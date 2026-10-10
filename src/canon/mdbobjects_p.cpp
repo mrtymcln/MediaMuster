@@ -1,9 +1,9 @@
-// Interprets OMF media's recorded dictionaries, values and local references,
-// keeping every observation. File matching and display selection belong to
-// later stages. MDB has its own implementation and does not call this one.
+// Interprets MDB's dictionaries, property bytes and local references without
+// selecting displayed values. Keep this implementation independent of OMF
+// media support; the shared scan model still gives every reader the same output.
 
-#include "omfobjects_p.h"
-#include "audioreader_p.h"
+#include "mdbobjects_p.h"
+#include "mdbaudiosummary_p.h"
 #include "sourcestorage_p.h"
 
 #include <QHash>
@@ -16,7 +16,7 @@ namespace Canon
 	namespace
 	{
 		using Outcome = ParsedSource::Outcome;
-		using Value = Detail::BentoValue;
+		using Value = MdbDetail::BentoValue;
 
 		struct Name
 		{
@@ -132,7 +132,7 @@ namespace Canon
 		class ObjectReader
 		{
 		public:
-			ObjectReader(Detail::BentoReadResult &bento, ParsedSource &result, const Cancellation &cancellation)
+			ObjectReader(MdbDetail::BentoReadResult &bento, ParsedSource &result, const Cancellation &cancellation)
 				: m_bento(bento), m_result(result), m_cancellation(cancellation) {}
 
 			void read()
@@ -185,7 +185,7 @@ namespace Canon
 						if (property.locator.name == QLatin1String("OMFI:WAVD:Summary") ||
 							property.locator.name == QLatin1String("OMFI:AIFD:Summary"))
 						{
-							auto decoded = Detail::decodeAudioSummary(property);
+							auto decoded = MdbDetail::decodeAudioSummary(property);
 							for (const auto &field : decoded)
 								if (field.state == PropertyReadState::Unreadable)
 									m_result.diagnostics.append(QStringLiteral("%1: %2").arg(field.locator.name, field.interpretation));
@@ -198,7 +198,6 @@ namespace Canon
 				}
 			}
 
-			bool hasOmfHeader() const { return m_revision != 0; }
 			std::optional<OmfRevision> revision() const
 			{
 				if (m_revision == 1)
@@ -646,7 +645,7 @@ namespace Canon
 				}
 			}
 
-			Detail::BentoReadResult &m_bento;
+			MdbDetail::BentoReadResult &m_bento;
 			ParsedSource &m_result;
 			const Cancellation &m_cancellation;
 			Dictionary m_properties;
@@ -659,7 +658,7 @@ namespace Canon
 		};
 	}
 
-	ParsedSource Detail::interpretOmfObjects(BentoReadResult bento, const ReaderContext &context)
+	ParsedSource MdbDetail::interpretMdbObjects(BentoReadResult bento, const ReaderContext &context)
 	{
 		ParsedSource result;
 		result.container = ParsedSource::Container::Bento;
@@ -669,17 +668,10 @@ namespace Canon
 		ObjectReader reader(bento, result, context.cancellation);
 		reader.read();
 		result.omfRevision = reader.revision();
-		if (reader.hasOmfHeader())
-			result.container = ParsedSource::Container::Omf;
-		else if (result.outcome == Outcome::Complete)
-		{
-			result.outcome = Outcome::Unsupported;
-			result.diagnostics.append(QStringLiteral("Bento values retained, but a supported OMF HEAD was not established."));
-		}
 		if (context.cancellation.cancelled())
 			result.outcome = Outcome::Cancelled;
 		auto receipt = QSharedPointer<SourceSnapshot>::create(context.snapshot ? *context.snapshot : SourceSnapshot{});
-		receipt->source = MetadataSource::Omf;
+		receipt->source = MetadataSource::Mdb;
 		receipt->readState = result.outcome == Outcome::Complete  ? SourceReadState::Complete
 							 : result.outcome == Outcome::IoError ? SourceReadState::Unreadable
 																  : SourceReadState::Incomplete;

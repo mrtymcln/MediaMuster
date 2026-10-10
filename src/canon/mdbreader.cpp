@@ -1,13 +1,13 @@
-// Reads the complete MDB value graph through the shared OMF object interpreter.
-// Media payload handling belongs to the separate Legacy Media reader.
+// Reads MDB database values and relationships using its own container and
+// object decoders. Removing OMF media support cannot remove this implementation.
 
 #include "mdbreader.h"
-#include "omfobjects_p.h"
+#include "mdbobjects_p.h"
 
 namespace Canon
 {
 	ParsedSource MdbReader::read(QIODevice &source, const ReaderContext &context) const
 	{
-		return Detail::interpretOmfObjects(Detail::readBento(source, context.cancellation), context, MetadataSource::Mdb);
+		return MdbDetail::interpretMdbObjects(MdbDetail::readBento(source, context.cancellation), context);
 	}
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-// The private container reader behind Canon's MDB and OMF readers. It follows Bento's
+// The private container reader behind Canon's OMF media reader. It follows Bento's
 // table of contents and preserves each recorded value, without deciding what
 // Avid's property names mean or which value a Media File row should display.
 

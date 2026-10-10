@@ -4,6 +4,9 @@ Later status: this reader is now connected to the application. The
 [8 October compression/audio-summary correction](legacy-compression-and-audio-summaries-2026-10-08.md)
 records shared native/Summary field decoding, per-field evidence and current
 verification. The implementation-stage description below remains dated 4 October.
+On 10 October the user named this reader **OmfReader** and required independent
+MDB/OMF implementations. [Reader ownership](reader-boundaries-2026-10-10.md)
+supersedes the original sharing arrangement below.
 
 Implemented 4 October 2026 as the next independent Canon reader. The shared Bento
 work and original OMF toolkit made this a useful next step after MDB. The toolkit
@@ -12,7 +15,7 @@ app scanner, UI and file-operation executor have not been switched to this reade
 
 ## What it does
 
-`Canon::LegacyReader` accepts an already-open binary device and inspects its bytes.
+`Canon::OmfReader` accepts an already-open binary device and inspects its bytes.
 It handles supported OMF/Bento containers and native RIFF/RF64 WAVE or FORM
 AIFF/AIFF-C files, including the OMF metadata embedded in real Avid audio files.
 No PMR/MDB database is required to read a media file's own metadata.
@@ -20,13 +23,13 @@ No PMR/MDB database is required to read a media file's own metadata.
 ```text
 One admitted physical .omf / .aif / .wav file
                    |
-             LegacyReader
+             OmfReader
              /          \
      OMF container    Native WAVE / AIFF
           |              |         \
           |       audio headers    embedded omfi chunk(s)
           |              |                  |
-          +--------------|------- shared Bento + OMF object reader
+          +--------------|------- OMF-owned Bento + object reader
                          |                  |
                          v                  v
                     RAM ParsedSource + embedded ParsedSource(s)
@@ -39,17 +42,18 @@ One admitted physical .omf / .aif / .wav file
                             select fields, adapt to the existing UI
 ```
 
-The OMF object interpreter is shared with `MdbReader`; there is one implementation
-of those dictionary, type, text and reference rules. MDB retains its previous
-eager value-reading behaviour. OMF media uses a metadata-only read path so known
-recording payloads stay on disk. Neither path calls the old production parsers.
+Originally the OMF object interpreter was shared with `MdbReader`. Since the
+10 October independence refactor, each owns its dictionary, type, text and
+reference implementation. MDB retains its previous eager value-reading behaviour.
+OMF media uses a metadata-only read path so known recording payloads stay on disk.
+Neither path calls the old production parsers.
 
 Implementation files:
 
-- [`legacyreader.h/.cpp`](../src/canon/legacyreader.cpp): public reader and native/embedded source coordination.
+- [`omfreader.h/.cpp`](../src/canon/omfreader.cpp): public reader and native/embedded source coordination.
 - [`audioreader_p.h/.cpp`](../src/canon/audioreader_p.cpp): bounded native audio chunk reader.
-- [`bentoreader_p.h/.cpp`](../src/canon/bentoreader_p.cpp): shared container framing and selective value reads.
-- [`omfobjects_p.h/.cpp`](../src/canon/omfobjects_p.cpp): shared OMF/MDB object interpretation.
+- [`omfbentoreader_p.h/.cpp`](../src/canon/omfbentoreader_p.cpp): OMF-owned container framing and selective value reads.
+- [`omfobjects_p.h/.cpp`](../src/canon/omfobjects_p.cpp): OMF-owned object interpretation.
 - [`scanmodel.h`](../src/canon/scanmodel.h): embedded source contexts and original embedding locations.
 - [`tst_canonlegacy.cpp`](../tests/tst_canonlegacy.cpp): real specimens and independently authored failure/boundary cases.
 

@@ -86,14 +86,28 @@ option(MEDIAMUSTER_BUILD_TESTS "Build the MediaMuster test suite" ON)
 ### Pin to Qt version ###
 find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Widgets Core Gui Concurrent)
 
+# MDB and OMF own separate parsing and interpretation implementations. Keep the
+# lists independent so removing one media family cannot remove the MDB decoder.
+set(CANON_MDB_SOURCES
+    src/canon/mdbreader.cpp
+    src/canon/mdbbentoreader_p.cpp
+    src/canon/mdbobjects_p.cpp
+    src/canon/mdbaudiosummary_p.cpp
+    src/canon/mdbprojection.cpp
+)
+set(CANON_OMF_SOURCES
+    src/canon/omfreader.cpp
+    src/canon/omfbentoreader_p.cpp
+    src/canon/omfobjects_p.cpp
+    src/canon/audioreader_p.cpp
+    src/canon/omfprojection.cpp
+)
+
 add_library(mediamuster_canon STATIC
     src/canon/discoveryengine.cpp
     src/canon/pmrreader.cpp
-    src/canon/mdbreader.cpp
-    src/canon/omfobjects_p.cpp
-    src/canon/legacyreader.cpp
-    src/canon/audioreader_p.cpp
-    src/canon/bentoreader_p.cpp
+    ${CANON_MDB_SOURCES}
+    ${CANON_OMF_SOURCES}
     src/canon/mxfreader.cpp
     src/canon/mxfobjects_p.cpp
     src/canon/avbreader.cpp
@@ -110,7 +124,6 @@ add_library(mediamuster_canon STATIC
     src/canon/sourcearchive.h
     src/canon/pmrprojection.cpp
     src/canon/mxfprojection.cpp
-    src/canon/omfprojection.cpp
     src/canon/picturegeometry_p.h
     src/canon/scanengine.cpp
     src/avideffects.cpp

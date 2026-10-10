@@ -3,7 +3,7 @@
 #include "conventions.h"
 #include "mobid.h"
 #include "canon/mxfreader.h"
-#include "canon/legacyreader.h"
+#include "canon/omfreader.h"
 #include "canon/projection.h"
 #include "canon/scanengine.h"
 #include "pathkey.h"
@@ -123,7 +123,7 @@ namespace
 		const auto receipt = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
 			mxf ? MetadataSource::Mxf : MetadataSource::Omf, item.src, QFileInfo(item.src).lastModified(), SourceReadState::NotRead});
 		const auto parsed = mxf ? Canon::MxfReader{}.read(source.io(), {receipt, cancellation})
-								: Canon::LegacyReader{}.read(source.io(), {receipt, cancellation});
+								: Canon::OmfReader{}.read(source.io(), {receipt, cancellation});
 		const auto projection = mxf ? Canon::projectMxf(parsed, cancellation) : Canon::projectOmf(parsed, cancellation);
 		MediaEvidence evidence;
 		for (const auto &file : projection.files)

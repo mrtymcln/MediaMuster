@@ -27,6 +27,7 @@ namespace Canon
 	};
 
 	Projection projectPmr(const ParsedSource &source, const Cancellation &cancellation);
+	Projection projectMdb(const ParsedSource &source, const Cancellation &cancellation);
 	Projection projectMxf(const ParsedSource &source, const Cancellation &cancellation);
 	Projection projectOmf(const ParsedSource &source, const Cancellation &cancellation);
 

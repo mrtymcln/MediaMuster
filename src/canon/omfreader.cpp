@@ -2,7 +2,7 @@
 // same physical file. Keep each source context, inspect bytes rather than names,
 // and leave audio/video samples on disk whilst reading their metadata.
 
-#include "legacyreader.h"
+#include "omfreader.h"
 #include "audioreader_p.h"
 #include "omfobjects_p.h"
 #include "sourcestorage_p.h"
@@ -79,7 +79,7 @@ namespace Canon
 			Detail::BentoReadOptions options;
 			options.metadataOnly = true;
 			options.labelOffset = labelOffset;
-			return Detail::interpretOmfObjects(Detail::readBento(source, context.cancellation, options), context, MetadataSource::Omf);
+			return Detail::interpretOmfObjects(Detail::readBento(source, context.cancellation, options), context);
 		}
 
 		void appendEmbedded(ParsedSource &parent, ParsedSource child, PropertyLocator embedding)
@@ -95,7 +95,7 @@ namespace Canon
 		}
 	}
 
-	ParsedSource LegacyReader::read(QIODevice &source, const ReaderContext &context) const
+	ParsedSource OmfReader::read(QIODevice &source, const ReaderContext &context) const
 	{
 		ParsedSource result;
 		try

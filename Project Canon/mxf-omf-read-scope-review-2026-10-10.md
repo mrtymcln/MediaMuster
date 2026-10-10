@@ -2,7 +2,8 @@
 
 Reviewed 10 October 2026, before choosing a media-reading or retention change.
 This report records published format rules, Avid/workflow evidence, local
-observations and proposed classifications separately. No engine code changed.
+observations and proposed classifications separately. The specification review
+changed no engine code; the subsequent reader-ownership refactor is noted below.
 
 ## Scope and meaning of “needed”
 
@@ -12,6 +13,31 @@ toolkit, and Avid/integration documentation. It does not claim to cover every
 codec standard, every MXF application profile, or unpublished Avid extensions.
 The historical Avid “MXF Unwrapped” PDF remained unavailable through its original
 and archived URLs; no conclusion relies on having read it.
+
+### Confirmed product scope and reader boundaries
+
+After this review, the user confirmed the supported MXF family is **Avid-compatible
+OP-Atom**, produced by Media Composer or third-party applications for Media
+Composer, alongside **OMF/legacy media**. General MXF layouts in this report are
+background and explain qualifications; they are not an instruction to expand the
+product into a general-purpose MXF scanner. Proven Avid layout variations still
+matter; a strict conformance rejection is not introduced by this scope decision.
+
+Keep separate format readers and metadata interpretation: `MxfReader` and
+`projectMxf` for MXF; `OmfReader` and `projectOmf` for admitted OMF/legacy
+media, with native audio helpers for the previously agreed WAV/AIF support.
+Share the source contract, `MediaFile`/evidence model and selection policy.
+The user subsequently required independent MDB and OMF implementations, even
+where their wire formats overlap. `MdbReader`/`projectMdb` now own their container,
+object and summary decoding; `OmfReader`/`projectOmf` own the legacy-media path.
+Disabling or removing legacy-media support must not remove MDB decoding. See
+[reader ownership and verification](reader-boundaries-2026-10-10.md).
+
+`FeatureFlags::kOmfScan` controls the OMFI-family path, enabled by default as
+previously agreed. Off skips its media and databases; on includes the OMFI root
+and admitted immediate subfolders with `.omf`, `.aif`, `.wav`, `.pmr`, `.mdb`.
+The family gate already existed in Canon; the subsequent independence refactor
+changes implementation ownership, not byte-reading, retention or recovery policy.
 
 Three different requirements must remain separate:
 
@@ -228,8 +254,8 @@ RAM representation is therefore a distinct concern from narrowing read scope.
   candidates; it does not automatically select closed/latest-generation metadata
   under the general MXF authority rules. No affected local sample is established;
   handling actual open/growing files needs focused qualification before a change.
-- [LegacyReader](../src/canon/legacyreader.cpp) uses metadata-only Bento reading.
-  [Bento metadata reading](../src/canon/bentoreader_p.cpp) skips seven
+- [OmfReader](../src/canon/omfreader.cpp) uses metadata-only Bento reading.
+  [Bento metadata reading](../src/canon/omfbentoreader_p.cpp) skips seven
   toolkit-identified recording properties, but reads other values, including
   unfamiliar ones. A private DataValue can be large recording data; its generic
   type alone cannot establish that it is small metadata.

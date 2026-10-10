@@ -6,7 +6,7 @@
 #include "pmrreader.h"
 #include "mdbreader.h"
 #include "mxfreader.h"
-#include "legacyreader.h"
+#include "omfreader.h"
 #include "pmrkey.h"
 #include "mobid.h"
 #include "featureflags.h"
@@ -77,7 +77,7 @@ namespace Canon
 			case SourceCandidate::ReaderHint::Mxf:
 				return MxfReader{}.read(input, context);
 			case SourceCandidate::ReaderHint::LegacyMedia:
-				return LegacyReader{}.read(input, context);
+				return OmfReader{}.read(input, context);
 			}
 			return {};
 		}
@@ -92,6 +92,7 @@ namespace Canon
 			case MetadataSource::Mxf:
 				return projectMxf(source, cancellation);
 			case MetadataSource::Mdb:
+				return projectMdb(source, cancellation);
 			case MetadataSource::Omf:
 				return projectOmf(source, cancellation);
 			default:

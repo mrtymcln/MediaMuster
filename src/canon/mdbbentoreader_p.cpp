@@ -1,17 +1,15 @@
-// Reads Bento's container structure independently of the old application parser.
-// The table of contents describes where values live; only declared continuations
-// are joined. Unknown properties keep their bytes for the MDB reader to interpret.
+// Reads MDB's Bento container, joining only explicitly continued values.
+// This verified decoding is intentionally independent of the OMF media reader;
+// MDB values keep their original bytes, order and locations.
 
-#include "bentoreader_p.h"
+#include "mdbbentoreader_p.h"
 
 #include <QByteArrayView>
-#include <QHash>
-#include <QSet>
 #include <QtEndian>
 #include <algorithm>
 #include <array>
 
-namespace Canon::Detail
+namespace Canon::MdbDetail
 {
 	namespace
 	{
@@ -98,15 +96,14 @@ namespace Canon::Detail
 		class Reader
 		{
 		public:
-			Reader(Input &input, const Cancellation &cancellation, BentoReadResult &result,
-				   const BentoReadOptions &options)
-				: m_input(input), m_cancellation(cancellation), m_result(result), m_options(options) {}
+			Reader(Input &input, const Cancellation &cancellation, BentoReadResult &result)
+				: m_input(input), m_cancellation(cancellation), m_result(result) {}
 
 			void read()
 			{
 				if (m_input.extent() < labelSize)
 					throw Failure{Outcome::Incomplete, QStringLiteral("Source is too short to contain a Bento label.")};
-				const qint64 labelOffset = m_options.labelOffset == -1 ? m_input.extent() - labelSize : m_options.labelOffset;
+				const qint64 labelOffset = m_input.extent() - labelSize;
 				const auto &label = structure(QStringLiteral("Bento.Label"), labelOffset, labelSize);
 				if (!label.encoding.startsWith(magic))
 					throw Failure{Outcome::Malformed, QStringLiteral("No Bento label at the specified source offset.")};
@@ -154,8 +151,6 @@ namespace Canon::Detail
 					trailing.bytesRetained = false;
 					trailing.interpretation = QStringLiteral("Unreferenced space before the label; retained as a source range.");
 				}
-				if (m_options.metadataOnly)
-					readMetadata();
 			}
 
 		private:
@@ -222,16 +217,6 @@ namespace Canon::Detail
 					value.bytes.append(m_toc.data() + qint64(segment.offset) - m_tocOffset, qsizetype(segment.length));
 					value.ranges.append({qint64(segment.offset), qint64(segment.length)});
 				}
-				else if (m_options.metadataOnly)
-				{
-					value.bytesRetained = false;
-					value.ranges.append({qint64(segment.offset), qint64(segment.length)});
-					if (value.state == PropertyReadState::Present)
-					{
-						value.state = PropertyReadState::NotRead;
-						value.problem = QStringLiteral("Value ranges indexed; metadata reading has not reached this value.");
-					}
-				}
 				else
 				{
 					// Keep a failed/partial read attached to its value before propagating.
@@ -242,76 +227,6 @@ namespace Canon::Detail
 				}
 				if ((segment.object == 1 && segment.property >= 8 && segment.property <= 10) || segment.property == 29 || segment.type == 30)
 					throw Failure{Outcome::Unsupported, QStringLiteral("Bento update instructions require a target/update resolver; original value and TOC ranges are retained.")};
-			}
-
-			void readDeferred(BentoValue &value)
-			{
-				if (value.state != PropertyReadState::NotRead)
-					return;
-				checkCancellation(m_cancellation);
-				const auto declaredRanges = std::move(value.ranges);
-				value.ranges.clear();
-				value.bytes.clear();
-				value.bytesRetained = true;
-				value.state = PropertyReadState::Unreadable;
-				value.problem = QStringLiteral("Metadata read interrupted; obtained bytes and their ranges are retained. The TOC preserves the complete declared extents.");
-				for (const auto &range : declaredRanges)
-					m_input.read(range.offset, range.length, value.bytes, value.ranges);
-				value.state = PropertyReadState::Present;
-				value.problem.clear();
-			}
-
-			void readMetadata()
-			{
-				// Property IDs are file-local. Read their definitions before deciding
-				// whether a value is media essence; a VarLenBytes/DataValue type alone
-				// cannot distinguish an entire recording from a descriptor summary.
-				for (auto &value : m_result.values)
-				{
-					checkCancellation(m_cancellation);
-					if (value.property == 23 || value.property == 24)
-						readDeferred(value);
-				}
-				// OMF toolkit omFile.c registers these seven essence property names.
-				const QSet<QByteArray> essenceNames{
-					"OMFI:IDAT:ImageData", "OMFI:TIFF:Data", "OMFI:TIFF:ImageData",
-					"OMFI:AIFC:Data", "OMFI:AIFC:AudioData", "OMFI:WAVE:Data", "OMFI:WAVE:AudioData"};
-				QHash<quint32, QSet<QByteArray>> propertyNames;
-				QSet<quint32> uncertainDefinitions;
-				for (const auto &value : m_result.values)
-				{
-					checkCancellation(m_cancellation);
-					if (value.property != 24)
-						continue;
-					if (value.state != PropertyReadState::Present || !value.bytesRetained)
-					{
-						uncertainDefinitions.insert(value.object);
-						continue;
-					}
-					const auto terminator = value.bytes.indexOf('\0');
-					propertyNames[value.object].insert(terminator < 0 ? value.bytes : value.bytes.first(terminator));
-				}
-				for (auto &value : m_result.values)
-				{
-					checkCancellation(m_cancellation);
-					if (value.state == PropertyReadState::Unreadable)
-						continue;
-					const auto names = propertyNames.constFind(value.property);
-					const bool essence = names != propertyNames.cend() &&
-										 std::any_of(names->cbegin(), names->cend(), [&](const QByteArray &name)
-													 { return essenceNames.contains(name); });
-					if (!essence)
-					{
-						readDeferred(value);
-						continue;
-					}
-					value.bytes.clear();
-					value.bytesRetained = false;
-					value.state = PropertyReadState::Present;
-					value.problem = names->size() != 1 || uncertainDefinitions.contains(value.property)
-										? QStringLiteral("Conflicting property definitions include an essence property; retained by range without guessing which definition applies.")
-										: QStringLiteral("Recorded media essence retained by source range; media payload bytes are not copied during metadata reading.");
-				}
 			}
 
 			void fixedToc()
@@ -469,14 +384,13 @@ namespace Canon::Detail
 			Input &m_input;
 			const Cancellation &m_cancellation;
 			BentoReadResult &m_result;
-			const BentoReadOptions &m_options;
 			QByteArrayView m_toc;
 			qint64 m_tocOffset = 0, m_blockSize = 0;
 			bool m_continuing = false;
 		};
 	}
 
-	BentoReadResult readBento(QIODevice &source, const Cancellation &cancellation, const BentoReadOptions &options)
+	BentoReadResult readBento(QIODevice &source, const Cancellation &cancellation)
 	{
 		BentoReadResult result;
 		try
@@ -486,7 +400,7 @@ namespace Canon::Detail
 				throw Failure{Outcome::IoError, QStringLiteral("Bento reader requires an already-open, readable, seekable binary device.")};
 			Input input(source, cancellation);
 			result.outcome = Outcome::Complete;
-			Reader(input, cancellation, result, options).read();
+			Reader(input, cancellation, result).read();
 			input.verify();
 		}
 		catch (const Failure &failure)

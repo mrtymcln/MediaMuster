@@ -1,7 +1,8 @@
-// Interprets OMF and legacy audio metadata as observations about one file.
-// Recorded media-data ownership connects descriptors to that physical file.
-// This path does not interpret database entries; its local helpers remain
-// independent so legacy media support can be removed without changing MDB.
+// Interprets the MDB reader's object graph without using the OMF media path.
+// MDB uses OMFI property names, but its database entries are independent file
+// candidates: a media file's own contents list does not select their ownership.
+// These local helpers are deliberately separate so OMF support can be removed
+// without changing database interpretation. Recorded references remain intact.
 
 #include "projection.h"
 #include "compressionnames_p.h"
@@ -247,25 +248,10 @@ namespace Canon
 				file.objects.append({source.snapshot, object.handle});
 		}
 
-		void retainAmbiguousCandidate(ProjectedFile &file, const ProjectedFile &candidate, bool retainIdentity = true)
-		{
-			appendEvidence(file.evidence, candidate.evidence, false);
-			file.objects += candidate.objects;
-			if (!retainIdentity)
-				return;
-			// A positive identity disagreement is different from an unreadable ID:
-			// keep competing IDs active while excluding unowned technical facts.
-			for (auto value : candidate.evidence.observations(MediaProperty::FileMobId))
-			{
-				value.explanation += QStringLiteral(" OMF physical-file ownership is ambiguous; competing identity observations must be reconciled before use.");
-				file.evidence.observe(MediaProperty::FileMobId, std::move(value));
-			}
-		}
-
-		class OmfProjection
+		class MdbProjection
 		{
 		public:
-			OmfProjection(const ParsedSource &source, const Cancellation &cancellation)
+			MdbProjection(const ParsedSource &source, const Cancellation &cancellation)
 				: m_source(source), m_cancellation(cancellation)
 			{
 				for (const auto &object : source.objects)
@@ -415,74 +401,6 @@ namespace Canon
 							QStringLiteral("Independent recorded master-track lengths linked to this file; unknown lengths, clocks or drop-frame status are not invented."));
 				}
 				result.diagnostics += m_referenceDiagnostics;
-				if (m_disputedMedia)
-				{
-					result.files.clear();
-					return result;
-				}
-
-				QSet<QString> mediaIds;
-				bool mediaIdentityRecorded = !m_activeMedia.isEmpty();
-				bool unreadableMediaIdentity = !mediaIdentityRecorded;
-				bool uncertainMediaIdentity = m_disputedMedia;
-				for (const auto &file : result.files)
-					if (file.fileMobId.isEmpty() && !file.evidence.observations(MediaProperty::FileMobId).isEmpty())
-						uncertainMediaIdentity = true;
-				for (const auto &object : m_source.objects)
-				{
-					const auto identities = mediaIdentities(object);
-					if (m_activeMedia.contains(object.handle) && identities.isEmpty())
-						unreadableMediaIdentity = true;
-					for (const auto *property : identities)
-					{
-						mediaIdentityRecorded = true;
-						const auto id = identity(property);
-						if (!id.isEmpty())
-							mediaIds.insert(id);
-						else
-							unreadableMediaIdentity = true;
-					}
-				}
-				uncertainMediaIdentity = uncertainMediaIdentity || unreadableMediaIdentity;
-				if (unreadableMediaIdentity)
-					result.diagnostics.append(QStringLiteral("No complete positive root-listed MediaData identity establishes this physical OMF file's ownership; absent or unreadable identity leaves candidate metadata unqualified. Independent sources remain available."));
-				QVector<ProjectedFile> eligible;
-				QSet<QString> eligibleIds;
-				for (auto &file : result.files)
-					if (!mediaIdentityRecorded || mediaIds.contains(file.fileMobId))
-					{
-						eligibleIds.insert(file.fileMobId);
-						eligible.append(std::move(file));
-					}
-				if (!uncertainMediaIdentity && eligibleIds.size() == 1 && (!mediaIdentityRecorded || mediaIds.size() == 1))
-					result.files = std::move(eligible);
-				else
-				{
-					if (!result.files.isEmpty() || mediaIdentityRecorded)
-						result.diagnostics.append(QStringLiteral("OMF physical-file ownership is absent or ambiguous; no unrelated file mob was selected."));
-					ProjectedFile ambiguous;
-					// Candidates moved to eligible are still observations, even though
-					// their ownership could not be selected.
-					for (const auto &candidate : result.files)
-						retainAmbiguousCandidate(ambiguous, candidate, !unreadableMediaIdentity || candidate.fileMobId.isEmpty());
-					for (const auto &candidate : eligible)
-						retainAmbiguousCandidate(ambiguous, candidate, !unreadableMediaIdentity || candidate.fileMobId.isEmpty());
-					for (const auto &object : m_source.objects)
-						for (const auto *property : mediaIdentities(object))
-						{
-							const auto id = identity(property);
-							if (!id.isEmpty())
-							{
-								auto value = observation(m_source, object, *property, id, EvidenceBasis::Derived,
-														 QStringLiteral("Recorded media-data ownership disagrees with the available file-mob candidates; original identity retained."));
-								value.eligible = !unreadableMediaIdentity || mediaIds.size() > 1;
-								ambiguous.evidence.observe(MediaProperty::FileMobId, std::move(value));
-							}
-						}
-					result.files.clear();
-					if (!ambiguous.evidence.observations(MediaProperty::FileMobId).isEmpty())
-						result.files.append(std::move(ambiguous));
-				}
 				return result;
 			}
 
@@ -573,9 +491,7 @@ namespace Canon
 				if (!list.complete || !disputed.isEmpty())
 				{
 					m_contentsDiagnostics.append(QStringLiteral("%1 is unreadable or disagrees with ObjectSpine membership/recorded MobID; affected identity associations are not eligible. Raw properties and references remain available.").arg(QLatin1String(name)));
-					if (media)
-						m_disputedMedia = true;
-					else
+					if (!media)
 						m_disputedMobs += disputed;
 				}
 			}
@@ -622,7 +538,6 @@ namespace Canon
 							m_activeMedia.insert(handle);
 							if (!mediaDataClass(cls))
 							{
-								m_disputedMedia = true;
 								m_contentsDiagnostics.append(QStringLiteral("ObjectSpine media-data class %1 has no established identity interpretation; physical ownership remains unknown and its raw context is retained.").arg(cls));
 							}
 						}
@@ -1228,7 +1143,6 @@ namespace Canon
 			QStringList m_contentsDiagnostics;
 			mutable QStringList m_referenceDiagnostics;
 			bool m_contentsComplete = false;
-			bool m_disputedMedia = false;
 		};
 
 		struct AudioFacts
@@ -1236,15 +1150,11 @@ namespace Canon
 			int channels = 0;
 			int bits = 0;
 			MediaRate sampleRate;
-			std::optional<qint64> frames;
 			QString codec;
 			QString representation;
-			quint16 blockAlign = 0;
-			bool uncompressed = false;
 			Property channelsProperty = nullptr;
 			Property bitsProperty = nullptr;
 			Property rateProperty = nullptr;
-			Property framesProperty = nullptr;
 			Property codecProperty = nullptr;
 		};
 
@@ -1284,7 +1194,6 @@ namespace Canon
 			const quint32 sampleRate = fields.value(QStringLiteral("nSamplesPerSec")).toUInt();
 			if (sampleRate <= quint32(std::numeric_limits<qint32>::max()))
 				result.sampleRate = {qint32(sampleRate), 1};
-			result.blockAlign = quint16(fields.value(QStringLiteral("nBlockAlign")).toUInt());
 			if (format == 0xfffe)
 			{
 				result.codecProperty = audioField(owner, header, "SubFormat");
@@ -1310,13 +1219,11 @@ namespace Canon
 			{
 				result.codec = QStringLiteral("PCM");
 				result.representation = QStringLiteral("Integer");
-				result.uncompressed = true;
 			}
 			else if (format == 3)
 			{
 				result.codec = QStringLiteral("IEEE float");
 				result.representation = QStringLiteral("Float");
-				result.uncompressed = true;
 			}
 			return result;
 		}
@@ -1360,10 +1267,8 @@ namespace Canon
 			result.channelsProperty = audioField(owner, header, "numChannels");
 			result.bitsProperty = audioField(owner, header, "sampleSize");
 			result.rateProperty = audioField(owner, header, "sampleRate");
-			result.framesProperty = audioField(owner, header, "numSampleFrames");
 			result.codecProperty = audioField(owner, header, "compressionType");
 			result.channels = fields.value(QStringLiteral("numChannels")).toInt();
-			result.frames = fields.value(QStringLiteral("numSampleFrames")).toLongLong();
 			result.bits = fields.value(QStringLiteral("sampleSize")).toInt();
 			if (result.rateProperty)
 				result.sampleRate = extendedRate(result.rateProperty->encoding);
@@ -1373,19 +1278,17 @@ namespace Canon
 			{
 				result.codec = QStringLiteral("PCM");
 				result.representation = QStringLiteral("Integer");
-				result.uncompressed = true;
 			}
 			else if (codec == "fl32" || codec == "FL32" || codec == "fl64" || codec == "FL64")
 			{
 				result.codec = QStringLiteral("IEEE float");
 				result.representation = QStringLiteral("Float");
-				result.uncompressed = true;
 			}
 			return result;
 		}
 
 		void audioObservations(ProjectedFile &file, const ParsedSource &source, const AvidObject &object,
-							   const RawProperty &property, const AudioFacts &audio, bool duration)
+							   const RawProperty &property, const AudioFacts &audio)
 		{
 			const auto add = [&](MediaProperty field, Property input, const QVariant &value)
 			{
@@ -1403,14 +1306,9 @@ namespace Canon
 				add(MediaProperty::Compression, audio.codecProperty ? audio.codecProperty : &property, audio.codec.isEmpty() ? QVariant{} : QVariant(audio.codec));
 				add(MediaProperty::SampleFormat, audio.codecProperty ? audio.codecProperty : &property, audio.representation.isEmpty() ? QVariant{} : QVariant(audio.representation));
 			}
-			if (duration && audio.frames && *audio.frames >= 0 && audio.sampleRate.valid())
-				observe(file, MediaProperty::FileDuration, source, object, audio.framesProperty ? *audio.framesProperty : property,
-						durationValue({*audio.frames, audio.sampleRate, {}, MediaDuration::Source::Descriptor}), EvidenceBasis::Derived,
-						property.locator.key == "COMM" ? QStringLiteral("Recorded sample-frame count and exact native sampling rate; no video clock inferred.")
-						: QStringLiteral("Sample-frame count derived from the single native data extent and recorded block alignment, using the exact native sampling rate; sound samples remain unread and no video clock is inferred."));
 		}
 
-		void OmfProjection::technical(ProjectedFile &file, const AvidObject &descriptor, MediaRate editRate)
+		void MdbProjection::technical(ProjectedFile &file, const AvidObject &descriptor, MediaRate editRate)
 		{
 			const auto cls = objectClass(descriptor);
 			const bool audio = audioClass(cls);
@@ -1475,7 +1373,7 @@ namespace Canon
 					const auto facts = waveSummary ? waveFormat(descriptor, header) : aiffCommon(descriptor, header);
 					// Compression is the actual encoding; WAVE/AIFF is retained as the
 					// descriptor/container fact, not substituted for compression.
-					audioObservations(file, m_source, descriptor, header, facts, false);
+					audioObservations(file, m_source, descriptor, header, facts);
 					if (facts.sampleRate.valid())
 					{
 						if (summaryRate.valid() && (summaryRate.numerator != facts.sampleRate.numerator || summaryRate.denominator != facts.sampleRate.denominator))
@@ -1726,102 +1624,12 @@ namespace Canon
 			}
 			saveCodec();
 		}
-
-		ProjectedFile nativeAudio(const ParsedSource &source)
-		{
-			ProjectedFile file;
-			AvidObject owner;
-			owner.snapshot = source.snapshot;
-			owner.properties = source.unownedProperties;
-			file.evidence.registerSource(source.snapshot, QStringLiteral("object:0"));
-			for (const auto field : {MediaProperty::Kind, MediaProperty::Channels, MediaProperty::BitDepth,
-									 MediaProperty::SampleRate, MediaProperty::Compression, MediaProperty::SampleFormat})
-				recordPropertyCoverage(file, field, source, owner, {"Audio.fmt ", "Audio.COMM"}, false);
-			recordPropertyCoverage(file, MediaProperty::FileDuration, source, owner,
-								   {"Audio.fmt ", "Audio.COMM", "Audio.data", "Audio.SSND"}, false);
-			QVector<Property> dataChunks;
-			for (const auto &property : source.unownedProperties)
-				if (property.locator.key == "data" && property.state == PropertyReadState::Present)
-					dataChunks.append(&property);
-			for (const auto &property : source.unownedProperties)
-			{
-				if (!property.bytesRetained)
-					continue;
-				AudioFacts facts;
-				if (property.locator.key == "fmt ")
-				{
-					facts = waveFormat(owner, property);
-					if (facts.uncompressed && facts.blockAlign && dataChunks.size() == 1 && dataChunks.first()->locator.ranges.size() == 1)
-					{
-						const auto bytes = dataChunks.first()->locator.ranges.first().length;
-						if (bytes >= 0 && bytes % facts.blockAlign == 0)
-						{
-							facts.frames = bytes / facts.blockAlign;
-							facts.framesProperty = dataChunks.first();
-						}
-					}
-				}
-				else if (property.locator.key == "COMM")
-				{
-					facts = aiffCommon(owner, property);
-				}
-				else
-					continue;
-				if (!property.decoded.toMap().isEmpty())
-					observe(file, MediaProperty::Kind, source, owner, facts.channelsProperty ? *facts.channelsProperty : property, 1, EvidenceBasis::Derived,
-							QStringLiteral("A native WAVE/AIFF audio format header was recorded."));
-				audioObservations(file, source, owner, property, facts, true);
-			}
-			return file;
-		}
 	}
 
-	Projection projectOmf(const ParsedSource &source, const Cancellation &cancellation)
+	Projection projectMdb(const ParsedSource &source, const Cancellation &cancellation)
 	{
 		if (cancellation.cancelled())
 			return {};
-		if (source.container == ParsedSource::Container::Omf || source.container == ParsedSource::Container::Bento)
-			return OmfProjection(source, cancellation).project();
-		Projection result;
-		if (source.container != ParsedSource::Container::Wave && source.container != ParsedSource::Container::Aiff)
-			return result;
-		auto file = nativeAudio(source);
-		QVector<ProjectedFile> embedded;
-		QSet<QString> identities;
-		for (const auto &child : source.embeddedSources)
-		{
-			if (cancellation.cancelled())
-				return result;
-			auto projection = OmfProjection(child, cancellation).project();
-			result.diagnostics += projection.diagnostics;
-			for (auto &candidate : projection.files)
-			{
-				for (const auto &value : candidate.evidence.observations(MediaProperty::FileMobId))
-					if (value.eligible && value.readState == PropertyReadState::Present && !value.value.toString().isEmpty())
-						identities.insert(value.value.toString());
-				embedded.append(std::move(candidate));
-			}
-		}
-		if (identities.size() == 1)
-		{
-			file.fileMobId = *identities.cbegin();
-			for (const auto &candidate : embedded)
-			{
-				appendEvidence(file.evidence, candidate.evidence);
-				file.objects += candidate.objects;
-				for (const auto &master : candidate.masterMobIds)
-					if (!file.masterMobIds.contains(master))
-						file.masterMobIds.append(master);
-			}
-			file.masterMobIds.sort();
-		}
-		else if (identities.size() > 1)
-		{
-			result.diagnostics.append(QStringLiteral("Embedded OMF graphs disagree about the physical audio file's identity; native audio facts remain available."));
-			for (const auto &candidate : embedded)
-				retainAmbiguousCandidate(file, candidate);
-		}
-		result.files.append(std::move(file));
-		return result;
+		return MdbProjection(source, cancellation).project();
 	}
 }

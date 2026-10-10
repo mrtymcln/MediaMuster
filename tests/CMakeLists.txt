@@ -65,6 +65,30 @@ mediamuster_add_test(tst_canonlegacy media)
 target_link_libraries(tst_canonlegacy PRIVATE mediamuster_canon)
 target_compile_definitions(tst_canonlegacy PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
+# Build each reader/projector without the other family's implementation. Linking
+# the full Canon library here would hide an accidental cross-reader dependency.
+set(CANON_ISOLATED_VALUE_SOURCES
+    ${CMAKE_SOURCE_DIR}/src/canon/projection.cpp
+    ${CMAKE_SOURCE_DIR}/src/canon/compressionnames_p.cpp
+    ${CMAKE_SOURCE_DIR}/src/canon/metadataselectionpolicy.cpp
+    ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
+    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
+    ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
+)
+foreach(family IN ITEMS MDB OMF)
+    string(TOLOWER "${family}" family_lower)
+    set(isolated_sources)
+    foreach(source IN LISTS CANON_${family}_SOURCES)
+        list(APPEND isolated_sources "${CMAKE_SOURCE_DIR}/${source}")
+    endforeach()
+    set(test_name "tst_canon${family_lower}isolated")
+    mediamuster_add_test(${test_name} media
+        ${isolated_sources}
+        ${CANON_ISOLATED_VALUE_SOURCES}
+    )
+    target_compile_definitions(${test_name} PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+endforeach()
+
 # Full MXF metadata framing, scoped Primers, source graphs and guarded essence.
 mediamuster_add_test(tst_canonmxf media)
 target_link_libraries(tst_canonmxf PRIVATE mediamuster_canon)

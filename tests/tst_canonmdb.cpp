@@ -3,7 +3,7 @@
 // bytes; the production MDB parser is not used as an oracle.
 
 #include "canon/mdbreader.h"
-#include "canon/bentoreader_p.h"
+#include "canon/mdbbentoreader_p.h"
 #include "testcanonbento.h"
 
 #include <QBuffer>
@@ -28,7 +28,7 @@ Canon::ParsedSource parse(QByteArray bytes)
 	return Canon::MdbReader{}.read(source, {{}, cancellation});
 }
 
-Canon::Detail::BentoReadResult readCompact(const QByteArray &payload, const QByteArray &toc)
+Canon::MdbDetail::BentoReadResult readCompact(const QByteArray &payload, const QByteArray &toc)
 {
 	QByteArray bytes = payload + toc + QByteArray::fromHex("a4434da5486472d7");
 	bytes += number<quint16>(0x0101) + number<quint16>(1) + number<quint16>(2) + number<quint16>(0);
@@ -36,7 +36,7 @@ Canon::Detail::BentoReadResult readCompact(const QByteArray &payload, const QByt
 	QBuffer source(&bytes);
 	source.open(QIODevice::ReadOnly);
 	Canon::Cancellation cancellation;
-	return Canon::Detail::readBento(source, cancellation);
+	return Canon::MdbDetail::readBento(source, cancellation);
 }
 
 const Canon::AvidObject *object(const Canon::ParsedSource &result, Canon::ObjectHandle handle)

@@ -3,7 +3,7 @@
 
 #include "canon/projection.h"
 #include "canon/mdbreader.h"
-#include "canon/legacyreader.h"
+#include "canon/omfreader.h"
 #include "testcanonbento.h"
 #include "testtypedbento.h"
 
@@ -62,13 +62,14 @@ namespace
 		QBuffer input(&bytes);
 		input.open(QIODevice::ReadOnly);
 		Canon::Cancellation cancellation;
-		return database ? Canon::MdbReader{}.read(input, {{}, cancellation}) : Canon::LegacyReader{}.read(input, {{}, cancellation});
+		return database ? Canon::MdbReader{}.read(input, {{}, cancellation}) : Canon::OmfReader{}.read(input, {{}, cancellation});
 	}
 
 	Canon::Projection project(const Canon::ParsedSource &source)
 	{
 		Canon::Cancellation cancellation;
-		return Canon::projectOmf(source, cancellation);
+		return source.snapshot && source.snapshot->source == MetadataSource::Mdb
+			? Canon::projectMdb(source, cancellation) : Canon::projectOmf(source, cancellation);
 	}
 
 	QVariant single(const Canon::ProjectedFile &file, MediaProperty field)
@@ -1908,7 +1909,7 @@ void TestCanonOmfProjection::genuineVideoCodecNames()
 	QFile input(QStringLiteral(FIXTURES_DIR "/omf/avid_supporting/") + filename);
 	QVERIFY(input.open(QIODevice::ReadOnly));
 	Canon::Cancellation cancellation;
-	const auto source = Canon::LegacyReader{}.read(input, {{}, cancellation});
+	const auto source = Canon::OmfReader{}.read(input, {{}, cancellation});
 	const auto result = project(source);
 	QCOMPARE(result.files.size(), 1);
 	QCOMPARE(single(result.files.first(), MediaProperty::Compression).toString(), expected);
@@ -1927,7 +1928,7 @@ void TestCanonOmfProjection::legacyDnx220NamingIsExact()
 	QFile input(QStringLiteral(FIXTURES_DIR "/omf/avid_supporting/BLACK_1920x540x2_AVHD_220.omf"));
 	QVERIFY(input.open(QIODevice::ReadOnly));
 	Canon::Cancellation cancellation;
-	const auto original = Canon::LegacyReader{}.read(input, {{}, cancellation});
+	const auto original = Canon::OmfReader{}.read(input, {{}, cancellation});
 	const auto verifyRejected = [&](const QString &propertyName, QVariant replacement)
 	{
 		auto source = original;
@@ -2165,7 +2166,7 @@ void TestCanonOmfProjection::genuineProjectWithoutPmr()
 	QFile input(QStringLiteral(FIXTURES_DIR "/omf/mc2026_audio/TONE_100A01.6A972974.039700.wav"));
 	QVERIFY(input.open(QIODevice::ReadOnly));
 	Canon::Cancellation cancellation;
-	const auto source = Canon::LegacyReader{}.read(input, {{}, cancellation});
+	const auto source = Canon::OmfReader{}.read(input, {{}, cancellation});
 	const auto result = project(source);
 	QCOMPARE(result.files.size(), 1);
 	const auto &observations = result.files.first().evidence.observations(MediaProperty::Project);
@@ -2217,7 +2218,7 @@ void TestCanonOmfProjection::genuineFiles()
 	QFile input(path);
 	QVERIFY2(input.open(QIODevice::ReadOnly), qPrintable(input.errorString()));
 	Canon::Cancellation cancellation;
-	const auto source = database ? Canon::MdbReader{}.read(input, {{}, cancellation}) : Canon::LegacyReader{}.read(input, {{}, cancellation});
+	const auto source = database ? Canon::MdbReader{}.read(input, {{}, cancellation}) : Canon::OmfReader{}.read(input, {{}, cancellation});
 	QCOMPARE(source.outcome, Canon::ParsedSource::Outcome::Complete);
 	const auto result = project(source);
 	QVERIFY2(!result.files.isEmpty(), qPrintable(result.diagnostics.join(QLatin1Char('\n'))));

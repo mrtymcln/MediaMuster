@@ -8,7 +8,7 @@
 
 namespace Canon
 {
-	class LegacyReader final : public SourceReader
+	class OmfReader final : public SourceReader
 	{
 	public:
 		ParsedSource read(QIODevice &source, const ReaderContext &context) const override;

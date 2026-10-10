@@ -7,7 +7,7 @@
 #include "operationrecovery.h"
 #include "optrash.h"
 #include "mxfparser.h"
-#include "canon/legacyreader.h"
+#include "canon/omfreader.h"
 #include "canon/projection.h"
 #include "canon/scanengine.h"
 #include <QTest>
@@ -1711,7 +1711,7 @@ void TestFileOperations::real_legacy_header_identity_is_checked()
 	const auto receipt = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Omf, sample,
 																			   QFileInfo(sample).lastModified(), SourceReadState::NotRead});
 	const Canon::Cancellation cancellation;
-	const auto parsed = Canon::LegacyReader{}.read(media, {receipt, cancellation});
+	const auto parsed = Canon::OmfReader{}.read(media, {receipt, cancellation});
 	MediaEvidence evidence;
 	for (const auto &file : Canon::projectOmf(parsed, cancellation).files)
 		Canon::appendEvidence(evidence, file.evidence);

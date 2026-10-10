@@ -550,6 +550,8 @@ inline Canon::Projection project(const Canon::ParsedSource &source, const Canon:
 		return Canon::projectPmr(source, cancellation);
 	if (source.container == Canon::ParsedSource::Container::Mxf)
 		return Canon::projectMxf(source, cancellation);
+	if (source.snapshot && source.snapshot->source == MetadataSource::Mdb)
+		return Canon::projectMdb(source, cancellation);
 	return Canon::projectOmf(source, cancellation);
 }
 

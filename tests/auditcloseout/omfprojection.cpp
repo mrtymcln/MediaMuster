@@ -39,7 +39,7 @@ namespace
 	Canon::Projection project(const Canon::ParsedSource &source)
 	{
 		Canon::Cancellation cancellation;
-		return Canon::projectOmf(source, cancellation);
+		return Canon::projectMdb(source, cancellation);
 	}
 
 	QVariant single(const Canon::ProjectedFile &file, MediaProperty field)

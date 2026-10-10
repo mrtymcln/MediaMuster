@@ -9,9 +9,10 @@ Per-file column: true for accepted OMFI-family media, false for MXF-family media
 Includes legacy .aif/.wav by earlier agreement. This supersedes Media Format.
 The boolean is not a copy of the global flag. Actual container stays separate.
 
-Current names are `FeatureFlags::kOmfEnabled`, `Options::includeOmf`,
-`MediaScanner::scanOmfRoot()` and `MediaFile::omfEra`; there is no current OmfScan
-class/function/column. Adopt the agreed terminology during the rewrite.
+Names at the initial pre-rewrite inspection were `FeatureFlags::kOmfEnabled`, `Options::includeOmf`,
+`MediaScanner::scanOmfRoot()` and `MediaFile::omfEra`; that historical implementation
+did not have an OmfScan class/function/column. Adopt the agreed
+terminology during the rewrite; see the current boundary clarification below.
 
 ## Agreed rewrite scope
 
@@ -93,7 +94,7 @@ filter would accidentally disable agreed legacy support.
 
 ## Fresh legacy reader, 4 October 2026
 
-`Canon::LegacyReader` is now implemented independently of the production scanner;
+`Canon::OmfReader` is now implemented independently of the production scanner;
 see [implementation, evidence and limits](fresh-legacy-reader-2026-10-04.md).
 It inspects bytes for supported OMF, WAVE/RF64 or AIFF/AIFF-C containers and retains
 embedded OMF graphs separately from native audio headers. Database-free media
@@ -101,3 +102,24 @@ can supply its own header evidence. Extensions still control discovery admission
 the reader's broader byte recognition does not admit additional extensions or
 folders. The OmfScan row flag remains a folder-family fact, independently of the
 actual parsed container. Live-scanner integration and selection remain pending.
+
+## Confirmed reader boundaries, 10 October 2026
+
+The supported MXF family is Avid-compatible OP-Atom created by Media Composer or
+third-party applications for Media Composer. OMF/legacy support stays separate.
+The broad [format review](mxf-omf-read-scope-review-2026-10-10.md) supplies evidence
+and qualifications, not a requirement to support every MXF application profile.
+
+Canon now routes MXF to `MxfReader`/`projectMxf` and legacy media to
+`OmfReader`/`projectOmf`. Native WAV/AIF helpers preserve the previously agreed
+legacy audio support. Both paths produce the shared source evidence and MediaFile
+model; PMR/MDB matching and selection policies remain shared. The user subsequently
+required MDB and OMF to own separate decoding implementations even where their
+formats overlap. MDB now uses `MdbReader`/`projectMdb` and its own container,
+object and audio-summary decoding. See [reader ownership](reader-boundaries-2026-10-10.md).
+
+The implemented gate is `FeatureFlags::kOmfScan`, enabled by default. It feeds the
+scan request's `omfScan` setting; disabling it skips OMFI roots before their media
+and database enumeration. MXF-family scanning and its PMR/MDB readers remain
+available. The independent-reader refactor preserves these gate semantics and
+metadata retention; it changes implementation ownership.

@@ -67,7 +67,7 @@ Applicability, agreement, eligibility and freshness remain separate facts; see t
 | [Canon::PmrReader](../src/canon/pmrreader.cpp) | Retains both PMR file sets, names, identities, original encodings and record locations. |
 | [Canon::MdbReader](../src/canon/mdbreader.cpp) | Retains source-local Bento objects, typed properties, dictionaries, qualified relationships and the HEAD-established `OmfRevision`, independently of the Bento container version. |
 | [Canon::MxfReader](../src/canon/mxfreader.cpp) | Retains MXF partitions, Primer mappings, raw/typed metadata and source-local references; skips recording payloads. |
-| [Canon::LegacyReader](../src/canon/legacyreader.cpp) | Reads OMF and native WAV/AIFF metadata, keeping embedded OMF graphs as separate source contexts. |
+| [Canon::OmfReader](../src/canon/omfreader.cpp) | Reads OMF and native WAV/AIFF metadata, keeping embedded OMF graphs as separate source contexts. |
 | [Canon::AvbReader](../src/canon/avbreader.cpp) and [reference engine](../src/canon/avbreferences.cpp) | Retain bin objects and resolve whole-bin or selected-sequence references with explicit completeness warnings. |
 | [Canon source projections](../src/canon/projection.h) | Interpret recorded properties as file-owned or master-owned observations, retaining original graphs and competing evidence. |
 | [Canon::ScanEngine](../src/canon/scanengine.cpp) | Coordinates reads, exact-name/identity matching, field selection and scoped unmatched-reference issues. |

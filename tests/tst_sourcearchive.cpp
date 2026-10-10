@@ -5,7 +5,7 @@
 #include "canon/sourcearchive.h"
 #include "canon/avbreader.h"
 #include "canon/avbreferences.h"
-#include "canon/legacyreader.h"
+#include "canon/omfreader.h"
 #include "canon/mdbreader.h"
 #include "canon/mxfreader.h"
 #include "canon/pmrreader.h"
@@ -338,6 +338,8 @@ namespace
 			return Canon::projectPmr(source, cancellation);
 		if (source.container == Canon::ParsedSource::Container::Mxf)
 			return Canon::projectMxf(source, cancellation);
+		if (source.snapshot && source.snapshot->source == MetadataSource::Mdb)
+			return Canon::projectMdb(source, cancellation);
 		return Canon::projectOmf(source, cancellation);
 	}
 	void compareAvbResolution(const Canon::ParsedSource &a, const Canon::ParsedSource &b,
@@ -432,7 +434,7 @@ private slots:
 		case 0: original = Canon::PmrReader{}.read(input, context); break;
 		case 1: original = Canon::MdbReader{}.read(input, context); break;
 		case 2: original = Canon::MxfReader{}.read(input, context); break;
-		case 3: original = Canon::LegacyReader{}.read(input, context); break;
+		case 3: original = Canon::OmfReader{}.read(input, context); break;
 		case 4: original = Canon::AvbReader{}.read(input, context); break;
 		}
 		// Native audio keeps its chunks at the container level; its OMF

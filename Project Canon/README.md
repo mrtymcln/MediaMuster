@@ -184,6 +184,11 @@ separates completed OP-Atom, general/open MXF, body metadata and OMF's indexed
 layout. It classifies current scan needs versus original-byte preservation and
 optional content inspection, and records the present readers' scope limits.
 This review does not approve a new reading, retention or selection policy.
+The user's subsequent scope clarification limits the product to Avid-compatible
+OP-Atom from Media Composer or third-party producers, plus separately gated
+OMF/legacy support. Keep distinct MXF and legacy readers/interpretation, sharing
+the MediaFile/evidence model and selection policy; general MXF research is
+background rather than an expanded product requirement.
 
 The user subsequently clarified that scanner, parser and metadata engines should
 be fresh replacements, while the UI and file-operation executor stay. See the
@@ -197,10 +202,19 @@ The [fresh MDB reader](fresh-mdb-reader-2026-10-04.md) now preserves Bento objec
 typed property occurrences and references independently of the former production parser.
 It has been checked against genuine local/EDIT MDBs and original toolkit files,
 and now supplies the live reconciliation stage.
-The [fresh OMF/legacy reader](fresh-legacy-reader-2026-10-04.md) now uses that shared
+The [fresh OMF/legacy reader](fresh-legacy-reader-2026-10-04.md) initially used that shared
 object interpreter and reads native WAV/AIFF headers plus embedded OMF graphs.
 Known recording payloads stay on disk; real specimens and guarded large-file
 tests verify the metadata path. It now supplies the live legacy-file scan path.
+The [10 October reader-ownership refactor](reader-boundaries-2026-10-10.md)
+renames it `OmfReader` and makes MDB/OMF container, object, summary and projection
+implementations independent, as explicitly requested. `projectMdb` now handles
+database entries; `projectOmf` handles legacy media. Isolated build targets prove
+each works without the other's implementation.
+After EDIT was mounted, the full 2,413-row before/after comparison also passed:
+CSV and all retained graph/evidence/relationship fingerprints match, with the same
+database-first scheduling. The [mounted proof](reader-boundaries-2026-10-10.md#full-comparison-after-edit-was-mounted)
+supersedes the initial local-only coverage; it is not a Windows/NEXIS benchmark.
 The [fresh MXF reader](fresh-mxf-reader-2026-10-04.md) now preserves metadata sets,
 per-partition Primers, typed/raw properties and qualified references across the
 file, while seeking over recording payloads. Its [uninterpreted-field inventory](mxf-uninterpreted-fields-2026-10-04.md)

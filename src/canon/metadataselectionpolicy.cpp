@@ -53,7 +53,7 @@ namespace Canon
 		// Read each prefer() left to right: first choice, fallback, final fallback.
 		// Sources in one group are equal. Conflicting top-group values remain unresolved.
 		// Unlisted sources cannot supply the selected value; their evidence is retained.
-		// Source::Omf includes the LegacyReader's OMF, WAV and AIFF observations.
+		// Source::Omf includes the OmfReader's OMF, WAV and AIFF observations.
 		// These are application field names; observations retain original source property names.
 		// Edit one row for the next build. Keep one row per property in catalogue order.
 		constexpr PropertyPolicies kPropertyPolicies{{

@@ -3,6 +3,9 @@
 Implemented 4 October 2026, alongside the existing production reader. This is the
 next replacement-engine component after the selected fresh PMR reader. It does
 not activate the replacement scanner or change table/CSV selection rules.
+Later status: Canon is live. The [10 October reader-ownership refactor](reader-boundaries-2026-10-10.md)
+gives MDB its own container, object, audio-summary and metadata interpretation
+implementations, independent of OMF support.
 
 ## What it does
 
@@ -34,9 +37,10 @@ Later: reconcile ownership/identities, match physical MediaFiles,
 Implementation files:
 
 - `src/canon/mdbreader.h/.cpp`: public MDB reader; delegates container and object interpretation.
-- `src/canon/omfobjects_p.h/.cpp`: shared dictionary and object interpretation,
-  extracted during the subsequent OMF/legacy stage on 4 October.
-- `src/canon/bentoreader_p.h/.cpp`: private container reader; no dependency on the
+- `src/canon/mdbobjects_p.h/.cpp`: MDB-owned dictionary and object interpretation.
+- `src/canon/mdbaudiosummary_p.h/.cpp`: MDB-owned copied audio-format decoding.
+- `src/canon/mdbprojection.cpp`: MDB-owned metadata interpretation.
+- `src/canon/mdbbentoreader_p.h/.cpp`: private container reader; no dependency on the
   old `BentoFile`, `MdbParser` or `OmfObjects` implementations.
 - `src/canon/scanmodel.h`: optional `BentoPropertyContext` on a raw property.
 - `tests/tst_canonmdb.cpp`: independently authored containers and genuine fixtures.

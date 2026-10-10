@@ -4,7 +4,7 @@
 #include "canon2/databasesource.h"
 #include "canon2/scanengine.h"
 #include "canon/discoveryengine.h"
-#include "canon/legacyreader.h"
+#include "canon/omfreader.h"
 #include "canon/mdbreader.h"
 #include "canon/mxfreader.h"
 #include "canon/pmrreader.h"
@@ -229,7 +229,7 @@ namespace
 		case Canon::SourceCandidate::ReaderHint::Pmr: result = Canon::PmrReader{}.read(input, context); break;
 		case Canon::SourceCandidate::ReaderHint::Mdb: result = Canon::MdbReader{}.read(input, context); break;
 		case Canon::SourceCandidate::ReaderHint::Mxf: result = Canon::MxfReader{}.read(input, context); break;
-		case Canon::SourceCandidate::ReaderHint::LegacyMedia: result = Canon::LegacyReader{}.read(input, context); break;
+		case Canon::SourceCandidate::ReaderHint::LegacyMedia: result = Canon::OmfReader{}.read(input, context); break;
 		}
 		// A direct reader has no scheduling decision; the scan comparison hashes
 		// actual decisions separately, while this check compares obtained records.

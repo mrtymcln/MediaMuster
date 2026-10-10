@@ -7,7 +7,9 @@ The subsequent [MXF/OMF specification review](mxf-omf-read-scope-review-2026-10-
 qualifies the reading-scope discussion below: completed conforming OP-Atom has
 header metadata only in its initial header, general/live MXF can differ, and
 body data can carry meaningful metadata. OMF uses indexed objects rather than
-MXF-style physical header/body/footer regions. No scope decision is approved.
+MXF-style physical header/body/footer regions. The subsequently confirmed product
+scope is Avid-compatible OP-Atom plus separately gated OMF/legacy support; general
+MXF research is background. No new byte-reading or retention policy is approved.
 
 ## Workload correction
 
@@ -196,7 +198,7 @@ storage savings and large-workload completion are unproven until measured.
 - [Canon2 measured comparison](canon2-comparison-engine-2026-10-10.md).
 - [Original Windows/NEXIS regression investigation](nexis-memory-regression-2026-10-09.md).
 - `src/canon/mxfreader.cpp`: physical KLV walk, metadata and packet-range records.
-- `src/canon/legacyreader.cpp`, `bentoreader_p.cpp`, `audioreader_p.cpp`:
+- `src/canon/omfreader.cpp`, `omfbentoreader_p.cpp`, `audioreader_p.cpp`:
   OMF/audio value extents and payload exclusions.
 - `src/canon/scanengine.cpp`, `sourcearchive.cpp`: current media storage lifecycle.
 - `src/mediaevidence.h`, `canonadapter.cpp`: evidence and display-row ownership.

@@ -355,7 +355,7 @@ namespace
 	Canon::Projection project(const Canon::ParsedSource &source, const Canon::Cancellation &cancellation)
 	{
 		return source.container == Canon::ParsedSource::Container::Pmr
-			? Canon::projectPmr(source, cancellation) : Canon::projectOmf(source, cancellation);
+			? Canon::projectPmr(source, cancellation) : Canon::projectMdb(source, cancellation);
 	}
 
 	void addDatabaseFixtures()

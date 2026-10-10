@@ -2,7 +2,7 @@
 // authored containers. Large sample ranges are guarded so metadata-only reads
 // cannot accidentally pass by copying the audio or video into memory.
 
-#include "canon/legacyreader.h"
+#include "canon/omfreader.h"
 #include "canon/audioreader_p.h"
 #include "testcanonbento.h"
 
@@ -55,7 +55,7 @@ namespace
 		QBuffer source(&bytes);
 		source.open(QIODevice::ReadOnly);
 		Canon::Cancellation cancellation;
-		return Canon::LegacyReader{}.read(source, {{}, cancellation});
+		return Canon::OmfReader{}.read(source, {{}, cancellation});
 	}
 
 	const Canon::RawProperty *nativeChunk(const Canon::ParsedSource &result, const QByteArray &key)
@@ -272,7 +272,7 @@ void TestCanonLegacy::bentoEssenceIsNotRead()
 	GuardedDevice source(writer.build());
 	source.forbidden.append({64, 512 * 1024 - 128});
 	Canon::Cancellation cancellation;
-	const auto result = Canon::LegacyReader{}.read(source, {{}, cancellation});
+	const auto result = Canon::OmfReader{}.read(source, {{}, cancellation});
 	QVERIFY(!source.forbiddenRead);
 	QCOMPARE(result.outcome, Outcome::Complete);
 	QCOMPARE(result.container, Container::Omf);
@@ -306,7 +306,7 @@ void TestCanonLegacy::sparseRf64SkipsSamples()
 	source.pieces.append({qint64(dataOffset + dataSize), tail});
 	source.forbidden.append({qint64(dataOffset + 64), qint64(dataSize - 128)});
 	Canon::Cancellation cancellation;
-	const auto result = Canon::LegacyReader{}.read(source, {{}, cancellation});
+	const auto result = Canon::OmfReader{}.read(source, {{}, cancellation});
 	QVERIFY(!source.forbiddenRead);
 	QCOMPARE(result.outcome, Outcome::Complete);
 	QCOMPARE(result.container, Container::Wave);
@@ -346,7 +346,7 @@ void TestCanonLegacy::partialDeferredMetadata()
 	source.cancellation = &cancellation;
 	source.stopOffset = 256 + 4;
 	source.cancelAtStop = cancelRead;
-	const auto result = Canon::LegacyReader{}.read(source, {{}, cancellation});
+	const auto result = Canon::OmfReader{}.read(source, {{}, cancellation});
 	QCOMPARE(result.outcome, cancelRead ? Outcome::Cancelled : Outcome::IoError);
 	// Cancellation may stop name interpretation; the native property ID still
 	// connects the retained bytes to the already-retained dictionary and TOC.
@@ -380,7 +380,7 @@ void TestCanonLegacy::continuedMetadataAndEssence()
 	GuardedDevice source(bytes);
 	source.forbidden.append({7 + 64, 512 * 1024 - 128});
 	Canon::Cancellation cancellation;
-	const auto result = Canon::LegacyReader{}.read(source, {{}, cancellation});
+	const auto result = Canon::OmfReader{}.read(source, {{}, cancellation});
 	QVERIFY(!source.forbiddenRead);
 	QCOMPARE(result.outcome, Outcome::Complete);
 	const auto *metadata = objectProperty(result, "Vendor:Continued");
@@ -410,7 +410,7 @@ void TestCanonLegacy::ambiguousEssencePropertyStaysDeferred()
 	GuardedDevice source(writer.build());
 	source.forbidden.append({64, 256 * 1024 - 128});
 	Canon::Cancellation cancellation;
-	const auto result = Canon::LegacyReader{}.read(source, {{}, cancellation});
+	const auto result = Canon::OmfReader{}.read(source, {{}, cancellation});
 	QVERIFY(!source.forbiddenRead);
 	const Canon::RawProperty *ambiguous = nullptr;
 	for (const auto &object : result.objects)
@@ -539,7 +539,7 @@ void TestCanonLegacy::inputReceiptAndBorrowedDevice()
 	input->source = MetadataSource::Pmr;
 	input->readState = SourceReadState::NotRead;
 	Canon::Cancellation cancellation;
-	const auto result = Canon::LegacyReader{}.read(source, {input, cancellation});
+	const auto result = Canon::OmfReader{}.read(source, {input, cancellation});
 	QCOMPARE(result.outcome, Outcome::Complete);
 	QCOMPARE(result.container, Container::Omf);
 	QVERIFY(source.isOpen());
@@ -598,12 +598,12 @@ void TestCanonLegacy::cancellation()
 	QVERIFY(buffer.open(QIODevice::ReadOnly));
 	Canon::Cancellation cancelled;
 	cancelled.cancel();
-	QCOMPARE(Canon::LegacyReader{}.read(buffer, {{}, cancelled}).outcome, Outcome::Cancelled);
+	QCOMPARE(Canon::OmfReader{}.read(buffer, {{}, cancelled}).outcome, Outcome::Cancelled);
 	Canon::Cancellation during;
 	GuardedDevice source(bytes);
 	source.cancellation = &during;
 	source.cancelAfter = 12;
-	QCOMPARE(Canon::LegacyReader{}.read(source, {{}, during}).outcome, Outcome::Cancelled);
+	QCOMPARE(Canon::OmfReader{}.read(source, {{}, during}).outcome, Outcome::Cancelled);
 }
 
 void TestCanonLegacy::realAvidSlates_data()
@@ -622,7 +622,7 @@ void TestCanonLegacy::realAvidSlates()
 	QFile source(path);
 	QVERIFY(source.open(QIODevice::ReadOnly));
 	Canon::Cancellation cancellation;
-	const auto result = Canon::LegacyReader{}.read(source, {{}, cancellation});
+	const auto result = Canon::OmfReader{}.read(source, {{}, cancellation});
 	QCOMPARE(result.outcome, Outcome::Complete);
 	QCOMPARE(result.container, Container::Omf);
 	QVERIFY(result.snapshot);
@@ -653,7 +653,7 @@ void TestCanonLegacy::realAvidAudio()
 	QFile source(QStringLiteral(FIXTURES_DIR) + "/omf/mc2026_audio/" + name);
 	QVERIFY(source.open(QIODevice::ReadOnly));
 	Canon::Cancellation cancellation;
-	const auto result = Canon::LegacyReader{}.read(source, {{}, cancellation});
+	const auto result = Canon::OmfReader{}.read(source, {{}, cancellation});
 	QCOMPARE(result.outcome, Outcome::Complete);
 	QCOMPARE(result.container, isWave ? Container::Wave : Container::Aiff);
 	const auto *description = nativeChunk(result, isWave ? "fmt " : "COMM");
@@ -694,7 +694,7 @@ void TestCanonLegacy::realAudioSummariesMatchNativeFields()
 	QFile input(QStringLiteral(FIXTURES_DIR) + "/omf/mc2026_audio/" + name);
 	QVERIFY(input.open(QIODevice::ReadOnly));
 	Canon::Cancellation cancellation;
-	const auto source = Canon::LegacyReader{}.read(input, {{}, cancellation});
+	const auto source = Canon::OmfReader{}.read(input, {{}, cancellation});
 	QCOMPARE(source.outcome, Outcome::Complete);
 	QCOMPARE(source.embeddedSources.size(), 1);
 	const auto &embedded = source.embeddedSources.first();

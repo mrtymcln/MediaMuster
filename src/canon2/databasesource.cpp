@@ -226,7 +226,7 @@ namespace Canon2
 		if (interpreted && !cancellation.cancelled())
 			prepared.projection = candidate.hint == Canon::SourceCandidate::ReaderHint::Pmr
 									  ? Canon::projectPmr(parsed, cancellation)
-									  : Canon::projectOmf(parsed, cancellation);
+									  : Canon::projectMdb(parsed, cancellation);
 		auto data = QSharedPointer<DatabaseSource::Data>::create(std::move(image));
 		data->hint = candidate.hint;
 		data->frame = sourceFrame(parsed);
