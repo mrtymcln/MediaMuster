@@ -23,7 +23,7 @@ namespace MediaEngine
 		SourcePipeline(SourcePipeline &&) = delete;
 		SourcePipeline &operator=(SourcePipeline &&) = delete;
 		virtual PreparedSource processDatabase(const SourceCandidate &candidate,
-											  const QString &readReason, const Cancellation &cancellation) const = 0;
+											   const QString &readReason, const Cancellation &cancellation) const = 0;
 		// An absent alternative keeps the scanner's established MXF reader/archive
 		// path. This hook changes storage after the scheduler has chosen a header.
 		virtual std::optional<PreparedSource> processMxf(const SourceCandidate &,

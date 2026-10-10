@@ -2,8 +2,9 @@
 
 Recorded 10 October 2026. The user approved the names below and asked for a
 step-by-step account of what could be removed, what it could improve, and what
-information or correctness would be lost. The retention and performance changes
-in this document are proposals, not implemented or approved cuts.
+information or correctness would be lost. The retention cuts in this document remain proposals. The user subsequently
+approved steps 1 and 2; their bounded implementation and measurements are recorded
+in the [11 October report](mediaengine-steps-1-2-2026-10-11.md).
 
 ## Current status
 
@@ -18,6 +19,13 @@ user observations, not a completed throughput, peak-memory or correctness result
 Do not treat the local sample's byte sizes as measurements of this work corpus.
 
 Compression changes remain on hold by the user's instruction.
+
+Steps 1 and 2 are implemented without discarding source backing, observations,
+alternatives or retained row/candidate receipts. Step 2 adds compact explanation
+codes, narrow state enums and source-scoped shared owner text. Numeric object
+handles, typed rate/duration APIs and shared receipts were already present; no
+new observation-value schema migration or blanket index/row clearing was done.
+The original stage descriptions below retain their proposal scope.
 
 ## The useful dividing line
 

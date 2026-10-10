@@ -12,13 +12,13 @@ namespace MediaEngine
 		{
 		public:
 			MediaEngine::PreparedSource processDatabase(const MediaEngine::SourceCandidate &candidate, const QString &readReason,
-												 const MediaEngine::Cancellation &cancellation) const override
+														const MediaEngine::Cancellation &cancellation) const override
 			{
 				return prepareDatabase(candidate, readReason, cancellation);
 			}
 			std::optional<MediaEngine::PreparedSource> processMxf(const MediaEngine::SourceCandidate &candidate,
-															 const QString &readReason,
-															 const MediaEngine::Cancellation &cancellation) const override
+																  const QString &readReason,
+																  const MediaEngine::Cancellation &cancellation) const override
 			{
 				return prepareMxf(candidate, readReason, cancellation);
 			}
@@ -26,7 +26,7 @@ namespace MediaEngine
 	}
 
 	MediaEngine::ScanResult ScanEngine::scan(const MediaEngine::ScanRequest &request, const MediaEngine::Cancellation &cancellation,
-									  const MediaEngine::ScanCallbacks &callbacks) const
+											 const MediaEngine::ScanCallbacks &callbacks) const
 	{
 		const ImagePipeline pipeline;
 		return MediaEngine::ScanCoordinator{}.scan(request, cancellation, callbacks, &pipeline);

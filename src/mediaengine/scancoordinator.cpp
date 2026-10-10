@@ -123,6 +123,31 @@ namespace MediaEngine
 			return claims;
 		}
 
+		QStringList eligibleMasterIds(const MediaEvidence &evidence)
+		{
+			QStringList masters;
+			for (const auto &item : evidence.observations(MediaProperty::MasterMobId))
+				if (item.eligible && item.readState == PropertyReadState::Present)
+				{
+					if (item.value.metaType().id() == QMetaType::QStringList)
+						masters.append(item.value.toStringList());
+					else if (!item.value.toString().isEmpty())
+						masters.append(item.value.toString());
+				}
+			masters.removeDuplicates();
+			std::sort(masters.begin(), masters.end());
+			return masters;
+		}
+
+		void selectMatchingEffects(MediaEvidence &evidence)
+		{
+			// Keep the existing interpretation history while matching adds sources.
+			// Only these two fields feed effects; the other fields can wait.
+			for (const auto property : {MediaProperty::ClipName, MediaProperty::Type})
+				evidence.select(property, resolveProperty(evidence, propertyPolicy(property)));
+			selectEffectMetadata(evidence);
+		}
+
 		QStringList requiredTableMetadata(const MediaEvidence &evidence)
 		{
 			QStringList missing;
@@ -204,22 +229,12 @@ namespace MediaEngine
 				auto value = field.value.toMap();
 				value.insert(QStringLiteral("DisplayRate"), clock.value);
 				field.value = value;
-				field.reason += QStringLiteral("; display clock resolved independently from matching duration observations: ") + clock.reason;
+				field.reason = EvidenceExplanation::withDisplayClock(field.reason, clock.reason);
 			}
 			else if (policy.rule == SelectionRule::MasterAssociations)
 			{
 				// Master associations are relationships, not competing scalar values.
-				QStringList masters;
-				for (const auto &item : evidence.observations(policy.property))
-					if (item.eligible && item.readState == PropertyReadState::Present)
-					{
-						if (item.value.metaType().id() == QMetaType::QStringList)
-							masters.append(item.value.toStringList());
-						else if (!item.value.toString().isEmpty())
-							masters.append(item.value.toString());
-					}
-				masters.removeDuplicates();
-				std::sort(masters.begin(), masters.end());
+				const auto masters = eligibleMasterIds(evidence);
 				if (!masters.isEmpty())
 				{
 					field.value = masters;
@@ -227,7 +242,7 @@ namespace MediaEngine
 					field.readReason = PropertyReadReason::None;
 					field.applicability = PropertyApplicability::Applicable;
 					field.agreement = PropertyAgreement::NotCompared;
-					field.reason = QStringLiteral("Every eligible master association retained; multiple masters do not merge physical files");
+					field.reason = EvidenceExplanation(EvidenceExplanation::Reason::MasterAssociations);
 				}
 			}
 			evidence.select(policy.property, std::move(field));
@@ -236,7 +251,7 @@ namespace MediaEngine
 	}
 
 	ScanResult ScanCoordinator::scan(const ScanRequest &request, const Cancellation &cancellation,
-								const ScanCallbacks &callbacks, const SourcePipeline *pipeline) const
+									 const ScanCallbacks &callbacks, const SourcePipeline *pipeline) const
 	{
 		ScanResult result = DiscoveryEngine{}.discover(request, cancellation, callbacks.discovering);
 		// Keep discovered rows and any source evidence already obtained. Once
@@ -454,8 +469,8 @@ namespace MediaEngine
 					file.evidence.qualifySource(result.sources[headers.value(file.kelpieId)].snapshot,
 												false, SourceFreshness::Changed);
 			}
-			selectMetadata(file.evidence);
-			const auto headerSelection = file.evidence.selected(MediaProperty::FileMobId);
+			selectMatchingEffects(file.evidence);
+			const auto headerSelection = resolveProperty(file.evidence, propertyPolicy(MediaProperty::FileMobId));
 			const QString headerId = headerSelection.value.toString();
 			const bool conflictingHeader = headerSelection.agreement == PropertyAgreement::Conflicting && headerId.isEmpty();
 			struct PmrMatch
@@ -528,8 +543,8 @@ namespace MediaEngine
 						result.reconciliationIssues.append(issue);
 				}
 			}
-			selectMetadata(file.evidence);
-			const QString identity = file.evidence.selected(MediaProperty::FileMobId).value.toString();
+			selectMatchingEffects(file.evidence);
+			const QString identity = resolveProperty(file.evidence, propertyPolicy(MediaProperty::FileMobId)).value.toString();
 			bool completeMdbMatch = false;
 			QSet<QString> candidateIds;
 			for (const auto &item : file.evidence.observations(MediaProperty::FileMobId))
@@ -550,8 +565,8 @@ namespace MediaEngine
 					attach(file, facts, eligible);
 					completeMdbMatch |= eligible && result.sources[entry.first].outcome == ParsedSource::Outcome::Complete;
 				}
-			selectMetadata(file.evidence);
-			const auto selectedMasters = file.evidence.selected(MediaProperty::MasterMobId).value.toStringList();
+			selectMatchingEffects(file.evidence);
+			const auto selectedMasters = eligibleMasterIds(file.evidence);
 			QSet<QString> candidateMasters;
 			for (const auto &item : file.evidence.observations(MediaProperty::MasterMobId))
 				if (item.readState == PropertyReadState::Present)
@@ -589,7 +604,9 @@ namespace MediaEngine
 			dbStatus.basis = EvidenceBasis::Derived;
 			dbStatus.explanation = QStringLiteral("Derived from local database enumeration, read outcomes and unambiguous filename/identity matching; not proof of database freshness.");
 			file.evidence.observe(MediaProperty::DatabaseStatus, std::move(dbStatus));
-			selectMetadata(file.evidence);
+			// This filesystem membership observation changes only its own field.
+			file.evidence.select(MediaProperty::DatabaseStatus,
+								 resolveProperty(file.evidence, propertyPolicy(MediaProperty::DatabaseStatus)));
 
 			for (int field = int(MediaProperty::ClipName); field < int(MediaProperty::Count); ++field)
 			{
@@ -603,7 +620,7 @@ namespace MediaEngine
 				issue.kind = ScanIssue::Kind::MetadataConflict;
 				issue.expectedPath = file.path;
 				issue.fileMobId = file.stamp.mobId;
-				issue.explanation = QStringLiteral("%1: %2").arg(mediaPropertyName(property), selected.reason);
+				issue.explanation = QStringLiteral("%1: %2").arg(mediaPropertyName(property), selected.reason.text());
 				if (reportIssues)
 					result.reconciliationIssues.append(issue);
 			}
@@ -618,6 +635,32 @@ namespace MediaEngine
 			const bool current = checkUnchanged(sourceIndex);
 			if (cancellation.cancelled())
 				return;
+			// Without a local PMR filename candidate, database-only matching cannot
+			// supply this file. Avoid building and selecting a throwaway row.
+			const QFileInfo info(file.path);
+			const QString folder = cachedFolderKey(info.absolutePath());
+			bool canMatchPmr = false;
+			if (const auto local = databases.constFind(folder); local != databases.cend())
+			{
+				const QString name = PmrKey::primary(info.fileName());
+				for (const auto index : local.value())
+				{
+					const auto names = pmrByName.constFind(index);
+					if (names != pmrByName.cend() && names.value().contains(name))
+					{
+						canMatchPmr = true;
+						break;
+					}
+				}
+			}
+			if (cancellation.cancelled())
+				return;
+			if (!current || !canMatchPmr)
+			{
+				readCandidate(sourceIndex, !current ? QStringLiteral("Header read: physical file changed after discovery")
+													: QStringLiteral("Header read: no usable database match"));
+				return;
+			}
 			MediaFile databaseFile = file;
 			const bool matched = matchFile(databaseFile, false);
 			if (cancellation.cancelled())

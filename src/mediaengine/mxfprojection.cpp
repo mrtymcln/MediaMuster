@@ -46,19 +46,36 @@ namespace MediaEngine
 		{
 			if (!object.mxf)
 				return false;
-			QString current = object.mxf->name;
-			while (!current.isEmpty() && current != QLatin1String("root"))
+			// The catalogue is fixed for this build. Follow each parent chain once,
+			// rather than searching it again for every object and ownership check.
+			static const auto ancestry = []
 			{
-				if (current == QLatin1String(name))
-					return true;
-				const auto found = std::find_if(std::begin(Detail::MxfSchema::sets), std::end(Detail::MxfSchema::sets),
-												[&](const auto &set)
-												{ return current == QLatin1String(set.name); });
-				if (found == std::end(Detail::MxfSchema::sets))
-					return false;
-				current = QString::fromLatin1(found->parent);
-			}
-			return false;
+				QHash<QString, QVector<QLatin1String>> result;
+				for (const auto &set : Detail::MxfSchema::sets)
+				{
+					QVector<QLatin1String> parents;
+					QLatin1String current(set.name);
+					while (!current.isEmpty() && current != QLatin1String("root"))
+					{
+						parents.append(current);
+						const auto found = std::find_if(std::begin(Detail::MxfSchema::sets), std::end(Detail::MxfSchema::sets),
+														[&](const auto &candidate)
+														{ return current == QLatin1String(candidate.name); });
+						if (found == std::end(Detail::MxfSchema::sets))
+							break;
+						current = QLatin1String(found->parent);
+					}
+					result.insert(QString::fromLatin1(set.name), std::move(parents));
+				}
+				return result;
+			}();
+			const auto found = ancestry.constFind(object.mxf->name);
+			if (found == ancestry.cend())
+				return !object.mxf->name.isEmpty() && object.mxf->name != QLatin1String("root") &&
+					   object.mxf->name == QLatin1String(name);
+			return std::any_of(found.value().cbegin(), found.value().cend(),
+							   [&](QLatin1String parent)
+							   { return parent == QLatin1String(name); });
 		}
 
 		std::optional<qint64> integer(Property property)
@@ -794,7 +811,7 @@ namespace MediaEngine
 					file.evidence.recordReadStatus(MediaProperty::Resolution, m_source.snapshot,
 												   QStringLiteral("object:%1").arg(descriptor.handle),
 												   {PropertyReadState::NotRead, PropertyReadReason::None, PropertyApplicability::NotApplicable,
-													QStringLiteral("This sound descriptor does not describe a picture raster")});
+													EvidenceExplanation(EvidenceExplanation::Reason::SoundDescriptor)});
 				}
 				copy(file, descriptor, codingName, MediaProperty::CompressionLabel);
 				const auto *coding = unique(descriptor, codingName);

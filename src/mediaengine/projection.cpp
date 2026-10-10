@@ -123,16 +123,15 @@ namespace MediaEngine
 		{
 			status.state = PropertyReadState::Absent;
 			status.reason = PropertyReadReason::NotPresentInObject;
-			status.explanation = QStringLiteral("The complete owning object has none of the checked input properties");
 		}
-		else if (found)
-			status.explanation = QStringLiteral("Recognized input properties are retained; the field has no usable interpretation unless an observation establishes it");
-		else
-			status.explanation = QStringLiteral("Owning object coverage is incomplete; missing inputs cannot establish absence");
 		QStringList checked;
 		for (const char *name : names)
 			checked.append(QString::fromLatin1(name));
-		status.explanation += QStringLiteral(". Checked properties: %1").arg(checked.join(QStringLiteral(", ")));
+		status.explanation = EvidenceExplanation::checkedInputs(
+			!found && completeObject ? EvidenceExplanation::Reason::CheckedInputsAbsent
+			: found					 ? EvidenceExplanation::Reason::CheckedInputsUninterpreted
+									 : EvidenceExplanation::Reason::CheckedInputsIncomplete,
+			checked.join(QStringLiteral(", ")));
 		file.evidence.recordReadStatus(field, source.snapshot, QStringLiteral("object:%1").arg(object.handle), std::move(status));
 	}
 

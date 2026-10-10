@@ -100,7 +100,7 @@ bool BinMetadataResolver::apply(MediaFile &file) const
 			selected.value.clear();
 			selected.selectedObservation = -1;
 			selected.agreement = PropertyAgreement::Conflicting;
-			selected.reason = QStringLiteral("Matching AVB master or original-bin associations disagree; no value selected.");
+			selected.reason = EvidenceExplanation(EvidenceExplanation::Reason::AvbAssociationConflict);
 		}
 	};
 	qualifyConflict(MediaProperty::ClipName, combined.nameConflict, selectedName);

@@ -55,7 +55,7 @@ namespace MediaEngine
 		}
 
 		MediaEngine::ParsedSource readImage(const DatabaseImage &image, MediaEngine::SourceCandidate::ReaderHint hint,
-									  const SourceSnapshotRef &snapshot, const MediaEngine::Cancellation &cancellation)
+											const SourceSnapshotRef &snapshot, const MediaEngine::Cancellation &cancellation)
 		{
 			QBuffer input;
 			// QByteArray sharing keeps the captured image immutable and avoids a
@@ -200,7 +200,7 @@ namespace MediaEngine
 	}
 
 	MediaEngine::PreparedSource prepareDatabase(const MediaEngine::SourceCandidate &candidate, const QString &readReason,
-										  const MediaEngine::Cancellation &cancellation)
+												const MediaEngine::Cancellation &cancellation)
 	{
 		const auto kind = sourceKind(candidate.hint);
 		auto snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{

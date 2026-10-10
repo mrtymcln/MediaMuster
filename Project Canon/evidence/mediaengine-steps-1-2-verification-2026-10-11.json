@@ -1,0 +1,1295 @@
+{
+  "date": "2026-10-11",
+  "stage": "MediaEngine approved optimization steps 1 and 2; no source-retention cuts",
+  "sourceState": {
+    "baselineGitHead": "9c286ee092ccb028f214b38676169ff43fa86e66",
+    "uncommittedChanges": true,
+    "measuredBuildScope": "Build/tests completed before the independent other-chat edits arrived. Frozen before/after probe binaries are the measured artifacts; later formatting/source edits are not attributed to these measurements.",
+    "documentationSnapshotSha256": {
+      "src/evidenceexplanation.h": "f01ce3a95eeb21c4dc111317fd85753258bd1a090e6f073d6244c9301e24a372",
+      "src/mediaevidence.h": "881fbe650523d58cfd3e43d481221f624f13df01ca8eceb4a1fa101df2922544",
+      "src/mediaengine/scancoordinator.cpp": "6946ff8278d1413ac7a224902ff3703d8f0d54da5ffb65a1c32d1a9bb2a2e370",
+      "src/mediaengine/mxfprojection.cpp": "0ff2c6b2207ab40ad33f5359e33d0db5ead5bff2956f53fedea8c29c142c8bee",
+      "src/mediaengine/pmrprojection.cpp": "2b89e4df00fa29cde9e8ba41b07eb428da80a12ae688213379276a1e7a865111",
+      "src/mediaengine/projection.cpp": "a79552d47bb16abaa46068c0a2398953a057d43eb1ec3704e432cdafc1f7a52f",
+      "src/binmetadataresolver.cpp": "a8a3bc6e71a90e771f793ee415db6e78ece2b2af33cfaa6cc4880423ffaa44d3",
+      "tests/mediaenginefingerprint.h": "26153022cc655c0a00377914a8d9ec098f54f4921f03b010ff2ce1a7c36fb1fb",
+      "tests/tst_mediaenginedatabase.cpp": "b124c3738084c13e69f413b5f0a7499051bf2c30d972a810e3959f85b8fda6f3",
+      "tests/tst_sourcearchive.cpp": "23b3274e822c928955ff54e8e10e6857bbec29f9d91acc2afa5a1f2a8ecef51c",
+      "tests/tst_mediaevidence.cpp": "622feee192fefb3eda3633dfc0fe9c967edf559e510c250f19fe069aecdc470a"
+    },
+    "documentationSnapshotNote": "Hashes recorded after later comment/format changes; exact measured artifacts are the frozen probe binaries below. User confirmed an independent chat is editing related files; those edits were preserved and excluded from this performance attribution."
+  },
+  "build": {
+    "cmakeCacheSha256": "c16c6d3fb4ee6c7d20dc1514ccd399c7774d7536f2d8d922945bedc1e41bd452",
+    "cmakeSettings": {
+      "CMAKE_BUILD_TYPE": "Release",
+      "CMAKE_CXX_COMPILER": "/usr/bin/c++",
+      "CMAKE_CXX_FLAGS": "",
+      "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG",
+      "CMAKE_OSX_ARCHITECTURES": "arm64",
+      "Qt6Core_DIR": "/Users/martymclean/Qt/6.5.3/macos/lib/cmake/Qt6Core",
+      "Qt6_DIR": "/Users/martymclean/Qt/6.5.3/macos/lib/cmake/Qt6",
+      "CMAKE_GENERATOR": "Ninja",
+      "CMAKE_HOME_DIRECTORY": "/Users/martymclean/Developer/MediaMuster"
+    },
+    "appSha256": "ffa9e99344649be79683cae490ec2d3cf68e5c1930acc8785361bf6713153a83",
+    "afterProbeSha256": "f169d4452300511d7be6cf9917b652b2b9f802f6b7f7d3ce6854f8ec56401a37",
+    "adHocSignatureVerified": true
+  },
+  "tests": {
+    "command": "ctest --test-dir build-mediaengine-release --output-on-failure -j1",
+    "suitesPassed": 43,
+    "suitesFailed": 0,
+    "testLogSha256": "5626974a51b396a5863f29d8a22f99642e15db9c963c5baec8e66db6fbf9d77a",
+    "start": "Start testing: Oct 11 07:44 AEDT",
+    "end": "End testing: Oct 11 07:46 AEDT",
+    "seconds": 105.32,
+    "scope": "Core, media, operations and UI suites, including genuine media, archive/native replay, bins, changed-source/cancellation controls and compact-evidence sharing/wording checks. Completed on the steps1/2 build before independent chat edits."
+  },
+  "preservation": {
+    "passed": true,
+    "sameCsvAndRowEvidence": true,
+    "sameRestoredSourceGraphsAndProjections": true,
+    "sameNativeCapturedOriginalBytes": true,
+    "sameSourceStorageCountsAndSizes": true,
+    "sameSchedulingCallbacksAndDiagnostics": true,
+    "stableInputs": true,
+    "datasets": {
+      "database": {
+        "before": {
+          "reportSha256": "7b9c0b58dee00384c6fb9384e8b9d66c194b60fea8592a4d8627ba40b388d34f",
+          "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+          "hashes": {
+            "callbacksSha256": "1ae2f889346ea26e8ae923f81b3b3e10ad38b613bd6f40564da69e564b552612",
+            "filesSha256": "71ff825617db8617cbcc25a94cf85513642a650bed18d8dbcf1f789b56b3062e",
+            "issuesSha256": "66323ed46c8ee12ea75338d5d0cfc32f983c7b5fc98f904a0f98dab483d24e5a",
+            "projectionsSha256": "f6ef0e5066ffb074f983e8df284edbff1836254a203099c59192fe30b1b37b75",
+            "schedulingSha256": "9e0dde371277852dd7e880e74716a36d142125edee5e8e01d53f1ea0c1bf0c54",
+            "sourceGraphsSha256": "af16fcfe5678e68f8a7d4f79b863410345925f0431ea1763dd2a6b5ee9fa7acf",
+            "stateSha256": "024783375497feb86964d7340e0719e5d133ee994e2a71c8a41a241a7d0d28c3"
+          },
+          "counts": {
+            "rows": 2413,
+            "sources": 2425,
+            "headerReads": 116,
+            "headerSkips": 2297,
+            "databaseReads": 12,
+            "sourceObjects": 475088,
+            "sourceRelationships": 498221,
+            "sourceProperties": 2719926,
+            "originalValueBytes": 83566949,
+            "originalGraphsAndProjectionsCompared": 128
+          },
+          "storage": {
+            "alternativeStores": 128,
+            "archiveBlocks": 0,
+            "archives": 0,
+            "completeMxfArchiveFallbacks": 0,
+            "compressedBytes": 0,
+            "databaseArchiveCompressedBytes": 0,
+            "databaseArchives": 0,
+            "legacyMediaArchiveCompressedBytes": 0,
+            "legacyMediaArchives": 0,
+            "mxfArchiveCompressedBytes": 0,
+            "mxfArchives": 0,
+            "nativeDatabaseImageBytes": 64537496,
+            "nativeDatabaseImages": 12,
+            "nativeImageBytes": 64537496,
+            "nativeMxfAcquiredBytes": 16514752,
+            "nativeMxfImageBytes": 16512896,
+            "nativeMxfImageRanges": 1160,
+            "nativeMxfImages": 116,
+            "nativeMxfRangeCapacityBytes": 16512896,
+            "serializedBytes": 0,
+            "unfinishedGraphs": 0
+          }
+        },
+        "after": {
+          "reportSha256": "0172659d4900e9c53e0ee6527ada18ffaff03bfdfde8b5457d14acec63d69edb",
+          "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+          "hashes": {
+            "callbacksSha256": "1ae2f889346ea26e8ae923f81b3b3e10ad38b613bd6f40564da69e564b552612",
+            "filesSha256": "71ff825617db8617cbcc25a94cf85513642a650bed18d8dbcf1f789b56b3062e",
+            "issuesSha256": "66323ed46c8ee12ea75338d5d0cfc32f983c7b5fc98f904a0f98dab483d24e5a",
+            "projectionsSha256": "f6ef0e5066ffb074f983e8df284edbff1836254a203099c59192fe30b1b37b75",
+            "schedulingSha256": "9e0dde371277852dd7e880e74716a36d142125edee5e8e01d53f1ea0c1bf0c54",
+            "sourceGraphsSha256": "af16fcfe5678e68f8a7d4f79b863410345925f0431ea1763dd2a6b5ee9fa7acf",
+            "stateSha256": "024783375497feb86964d7340e0719e5d133ee994e2a71c8a41a241a7d0d28c3"
+          },
+          "counts": {
+            "rows": 2413,
+            "sources": 2425,
+            "headerReads": 116,
+            "headerSkips": 2297,
+            "databaseReads": 12,
+            "sourceObjects": 475088,
+            "sourceRelationships": 498221,
+            "sourceProperties": 2719926,
+            "originalValueBytes": 83566949,
+            "originalGraphsAndProjectionsCompared": 128
+          },
+          "storage": {
+            "alternativeStores": 128,
+            "archiveBlocks": 0,
+            "archives": 0,
+            "completeMxfArchiveFallbacks": 0,
+            "compressedBytes": 0,
+            "databaseArchiveCompressedBytes": 0,
+            "databaseArchives": 0,
+            "legacyMediaArchiveCompressedBytes": 0,
+            "legacyMediaArchives": 0,
+            "mxfArchiveCompressedBytes": 0,
+            "mxfArchives": 0,
+            "nativeDatabaseImageBytes": 64537496,
+            "nativeDatabaseImages": 12,
+            "nativeImageBytes": 64537496,
+            "nativeMxfAcquiredBytes": 16514752,
+            "nativeMxfImageBytes": 16512896,
+            "nativeMxfImageRanges": 1160,
+            "nativeMxfImages": 116,
+            "nativeMxfRangeCapacityBytes": 16512896,
+            "serializedBytes": 0,
+            "unfinishedGraphs": 0
+          }
+        }
+      },
+      "complete": {
+        "before": {
+          "reportSha256": "f825bf956ade2175e5b37745530418d15c7dd0d48c4a9aabf4c0f149ed297aac",
+          "csvSha256": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+          "hashes": {
+            "callbacksSha256": "e626cd5ed52a45b8ee10198640ab39873e135d272e2d75fff1565e9a055faae2",
+            "filesSha256": "7640a17e15753e81ac8dcb840f34193068f3a231f5471accdf0ce163b836734b",
+            "issuesSha256": "25ddce5544227d9b47cb341d6f0b7dd2a14c48623a8e3caa41a0c90969ebc5bb",
+            "projectionsSha256": "2dc3c48230a4ecaeed787baa809b4be088456a2954512e64a5d10530e6de9296",
+            "schedulingSha256": "988f31100c78d98ad981b7f1bc4884c62cc2df9da41c8f8cecf73dea7885676a",
+            "sourceGraphsSha256": "6e2e3dd01689c3fd9b1765edc5bcd9ac965df00ed7c976d27e17daf0e6748c41",
+            "stateSha256": "5a2942df9305fa108f6f38f6424f44c2329e875aa0b1fc3505dd3faf3850d7f8"
+          },
+          "counts": {
+            "rows": 267,
+            "sources": 267,
+            "headerReads": 267,
+            "headerSkips": 0,
+            "databaseReads": 0,
+            "sourceObjects": 200329,
+            "sourceRelationships": 260020,
+            "sourceProperties": 1240070,
+            "originalValueBytes": 36362703,
+            "originalGraphsAndProjectionsCompared": 267
+          },
+          "storage": {
+            "alternativeStores": 267,
+            "archiveBlocks": 0,
+            "archives": 0,
+            "completeMxfArchiveFallbacks": 0,
+            "compressedBytes": 0,
+            "databaseArchiveCompressedBytes": 0,
+            "databaseArchives": 0,
+            "legacyMediaArchiveCompressedBytes": 0,
+            "legacyMediaArchives": 0,
+            "mxfArchiveCompressedBytes": 0,
+            "mxfArchives": 0,
+            "nativeDatabaseImageBytes": 0,
+            "nativeDatabaseImages": 0,
+            "nativeImageBytes": 0,
+            "nativeMxfAcquiredBytes": 40493039,
+            "nativeMxfImageBytes": 40488767,
+            "nativeMxfImageRanges": 2670,
+            "nativeMxfImages": 267,
+            "nativeMxfRangeCapacityBytes": 40488767,
+            "serializedBytes": 0,
+            "unfinishedGraphs": 0
+          }
+        },
+        "after": {
+          "reportSha256": "3cef3e8c13e4334a91e54984219ec8303710b803540bcce0025fffa15c15ecbe",
+          "csvSha256": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+          "hashes": {
+            "callbacksSha256": "e626cd5ed52a45b8ee10198640ab39873e135d272e2d75fff1565e9a055faae2",
+            "filesSha256": "7640a17e15753e81ac8dcb840f34193068f3a231f5471accdf0ce163b836734b",
+            "issuesSha256": "25ddce5544227d9b47cb341d6f0b7dd2a14c48623a8e3caa41a0c90969ebc5bb",
+            "projectionsSha256": "2dc3c48230a4ecaeed787baa809b4be088456a2954512e64a5d10530e6de9296",
+            "schedulingSha256": "988f31100c78d98ad981b7f1bc4884c62cc2df9da41c8f8cecf73dea7885676a",
+            "sourceGraphsSha256": "6e2e3dd01689c3fd9b1765edc5bcd9ac965df00ed7c976d27e17daf0e6748c41",
+            "stateSha256": "5a2942df9305fa108f6f38f6424f44c2329e875aa0b1fc3505dd3faf3850d7f8"
+          },
+          "counts": {
+            "rows": 267,
+            "sources": 267,
+            "headerReads": 267,
+            "headerSkips": 0,
+            "databaseReads": 0,
+            "sourceObjects": 200329,
+            "sourceRelationships": 260020,
+            "sourceProperties": 1240070,
+            "originalValueBytes": 36362703,
+            "originalGraphsAndProjectionsCompared": 267
+          },
+          "storage": {
+            "alternativeStores": 267,
+            "archiveBlocks": 0,
+            "archives": 0,
+            "completeMxfArchiveFallbacks": 0,
+            "compressedBytes": 0,
+            "databaseArchiveCompressedBytes": 0,
+            "databaseArchives": 0,
+            "legacyMediaArchiveCompressedBytes": 0,
+            "legacyMediaArchives": 0,
+            "mxfArchiveCompressedBytes": 0,
+            "mxfArchives": 0,
+            "nativeDatabaseImageBytes": 0,
+            "nativeDatabaseImages": 0,
+            "nativeImageBytes": 0,
+            "nativeMxfAcquiredBytes": 40493039,
+            "nativeMxfImageBytes": 40488767,
+            "nativeMxfImageRanges": 2670,
+            "nativeMxfImages": 267,
+            "nativeMxfRangeCapacityBytes": 40488767,
+            "serializedBytes": 0,
+            "unfinishedGraphs": 0
+          }
+        }
+      },
+      "headers": {
+        "before": {
+          "reportSha256": "fca738203757968ef2a767caa3b93827881c48163dabd2f9ba85d9670eb80b48",
+          "csvSha256": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+          "hashes": {
+            "callbacksSha256": "d3b0afc7eceeed05b4b1a5ee4bb332b4e05ebea6dc2b2bcc304992053950fd67",
+            "filesSha256": "0e5437cd0cb26b726441760aab1dccac3667e4b3d74b11d6c5c7ddc904edded1",
+            "issuesSha256": "0486d327bc34b97c76d7dca8b2c95abb8a410f005c42f1b6852aaeff077b71ab",
+            "projectionsSha256": "a46bf89624d0850760d5de938004e72eeccf6924f4b0a3bb7489f7add8ca9560",
+            "schedulingSha256": "f4ba780067a9481e62bac674eb46f654c6dabd3768db70988d233bbb4bca7704",
+            "sourceGraphsSha256": "c082dede3eeea4cb72c31420833e23512e8cc8712eeccfd9ea03e8e74ef850d3",
+            "stateSha256": "cfc38b28bd3d48642480d09d8a91e164183d653ce7c45bab922ffe28af71f041"
+          },
+          "counts": {
+            "rows": 795,
+            "sources": 795,
+            "headerReads": 795,
+            "headerSkips": 0,
+            "databaseReads": 0,
+            "sourceObjects": 595050,
+            "sourceRelationships": 772578,
+            "sourceProperties": 3678532,
+            "originalValueBytes": 104689796,
+            "originalGraphsAndProjectionsCompared": 795
+          },
+          "storage": {
+            "alternativeStores": 0,
+            "archiveBlocks": 28653,
+            "archives": 795,
+            "completeMxfArchiveFallbacks": 0,
+            "compressedBytes": 248689951,
+            "databaseArchiveCompressedBytes": 0,
+            "databaseArchives": 0,
+            "legacyMediaArchiveCompressedBytes": 0,
+            "legacyMediaArchives": 0,
+            "mxfArchiveCompressedBytes": 248689951,
+            "mxfArchives": 795,
+            "nativeDatabaseImageBytes": 0,
+            "nativeDatabaseImages": 0,
+            "nativeImageBytes": 0,
+            "nativeMxfAcquiredBytes": 0,
+            "nativeMxfImageBytes": 0,
+            "nativeMxfImageRanges": 0,
+            "nativeMxfImages": 0,
+            "nativeMxfRangeCapacityBytes": 0,
+            "serializedBytes": 1848695797,
+            "unfinishedGraphs": 0
+          }
+        },
+        "after": {
+          "reportSha256": "dea9db8574dc79b1fb7f726554fc0fb5da49f71ffd52b92a7e4bc54930ac33e7",
+          "csvSha256": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+          "hashes": {
+            "callbacksSha256": "d3b0afc7eceeed05b4b1a5ee4bb332b4e05ebea6dc2b2bcc304992053950fd67",
+            "filesSha256": "0e5437cd0cb26b726441760aab1dccac3667e4b3d74b11d6c5c7ddc904edded1",
+            "issuesSha256": "0486d327bc34b97c76d7dca8b2c95abb8a410f005c42f1b6852aaeff077b71ab",
+            "projectionsSha256": "a46bf89624d0850760d5de938004e72eeccf6924f4b0a3bb7489f7add8ca9560",
+            "schedulingSha256": "f4ba780067a9481e62bac674eb46f654c6dabd3768db70988d233bbb4bca7704",
+            "sourceGraphsSha256": "c082dede3eeea4cb72c31420833e23512e8cc8712eeccfd9ea03e8e74ef850d3",
+            "stateSha256": "cfc38b28bd3d48642480d09d8a91e164183d653ce7c45bab922ffe28af71f041"
+          },
+          "counts": {
+            "rows": 795,
+            "sources": 795,
+            "headerReads": 795,
+            "headerSkips": 0,
+            "databaseReads": 0,
+            "sourceObjects": 595050,
+            "sourceRelationships": 772578,
+            "sourceProperties": 3678532,
+            "originalValueBytes": 104689796,
+            "originalGraphsAndProjectionsCompared": 795
+          },
+          "storage": {
+            "alternativeStores": 0,
+            "archiveBlocks": 28653,
+            "archives": 795,
+            "completeMxfArchiveFallbacks": 0,
+            "compressedBytes": 248689951,
+            "databaseArchiveCompressedBytes": 0,
+            "databaseArchives": 0,
+            "legacyMediaArchiveCompressedBytes": 0,
+            "legacyMediaArchives": 0,
+            "mxfArchiveCompressedBytes": 248689951,
+            "mxfArchives": 795,
+            "nativeDatabaseImageBytes": 0,
+            "nativeDatabaseImages": 0,
+            "nativeImageBytes": 0,
+            "nativeMxfAcquiredBytes": 0,
+            "nativeMxfImageBytes": 0,
+            "nativeMxfImageRanges": 0,
+            "nativeMxfImages": 0,
+            "nativeMxfRangeCapacityBytes": 0,
+            "serializedBytes": 1848695797,
+            "unfinishedGraphs": 0
+          }
+        }
+      }
+    }
+  },
+  "layoutBytes": {
+    "architecture": "arm64",
+    "method": "sizeof on before/after C++ headers; excludes dynamic allocations",
+    "PropertyReadResult": {
+      "before": 40,
+      "after": 24
+    },
+    "SourceFieldCoverage": {
+      "before": 64,
+      "after": 64
+    },
+    "MetadataObservation": {
+      "before": 192,
+      "after": 176
+    },
+    "ResolvedField": {
+      "before": 104,
+      "after": 88
+    },
+    "EvidenceExplanation": 16
+  },
+  "benchmark": {
+    "startedAtUtc": "2026-10-10T20:50:55.977471+00:00",
+    "finishedAtUtc": "2026-10-10T20:54:58.966341+00:00",
+    "method": "Three alternating fresh-process pairs per dataset. Same native storage, Release configuration, QT_HASH_SEED=0. Warm filesystem cache; scanMs and memoryRetained recorded before CSV or proof work. This task ran no builds/tests/proofs during timing; desktop and other-chat background activity were uncontrolled.",
+    "binaries": {
+      "before": {
+        "path": "/private/tmp/mediaengine-stages12-20261011/before-probe",
+        "sha256": "237bc99d03be331abdd90b98c5e375dfa6538fccefb32709fc7f38efaf07beb7"
+      },
+      "after": {
+        "path": "/private/tmp/mediaengine-stages12-20261011/after-probe",
+        "sha256": "f169d4452300511d7be6cf9917b652b2b9f802f6b7f7d3ce6854f8ec56401a37"
+      }
+    },
+    "runs": [
+      {
+        "dataset": "database",
+        "version": "before",
+        "pair": 1,
+        "order": [
+          "before",
+          "after"
+        ],
+        "scanMs": 5803,
+        "memoryBefore": {
+          "peakResidentBytes": 21282816,
+          "physicalFootprintBytes": 12993728,
+          "residentBytes": 21004288
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 1129758720,
+          "physicalFootprintBytes": 385535104,
+          "residentBytes": 1069449216
+        },
+        "reportSha256": "6973ac703b02dacd38ea4adcd7685821a9ebc40391adb8d043a320687f305b17",
+        "reportName": "before-timing-database-1.json",
+        "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+        "hashes": {
+          "callbacksSha256": "1ae2f889346ea26e8ae923f81b3b3e10ad38b613bd6f40564da69e564b552612",
+          "filesSha256": "71ff825617db8617cbcc25a94cf85513642a650bed18d8dbcf1f789b56b3062e",
+          "issuesSha256": "66323ed46c8ee12ea75338d5d0cfc32f983c7b5fc98f904a0f98dab483d24e5a",
+          "schedulingSha256": "9e0dde371277852dd7e880e74716a36d142125edee5e8e01d53f1ea0c1bf0c54",
+          "stateSha256": "024783375497feb86964d7340e0719e5d133ee994e2a71c8a41a241a7d0d28c3"
+        }
+      },
+      {
+        "dataset": "database",
+        "version": "after",
+        "pair": 1,
+        "order": [
+          "before",
+          "after"
+        ],
+        "scanMs": 5371,
+        "memoryBefore": {
+          "peakResidentBytes": 21643264,
+          "physicalFootprintBytes": 14763328,
+          "residentBytes": 21643264
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 1117929472,
+          "physicalFootprintBytes": 331238720,
+          "residentBytes": 975372288
+        },
+        "reportSha256": "a09698d6a9c7a6234bc4f6124d0584f5a87566900eac3ebdb153ace7b528b5c8",
+        "reportName": "after-timing-database-1.json",
+        "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+        "hashes": {
+          "callbacksSha256": "1ae2f889346ea26e8ae923f81b3b3e10ad38b613bd6f40564da69e564b552612",
+          "filesSha256": "71ff825617db8617cbcc25a94cf85513642a650bed18d8dbcf1f789b56b3062e",
+          "issuesSha256": "66323ed46c8ee12ea75338d5d0cfc32f983c7b5fc98f904a0f98dab483d24e5a",
+          "schedulingSha256": "9e0dde371277852dd7e880e74716a36d142125edee5e8e01d53f1ea0c1bf0c54",
+          "stateSha256": "024783375497feb86964d7340e0719e5d133ee994e2a71c8a41a241a7d0d28c3"
+        }
+      },
+      {
+        "dataset": "database",
+        "version": "after",
+        "pair": 2,
+        "order": [
+          "after",
+          "before"
+        ],
+        "scanMs": 5261,
+        "memoryBefore": {
+          "peakResidentBytes": 21020672,
+          "physicalFootprintBytes": 14468288,
+          "residentBytes": 20971520
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 1117143040,
+          "physicalFootprintBytes": 321113152,
+          "residentBytes": 974569472
+        },
+        "reportSha256": "4bf8dd926272569e252c722ae8144c4d9c2a177ba3ba9c54a11df99afef9a748",
+        "reportName": "after-timing-database-2.json",
+        "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+        "hashes": {
+          "callbacksSha256": "1ae2f889346ea26e8ae923f81b3b3e10ad38b613bd6f40564da69e564b552612",
+          "filesSha256": "71ff825617db8617cbcc25a94cf85513642a650bed18d8dbcf1f789b56b3062e",
+          "issuesSha256": "66323ed46c8ee12ea75338d5d0cfc32f983c7b5fc98f904a0f98dab483d24e5a",
+          "schedulingSha256": "9e0dde371277852dd7e880e74716a36d142125edee5e8e01d53f1ea0c1bf0c54",
+          "stateSha256": "024783375497feb86964d7340e0719e5d133ee994e2a71c8a41a241a7d0d28c3"
+        }
+      },
+      {
+        "dataset": "database",
+        "version": "before",
+        "pair": 2,
+        "order": [
+          "after",
+          "before"
+        ],
+        "scanMs": 5469,
+        "memoryBefore": {
+          "peakResidentBytes": 21839872,
+          "physicalFootprintBytes": 14026048,
+          "residentBytes": 21839872
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 1162608640,
+          "physicalFootprintBytes": 393432448,
+          "residentBytes": 1120862208
+        },
+        "reportSha256": "1e5e1b4c5f0ce065a08dd77660f46d8f9be104489f2eb53cf2d97870fd631623",
+        "reportName": "before-timing-database-2.json",
+        "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+        "hashes": {
+          "callbacksSha256": "1ae2f889346ea26e8ae923f81b3b3e10ad38b613bd6f40564da69e564b552612",
+          "filesSha256": "71ff825617db8617cbcc25a94cf85513642a650bed18d8dbcf1f789b56b3062e",
+          "issuesSha256": "66323ed46c8ee12ea75338d5d0cfc32f983c7b5fc98f904a0f98dab483d24e5a",
+          "schedulingSha256": "9e0dde371277852dd7e880e74716a36d142125edee5e8e01d53f1ea0c1bf0c54",
+          "stateSha256": "024783375497feb86964d7340e0719e5d133ee994e2a71c8a41a241a7d0d28c3"
+        }
+      },
+      {
+        "dataset": "database",
+        "version": "before",
+        "pair": 3,
+        "order": [
+          "before",
+          "after"
+        ],
+        "scanMs": 5742,
+        "memoryBefore": {
+          "peakResidentBytes": 20119552,
+          "physicalFootprintBytes": 10404928,
+          "residentBytes": 18546688
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 1145290752,
+          "physicalFootprintBytes": 386076032,
+          "residentBytes": 1115308032
+        },
+        "reportSha256": "daff63d2bbe1add5fb448885feb1a7c10abf2fb6cac7ef881824923ab213dbf1",
+        "reportName": "before-timing-database-3.json",
+        "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+        "hashes": {
+          "callbacksSha256": "1ae2f889346ea26e8ae923f81b3b3e10ad38b613bd6f40564da69e564b552612",
+          "filesSha256": "71ff825617db8617cbcc25a94cf85513642a650bed18d8dbcf1f789b56b3062e",
+          "issuesSha256": "66323ed46c8ee12ea75338d5d0cfc32f983c7b5fc98f904a0f98dab483d24e5a",
+          "schedulingSha256": "9e0dde371277852dd7e880e74716a36d142125edee5e8e01d53f1ea0c1bf0c54",
+          "stateSha256": "024783375497feb86964d7340e0719e5d133ee994e2a71c8a41a241a7d0d28c3"
+        }
+      },
+      {
+        "dataset": "database",
+        "version": "after",
+        "pair": 3,
+        "order": [
+          "before",
+          "after"
+        ],
+        "scanMs": 5439,
+        "memoryBefore": {
+          "peakResidentBytes": 21282816,
+          "physicalFootprintBytes": 14108160,
+          "residentBytes": 21151744
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 1117814784,
+          "physicalFootprintBytes": 366398848,
+          "residentBytes": 1022296064
+        },
+        "reportSha256": "796a41865b44a9af081ce549445deabbbe48450d74101add6c9762c2b2fc3b90",
+        "reportName": "after-timing-database-3.json",
+        "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+        "hashes": {
+          "callbacksSha256": "1ae2f889346ea26e8ae923f81b3b3e10ad38b613bd6f40564da69e564b552612",
+          "filesSha256": "71ff825617db8617cbcc25a94cf85513642a650bed18d8dbcf1f789b56b3062e",
+          "issuesSha256": "66323ed46c8ee12ea75338d5d0cfc32f983c7b5fc98f904a0f98dab483d24e5a",
+          "schedulingSha256": "9e0dde371277852dd7e880e74716a36d142125edee5e8e01d53f1ea0c1bf0c54",
+          "stateSha256": "024783375497feb86964d7340e0719e5d133ee994e2a71c8a41a241a7d0d28c3"
+        }
+      },
+      {
+        "dataset": "complete",
+        "version": "before",
+        "pair": 1,
+        "order": [
+          "before",
+          "after"
+        ],
+        "scanMs": 5248,
+        "memoryBefore": {
+          "peakResidentBytes": 10485760,
+          "physicalFootprintBytes": 4752448,
+          "residentBytes": 10485760
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 106348544,
+          "physicalFootprintBytes": 89229056,
+          "residentBytes": 106348544
+        },
+        "reportSha256": "534e424caca48ed5f8cb9be2f646437311650db6585920efce2d226269abfc4c",
+        "reportName": "before-timing-complete-1.json",
+        "csvSha256": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+        "hashes": {
+          "callbacksSha256": "e626cd5ed52a45b8ee10198640ab39873e135d272e2d75fff1565e9a055faae2",
+          "filesSha256": "7640a17e15753e81ac8dcb840f34193068f3a231f5471accdf0ce163b836734b",
+          "issuesSha256": "25ddce5544227d9b47cb341d6f0b7dd2a14c48623a8e3caa41a0c90969ebc5bb",
+          "schedulingSha256": "988f31100c78d98ad981b7f1bc4884c62cc2df9da41c8f8cecf73dea7885676a",
+          "stateSha256": "5a2942df9305fa108f6f38f6424f44c2329e875aa0b1fc3505dd3faf3850d7f8"
+        }
+      },
+      {
+        "dataset": "complete",
+        "version": "after",
+        "pair": 1,
+        "order": [
+          "before",
+          "after"
+        ],
+        "scanMs": 4996,
+        "memoryBefore": {
+          "peakResidentBytes": 10403840,
+          "physicalFootprintBytes": 4686848,
+          "residentBytes": 10403840
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 102629376,
+          "physicalFootprintBytes": 89343424,
+          "residentBytes": 102629376
+        },
+        "reportSha256": "96e57b8e886805ee48ec86d00dac9b2837bc89ae1163d7f7a2765ad820448ae9",
+        "reportName": "after-timing-complete-1.json",
+        "csvSha256": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+        "hashes": {
+          "callbacksSha256": "e626cd5ed52a45b8ee10198640ab39873e135d272e2d75fff1565e9a055faae2",
+          "filesSha256": "7640a17e15753e81ac8dcb840f34193068f3a231f5471accdf0ce163b836734b",
+          "issuesSha256": "25ddce5544227d9b47cb341d6f0b7dd2a14c48623a8e3caa41a0c90969ebc5bb",
+          "schedulingSha256": "988f31100c78d98ad981b7f1bc4884c62cc2df9da41c8f8cecf73dea7885676a",
+          "stateSha256": "5a2942df9305fa108f6f38f6424f44c2329e875aa0b1fc3505dd3faf3850d7f8"
+        }
+      },
+      {
+        "dataset": "complete",
+        "version": "after",
+        "pair": 2,
+        "order": [
+          "after",
+          "before"
+        ],
+        "scanMs": 5008,
+        "memoryBefore": {
+          "peakResidentBytes": 10256384,
+          "physicalFootprintBytes": 4539392,
+          "residentBytes": 10256384
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 104005632,
+          "physicalFootprintBytes": 89376640,
+          "residentBytes": 104005632
+        },
+        "reportSha256": "75ecf595efc0bd9a7ad30348f9ac3f50b673996b1d7b7c1010b6a0d2908789b7",
+        "reportName": "after-timing-complete-2.json",
+        "csvSha256": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+        "hashes": {
+          "callbacksSha256": "e626cd5ed52a45b8ee10198640ab39873e135d272e2d75fff1565e9a055faae2",
+          "filesSha256": "7640a17e15753e81ac8dcb840f34193068f3a231f5471accdf0ce163b836734b",
+          "issuesSha256": "25ddce5544227d9b47cb341d6f0b7dd2a14c48623a8e3caa41a0c90969ebc5bb",
+          "schedulingSha256": "988f31100c78d98ad981b7f1bc4884c62cc2df9da41c8f8cecf73dea7885676a",
+          "stateSha256": "5a2942df9305fa108f6f38f6424f44c2329e875aa0b1fc3505dd3faf3850d7f8"
+        }
+      },
+      {
+        "dataset": "complete",
+        "version": "before",
+        "pair": 2,
+        "order": [
+          "after",
+          "before"
+        ],
+        "scanMs": 5055,
+        "memoryBefore": {
+          "peakResidentBytes": 10256384,
+          "physicalFootprintBytes": 4506624,
+          "residentBytes": 10256384
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 109445120,
+          "physicalFootprintBytes": 93062848,
+          "residentBytes": 109445120
+        },
+        "reportSha256": "5269161c887d8e8348b81753f16f2079c4063c72de5777ae1aeac338ec9919d7",
+        "reportName": "before-timing-complete-2.json",
+        "csvSha256": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+        "hashes": {
+          "callbacksSha256": "e626cd5ed52a45b8ee10198640ab39873e135d272e2d75fff1565e9a055faae2",
+          "filesSha256": "7640a17e15753e81ac8dcb840f34193068f3a231f5471accdf0ce163b836734b",
+          "issuesSha256": "25ddce5544227d9b47cb341d6f0b7dd2a14c48623a8e3caa41a0c90969ebc5bb",
+          "schedulingSha256": "988f31100c78d98ad981b7f1bc4884c62cc2df9da41c8f8cecf73dea7885676a",
+          "stateSha256": "5a2942df9305fa108f6f38f6424f44c2329e875aa0b1fc3505dd3faf3850d7f8"
+        }
+      },
+      {
+        "dataset": "complete",
+        "version": "before",
+        "pair": 3,
+        "order": [
+          "before",
+          "after"
+        ],
+        "scanMs": 5152,
+        "memoryBefore": {
+          "peakResidentBytes": 10518528,
+          "physicalFootprintBytes": 4768768,
+          "residentBytes": 10518528
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 101384192,
+          "physicalFootprintBytes": 87213568,
+          "residentBytes": 101384192
+        },
+        "reportSha256": "2ce5f42ed665228fbb2170fbb8998a2f431a001989fc55d8603ee7051f9a1897",
+        "reportName": "before-timing-complete-3.json",
+        "csvSha256": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+        "hashes": {
+          "callbacksSha256": "e626cd5ed52a45b8ee10198640ab39873e135d272e2d75fff1565e9a055faae2",
+          "filesSha256": "7640a17e15753e81ac8dcb840f34193068f3a231f5471accdf0ce163b836734b",
+          "issuesSha256": "25ddce5544227d9b47cb341d6f0b7dd2a14c48623a8e3caa41a0c90969ebc5bb",
+          "schedulingSha256": "988f31100c78d98ad981b7f1bc4884c62cc2df9da41c8f8cecf73dea7885676a",
+          "stateSha256": "5a2942df9305fa108f6f38f6424f44c2329e875aa0b1fc3505dd3faf3850d7f8"
+        }
+      },
+      {
+        "dataset": "complete",
+        "version": "after",
+        "pair": 3,
+        "order": [
+          "before",
+          "after"
+        ],
+        "scanMs": 5176,
+        "memoryBefore": {
+          "peakResidentBytes": 10600448,
+          "physicalFootprintBytes": 4883456,
+          "residentBytes": 10600448
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 100892672,
+          "physicalFootprintBytes": 86689472,
+          "residentBytes": 100892672
+        },
+        "reportSha256": "67ec29e3fe3a198b92fdcf9f9b8c5069a9784952d92220135a88cb289d273ed0",
+        "reportName": "after-timing-complete-3.json",
+        "csvSha256": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+        "hashes": {
+          "callbacksSha256": "e626cd5ed52a45b8ee10198640ab39873e135d272e2d75fff1565e9a055faae2",
+          "filesSha256": "7640a17e15753e81ac8dcb840f34193068f3a231f5471accdf0ce163b836734b",
+          "issuesSha256": "25ddce5544227d9b47cb341d6f0b7dd2a14c48623a8e3caa41a0c90969ebc5bb",
+          "schedulingSha256": "988f31100c78d98ad981b7f1bc4884c62cc2df9da41c8f8cecf73dea7885676a",
+          "stateSha256": "5a2942df9305fa108f6f38f6424f44c2329e875aa0b1fc3505dd3faf3850d7f8"
+        }
+      },
+      {
+        "dataset": "headers",
+        "version": "before",
+        "pair": 1,
+        "order": [
+          "before",
+          "after"
+        ],
+        "scanMs": 25956,
+        "memoryBefore": {
+          "peakResidentBytes": 13303808,
+          "physicalFootprintBytes": 6882432,
+          "residentBytes": 13303808
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 365379584,
+          "physicalFootprintBytes": 325421312,
+          "residentBytes": 365379584
+        },
+        "reportSha256": "9a3493f5f1079276b042a8b3b935557c5c5d5a7c5e2757473a3cf2978a6c5a2c",
+        "reportName": "before-timing-headers-1.json",
+        "csvSha256": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+        "hashes": {
+          "callbacksSha256": "d3b0afc7eceeed05b4b1a5ee4bb332b4e05ebea6dc2b2bcc304992053950fd67",
+          "filesSha256": "0e5437cd0cb26b726441760aab1dccac3667e4b3d74b11d6c5c7ddc904edded1",
+          "issuesSha256": "0486d327bc34b97c76d7dca8b2c95abb8a410f005c42f1b6852aaeff077b71ab",
+          "schedulingSha256": "f4ba780067a9481e62bac674eb46f654c6dabd3768db70988d233bbb4bca7704",
+          "stateSha256": "cfc38b28bd3d48642480d09d8a91e164183d653ce7c45bab922ffe28af71f041"
+        }
+      },
+      {
+        "dataset": "headers",
+        "version": "after",
+        "pair": 1,
+        "order": [
+          "before",
+          "after"
+        ],
+        "scanMs": 24719,
+        "memoryBefore": {
+          "peakResidentBytes": 13172736,
+          "physicalFootprintBytes": 6489216,
+          "residentBytes": 13172736
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 348553216,
+          "physicalFootprintBytes": 311822464,
+          "residentBytes": 348553216
+        },
+        "reportSha256": "e8475f16fb5cccb9fdc095ec9f13a27a02348ad6bb6137de8cb10dc38be37e09",
+        "reportName": "after-timing-headers-1.json",
+        "csvSha256": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+        "hashes": {
+          "callbacksSha256": "d3b0afc7eceeed05b4b1a5ee4bb332b4e05ebea6dc2b2bcc304992053950fd67",
+          "filesSha256": "0e5437cd0cb26b726441760aab1dccac3667e4b3d74b11d6c5c7ddc904edded1",
+          "issuesSha256": "0486d327bc34b97c76d7dca8b2c95abb8a410f005c42f1b6852aaeff077b71ab",
+          "schedulingSha256": "f4ba780067a9481e62bac674eb46f654c6dabd3768db70988d233bbb4bca7704",
+          "stateSha256": "cfc38b28bd3d48642480d09d8a91e164183d653ce7c45bab922ffe28af71f041"
+        }
+      },
+      {
+        "dataset": "headers",
+        "version": "after",
+        "pair": 2,
+        "order": [
+          "after",
+          "before"
+        ],
+        "scanMs": 24591,
+        "memoryBefore": {
+          "peakResidentBytes": 13500416,
+          "physicalFootprintBytes": 7586944,
+          "residentBytes": 13500416
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 352223232,
+          "physicalFootprintBytes": 322324544,
+          "residentBytes": 352223232
+        },
+        "reportSha256": "c975dc391396bb888be35404b32f333f75c6790581586a17eabe868489421202",
+        "reportName": "after-timing-headers-2.json",
+        "csvSha256": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+        "hashes": {
+          "callbacksSha256": "d3b0afc7eceeed05b4b1a5ee4bb332b4e05ebea6dc2b2bcc304992053950fd67",
+          "filesSha256": "0e5437cd0cb26b726441760aab1dccac3667e4b3d74b11d6c5c7ddc904edded1",
+          "issuesSha256": "0486d327bc34b97c76d7dca8b2c95abb8a410f005c42f1b6852aaeff077b71ab",
+          "schedulingSha256": "f4ba780067a9481e62bac674eb46f654c6dabd3768db70988d233bbb4bca7704",
+          "stateSha256": "cfc38b28bd3d48642480d09d8a91e164183d653ce7c45bab922ffe28af71f041"
+        }
+      },
+      {
+        "dataset": "headers",
+        "version": "before",
+        "pair": 2,
+        "order": [
+          "after",
+          "before"
+        ],
+        "scanMs": 24618,
+        "memoryBefore": {
+          "peakResidentBytes": 14254080,
+          "physicalFootprintBytes": 7783552,
+          "residentBytes": 14254080
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 368918528,
+          "physicalFootprintBytes": 328812544,
+          "residentBytes": 368918528
+        },
+        "reportSha256": "7036e3a3560dfc5882254f05128510c051178f53bfcb417ca64ecdcac44c7c14",
+        "reportName": "before-timing-headers-2.json",
+        "csvSha256": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+        "hashes": {
+          "callbacksSha256": "d3b0afc7eceeed05b4b1a5ee4bb332b4e05ebea6dc2b2bcc304992053950fd67",
+          "filesSha256": "0e5437cd0cb26b726441760aab1dccac3667e4b3d74b11d6c5c7ddc904edded1",
+          "issuesSha256": "0486d327bc34b97c76d7dca8b2c95abb8a410f005c42f1b6852aaeff077b71ab",
+          "schedulingSha256": "f4ba780067a9481e62bac674eb46f654c6dabd3768db70988d233bbb4bca7704",
+          "stateSha256": "cfc38b28bd3d48642480d09d8a91e164183d653ce7c45bab922ffe28af71f041"
+        }
+      },
+      {
+        "dataset": "headers",
+        "version": "before",
+        "pair": 3,
+        "order": [
+          "before",
+          "after"
+        ],
+        "scanMs": 24972,
+        "memoryBefore": {
+          "peakResidentBytes": 13697024,
+          "physicalFootprintBytes": 7931008,
+          "residentBytes": 13697024
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 364331008,
+          "physicalFootprintBytes": 328648896,
+          "residentBytes": 364331008
+        },
+        "reportSha256": "1f7f88eb6eea436f9ebcb78e96fe4c42ba7f6a2631e341825eadbb7defe2cd83",
+        "reportName": "before-timing-headers-3.json",
+        "csvSha256": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+        "hashes": {
+          "callbacksSha256": "d3b0afc7eceeed05b4b1a5ee4bb332b4e05ebea6dc2b2bcc304992053950fd67",
+          "filesSha256": "0e5437cd0cb26b726441760aab1dccac3667e4b3d74b11d6c5c7ddc904edded1",
+          "issuesSha256": "0486d327bc34b97c76d7dca8b2c95abb8a410f005c42f1b6852aaeff077b71ab",
+          "schedulingSha256": "f4ba780067a9481e62bac674eb46f654c6dabd3768db70988d233bbb4bca7704",
+          "stateSha256": "cfc38b28bd3d48642480d09d8a91e164183d653ce7c45bab922ffe28af71f041"
+        }
+      },
+      {
+        "dataset": "headers",
+        "version": "after",
+        "pair": 3,
+        "order": [
+          "before",
+          "after"
+        ],
+        "scanMs": 24437,
+        "memoryBefore": {
+          "peakResidentBytes": 13123584,
+          "physicalFootprintBytes": 6767744,
+          "residentBytes": 13123584
+        },
+        "memoryRetained": {
+          "peakResidentBytes": 344440832,
+          "physicalFootprintBytes": 311543808,
+          "residentBytes": 344440832
+        },
+        "reportSha256": "f44e02c26328a092ee531ab950f72d987cd84ccdd3da0a8c36347b8016699e1c",
+        "reportName": "after-timing-headers-3.json",
+        "csvSha256": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+        "hashes": {
+          "callbacksSha256": "d3b0afc7eceeed05b4b1a5ee4bb332b4e05ebea6dc2b2bcc304992053950fd67",
+          "filesSha256": "0e5437cd0cb26b726441760aab1dccac3667e4b3d74b11d6c5c7ddc904edded1",
+          "issuesSha256": "0486d327bc34b97c76d7dca8b2c95abb8a410f005c42f1b6852aaeff077b71ab",
+          "schedulingSha256": "f4ba780067a9481e62bac674eb46f654c6dabd3768db70988d233bbb4bca7704",
+          "stateSha256": "cfc38b28bd3d48642480d09d8a91e164183d653ce7c45bab922ffe28af71f041"
+        }
+      }
+    ],
+    "summary": {
+      "database": {
+        "metrics": {
+          "before": {
+            "scanMs": {
+              "values": [
+                5803,
+                5469,
+                5742
+              ],
+              "median": 5742,
+              "min": 5469,
+              "max": 5803
+            },
+            "physicalFootprintBytes": {
+              "values": [
+                385535104,
+                393432448,
+                386076032
+              ],
+              "median": 386076032,
+              "min": 385535104,
+              "max": 393432448
+            },
+            "residentBytes": {
+              "values": [
+                1069449216,
+                1120862208,
+                1115308032
+              ],
+              "median": 1115308032,
+              "min": 1069449216,
+              "max": 1120862208
+            },
+            "peakResidentBytes": {
+              "values": [
+                1129758720,
+                1162608640,
+                1145290752
+              ],
+              "median": 1145290752,
+              "min": 1129758720,
+              "max": 1162608640
+            },
+            "scanPhysicalFootprintIncreaseBytes": {
+              "values": [
+                372541376,
+                379406400,
+                375671104
+              ],
+              "median": 375671104,
+              "min": 372541376,
+              "max": 379406400
+            }
+          },
+          "after": {
+            "scanMs": {
+              "values": [
+                5371,
+                5261,
+                5439
+              ],
+              "median": 5371,
+              "min": 5261,
+              "max": 5439
+            },
+            "physicalFootprintBytes": {
+              "values": [
+                331238720,
+                321113152,
+                366398848
+              ],
+              "median": 331238720,
+              "min": 321113152,
+              "max": 366398848
+            },
+            "residentBytes": {
+              "values": [
+                975372288,
+                974569472,
+                1022296064
+              ],
+              "median": 975372288,
+              "min": 974569472,
+              "max": 1022296064
+            },
+            "peakResidentBytes": {
+              "values": [
+                1117929472,
+                1117143040,
+                1117814784
+              ],
+              "median": 1117814784,
+              "min": 1117143040,
+              "max": 1117929472
+            },
+            "scanPhysicalFootprintIncreaseBytes": {
+              "values": [
+                316475392,
+                306644864,
+                352290688
+              ],
+              "median": 316475392,
+              "min": 306644864,
+              "max": 352290688
+            }
+          }
+        },
+        "changePercent": {
+          "scanMs": -6.461163357715083,
+          "physicalFootprintBytes": -14.203759740257581,
+          "residentBytes": -12.546824732272711,
+          "peakResidentBytes": -2.399038667868336,
+          "scanPhysicalFootprintIncreaseBytes": -15.757323725382932
+        }
+      },
+      "complete": {
+        "metrics": {
+          "before": {
+            "scanMs": {
+              "values": [
+                5248,
+                5055,
+                5152
+              ],
+              "median": 5152,
+              "min": 5055,
+              "max": 5248
+            },
+            "physicalFootprintBytes": {
+              "values": [
+                89229056,
+                93062848,
+                87213568
+              ],
+              "median": 89229056,
+              "min": 87213568,
+              "max": 93062848
+            },
+            "residentBytes": {
+              "values": [
+                106348544,
+                109445120,
+                101384192
+              ],
+              "median": 106348544,
+              "min": 101384192,
+              "max": 109445120
+            },
+            "peakResidentBytes": {
+              "values": [
+                106348544,
+                109445120,
+                101384192
+              ],
+              "median": 106348544,
+              "min": 101384192,
+              "max": 109445120
+            },
+            "scanPhysicalFootprintIncreaseBytes": {
+              "values": [
+                84476608,
+                88556224,
+                82444800
+              ],
+              "median": 84476608,
+              "min": 82444800,
+              "max": 88556224
+            }
+          },
+          "after": {
+            "scanMs": {
+              "values": [
+                4996,
+                5008,
+                5176
+              ],
+              "median": 5008,
+              "min": 4996,
+              "max": 5176
+            },
+            "physicalFootprintBytes": {
+              "values": [
+                89343424,
+                89376640,
+                86689472
+              ],
+              "median": 89343424,
+              "min": 86689472,
+              "max": 89376640
+            },
+            "residentBytes": {
+              "values": [
+                102629376,
+                104005632,
+                100892672
+              ],
+              "median": 102629376,
+              "min": 100892672,
+              "max": 104005632
+            },
+            "peakResidentBytes": {
+              "values": [
+                102629376,
+                104005632,
+                100892672
+              ],
+              "median": 102629376,
+              "min": 100892672,
+              "max": 104005632
+            },
+            "scanPhysicalFootprintIncreaseBytes": {
+              "values": [
+                84656576,
+                84837248,
+                81806016
+              ],
+              "median": 84656576,
+              "min": 81806016,
+              "max": 84837248
+            }
+          }
+        },
+        "changePercent": {
+          "scanMs": -2.795031055900621,
+          "physicalFootprintBytes": 0.12817349541387468,
+          "residentBytes": -3.4971498998613515,
+          "peakResidentBytes": -3.4971498998613515,
+          "scanPhysicalFootprintIncreaseBytes": 0.21303885686319024
+        }
+      },
+      "headers": {
+        "metrics": {
+          "before": {
+            "scanMs": {
+              "values": [
+                25956,
+                24618,
+                24972
+              ],
+              "median": 24972,
+              "min": 24618,
+              "max": 25956
+            },
+            "physicalFootprintBytes": {
+              "values": [
+                325421312,
+                328812544,
+                328648896
+              ],
+              "median": 328648896,
+              "min": 325421312,
+              "max": 328812544
+            },
+            "residentBytes": {
+              "values": [
+                365379584,
+                368918528,
+                364331008
+              ],
+              "median": 365379584,
+              "min": 364331008,
+              "max": 368918528
+            },
+            "peakResidentBytes": {
+              "values": [
+                365379584,
+                368918528,
+                364331008
+              ],
+              "median": 365379584,
+              "min": 364331008,
+              "max": 368918528
+            },
+            "scanPhysicalFootprintIncreaseBytes": {
+              "values": [
+                318538880,
+                321028992,
+                320717888
+              ],
+              "median": 320717888,
+              "min": 318538880,
+              "max": 321028992
+            }
+          },
+          "after": {
+            "scanMs": {
+              "values": [
+                24719,
+                24591,
+                24437
+              ],
+              "median": 24591,
+              "min": 24437,
+              "max": 24719
+            },
+            "physicalFootprintBytes": {
+              "values": [
+                311822464,
+                322324544,
+                311543808
+              ],
+              "median": 311822464,
+              "min": 311543808,
+              "max": 322324544
+            },
+            "residentBytes": {
+              "values": [
+                348553216,
+                352223232,
+                344440832
+              ],
+              "median": 348553216,
+              "min": 344440832,
+              "max": 352223232
+            },
+            "peakResidentBytes": {
+              "values": [
+                348553216,
+                352223232,
+                344440832
+              ],
+              "median": 348553216,
+              "min": 344440832,
+              "max": 352223232
+            },
+            "scanPhysicalFootprintIncreaseBytes": {
+              "values": [
+                305333248,
+                314737600,
+                304776064
+              ],
+              "median": 305333248,
+              "min": 304776064,
+              "max": 314737600
+            }
+          }
+        },
+        "changePercent": {
+          "scanMs": -1.525708793849112,
+          "physicalFootprintBytes": -5.119880883458072,
+          "residentBytes": -4.605174655845035,
+          "peakResidentBytes": -4.605174655845035,
+          "scanPhysicalFootprintIncreaseBytes": -4.796938548061281
+        }
+      }
+    }
+  },
+  "limits": [
+    "MacOS local/external-drive scanner probe, not whole-GUI memory or Windows/NEXIS throughput.",
+    "Three paired trials; small time differences are indicative, not a statistically established general speedup.",
+    "The 267 complete MXFs are a selected small-file sample; the 795 header specimens are truncated genuine acquisitions exercising incomplete-source recovery.",
+    "No source backing, observations, alternatives, row/candidate receipts or safety checks were removed. Larger retention cuts remain unapproved.",
+    "No GUI performance result, peak physical-footprint measurement or 300,000-file completion result is claimed."
+  ],
+  "separateApprovedEdit": {
+    "property": "Compression",
+    "label": "060e2b34040101030e04410101030000",
+    "displayName": "Avid DNxRLE Alpha",
+    "userConfirmed": true,
+    "affectedSavedHeaderSpecimens": 0,
+    "fullDatabaseScanMetadataChanges": 0
+  }
+}

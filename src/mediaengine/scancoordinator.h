@@ -16,7 +16,7 @@ namespace MediaEngine
 		std::function<void(int, int, const QString &)> progress;
 		std::function<void()> finalising;
 		std::function<void(const QString &)> warning;
-		std::function<void(const QString &)> discovering; ///< Folder access, before source totals are known.
+		std::function<void(const QString &)> discovering;	  ///< Folder access, before source totals are known.
 		std::function<void(const SourceCandidate &)> reading; ///< Source receipt, immediately before opening its reader.
 	};
 	class ScanCoordinator

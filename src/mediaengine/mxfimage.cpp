@@ -108,7 +108,8 @@ namespace MediaEngine
 		const qint64 end = offset + length;
 		auto &ranges = m_image.m_ranges;
 		auto first = std::lower_bound(ranges.begin(), ranges.end(), offset,
-			[](const MxfRange &range, qint64 position) { return endOf(range) < position; });
+									  [](const MxfRange &range, qint64 position)
+									  { return endOf(range) < position; });
 		if (first == ranges.end() || first->offset > end)
 		{
 			ranges.insert(first, MxfRange{offset, QByteArray(data, static_cast<qsizetype>(length))});
@@ -216,11 +217,13 @@ namespace MediaEngine
 		const qint64 length = std::min(maximum, size() - offset);
 		const auto &ranges = m_image.ranges();
 		const auto next = std::upper_bound(ranges.cbegin(), ranges.cend(), offset,
-			[](qint64 position, const MxfRange &range) { return position < range.offset; });
+										   [](qint64 position, const MxfRange &range)
+										   { return position < range.offset; });
 		if (next == ranges.cbegin() || endOf(*(next - 1)) < offset + length)
 		{
 			setErrorString(QStringLiteral("MXF RAM image has no acquired bytes for requested range %1..%2.")
-						   .arg(offset).arg(offset + length));
+							   .arg(offset)
+							   .arg(offset + length));
 			return -1;
 		}
 		const auto &range = *(next - 1);

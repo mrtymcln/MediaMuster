@@ -22,6 +22,45 @@ class TestMediaEvidence : public QObject
 {
 	Q_OBJECT
 private slots:
+	void compact_reasons_preserve_diagnostic_wording_and_parameters()
+	{
+		using Reason = EvidenceExplanation::Reason;
+		QVERIFY(sizeof(EvidenceExplanation) < sizeof(QString));
+		const EvidenceExplanation preferred(Reason::PreferredSource);
+		QCOMPARE(preferred.text(), QStringLiteral("Selected by the field-specific source priority; alternatives retained"));
+		QCOMPARE(preferred.reason(), Reason::PreferredSource);
+		QCOMPARE(EvidenceExplanation(Reason::EqualRankConflict).text(),
+			QStringLiteral("Equally eligible sources disagree; no defensible winner"));
+		const auto checked = EvidenceExplanation::checkedInputs(Reason::CheckedInputsAbsent,
+			QStringLiteral("OMFI:A, OMFI:B"));
+		QCOMPARE(checked.text(), QStringLiteral("The complete owning object has none of the checked input properties. Checked properties: OMFI:A, OMFI:B"));
+		const auto copied = checked;
+		QCOMPARE(copied.text(), checked.text());
+		const auto clock = EvidenceExplanation::withDisplayClock(preferred,
+			EvidenceExplanation(Reason::EqualRankConflict));
+		QCOMPARE(clock.text(), preferred.text() +
+			QStringLiteral("; display clock resolved independently from matching duration observations: Equally eligible sources disagree; no defensible winner"));
+		const auto emptyClock = EvidenceExplanation::withDisplayClock(preferred, {});
+		QCOMPARE(emptyClock.text(), preferred.text() +
+			QStringLiteral("; display clock resolved independently from matching duration observations: "));
+		const EvidenceExplanation unusual(QStringLiteral("Reader-specific text: \u4f60\u597d; bytes retained."));
+		QCOMPARE(unusual.reason(), Reason::Custom);
+		QCOMPARE(unusual.text(), QStringLiteral("Reader-specific text: \u4f60\u597d; bytes retained."));
+		const auto customClock = EvidenceExplanation::withDisplayClock(unusual, preferred);
+		QCOMPARE(customClock.text(), unusual.text() +
+			QStringLiteral("; display clock resolved independently from matching duration observations: ") + preferred.text());
+		const auto nestedClock = EvidenceExplanation::withDisplayClock(preferred, clock);
+		QCOMPARE(nestedClock.text(), preferred.text() +
+			QStringLiteral("; display clock resolved independently from matching duration observations: ") + clock.text());
+		QVERIFY(EvidenceExplanation{}.isEmpty());
+		QVERIFY(EvidenceExplanation(QString{}).isEmpty());
+		QVERIFY(EvidenceExplanation{}.text().isNull());
+		QVERIFY(EvidenceExplanation(QString{}).text().isNull());
+		const EvidenceExplanation recordedEmpty(QStringLiteral(""));
+		QVERIFY(recordedEmpty.isEmpty());
+		QVERIFY(!recordedEmpty.text().isNull());
+		QCOMPARE(recordedEmpty.reason(), Reason::Custom);
+	}
 	void retains_conflicting_values_and_prefers_validated_header()
 	{
 		MediaEvidence evidence;
@@ -178,6 +217,90 @@ private slots:
 		QVERIFY(!copy.observations(MediaProperty::Compression).first().eligible);
 		QCOMPARE(original.observations(MediaProperty::Compression).first().snapshot,
 			copy.observations(MediaProperty::Compression).first().snapshot);
+	}
+	void object_context_text_is_shared_within_its_source()
+	{
+		MediaEvidence evidence;
+		const auto source = observation(MetadataSource::Mxf, {}).snapshot;
+		const QString firstOwner = QString::fromLatin1("object:42");
+		const QString secondOwner = QString::fromLatin1("object:42");
+		QVERIFY(firstOwner.constData() != secondOwner.constData());
+		auto first = observation(MetadataSource::Mxf, QStringLiteral("clip"));
+		first.snapshot = source;
+		first.objectIdentity = firstOwner;
+		evidence.observe(MediaProperty::ClipName, first);
+		auto second = first;
+		second.value = QStringLiteral("project");
+		second.objectIdentity = secondOwner;
+		evidence.observe(MediaProperty::Project, second);
+		const auto *sharedText = evidence.observations(MediaProperty::ClipName).first().objectIdentity.constData();
+		QCOMPARE(evidence.observations(MediaProperty::Project).first().objectIdentity.constData(), sharedText);
+		QCOMPARE(evidence.sourceCoverage().first().objectIdentity.constData(), sharedText);
+
+		// Growing the coverage list must not leave observations borrowing its entries.
+		for (int handle = 100; handle < 228; ++handle)
+			evidence.registerSource(source, QStringLiteral("object:%1").arg(handle));
+		QCOMPARE(evidence.observations(MediaProperty::ClipName).first().objectIdentity, firstOwner);
+		QCOMPARE(evidence.observations(MediaProperty::ClipName).first().objectIdentity.constData(), sharedText);
+		MediaEvidence copy = evidence;
+		second.objectIdentity = QString::fromLatin1("object:42");
+		copy.observe(MediaProperty::OriginalBin, second);
+		QCOMPARE(copy.observations(MediaProperty::OriginalBin).first().objectIdentity.constData(), sharedText);
+		QVERIFY(evidence.observations(MediaProperty::OriginalBin).isEmpty());
+	}
+	void object_context_sharing_preserves_distinct_receipts_and_spellings()
+	{
+		MediaEvidence evidence;
+		const auto firstSource = observation(MetadataSource::Mxf, {}).snapshot;
+		const auto secondSource = QSharedPointer<SourceSnapshot>::create(*firstSource);
+		auto first = observation(MetadataSource::Mxf, QStringLiteral("first read"));
+		first.snapshot = firstSource;
+		first.objectIdentity = QString::fromLatin1("object:42");
+		evidence.observe(MediaProperty::ClipName, first);
+		auto second = first;
+		second.snapshot = secondSource;
+		second.value = QStringLiteral("second read");
+		second.objectIdentity = QString::fromLatin1("object:42");
+		evidence.observe(MediaProperty::ClipName, second);
+		auto distinctSpelling = first;
+		distinctSpelling.objectIdentity = QString::fromLatin1("42");
+		evidence.observe(MediaProperty::ClipName, distinctSpelling);
+		const auto &values = evidence.observations(MediaProperty::ClipName);
+		QCOMPARE(values.size(), 3);
+		QCOMPARE(evidence.sourceCoverage().size(), 3);
+		QCOMPARE(values[0].snapshot, firstSource);
+		QCOMPARE(values[1].snapshot, SourceSnapshotRef(secondSource));
+		QVERIFY(values[0].objectIdentity.constData() != values[1].objectIdentity.constData());
+		QCOMPARE(values[0].objectIdentity, QStringLiteral("object:42"));
+		QCOMPARE(values[2].objectIdentity, QStringLiteral("42"));
+		evidence.qualifySource(firstSource, false, SourceFreshness::Changed);
+		QVERIFY(!evidence.observations(MediaProperty::ClipName)[0].eligible);
+		QVERIFY(evidence.observations(MediaProperty::ClipName)[1].eligible);
+		QVERIFY(!evidence.observations(MediaProperty::ClipName)[2].eligible);
+	}
+	void object_context_sharing_preserves_null_and_explicitly_empty_text()
+	{
+		const QString nullOwner;
+		const QString emptyOwner = QStringLiteral("");
+		QVERIFY(nullOwner.isNull());
+		QVERIFY(!emptyOwner.isNull());
+		for (const bool nullFirst : {true, false})
+		{
+			MediaEvidence evidence;
+			auto first = observation(MetadataSource::Mxf, QStringLiteral("clip"));
+			first.objectIdentity = nullFirst ? nullOwner : emptyOwner;
+			evidence.observe(MediaProperty::ClipName, first);
+			auto second = first;
+			second.value = QStringLiteral("project");
+			second.objectIdentity = nullFirst ? emptyOwner : nullOwner;
+			evidence.observe(MediaProperty::Project, second);
+			// Context grouping still uses QString equality; each observation keeps
+			// the nullness supplied by its own reader.
+			QCOMPARE(evidence.sourceCoverage().size(), 1);
+			QCOMPARE(evidence.sourceCoverage().first().objectIdentity.isNull(), nullFirst);
+			QCOMPARE(evidence.observations(MediaProperty::ClipName).first().objectIdentity.isNull(), nullFirst);
+			QCOMPARE(evidence.observations(MediaProperty::Project).first().objectIdentity.isNull(), !nullFirst);
+		}
 	}
 	void id_allocation_never_wraps_or_reuses_removed_ids()
 	{

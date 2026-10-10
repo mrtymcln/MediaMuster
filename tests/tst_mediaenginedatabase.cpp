@@ -251,7 +251,7 @@ namespace
 		QCOMPARE(a.state, b.state);
 		QCOMPARE(a.reason, b.reason);
 		QCOMPARE(a.applicability, b.applicability);
-		compareText(a.explanation, b.explanation);
+		compareText(a.explanation.text(), b.explanation.text());
 	}
 	void compareEvidence(MediaEvidence a, MediaEvidence b)
 	{
@@ -305,7 +305,7 @@ namespace
 			QCOMPARE(x.agreement, y.agreement);
 			QCOMPARE(x.selectedObservation, y.selectedObservation);
 			compareText(x.rule, y.rule);
-			compareText(x.reason, y.reason);
+			compareText(x.reason.text(), y.reason.text());
 			QCOMPARE(x.readReason, y.readReason);
 			QCOMPARE(x.applicability, y.applicability);
 		}

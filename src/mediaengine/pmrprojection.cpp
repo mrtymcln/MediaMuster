@@ -32,29 +32,29 @@ namespace MediaEngine
 			// These fields belong to the known record layout. A partial record must
 			// not turn an unattempted read into a format-omission claim.
 			for (const auto field : {MediaProperty::Filename, MediaProperty::Project,
-									MediaProperty::FileMobId, MediaProperty::MasterMobId})
+									 MediaProperty::FileMobId, MediaProperty::MasterMobId})
 				file.evidence.recordReadStatus(field, source.snapshot, owner,
 					{PropertyReadState::NotRead, source.outcome == ParsedSource::Outcome::Incomplete
 						? PropertyReadReason::SourceIncomplete : PropertyReadReason::CoverageNotEstablished,
-					 PropertyApplicability::Applicable, QStringLiteral("Known PMR record field; its observation records the read outcome")});
+					 PropertyApplicability::Applicable, EvidenceExplanation(EvidenceExplanation::Reason::PmrKnownField)});
 			const auto modification = std::find_if(object.properties.cbegin(), object.properties.cend(),
 				[](const RawProperty &property) { return property.locator.name == QLatin1String("ModificationWord"); });
 			PropertyReadResult modified;
 			if (modification == object.properties.cend())
 			{
 				modified.reason = PropertyReadReason::SourceIncomplete;
-				modified.explanation = QStringLiteral("The PMR record did not reach its modification word");
+				modified.explanation = EvidenceExplanation(EvidenceExplanation::Reason::PmrModificationMissing);
 			}
 			else if (modification->state == PropertyReadState::Unreadable)
 			{
 				modified.state = PropertyReadState::Unreadable;
 				modified.reason = PropertyReadReason::ValueUnreadable;
-				modified.explanation = QStringLiteral("The PMR modification word could not be read");
+				modified.explanation = EvidenceExplanation(EvidenceExplanation::Reason::PmrModificationUnreadable);
 			}
 			else
 			{
 				modified.reason = PropertyReadReason::UnsupportedInterpretation;
-				modified.explanation = QStringLiteral("PMR ModificationWord is retained without a proven timestamp interpretation");
+				modified.explanation = EvidenceExplanation(EvidenceExplanation::Reason::PmrModificationUninterpreted);
 			}
 			file.evidence.recordReadStatus(MediaProperty::Modified, source.snapshot, owner, std::move(modified));
 			for (const auto &raw : object.properties)

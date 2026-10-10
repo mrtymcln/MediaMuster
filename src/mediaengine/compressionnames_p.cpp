@@ -145,7 +145,7 @@ namespace MediaEngine::Detail
 			NameRow{"060e2b340401010d04010202711a0000", "Avid DNx TR"},
 			// Existing DNx compatibility spellings remain unchanged in this
 			// naming-only work; dnx_uncompressed.lua records these identifiers.
-			NameRow{"060e2b34040101030e04410101030000", "DNxRLE Alpha"},
+			NameRow{"060e2b34040101030e04410101030000", "Avid DNxRLE Alpha"},
 			NameRow{"060e2b34040101030e04410101050200", "Avid DNx HQ"},
 			NameRow{"060e2b34040101030e04410101050300", "Avid DNx SQ"},
 			NameRow{"060e2b34040101030e04410101060100", "Avid DNxStitched AVC-I 4:2:2"},
@@ -202,9 +202,9 @@ namespace MediaEngine::Detail
 			for (const auto &row : rows)
 			{
 				const bool descriptor = facts.descriptorClass == QLatin1String(row.descriptor) ||
-					(facts.descriptorClass == QLatin1String("CDCI") && QLatin1String(row.descriptor) == QLatin1String("JPED"));
+										(facts.descriptorClass == QLatin1String("CDCI") && QLatin1String(row.descriptor) == QLatin1String("JPED"));
 				const bool coding = (facts.codingAbsent && facts.codingLabel.isEmpty()) ||
-					isLabel(facts.codingLabel, row.coding1) || (row.coding2[0] && isLabel(facts.codingLabel, row.coding2));
+									isLabel(facts.codingLabel, row.coding1) || (row.coding2[0] && isLabel(facts.codingLabel, row.coding2));
 				if (!descriptor || !coding || facts.legacyCompression != row.compression || facts.legacyResolution != row.resolution)
 					continue;
 
@@ -214,12 +214,10 @@ namespace MediaEngine::Detail
 				{
 					const bool pal = facts.geometry == QPair<qint64, qint64>{720, 576} && facts.rate.sameRate({25, 1});
 					const bool ntsc = facts.geometry.first == 720 &&
-						(facts.geometry.second == 480 || facts.geometry.second == 486) &&
-						(facts.rate.sameRate({30000, 1001}) || facts.rate.sameRate({2997, 100}));
+									  (facts.geometry.second == 480 || facts.geometry.second == 486) &&
+									  (facts.rate.sameRate({30000, 1001}) || facts.rate.sameRate({2997, 100}));
 					if (pal || ntsc)
-						return QStringLiteral("DV %1 %2Mbps %3").arg(pal ? QLatin1String("PAL") : QLatin1String("NTSC"))
-							.arg(row.resolution == 140 ? 25 : 50)
-							.arg(row.resolution == 140 ? QLatin1String("4:1:1") : QLatin1String("4:2:2"));
+						return QStringLiteral("DV %1 %2Mbps %3").arg(pal ? QLatin1String("PAL") : QLatin1String("NTSC")).arg(row.resolution == 140 ? 25 : 50).arg(row.resolution == 140 ? QLatin1String("4:1:1") : QLatin1String("4:2:2"));
 				}
 				if ((row.resolution == 141 || row.resolution == 144) &&
 					facts.geometry == QPair<qint64, qint64>{720, 576} &&

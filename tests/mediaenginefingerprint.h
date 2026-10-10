@@ -351,7 +351,7 @@ public:
 	void readResult(const PropertyReadResult &value)
 	{
 		stream << qint32(value.state) << qint32(value.reason) << qint32(value.applicability);
-		text(value.explanation);
+		text(value.explanation.text());
 	}
 	void evidence(const MediaEvidence &value)
 	{
@@ -402,7 +402,7 @@ public:
 			variant(selected.value);
 			stream << qint32(selected.readState) << qint32(selected.agreement) << selected.selectedObservation;
 			text(selected.rule);
-			text(selected.reason);
+			text(selected.reason.text());
 			stream << qint32(selected.readReason) << qint32(selected.applicability);
 		}
 	}

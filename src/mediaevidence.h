@@ -1,5 +1,7 @@
 #pragma once
 
+#include "evidenceexplanation.h"
+
 #include <QDateTime>
 #include <QHash>
 #include <QSharedPointer>
@@ -52,7 +54,7 @@ private:
 
 // What was established about a property's value. Selection, agreement and
 // freshness are separate; the read reason explains incomplete/unsupported cases.
-enum class PropertyReadState
+enum class PropertyReadState : quint8
 {
 	NotRead,   ///< No interpreted read result established; this does not prove absence.
 	Present,   ///< A value was read, including empty text, false or zero; it need not be selected.
@@ -61,7 +63,7 @@ enum class PropertyReadState
 };
 // Compare eligible observations of the same fact, even within one source.
 // Disagreement can coexist with a selected value under an explicit preference.
-enum class PropertyAgreement
+enum class PropertyAgreement : quint8
 {
 	NotCompared,  ///< No usable comparison result established.
 	SingleSource, ///< One usable observation; this counts observations, not file/source kinds.
@@ -69,12 +71,12 @@ enum class PropertyAgreement
 	Conflicting	  ///< Comparable values or qualified associations disagree.
 };
 // How the value was obtained, independently of whether it is correct or current.
-enum class EvidenceBasis
+enum class EvidenceBasis : quint8
 {
 	Recorded, ///< The source explicitly supplied the value.
 	Derived	  ///< Calculated or inferred from evidence, with an explanation.
 };
-enum class MetadataSource
+enum class MetadataSource : quint8
 {
 	Filesystem,
 	Pmr,
@@ -83,14 +85,14 @@ enum class MetadataSource
 	Omf,
 	Avb
 };
-enum class SourceReadState
+enum class SourceReadState : quint8
 {
 	NotRead,
 	Complete,
 	Incomplete,
 	Unreadable
 };
-enum class SourceFreshness
+enum class SourceFreshness : quint8
 {
 	Unknown,
 	TimestampConsistent,
@@ -99,7 +101,7 @@ enum class SourceFreshness
 
 // A missing selected value does not explain what the reader actually checked.
 // Keep that explanation separate from value agreement and field applicability.
-enum class PropertyReadReason
+enum class PropertyReadReason : quint8
 {
 	None,
 	NoAssociatedSource,
@@ -112,7 +114,7 @@ enum class PropertyReadReason
 	UnsupportedInterpretation,
 	ValueUnreadable
 };
-enum class PropertyApplicability
+enum class PropertyApplicability : quint8
 {
 	Unknown,
 	Applicable,
@@ -282,7 +284,7 @@ struct PropertyReadResult
 	PropertyReadState state = PropertyReadState::NotRead;
 	PropertyReadReason reason = PropertyReadReason::NoAssociatedSource;
 	PropertyApplicability applicability = PropertyApplicability::Unknown;
-	QString explanation;
+	EvidenceExplanation explanation;
 };
 
 // One source/object receipt supplies defaults for all logical fields. Only
@@ -322,7 +324,7 @@ struct ResolvedField
 	PropertyAgreement agreement = PropertyAgreement::NotCompared;
 	int selectedObservation = -1;
 	QString rule; ///< Diagnostic selection label; MediaEngine uses the shared property name.
-	QString reason;
+	EvidenceExplanation reason;
 	PropertyReadReason readReason = PropertyReadReason::NoAssociatedSource;
 	PropertyApplicability applicability = PropertyApplicability::Unknown;
 };
@@ -334,33 +336,7 @@ public:
 	void registerSource(const SourceSnapshotRef &snapshot, const QString &objectIdentity = {},
 						PropertyReadReason defaultReason = PropertyReadReason::CoverageNotEstablished)
 	{
-		if (!snapshot)
-			return;
-		for (auto &coverage : m_coverage)
-		{
-			// A scheduled header replaces its unopened receipt. Distinct reads
-			// with actual observations remain distinct snapshots.
-			if (coverage.objectIdentity.isEmpty() && objectIdentity.isEmpty() && coverage.fields.isEmpty() &&
-				coverage.snapshot->readState == SourceReadState::NotRead &&
-				snapshot->readState != SourceReadState::NotRead &&
-				coverage.snapshot->source == snapshot->source && coverage.snapshot->path == snapshot->path &&
-				coverage.snapshot->modified == snapshot->modified)
-			{
-				const bool hasObservations = std::any_of(m_observations.cbegin(), m_observations.cend(),
-														 [&](const QVector<MetadataObservation> &values)
-														 { return std::any_of(values.cbegin(), values.cend(), [&](const MetadataObservation &value)
-																			  { return value.snapshot == coverage.snapshot; }); });
-				if (!hasObservations)
-					coverage.snapshot = snapshot;
-			}
-			if (coverage.snapshot == snapshot && coverage.objectIdentity == objectIdentity)
-			{
-				if (defaultReason != PropertyReadReason::CoverageNotEstablished)
-					coverage.defaultReason = defaultReason;
-				return;
-			}
-		}
-		m_coverage.append({snapshot, objectIdentity, defaultReason, {}, true, SourceFreshness::Unknown});
+		registerSourceContext(snapshot, objectIdentity, defaultReason);
 	}
 	void recordReadStatus(MediaProperty property, const SourceSnapshotRef &snapshot,
 						  const QString &objectIdentity, PropertyReadResult status)
@@ -419,7 +395,7 @@ public:
 			if (coverage.defaultReason == PropertyReadReason::NotStoredByFormat)
 			{
 				status.state = PropertyReadState::Absent;
-				status.explanation = QStringLiteral("This source record layout does not store this field");
+				status.explanation = EvidenceExplanation(EvidenceExplanation::Reason::LayoutDoesNotStore);
 			}
 			else if (coverage.snapshot->readState == SourceReadState::NotRead)
 				status.reason = PropertyReadReason::SourceNotRead;
@@ -459,7 +435,9 @@ public:
 	}
 	void observe(MediaProperty property, MetadataObservation observation)
 	{
-		registerSource(observation.snapshot, observation.objectIdentity);
+		// All fields on this source object share its recorded owner text.
+		observation.objectIdentity = registerSourceContext(observation.snapshot, observation.objectIdentity,
+			PropertyReadReason::CoverageNotEstablished);
 		auto &values = m_observations[property];
 		for (auto &existing : values)
 			if (existing.snapshot == observation.snapshot && existing.property == observation.property &&
@@ -708,11 +686,11 @@ public:
 		{
 			result.value.clear();
 			result.selectedObservation = -1;
-			result.reason = QStringLiteral("Equally eligible sources disagree; no defensible winner");
+			result.reason = EvidenceExplanation(EvidenceExplanation::Reason::EqualRankConflict);
 		}
 		else if (result.selectedObservation >= 0)
 		{
-			result.reason = QStringLiteral("Selected by the field-specific source priority; alternatives retained");
+			result.reason = EvidenceExplanation(EvidenceExplanation::Reason::PreferredSource);
 			if (property == MediaProperty::ClipDuration)
 			{
 				// Coalesce duplicate facts only in the selected value. The source
@@ -732,18 +710,53 @@ public:
 					result.value.clear();
 					result.selectedObservation = -1;
 					result.agreement = PropertyAgreement::Conflicting;
-					result.reason = QStringLiteral("Selected source records contradictory timing for the same master track; alternatives retained");
+					result.reason = EvidenceExplanation(EvidenceExplanation::Reason::ContradictoryMasterTiming);
 				}
 				else
 					result.value = tracks;
 			}
 		}
 		else if (present > 0)
-			result.reason = QStringLiteral("Read values retained; the policy excludes their sources from selection");
+			result.reason = EvidenceExplanation(EvidenceExplanation::Reason::ExcludedSources);
 		return result;
 	}
 
 private:
+	QString registerSourceContext(const SourceSnapshotRef &snapshot, const QString &objectIdentity,
+								  PropertyReadReason defaultReason)
+	{
+		if (!snapshot)
+			return objectIdentity;
+		for (auto &coverage : m_coverage)
+		{
+			// A scheduled header replaces its unopened receipt. Distinct reads
+			// with actual observations remain distinct snapshots.
+			if (coverage.objectIdentity.isEmpty() && objectIdentity.isEmpty() && coverage.fields.isEmpty() &&
+				coverage.snapshot->readState == SourceReadState::NotRead &&
+				snapshot->readState != SourceReadState::NotRead &&
+				coverage.snapshot->source == snapshot->source && coverage.snapshot->path == snapshot->path &&
+				coverage.snapshot->modified == snapshot->modified)
+			{
+				const bool hasObservations = std::any_of(m_observations.cbegin(), m_observations.cend(),
+														 [&](const QVector<MetadataObservation> &values)
+														 { return std::any_of(values.cbegin(), values.cend(), [&](const MetadataObservation &value)
+																			  { return value.snapshot == coverage.snapshot; }); });
+				if (!hasObservations)
+					coverage.snapshot = snapshot;
+			}
+			if (coverage.snapshot == snapshot && coverage.objectIdentity == objectIdentity)
+			{
+				if (defaultReason != PropertyReadReason::CoverageNotEstablished)
+					coverage.defaultReason = defaultReason;
+				// QString compares null and explicitly empty text equally. Preserve
+				// that original distinction while sharing identical owner encodings.
+				return coverage.objectIdentity.isNull() == objectIdentity.isNull()
+					? coverage.objectIdentity : objectIdentity;
+			}
+		}
+		m_coverage.append({snapshot, objectIdentity, defaultReason, {}, true, SourceFreshness::Unknown});
+		return m_coverage.constLast().objectIdentity;
+	}
 	QVector<SourceFieldCoverage> m_coverage;
 	QHash<MediaProperty, QVector<MetadataObservation>> m_observations;
 	QHash<MediaProperty, ResolvedField> m_resolved;

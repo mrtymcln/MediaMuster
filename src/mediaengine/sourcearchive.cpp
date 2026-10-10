@@ -25,7 +25,9 @@ namespace MediaEngine
 
 		// This private signal unwinds a partly written/read graph. Public methods
 		// return cancellation separately from failures, and never publish half an archive.
-		struct Cancelled {};
+		struct Cancelled
+		{
+		};
 
 		void checkCancellation(const Cancellation &cancellation)
 		{
@@ -74,6 +76,7 @@ namespace MediaEngine
 			}
 			qint64 serializedBytes = 0;
 			qint64 compressedBytes = 0;
+
 		protected:
 			qint64 readData(char *, qint64) override { return -1; }
 			qint64 writeData(const char *data, qint64 size) override
@@ -92,6 +95,7 @@ namespace MediaEngine
 				}
 				return requested;
 			}
+
 		private:
 			void flushBlock()
 			{
@@ -125,6 +129,7 @@ namespace MediaEngine
 			bool atEnd() const override { return consumedBytes == m_bytes; }
 			qint64 bytesAvailable() const override { return m_bytes - consumedBytes; }
 			qint64 consumedBytes = 0;
+
 		protected:
 			qint64 writeData(const char *, qint64) override { return -1; }
 			qint64 readData(char *destination, qint64 requested) override
@@ -156,6 +161,7 @@ namespace MediaEngine
 				}
 				return copied;
 			}
+
 		private:
 			const QVector<ArchiveBlock> &m_blocks;
 			const qint64 m_bytes;
@@ -165,7 +171,8 @@ namespace MediaEngine
 			QByteArray m_buffer;
 		};
 
-		template<class IO, class T> void fields(IO &io, T &v)
+		template <class IO, class T>
+		void fields(IO &io, T &v)
 		{
 			using Value = std::remove_const_t<T>;
 			if constexpr (std::is_same_v<Value, ByteRange>)
@@ -195,7 +202,8 @@ namespace MediaEngine
 				   v.embeddedSources, v.recordSets, v.objects, v.relationships, v.unownedProperties, v.diagnostics);
 		}
 
-		template<class T> constexpr bool isRecord =
+		template <class T>
+		constexpr bool isRecord =
 			std::is_same_v<T, ByteRange> || std::is_same_v<T, PropertyLocator> ||
 			std::is_same_v<T, BentoPropertyContext> || std::is_same_v<T, MxfPropertyContext> ||
 			std::is_same_v<T, MxfSetContext> || std::is_same_v<T, AvbObjectContext> ||
@@ -204,13 +212,23 @@ namespace MediaEngine
 
 		// A context is written once and subsequent references use its index. This
 		// preserves sharing without keeping those expanded contexts in the archive.
-		template<class T> using PointerIds = QHash<const T *, quint64>;
-		template<class T> using RestoredPointers = QVector<QSharedPointer<const T>>;
+		template <class T>
+		using PointerIds = QHash<const T *, quint64>;
+		template <class T>
+		using RestoredPointers = QVector<QSharedPointer<const T>>;
 		using WritePointers = std::tuple<PointerIds<BentoPropertyContext>, PointerIds<MxfPropertyContext>,
-			PointerIds<MxfSetContext>, PointerIds<AvbObjectContext>>;
+										 PointerIds<MxfSetContext>, PointerIds<AvbObjectContext>>;
 		using ReadPointers = std::tuple<RestoredPointers<BentoPropertyContext>, RestoredPointers<MxfPropertyContext>,
-			RestoredPointers<MxfSetContext>, RestoredPointers<AvbObjectContext>>;
-		enum class VariantEncoding : quint8 { QtValue, Float, Double, List, Map, Hash };
+										RestoredPointers<MxfSetContext>, RestoredPointers<AvbObjectContext>>;
+		enum class VariantEncoding : quint8
+		{
+			QtValue,
+			Float,
+			Double,
+			List,
+			Map,
+			Hash
+		};
 
 		void configure(QDataStream &stream)
 		{
@@ -224,8 +242,10 @@ namespace MediaEngine
 		public:
 			Writer(WriteDevice &device, QVector<SourceSnapshotRef> &receipts, const Cancellation &cancellation)
 				: m_stream(&device), m_receipts(receipts), m_cancellation(cancellation) { configure(m_stream); }
-			template<class... T> void operator()(const T &...v) { (value(v), ...); }
-			template<class T> void value(const T &v)
+			template <class... T>
+			void operator()(const T &...v) { (value(v), ...); }
+			template <class T>
+			void value(const T &v)
 			{
 				checkCancellation(m_cancellation);
 				if constexpr (std::is_same_v<T, QByteArray> || std::is_same_v<T, QString>)
@@ -238,32 +258,53 @@ namespace MediaEngine
 					m_stream << v;
 				checkStream(m_stream);
 			}
-			template<class T> void value(const std::optional<T> &v)
+			template <class T>
+			void value(const std::optional<T> &v)
 			{
 				value(bool(v));
-				if (v) value(*v);
+				if (v)
+					value(*v);
 			}
-			template<class T> void value(const QList<T> &v)
+			template <class T>
+			void value(const QList<T> &v)
 			{
 				value(quint64(v.size()));
-				for (const auto &item : v) value(item);
+				for (const auto &item : v)
+					value(item);
 			}
 			void value(const SourceSnapshotRef &v)
 			{
-				if (!v) { value(quint64(0)); return; }
+				if (!v)
+				{
+					value(quint64(0));
+					return;
+				}
 				auto found = m_receiptIds.constFind(v.data());
-				if (found != m_receiptIds.cend()) { value(*found); return; }
+				if (found != m_receiptIds.cend())
+				{
+					value(*found);
+					return;
+				}
 				const quint64 id = quint64(m_receipts.size()) + 1;
 				m_receiptIds.insert(v.data(), id);
 				m_receipts.append(v);
 				value(id);
 			}
-			template<class T> void value(const QSharedPointer<const T> &v)
+			template <class T>
+			void value(const QSharedPointer<const T> &v)
 			{
-				if (!v) { value(quint64(0)); return; }
+				if (!v)
+				{
+					value(quint64(0));
+					return;
+				}
 				auto &ids = std::get<PointerIds<T>>(m_pointerIds);
 				auto found = ids.constFind(v.data());
-				if (found != ids.cend()) { value(*found); return; }
+				if (found != ids.cend())
+				{
+					value(*found);
+					return;
+				}
 				const quint64 id = quint64(ids.size()) + 1;
 				ids.insert(v.data(), id);
 				value(id);
@@ -278,13 +319,24 @@ namespace MediaEngine
 					// Integer bit copies preserve NaN payloads and signed zero too.
 					m_stream << quint8(type == QMetaType::Float ? VariantEncoding::Float : VariantEncoding::Double);
 					value(v.isNull());
-					if (type == QMetaType::Float) { quint32 bits; std::memcpy(&bits, v.constData(), sizeof(bits)); value(bits); }
-					else { quint64 bits; std::memcpy(&bits, v.constData(), sizeof(bits)); value(bits); }
+					if (type == QMetaType::Float)
+					{
+						quint32 bits;
+						std::memcpy(&bits, v.constData(), sizeof(bits));
+						value(bits);
+					}
+					else
+					{
+						quint64 bits;
+						std::memcpy(&bits, v.constData(), sizeof(bits));
+						value(bits);
+					}
 				}
 				else if (type == QMetaType::QVariantList)
 				{
 					m_stream << quint8(VariantEncoding::List);
-					value(v.isNull()); value(*static_cast<const QVariantList *>(v.constData()));
+					value(v.isNull());
+					value(*static_cast<const QVariantList *>(v.constData()));
 				}
 				else if (type == QMetaType::QVariantMap || type == QMetaType::QVariantHash)
 				{
@@ -294,33 +346,49 @@ namespace MediaEngine
 					{
 						const auto &map = *static_cast<const QVariantMap *>(v.constData());
 						value(quint64(map.size()));
-						for (auto it = map.cbegin(); it != map.cend(); ++it) { value(it.key()); value(it.value()); }
+						for (auto it = map.cbegin(); it != map.cend(); ++it)
+						{
+							value(it.key());
+							value(it.value());
+						}
 					}
 					else
 					{
 						const auto &hash = *static_cast<const QVariantHash *>(v.constData());
-						auto keys = hash.keys(); std::sort(keys.begin(), keys.end());
+						auto keys = hash.keys();
+						std::sort(keys.begin(), keys.end());
 						value(quint64(keys.size()));
-						for (const auto &key : keys) { value(key); value(hash.value(key)); }
+						for (const auto &key : keys)
+						{
+							value(key);
+							value(hash.value(key));
+						}
 					}
 				}
 				else
 				{
 					if (v.isValid() && !v.metaType().hasRegisteredDataStreamOperators())
 						throw SourceArchiveError("Decoded value has no lossless Qt stream encoding");
-					if (type == QMetaType::QByteArray) checkEncodingWidth(*static_cast<const QByteArray *>(v.constData()));
-					else if (type == QMetaType::QString) checkEncodingWidth(*static_cast<const QString *>(v.constData()));
+					if (type == QMetaType::QByteArray)
+						checkEncodingWidth(*static_cast<const QByteArray *>(v.constData()));
+					else if (type == QMetaType::QString)
+						checkEncodingWidth(*static_cast<const QString *>(v.constData()));
 					else if (type == QMetaType::QStringList)
 					{
 						const auto &strings = *static_cast<const QStringList *>(v.constData());
 						if (quint64(strings.size()) >= std::numeric_limits<quint32>::max())
 							throw SourceArchiveError("String list exceeds the Qt source archive encoding width");
-						for (const auto &text : strings) { checkCancellation(m_cancellation); checkEncodingWidth(text); }
+						for (const auto &text : strings)
+						{
+							checkCancellation(m_cancellation);
+							checkEncodingWidth(text);
+						}
 					}
 					m_stream << quint8(VariantEncoding::QtValue) << v;
 				}
 				checkStream(m_stream);
 			}
+
 		private:
 			QDataStream m_stream;
 			QVector<SourceSnapshotRef> &m_receipts;
@@ -334,87 +402,159 @@ namespace MediaEngine
 		public:
 			Reader(ReadDevice &device, const QVector<SourceSnapshotRef> &receipts, const Cancellation &cancellation)
 				: m_stream(&device), m_device(device), m_receipts(receipts), m_cancellation(cancellation) { configure(m_stream); }
-			template<class... T> void operator()(T &...v) { (value(v), ...); }
-			template<class T> void value(T &v)
+			template <class... T>
+			void operator()(T &...v) { (value(v), ...); }
+			template <class T>
+			void value(T &v)
 			{
 				checkCancellation(m_cancellation);
-				if constexpr (std::is_enum_v<T>) { qint32 encoded = 0; m_stream >> encoded; v = static_cast<T>(encoded); }
-				else if constexpr (isRecord<T>) fields(*this, v);
-				else m_stream >> v;
+				if constexpr (std::is_enum_v<T>)
+				{
+					qint32 encoded = 0;
+					m_stream >> encoded;
+					v = static_cast<T>(encoded);
+				}
+				else if constexpr (isRecord<T>)
+					fields(*this, v);
+				else
+					m_stream >> v;
 				checkStream(m_stream);
 			}
 			qsizetype count()
 			{
-				quint64 encoded = 0; value(encoded);
+				quint64 encoded = 0;
+				value(encoded);
 				// Every stored item has at least one byte. This checks the archive's
 				// own recorded length without imposing a memory budget on the graph.
 				if (encoded > quint64(std::numeric_limits<qsizetype>::max()) || encoded > quint64(m_device.bytesAvailable()))
 					throw SourceArchiveError("Invalid source RAM archive item count");
 				return qsizetype(encoded);
 			}
-			template<class T> void value(std::optional<T> &v)
+			template <class T>
+			void value(std::optional<T> &v)
 			{
-				bool present = false; value(present);
-				if (present) { T item{}; value(item); v = std::move(item); }
-				else v.reset();
+				bool present = false;
+				value(present);
+				if (present)
+				{
+					T item{};
+					value(item);
+					v = std::move(item);
+				}
+				else
+					v.reset();
 			}
-			template<class T> void value(QList<T> &v)
+			template <class T>
+			void value(QList<T> &v)
 			{
 				const qsizetype size = count();
-				v.clear(); v.reserve(size);
-				for (qsizetype index = 0; index < size; ++index) { T item{}; value(item); v.append(std::move(item)); }
+				v.clear();
+				v.reserve(size);
+				for (qsizetype index = 0; index < size; ++index)
+				{
+					T item{};
+					value(item);
+					v.append(std::move(item));
+				}
 			}
 			void value(SourceSnapshotRef &v)
 			{
-				quint64 id = 0; value(id);
-				if (id > quint64(m_receipts.size())) throw SourceArchiveError("Invalid source RAM archive receipt");
+				quint64 id = 0;
+				value(id);
+				if (id > quint64(m_receipts.size()))
+					throw SourceArchiveError("Invalid source RAM archive receipt");
 				v = id ? m_receipts.at(qsizetype(id - 1)) : SourceSnapshotRef{};
 			}
-			template<class T> void value(QSharedPointer<const T> &v)
+			template <class T>
+			void value(QSharedPointer<const T> &v)
 			{
-				quint64 id = 0; value(id);
-				if (!id) { v.clear(); return; }
+				quint64 id = 0;
+				value(id);
+				if (!id)
+				{
+					v.clear();
+					return;
+				}
 				auto &pointers = std::get<RestoredPointers<T>>(m_pointers);
-				if (id <= quint64(pointers.size())) { v = pointers.at(qsizetype(id - 1)); return; }
-				if (id != quint64(pointers.size()) + 1) throw SourceArchiveError("Invalid source RAM archive context");
-				T item{}; value(item);
+				if (id <= quint64(pointers.size()))
+				{
+					v = pointers.at(qsizetype(id - 1));
+					return;
+				}
+				if (id != quint64(pointers.size()) + 1)
+					throw SourceArchiveError("Invalid source RAM archive context");
+				T item{};
+				value(item);
 				v = QSharedPointer<const T>::create(std::move(item));
 				pointers.append(v);
 			}
 			void value(QVariant &v)
 			{
-				quint8 kind = 0; value(kind);
-				if (kind == quint8(VariantEncoding::QtValue)) { m_stream >> v; checkStream(m_stream); return; }
-				bool isNull = false; value(isNull);
+				quint8 kind = 0;
+				value(kind);
+				if (kind == quint8(VariantEncoding::QtValue))
+				{
+					m_stream >> v;
+					checkStream(m_stream);
+					return;
+				}
+				bool isNull = false;
+				value(isNull);
 				if (kind == quint8(VariantEncoding::Float))
 				{
-					quint32 bits = 0; value(bits); float number; std::memcpy(&number, &bits, sizeof(number));
+					quint32 bits = 0;
+					value(bits);
+					float number;
+					std::memcpy(&number, &bits, sizeof(number));
 					v = isNull ? QVariant(QMetaType::fromType<float>()) : QVariant::fromValue(number);
 				}
 				else if (kind == quint8(VariantEncoding::Double))
 				{
-					quint64 bits = 0; value(bits); double number; std::memcpy(&number, &bits, sizeof(number));
+					quint64 bits = 0;
+					value(bits);
+					double number;
+					std::memcpy(&number, &bits, sizeof(number));
 					v = isNull ? QVariant(QMetaType::fromType<double>()) : QVariant::fromValue(number);
 				}
 				else if (kind == quint8(VariantEncoding::List))
 				{
-					QVariantList list; value(list);
+					QVariantList list;
+					value(list);
 					v = isNull ? QVariant(QMetaType::fromType<QVariantList>()) : QVariant::fromValue(std::move(list));
 				}
 				else if (kind == quint8(VariantEncoding::Map))
 				{
-					QVariantMap map; const qsizetype size = count();
-					for (qsizetype index = 0; index < size; ++index) { QString key; QVariant item; value(key); value(item); map.insert(key, std::move(item)); }
+					QVariantMap map;
+					const qsizetype size = count();
+					for (qsizetype index = 0; index < size; ++index)
+					{
+						QString key;
+						QVariant item;
+						value(key);
+						value(item);
+						map.insert(key, std::move(item));
+					}
 					v = isNull ? QVariant(QMetaType::fromType<QVariantMap>()) : QVariant::fromValue(std::move(map));
 				}
 				else if (kind == quint8(VariantEncoding::Hash))
 				{
-					QVariantHash hash; const qsizetype size = count(); hash.reserve(size);
-					for (qsizetype index = 0; index < size; ++index) { QString key; QVariant item; value(key); value(item); hash.insert(key, std::move(item)); }
+					QVariantHash hash;
+					const qsizetype size = count();
+					hash.reserve(size);
+					for (qsizetype index = 0; index < size; ++index)
+					{
+						QString key;
+						QVariant item;
+						value(key);
+						value(item);
+						hash.insert(key, std::move(item));
+					}
 					v = isNull ? QVariant(QMetaType::fromType<QVariantHash>()) : QVariant::fromValue(std::move(hash));
 				}
-				else throw SourceArchiveError("Invalid source RAM archive variant");
+				else
+					throw SourceArchiveError("Invalid source RAM archive variant");
 			}
+
 		private:
 			QDataStream m_stream;
 			ReadDevice &m_device;
@@ -450,10 +590,22 @@ namespace MediaEngine
 			checkCancellation(cancellation);
 			return QSharedPointer<SourceArchive>::create(std::move(data));
 		}
-		catch (const Cancelled &) { return {}; }
-		catch (const std::bad_alloc &) { throw; }
-		catch (const SourceArchiveError &) { throw; }
-		catch (const std::exception &error) { throw SourceArchiveError(error.what()); }
+		catch (const Cancelled &)
+		{
+			return {};
+		}
+		catch (const std::bad_alloc &)
+		{
+			throw;
+		}
+		catch (const SourceArchiveError &)
+		{
+			throw;
+		}
+		catch (const std::exception &error)
+		{
+			throw SourceArchiveError(error.what());
+		}
 	}
 
 	std::optional<ParsedSource> SourceArchive::restore(const Cancellation &cancellation) const
@@ -465,14 +617,27 @@ namespace MediaEngine
 			Reader reader(device, m_data->receipts, cancellation);
 			ParsedSource source;
 			reader.value(source);
-			if (!device.atEnd()) throw SourceArchiveError("Source RAM archive has trailing bytes");
+			if (!device.atEnd())
+				throw SourceArchiveError("Source RAM archive has trailing bytes");
 			checkCancellation(cancellation);
 			return source;
 		}
-		catch (const Cancelled &) { return std::nullopt; }
-		catch (const std::bad_alloc &) { throw; }
-		catch (const SourceArchiveError &) { throw; }
-		catch (const std::exception &error) { throw SourceArchiveError(error.what()); }
+		catch (const Cancelled &)
+		{
+			return std::nullopt;
+		}
+		catch (const std::bad_alloc &)
+		{
+			throw;
+		}
+		catch (const SourceArchiveError &)
+		{
+			throw;
+		}
+		catch (const std::exception &error)
+		{
+			throw SourceArchiveError(error.what());
+		}
 	}
 
 	qint64 SourceArchive::compressedBytes() const { return m_data->compressedBytes; }
@@ -497,15 +662,19 @@ namespace MediaEngine
 
 	std::optional<ParsedSource> StoredSource::restore(const Cancellation &cancellation) const
 	{
-		if (cancellation.cancelled()) return std::nullopt;
-		if (archive) return archive->restore(cancellation);
+		if (cancellation.cancelled())
+			return std::nullopt;
+		if (archive)
+			return archive->restore(cancellation);
 		if (unfinishedGraph)
 		{
 			ParsedSource source = *unfinishedGraph;
-			if (cancellation.cancelled()) return std::nullopt;
+			if (cancellation.cancelled())
+				return std::nullopt;
 			return source;
 		}
-		if (storage) return storage->restore(cancellation);
+		if (storage)
+			return storage->restore(cancellation);
 		if (outcome != ParsedSource::Outcome::NotRead)
 			throw SourceArchiveError("A parsed source has no stored graph");
 		// Unopened headers only have these scheduling/receipt fields.
@@ -515,7 +684,8 @@ namespace MediaEngine
 		source.snapshot = snapshot;
 		source.container = container;
 		source.diagnostics = diagnostics;
-		if (cancellation.cancelled()) return std::nullopt;
+		if (cancellation.cancelled())
+			return std::nullopt;
 		return source;
 	}
 }

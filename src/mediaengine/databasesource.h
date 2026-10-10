@@ -27,10 +27,10 @@ namespace MediaEngine
 		explicit DatabaseSource(QSharedPointer<const Data> data);
 		friend class QSharedPointer<DatabaseSource>;
 		friend MediaEngine::PreparedSource prepareDatabase(const MediaEngine::SourceCandidate &, const QString &,
-													 const MediaEngine::Cancellation &);
+														   const MediaEngine::Cancellation &);
 		QSharedPointer<const Data> m_data;
 	};
 
 	MediaEngine::PreparedSource prepareDatabase(const MediaEngine::SourceCandidate &candidate, const QString &readReason,
-										 const MediaEngine::Cancellation &cancellation);
+												const MediaEngine::Cancellation &cancellation);
 }

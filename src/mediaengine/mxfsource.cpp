@@ -61,7 +61,7 @@ namespace MediaEngine
 		}
 
 		MediaEngine::PreparedSource archive(MediaEngine::ParsedSource source, MediaEngine::Projection projection,
-									 const MediaEngine::Cancellation &cancellation)
+											const MediaEngine::Cancellation &cancellation)
 		{
 			return {std::move(projection), MediaEngine::StoredSource::store(std::move(source), cancellation)};
 		}
@@ -109,7 +109,8 @@ namespace MediaEngine
 					return false;
 				auto &object = source.objects[index];
 				const auto expected = exception < layout.handles.size() && layout.handles[exception].index == index
-					? layout.handles[exception++].handle : MediaEngine::ObjectHandle(index) + 1;
+										  ? layout.handles[exception++].handle
+										  : MediaEngine::ObjectHandle(index) + 1;
 				if (object.handle != expected)
 					throw MxfSourceError("Retained MXF decoding changed its original object handles");
 				object.snapshot = layout.snapshot;
@@ -160,7 +161,7 @@ namespace MediaEngine
 	}
 
 	MediaEngine::PreparedSource MxfSource::prepare(QIODevice &input, const MediaEngine::SourceCandidate &candidate,
-											const QString &readReason, const MediaEngine::Cancellation &cancellation)
+												   const QString &readReason, const MediaEngine::Cancellation &cancellation)
 	{
 		const auto snapshot = inputReceipt(candidate);
 		if (cancellation.cancelled())
@@ -190,7 +191,7 @@ namespace MediaEngine
 	}
 
 	MediaEngine::PreparedSource prepareMxf(QIODevice &input, const MediaEngine::SourceCandidate &candidate,
-								 const QString &readReason, const MediaEngine::Cancellation &cancellation)
+										   const QString &readReason, const MediaEngine::Cancellation &cancellation)
 	{
 		requireMxf(candidate);
 		if (cancellation.cancelled())
@@ -205,7 +206,7 @@ namespace MediaEngine
 	}
 
 	MediaEngine::PreparedSource prepareMxf(const MediaEngine::SourceCandidate &candidate, const QString &readReason,
-								 const MediaEngine::Cancellation &cancellation)
+										   const MediaEngine::Cancellation &cancellation)
 	{
 		requireMxf(candidate);
 		QFile input(candidate.path);

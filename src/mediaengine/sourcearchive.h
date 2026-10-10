@@ -19,7 +19,7 @@ namespace MediaEngine
 	{
 	public:
 		static QSharedPointer<const SourceArchive> pack(const ParsedSource &source,
-													 const Cancellation &cancellation);
+														const Cancellation &cancellation);
 		std::optional<ParsedSource> restore(const Cancellation &cancellation) const;
 		qint64 compressedBytes() const;
 		qint64 serializedBytes() const;
