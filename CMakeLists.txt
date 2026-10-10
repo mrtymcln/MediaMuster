@@ -137,13 +137,17 @@ set_target_properties(mediamuster_canon PROPERTIES AUTOMOC OFF)
 target_include_directories(mediamuster_canon PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(mediamuster_canon PUBLIC Qt6::Core)
 
-# Comparison engine: original PMR/MDB images replace their expanded RAM archives.
-# The live app continues to use mediamuster_canon until comparison is accepted.
+# Live scan storage: original PMR/MDB images and acquired MXF bytes replace graphs.
+# Verified readers, matching and metadata selection remain shared with Canon.
 add_library(mediamuster_canon2 STATIC
     src/canon2/databaseimage.cpp
     src/canon2/databaseimage.h
     src/canon2/databasesource.cpp
     src/canon2/databasesource.h
+    src/canon2/mxfimage.cpp
+    src/canon2/mxfimage.h
+    src/canon2/mxfsource.cpp
+    src/canon2/mxfsource.h
     src/canon2/scanengine.cpp
     src/canon2/scanengine.h
 )
@@ -253,7 +257,7 @@ target_include_directories(MediaMuster PRIVATE
 )
 
 target_link_libraries(MediaMuster PRIVATE
-    mediamuster_canon
+    mediamuster_canon2
     Qt6::Widgets
     Qt6::Core
     Qt6::Gui

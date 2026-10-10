@@ -133,6 +133,13 @@ mediamuster_add_test(tst_canon2database media)
 target_link_libraries(tst_canon2database PRIVATE mediamuster_canon2)
 target_compile_definitions(tst_canon2database PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
+# Native sparse MXF bytes and restoration through the verified format reader.
+foreach(suite IN ITEMS tst_canon2mxfimage tst_canon2mxfsource)
+    mediamuster_add_test(${suite} media)
+    target_link_libraries(${suite} PRIVATE mediamuster_canon2)
+    target_compile_definitions(${suite} PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+endforeach()
+
 # Read-only comparison tool. Run one engine per process to measure its own peak RAM.
 add_executable(canon2_compare canon2_compare.cpp
     ${CMAKE_SOURCE_DIR}/src/canonadapter.cpp
@@ -271,7 +278,7 @@ mediamuster_add_test(tst_scanner media
     ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
-target_link_libraries(tst_scanner PRIVATE Qt6::Concurrent mediamuster_canon)
+target_link_libraries(tst_scanner PRIVATE Qt6::Concurrent mediamuster_canon2)
 target_compile_definitions(tst_scanner PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
@@ -381,7 +388,7 @@ list(FILTER _operation_ui_sources EXCLUDE REGEX "\\.(icns|rc)$")
 list(TRANSFORM _operation_ui_sources PREPEND "${CMAKE_SOURCE_DIR}/")
 mediamuster_add_test(tst_operationui ui ${_operation_ui_sources})
 target_include_directories(tst_operationui PRIVATE ${CMAKE_BINARY_DIR})
-target_link_libraries(tst_operationui PRIVATE Qt6::Widgets Qt6::Gui Qt6::Concurrent mediamuster_canon)
+target_link_libraries(tst_operationui PRIVATE Qt6::Widgets Qt6::Gui Qt6::Concurrent mediamuster_canon2)
 mediamuster_link_native_operations(tst_operationui)
 if(APPLE)
     set_source_files_properties(${CMAKE_SOURCE_DIR}/src/revealinfinder.cpp PROPERTIES LANGUAGE OBJCXX)

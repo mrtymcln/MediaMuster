@@ -38,6 +38,9 @@ ORIGINAL_PROOF_FIELDS = (
 IMAGE_FIELDS = (
     "capturedBytes", "expectedSize", "acquisitionOutcome", "acquisitionComplete", "diagnostics",
 )
+MXF_IMAGE_FIELDS = (
+    "physicalSize", "acquiredBytes", "capturedBytes", "rangeCapacityBytes", "rangeCount", "valid", "diagnostics",
+)
 MEMORY_COUNTERS = (
     "residentBytes", "physicalFootprintBytes", "privateBytes", "peakResidentBytes",
 )
@@ -191,6 +194,51 @@ def check_report(report, mode, expected_rows, csv_path):
                 require(not any(field in image for field in (
                     "exactOriginalBytes", "originalFileSha256", "imageSha256",
                 )), f"Scan mode claims omitted original-byte verification: {source['path']}")
+        mxf_sources = [source for source in report["sourceDigests"] if "mxfImage" in source]
+        storage = report["storage"]
+        require(storage["nativeMxfImages"] == len(mxf_sources),
+                "Canon2 native MXF image count differs from reported source images")
+        require(storage["nativeMxfImageBytes"] == sum(source["mxfImage"]["capturedBytes"] for source in mxf_sources),
+                "Canon2 native MXF byte total differs from source images")
+        require(storage["nativeMxfAcquiredBytes"] == sum(source["mxfImage"]["acquiredBytes"] for source in mxf_sources),
+                "Canon2 native MXF acquisition total differs from source images")
+        require(storage["nativeMxfImageRanges"] == sum(source["mxfImage"]["rangeCount"] for source in mxf_sources),
+                "Canon2 native MXF range total differs from source images")
+        require(storage["nativeMxfRangeCapacityBytes"] == sum(source["mxfImage"]["rangeCapacityBytes"] for source in mxf_sources),
+                "Canon2 native MXF array capacity total differs from source images")
+        require(storage["nativeDatabaseImageBytes"] == storage["nativeImageBytes"],
+                "Explicit database byte total differs from historical report alias")
+        for source in mxf_sources:
+            image = source["mxfImage"]
+            require(source["hint"] == 2 and source["outcome"] == 1,
+                    f"Native MXF image published for a non-complete MXF: {source['path']}")
+            require(all(field in image for field in MXF_IMAGE_FIELDS)
+                    and image["valid"] is True
+                    and 0 <= image["capturedBytes"] <= image["acquiredBytes"]
+                    and image["capturedBytes"] <= image["rangeCapacityBytes"]
+                    and image["physicalSize"] >= image["capturedBytes"],
+                    f"Native MXF capture receipt was invalid: {source['path']}")
+            if mode == "full":
+                require(image.get("exactOriginalRanges") is True
+                        and image.get("rangesWellFormed") is True
+                        and image["originalRangeSha256"] == image["imageRangeSha256"],
+                        f"Native MXF ranges differ from original bytes: {source['path']}")
+                require(len(image["ranges"]) == image["rangeCount"]
+                        and sum(region["bytes"] for region in image["ranges"]) == image["capturedBytes"],
+                        f"Native MXF range proof count/bytes differ: {source['path']}")
+                end = 0
+                for region in image["ranges"]:
+                    require(region["offset"] >= end and region["bytes"] > 0
+                            and region["offset"] + region["bytes"] <= image["physicalSize"],
+                            f"Native MXF range proof has invalid original extents: {source['path']}")
+                    require(region["exactOriginalBytes"] is True
+                            and region["originalSha256"] == region["imageSha256"],
+                            f"Native MXF range differs at {region['offset']}: {source['path']}")
+                    end = region["offset"] + region["bytes"]
+            else:
+                require(not any(field in image for field in (
+                    "exactOriginalRanges", "rangesWellFormed", "originalRangeSha256", "imageRangeSha256", "ranges",
+                )), f"Scan mode claims omitted MXF-range verification: {source['path']}")
     return {"csvRows": count, "csvHeader": header}
 
 
@@ -263,9 +311,9 @@ def main():
                  "python": sys.version},
         "environmentOverrides": {"QT_HASH_SEED": "0"},
         "method": "Eight sequential fresh processes using one Release probe linked to both engines: full Canon then full Canon2; three scan-only pairs ordered Canon/Canon2, Canon2/Canon, Canon/Canon2. Filesystem cache is uncontrolled. No Windows/NEXIS or cold-cache claim follows from a macOS run.",
-        "proofScope": {"full": "Complete recursive graphs, alias topology, projections, direct original-reader equality and exact Canon2 native database bytes, plus scan/CSV evidence.",
+        "proofScope": {"full": "Complete recursive graphs, alias topology, projections, direct original-reader equality, exact Canon2 native database bytes and original-offset/byte equality for every retained MXF range, plus scan/CSV evidence.",
                        "scan": "Final row/evidence, scheduling, issues, callbacks, completion, CSV and unchanged input stamps. Source graph/projection/original-byte verification is omitted.",
-                       "storage": "Representation differences are reported separately. Canon2 requires zero database archives and unfinished graphs; media header archives are expected."},
+                       "storage": "Representation differences are reported separately. Canon2 requires zero database archives and unfinished graphs. Complete, valid MXF reads retain native acquired ranges; non-complete/invalid MXF reads and legacy media keep graph archives. Acquired bytes include rereads; captured bytes count unique retained positions. No picture/sound payload retention policy is changed."},
         "runs": [], "comparisons": [],
     }
     write_json(output / "build-receipt.json", receipt)
@@ -332,6 +380,15 @@ def main():
                         "bytes": report["storage"]["nativeImageBytes"],
                         "scope": "Every opened Canon2 PMR/MDB image directly compared byte-for-byte with its unchanged original file in the full run. Timing trials do not repeat this proof.",
                     }
+                    summary["nativeMxfByteProof"] = {
+                        "passed": True, "images": report["storage"]["nativeMxfImages"],
+                        "bytes": report["storage"]["nativeMxfImageBytes"],
+                        "acquiredBytes": report["storage"]["nativeMxfAcquiredBytes"],
+                        "rangeCapacityBytes": report["storage"]["nativeMxfRangeCapacityBytes"],
+                        "ranges": report["storage"]["nativeMxfImageRanges"],
+                        "completeArchiveFallbacks": report["storage"]["completeMxfArchiveFallbacks"],
+                        "scope": "Every retained Canon2 MXF byte range directly compared with its unchanged original at the same original offset in the full run. Range hashes frame original offsets and lengths. Recording payloads outside those acquired ranges are not read for this proof. Timing trials do not repeat this proof.",
+                    }
             else:
                 compare_reports(full_reports["canon"], report, full=False)
                 own_baseline = full_reports[engine]
@@ -341,6 +398,10 @@ def main():
                         for field in IMAGE_FIELDS:
                             require(reference["databaseImage"][field] == source["databaseImage"][field],
                                     f"Native acquisition {field} changed: {source['path']}")
+                    if "mxfImage" in reference:
+                        for field in MXF_IMAGE_FIELDS:
+                            require(reference["mxfImage"][field] == source["mxfImage"][field],
+                                    f"Native MXF acquisition {field} changed: {source['path']}")
                 require(summary["runs"][0]["csvHeader"] == csv_receipt["csvHeader"], "CSV headings differ")
                 summary["comparisons"].append({"run": name, "baseline": summary["runs"][0]["name"],
                                                "scope": "scan", "passed": True})

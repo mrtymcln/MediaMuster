@@ -4,7 +4,16 @@ Recorded 10 October 2026. The user authorized building Canon2 alongside Canon,
 then chose the first comparison stage: reuse the verified format readers,
 retain exact PMR/MDB source images, extract the same file facts, and release
 the expanded database records. Direct compact-index interpretation is a later
-stage. Canon remains the application's live engine.
+stage. Canon remained the application's live engine during this comparison.
+
+The user subsequently approved [Canon2 live integration](canon2-live-integration-2026-10-10.md).
+That report records the current application path. The measurements below remain
+the original database-only comparison results.
+
+The subsequent [acquired MXF metadata stage](canon2-mxf-native-storage-2026-10-10.md)
+extends Canon2 with native media-byte storage. The database-stage measurements
+below describe the earlier database-only implementation; they do not measure
+the newer MXF path or qualify the Windows/Interplay workload.
 
 ## Fixed requirements
 
@@ -100,8 +109,9 @@ Local comparisons cannot prove its completion, throughput or maximum memory use.
 
 The first comparison stage is implemented and passes the local proof. Both
 engines ran against `/Users/Shared/AvidMediaComposer` and `/Volumes/EDIT` with
-OMF-family discovery enabled. Canon remains the application's live engine;
-Canon2 is available through the comparison target, not the scan UI.
+OMF-family discovery enabled. At the time of this comparison, Canon remained the
+application's live engine and Canon2 was available through the comparison target.
+The later live integration is linked above.
 
 ### Information preservation
 

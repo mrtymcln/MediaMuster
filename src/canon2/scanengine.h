@@ -1,7 +1,7 @@
 #pragma once
 
-// Runs the shared Canon scan with database bytes retained by Canon2. Discovery,
-// media readers, matching, scheduling and metadata selection stay in Canon.
+// Runs the shared scan with database and acquired MXF bytes retained by Canon2.
+// Discovery, format interpretation, scheduling and selection stay in Canon.
 
 #include "canon/scanengine.h"
 

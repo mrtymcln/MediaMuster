@@ -2,9 +2,11 @@
 
 Recorded 3 October 2026. This folder captures the user's requirements, the proposed
 RAM metadata design, and the evidence discussed during the Avid format investigation.
-The fresh engines are now connected to the application. See the
-[live connection report](live-connection-2026-10-04.md) for current implementation,
-verification status and limits. The [foundation implementation](foundation-implementation-2026-10-03.md)
+The fresh engines are now connected to the application. The user approved
+[Canon2 as the live scanner](canon2-live-integration-2026-10-10.md) on 10 October.
+That report records the current source-storage path; the earlier
+[live connection report](live-connection-2026-10-04.md) records the shared scanner,
+metadata integration and its limits. The [foundation implementation](foundation-implementation-2026-10-03.md)
 records the earlier milestone; some design requirements and optional UI features
 remain future work.
 
@@ -82,8 +84,9 @@ The user has authorized [connecting Canon to the application](live-connection-20
 This supersedes the historical “not yet connected” status of the reader reports below.
 Memory optimization is not a prerequisite. Work began on 4 October and continued
 through 9 October 2026; the dated reports record verification status. The live scanner
-uses Canon discovery, raw source graphs, file/master projections and per-field
-selection. The AVB whole-bin path uses the fresh reader; the individual-sequence
+uses the shared Canon discovery, source interpretation, file/master projections
+and per-field selection, with Canon2's source storage linked below. The AVB
+whole-bin path uses the fresh reader; the individual-sequence
 picker remains behind `SequenceFilter` for a later release.
 
 The shared [metadata selection policy](metadata-selection-policy.md) is implemented
@@ -165,19 +168,35 @@ Windows/NEXIS throughput and the 300,000-file workload still need verification.
 
 ## Implementation direction
 
-The user authorized a separate [Canon2 comparison engine](canon2-comparison-engine-2026-10-10.md)
+The user first authorized a separate [Canon2 comparison engine](canon2-comparison-engine-2026-10-10.md)
 on 10 October. Its first stage retains exact PMR/MDB images in RAM while reusing
-the verified readers and the shared database-first scanner. Canon remains live;
-direct compact-index interpretation and per-row evidence compaction are later
-work. The report distinguishes source-byte preservation, temporary expansion and
-the measurements needed before claiming a performance or memory improvement.
+the verified readers and the shared database-first scanner. The later
+[live integration](canon2-live-integration-2026-10-10.md) promotes Canon2 to the
+application's scanner after the MXF comparison below. Direct compact-index
+interpretation and per-row evidence compaction remain later work. The comparison
+report retains its historical measurements and their limits.
 
 The user subsequently clarified that the 300,000-file Interplay workload is
 dominated by media-header fallback. The [media-source storage proposal](media-source-storage-proposal-2026-10-10.md)
 records the relevant MXF/OMF costs and a native metadata/framing-image approach,
 with compact layout/evidence storage and a header-heavy comparison requirement.
-This proposal is not implemented; the database-only benchmark does not qualify
-that workload.
+The user approved its first [acquired MXF metadata comparison stage](canon2-mxf-native-storage-2026-10-10.md):
+reuse the verified reader and retain its acquired original bytes and offsets in
+RAM. The full graph, evidence and header-reading decisions must still match.
+That stage now passes all 47 Release suites and both real-input comparisons.
+For 256 database-free genuine MXFs, median scan time fell 37.6% and process
+physical footprint fell 29.0%; the report records the scope and qualifications.
+OMF image storage, compact-index parsing and row-evidence compaction remain later
+work; the database-only benchmark does not qualify the Interplay workload.
+
+The user then approved using Canon2 in the app. Completed PMR/MDB sources retain
+their exact database bytes; completed MXF sources retain the reader's acquired
+bytes and original offsets. MediaFile values, relationships, evidence, metadata
+selection and database-first header decisions keep their existing behavior.
+OMF/legacy remains on its independent reader and existing source-storage path.
+The old engines/readers/tests remain available until the user's separate
+retirement decision. See [Canon2 live integration](canon2-live-integration-2026-10-10.md)
+for verification status; the 300,000-file Windows/NEXIS test is still required.
 
 Before choosing a media-reading scope, the [MXF/OMF specification review](mxf-omf-read-scope-review-2026-10-10.md)
 separates completed OP-Atom, general/open MXF, body metadata and OMF's indexed
@@ -389,8 +408,10 @@ Only the selected implementation remains in the current Canon source.
 
 ## Documents
 
-- [Live connection](live-connection-2026-10-04.md): current Canon application path,
-  approved priorities, retained evidence and integration verification.
+- [Canon2 live integration](canon2-live-integration-2026-10-10.md): current scanner
+  engine, native source storage, unchanged behavior and remaining qualification.
+- [Original live connection](live-connection-2026-10-04.md): shared scanner and
+  metadata integration, approved priorities, retained evidence and earlier verification.
 - [Root membership corrections](root-membership-corrections-2026-10-08.md): active
   contents, dependent reference completeness, conflict carriers and verification limits.
 - [Root membership specimens](root-membership-specimens-2026-10-08.md): bounded

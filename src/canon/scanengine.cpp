@@ -322,12 +322,16 @@ namespace Canon
 				callbacks.reading(candidate);
 			if (cancellation.cancelled())
 				return;
+			std::optional<PreparedSource> prepared;
 			if (pipeline && (candidate.hint == SourceCandidate::ReaderHint::Pmr ||
 							 candidate.hint == SourceCandidate::ReaderHint::Mdb))
+				prepared = pipeline->processDatabase(candidate, reason, cancellation);
+			else if (pipeline && candidate.hint == SourceCandidate::ReaderHint::Mxf)
+				prepared = pipeline->processMxf(candidate, reason, cancellation);
+			if (prepared)
 			{
-				auto prepared = pipeline->processDatabase(candidate, reason, cancellation);
-				projections[index] = std::move(prepared.projection);
-				result.sources[index] = std::move(prepared.source);
+				projections[index] = std::move(prepared->projection);
+				result.sources[index] = std::move(prepared->source);
 			}
 			else
 			{

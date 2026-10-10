@@ -1,6 +1,7 @@
 #include "canon/scanengine.h"
 #ifdef MEDIAMUSTER_TEST_CANON2
 #include "canon2/scanengine.h"
+#include "canon2/mxfsource.h"
 using TestScanEngine = Canon2::ScanEngine;
 #else
 using TestScanEngine = Canon::ScanEngine;
@@ -512,7 +513,12 @@ private slots:
 		QCOMPARE(first.canonScan, second.canonScan);
 		QCOMPARE(first.scanStamp.mobId, first.fileMobId);
 		const auto &stored = first.canonScan->sources.front();
+#ifdef MEDIAMUSTER_TEST_CANON2
+		QVERIFY(dynamic_cast<const Canon2::MxfSource *>(stored.storage.data()));
+		QVERIFY(!stored.archive);
+#else
 		QVERIFY(stored.archive);
+#endif
 		QVERIFY(!stored.unfinishedGraph);
 		const auto restored = stored.restore(cancellation);
 		QVERIFY(restored);

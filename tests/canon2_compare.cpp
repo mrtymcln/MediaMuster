@@ -2,6 +2,7 @@
 // semantic hashes/CSV externally. Only the requested report and CSV are written.
 #include "canon2fingerprint.h"
 #include "canon2/databasesource.h"
+#include "canon2/mxfsource.h"
 #include "canon2/scanengine.h"
 #include "canon/discoveryengine.h"
 #include "canon/omfreader.h"
@@ -13,6 +14,7 @@
 #include "mediacsv.h"
 #include <QCommandLineParser>
 #include <QCoreApplication>
+#include <QDataStream>
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFile>
@@ -216,6 +218,92 @@ namespace
 		return result;
 	}
 
+	QJsonObject mxfImageReceipt(const Canon2::MxfImage &image)
+	{
+		// Array capacity exposes spare byte storage; it excludes index, container
+		// and allocator overhead, which the process-memory samples also measure.
+		qint64 capacityBytes = 0;
+		for (const auto &range : image.ranges())
+			capacityBytes += range.bytes.capacity();
+		return QJsonObject{{QStringLiteral("physicalSize"), image.physicalSize()},
+			{QStringLiteral("acquiredBytes"), image.acquiredBytes()},
+			{QStringLiteral("capturedBytes"), image.storedBytes()},
+			{QStringLiteral("rangeCapacityBytes"), capacityBytes},
+			{QStringLiteral("rangeCount"), image.rangeCount()},
+			{QStringLiteral("valid"), image.valid()},
+			{QStringLiteral("diagnostics"), QJsonArray::fromStringList(image.diagnostics())}};
+	}
+
+	QJsonObject checkMxfImage(const Canon2::MxfImage &image, const QString &path)
+	{
+		auto result = mxfImageReceipt(image);
+		QFile file(path);
+		if (!file.open(QIODevice::ReadOnly))
+		{
+			result.insert(QStringLiteral("exactOriginalRanges"), false);
+			result.insert(QStringLiteral("error"), file.errorString());
+			return result;
+		}
+		// Compare acquired regions directly. Hash their original offsets and lengths
+		// as well as bytes, so identical bytes at a different location cannot pass.
+		QCryptographicHash originalHash(QCryptographicHash::Sha256), imageHash(QCryptographicHash::Sha256);
+		QJsonArray ranges;
+		bool wellFormed = image.valid() && image.physicalSize() == file.size();
+		bool exact = wellFormed;
+		qint64 previousEnd = 0, storedBytes = 0;
+		for (const auto &range : image.ranges())
+		{
+			const qint64 length = range.bytes.size();
+			const bool bounded = range.offset >= previousEnd && length > 0 && range.offset <= image.physicalSize()
+				&& length <= image.physicalSize() - range.offset;
+			wellFormed = wellFormed && bounded;
+			QByteArray framing;
+			QDataStream framingStream(&framing, QIODevice::WriteOnly);
+			framingStream << range.offset << length;
+			originalHash.addData(framing);
+			imageHash.addData(framing);
+			imageHash.addData(range.bytes);
+			QCryptographicHash originalRangeHash(QCryptographicHash::Sha256);
+			bool same = bounded && file.seek(range.offset);
+			qint64 obtained = 0;
+			if (same)
+			{
+				while (obtained < length)
+				{
+					const auto chunk = file.read(std::min<qint64>(1024 * 1024, length - obtained));
+					if (chunk.isEmpty())
+					{
+						same = false;
+						break;
+					}
+					originalHash.addData(chunk);
+					originalRangeHash.addData(chunk);
+					if (std::memcmp(chunk.constData(), range.bytes.constData() + obtained, size_t(chunk.size())) != 0)
+						same = false;
+					obtained += chunk.size();
+				}
+			}
+			same = same && obtained == length && file.error() == QFileDevice::NoError;
+			ranges.append(QJsonObject{{QStringLiteral("offset"), range.offset}, {QStringLiteral("bytes"), length},
+				{QStringLiteral("exactOriginalBytes"), same},
+				{QStringLiteral("originalSha256"), QString::fromLatin1(originalRangeHash.result().toHex())},
+				{QStringLiteral("imageSha256"), QString::fromLatin1(QCryptographicHash::hash(range.bytes, QCryptographicHash::Sha256).toHex())}});
+			exact = exact && same;
+			if (bounded)
+				previousEnd = range.offset + length;
+			storedBytes += length;
+		}
+		wellFormed = wellFormed && storedBytes == image.storedBytes() && image.acquiredBytes() >= storedBytes;
+		result.insert(QStringLiteral("rangesWellFormed"), wellFormed);
+		result.insert(QStringLiteral("exactOriginalRanges"), exact && wellFormed);
+		result.insert(QStringLiteral("originalRangeSha256"), QString::fromLatin1(originalHash.result().toHex()));
+		result.insert(QStringLiteral("imageRangeSha256"), QString::fromLatin1(imageHash.result().toHex()));
+		result.insert(QStringLiteral("ranges"), ranges);
+		if (file.error() != QFileDevice::NoError)
+			result.insert(QStringLiteral("error"), file.errorString());
+		return result;
+	}
+
 	Canon::ParsedSource originalSource(const Canon::SourceCandidate &candidate, const Canon::StoredSource &stored,
 		const Canon::Cancellation &cancellation)
 	{
@@ -270,7 +358,7 @@ int main(int argc, char **argv)
 	const QCommandLineOption csvOption(QStringLiteral("csv"), QStringLiteral("Optional app-boundary CSV path"), QStringLiteral("path"));
 	const QCommandLineOption expectedRowsOption(QStringLiteral("expected-rows"), QStringLiteral("Require this physical row count"), QStringLiteral("count"));
 	const QCommandLineOption noOmfOption(QStringLiteral("no-omf"), QStringLiteral("Disable OMF-family discovery"));
-	const QCommandLineOption measureOnlyOption(QStringLiteral("measure-only"), QStringLiteral("Verify scan rows and receipts without restoring/reparsing sources or checking database bytes"));
+	const QCommandLineOption measureOnlyOption(QStringLiteral("measure-only"), QStringLiteral("Verify scan rows and receipts without restoring/reparsing sources or checking original source bytes"));
 	parser.addOptions({engineOption, outputOption, csvOption, expectedRowsOption, noOmfOption, measureOnlyOption});
 	parser.addPositionalArgument(QStringLiteral("roots"), QStringLiteral("One or more managed roots or direct containing bases"), QStringLiteral("roots..."));
 	parser.process(app);
@@ -283,7 +371,7 @@ int main(int argc, char **argv)
 		parser.showHelp(1);
 
 	const bool measureOnly = parser.isSet(measureOnlyOption);
-	QJsonObject report{{QStringLiteral("engine"), engine}, {QStringLiteral("schemaVersion"), 1},
+	QJsonObject report{{QStringLiteral("engine"), engine}, {QStringLiteral("schemaVersion"), 2},
 		{QStringLiteral("verificationMode"), measureOnly ? QStringLiteral("scan") : QStringLiteral("full")},
 		{QStringLiteral("sourceVerificationPerformed"), !measureOnly}};
 	QStringList errors;
@@ -375,7 +463,10 @@ int main(int argc, char **argv)
 		QMap<QString, qint64> reasons;
 		qint64 sourceObjects = 0, sourceRelationships = 0, sourceProperties = 0, originalValueBytes = 0;
 		qint64 archives = 0, databaseArchives = 0, compressedBytes = 0, serializedBytes = 0, archiveBlocks = 0;
+		qint64 databaseArchiveCompressedBytes = 0, mxfArchiveCompressedBytes = 0, legacyMediaArchiveCompressedBytes = 0;
 		qint64 nativeImages = 0, nativeImageBytes = 0, alternativeStores = 0, unfinishedGraphs = 0;
+		qint64 nativeMxfImages = 0, nativeMxfImageBytes = 0, nativeMxfAcquiredBytes = 0, nativeMxfImageRanges = 0, nativeMxfRangeCapacityBytes = 0;
+		qint64 mxfArchives = 0, legacyMediaArchives = 0, completeMxfArchiveFallbacks = 0;
 		qint64 headersRead = 0, headersSkipped = 0, databasesRead = 0, originalsCompared = 0;
 		for (qsizetype index = 0; index < scan->sources.size(); ++index)
 		{
@@ -393,7 +484,18 @@ int main(int argc, char **argv)
 			{
 				++archives;
 				databaseArchives += database;
+				mxfArchives += candidate.hint == Canon::SourceCandidate::ReaderHint::Mxf;
+				legacyMediaArchives += candidate.hint == Canon::SourceCandidate::ReaderHint::LegacyMedia;
+				completeMxfArchiveFallbacks += engine == QLatin1String("canon2")
+					&& candidate.hint == Canon::SourceCandidate::ReaderHint::Mxf
+					&& stored.outcome == Canon::ParsedSource::Outcome::Complete;
 				compressedBytes += stored.archive->compressedBytes();
+				if (database)
+					databaseArchiveCompressedBytes += stored.archive->compressedBytes();
+				else if (candidate.hint == Canon::SourceCandidate::ReaderHint::Mxf)
+					mxfArchiveCompressedBytes += stored.archive->compressedBytes();
+				else
+					legacyMediaArchiveCompressedBytes += stored.archive->compressedBytes();
 				serializedBytes += stored.archive->serializedBytes();
 				archiveBlocks += stored.archive->blockCount();
 			}
@@ -416,6 +518,19 @@ int main(int argc, char **argv)
 				details.insert(QStringLiteral("databaseImage"), imageProof);
 				if (!measureOnly && !imageProof.value(QStringLiteral("exactOriginalBytes")).toBool())
 					errors.append(QStringLiteral("Database image differs from original: %1").arg(candidate.path));
+			}
+			if (const auto native = dynamic_cast<const Canon2::MxfSource *>(stored.storage.data()))
+			{
+				++nativeMxfImages;
+				const auto &image = native->image();
+				nativeMxfImageBytes += image.storedBytes();
+				nativeMxfAcquiredBytes += image.acquiredBytes();
+				nativeMxfImageRanges += image.rangeCount();
+				const auto imageProof = measureOnly ? mxfImageReceipt(image) : checkMxfImage(image, candidate.path);
+				nativeMxfRangeCapacityBytes += imageProof.value(QStringLiteral("rangeCapacityBytes")).toInteger();
+				details.insert(QStringLiteral("mxfImage"), imageProof);
+				if (!measureOnly && !imageProof.value(QStringLiteral("exactOriginalRanges")).toBool())
+					errors.append(QStringLiteral("MXF image ranges differ from original: %1").arg(candidate.path));
 			}
 			if (!measureOnly)
 			{
@@ -544,6 +659,15 @@ int main(int argc, char **argv)
 			{QStringLiteral("databaseArchives"), databaseArchives}, {QStringLiteral("compressedBytes"), compressedBytes},
 			{QStringLiteral("serializedBytes"), serializedBytes}, {QStringLiteral("archiveBlocks"), archiveBlocks},
 			{QStringLiteral("nativeDatabaseImages"), nativeImages}, {QStringLiteral("nativeImageBytes"), nativeImageBytes},
+			{QStringLiteral("nativeDatabaseImageBytes"), nativeImageBytes},
+			{QStringLiteral("nativeMxfImages"), nativeMxfImages}, {QStringLiteral("nativeMxfImageBytes"), nativeMxfImageBytes},
+			{QStringLiteral("nativeMxfAcquiredBytes"), nativeMxfAcquiredBytes}, {QStringLiteral("nativeMxfImageRanges"), nativeMxfImageRanges},
+			{QStringLiteral("nativeMxfRangeCapacityBytes"), nativeMxfRangeCapacityBytes},
+			{QStringLiteral("mxfArchives"), mxfArchives}, {QStringLiteral("legacyMediaArchives"), legacyMediaArchives},
+			{QStringLiteral("databaseArchiveCompressedBytes"), databaseArchiveCompressedBytes},
+			{QStringLiteral("mxfArchiveCompressedBytes"), mxfArchiveCompressedBytes},
+			{QStringLiteral("legacyMediaArchiveCompressedBytes"), legacyMediaArchiveCompressedBytes},
+			{QStringLiteral("completeMxfArchiveFallbacks"), completeMxfArchiveFallbacks},
 			{QStringLiteral("alternativeStores"), alternativeStores}, {QStringLiteral("unfinishedGraphs"), unfinishedGraphs}});
 		report.insert(QStringLiteral("hashes"), hashes);
 		report.insert(QStringLiteral("fileDigests"), fileDigests);
@@ -560,8 +684,8 @@ int main(int argc, char **argv)
 			{QStringLiteral("memory"), QStringLiteral("Fresh-process current resident/physical footprint or Windows private bytes and peak resident sampled immediately after scan return, retaining session; before graph restoration, original rereads and adapter rows. Peak includes process setup, preflight discovery and the scan. Unsupported counters are omitted.")},
 			{QStringLiteral("setup"), QStringLiteral("Common preflight discovery enumerates input stamps before timing. Its inventory is released before memoryBefore; stamps and bounded callback sink remain. Filesystem cache is uncontrolled; no cold-cache claim.")},
 			{QStringLiteral("verification"), measureOnly
-				? QStringLiteral("Scan mode hashes every final row's property fields, read coverage, observations, selections and receipt aliases, scheduling receipts, stamps, issues, callbacks and completion flags. CSV and source/folder stamp checks still run. Source graph restoration, projections, original rereads and exact database-byte verification are omitted; storage counts and native capture sizes are reported only.")
-				: QStringLiteral("Full mode verifies every recursive retained graph and projection plus fresh direct-reader original comparisons for opened sources. One graph at a time. Exact native database bytes compared directly to unchanged source file. All property fields, read coverage, observations, selections, stamps, issues, callbacks and alias topology hashed; storage representation excluded from semantic hashes.")},
+				? QStringLiteral("Scan mode hashes every final row's property fields, read coverage, observations, selections and receipt aliases, scheduling receipts, stamps, issues, callbacks and completion flags. CSV and source/folder stamp checks still run. Source graph restoration, projections, original rereads and exact native database/MXF-byte verification are omitted; storage counts and native capture sizes are reported only.")
+				: QStringLiteral("Full mode verifies every recursive retained graph and projection plus fresh direct-reader original comparisons for opened sources. One graph at a time. Exact native database bytes and each acquired MXF range compared directly to unchanged source files. MXF range hashes include original offsets and lengths; bytes outside those acquired ranges are not read for this byte proof. The established reader still excludes recognized picture/sound payloads. All property fields, read coverage, observations, selections, stamps, issues, callbacks and alias topology hashed; storage representation excluded from semantic hashes.")},
 			{QStringLiteral("csv"), QStringLiteral("Existing Canon adapter and MediaCsv with precompute details and clip duration enabled; created after memory sample.")}});
 	}
 	catch (const std::exception &error)

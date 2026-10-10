@@ -1,7 +1,15 @@
 # Canon2 media-source storage proposal
 
-Recorded 10 October 2026. This is an investigated proposal, not an implemented
-reader or an approved change to which information MediaMuster retains.
+Originally recorded 10 October 2026 as an investigated proposal, before any
+media-source image implementation or change to retained information was approved.
+
+The user subsequently authorized the first MXF comparison milestone. Its
+implementation and proof are recorded in
+[Canon2 acquired MXF metadata storage](canon2-mxf-native-storage-2026-10-10.md).
+The user then approved [Canon2 live integration](canon2-live-integration-2026-10-10.md).
+Those decisions do not approve the broader compact-index, OMF image or read-scope
+proposals below. The original proposal text remains useful context for those
+decisions.
 
 The subsequent [MXF/OMF specification review](mxf-omf-read-scope-review-2026-10-10.md)
 qualifies the reading-scope discussion below: completed conforming OP-Atom has
@@ -27,7 +35,8 @@ There is an important historical distinction: the failed build retained expanded
 `ParsedSource` graphs. Today's Canon and the first Canon2 comparison engine
 compress completed media-source graphs and release the expanded graph. That
 archive repair is a real change, although Windows qualification remains pending.
-Canon2's native-image substitution currently covers PMR/MDB only.
+At the time of this proposal, Canon2's native-image substitution covered PMR/MDB
+only. The subsequently approved MXF implementation is linked above.
 
 ## What is genuinely different from the old engine
 

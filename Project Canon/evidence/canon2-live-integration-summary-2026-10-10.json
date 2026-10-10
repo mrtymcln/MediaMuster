@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-10",
+  "stage": "Canon2 live MediaScanner integration",
+  "status": "passed",
+  "authorization": "User requested making the app use Canon2. Earlier engines/readers/tests remain available.",
+  "gitHead": "628eb615112e3ab774f5a3684cd59d21438e5c6a",
+  "uncommittedChanges": true,
+  "roots": [
+    "/Users/Shared/AvidMediaComposer",
+    "/Volumes/EDIT"
+  ],
+  "rowCount": 2413,
+  "sourceReceiptCount": 2425,
+  "databaseReads": 12,
+  "headerReads": 116,
+  "headerSkips": 2297,
+  "equality": {
+    "csvByteEquality": true,
+    "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "inventory": true,
+    "issues": true,
+    "sourceOutcomesReadReasonsGraphCountsAndEncodingBytes": true
+  },
+  "retainedStorage": {
+    "archiveBytes": 0,
+    "archives": 0,
+    "databaseImageBytes": 64537496,
+    "databaseImages": 12,
+    "mxfImageBytes": 16512896,
+    "mxfImages": 116
+  },
+  "restoredGraphCounts": {
+    "objects": 475088,
+    "relationships": 498221,
+    "properties": 2719926,
+    "encodingBytes": 83566949
+  },
+  "sourceSha256": {
+    "CMakeLists.txt": "4a0ba434eb3bf16e91ac7b04ebf4634641655a8b379db547be3630aec81bb1ac",
+    "tests/CMakeLists.txt": "b0dbebe1652a44306289e25d7126bebecae5f7e7d775f4b052450442c38675fe",
+    "tests/tst_scanner.cpp": "9ab99468d5fb2c0ac3077f369b55120bf815e6b80242b7d52b2be10ca189f956",
+    "src/mediascanner.cpp": "ac06b5ed95972ffb11bf0d320448961f12865335f14606caa024a37e91c74dda",
+    "src/mediascanner.h": "0eb71d898e74fca91f4331c54f0a3d50831217e79e15e28a258d0578065a7104",
+    "src/canon/scanengine.cpp": "095f5b42b9dc87b5e3c4af0920fbd667986814c4fdfb24aae194bd41c004e015",
+    "src/canon/sourcepipeline.h": "9c91ff0d5ab0080852849d0ef58bacb5dbd5b22420ffc6e18ee85f5c630b6d14",
+    "src/canon2/scanengine.cpp": "e73a8eeb38e265df8a7a6cb317a59753e8899e2d158f1297cbf3ca0698e77923",
+    "src/canon2/scanengine.h": "cf82b9f587cbe88a8e0c86068934e92bcd947639a4fa48186d99f6c5391b3f25",
+    "src/canon2/databaseimage.cpp": "7d347111509217244e4b8a4a49c4219bf68db74f1564e20a8d44f75bf26b307f",
+    "src/canon2/databaseimage.h": "07d8c9c5870abd801cb94f352b58916ab21f19abb5ad844479db43b5164c1abd",
+    "src/canon2/databasesource.cpp": "d592598e1ddb293c3f8aa326cfac651ef291fef07a73dbf27761174cb5bd3a94",
+    "src/canon2/databasesource.h": "386740911590666458e5021e7945b90ecbfc5f3012652e1e62194e6ef6b9a21a",
+    "src/canon2/mxfimage.cpp": "b55dd3964e20f4b6518378195d43f4815f088f609c278ee8f8997ba91a604601",
+    "src/canon2/mxfimage.h": "987dd05dfefde865ded7b061e615389765b4d4080b095afceb8c0e38900e1685",
+    "src/canon2/mxfsource.cpp": "c01c54ad23e39a41c4d4f3910c720775b1284792be982da3572815ed66219ca9",
+    "src/canon2/mxfsource.h": "09d06211b41d7abf260a376e6fa08d6bb2efbaf51ac91d6409ee4a96b57939e1"
+  },
+  "binarySha256": {
+    "beforeLiveAudit": "8946dc94975ac54610d724055f0f26cfe28db03ae7267035c441c2b757945ddc",
+    "afterLiveAudit": "672a518853485a24ba36497aae0cef9003761340d10eec18e7d42dea6e7a72b1",
+    "universalApp": "67694b120af1cd81e68cb983f54efd4a886a41a90646735038d370fe69d9d4b8"
+  },
+  "verification": {
+    "releaseSuitesPassed": 47,
+    "releaseSuitesFailed": 0,
+    "universalMacArchitectures": [
+      "arm64",
+      "x86_64"
+    ],
+    "signatureVerified": true,
+    "livePmrMdbExactByteFixtureAssertions": true,
+    "liveMxfRamRestoreAfterDeletingDisposableFile": true,
+    "allRealInputSourceRestorations": true
+  },
+  "limitations": [
+    "This is a live adapter equality audit, not a controlled performance benchmark; single-run timing and memory observations remain in the raw reports without a performance conclusion.",
+    "Earlier full recursive graph/evidence/raw-byte comparisons are recorded separately by the Canon2 comparison stage. This live audit compares inventory, CSV, issues, scheduling/outcomes and restored graph/encoding-byte counts.",
+    "Local macOS verification does not qualify Windows/NEXIS or the approximately 300,000-file Interplay workload, or compare throughput/reliability against MDVX.",
+    "No persistent metadata database, memory cap, format-reader/selection-policy change, or retirement of old engines/tests.",
+    "Native byte images are still uncompressed; each source still expands temporarily while reading/inspecting."
+  ]
+}

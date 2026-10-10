@@ -1,9 +1,12 @@
-// Drives the live Canon scanner through MediaScanner using disposable Avid
+// Drives the live Canon2 scanner through MediaScanner using disposable Avid
 // layouts and real format fixtures. Old parsers appear only as comparison oracles.
 
 #include "conventions.h"
 #include "canon/scanmodel.h"
+#include "canon/projection.h"
 #include "canon/sourcearchive.h"
+#include "canon2/databasesource.h"
+#include "canon2/mxfsource.h"
 #include "featureflags.h"
 #include "mediafile.h"
 #include "mediacsv.h"
@@ -332,21 +335,27 @@ void TestScanner::optional_read_only_real_scan()
 	connect(&scanner, &MediaScanner::scanProgress, &scanner, [&](int current, int total, const QString &path)
 			{
 		if (current % 100 == 0)
-			qInfo() << "Canon audit progress:" << current << "/" << total << "at" << timer.elapsed() << "ms" << path; });
+			qInfo() << "Canon2 audit progress:" << current << "/" << total << "at" << timer.elapsed() << "ms" << path; });
 	connect(&scanner, &MediaScanner::scanFinalising, &scanner, [&]
-			{ qInfo() << "Canon audit matching at" << timer.elapsed() << "ms"; });
+			{ qInfo() << "Canon2 audit matching at" << timer.elapsed() << "ms"; });
 	scanner.startScan(options);
 	QVERIFY(finished.wait(600000));
 	QTRY_COMPARE(issues.count(), 1);
 	const qint64 elapsed = timer.elapsed();
 	const auto files = qvariant_cast<QVector<MediaFile>>(finished.first().first());
-	// Capture before inspecting archives: retained source storage and UI rows
+	// Capture before restoring records: retained source storage and UI rows
 	// are alive, but this audit has not temporarily restored any source graphs.
 	const QJsonObject memoryRetained = auditMemory();
 	const QString csvOutput = qEnvironmentVariable("MEDIAMUSTER_CANON_REAL_SCAN_CSV");
 	if (!csvOutput.isEmpty())
 		QVERIFY(MediaCsv::write(csvOutput, files, {true, true}));
 	QJsonArray sourceDetails;
+	qint64 databaseImageCount = 0;
+	qint64 databaseImageBytes = 0;
+	qint64 mxfImageCount = 0;
+	qint64 mxfImageBytes = 0;
+	qint64 archiveCount = 0;
+	qint64 archiveBytes = 0;
 	if (!files.isEmpty() && files.first().canonScan)
 	{
 		const auto &scan = *files.first().canonScan;
@@ -356,6 +365,16 @@ void TestScanner::optional_read_only_real_scan()
 		QVERIFY(!scan.cancelled);
 		for (const auto &source : scan.sources)
 		{
+			const auto *database = dynamic_cast<const Canon2::DatabaseSource *>(source.storage.data());
+			const auto *mxf = dynamic_cast<const Canon2::MxfSource *>(source.storage.data());
+			const qint64 capturedDatabaseBytes = database ? database->image().bytes().size() : 0;
+			const qint64 capturedMxfBytes = mxf ? mxf->image().storedBytes() : 0;
+			databaseImageCount += database != nullptr;
+			databaseImageBytes += capturedDatabaseBytes;
+			mxfImageCount += mxf != nullptr;
+			mxfImageBytes += capturedMxfBytes;
+			archiveCount += !source.archive.isNull();
+			archiveBytes += source.archive ? source.archive->compressedBytes() : 0;
 			// Inspect one source at a time; retaining every restored graph would
 			// recreate the application's former memory use in this audit itself.
 			const Canon::Cancellation inspection;
@@ -368,6 +387,10 @@ void TestScanner::optional_read_only_real_scan()
 				{"source", source.snapshot ? int(source.snapshot->source) : -1},
 				{"outcome", int(source.outcome)},
 				{"readReason", source.readReason},
+				{"databaseImageBytes", capturedDatabaseBytes},
+				{"mxfImageBytes", capturedMxfBytes},
+				{"mxfAcquiredBytes", mxf ? mxf->image().acquiredBytes() : qint64(0)},
+				{"mxfRangeCount", mxf ? qint64(mxf->image().rangeCount()) : qint64(0)},
 				{"archivedBytes", source.archive ? source.archive->compressedBytes() : qint64(0)},
 				{"serializedBytes", source.archive ? source.archive->serializedBytes() : qint64(0)},
 				{"archiveBlocks", source.archive ? qint64(source.archive->blockCount()) : qint64(0)},
@@ -402,6 +425,10 @@ void TestScanner::optional_read_only_real_scan()
 		const QJsonDocument document(QJsonObject{{"roots", QJsonArray::fromStringList(options.manualPaths)},
 												 {"memoryBefore", memoryBefore},
 												 {"memoryRetained", memoryRetained},
+												 {"sourceStorage", QJsonObject{{"databaseImages", databaseImageCount},
+													 {"databaseImageBytes", databaseImageBytes},
+													 {"mxfImages", mxfImageCount}, {"mxfImageBytes", mxfImageBytes},
+													 {"archives", archiveCount}, {"archiveBytes", archiveBytes}}},
 												 {"sources", sourceDetails},
 												 {"scanMs", elapsed},
 												 {"rows", files.size()},
@@ -410,7 +437,7 @@ void TestScanner::optional_read_only_real_scan()
 												 {"issues", issueDetails}});
 		QVERIFY(report.write(document.toJson()) > 0);
 	}
-	qInfo() << "Read-only Canon audit:" << files.size() << "rows in" << elapsed << "ms";
+	qInfo() << "Read-only Canon2 audit:" << files.size() << "rows in" << elapsed << "ms";
 }
 
 void TestScanner::canon_extension_discovery_keeps_copies_and_local_reference_issues()
@@ -488,7 +515,7 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 	opts.volumePaths = QStringList{tmp.path()};
 	scanner.startScan(opts);
 
-	// The supplied fixture contains just the metadata prefix.
+	// This genuine tone fixture contains the complete MXF file.
 	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
 	QCOMPARE(finishedSpy.size(), 1);
 
@@ -496,6 +523,27 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 	QCOMPARE(results.size(), 1);
 
 	const MediaFile &mf = results.first();
+
+	// Exercise the live adapter, not just the standalone Canon2 coordinator.
+	// Each database keeps its original fixture bytes instead of a graph archive.
+	QVERIFY(mf.canonScan);
+	int databaseSources = 0;
+	for (const auto &source : mf.canonScan->sources)
+	{
+		if (!source.snapshot || (source.snapshot->source != MetadataSource::Pmr &&
+							 source.snapshot->source != MetadataSource::Mdb))
+			continue;
+		const auto *database = dynamic_cast<const Canon2::DatabaseSource *>(source.storage.data());
+		QVERIFY(database);
+		QVERIFY(!source.archive);
+		QVERIFY(!source.unfinishedGraph);
+		QVERIFY(database->image().acquisitionComplete());
+		QFile original(fixturesDir() + QLatin1Char('/') + QFileInfo(source.snapshot->path).fileName());
+		QVERIFY(original.open(QIODevice::ReadOnly));
+		QCOMPARE(database->image().bytes(), original.readAll());
+		++databaseSources;
+	}
+	QCOMPARE(databaseSources, 2);
 
 	QCOMPARE(mf.fileName, QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"));
 	QCOMPARE(mf.mediaFolderName, QStringLiteral("1"));
@@ -511,7 +559,7 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 	// From the MXF MaterialPackage (it outranks the MDB's name on the ladder)
 	QCOMPARE(mf.clipName, QStringLiteral("TONE: 1000 Hz @ -14.0 dB.1"));
 
-	// Multi-script bin name; exercises mdbparser's UTF-8 path.
+	// Multi-script bin name; exercises the MDB reader's UTF-8 inference.
 	// Raw bytes so source-file encoding can't drift the assertion.
 	const QString expectedBin = QString::fromUtf8("No\xCC\x88n English bin na\xCC\x81me\xE2\x84\xA2"
 												  " \xE4\xBD\xA0\xE5\xA5\xBD \xE6\xBC\xA2");
@@ -2187,6 +2235,36 @@ void TestScanner::folder_without_databases_reads_every_header()
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 	QVERIFY(!mf.compression.isEmpty());
 	QVERIFY(mf.sampleRate > 0);
+
+	QVERIFY(mf.canonScan);
+	QCOMPARE(mf.canonScan->sources.size(), 1);
+	const auto &stored = mf.canonScan->sources.first();
+	QCOMPARE(stored.outcome, Canon::ParsedSource::Outcome::Complete);
+	const auto *mxf = dynamic_cast<const Canon2::MxfSource *>(stored.storage.data());
+	QVERIFY(mxf);
+	QVERIFY(!stored.archive);
+	QVERIFY(!stored.unfinishedGraph);
+	QVERIFY(mxf->image().valid());
+	QVERIFY(mxf->image().storedBytes() > 0);
+	const Canon::Cancellation inspection;
+	const auto beforeRemoval = stored.restore(inspection);
+	QVERIFY(beforeRemoval);
+	QVERIFY(!beforeRemoval->objects.isEmpty());
+	// Removing only the disposable copy proves the UI row owns its RAM source.
+	QVERIFY(QFile::remove(mf.mediaFilePath));
+	const auto restored = stored.restore(inspection);
+	QVERIFY(restored);
+	QCOMPARE(restored->snapshot, stored.snapshot);
+	QCOMPARE(restored->objects.size(), beforeRemoval->objects.size());
+	QCOMPARE(restored->relationships.size(), beforeRemoval->relationships.size());
+	QCOMPARE(restored->objects.first().snapshot, beforeRemoval->objects.first().snapshot);
+	const auto projection = Canon::projectMxf(*restored, inspection);
+	QCOMPARE(projection.files.size(), 1);
+	QCOMPARE(projection.files.first().fileMobId, mf.fileMobId);
+	bool sharedReceipt = false;
+	for (const auto &observation : mf.evidence.observations(MediaProperty::FileMobId))
+		sharedReceipt |= observation.snapshot == restored->snapshot;
+	QVERIFY(sharedReceipt);
 }
 
 void TestScanner::mpeg_audio_falls_back_to_its_header()

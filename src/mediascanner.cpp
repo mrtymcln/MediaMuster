@@ -1,7 +1,9 @@
 // Owns the background scan and forwards progress/results to the existing UI.
-// Canon owns discovery, source parsing, matching and metadata selection.
+// Canon2 retains source bytes; Canon supplies the shared readers and matching.
 #include "mediascanner.h"
-#include "canon/scanengine.h"
+#include "canon2/scanengine.h"
+#include "canon2/databasesource.h"
+#include "canon2/mxfsource.h"
 #include "canon/sourcearchive.h"
 #include "canonadapter.h"
 #include "avidmedialayout.h"
@@ -227,7 +229,7 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 		emit scanLogBatch(logs);
 		logs.clear();
 	};
-	logs.append({QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("Scanning %1 location(s) with Canon...").arg(request.roots.size())});
+	logs.append({QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("Scanning %1 location(s) with Canon2...").arg(request.roots.size())});
 	logs.append({QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("Root lookup: %1 ms").arg(rootLookupMs)});
 	flush();
 	bool preparationReported = false;
@@ -278,18 +280,36 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 		flush();
 		emit scanFinalising();
 	};
-	auto session = QSharedPointer<Canon::ScanResult>::create(Canon::ScanEngine{}.scan(request, cancellation, callbacks));
+	auto session = QSharedPointer<Canon::ScanResult>::create(Canon2::ScanEngine{}.scan(request, cancellation, callbacks));
 	reportPreparation(); // Empty or cancelled scans may never reach source progress.
 	qint64 serializedBytes = 0;
 	qint64 compressedBytes = 0;
 	qsizetype archivedSources = 0;
+	qint64 databaseImageBytes = 0;
+	qint64 mxfImageBytes = 0;
+	qsizetype databaseImages = 0;
+	qsizetype mxfImages = 0;
 	for (const auto &source : std::as_const(session->sources))
+	{
 		if (source.archive)
 		{
 			++archivedSources;
 			serializedBytes += source.archive->serializedBytes();
 			compressedBytes += source.archive->compressedBytes();
 		}
+		if (const auto *database = dynamic_cast<const Canon2::DatabaseSource *>(source.storage.data()))
+		{
+			++databaseImages;
+			databaseImageBytes += database->image().bytes().size();
+		}
+		else if (const auto *mxf = dynamic_cast<const Canon2::MxfSource *>(source.storage.data()))
+		{
+			++mxfImages;
+			mxfImageBytes += mxf->image().storedBytes();
+		}
+	}
+	logs.append({QtInfoMsg, QStringLiteral("scanner"),
+				 QStringLiteral("RAM source images: %1 database(s), %2 bytes; %3 MXF source(s), %4 bytes").arg(databaseImages).arg(databaseImageBytes).arg(mxfImages).arg(mxfImageBytes)});
 	logs.append({QtInfoMsg, QStringLiteral("scanner"),
 				 QStringLiteral("RAM source archives: %1 source(s), %2 serialized bytes, %3 compressed bytes").arg(archivedSources).arg(serializedBytes).arg(compressedBytes)});
 	QVector<MediaFile> rows;
