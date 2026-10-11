@@ -4,13 +4,11 @@
 // Lists retain their recorded order; only unordered map keys are sorted. Pointer
 // IDs describe alias topology without depending on allocator addresses.
 
-#include "mediaengine/avbreferences.h"
 #include "mediaengine/projection.h"
 #include "mediaengine/scancoordinator.h"
 #include <QCryptographicHash>
 #include <QDataStream>
 #include <QIODevice>
-#include <QTimeZone>
 #include <algorithm>
 #include <cstring>
 #include <stdexcept>
@@ -75,7 +73,7 @@ public:
 		if (found != m_ids.cend())
 			return found.value();
 		const auto result = quint64(m_owners.size()) + 1;
-		m_owners.append(snapshot); // Keep keys alive even after a scoped graph dies.
+		m_owners.append(snapshot); // Keep receipt aliases valid throughout the proof.
 		m_ids.insert(snapshot.data(), result);
 		return result;
 	}
@@ -104,10 +102,6 @@ public:
 
 	HashSink sink;
 	QDataStream stream;
-	qint64 objects = 0;
-	qint64 relationships = 0;
-	qint64 properties = 0;
-	qint64 encodingBytes = 0;
 
 	void text(const QString &value) { stream << value.isNull() << value; }
 	void bytes(const QByteArray &value) { stream << value.isNull() << value; }
@@ -230,124 +224,6 @@ public:
 			stream << qint32(value->readState);
 		}
 	}
-	void range(const MediaEngine::ByteRange &value) { stream << value.offset << value.length; }
-	void ranges(const QVector<MediaEngine::ByteRange> &values)
-	{
-		stream << qint64(values.size());
-		for (const auto &value : values)
-			range(value);
-	}
-	void locator(const MediaEngine::PropertyLocator &value)
-	{
-		text(value.name);
-		bytes(value.key);
-		stream << value.objectNumber;
-		ranges(value.ranges);
-	}
-
-	void property(const MediaEngine::RawProperty &value)
-	{
-		++properties;
-		encodingBytes += value.encoding.size();
-		locator(value.locator);
-		bytes(value.encoding);
-		variant(value.decoded);
-		stream << qint32(value.state);
-		text(value.interpretation);
-		optional(value.textEncoding);
-		optional(value.textEncodingBasis);
-		stream << contextId(value.bento.data());
-		if (value.bento)
-		{
-			const auto &native = *value.bento;
-			stream << native.property << native.type << native.generation << native.referenceListObject;
-			text(native.typeName);
-			ranges(native.tocRanges);
-			optional(native.metadataBigEndian);
-		}
-		stream << contextId(value.mxf.data());
-		if (value.mxf)
-		{
-			const auto &native = *value.mxf;
-			stream << native.localTag << native.primerOffset;
-			bytes(native.mappedAuid);
-			text(native.typeName);
-			bytes(native.framingBytes);
-			ranges(native.framingRanges);
-		}
-		stream << value.bytesRetained;
-	}
-	void propertyList(const QVector<MediaEngine::RawProperty> &values)
-	{
-		stream << qint64(values.size());
-		for (const auto &value : values)
-			property(value);
-	}
-	void graph(const MediaEngine::ParsedSource &value)
-	{
-		stream << qint32(value.outcome);
-		text(value.readReason);
-		snapshot(value.snapshot);
-		stream << qint32(value.container);
-		optional(value.omfRevision);
-		locator(value.embedding);
-		stream << qint64(value.recordSets.size());
-		for (const auto &set : value.recordSets)
-		{
-			text(set.name);
-			optional(set.pmrFileSet);
-			stream << set.version << set.declaredCount << qint64(set.objects.size());
-			for (const auto object : set.objects)
-				stream << object;
-			stream << set.framingComplete;
-		}
-		stream << qint64(value.objects.size());
-		objects += value.objects.size();
-		for (const auto &object : value.objects)
-		{
-			stream << object.handle << qint32(object.role);
-			snapshot(object.snapshot);
-			bytes(object.recordedIdentity);
-			text(object.identityEncoding);
-			stream << contextId(object.mxf.data());
-			if (object.mxf)
-			{
-				const auto &native = *object.mxf;
-				bytes(native.key);
-				text(native.name);
-				stream << native.partitionOffset;
-				range(native.framing);
-				range(native.value);
-			}
-			stream << contextId(object.avb.data());
-			if (object.avb)
-			{
-				const auto &native = *object.avb;
-				bytes(native.classId);
-				range(native.framing);
-				range(native.value);
-				stream << native.bigEndian << native.interpretationComplete;
-			}
-			propertyList(object.properties);
-		}
-		stream << qint64(value.relationships.size());
-		relationships += value.relationships.size();
-		for (const auto &link : value.relationships)
-		{
-			stream << link.origin << link.target;
-			locator(link.locator);
-			variant(link.recordedReference);
-			text(link.referenceEncoding);
-			stream << qint32(link.basis);
-			text(link.explanation);
-		}
-		propertyList(value.unownedProperties);
-		texts(value.diagnostics);
-		stream << qint64(value.embeddedSources.size());
-		for (const auto &child : value.embeddedSources)
-			graph(child);
-	}
-
 	void readResult(const PropertyReadResult &value)
 	{
 		stream << qint32(value.state) << qint32(value.reason) << qint32(value.applicability);
@@ -439,7 +315,7 @@ public:
 		dateTime(value.modified);
 		stream << value.kelpieId;
 	}
-	void storedReceipt(const MediaEngine::StoredSource &value)
+	void sourceReceipt(const MediaEngine::SourceReceipt &value)
 	{
 		stream << qint32(value.outcome) << qint32(value.container);
 		text(value.readReason);
@@ -452,23 +328,6 @@ public:
 		projectedFiles(value.masters);
 		texts(value.diagnostics);
 	}
-	void avb(const MediaEngine::ParsedSource &source, const MediaEngine::Cancellation &cancellation)
-	{
-		const auto owned = QSharedPointer<MediaEngine::ParsedSource>::create(source);
-		const MediaEngine::AvbReferenceIndex index({owned}, cancellation);
-		stream << qint64(index.sequences().size());
-		for (const auto &sequence : index.sequences())
-		{
-			avbKey(sequence.key);
-			text(sequence.name);
-			bytes(sequence.mobId);
-			stream << sequence.userPlaced;
-			locator(sequence.membership);
-		}
-		avbResolution(index.resolve({{0, MediaEngine::AvbScope::Kind::EntireBin, {}}}, cancellation));
-		for (const auto &sequence : index.sequences())
-			avbResolution(index.resolve({{0, MediaEngine::AvbScope::Kind::SelectedSequences, {sequence.key.object}}}, cancellation));
-	}
 	QByteArray result()
 	{
 		if (stream.status() != QDataStream::Ok)
@@ -477,17 +336,6 @@ public:
 	}
 
 private:
-	quint64 contextId(const void *context)
-	{
-		if (!context)
-			return 0;
-		const auto found = m_contexts.constFind(context);
-		if (found != m_contexts.cend())
-			return found.value();
-		const auto result = quint64(m_contexts.size()) + 1;
-		m_contexts.insert(context, result);
-		return result;
-	}
 	void projectedFiles(const QVector<MediaEngine::ProjectedFile> &values)
 	{
 		stream << qint64(values.size());
@@ -502,57 +350,8 @@ private:
 			evidence(selected);
 		}
 	}
-	void avbKey(const MediaEngine::AvbObjectKey &value) { stream << qint64(value.source) << value.object; }
-	void avbResolution(const MediaEngine::AvbResolution &value)
-	{
-		stream << value.complete << value.cancelled << qint64(value.roots.size());
-		for (const auto &root : value.roots)
-			avbKey(root);
-		stream << qint64(value.edges.size());
-		for (const auto &edge : value.edges)
-		{
-			avbKey(edge.origin);
-			avbKey(edge.target);
-			stream << qint64(edge.relationship);
-		}
-		stream << qint64(value.media.size());
-		for (const auto &media : value.media)
-		{
-			avbKey(media.locator);
-			stream << qint64(media.property);
-			bytes(media.mobId);
-			bytes(media.legacyId);
-		}
-		stream << qint64(value.terminals.size());
-		for (const auto &terminal : value.terminals)
-		{
-			avbKey(terminal.object);
-			stream << qint64(terminal.relationship) << qint32(terminal.kind);
-		}
-		stream << qint64(value.issues.size());
-		for (const auto &issue : value.issues)
-		{
-			stream << qint32(issue.kind);
-			avbKey(issue.object);
-			locator(issue.property);
-			text(issue.explanation);
-		}
-	}
 	SnapshotIds m_localSnapshots;
 	SnapshotIds *m_snapshots;
-	// One Fingerprint per source graph keeps this table scoped to that tree.
-	QHash<const void *, quint64> m_contexts;
 };
-
-inline MediaEngine::Projection project(const MediaEngine::ParsedSource &source, const MediaEngine::Cancellation &cancellation)
-{
-	if (source.container == MediaEngine::ParsedSource::Container::Pmr)
-		return MediaEngine::projectPmr(source, cancellation);
-	if (source.container == MediaEngine::ParsedSource::Container::Mxf)
-		return MediaEngine::projectMxf(source, cancellation);
-	if (source.snapshot && source.snapshot->source == MetadataSource::Mdb)
-		return MediaEngine::projectMdb(source, cancellation);
-	return MediaEngine::projectOmf(source, cancellation);
-}
 
 } // namespace MediaEngineProof

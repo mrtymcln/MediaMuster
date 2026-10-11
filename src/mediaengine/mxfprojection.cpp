@@ -7,7 +7,7 @@
 #include "mxfcatalogue_p.h"
 #include "picturegeometry_p.h"
 #include "avidusage.h"
-#include "avidprecompute.h"
+#include "precompute.h"
 #include "mediametadata.h"
 
 #include <QHash>

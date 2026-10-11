@@ -9,53 +9,53 @@
 
 namespace MediaEngine
 {
-	struct AvbObjectKey
+	struct AvbObjectRef
 	{
-		qsizetype source = -1; ///< Index in AvbReferenceIndex::sources(), not a filename.
-		ObjectHandle object = 0;
-		bool operator==(const AvbObjectKey &other) const
+		qsizetype sourceIndex = -1; ///< Index in AvbReferenceIndex::sources(), not a filename.
+		ObjectHandle objectHandle = 0;
+		bool operator==(const AvbObjectRef &other) const
 		{
-			return source == other.source && object == other.object;
+			return sourceIndex == other.sourceIndex && objectHandle == other.objectHandle;
 		}
 	};
 
-	struct AvbSequence
+	struct AvbSequenceEntry
 	{
-		AvbObjectKey key;
+		AvbObjectRef key;
 		QString name;
 		QByteArray mobId;
 		bool userPlaced = false;
-		PropertyLocator membership;
+		PropertyLocator membershipEvidence;
 	};
 
-	struct AvbScope
+	struct AvbSelection
 	{
 		enum class Kind
 		{
 			EntireBin,
 			SelectedSequences
 		};
-		qsizetype source = -1;
+		qsizetype sourceIndex = -1;
 		Kind kind = Kind::EntireBin;
-		QVector<ObjectHandle> sequences; ///< Explicitly empty means no sequences; never whole-bin fallback.
+		QVector<ObjectHandle> selectedSequences; ///< Explicitly empty means no sequences; never whole-bin fallback.
 	};
 
 	struct AvbResolvedEdge
 	{
-		AvbObjectKey origin;
-		AvbObjectKey target;
-		qsizetype relationship = -1; ///< Index in the origin source's retained relationships.
+		AvbObjectRef origin;
+		AvbObjectRef target;
+		qsizetype relationshipIndex = -1; ///< Index in the origin source's retained relationships.
 	};
 
 	struct AvbMediaReference
 	{
-		AvbObjectKey locator;
-		qsizetype property = -1; ///< Index of the full identity, or first legacy word.
+		AvbObjectRef objectKey;
+		qsizetype propertyIndex = -1; ///< Index of the full identity, or first legacy word.
 		QByteArray mobId;		 ///< Canonical 32-byte identity, material numeric fields little-endian.
 		QByteArray legacyId;	 ///< Eight explicitly legacy bytes; never truncate a modern ID into this field.
 	};
 
-	struct AvbReferenceIssue
+	struct AvbResolutionIssue
 	{
 		enum class Kind
 		{
@@ -67,8 +67,8 @@ namespace MediaEngine
 			Cancelled
 		};
 		Kind kind;
-		AvbObjectKey object;
-		PropertyLocator property;
+		AvbObjectRef objectKey;
+		PropertyLocator propertyLocator;
 		QString explanation;
 	};
 
@@ -79,19 +79,19 @@ namespace MediaEngine
 			Null,
 			Filler
 		};
-		AvbObjectKey object;
-		qsizetype relationship = -1;
+		AvbObjectRef objectKey;
+		qsizetype relationshipIndex = -1;
 		Kind kind;
 	};
 
-	struct AvbResolution
+	struct AvbReferenceResult
 	{
-		QVector<AvbObjectKey> roots;
+		QVector<AvbObjectRef> roots;
 		QVector<AvbResolvedEdge> edges;
-		QVector<AvbMediaReference> media;
-		QVector<AvbTerminalReference> terminals;
-		QVector<AvbReferenceIssue> issues;
-		bool complete = false; ///< Reference coverage, not filter eligibility or proof that physical files exist.
+		QVector<AvbMediaReference> mediaReferences;
+		QVector<AvbTerminalReference> terminalReferences;
+		QVector<AvbResolutionIssue> issues;
+		bool coverageComplete = false; ///< Reference coverage, not filter eligibility or proof that physical files exist.
 		bool cancelled = false;
 	};
 
@@ -101,19 +101,19 @@ namespace MediaEngine
 		explicit AvbReferenceIndex(QVector<QSharedPointer<const ParsedSource>> sources,
 								   const Cancellation &cancellation);
 		const QVector<QSharedPointer<const ParsedSource>> &sources() const { return m_sources; }
-		const QVector<AvbSequence> &sequences() const { return m_sequences; }
-		AvbResolution resolve(const QVector<AvbScope> &scopes, const Cancellation &cancellation) const;
+		const QVector<AvbSequenceEntry> &sequences() const { return m_sequences; }
+		AvbReferenceResult resolveReferences(const QVector<AvbSelection> &scopes, const Cancellation &cancellation) const;
 
 	private:
-		struct SourceIndex
+		struct SourceObjectIndex
 		{
-			QHash<ObjectHandle, qsizetype> objects;
+			QHash<ObjectHandle, qsizetype> objectIndices;
 			QHash<ObjectHandle, QVector<qsizetype>> outgoing;
 		};
 		QVector<QSharedPointer<const ParsedSource>> m_sources;
-		QVector<SourceIndex> m_indices;
-		QHash<QByteArray, QVector<AvbObjectKey>> m_mobs;
-		QVector<AvbSequence> m_sequences;
-		bool m_complete = false;
+		QVector<SourceObjectIndex> m_sourceIndices;
+		QHash<QByteArray, QVector<AvbObjectRef>> m_objectsByMobId;
+		QVector<AvbSequenceEntry> m_sequences;
+		bool m_indexComplete = false;
 	};
 }

@@ -70,15 +70,15 @@ Applicability, agreement, eligibility and freshness remain separate facts; see t
 | [MediaEngine::MxfReader](../src/mediaengine/mxfreader.cpp) | Decodes MXF partitions, Primer mappings, raw/typed metadata and source-local references for projection; skips recording payloads. |
 | [MediaEngine::OmfReader](../src/mediaengine/omfreader.cpp) | Reads OMF and native WAV/AIFF metadata for projection; embedded OMF graphs have separate source contexts. |
 | [MediaEngine::AvbReader](../src/mediaengine/avbreader.cpp) and [reference engine](../src/mediaengine/avbreferences.cpp) | Retain bin objects and resolve whole-bin or selected-sequence references with explicit completeness warnings. |
-| [MediaEngine source projections](../src/mediaengine/projection.h) | Interpret recorded properties as file-owned or master-owned observations, preserving supported observation bytes and competing evidence independently of optional source replay. |
-| [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp) | Defaults to `MetadataOnly` for PMR/MDB/MXF/OMF sources: retains supported evidence and receipts, then releases temporary images and unused graphs. AVB graphs remain independently retained for active use. |
+| [MediaEngine source projections](../src/mediaengine/projection.h) | Interpret recorded properties as file-owned or master-owned observations, preserving supported observation bytes and competing evidence independently of temporary reading storage. |
+| [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp) | Public entry point for database-first scanning. Supported evidence and `SourceReceipt`s outlive temporary images and unused graphs. AVB graphs remain independently retained for active use. |
 | [MediaEngine::ScanCoordinator](../src/mediaengine/scancoordinator.cpp) | Coordinates discovery, database-first reads, exact-name/identity matching, field selection and scoped unmatched-reference issues. |
 | [MediaEngine selection policy](../src/mediaengine/metadataselectionpolicy.cpp) | One compiled row per semantic property, using source preferences 3 > 2 > 1 > 0 and explicit duration, association and effect rules. |
 | [MediaEvidence](../src/mediaevidence.h) | Stores observations separately from selected values, with read state, agreement, eligibility, source, basis and explanation. |
-| [AvbParser](../src/avbparser.cpp) | Compatibility adapter used by the existing bin dialog; delegates parsing and reference resolution to MediaEngine. |
-| [BinMetadataResolver](../src/binmetadataresolver.cpp) | Applies and retracts eligible AVB name/bin observations without erasing scan evidence. |
+| [AvbBinLoader](../src/avbbinloader.cpp) | Loads bin files through AvbReader and prepares clip metadata, evidence and media references for AvbFilterDialog. |
+| [AvbMetadataResolver](../src/avbmetadataresolver.cpp) | Applies and retracts eligible AVB name/bin observations without erasing scan evidence. |
 | [MediaEngine presentation adapter](../src/mediaengineadapter.cpp) | Refreshes semantic table/filter/CSV fields from selected evidence, including clearing unresolved values; physical operation fields keep their current location and identity. |
-| [AvidEffects](../src/avideffects.cpp) | Maps the selected name of an established precompute to derived effect details; it does not classify the file. |
+| [AvidEffects](../src/effectcatalogue.cpp) | Maps the selected name of an established precompute to derived effect details; it does not classify the file. |
 
 `MediaScanner::doScan()` owns the background/UI boundary, cancellation, progress,
 logs and result delivery. MediaEngine owns per-scan source storage and reconciliation;
@@ -99,8 +99,8 @@ changes do not establish a measured improvement there.
 A `MediaEngine::ParsedSource` temporarily contains source-local objects, raw properties
 and edges while readers and projectors establish supported facts. Normal scans retain
 those facts and their observation evidence, not every original record or framing
-detail. Diagnostic replay retains source backing for tests and format verification
-through the same engine and readers. AVB graphs remain retained for bin consumers.
+detail. Reader/projector tests inspect temporary source records directly and check
+that extracted evidence owns its values. AVB graphs remain retained for bin consumers.
 An object reference is a source receipt plus handle, not a globally unique Avid ID.
 Native WAV/AIFF and embedded OMF graphs keep separate handles and receipts. MXF
 partition copies also remain separate observations. Every physical location keeps
@@ -151,8 +151,8 @@ and [parser compatibility](parser-compatibility.md).
 
 ## Filters, selection and export
 
-[BinFilterDialog](../src/binfilterdialog.cpp) loads bins and builds an ordered
-[BinFilter](../src/binfilter.h) expression. The proxy evaluates each step against a
+[AvbFilterDialog](../src/avbfilterdialog.cpp) controls loaded bins and builds an ordered
+[AvbFilter](../src/avbfilter.h) expression. The proxy evaluates each step against a
 row's file or every established master identifier. Applied partial steps retain their
 source graphs and persistent “Results may be incomplete” warning. The future sequence
 picker remains disabled behind `SequenceFilter`; the current dialog applies whole-bin

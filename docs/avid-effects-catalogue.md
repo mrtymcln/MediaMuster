@@ -1,6 +1,6 @@
 # Effect-name catalogue: Media Composer 26.8
 
-The catalogue embedded in `src/avideffects.cpp` contains **887 distinct name/category pairs, representing 861 English names**, identified from Media Composer **26.8.0.58987** and its shipped resources. It was independently extracted to replace an older table that included duplicates, palette headings and truncated plug-in names. The refresh added 39 distinct name/category pairs and removed or replaced 30.
+The catalogue embedded in `src/effectcatalogue.cpp` contains **887 distinct name/category pairs, representing 861 English names**, identified from Media Composer **26.8.0.58987** and its shipped resources. It was independently extracted to replace an older table that included duplicates, palette headings and truncated plug-in names. The refresh added 39 distinct name/category pairs and removed or replaced 30.
 
 Recognition from a clip name is **not a definitive effect ID**. Clip names are editable, and a name does not identify a specific AlphaFlex execution variant. The application must first classify a row as a precompute using its usage metadata. Unmatched tokens retain their original text and an **unknown** category, including uppercase `TITLE`, `SLATE` and arbitrary template names.
 

@@ -1,0 +1,5320 @@
+{
+  "selectionCount": 166,
+  "originalFileCount": 205,
+  "fileMoves": {
+    "src/avbparser.cpp": "src/avbbinloader.cpp",
+    "src/avbparser.h": "src/avbbinloader.h",
+    "src/avideffects.cpp": "src/effectcatalogue.cpp",
+    "src/avideffects.h": "src/effectcatalogue.h",
+    "src/avidmedialayout.h": "src/app_avidmedialayout.h",
+    "src/avidprecompute.h": "src/precompute.h",
+    "src/binfilereferences.h": "src/avbfilereferences.h",
+    "src/binfilter.h": "src/avbfilter.h",
+    "src/binfilterdialog.cpp": "src/avbfilterdialog.cpp",
+    "src/binfilterdialog.h": "src/avbfilterdialog.h",
+    "src/binmetadataresolver.cpp": "src/avbmetadataresolver.cpp",
+    "src/binmetadataresolver.h": "src/avbmetadataresolver.h"
+  },
+  "selections": [
+    {
+      "id": "779582d15cd6595e",
+      "file": "src/aboutdialog.cpp",
+      "line": 1,
+      "column": 1,
+      "current": "aboutdialog.cpp",
+      "chosen": "aboutdialog.cpp",
+      "category": "File",
+      "decision": "Keep current",
+      "expected": "aboutdialog.cpp",
+      "actual": "aboutdialog.cpp",
+      "passed": true
+    },
+    {
+      "id": "f08bd1ce33a4c92b",
+      "file": "src/aboutdialog.h",
+      "line": 1,
+      "column": 1,
+      "current": "aboutdialog.h",
+      "chosen": "aboutdialog.h",
+      "category": "File",
+      "decision": "Keep current",
+      "expected": "aboutdialog.h",
+      "actual": "aboutdialog.h",
+      "passed": true
+    },
+    {
+      "id": "fba9a308192544b4",
+      "file": "src/avbparser.cpp",
+      "line": 1,
+      "column": 1,
+      "current": "avbparser.cpp",
+      "chosen": "avbbinloader.cpp",
+      "category": "File",
+      "decision": "Rename",
+      "expected": "avbbinloader.cpp",
+      "actual": "avbbinloader.cpp",
+      "passed": true
+    },
+    {
+      "id": "6c05b40786c912ad",
+      "file": "src/avbparser.cpp",
+      "line": 29,
+      "column": 38,
+      "current": "object",
+      "chosen": "avbObject",
+      "category": "Parameter",
+      "decision": "Rename",
+      "expected": "avbObject",
+      "actual": "avbObject",
+      "passed": true,
+      "originalTokenIndex": 98
+    },
+    {
+      "id": "956b4c41daa52ede",
+      "file": "src/avbparser.cpp",
+      "line": 31,
+      "column": 19,
+      "current": "found",
+      "chosen": "matchingProperty",
+      "category": "Local variable",
+      "decision": "Rename",
+      "expected": "matchingProperty",
+      "actual": "matchingProperty",
+      "passed": true,
+      "originalTokenIndex": 118
+    },
+    {
+      "id": "c91626995427cf3c",
+      "file": "src/avbparser.cpp",
+      "line": 32,
+      "column": 20,
+      "current": "value",
+      "chosen": "candidateProperty",
+      "category": "Local variable",
+      "decision": "Rename",
+      "expected": "candidateProperty",
+      "actual": "candidateProperty",
+      "passed": true,
+      "originalTokenIndex": 127
+    },
+    {
+      "id": "093ac34502a6da81",
+      "file": "src/avbparser.cpp",
+      "line": 49,
+      "column": 92,
+      "current": "value",
+      "chosen": "property",
+      "category": "Parameter",
+      "decision": "Rename",
+      "expected": "property",
+      "actual": "property",
+      "passed": true,
+      "originalTokenIndex": 299
+    },
+    {
+      "id": "e5fd741562f18a11",
+      "file": "src/avbparser.cpp",
+      "line": 52,
+      "column": 33,
+      "current": "bytes",
+      "chosen": "bytes",
+      "category": "Parameter",
+      "decision": "Keep current",
+      "expected": "bytes",
+      "actual": "bytes",
+      "passed": true,
+      "originalTokenIndex": 322
+    },
+    {
+      "id": "ba7c43bb3ae10f07",
+      "file": "src/avbparser.cpp",
+      "line": 64,
+      "column": 15,
+      "current": "raw",
+      "chosen": "decodedMobId",
+      "category": "Local constant",
+      "decision": "Rename",
+      "expected": "decodedMobId",
+      "actual": "decodedMobId",
+      "passed": true,
+      "originalTokenIndex": 413
+    },
+    {
+      "id": "c7ca7386ef6079bc",
+      "file": "src/avbparser.cpp",
+      "line": 78,
+      "column": 48,
+      "current": "object",
+      "chosen": "fieldOwner",
+      "category": "Parameter",
+      "decision": "Rename",
+      "expected": "fieldOwner",
+      "actual": "fieldOwner",
+      "passed": true,
+      "originalTokenIndex": 600
+    },
+    {
+      "id": "5ae8aebef5711cf2",
+      "file": "src/avbparser.cpp",
+      "line": 96,
+      "column": 9,
+      "current": "OriginalBin",
+      "chosen": "OriginalBinMetadata",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "OriginalBinMetadata",
+      "actual": "OriginalBinMetadata",
+      "passed": true,
+      "originalTokenIndex": 747
+    },
+    {
+      "id": "b458c766bfb25235",
+      "file": "src/avbparser.cpp",
+      "line": 100,
+      "column": 32,
+      "current": "observations",
+      "chosen": "nameObservations",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "nameObservations",
+      "actual": "nameObservations",
+      "passed": true,
+      "originalTokenIndex": 759
+    },
+    {
+      "id": "6201f35f07455329",
+      "file": "src/avbparser.cpp",
+      "line": 110,
+      "column": 8,
+      "current": "found",
+      "chosen": "hasOriginalBin",
+      "category": "Local variable",
+      "decision": "Rename",
+      "expected": "hasOriginalBin",
+      "actual": "hasOriginalBin",
+      "passed": true,
+      "originalTokenIndex": 865
+    },
+    {
+      "id": "7ce01e922eab78ba",
+      "file": "src/avbparser.cpp",
+      "line": 150,
+      "column": 16,
+      "current": "value",
+      "chosen": "candidateBin",
+      "category": "Local variable",
+      "decision": "Rename",
+      "expected": "candidateBin",
+      "actual": "candidateBin",
+      "passed": true,
+      "originalTokenIndex": 1387
+    },
+    {
+      "id": "9f548e88c5912519",
+      "file": "src/avbparser.cpp",
+      "line": 173,
+      "column": 15,
+      "current": "value",
+      "chosen": "observation",
+      "category": "Local variable",
+      "decision": "Rename",
+      "expected": "observation",
+      "actual": "observation",
+      "passed": true,
+      "originalTokenIndex": 1585
+    },
+    {
+      "id": "7e67f43c88f4f1e6",
+      "file": "src/avbparser.cpp",
+      "line": 190,
+      "column": 40,
+      "current": "bytes",
+      "chosen": "headerBytes",
+      "category": "Local variable",
+      "decision": "Rename",
+      "expected": "headerBytes",
+      "actual": "headerBytes",
+      "passed": true,
+      "originalTokenIndex": 1704
+    },
+    {
+      "id": "da866d423ff1ae76",
+      "file": "src/avbparser.cpp",
+      "line": 198,
+      "column": 8,
+      "current": "AvbParser::parse",
+      "chosen": "AvbParser::parse",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbBinLoader::load",
+      "actual": "AvbBinLoader::load",
+      "passed": true,
+      "originalTokenIndex": 1815
+    },
+    {
+      "id": "8592bc11bf61b932",
+      "file": "src/avbparser.cpp",
+      "line": 232,
+      "column": 105,
+      "current": "object",
+      "chosen": "binObject",
+      "category": "Parameter",
+      "decision": "Rename",
+      "expected": "binObject",
+      "actual": "binObject",
+      "passed": true,
+      "originalTokenIndex": 2124
+    },
+    {
+      "id": "7863801c25d02e5e",
+      "file": "src/avbparser.cpp",
+      "line": 272,
+      "column": 19,
+      "current": "object",
+      "chosen": "composition",
+      "category": "Local variable",
+      "decision": "Rename",
+      "expected": "composition",
+      "actual": "composition",
+      "passed": true,
+      "originalTokenIndex": 2652
+    },
+    {
+      "id": "053c13032b17d010",
+      "file": "src/avbparser.h",
+      "line": 1,
+      "column": 1,
+      "current": "avbparser.h",
+      "chosen": "avbparser.h",
+      "category": "File",
+      "decision": "Keep current",
+      "expected": "avbbinloader.h",
+      "actual": "avbbinloader.h",
+      "passed": true
+    },
+    {
+      "id": "83f7d66596c0bc30",
+      "file": "src/avbparser.h",
+      "line": 16,
+      "column": 9,
+      "current": "AvbResolution",
+      "chosen": "AvbReferenceResult",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "AvbReferenceResult",
+      "actual": "AvbReferenceResult",
+      "passed": true,
+      "originalTokenIndex": 46
+    },
+    {
+      "id": "2298490d2608f171",
+      "file": "src/avbparser.h",
+      "line": 19,
+      "column": 8,
+      "current": "AvbMob",
+      "chosen": "AvbComposition",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "AvbComposition",
+      "actual": "AvbComposition",
+      "passed": true,
+      "originalTokenIndex": 50
+    },
+    {
+      "id": "60e2d0f333d72f42",
+      "file": "src/avbparser.h",
+      "line": 28,
+      "column": 10,
+      "current": "originalBin",
+      "chosen": "originalBinName",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "originalBinName",
+      "actual": "originalBinName",
+      "passed": true,
+      "originalTokenIndex": 66
+    },
+    {
+      "id": "b1984d05d858bfd4",
+      "file": "src/avbparser.h",
+      "line": 42,
+      "column": 18,
+      "current": "mobs",
+      "chosen": "compositions",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "compositions",
+      "actual": "compositions",
+      "passed": true,
+      "originalTokenIndex": 108
+    },
+    {
+      "id": "fdbf0ed40b75edf4",
+      "file": "src/avbparser.h",
+      "line": 48,
+      "column": 50,
+      "current": "source",
+      "chosen": "sourceGraph",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "sourceGraph",
+      "actual": "sourceGraph",
+      "passed": true,
+      "originalTokenIndex": 120
+    },
+    {
+      "id": "8ceba4bcd3f5efd9",
+      "file": "src/avbparser.h",
+      "line": 49,
+      "column": 51,
+      "current": "resolution",
+      "chosen": "referenceResult",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "referenceResult",
+      "actual": "referenceResult",
+      "passed": true,
+      "originalTokenIndex": 129
+    },
+    {
+      "id": "1eba9126b0c3a203",
+      "file": "src/avbparser.h",
+      "line": 53,
+      "column": 7,
+      "current": "valid",
+      "chosen": "usable",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "usable",
+      "actual": "usable",
+      "passed": true,
+      "originalTokenIndex": 132
+    },
+    {
+      "id": "647db09cb1e846f6",
+      "file": "src/avbparser.h",
+      "line": 54,
+      "column": 7,
+      "current": "complete",
+      "chosen": "coverageComplete",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "coverageComplete",
+      "actual": "coverageComplete",
+      "passed": true,
+      "originalTokenIndex": 137
+    },
+    {
+      "id": "7c6ae75829d11c00",
+      "file": "src/avbparser.h",
+      "line": 64,
+      "column": 8,
+      "current": "AvbHeaderCheck",
+      "chosen": "AvbHeaderResult",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "AvbHeaderResult",
+      "actual": "AvbHeaderResult",
+      "passed": true,
+      "originalTokenIndex": 170
+    },
+    {
+      "id": "228356b2eab081fb",
+      "file": "src/avbparser.h",
+      "line": 70,
+      "column": 7,
+      "current": "AvbParser",
+      "chosen": "AvbParser",
+      "category": "Class",
+      "decision": "Keep current",
+      "expected": "AvbBinLoader",
+      "actual": "AvbBinLoader",
+      "passed": true,
+      "originalTokenIndex": 183
+    },
+    {
+      "id": "b3549e698031d6e3",
+      "file": "src/avbparser.h",
+      "line": 77,
+      "column": 30,
+      "current": "parse",
+      "chosen": "load",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "load",
+      "actual": "load",
+      "passed": true,
+      "originalTokenIndex": 209
+    },
+    {
+      "id": "4b64456e79343a89",
+      "file": "src/avideffects.cpp",
+      "line": 1,
+      "column": 1,
+      "current": "avideffects.cpp",
+      "chosen": "effectcatalogue.cpp",
+      "category": "File",
+      "decision": "Rename",
+      "expected": "effectcatalogue.cpp",
+      "actual": "effectcatalogue.cpp",
+      "passed": true
+    },
+    {
+      "id": "d1f8b5b384e81e81",
+      "file": "src/avideffects.h",
+      "line": 1,
+      "column": 1,
+      "current": "avideffects.h",
+      "chosen": "effectcatalogue.h",
+      "category": "File",
+      "decision": "Rename",
+      "expected": "effectcatalogue.h",
+      "actual": "effectcatalogue.h",
+      "passed": true
+    },
+    {
+      "id": "045bf9bc566c35fb",
+      "file": "src/avidmedialayout.h",
+      "line": 1,
+      "column": 1,
+      "current": "avidmedialayout.h",
+      "chosen": "app_avidmedialayout.h",
+      "category": "File",
+      "decision": "Rename",
+      "expected": "app_avidmedialayout.h",
+      "actual": "app_avidmedialayout.h",
+      "passed": true
+    },
+    {
+      "id": "dd4c0aa7926b1d96",
+      "file": "src/avidprecompute.h",
+      "line": 1,
+      "column": 1,
+      "current": "avidprecompute.h",
+      "chosen": "precompute",
+      "category": "File",
+      "decision": "Rename",
+      "expected": "precompute.h",
+      "actual": "precompute.h",
+      "passed": true
+    },
+    {
+      "id": "ad39652907652793",
+      "file": "src/binfilereferences.h",
+      "line": 1,
+      "column": 1,
+      "current": "binfilereferences.h",
+      "chosen": "avbfilereferences.h",
+      "category": "File",
+      "decision": "Rename",
+      "expected": "avbfilereferences.h",
+      "actual": "avbfilereferences.h",
+      "passed": true
+    },
+    {
+      "id": "983f9c62448ab57f",
+      "file": "src/binfilereferences.h",
+      "line": 13,
+      "column": 8,
+      "current": "BinFileId",
+      "chosen": "AvbFileId",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "AvbFileId",
+      "actual": "AvbFileId",
+      "passed": true,
+      "originalTokenIndex": 30
+    },
+    {
+      "id": "03585bdeeaf4ea1a",
+      "file": "src/binfilereferences.h",
+      "line": 67,
+      "column": 8,
+      "current": "BinFileReferences",
+      "chosen": "AvbFileReferences",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "AvbFileReferences",
+      "actual": "AvbFileReferences",
+      "passed": true,
+      "originalTokenIndex": 446
+    },
+    {
+      "id": "f851483f1ffdd387",
+      "file": "src/binfilter.h",
+      "line": 1,
+      "column": 1,
+      "current": "binfilter.h",
+      "chosen": "avbfilter.h",
+      "category": "File",
+      "decision": "Rename",
+      "expected": "avbfilter.h",
+      "actual": "avbfilter.h",
+      "passed": true
+    },
+    {
+      "id": "ca6e5cd1bdc61a11",
+      "file": "src/binfilter.h",
+      "line": 14,
+      "column": 9,
+      "current": "AvbResolution",
+      "chosen": "AvbReferenceResult",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "AvbReferenceResult",
+      "actual": "AvbReferenceResult",
+      "passed": true,
+      "originalTokenIndex": 38
+    },
+    {
+      "id": "c7e227609d822b45",
+      "file": "src/binfilter.h",
+      "line": 19,
+      "column": 8,
+      "current": "BinFilter",
+      "chosen": "AvbFilter",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "AvbFilter",
+      "actual": "AvbFilter",
+      "passed": true,
+      "originalTokenIndex": 42
+    },
+    {
+      "id": "0ce326022e4dc744",
+      "file": "src/binfilter.h",
+      "line": 30,
+      "column": 13,
+      "current": "op",
+      "chosen": "operation",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "operation",
+      "actual": "operation",
+      "passed": true,
+      "originalTokenIndex": 59
+    },
+    {
+      "id": "95f20d2a0824e0b5",
+      "file": "src/binfilter.h",
+      "line": 32,
+      "column": 21,
+      "current": "mediaFileIds",
+      "chosen": "fileReferences",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "fileReferences",
+      "actual": "fileReferences",
+      "passed": true,
+      "originalTokenIndex": 72
+    },
+    {
+      "id": "443dabd68ebb1085",
+      "file": "src/binfilter.h",
+      "line": 34,
+      "column": 60,
+      "current": "sources",
+      "chosen": "sourceGraphs",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "sourceGraphs",
+      "actual": "sourceGraphs",
+      "passed": true,
+      "originalTokenIndex": 87
+    },
+    {
+      "id": "92db3054af26b36d",
+      "file": "src/binfilter.h",
+      "line": 35,
+      "column": 61,
+      "current": "resolutions",
+      "chosen": "referenceResults",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "referenceResults",
+      "actual": "referenceResults",
+      "passed": true,
+      "originalTokenIndex": 99
+    },
+    {
+      "id": "eae4e87269de7e48",
+      "file": "src/binfilterdialog.cpp",
+      "line": 1,
+      "column": 1,
+      "current": "binfilterdialog.cpp",
+      "chosen": "avbfilterdialog.cpp",
+      "category": "File",
+      "decision": "Rename",
+      "expected": "avbfilterdialog.cpp",
+      "actual": "avbfilterdialog.cpp",
+      "passed": true
+    },
+    {
+      "id": "f4104b368a899c0b",
+      "file": "src/binfilterdialog.cpp",
+      "line": 87,
+      "column": 9,
+      "current": "row",
+      "chosen": "operationRow",
+      "category": "Local variable",
+      "decision": "Rename",
+      "expected": "operationRow",
+      "actual": "operationRow",
+      "passed": true,
+      "originalTokenIndex": 336
+    },
+    {
+      "id": "80af01218d54a4d8",
+      "file": "src/binfilterdialog.cpp",
+      "line": 300,
+      "column": 15,
+      "current": "idx",
+      "chosen": "binIndex",
+      "category": "Local constant",
+      "decision": "Rename",
+      "expected": "stepIndex",
+      "actual": "stepIndex",
+      "passed": true,
+      "originalTokenIndex": 1630
+    },
+    {
+      "id": "cb2a0468eceaf208",
+      "file": "src/binfilterdialog.cpp",
+      "line": 334,
+      "column": 33,
+      "current": "entry",
+      "chosen": "binEntry",
+      "category": "Parameter",
+      "decision": "Rename",
+      "expected": "binEntry",
+      "actual": "binEntry",
+      "passed": true,
+      "originalTokenIndex": 1844
+    },
+    {
+      "id": "344900888036ae54",
+      "file": "src/binfilterdialog.cpp",
+      "line": 455,
+      "column": 24,
+      "current": "entry",
+      "chosen": "existingBin",
+      "category": "Local variable",
+      "decision": "Rename",
+      "expected": "existingBin",
+      "actual": "existingBin",
+      "passed": true,
+      "originalTokenIndex": 2467
+    },
+    {
+      "id": "9ae1a6b470edade0",
+      "file": "src/binfilterdialog.cpp",
+      "line": 471,
+      "column": 12,
+      "current": "entry",
+      "chosen": "newBinEntry",
+      "category": "Local variable",
+      "decision": "Rename",
+      "expected": "newBinEntry",
+      "actual": "newBinEntry",
+      "passed": true,
+      "originalTokenIndex": 2552
+    },
+    {
+      "id": "417bbc614d74bc26",
+      "file": "src/binfilterdialog.cpp",
+      "line": 476,
+      "column": 12,
+      "current": "row",
+      "chosen": "binRow",
+      "category": "Local constant",
+      "decision": "Rename",
+      "expected": "binRow",
+      "actual": "binRow",
+      "passed": true,
+      "originalTokenIndex": 2592
+    },
+    {
+      "id": "a86c61f63f1a42a7",
+      "file": "src/binfilterdialog.cpp",
+      "line": 511,
+      "column": 11,
+      "current": "row",
+      "chosen": "binRow",
+      "category": "Local variable",
+      "decision": "Rename",
+      "expected": "binRow",
+      "actual": "binRow",
+      "passed": true,
+      "originalTokenIndex": 2820
+    },
+    {
+      "id": "53ce31d5a30ecc83",
+      "file": "src/binfilterdialog.cpp",
+      "line": 513,
+      "column": 14,
+      "current": "entry",
+      "chosen": "binEntry",
+      "category": "Local variable",
+      "decision": "Rename",
+      "expected": "binEntry",
+      "actual": "binEntry",
+      "passed": true,
+      "originalTokenIndex": 2839
+    },
+    {
+      "id": "4622e15c9aec04a9",
+      "file": "src/binfilterdialog.cpp",
+      "line": 586,
+      "column": 6,
+      "current": "BinFilterDialog::maybeAutoIntersect",
+      "chosen": "tryAutoIntersect",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "AvbFilterDialog::tryAutoIntersect",
+      "actual": "AvbFilterDialog::tryAutoIntersect",
+      "passed": true,
+      "originalTokenIndex": 3236
+    },
+    {
+      "id": "90e865d010bc684f",
+      "file": "src/binfilterdialog.cpp",
+      "line": 596,
+      "column": 41,
+      "current": "idx",
+      "chosen": "binIndex",
+      "category": "Parameter",
+      "decision": "Rename",
+      "expected": "binIndex",
+      "actual": "binIndex",
+      "passed": true,
+      "originalTokenIndex": 3283
+    },
+    {
+      "id": "8eb8d90017175927",
+      "file": "src/binfilterdialog.cpp",
+      "line": 603,
+      "column": 41,
+      "current": "idx",
+      "chosen": "binIndex",
+      "category": "Parameter",
+      "decision": "Rename",
+      "expected": "binIndex",
+      "actual": "binIndex",
+      "passed": true,
+      "originalTokenIndex": 3314
+    },
+    {
+      "id": "f4197bca777ec231",
+      "file": "src/binfilterdialog.cpp",
+      "line": 605,
+      "column": 19,
+      "current": "entry",
+      "chosen": "binEntry",
+      "category": "Local constant",
+      "decision": "Rename",
+      "expected": "binEntry",
+      "actual": "binEntry",
+      "passed": true,
+      "originalTokenIndex": 3320
+    },
+    {
+      "id": "9f320eefa3d3a027",
+      "file": "src/binfilterdialog.cpp",
+      "line": 643,
+      "column": 22,
+      "current": "p",
+      "chosen": "avbPath",
+      "category": "Local variable",
+      "decision": "Rename",
+      "expected": "avbPath",
+      "actual": "avbPath",
+      "passed": true,
+      "originalTokenIndex": 3628
+    },
+    {
+      "id": "9a431feeaa20fcf9",
+      "file": "src/binfilterdialog.cpp",
+      "line": 678,
+      "column": 25,
+      "current": "BinFilterDialog::checkedBins",
+      "chosen": "checkedLoadedBins",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "AvbFilterDialog::checkedLoadedBins",
+      "actual": "AvbFilterDialog::checkedLoadedBins",
+      "passed": true,
+      "originalTokenIndex": 3777
+    },
+    {
+      "id": "74e012bc94a6d678",
+      "file": "src/binfilterdialog.cpp",
+      "line": 681,
+      "column": 11,
+      "current": "i",
+      "chosen": "binRow",
+      "category": "Local variable",
+      "decision": "Rename",
+      "expected": "binRow",
+      "actual": "binRow",
+      "passed": true,
+      "originalTokenIndex": 3795
+    },
+    {
+      "id": "a8ca75515d9faaf0",
+      "file": "src/binfilterdialog.cpp",
+      "line": 683,
+      "column": 26,
+      "current": "it",
+      "chosen": "binItem",
+      "category": "Local variable",
+      "decision": "Rename",
+      "expected": "binItem",
+      "actual": "binItem",
+      "passed": true,
+      "originalTokenIndex": 3815
+    },
+    {
+      "id": "bf6dff97c86c90ea",
+      "file": "src/binfilterdialog.cpp",
+      "line": 686,
+      "column": 20,
+      "current": "entry",
+      "chosen": "binEntry",
+      "category": "Local constant",
+      "decision": "Rename",
+      "expected": "binEntry",
+      "actual": "binEntry",
+      "passed": true,
+      "originalTokenIndex": 3842
+    },
+    {
+      "id": "14e9e7db48b36e53",
+      "file": "src/binfilterdialog.cpp",
+      "line": 739,
+      "column": 6,
+      "current": "BinFilterDialog::clearChain",
+      "chosen": "clearFilterSteps",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "AvbFilterDialog::clearFilterSteps",
+      "actual": "AvbFilterDialog::clearFilterSteps",
+      "passed": true,
+      "originalTokenIndex": 4109
+    },
+    {
+      "id": "deda0408a6b4e591",
+      "file": "src/binfilterdialog.cpp",
+      "line": 766,
+      "column": 13,
+      "current": "row",
+      "chosen": "stepRow",
+      "category": "Local constant",
+      "decision": "Rename",
+      "expected": "stepRow",
+      "actual": "stepRow",
+      "passed": true,
+      "originalTokenIndex": 4229
+    },
+    {
+      "id": "0eff908c8135a5cc",
+      "file": "src/binfilterdialog.cpp",
+      "line": 802,
+      "column": 24,
+      "current": "s",
+      "chosen": "step",
+      "category": "Local variable",
+      "decision": "Rename",
+      "expected": "step",
+      "actual": "step",
+      "passed": true,
+      "originalTokenIndex": 4459
+    },
+    {
+      "id": "929bb902daedb55e",
+      "file": "src/binfilterdialog.h",
+      "line": 1,
+      "column": 1,
+      "current": "binfilterdialog.h",
+      "chosen": "avbfilterdialog.h",
+      "category": "File",
+      "decision": "Rename",
+      "expected": "avbfilterdialog.h",
+      "actual": "avbfilterdialog.h",
+      "passed": true
+    },
+    {
+      "id": "fa72a6ffff3a6172",
+      "file": "src/binfilterdialog.h",
+      "line": 43,
+      "column": 7,
+      "current": "BinFilterDialog",
+      "chosen": "AvbFilterDialog",
+      "category": "Class",
+      "decision": "Rename",
+      "expected": "AvbFilterDialog",
+      "actual": "AvbFilterDialog",
+      "passed": true,
+      "originalTokenIndex": 87
+    },
+    {
+      "id": "a91be8e01634420e",
+      "file": "src/binfilterdialog.h",
+      "line": 64,
+      "column": 7,
+      "current": "clearChain",
+      "chosen": "clearFilterSteps",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "clearFilterSteps",
+      "actual": "clearFilterSteps",
+      "passed": true,
+      "originalTokenIndex": 135
+    },
+    {
+      "id": "87d891bd16e3128f",
+      "file": "src/binfilterdialog.h",
+      "line": 109,
+      "column": 7,
+      "current": "maybeAutoIntersect",
+      "chosen": "tryAutoIntersect",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "tryAutoIntersect",
+      "actual": "tryAutoIntersect",
+      "passed": true,
+      "originalTokenIndex": 278
+    },
+    {
+      "id": "611a1aa6963d98e4",
+      "file": "src/binfilterdialog.h",
+      "line": 140,
+      "column": 26,
+      "current": "checkedBins",
+      "chosen": "checkedLoadedBins",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "checkedLoadedBins",
+      "actual": "checkedLoadedBins",
+      "passed": true,
+      "originalTokenIndex": 408
+    },
+    {
+      "id": "27a7c7ded574e2aa",
+      "file": "src/binfilterdialog.h",
+      "line": 142,
+      "column": 9,
+      "current": "LoadedBin",
+      "chosen": "BinLoadEntry",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "BinLoadEntry",
+      "actual": "BinLoadEntry",
+      "passed": true,
+      "originalTokenIndex": 414
+    },
+    {
+      "id": "d82e0159c15b5566",
+      "file": "src/binfilterdialog.h",
+      "line": 145,
+      "column": 11,
+      "current": "id",
+      "chosen": "binRowId",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "binRowId",
+      "actual": "binRowId",
+      "passed": true,
+      "originalTokenIndex": 420
+    },
+    {
+      "id": "89ff4a1d445c9f2a",
+      "file": "src/binfilterdialog.h",
+      "line": 154,
+      "column": 14,
+      "current": "m_parsePool",
+      "chosen": "m_loadPool",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "m_loadPool",
+      "actual": "m_loadPool",
+      "passed": true,
+      "originalTokenIndex": 471
+    },
+    {
+      "id": "ec3ffacd202a7bc9",
+      "file": "src/binmetadataresolver.cpp",
+      "line": 1,
+      "column": 1,
+      "current": "binmetadataresolver.cpp",
+      "chosen": "avbmetadataresolver.cpp",
+      "category": "File",
+      "decision": "Rename",
+      "expected": "avbmetadataresolver.cpp",
+      "actual": "avbmetadataresolver.cpp",
+      "passed": true
+    },
+    {
+      "id": "ae1e9cc975353c0c",
+      "file": "src/binmetadataresolver.cpp",
+      "line": 55,
+      "column": 6,
+      "current": "BinMetadataResolver::apply",
+      "chosen": "BinMetadataResolver::apply",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbMetadataResolver::applyTo",
+      "actual": "AvbMetadataResolver::applyTo",
+      "passed": true,
+      "originalTokenIndex": 295
+    },
+    {
+      "id": "e7c6551a90650e50",
+      "file": "src/binmetadataresolver.h",
+      "line": 1,
+      "column": 1,
+      "current": "binmetadataresolver.h",
+      "chosen": "avbmetadataresolver.h",
+      "category": "File",
+      "decision": "Rename",
+      "expected": "avbmetadataresolver.h",
+      "actual": "avbmetadataresolver.h",
+      "passed": true
+    },
+    {
+      "id": "0461b5b4864261d8",
+      "file": "src/binmetadataresolver.h",
+      "line": 9,
+      "column": 8,
+      "current": "AvbMob",
+      "chosen": "AvbComposition",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "AvbComposition",
+      "actual": "AvbComposition",
+      "passed": true,
+      "originalTokenIndex": 25
+    },
+    {
+      "id": "1f4a01710f78c248",
+      "file": "src/binmetadataresolver.h",
+      "line": 19,
+      "column": 7,
+      "current": "BinMetadataResolver",
+      "chosen": "AvbMetadataResolver",
+      "category": "Class",
+      "decision": "Rename",
+      "expected": "AvbMetadataResolver",
+      "actual": "AvbMetadataResolver",
+      "passed": true,
+      "originalTokenIndex": 38
+    },
+    {
+      "id": "7d65eeb8b8520f7c",
+      "file": "src/binmetadataresolver.h",
+      "line": 24,
+      "column": 7,
+      "current": "apply",
+      "chosen": "applyTo",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "applyTo",
+      "actual": "applyTo",
+      "passed": true,
+      "originalTokenIndex": 55
+    },
+    {
+      "id": "9ac204f68658b7df",
+      "file": "src/binmetadataresolver.h",
+      "line": 31,
+      "column": 11,
+      "current": "originalBin",
+      "chosen": "originalBinName",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "originalBinName",
+      "actual": "originalBinName",
+      "passed": true,
+      "originalTokenIndex": 92
+    },
+    {
+      "id": "a5b8c9d1e52506bc",
+      "file": "src/binmetadataresolver.h",
+      "line": 33,
+      "column": 8,
+      "current": "nameConflict",
+      "chosen": "clipNameConflict",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "clipNameConflict",
+      "actual": "clipNameConflict",
+      "passed": true,
+      "originalTokenIndex": 98
+    },
+    {
+      "id": "aed900028750b028",
+      "file": "src/binmetadataresolver.h",
+      "line": 34,
+      "column": 8,
+      "current": "binConflict",
+      "chosen": "originalBinConflict",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "originalBinConflict",
+      "actual": "originalBinConflict",
+      "passed": true,
+      "originalTokenIndex": 103
+    },
+    {
+      "id": "76a49e7dccce5be2",
+      "file": "src/binmetadataresolver.h",
+      "line": 35,
+      "column": 32,
+      "current": "names",
+      "chosen": "clipNameObservations",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "clipNameObservations",
+      "actual": "clipNameObservations",
+      "passed": true,
+      "originalTokenIndex": 111
+    },
+    {
+      "id": "0e539eb99b641ec6",
+      "file": "src/binmetadataresolver.h",
+      "line": 36,
+      "column": 32,
+      "current": "bins",
+      "chosen": "originalBinObservations",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "originalBinObservations",
+      "actual": "originalBinObservations",
+      "passed": true,
+      "originalTokenIndex": 117
+    },
+    {
+      "id": "4c3cc2b63aa58e02",
+      "file": "src/binmetadataresolver.h",
+      "line": 37,
+      "column": 60,
+      "current": "sources",
+      "chosen": "avbSources",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "avbSources",
+      "actual": "avbSources",
+      "passed": true,
+      "originalTokenIndex": 129
+    },
+    {
+      "id": "7f9b6c31d7abbf03",
+      "file": "src/mainwindow.h",
+      "line": 252,
+      "column": 8,
+      "current": "BinFilterDialog",
+      "chosen": "AvbFilterDialog",
+      "category": "Class",
+      "decision": "Rename",
+      "expected": "AvbFilterDialog",
+      "actual": "AvbFilterDialog",
+      "passed": true,
+      "originalTokenIndex": 958
+    },
+    {
+      "id": "4c8bead026ac046f",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 27,
+      "column": 9,
+      "current": "AvbCursor::remaining",
+      "chosen": "AvbCursor::remaining",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::remainingBytes",
+      "actual": "AvbFieldReader::remainingBytes",
+      "passed": true,
+      "originalTokenIndex": 123
+    },
+    {
+      "id": "216b8127f65f0f5c",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 28,
+      "column": 9,
+      "current": "AvbCursor::position",
+      "chosen": "AvbCursor::position",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::fileOffset",
+      "actual": "AvbFieldReader::fileOffset",
+      "passed": true,
+      "originalTokenIndex": 141
+    },
+    {
+      "id": "ad2fdbc3f2c0f26b",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 30,
+      "column": 7,
+      "current": "AvbCursor::checkCancellation",
+      "chosen": "AvbCursor::checkCancellation",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::checkCancellation",
+      "actual": "AvbFieldReader::checkCancellation",
+      "passed": true,
+      "originalTokenIndex": 155
+    },
+    {
+      "id": "08d69fb77ccbfa66",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 36,
+      "column": 7,
+      "current": "AvbCursor::requireCount",
+      "chosen": "AvbCursor::requireCount",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::requireCount",
+      "actual": "AvbFieldReader::requireCount",
+      "passed": true,
+      "originalTokenIndex": 187
+    },
+    {
+      "id": "8e7d873959694fe5",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 43,
+      "column": 20,
+      "current": "AvbCursor::unsupported",
+      "chosen": "AvbCursor::unsupported",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::failUnsupported",
+      "actual": "AvbFieldReader::failUnsupported",
+      "passed": true,
+      "originalTokenIndex": 246
+    },
+    {
+      "id": "bd258733b0772440",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 48,
+      "column": 20,
+      "current": "AvbCursor::malformed",
+      "chosen": "AvbCursor::malformed",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::failMalformed",
+      "actual": "AvbFieldReader::failMalformed",
+      "passed": true,
+      "originalTokenIndex": 276
+    },
+    {
+      "id": "2e5c4484769f51f5",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 53,
+      "column": 15,
+      "current": "AvbCursor::capture",
+      "chosen": "AvbCursor::capture",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::captureField",
+      "actual": "AvbFieldReader::captureField",
+      "passed": true,
+      "originalTokenIndex": 302
+    },
+    {
+      "id": "6e332df73ba6edcd",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 75,
+      "column": 4,
+      "current": "AvbCursor::integer",
+      "chosen": "AvbCursor::integer",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::readInteger",
+      "actual": "AvbFieldReader::readInteger",
+      "passed": true,
+      "originalTokenIndex": 497
+    },
+    {
+      "id": "6a0f6d9f8d8040f7",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 120,
+      "column": 9,
+      "current": "AvbCursor::exp10",
+      "chosen": "AvbCursor::exp10",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::readMantissaExponent",
+      "actual": "AvbFieldReader::readMantissaExponent",
+      "passed": true,
+      "originalTokenIndex": 921
+    },
+    {
+      "id": "b6532e07ce2b3feb",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 128,
+      "column": 13,
+      "current": "AvbCursor::raw",
+      "chosen": "AvbCursor::raw",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::readBytes",
+      "actual": "AvbFieldReader::readBytes",
+      "passed": true,
+      "originalTokenIndex": 979
+    },
+    {
+      "id": "2a9942574253263b",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 133,
+      "column": 10,
+      "current": "AvbCursor::decode",
+      "chosen": "AvbCursor::decode",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::decodeText",
+      "actual": "AvbFieldReader::decodeText",
+      "passed": true,
+      "originalTokenIndex": 1004
+    },
+    {
+      "id": "1e80c321ec949683",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 176,
+      "column": 10,
+      "current": "AvbCursor::text",
+      "chosen": "AvbCursor::text",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::readText",
+      "actual": "AvbFieldReader::readText",
+      "passed": true,
+      "originalTokenIndex": 1332
+    },
+    {
+      "id": "8190f510827f0549",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 182,
+      "column": 10,
+      "current": "AvbCursor::string",
+      "chosen": "AvbCursor::string",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::string",
+      "actual": "AvbFieldReader::string",
+      "passed": true,
+      "originalTokenIndex": 1373
+    },
+    {
+      "id": "d29ddf904938bd7c",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 211,
+      "column": 13,
+      "current": "AvbCursor::fourcc",
+      "chosen": "AvbCursor::fourcc",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::readFourcc",
+      "actual": "AvbFieldReader::readFourcc",
+      "passed": true,
+      "originalTokenIndex": 1621
+    },
+    {
+      "id": "dcc64bf9e47839bc",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 221,
+      "column": 13,
+      "current": "AvbCursor::rawUuid",
+      "chosen": "AvbCursor::rawUuid",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::readBinaryUuid",
+      "actual": "AvbFieldReader::readBinaryUuid",
+      "passed": true,
+      "originalTokenIndex": 1682
+    },
+    {
+      "id": "bf3e8f32199aa1d7",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 236,
+      "column": 13,
+      "current": "AvbCursor::uuid",
+      "chosen": "AvbCursor::uuid",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::readTypedUuid",
+      "actual": "AvbFieldReader::readTypedUuid",
+      "passed": true,
+      "originalTokenIndex": 1797
+    },
+    {
+      "id": "562acad91ad81cfd",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 258,
+      "column": 13,
+      "current": "AvbCursor::mobId",
+      "chosen": "AvbCursor::mobId",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::readMobId",
+      "actual": "AvbFieldReader::readMobId",
+      "passed": true,
+      "originalTokenIndex": 2065
+    },
+    {
+      "id": "25ab99d4e6e24730",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 286,
+      "column": 10,
+      "current": "AvbCursor::ref",
+      "chosen": "AvbCursor::ref",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::readObjectReference",
+      "actual": "AvbFieldReader::readObjectReference",
+      "passed": true,
+      "originalTokenIndex": 2455
+    },
+    {
+      "id": "84d1c2030f409af5",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 299,
+      "column": 7,
+      "current": "AvbCursor::mobReference",
+      "chosen": "AvbCursor::mobReference",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::recordMobReference",
+      "actual": "AvbFieldReader::recordMobReference",
+      "passed": true,
+      "originalTokenIndex": 2557
+    },
+    {
+      "id": "85aed14cca27aac5",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 314,
+      "column": 7,
+      "current": "AvbCursor::tag",
+      "chosen": "AvbCursor::tag",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::expectTag",
+      "actual": "AvbFieldReader::expectTag",
+      "passed": true,
+      "originalTokenIndex": 2673
+    },
+    {
+      "id": "3e95109295ca979a",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 321,
+      "column": 6,
+      "current": "AvbCursor::extension",
+      "chosen": "AvbCursor::extension",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::readExtensionTag",
+      "actual": "AvbFieldReader::readExtensionTag",
+      "passed": true,
+      "originalTokenIndex": 2729
+    },
+    {
+      "id": "87f9e7eb9283f3c3",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 330,
+      "column": 9,
+      "current": "AvbCursor::peek",
+      "chosen": "AvbCursor::peek",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::peek",
+      "actual": "AvbFieldReader::peek",
+      "passed": true,
+      "originalTokenIndex": 2776
+    },
+    {
+      "id": "0777e629c8b41d42",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 338,
+      "column": 7,
+      "current": "AvbCursor::retainTail",
+      "chosen": "AvbCursor::retainTail",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::retainUnparsedTail",
+      "actual": "AvbFieldReader::retainUnparsedTail",
+      "passed": true,
+      "originalTokenIndex": 2822
+    },
+    {
+      "id": "27fd7138c66547d0",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 346,
+      "column": 7,
+      "current": "AvbCursor::role",
+      "chosen": "AvbCursor::role",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::setObjectRole",
+      "actual": "AvbFieldReader::setObjectRole",
+      "passed": true,
+      "originalTokenIndex": 2867
+    },
+    {
+      "id": "a01f64cca87aaacd",
+      "file": "src/mediaengine/avbobjects_p.cpp",
+      "line": 352,
+      "column": 7,
+      "current": "AvbCursor::identity",
+      "chosen": "AvbCursor::identity",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbFieldReader::setObjectIdentity",
+      "actual": "AvbFieldReader::setObjectIdentity",
+      "passed": true,
+      "originalTokenIndex": 2889
+    },
+    {
+      "id": "36cf063865f28fa7",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 11,
+      "column": 9,
+      "current": "AvbFailure",
+      "chosen": "AvbReadFailure",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "AvbReadFailure",
+      "actual": "AvbReadFailure",
+      "passed": true,
+      "originalTokenIndex": 17
+    },
+    {
+      "id": "43b92e5da6e4e0e0",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 17,
+      "column": 8,
+      "current": "AvbCursor",
+      "chosen": "AvbFieldReader",
+      "category": "Class",
+      "decision": "Rename",
+      "expected": "AvbFieldReader",
+      "actual": "AvbFieldReader",
+      "passed": true,
+      "originalTokenIndex": 30
+    },
+    {
+      "id": "d48b082c308099d0",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 32,
+      "column": 10,
+      "current": "exp10",
+      "chosen": "readMantissaExponent",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "readMantissaExponent",
+      "actual": "readMantissaExponent",
+      "passed": true,
+      "originalTokenIndex": 150
+    },
+    {
+      "id": "5bc9be3538d908b1",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 33,
+      "column": 14,
+      "current": "raw",
+      "chosen": "readBytes",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "readBytes",
+      "actual": "readBytes",
+      "passed": true,
+      "originalTokenIndex": 159
+    },
+    {
+      "id": "16613a23e81e89b5",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 35,
+      "column": 11,
+      "current": "text",
+      "chosen": "readText",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "readText",
+      "actual": "readText",
+      "passed": true,
+      "originalTokenIndex": 187
+    },
+    {
+      "id": "49466d25b39697b9",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 36,
+      "column": 14,
+      "current": "fourcc",
+      "chosen": "readFourcc",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "readFourcc",
+      "actual": "readFourcc",
+      "passed": true,
+      "originalTokenIndex": 202
+    },
+    {
+      "id": "a32d64a0c8d0e174",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 37,
+      "column": 14,
+      "current": "uuid",
+      "chosen": "readTypedUuid",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "readTypedUuid",
+      "actual": "readTypedUuid",
+      "passed": true,
+      "originalTokenIndex": 211
+    },
+    {
+      "id": "445418de1ba8b545",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 38,
+      "column": 14,
+      "current": "rawUuid",
+      "chosen": "readBinaryUuid",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "readBinaryUuid",
+      "actual": "readBinaryUuid",
+      "passed": true,
+      "originalTokenIndex": 220
+    },
+    {
+      "id": "0a12cb2169965767",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 39,
+      "column": 14,
+      "current": "mobId",
+      "chosen": "readMobId",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "readMobId",
+      "actual": "readMobId",
+      "passed": true,
+      "originalTokenIndex": 229
+    },
+    {
+      "id": "08ff16768ced288c",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 40,
+      "column": 11,
+      "current": "ref",
+      "chosen": "readObjectReference",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "readObjectReference",
+      "actual": "readObjectReference",
+      "passed": true,
+      "originalTokenIndex": 238
+    },
+    {
+      "id": "8943e41303731b0a",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 41,
+      "column": 8,
+      "current": "mobReference",
+      "chosen": "recordMobReference",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "recordMobReference",
+      "actual": "recordMobReference",
+      "passed": true,
+      "originalTokenIndex": 247
+    },
+    {
+      "id": "ed10e21696a5d9ab",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 42,
+      "column": 8,
+      "current": "tag",
+      "chosen": "expectTag",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "expectTag",
+      "actual": "expectTag",
+      "passed": true,
+      "originalTokenIndex": 261
+    },
+    {
+      "id": "eeb5959f3d99e283",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 43,
+      "column": 7,
+      "current": "extension",
+      "chosen": "readExtensionTag",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "readExtensionTag",
+      "actual": "readExtensionTag",
+      "passed": true,
+      "originalTokenIndex": 268
+    },
+    {
+      "id": "212ec883b814d11c",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 45,
+      "column": 10,
+      "current": "remaining",
+      "chosen": "remainingBytes",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "remainingBytes",
+      "actual": "remainingBytes",
+      "passed": true,
+      "originalTokenIndex": 279
+    },
+    {
+      "id": "35ba15f4529f773f",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 46,
+      "column": 10,
+      "current": "position",
+      "chosen": "fileOffset",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "fileOffset",
+      "actual": "fileOffset",
+      "passed": true,
+      "originalTokenIndex": 285
+    },
+    {
+      "id": "5d7424520928fba5",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 47,
+      "column": 8,
+      "current": "bigEndian",
+      "chosen": "isBigEndian",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "isBigEndian",
+      "actual": "isBigEndian",
+      "passed": true,
+      "originalTokenIndex": 291
+    },
+    {
+      "id": "cc8feade99631f15",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 50,
+      "column": 21,
+      "current": "unsupported",
+      "chosen": "failUnsupported",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "failUnsupported",
+      "actual": "failUnsupported",
+      "passed": true,
+      "originalTokenIndex": 323
+    },
+    {
+      "id": "c447315a6ba4d438",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 51,
+      "column": 21,
+      "current": "malformed",
+      "chosen": "failMalformed",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "failMalformed",
+      "actual": "failMalformed",
+      "passed": true,
+      "originalTokenIndex": 338
+    },
+    {
+      "id": "f0d2e75b63a452af",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 52,
+      "column": 8,
+      "current": "retainTail",
+      "chosen": "retainUnparsedTail",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "retainUnparsedTail",
+      "actual": "retainUnparsedTail",
+      "passed": true,
+      "originalTokenIndex": 348
+    },
+    {
+      "id": "fafab808c3931fa6",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 53,
+      "column": 8,
+      "current": "role",
+      "chosen": "setObjectRole",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "setObjectRole",
+      "actual": "setObjectRole",
+      "passed": true,
+      "originalTokenIndex": 357
+    },
+    {
+      "id": "3fe300333a8f87a1",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 54,
+      "column": 8,
+      "current": "identity",
+      "chosen": "setObjectIdentity",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "setObjectIdentity",
+      "actual": "setObjectIdentity",
+      "passed": true,
+      "originalTokenIndex": 366
+    },
+    {
+      "id": "934450589ee15b37",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 57,
+      "column": 16,
+      "current": "capture",
+      "chosen": "captureField",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "captureField",
+      "actual": "captureField",
+      "passed": true,
+      "originalTokenIndex": 383
+    },
+    {
+      "id": "584a011379e60ca6",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 59,
+      "column": 11,
+      "current": "decode",
+      "chosen": "decodeText",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "decodeText",
+      "actual": "decodeText",
+      "passed": true,
+      "originalTokenIndex": 404
+    },
+    {
+      "id": "4d9156d6359c91c0",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 61,
+      "column": 5,
+      "current": "integer",
+      "chosen": "readInteger",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "readInteger",
+      "actual": "readInteger",
+      "passed": true,
+      "originalTokenIndex": 423
+    },
+    {
+      "id": "c0ac9862275e1a6a",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 63,
+      "column": 10,
+      "current": "m_offset",
+      "chosen": "m_baseOffset",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "m_baseOffset",
+      "actual": "m_baseOffset",
+      "passed": true,
+      "originalTokenIndex": 435
+    },
+    {
+      "id": "fc874e966c312aa3",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 64,
+      "column": 13,
+      "current": "m_position",
+      "chosen": "m_relativeOffset",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "m_relativeOffset",
+      "actual": "m_relativeOffset",
+      "passed": true,
+      "originalTokenIndex": 438
+    },
+    {
+      "id": "e6f9a218a544f2f0",
+      "file": "src/mediaengine/avbobjects_p.h",
+      "line": 67,
+      "column": 15,
+      "current": "m_object",
+      "chosen": "m_currentObject",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "m_currentObject",
+      "actual": "m_currentObject",
+      "passed": true,
+      "originalTokenIndex": 451
+    },
+    {
+      "id": "02e495bb266e5c02",
+      "file": "src/mediaengine/avbreferences.cpp",
+      "line": 124,
+      "column": 16,
+      "current": "AvbReferenceIndex::resolve",
+      "chosen": "AvbReferenceIndex::resolve",
+      "category": "Function",
+      "decision": "Keep current",
+      "expected": "AvbReferenceIndex::resolveReferences",
+      "actual": "AvbReferenceIndex::resolveReferences",
+      "passed": true,
+      "originalTokenIndex": 1019
+    },
+    {
+      "id": "36e0638454bc31ac",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 12,
+      "column": 9,
+      "current": "AvbObjectKey",
+      "chosen": "AvbObjectRef",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "AvbObjectRef",
+      "actual": "AvbObjectRef",
+      "passed": true,
+      "originalTokenIndex": 15
+    },
+    {
+      "id": "4c0e0f7056beccca",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 14,
+      "column": 13,
+      "current": "source",
+      "chosen": "sourceIndex",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "sourceIndex",
+      "actual": "sourceIndex",
+      "passed": true,
+      "originalTokenIndex": 18
+    },
+    {
+      "id": "156b9b57e870ed23",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 15,
+      "column": 16,
+      "current": "object",
+      "chosen": "objectHandle",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "objectHandle",
+      "actual": "objectHandle",
+      "passed": true,
+      "originalTokenIndex": 24
+    },
+    {
+      "id": "2bf4fdfd757e9cc6",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 22,
+      "column": 9,
+      "current": "AvbSequence",
+      "chosen": "AvbSequenceEntry",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "AvbSequenceEntry",
+      "actual": "AvbSequenceEntry",
+      "passed": true,
+      "originalTokenIndex": 60
+    },
+    {
+      "id": "452e13f5faf00f54",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 28,
+      "column": 19,
+      "current": "membership",
+      "chosen": "membershipEvidence",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "membershipEvidence",
+      "actual": "membershipEvidence",
+      "passed": true,
+      "originalTokenIndex": 77
+    },
+    {
+      "id": "bd96b053d19064bb",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 31,
+      "column": 9,
+      "current": "AvbScope",
+      "chosen": "AvbSelection",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "AvbSelection",
+      "actual": "AvbSelection",
+      "passed": true,
+      "originalTokenIndex": 82
+    },
+    {
+      "id": "d47d2b238522855c",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 38,
+      "column": 13,
+      "current": "source",
+      "chosen": "sourceIndex",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "sourceIndex",
+      "actual": "sourceIndex",
+      "passed": true,
+      "originalTokenIndex": 94
+    },
+    {
+      "id": "ff21076d7f0a8b4c",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 40,
+      "column": 25,
+      "current": "sequences",
+      "chosen": "selectedSequences",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "selectedSequences",
+      "actual": "selectedSequences",
+      "passed": true,
+      "originalTokenIndex": 110
+    },
+    {
+      "id": "ad24138e284be0f4",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 47,
+      "column": 13,
+      "current": "relationship",
+      "chosen": "relationshipIndex",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "relationshipIndex",
+      "actual": "relationshipIndex",
+      "passed": true,
+      "originalTokenIndex": 124
+    },
+    {
+      "id": "5035676b7cb7579a",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 52,
+      "column": 16,
+      "current": "locator",
+      "chosen": "objectKey",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "objectKey",
+      "actual": "objectKey",
+      "passed": true,
+      "originalTokenIndex": 135
+    },
+    {
+      "id": "ec92159d302eb026",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 53,
+      "column": 13,
+      "current": "property",
+      "chosen": "propertyIndex",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "propertyIndex",
+      "actual": "propertyIndex",
+      "passed": true,
+      "originalTokenIndex": 138
+    },
+    {
+      "id": "9e440fbced42141a",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 58,
+      "column": 9,
+      "current": "AvbReferenceIssue",
+      "chosen": "AvbResolutionIssue",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "AvbResolutionIssue",
+      "actual": "AvbResolutionIssue",
+      "passed": true,
+      "originalTokenIndex": 152
+    },
+    {
+      "id": "8590096fabd94239",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 70,
+      "column": 16,
+      "current": "object",
+      "chosen": "objectKey",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "objectKey",
+      "actual": "objectKey",
+      "passed": true,
+      "originalTokenIndex": 175
+    },
+    {
+      "id": "cfebf5dd9e20a7e2",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 71,
+      "column": 19,
+      "current": "property",
+      "chosen": "propertyLocator",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "propertyLocator",
+      "actual": "propertyLocator",
+      "passed": true,
+      "originalTokenIndex": 178
+    },
+    {
+      "id": "a2e95d8ce158e5c6",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 82,
+      "column": 16,
+      "current": "object",
+      "chosen": "objectKey",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "objectKey",
+      "actual": "objectKey",
+      "passed": true,
+      "originalTokenIndex": 198
+    },
+    {
+      "id": "6b09201687856dc4",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 83,
+      "column": 13,
+      "current": "relationship",
+      "chosen": "relationshipIndex",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "relationshipIndex",
+      "actual": "relationshipIndex",
+      "passed": true,
+      "originalTokenIndex": 201
+    },
+    {
+      "id": "4ec25e94cac274ce",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 87,
+      "column": 9,
+      "current": "AvbResolution",
+      "chosen": "AvbReferenceResult",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "AvbReferenceResult",
+      "actual": "AvbReferenceResult",
+      "passed": true,
+      "originalTokenIndex": 212
+    },
+    {
+      "id": "371bb063117a9b0e",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 91,
+      "column": 30,
+      "current": "media",
+      "chosen": "mediaReferences",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "mediaReferences",
+      "actual": "mediaReferences",
+      "passed": true,
+      "originalTokenIndex": 230
+    },
+    {
+      "id": "119f56252c9bf57e",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 92,
+      "column": 33,
+      "current": "terminals",
+      "chosen": "terminalReferences",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "terminalReferences",
+      "actual": "terminalReferences",
+      "passed": true,
+      "originalTokenIndex": 236
+    },
+    {
+      "id": "da2f05e39022b571",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 94,
+      "column": 8,
+      "current": "complete",
+      "chosen": "coverageComplete",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "coverageComplete",
+      "actual": "coverageComplete",
+      "passed": true,
+      "originalTokenIndex": 245
+    },
+    {
+      "id": "558a05171a3c235c",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 105,
+      "column": 17,
+      "current": "resolve",
+      "chosen": "resolveReferences",
+      "category": "Function",
+      "decision": "Rename",
+      "expected": "resolveReferences",
+      "actual": "resolveReferences",
+      "passed": true,
+      "originalTokenIndex": 315
+    },
+    {
+      "id": "1232b067415ff110",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 108,
+      "column": 10,
+      "current": "SourceIndex",
+      "chosen": "SourceObjectIndex",
+      "category": "Struct",
+      "decision": "Rename",
+      "expected": "SourceObjectIndex",
+      "actual": "SourceObjectIndex",
+      "passed": true,
+      "originalTokenIndex": 335
+    },
+    {
+      "id": "57f9f137dd3da304",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 110,
+      "column": 35,
+      "current": "objects",
+      "chosen": "objectIndices",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "objectIndices",
+      "actual": "objectIndices",
+      "passed": true,
+      "originalTokenIndex": 343
+    },
+    {
+      "id": "c72add8ba8423f64",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 114,
+      "column": 24,
+      "current": "m_indices",
+      "chosen": "m_sourceIndices",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "m_sourceIndices",
+      "actual": "m_sourceIndices",
+      "passed": true,
+      "originalTokenIndex": 372
+    },
+    {
+      "id": "e3b4a71b9c7cea06",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 115,
+      "column": 44,
+      "current": "m_mobs",
+      "chosen": "m_objectsByMobId",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "m_objectsByMobId",
+      "actual": "m_objectsByMobId",
+      "passed": true,
+      "originalTokenIndex": 383
+    },
+    {
+      "id": "ca8385389578b7f1",
+      "file": "src/mediaengine/avbreferences.h",
+      "line": 117,
+      "column": 8,
+      "current": "m_complete",
+      "chosen": "m_indexComplete",
+      "category": "Field",
+      "decision": "Rename",
+      "expected": "m_indexComplete",
+      "actual": "m_indexComplete",
+      "passed": true,
+      "originalTokenIndex": 392
+    }
+  ],
+  "files": [
+    {
+      "original": "CMakeLists.txt",
+      "current": "CMakeLists.txt",
+      "changed": true,
+      "originalTokens": 248,
+      "currentTokens": 248,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/opscanreceipt.cpp",
+      "current": "src/opscanreceipt.cpp",
+      "changed": false,
+      "originalTokens": 930,
+      "currentTokens": 930,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/progressdialog.cpp",
+      "current": "src/progressdialog.cpp",
+      "changed": false,
+      "originalTokens": 729,
+      "currentTokens": 729,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/optrash.h",
+      "current": "src/optrash.h",
+      "changed": false,
+      "originalTokens": 209,
+      "currentTokens": 209,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/conventions.h",
+      "current": "src/conventions.h",
+      "changed": false,
+      "originalTokens": 444,
+      "currentTokens": 444,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/binmetadataresolver.h",
+      "current": "src/avbmetadataresolver.h",
+      "changed": true,
+      "originalTokens": 143,
+      "currentTokens": 143,
+      "identifierChanges": 10,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/nativefile.h",
+      "current": "src/nativefile.h",
+      "changed": false,
+      "originalTokens": 79,
+      "currentTokens": 79,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/unfinishedbusinessdialog.h",
+      "current": "src/unfinishedbusinessdialog.h",
+      "changed": false,
+      "originalTokens": 220,
+      "currentTokens": 220,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengineadapter.cpp",
+      "current": "src/mediaengineadapter.cpp",
+      "changed": false,
+      "originalTokens": 1748,
+      "currentTokens": 1748,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/layoututil.h",
+      "current": "src/layoututil.h",
+      "changed": false,
+      "originalTokens": 93,
+      "currentTokens": 93,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/fileoperationcontroller.cpp",
+      "current": "src/fileoperationcontroller.cpp",
+      "changed": false,
+      "originalTokens": 3465,
+      "currentTokens": 3465,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/avbparser.h",
+      "current": "src/avbbinloader.h",
+      "changed": true,
+      "originalTokens": 228,
+      "currentTokens": 228,
+      "identifierChanges": 16,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/mediaduration.h",
+      "current": "src/mediaduration.h",
+      "changed": false,
+      "originalTokens": 568,
+      "currentTokens": 568,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/opmanager.h",
+      "current": "src/opmanager.h",
+      "changed": false,
+      "originalTokens": 371,
+      "currentTokens": 371,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediascanner.h",
+      "current": "src/mediascanner.h",
+      "changed": false,
+      "originalTokens": 232,
+      "currentTokens": 232,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/rebalancedialog.h",
+      "current": "src/rebalancedialog.h",
+      "changed": false,
+      "originalTokens": 482,
+      "currentTokens": 482,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/avidprecompute.h",
+      "current": "src/precompute.h",
+      "changed": false,
+      "originalTokens": 115,
+      "currentTokens": 115,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/nativefile.cpp",
+      "current": "src/nativefile.cpp",
+      "changed": false,
+      "originalTokens": 665,
+      "currentTokens": 665,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/rebalanceplanner.h",
+      "current": "src/rebalanceplanner.h",
+      "changed": false,
+      "originalTokens": 123,
+      "currentTokens": 123,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/managemediadialog.cpp",
+      "current": "src/managemediadialog.cpp",
+      "changed": false,
+      "originalTokens": 4190,
+      "currentTokens": 4190,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/enumutil.h",
+      "current": "src/enumutil.h",
+      "changed": false,
+      "originalTokens": 53,
+      "currentTokens": 53,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaobservations.h",
+      "current": "src/mediaobservations.h",
+      "changed": false,
+      "originalTokens": 229,
+      "currentTokens": 229,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mainwindow.h",
+      "current": "src/mainwindow.h",
+      "changed": true,
+      "originalTokens": 991,
+      "currentTokens": 991,
+      "identifierChanges": 1,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediatablemodel.cpp",
+      "current": "src/mediatablemodel.cpp",
+      "changed": true,
+      "originalTokens": 2742,
+      "currentTokens": 2742,
+      "identifierChanges": 2,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/opcopier.h",
+      "current": "src/opcopier.h",
+      "changed": false,
+      "originalTokens": 117,
+      "currentTokens": 117,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/version.h.in",
+      "current": "src/version.h.in",
+      "changed": false,
+      "originalTokens": 11,
+      "currentTokens": 11,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/managemediadialog.h",
+      "current": "src/managemediadialog.h",
+      "changed": false,
+      "originalTokens": 416,
+      "currentTokens": 416,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/aboutdialog.cpp",
+      "current": "src/aboutdialog.cpp",
+      "changed": false,
+      "originalTokens": 1071,
+      "currentTokens": 1071,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mxfproperties.h",
+      "current": "src/mxfproperties.h",
+      "changed": false,
+      "originalTokens": 301,
+      "currentTokens": 301,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/rebalancer.h",
+      "current": "src/rebalancer.h",
+      "changed": false,
+      "originalTokens": 191,
+      "currentTokens": 191,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediametadata.h",
+      "current": "src/mediametadata.h",
+      "changed": false,
+      "originalTokens": 35,
+      "currentTokens": 35,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/fileoperationcontroller.h",
+      "current": "src/fileoperationcontroller.h",
+      "changed": false,
+      "originalTokens": 519,
+      "currentTokens": 519,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/volumelistwidget.cpp",
+      "current": "src/volumelistwidget.cpp",
+      "changed": false,
+      "originalTokens": 356,
+      "currentTokens": 356,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/avidtext.h",
+      "current": "src/avidtext.h",
+      "changed": false,
+      "originalTokens": 416,
+      "currentTokens": 416,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/avideffects.h",
+      "current": "src/effectcatalogue.h",
+      "changed": false,
+      "originalTokens": 74,
+      "currentTokens": 74,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/optrash.cpp",
+      "current": "src/optrash.cpp",
+      "changed": false,
+      "originalTokens": 4490,
+      "currentTokens": 4490,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/rebalanceplan.h",
+      "current": "src/rebalanceplan.h",
+      "changed": true,
+      "originalTokens": 155,
+      "currentTokens": 155,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/rebalanceplanner.cpp",
+      "current": "src/rebalanceplanner.cpp",
+      "changed": true,
+      "originalTokens": 3583,
+      "currentTokens": 3583,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/mediafilterproxy.cpp",
+      "current": "src/mediafilterproxy.cpp",
+      "changed": true,
+      "originalTokens": 1940,
+      "currentTokens": 1940,
+      "identifierChanges": 1,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediatablemodel.h",
+      "current": "src/mediatablemodel.h",
+      "changed": true,
+      "originalTokens": 382,
+      "currentTokens": 382,
+      "identifierChanges": 1,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/mediacsv.h",
+      "current": "src/mediacsv.h",
+      "changed": false,
+      "originalTokens": 83,
+      "currentTokens": 83,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/diagnostics.cpp",
+      "current": "src/diagnostics.cpp",
+      "changed": false,
+      "originalTokens": 985,
+      "currentTokens": 985,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/evidenceexplanation.h",
+      "current": "src/evidenceexplanation.h",
+      "changed": false,
+      "originalTokens": 698,
+      "currentTokens": 698,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/operationplan.h",
+      "current": "src/operationplan.h",
+      "changed": false,
+      "originalTokens": 165,
+      "currentTokens": 165,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaevidence.h",
+      "current": "src/mediaevidence.h",
+      "changed": false,
+      "originalTokens": 4875,
+      "currentTokens": 4875,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/avbparser.cpp",
+      "current": "src/avbbinloader.cpp",
+      "changed": true,
+      "originalTokens": 3250,
+      "currentTokens": 3250,
+      "identifierChanges": 97,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/volumemanager.h",
+      "current": "src/volumemanager.h",
+      "changed": false,
+      "originalTokens": 271,
+      "currentTokens": 271,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mainwindow.cpp",
+      "current": "src/mainwindow.cpp",
+      "changed": true,
+      "originalTokens": 14435,
+      "currentTokens": 14435,
+      "identifierChanges": 10,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/aboutdialog.h",
+      "current": "src/aboutdialog.h",
+      "changed": false,
+      "originalTokens": 29,
+      "currentTokens": 29,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/rebalancer.cpp",
+      "current": "src/rebalancer.cpp",
+      "changed": false,
+      "originalTokens": 461,
+      "currentTokens": 461,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/rebalancedialog.cpp",
+      "current": "src/rebalancedialog.cpp",
+      "changed": false,
+      "originalTokens": 4817,
+      "currentTokens": 4817,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/opjournal.h",
+      "current": "src/opjournal.h",
+      "changed": false,
+      "originalTokens": 723,
+      "currentTokens": 723,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/binfilterdialog.cpp",
+      "current": "src/avbfilterdialog.cpp",
+      "changed": true,
+      "originalTokens": 4521,
+      "currentTokens": 4521,
+      "identifierChanges": 148,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/opcopier.cpp",
+      "current": "src/opcopier.cpp",
+      "changed": false,
+      "originalTokens": 2215,
+      "currentTokens": 2215,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/binfilterdialog.h",
+      "current": "src/avbfilterdialog.h",
+      "changed": true,
+      "originalTokens": 532,
+      "currentTokens": 532,
+      "identifierChanges": 14,
+      "filenameLiteralChanges": 2,
+      "problems": []
+    },
+    {
+      "original": "src/mediametadata.cpp",
+      "current": "src/mediametadata.cpp",
+      "changed": false,
+      "originalTokens": 58,
+      "currentTokens": 58,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/volumelistwidget.h",
+      "current": "src/volumelistwidget.h",
+      "changed": false,
+      "originalTokens": 104,
+      "currentTokens": 104,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/volumeidentity.cpp",
+      "current": "src/volumeidentity.cpp",
+      "changed": false,
+      "originalTokens": 1939,
+      "currentTokens": 1939,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/operationplan.cpp",
+      "current": "src/operationplan.cpp",
+      "changed": false,
+      "originalTokens": 672,
+      "currentTokens": 672,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mobid.h",
+      "current": "src/mobid.h",
+      "changed": false,
+      "originalTokens": 495,
+      "currentTokens": 495,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/pmrkey.h",
+      "current": "src/pmrkey.h",
+      "changed": false,
+      "originalTokens": 37,
+      "currentTokens": 37,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/opscanreceipt.h",
+      "current": "src/opscanreceipt.h",
+      "changed": false,
+      "originalTokens": 18,
+      "currentTokens": 18,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/binmetadataresolver.cpp",
+      "current": "src/avbmetadataresolver.cpp",
+      "changed": true,
+      "originalTokens": 876,
+      "currentTokens": 876,
+      "identifierChanges": 36,
+      "filenameLiteralChanges": 2,
+      "problems": []
+    },
+    {
+      "original": "src/progressthrottle.h",
+      "current": "src/progressthrottle.h",
+      "changed": false,
+      "originalTokens": 115,
+      "currentTokens": 115,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/revealinfinder.h",
+      "current": "src/revealinfinder.h",
+      "changed": false,
+      "originalTokens": 50,
+      "currentTokens": 50,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediafile.h",
+      "current": "src/mediafile.h",
+      "changed": true,
+      "originalTokens": 1582,
+      "currentTokens": 1582,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/backgroundjob.h",
+      "current": "src/backgroundjob.h",
+      "changed": false,
+      "originalTokens": 316,
+      "currentTokens": 316,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/avideffects.cpp",
+      "current": "src/effectcatalogue.cpp",
+      "changed": true,
+      "originalTokens": 11819,
+      "currentTokens": 11819,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/binfilter.h",
+      "current": "src/avbfilter.h",
+      "changed": true,
+      "originalTokens": 459,
+      "currentTokens": 459,
+      "identifierChanges": 21,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/progressdialog.h",
+      "current": "src/progressdialog.h",
+      "changed": false,
+      "originalTokens": 127,
+      "currentTokens": 127,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/revealinfinder.cpp",
+      "current": "src/revealinfinder.cpp",
+      "changed": false,
+      "originalTokens": 735,
+      "currentTokens": 735,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/featureflags.h",
+      "current": "src/featureflags.h",
+      "changed": false,
+      "originalTokens": 56,
+      "currentTokens": 56,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/resources.qrc",
+      "current": "src/resources.qrc",
+      "changed": false,
+      "originalTokens": 32,
+      "currentTokens": 32,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/pathkey.h",
+      "current": "src/pathkey.h",
+      "changed": false,
+      "originalTokens": 274,
+      "currentTokens": 274,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediascanner.cpp",
+      "current": "src/mediascanner.cpp",
+      "changed": true,
+      "originalTokens": 2409,
+      "currentTokens": 2409,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/opjournal.cpp",
+      "current": "src/opjournal.cpp",
+      "changed": false,
+      "originalTokens": 8987,
+      "currentTokens": 8987,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/volumeidentity.h",
+      "current": "src/volumeidentity.h",
+      "changed": false,
+      "originalTokens": 174,
+      "currentTokens": 174,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/avidmedialayout.h",
+      "current": "src/app_avidmedialayout.h",
+      "changed": false,
+      "originalTokens": 1239,
+      "currentTokens": 1239,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/diagnostics.h",
+      "current": "src/diagnostics.h",
+      "changed": false,
+      "originalTokens": 121,
+      "currentTokens": 121,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/optrash_mac.mm",
+      "current": "src/optrash_mac.mm",
+      "changed": false,
+      "originalTokens": 997,
+      "currentTokens": 997,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/opfile.h",
+      "current": "src/opfile.h",
+      "changed": false,
+      "originalTokens": 480,
+      "currentTokens": 480,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/precomputefilter.h",
+      "current": "src/precomputefilter.h",
+      "changed": false,
+      "originalTokens": 251,
+      "currentTokens": 251,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/oprunner.h",
+      "current": "src/oprunner.h",
+      "changed": false,
+      "originalTokens": 872,
+      "currentTokens": 872,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/omfuid.h",
+      "current": "src/omfuid.h",
+      "changed": false,
+      "originalTokens": 514,
+      "currentTokens": 514,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/precomputefilterdialog.cpp",
+      "current": "src/precomputefilterdialog.cpp",
+      "changed": false,
+      "originalTokens": 2412,
+      "currentTokens": 2412,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/formatutil.h",
+      "current": "src/formatutil.h",
+      "changed": false,
+      "originalTokens": 230,
+      "currentTokens": 230,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/operationrecovery.h",
+      "current": "src/operationrecovery.h",
+      "changed": false,
+      "originalTokens": 229,
+      "currentTokens": 229,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediacsv.cpp",
+      "current": "src/mediacsv.cpp",
+      "changed": false,
+      "originalTokens": 785,
+      "currentTokens": 785,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/opmanager.cpp",
+      "current": "src/opmanager.cpp",
+      "changed": false,
+      "originalTokens": 847,
+      "currentTokens": 847,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/unfinishedbusinessdialog.cpp",
+      "current": "src/unfinishedbusinessdialog.cpp",
+      "changed": false,
+      "originalTokens": 1876,
+      "currentTokens": 1876,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/precomputefilterdialog.h",
+      "current": "src/precomputefilterdialog.h",
+      "changed": false,
+      "originalTokens": 250,
+      "currentTokens": 250,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/main.cpp",
+      "current": "src/main.cpp",
+      "changed": false,
+      "originalTokens": 214,
+      "currentTokens": 214,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/oprequest.h",
+      "current": "src/oprequest.h",
+      "changed": false,
+      "originalTokens": 571,
+      "currentTokens": 571,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/oprunner.cpp",
+      "current": "src/oprunner.cpp",
+      "changed": false,
+      "originalTokens": 17497,
+      "currentTokens": 17497,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/opfile.cpp",
+      "current": "src/opfile.cpp",
+      "changed": false,
+      "originalTokens": 5445,
+      "currentTokens": 5445,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/testpause.h",
+      "current": "src/testpause.h",
+      "changed": false,
+      "originalTokens": 120,
+      "currentTokens": 120,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengineadapter.h",
+      "current": "src/mediaengineadapter.h",
+      "changed": false,
+      "originalTokens": 55,
+      "currentTokens": 55,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediafilterproxy.h",
+      "current": "src/mediafilterproxy.h",
+      "changed": true,
+      "originalTokens": 259,
+      "currentTokens": 259,
+      "identifierChanges": 2,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/dragdroputil.h",
+      "current": "src/dragdroputil.h",
+      "changed": false,
+      "originalTokens": 96,
+      "currentTokens": 96,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/avidusage.h",
+      "current": "src/avidusage.h",
+      "changed": false,
+      "originalTokens": 600,
+      "currentTokens": 600,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/volumemanager.cpp",
+      "current": "src/volumemanager.cpp",
+      "changed": false,
+      "originalTokens": 1540,
+      "currentTokens": 1540,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/binfilereferences.h",
+      "current": "src/avbfilereferences.h",
+      "changed": true,
+      "originalTokens": 663,
+      "currentTokens": 663,
+      "identifierChanges": 8,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/operationrecovery.cpp",
+      "current": "src/operationrecovery.cpp",
+      "changed": false,
+      "originalTokens": 1635,
+      "currentTokens": 1635,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/compressionnames_p.h",
+      "current": "src/mediaengine/compressionnames_p.h",
+      "changed": false,
+      "originalTokens": 147,
+      "currentTokens": 147,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/pmrreader.cpp",
+      "current": "src/mediaengine/pmrreader.cpp",
+      "changed": false,
+      "originalTokens": 2493,
+      "currentTokens": 2493,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mxfreader.h",
+      "current": "src/mediaengine/mxfreader.h",
+      "changed": false,
+      "originalTokens": 36,
+      "currentTokens": 36,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/sourcepreparation.h",
+      "current": "src/mediaengine/sourcepreparation.h",
+      "changed": false,
+      "originalTokens": 21,
+      "currentTokens": 21,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mxfcatalogue_p.h",
+      "current": "src/mediaengine/mxfcatalogue_p.h",
+      "changed": false,
+      "originalTokens": 7167,
+      "currentTokens": 7167,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mxfobjects_p.cpp",
+      "current": "src/mediaengine/mxfobjects_p.cpp",
+      "changed": false,
+      "originalTokens": 4583,
+      "currentTokens": 4583,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/compressionnames_p.cpp",
+      "current": "src/mediaengine/compressionnames_p.cpp",
+      "changed": false,
+      "originalTokens": 2810,
+      "currentTokens": 2810,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mdbobjects_p.h",
+      "current": "src/mediaengine/mdbobjects_p.h",
+      "changed": false,
+      "originalTokens": 27,
+      "currentTokens": 27,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/projection.h",
+      "current": "src/mediaengine/projection.h",
+      "changed": false,
+      "originalTokens": 338,
+      "currentTokens": 338,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/discoveryengine.h",
+      "current": "src/mediaengine/discoveryengine.h",
+      "changed": false,
+      "originalTokens": 55,
+      "currentTokens": 55,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/avbreader.cpp",
+      "current": "src/mediaengine/avbreader.cpp",
+      "changed": true,
+      "originalTokens": 4349,
+      "currentTokens": 4349,
+      "identifierChanges": 74,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/metadataselectionpolicy.h",
+      "current": "src/mediaengine/metadataselectionpolicy.h",
+      "changed": false,
+      "originalTokens": 141,
+      "currentTokens": 141,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/discoveryengine.cpp",
+      "current": "src/mediaengine/discoveryengine.cpp",
+      "changed": true,
+      "originalTokens": 1875,
+      "currentTokens": 1875,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/omfprojection.cpp",
+      "current": "src/mediaengine/omfprojection.cpp",
+      "changed": true,
+      "originalTokens": 15341,
+      "currentTokens": 15341,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/avbdescriptors_p.cpp",
+      "current": "src/mediaengine/avbdescriptors_p.cpp",
+      "changed": true,
+      "originalTokens": 6142,
+      "currentTokens": 6142,
+      "identifierChanges": 184,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mxfprojection.cpp",
+      "current": "src/mediaengine/mxfprojection.cpp",
+      "changed": true,
+      "originalTokens": 11978,
+      "currentTokens": 11978,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/avbreader.h",
+      "current": "src/mediaengine/avbreader.h",
+      "changed": false,
+      "originalTokens": 36,
+      "currentTokens": 36,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mxfreader.cpp",
+      "current": "src/mediaengine/mxfreader.cpp",
+      "changed": false,
+      "originalTokens": 5281,
+      "currentTokens": 5281,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/omfreader.cpp",
+      "current": "src/mediaengine/omfreader.cpp",
+      "changed": false,
+      "originalTokens": 1365,
+      "currentTokens": 1365,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/omfobjects_p.h",
+      "current": "src/mediaengine/omfobjects_p.h",
+      "changed": false,
+      "originalTokens": 27,
+      "currentTokens": 27,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/pmrprojection.cpp",
+      "current": "src/mediaengine/pmrprojection.cpp",
+      "changed": false,
+      "originalTokens": 791,
+      "currentTokens": 791,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mdbreader.h",
+      "current": "src/mediaengine/mdbreader.h",
+      "changed": false,
+      "originalTokens": 36,
+      "currentTokens": 36,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/dnxnames_p.h",
+      "current": "src/mediaengine/dnxnames_p.h",
+      "changed": false,
+      "originalTokens": 1006,
+      "currentTokens": 1006,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/audioreader_p.h",
+      "current": "src/mediaengine/audioreader_p.h",
+      "changed": false,
+      "originalTokens": 97,
+      "currentTokens": 97,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/projection.cpp",
+      "current": "src/mediaengine/projection.cpp",
+      "changed": true,
+      "originalTokens": 1708,
+      "currentTokens": 1708,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mxfsource.h",
+      "current": "src/mediaengine/mxfsource.h",
+      "changed": false,
+      "originalTokens": 81,
+      "currentTokens": 81,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/scanengine.h",
+      "current": "src/mediaengine/scanengine.h",
+      "changed": false,
+      "originalTokens": 48,
+      "currentTokens": 48,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/sourcestorage_p.h",
+      "current": "src/mediaengine/sourcestorage_p.h",
+      "changed": false,
+      "originalTokens": 160,
+      "currentTokens": 160,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/omfbentoreader_p.h",
+      "current": "src/mediaengine/omfbentoreader_p.h",
+      "changed": false,
+      "originalTokens": 155,
+      "currentTokens": 155,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/omfbentoreader_p.cpp",
+      "current": "src/mediaengine/omfbentoreader_p.cpp",
+      "changed": false,
+      "originalTokens": 3671,
+      "currentTokens": 3671,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/omfobjects_p.cpp",
+      "current": "src/mediaengine/omfobjects_p.cpp",
+      "changed": false,
+      "originalTokens": 5126,
+      "currentTokens": 5126,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/discoveryengine_p.h",
+      "current": "src/mediaengine/discoveryengine_p.h",
+      "changed": false,
+      "originalTokens": 118,
+      "currentTokens": 118,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/databasesource.h",
+      "current": "src/mediaengine/databasesource.h",
+      "changed": false,
+      "originalTokens": 53,
+      "currentTokens": 53,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mdbbentoreader_p.cpp",
+      "current": "src/mediaengine/mdbbentoreader_p.cpp",
+      "changed": false,
+      "originalTokens": 3078,
+      "currentTokens": 3078,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mdbobjects_p.cpp",
+      "current": "src/mediaengine/mdbobjects_p.cpp",
+      "changed": false,
+      "originalTokens": 5061,
+      "currentTokens": 5061,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/scancoordinator.cpp",
+      "current": "src/mediaengine/scancoordinator.cpp",
+      "changed": false,
+      "originalTokens": 6353,
+      "currentTokens": 6353,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/scanmodel.h",
+      "current": "src/mediaengine/scanmodel.h",
+      "changed": false,
+      "originalTokens": 904,
+      "currentTokens": 904,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/scancoordinator.h",
+      "current": "src/mediaengine/scancoordinator.h",
+      "changed": false,
+      "originalTokens": 124,
+      "currentTokens": 124,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/databaseimage.cpp",
+      "current": "src/mediaengine/databaseimage.cpp",
+      "changed": false,
+      "originalTokens": 632,
+      "currentTokens": 632,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/picturegeometry_p.h",
+      "current": "src/mediaengine/picturegeometry_p.h",
+      "changed": false,
+      "originalTokens": 885,
+      "currentTokens": 885,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mdbreader.cpp",
+      "current": "src/mediaengine/mdbreader.cpp",
+      "changed": false,
+      "originalTokens": 46,
+      "currentTokens": 46,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mdbprojection.cpp",
+      "current": "src/mediaengine/mdbprojection.cpp",
+      "changed": true,
+      "originalTokens": 13724,
+      "currentTokens": 13724,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/omfreader.h",
+      "current": "src/mediaengine/omfreader.h",
+      "changed": false,
+      "originalTokens": 36,
+      "currentTokens": 36,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/databaseimage.h",
+      "current": "src/mediaengine/databaseimage.h",
+      "changed": false,
+      "originalTokens": 150,
+      "currentTokens": 150,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/metadataselectionpolicy.cpp",
+      "current": "src/mediaengine/metadataselectionpolicy.cpp",
+      "changed": false,
+      "originalTokens": 1671,
+      "currentTokens": 1671,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mdbaudiosummary_p.cpp",
+      "current": "src/mediaengine/mdbaudiosummary_p.cpp",
+      "changed": false,
+      "originalTokens": 2637,
+      "currentTokens": 2637,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/avbreferences.cpp",
+      "current": "src/mediaengine/avbreferences.cpp",
+      "changed": true,
+      "originalTokens": 2790,
+      "currentTokens": 2790,
+      "identifierChanges": 76,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mxfobjects_p.h",
+      "current": "src/mediaengine/mxfobjects_p.h",
+      "changed": false,
+      "originalTokens": 25,
+      "currentTokens": 25,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mdbaudiosummary_p.h",
+      "current": "src/mediaengine/mdbaudiosummary_p.h",
+      "changed": false,
+      "originalTokens": 24,
+      "currentTokens": 24,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/avbreferences.h",
+      "current": "src/mediaengine/avbreferences.h",
+      "changed": true,
+      "originalTokens": 399,
+      "currentTokens": 399,
+      "identifierChanges": 45,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/scanengine.cpp",
+      "current": "src/mediaengine/scanengine.cpp",
+      "changed": false,
+      "originalTokens": 44,
+      "currentTokens": 44,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/sourcereader.h",
+      "current": "src/mediaengine/sourcereader.h",
+      "changed": false,
+      "originalTokens": 89,
+      "currentTokens": 89,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mdbbentoreader_p.h",
+      "current": "src/mediaengine/mdbbentoreader_p.h",
+      "changed": false,
+      "originalTokens": 131,
+      "currentTokens": 131,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/avbobjects_p.h",
+      "current": "src/mediaengine/avbobjects_p.h",
+      "changed": true,
+      "originalTokens": 497,
+      "currentTokens": 497,
+      "identifierChanges": 30,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/databasesource.cpp",
+      "current": "src/mediaengine/databasesource.cpp",
+      "changed": false,
+      "originalTokens": 531,
+      "currentTokens": 531,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/avbobjects_p.cpp",
+      "current": "src/mediaengine/avbobjects_p.cpp",
+      "changed": true,
+      "originalTokens": 2952,
+      "currentTokens": 2952,
+      "identifierChanges": 132,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/pmrreader.h",
+      "current": "src/mediaengine/pmrreader.h",
+      "changed": false,
+      "originalTokens": 36,
+      "currentTokens": 36,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/avbcomponents_p.cpp",
+      "current": "src/mediaengine/avbcomponents_p.cpp",
+      "changed": true,
+      "originalTokens": 4294,
+      "currentTokens": 4294,
+      "identifierChanges": 141,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/audioreader_p.cpp",
+      "current": "src/mediaengine/audioreader_p.cpp",
+      "changed": false,
+      "originalTokens": 5851,
+      "currentTokens": 5851,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "src/mediaengine/mxfsource.cpp",
+      "current": "src/mediaengine/mxfsource.cpp",
+      "changed": false,
+      "originalTokens": 432,
+      "currentTokens": 432,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediametadata.cpp",
+      "current": "tests/tst_mediametadata.cpp",
+      "changed": false,
+      "originalTokens": 229,
+      "currentTokens": 229,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaengine_compressionnames.cpp",
+      "current": "tests/tst_mediaengine_compressionnames.cpp",
+      "changed": false,
+      "originalTokens": 1912,
+      "currentTokens": 1912,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaenginemdb.cpp",
+      "current": "tests/tst_mediaenginemdb.cpp",
+      "changed": false,
+      "originalTokens": 7619,
+      "currentTokens": 7619,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaengineavbreferences.cpp",
+      "current": "tests/tst_mediaengineavbreferences.cpp",
+      "changed": true,
+      "originalTokens": 5148,
+      "currentTokens": 5148,
+      "identifierChanges": 91,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_pathkey.cpp",
+      "current": "tests/tst_pathkey.cpp",
+      "changed": false,
+      "originalTokens": 838,
+      "currentTokens": 838,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_metadataselectionpolicy.cpp",
+      "current": "tests/tst_metadataselectionpolicy.cpp",
+      "changed": false,
+      "originalTokens": 2541,
+      "currentTokens": 2541,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaengineomfisolated.cpp",
+      "current": "tests/tst_mediaengineomfisolated.cpp",
+      "changed": false,
+      "originalTokens": 1089,
+      "currentTokens": 1089,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_avideffects.cpp",
+      "current": "tests/tst_avideffects.cpp",
+      "changed": true,
+      "originalTokens": 2000,
+      "currentTokens": 2000,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "tests/mediaengine_compare.cpp",
+      "current": "tests/mediaengine_compare.cpp",
+      "changed": false,
+      "originalTokens": 3702,
+      "currentTokens": 3702,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaenginescan.cpp",
+      "current": "tests/tst_mediaenginescan.cpp",
+      "changed": false,
+      "originalTokens": 9659,
+      "currentTokens": 9659,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_rebalanceplanner.cpp",
+      "current": "tests/tst_rebalanceplanner.cpp",
+      "changed": false,
+      "originalTokens": 5568,
+      "currentTokens": 5568,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediafilterproxy.cpp",
+      "current": "tests/tst_mediafilterproxy.cpp",
+      "changed": true,
+      "originalTokens": 9697,
+      "currentTokens": 9697,
+      "identifierChanges": 47,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaenginemxfsource.cpp",
+      "current": "tests/tst_mediaenginemxfsource.cpp",
+      "changed": false,
+      "originalTokens": 2035,
+      "currentTokens": 2035,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_opjournal.cpp",
+      "current": "tests/tst_opjournal.cpp",
+      "changed": false,
+      "originalTokens": 11781,
+      "currentTokens": 11781,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_binfilterdialog.cpp",
+      "current": "tests/tst_binfilterdialog.cpp",
+      "changed": true,
+      "originalTokens": 8907,
+      "currentTokens": 8907,
+      "identifierChanges": 67,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_fileoperations.cpp",
+      "current": "tests/tst_fileoperations.cpp",
+      "changed": false,
+      "originalTokens": 32440,
+      "currentTokens": 32440,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaenginedatabase.cpp",
+      "current": "tests/tst_mediaenginedatabase.cpp",
+      "changed": false,
+      "originalTokens": 3564,
+      "currentTokens": 3564,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_operationui.cpp",
+      "current": "tests/tst_operationui.cpp",
+      "changed": true,
+      "originalTokens": 24029,
+      "currentTokens": 24029,
+      "identifierChanges": 1,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaenginelegacy.cpp",
+      "current": "tests/tst_mediaenginelegacy.cpp",
+      "changed": false,
+      "originalTokens": 8191,
+      "currentTokens": 8191,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_diagnostics.cpp",
+      "current": "tests/tst_diagnostics.cpp",
+      "changed": false,
+      "originalTokens": 741,
+      "currentTokens": 741,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaengineavb.cpp",
+      "current": "tests/tst_mediaengineavb.cpp",
+      "changed": false,
+      "originalTokens": 5170,
+      "currentTokens": 5170,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_scanner.cpp",
+      "current": "tests/tst_scanner.cpp",
+      "changed": false,
+      "originalTokens": 31289,
+      "currentTokens": 31289,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_volumeidentity.cpp",
+      "current": "tests/tst_volumeidentity.cpp",
+      "changed": false,
+      "originalTokens": 733,
+      "currentTokens": 733,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaenginepmrrobustness.cpp",
+      "current": "tests/tst_mediaenginepmrrobustness.cpp",
+      "changed": false,
+      "originalTokens": 2190,
+      "currentTokens": 2190,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaenginemxf.cpp",
+      "current": "tests/tst_mediaenginemxf.cpp",
+      "changed": false,
+      "originalTokens": 7508,
+      "currentTokens": 7508,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaenginepmr.cpp",
+      "current": "tests/tst_mediaenginepmr.cpp",
+      "changed": false,
+      "originalTokens": 4450,
+      "currentTokens": 4450,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaenginemdbisolated.cpp",
+      "current": "tests/tst_mediaenginemdbisolated.cpp",
+      "changed": false,
+      "originalTokens": 1007,
+      "currentTokens": 1007,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaevidence.cpp",
+      "current": "tests/tst_mediaevidence.cpp",
+      "changed": false,
+      "originalTokens": 3359,
+      "currentTokens": 3359,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaengine_mxfprojection.cpp",
+      "current": "tests/tst_mediaengine_mxfprojection.cpp",
+      "changed": false,
+      "originalTokens": 11340,
+      "currentTokens": 11340,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaengine_omfprojection.cpp",
+      "current": "tests/tst_mediaengine_omfprojection.cpp",
+      "changed": false,
+      "originalTokens": 27617,
+      "currentTokens": 27617,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_opcleanup.cpp",
+      "current": "tests/tst_opcleanup.cpp",
+      "changed": false,
+      "originalTokens": 2434,
+      "currentTokens": 2434,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mobid.cpp",
+      "current": "tests/tst_mobid.cpp",
+      "changed": false,
+      "originalTokens": 452,
+      "currentTokens": 452,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediaenginediscovery.cpp",
+      "current": "tests/tst_mediaenginediscovery.cpp",
+      "changed": false,
+      "originalTokens": 3071,
+      "currentTokens": 3071,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_conventions.cpp",
+      "current": "tests/tst_conventions.cpp",
+      "changed": true,
+      "originalTokens": 3387,
+      "currentTokens": 3387,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediacsv.cpp",
+      "current": "tests/tst_mediacsv.cpp",
+      "changed": false,
+      "originalTokens": 3723,
+      "currentTokens": 3723,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_readerregressions.cpp",
+      "current": "tests/tst_readerregressions.cpp",
+      "changed": false,
+      "originalTokens": 2769,
+      "currentTokens": 2769,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_avbparser.cpp",
+      "current": "tests/tst_avbparser.cpp",
+      "changed": true,
+      "originalTokens": 8197,
+      "currentTokens": 8197,
+      "identifierChanges": 156,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_format.cpp",
+      "current": "tests/tst_format.cpp",
+      "changed": false,
+      "originalTokens": 291,
+      "currentTokens": 291,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_mediatablemodel.cpp",
+      "current": "tests/tst_mediatablemodel.cpp",
+      "changed": true,
+      "originalTokens": 10801,
+      "currentTokens": 10801,
+      "identifierChanges": 31,
+      "filenameLiteralChanges": 1,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_precomputefilterdialog.cpp",
+      "current": "tests/tst_precomputefilterdialog.cpp",
+      "changed": false,
+      "originalTokens": 2514,
+      "currentTokens": 2514,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/tst_omfuid.cpp",
+      "current": "tests/tst_omfuid.cpp",
+      "changed": false,
+      "originalTokens": 1200,
+      "currentTokens": 1200,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    },
+    {
+      "original": "tests/CMakeLists.txt",
+      "current": "tests/CMakeLists.txt",
+      "changed": true,
+      "originalTokens": 998,
+      "currentTokens": 998,
+      "identifierChanges": 0,
+      "filenameLiteralChanges": 0,
+      "problems": []
+    }
+  ],
+  "unexpectedChanges": [],
+  "summary": {
+    "selectionPasses": 166,
+    "selectionFailures": 0,
+    "changedFiles": 41,
+    "identifierChanges": 1442,
+    "filenameLiteralChanges": 27,
+    "unexpectedChangeFiles": 0
+  },
+  "date": "2026-10-11",
+  "input": {
+    "filename": "mediamuster-naming-choices.txt",
+    "sha256": "30712948a7736c810c8b9cff85359ac6cc0c1ddb779c459c7ee650025fc53517",
+    "exportedRenames": 133,
+    "exportedKeeps": 33
+  },
+  "approvedResolutions": {
+    "methodDuplicates": "Apply the selected header method name to declarations, definitions and calls.",
+    "binLoaderComponent": "AvbParser becomes AvbBinLoader; avbparser.h/.cpp become avbbinloader.h/.cpp. MediaEngine::AvbReader remains the format reader.",
+    "precomputeFilename": "precompute.h",
+    "filterStepIndex": "stepIndex at original src/binfilterdialog.cpp:300."
+  },
+  "validation": {
+    "build": "Release macOS arm64; C++17; Qt 6.5.3; app and all test targets built successfully.",
+    "ctestBefore": {
+      "suitesPassed": 40,
+      "failed": 0,
+      "seconds": 36.22
+    },
+    "ctestAfter": {
+      "suitesPassed": 40,
+      "failed": 0,
+      "seconds": 34.08,
+      "suiteCount": 40,
+      "suites": [
+        "tst_readerregressions",
+        "tst_rebalanceplanner",
+        "tst_fileoperations",
+        "tst_mediaenginemxf",
+        "tst_mediaenginedatabase",
+        "tst_scanner",
+        "tst_operationui",
+        "tst_mediaenginemxfsource",
+        "tst_avbparser",
+        "tst_opjournal",
+        "tst_mediaenginemdb",
+        "tst_binfilterdialog",
+        "tst_mediaenginepmr",
+        "tst_precomputefilterdialog",
+        "tst_mediaenginescan",
+        "tst_mediaengine_omfprojection",
+        "tst_mediaenginelegacy",
+        "tst_mediatablemodel",
+        "tst_mediaengineavb",
+        "tst_mediaenginediscovery",
+        "tst_mediaengineavbreferences",
+        "tst_mediafilterproxy",
+        "tst_mediaengineomfisolated",
+        "tst_mediaenginemdbisolated",
+        "tst_mediaengine_mxfprojection",
+        "tst_mediaenginepmrrobustness",
+        "tst_mediaevidence",
+        "tst_opcleanup",
+        "tst_volumeidentity",
+        "tst_diagnostics",
+        "tst_pathkey",
+        "tst_format",
+        "tst_mediaengine_compressionnames",
+        "tst_mobid",
+        "tst_metadataselectionpolicy",
+        "tst_mediametadata",
+        "tst_omfuid",
+        "tst_mediacsv",
+        "tst_avideffects",
+        "tst_conventions"
+      ],
+      "qtCaseTotals": {
+        "passed": 2570,
+        "failed": 0,
+        "skipped": 7,
+        "blacklisted": 0
+      },
+      "skips": [
+        {
+          "suite": "tst_scanner",
+          "entry": "SKIP   : TestScanner::optional_read_only_real_scan() Opt-in real-drive audit; set MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_ROOTS to semicolon-separated managed roots"
+        },
+        {
+          "suite": "tst_scanner",
+          "entry": "SKIP   : TestScanner::case_distinct_shared_folders_remain_distinct() Temporary filesystem is case-insensitive; case-distinct directories cannot be created here"
+        },
+        {
+          "suite": "tst_mediaenginepmr",
+          "entry": "SKIP   : TestMediaEnginePmr::realDrivePmrs() Opt-in read-only local/EDIT PMR audit."
+        },
+        {
+          "suite": "tst_mediaenginescan",
+          "entry": "SKIP   : TestMediaEngineScan::normalized_name_does_not_assign_one_record_to_two_files() Temporary filesystem does not preserve case-distinct file locations"
+        },
+        {
+          "suite": "tst_mediaengineavb",
+          "entry": "SKIP   : TestMediaEngineAvb::suppliedBins() Set MEDIAMUSTER_MEDIAENGINE_REAL_AVB_FILES to inspect the supplied bins read-only."
+        },
+        {
+          "suite": "tst_mediaenginediscovery",
+          "entry": "SKIP   : TestMediaEngineDiscovery::optional_real_discovery() Opt-in read-only discovery of real managed roots"
+        },
+        {
+          "suite": "tst_mediaenginepmrrobustness",
+          "entry": "SKIP   : TestMediaEnginePmrRobustness::benchmark() Opt-in parsing benchmark; excludes discovery and filesystem I/O."
+        }
+      ]
+    },
+    "warningNote": "The 28 missing-field-initializer warnings in tst_mediafilterproxy.cpp also occurred before this naming batch.",
+    "limits": "No Windows build or complete drive scan was performed for this naming-only batch. Test runtimes are not scan-performance measurements."
+  },
+  "sourceHashes": {
+    "CMakeLists.txt": {
+      "before": "5c6c43580558a808f09eb61d791470a171197720cbb7edf3b3ea66a65ef8e589",
+      "after": "7f82296e361119f6a88b4e491153332a1c08c38e587a4ed4d6ee6284393e1dca"
+    },
+    "src/opscanreceipt.cpp": {
+      "before": "0f7c9d8c9b9e09b780632f47fec27fe7fb15b438b300086530aad48598c03a4c",
+      "after": "0f7c9d8c9b9e09b780632f47fec27fe7fb15b438b300086530aad48598c03a4c"
+    },
+    "src/progressdialog.cpp": {
+      "before": "80894107aa3b4e379812c113b09be0908f87131ed3f119e612df165fa598b4b0",
+      "after": "80894107aa3b4e379812c113b09be0908f87131ed3f119e612df165fa598b4b0"
+    },
+    "src/optrash.h": {
+      "before": "0eb2da2292bf86e2cbb1d5bd71ddbec03aebcbdb6cd0b88f98b6aece559c9a67",
+      "after": "0eb2da2292bf86e2cbb1d5bd71ddbec03aebcbdb6cd0b88f98b6aece559c9a67"
+    },
+    "src/conventions.h": {
+      "before": "ec2ecb9f4b7b3f3b636b22ef3faf11527568678813c8e8eeb300fbb14450764d",
+      "after": "ec2ecb9f4b7b3f3b636b22ef3faf11527568678813c8e8eeb300fbb14450764d"
+    },
+    "src/avbmetadataresolver.h": {
+      "before": "74b2ac30eb79a106e7760ed5f371554fd23ff861391a1dbfcf5378382b1684a1",
+      "after": "1efe22df5801474d464f23eb977984f13d3dc675699a5706245a4d9578910698"
+    },
+    "src/nativefile.h": {
+      "before": "d22a83873134e61d934f082cbb4b1c5cdab7201c178ac89873d3f569850445ee",
+      "after": "d22a83873134e61d934f082cbb4b1c5cdab7201c178ac89873d3f569850445ee"
+    },
+    "src/unfinishedbusinessdialog.h": {
+      "before": "082c076c90d6046e4e5278556f658ff9da2fc90672c8a115529584b24867a3d2",
+      "after": "082c076c90d6046e4e5278556f658ff9da2fc90672c8a115529584b24867a3d2"
+    },
+    "src/mediaengineadapter.cpp": {
+      "before": "255b5bc9f91adec7dfa315501627f88ae99edb3759212113c6681b51ac589574",
+      "after": "255b5bc9f91adec7dfa315501627f88ae99edb3759212113c6681b51ac589574"
+    },
+    "src/layoututil.h": {
+      "before": "d8b8dd04e16c705b27932134f583ffdd32cb1e24fe3731789a1dc29ba8f2b494",
+      "after": "d8b8dd04e16c705b27932134f583ffdd32cb1e24fe3731789a1dc29ba8f2b494"
+    },
+    "src/fileoperationcontroller.cpp": {
+      "before": "7e727a14b81bd2b3f53e1f8e27f4b291d02ba5317c267588dc342464a4d59298",
+      "after": "7e727a14b81bd2b3f53e1f8e27f4b291d02ba5317c267588dc342464a4d59298"
+    },
+    "src/avbbinloader.h": {
+      "before": "de88c1a3cb309cad00d842e169cfaa796a58379478cba781be9ce97c1865d185",
+      "after": "3f8cc365494bcbc8b4876c9b173255b511459bfd80e219e913999ccb8da0c28b"
+    },
+    "src/mediaduration.h": {
+      "before": "7cf2b94d109e2e36beeafa73f2e02c2e4539a7c2ab72721e1b0c01433b0103ff",
+      "after": "7cf2b94d109e2e36beeafa73f2e02c2e4539a7c2ab72721e1b0c01433b0103ff"
+    },
+    "src/opmanager.h": {
+      "before": "87e5190c091054b2b3cc2c72b24b5ba9a70843d22a5d57b994a1ab8a4e559d28",
+      "after": "87e5190c091054b2b3cc2c72b24b5ba9a70843d22a5d57b994a1ab8a4e559d28"
+    },
+    "src/mediascanner.h": {
+      "before": "faf56e67103bd66c2cc967b4992a7f56c8bb25d7ab478b38eab02314d91ffc6a",
+      "after": "faf56e67103bd66c2cc967b4992a7f56c8bb25d7ab478b38eab02314d91ffc6a"
+    },
+    "src/rebalancedialog.h": {
+      "before": "7e3ac3e593e67624f1578e23ffa69d5abb589d108362ab0218ec203522781319",
+      "after": "7e3ac3e593e67624f1578e23ffa69d5abb589d108362ab0218ec203522781319"
+    },
+    "src/precompute.h": {
+      "before": "4ff0c7e52fd8cbd1cc0900bc3638283ee6b69d05d72121f425d91c34af3748cd",
+      "after": "4ff0c7e52fd8cbd1cc0900bc3638283ee6b69d05d72121f425d91c34af3748cd"
+    },
+    "src/nativefile.cpp": {
+      "before": "d990281783ba6d12fd54459d319f25ebd1f37915b0c9f501375ac08aca6cbc5b",
+      "after": "d990281783ba6d12fd54459d319f25ebd1f37915b0c9f501375ac08aca6cbc5b"
+    },
+    "src/rebalanceplanner.h": {
+      "before": "1e3aed2a5031c8cb38cce0d687bac9f95c4da02f3cda022e9c9272bfba3ae8a2",
+      "after": "1e3aed2a5031c8cb38cce0d687bac9f95c4da02f3cda022e9c9272bfba3ae8a2"
+    },
+    "src/managemediadialog.cpp": {
+      "before": "fcde76e8794b27f2c23a548597aee0313721773e9e00e258ff613946eda38dc1",
+      "after": "fcde76e8794b27f2c23a548597aee0313721773e9e00e258ff613946eda38dc1"
+    },
+    "src/enumutil.h": {
+      "before": "dd2cbfbbe8db0fa5686fa0c69eeb2f7de83fafbadcc3990d20831b3e0e25c254",
+      "after": "dd2cbfbbe8db0fa5686fa0c69eeb2f7de83fafbadcc3990d20831b3e0e25c254"
+    },
+    "src/mediaobservations.h": {
+      "before": "637231552d01076961cb54bcd425fb12dfde612fb2f393b5ffb94badd83821e6",
+      "after": "637231552d01076961cb54bcd425fb12dfde612fb2f393b5ffb94badd83821e6"
+    },
+    "src/mainwindow.h": {
+      "before": "33e26caec668bbe2cb7e3f704605e5a530a0b2c416f71a6a1b783e9e21c45de0",
+      "after": "6590906bfc047b887816867e1d2a0c197194ddbe9cc6aa4f54a45b02abfdbe08"
+    },
+    "src/mediatablemodel.cpp": {
+      "before": "519da674568271513a7626699353654ccac3c6d63e93fce524a19a80ae2150a7",
+      "after": "49efc366ae8324d2d1b4c621e034c46e1894e47f96ee7924a7667e7156b6e438"
+    },
+    "src/opcopier.h": {
+      "before": "1912a5b5d72b081ca1bc6ffaab7d8b0c69806bb62fb5db53ade324e006a16ca8",
+      "after": "1912a5b5d72b081ca1bc6ffaab7d8b0c69806bb62fb5db53ade324e006a16ca8"
+    },
+    "src/version.h.in": {
+      "before": "12fd9311e791b750e52000cdbc584c22d409ae6b33bacaac0f0123b0c3d81652",
+      "after": "12fd9311e791b750e52000cdbc584c22d409ae6b33bacaac0f0123b0c3d81652"
+    },
+    "src/managemediadialog.h": {
+      "before": "a7f62a3f1547990b185c436839cfa24c878680d6ad31fa2abcd459d2bbb8d5bb",
+      "after": "a7f62a3f1547990b185c436839cfa24c878680d6ad31fa2abcd459d2bbb8d5bb"
+    },
+    "src/aboutdialog.cpp": {
+      "before": "382d1f149675ff5669c6a66ac025610548a7e5e8d518b786c95f1a15961495b0",
+      "after": "382d1f149675ff5669c6a66ac025610548a7e5e8d518b786c95f1a15961495b0"
+    },
+    "src/mxfproperties.h": {
+      "before": "be795545e51f71148a01a4f9b7607dd70c56b98ca6ddcad13179c76550962d44",
+      "after": "be795545e51f71148a01a4f9b7607dd70c56b98ca6ddcad13179c76550962d44"
+    },
+    "src/rebalancer.h": {
+      "before": "86baad741be6e8298a1f61eae7a829d39b2d4e957612179a1cee57b8b3cbc6b3",
+      "after": "86baad741be6e8298a1f61eae7a829d39b2d4e957612179a1cee57b8b3cbc6b3"
+    },
+    "src/mediametadata.h": {
+      "before": "4e5e88a8620ec3c748729b49a887d7994358c676b8e06d979654676916e3611b",
+      "after": "4e5e88a8620ec3c748729b49a887d7994358c676b8e06d979654676916e3611b"
+    },
+    "src/fileoperationcontroller.h": {
+      "before": "7e7dbeab1c3ae8fe6acdb2d30357df3f2814bfcca2a4364cf9d082afdc89bf74",
+      "after": "7e7dbeab1c3ae8fe6acdb2d30357df3f2814bfcca2a4364cf9d082afdc89bf74"
+    },
+    "src/volumelistwidget.cpp": {
+      "before": "c80c56232489cefdc2eb94c5d83376f7ba073f8d60bde9f2eeefa0fc2dccb86d",
+      "after": "c80c56232489cefdc2eb94c5d83376f7ba073f8d60bde9f2eeefa0fc2dccb86d"
+    },
+    "src/avidtext.h": {
+      "before": "19cd6e2d2a833efa74f07f28efa0c5b2daf69fa79172f785c7736ede8e5e5e62",
+      "after": "19cd6e2d2a833efa74f07f28efa0c5b2daf69fa79172f785c7736ede8e5e5e62"
+    },
+    "src/effectcatalogue.h": {
+      "before": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1",
+      "after": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1"
+    },
+    "src/optrash.cpp": {
+      "before": "d22ace78c7a963e40c9fa02d153269c892aa21dd2b8c7a5c9d43d30ee48b58a7",
+      "after": "d22ace78c7a963e40c9fa02d153269c892aa21dd2b8c7a5c9d43d30ee48b58a7"
+    },
+    "src/rebalanceplan.h": {
+      "before": "32ff6dce50573b26a2a902ac78140bc3df75497b7a1c873d11ec2dedebad0989",
+      "after": "e3a9d2a86e2afc43b6cf46fa5071acab5209eb49b29dcd3c0b298ed78dd2ea49"
+    },
+    "src/rebalanceplanner.cpp": {
+      "before": "fa9d5d9a705e55789ff4745d4497374c3209d8de5e11ed6d181f5ee01b03510c",
+      "after": "f62f2eae16dd8bae453478ca7ba85f1fdfa8ad641776e83d6753c065262de3c9"
+    },
+    "src/mediafilterproxy.cpp": {
+      "before": "c45ffb8a0c2e57705a129a232ee9884fd45f6070c2ea53eb4a8d52d75a41c2a2",
+      "after": "f475add42e3dfee3ef62c3f2394548d762700f5ecb5850dd460c9771f9d154e9"
+    },
+    "src/mediatablemodel.h": {
+      "before": "3244c290de884c911211604b2eacfd88742a4e61988d9364d4c7d292240bf3b0",
+      "after": "af258e10ed9edd967092734ef97b79259d327d899cf1c661adc93604f769942c"
+    },
+    "src/mediacsv.h": {
+      "before": "d0760cdd64f6784276fad27a2ad6e29850cadf75b73cfd5e690952c694f4001d",
+      "after": "d0760cdd64f6784276fad27a2ad6e29850cadf75b73cfd5e690952c694f4001d"
+    },
+    "src/diagnostics.cpp": {
+      "before": "5bd573d32af4917af051b75334204f6ead9f13f05c5f3ff59614c63fc7ec43a2",
+      "after": "5bd573d32af4917af051b75334204f6ead9f13f05c5f3ff59614c63fc7ec43a2"
+    },
+    "src/evidenceexplanation.h": {
+      "before": "329a92834a97e823c3dec89332ecf0a1b4d737d76b293f19f3bca5ebe53fe5e6",
+      "after": "329a92834a97e823c3dec89332ecf0a1b4d737d76b293f19f3bca5ebe53fe5e6"
+    },
+    "src/operationplan.h": {
+      "before": "2cb600014a0cecb7bd66834585047eaa5a488daf470b47b1ee17b9a48f248db0",
+      "after": "2cb600014a0cecb7bd66834585047eaa5a488daf470b47b1ee17b9a48f248db0"
+    },
+    "src/mediaevidence.h": {
+      "before": "881fbe650523d58cfd3e43d481221f624f13df01ca8eceb4a1fa101df2922544",
+      "after": "881fbe650523d58cfd3e43d481221f624f13df01ca8eceb4a1fa101df2922544"
+    },
+    "src/avbbinloader.cpp": {
+      "before": "c972c59206fe0e798921708c45eaa37a6099b1bc0bec10a0ec0393aa9cfc3fed",
+      "after": "e2c64bc79b0448689d75ed4574aac7d73652f2899d4745badcd2a7b4a8f3007d"
+    },
+    "src/volumemanager.h": {
+      "before": "29a1688f272e3886217cc8570172d7fd2b0ade57ff0bbec1d738c567498a4356",
+      "after": "29a1688f272e3886217cc8570172d7fd2b0ade57ff0bbec1d738c567498a4356"
+    },
+    "src/mainwindow.cpp": {
+      "before": "8ea99209dba50a3ec2dd00b71a087f6f97cb3bc07be4b29df6f8b043d2e366db",
+      "after": "103c0d82d250a932e3a500c1ebf568ef2fb4155ddf3c0316869f66d8d64e4a5f"
+    },
+    "src/aboutdialog.h": {
+      "before": "f51b9af72d09198bfd92f11b199e3841bdb46fab256a0d9d0675e67a243de225",
+      "after": "f51b9af72d09198bfd92f11b199e3841bdb46fab256a0d9d0675e67a243de225"
+    },
+    "src/rebalancer.cpp": {
+      "before": "4287b7afa3549e4fb15628e0a9fd5bd4530794f4a40657be53c81458583105bc",
+      "after": "4287b7afa3549e4fb15628e0a9fd5bd4530794f4a40657be53c81458583105bc"
+    },
+    "src/rebalancedialog.cpp": {
+      "before": "932c55198c526524b9aa79190d71a8069874f1e9abe8bcf65f9d5a100d239b22",
+      "after": "932c55198c526524b9aa79190d71a8069874f1e9abe8bcf65f9d5a100d239b22"
+    },
+    "src/opjournal.h": {
+      "before": "f11c524fd32133d8a279cc2e4af7bb0bd0b65ca7daaebde94f7eeb5fbc1d6995",
+      "after": "f11c524fd32133d8a279cc2e4af7bb0bd0b65ca7daaebde94f7eeb5fbc1d6995"
+    },
+    "src/avbfilterdialog.cpp": {
+      "before": "aac0c5eed22ac7f1f0359161a33855f01a358173201f2cc80cc7e8275791d979",
+      "after": "52d68d3c0ac6519cf2a9bdd3aa152e753cade5289af34bfb9a98805a8fd411df"
+    },
+    "src/opcopier.cpp": {
+      "before": "9bb0e15ad44b63093e57039ad8fc6883ddf1c8b38a6a4e78458428a255053f11",
+      "after": "9bb0e15ad44b63093e57039ad8fc6883ddf1c8b38a6a4e78458428a255053f11"
+    },
+    "src/avbfilterdialog.h": {
+      "before": "d87de858e544f78eb91a44eb395e9f7854996659ad1ed22b02f3aa83558ff85f",
+      "after": "363de58dd7771eac5e1ada03480e37000ab56c5a1ae7a7c6c666af71b834aa12"
+    },
+    "src/mediametadata.cpp": {
+      "before": "af904bbc22e58778d3738072f21997e14464c7a802e4e49bc92ed19199afd538",
+      "after": "af904bbc22e58778d3738072f21997e14464c7a802e4e49bc92ed19199afd538"
+    },
+    "src/volumelistwidget.h": {
+      "before": "77480d504f145c2c16ef236edc85647305d0a199dfb32fe865296819c47917e0",
+      "after": "77480d504f145c2c16ef236edc85647305d0a199dfb32fe865296819c47917e0"
+    },
+    "src/volumeidentity.cpp": {
+      "before": "f3bd79a153d8793b825920b835d15190c06a7cf5c99006ef92b8dc30e86babc1",
+      "after": "f3bd79a153d8793b825920b835d15190c06a7cf5c99006ef92b8dc30e86babc1"
+    },
+    "src/operationplan.cpp": {
+      "before": "a50e185593f4bc45344732a1495d1a106f7d738e21b6b55c35ecb8dd0c405026",
+      "after": "a50e185593f4bc45344732a1495d1a106f7d738e21b6b55c35ecb8dd0c405026"
+    },
+    "src/mobid.h": {
+      "before": "6a6d13d5ed86acd52eabc437c7893f5eaffceba0399cbb21ea87ab209fa4ddc8",
+      "after": "6a6d13d5ed86acd52eabc437c7893f5eaffceba0399cbb21ea87ab209fa4ddc8"
+    },
+    "src/pmrkey.h": {
+      "before": "27f30d43c81c3be9807dd951fa6558bfad38f313419d55719c00d08ed80d8c72",
+      "after": "27f30d43c81c3be9807dd951fa6558bfad38f313419d55719c00d08ed80d8c72"
+    },
+    "src/opscanreceipt.h": {
+      "before": "976f6034b157e744e023f4b7604c3cb54e7a2c6f49d306729100723a98af73af",
+      "after": "976f6034b157e744e023f4b7604c3cb54e7a2c6f49d306729100723a98af73af"
+    },
+    "src/avbmetadataresolver.cpp": {
+      "before": "a8a3bc6e71a90e771f793ee415db6e78ece2b2af33cfaa6cc4880423ffaa44d3",
+      "after": "7af583172401b8c403d520e89cd11a9dcc03c295424f5a9d9078026976bcb811"
+    },
+    "src/progressthrottle.h": {
+      "before": "365da04fbd81cf024464c174a4b01c47f0955e96588b10d7c72d332d274f966b",
+      "after": "365da04fbd81cf024464c174a4b01c47f0955e96588b10d7c72d332d274f966b"
+    },
+    "src/revealinfinder.h": {
+      "before": "83be667341872afd7c76f89db99fb2563d4e9047e91d3d676dc142c19891ef76",
+      "after": "83be667341872afd7c76f89db99fb2563d4e9047e91d3d676dc142c19891ef76"
+    },
+    "src/mediafile.h": {
+      "before": "0b008810a31fa5b818939c7a24e0d8b4585f52cf70daec3a25e4ee7334499c25",
+      "after": "378d0aa69d401fbabd879c2556b2ddcf0cc7ee615ae7d0f0eae857c319432ee3"
+    },
+    "src/backgroundjob.h": {
+      "before": "b4a3488d0ed3cdd917c474e47366a658def978471987df0ece9523d7274bd9c2",
+      "after": "b4a3488d0ed3cdd917c474e47366a658def978471987df0ece9523d7274bd9c2"
+    },
+    "src/effectcatalogue.cpp": {
+      "before": "8c50f1bfb58f5d105c14f5fc78230f4a063d33c5ce007be48c126e201525544c",
+      "after": "96016f5e53ae44b6b81c4e844cbec906e3a6ee559e59e85f9bd8e6e1a3601440"
+    },
+    "src/avbfilter.h": {
+      "before": "1a32bcfb39632595913e6cca4bc7bf4cbb7c7add8554865626a212a2c7dbec3f",
+      "after": "8a4e2d127cbffba8eda26ec0a05f00eb2b11949df1284a1ed3132f5acc2181d4"
+    },
+    "src/progressdialog.h": {
+      "before": "fdf6cf6bc87f662ad2cacacb6a3e1ae961b1876491d27f29b472ca055b3ce07d",
+      "after": "fdf6cf6bc87f662ad2cacacb6a3e1ae961b1876491d27f29b472ca055b3ce07d"
+    },
+    "src/revealinfinder.cpp": {
+      "before": "4fa74c6cbdbef108beaa5c31c6c4ab1791b58ab86ee4d683d6d76f3b3c91402c",
+      "after": "4fa74c6cbdbef108beaa5c31c6c4ab1791b58ab86ee4d683d6d76f3b3c91402c"
+    },
+    "src/featureflags.h": {
+      "before": "3dd0e3eb3343a4b6e45f44ad1d1b400c8f496505c83ecfc95be17fcf9ca7480f",
+      "after": "3dd0e3eb3343a4b6e45f44ad1d1b400c8f496505c83ecfc95be17fcf9ca7480f"
+    },
+    "src/resources.qrc": {
+      "before": "0ab30e6cf4243e6003317a5a2ac710ef05195fdc38b09af5b79cb3193285cd08",
+      "after": "0ab30e6cf4243e6003317a5a2ac710ef05195fdc38b09af5b79cb3193285cd08"
+    },
+    "src/pathkey.h": {
+      "before": "0d769da9dea2bf7060868319422ad647a187caabe336a84799e6b3dfcae74819",
+      "after": "0d769da9dea2bf7060868319422ad647a187caabe336a84799e6b3dfcae74819"
+    },
+    "src/mediascanner.cpp": {
+      "before": "7fbb0f36f2378fa6e03f5436ae3cb24250bce7fdb50ce8a8b3f9acd78c8ef291",
+      "after": "d15e290e297a723edbffc24bc7577c67253406577f568f1b992ef82554630933"
+    },
+    "src/opjournal.cpp": {
+      "before": "40aabdea82dd4e284d9fe94726300f30213d30ec65a4a5cc48d301f2adf56784",
+      "after": "40aabdea82dd4e284d9fe94726300f30213d30ec65a4a5cc48d301f2adf56784"
+    },
+    "src/volumeidentity.h": {
+      "before": "8d779067d2b51ec7d2cf2024c9e55648d362dfcf76da47cca06be85ae5d2c0da",
+      "after": "8d779067d2b51ec7d2cf2024c9e55648d362dfcf76da47cca06be85ae5d2c0da"
+    },
+    "src/app_avidmedialayout.h": {
+      "before": "f7e96f37804ba628e18a12a97b374911d5ec8d9f7edb4745ccba6473f79572fc",
+      "after": "f7e96f37804ba628e18a12a97b374911d5ec8d9f7edb4745ccba6473f79572fc"
+    },
+    "src/diagnostics.h": {
+      "before": "1b4ad2005925ddc1e742f4c4557b3fb8b2f73814f5de84b2736c5a9f7c62282c",
+      "after": "1b4ad2005925ddc1e742f4c4557b3fb8b2f73814f5de84b2736c5a9f7c62282c"
+    },
+    "src/optrash_mac.mm": {
+      "before": "e1add8d351578a829c4c9d2f986e1c5892255d1bbdeb75d4334e5af3b1cfd665",
+      "after": "e1add8d351578a829c4c9d2f986e1c5892255d1bbdeb75d4334e5af3b1cfd665"
+    },
+    "src/opfile.h": {
+      "before": "098975b44596eb2c1d968c647b9bc6ec5df63bcd98dcb3b003ec649d24aa802f",
+      "after": "098975b44596eb2c1d968c647b9bc6ec5df63bcd98dcb3b003ec649d24aa802f"
+    },
+    "src/precomputefilter.h": {
+      "before": "2303ece77ad98b02048978d8aa7e3c590e336e6519f6615f331abfef993d8f0d",
+      "after": "2303ece77ad98b02048978d8aa7e3c590e336e6519f6615f331abfef993d8f0d"
+    },
+    "src/oprunner.h": {
+      "before": "bfa33d8fbbbcd68e84def574ce0f363cb4b49add5b9847445f2cd8071311c118",
+      "after": "bfa33d8fbbbcd68e84def574ce0f363cb4b49add5b9847445f2cd8071311c118"
+    },
+    "src/omfuid.h": {
+      "before": "c02b9316794d8113021bd0688143382dfddc8df5a2afeb11612447f2bbf48a66",
+      "after": "c02b9316794d8113021bd0688143382dfddc8df5a2afeb11612447f2bbf48a66"
+    },
+    "src/precomputefilterdialog.cpp": {
+      "before": "04c8a20bce6172f71c58ba5aabbaa56d81fd9f652802f5005da8099d7c274f87",
+      "after": "04c8a20bce6172f71c58ba5aabbaa56d81fd9f652802f5005da8099d7c274f87"
+    },
+    "src/formatutil.h": {
+      "before": "c3b722d1ad6d744c8c2b0cad75b0085560ccb68fdc9ffd06fd61d2bc2d1000de",
+      "after": "c3b722d1ad6d744c8c2b0cad75b0085560ccb68fdc9ffd06fd61d2bc2d1000de"
+    },
+    "src/operationrecovery.h": {
+      "before": "2c53f3d40abe63d1da2d4cc6f0386e4a9244e0bb2110a7dceedf9dae0bafcb8e",
+      "after": "2c53f3d40abe63d1da2d4cc6f0386e4a9244e0bb2110a7dceedf9dae0bafcb8e"
+    },
+    "src/mediacsv.cpp": {
+      "before": "028974b57a39f0914efb6340736f36ec908cab82a2b7f888154f5afe397ccd4f",
+      "after": "028974b57a39f0914efb6340736f36ec908cab82a2b7f888154f5afe397ccd4f"
+    },
+    "src/opmanager.cpp": {
+      "before": "69ed237cef4160bb0618ebb79a13abe08fbd4f7fbaaa87eab1cbbd81e8c53c3b",
+      "after": "69ed237cef4160bb0618ebb79a13abe08fbd4f7fbaaa87eab1cbbd81e8c53c3b"
+    },
+    "src/unfinishedbusinessdialog.cpp": {
+      "before": "29b9d838befbe25b1e982001c582987d50ccd34079928c9f2ccf5a6f91c20403",
+      "after": "29b9d838befbe25b1e982001c582987d50ccd34079928c9f2ccf5a6f91c20403"
+    },
+    "src/precomputefilterdialog.h": {
+      "before": "321cec10cccf155d13733bedb3b5b87843df3e2b899af4a2eff70bd52f4cfa76",
+      "after": "321cec10cccf155d13733bedb3b5b87843df3e2b899af4a2eff70bd52f4cfa76"
+    },
+    "src/main.cpp": {
+      "before": "104499a91dc3ce865a590384400ee01e6dc8ddfb35feea08676e91dab7456577",
+      "after": "104499a91dc3ce865a590384400ee01e6dc8ddfb35feea08676e91dab7456577"
+    },
+    "src/oprequest.h": {
+      "before": "79b9658de2a4e7b29fcf77517e3070969f23a5ce23c955ec9ef0dc3ef53cb750",
+      "after": "79b9658de2a4e7b29fcf77517e3070969f23a5ce23c955ec9ef0dc3ef53cb750"
+    },
+    "src/oprunner.cpp": {
+      "before": "cbb2b9d9661a1c4cb4abb3601d9dfbad9456d587ae7e85c2b5070320bcacb911",
+      "after": "cbb2b9d9661a1c4cb4abb3601d9dfbad9456d587ae7e85c2b5070320bcacb911"
+    },
+    "src/opfile.cpp": {
+      "before": "950518ae71c6b1c70b5ddad0f7204497578b41823472728e6ee6193963c8d4f6",
+      "after": "950518ae71c6b1c70b5ddad0f7204497578b41823472728e6ee6193963c8d4f6"
+    },
+    "src/testpause.h": {
+      "before": "180149048625806cd4e11c86740454549e6b74c1fe5bc077866ce9e62e31c3a0",
+      "after": "180149048625806cd4e11c86740454549e6b74c1fe5bc077866ce9e62e31c3a0"
+    },
+    "src/mediaengineadapter.h": {
+      "before": "a6723386146bb7baadba420b4387b1c6ef0af5c109a2ffd6839e6459944830b5",
+      "after": "a6723386146bb7baadba420b4387b1c6ef0af5c109a2ffd6839e6459944830b5"
+    },
+    "src/mediafilterproxy.h": {
+      "before": "fb52834c749d8f922178947fa10f71239fa07849182e3eacb1ffa9a9de93cb3f",
+      "after": "10efa455b2f5c7febfaa9e7afaddcf70582b5e1f8bea655eb571c905e3af006d"
+    },
+    "src/dragdroputil.h": {
+      "before": "6c91567ce5c2c7a5e619cc9e1adf6e08feee6ec2750b7479f71bf7e7710a7fbb",
+      "after": "6c91567ce5c2c7a5e619cc9e1adf6e08feee6ec2750b7479f71bf7e7710a7fbb"
+    },
+    "src/avidusage.h": {
+      "before": "2338ad737d20b8be37c95f52b60c17ce600fa4e55b1a690e1e2ede569c5a234c",
+      "after": "2338ad737d20b8be37c95f52b60c17ce600fa4e55b1a690e1e2ede569c5a234c"
+    },
+    "src/volumemanager.cpp": {
+      "before": "9f1ca3b1c228e89404e55f10243f462549fb1fc7aea94043cff4f28ca943d8e8",
+      "after": "9f1ca3b1c228e89404e55f10243f462549fb1fc7aea94043cff4f28ca943d8e8"
+    },
+    "src/avbfilereferences.h": {
+      "before": "5356e351eb5d82059797634469f25c02f2bbd026c06bd16f5afffc9b6a61ab96",
+      "after": "62391104aeb3d055cc7611a4f733a780baa0ca3d52659487a28e16a3a29050ec"
+    },
+    "src/operationrecovery.cpp": {
+      "before": "5de005ee6eb0c89062d07d62f395c0e5a4ad393438639034d6bae461112557a4",
+      "after": "5de005ee6eb0c89062d07d62f395c0e5a4ad393438639034d6bae461112557a4"
+    },
+    "src/mediaengine/compressionnames_p.h": {
+      "before": "26fc69bad86718511987028cd87f4356488ccb1f47a7db2bb915b9154e1654ff",
+      "after": "26fc69bad86718511987028cd87f4356488ccb1f47a7db2bb915b9154e1654ff"
+    },
+    "src/mediaengine/pmrreader.cpp": {
+      "before": "e6a669c56ffa34ad9046295161b78e34bdd71a8864391d211c1e2960365d472e",
+      "after": "e6a669c56ffa34ad9046295161b78e34bdd71a8864391d211c1e2960365d472e"
+    },
+    "src/mediaengine/mxfreader.h": {
+      "before": "73142f5745b728022be17de9b09fed04edfdb8ce603cbebb2a446fda08456982",
+      "after": "73142f5745b728022be17de9b09fed04edfdb8ce603cbebb2a446fda08456982"
+    },
+    "src/mediaengine/sourcepreparation.h": {
+      "before": "d94f9f7dba043962a21c097893a5f1aedcd0cafa23279de4ba604d592c5d3a7e",
+      "after": "d94f9f7dba043962a21c097893a5f1aedcd0cafa23279de4ba604d592c5d3a7e"
+    },
+    "src/mediaengine/mxfcatalogue_p.h": {
+      "before": "6d67b2300f380cd63a50547595154ee27d8ab69f36b6d87e83e81fd3a33ff75c",
+      "after": "6d67b2300f380cd63a50547595154ee27d8ab69f36b6d87e83e81fd3a33ff75c"
+    },
+    "src/mediaengine/mxfobjects_p.cpp": {
+      "before": "0e7c8c634ad70efd9ff6c548fe0a68d14be55205e5fe44db42fcf8d59a16d156",
+      "after": "0e7c8c634ad70efd9ff6c548fe0a68d14be55205e5fe44db42fcf8d59a16d156"
+    },
+    "src/mediaengine/compressionnames_p.cpp": {
+      "before": "b2cc1e50e0f00e8c113d9644e02cc4f7f44b41f8e53e40b84ac352d3e12f7732",
+      "after": "b2cc1e50e0f00e8c113d9644e02cc4f7f44b41f8e53e40b84ac352d3e12f7732"
+    },
+    "src/mediaengine/mdbobjects_p.h": {
+      "before": "4bd0196f5df63398e2cc195c3dffb0d63fb06c0e489d67e42b6dd3b815fcdac5",
+      "after": "4bd0196f5df63398e2cc195c3dffb0d63fb06c0e489d67e42b6dd3b815fcdac5"
+    },
+    "src/mediaengine/projection.h": {
+      "before": "9b9a8778e770ee615610a43840ad8df6b7a177b68f41cba99d8a52f7187eb1f0",
+      "after": "9b9a8778e770ee615610a43840ad8df6b7a177b68f41cba99d8a52f7187eb1f0"
+    },
+    "src/mediaengine/discoveryengine.h": {
+      "before": "ecf5f9511139822be7550783826c04800ca8c21bcd5d1de3d663c998b29f7064",
+      "after": "ecf5f9511139822be7550783826c04800ca8c21bcd5d1de3d663c998b29f7064"
+    },
+    "src/mediaengine/avbreader.cpp": {
+      "before": "481fbb931b4b4c8d17a1690a4fae5e28dc0497146311a493677ef14cef79ae7f",
+      "after": "54e9bce9ca6414b09c2d666afe6a1cea5cdc51c5385b67afc7ee3fb57a86dedd"
+    },
+    "src/mediaengine/metadataselectionpolicy.h": {
+      "before": "3f0df3ed71da83420add6f9b97b1819bd5b09bd1ad267ef8af4bbab86737c088",
+      "after": "3f0df3ed71da83420add6f9b97b1819bd5b09bd1ad267ef8af4bbab86737c088"
+    },
+    "src/mediaengine/discoveryengine.cpp": {
+      "before": "b068268a65c2fefef093fcaa40c85c31207090100c0eb10b02bda1c22f343a36",
+      "after": "3408f8889767a61edf51c2681ce5f440a52bf6eafa64e22b6a0740c6be24f3a1"
+    },
+    "src/mediaengine/omfprojection.cpp": {
+      "before": "9904dedf769de067de16000b9427122e3035ab5a6d1e66820b6c9bc0d1de1123",
+      "after": "1573950415e11e55e32ccb5e08cef342c49d6a012e53c81d385ae91282f8b170"
+    },
+    "src/mediaengine/avbdescriptors_p.cpp": {
+      "before": "02de006f1d3e35a6e23fc4e5374e8323647152ffbbaa03ec44fd6e6730e9c724",
+      "after": "edb0a98d59bcf1354ad46b4a3fd0182bba2b7bc28cdfa6df80094ee97dbb6ca0"
+    },
+    "src/mediaengine/mxfprojection.cpp": {
+      "before": "f3df41af48b24931cd61af21e79975c34a9506bcbf6e8cb95f4053adcc3b3a86",
+      "after": "a10ef45f14e00c468c1df348a64abe3900612ec60488686d36dbcc13f97f0e29"
+    },
+    "src/mediaengine/avbreader.h": {
+      "before": "1c9e6fd0e56e9032abd67fec1f44807c5587d8fb96ebb35fe23fba6b1cbf60c1",
+      "after": "1c9e6fd0e56e9032abd67fec1f44807c5587d8fb96ebb35fe23fba6b1cbf60c1"
+    },
+    "src/mediaengine/mxfreader.cpp": {
+      "before": "6d66fe804e5b58a33cdd38284e62219042705df2364ad7a463807646c2189873",
+      "after": "6d66fe804e5b58a33cdd38284e62219042705df2364ad7a463807646c2189873"
+    },
+    "src/mediaengine/omfreader.cpp": {
+      "before": "5060984ac330193cac1ec1c97a754af417d8bf204e4faad54319eb28cec348c0",
+      "after": "5060984ac330193cac1ec1c97a754af417d8bf204e4faad54319eb28cec348c0"
+    },
+    "src/mediaengine/omfobjects_p.h": {
+      "before": "0a05da9cc8d5ddf0da42e6bc4190a00e01050a6b833d7140c7ef6c6823c8ee0a",
+      "after": "0a05da9cc8d5ddf0da42e6bc4190a00e01050a6b833d7140c7ef6c6823c8ee0a"
+    },
+    "src/mediaengine/pmrprojection.cpp": {
+      "before": "2b89e4df00fa29cde9e8ba41b07eb428da80a12ae688213379276a1e7a865111",
+      "after": "2b89e4df00fa29cde9e8ba41b07eb428da80a12ae688213379276a1e7a865111"
+    },
+    "src/mediaengine/mdbreader.h": {
+      "before": "6edca39deee938c18f17af2b20af1221dd49d2cfb96cd20b681920be3368cd62",
+      "after": "6edca39deee938c18f17af2b20af1221dd49d2cfb96cd20b681920be3368cd62"
+    },
+    "src/mediaengine/dnxnames_p.h": {
+      "before": "a2b1fd69ddcde71a55e00b73586e533a746fa4ff69b9b1790643f1f7ea29d8b6",
+      "after": "a2b1fd69ddcde71a55e00b73586e533a746fa4ff69b9b1790643f1f7ea29d8b6"
+    },
+    "src/mediaengine/audioreader_p.h": {
+      "before": "d2234a43f50ed78a7977ec408eae7c47f89f3f69bc8f0406842594a4a0454846",
+      "after": "d2234a43f50ed78a7977ec408eae7c47f89f3f69bc8f0406842594a4a0454846"
+    },
+    "src/mediaengine/projection.cpp": {
+      "before": "a79552d47bb16abaa46068c0a2398953a057d43eb1ec3704e432cdafc1f7a52f",
+      "after": "5930162f18ea8f98f4334d1b22934d157b0ddfb8c1ebe46ba4dfd34ac78e6280"
+    },
+    "src/mediaengine/mxfsource.h": {
+      "before": "a4418cc0020922e841d399adfdd3b0cc29baaef65f68c243a5578c8f57ff2d6d",
+      "after": "a4418cc0020922e841d399adfdd3b0cc29baaef65f68c243a5578c8f57ff2d6d"
+    },
+    "src/mediaengine/scanengine.h": {
+      "before": "75e5c16b3c11a3ac8747cee487495d563c38c06ead137df32b50dd8bc6558d3f",
+      "after": "75e5c16b3c11a3ac8747cee487495d563c38c06ead137df32b50dd8bc6558d3f"
+    },
+    "src/mediaengine/sourcestorage_p.h": {
+      "before": "1b0f65f279e2f8b5ef099a504387b379b772b1e78d4feef5b6e36ddf0546ebbe",
+      "after": "1b0f65f279e2f8b5ef099a504387b379b772b1e78d4feef5b6e36ddf0546ebbe"
+    },
+    "src/mediaengine/omfbentoreader_p.h": {
+      "before": "a1ccfda12d6508922200bf6c504d0a256121da1003bd409e9b02e25e9fb7b623",
+      "after": "a1ccfda12d6508922200bf6c504d0a256121da1003bd409e9b02e25e9fb7b623"
+    },
+    "src/mediaengine/omfbentoreader_p.cpp": {
+      "before": "ff33ee91f2bfd59752ee81374cde80c11bb00139074ea14d6900aac9d246c8dd",
+      "after": "ff33ee91f2bfd59752ee81374cde80c11bb00139074ea14d6900aac9d246c8dd"
+    },
+    "src/mediaengine/omfobjects_p.cpp": {
+      "before": "b1a3bb7c0151bb7913a5342caf3e2d866a1f43d458827041db26967298e49229",
+      "after": "b1a3bb7c0151bb7913a5342caf3e2d866a1f43d458827041db26967298e49229"
+    },
+    "src/mediaengine/discoveryengine_p.h": {
+      "before": "4efe77b4ab32000e92d97f41b7827df92df6b8cc1e3ac95c690b3c079d808e91",
+      "after": "4efe77b4ab32000e92d97f41b7827df92df6b8cc1e3ac95c690b3c079d808e91"
+    },
+    "src/mediaengine/databasesource.h": {
+      "before": "50869818aec8f7f0a226fca54fa08ba929656a785c951c6d949e1778e79f70e4",
+      "after": "50869818aec8f7f0a226fca54fa08ba929656a785c951c6d949e1778e79f70e4"
+    },
+    "src/mediaengine/mdbbentoreader_p.cpp": {
+      "before": "310999d1bc0fe55146d754d2c9daa777cbd6ce3c630bbf2cd56573254ba12ad3",
+      "after": "310999d1bc0fe55146d754d2c9daa777cbd6ce3c630bbf2cd56573254ba12ad3"
+    },
+    "src/mediaengine/mdbobjects_p.cpp": {
+      "before": "a9cb68cf4e757fe859645c5d37121bb7c0e9f02014367fa834a13e8bdeebeeae",
+      "after": "a9cb68cf4e757fe859645c5d37121bb7c0e9f02014367fa834a13e8bdeebeeae"
+    },
+    "src/mediaengine/scancoordinator.cpp": {
+      "before": "ba00a9a644623a6d7509fdd02df4485d62fe238f92584a2b4502b1062fe8df81",
+      "after": "ba00a9a644623a6d7509fdd02df4485d62fe238f92584a2b4502b1062fe8df81"
+    },
+    "src/mediaengine/scanmodel.h": {
+      "before": "b42b37f224f3d8c873fb85afb8bf1d79f58333f0ae07204d5fbab10a4e3db524",
+      "after": "b42b37f224f3d8c873fb85afb8bf1d79f58333f0ae07204d5fbab10a4e3db524"
+    },
+    "src/mediaengine/scancoordinator.h": {
+      "before": "834e07bab084b0fa120e45ae13b89c14ed477965bd43913878f50fccaf89985f",
+      "after": "834e07bab084b0fa120e45ae13b89c14ed477965bd43913878f50fccaf89985f"
+    },
+    "src/mediaengine/databaseimage.cpp": {
+      "before": "4f0d4c9e6c2e06909f63ee8ade22c90d566bc876ccaaa1c7afcf7d126909e662",
+      "after": "4f0d4c9e6c2e06909f63ee8ade22c90d566bc876ccaaa1c7afcf7d126909e662"
+    },
+    "src/mediaengine/picturegeometry_p.h": {
+      "before": "988510ac14b236d6b0848dd32f426963d33864fce0ea8743bc139f99d69d2de0",
+      "after": "988510ac14b236d6b0848dd32f426963d33864fce0ea8743bc139f99d69d2de0"
+    },
+    "src/mediaengine/mdbreader.cpp": {
+      "before": "43802d86f0d81658d67b03ab00ef87b180569f821453a3e3e3ce9dda8a29c9f7",
+      "after": "43802d86f0d81658d67b03ab00ef87b180569f821453a3e3e3ce9dda8a29c9f7"
+    },
+    "src/mediaengine/mdbprojection.cpp": {
+      "before": "6a85ce57cdbd280f3a2bae3c4699bd1326193fac1d7cc3c770162394d2698d75",
+      "after": "a3f073cd007b63c778198b08421bd733af3d5385ea8209113f866414e129ad60"
+    },
+    "src/mediaengine/omfreader.h": {
+      "before": "46edc8e1433d23488ccd3378918b200a644e09f7840803ab32a899ed8a264511",
+      "after": "46edc8e1433d23488ccd3378918b200a644e09f7840803ab32a899ed8a264511"
+    },
+    "src/mediaengine/databaseimage.h": {
+      "before": "115df5eb949bf5fa0dcc1863373f922d83589861a615eb710e53f87887c0ddd5",
+      "after": "115df5eb949bf5fa0dcc1863373f922d83589861a615eb710e53f87887c0ddd5"
+    },
+    "src/mediaengine/metadataselectionpolicy.cpp": {
+      "before": "5eb8478378d93b62cb96cdea49b7df04d43c63951970d04c0e4843edaaa49ff2",
+      "after": "5eb8478378d93b62cb96cdea49b7df04d43c63951970d04c0e4843edaaa49ff2"
+    },
+    "src/mediaengine/mdbaudiosummary_p.cpp": {
+      "before": "cf3c4018bc9ebf83bc5bdd3ae1476f5df0cf791744d73bb97f5e3692856bffa2",
+      "after": "cf3c4018bc9ebf83bc5bdd3ae1476f5df0cf791744d73bb97f5e3692856bffa2"
+    },
+    "src/mediaengine/avbreferences.cpp": {
+      "before": "d8b4b0ee2913e67119ed77e6697adc9ffae1fb861144190057de5287adbe3113",
+      "after": "4ac791e29f3b739d415696c21fb1385bbf50427f5dc3f7084743c561a7df8290"
+    },
+    "src/mediaengine/mxfobjects_p.h": {
+      "before": "a3a7008f11efbcfe4ea82e5f0d97a1896393b5216d808b91d57e972ba9df8612",
+      "after": "a3a7008f11efbcfe4ea82e5f0d97a1896393b5216d808b91d57e972ba9df8612"
+    },
+    "src/mediaengine/mdbaudiosummary_p.h": {
+      "before": "a78ab4c72ed054ac43a343703af8d0ce6d15d18767acefe57d7ee7788ff1cc76",
+      "after": "a78ab4c72ed054ac43a343703af8d0ce6d15d18767acefe57d7ee7788ff1cc76"
+    },
+    "src/mediaengine/avbreferences.h": {
+      "before": "228a0edefc8110a561d1c7821fbca1d8267865b5eda6e97348f2c310993f1853",
+      "after": "95a9a2109edee258c47c8c3f794afb51230a866f622bec89935d5ca48eb86615"
+    },
+    "src/mediaengine/scanengine.cpp": {
+      "before": "11b4748216ea54910f8c3aa29ea2b1d363b18be304fe98d003159f0192823866",
+      "after": "11b4748216ea54910f8c3aa29ea2b1d363b18be304fe98d003159f0192823866"
+    },
+    "src/mediaengine/sourcereader.h": {
+      "before": "936d50f22a4d83c7a85cc3204982c357460edee5016d8fe75b14863b0aa37083",
+      "after": "936d50f22a4d83c7a85cc3204982c357460edee5016d8fe75b14863b0aa37083"
+    },
+    "src/mediaengine/mdbbentoreader_p.h": {
+      "before": "f7490cb6bbbb78cccaa6fe6c2975155699547a4ef7bfbbe682017c416f76e3c4",
+      "after": "f7490cb6bbbb78cccaa6fe6c2975155699547a4ef7bfbbe682017c416f76e3c4"
+    },
+    "src/mediaengine/avbobjects_p.h": {
+      "before": "75595521b0bbb01fad62ebdc8c5bbce940783cc6a3da9ab6e22e77f290fe3e68",
+      "after": "5d8cd300c2c295fbc2d6b2be5a3465bb8cc72b5208f612eaf8c8f79b07498d42"
+    },
+    "src/mediaengine/databasesource.cpp": {
+      "before": "fe4235c24e024ffd31431c68e01a40626188e1e8ed46d1212f6adad40b84f6b8",
+      "after": "fe4235c24e024ffd31431c68e01a40626188e1e8ed46d1212f6adad40b84f6b8"
+    },
+    "src/mediaengine/avbobjects_p.cpp": {
+      "before": "35c1056c4b0e7acaebae18a13491cf8e1c869fda186079de979eb52473453a0e",
+      "after": "964569d9abbf27e410fb64357506bcf4998930257db135bb47ec8a9420b534d3"
+    },
+    "src/mediaengine/pmrreader.h": {
+      "before": "f88e34d9551a51763b1f2229d903daecd385216a7defa68bb2cc8e2268af622d",
+      "after": "f88e34d9551a51763b1f2229d903daecd385216a7defa68bb2cc8e2268af622d"
+    },
+    "src/mediaengine/avbcomponents_p.cpp": {
+      "before": "749d0ad4d687f0532407009f93c8cb82939491d978823c8de2ee6863d10504f4",
+      "after": "47fe6cef59538914f8f6960451c876784877cbd1c6afb9c8aa167c25cd510fa1"
+    },
+    "src/mediaengine/audioreader_p.cpp": {
+      "before": "f9dec61b96f2de3954b0c920f8eb9dc9cb7d15f397561f57aa9ea7a2e3d02bd1",
+      "after": "f9dec61b96f2de3954b0c920f8eb9dc9cb7d15f397561f57aa9ea7a2e3d02bd1"
+    },
+    "src/mediaengine/mxfsource.cpp": {
+      "before": "afc2e5170ffc4902006fe1ce9bec10e99619074304b0b7cfc0b9983f1861b479",
+      "after": "afc2e5170ffc4902006fe1ce9bec10e99619074304b0b7cfc0b9983f1861b479"
+    },
+    "tests/tst_mediametadata.cpp": {
+      "before": "b2761071605553fd5125f0249f590620be49c0fe87192a1f2d1439e072bcee47",
+      "after": "b2761071605553fd5125f0249f590620be49c0fe87192a1f2d1439e072bcee47"
+    },
+    "tests/tst_mediaengine_compressionnames.cpp": {
+      "before": "8c0cc11259c488f031d3c8e48e09fd2fc70779c57841f4f2796304a97e204b7d",
+      "after": "8c0cc11259c488f031d3c8e48e09fd2fc70779c57841f4f2796304a97e204b7d"
+    },
+    "tests/tst_mediaenginemdb.cpp": {
+      "before": "867d556eaef78fd2495be8529fc7dd81403235d4cc0cc08c278fcbb5a4c708e3",
+      "after": "867d556eaef78fd2495be8529fc7dd81403235d4cc0cc08c278fcbb5a4c708e3"
+    },
+    "tests/tst_mediaengineavbreferences.cpp": {
+      "before": "441a285c0cd7eb0b3905a72cb790dcc0b32438fb6193a8f9585b88820e234b98",
+      "after": "5e767e22ab88470a2b6dba85c6c9af5a7bfe486f8dbc13340817bf7d2f142be1"
+    },
+    "tests/tst_pathkey.cpp": {
+      "before": "087c280e11139cd4bf5f22a40db261f43c39bbc02308e1e479f830492dbf4825",
+      "after": "087c280e11139cd4bf5f22a40db261f43c39bbc02308e1e479f830492dbf4825"
+    },
+    "tests/tst_metadataselectionpolicy.cpp": {
+      "before": "5110faf6d09a58aa98e764f9e4fb325d53a2205873deb879e9ccf7967094ad4c",
+      "after": "5110faf6d09a58aa98e764f9e4fb325d53a2205873deb879e9ccf7967094ad4c"
+    },
+    "tests/tst_mediaengineomfisolated.cpp": {
+      "before": "c18c4ec80e762dd9adbab359b752fe01ea2263a317ff8de271a32aee26040cb3",
+      "after": "c18c4ec80e762dd9adbab359b752fe01ea2263a317ff8de271a32aee26040cb3"
+    },
+    "tests/tst_avideffects.cpp": {
+      "before": "a6895b3ecd69ba6f3139cf4ed8c3e6f5cbfab3c3f8e721b38220a875fddabee8",
+      "after": "e76a3dcf5c63b319b6ae90cdd3e3705916042e8dc1ab5efb04a95dcf14868c7a"
+    },
+    "tests/mediaengine_compare.cpp": {
+      "before": "8fa806512b048df202b6dffeec0a4f9b89ff8e7bc0998b5439aebbc9d1762b8a",
+      "after": "8fa806512b048df202b6dffeec0a4f9b89ff8e7bc0998b5439aebbc9d1762b8a"
+    },
+    "tests/tst_mediaenginescan.cpp": {
+      "before": "2d763f8d9dbbb16f1e34c7ebbb0cd502aea235e7458deb7e6fc35c690263b3b3",
+      "after": "2d763f8d9dbbb16f1e34c7ebbb0cd502aea235e7458deb7e6fc35c690263b3b3"
+    },
+    "tests/tst_rebalanceplanner.cpp": {
+      "before": "626ef3f350248af1ebaee7aa1fe4a5af7541297b7cb6b951cd9beb1084c744a8",
+      "after": "626ef3f350248af1ebaee7aa1fe4a5af7541297b7cb6b951cd9beb1084c744a8"
+    },
+    "tests/tst_mediafilterproxy.cpp": {
+      "before": "4f43a87485c1f21cc683f46e3298b830421d8c65a7c25f34c78021150e2559f7",
+      "after": "b889b6d987ad97911e32decb29cab643ec77f1a5bae6a7a9569b5f1067dc1679"
+    },
+    "tests/tst_mediaenginemxfsource.cpp": {
+      "before": "759856735bf3350d2ba1cc961f3b5d485d444bdd7d6b82925bcd0a238da9bdd2",
+      "after": "759856735bf3350d2ba1cc961f3b5d485d444bdd7d6b82925bcd0a238da9bdd2"
+    },
+    "tests/tst_opjournal.cpp": {
+      "before": "2de03172ea9feea4f60d7ac7ce53d55fb797cf13ca27f07c21e9d8e49e1d92f3",
+      "after": "2de03172ea9feea4f60d7ac7ce53d55fb797cf13ca27f07c21e9d8e49e1d92f3"
+    },
+    "tests/tst_binfilterdialog.cpp": {
+      "before": "97689a14f971a46f35ab269bc6aaa8fe4f7c61719b586be497e9ef4c917846fa",
+      "after": "85247ae605148b624ef67b158bb722a080c820907a317a6e81c7241b7b863083"
+    },
+    "tests/tst_fileoperations.cpp": {
+      "before": "e2c3fcfb30abdfc5ffb8dc0e9588d22a5e4acdba5f12a7be0b18d1c1e3b0de48",
+      "after": "e2c3fcfb30abdfc5ffb8dc0e9588d22a5e4acdba5f12a7be0b18d1c1e3b0de48"
+    },
+    "tests/tst_mediaenginedatabase.cpp": {
+      "before": "46b2fa05ad3decb165a605f83728be2e5dbb35306956a0f1444ce4429471f1eb",
+      "after": "46b2fa05ad3decb165a605f83728be2e5dbb35306956a0f1444ce4429471f1eb"
+    },
+    "tests/tst_operationui.cpp": {
+      "before": "755350f080d00e134dd38665a732988a99252ed357fde6d20b34318e2f1e7156",
+      "after": "8eacce483901b9f6212ab8c6c089e81e5fe9ad383e842172d64c3a60cc4c4b79"
+    },
+    "tests/tst_mediaenginelegacy.cpp": {
+      "before": "4fecc08c6858f148015659dcdfa14ae4ec525f6f92c341d2e6aa2d9df47313c6",
+      "after": "4fecc08c6858f148015659dcdfa14ae4ec525f6f92c341d2e6aa2d9df47313c6"
+    },
+    "tests/tst_diagnostics.cpp": {
+      "before": "9f9191092e440597c8b07188f088e6f9a8d4750b9e96a036ff9b38fda1cda2fe",
+      "after": "9f9191092e440597c8b07188f088e6f9a8d4750b9e96a036ff9b38fda1cda2fe"
+    },
+    "tests/tst_mediaengineavb.cpp": {
+      "before": "acb986cc1eff836d65f7e23e7dc6632a6218bd3200435a3e1f30a37fedf93d3e",
+      "after": "acb986cc1eff836d65f7e23e7dc6632a6218bd3200435a3e1f30a37fedf93d3e"
+    },
+    "tests/tst_scanner.cpp": {
+      "before": "f89361b8cf96f45b4db1accf8965b5118d314aed85d98066a5295afb6e538d63",
+      "after": "f89361b8cf96f45b4db1accf8965b5118d314aed85d98066a5295afb6e538d63"
+    },
+    "tests/tst_volumeidentity.cpp": {
+      "before": "f7909b92871f733e83487f708c9b9013fff8c5501fd3e201ccc09b3390976527",
+      "after": "f7909b92871f733e83487f708c9b9013fff8c5501fd3e201ccc09b3390976527"
+    },
+    "tests/tst_mediaenginepmrrobustness.cpp": {
+      "before": "4b9835adebd99afd230dcf5fa3202e3142bea615b6cc61f2f58e563937ae588d",
+      "after": "4b9835adebd99afd230dcf5fa3202e3142bea615b6cc61f2f58e563937ae588d"
+    },
+    "tests/tst_mediaenginemxf.cpp": {
+      "before": "dd2a650552599fee811ed2f557167a035afbd2c0147af873106397dabf82cffa",
+      "after": "dd2a650552599fee811ed2f557167a035afbd2c0147af873106397dabf82cffa"
+    },
+    "tests/tst_mediaenginepmr.cpp": {
+      "before": "37e09135380891dd9080e631e576bda326ce58c5262800580c8e4f5458729519",
+      "after": "37e09135380891dd9080e631e576bda326ce58c5262800580c8e4f5458729519"
+    },
+    "tests/tst_mediaenginemdbisolated.cpp": {
+      "before": "60eef3e8d762e9fbd2c5195d004cc50dd0a10db65b070b1142b650fccd8c21e9",
+      "after": "60eef3e8d762e9fbd2c5195d004cc50dd0a10db65b070b1142b650fccd8c21e9"
+    },
+    "tests/tst_mediaevidence.cpp": {
+      "before": "622feee192fefb3eda3633dfc0fe9c967edf559e510c250f19fe069aecdc470a",
+      "after": "622feee192fefb3eda3633dfc0fe9c967edf559e510c250f19fe069aecdc470a"
+    },
+    "tests/tst_mediaengine_mxfprojection.cpp": {
+      "before": "0ee120b9cb03b5e6c671fec1f35dc1ce3894567b50aa98b7044f139680a094bb",
+      "after": "0ee120b9cb03b5e6c671fec1f35dc1ce3894567b50aa98b7044f139680a094bb"
+    },
+    "tests/tst_mediaengine_omfprojection.cpp": {
+      "before": "e65600d6fa4371572a059d5e820936d2971a17fc343eb469de6e6d502b32852c",
+      "after": "e65600d6fa4371572a059d5e820936d2971a17fc343eb469de6e6d502b32852c"
+    },
+    "tests/tst_opcleanup.cpp": {
+      "before": "914c6a2fac2c819299a364c9425a1b3b6d55ad35b8b792b9c6582fe53397cf5d",
+      "after": "914c6a2fac2c819299a364c9425a1b3b6d55ad35b8b792b9c6582fe53397cf5d"
+    },
+    "tests/tst_mobid.cpp": {
+      "before": "95e5b26dde4a369b6cc5335d594fca69e4e58c05b2a08b4af174e8ab8356fbc8",
+      "after": "95e5b26dde4a369b6cc5335d594fca69e4e58c05b2a08b4af174e8ab8356fbc8"
+    },
+    "tests/tst_mediaenginediscovery.cpp": {
+      "before": "8e84ec0b2c3be12c78f9de029aeba24aee33d3581e56770cb442d461b9f3e370",
+      "after": "8e84ec0b2c3be12c78f9de029aeba24aee33d3581e56770cb442d461b9f3e370"
+    },
+    "tests/tst_conventions.cpp": {
+      "before": "e4bc8cbc6a59781c3427f1c2463a7b4b8d26bf7bc073ba5bf215ac69328b62a4",
+      "after": "dd4ca454df62b0cad476aa2865e08c28208c3e7b6f12256aad2dcd03ca423340"
+    },
+    "tests/tst_mediacsv.cpp": {
+      "before": "586baaf6fe766117c25e29ac54c714da8288800a2be698ed736bf4de8f026bc8",
+      "after": "586baaf6fe766117c25e29ac54c714da8288800a2be698ed736bf4de8f026bc8"
+    },
+    "tests/tst_readerregressions.cpp": {
+      "before": "853f72fbf3da07b5240b66e3bf09af22b953e610ff6ce8b590e05bcc1e71a7bf",
+      "after": "853f72fbf3da07b5240b66e3bf09af22b953e610ff6ce8b590e05bcc1e71a7bf"
+    },
+    "tests/tst_avbparser.cpp": {
+      "before": "c2e5ed3205a5d245974bf43999615a13ac660370b464149ca197626aef200c4d",
+      "after": "38cb3b439963590089550dc1efc5170cfae648519c5cb2e7cb7b68f7bac6acc8"
+    },
+    "tests/tst_format.cpp": {
+      "before": "30528095a3b0a81847f318bedf1a1e4eeab34456fd3094ea2da603ac54387efb",
+      "after": "30528095a3b0a81847f318bedf1a1e4eeab34456fd3094ea2da603ac54387efb"
+    },
+    "tests/tst_mediatablemodel.cpp": {
+      "before": "53e6057b4722a69397d8b1fb0a43c2ae1fa8fcdd3fe062983e01e681adfa008a",
+      "after": "c15ad17e21acbccf2b462119d958a36d48f15c63c1edd53b123a6a9e35b6e914"
+    },
+    "tests/tst_precomputefilterdialog.cpp": {
+      "before": "1482933758882b3b8696fa874c712c298ecee5dbde5f527bd31653105d7fad93",
+      "after": "1482933758882b3b8696fa874c712c298ecee5dbde5f527bd31653105d7fad93"
+    },
+    "tests/tst_omfuid.cpp": {
+      "before": "963d84a8387a82e844bc986db9e31f95526d90e0aad5e8f9c0e1cfbf5af4e5cf",
+      "after": "963d84a8387a82e844bc986db9e31f95526d90e0aad5e8f9c0e1cfbf5af4e5cf"
+    },
+    "tests/CMakeLists.txt": {
+      "before": "14c82431239c348b46066b4865cfd643d7aad046280e5a592a45ce46364ff939",
+      "after": "75e99f897c7575d81a9df7a218d5ca7fe7bad601ffc6106ca06eb8e0de2906ef"
+    }
+  }
+}

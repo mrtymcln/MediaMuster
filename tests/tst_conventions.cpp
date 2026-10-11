@@ -1,5 +1,5 @@
 #include "conventions.h"
-#include "avidmedialayout.h"
+#include "app_avidmedialayout.h"
 
 #include <QtTest>
 

@@ -232,8 +232,8 @@ evidence, and ask the user how new properties/value meanings should be represent
 and selected before extending the semantic model. Normal scans retain all supported
 observations and raw value bytes, including unresolved alternatives; unused unknown
 records are temporary under the approved source lifetimes. Report unsupported
-coverage rather than labelling it absent. Complete original records can be kept
-explicitly for diagnostic replay, or inspected again from the source. See the
+coverage rather than labelling it absent. Inspect complete original records directly
+from the source during investigation; they are not part of retained scan results. See the
 selection-policy document for the discovery/decision workflow.
 Complete logical coverage does not require duplicating empty strings and identical
 format capability records for every file: shared field definitions/source capabilities

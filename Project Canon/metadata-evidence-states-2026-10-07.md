@@ -61,7 +61,7 @@ existing qualified derived presentation; their presence is not codec certificati
   receipt even when skipped, failed or unable to establish ownership. A later
   read replaces its unobserved unopened receipt; distinct observed snapshots stay
   distinct. Changed header coverage is ineligible and retains Changed freshness.
-- [Bin enrichment](../src/binmetadataresolver.cpp) registers associated AVB
+- [Bin enrichment](../src/avbmetadataresolver.cpp) registers associated AVB
   receipts without changing the approved name/bin priorities. Coverage propagates
   through source qualification, selection exclusion, scan attachment and copies.
 

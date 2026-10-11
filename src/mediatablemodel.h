@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mediafile.h"
-#include "binmetadataresolver.h"
+#include "avbmetadataresolver.h"
 
 #include <QAbstractTableModel>
 #include <QSet>
@@ -91,7 +91,7 @@ public:
 
 private:
 	void applyAvbMetadata(bool notify);
-	BinMetadataResolver m_binMetadata;
+	AvbMetadataResolver m_binMetadata;
 	QVector<MediaFile> m_files;
 	bool m_precomputesEnabled = false;
 	bool m_clipDurationEnabled = false;

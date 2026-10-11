@@ -1,4 +1,4 @@
-#include "avideffects.h"
+#include "effectcatalogue.h"
 
 #include <QHash>
 #include <QRegularExpression>

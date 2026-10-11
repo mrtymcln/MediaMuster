@@ -1,0 +1,1703 @@
+{
+  "date": "2026-10-11",
+  "complete": true,
+  "baseline": {
+    "gitHead": "5e4fbd17a024ee070a9d479fec303d3693fbb214",
+    "workingTreeClean": true,
+    "probeSha256": "829d872c41ea8e822fb702155c48c989e581ae3eaa0bd9d363da0195e98fa825",
+    "matchedPreviousFinalVerification": true,
+    "sourceSha256": {
+      "CMakeLists.txt": "85de8da1ea6fb2fab0c0f9dfc419a2ff3c68e7a741652ab238766d9256047641",
+      "src/aboutdialog.cpp": "382d1f149675ff5669c6a66ac025610548a7e5e8d518b786c95f1a15961495b0",
+      "src/aboutdialog.h": "f51b9af72d09198bfd92f11b199e3841bdb46fab256a0d9d0675e67a243de225",
+      "src/avbparser.cpp": "c972c59206fe0e798921708c45eaa37a6099b1bc0bec10a0ec0393aa9cfc3fed",
+      "src/avbparser.h": "de88c1a3cb309cad00d842e169cfaa796a58379478cba781be9ce97c1865d185",
+      "src/avideffects.cpp": "8c50f1bfb58f5d105c14f5fc78230f4a063d33c5ce007be48c126e201525544c",
+      "src/avideffects.h": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1",
+      "src/avidmedialayout.h": "f7e96f37804ba628e18a12a97b374911d5ec8d9f7edb4745ccba6473f79572fc",
+      "src/avidprecompute.h": "4ff0c7e52fd8cbd1cc0900bc3638283ee6b69d05d72121f425d91c34af3748cd",
+      "src/avidtext.h": "19cd6e2d2a833efa74f07f28efa0c5b2daf69fa79172f785c7736ede8e5e5e62",
+      "src/avidusage.h": "2338ad737d20b8be37c95f52b60c17ce600fa4e55b1a690e1e2ede569c5a234c",
+      "src/backgroundjob.h": "b4a3488d0ed3cdd917c474e47366a658def978471987df0ece9523d7274bd9c2",
+      "src/binfilereferences.h": "5356e351eb5d82059797634469f25c02f2bbd026c06bd16f5afffc9b6a61ab96",
+      "src/binfilter.h": "1a32bcfb39632595913e6cca4bc7bf4cbb7c7add8554865626a212a2c7dbec3f",
+      "src/binfilterdialog.cpp": "aac0c5eed22ac7f1f0359161a33855f01a358173201f2cc80cc7e8275791d979",
+      "src/binfilterdialog.h": "d87de858e544f78eb91a44eb395e9f7854996659ad1ed22b02f3aa83558ff85f",
+      "src/binmetadataresolver.cpp": "a8a3bc6e71a90e771f793ee415db6e78ece2b2af33cfaa6cc4880423ffaa44d3",
+      "src/binmetadataresolver.h": "74b2ac30eb79a106e7760ed5f371554fd23ff861391a1dbfcf5378382b1684a1",
+      "src/conventions.h": "ec2ecb9f4b7b3f3b636b22ef3faf11527568678813c8e8eeb300fbb14450764d",
+      "src/diagnostics.cpp": "5bd573d32af4917af051b75334204f6ead9f13f05c5f3ff59614c63fc7ec43a2",
+      "src/diagnostics.h": "1b4ad2005925ddc1e742f4c4557b3fb8b2f73814f5de84b2736c5a9f7c62282c",
+      "src/dragdroputil.h": "6c91567ce5c2c7a5e619cc9e1adf6e08feee6ec2750b7479f71bf7e7710a7fbb",
+      "src/enumutil.h": "dd2cbfbbe8db0fa5686fa0c69eeb2f7de83fafbadcc3990d20831b3e0e25c254",
+      "src/evidenceexplanation.h": "329a92834a97e823c3dec89332ecf0a1b4d737d76b293f19f3bca5ebe53fe5e6",
+      "src/featureflags.h": "3dd0e3eb3343a4b6e45f44ad1d1b400c8f496505c83ecfc95be17fcf9ca7480f",
+      "src/fileoperationcontroller.cpp": "7e727a14b81bd2b3f53e1f8e27f4b291d02ba5317c267588dc342464a4d59298",
+      "src/fileoperationcontroller.h": "7e7dbeab1c3ae8fe6acdb2d30357df3f2814bfcca2a4364cf9d082afdc89bf74",
+      "src/formatutil.h": "c3b722d1ad6d744c8c2b0cad75b0085560ccb68fdc9ffd06fd61d2bc2d1000de",
+      "src/layoututil.h": "d8b8dd04e16c705b27932134f583ffdd32cb1e24fe3731789a1dc29ba8f2b494",
+      "src/main.cpp": "104499a91dc3ce865a590384400ee01e6dc8ddfb35feea08676e91dab7456577",
+      "src/mainwindow.cpp": "8ea99209dba50a3ec2dd00b71a087f6f97cb3bc07be4b29df6f8b043d2e366db",
+      "src/mainwindow.h": "33e26caec668bbe2cb7e3f704605e5a530a0b2c416f71a6a1b783e9e21c45de0",
+      "src/managemediadialog.cpp": "fcde76e8794b27f2c23a548597aee0313721773e9e00e258ff613946eda38dc1",
+      "src/managemediadialog.h": "a7f62a3f1547990b185c436839cfa24c878680d6ad31fa2abcd459d2bbb8d5bb",
+      "src/mediacsv.cpp": "028974b57a39f0914efb6340736f36ec908cab82a2b7f888154f5afe397ccd4f",
+      "src/mediacsv.h": "d0760cdd64f6784276fad27a2ad6e29850cadf75b73cfd5e690952c694f4001d",
+      "src/mediaduration.h": "7cf2b94d109e2e36beeafa73f2e02c2e4539a7c2ab72721e1b0c01433b0103ff",
+      "src/mediaengine/audioreader_p.cpp": "f9dec61b96f2de3954b0c920f8eb9dc9cb7d15f397561f57aa9ea7a2e3d02bd1",
+      "src/mediaengine/audioreader_p.h": "d2234a43f50ed78a7977ec408eae7c47f89f3f69bc8f0406842594a4a0454846",
+      "src/mediaengine/avbcomponents_p.cpp": "749d0ad4d687f0532407009f93c8cb82939491d978823c8de2ee6863d10504f4",
+      "src/mediaengine/avbdescriptors_p.cpp": "02de006f1d3e35a6e23fc4e5374e8323647152ffbbaa03ec44fd6e6730e9c724",
+      "src/mediaengine/avbobjects_p.cpp": "35c1056c4b0e7acaebae18a13491cf8e1c869fda186079de979eb52473453a0e",
+      "src/mediaengine/avbobjects_p.h": "75595521b0bbb01fad62ebdc8c5bbce940783cc6a3da9ab6e22e77f290fe3e68",
+      "src/mediaengine/avbreader.cpp": "481fbb931b4b4c8d17a1690a4fae5e28dc0497146311a493677ef14cef79ae7f",
+      "src/mediaengine/avbreader.h": "1c9e6fd0e56e9032abd67fec1f44807c5587d8fb96ebb35fe23fba6b1cbf60c1",
+      "src/mediaengine/avbreferences.cpp": "d8b4b0ee2913e67119ed77e6697adc9ffae1fb861144190057de5287adbe3113",
+      "src/mediaengine/avbreferences.h": "228a0edefc8110a561d1c7821fbca1d8267865b5eda6e97348f2c310993f1853",
+      "src/mediaengine/compressionnames_p.cpp": "b2cc1e50e0f00e8c113d9644e02cc4f7f44b41f8e53e40b84ac352d3e12f7732",
+      "src/mediaengine/compressionnames_p.h": "26fc69bad86718511987028cd87f4356488ccb1f47a7db2bb915b9154e1654ff",
+      "src/mediaengine/databaseimage.cpp": "4f0d4c9e6c2e06909f63ee8ade22c90d566bc876ccaaa1c7afcf7d126909e662",
+      "src/mediaengine/databaseimage.h": "00765da63df7621df1c0c512f6b6f4c5d26b159088d65ca1ea2fe3242a73ba49",
+      "src/mediaengine/databasesource.cpp": "749fdee8d071cca68b1b49cce605dd9a436a04ca9f9c3cac6301ffdd164b66e6",
+      "src/mediaengine/databasesource.h": "0b5d4095fab56e53257b3ebd39d8c2829dd108a789830afac38f724e42fab8b8",
+      "src/mediaengine/discoveryengine.cpp": "b068268a65c2fefef093fcaa40c85c31207090100c0eb10b02bda1c22f343a36",
+      "src/mediaengine/discoveryengine.h": "ecf5f9511139822be7550783826c04800ca8c21bcd5d1de3d663c998b29f7064",
+      "src/mediaengine/discoveryengine_p.h": "4efe77b4ab32000e92d97f41b7827df92df6b8cc1e3ac95c690b3c079d808e91",
+      "src/mediaengine/dnxnames_p.h": "a2b1fd69ddcde71a55e00b73586e533a746fa4ff69b9b1790643f1f7ea29d8b6",
+      "src/mediaengine/mdbaudiosummary_p.cpp": "cf3c4018bc9ebf83bc5bdd3ae1476f5df0cf791744d73bb97f5e3692856bffa2",
+      "src/mediaengine/mdbaudiosummary_p.h": "a78ab4c72ed054ac43a343703af8d0ce6d15d18767acefe57d7ee7788ff1cc76",
+      "src/mediaengine/mdbbentoreader_p.cpp": "310999d1bc0fe55146d754d2c9daa777cbd6ce3c630bbf2cd56573254ba12ad3",
+      "src/mediaengine/mdbbentoreader_p.h": "f7490cb6bbbb78cccaa6fe6c2975155699547a4ef7bfbbe682017c416f76e3c4",
+      "src/mediaengine/mdbobjects_p.cpp": "a9cb68cf4e757fe859645c5d37121bb7c0e9f02014367fa834a13e8bdeebeeae",
+      "src/mediaengine/mdbobjects_p.h": "4bd0196f5df63398e2cc195c3dffb0d63fb06c0e489d67e42b6dd3b815fcdac5",
+      "src/mediaengine/mdbprojection.cpp": "6a85ce57cdbd280f3a2bae3c4699bd1326193fac1d7cc3c770162394d2698d75",
+      "src/mediaengine/mdbreader.cpp": "43802d86f0d81658d67b03ab00ef87b180569f821453a3e3e3ce9dda8a29c9f7",
+      "src/mediaengine/mdbreader.h": "6edca39deee938c18f17af2b20af1221dd49d2cfb96cd20b681920be3368cd62",
+      "src/mediaengine/metadataselectionpolicy.cpp": "5eb8478378d93b62cb96cdea49b7df04d43c63951970d04c0e4843edaaa49ff2",
+      "src/mediaengine/metadataselectionpolicy.h": "3f0df3ed71da83420add6f9b97b1819bd5b09bd1ad267ef8af4bbab86737c088",
+      "src/mediaengine/mxfcatalogue_p.h": "6d67b2300f380cd63a50547595154ee27d8ab69f36b6d87e83e81fd3a33ff75c",
+      "src/mediaengine/mxfimage.cpp": "e25b2b8ee68533099c8a5474c4efbf07b7c99406a85e40ba10090124b0c102fd",
+      "src/mediaengine/mxfimage.h": "96af93f6dc1f22dd203ccd7493f6a74f1cc0c56ac6f5b5a5d448d18c9fe993b3",
+      "src/mediaengine/mxfobjects_p.cpp": "0e7c8c634ad70efd9ff6c548fe0a68d14be55205e5fe44db42fcf8d59a16d156",
+      "src/mediaengine/mxfobjects_p.h": "a3a7008f11efbcfe4ea82e5f0d97a1896393b5216d808b91d57e972ba9df8612",
+      "src/mediaengine/mxfprojection.cpp": "f3df41af48b24931cd61af21e79975c34a9506bcbf6e8cb95f4053adcc3b3a86",
+      "src/mediaengine/mxfreader.cpp": "6d66fe804e5b58a33cdd38284e62219042705df2364ad7a463807646c2189873",
+      "src/mediaengine/mxfreader.h": "73142f5745b728022be17de9b09fed04edfdb8ce603cbebb2a446fda08456982",
+      "src/mediaengine/mxfsource.cpp": "f3846d4ec2d596f3d17b0ed9988e382a1fa4448d9e0cb432d84fff92114424b8",
+      "src/mediaengine/mxfsource.h": "fa1a07d3384122aae26229c9683dd4c698f0aa5535322db3fb889a801233e574",
+      "src/mediaengine/omfbentoreader_p.cpp": "ff33ee91f2bfd59752ee81374cde80c11bb00139074ea14d6900aac9d246c8dd",
+      "src/mediaengine/omfbentoreader_p.h": "a1ccfda12d6508922200bf6c504d0a256121da1003bd409e9b02e25e9fb7b623",
+      "src/mediaengine/omfobjects_p.cpp": "b1a3bb7c0151bb7913a5342caf3e2d866a1f43d458827041db26967298e49229",
+      "src/mediaengine/omfobjects_p.h": "0a05da9cc8d5ddf0da42e6bc4190a00e01050a6b833d7140c7ef6c6823c8ee0a",
+      "src/mediaengine/omfprojection.cpp": "9904dedf769de067de16000b9427122e3035ab5a6d1e66820b6c9bc0d1de1123",
+      "src/mediaengine/omfreader.cpp": "5060984ac330193cac1ec1c97a754af417d8bf204e4faad54319eb28cec348c0",
+      "src/mediaengine/omfreader.h": "46edc8e1433d23488ccd3378918b200a644e09f7840803ab32a899ed8a264511",
+      "src/mediaengine/picturegeometry_p.h": "988510ac14b236d6b0848dd32f426963d33864fce0ea8743bc139f99d69d2de0",
+      "src/mediaengine/pmrprojection.cpp": "2b89e4df00fa29cde9e8ba41b07eb428da80a12ae688213379276a1e7a865111",
+      "src/mediaengine/pmrreader.cpp": "e6a669c56ffa34ad9046295161b78e34bdd71a8864391d211c1e2960365d472e",
+      "src/mediaengine/pmrreader.h": "f88e34d9551a51763b1f2229d903daecd385216a7defa68bb2cc8e2268af622d",
+      "src/mediaengine/projection.cpp": "a79552d47bb16abaa46068c0a2398953a057d43eb1ec3704e432cdafc1f7a52f",
+      "src/mediaengine/projection.h": "d8f0a2b81146089394fbab66945b9d42501f5ceddcbe125080aae8df87a1e4b4",
+      "src/mediaengine/scancoordinator.cpp": "5a19e5cce356845b282a068d369630e7f655e453088dbbaeedfba0949ef5ec01",
+      "src/mediaengine/scancoordinator.h": "3357ffdda7877b78101641c9f4b6e5a6331435b922fae85cc0a0a2767aca2df1",
+      "src/mediaengine/scanengine.cpp": "420a18df06aa23e5fa015090dab7321642b5092a6b71055714cec745dae5e865",
+      "src/mediaengine/scanengine.h": "bd418d00385e14a0d2d9453a5e527c44f2cef43e00eb2b1c92a999db45293dab",
+      "src/mediaengine/scanmodel.h": "300a231dd6d82b8000555443d64f990dc2a318a132ab87053fe5aa2f17c68184",
+      "src/mediaengine/sourcearchive.cpp": "be3766dc8d4f73bc966c40afea6b7975ad3d943e1d9af302837c35bedd4b1ad8",
+      "src/mediaengine/sourcearchive.h": "44aa3797648c805e0a5696b53721604f819c2b19623930e2e99f6902e55e249c",
+      "src/mediaengine/sourcepipeline.h": "73a978f7ae3667c85af18b52dd3036fed0c5a7c45a1648caba3fd952eb6953cf",
+      "src/mediaengine/sourcereader.h": "936d50f22a4d83c7a85cc3204982c357460edee5016d8fe75b14863b0aa37083",
+      "src/mediaengine/sourcestorage_p.h": "1b0f65f279e2f8b5ef099a504387b379b772b1e78d4feef5b6e36ddf0546ebbe",
+      "src/mediaengine/sourcestore.h": "f3bf6cc2c2271856a2ca1c3c7cd334c13389c403a002a99d8308ec572b1c6f6c",
+      "src/mediaengineadapter.cpp": "255b5bc9f91adec7dfa315501627f88ae99edb3759212113c6681b51ac589574",
+      "src/mediaengineadapter.h": "a6723386146bb7baadba420b4387b1c6ef0af5c109a2ffd6839e6459944830b5",
+      "src/mediaevidence.h": "881fbe650523d58cfd3e43d481221f624f13df01ca8eceb4a1fa101df2922544",
+      "src/mediafile.h": "0b008810a31fa5b818939c7a24e0d8b4585f52cf70daec3a25e4ee7334499c25",
+      "src/mediafilterproxy.cpp": "c45ffb8a0c2e57705a129a232ee9884fd45f6070c2ea53eb4a8d52d75a41c2a2",
+      "src/mediafilterproxy.h": "fb52834c749d8f922178947fa10f71239fa07849182e3eacb1ffa9a9de93cb3f",
+      "src/mediametadata.cpp": "af904bbc22e58778d3738072f21997e14464c7a802e4e49bc92ed19199afd538",
+      "src/mediametadata.h": "4e5e88a8620ec3c748729b49a887d7994358c676b8e06d979654676916e3611b",
+      "src/mediaobservations.h": "637231552d01076961cb54bcd425fb12dfde612fb2f393b5ffb94badd83821e6",
+      "src/mediascanner.cpp": "7fbb0f36f2378fa6e03f5436ae3cb24250bce7fdb50ce8a8b3f9acd78c8ef291",
+      "src/mediascanner.h": "faf56e67103bd66c2cc967b4992a7f56c8bb25d7ab478b38eab02314d91ffc6a",
+      "src/mediatablemodel.cpp": "519da674568271513a7626699353654ccac3c6d63e93fce524a19a80ae2150a7",
+      "src/mediatablemodel.h": "3244c290de884c911211604b2eacfd88742a4e61988d9364d4c7d292240bf3b0",
+      "src/mobid.h": "6a6d13d5ed86acd52eabc437c7893f5eaffceba0399cbb21ea87ab209fa4ddc8",
+      "src/mxfproperties.h": "be795545e51f71148a01a4f9b7607dd70c56b98ca6ddcad13179c76550962d44",
+      "src/nativefile.cpp": "d990281783ba6d12fd54459d319f25ebd1f37915b0c9f501375ac08aca6cbc5b",
+      "src/nativefile.h": "d22a83873134e61d934f082cbb4b1c5cdab7201c178ac89873d3f569850445ee",
+      "src/omfuid.h": "c02b9316794d8113021bd0688143382dfddc8df5a2afeb11612447f2bbf48a66",
+      "src/opcopier.cpp": "9bb0e15ad44b63093e57039ad8fc6883ddf1c8b38a6a4e78458428a255053f11",
+      "src/opcopier.h": "1912a5b5d72b081ca1bc6ffaab7d8b0c69806bb62fb5db53ade324e006a16ca8",
+      "src/operationplan.cpp": "a50e185593f4bc45344732a1495d1a106f7d738e21b6b55c35ecb8dd0c405026",
+      "src/operationplan.h": "2cb600014a0cecb7bd66834585047eaa5a488daf470b47b1ee17b9a48f248db0",
+      "src/operationrecovery.cpp": "5de005ee6eb0c89062d07d62f395c0e5a4ad393438639034d6bae461112557a4",
+      "src/operationrecovery.h": "2c53f3d40abe63d1da2d4cc6f0386e4a9244e0bb2110a7dceedf9dae0bafcb8e",
+      "src/opfile.cpp": "950518ae71c6b1c70b5ddad0f7204497578b41823472728e6ee6193963c8d4f6",
+      "src/opfile.h": "098975b44596eb2c1d968c647b9bc6ec5df63bcd98dcb3b003ec649d24aa802f",
+      "src/opjournal.cpp": "40aabdea82dd4e284d9fe94726300f30213d30ec65a4a5cc48d301f2adf56784",
+      "src/opjournal.h": "f11c524fd32133d8a279cc2e4af7bb0bd0b65ca7daaebde94f7eeb5fbc1d6995",
+      "src/opmanager.cpp": "69ed237cef4160bb0618ebb79a13abe08fbd4f7fbaaa87eab1cbbd81e8c53c3b",
+      "src/opmanager.h": "87e5190c091054b2b3cc2c72b24b5ba9a70843d22a5d57b994a1ab8a4e559d28",
+      "src/oprequest.h": "79b9658de2a4e7b29fcf77517e3070969f23a5ce23c955ec9ef0dc3ef53cb750",
+      "src/oprunner.cpp": "cbb2b9d9661a1c4cb4abb3601d9dfbad9456d587ae7e85c2b5070320bcacb911",
+      "src/oprunner.h": "bfa33d8fbbbcd68e84def574ce0f363cb4b49add5b9847445f2cd8071311c118",
+      "src/opscanreceipt.cpp": "691f14b56c9a40f5a34a16568523d744faab4457ac1d6e776391957eac80a9e7",
+      "src/opscanreceipt.h": "976f6034b157e744e023f4b7604c3cb54e7a2c6f49d306729100723a98af73af",
+      "src/optrash.cpp": "d22ace78c7a963e40c9fa02d153269c892aa21dd2b8c7a5c9d43d30ee48b58a7",
+      "src/optrash.h": "0eb2da2292bf86e2cbb1d5bd71ddbec03aebcbdb6cd0b88f98b6aece559c9a67",
+      "src/pathkey.h": "0d769da9dea2bf7060868319422ad647a187caabe336a84799e6b3dfcae74819",
+      "src/pmrkey.h": "27f30d43c81c3be9807dd951fa6558bfad38f313419d55719c00d08ed80d8c72",
+      "src/precomputefilter.h": "2303ece77ad98b02048978d8aa7e3c590e336e6519f6615f331abfef993d8f0d",
+      "src/precomputefilterdialog.cpp": "04c8a20bce6172f71c58ba5aabbaa56d81fd9f652802f5005da8099d7c274f87",
+      "src/precomputefilterdialog.h": "321cec10cccf155d13733bedb3b5b87843df3e2b899af4a2eff70bd52f4cfa76",
+      "src/progressdialog.cpp": "80894107aa3b4e379812c113b09be0908f87131ed3f119e612df165fa598b4b0",
+      "src/progressdialog.h": "fdf6cf6bc87f662ad2cacacb6a3e1ae961b1876491d27f29b472ca055b3ce07d",
+      "src/progressthrottle.h": "365da04fbd81cf024464c174a4b01c47f0955e96588b10d7c72d332d274f966b",
+      "src/rebalancedialog.cpp": "932c55198c526524b9aa79190d71a8069874f1e9abe8bcf65f9d5a100d239b22",
+      "src/rebalancedialog.h": "7e3ac3e593e67624f1578e23ffa69d5abb589d108362ab0218ec203522781319",
+      "src/rebalanceplan.h": "32ff6dce50573b26a2a902ac78140bc3df75497b7a1c873d11ec2dedebad0989",
+      "src/rebalanceplanner.cpp": "fa9d5d9a705e55789ff4745d4497374c3209d8de5e11ed6d181f5ee01b03510c",
+      "src/rebalanceplanner.h": "1e3aed2a5031c8cb38cce0d687bac9f95c4da02f3cda022e9c9272bfba3ae8a2",
+      "src/rebalancer.cpp": "4287b7afa3549e4fb15628e0a9fd5bd4530794f4a40657be53c81458583105bc",
+      "src/rebalancer.h": "86baad741be6e8298a1f61eae7a829d39b2d4e957612179a1cee57b8b3cbc6b3",
+      "src/revealinfinder.cpp": "4fa74c6cbdbef108beaa5c31c6c4ab1791b58ab86ee4d683d6d76f3b3c91402c",
+      "src/revealinfinder.h": "83be667341872afd7c76f89db99fb2563d4e9047e91d3d676dc142c19891ef76",
+      "src/testpause.h": "180149048625806cd4e11c86740454549e6b74c1fe5bc077866ce9e62e31c3a0",
+      "src/unfinishedbusinessdialog.cpp": "29b9d838befbe25b1e982001c582987d50ccd34079928c9f2ccf5a6f91c20403",
+      "src/unfinishedbusinessdialog.h": "082c076c90d6046e4e5278556f658ff9da2fc90672c8a115529584b24867a3d2",
+      "src/volumeidentity.cpp": "f3bd79a153d8793b825920b835d15190c06a7cf5c99006ef92b8dc30e86babc1",
+      "src/volumeidentity.h": "8d779067d2b51ec7d2cf2024c9e55648d362dfcf76da47cca06be85ae5d2c0da",
+      "src/volumelistwidget.cpp": "c80c56232489cefdc2eb94c5d83376f7ba073f8d60bde9f2eeefa0fc2dccb86d",
+      "src/volumelistwidget.h": "77480d504f145c2c16ef236edc85647305d0a199dfb32fe865296819c47917e0",
+      "src/volumemanager.cpp": "9f1ca3b1c228e89404e55f10243f462549fb1fc7aea94043cff4f28ca943d8e8",
+      "src/volumemanager.h": "29a1688f272e3886217cc8570172d7fd2b0ade57ff0bbec1d738c567498a4356",
+      "tests/CMakeLists.txt": "88919d4aa4b103e33b7cbca805f942abaa47e2d2002560002c763e9c331a7197",
+      "tests/mediaengine_compare.cpp": "c6ae74dd4d794cf957de29c7885cc9fbc94d567a202f53e8002045da84a51b2f",
+      "tests/mediaenginefingerprint.h": "26153022cc655c0a00377914a8d9ec098f54f4921f03b010ff2ce1a7c36fb1fb",
+      "tests/run_mediaengine_comparison.py": "0f92326951e3253093c381acd36be9a54a18292e53d2297911d149d87928cb09"
+    },
+    "configuration": "macOS arm64 Release, C++17, Qt6.5.3"
+  },
+  "afterBuild": {
+    "probe": "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/tests/mediaengine_compare",
+    "probeSha256": "fa85eaa79ca730b75d9c26bcd981080535e24671e44201c9915cf0ef02abd3b7",
+    "sourceSha256": {
+      "CMakeLists.txt": "5c6c43580558a808f09eb61d791470a171197720cbb7edf3b3ea66a65ef8e589",
+      "src/aboutdialog.cpp": "382d1f149675ff5669c6a66ac025610548a7e5e8d518b786c95f1a15961495b0",
+      "src/aboutdialog.h": "f51b9af72d09198bfd92f11b199e3841bdb46fab256a0d9d0675e67a243de225",
+      "src/avbparser.cpp": "c972c59206fe0e798921708c45eaa37a6099b1bc0bec10a0ec0393aa9cfc3fed",
+      "src/avbparser.h": "de88c1a3cb309cad00d842e169cfaa796a58379478cba781be9ce97c1865d185",
+      "src/avideffects.cpp": "8c50f1bfb58f5d105c14f5fc78230f4a063d33c5ce007be48c126e201525544c",
+      "src/avideffects.h": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1",
+      "src/avidmedialayout.h": "f7e96f37804ba628e18a12a97b374911d5ec8d9f7edb4745ccba6473f79572fc",
+      "src/avidprecompute.h": "4ff0c7e52fd8cbd1cc0900bc3638283ee6b69d05d72121f425d91c34af3748cd",
+      "src/avidtext.h": "19cd6e2d2a833efa74f07f28efa0c5b2daf69fa79172f785c7736ede8e5e5e62",
+      "src/avidusage.h": "2338ad737d20b8be37c95f52b60c17ce600fa4e55b1a690e1e2ede569c5a234c",
+      "src/backgroundjob.h": "b4a3488d0ed3cdd917c474e47366a658def978471987df0ece9523d7274bd9c2",
+      "src/binfilereferences.h": "5356e351eb5d82059797634469f25c02f2bbd026c06bd16f5afffc9b6a61ab96",
+      "src/binfilter.h": "1a32bcfb39632595913e6cca4bc7bf4cbb7c7add8554865626a212a2c7dbec3f",
+      "src/binfilterdialog.cpp": "aac0c5eed22ac7f1f0359161a33855f01a358173201f2cc80cc7e8275791d979",
+      "src/binfilterdialog.h": "d87de858e544f78eb91a44eb395e9f7854996659ad1ed22b02f3aa83558ff85f",
+      "src/binmetadataresolver.cpp": "a8a3bc6e71a90e771f793ee415db6e78ece2b2af33cfaa6cc4880423ffaa44d3",
+      "src/binmetadataresolver.h": "74b2ac30eb79a106e7760ed5f371554fd23ff861391a1dbfcf5378382b1684a1",
+      "src/conventions.h": "ec2ecb9f4b7b3f3b636b22ef3faf11527568678813c8e8eeb300fbb14450764d",
+      "src/diagnostics.cpp": "5bd573d32af4917af051b75334204f6ead9f13f05c5f3ff59614c63fc7ec43a2",
+      "src/diagnostics.h": "1b4ad2005925ddc1e742f4c4557b3fb8b2f73814f5de84b2736c5a9f7c62282c",
+      "src/dragdroputil.h": "6c91567ce5c2c7a5e619cc9e1adf6e08feee6ec2750b7479f71bf7e7710a7fbb",
+      "src/enumutil.h": "dd2cbfbbe8db0fa5686fa0c69eeb2f7de83fafbadcc3990d20831b3e0e25c254",
+      "src/evidenceexplanation.h": "329a92834a97e823c3dec89332ecf0a1b4d737d76b293f19f3bca5ebe53fe5e6",
+      "src/featureflags.h": "3dd0e3eb3343a4b6e45f44ad1d1b400c8f496505c83ecfc95be17fcf9ca7480f",
+      "src/fileoperationcontroller.cpp": "7e727a14b81bd2b3f53e1f8e27f4b291d02ba5317c267588dc342464a4d59298",
+      "src/fileoperationcontroller.h": "7e7dbeab1c3ae8fe6acdb2d30357df3f2814bfcca2a4364cf9d082afdc89bf74",
+      "src/formatutil.h": "c3b722d1ad6d744c8c2b0cad75b0085560ccb68fdc9ffd06fd61d2bc2d1000de",
+      "src/layoututil.h": "d8b8dd04e16c705b27932134f583ffdd32cb1e24fe3731789a1dc29ba8f2b494",
+      "src/main.cpp": "104499a91dc3ce865a590384400ee01e6dc8ddfb35feea08676e91dab7456577",
+      "src/mainwindow.cpp": "8ea99209dba50a3ec2dd00b71a087f6f97cb3bc07be4b29df6f8b043d2e366db",
+      "src/mainwindow.h": "33e26caec668bbe2cb7e3f704605e5a530a0b2c416f71a6a1b783e9e21c45de0",
+      "src/managemediadialog.cpp": "fcde76e8794b27f2c23a548597aee0313721773e9e00e258ff613946eda38dc1",
+      "src/managemediadialog.h": "a7f62a3f1547990b185c436839cfa24c878680d6ad31fa2abcd459d2bbb8d5bb",
+      "src/mediacsv.cpp": "028974b57a39f0914efb6340736f36ec908cab82a2b7f888154f5afe397ccd4f",
+      "src/mediacsv.h": "d0760cdd64f6784276fad27a2ad6e29850cadf75b73cfd5e690952c694f4001d",
+      "src/mediaduration.h": "7cf2b94d109e2e36beeafa73f2e02c2e4539a7c2ab72721e1b0c01433b0103ff",
+      "src/mediaengine/audioreader_p.cpp": "f9dec61b96f2de3954b0c920f8eb9dc9cb7d15f397561f57aa9ea7a2e3d02bd1",
+      "src/mediaengine/audioreader_p.h": "d2234a43f50ed78a7977ec408eae7c47f89f3f69bc8f0406842594a4a0454846",
+      "src/mediaengine/avbcomponents_p.cpp": "749d0ad4d687f0532407009f93c8cb82939491d978823c8de2ee6863d10504f4",
+      "src/mediaengine/avbdescriptors_p.cpp": "02de006f1d3e35a6e23fc4e5374e8323647152ffbbaa03ec44fd6e6730e9c724",
+      "src/mediaengine/avbobjects_p.cpp": "35c1056c4b0e7acaebae18a13491cf8e1c869fda186079de979eb52473453a0e",
+      "src/mediaengine/avbobjects_p.h": "75595521b0bbb01fad62ebdc8c5bbce940783cc6a3da9ab6e22e77f290fe3e68",
+      "src/mediaengine/avbreader.cpp": "481fbb931b4b4c8d17a1690a4fae5e28dc0497146311a493677ef14cef79ae7f",
+      "src/mediaengine/avbreader.h": "1c9e6fd0e56e9032abd67fec1f44807c5587d8fb96ebb35fe23fba6b1cbf60c1",
+      "src/mediaengine/avbreferences.cpp": "d8b4b0ee2913e67119ed77e6697adc9ffae1fb861144190057de5287adbe3113",
+      "src/mediaengine/avbreferences.h": "228a0edefc8110a561d1c7821fbca1d8267865b5eda6e97348f2c310993f1853",
+      "src/mediaengine/compressionnames_p.cpp": "b2cc1e50e0f00e8c113d9644e02cc4f7f44b41f8e53e40b84ac352d3e12f7732",
+      "src/mediaengine/compressionnames_p.h": "26fc69bad86718511987028cd87f4356488ccb1f47a7db2bb915b9154e1654ff",
+      "src/mediaengine/databaseimage.cpp": "4f0d4c9e6c2e06909f63ee8ade22c90d566bc876ccaaa1c7afcf7d126909e662",
+      "src/mediaengine/databaseimage.h": "17ab24e7fe1410d5d9cdb4c53553aa77a9df30fd608a45b2c2ac83873e89d901",
+      "src/mediaengine/databasesource.cpp": "fe4235c24e024ffd31431c68e01a40626188e1e8ed46d1212f6adad40b84f6b8",
+      "src/mediaengine/databasesource.h": "50869818aec8f7f0a226fca54fa08ba929656a785c951c6d949e1778e79f70e4",
+      "src/mediaengine/discoveryengine.cpp": "b068268a65c2fefef093fcaa40c85c31207090100c0eb10b02bda1c22f343a36",
+      "src/mediaengine/discoveryengine.h": "ecf5f9511139822be7550783826c04800ca8c21bcd5d1de3d663c998b29f7064",
+      "src/mediaengine/discoveryengine_p.h": "4efe77b4ab32000e92d97f41b7827df92df6b8cc1e3ac95c690b3c079d808e91",
+      "src/mediaengine/dnxnames_p.h": "a2b1fd69ddcde71a55e00b73586e533a746fa4ff69b9b1790643f1f7ea29d8b6",
+      "src/mediaengine/mdbaudiosummary_p.cpp": "cf3c4018bc9ebf83bc5bdd3ae1476f5df0cf791744d73bb97f5e3692856bffa2",
+      "src/mediaengine/mdbaudiosummary_p.h": "a78ab4c72ed054ac43a343703af8d0ce6d15d18767acefe57d7ee7788ff1cc76",
+      "src/mediaengine/mdbbentoreader_p.cpp": "310999d1bc0fe55146d754d2c9daa777cbd6ce3c630bbf2cd56573254ba12ad3",
+      "src/mediaengine/mdbbentoreader_p.h": "f7490cb6bbbb78cccaa6fe6c2975155699547a4ef7bfbbe682017c416f76e3c4",
+      "src/mediaengine/mdbobjects_p.cpp": "a9cb68cf4e757fe859645c5d37121bb7c0e9f02014367fa834a13e8bdeebeeae",
+      "src/mediaengine/mdbobjects_p.h": "4bd0196f5df63398e2cc195c3dffb0d63fb06c0e489d67e42b6dd3b815fcdac5",
+      "src/mediaengine/mdbprojection.cpp": "6a85ce57cdbd280f3a2bae3c4699bd1326193fac1d7cc3c770162394d2698d75",
+      "src/mediaengine/mdbreader.cpp": "43802d86f0d81658d67b03ab00ef87b180569f821453a3e3e3ce9dda8a29c9f7",
+      "src/mediaengine/mdbreader.h": "6edca39deee938c18f17af2b20af1221dd49d2cfb96cd20b681920be3368cd62",
+      "src/mediaengine/metadataselectionpolicy.cpp": "5eb8478378d93b62cb96cdea49b7df04d43c63951970d04c0e4843edaaa49ff2",
+      "src/mediaengine/metadataselectionpolicy.h": "3f0df3ed71da83420add6f9b97b1819bd5b09bd1ad267ef8af4bbab86737c088",
+      "src/mediaengine/mxfcatalogue_p.h": "6d67b2300f380cd63a50547595154ee27d8ab69f36b6d87e83e81fd3a33ff75c",
+      "src/mediaengine/mxfobjects_p.cpp": "0e7c8c634ad70efd9ff6c548fe0a68d14be55205e5fe44db42fcf8d59a16d156",
+      "src/mediaengine/mxfobjects_p.h": "a3a7008f11efbcfe4ea82e5f0d97a1896393b5216d808b91d57e972ba9df8612",
+      "src/mediaengine/mxfprojection.cpp": "f3df41af48b24931cd61af21e79975c34a9506bcbf6e8cb95f4053adcc3b3a86",
+      "src/mediaengine/mxfreader.cpp": "6d66fe804e5b58a33cdd38284e62219042705df2364ad7a463807646c2189873",
+      "src/mediaengine/mxfreader.h": "73142f5745b728022be17de9b09fed04edfdb8ce603cbebb2a446fda08456982",
+      "src/mediaengine/mxfsource.cpp": "afc2e5170ffc4902006fe1ce9bec10e99619074304b0b7cfc0b9983f1861b479",
+      "src/mediaengine/mxfsource.h": "a4418cc0020922e841d399adfdd3b0cc29baaef65f68c243a5578c8f57ff2d6d",
+      "src/mediaengine/omfbentoreader_p.cpp": "ff33ee91f2bfd59752ee81374cde80c11bb00139074ea14d6900aac9d246c8dd",
+      "src/mediaengine/omfbentoreader_p.h": "a1ccfda12d6508922200bf6c504d0a256121da1003bd409e9b02e25e9fb7b623",
+      "src/mediaengine/omfobjects_p.cpp": "b1a3bb7c0151bb7913a5342caf3e2d866a1f43d458827041db26967298e49229",
+      "src/mediaengine/omfobjects_p.h": "0a05da9cc8d5ddf0da42e6bc4190a00e01050a6b833d7140c7ef6c6823c8ee0a",
+      "src/mediaengine/omfprojection.cpp": "9904dedf769de067de16000b9427122e3035ab5a6d1e66820b6c9bc0d1de1123",
+      "src/mediaengine/omfreader.cpp": "5060984ac330193cac1ec1c97a754af417d8bf204e4faad54319eb28cec348c0",
+      "src/mediaengine/omfreader.h": "46edc8e1433d23488ccd3378918b200a644e09f7840803ab32a899ed8a264511",
+      "src/mediaengine/picturegeometry_p.h": "988510ac14b236d6b0848dd32f426963d33864fce0ea8743bc139f99d69d2de0",
+      "src/mediaengine/pmrprojection.cpp": "2b89e4df00fa29cde9e8ba41b07eb428da80a12ae688213379276a1e7a865111",
+      "src/mediaengine/pmrreader.cpp": "e6a669c56ffa34ad9046295161b78e34bdd71a8864391d211c1e2960365d472e",
+      "src/mediaengine/pmrreader.h": "f88e34d9551a51763b1f2229d903daecd385216a7defa68bb2cc8e2268af622d",
+      "src/mediaengine/projection.cpp": "a79552d47bb16abaa46068c0a2398953a057d43eb1ec3704e432cdafc1f7a52f",
+      "src/mediaengine/projection.h": "9b9a8778e770ee615610a43840ad8df6b7a177b68f41cba99d8a52f7187eb1f0",
+      "src/mediaengine/scancoordinator.cpp": "ba00a9a644623a6d7509fdd02df4485d62fe238f92584a2b4502b1062fe8df81",
+      "src/mediaengine/scancoordinator.h": "834e07bab084b0fa120e45ae13b89c14ed477965bd43913878f50fccaf89985f",
+      "src/mediaengine/scanengine.cpp": "11b4748216ea54910f8c3aa29ea2b1d363b18be304fe98d003159f0192823866",
+      "src/mediaengine/scanengine.h": "75e5c16b3c11a3ac8747cee487495d563c38c06ead137df32b50dd8bc6558d3f",
+      "src/mediaengine/scanmodel.h": "b42b37f224f3d8c873fb85afb8bf1d79f58333f0ae07204d5fbab10a4e3db524",
+      "src/mediaengine/sourcepreparation.h": "d94f9f7dba043962a21c097893a5f1aedcd0cafa23279de4ba604d592c5d3a7e",
+      "src/mediaengine/sourcereader.h": "936d50f22a4d83c7a85cc3204982c357460edee5016d8fe75b14863b0aa37083",
+      "src/mediaengine/sourcestorage_p.h": "1b0f65f279e2f8b5ef099a504387b379b772b1e78d4feef5b6e36ddf0546ebbe",
+      "src/mediaengineadapter.cpp": "255b5bc9f91adec7dfa315501627f88ae99edb3759212113c6681b51ac589574",
+      "src/mediaengineadapter.h": "a6723386146bb7baadba420b4387b1c6ef0af5c109a2ffd6839e6459944830b5",
+      "src/mediaevidence.h": "881fbe650523d58cfd3e43d481221f624f13df01ca8eceb4a1fa101df2922544",
+      "src/mediafile.h": "0b008810a31fa5b818939c7a24e0d8b4585f52cf70daec3a25e4ee7334499c25",
+      "src/mediafilterproxy.cpp": "c45ffb8a0c2e57705a129a232ee9884fd45f6070c2ea53eb4a8d52d75a41c2a2",
+      "src/mediafilterproxy.h": "fb52834c749d8f922178947fa10f71239fa07849182e3eacb1ffa9a9de93cb3f",
+      "src/mediametadata.cpp": "af904bbc22e58778d3738072f21997e14464c7a802e4e49bc92ed19199afd538",
+      "src/mediametadata.h": "4e5e88a8620ec3c748729b49a887d7994358c676b8e06d979654676916e3611b",
+      "src/mediaobservations.h": "637231552d01076961cb54bcd425fb12dfde612fb2f393b5ffb94badd83821e6",
+      "src/mediascanner.cpp": "7fbb0f36f2378fa6e03f5436ae3cb24250bce7fdb50ce8a8b3f9acd78c8ef291",
+      "src/mediascanner.h": "faf56e67103bd66c2cc967b4992a7f56c8bb25d7ab478b38eab02314d91ffc6a",
+      "src/mediatablemodel.cpp": "519da674568271513a7626699353654ccac3c6d63e93fce524a19a80ae2150a7",
+      "src/mediatablemodel.h": "3244c290de884c911211604b2eacfd88742a4e61988d9364d4c7d292240bf3b0",
+      "src/mobid.h": "6a6d13d5ed86acd52eabc437c7893f5eaffceba0399cbb21ea87ab209fa4ddc8",
+      "src/mxfproperties.h": "be795545e51f71148a01a4f9b7607dd70c56b98ca6ddcad13179c76550962d44",
+      "src/nativefile.cpp": "d990281783ba6d12fd54459d319f25ebd1f37915b0c9f501375ac08aca6cbc5b",
+      "src/nativefile.h": "d22a83873134e61d934f082cbb4b1c5cdab7201c178ac89873d3f569850445ee",
+      "src/omfuid.h": "c02b9316794d8113021bd0688143382dfddc8df5a2afeb11612447f2bbf48a66",
+      "src/opcopier.cpp": "9bb0e15ad44b63093e57039ad8fc6883ddf1c8b38a6a4e78458428a255053f11",
+      "src/opcopier.h": "1912a5b5d72b081ca1bc6ffaab7d8b0c69806bb62fb5db53ade324e006a16ca8",
+      "src/operationplan.cpp": "a50e185593f4bc45344732a1495d1a106f7d738e21b6b55c35ecb8dd0c405026",
+      "src/operationplan.h": "2cb600014a0cecb7bd66834585047eaa5a488daf470b47b1ee17b9a48f248db0",
+      "src/operationrecovery.cpp": "5de005ee6eb0c89062d07d62f395c0e5a4ad393438639034d6bae461112557a4",
+      "src/operationrecovery.h": "2c53f3d40abe63d1da2d4cc6f0386e4a9244e0bb2110a7dceedf9dae0bafcb8e",
+      "src/opfile.cpp": "950518ae71c6b1c70b5ddad0f7204497578b41823472728e6ee6193963c8d4f6",
+      "src/opfile.h": "098975b44596eb2c1d968c647b9bc6ec5df63bcd98dcb3b003ec649d24aa802f",
+      "src/opjournal.cpp": "40aabdea82dd4e284d9fe94726300f30213d30ec65a4a5cc48d301f2adf56784",
+      "src/opjournal.h": "f11c524fd32133d8a279cc2e4af7bb0bd0b65ca7daaebde94f7eeb5fbc1d6995",
+      "src/opmanager.cpp": "69ed237cef4160bb0618ebb79a13abe08fbd4f7fbaaa87eab1cbbd81e8c53c3b",
+      "src/opmanager.h": "87e5190c091054b2b3cc2c72b24b5ba9a70843d22a5d57b994a1ab8a4e559d28",
+      "src/oprequest.h": "79b9658de2a4e7b29fcf77517e3070969f23a5ce23c955ec9ef0dc3ef53cb750",
+      "src/oprunner.cpp": "cbb2b9d9661a1c4cb4abb3601d9dfbad9456d587ae7e85c2b5070320bcacb911",
+      "src/oprunner.h": "bfa33d8fbbbcd68e84def574ce0f363cb4b49add5b9847445f2cd8071311c118",
+      "src/opscanreceipt.cpp": "0f7c9d8c9b9e09b780632f47fec27fe7fb15b438b300086530aad48598c03a4c",
+      "src/opscanreceipt.h": "976f6034b157e744e023f4b7604c3cb54e7a2c6f49d306729100723a98af73af",
+      "src/optrash.cpp": "d22ace78c7a963e40c9fa02d153269c892aa21dd2b8c7a5c9d43d30ee48b58a7",
+      "src/optrash.h": "0eb2da2292bf86e2cbb1d5bd71ddbec03aebcbdb6cd0b88f98b6aece559c9a67",
+      "src/pathkey.h": "0d769da9dea2bf7060868319422ad647a187caabe336a84799e6b3dfcae74819",
+      "src/pmrkey.h": "27f30d43c81c3be9807dd951fa6558bfad38f313419d55719c00d08ed80d8c72",
+      "src/precomputefilter.h": "2303ece77ad98b02048978d8aa7e3c590e336e6519f6615f331abfef993d8f0d",
+      "src/precomputefilterdialog.cpp": "04c8a20bce6172f71c58ba5aabbaa56d81fd9f652802f5005da8099d7c274f87",
+      "src/precomputefilterdialog.h": "321cec10cccf155d13733bedb3b5b87843df3e2b899af4a2eff70bd52f4cfa76",
+      "src/progressdialog.cpp": "80894107aa3b4e379812c113b09be0908f87131ed3f119e612df165fa598b4b0",
+      "src/progressdialog.h": "fdf6cf6bc87f662ad2cacacb6a3e1ae961b1876491d27f29b472ca055b3ce07d",
+      "src/progressthrottle.h": "365da04fbd81cf024464c174a4b01c47f0955e96588b10d7c72d332d274f966b",
+      "src/rebalancedialog.cpp": "932c55198c526524b9aa79190d71a8069874f1e9abe8bcf65f9d5a100d239b22",
+      "src/rebalancedialog.h": "7e3ac3e593e67624f1578e23ffa69d5abb589d108362ab0218ec203522781319",
+      "src/rebalanceplan.h": "32ff6dce50573b26a2a902ac78140bc3df75497b7a1c873d11ec2dedebad0989",
+      "src/rebalanceplanner.cpp": "fa9d5d9a705e55789ff4745d4497374c3209d8de5e11ed6d181f5ee01b03510c",
+      "src/rebalanceplanner.h": "1e3aed2a5031c8cb38cce0d687bac9f95c4da02f3cda022e9c9272bfba3ae8a2",
+      "src/rebalancer.cpp": "4287b7afa3549e4fb15628e0a9fd5bd4530794f4a40657be53c81458583105bc",
+      "src/rebalancer.h": "86baad741be6e8298a1f61eae7a829d39b2d4e957612179a1cee57b8b3cbc6b3",
+      "src/revealinfinder.cpp": "4fa74c6cbdbef108beaa5c31c6c4ab1791b58ab86ee4d683d6d76f3b3c91402c",
+      "src/revealinfinder.h": "83be667341872afd7c76f89db99fb2563d4e9047e91d3d676dc142c19891ef76",
+      "src/testpause.h": "180149048625806cd4e11c86740454549e6b74c1fe5bc077866ce9e62e31c3a0",
+      "src/unfinishedbusinessdialog.cpp": "29b9d838befbe25b1e982001c582987d50ccd34079928c9f2ccf5a6f91c20403",
+      "src/unfinishedbusinessdialog.h": "082c076c90d6046e4e5278556f658ff9da2fc90672c8a115529584b24867a3d2",
+      "src/volumeidentity.cpp": "f3bd79a153d8793b825920b835d15190c06a7cf5c99006ef92b8dc30e86babc1",
+      "src/volumeidentity.h": "8d779067d2b51ec7d2cf2024c9e55648d362dfcf76da47cca06be85ae5d2c0da",
+      "src/volumelistwidget.cpp": "c80c56232489cefdc2eb94c5d83376f7ba073f8d60bde9f2eeefa0fc2dccb86d",
+      "src/volumelistwidget.h": "77480d504f145c2c16ef236edc85647305d0a199dfb32fe865296819c47917e0",
+      "src/volumemanager.cpp": "9f1ca3b1c228e89404e55f10243f462549fb1fc7aea94043cff4f28ca943d8e8",
+      "src/volumemanager.h": "29a1688f272e3886217cc8570172d7fd2b0ade57ff0bbec1d738c567498a4356",
+      "tests/CMakeLists.txt": "14c82431239c348b46066b4865cfd643d7aad046280e5a592a45ce46364ff939",
+      "tests/mediaengine_compare.cpp": "8fa806512b048df202b6dffeec0a4f9b89ff8e7bc0998b5439aebbc9d1762b8a",
+      "tests/mediaenginefingerprint.h": "7196d16337a75bf6a87ca5dff56a9dc6c55972eb6ec8d5b53c14e82e7fc59d2d",
+      "tests/run_mediaengine_comparison.py": "449d615d2eafa77624e0c67a23353acdd7e7c17ae00e42679bfb782922f2f684"
+    },
+    "cmakeCache": "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeCache.txt",
+    "cmakeCacheSha256": "c16c6d3fb4ee6c7d20dc1514ccd399c7774d7536f2d8d922945bedc1e41bd452",
+    "cmakeSettings": {
+      "CMAKE_BUILD_TYPE": "Release",
+      "CMAKE_CXX_COMPILER": "/usr/bin/c++",
+      "CMAKE_CXX_FLAGS": "",
+      "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG",
+      "CMAKE_OSX_ARCHITECTURES": "arm64",
+      "Qt6Core_DIR": "/Users/martymclean/Qt/6.5.3/macos/lib/cmake/Qt6Core",
+      "Qt6_DIR": "/Users/martymclean/Qt/6.5.3/macos/lib/cmake/Qt6",
+      "CMAKE_GENERATOR": "Ninja",
+      "CMAKE_HOME_DIRECTORY": "/Users/martymclean/Developer/MediaMuster"
+    },
+    "releaseConfigurationVerified": true,
+    "configurationEvidence": "Recorded CMake cache settings and probe location; no build flags inferred from filenames.",
+    "librarySha256": {
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/libmediamuster_mediaengine_core.a": "4e5cc5d912da048dab52b0dfc68a2bf347d7c4c75c768fa0aa6f57757e6a6ed8",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/libmediamuster_mediaengine.a": "d330d0663e854bfd7ed6aff6353081ce43790f943366ba2bd6bd48eb255f7c37"
+    }
+  },
+  "scope": "Remove unused source retention/reconstruction machinery. Same supported extracted values, alternatives, evidence and receipts; same database-first scheduling; retained AVB graphs unchanged.",
+  "method": "Four real-file datasets, scan/evidence comparisons, then three alternating fresh-process pairs using the frozen prior metadata-only executable and the sole-engine current executable. Same Release configuration; warm uncontrolled filesystem cache; no overlapping build/test work. Scan timer and RAM sample precede CSV/proof work. No Windows/NEXIS throughput claim.",
+  "datasets": {
+    "database": {
+      "roots": [
+        "/Users/Shared/AvidMediaComposer",
+        "/Volumes/EDIT"
+      ],
+      "rows": 2413,
+      "beforeStorage": {
+        "alternativeStores": 0,
+        "archiveBlocks": 0,
+        "archives": 0,
+        "completeMxfArchiveFallbacks": 0,
+        "compressedBytes": 0,
+        "databaseArchiveCompressedBytes": 0,
+        "databaseArchives": 0,
+        "legacyMediaArchiveCompressedBytes": 0,
+        "legacyMediaArchives": 0,
+        "mxfArchiveCompressedBytes": 0,
+        "mxfArchives": 0,
+        "nativeDatabaseImageBytes": 0,
+        "nativeDatabaseImages": 0,
+        "nativeImageBytes": 0,
+        "nativeMxfAcquiredBytes": 0,
+        "nativeMxfImageBytes": 0,
+        "nativeMxfImageRanges": 0,
+        "nativeMxfImages": 0,
+        "nativeMxfRangeCapacityBytes": 0,
+        "serializedBytes": 0,
+        "unfinishedGraphs": 0
+      },
+      "sourceReceiptCount": 2425,
+      "headerReads": 116,
+      "headerSkips": 2297,
+      "databaseReads": 12,
+      "logicalComparisonPassed": true,
+      "csvSha256": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+      "hashes": {
+        "callbacksSha256": "1ae2f889346ea26e8ae923f81b3b3e10ad38b613bd6f40564da69e564b552612",
+        "filesSha256": "69e81d5066341c176a81d11fab4192d8f5640617970d5bb6ec65d08f09db6c00",
+        "issuesSha256": "66323ed46c8ee12ea75338d5d0cfc32f983c7b5fc98f904a0f98dab483d24e5a",
+        "schedulingSha256": "9e0dde371277852dd7e880e74716a36d142125edee5e8e01d53f1ea0c1bf0c54",
+        "stateSha256": "024783375497feb86964d7340e0719e5d133ee994e2a71c8a41a241a7d0d28c3"
+      },
+      "runs": [
+        {
+          "pair": 1,
+          "generation": "before",
+          "scanMs": 5023,
+          "memoryRetained": {
+            "peakResidentBytes": 1098301440,
+            "physicalFootprintBytes": 234360064,
+            "residentBytes": 926728192
+          },
+          "reportSha256": "8e8e5b65b1849aa0e8b3b0d7094ba8fcfaae6cdd20bc6f103a74f02ccace9420"
+        },
+        {
+          "pair": 1,
+          "generation": "after",
+          "scanMs": 4951,
+          "memoryRetained": {
+            "peakResidentBytes": 1093599232,
+            "physicalFootprintBytes": 256658560,
+            "residentBytes": 941850624
+          },
+          "reportSha256": "c3c91c1154922d535f853425841bd9eda6eb75618b54c15be9263d5bb57ac1af"
+        },
+        {
+          "pair": 2,
+          "generation": "after",
+          "scanMs": 5048,
+          "memoryRetained": {
+            "peakResidentBytes": 1105297408,
+            "physicalFootprintBytes": 273616064,
+            "residentBytes": 950894592
+          },
+          "reportSha256": "d02f03287319c5a9ea8a0560a9b561a550db13f00a6c7ad24313477acadf1b28"
+        },
+        {
+          "pair": 2,
+          "generation": "before",
+          "scanMs": 5276,
+          "memoryRetained": {
+            "peakResidentBytes": 1114587136,
+            "physicalFootprintBytes": 278220096,
+            "residentBytes": 1014628352
+          },
+          "reportSha256": "9b6f53d0e627cfcc6bd9d1b947261f29a4f02f1e89eef845b6aa47a324210ede"
+        },
+        {
+          "pair": 3,
+          "generation": "before",
+          "scanMs": 5068,
+          "memoryRetained": {
+            "peakResidentBytes": 1108312064,
+            "physicalFootprintBytes": 274091072,
+            "residentBytes": 943243264
+          },
+          "reportSha256": "989414d110f349a8c84783e6cfd6deffa3cc109d0b4c8d150fcfeed02e45e756"
+        },
+        {
+          "pair": 3,
+          "generation": "after",
+          "scanMs": 5013,
+          "memoryRetained": {
+            "peakResidentBytes": 1081491456,
+            "physicalFootprintBytes": 268848320,
+            "residentBytes": 941211648
+          },
+          "reportSha256": "ab42dfa4108f5f3391b8964d560830623b62c773ba628a6638eb67dd2ef98481"
+        }
+      ],
+      "metrics": {
+        "before": {
+          "scanMs": {
+            "values": [
+              5023,
+              5276,
+              5068
+            ],
+            "median": 5068,
+            "min": 5023,
+            "max": 5276
+          },
+          "residentBytes": {
+            "values": [
+              926728192,
+              1014628352,
+              943243264
+            ],
+            "median": 943243264,
+            "min": 926728192,
+            "max": 1014628352
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              234360064,
+              278220096,
+              274091072
+            ],
+            "median": 274091072,
+            "min": 234360064,
+            "max": 278220096
+          },
+          "peakResidentBytes": {
+            "values": [
+              1098301440,
+              1114587136,
+              1108312064
+            ],
+            "median": 1108312064,
+            "min": 1098301440,
+            "max": 1114587136
+          }
+        },
+        "after": {
+          "scanMs": {
+            "values": [
+              4951,
+              5048,
+              5013
+            ],
+            "median": 5013,
+            "min": 4951,
+            "max": 5048
+          },
+          "residentBytes": {
+            "values": [
+              941850624,
+              950894592,
+              941211648
+            ],
+            "median": 941850624,
+            "min": 941211648,
+            "max": 950894592
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              256658560,
+              273616064,
+              268848320
+            ],
+            "median": 268848320,
+            "min": 256658560,
+            "max": 273616064
+          },
+          "peakResidentBytes": {
+            "values": [
+              1093599232,
+              1105297408,
+              1081491456
+            ],
+            "median": 1093599232,
+            "min": 1081491456,
+            "max": 1105297408
+          }
+        }
+      },
+      "medianChanges": {
+        "peakResidentBytes": {
+          "before": 1108312064,
+          "after": 1093599232,
+          "reductionPercent": 1.3274990391153985
+        },
+        "physicalFootprintBytes": {
+          "before": 274091072,
+          "after": 268848320,
+          "reductionPercent": 1.9127773705814088
+        },
+        "scanMs": {
+          "before": 5068,
+          "after": 5013,
+          "reductionPercent": 1.0852407261247032
+        },
+        "residentBytes": {
+          "before": 943243264,
+          "after": 941850624,
+          "reductionPercent": 0.14764377898595082
+        }
+      }
+    },
+    "complete": {
+      "roots": [
+        "/private/tmp/mediaengine-stages12-20261011/complete-media"
+      ],
+      "rows": 267,
+      "beforeStorage": {
+        "alternativeStores": 0,
+        "archiveBlocks": 0,
+        "archives": 0,
+        "completeMxfArchiveFallbacks": 0,
+        "compressedBytes": 0,
+        "databaseArchiveCompressedBytes": 0,
+        "databaseArchives": 0,
+        "legacyMediaArchiveCompressedBytes": 0,
+        "legacyMediaArchives": 0,
+        "mxfArchiveCompressedBytes": 0,
+        "mxfArchives": 0,
+        "nativeDatabaseImageBytes": 0,
+        "nativeDatabaseImages": 0,
+        "nativeImageBytes": 0,
+        "nativeMxfAcquiredBytes": 0,
+        "nativeMxfImageBytes": 0,
+        "nativeMxfImageRanges": 0,
+        "nativeMxfImages": 0,
+        "nativeMxfRangeCapacityBytes": 0,
+        "serializedBytes": 0,
+        "unfinishedGraphs": 0
+      },
+      "sourceReceiptCount": 267,
+      "headerReads": 267,
+      "headerSkips": 0,
+      "databaseReads": 0,
+      "logicalComparisonPassed": true,
+      "csvSha256": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+      "hashes": {
+        "callbacksSha256": "e626cd5ed52a45b8ee10198640ab39873e135d272e2d75fff1565e9a055faae2",
+        "filesSha256": "37d5c1da60e9c1a8d3d847d5eb4a92602d8e1db0c3d01afa4f82ced73d7693bf",
+        "issuesSha256": "25ddce5544227d9b47cb341d6f0b7dd2a14c48623a8e3caa41a0c90969ebc5bb",
+        "schedulingSha256": "988f31100c78d98ad981b7f1bc4884c62cc2df9da41c8f8cecf73dea7885676a",
+        "stateSha256": "5a2942df9305fa108f6f38f6424f44c2329e875aa0b1fc3505dd3faf3850d7f8"
+      },
+      "runs": [
+        {
+          "pair": 1,
+          "generation": "before",
+          "scanMs": 4710,
+          "memoryRetained": {
+            "peakResidentBytes": 55541760,
+            "physicalFootprintBytes": 40191360,
+            "residentBytes": 55541760
+          },
+          "reportSha256": "3156289c320abd9fe28a87bcfbb2424a8ee3da7c2f424d1722895ff9b0a00bb6"
+        },
+        {
+          "pair": 1,
+          "generation": "after",
+          "scanMs": 4730,
+          "memoryRetained": {
+            "peakResidentBytes": 54607872,
+            "physicalFootprintBytes": 42305024,
+            "residentBytes": 54607872
+          },
+          "reportSha256": "418d98861d65d73133216a928bae85055e1bcf325f52d60f491df93d9d87ec0e"
+        },
+        {
+          "pair": 2,
+          "generation": "after",
+          "scanMs": 4680,
+          "memoryRetained": {
+            "peakResidentBytes": 54231040,
+            "physicalFootprintBytes": 40240896,
+            "residentBytes": 54231040
+          },
+          "reportSha256": "ca6e750e03605afdf85b7db980eb2acdf17ae2d3516443fe4c9b594a292cd8fb"
+        },
+        {
+          "pair": 2,
+          "generation": "before",
+          "scanMs": 4651,
+          "memoryRetained": {
+            "peakResidentBytes": 53002240,
+            "physicalFootprintBytes": 39257600,
+            "residentBytes": 53002240
+          },
+          "reportSha256": "f38f688bc9eeb77dde17b3f8f0376817e543e9eff2768b8e3e342035ac4d9459"
+        },
+        {
+          "pair": 3,
+          "generation": "before",
+          "scanMs": 4833,
+          "memoryRetained": {
+            "peakResidentBytes": 52297728,
+            "physicalFootprintBytes": 38995456,
+            "residentBytes": 52297728
+          },
+          "reportSha256": "dfee975fe2403969a21b39137c814057efece54fba72f7b4089a612934591039"
+        },
+        {
+          "pair": 3,
+          "generation": "after",
+          "scanMs": 4780,
+          "memoryRetained": {
+            "peakResidentBytes": 51642368,
+            "physicalFootprintBytes": 35915584,
+            "residentBytes": 51642368
+          },
+          "reportSha256": "61d44da4c1e7272af4b5d2f96bb71aa5b79a505e148eebdf0810f89de717353e"
+        }
+      ],
+      "metrics": {
+        "before": {
+          "scanMs": {
+            "values": [
+              4710,
+              4651,
+              4833
+            ],
+            "median": 4710,
+            "min": 4651,
+            "max": 4833
+          },
+          "residentBytes": {
+            "values": [
+              55541760,
+              53002240,
+              52297728
+            ],
+            "median": 53002240,
+            "min": 52297728,
+            "max": 55541760
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              40191360,
+              39257600,
+              38995456
+            ],
+            "median": 39257600,
+            "min": 38995456,
+            "max": 40191360
+          },
+          "peakResidentBytes": {
+            "values": [
+              55541760,
+              53002240,
+              52297728
+            ],
+            "median": 53002240,
+            "min": 52297728,
+            "max": 55541760
+          }
+        },
+        "after": {
+          "scanMs": {
+            "values": [
+              4730,
+              4680,
+              4780
+            ],
+            "median": 4730,
+            "min": 4680,
+            "max": 4780
+          },
+          "residentBytes": {
+            "values": [
+              54607872,
+              54231040,
+              51642368
+            ],
+            "median": 54231040,
+            "min": 51642368,
+            "max": 54607872
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              42305024,
+              40240896,
+              35915584
+            ],
+            "median": 40240896,
+            "min": 35915584,
+            "max": 42305024
+          },
+          "peakResidentBytes": {
+            "values": [
+              54607872,
+              54231040,
+              51642368
+            ],
+            "median": 54231040,
+            "min": 51642368,
+            "max": 54607872
+          }
+        }
+      },
+      "medianChanges": {
+        "peakResidentBytes": {
+          "before": 53002240,
+          "after": 54231040,
+          "reductionPercent": -2.3183925811437467
+        },
+        "physicalFootprintBytes": {
+          "before": 39257600,
+          "after": 40240896,
+          "reductionPercent": -2.5047277469840257
+        },
+        "scanMs": {
+          "before": 4710,
+          "after": 4730,
+          "reductionPercent": -0.424628450106157
+        },
+        "residentBytes": {
+          "before": 53002240,
+          "after": 54231040,
+          "reductionPercent": -2.3183925811437467
+        }
+      }
+    },
+    "headers": {
+      "roots": [
+        "/private/tmp/mediaengine-stages12-20261011/header-only"
+      ],
+      "rows": 795,
+      "beforeStorage": {
+        "alternativeStores": 0,
+        "archiveBlocks": 0,
+        "archives": 0,
+        "completeMxfArchiveFallbacks": 0,
+        "compressedBytes": 0,
+        "databaseArchiveCompressedBytes": 0,
+        "databaseArchives": 0,
+        "legacyMediaArchiveCompressedBytes": 0,
+        "legacyMediaArchives": 0,
+        "mxfArchiveCompressedBytes": 0,
+        "mxfArchives": 0,
+        "nativeDatabaseImageBytes": 0,
+        "nativeDatabaseImages": 0,
+        "nativeImageBytes": 0,
+        "nativeMxfAcquiredBytes": 0,
+        "nativeMxfImageBytes": 0,
+        "nativeMxfImageRanges": 0,
+        "nativeMxfImages": 0,
+        "nativeMxfRangeCapacityBytes": 0,
+        "serializedBytes": 0,
+        "unfinishedGraphs": 0
+      },
+      "sourceReceiptCount": 795,
+      "headerReads": 795,
+      "headerSkips": 0,
+      "databaseReads": 0,
+      "logicalComparisonPassed": true,
+      "csvSha256": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+      "hashes": {
+        "callbacksSha256": "d3b0afc7eceeed05b4b1a5ee4bb332b4e05ebea6dc2b2bcc304992053950fd67",
+        "filesSha256": "8f72442416312d8bf897ff270b87fd3dc062f5e55579266c5e6209c25f653dba",
+        "issuesSha256": "0486d327bc34b97c76d7dca8b2c95abb8a410f005c42f1b6852aaeff077b71ab",
+        "schedulingSha256": "f4ba780067a9481e62bac674eb46f654c6dabd3768db70988d233bbb4bca7704",
+        "stateSha256": "cfc38b28bd3d48642480d09d8a91e164183d653ce7c45bab922ffe28af71f041"
+      },
+      "runs": [
+        {
+          "pair": 1,
+          "generation": "before",
+          "scanMs": 14777,
+          "memoryRetained": {
+            "peakResidentBytes": 87031808,
+            "physicalFootprintBytes": 64865856,
+            "residentBytes": 87031808
+          },
+          "reportSha256": "00cfbba2ca8418d7df6d9c10e2d78fef3a37bd87122ff0f55f93bf195e9d93f9"
+        },
+        {
+          "pair": 1,
+          "generation": "after",
+          "scanMs": 14620,
+          "memoryRetained": {
+            "peakResidentBytes": 89702400,
+            "physicalFootprintBytes": 67176192,
+            "residentBytes": 89702400
+          },
+          "reportSha256": "c2fc55472da6d79c669d74a551d30ae1c502830564a86e8129b80ecf196a6cbf"
+        },
+        {
+          "pair": 2,
+          "generation": "after",
+          "scanMs": 14004,
+          "memoryRetained": {
+            "peakResidentBytes": 89079808,
+            "physicalFootprintBytes": 67733120,
+            "residentBytes": 89079808
+          },
+          "reportSha256": "32fbf2d7b29e20aaaef0d4cdd433660b275114f2a1f426924233609b97d74a2b"
+        },
+        {
+          "pair": 2,
+          "generation": "before",
+          "scanMs": 14154,
+          "memoryRetained": {
+            "peakResidentBytes": 86130688,
+            "physicalFootprintBytes": 62588480,
+            "residentBytes": 86130688
+          },
+          "reportSha256": "4a6039927cc3bc67282a23be1f5ce87f24a3b5deea21e671eb29630ae2d90cc9"
+        },
+        {
+          "pair": 3,
+          "generation": "before",
+          "scanMs": 14108,
+          "memoryRetained": {
+            "peakResidentBytes": 89948160,
+            "physicalFootprintBytes": 66455104,
+            "residentBytes": 89948160
+          },
+          "reportSha256": "57ea4db7fa8089e88a49490ef68ab4a10ef5db09c5d3a281c11b2f629330c017"
+        },
+        {
+          "pair": 3,
+          "generation": "after",
+          "scanMs": 13718,
+          "memoryRetained": {
+            "peakResidentBytes": 84901888,
+            "physicalFootprintBytes": 63719040,
+            "residentBytes": 84901888
+          },
+          "reportSha256": "27f6c10dac2779708375135d6387905fefc432eddf406db176498721075998d1"
+        }
+      ],
+      "metrics": {
+        "before": {
+          "scanMs": {
+            "values": [
+              14777,
+              14154,
+              14108
+            ],
+            "median": 14154,
+            "min": 14108,
+            "max": 14777
+          },
+          "residentBytes": {
+            "values": [
+              87031808,
+              86130688,
+              89948160
+            ],
+            "median": 87031808,
+            "min": 86130688,
+            "max": 89948160
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              64865856,
+              62588480,
+              66455104
+            ],
+            "median": 64865856,
+            "min": 62588480,
+            "max": 66455104
+          },
+          "peakResidentBytes": {
+            "values": [
+              87031808,
+              86130688,
+              89948160
+            ],
+            "median": 87031808,
+            "min": 86130688,
+            "max": 89948160
+          }
+        },
+        "after": {
+          "scanMs": {
+            "values": [
+              14620,
+              14004,
+              13718
+            ],
+            "median": 14004,
+            "min": 13718,
+            "max": 14620
+          },
+          "residentBytes": {
+            "values": [
+              89702400,
+              89079808,
+              84901888
+            ],
+            "median": 89079808,
+            "min": 84901888,
+            "max": 89702400
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              67176192,
+              67733120,
+              63719040
+            ],
+            "median": 67176192,
+            "min": 63719040,
+            "max": 67733120
+          },
+          "peakResidentBytes": {
+            "values": [
+              89702400,
+              89079808,
+              84901888
+            ],
+            "median": 89079808,
+            "min": 84901888,
+            "max": 89702400
+          }
+        }
+      },
+      "medianChanges": {
+        "peakResidentBytes": {
+          "before": 87031808,
+          "after": 89079808,
+          "reductionPercent": -2.353162650602414
+        },
+        "physicalFootprintBytes": {
+          "before": 64865856,
+          "after": 67176192,
+          "reductionPercent": -3.5617135770165342
+        },
+        "scanMs": {
+          "before": 14154,
+          "after": 14004,
+          "reductionPercent": 1.0597710894446832
+        },
+        "residentBytes": {
+          "before": 87031808,
+          "after": 89079808,
+          "reductionPercent": -2.353162650602414
+        }
+      }
+    },
+    "legacy": {
+      "roots": [
+        "/private/tmp/mediaengine-step3-20261011/legacy-media"
+      ],
+      "rows": 82,
+      "beforeStorage": {
+        "alternativeStores": 0,
+        "archiveBlocks": 0,
+        "archives": 0,
+        "completeMxfArchiveFallbacks": 0,
+        "compressedBytes": 0,
+        "databaseArchiveCompressedBytes": 0,
+        "databaseArchives": 0,
+        "legacyMediaArchiveCompressedBytes": 0,
+        "legacyMediaArchives": 0,
+        "mxfArchiveCompressedBytes": 0,
+        "mxfArchives": 0,
+        "nativeDatabaseImageBytes": 0,
+        "nativeDatabaseImages": 0,
+        "nativeImageBytes": 0,
+        "nativeMxfAcquiredBytes": 0,
+        "nativeMxfImageBytes": 0,
+        "nativeMxfImageRanges": 0,
+        "nativeMxfImages": 0,
+        "nativeMxfRangeCapacityBytes": 0,
+        "serializedBytes": 0,
+        "unfinishedGraphs": 0
+      },
+      "sourceReceiptCount": 82,
+      "headerReads": 82,
+      "headerSkips": 0,
+      "databaseReads": 0,
+      "logicalComparisonPassed": true,
+      "csvSha256": "09181fcbb4d6a8a5f473a20436640a780c5c2c9e0aa6ce80176408441358a524",
+      "hashes": {
+        "callbacksSha256": "b83455d70b67003bf7ae7d2b0f98e823a33814e5137ca3312ffc53d569e19ae7",
+        "filesSha256": "5e0f869614b83b52780366934c551dd472975de24160dafad135cd2ea6b68c5e",
+        "issuesSha256": "b8a5cb17093330dc850a773a62ecc0b53e0b5d914e8bca72cd51879789276bb0",
+        "schedulingSha256": "41a400470d8548373b2f638418300167598180ac3798eddb9144f59b39334c00",
+        "stateSha256": "ade7ef663fe483483fa0cb9c66b3e0e12e7e21d50bcfca48f39008a64032a340"
+      },
+      "runs": [
+        {
+          "pair": 1,
+          "generation": "before",
+          "scanMs": 76,
+          "memoryRetained": {
+            "peakResidentBytes": 17367040,
+            "physicalFootprintBytes": 10847552,
+            "residentBytes": 17367040
+          },
+          "reportSha256": "2ee1d4513a6c2a54eac3fe80489dee22bd959e11c1c3da04a29eee757d5440da"
+        },
+        {
+          "pair": 1,
+          "generation": "after",
+          "scanMs": 74,
+          "memoryRetained": {
+            "peakResidentBytes": 17088512,
+            "physicalFootprintBytes": 10667392,
+            "residentBytes": 17088512
+          },
+          "reportSha256": "b5f3cd1dd5f1d1e85ff7fb343fbdea67d617546237449d6e655af306f11c91ec"
+        },
+        {
+          "pair": 2,
+          "generation": "after",
+          "scanMs": 76,
+          "memoryRetained": {
+            "peakResidentBytes": 18694144,
+            "physicalFootprintBytes": 12289472,
+            "residentBytes": 18694144
+          },
+          "reportSha256": "86884104316c6d395c94cde9c9fe19338a9f59faf7b88498e2efb5d270b63613"
+        },
+        {
+          "pair": 2,
+          "generation": "before",
+          "scanMs": 75,
+          "memoryRetained": {
+            "peakResidentBytes": 17399808,
+            "physicalFootprintBytes": 10863872,
+            "residentBytes": 17399808
+          },
+          "reportSha256": "faa91d803e87d6237a1c136145850162efb6c79194d46282890f28d044c0e433"
+        },
+        {
+          "pair": 3,
+          "generation": "before",
+          "scanMs": 77,
+          "memoryRetained": {
+            "peakResidentBytes": 19578880,
+            "physicalFootprintBytes": 13075840,
+            "residentBytes": 19578880
+          },
+          "reportSha256": "58ab132a55b0c678920e4b80fe877d86b974b450067bb2aa231a20ea4db9678e"
+        },
+        {
+          "pair": 3,
+          "generation": "after",
+          "scanMs": 73,
+          "memoryRetained": {
+            "peakResidentBytes": 18251776,
+            "physicalFootprintBytes": 11797760,
+            "residentBytes": 18251776
+          },
+          "reportSha256": "8fcdb0da6ee4eb22a726352156a019ad237eb53948c4fcdabf331ac8447178ef"
+        }
+      ],
+      "metrics": {
+        "before": {
+          "scanMs": {
+            "values": [
+              76,
+              75,
+              77
+            ],
+            "median": 76,
+            "min": 75,
+            "max": 77
+          },
+          "residentBytes": {
+            "values": [
+              17367040,
+              17399808,
+              19578880
+            ],
+            "median": 17399808,
+            "min": 17367040,
+            "max": 19578880
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              10847552,
+              10863872,
+              13075840
+            ],
+            "median": 10863872,
+            "min": 10847552,
+            "max": 13075840
+          },
+          "peakResidentBytes": {
+            "values": [
+              17367040,
+              17399808,
+              19578880
+            ],
+            "median": 17399808,
+            "min": 17367040,
+            "max": 19578880
+          }
+        },
+        "after": {
+          "scanMs": {
+            "values": [
+              74,
+              76,
+              73
+            ],
+            "median": 74,
+            "min": 73,
+            "max": 76
+          },
+          "residentBytes": {
+            "values": [
+              17088512,
+              18694144,
+              18251776
+            ],
+            "median": 18251776,
+            "min": 17088512,
+            "max": 18694144
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              10667392,
+              12289472,
+              11797760
+            ],
+            "median": 11797760,
+            "min": 10667392,
+            "max": 12289472
+          },
+          "peakResidentBytes": {
+            "values": [
+              17088512,
+              18694144,
+              18251776
+            ],
+            "median": 18251776,
+            "min": 17088512,
+            "max": 18694144
+          }
+        }
+      },
+      "medianChanges": {
+        "peakResidentBytes": {
+          "before": 17399808,
+          "after": 18251776,
+          "reductionPercent": -4.896421845574395
+        },
+        "physicalFootprintBytes": {
+          "before": 10863872,
+          "after": 11797760,
+          "reductionPercent": -8.596272121026471
+        },
+        "scanMs": {
+          "before": 76,
+          "after": 74,
+          "reductionPercent": 2.631578947368418
+        },
+        "residentBytes": {
+          "before": 17399808,
+          "after": 18251776,
+          "reductionPercent": -4.896421845574395
+        }
+      }
+    }
+  },
+  "tests": {
+    "suitesPassed": 40,
+    "suitesFailed": 0,
+    "individualCasesSkipped": 7,
+    "results": [
+      {
+        "suite": "tst_avbparser.result.txt",
+        "totals": [
+          "Totals: 161 passed, 0 failed, 0 skipped, 0 blacklisted, 10677ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_avideffects.result.txt",
+        "totals": [
+          "Totals: 36 passed, 0 failed, 0 skipped, 0 blacklisted, 2ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_binfilterdialog.result.txt",
+        "totals": [
+          "Totals: 49 passed, 0 failed, 0 skipped, 0 blacklisted, 1047ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_conventions.result.txt",
+        "totals": [
+          "Totals: 77 passed, 0 failed, 0 skipped, 0 blacklisted, 2ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_diagnostics.result.txt",
+        "totals": [
+          "Totals: 9 passed, 0 failed, 0 skipped, 0 blacklisted, 5ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_fileoperations.result.txt",
+        "totals": [
+          "Totals: 150 passed, 0 failed, 0 skipped, 0 blacklisted, 18188ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_format.result.txt",
+        "totals": [
+          "Totals: 12 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mediacsv.result.txt",
+        "totals": [
+          "Totals: 22 passed, 0 failed, 0 skipped, 0 blacklisted, 4ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mediaengine_compressionnames.result.txt",
+        "totals": [
+          "Totals: 31 passed, 0 failed, 0 skipped, 0 blacklisted, 2ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mediaengine_mxfprojection.result.txt",
+        "totals": [
+          "Totals: 70 passed, 0 failed, 0 skipped, 0 blacklisted, 45ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mediaengine_omfprojection.result.txt",
+        "totals": [
+          "Totals: 231 passed, 0 failed, 0 skipped, 0 blacklisted, 114ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mediaengineavb.result.txt",
+        "totals": [
+          "Totals: 35 passed, 0 failed, 1 skipped, 0 blacklisted, 10ms"
+        ],
+        "skips": [
+          "SKIP   : TestMediaEngineAvb::suppliedBins() Set MEDIAMUSTER_MEDIAENGINE_REAL_AVB_FILES to inspect the supplied bins read-only."
+        ]
+      },
+      {
+        "suite": "tst_mediaengineavbreferences.result.txt",
+        "totals": [
+          "Totals: 22 passed, 0 failed, 0 skipped, 0 blacklisted, 2ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mediaenginedatabase.result.txt",
+        "totals": [
+          "Totals: 36 passed, 0 failed, 0 skipped, 0 blacklisted, 8755ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mediaenginediscovery.result.txt",
+        "totals": [
+          "Totals: 14 passed, 0 failed, 1 skipped, 0 blacklisted, 19ms"
+        ],
+        "skips": [
+          "SKIP   : TestMediaEngineDiscovery::optional_real_discovery() Opt-in read-only discovery of real managed roots"
+        ]
+      },
+      {
+        "suite": "tst_mediaenginelegacy.result.txt",
+        "totals": [
+          "Totals: 109 passed, 0 failed, 0 skipped, 0 blacklisted, 68ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mediaenginemdb.result.txt",
+        "totals": [
+          "Totals: 29 passed, 0 failed, 0 skipped, 0 blacklisted, 473ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mediaenginemdbisolated.result.txt",
+        "totals": [
+          "Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 4ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mediaenginemxf.result.txt",
+        "totals": [
+          "Totals: 856 passed, 0 failed, 0 skipped, 0 blacklisted, 19518ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mediaenginemxfsource.result.txt",
+        "totals": [
+          "Totals: 18 passed, 0 failed, 0 skipped, 0 blacklisted, 480ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mediaengineomfisolated.result.txt",
+        "totals": [
+          "Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted, 5ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mediaenginepmr.result.txt",
+        "totals": [
+          "Totals: 27 passed, 0 failed, 1 skipped, 0 blacklisted, 9ms"
+        ],
+        "skips": [
+          "SKIP   : TestMediaEnginePmr::realDrivePmrs() Opt-in read-only local/EDIT PMR audit."
+        ]
+      },
+      {
+        "suite": "tst_mediaenginepmrrobustness.result.txt",
+        "totals": [
+          "Totals: 9 passed, 0 failed, 1 skipped, 0 blacklisted, 15ms"
+        ],
+        "skips": [
+          "SKIP   : TestMediaEnginePmrRobustness::benchmark() Opt-in parsing benchmark; excludes discovery and filesystem I/O."
+        ]
+      },
+      {
+        "suite": "tst_mediaenginescan.result.txt",
+        "totals": [
+          "Totals: 30 passed, 0 failed, 1 skipped, 0 blacklisted, 179ms"
+        ],
+        "skips": [
+          "SKIP   : TestMediaEngineScan::normalized_name_does_not_assign_one_record_to_two_files() Temporary filesystem does not preserve case-distinct file locations"
+        ]
+      },
+      {
+        "suite": "tst_mediaevidence.result.txt",
+        "totals": [
+          "Totals: 18 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mediafilterproxy.result.txt",
+        "totals": [
+          "Totals: 32 passed, 0 failed, 0 skipped, 0 blacklisted, 7ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mediametadata.result.txt",
+        "totals": [
+          "Totals: 9 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mediatablemodel.result.txt",
+        "totals": [
+          "Totals: 37 passed, 0 failed, 0 skipped, 0 blacklisted, 7ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_metadataselectionpolicy.result.txt",
+        "totals": [
+          "Totals: 12 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_mobid.result.txt",
+        "totals": [
+          "Totals: 10 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_omfuid.result.txt",
+        "totals": [
+          "Totals: 10 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_opcleanup.result.txt",
+        "totals": [
+          "Totals: 17 passed, 0 failed, 0 skipped, 0 blacklisted, 40ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_operationui.result.txt",
+        "totals": [
+          "Totals: 71 passed, 0 failed, 0 skipped, 0 blacklisted, 6477ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_opjournal.result.txt",
+        "totals": [
+          "Totals: 85 passed, 0 failed, 0 skipped, 0 blacklisted, 1556ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_pathkey.result.txt",
+        "totals": [
+          "Totals: 12 passed, 0 failed, 0 skipped, 0 blacklisted, 5ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_precomputefilterdialog.result.txt",
+        "totals": [
+          "Totals: 8 passed, 0 failed, 0 skipped, 0 blacklisted, 156ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_readerregressions.result.txt",
+        "totals": [
+          "Totals: 7 passed, 0 failed, 0 skipped, 0 blacklisted, 15615ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_rebalanceplanner.result.txt",
+        "totals": [
+          "Totals: 40 passed, 0 failed, 0 skipped, 0 blacklisted, 11855ms"
+        ],
+        "skips": []
+      },
+      {
+        "suite": "tst_scanner.result.txt",
+        "totals": [
+          "Totals: 153 passed, 0 failed, 2 skipped, 0 blacklisted, 6858ms"
+        ],
+        "skips": [
+          "SKIP   : TestScanner::optional_read_only_real_scan() Opt-in real-drive audit; set MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_ROOTS to semicolon-separated managed roots",
+          "SKIP   : TestScanner::case_distinct_shared_folders_remain_distinct() Temporary filesystem is case-insensitive; case-distinct directories cannot be created here"
+        ]
+      },
+      {
+        "suite": "tst_volumeidentity.result.txt",
+        "totals": [
+          "Totals: 8 passed, 0 failed, 0 skipped, 0 blacklisted, 8ms"
+        ],
+        "skips": []
+      }
+    ],
+    "logSha256": "93e2ac570831f4cb9077a7d3c47edf63b0a783a2337fd5870d9e81897f1fd489"
+  },
+  "receiptSize": {
+    "platform": "macOS arm64",
+    "qt": "6.5.3",
+    "cpp": "C++17",
+    "sizes": {
+      "before": 136,
+      "after": 80
+    },
+    "savingBytesPerSource": 56,
+    "scope": "sizeof the receipt value only, excludes shared payloads, allocator/capacity and all row evidence"
+  },
+  "application": {
+    "path": "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/MediaMuster.app",
+    "executableSha256": "c03ca4b32063a86ee54247c8f0fe1b1fa5dcc3ad213aec99e97a42267ae1db6a",
+    "signatureVerified": true,
+    "signatureOutput": "build-mediaengine-release/MediaMuster.app: valid on disk\nbuild-mediaengine-release/MediaMuster.app: satisfies its Designated Requirement\n"
+  },
+  "sourceFreezeVerified": true,
+  "testSourceSha256": {
+    "tests/mediaengine_compare.cpp": "8fa806512b048df202b6dffeec0a4f9b89ff8e7bc0998b5439aebbc9d1762b8a",
+    "tests/tst_avbparser.cpp": "c2e5ed3205a5d245974bf43999615a13ac660370b464149ca197626aef200c4d",
+    "tests/tst_avideffects.cpp": "a6895b3ecd69ba6f3139cf4ed8c3e6f5cbfab3c3f8e721b38220a875fddabee8",
+    "tests/tst_binfilterdialog.cpp": "97689a14f971a46f35ab269bc6aaa8fe4f7c61719b586be497e9ef4c917846fa",
+    "tests/tst_conventions.cpp": "e4bc8cbc6a59781c3427f1c2463a7b4b8d26bf7bc073ba5bf215ac69328b62a4",
+    "tests/tst_diagnostics.cpp": "9f9191092e440597c8b07188f088e6f9a8d4750b9e96a036ff9b38fda1cda2fe",
+    "tests/tst_fileoperations.cpp": "e2c3fcfb30abdfc5ffb8dc0e9588d22a5e4acdba5f12a7be0b18d1c1e3b0de48",
+    "tests/tst_format.cpp": "30528095a3b0a81847f318bedf1a1e4eeab34456fd3094ea2da603ac54387efb",
+    "tests/tst_mediacsv.cpp": "586baaf6fe766117c25e29ac54c714da8288800a2be698ed736bf4de8f026bc8",
+    "tests/tst_mediaengine_compressionnames.cpp": "8c0cc11259c488f031d3c8e48e09fd2fc70779c57841f4f2796304a97e204b7d",
+    "tests/tst_mediaengine_mxfprojection.cpp": "0ee120b9cb03b5e6c671fec1f35dc1ce3894567b50aa98b7044f139680a094bb",
+    "tests/tst_mediaengine_omfprojection.cpp": "e65600d6fa4371572a059d5e820936d2971a17fc343eb469de6e6d502b32852c",
+    "tests/tst_mediaengineavb.cpp": "acb986cc1eff836d65f7e23e7dc6632a6218bd3200435a3e1f30a37fedf93d3e",
+    "tests/tst_mediaengineavbreferences.cpp": "441a285c0cd7eb0b3905a72cb790dcc0b32438fb6193a8f9585b88820e234b98",
+    "tests/tst_mediaenginedatabase.cpp": "46b2fa05ad3decb165a605f83728be2e5dbb35306956a0f1444ce4429471f1eb",
+    "tests/tst_mediaenginediscovery.cpp": "8e84ec0b2c3be12c78f9de029aeba24aee33d3581e56770cb442d461b9f3e370",
+    "tests/tst_mediaenginelegacy.cpp": "4fecc08c6858f148015659dcdfa14ae4ec525f6f92c341d2e6aa2d9df47313c6",
+    "tests/tst_mediaenginemdb.cpp": "867d556eaef78fd2495be8529fc7dd81403235d4cc0cc08c278fcbb5a4c708e3",
+    "tests/tst_mediaenginemdbisolated.cpp": "60eef3e8d762e9fbd2c5195d004cc50dd0a10db65b070b1142b650fccd8c21e9",
+    "tests/tst_mediaenginemxf.cpp": "dd2a650552599fee811ed2f557167a035afbd2c0147af873106397dabf82cffa",
+    "tests/tst_mediaenginemxfsource.cpp": "759856735bf3350d2ba1cc961f3b5d485d444bdd7d6b82925bcd0a238da9bdd2",
+    "tests/tst_mediaengineomfisolated.cpp": "c18c4ec80e762dd9adbab359b752fe01ea2263a317ff8de271a32aee26040cb3",
+    "tests/tst_mediaenginepmr.cpp": "37e09135380891dd9080e631e576bda326ce58c5262800580c8e4f5458729519",
+    "tests/tst_mediaenginepmrrobustness.cpp": "4b9835adebd99afd230dcf5fa3202e3142bea615b6cc61f2f58e563937ae588d",
+    "tests/tst_mediaenginescan.cpp": "2d763f8d9dbbb16f1e34c7ebbb0cd502aea235e7458deb7e6fc35c690263b3b3",
+    "tests/tst_mediaevidence.cpp": "622feee192fefb3eda3633dfc0fe9c967edf559e510c250f19fe069aecdc470a",
+    "tests/tst_mediafilterproxy.cpp": "4f43a87485c1f21cc683f46e3298b830421d8c65a7c25f34c78021150e2559f7",
+    "tests/tst_mediametadata.cpp": "b2761071605553fd5125f0249f590620be49c0fe87192a1f2d1439e072bcee47",
+    "tests/tst_mediatablemodel.cpp": "53e6057b4722a69397d8b1fb0a43c2ae1fa8fcdd3fe062983e01e681adfa008a",
+    "tests/tst_metadataselectionpolicy.cpp": "5110faf6d09a58aa98e764f9e4fb325d53a2205873deb879e9ccf7967094ad4c",
+    "tests/tst_mobid.cpp": "95e5b26dde4a369b6cc5335d594fca69e4e58c05b2a08b4af174e8ab8356fbc8",
+    "tests/tst_omfuid.cpp": "963d84a8387a82e844bc986db9e31f95526d90e0aad5e8f9c0e1cfbf5af4e5cf",
+    "tests/tst_opcleanup.cpp": "914c6a2fac2c819299a364c9425a1b3b6d55ad35b8b792b9c6582fe53397cf5d",
+    "tests/tst_operationui.cpp": "755350f080d00e134dd38665a732988a99252ed357fde6d20b34318e2f1e7156",
+    "tests/tst_opjournal.cpp": "2de03172ea9feea4f60d7ac7ce53d55fb797cf13ca27f07c21e9d8e49e1d92f3",
+    "tests/tst_pathkey.cpp": "087c280e11139cd4bf5f22a40db261f43c39bbc02308e1e479f830492dbf4825",
+    "tests/tst_precomputefilterdialog.cpp": "1482933758882b3b8696fa874c712c298ecee5dbde5f527bd31653105d7fad93",
+    "tests/tst_readerregressions.cpp": "853f72fbf3da07b5240b66e3bf09af22b953e610ff6ce8b590e05bcc1e71a7bf",
+    "tests/tst_rebalanceplanner.cpp": "626ef3f350248af1ebaee7aa1fe4a5af7541297b7cb6b951cd9beb1084c744a8",
+    "tests/tst_scanner.cpp": "f89361b8cf96f45b4db1accf8965b5118d314aed85d98066a5295afb6e538d63",
+    "tests/tst_volumeidentity.cpp": "f7909b92871f733e83487f708c9b9013fff8c5501fd3e201ccc09b3390976527",
+    "tests/mediaenginefingerprint.h": "7196d16337a75bf6a87ca5dff56a9dc6c55972eb6ec8d5b53c14e82e7fc59d2d",
+    "tests/testavb.h": "8ae9808ee69f3368325c05cbac170fc4dde342ac4dded1e972615e9cec66cd98",
+    "tests/testbento.h": "cd6a19ce268a76a2b973b0bba8a03c0ca7f4b0f4103c76128380cdce47b2c999",
+    "tests/testbento2.h": "396371ca8fee777fae482a017f076af86aaa2f4a444e4f199e8778662c008d79",
+    "tests/testmediaenginebento.h": "e03c344f2bc5a3de1593477613ff136893b44151fefe7c146fd39a93a2df2819",
+    "tests/testmediafile.h": "e216a76a1e2695add663dacd90b1864d7db0f7881d8a0a949ba74ccb85631eef",
+    "tests/testomf.h": "d9847853e402b51ccdb9de6fd7653a26d7073e81f18e176114f669e9d0d1bed1",
+    "tests/testtypedbento.h": "0fdc2acfaf0738cc4e394095421bec7ac22672cf47f0ef22d7bb4a17c1c03a83",
+    "tests/testutil.h": "89fee7d934e2ad69b443897fd32353ee12c937dd17e55dafaa954a8868508b2a"
+  },
+  "artifactSha256": {
+    "after-size.cpp": "8756014cea3167cf5817e9e28cf42c85df2bb782d5cc74e5e1597c8dcb297262",
+    "app-signature.txt": "c162ade7a6082290a752317738617797e72dc148aa6ff0f8e7c947d19a585348",
+    "baseline-receipt.json": "8fc98909c75b6112cede9ccee34768398338e461f8b2118ccf1a013becb5f1cb",
+    "baseline.py": "7f6c1c810ec7f60bdb065368e48f1370fb0317cf601842807ec6f73947765f2f",
+    "before-scan-complete.csv": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+    "before-scan-complete.json": "3b5ef529b100c9d8a1179f48710f086b9e4ca71cd60b898bd8ddd0c0a86aad2d",
+    "before-scan-database.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "before-scan-database.json": "291032990396b7375677c8bc0f91b17fc2280d960ae9652a8fd228a098384a5c",
+    "before-scan-headers.csv": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+    "before-scan-headers.json": "7a26f3415f0595f6843a76db2457864dbf341ba063f404cc6a6a0c9aad069db3",
+    "before-scan-legacy.csv": "09181fcbb4d6a8a5f473a20436640a780c5c2c9e0aa6ce80176408441358a524",
+    "before-scan-legacy.json": "89c8a07a71457dcd32754b4d543cbb23cbaea8d8ceb441a1411915609b038f62",
+    "before-scanmodel.h": "300a231dd6d82b8000555443d64f990dc2a318a132ab87053fe5aa2f17c68184",
+    "before-size.cpp": "dd82e8da37c8e05dc3786301bbd2dea199efe163e201d2217431ac115acdfdf2",
+    "before-validator.py": "0f92326951e3253093c381acd36be9a54a18292e53d2297911d149d87928cb09",
+    "compare.py": "7a7b0f0cfab295fa71d1b5d204b58640cc43ce731c5e5772d5127cc6c3dbd013",
+    "ctest.log": "93e2ac570831f4cb9077a7d3c47edf63b0a783a2337fd5870d9e81897f1fd489",
+    "proof-complete-after.csv": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+    "proof-complete-after.json": "aa3480528d3259e03ae57574c2b0d08fc29f050d3a1471873e7bf60a6ef7f80c",
+    "proof-database-after.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "proof-database-after.json": "873a4e04893866a94c254142bb06dcd8e9024840e820e9f65aedc35c6b4b68b9",
+    "proof-headers-after.csv": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+    "proof-headers-after.json": "f8a37d21ccef0d88fd0bf64faec59f9b4ee97251fd781b490d57a502ad0c3b2f",
+    "proof-legacy-after.csv": "09181fcbb4d6a8a5f473a20436640a780c5c2c9e0aa6ce80176408441358a524",
+    "proof-legacy-after.json": "778e1ffd9f1b88c9e9545b08e2d5cba832b4dcaee7c6bc435eb5b53481fbc454",
+    "receipt-size.json": "dd1a79a5916f551bfdf17dfc29ad2961748bcbc5e5bca38f816f5c49717fa4d5",
+    "test-results.json": "fce2145a63ffd8d230ac192da235ad2fe490d992fb57369b90cff67990eecd71",
+    "trial-1-complete-after.csv": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+    "trial-1-complete-after.json": "418d98861d65d73133216a928bae85055e1bcf325f52d60f491df93d9d87ec0e",
+    "trial-1-complete-before.csv": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+    "trial-1-complete-before.json": "3156289c320abd9fe28a87bcfbb2424a8ee3da7c2f424d1722895ff9b0a00bb6",
+    "trial-1-database-after.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "trial-1-database-after.json": "c3c91c1154922d535f853425841bd9eda6eb75618b54c15be9263d5bb57ac1af",
+    "trial-1-database-before.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "trial-1-database-before.json": "8e8e5b65b1849aa0e8b3b0d7094ba8fcfaae6cdd20bc6f103a74f02ccace9420",
+    "trial-1-headers-after.csv": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+    "trial-1-headers-after.json": "c2fc55472da6d79c669d74a551d30ae1c502830564a86e8129b80ecf196a6cbf",
+    "trial-1-headers-before.csv": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+    "trial-1-headers-before.json": "00cfbba2ca8418d7df6d9c10e2d78fef3a37bd87122ff0f55f93bf195e9d93f9",
+    "trial-1-legacy-after.csv": "09181fcbb4d6a8a5f473a20436640a780c5c2c9e0aa6ce80176408441358a524",
+    "trial-1-legacy-after.json": "b5f3cd1dd5f1d1e85ff7fb343fbdea67d617546237449d6e655af306f11c91ec",
+    "trial-1-legacy-before.csv": "09181fcbb4d6a8a5f473a20436640a780c5c2c9e0aa6ce80176408441358a524",
+    "trial-1-legacy-before.json": "2ee1d4513a6c2a54eac3fe80489dee22bd959e11c1c3da04a29eee757d5440da",
+    "trial-2-complete-after.csv": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+    "trial-2-complete-after.json": "ca6e750e03605afdf85b7db980eb2acdf17ae2d3516443fe4c9b594a292cd8fb",
+    "trial-2-complete-before.csv": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+    "trial-2-complete-before.json": "f38f688bc9eeb77dde17b3f8f0376817e543e9eff2768b8e3e342035ac4d9459",
+    "trial-2-database-after.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "trial-2-database-after.json": "d02f03287319c5a9ea8a0560a9b561a550db13f00a6c7ad24313477acadf1b28",
+    "trial-2-database-before.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "trial-2-database-before.json": "9b6f53d0e627cfcc6bd9d1b947261f29a4f02f1e89eef845b6aa47a324210ede",
+    "trial-2-headers-after.csv": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+    "trial-2-headers-after.json": "32fbf2d7b29e20aaaef0d4cdd433660b275114f2a1f426924233609b97d74a2b",
+    "trial-2-headers-before.csv": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+    "trial-2-headers-before.json": "4a6039927cc3bc67282a23be1f5ce87f24a3b5deea21e671eb29630ae2d90cc9",
+    "trial-2-legacy-after.csv": "09181fcbb4d6a8a5f473a20436640a780c5c2c9e0aa6ce80176408441358a524",
+    "trial-2-legacy-after.json": "86884104316c6d395c94cde9c9fe19338a9f59faf7b88498e2efb5d270b63613",
+    "trial-2-legacy-before.csv": "09181fcbb4d6a8a5f473a20436640a780c5c2c9e0aa6ce80176408441358a524",
+    "trial-2-legacy-before.json": "faa91d803e87d6237a1c136145850162efb6c79194d46282890f28d044c0e433",
+    "trial-3-complete-after.csv": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+    "trial-3-complete-after.json": "61d44da4c1e7272af4b5d2f96bb71aa5b79a505e148eebdf0810f89de717353e",
+    "trial-3-complete-before.csv": "845c5e7dcd632f2c4fe1140f31473e19f082f844f703a77223c9479aea35c858",
+    "trial-3-complete-before.json": "dfee975fe2403969a21b39137c814057efece54fba72f7b4089a612934591039",
+    "trial-3-database-after.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "trial-3-database-after.json": "ab42dfa4108f5f3391b8964d560830623b62c773ba628a6638eb67dd2ef98481",
+    "trial-3-database-before.csv": "376cb5f8d5d112b6741edee21d381ff82e6d7880f508cba1afe04a53fac283c7",
+    "trial-3-database-before.json": "989414d110f349a8c84783e6cfd6deffa3cc109d0b4c8d150fcfeed02e45e756",
+    "trial-3-headers-after.csv": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+    "trial-3-headers-after.json": "27f6c10dac2779708375135d6387905fefc432eddf406db176498721075998d1",
+    "trial-3-headers-before.csv": "41182d73f135330fad7f28133b142df0663627a7aef7446f5d44d7183299187f",
+    "trial-3-headers-before.json": "57ea4db7fa8089e88a49490ef68ab4a10ef5db09c5d3a281c11b2f629330c017",
+    "trial-3-legacy-after.csv": "09181fcbb4d6a8a5f473a20436640a780c5c2c9e0aa6ce80176408441358a524",
+    "trial-3-legacy-after.json": "8fcdb0da6ee4eb22a726352156a019ad237eb53948c4fcdabf331ac8447178ef",
+    "trial-3-legacy-before.csv": "09181fcbb4d6a8a5f473a20436640a780c5c2c9e0aa6ce80176408441358a524",
+    "trial-3-legacy-before.json": "58ab132a55b0c678920e4b80fe877d86b974b450067bb2aa231a20ea4db9678e"
+  },
+  "limits": [
+    "Same supported metadata and evidence verified, not every discarded source record.",
+    "Four bounded macOS datasets; no 300,000-file Windows/NEXIS stability or throughput claim.",
+    "Warm uncontrolled filesystem cache; three trials per build per dataset.",
+    "Process retained/peak counters are not a direct measurement of Qt allocation bytes or full GUI RAM.",
+    "SourceReceipt sizeof excludes its shared payloads and allocator/vector capacity."
+  ]
+}

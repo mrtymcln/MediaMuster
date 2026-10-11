@@ -1,20 +1,14 @@
-// Read-only comparison probe. Run one engine per fresh process and compare the
-// semantic hashes/CSV externally. Only the requested report and CSV are written.
+// Read-only scan probe. Each fresh process fingerprints the retained metadata
+// and measures scan time/RAM before producing proof hashes and CSV rows.
+// Only the requested report and CSV are written.
 #include "mediaenginefingerprint.h"
-#include "mediaengine/databasesource.h"
-#include "mediaengine/mxfsource.h"
 #include "mediaengine/scanengine.h"
 #include "mediaengine/discoveryengine.h"
-#include "mediaengine/omfreader.h"
-#include "mediaengine/mdbreader.h"
-#include "mediaengine/mxfreader.h"
-#include "mediaengine/pmrreader.h"
-#include "mediaengine/sourcearchive.h"
 #include "mediaengineadapter.h"
 #include "mediacsv.h"
 #include <QCommandLineParser>
 #include <QCoreApplication>
-#include <QDataStream>
+#include <QCryptographicHash>
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFile>
@@ -26,7 +20,8 @@
 #include <QSet>
 #include <cstdio>
 #include <filesystem>
-#include <memory>
+#include <algorithm>
+#include <stdexcept>
 
 #ifdef Q_OS_MACOS
 #include <mach/mach.h>
@@ -142,8 +137,8 @@ namespace
 	QStringList inputPaths(const MediaEngine::ScanRequest &request, const MediaEngine::Cancellation &cancellation)
 	{
 		QSet<QString> paths;
-		// Setup discovery gives both engines the same initial stamp inventory. Its
-		// temporary rows are destroyed before the baseline and retained RAM samples.
+		// Preflight discovery records the input stamp inventory. Its temporary
+		// rows are destroyed before the baseline and retained RAM samples.
 		const auto discovery = MediaEngine::DiscoveryEngine{}.discover(request, cancellation,
 			[&](const QString &path) { paths.insert(path); });
 		for (const auto &candidate : discovery.candidates)
@@ -174,168 +169,6 @@ namespace
 		return hash.result().toHex();
 	}
 
-	QJsonObject checkImage(const MediaEngine::DatabaseImage &image, const QString &path)
-	{
-		QJsonObject result{{QStringLiteral("capturedBytes"), qint64(image.bytes().size())},
-			{QStringLiteral("expectedSize"), image.expectedSize()},
-			{QStringLiteral("acquisitionOutcome"), int(image.outcome())},
-			{QStringLiteral("acquisitionComplete"), image.acquisitionComplete()},
-			{QStringLiteral("diagnostics"), QJsonArray::fromStringList(image.diagnostics())}};
-		QFile file(path);
-		if (!file.open(QIODevice::ReadOnly))
-		{
-			result.insert(QStringLiteral("exactOriginalBytes"), false);
-			result.insert(QStringLiteral("error"), file.errorString());
-			return result;
-		}
-		QCryptographicHash hash(QCryptographicHash::Sha256);
-		qint64 offset = 0;
-		bool same = file.size() == image.bytes().size() && image.acquisitionComplete();
-		while (!file.atEnd())
-		{
-			const auto chunk = file.read(1024 * 1024);
-			if (chunk.isEmpty())
-			{
-				same = false;
-				break;
-			}
-			hash.addData(chunk);
-			if (offset > image.bytes().size() || chunk.size() > image.bytes().size() - offset ||
-				std::memcmp(chunk.constData(), image.bytes().constData() + offset, size_t(chunk.size())) != 0)
-				same = false;
-			offset += chunk.size();
-		}
-		if (file.error() != QFileDevice::NoError)
-		{
-			same = false;
-			result.insert(QStringLiteral("error"), file.errorString());
-		}
-		same = same && offset == image.bytes().size() && image.expectedSize() == offset;
-		result.insert(QStringLiteral("exactOriginalBytes"), same);
-		result.insert(QStringLiteral("originalFileSha256"), QString::fromLatin1(hash.result().toHex()));
-		result.insert(QStringLiteral("imageSha256"), QString::fromLatin1(
-			QCryptographicHash::hash(image.bytes(), QCryptographicHash::Sha256).toHex()));
-		return result;
-	}
-
-	QJsonObject mxfImageReceipt(const MediaEngine::MxfImage &image)
-	{
-		// Array capacity exposes spare byte storage; it excludes index, container
-		// and allocator overhead, which the process-memory samples also measure.
-		qint64 capacityBytes = 0;
-		for (const auto &range : image.ranges())
-			capacityBytes += range.bytes.capacity();
-		return QJsonObject{{QStringLiteral("physicalSize"), image.physicalSize()},
-			{QStringLiteral("acquiredBytes"), image.acquiredBytes()},
-			{QStringLiteral("capturedBytes"), image.storedBytes()},
-			{QStringLiteral("rangeCapacityBytes"), capacityBytes},
-			{QStringLiteral("rangeCount"), image.rangeCount()},
-			{QStringLiteral("valid"), image.valid()},
-			{QStringLiteral("diagnostics"), QJsonArray::fromStringList(image.diagnostics())}};
-	}
-
-	QJsonObject checkMxfImage(const MediaEngine::MxfImage &image, const QString &path)
-	{
-		auto result = mxfImageReceipt(image);
-		QFile file(path);
-		if (!file.open(QIODevice::ReadOnly))
-		{
-			result.insert(QStringLiteral("exactOriginalRanges"), false);
-			result.insert(QStringLiteral("error"), file.errorString());
-			return result;
-		}
-		// Compare acquired regions directly. Hash their original offsets and lengths
-		// as well as bytes, so identical bytes at a different location cannot pass.
-		QCryptographicHash originalHash(QCryptographicHash::Sha256), imageHash(QCryptographicHash::Sha256);
-		QJsonArray ranges;
-		bool wellFormed = image.valid() && image.physicalSize() == file.size();
-		bool exact = wellFormed;
-		qint64 previousEnd = 0, storedBytes = 0;
-		for (const auto &range : image.ranges())
-		{
-			const qint64 length = range.bytes.size();
-			const bool bounded = range.offset >= previousEnd && length > 0 && range.offset <= image.physicalSize()
-				&& length <= image.physicalSize() - range.offset;
-			wellFormed = wellFormed && bounded;
-			QByteArray framing;
-			QDataStream framingStream(&framing, QIODevice::WriteOnly);
-			framingStream << range.offset << length;
-			originalHash.addData(framing);
-			imageHash.addData(framing);
-			imageHash.addData(range.bytes);
-			QCryptographicHash originalRangeHash(QCryptographicHash::Sha256);
-			bool same = bounded && file.seek(range.offset);
-			qint64 obtained = 0;
-			if (same)
-			{
-				while (obtained < length)
-				{
-					const auto chunk = file.read(std::min<qint64>(1024 * 1024, length - obtained));
-					if (chunk.isEmpty())
-					{
-						same = false;
-						break;
-					}
-					originalHash.addData(chunk);
-					originalRangeHash.addData(chunk);
-					if (std::memcmp(chunk.constData(), range.bytes.constData() + obtained, size_t(chunk.size())) != 0)
-						same = false;
-					obtained += chunk.size();
-				}
-			}
-			same = same && obtained == length && file.error() == QFileDevice::NoError;
-			ranges.append(QJsonObject{{QStringLiteral("offset"), range.offset}, {QStringLiteral("bytes"), length},
-				{QStringLiteral("exactOriginalBytes"), same},
-				{QStringLiteral("originalSha256"), QString::fromLatin1(originalRangeHash.result().toHex())},
-				{QStringLiteral("imageSha256"), QString::fromLatin1(QCryptographicHash::hash(range.bytes, QCryptographicHash::Sha256).toHex())}});
-			exact = exact && same;
-			if (bounded)
-				previousEnd = range.offset + length;
-			storedBytes += length;
-		}
-		wellFormed = wellFormed && storedBytes == image.storedBytes() && image.acquiredBytes() >= storedBytes;
-		result.insert(QStringLiteral("rangesWellFormed"), wellFormed);
-		result.insert(QStringLiteral("exactOriginalRanges"), exact && wellFormed);
-		result.insert(QStringLiteral("originalRangeSha256"), QString::fromLatin1(originalHash.result().toHex()));
-		result.insert(QStringLiteral("imageRangeSha256"), QString::fromLatin1(imageHash.result().toHex()));
-		result.insert(QStringLiteral("ranges"), ranges);
-		if (file.error() != QFileDevice::NoError)
-			result.insert(QStringLiteral("error"), file.errorString());
-		return result;
-	}
-
-	MediaEngine::ParsedSource originalSource(const MediaEngine::SourceCandidate &candidate, const MediaEngine::StoredSource &stored,
-		const MediaEngine::Cancellation &cancellation)
-	{
-		QFile input(candidate.path);
-		if (!input.open(QIODevice::ReadOnly))
-			throw std::runtime_error(QStringLiteral("Cannot verify original %1: %2").arg(candidate.path, input.errorString()).toStdString());
-		const MediaEngine::ReaderContext context{stored.snapshot, cancellation};
-		MediaEngine::ParsedSource result;
-		switch (candidate.hint)
-		{
-		case MediaEngine::SourceCandidate::ReaderHint::Pmr: result = MediaEngine::PmrReader{}.read(input, context); break;
-		case MediaEngine::SourceCandidate::ReaderHint::Mdb: result = MediaEngine::MdbReader{}.read(input, context); break;
-		case MediaEngine::SourceCandidate::ReaderHint::Mxf: result = MediaEngine::MxfReader{}.read(input, context); break;
-		case MediaEngine::SourceCandidate::ReaderHint::LegacyMedia: result = MediaEngine::OmfReader{}.read(input, context); break;
-		}
-		// A direct reader has no scheduling decision; the scan comparison hashes
-		// actual decisions separately, while this check compares obtained records.
-		result.readReason = stored.readReason;
-		return result;
-	}
-
-	QByteArray interpretationDigest(const MediaEngine::ParsedSource &source, const MediaEngine::Cancellation &cancellation,
-		SnapshotIds *snapshots = nullptr)
-	{
-		Fingerprint proof(snapshots);
-		if (source.container == MediaEngine::ParsedSource::Container::Avb)
-			proof.avb(source, cancellation);
-		else
-			proof.projection(MediaEngineProof::project(source, cancellation));
-		return proof.result();
-	}
-
 	bool writeReport(const QString &path, const QJsonObject &report)
 	{
 		const auto bytes = QJsonDocument(report).toJson(QJsonDocument::Indented);
@@ -351,35 +184,25 @@ int main(int argc, char **argv)
 	QCoreApplication app(argc, argv);
 	QCoreApplication::setApplicationName(QStringLiteral("mediaengine_compare"));
 	QCommandLineParser parser;
-	parser.setApplicationDescription(QStringLiteral("Read-only MediaEngine source-retention, semantic and process-memory comparison"));
+	parser.setApplicationDescription(QStringLiteral("Read-only MediaEngine metadata, evidence and process-memory scan proof"));
 	parser.addHelpOption();
-	// All modes share readers and matching; only source retention differs.
-	const QCommandLineOption engineOption(QStringLiteral("engine"), QStringLiteral("Storage mode: archive, native (replay), or metadata (live source retention)"), QStringLiteral("mode"));
 	const QCommandLineOption outputOption(QStringLiteral("output"), QStringLiteral("JSON report path; - writes stdout"), QStringLiteral("path"), QStringLiteral("-"));
 	const QCommandLineOption csvOption(QStringLiteral("csv"), QStringLiteral("Optional app-boundary CSV path"), QStringLiteral("path"));
 	const QCommandLineOption expectedRowsOption(QStringLiteral("expected-rows"), QStringLiteral("Require this physical row count"), QStringLiteral("count"));
 	const QCommandLineOption noOmfOption(QStringLiteral("no-omf"), QStringLiteral("Disable OMF-family discovery"));
-	const QCommandLineOption measureOnlyOption(QStringLiteral("measure-only"), QStringLiteral("Verify scan rows and receipts without restoring/reparsing sources or checking original source bytes"));
-	parser.addOptions({engineOption, outputOption, csvOption, expectedRowsOption, noOmfOption, measureOnlyOption});
+	parser.addOptions({outputOption, csvOption, expectedRowsOption, noOmfOption});
 	parser.addPositionalArgument(QStringLiteral("roots"), QStringLiteral("One or more managed roots or direct containing bases"), QStringLiteral("roots..."));
 	parser.process(app);
-	const auto engine = parser.value(engineOption);
-	if ((engine != QLatin1String("archive") && engine != QLatin1String("native") && engine != QLatin1String("metadata")) || parser.positionalArguments().isEmpty())
+	if (parser.positionalArguments().isEmpty())
 		parser.showHelp(1);
 	bool validRows = true;
 	const qint64 expectedRows = parser.isSet(expectedRowsOption) ? parser.value(expectedRowsOption).toLongLong(&validRows) : -1;
 	if (!validRows || (parser.isSet(expectedRowsOption) && expectedRows < 0))
 		parser.showHelp(1);
 
-	const bool measureOnly = parser.isSet(measureOnlyOption);
-	if (engine == QLatin1String("metadata") && !measureOnly)
-	{
-		std::fprintf(stderr, "Metadata-only sources have no replay graph; use --measure-only to verify all retained row evidence and receipts.\n");
-		return 1;
-	}
-	QJsonObject report{{QStringLiteral("engine"), engine}, {QStringLiteral("schemaVersion"), 2},
-		{QStringLiteral("verificationMode"), measureOnly ? QStringLiteral("scan") : QStringLiteral("full")},
-		{QStringLiteral("sourceVerificationPerformed"), !measureOnly}};
+	QJsonObject report{{QStringLiteral("schemaVersion"), 2},
+		{QStringLiteral("verificationMode"), QStringLiteral("scan")},
+		{QStringLiteral("sourceVerificationPerformed"), false}};
 	QStringList errors;
 	try
 	{
@@ -414,20 +237,17 @@ int main(int argc, char **argv)
 		const auto memoryBefore = memory();
 		QElapsedTimer timer;
 		timer.start();
-		auto scan = QSharedPointer<MediaEngine::ScanResult>::create(engine == QLatin1String("archive")
-			? MediaEngine::ScanCoordinator{}.scan(request, cancellation, observers)
-			: engine == QLatin1String("native")
-				? MediaEngine::ScanEngine{MediaEngine::SourceRetention::Replay}.scan(request, cancellation, observers)
-				: MediaEngine::ScanEngine{}.scan(request, cancellation, observers));
+		const auto scan = QSharedPointer<MediaEngine::ScanResult>::create(
+			MediaEngine::ScanEngine{}.scan(request, cancellation, observers));
 		const auto scanMs = timer.elapsed();
-		// These samples precede all graph restoration, original rereads, hashes,
-		// file-byte comparison and adapter/CSV rows. The session stays retained.
+		// These samples precede fingerprints and adapter/CSV rows. The scan
+		// session stays retained so its metadata and evidence are included.
 		const auto memoryRetained = memory();
 		const auto afterScan = stamps(paths);
 		timer.restart();
 		SnapshotIds snapshots;
 		snapshots.seed(*scan);
-		Fingerprint filesProof(&snapshots), sourcesProof(&snapshots), projectionsProof(&snapshots), scheduleProof(&snapshots), issuesProof(&snapshots), stateProof;
+		Fingerprint filesProof(&snapshots), scheduleProof(&snapshots), issuesProof(&snapshots), stateProof;
 		filesProof.stream << qint64(scan->files.size());
 		QJsonArray fileDigests;
 		for (const auto &file : scan->files)
@@ -442,8 +262,7 @@ int main(int argc, char **argv)
 				{QStringLiteral("sha256"), QString::fromLatin1(digest)},
 				{QStringLiteral("serializedBytes"), proof.sink.serializedBytes}});
 		}
-		// Common hashes must assign receipt IDs before optional source graph
-		// inspection can discover additional embedded receipts.
+		// Receipt aliases have a stable order across files, issues and scheduling.
 		issuesProof.stream << qint64(scan->discoveryIssues.size());
 		for (const auto &issue : scan->discoveryIssues)
 		{
@@ -462,146 +281,30 @@ int main(int argc, char **argv)
 			issuesProof.stream << issue.scopeComplete;
 			issuesProof.text(issue.explanation);
 		}
-		sourcesProof.stream << qint64(scan->sources.size());
-		projectionsProof.stream << qint64(scan->sources.size());
 		scheduleProof.stream << qint64(scan->candidates.size()) << qint64(scan->sources.size());
 		if (scan->sources.size() != scan->candidates.size())
 			throw std::runtime_error("Candidate/source count differs");
 		QJsonArray sourceDigests;
 		QMap<QString, qint64> reasons;
-		qint64 sourceObjects = 0, sourceRelationships = 0, sourceProperties = 0, originalValueBytes = 0;
-		qint64 archives = 0, databaseArchives = 0, compressedBytes = 0, serializedBytes = 0, archiveBlocks = 0;
-		qint64 databaseArchiveCompressedBytes = 0, mxfArchiveCompressedBytes = 0, legacyMediaArchiveCompressedBytes = 0;
-		qint64 nativeImages = 0, nativeImageBytes = 0, alternativeStores = 0, unfinishedGraphs = 0;
-		qint64 nativeMxfImages = 0, nativeMxfImageBytes = 0, nativeMxfAcquiredBytes = 0, nativeMxfImageRanges = 0, nativeMxfRangeCapacityBytes = 0;
-		qint64 mxfArchives = 0, legacyMediaArchives = 0, completeMxfArchiveFallbacks = 0;
-		qint64 headersRead = 0, headersSkipped = 0, databasesRead = 0, originalsCompared = 0;
+		qint64 headersRead = 0, headersSkipped = 0, databasesRead = 0;
 		for (qsizetype index = 0; index < scan->sources.size(); ++index)
 		{
-			const auto &stored = scan->sources[index];
+			const auto &receipt = scan->sources[index];
 			const auto &candidate = scan->candidates[index];
 			const bool database = candidate.hint == MediaEngine::SourceCandidate::ReaderHint::Pmr || candidate.hint == MediaEngine::SourceCandidate::ReaderHint::Mdb;
-			++reasons[stored.readReason];
+			++reasons[receipt.readReason];
 			if (database)
-				databasesRead += stored.outcome != MediaEngine::ParsedSource::Outcome::NotRead;
-			else if (stored.outcome == MediaEngine::ParsedSource::Outcome::NotRead)
+				databasesRead += receipt.outcome != MediaEngine::ParsedSource::Outcome::NotRead;
+			else if (receipt.outcome == MediaEngine::ParsedSource::Outcome::NotRead)
 				++headersSkipped;
 			else
 				++headersRead;
-			if (stored.archive)
-			{
-				++archives;
-				databaseArchives += database;
-				mxfArchives += candidate.hint == MediaEngine::SourceCandidate::ReaderHint::Mxf;
-				legacyMediaArchives += candidate.hint == MediaEngine::SourceCandidate::ReaderHint::LegacyMedia;
-				completeMxfArchiveFallbacks += engine == QLatin1String("native")
-					&& candidate.hint == MediaEngine::SourceCandidate::ReaderHint::Mxf
-					&& stored.outcome == MediaEngine::ParsedSource::Outcome::Complete;
-				compressedBytes += stored.archive->compressedBytes();
-				if (database)
-					databaseArchiveCompressedBytes += stored.archive->compressedBytes();
-				else if (candidate.hint == MediaEngine::SourceCandidate::ReaderHint::Mxf)
-					mxfArchiveCompressedBytes += stored.archive->compressedBytes();
-				else
-					legacyMediaArchiveCompressedBytes += stored.archive->compressedBytes();
-				serializedBytes += stored.archive->serializedBytes();
-				archiveBlocks += stored.archive->blockCount();
-			}
-			alternativeStores += !stored.storage.isNull();
-			unfinishedGraphs += !stored.unfinishedGraph.isNull();
-			QJsonObject details{{QStringLiteral("path"), candidate.path}, {QStringLiteral("hint"), int(candidate.hint)},
-				{QStringLiteral("outcome"), int(stored.outcome)}, {QStringLiteral("readReason"), stored.readReason},
-				{QStringLiteral("retention"), stored.retention == MediaEngine::SourceRetention::MetadataOnly
-					? QStringLiteral("metadata-only") : QStringLiteral("replay")},
-				{QStringLiteral("sourceBackingAvailable"), bool(stored.archive || stored.storage || stored.unfinishedGraph)}};
-			if (engine == QLatin1String("metadata")
-				&& (stored.retention != MediaEngine::SourceRetention::MetadataOnly
-					|| stored.archive || stored.storage || stored.unfinishedGraph))
-				errors.append(QStringLiteral("Metadata-only source retained replay policy or backing: %1").arg(candidate.path));
-			if (const auto native = dynamic_cast<const MediaEngine::DatabaseSource *>(stored.storage.data()))
-			{
-				++nativeImages;
-				nativeImageBytes += native->image().bytes().size();
-				const auto &image = native->image();
-				const auto imageProof = measureOnly ? QJsonObject{
-					{QStringLiteral("capturedBytes"), qint64(image.bytes().size())},
-					{QStringLiteral("expectedSize"), image.expectedSize()},
-					{QStringLiteral("acquisitionOutcome"), int(image.outcome())},
-					{QStringLiteral("acquisitionComplete"), image.acquisitionComplete()},
-					{QStringLiteral("diagnostics"), QJsonArray::fromStringList(image.diagnostics())}}
-					: checkImage(image, candidate.path);
-				details.insert(QStringLiteral("databaseImage"), imageProof);
-				if (!measureOnly && !imageProof.value(QStringLiteral("exactOriginalBytes")).toBool())
-					errors.append(QStringLiteral("Database image differs from original: %1").arg(candidate.path));
-			}
-			if (const auto native = dynamic_cast<const MediaEngine::MxfSource *>(stored.storage.data()))
-			{
-				++nativeMxfImages;
-				const auto &image = native->image();
-				nativeMxfImageBytes += image.storedBytes();
-				nativeMxfAcquiredBytes += image.acquiredBytes();
-				nativeMxfImageRanges += image.rangeCount();
-				const auto imageProof = measureOnly ? mxfImageReceipt(image) : checkMxfImage(image, candidate.path);
-				nativeMxfRangeCapacityBytes += imageProof.value(QStringLiteral("rangeCapacityBytes")).toInteger();
-				details.insert(QStringLiteral("mxfImage"), imageProof);
-				if (!measureOnly && !imageProof.value(QStringLiteral("exactOriginalRanges")).toBool())
-					errors.append(QStringLiteral("MXF image ranges differ from original: %1").arg(candidate.path));
-			}
-			if (!measureOnly)
-			{
-				QByteArray graphDigest, localGraphDigest, projectionDigest, localProjectionDigest;
-				{
-					const auto restored = stored.restore(cancellation);
-					if (!restored)
-						throw std::runtime_error(QStringLiteral("Cannot restore %1").arg(candidate.path).toStdString());
-					Fingerprint graphProof(&snapshots), localProof;
-					graphProof.graph(*restored);
-					localProof.graph(*restored);
-					graphDigest = graphProof.result();
-					localGraphDigest = localProof.result();
-					projectionDigest = interpretationDigest(*restored, cancellation, &snapshots);
-					localProjectionDigest = interpretationDigest(*restored, cancellation);
-					sourceObjects += graphProof.objects;
-					sourceRelationships += graphProof.relationships;
-					sourceProperties += graphProof.properties;
-					originalValueBytes += graphProof.encodingBytes;
-					details.insert(QStringLiteral("objects"), graphProof.objects);
-					details.insert(QStringLiteral("relationships"), graphProof.relationships);
-					details.insert(QStringLiteral("properties"), graphProof.properties);
-					details.insert(QStringLiteral("originalValueBytes"), graphProof.encodingBytes);
-					details.insert(QStringLiteral("graphSerializedBytes"), graphProof.sink.serializedBytes);
-					if (restored->snapshot != stored.snapshot)
-						errors.append(QStringLiteral("Restoration replaced published receipt: %1").arg(candidate.path));
-				} // Release this restored graph before parsing the original source.
-				if (stored.outcome != MediaEngine::ParsedSource::Outcome::NotRead)
-				{
-					const auto original = originalSource(candidate, stored, cancellation);
-					Fingerprint proof;
-					proof.graph(original);
-					const auto originalGraphDigest = proof.result();
-					const auto originalProjectionDigest = interpretationDigest(original, cancellation);
-					const bool graphSame = originalGraphDigest == localGraphDigest;
-					const bool projectionSame = originalProjectionDigest == localProjectionDigest;
-					details.insert(QStringLiteral("originalGraphEqual"), graphSame);
-					details.insert(QStringLiteral("originalProjectionEqual"), projectionSame);
-					details.insert(QStringLiteral("originalGraphSha256"), QString::fromLatin1(originalGraphDigest));
-					details.insert(QStringLiteral("originalProjectionSha256"), QString::fromLatin1(originalProjectionDigest));
-					if (!graphSame || !projectionSame)
-						errors.append(QStringLiteral("Restored records/projection differ from direct reader: %1").arg(candidate.path));
-					++originalsCompared;
-				}
-				details.insert(QStringLiteral("sha256"), QString::fromLatin1(graphDigest));
-				details.insert(QStringLiteral("localGraphSha256"), QString::fromLatin1(localGraphDigest));
-				details.insert(QStringLiteral("projectionSha256"), QString::fromLatin1(projectionDigest));
-				sourcesProof.stream << qint64(index);
-				sourcesProof.bytes(graphDigest);
-				projectionsProof.stream << qint64(index);
-				projectionsProof.bytes(projectionDigest);
-			}
+			const QJsonObject details{{QStringLiteral("path"), candidate.path}, {QStringLiteral("hint"), int(candidate.hint)},
+				{QStringLiteral("outcome"), int(receipt.outcome)}, {QStringLiteral("readReason"), receipt.readReason}};
 			sourceDigests.append(details);
 			scheduleProof.stream << qint64(index);
 			scheduleProof.candidate(candidate);
-			scheduleProof.storedReceipt(stored);
+			scheduleProof.sourceReceipt(receipt);
 		}
 		stateProof.texts(scan->request.roots);
 		stateProof.stream << scan->request.omfScan << scan->discoveryComplete << scan->cancelled
@@ -609,16 +312,11 @@ int main(int argc, char **argv)
 		QJsonObject reasonCounts;
 		for (auto reason = reasons.cbegin(); reason != reasons.cend(); ++reason)
 			reasonCounts.insert(reason.key(), reason.value());
-		QJsonObject hashes{{QStringLiteral("filesSha256"), QString::fromLatin1(filesProof.result())},
+		const QJsonObject hashes{{QStringLiteral("filesSha256"), QString::fromLatin1(filesProof.result())},
 			{QStringLiteral("schedulingSha256"), QString::fromLatin1(scheduleProof.result())},
 			{QStringLiteral("issuesSha256"), QString::fromLatin1(issuesProof.result())},
 			{QStringLiteral("stateSha256"), QString::fromLatin1(stateProof.result())},
 			{QStringLiteral("callbacksSha256"), QString::fromLatin1(callbacks.result())}};
-		if (!measureOnly)
-		{
-			hashes.insert(QStringLiteral("sourceGraphsSha256"), QString::fromLatin1(sourcesProof.result()));
-			hashes.insert(QStringLiteral("projectionsSha256"), QString::fromLatin1(projectionsProof.result()));
-		}
 		const auto verificationMs = timer.elapsed();
 		if (parser.isSet(csvOption))
 		{
@@ -640,8 +338,6 @@ int main(int argc, char **argv)
 		const bool complete = scan->discoveryComplete && scan->parsingComplete && scan->reconciliationComplete && !scan->cancelled;
 		if (!complete)
 			errors.append(QStringLiteral("Scan did not complete discovery, parsing and reconciliation"));
-		if ((engine == QLatin1String("native") || engine == QLatin1String("metadata")) && databaseArchives != 0)
-			errors.append(QStringLiteral("MediaEngine retained %1 full database archives").arg(databaseArchives));
 		report.insert(QStringLiteral("roots"), QJsonArray::fromStringList(scan->request.roots));
 		report.insert(QStringLiteral("omfScan"), scan->request.omfScan);
 		report.insert(QStringLiteral("rows"), scan->files.size());
@@ -657,33 +353,11 @@ int main(int argc, char **argv)
 		report.insert(QStringLiteral("verificationMs"), verificationMs);
 		report.insert(QStringLiteral("memoryBefore"), memoryBefore);
 		report.insert(QStringLiteral("memoryRetained"), memoryRetained);
-		if (!measureOnly)
-		{
-			report.insert(QStringLiteral("sourceObjects"), sourceObjects);
-			report.insert(QStringLiteral("sourceRelationships"), sourceRelationships);
-			report.insert(QStringLiteral("sourceProperties"), sourceProperties);
-			report.insert(QStringLiteral("originalValueBytes"), originalValueBytes);
-			report.insert(QStringLiteral("originalGraphsAndProjectionsCompared"), originalsCompared);
-		}
 		report.insert(QStringLiteral("snapshotIdentityCount"), snapshots.size());
 		report.insert(QStringLiteral("headerReads"), headersRead);
 		report.insert(QStringLiteral("headerSkips"), headersSkipped);
 		report.insert(QStringLiteral("databaseReads"), databasesRead);
 		report.insert(QStringLiteral("readReasonCounts"), reasonCounts);
-		report.insert(QStringLiteral("storage"), QJsonObject{{QStringLiteral("archives"), archives},
-			{QStringLiteral("databaseArchives"), databaseArchives}, {QStringLiteral("compressedBytes"), compressedBytes},
-			{QStringLiteral("serializedBytes"), serializedBytes}, {QStringLiteral("archiveBlocks"), archiveBlocks},
-			{QStringLiteral("nativeDatabaseImages"), nativeImages}, {QStringLiteral("nativeImageBytes"), nativeImageBytes},
-			{QStringLiteral("nativeDatabaseImageBytes"), nativeImageBytes},
-			{QStringLiteral("nativeMxfImages"), nativeMxfImages}, {QStringLiteral("nativeMxfImageBytes"), nativeMxfImageBytes},
-			{QStringLiteral("nativeMxfAcquiredBytes"), nativeMxfAcquiredBytes}, {QStringLiteral("nativeMxfImageRanges"), nativeMxfImageRanges},
-			{QStringLiteral("nativeMxfRangeCapacityBytes"), nativeMxfRangeCapacityBytes},
-			{QStringLiteral("mxfArchives"), mxfArchives}, {QStringLiteral("legacyMediaArchives"), legacyMediaArchives},
-			{QStringLiteral("databaseArchiveCompressedBytes"), databaseArchiveCompressedBytes},
-			{QStringLiteral("mxfArchiveCompressedBytes"), mxfArchiveCompressedBytes},
-			{QStringLiteral("legacyMediaArchiveCompressedBytes"), legacyMediaArchiveCompressedBytes},
-			{QStringLiteral("completeMxfArchiveFallbacks"), completeMxfArchiveFallbacks},
-			{QStringLiteral("alternativeStores"), alternativeStores}, {QStringLiteral("unfinishedGraphs"), unfinishedGraphs}});
 		report.insert(QStringLiteral("hashes"), hashes);
 		report.insert(QStringLiteral("fileDigests"), fileDigests);
 		report.insert(QStringLiteral("sourceDigests"), sourceDigests);
@@ -695,12 +369,10 @@ int main(int argc, char **argv)
 		report.insert(QStringLiteral("inputStampsAfterVerification"), afterVerification);
 		report.insert(QStringLiteral("sourceAndFolderStampsStable"), stable);
 		report.insert(QStringLiteral("measurementScope"), QJsonObject{
-			{QStringLiteral("scan"), QStringLiteral("Synchronous engine scan including discovery, readers, storage, projection, matching and selection; excludes verification and CSV adapters.")},
-			{QStringLiteral("memory"), QStringLiteral("Fresh-process current resident/physical footprint or Windows private bytes and peak resident sampled immediately after scan return, retaining session; before graph restoration, original rereads and adapter rows. Peak includes process setup, preflight discovery and the scan. Unsupported counters are omitted.")},
-			{QStringLiteral("setup"), QStringLiteral("Common preflight discovery enumerates input stamps before timing. Its inventory is released before memoryBefore; stamps and bounded callback sink remain. Filesystem cache is uncontrolled; no cold-cache claim.")},
-			{QStringLiteral("verification"), measureOnly
-				? QStringLiteral("Scan mode hashes every final row's property fields, read coverage, observations, selections and receipt aliases, scheduling receipts, stamps, issues, callbacks and completion flags. CSV and source/folder stamp checks still run. Source graph restoration, projections, original rereads and exact native database/MXF-byte verification are omitted; storage counts and native capture sizes are reported only.")
-				: QStringLiteral("Full mode verifies every recursive retained graph and projection plus fresh direct-reader original comparisons for opened sources. One graph at a time. Exact native database bytes and each acquired MXF range compared directly to unchanged source files. MXF range hashes include original offsets and lengths; bytes outside those acquired ranges are not read for this byte proof. The established reader still excludes recognized picture/sound payloads. All property fields, read coverage, observations, selections, stamps, issues, callbacks and alias topology hashed; storage representation excluded from semantic hashes.")},
+			{QStringLiteral("scan"), QStringLiteral("Synchronous engine scan including discovery, readers, projection, matching and selection; excludes verification and CSV adapters.")},
+			{QStringLiteral("memory"), QStringLiteral("Fresh-process current resident/physical footprint or Windows private bytes and peak resident sampled immediately after scan return, retaining session; before proof fingerprints and adapter rows. Peak includes process setup, preflight discovery and the scan. Unsupported counters are omitted.")},
+			{QStringLiteral("setup"), QStringLiteral("Preflight discovery enumerates input stamps before timing. Its inventory is released before memoryBefore; stamps and bounded callback sink remain. Filesystem cache is uncontrolled; no cold-cache claim.")},
+			{QStringLiteral("verification"), QStringLiteral("Hashes every final row's property fields, read coverage, observations, alternatives, selections and receipt aliases; scheduling receipts, stamps, issues, callbacks and completion flags. CSV and source/folder stamp checks also run. Dedicated format-reader tests verify parsed records separately.")},
 			{QStringLiteral("csv"), QStringLiteral("Existing MediaEngine adapter and MediaCsv with precompute details and clip duration enabled; created after memory sample.")}});
 	}
 	catch (const std::exception &error)

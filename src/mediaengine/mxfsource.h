@@ -1,11 +1,10 @@
 #pragma once
 
-// Reads and projects MXF metadata. Optional replay storage keeps acquired bytes;
-// ordinary scans retain supported observations and the source receipt instead.
+// Reads MXF metadata and returns its supported observations and source receipt.
+// The reader's temporary records are released once projection has finished.
 
-#include "mxfimage.h"
-#include "mediaengine/sourcepipeline.h"
-#include "mediaengine/sourcestore.h"
+#include "sourcepreparation.h"
+#include <QIODevice>
 #include <stdexcept>
 
 namespace MediaEngine
@@ -16,31 +15,10 @@ namespace MediaEngine
 		using std::runtime_error::runtime_error;
 	};
 
-	class MxfSource final : public MediaEngine::SourceStore
-	{
-	public:
-		const MxfImage &image() const;
-		std::optional<MediaEngine::ParsedSource> restore(const MediaEngine::Cancellation &cancellation) const override;
-
-	private:
-		struct Data;
-		explicit MxfSource(QSharedPointer<const Data> data);
-		static MediaEngine::PreparedSource prepare(QIODevice &, const MediaEngine::SourceCandidate &, const QString &,
-												   const MediaEngine::Cancellation &, SourceRetention);
-		friend class QSharedPointer<MxfSource>;
-		friend MediaEngine::PreparedSource prepareMxf(const MediaEngine::SourceCandidate &, const QString &,
-													  const MediaEngine::Cancellation &, SourceRetention);
-		friend MediaEngine::PreparedSource prepareMxf(QIODevice &, const MediaEngine::SourceCandidate &, const QString &,
-													  const MediaEngine::Cancellation &, SourceRetention);
-		QSharedPointer<const Data> m_data;
-	};
-
-	MediaEngine::PreparedSource prepareMxf(const MediaEngine::SourceCandidate &candidate, const QString &readReason,
-										   const MediaEngine::Cancellation &cancellation,
-										   SourceRetention retention = SourceRetention::MetadataOnly);
-	// Borrows an already-open input. It never closes the caller's device; controlled
-	// I/O tests use this same acquisition path without inventing MXF structures.
-	MediaEngine::PreparedSource prepareMxf(QIODevice &input, const MediaEngine::SourceCandidate &candidate,
-										   const QString &readReason, const MediaEngine::Cancellation &cancellation,
-										   SourceRetention retention = SourceRetention::MetadataOnly);
+	PreparedSource prepareMxf(const SourceCandidate &candidate, const QString &readReason,
+							  const Cancellation &cancellation);
+	// Borrows an already-open input and leaves it open. Controlled I/O tests use
+	// this same reading path without inventing MXF structures.
+	PreparedSource prepareMxf(QIODevice &input, const SourceCandidate &candidate,
+							  const QString &readReason, const Cancellation &cancellation);
 }

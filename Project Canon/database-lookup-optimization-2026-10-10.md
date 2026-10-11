@@ -174,7 +174,7 @@ union/sort and intermediate ClipName/Type-derived effect history. Keep final
 matching unchanged initially: its partially selected rows can survive
 cancellation, so reducing those passes needs a separate partial-result proof.
 
-Table population always calls `BinMetadataResolver::apply`. Source/effect
+Table population always calls `AvbMetadataResolver::applyTo`. Source/effect
 exclusion helpers enter mutable Qt containers even when no matching eligible
 observation exists. A const preflight could preserve observation-list sharing
 until a change is necessary. Keep existing selection invalidation for present

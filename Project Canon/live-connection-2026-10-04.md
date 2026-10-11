@@ -42,7 +42,7 @@ all parsed source graphs. That receipt describes the original scan; the live row
 location and operation receipt follow confirmed moves/copies. There is no new
 persistent database and no application memory cap.
 
-The existing `AvbParser` public interface becomes an adapter over the MediaEngine AVB
+The existing `AvbBinLoader` public interface becomes an adapter over the MediaEngine AVB
 reader and whole-bin reference engine. `SequenceFilter` remains disabled; this
 connection does not add a sequence picker. Usable partial bin results retain their
 warnings and source evidence, including in an applied filter after its loaded-bin

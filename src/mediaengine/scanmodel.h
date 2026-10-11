@@ -9,12 +9,11 @@
 #include <QStringList>
 #include <atomic>
 #include <optional>
+#include <utility>
 
 namespace MediaEngine
 {
 	class Cancellation;
-	class SourceArchive;
-	class SourceStore;
 	enum class PmrFileSet
 	{
 		Legacy,
@@ -203,32 +202,21 @@ namespace MediaEngine
 		QStringList diagnostics;
 	};
 
-	// Replay keeps original records for later inspection. MetadataOnly keeps the
-	// source receipt; supported observations remain in the projected file evidence.
-	enum class SourceRetention : quint8
-	{
-		Replay,
-		MetadataOnly
-	};
-
-	// Matching and file-operation checks use these small receipts. Replay backing
-	// is optional and does not determine which properties a reader interprets.
-	struct StoredSource
+	// Matching and file-operation checks use these small receipts. Supported
+	// observations own their evidence independently of temporary reader records.
+	struct SourceReceipt
 	{
 		ParsedSource::Outcome outcome = ParsedSource::Outcome::NotRead;
 		QString readReason;
 		SourceSnapshotRef snapshot;
 		ParsedSource::Container container = ParsedSource::Container::Unknown;
 		QStringList diagnostics;
-		SourceRetention retention = SourceRetention::Replay;
-		QSharedPointer<const SourceArchive> archive;
-		QSharedPointer<const SourceStore> storage; ///< Native image backing when replay is retained.
-		// Replay mode keeps the obtained graph if packing is cancelled.
-		QSharedPointer<const ParsedSource> unfinishedGraph;
 
-		static StoredSource store(ParsedSource &&source, const Cancellation &cancellation,
-								  SourceRetention retention = SourceRetention::Replay);
-		std::optional<ParsedSource> restore(const Cancellation &cancellation) const;
+		static SourceReceipt fromParsed(ParsedSource &&source)
+		{
+			return {source.outcome, std::move(source.readReason), std::move(source.snapshot),
+					source.container, std::move(source.diagnostics)};
+		}
 	};
 
 	/// Canonical physical record. UI strings belong in a later adapter.
@@ -287,7 +275,7 @@ namespace MediaEngine
 		ScanRequest request;
 		QVector<MediaFile> files;
 		QVector<SourceCandidate> candidates;
-		QVector<StoredSource> sources;
+		QVector<SourceReceipt> sources;
 		QVector<DiscoveryIssue> discoveryIssues;
 		QVector<ScanIssue> reconciliationIssues;
 		bool discoveryComplete = true;

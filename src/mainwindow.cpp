@@ -3,7 +3,7 @@
 #include "aboutdialog.h"
 #include "diagnostics.h"
 #include "conventions.h"
-#include "binfilterdialog.h"
+#include "avbfilterdialog.h"
 #include "enumutil.h"
 #include "precomputefilterdialog.h"
 #include "featureflags.h"
@@ -1063,20 +1063,20 @@ void MainWindow::onFilterByBins()
 	// so chain state persists across show/hide.
 	if (!m_binFilterDialog)
 	{
-		m_binFilterDialog = new BinFilterDialog(this);
-		connect(m_binFilterDialog, &BinFilterDialog::loadWarning, this,
+		m_binFilterDialog = new AvbFilterDialog(this);
+		connect(m_binFilterDialog, &AvbFilterDialog::loadWarning, this,
 				[this](const QString &path, const QString &reason)
 				{
 					addLog(QtWarningMsg, QStringLiteral("filters"),
 						   tr("Bin loaded with incomplete results: %1: %2").arg(path, reason));
 				});
-		connect(m_binFilterDialog, &BinFilterDialog::loadError, this,
+		connect(m_binFilterDialog, &AvbFilterDialog::loadError, this,
 				[this](const QString &path, const QString &reason)
 				{
 					addLog(QtWarningMsg, QStringLiteral("filters"),
 						   tr("Bin unavailable: %1: %2").arg(path, reason));
 				});
-		connect(m_binFilterDialog, &BinFilterDialog::binsChanged, this,
+		connect(m_binFilterDialog, &AvbFilterDialog::binsChanged, this,
 				[this](const QVector<AvbBin> &bins)
 				{
 					applyFilterPreservingSelection([this, &bins]
@@ -1085,16 +1085,16 @@ void MainWindow::onFilterByBins()
 				});
 		// Apply the chain change through the selection-preserving
 		// helper so the user's selection survives the filter shuffle.
-		connect(m_binFilterDialog, &BinFilterDialog::filterChainChanged, this,
-				[this](const BinFilter &filter, const QStringList &)
+		connect(m_binFilterDialog, &AvbFilterDialog::filterChainChanged, this,
+				[this](const AvbFilter &filter, const QStringList &)
 				{
 					applyFilterPreservingSelection(
 						[this, &filter]()
 						{ m_proxy->setBinFilter(filter); });
 				});
 		connect(
-			m_binFilterDialog, &BinFilterDialog::filterChainChanged, this,
-			[this](const BinFilter &filter, const QStringList &binNames)
+			m_binFilterDialog, &AvbFilterDialog::filterChainChanged, this,
+			[this](const AvbFilter &filter, const QStringList &binNames)
 			{
 				m_binFilterActive = filter.isActive();
 				m_binFilterIncomplete = filter.resultsMayBeIncomplete();
@@ -2339,7 +2339,7 @@ void MainWindow::rebuildFilterChips()
 			if (m_binFilterDialog)
 			{
 				// Use the dialog's signal so filter state, logging and chips update together.
-				m_binFilterDialog->clearChain();
+				m_binFilterDialog->clearFilterSteps();
 				return;
 			}
 			// Defensive: chips shouldn't exist without the dialog (it
@@ -2384,11 +2384,11 @@ void MainWindow::resetFiltersForNewScan()
 		m_projectList->clearSelection();
 	}
 
-	// Bin filter: when the dialog exists, clearChain() tears down its internal
+	// Bin filter: when the dialog exists, clearFilterSteps() tears down its internal
 	// chain and the chain-list UI. The cached chip state is reset here for the
-	// no-dialog / empty-chain paths clearChain() skips.
+	// no-dialog / empty-chain paths clearFilterSteps() skips.
 	if (m_binFilterDialog)
-		m_binFilterDialog->clearChain();
+		m_binFilterDialog->clearFilterSteps();
 	m_binFilterActive = false;
 	m_binFilterBinNames.clear();
 

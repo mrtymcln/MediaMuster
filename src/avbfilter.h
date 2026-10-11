@@ -1,6 +1,6 @@
 #pragma once
 
-#include "binfilereferences.h"
+#include "avbfilereferences.h"
 
 #include <QMetaType>
 #include <QString>
@@ -11,12 +11,12 @@
 namespace MediaEngine
 {
 	struct ParsedSource;
-	struct AvbResolution;
+	struct AvbReferenceResult;
 }
 
 /// Ordered operations on files identified by the selected bins' MSML locators.
 /// A shared master MobId does not establish bin-filter membership.
-struct BinFilter
+struct AvbFilter
 {
 	enum class Operation
 	{
@@ -27,12 +27,12 @@ struct BinFilter
 
 	struct Step
 	{
-		Operation op = Operation::Intersect;
+		Operation operation = Operation::Intersect;
 		QVector<QString> binDisplayNames;
-		BinFileReferences mediaFileIds;
+		AvbFileReferences fileReferences;
 		QStringList warnings;
-		QVector<QSharedPointer<const MediaEngine::ParsedSource>> sources;
-		QVector<QSharedPointer<const MediaEngine::AvbResolution>> resolutions;
+		QVector<QSharedPointer<const MediaEngine::ParsedSource>> sourceGraphs;
+		QVector<QSharedPointer<const MediaEngine::AvbReferenceResult>> referenceResults;
 	};
 
 	QVector<Step> steps;
@@ -47,7 +47,7 @@ struct BinFilter
 	}
 
 	/// Labels do not affect row membership; operation order and both ID sets do.
-	[[nodiscard]] bool hasSameCriteria(const BinFilter &other) const
+	[[nodiscard]] bool hasSameCriteria(const AvbFilter &other) const
 	{
 		if (steps.size() != other.steps.size())
 			return false;
@@ -55,8 +55,8 @@ struct BinFilter
 		{
 			const auto &a = steps[i];
 			const auto &b = other.steps[i];
-			if (a.op != b.op || a.mediaFileIds.fullIds != b.mediaFileIds.fullIds ||
-				a.mediaFileIds.legacyKeys != b.mediaFileIds.legacyKeys)
+			if (a.operation != b.operation || a.fileReferences.fullIds != b.fileReferences.fullIds ||
+				a.fileReferences.legacyKeys != b.fileReferences.legacyKeys)
 				return false;
 		}
 		return true;
@@ -70,21 +70,21 @@ struct BinFilter
 		// A leading Subtract removes matches from all media rows, including
 		// rows outside every loaded bin. A leading Add starts with its own
 		// matches. This remains stable when earlier steps or bins are removed.
-		const auto fileId = BinFileId::fromMobId(fileMobId);
+		const auto fileId = AvbFileId::fromMobId(fileMobId);
 		bool accepted = true;
 		bool started = false;
 		for (const Step &step : steps)
 		{
 			// An operand without usable file identities leaves the result unchanged.
-			if (step.mediaFileIds.isEmpty())
+			if (step.fileReferences.isEmpty())
 				continue;
 			if (!started)
 			{
-				accepted = step.op != Operation::Add;
+				accepted = step.operation != Operation::Add;
 				started = true;
 			}
-			const bool hit = step.mediaFileIds.matches(fileId);
-			switch (step.op)
+			const bool hit = step.fileReferences.matches(fileId);
+			switch (step.operation)
 			{
 			case Operation::Intersect:
 				accepted = accepted && hit;
@@ -101,4 +101,4 @@ struct BinFilter
 	}
 };
 
-Q_DECLARE_METATYPE(BinFilter)
+Q_DECLARE_METATYPE(AvbFilter)

@@ -3,7 +3,7 @@
 #include "mediascanner.h"
 #include "mediaengine/scanengine.h"
 #include "mediaengineadapter.h"
-#include "avidmedialayout.h"
+#include "app_avidmedialayout.h"
 #include "conventions.h"
 #include "testpause.h"
 #include <QDir>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "avbparser.h"
-#include "binfilter.h"
+#include "avbbinloader.h"
+#include "avbfilter.h"
 
 #include <QDialog>
 #include <QHash>
@@ -25,7 +25,7 @@ class QDragMoveEvent;
 class QDragLeaveEvent;
 class QDropEvent;
 
-// MARK: - BinFilterDialog
+// MARK: - AvbFilterDialog
 
 /// Filters the main table by one or more Avid bins. User loads bins
 /// via drag-drop or the picker, ticks the ones to use, then chains
@@ -40,17 +40,17 @@ class QDropEvent;
 /// The proxy matches each row's file identity against the MSML references, in order.
 /// Loading is asynchronous. Unreadable bins report loadError; readable partial
 /// bins remain available with loadWarning and persistent filter warnings.
-class BinFilterDialog : public QDialog
+class AvbFilterDialog : public QDialog
 {
 	Q_OBJECT
 public:
 	// MARK: - Operations
 
-	using Operation = BinFilter::Operation;
-	using ChainStep = BinFilter::Step;
+	using Operation = AvbFilter::Operation;
+	using ChainStep = AvbFilter::Step;
 
-	explicit BinFilterDialog(QWidget *parent = nullptr);
-	~BinFilterDialog() override;
+	explicit AvbFilterDialog(QWidget *parent = nullptr);
+	~AvbFilterDialog() override;
 
 	// MARK: - Public API
 
@@ -61,7 +61,7 @@ public:
 	/// Drops every chain step, leaving loaded bins untouched. Used
 	/// when the user dismisses the bin filter from the main-window
 	/// chip strip; keeps dialog state and chip state in lockstep.
-	void clearChain();
+	void clearFilterSteps();
 
 signals:
 
@@ -69,7 +69,7 @@ signals:
 
 	/// The complete ordered expression and insertion-ordered, deduped names
 	/// used by the main-window chip strip. An empty expression is inactive.
-	void filterChainChanged(const BinFilter &filter, const QStringList &binNames);
+	void filterChainChanged(const AvbFilter &filter, const QStringList &binNames);
 
 	/// Completed attempt, including immediate extension rejection and failed reads.
 	/// Cancelled/removed loading rows do not emit a completion.
@@ -106,11 +106,11 @@ private slots:
 	/// Convenience: when the chain is empty and bins were just added,
 	/// apply Intersect across whatever's currently ticked once the complete
 	/// loading batch settles. Drop-bursts collapse into one step.
-	void maybeAutoIntersect();
+	void tryAutoIntersect();
 	void finishLoadingBatch();
 
 private:
-	Q_DISABLE_COPY_MOVE(BinFilterDialog)
+	Q_DISABLE_COPY_MOVE(AvbFilterDialog)
 
 	void setupUi();
 
@@ -137,21 +137,21 @@ private:
 	// MARK: - Tick helpers
 
 	/// Immediate-use snapshot of ticked, fully loaded bins in list order.
-	QVector<const AvbBin *> checkedBins() const;
+	QVector<const AvbBin *> checkedLoadedBins() const;
 
-	struct LoadedBin
+	struct BinLoadEntry
 	{
 		AvbBin bin;
-		quint64 id = 0;
+		quint64 binRowId = 0;
 		bool loading = true;
 	};
 
-	QVector<LoadedBin> m_bins;
+	QVector<BinLoadEntry> m_bins;
 	QVector<ChainStep> m_chain;
 	QHash<quint64, std::shared_ptr<std::atomic_bool>> m_pendingLoads;
 	QSet<QString> m_dragAcceptedPaths;
 	QSet<quint64> m_newlyLoadedIds;
-	QThreadPool m_parsePool;
+	QThreadPool m_loadPool;
 	quint64 m_nextBinId = 1;
 	bool m_autoIntersectPending = false;
 	bool m_metadataUpdatePending = false;

@@ -73,7 +73,7 @@ supersedes the earlier blanket rule blocking incomplete sequence filters:
   unavailable. This change does not turn a failed operation into a usable result.
   A partial read with no usable media references cannot manufacture an operand.
 - Keep dependency completeness separate from filter eligibility. Leave
-  `AvbResolution.complete` false when issues remain. The future adapter must
+  `AvbReferenceResult.coverageComplete` false when issues remain. The future adapter must
   validate the selected roots, cancellation and usable references, carry the
   warning into the applied result and retain the underlying issues.
 - A known managed identity not found in the current scan is a separate scan
@@ -193,7 +193,7 @@ merely by sharing the MobID type. Legacy SourceClips with only numeric words and
 no full typed identity remain unresolved in this stage; there is no guessed
 legacy-to-full mapping.
 
-The production AvbParser accepts both bins without warnings: 721 full MSML IDs
+The production AvbBinLoader accepts both bins without warnings: 721 full MSML IDs
 and 684 legacy keys for `01_SEQ`; 517 full IDs and 189 legacy keys for
 `02_SEQ_LOCK`. Those sets may overlap and are not physical-file counts. Production
 filter readiness is narrower than complete format interpretation.
@@ -217,7 +217,7 @@ managed-media identities. See [the implementation report](avb-reader.md).
 
 The checklist below also contains **later integration checks**: no physical-row
 adapter, live filter operation, sequence picker or Media Composer export oracle
-is claimed as delivered in this stage. `AvbResolution.complete` describes
+is claimed as delivered in this stage. `AvbReferenceResult.coverageComplete` describes
 coverage; the revised warning policy governs the later adapter's eligibility.
 
 1. Implement the independent MediaEngine AVB reader, retaining bin membership, sequence

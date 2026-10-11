@@ -36,7 +36,7 @@ from all admitted databases; filename alone must not silently select a winner.
 
 ## Current rules (before the rewrite)
 
-Sources: [scanner](../src/mediascanner.cpp), [layout](../src/avidmedialayout.h),
+Sources: [scanner](../src/mediascanner.cpp), [layout](../src/app_avidmedialayout.h),
 [conventions](../src/conventions.h), [feature flags](../src/featureflags.h).
 
 - Root spelling is **Avid MediaFiles**, with a space; `AvidMediaFiles` is not that

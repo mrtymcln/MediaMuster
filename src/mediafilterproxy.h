@@ -1,6 +1,6 @@
 #pragma once
 
-#include "binfilter.h"
+#include "avbfilter.h"
 #include "precomputefilter.h"
 
 #include <QSet>
@@ -59,7 +59,7 @@ public:
 
 public slots:
 	/// Apply ordered bin operations to each row's file-locator membership.
-	void setBinFilter(const BinFilter &filter);
+	void setBinFilter(const AvbFilter &filter);
 
 protected:
 	bool filterAcceptsRow(int row, const QModelIndex &parent) const override;
@@ -79,5 +79,5 @@ private:
 	bool m_precomputesEnabled = false;
 	PrecomputeFilter m_precomputeTreeFilter;
 	QString m_precomputeVolumePath;
-	BinFilter m_binFilter;
+	AvbFilter m_binFilter;
 };

@@ -78,7 +78,7 @@ if(APPLE)
         CACHE STRING "Codesign identity for the .app bundle")
 endif()
 
-### MediaEngine: format readers, matching and scan storage ###
+### MediaEngine: format readers, matching and metadata ###
 # The live scanner and bin adapter share this parsing and reconciliation engine.
 ### Test suite; disable with -DMEDIAMUSTER_BUILD_TESTS=OFF ###
 option(MEDIAMUSTER_BUILD_TESTS "Build the MediaMuster test suite" ON)
@@ -120,13 +120,18 @@ add_library(mediamuster_mediaengine_core STATIC
     src/mediaengine/metadataselectionpolicy.cpp
     src/mediaengine/metadataselectionpolicy.h
     src/mediaengine/sourcestorage_p.h
-    src/mediaengine/sourcearchive.cpp
-    src/mediaengine/sourcearchive.h
+    src/mediaengine/databaseimage.cpp
+    src/mediaengine/databaseimage.h
+    src/mediaengine/databasesource.cpp
+    src/mediaengine/databasesource.h
+    src/mediaengine/mxfsource.cpp
+    src/mediaengine/mxfsource.h
+    src/mediaengine/sourcepreparation.h
     src/mediaengine/pmrprojection.cpp
     src/mediaengine/mxfprojection.cpp
     src/mediaengine/picturegeometry_p.h
     src/mediaengine/scancoordinator.cpp
-    src/avideffects.cpp
+    src/effectcatalogue.cpp
     src/mediametadata.cpp
     src/diagnostics.cpp
     src/volumeidentity.cpp
@@ -136,17 +141,8 @@ set_target_properties(mediamuster_mediaengine_core PROPERTIES AUTOMOC OFF)
 target_include_directories(mediamuster_mediaengine_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(mediamuster_mediaengine_core PUBLIC Qt6::Core)
 
-# Live scans retain extracted metadata, evidence and receipts after projection.
-# Diagnostic source replay uses the same core readers and coordinator.
+# Public scan entry point; preparation and coordination share the core library.
 add_library(mediamuster_mediaengine STATIC
-    src/mediaengine/databaseimage.cpp
-    src/mediaengine/databaseimage.h
-    src/mediaengine/databasesource.cpp
-    src/mediaengine/databasesource.h
-    src/mediaengine/mxfimage.cpp
-    src/mediaengine/mxfimage.h
-    src/mediaengine/mxfsource.cpp
-    src/mediaengine/mxfsource.h
     src/mediaengine/scanengine.cpp
     src/mediaengine/scanengine.h
 )
@@ -175,14 +171,14 @@ set(SOURCES
     src/diagnostics.cpp
     src/mediafilterproxy.cpp
     src/mediatablemodel.cpp
-    src/binmetadataresolver.cpp
+    src/avbmetadataresolver.cpp
     src/revealinfinder.cpp
     src/volumelistwidget.cpp
     src/volumemanager.cpp
     src/mediascanner.cpp
     src/mediaengineadapter.cpp
     src/mediametadata.cpp
-    src/avideffects.cpp
+    src/effectcatalogue.cpp
     src/mediacsv.cpp
     src/volumeidentity.cpp
     src/nativefile.cpp
@@ -195,8 +191,8 @@ set(SOURCES
     src/opscanreceipt.cpp
     src/opmanager.cpp
     src/operationrecovery.cpp
-    src/avbparser.cpp
-    src/binfilterdialog.cpp
+    src/avbbinloader.cpp
+    src/avbfilterdialog.cpp
     src/precomputefilterdialog.cpp
     src/managemediadialog.cpp
     src/progressdialog.cpp

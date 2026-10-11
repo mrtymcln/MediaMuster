@@ -1,10 +1,6 @@
 #include "mediaengine/scancoordinator.h"
-#ifdef MEDIAMUSTER_TEST_NATIVE_STORAGE
 #include "mediaengine/scanengine.h"
-using TestScanEngine = MediaEngine::ScanEngine;
-#else
-using TestScanEngine = MediaEngine::ScanCoordinator;
-#endif
+#include "mediaengine/mdbreader.h"
 #include "mediaengine/projection.h"
 #include "mediaengine/metadataselectionpolicy.h"
 #include "mediaengineadapter.h"
@@ -89,7 +85,7 @@ namespace
 		}
 		return writer.build();
 	}
-	const MediaEngine::StoredSource *mediaSource(const MediaEngine::ScanResult &scan, const QString &path)
+	const MediaEngine::SourceReceipt *mediaSource(const MediaEngine::ScanResult &scan, const QString &path)
 	{
 		for (const auto &source : scan.sources)
 			if (source.snapshot && source.snapshot->path == path)
@@ -113,7 +109,7 @@ private slots:
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"),
 			audioDatabase(24, {101, 301, 601}, true)));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(mediaSource(scan, path)->outcome != MediaEngine::ParsedSource::Outcome::NotRead);
 		const auto &evidence = scan.files.front().evidence;
@@ -142,7 +138,7 @@ private slots:
 		QStringList warnings;
 		MediaEngine::ScanCallbacks callbacks;
 		callbacks.warning = [&](const QString &message) { warnings.append(message); };
-		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(scan.files.front().kelpieId != 0);
 		QVERIFY(mediaSource(scan, path)->outcome != MediaEngine::ParsedSource::Outcome::NotRead);
@@ -153,21 +149,16 @@ private slots:
 			{ return message.contains(QStringLiteral("ObjectSpine")); }));
 		const auto *database = mediaSource(scan, folder + QStringLiteral("/metadata.mdb"));
 		QVERIFY(database);
-		const auto restored = database->restore(cancellation);
-		if (database->retention == MediaEngine::SourceRetention::MetadataOnly)
-		{
-			QVERIFY(!database->archive && !database->storage && !database->unfinishedGraph);
-			QVERIFY(!restored);
-		}
-		else
-		{
-			QVERIFY(restored);
-			QCOMPARE(restored->snapshot, database->snapshot);
-			QVERIFY(!restored->objects.isEmpty());
-			QVERIFY(std::any_of(restored->relationships.cbegin(), restored->relationships.cend(),
-				[](const MediaEngine::Relationship &link)
-				{ return link.locator.name == QLatin1String("OMFI:ObjectSpine") && link.target == 0; }));
-		}
+		// Check the actual unreadable contents-list relationship through the reader.
+		QFile input(database->snapshot->path);
+		QVERIFY(input.open(QIODevice::ReadOnly));
+		const auto parsed = MediaEngine::MdbReader{}.read(input, {database->snapshot, cancellation});
+		QCOMPARE(database->outcome, parsed.outcome);
+		QCOMPARE(database->snapshot->readState, parsed.snapshot->readState);
+		QVERIFY(!parsed.objects.isEmpty());
+		QVERIFY(std::any_of(parsed.relationships.cbegin(), parsed.relationships.cend(),
+			[](const MediaEngine::Relationship &link)
+			{ return link.locator.name == QLatin1String("OMFI:ObjectSpine") && link.target == 0; }));
 	}
 
 	void unlisted_database_master_cannot_supply_clip_name()
@@ -181,7 +172,7 @@ private slots:
 		// The master is readable in the database, but its contents list omits it.
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"), audioDatabase(24, {101})));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(scan.files.front().kelpieId != 0);
 		QVERIFY(mediaSource(scan, path)->outcome != MediaEngine::ParsedSource::Outcome::NotRead);
@@ -205,24 +196,13 @@ private slots:
 		MediaEngine::ScanCallbacks callbacks;
 		callbacks.progress = [&](int, int, const QString &source)
 		{ decisions.append(source); };
-		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(scan.reconciliationComplete);
 		const auto *header = mediaSource(scan, path);
 		QVERIFY(header);
 		QVERIFY2(header->outcome == MediaEngine::ParsedSource::Outcome::NotRead, qPrintable(header->readReason));
 		QCOMPARE(header->snapshot->readState, SourceReadState::NotRead);
-		const auto restoredHeader = header->restore(cancellation);
-		if (header->retention == MediaEngine::SourceRetention::MetadataOnly)
-		{
-			QVERIFY(!header->archive && !header->storage && !header->unfinishedGraph);
-			QVERIFY(!restoredHeader);
-		}
-		else
-		{
-			QVERIFY(restoredHeader);
-			QVERIFY(restoredHeader->objects.isEmpty());
-		}
 		QCOMPARE(decisions.last(), path);
 		const auto &evidence = scan.files.front().evidence;
 		QCOMPARE(evidence.readStatus(MediaProperty::Compression, header->snapshot).state, PropertyReadState::NotRead);
@@ -265,7 +245,7 @@ private slots:
 		if (conflicting)
 			QVERIFY(tryWriteFile(folder + QStringLiteral("/other.mdb"), audioDatabase(16)));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
 		const auto *header = mediaSource(scan, path);
 		QVERIFY(header);
 		QVERIFY(header->outcome != MediaEngine::ParsedSource::Outcome::NotRead);
@@ -284,7 +264,7 @@ private slots:
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("listed.mxf", toneFileId, "Project")})));
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"), audioDatabase()));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 2);
 		QVERIFY(scan.files[0].kelpieId != scan.files[1].kelpieId);
 		QCOMPARE(mediaSource(scan, folder + QStringLiteral("/listed.mxf"))->outcome, MediaEngine::ParsedSource::Outcome::NotRead);
@@ -312,7 +292,7 @@ private slots:
 			changed = file.open(QIODevice::ReadWrite) && file.setFileTime(modified.addSecs(10), QFileDevice::FileModificationTime);
 		};
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QVERIFY(changed);
 		QCOMPARE(scan.files.size(), 2);
 		QVERIFY(!scan.files[0].evidence.selected(MediaProperty::Compression).value.isValid());
@@ -342,7 +322,7 @@ private slots:
 			expected = QFileInfo(folder).lastModified();
 		};
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QVERIFY(!error);
 		QVERIFY(expected.isValid() && expected != original);
 		QVERIFY(scan.reconciliationComplete);
@@ -380,7 +360,7 @@ private slots:
 			changed = file.open(QIODevice::ReadWrite) && file.setFileTime(modified.addSecs(10), QFileDevice::FileModificationTime);
 		};
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QVERIFY(changed);
 		QVERIFY(mediaSource(scan, first)->outcome != MediaEngine::ParsedSource::Outcome::NotRead);
 		const auto &evidence = scan.files.front().evidence;
@@ -514,7 +494,7 @@ private slots:
 			QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR) + '/' + name, path + '/' + name));
 		}
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = QSharedPointer<MediaEngine::ScanResult>::create(TestScanEngine{}.scan({{temporary.path()}, false}, cancellation));
+		const auto scan = QSharedPointer<MediaEngine::ScanResult>::create(MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation));
 		QCOMPARE(scan->files.size(), 2);
 		QVERIFY(scan->reconciliationComplete);
 		QVERIFY(scan->files[0].kelpieId != scan->files[1].kelpieId);
@@ -528,23 +508,11 @@ private slots:
 		QCOMPARE(first.mediaEngineScan, second.mediaEngineScan);
 		QCOMPARE(first.scanStamp.mobId, first.fileMobId);
 		const auto &stored = first.mediaEngineScan->sources.front();
-#ifdef MEDIAMUSTER_TEST_NATIVE_STORAGE
-		QCOMPARE(stored.retention, MediaEngine::SourceRetention::MetadataOnly);
-		QVERIFY(!stored.storage);
-		QVERIFY(!stored.archive);
-#else
-		QVERIFY(stored.archive);
-#endif
-		QVERIFY(!stored.unfinishedGraph);
-		const auto restored = stored.restore(cancellation);
-		if (stored.retention == MediaEngine::SourceRetention::MetadataOnly)
-			QVERIFY(!restored);
-		else
-		{
-			QVERIFY(restored);
-			QCOMPARE(restored->snapshot, stored.snapshot);
-			QVERIFY(!restored->objects.isEmpty());
-		}
+		QCOMPARE(stored.outcome, MediaEngine::ParsedSource::Outcome::Complete);
+		QCOMPARE(stored.snapshot->readState, SourceReadState::Complete);
+		QVERIFY(std::any_of(first.evidence.observations(MediaProperty::FileMobId).cbegin(),
+			first.evidence.observations(MediaProperty::FileMobId).cend(),
+			[&](const MetadataObservation &observation) { return observation.snapshot == stored.snapshot; }));
 		QVERIFY(!first.evidence.observations(MediaProperty::FileMobId).isEmpty());
 		QCOMPARE(first.kind, MediaFile::Kind::Audio);
 		QCOMPARE(first.dbStatus, MediaFile::DbStatus::NoDatabase);
@@ -558,7 +526,7 @@ private slots:
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/take.mxf"), "not an MXF header"));
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("TAKE.MXF", otherId, "wrong case"), pmrRecord("take.mxf", toneFileId, "exact name")})));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		const auto &evidence = scan.files.front().evidence;
 		QCOMPARE(evidence.selected(MediaProperty::Project).value.toString(), QStringLiteral("exact name"));
@@ -579,7 +547,7 @@ private slots:
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/take.mxf"), "not an MXF header"));
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("TAKE.MXF", toneFileId, "normalized match")})));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		QCOMPARE(scan.files.front().evidence.selected(MediaProperty::Project).value.toString(), QStringLiteral("normalized match"));
 	}
@@ -592,7 +560,7 @@ private slots:
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/take.mxf"), "not an MXF header"));
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("take.mxf", toneFileId, "same project"), pmrRecord("take.mxf", otherId, "same project")})));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		const auto &evidence = scan.files.front().evidence;
 		QVERIFY(!evidence.selected(MediaProperty::FileMobId).value.isValid());
@@ -613,7 +581,7 @@ private slots:
 			QSKIP("Temporary filesystem does not preserve case-distinct file locations");
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("Take.mxf", toneFileId, "ambiguous location")})));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 2);
 		for (const auto &file : scan.files)
 		{
@@ -642,7 +610,7 @@ private slots:
 			changed = file.open(QIODevice::ReadWrite) && file.setFileTime(modified.addSecs(10), QFileDevice::FileModificationTime);
 		};
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QVERIFY(changed);
 		QCOMPARE(scan.files.size(), 1);
 		const auto &evidence = scan.files.front().evidence;
@@ -757,7 +725,7 @@ private slots:
 		const MediaEngine::Cancellation cancellation(&flag);
 		QVERIFY(!cancellation.cancelled());
 		flag.store(true);
-		const auto scan = TestScanEngine{}.scan({}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan({}, cancellation);
 		QVERIFY(scan.cancelled);
 		QVERIFY(!scan.reconciliationComplete);
 		QVERIFY(!scan.parsingComplete);
@@ -802,7 +770,7 @@ private slots:
 			cancellation.cancel();
 		};
 		callbacks.finalising = [&] { finalising = true; };
-		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QCOMPARE(progressCalls, 1);
 		QCOMPARE(readingCalls, atReading ? 1 : 0);
 		QVERIFY(!finalising);
@@ -817,18 +785,7 @@ private slots:
 		{
 			QCOMPARE(source.outcome, MediaEngine::ParsedSource::Outcome::NotRead);
 			QCOMPARE(source.snapshot->readState, SourceReadState::NotRead);
-			const MediaEngine::Cancellation inspection;
-			const auto restored = source.restore(inspection);
-			if (source.retention == MediaEngine::SourceRetention::MetadataOnly)
-			{
-				QVERIFY(!source.archive && !source.storage && !source.unfinishedGraph);
-				QVERIFY(!restored);
-			}
-			else
-			{
-				QVERIFY(restored);
-				QVERIFY(restored->objects.isEmpty());
-			}
+			QVERIFY(source.diagnostics.isEmpty());
 		}
 		QVERIFY(scan.reconciliationIssues.isEmpty());
 	}
@@ -850,7 +807,7 @@ private slots:
 			if (current == path)
 				cancellation.cancel();
 		};
-		const auto scan = TestScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
 		QVERIFY(scan.cancelled);
 		QVERIFY(!scan.reconciliationComplete);
 		QCOMPARE(scan.files.size(), 1);
@@ -858,19 +815,7 @@ private slots:
 		QVERIFY(parsed);
 		QCOMPARE(parsed->outcome, MediaEngine::ParsedSource::Outcome::Complete);
 		QCOMPARE(parsed->snapshot->readState, SourceReadState::Complete);
-		const MediaEngine::Cancellation inspection;
-		const auto restored = parsed->restore(inspection);
-		if (parsed->retention == MediaEngine::SourceRetention::MetadataOnly)
-		{
-			QVERIFY(!parsed->archive && !parsed->storage && !parsed->unfinishedGraph);
-			QVERIFY(!restored);
-		}
-		else
-		{
-			QVERIFY(restored);
-			QCOMPARE(restored->snapshot, parsed->snapshot);
-			QVERIFY(!restored->objects.isEmpty());
-		}
+		QVERIFY(!parsed->readReason.isEmpty());
 		QCOMPARE(mediaSource(scan, path)->outcome, MediaEngine::ParsedSource::Outcome::NotRead);
 		QVERIFY(scan.reconciliationIssues.isEmpty());
 	}
@@ -896,4 +841,4 @@ private slots:
 };
 
 QTEST_GUILESS_MAIN(TestMediaEngineScan)
-#include "tst_mediaenginescanarchive.moc"
+#include "tst_mediaenginescan.moc"

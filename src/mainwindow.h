@@ -249,7 +249,7 @@ private:
 	/// shrink the persistent record and lose the user's picks.
 	bool m_inFilterRestore = false;
 
-	class BinFilterDialog *m_binFilterDialog = nullptr;
+	class AvbFilterDialog *m_binFilterDialog = nullptr;
 
 	/// Cached so the chip strip can render without reaching into
 	/// the dialog (which may not exist yet if not opened).

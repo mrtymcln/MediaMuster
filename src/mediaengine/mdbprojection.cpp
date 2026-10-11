@@ -7,7 +7,7 @@
 #include "projection.h"
 #include "compressionnames_p.h"
 #include "picturegeometry_p.h"
-#include "avidprecompute.h"
+#include "precompute.h"
 #include "mediametadata.h"
 
 #include <QHash>

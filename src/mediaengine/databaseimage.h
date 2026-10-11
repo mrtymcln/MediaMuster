@@ -1,7 +1,7 @@
 #pragma once
 
-// Keeps the exact bytes obtained from one database in RAM. Capturing the image
-// does not interpret its format; readers share these bytes after acquisition.
+// Holds one database's exact bytes whilst its reader works. This temporary
+// buffer does not interpret the format or outlive source preparation.
 
 #include "mediaengine/scanmodel.h"
 #include <QByteArray>

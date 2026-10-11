@@ -1,6 +1,6 @@
 #pragma once
 
-#include "binfilereferences.h"
+#include "avbfilereferences.h"
 #include "mediaevidence.h"
 
 #include <QString>
@@ -13,10 +13,10 @@
 namespace MediaEngine
 {
 	struct ParsedSource;
-	struct AvbResolution;
+	struct AvbReferenceResult;
 }
 
-struct AvbMob
+struct AvbComposition
 {
 	static constexpr int masterMobType = 2;
 
@@ -25,7 +25,7 @@ struct AvbMob
 	QString name;
 
 	/// Clips can move between bins, so use the original bin recorded in _ORG_BIN.
-	QString originalBin;
+	QString originalBinName;
 	QString originalBinUid;
 	int mobType = 0;
 	int usageCode = 0;
@@ -39,41 +39,41 @@ struct AvbBin
 	QString displayName;
 
 	/// Composition identities and clip/original-bin metadata.
-	QVector<AvbMob> mobs;
+	QVector<AvbComposition> compositions;
 
 	/// Full file IDs and explicitly legacy references from MSML locators.
-	BinFileReferences mediaFileIds;
+	AvbFileReferences mediaFileIds;
 
 	/// Shared source evidence survives worker delivery and filter snapshots.
-	QSharedPointer<const MediaEngine::ParsedSource> source;
-	QSharedPointer<const MediaEngine::AvbResolution> resolution;
+	QSharedPointer<const MediaEngine::ParsedSource> sourceGraph;
+	QSharedPointer<const MediaEngine::AvbReferenceResult> referenceResult;
 
 	/// Readability and reference coverage are separate. Partial results remain
 	/// usable with persistent warnings; empty reference sets create no operand.
-	bool valid = false;
-	bool complete = false;
+	bool usable = false;
+	bool coverageComplete = false;
 	QString error;
 	QStringList warnings;
 
 	/// Usable for filtering and metadata; loading state belongs to the dialog.
-	[[nodiscard]] bool isUsable() const noexcept { return valid; }
+	[[nodiscard]] bool isUsable() const noexcept { return usable; }
 };
 
 Q_DECLARE_METATYPE(AvbBin)
 
-struct AvbHeaderCheck
+struct AvbHeaderResult
 {
 	bool recognized = false;
 	QString error;
 };
 
-class AvbParser
+class AvbBinLoader
 {
 public:
-	/// Keep the header check quick for dragging. The full bin still needs parsing.
-	[[nodiscard]] static AvbHeaderCheck inspectHeader(const QString &avbFilePath);
+	/// Keep the header check quick for dragging. The full bin still needs loading.
+	[[nodiscard]] static AvbHeaderResult inspectHeader(const QString &avbFilePath);
 
-	/// The parser borrows this flag, so keep it alive until parsing finishes.
-	[[nodiscard]] static AvbBin parse(
+	/// The loader borrows this flag, so keep it alive until loading finishes.
+	[[nodiscard]] static AvbBin load(
 		const QString &avbFilePath, const std::atomic_bool *cancelled = nullptr);
 };

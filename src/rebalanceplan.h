@@ -1,6 +1,6 @@
 #pragma once
 
-#include "avidmedialayout.h"
+#include "app_avidmedialayout.h"
 #include "oprequest.h"
 
 #include <QString>

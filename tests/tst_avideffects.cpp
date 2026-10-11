@@ -3,7 +3,7 @@
 // user-typed title), current 26.8 registrations, the parse rule, the mangle rule
 // (space/colon → underscore), ambiguity, and a localised spelling.
 
-#include "avideffects.h"
+#include "effectcatalogue.h"
 
 #include <QTest>
 

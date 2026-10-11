@@ -4,7 +4,7 @@
 
 #include "discoveryengine.h"
 #include "discoveryengine_p.h"
-#include "avidmedialayout.h"
+#include "app_avidmedialayout.h"
 #include "volumeidentity.h"
 
 #include <QFileInfo>

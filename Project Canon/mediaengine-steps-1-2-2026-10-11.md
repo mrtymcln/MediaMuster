@@ -77,7 +77,7 @@ file operations use them. No blanket clearing of those records was done.
 | MXF interpretation | `src/mediaengine/mxfprojection.cpp` | Reuse fixed class ancestry; use the compact sound-descriptor explanation. |
 | Evidence storage | `src/evidenceexplanation.h`, `src/mediaevidence.h` | Small typed reasons, smaller state enums and source-scoped shared owner text. |
 | Field read coverage | `src/mediaengine/projection.cpp`, `src/mediaengine/pmrprojection.cpp` | Keep complete explanations and checked property names in the compact representation. |
-| Bin enrichment | `src/binmetadataresolver.cpp` | Keep the same conflict explanation using the shared compact reason. |
+| Bin enrichment | `src/avbmetadataresolver.cpp` | Keep the same conflict explanation using the shared compact reason. |
 | Verification | `tests/tst_mediaevidence.cpp`, `tests/mediaenginefingerprint.h`, `tests/tst_mediaenginedatabase.cpp`, `tests/tst_sourcearchive.cpp` | Check sharing/lifetimes and exact explanation text; fingerprint and compare the logical evidence, rather than its new in-memory storage. |
 
 The independent, user-approved catalogue edit keeps **Avid DNxRLE Alpha** in

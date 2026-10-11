@@ -45,7 +45,7 @@ and their limits in the report; do not check in temporary probes, generated outp
 logs, screenshots or copies of source code.
 
 Real media fixtures under `tests/fixtures/` remain active regression inputs. The
-app's effect catalogue is maintained in `src/avideffects.cpp`; its
+app's effect catalogue is maintained in `src/effectcatalogue.cpp`; its
 [provenance and recognition rules](avid-effects-catalogue.md) are documented separately.
 Future catalogue updates require renewed binary inspection and comparison with
 the application catalogue.

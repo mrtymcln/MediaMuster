@@ -49,14 +49,14 @@ tracks, descriptors, objects or occurrences. Normalized semantic fields link bac
 to their retained source observations. An unsupported input to a defined field
 keeps its coverage/read reason; it is not proof that the property is absent. Do not
 invent a meaning or manufacture absent-field results for an unenumerated structure.
-Investigation or diagnostic replay can capture unknown/private records for review;
+Investigation can inspect unknown/private records directly from the source for review;
 normal scan RAM is not a permanent archive of those unused records. Picture/audio
 essence payloads are not loaded as metadata values.
 
 When additional properties or previously unsupported value meanings are discovered:
 
 1. Record what the source actually stores and where it occurs in investigation
-   evidence; use diagnostic replay when complete original records are needed.
+   evidence; inspect the source directly when complete original records are needed.
 2. Establish the format/object role and interpretation from available evidence;
    keep uncertainty explicit rather than presenting a guess as established.
 3. Ask the user how the finding should be represented, named, associated and selected

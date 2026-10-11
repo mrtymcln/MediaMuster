@@ -2,15 +2,14 @@
 
 // Reads databases first, then opens media headers only for unmatched files or
 // missing/conflicting required table metadata. Unopened headers remain NotRead.
-// The caller owns the worker thread. Source records stay in the chosen RAM
-// storage; matching uses their immediately available receipts and file facts.
+// The caller owns the worker thread. Matching uses projected facts and small
+// source receipts; temporary reader records are released after projection.
 
 #include "scanmodel.h"
 #include <functional>
 
 namespace MediaEngine
 {
-	class SourcePipeline;
 	struct ScanCallbacks
 	{
 		std::function<void(int, int, const QString &)> progress;
@@ -23,8 +22,7 @@ namespace MediaEngine
 	{
 	public:
 		ScanResult scan(const ScanRequest &request, const Cancellation &cancellation,
-						const ScanCallbacks &callbacks = {}, const SourcePipeline *pipeline = nullptr) const;
-		// pipeline is borrowed for this call and only processes PMR/MDB candidates.
+						const ScanCallbacks &callbacks = {}) const;
 	};
 	void selectMetadata(MediaEvidence &evidence);
 }

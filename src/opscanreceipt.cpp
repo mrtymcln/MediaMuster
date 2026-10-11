@@ -23,7 +23,7 @@ namespace
 			return {};
 		const QString scannedPath = originalLocation(file);
 		const bool skipped = std::any_of(file.mediaEngineScan->sources.cbegin(), file.mediaEngineScan->sources.cend(),
-											 [&](const MediaEngine::StoredSource &source)
+											 [&](const MediaEngine::SourceReceipt &source)
 										 {
 											 return source.snapshot && scannedPath == source.snapshot->path &&
 													(source.snapshot->source == MetadataSource::Mxf || source.snapshot->source == MetadataSource::Omf) &&

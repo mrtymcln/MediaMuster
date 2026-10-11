@@ -1,11 +1,9 @@
 #include "scancoordinator.h"
-#include "sourcepipeline.h"
+#include "databasesource.h"
+#include "mxfsource.h"
 #include "discoveryengine.h"
 #include "projection.h"
 #include "metadataselectionpolicy.h"
-#include "pmrreader.h"
-#include "mdbreader.h"
-#include "mxfreader.h"
 #include "omfreader.h"
 #include "pmrkey.h"
 #include "mobid.h"
@@ -15,6 +13,7 @@
 #include <QFileInfo>
 #include <QSet>
 #include <algorithm>
+#include <utility>
 
 namespace MediaEngine
 {
@@ -46,10 +45,10 @@ namespace MediaEngine
 			}
 			return MetadataSource::Filesystem;
 		}
-		ParsedSource readSource(const SourceCandidate &candidate, const Cancellation &cancellation)
+		ParsedSource readLegacy(const SourceCandidate &candidate, const Cancellation &cancellation)
 		{
 			const auto snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
-				sourceKind(candidate.hint), candidate.path, candidate.modified, SourceReadState::NotRead});
+				MetadataSource::Omf, candidate.path, candidate.modified, SourceReadState::NotRead});
 			if (cancellation.cancelled())
 			{
 				ParsedSource result;
@@ -68,36 +67,7 @@ namespace MediaEngine
 				return result;
 			}
 			const ReaderContext context{snapshot, cancellation};
-			switch (candidate.hint)
-			{
-			case SourceCandidate::ReaderHint::Pmr:
-				return PmrReader{}.read(input, context);
-			case SourceCandidate::ReaderHint::Mdb:
-				return MdbReader{}.read(input, context);
-			case SourceCandidate::ReaderHint::Mxf:
-				return MxfReader{}.read(input, context);
-			case SourceCandidate::ReaderHint::LegacyMedia:
-				return OmfReader{}.read(input, context);
-			}
-			return {};
-		}
-		Projection project(const ParsedSource &source, const Cancellation &cancellation)
-		{
-			if (!source.snapshot)
-				return {};
-			switch (source.snapshot->source)
-			{
-			case MetadataSource::Pmr:
-				return projectPmr(source, cancellation);
-			case MetadataSource::Mxf:
-				return projectMxf(source, cancellation);
-			case MetadataSource::Mdb:
-				return projectMdb(source, cancellation);
-			case MetadataSource::Omf:
-				return projectOmf(source, cancellation);
-			default:
-				return {};
-			}
+			return OmfReader{}.read(input, context);
 		}
 		void attach(MediaFile &file, const ProjectedFile &facts, bool eligible)
 		{
@@ -251,7 +221,7 @@ namespace MediaEngine
 	}
 
 	ScanResult ScanCoordinator::scan(const ScanRequest &request, const Cancellation &cancellation,
-									 const ScanCallbacks &callbacks, const SourcePipeline *pipeline) const
+									 const ScanCallbacks &callbacks) const
 	{
 		ScanResult result = DiscoveryEngine{}.discover(request, cancellation, callbacks.discovering);
 		// Keep discovered rows and any source evidence already obtained. Once
@@ -299,9 +269,7 @@ namespace MediaEngine
 			if (stopRequested())
 				return result;
 			const auto &candidate = result.candidates[index];
-			StoredSource source;
-			if (pipeline)
-				source.retention = pipeline->sourceRetention();
+			SourceReceipt source;
 			source.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
 				sourceKind(candidate.hint), candidate.path, candidate.modified, SourceReadState::NotRead});
 			result.sources.append(std::move(source));
@@ -339,28 +307,22 @@ namespace MediaEngine
 				callbacks.reading(candidate);
 			if (cancellation.cancelled())
 				return;
-			std::optional<PreparedSource> prepared;
-			if (pipeline && (candidate.hint == SourceCandidate::ReaderHint::Pmr ||
-							 candidate.hint == SourceCandidate::ReaderHint::Mdb))
-				prepared = pipeline->processDatabase(candidate, reason, cancellation);
-			else if (pipeline && candidate.hint == SourceCandidate::ReaderHint::Mxf)
-				prepared = pipeline->processMxf(candidate, reason, cancellation);
-			if (prepared)
-			{
-				projections[index] = std::move(prepared->projection);
-				result.sources[index] = std::move(prepared->source);
-			}
+			PreparedSource prepared;
+			if (candidate.hint == SourceCandidate::ReaderHint::Pmr ||
+				candidate.hint == SourceCandidate::ReaderHint::Mdb)
+				prepared = prepareDatabase(candidate, reason, cancellation);
+			else if (candidate.hint == SourceCandidate::ReaderHint::Mxf)
+				prepared = prepareMxf(candidate, reason, cancellation);
 			else
 			{
-				auto parsed = readSource(candidate, cancellation);
+				auto parsed = readLegacy(candidate, cancellation);
 				parsed.readReason = reason;
 				if (!cancellation.cancelled())
-					projections[index] = project(parsed, cancellation);
-				// Projection owns the supported facts. Live scans keep their
-				// receipt instead of packing the remaining records for later replay.
-				const auto retention = pipeline ? pipeline->sourceRetention() : SourceRetention::Replay;
-				result.sources[index] = StoredSource::store(std::move(parsed), cancellation, retention);
+					prepared.projection = projectOmf(parsed, cancellation);
+				prepared.source = SourceReceipt::fromParsed(std::move(parsed));
 			}
+			projections[index] = std::move(prepared.projection);
+			result.sources[index] = std::move(prepared.source);
 			if (cancellation.cancelled())
 				return;
 			const auto &source = result.sources[index];

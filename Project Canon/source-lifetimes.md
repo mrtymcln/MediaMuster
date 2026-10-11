@@ -4,9 +4,11 @@ Keep data while something uses it; release it afterwards.
 
 ## Normal scans
 
-`ScanEngine` uses `SourceRetention::MetadataOnly` for PMR, MDB, MXF and OMF/legacy
-sources. This describes retention after reading, not which files or properties
-are read. The same readers, projectors and metadata selection policy apply.
+PMR, MDB, MXF and OMF/legacy reading has one path: read, extract supported facts,
+return their evidence and a `SourceReceipt`, then release temporary inputs and
+decoded records. Ordinary C++ scope lifetimes handle release. There is no storage
+policy switch or source reconstruction API. The readers, projectors and metadata
+selection policy decide which properties are interpreted and displayed.
 
 | Data | Lifetime and owner |
 | --- | --- |
@@ -15,7 +17,7 @@ are read. The same readers, projectors and metadata selection policy apply.
 | Projected database file/master facts | Owned by the coordinator while matching files, associating masters, deciding header fallbacks and reporting unresolved references. These own their values independently of the input buffer or reader graph. |
 | Supported media-file metadata | Retained in the scan results and physical `MediaFile` records for display, CSV, bin enrichment and file-operation checks. |
 | Observations and alternatives | Retained with relevant original value bytes, property/object identifiers, encoding, read state, basis, eligibility, agreement, freshness and selection reason. Hidden supported fields follow the same rule. |
-| Source receipts | Retain path, captured context, container, actual read outcome, reason and warnings. Unopened headers remain `NotRead`; discarding storage does not change an outcome to `Absent`. |
+| `SourceReceipt` | Retains shared source context (including path), container, actual read outcome, reason and warnings. Unopened headers remain `NotRead`; discarding storage does not change an outcome to `Absent`. |
 | Loaded AVB graphs | Retained with the loaded bin because sequence reference resolution, filtering and enrichment actively use their relationships. |
 
 The coordinator reads databases first. It opens media headers only for the
@@ -43,11 +45,12 @@ not imply the original complete object is still in RAM.
 
 ## Detailed reader verification
 
-Tests and diagnostic probes can explicitly select `SourceRetention::Replay`.
-This keeps native images or graph archives for exact-byte and reconstruction
-checks, using the same readers and matching engine. It is not an app preference
-or an alternative production engine. Missing backing in Replay is still an error;
-`restore()` returning unavailable in MetadataOnly is deliberate.
+Reader/projector tests inspect genuine input bytes and source-local records while
+their temporary inputs are alive. Ownership tests compare the extracted evidence
+after destroying those inputs and after the original file is unavailable. The
+read-only scan probe compares all supported metadata/evidence, source receipts,
+read scheduling and CSV across builds. It does not prove that discarded source
+records can be reconstructed from scan results.
 
 Ownership uses Qt value sharing and `QSharedPointer` with ordinary C++ scope
 lifetimes. This rule introduces no RAM cap, arbitrary header length, weaker

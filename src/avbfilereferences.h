@@ -10,7 +10,7 @@
 
 /// One file identity used by the bin filter. Legacy records only identify
 /// eight bytes; an Avid OMF wrapper preserves that same legacy identity.
-struct BinFileId
+struct AvbFileId
 {
 	QString fullId;
 	QString legacyKey;
@@ -24,7 +24,7 @@ struct BinFileId
 		return canonical.mid(kCoreHexOffset, 2 * OmfUid::kPmrSize);
 	}
 
-	static BinFileId fromMobId(const QString &mobId)
+	static AvbFileId fromMobId(const QString &mobId)
 	{
 		QString hex = mobId;
 		if (hex.size() == 2 * MobId::kRawSize + 3)
@@ -51,7 +51,7 @@ struct BinFileId
 		return {full, key, old};
 	}
 
-	static BinFileId fromLegacyWords(quint32 low, quint32 high)
+	static AvbFileId fromLegacyWords(quint32 low, quint32 high)
 	{
 		if (low == 0 && high == 0)
 			return {};
@@ -64,14 +64,14 @@ struct BinFileId
 
 /// File references from MSML locators. Modern IDs require full equality.
 /// The short comparison is available only when either identity is legacy.
-struct BinFileReferences
+struct AvbFileReferences
 {
 	QSet<QString> fullIds;
 	QSet<QString> legacyKeys;
 
 	bool isEmpty() const { return fullIds.isEmpty() && legacyKeys.isEmpty(); }
 
-	void add(const BinFileId &id)
+	void add(const AvbFileId &id)
 	{
 		if (!id.fullId.isEmpty())
 			fullIds.insert(id.fullId);
@@ -79,13 +79,13 @@ struct BinFileReferences
 			legacyKeys.insert(id.legacyKey);
 	}
 
-	void unite(const BinFileReferences &other)
+	void unite(const AvbFileReferences &other)
 	{
 		fullIds.unite(other.fullIds);
 		legacyKeys.unite(other.legacyKeys);
 	}
 
-	bool matches(const BinFileId &file) const
+	bool matches(const AvbFileId &file) const
 	{
 		if (!file.fullId.isEmpty() && fullIds.contains(file.fullId))
 			return true;
@@ -96,7 +96,7 @@ struct BinFileReferences
 		// Older media can only compare its known section with a full bin ID.
 		if (file.isLegacy)
 			for (const QString &id : fullIds)
-				if (BinFileId::legacyPart(id) == file.legacyKey)
+				if (AvbFileId::legacyPart(id) == file.legacyKey)
 					return true;
 		return false;
 	}

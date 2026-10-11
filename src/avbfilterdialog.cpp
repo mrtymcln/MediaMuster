@@ -1,4 +1,4 @@
-#include "binfilterdialog.h"
+#include "avbfilterdialog.h"
 #include "dragdroputil.h"
 #include "formatutil.h"
 
@@ -37,24 +37,24 @@ namespace
 	QString binExplanation(const AvbBin &bin, bool loading)
 	{
 		if (loading)
-			return BinFilterDialog::tr("Loading…");
-		if (!bin.complete)
-			return BinFilterDialog::tr("Results may be incomplete");
+			return AvbFilterDialog::tr("Loading…");
+		if (!bin.coverageComplete)
+			return AvbFilterDialog::tr("Results may be incomplete");
 		if (bin.mediaFileIds.isEmpty())
-			return BinFilterDialog::tr("No media references.");
-		return bin.warnings.isEmpty() ? QString() : BinFilterDialog::tr("Loaded with warnings.");
+			return AvbFilterDialog::tr("No media references.");
+		return bin.warnings.isEmpty() ? QString() : AvbFilterDialog::tr("Loaded with warnings.");
 	}
 
-	QString operationLabel(BinFilterDialog::Operation op)
+	QString operationLabel(AvbFilterDialog::Operation op)
 	{
 		switch (op)
 		{
-		case BinFilterDialog::Operation::Intersect:
-			return BinFilterDialog::tr("Intersect");
-		case BinFilterDialog::Operation::Subtract:
-			return BinFilterDialog::tr("Subtract");
-		case BinFilterDialog::Operation::Add:
-			return BinFilterDialog::tr("Add");
+		case AvbFilterDialog::Operation::Intersect:
+			return AvbFilterDialog::tr("Intersect");
+		case AvbFilterDialog::Operation::Subtract:
+			return AvbFilterDialog::tr("Subtract");
+		case AvbFilterDialog::Operation::Add:
+			return AvbFilterDialog::tr("Add");
 		}
 		return {};
 	}
@@ -84,8 +84,8 @@ namespace
 	// caller can wire its clicked signal.
 	QWidget *makeOperationRow(const QString &label, const QString &help, QPushButton *&buttonOut)
 	{
-		auto *row = new QWidget;
-		auto *layout = new QHBoxLayout(row);
+		auto *operationRow = new QWidget;
+		auto *layout = new QHBoxLayout(operationRow);
 		layout->setContentsMargins(0, 0, 0, 0);
 		layout->setSpacing(12);
 
@@ -97,13 +97,13 @@ namespace
 		helpLabel->setWordWrap(true);
 		layout->addWidget(helpLabel, 1);
 
-		return row;
+		return operationRow;
 	}
 } // namespace
 
 // MARK: - Construction
 
-BinFilterDialog::BinFilterDialog(QWidget *parent)
+AvbFilterDialog::AvbFilterDialog(QWidget *parent)
 	: QDialog(parent)
 {
 	setWindowTitle(tr("Filter by Bin"));
@@ -111,23 +111,23 @@ BinFilterDialog::BinFilterDialog(QWidget *parent)
 	setAttribute(Qt::WA_MacAlwaysShowToolWindow, true);
 	setModal(false);
 	setAcceptDrops(true);
-	m_parsePool.setMaxThreadCount(kMaxConcurrentBinLoads);
+	m_loadPool.setMaxThreadCount(kMaxConcurrentBinLoads);
 	resize(720, 640);
 	setupUi();
 }
 
-BinFilterDialog::~BinFilterDialog()
+AvbFilterDialog::~AvbFilterDialog()
 {
 	for (const auto &cancelled : std::as_const(m_pendingLoads))
 		cancelled->store(true, std::memory_order_relaxed);
 	// Workers own only their path and cancellation flag. On teardown, join
 	// after signalling cancellation so the pool cannot outlive the dialog.
-	m_parsePool.waitForDone();
+	m_loadPool.waitForDone();
 }
 
 // MARK: - UI layout
 
-void BinFilterDialog::setupUi()
+void AvbFilterDialog::setupUi()
 {
 	auto *root = new QVBoxLayout(this);
 	root->setContentsMargins(20, 20, 20, 20);
@@ -202,8 +202,8 @@ void BinFilterDialog::setupUi()
 	framedLayout->addWidget(segBar);
 	binsLayout->addWidget(binsFrame);
 
-	connect(btnPlus, &QToolButton::clicked, this, &BinFilterDialog::onAddBinsClicked);
-	connect(btnMinus, &QToolButton::clicked, this, &BinFilterDialog::onRemoveSelectedBinsClicked);
+	connect(btnPlus, &QToolButton::clicked, this, &AvbFilterDialog::onAddBinsClicked);
+	connect(btnMinus, &QToolButton::clicked, this, &AvbFilterDialog::onRemoveSelectedBinsClicked);
 
 	connect(m_binList, &QListWidget::itemSelectionChanged, this,
 			[this, btnMinus]()
@@ -297,8 +297,8 @@ void BinFilterDialog::setupUi()
 				auto sel = m_chainList->selectedItems();
 				if (sel.isEmpty())
 					return;
-				const int idx = sel.first()->data(Qt::UserRole).toInt();
-				onRemoveStep(idx);
+				const int stepIndex = sel.first()->data(Qt::UserRole).toInt();
+				onRemoveStep(stepIndex);
 			});
 
 	root->addWidget(chainGroup);
@@ -312,9 +312,9 @@ void BinFilterDialog::setupUi()
 	footer->addWidget(btnDone);
 	root->addLayout(footer);
 
-	connect(m_intersectButton, &QPushButton::clicked, this, &BinFilterDialog::onIntersectClicked);
-	connect(m_subtractButton, &QPushButton::clicked, this, &BinFilterDialog::onSubtractClicked);
-	connect(m_addButton, &QPushButton::clicked, this, &BinFilterDialog::onAddClicked);
+	connect(m_intersectButton, &QPushButton::clicked, this, &AvbFilterDialog::onIntersectClicked);
+	connect(m_subtractButton, &QPushButton::clicked, this, &AvbFilterDialog::onSubtractClicked);
+	connect(m_addButton, &QPushButton::clicked, this, &AvbFilterDialog::onAddClicked);
 	connect(btnDone, &QPushButton::clicked, this, &QDialog::hide);
 
 	// Tickbox changes drive the summary text and op-button enable state.
@@ -328,13 +328,13 @@ void BinFilterDialog::setupUi()
 
 // MARK: - UI state
 
-void BinFilterDialog::refreshBinSelectionUi()
+void AvbFilterDialog::refreshBinSelectionUi()
 {
 	const auto loading = std::count_if(m_bins.cbegin(), m_bins.cend(),
-									   [](const LoadedBin &entry)
-									   { return entry.loading; });
+									   [](const BinLoadEntry &binEntry)
+									   { return binEntry.loading; });
 	const auto loaded = m_bins.size() - loading;
-	const auto ready = checkedBins().size();
+	const auto ready = checkedLoadedBins().size();
 	QString summary = tr("%1 loaded, %2 ticked").arg(Format::count(loaded), Format::count(ready));
 	if (loading > 0)
 		summary += tr(", %1 loading").arg(Format::count(loading));
@@ -353,7 +353,7 @@ void BinFilterDialog::refreshBinSelectionUi()
 
 // MARK: - Drag and drop
 
-bool BinFilterDialog::hasAcceptedDragPath(const QMimeData *mime) const
+bool AvbFilterDialog::hasAcceptedDragPath(const QMimeData *mime) const
 {
 	return DragDropUtil::hasAnyLocalUrl(
 		mime, [this](const QString &path)
@@ -362,7 +362,7 @@ bool BinFilterDialog::hasAcceptedDragPath(const QMimeData *mime) const
 
 // Same blue ring + tint the Volumes list draws (VolumeListWidget). Kept as a
 // duplicate string on purpose: two static drop targets, no shared helper.
-void BinFilterDialog::setDropHighlight(bool on)
+void AvbFilterDialog::setDropHighlight(bool on)
 {
 	if (on)
 		m_binList->setStyleSheet(QStringLiteral(
@@ -372,7 +372,7 @@ void BinFilterDialog::setDropHighlight(bool on)
 		m_binList->setStyleSheet(QString());
 }
 
-void BinFilterDialog::dragEnterEvent(QDragEnterEvent *event)
+void AvbFilterDialog::dragEnterEvent(QDragEnterEvent *event)
 {
 	m_dragAcceptedPaths.clear();
 	QSet<QString> inspectedPaths;
@@ -386,9 +386,9 @@ void BinFilterDialog::dragEnterEvent(QDragEnterEvent *event)
 		if (inspectedPaths.contains(path))
 			continue;
 		inspectedPaths.insert(path);
-		const AvbHeaderCheck header = path.endsWith(QStringLiteral(".avb"), Qt::CaseInsensitive)
-										  ? AvbParser::inspectHeader(path)
-										  : AvbHeaderCheck{false, tr("Choose an Avid bin file with an .avb extension.")};
+		const AvbHeaderResult header = path.endsWith(QStringLiteral(".avb"), Qt::CaseInsensitive)
+										  ? AvbBinLoader::inspectHeader(path)
+										  : AvbHeaderResult{false, tr("Choose an Avid bin file with an .avb extension.")};
 		if (header.recognized)
 			m_dragAcceptedPaths.insert(path);
 		else
@@ -407,7 +407,7 @@ void BinFilterDialog::dragEnterEvent(QDragEnterEvent *event)
 	}
 }
 
-void BinFilterDialog::dragMoveEvent(QDragMoveEvent *event)
+void AvbFilterDialog::dragMoveEvent(QDragMoveEvent *event)
 {
 	if (hasAcceptedDragPath(event->mimeData()))
 		event->acceptProposedAction();
@@ -415,14 +415,14 @@ void BinFilterDialog::dragMoveEvent(QDragMoveEvent *event)
 		event->ignore();
 }
 
-void BinFilterDialog::dragLeaveEvent(QDragLeaveEvent *event)
+void AvbFilterDialog::dragLeaveEvent(QDragLeaveEvent *event)
 {
 	setDropHighlight(false);
 	m_dragAcceptedPaths.clear();
 	QDialog::dragLeaveEvent(event);
 }
 
-void BinFilterDialog::dropEvent(QDropEvent *event)
+void AvbFilterDialog::dropEvent(QDropEvent *event)
 {
 	setDropHighlight(false);
 	if (!hasAcceptedDragPath(event->mimeData()))
@@ -445,16 +445,16 @@ void BinFilterDialog::dropEvent(QDropEvent *event)
 
 // MARK: - Bin loading
 
-void BinFilterDialog::addBinFromFile(const QString &avbFilePath)
+void AvbFilterDialog::addBinFromFile(const QString &avbFilePath)
 {
 	const QFileInfo info(avbFilePath);
 	const QString canonical = info.canonicalFilePath();
 	const QString path = canonical.isEmpty()
 							 ? QDir::cleanPath(info.absoluteFilePath())
 							 : canonical;
-	for (const LoadedBin &entry : std::as_const(m_bins))
+	for (const BinLoadEntry &existingBin : std::as_const(m_bins))
 	{
-		if (entry.bin.filePath == path)
+		if (existingBin.bin.filePath == path)
 			return;
 	}
 	if (!avbFilePath.endsWith(QStringLiteral(".avb"), Qt::CaseInsensitive))
@@ -468,14 +468,14 @@ void BinFilterDialog::addBinFromFile(const QString &avbFilePath)
 		return;
 	}
 
-	LoadedBin entry;
-	entry.bin.filePath = path;
-	entry.bin.displayName = info.completeBaseName();
-	entry.id = m_nextBinId++;
-	const quint64 id = entry.id;
-	const int row = m_binList->count();
-	m_bins.append(std::move(entry));
-	appendBinItem(row);
+	BinLoadEntry newBinEntry;
+	newBinEntry.bin.filePath = path;
+	newBinEntry.bin.displayName = info.completeBaseName();
+	newBinEntry.binRowId = m_nextBinId++;
+	const quint64 id = newBinEntry.binRowId;
+	const int binRow = m_binList->count();
+	m_bins.append(std::move(newBinEntry));
+	appendBinItem(binRow);
 	refreshBinSelectionUi();
 
 	if (m_chain.isEmpty())
@@ -483,7 +483,7 @@ void BinFilterDialog::addBinFromFile(const QString &avbFilePath)
 	startBinLoad(id, path);
 }
 
-void BinFilterDialog::startBinLoad(quint64 id, const QString &path)
+void AvbFilterDialog::startBinLoad(quint64 id, const QString &path)
 {
 	const auto cancelled = std::make_shared<std::atomic_bool>(false);
 	m_pendingLoads.insert(id, cancelled);
@@ -495,39 +495,39 @@ void BinFilterDialog::startBinLoad(quint64 id, const QString &path)
 				const AvbBin parsed = watcher->result();
 				watcher->deleteLater();
 				completeBinLoad(id, parsed);
-				QTimer::singleShot(0, this, &BinFilterDialog::finishLoadingBatch);
+				QTimer::singleShot(0, this, &AvbFilterDialog::finishLoadingBatch);
 			});
 	// The worker owns its path and shares only the cancellation flag. The
 	// watcher callback is bound to this dialog's lifetime on the GUI thread.
-	watcher->setFuture(QtConcurrent::run(&m_parsePool,
+	watcher->setFuture(QtConcurrent::run(&m_loadPool,
 										 [path, cancelled]()
-										 { return AvbParser::parse(path, cancelled.get()); }));
+										 { return AvbBinLoader::load(path, cancelled.get()); }));
 }
 
-void BinFilterDialog::completeBinLoad(quint64 id, const AvbBin &bin)
+void AvbFilterDialog::completeBinLoad(quint64 id, const AvbBin &bin)
 {
 	// Rows may have been removed, compacted, or re-added while parsing.
 	// Only the original stable ID can receive this result.
-	for (int row = 0; row < m_binList->count(); ++row)
+	for (int binRow = 0; binRow < m_binList->count(); ++binRow)
 	{
-		LoadedBin &entry = m_bins[row];
-		if (entry.id != id)
+		BinLoadEntry &binEntry = m_bins[binRow];
+		if (binEntry.binRowId != id)
 			continue;
 		if (!bin.isUsable())
 		{
-			removeBinRow(row);
+			removeBinRow(binRow);
 			refreshBinSelectionUi();
 			reportLoadFailure(bin);
 			emit binLoaded(bin);
 			return;
 		}
-		entry.bin = bin;
-		entry.loading = false;
-		if (!bin.complete)
+		binEntry.bin = bin;
+		binEntry.loading = false;
+		if (!bin.coverageComplete)
 			emit loadWarning(bin.filePath, bin.warnings.join(QStringLiteral("; ")));
 		if (!bin.mediaFileIds.isEmpty())
 			m_newlyLoadedIds.insert(id);
-		updateBinItem(row);
+		updateBinItem(binRow);
 		refreshBinSelectionUi();
 		m_metadataUpdatePending = true;
 		emit binLoaded(bin);
@@ -535,9 +535,9 @@ void BinFilterDialog::completeBinLoad(quint64 id, const AvbBin &bin)
 	}
 }
 
-void BinFilterDialog::removeBinRow(int row)
+void AvbFilterDialog::removeBinRow(int row)
 {
-	const quint64 id = m_bins[row].id;
+	const quint64 id = m_bins[row].binRowId;
 	const auto cancelled = m_pendingLoads.value(id);
 	if (cancelled)
 		cancelled->store(true, std::memory_order_relaxed);
@@ -547,10 +547,10 @@ void BinFilterDialog::removeBinRow(int row)
 	const std::unique_ptr<QListWidgetItem> removed(m_binList->takeItem(row));
 }
 
-void BinFilterDialog::reportLoadFailure(const AvbBin &bin)
+void AvbFilterDialog::reportLoadFailure(const AvbBin &bin)
 {
 	QStringList reasons;
-	if (bin.valid)
+	if (bin.usable)
 		reasons.append(tr("This bin contains data that MediaMuster does not yet support"));
 	if (!bin.error.isEmpty())
 		reasons.append(bin.error);
@@ -560,14 +560,14 @@ void BinFilterDialog::reportLoadFailure(const AvbBin &bin)
 	emit loadError(bin.filePath, reasons.join(QStringLiteral("; ")));
 }
 
-bool BinFilterDialog::hasLoadingBins() const
+bool AvbFilterDialog::hasLoadingBins() const
 {
 	return std::any_of(m_bins.cbegin(), m_bins.cend(),
-					   [](const LoadedBin &entry)
+					   [](const BinLoadEntry &entry)
 					   { return entry.loading; });
 }
 
-void BinFilterDialog::finishLoadingBatch()
+void AvbFilterDialog::finishLoadingBatch()
 {
 	if (hasLoadingBins())
 		return;
@@ -577,13 +577,13 @@ void BinFilterDialog::finishLoadingBatch()
 		emitBinsChanged();
 	// Rejected attempts must not reactivate a previously cleared filter.
 	if (!m_newlyLoadedIds.isEmpty())
-		maybeAutoIntersect();
+		tryAutoIntersect();
 	else
 		m_autoIntersectPending = false;
 	m_newlyLoadedIds.clear();
 }
 
-void BinFilterDialog::maybeAutoIntersect()
+void AvbFilterDialog::tryAutoIntersect()
 {
 	if (!m_autoIntersectPending || !m_chain.isEmpty())
 		return;
@@ -593,25 +593,25 @@ void BinFilterDialog::maybeAutoIntersect()
 	applyOperation(Operation::Intersect);
 }
 
-void BinFilterDialog::appendBinItem(int idx)
+void AvbFilterDialog::appendBinItem(int binIndex)
 {
 	const QSignalBlocker block(m_binList);
 	m_binList->addItem(QString{});
-	updateBinItem(idx);
+	updateBinItem(binIndex);
 }
 
-void BinFilterDialog::updateBinItem(int idx)
+void AvbFilterDialog::updateBinItem(int binIndex)
 {
-	const LoadedBin &entry = m_bins[idx];
-	const AvbBin &bin = entry.bin;
-	QListWidgetItem *const item = m_binList->item(idx);
+	const BinLoadEntry &binEntry = m_bins[binIndex];
+	const AvbBin &bin = binEntry.bin;
+	QListWidgetItem *const item = m_binList->item(binIndex);
 	const QSignalBlocker block(m_binList);
-	const bool usable = !entry.loading && bin.isUsable();
+	const bool usable = !binEntry.loading && bin.isUsable();
 	item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable |
 				   (usable ? Qt::ItemIsUserCheckable : Qt::NoItemFlags));
 	// Loading rows remain selectable so their outstanding reads can be cancelled.
 	item->setData(Qt::CheckStateRole, usable ? QVariant(Qt::Checked) : QVariant());
-	const QString explanation = binExplanation(bin, entry.loading);
+	const QString explanation = binExplanation(bin, binEntry.loading);
 	item->setText(explanation.isEmpty() ? bin.displayName
 										: bin.displayName + QStringLiteral("\n") + explanation);
 	QStringList details{bin.filePath};
@@ -623,11 +623,11 @@ void BinFilterDialog::updateBinItem(int idx)
 	item->setToolTip(details.join(QStringLiteral("\n")));
 }
 
-void BinFilterDialog::emitBinsChanged()
+void AvbFilterDialog::emitBinsChanged()
 {
 	m_metadataUpdatePending = false;
 	QVector<AvbBin> bins;
-	for (const LoadedBin &entry : std::as_const(m_bins))
+	for (const BinLoadEntry &entry : std::as_const(m_bins))
 	{
 		if (!entry.loading && entry.bin.isUsable())
 			bins.append(entry.bin);
@@ -635,16 +635,16 @@ void BinFilterDialog::emitBinsChanged()
 	emit binsChanged(bins);
 }
 
-void BinFilterDialog::onAddBinsClicked()
+void AvbFilterDialog::onAddBinsClicked()
 {
 	const QStringList paths = QFileDialog::getOpenFileNames(
 		this, tr("Add Avid Bin files"), QString(),
 		tr("Avid Bin files (*.avb)"));
-	for (const QString &p : paths)
-		addBinFromFile(p);
+	for (const QString &avbPath : paths)
+		addBinFromFile(avbPath);
 }
 
-void BinFilterDialog::onRemoveSelectedBinsClicked()
+void AvbFilterDialog::onRemoveSelectedBinsClicked()
 {
 	// 'Selected' means rows the user clicked, not the tickboxes;
 	// tickboxes control which bins participate in operations.
@@ -670,65 +670,65 @@ void BinFilterDialog::onRemoveSelectedBinsClicked()
 	// leading Subtract. Metadata, however, belongs to the retained bins.
 	emitBinsChanged();
 	publishFilter();
-	QTimer::singleShot(0, this, &BinFilterDialog::finishLoadingBatch);
+	QTimer::singleShot(0, this, &AvbFilterDialog::finishLoadingBatch);
 }
 
 // MARK: - Tick helpers
 
-QVector<const AvbBin *> BinFilterDialog::checkedBins() const
+QVector<const AvbBin *> AvbFilterDialog::checkedLoadedBins() const
 {
 	QVector<const AvbBin *> out;
-	for (int i = 0; i < m_binList->count(); ++i)
+	for (int binRow = 0; binRow < m_binList->count(); ++binRow)
 	{
-		const QListWidgetItem *it = m_binList->item(i);
-		if (it->checkState() != Qt::Checked)
+		const QListWidgetItem *binItem = m_binList->item(binRow);
+		if (binItem->checkState() != Qt::Checked)
 			continue;
-		const LoadedBin &entry = m_bins[i];
-		if (!entry.loading && entry.bin.isUsable())
-			out.append(&entry.bin);
+		const BinLoadEntry &binEntry = m_bins[binRow];
+		if (!binEntry.loading && binEntry.bin.isUsable())
+			out.append(&binEntry.bin);
 	}
 	return out;
 }
 
 // MARK: - Chain operations
 
-void BinFilterDialog::onIntersectClicked()
+void AvbFilterDialog::onIntersectClicked()
 {
 	applyOperation(Operation::Intersect);
 }
-void BinFilterDialog::onSubtractClicked()
+void AvbFilterDialog::onSubtractClicked()
 {
 	applyOperation(Operation::Subtract);
 }
-void BinFilterDialog::onAddClicked()
+void AvbFilterDialog::onAddClicked()
 {
 	applyOperation(Operation::Add);
 }
 
-void BinFilterDialog::applyOperation(Operation op)
+void AvbFilterDialog::applyOperation(Operation op)
 {
-	const auto selection = checkedBins();
+	const auto selection = checkedLoadedBins();
 	if (selection.isEmpty())
 		return;
 	m_autoIntersectPending = false;
 	ChainStep step;
-	step.op = op;
+	step.operation = op;
 	for (const AvbBin *bin : selection)
 	{
 		step.binDisplayNames.append(bin->displayName);
-		step.mediaFileIds.unite(bin->mediaFileIds);
-		if (bin->source)
-			step.sources.append(bin->source);
-		if (bin->resolution)
-			step.resolutions.append(bin->resolution);
-		if (!bin->complete)
+		step.fileReferences.unite(bin->mediaFileIds);
+		if (bin->sourceGraph)
+			step.sourceGraphs.append(bin->sourceGraph);
+		if (bin->referenceResult)
+			step.referenceResults.append(bin->referenceResult);
+		if (!bin->coverageComplete)
 		{
 			step.warnings.append(tr("%1: Results may be incomplete").arg(bin->displayName));
 			step.warnings.append(bin->warnings);
 		}
 	}
 	// An operand without usable file identities leaves the current chain unchanged.
-	if (step.mediaFileIds.isEmpty())
+	if (step.fileReferences.isEmpty())
 		return;
 	m_chain.append(std::move(step));
 	rebuildChainList();
@@ -736,7 +736,7 @@ void BinFilterDialog::applyOperation(Operation op)
 	refreshBinSelectionUi();
 }
 
-void BinFilterDialog::clearChain()
+void AvbFilterDialog::clearFilterSteps()
 {
 	m_autoIntersectPending = false;
 	if (m_chain.isEmpty())
@@ -747,7 +747,7 @@ void BinFilterDialog::clearChain()
 	refreshBinSelectionUi();
 }
 
-void BinFilterDialog::onRemoveStep(int index)
+void AvbFilterDialog::onRemoveStep(int index)
 {
 	if (index < 0 || index >= m_chain.size())
 		return;
@@ -758,12 +758,12 @@ void BinFilterDialog::onRemoveStep(int index)
 	refreshBinSelectionUi();
 }
 
-void BinFilterDialog::rebuildChainList()
+void AvbFilterDialog::rebuildChainList()
 {
 	m_chainList->clear();
 	for (const ChainStep &step : std::as_const(m_chain))
 	{
-		const int row = m_chainList->count();
+		const int stepRow = m_chainList->count();
 		const QString binNames =
 			step.binDisplayNames.isEmpty()
 				? tr("(no bins)")
@@ -771,18 +771,18 @@ void BinFilterDialog::rebuildChainList()
 					  .join(QStringLiteral(", "));
 
 		auto *const item = new QListWidgetItem(
-			QStringLiteral("%1.  %2:  %3").arg(row + 1).arg(operationLabel(step.op), binNames));
+			QStringLiteral("%1.  %2:  %3").arg(stepRow + 1).arg(operationLabel(step.operation), binNames));
 		if (!step.warnings.isEmpty())
 			item->setText(item->text() + QStringLiteral("\n") + tr("Results may be incomplete"));
 		item->setToolTip(step.warnings.join(QStringLiteral("\n")));
-		item->setData(Qt::UserRole, row);
+		item->setData(Qt::UserRole, stepRow);
 		m_chainList->addItem(item);
 	}
 }
 
 // MARK: - Emit the ordered chain
 
-void BinFilterDialog::publishFilter()
+void AvbFilterDialog::publishFilter()
 {
 	if (m_chain.isEmpty())
 	{
@@ -792,16 +792,16 @@ void BinFilterDialog::publishFilter()
 	}
 
 	// The chain list already describes the active filter.
-	m_chainSummary->setText(BinFilter{m_chain}.resultsMayBeIncomplete() ? tr("Results may be incomplete") : QString{});
+	m_chainSummary->setText(AvbFilter{m_chain}.resultsMayBeIncomplete() ? tr("Results may be incomplete") : QString{});
 
 	// Deduped, insertion-ordered bin names for the main-window chip
 	// strip. First appearance wins so the chip ordering is stable
 	// across re-emits.
 	QStringList binNames;
 	QSet<QString> seen;
-	for (const ChainStep &s : std::as_const(m_chain))
+	for (const ChainStep &step : std::as_const(m_chain))
 	{
-		for (const QString &name : s.binDisplayNames)
+		for (const QString &name : step.binDisplayNames)
 		{
 			if (!seen.contains(name))
 			{
@@ -811,5 +811,5 @@ void BinFilterDialog::publishFilter()
 		}
 	}
 
-	emit filterChainChanged(BinFilter{m_chain}, binNames);
+	emit filterChainChanged(AvbFilter{m_chain}, binNames);
 }

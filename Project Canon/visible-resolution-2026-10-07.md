@@ -153,7 +153,7 @@ for every format variant.
 
 Older PMR/MDB/MXF/OMF parsers and their supporting Bento/OMF code still support
 meaningful regression suites. Deleting them requires moving that coverage first.
-The `AvbParser` interface is a live adapter over MediaEngine, so it remains needed.
+The `AvbBinLoader` interface is a live adapter over MediaEngine, so it remains needed.
 The earlier database-first engine used about 2.41 GB on this corpus. If further
 allocation work is undertaken, it should preserve the agreed evidence rather than
 discarding facts just to reduce the measurement. The original format-audit findings

@@ -16,7 +16,9 @@ Stages 4–7 remain proposals.
 ## Current status
 
 MediaEngine lives in `src/mediaengine` under namespace `MediaEngine`. Its
-`ScanEngine` supplies the source-reading and retention policy to the shared `ScanCoordinator`.
+`ScanEngine` delegates to `ScanCoordinator`, which prepares sources, reads databases
+first, matches files and selects supported metadata. `SourceReceipt` records each
+source's outcome and context without a complete image or graph.
 Naming and source layout do not change reading scope, storage, matching, metadata
 selection or the UI contract.
 
@@ -37,7 +39,8 @@ source images or unused graph archives, including partial/failed/cancelled reads
 Databases are buffered during reading and released after projection; their
 supported claims remain available for matching. AVB reference graphs are used
 by bin filtering and remain available. The [source lifetime contract](source-lifetimes.md)
-defines current ownership. Standalone reader verification can explicitly retain replay. The stage
+defines current ownership. Source-retention switches and reconstruction machinery
+have been removed; reader tests inspect source records directly. The stage
 descriptions below explain each change's scope and trade-offs; approval of one
 does not authorize another.
 

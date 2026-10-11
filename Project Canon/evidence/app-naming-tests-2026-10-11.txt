@@ -1,0 +1,91 @@
+Test project /Users/martymclean/Developer/MediaMuster/build-mediaengine-release
+      Start 15: tst_mediaenginemxf
+      Start 34: tst_fileoperations
+      Start 24: tst_readerregressions
+      Start 33: tst_rebalanceplanner
+ 1/40 Test #24: tst_readerregressions ..............   Passed   18.11 sec
+      Start 27: tst_avbparser
+ 2/40 Test #33: tst_rebalanceplanner ...............   Passed   18.73 sec
+      Start 19: tst_mediaenginedatabase
+ 3/40 Test #34: tst_fileoperations .................   Passed   21.16 sec
+      Start 29: tst_scanner
+ 4/40 Test #15: tst_mediaenginemxf .................   Passed   21.91 sec
+      Start 40: tst_operationui
+ 5/40 Test #19: tst_mediaenginedatabase ............   Passed    9.10 sec
+      Start 20: tst_mediaenginemxfsource
+ 6/40 Test #29: tst_scanner ........................   Passed    6.83 sec
+      Start 32: tst_opjournal
+ 7/40 Test #40: tst_operationui ....................   Passed    6.15 sec
+      Start 39: tst_binfilterdialog
+ 8/40 Test #20: tst_mediaenginemxfsource ...........   Passed    0.76 sec
+      Start 11: tst_mediaenginemdb
+ 9/40 Test #27: tst_avbparser ......................   Passed   11.04 sec
+      Start  9: tst_mediaenginepmr
+10/40 Test #32: tst_opjournal ......................   Passed    1.25 sec
+      Start 38: tst_precomputefilterdialog
+11/40 Test #11: tst_mediaenginemdb .................   Passed    0.76 sec
+      Start 18: tst_mediaenginescan
+12/40 Test #39: tst_binfilterdialog ................   Passed    1.35 sec
+      Start 22: tst_mediaengine_omfprojection
+13/40 Test  #9: tst_mediaenginepmr .................   Passed    0.27 sec
+      Start 12: tst_mediaenginelegacy
+14/40 Test #38: tst_precomputefilterdialog .........   Passed    0.61 sec
+      Start 36: tst_mediatablemodel
+15/40 Test #18: tst_mediaenginescan ................   Passed    0.70 sec
+      Start 16: tst_mediaengineavb
+16/40 Test #22: tst_mediaengine_omfprojection ......   Passed    0.81 sec
+      Start  8: tst_mediaenginediscovery
+17/40 Test #12: tst_mediaenginelegacy ..............   Passed    1.00 sec
+      Start 17: tst_mediaengineavbreferences
+18/40 Test #36: tst_mediatablemodel ................   Passed    0.75 sec
+      Start 37: tst_mediafilterproxy
+19/40 Test #16: tst_mediaengineavb .................   Passed    0.76 sec
+      Start 14: tst_mediaengineomfisolated
+20/40 Test  #8: tst_mediaenginediscovery ...........   Passed    0.84 sec
+      Start 13: tst_mediaenginemdbisolated
+21/40 Test #17: tst_mediaengineavbreferences .......   Passed    1.25 sec
+      Start 23: tst_mediaengine_mxfprojection
+22/40 Test #37: tst_mediafilterproxy ...............   Passed    1.42 sec
+      Start 10: tst_mediaenginepmrrobustness
+23/40 Test #14: tst_mediaengineomfisolated .........   Passed    1.41 sec
+      Start 21: tst_mediaengine_compressionnames
+24/40 Test #13: tst_mediaenginemdbisolated .........   Passed    1.38 sec
+      Start  6: tst_metadataselectionpolicy
+25/40 Test #23: tst_mediaengine_mxfprojection ......   Passed    1.05 sec
+      Start 35: tst_mediacsv
+26/40 Test #10: tst_mediaenginepmrrobustness .......   Passed    0.91 sec
+      Start  5: tst_mediaevidence
+27/40 Test  #5: tst_mediaevidence ..................   Passed    0.01 sec
+      Start 30: tst_opcleanup
+28/40 Test #30: tst_opcleanup ......................   Passed    0.05 sec
+      Start 31: tst_volumeidentity
+29/40 Test #31: tst_volumeidentity .................   Passed    0.03 sec
+      Start  1: tst_diagnostics
+30/40 Test  #1: tst_diagnostics ....................   Passed    0.02 sec
+      Start  3: tst_pathkey
+31/40 Test  #3: tst_pathkey ........................   Passed    0.02 sec
+      Start  4: tst_format
+32/40 Test  #4: tst_format .........................   Passed    0.01 sec
+      Start 28: tst_avideffects
+33/40 Test #21: tst_mediaengine_compressionnames ...   Passed    0.89 sec
+      Start  2: tst_mobid
+34/40 Test  #2: tst_mobid ..........................   Passed    0.01 sec
+      Start  7: tst_conventions
+35/40 Test  #6: tst_metadataselectionpolicy ........   Passed    0.92 sec
+      Start 26: tst_mediametadata
+36/40 Test #26: tst_mediametadata ..................   Passed    0.01 sec
+      Start 25: tst_omfuid
+37/40 Test #25: tst_omfuid .........................   Passed    0.01 sec
+38/40 Test #35: tst_mediacsv .......................   Passed    0.88 sec
+39/40 Test #28: tst_avideffects ....................   Passed    0.78 sec
+40/40 Test  #7: tst_conventions ....................   Passed    0.94 sec
+
+100% tests passed, 0 tests failed out of 40
+
+Label Time Summary:
+core          =   1.93 sec*proc (7 tests)
+media         =  80.59 sec*proc (22 tests)
+operations    =  41.21 sec*proc (5 tests)
+ui            =  11.16 sec*proc (6 tests)
+
+Total Test time (real) =  34.08 sec

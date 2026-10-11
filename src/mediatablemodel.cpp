@@ -142,7 +142,7 @@ void MediaTableModel::applyTransfer(const QString &source, const QString &destin
 		// Update only this row's evidence. The retained scan is an immutable
 		// receipt of the original location, shared with other physical rows.
 		MediaEngine::selectMetadata(transferred.evidence);
-		m_binMetadata.apply(transferred);
+		m_binMetadata.applyTo(transferred);
 		if (copy)
 		{
 			transferred.kelpieId = m_ids.allocate();
@@ -174,7 +174,7 @@ void MediaTableModel::applyAvbMetadata(bool notify)
 	for (int row = 0; row < rows; ++row)
 	{
 		MediaFile &file = m_files[row];
-		if (m_binMetadata.apply(file))
+		if (m_binMetadata.applyTo(file))
 		{
 			if (firstChanged < 0)
 				firstChanged = row;

@@ -1,7 +1,7 @@
 # MediaEngine terminology and ownership
 
 **MediaEngine** is the umbrella name for discovery, format reading, metadata
-interpretation and source storage. Its code lives in `src/mediaengine/`, under
+interpretation and reconciliation. Its code lives in `src/mediaengine/`, under
 namespace `MediaEngine`.
 
 | Component | Role |
@@ -11,7 +11,7 @@ namespace `MediaEngine`.
 | `ScanCoordinator` | Runs discovery, reads databases first, schedules necessary headers, matches identities and selects metadata. |
 | `PmrReader`, `MdbReader`, `MxfReader`, `OmfReader`, `AvbReader` | Decode their source formats with source-local records and read outcomes. MXF and OMF readers remain independent. |
 | `projectPmr`, `projectMdb`, `projectMxf`, `projectOmf` | Interpret recorded properties as qualified file/master facts. Projectors establish meaning and ownership; they do not choose the UI's preferred source. |
-| Source images, archives and `SourceStore` | Supply optional replay backing for tests and format verification. Normal scans retain supported evidence without complete source images or graphs. Original bytes and decoded records are different representations. |
+| `SourceReceipt` | Keeps a source's captured context, container, read outcome, reason and warnings. It owns no complete source image or graph. |
 | `SourceSnapshot` | Identifies the source and captured context behind an observation. |
 | `MediaEvidence` | Keeps observations, alternatives, read states, basis, eligibility, agreement and selected results. |
 | Metadata selection policy | One compiled preference row per supported property. Scanning and loaded-bin enrichment consume the same selections. |
@@ -19,8 +19,8 @@ namespace `MediaEngine`.
 
 The two build targets, `mediamuster_mediaengine_core` and
 `mediamuster_mediaengine`, are parts of this implementation: readers/coordination
-and source retention. The default `ScanEngine` uses `MetadataOnly` for
-PMR/MDB/MXF/OMF sources: supported values, original observation bytes, alternatives,
+and the public scan entry point. PMR/MDB/MXF/OMF reading has one lifetime:
+supported values, original observation bytes, alternatives,
 coverage, source receipts and selection evidence survive projection. Images and
 unused source graphs are temporary reading storage. Complete source graphs,
 unprojected properties and framing details are not retained, so scan-time source
@@ -32,11 +32,11 @@ database facts remain available for matching across folders and reporting unmatc
 references. AVB loading is independent: bin graphs remain retained because reference
 resolution, filtering and enrichment actively use them.
 
-The diagnostic comparison's `archive`, `native` and `metadata` modes use this same
-engine and format readers. `archive` retains graph archives, `native` retains native
-database/MXF replay backing, and `metadata` uses the normal retention policy.
-The latter compares all retained row evidence and receipts without source
-replay; replay modes remain available for detailed source verification.
+The read-only scan probe uses this same engine. It checks retained row evidence,
+source receipts, read decisions, callbacks, input stamps and CSV, and measures
+scan time and process memory. Reader and projector tests inspect genuine source
+records directly while those inputs are alive; they also check that extracted
+evidence survives the reading storage's lifetime.
 
 Outside this folder, `MediaScanner` owns the background/UI boundary. The
 presentation adapter supplies selected facts to the table and CSV. The interface

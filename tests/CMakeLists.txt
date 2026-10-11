@@ -71,7 +71,7 @@ set(MEDIAENGINE_ISOLATED_VALUE_SOURCES
     ${CMAKE_SOURCE_DIR}/src/mediaengine/projection.cpp
     ${CMAKE_SOURCE_DIR}/src/mediaengine/compressionnames_p.cpp
     ${CMAKE_SOURCE_DIR}/src/mediaengine/metadataselectionpolicy.cpp
-    ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
+    ${CMAKE_SOURCE_DIR}/src/effectcatalogue.cpp
     ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
@@ -101,46 +101,24 @@ target_compile_definitions(tst_mediaengineavb PRIVATE FIXTURES_DIR="${CMAKE_SOUR
 mediamuster_add_test(tst_mediaengineavbreferences media)
 target_link_libraries(tst_mediaengineavbreferences PRIVATE mediamuster_mediaengine_core)
 
-# Lossless RAM storage: genuine reader graphs, typed values and source receipts.
-mediamuster_add_test(tst_sourcearchive media)
-target_link_libraries(tst_sourcearchive PRIVATE mediamuster_mediaengine_core)
-target_compile_definitions(tst_sourcearchive PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
-
-# MediaEngine matching, projections and presentation with archive storage.
-mediamuster_add_test(tst_mediaenginescanarchive media
+# MediaEngine matching, projections, header scheduling and presentation.
+mediamuster_add_test(tst_mediaenginescan media
     ${CMAKE_SOURCE_DIR}/src/mediaengineadapter.cpp
-    ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
+    ${CMAKE_SOURCE_DIR}/src/effectcatalogue.cpp
 )
-target_link_libraries(tst_mediaenginescanarchive PRIVATE mediamuster_mediaengine_core)
-target_compile_definitions(tst_mediaenginescanarchive PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
-
-# Run the same matching/header-scheduling regressions against live native storage.
-add_executable(tst_mediaenginescan tst_mediaenginescanarchive.cpp
-    ${CMAKE_SOURCE_DIR}/src/mediaengineadapter.cpp
-    ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
-)
-target_link_libraries(tst_mediaenginescan PRIVATE Qt6::Test mediamuster_mediaengine)
-target_include_directories(tst_mediaenginescan PRIVATE ${CMAKE_SOURCE_DIR}/src)
-target_compile_definitions(tst_mediaenginescan PRIVATE
-    MEDIAMUSTER_TEST_NATIVE_STORAGE
-    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
-)
-add_test(NAME tst_mediaenginescan COMMAND tst_mediaenginescan
-    -o -,txt -o ${CMAKE_CURRENT_BINARY_DIR}/tst_mediaenginescan.result.txt,txt)
-set_tests_properties(tst_mediaenginescan PROPERTIES LABELS "media")
+target_link_libraries(tst_mediaenginescan PRIVATE mediamuster_mediaengine)
+target_compile_definitions(tst_mediaenginescan PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
 mediamuster_add_test(tst_mediaenginedatabase media)
 target_link_libraries(tst_mediaenginedatabase PRIVATE mediamuster_mediaengine)
 target_compile_definitions(tst_mediaenginedatabase PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
-# Native sparse MXF bytes and restoration through the verified format reader.
-foreach(suite IN ITEMS tst_mediaenginemxfimage tst_mediaenginemxfsource)
-    mediamuster_add_test(${suite} media)
-    target_link_libraries(${suite} PRIVATE mediamuster_mediaengine)
-    target_compile_definitions(${suite} PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
-endforeach()
+# MXF preparation: supported evidence owns its values after reading finishes.
+mediamuster_add_test(tst_mediaenginemxfsource media)
+target_link_libraries(tst_mediaenginemxfsource PRIVATE mediamuster_mediaengine)
+target_compile_definitions(tst_mediaenginemxfsource PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
-# Read-only storage comparison. Run each storage mode in its own process.
+# Read-only scan profiler and supported-metadata/evidence comparison.
 add_executable(mediaengine_compare mediaengine_compare.cpp
     ${CMAKE_SOURCE_DIR}/src/mediaengineadapter.cpp
     ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp
@@ -181,11 +159,11 @@ mediamuster_add_test(tst_mediametadata media
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 
-# AvbParser: complete structured documents in both byte orders, malformed
+# AvbBinLoader: complete structured documents in both byte orders, malformed
 # object/reference boundaries, typed identities and metadata ownership, plus
 # the two real OMF-era bins in fixtures/omf.
 mediamuster_add_test(tst_avbparser media
-    ${CMAKE_SOURCE_DIR}/src/avbparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/avbbinloader.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 target_link_libraries(tst_avbparser PRIVATE mediamuster_mediaengine_core)
@@ -194,9 +172,9 @@ target_compile_definitions(tst_avbparser PRIVATE
 )
 
 # AvidEffects: precompute clip name -> Avid effect name + palette
-# category, from the catalogue compiled into avideffects.cpp itself.
+# category, from the catalogue compiled into effectcatalogue.cpp itself.
 mediamuster_add_test(tst_avideffects media
-    ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
+    ${CMAKE_SOURCE_DIR}/src/effectcatalogue.cpp
 )
 
 mediamuster_add_test(tst_scanner media
@@ -206,7 +184,7 @@ mediamuster_add_test(tst_scanner media
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mediascanner.cpp
     ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
-    ${CMAKE_SOURCE_DIR}/src/avideffects.cpp
+    ${CMAKE_SOURCE_DIR}/src/effectcatalogue.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 target_link_libraries(tst_scanner PRIVATE Qt6::Concurrent mediamuster_mediaengine)
@@ -278,7 +256,7 @@ mediamuster_add_test(tst_mediacsv ui ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp)
 # The model is QtCore only (QAbstractTableModel); no widgets, no icons.
 mediamuster_add_test(tst_mediatablemodel ui
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/binmetadataresolver.cpp
+    ${CMAKE_SOURCE_DIR}/src/avbmetadataresolver.cpp
     ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp
 )
 
@@ -286,7 +264,7 @@ mediamuster_add_test(tst_mediatablemodel ui
 mediamuster_add_test(tst_mediafilterproxy ui
     ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/binmetadataresolver.cpp
+    ${CMAKE_SOURCE_DIR}/src/avbmetadataresolver.cpp
 )
 
 # Precompute picker: choose branches and a volume, then use the table filter.
@@ -294,18 +272,18 @@ mediamuster_add_test(tst_precomputefilterdialog ui
     ${CMAKE_SOURCE_DIR}/src/precomputefilterdialog.cpp
     ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/binmetadataresolver.cpp
+    ${CMAKE_SOURCE_DIR}/src/avbmetadataresolver.cpp
 )
 target_link_libraries(tst_precomputefilterdialog PRIVATE Qt6::Widgets)
 
 # Bin picker: asynchronous loading/status and ordered expressions through the
 # actual proxy, including empty operands and removed pending reads.
 mediamuster_add_test(tst_binfilterdialog ui
-    ${CMAKE_SOURCE_DIR}/src/binfilterdialog.cpp
-    ${CMAKE_SOURCE_DIR}/src/avbparser.cpp
+    ${CMAKE_SOURCE_DIR}/src/avbfilterdialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/avbbinloader.cpp
     ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/binmetadataresolver.cpp
+    ${CMAKE_SOURCE_DIR}/src/avbmetadataresolver.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 target_link_libraries(tst_binfilterdialog PRIVATE Qt6::Widgets Qt6::Concurrent mediamuster_mediaengine_core)

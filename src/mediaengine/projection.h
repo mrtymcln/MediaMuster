@@ -1,8 +1,8 @@
 #pragma once
 
-// Gives understood source properties their application meaning. The original
-// ParsedSource remains the authority: projections retain its object references
-// and observations, and never merge physical files or choose a display winner.
+// Gives understood source properties their application meaning. Projections own
+// the observations and source references they need after reading finishes. They
+// never merge physical files or choose a display winner.
 
 #include "scanmodel.h"
 #include "mediaduration.h"

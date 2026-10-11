@@ -23,6 +23,20 @@ source state tested at each stage: [live integration](canon2-live-integration-20
 [media retention](mediaengine-media-retention-2026-10-11.md).
 The [database lifetime report](mediaengine-database-lifetime-2026-10-11.md) records
 the all-source policy, its preservation checks and measured RAM/speed limits.
+The [source receipt cleanup](mediaengine-source-receipt-cleanup-2026-10-11.md)
+records removal of unused reconstruction machinery and policy switches, the
+permanent scoped reading path, exact metadata/evidence comparisons and measurements.
+`SourceReceipt` is the current per-source record; loaded AVB graphs remain available
+for active bin consumers. Earlier implementation reports retain their dated state.
+The [app naming review](app-naming-review-2026-10-11.md) and its
+[searchable inventory](app-naming-review-2026-10-11.html) group related components
+and propose names that describe their roles. The full declaration inventory,
+including local variables, remains available without generated prefix suggestions.
+Its dropdowns record
+chosen names and download a TXT for a later batch rename. They do not rename code.
+The [applied naming batch](app-naming-applied-2026-10-11.md) records the user’s
+exported choices, approved corrections and passing integration checks. The dated
+review inventory describes the source before that batch.
 Compression changes remain on hold. Project Canon remains the requirements folder
 name: canonical correctness is an objective, not a claim that every parser rule
 is proven. Dated verification records retain their source-state limits.
@@ -154,11 +168,12 @@ termination in build `e47299c`. The earlier local memory acceptance does not
 qualify that workload; large-scan storage and failure reporting now need correction.
 The [RAM storage repair proposal](ram-storage-repair-proposal-2026-10-09.md)
 records the Qt/C++17 design and bounded genuine-source archive measurements.
-The [implemented RAM source archive](ram-source-archive-implementation-2026-10-09.md)
-now preserves typed records, relationships and source identities in compressed
-RAM. All 41 suites pass; full local graph/row comparisons and CSV match the
-baseline. The final local scan retains about 417 MB instead of 2.37 GB, with
-additional scanning CPU time. Windows/NEXIS capacity verification remains
+The [9 October RAM source archive](ram-source-archive-implementation-2026-10-09.md)
+preserved typed records, relationships and source identities in compressed RAM
+at that stage. All 41 suites passed; full local graph/row comparisons and CSV
+matched the baseline. Its local scan retained about 417 MB instead of 2.37 GB,
+with additional scanning CPU time. That storage has since been superseded by the
+current source lifetime contract. Windows/NEXIS capacity verification remains
 outstanding.
 
 The [MDVX and remaining performance review](mdvx-performance-review-2026-10-09.md)
@@ -420,11 +435,12 @@ Only the selected implementation remains in the current MediaEngine source.
 
 - [MediaEngine names and retention plan](newtestament-retention-plan-2026-10-10.md):
   no-loss optimization candidates, source replay sacrifices
-  and the correctness boundary; proposal only apart from the naming change.
+  and the correctness boundary; steps 1–3 are approved and implemented,
+  while steps 4–7 remain proposals.
 - [Lossless compression estimate](canon2-compression-payload-estimate-2026-10-10.md):
   measured native payload reductions and the limits of whole-app RAM projections.
-- [MediaEngine live integration](canon2-live-integration-2026-10-10.md): current scanner
-  engine, native source storage, unchanged behavior and remaining qualification.
+- [MediaEngine live integration](canon2-live-integration-2026-10-10.md): dated scanner
+  integration, then-native source storage, unchanged behavior and qualification limits.
 - [Original live connection](live-connection-2026-10-04.md): shared scanner and
   metadata integration, approved priorities, retained evidence and earlier verification.
 - [Root membership corrections](root-membership-corrections-2026-10-08.md): active

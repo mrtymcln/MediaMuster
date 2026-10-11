@@ -3,7 +3,7 @@
 Recorded 4 October 2026. This document describes the new bin reader work and
 its evidence. The user confirmed **engine first**: implement and verify the
 reader and resolver now; do not change the live UI in this stage. Both engines
-are implemented, built and tested. The existing production `AvbParser` remains
+are implemented, built and tested. The existing production `AvbBinLoader` remains
 a separate implementation. Live filtering, physical-file matching and the new
 picker are subsequent integration work.
 

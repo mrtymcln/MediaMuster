@@ -18,13 +18,13 @@ namespace MediaEngine
 	namespace
 	{
 		using Outcome = ParsedSource::Outcome;
-		using Detail::AvbCursor;
-		using Detail::AvbFailure;
+		using Detail::AvbFieldReader;
+		using Detail::AvbReadFailure;
 
 		void check(const Cancellation &cancellation)
 		{
 			if (cancellation.cancelled())
-				throw AvbFailure{Outcome::Cancelled, QStringLiteral("AVB read cancelled.")};
+				throw AvbReadFailure{Outcome::Cancelled, QStringLiteral("AVB read cancelled.")};
 		}
 
 		int severity(Outcome outcome)
@@ -88,7 +88,7 @@ namespace MediaEngine
 				  m_modified(m_file ? m_file->fileTime(QFileDevice::FileModificationTime) : QDateTime{})
 			{
 				if (m_extent < 0 || !m_device.seek(0))
-					throw AvbFailure{Outcome::IoError, QStringLiteral("Cannot determine AVB length or seek to its beginning.")};
+					throw AvbReadFailure{Outcome::IoError, QStringLiteral("Cannot determine AVB length or seek to its beginning.")};
 			}
 
 			qint64 position() const { return m_position; }
@@ -98,17 +98,17 @@ namespace MediaEngine
 			void append(QByteArray &bytes, qint64 count)
 			{
 				if (count < 0)
-					throw AvbFailure{Outcome::Malformed, QStringLiteral("Negative AVB read length.")};
+					throw AvbReadFailure{Outcome::Malformed, QStringLiteral("Negative AVB read length.")};
 				std::array<char, 16384> buffer{};
 				while (count)
 				{
 					check(m_cancellation);
 					if (!remaining())
-						throw AvbFailure{Outcome::Incomplete, QStringLiteral("AVB ends during a field at byte %1.").arg(m_position)};
+						throw AvbReadFailure{Outcome::Incomplete, QStringLiteral("AVB ends during a field at byte %1.").arg(m_position)};
 					const qint64 request = std::min({count, remaining(), qint64(buffer.size())});
 					const qint64 received = m_device.read(buffer.data(), request);
 					if (received <= 0)
-						throw AvbFailure{received == 0 && m_device.atEnd() ? Outcome::Incomplete : Outcome::IoError,
+						throw AvbReadFailure{received == 0 && m_device.atEnd() ? Outcome::Incomplete : Outcome::IoError,
 										 QStringLiteral("Cannot read AVB at byte %1: %2").arg(m_position).arg(m_device.errorString())};
 					bytes.append(buffer.data(), received);
 					m_position += received;
@@ -121,9 +121,9 @@ namespace MediaEngine
 			{
 				check(m_cancellation);
 				if (count < 0 || count > remaining())
-					throw AvbFailure{Outcome::Incomplete, QStringLiteral("AVB chunk extends beyond the available file.")};
+					throw AvbReadFailure{Outcome::Incomplete, QStringLiteral("AVB chunk extends beyond the available file.")};
 				if (!m_device.seek(m_position + count))
-					throw AvbFailure{Outcome::IoError, QStringLiteral("Cannot seek past AVB chunk: %1").arg(m_device.errorString())};
+					throw AvbReadFailure{Outcome::IoError, QStringLiteral("Cannot seek past AVB chunk: %1").arg(m_device.errorString())};
 				m_position += count;
 			}
 
@@ -131,7 +131,7 @@ namespace MediaEngine
 			{
 				check(m_cancellation);
 				if (m_device.size() != m_extent || (m_file && m_file->fileTime(QFileDevice::FileModificationTime) != m_modified))
-					throw AvbFailure{Outcome::Incomplete, QStringLiteral("AVB source size or modification time changed during reading; check this source again.")};
+					throw AvbReadFailure{Outcome::Incomplete, QStringLiteral("AVB source size or modification time changed during reading; check this source again.")};
 			}
 
 		private:
@@ -148,28 +148,28 @@ namespace MediaEngine
 			return name + QLatin1Char('[') + QString::number(index) + QStringLiteral("]");
 		}
 
-		void version(AvbCursor &cursor, quint8 value)
+		void version(AvbFieldReader &cursor, quint8 value)
 		{
-			cursor.tag(2);
-			cursor.tag(value);
+			cursor.expectTag(2);
+			cursor.expectTag(value);
 		}
 
-		void colour(AvbCursor &cursor, const QString &name)
+		void colour(AvbFieldReader &cursor, const QString &name)
 		{
 			if (cursor.s16(name + QStringLiteral(".version")) != 1)
-				cursor.unsupported(QStringLiteral("Unrecognised AVB colour layout in %1.").arg(name));
+				cursor.failUnsupported(QStringLiteral("Unrecognised AVB colour layout in %1.").arg(name));
 			cursor.u16(name + QStringLiteral(".red"));
 			cursor.u16(name + QStringLiteral(".green"));
 			cursor.u16(name + QStringLiteral(".blue"));
 		}
 
-		void bin(AvbCursor &cursor, bool first)
+		void bin(AvbFieldReader &cursor, bool first)
 		{
-			cursor.tag(2);
+			cursor.expectTag(2);
 			const auto layout = cursor.u8(QStringLiteral("Bin.version"));
 			if (layout != 14 && layout != 15)
-				cursor.unsupported(QStringLiteral("AVB Bin version %1 has no established layout.").arg(layout));
-			cursor.ref(QStringLiteral("Bin.view_setting"));
+				cursor.failUnsupported(QStringLiteral("AVB Bin version %1 has no established layout.").arg(layout));
+			cursor.readObjectReference(QStringLiteral("Bin.view_setting"));
 			cursor.u64(QStringLiteral("Bin.uid"));
 			const quint32 count = layout == 14 ? cursor.u16(QStringLiteral("Bin.item_count"))
 											   : cursor.u32(QStringLiteral("Bin.item_count"));
@@ -177,7 +177,7 @@ namespace MediaEngine
 			for (quint32 i = 0; i < count; ++i)
 			{
 				const auto item = indexed(QStringLiteral("Bin.items"), i);
-				cursor.ref(item + QStringLiteral(".mob"));
+				cursor.readObjectReference(item + QStringLiteral(".mob"));
 				cursor.s16(item + QStringLiteral(".x"));
 				cursor.s16(item + QStringLiteral(".y"));
 				cursor.s32(item + QStringLiteral(".keyframe"));
@@ -205,30 +205,30 @@ namespace MediaEngine
 			cursor.s16(QStringLiteral("Bin.mac_font_size"));
 			cursor.s16(QStringLiteral("Bin.mac_image_scale"));
 			if (cursor.s16(QStringLiteral("Bin.home_rect.version")) != 1)
-				cursor.unsupported(QStringLiteral("Unrecognised AVB Bin rectangle layout."));
+				cursor.failUnsupported(QStringLiteral("Unrecognised AVB Bin rectangle layout."));
 			for (int i = 0; i < 4; ++i)
 				cursor.s16(indexed(QStringLiteral("Bin.home_rect.coordinates"), i));
 			colour(cursor, QStringLiteral("Bin.background_color"));
 			colour(cursor, QStringLiteral("Bin.forground_color"));
 			cursor.s16(QStringLiteral("Bin.ql_image_scale"));
-			cursor.ref(QStringLiteral("Bin.attributes"));
+			cursor.readObjectReference(QStringLiteral("Bin.attributes"));
 			cursor.boolean(QStringLiteral("Bin.was_iconic"));
 			if (first)
 			{
 				version(cursor, 1);
 				cursor.s32(QStringLiteral("BinFirst.unknown_s32"));
 			}
-			cursor.tag(3);
+			cursor.expectTag(3);
 		}
 
-		void viewSetting(AvbCursor &cursor)
+		void viewSetting(AvbFieldReader &cursor)
 		{
 			version(cursor, 6);
 			cursor.string(QStringLiteral("Setting.name"));
 			cursor.string(QStringLiteral("Setting.kind"));
 			cursor.s16(QStringLiteral("Setting.attr_count"));
 			cursor.s16(QStringLiteral("Setting.attr_type"));
-			cursor.ref(QStringLiteral("Setting.attributes"));
+			cursor.readObjectReference(QStringLiteral("Setting.attributes"));
 			version(cursor, 10);
 			const auto count = cursor.u16(QStringLiteral("BinViewSetting.column_count"));
 			cursor.requireCount(count, 7);
@@ -240,28 +240,28 @@ namespace MediaEngine
 				cursor.s16(column + QStringLiteral(".type"));
 				cursor.boolean(column + QStringLiteral(".hidden"));
 			}
-			for (int tag = cursor.extension(); tag >= 0; tag = cursor.extension())
+			for (int tag = cursor.readExtensionTag(); tag >= 0; tag = cursor.readExtensionTag())
 			{
 				if (tag != 1)
-					cursor.unsupported(QStringLiteral("BinViewSetting extension %1 has no established layout.").arg(tag));
-				cursor.tag(69);
+					cursor.failUnsupported(QStringLiteral("BinViewSetting extension %1 has no established layout.").arg(tag));
+				cursor.expectTag(69);
 				const auto descriptors = cursor.s16(QStringLiteral("BinViewSetting.format_descriptor_count"));
 				cursor.requireCount(descriptors, 13);
 				for (qint16 i = 0; i < descriptors; ++i)
 				{
 					const auto descriptor = indexed(QStringLiteral("BinViewSetting.format_descriptors"), i);
-					cursor.tag(69);
+					cursor.expectTag(69);
 					cursor.s16(descriptor + QStringLiteral(".vcid_free_column_id"));
-					cursor.tag(71);
+					cursor.expectTag(71);
 					const auto size = cursor.s32(descriptor + QStringLiteral(".data_size"));
-					cursor.tag(76);
+					cursor.expectTag(76);
 					// The reference reader preserves a four-byte prefix but the writer
 					// gives it two words. Retain exact bytes without guessing its meaning.
-					cursor.raw(descriptor + QStringLiteral(".text_prefix"), 4);
-					cursor.text(descriptor + QStringLiteral(".format_descriptor"), size, TextEncoding::Utf8);
+					cursor.readBytes(descriptor + QStringLiteral(".text_prefix"), 4);
+					cursor.readText(descriptor + QStringLiteral(".format_descriptor"), size, TextEncoding::Utf8);
 				}
 			}
-			cursor.tag(3);
+			cursor.expectTag(3);
 		}
 
 		class Reader
@@ -283,7 +283,7 @@ namespace MediaEngine
 				{
 					check(m_cancellation);
 					if (!m_input.remaining())
-						throw AvbFailure{Outcome::Incomplete, QStringLiteral("AVB ends before declared object %1.").arg(handle)};
+						throw AvbReadFailure{Outcome::Incomplete, QStringLiteral("AVB ends before declared object %1.").arg(handle)};
 					chunk(handle);
 					// Release this object's growth space before reading the next one.
 					if (!m_cancellation.cancelled())
@@ -327,14 +327,14 @@ namespace MediaEngine
 					else if (bytes == QByteArray::fromHex("0006"))
 						m_bigEndian = true;
 					else
-						throw AvbFailure{Outcome::Malformed, QStringLiteral("Invalid AVB byte-order signature.")};
+						throw AvbReadFailure{Outcome::Malformed, QStringLiteral("Invalid AVB byte-order signature.")};
 					m_input.append(bytes, 6);
 					if (bytes.mid(2) != "Domain")
-						throw AvbFailure{Outcome::Malformed, QStringLiteral("Invalid AVB Domain signature.")};
+						throw AvbReadFailure{Outcome::Malformed, QStringLiteral("Invalid AVB Domain signature.")};
 					m_result.container = ParsedSource::Container::Avb;
 					m_input.append(bytes, 4);
 					if (bytes.right(4) != (m_bigEndian ? "OBJD" : "DJBO"))
-						throw AvbFailure{Outcome::Malformed, QStringLiteral("AVB header is not an OBJD document.")};
+						throw AvbReadFailure{Outcome::Malformed, QStringLiteral("AVB header is not an OBJD document.")};
 					const auto typeOffset = bytes.size();
 					appendString(bytes);
 					QByteArrayView documentType(bytes.constData() + typeOffset + 2, bytes.size() - typeOffset - 2);
@@ -343,63 +343,63 @@ namespace MediaEngine
 					while (!documentType.empty() && documentType.back() == '\0')
 						documentType = documentType.first(documentType.size() - 1);
 					if (documentType != "AObjDoc")
-						throw AvbFailure{Outcome::Unsupported, QStringLiteral("Unrecognised AVB document type.")};
+						throw AvbReadFailure{Outcome::Unsupported, QStringLiteral("Unrecognised AVB document type.")};
 					m_input.append(bytes, 1);
 					if (quint8(bytes.back()) != 4)
-						throw AvbFailure{Outcome::Unsupported, QStringLiteral("Unrecognised AVB document version.")};
+						throw AvbReadFailure{Outcome::Unsupported, QStringLiteral("Unrecognised AVB document version.")};
 					appendString(bytes);
 					m_input.append(bytes, 28);
 					appendString(bytes);
 					m_input.append(bytes, 16);
 				}
-				catch (const AvbFailure &)
+				catch (const AvbReadFailure &)
 				{
 					retained(m_result.unownedProperties, QStringLiteral("Document.UnparsedHeader"), 0, 0,
 							 std::move(bytes), QStringLiteral("Partial header retained before input failure."));
 					throw;
 				}
-				AvbCursor cursor(bytes, 0, m_bigEndian, m_result, nullptr, m_cancellation);
+				AvbFieldReader cursor(bytes, 0, m_bigEndian, m_result, nullptr, m_cancellation);
 				try
 				{
-					cursor.raw(QStringLiteral("Document.byte_order"), 2);
-					cursor.text(QStringLiteral("Document.magic"), 6, TextEncoding::Ascii);
-					if (cursor.fourcc(QStringLiteral("Document.class_id")) != "OBJD")
-						cursor.malformed(QStringLiteral("AVB header is not an OBJD document."));
+					cursor.readBytes(QStringLiteral("Document.byte_order"), 2);
+					cursor.readText(QStringLiteral("Document.magic"), 6, TextEncoding::Ascii);
+					if (cursor.readFourcc(QStringLiteral("Document.class_id")) != "OBJD")
+						cursor.failMalformed(QStringLiteral("AVB header is not an OBJD document."));
 					if (cursor.string(QStringLiteral("Document.type")) != QStringLiteral("AObjDoc"))
-						cursor.unsupported(QStringLiteral("Unrecognised AVB document type."));
+						cursor.failUnsupported(QStringLiteral("Unrecognised AVB document type."));
 					if (cursor.u8(QStringLiteral("Document.version")) != 4)
-						cursor.unsupported(QStringLiteral("Unrecognised AVB document version."));
+						cursor.failUnsupported(QStringLiteral("Unrecognised AVB document version."));
 					cursor.string(QStringLiteral("Document.last_save_text"));
 					m_count = cursor.u32(QStringLiteral("Document.object_count"));
-					m_root = cursor.ref(QStringLiteral("Header.root_index"));
+					m_root = cursor.readObjectReference(QStringLiteral("Header.root_index"));
 					m_rootRead = true;
 					const auto marker = cursor.u32(QStringLiteral("Document.byte_order_marker"));
 					if (marker != 0x49494949 && marker != 0x4d4d4d4d)
-						cursor.unsupported(QStringLiteral("Unrecognised AVB document byte-order marker."));
+						cursor.failUnsupported(QStringLiteral("Unrecognised AVB document byte-order marker."));
 					if (marker != (m_bigEndian ? 0x4d4d4d4d : 0x49494949))
 						qualify(m_result, Outcome::Malformed, QStringLiteral("AVB document byte-order marker contradicts its opening signature."));
 					cursor.u32(QStringLiteral("Document.last_save"));
-					cursor.raw(QStringLiteral("Document.reserved_word"), 4);
-					if (cursor.fourcc(QStringLiteral("Document.object_marker")) != "ATob" ||
-						cursor.fourcc(QStringLiteral("Document.version_marker")) != "ATve")
-						cursor.malformed(QStringLiteral("Invalid AVB document metadata markers."));
+					cursor.readBytes(QStringLiteral("Document.reserved_word"), 4);
+					if (cursor.readFourcc(QStringLiteral("Document.object_marker")) != "ATob" ||
+						cursor.readFourcc(QStringLiteral("Document.version_marker")) != "ATve")
+						cursor.failMalformed(QStringLiteral("Invalid AVB document metadata markers."));
 					cursor.string(QStringLiteral("Document.creator_version"));
-					cursor.raw(QStringLiteral("Document.reserved"), 16);
+					cursor.readBytes(QStringLiteral("Document.reserved"), 16);
 				}
-				catch (const AvbFailure &)
+				catch (const AvbReadFailure &)
 				{
 					retainRemainder(cursor, bytes, 0, nullptr);
 					throw;
 				}
 			}
 
-			void retainRemainder(const AvbCursor &cursor, const QByteArray &bytes, qint64 offset, AvidObject *object)
+			void retainRemainder(const AvbFieldReader &cursor, const QByteArray &bytes, qint64 offset, AvidObject *object)
 			{
-				if (!cursor.remaining())
+				if (!cursor.remainingBytes())
 					return;
 				auto &properties = object ? object->properties : m_result.unownedProperties;
-				retained(properties, QStringLiteral("UnparsedTail"), object ? object->handle : 0, cursor.position(),
-						 bytes.mid(cursor.position() - offset), QStringLiteral("No field boundaries are assumed after the unsupported or incomplete layout."));
+				retained(properties, QStringLiteral("UnparsedTail"), object ? object->handle : 0, cursor.fileOffset(),
+						 bytes.mid(cursor.fileOffset() - offset), QStringLiteral("No field boundaries are assumed after the unsupported or incomplete layout."));
 			}
 
 			void chunk(ObjectHandle handle)
@@ -410,7 +410,7 @@ namespace MediaEngine
 				{
 					m_input.append(framing, 8);
 				}
-				catch (const AvbFailure &)
+				catch (const AvbReadFailure &)
 				{
 					retained(m_result.unownedProperties, QStringLiteral("Document.PartialChunkHeader"), 0, offset,
 							 std::move(framing), QStringLiteral("Incomplete framing cannot establish another object's payload."));
@@ -423,15 +423,15 @@ namespace MediaEngine
 				object.avb = native;
 				native->bigEndian = m_bigEndian;
 				native->framing = {offset, 8};
-				AvbCursor header(framing, offset, m_bigEndian, m_result, &object, m_cancellation);
-				native->classId = header.fourcc(QStringLiteral("Chunk.class_id"));
+				AvbFieldReader header(framing, offset, m_bigEndian, m_result, &object, m_cancellation);
+				native->classId = header.readFourcc(QStringLiteral("Chunk.class_id"));
 				const auto size = header.u32(QStringLiteral("Chunk.size"));
 				native->value = {m_input.position(), std::min(qint64(size), m_input.remaining())};
 				if (size > m_input.remaining())
 				{
 					rangeOnly(object.properties, QStringLiteral("UnparsedPayload"), handle, native->value,
 							  QStringLiteral("Declared chunk length exceeds available bytes; available range retained."));
-					throw AvbFailure{Outcome::Incomplete, QStringLiteral("AVB object %1 declares a payload beyond the available file.").arg(handle)};
+					throw AvbReadFailure{Outcome::Incomplete, QStringLiteral("AVB object %1 declares a payload beyond the available file.").arg(handle)};
 				}
 				const QByteArrayView classId(native->classId);
 				const bool isBin = classId == "ABIN" || classId == "BINF";
@@ -449,13 +449,13 @@ namespace MediaEngine
 				{
 					m_input.append(payload, size);
 				}
-				catch (const AvbFailure &)
+				catch (const AvbReadFailure &)
 				{
 					retained(object.properties, QStringLiteral("PartialPayload"), handle, native->value.offset,
 							 std::move(payload), QStringLiteral("Read stopped before the object's complete payload was available."));
 					throw;
 				}
-				AvbCursor cursor(payload, native->value.offset, m_bigEndian, m_result, &object, m_cancellation);
+				AvbFieldReader cursor(payload, native->value.offset, m_bigEndian, m_result, &object, m_cancellation);
 				try
 				{
 					if (isBin)
@@ -463,12 +463,12 @@ namespace MediaEngine
 					else if (isView)
 						viewSetting(cursor);
 					else if (!Detail::readAvbComponent(cursor, classId) && !Detail::readAvbDescriptor(cursor, classId))
-						cursor.unsupported(QStringLiteral("AVB class was admitted without a matching grammar."));
-					if (cursor.remaining())
-						cursor.unsupported(QStringLiteral("Uninterpreted bytes follow the known object layout."));
+						cursor.failUnsupported(QStringLiteral("AVB class was admitted without a matching grammar."));
+					if (cursor.remainingBytes())
+						cursor.failUnsupported(QStringLiteral("Uninterpreted bytes follow the known object layout."));
 					native->interpretationComplete = true;
 				}
-				catch (const AvbFailure &failure)
+				catch (const AvbReadFailure &failure)
 				{
 					retainRemainder(cursor, payload, native->value.offset, &object);
 					if (failure.outcome == Outcome::Cancelled || failure.outcome == Outcome::IoError)
@@ -534,7 +534,7 @@ namespace MediaEngine
 		{
 			check(context.cancellation);
 			if (!source.isOpen() || !source.isReadable() || source.isSequential() || source.isTextModeEnabled())
-				throw AvbFailure{Outcome::IoError, QStringLiteral("AVB reader requires an open readable seekable binary device.")};
+				throw AvbReadFailure{Outcome::IoError, QStringLiteral("AVB reader requires an open readable seekable binary device.")};
 			Input input(source, context.cancellation);
 			observedModified = input.modified();
 			result.outcome = Outcome::Complete;
@@ -544,7 +544,7 @@ namespace MediaEngine
 				reader.read();
 				input.finish();
 			}
-			catch (const AvbFailure &failure)
+			catch (const AvbReadFailure &failure)
 			{
 				qualify(result, failure.outcome, failure.explanation);
 				if (input.remaining())
@@ -553,7 +553,7 @@ namespace MediaEngine
 			}
 			reader.finishReferences();
 		}
-		catch (const AvbFailure &failure)
+		catch (const AvbReadFailure &failure)
 		{
 			qualify(result, failure.outcome, failure.explanation);
 		}

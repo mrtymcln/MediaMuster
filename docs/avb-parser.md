@@ -2,7 +2,8 @@
 
 MediaEngine's `AvbReader` reads supported Avid bin framing, typed objects,
 identities, attributes and relationships. `AvbReferenceIndex` resolves references;
-`AvbParser` is the application adapter used by the bin dialog. The reader does not
+`AvbBinLoader` loads a bin through that reader and prepares its app-facing results.
+`AvbFilterDialog` controls loaded bins and filter steps. The reader does not
 write bins or evaluate arbitrary timelines. [Reader evidence](../Project%20Canon/avb-reader.md)
 and [sequence scope](../Project%20Canon/avb-sequence-selection.md) record coverage and limits.
 
@@ -13,8 +14,8 @@ complete canonical equality; explicitly legacy identity bridges keep their
 narrower recorded scope. Filenames and unrelated MOB-looking text are not
 substitutes for qualified references.
 
-`AvbBin::valid` describes whether the bin provides usable results.
-`complete` separately describes reference coverage. Readable partial results remain
+`AvbBin::usable` describes whether the bin provides usable results.
+`coverageComplete` separately describes reference coverage. Readable partial results remain
 usable with a persistent **Results may be incomplete** warning and Console details.
 A completely unreadable bin or cancelled load cannot supply an applicable filter.
 Each applied step retains its warning and source evidence after its loaded-bin row

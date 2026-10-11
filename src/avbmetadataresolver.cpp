@@ -1,58 +1,58 @@
-#include "binmetadataresolver.h"
-#include "avbparser.h"
+#include "avbmetadataresolver.h"
+#include "avbbinloader.h"
 #include "mediaengineadapter.h"
 #include "mediaengine/metadataselectionpolicy.h"
 #include "mediaengine/projection.h"
 #include "mediafile.h"
 
-void BinMetadataResolver::MasterMobMetadata::merge(const AvbMob &mob, const QSharedPointer<const MediaEngine::ParsedSource> &source)
+void AvbMetadataResolver::MasterMobMetadata::merge(const AvbComposition &mob, const QSharedPointer<const MediaEngine::ParsedSource> &source)
 {
-	names += mob.nameObservations;
-	bins += mob.originalBinObservations;
-	if (source && !sources.contains(source))
-		sources.append(source);
+	clipNameObservations += mob.nameObservations;
+	originalBinObservations += mob.originalBinObservations;
+	if (source && !avbSources.contains(source))
+		avbSources.append(source);
 	if (!mob.name.isEmpty())
 	{
 		if (!clipName.isEmpty() && clipName != mob.name)
-			nameConflict = true;
+			clipNameConflict = true;
 		else
 			clipName = mob.name;
 	}
 	if (!mob.originalBinUid.isEmpty())
 	{
 		if (!originalBinUid.isEmpty() && originalBinUid != mob.originalBinUid)
-			binConflict = true;
+			originalBinConflict = true;
 		else
 			originalBinUid = mob.originalBinUid;
 	}
-	if (!mob.originalBin.isEmpty())
+	if (!mob.originalBinName.isEmpty())
 	{
-		if (!originalBin.isEmpty() && originalBin != mob.originalBin)
-			binConflict = true;
+		if (!originalBinName.isEmpty() && originalBinName != mob.originalBinName)
+			originalBinConflict = true;
 		else
-			originalBin = mob.originalBin;
+			originalBinName = mob.originalBinName;
 	}
 }
 
-void BinMetadataResolver::setBins(const QVector<AvbBin> &bins)
+void AvbMetadataResolver::setBins(const QVector<AvbBin> &bins)
 {
 	m_metadataByMasterMobId.clear();
 	for (const AvbBin &bin : bins)
 	{
 		if (!bin.isUsable())
 			continue;
-		for (const AvbMob &mob : bin.mobs)
+		for (const AvbComposition &mob : bin.compositions)
 		{
 			// Source names describe imports/tapes; only master clips supply editor names.
-			if (mob.mobType != AvbMob::masterMobType || mob.mobId.isEmpty())
+			if (mob.mobType != AvbComposition::masterMobType || mob.mobId.isEmpty())
 				continue;
 			// Scanner rows and AVB compositions already share the database ID representation.
-			m_metadataByMasterMobId[mob.mobId].merge(mob, bin.source);
+			m_metadataByMasterMobId[mob.mobId].merge(mob, bin.sourceGraph);
 		}
 	}
 }
 
-bool BinMetadataResolver::apply(MediaFile &file) const
+bool AvbMetadataResolver::applyTo(MediaFile &file) const
 {
 	const QString previousName = file.clipName;
 	const QString previousBin = file.originalBin;
@@ -68,16 +68,16 @@ bool BinMetadataResolver::apply(MediaFile &file) const
 		if (found == m_metadataByMasterMobId.cend())
 			continue;
 		const auto &value = found.value();
-		AvbMob mob;
+		AvbComposition mob;
 		mob.name = value.clipName;
-		mob.originalBin = value.originalBin;
+		mob.originalBinName = value.originalBinName;
 		mob.originalBinUid = value.originalBinUid;
-		mob.nameObservations = value.names;
-		mob.originalBinObservations = value.bins;
+		mob.nameObservations = value.clipNameObservations;
+		mob.originalBinObservations = value.originalBinObservations;
 		combined.merge(mob, {});
-		combined.nameConflict |= value.nameConflict;
-		combined.binConflict |= value.binConflict;
-		for (const auto &source : value.sources)
+		combined.clipNameConflict |= value.clipNameConflict;
+		combined.originalBinConflict |= value.originalBinConflict;
+		for (const auto &source : value.avbSources)
 			if (!file.mediaEngineAvbSources.contains(source))
 			{
 				file.mediaEngineAvbSources.append(source);
@@ -85,9 +85,9 @@ bool BinMetadataResolver::apply(MediaFile &file) const
 					file.evidence.registerSource(source->snapshot);
 			}
 	}
-	for (const auto &value : combined.names)
+	for (const auto &value : combined.clipNameObservations)
 		file.evidence.observe(MediaProperty::ClipName, value);
-	for (const auto &value : combined.bins)
+	for (const auto &value : combined.originalBinObservations)
 		file.evidence.observe(MediaProperty::OriginalBin, value);
 	auto selectedName = MediaEngine::resolveProperty(file.evidence, MediaEngine::propertyPolicy(MediaProperty::ClipName));
 	auto selectedBin = MediaEngine::resolveProperty(file.evidence, MediaEngine::propertyPolicy(MediaProperty::OriginalBin));
@@ -103,8 +103,8 @@ bool BinMetadataResolver::apply(MediaFile &file) const
 			selected.reason = EvidenceExplanation(EvidenceExplanation::Reason::AvbAssociationConflict);
 		}
 	};
-	qualifyConflict(MediaProperty::ClipName, combined.nameConflict, selectedName);
-	qualifyConflict(MediaProperty::OriginalBin, combined.binConflict, selectedBin);
+	qualifyConflict(MediaProperty::ClipName, combined.clipNameConflict, selectedName);
+	qualifyConflict(MediaProperty::OriginalBin, combined.originalBinConflict, selectedBin);
 	file.evidence.select(MediaProperty::ClipName, selectedName);
 	file.evidence.select(MediaProperty::OriginalBin, selectedBin);
 	MediaEngine::selectEffectMetadata(file.evidence);

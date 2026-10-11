@@ -1,7 +1,7 @@
 #include "projection.h"
 #include "metadataselectionpolicy.h"
 #include "avidtext.h"
-#include "avideffects.h"
+#include "effectcatalogue.h"
 #include <algorithm>
 #include "mobid.h"
 #include "omfuid.h"

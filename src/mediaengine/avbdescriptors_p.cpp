@@ -14,15 +14,15 @@ namespace MediaEngine::Detail
 {
 	namespace
 	{
-		void section(AvbCursor &c, quint8 version)
+		void section(AvbFieldReader &c, quint8 version)
 		{
-			c.tag(2);
-			c.tag(version);
+			c.expectTag(2);
+			c.expectTag(version);
 		}
 
-		[[noreturn]] void unknownExtension(AvbCursor &c, const QString &owner, int extension)
+		[[noreturn]] void unknownExtension(AvbFieldReader &c, const QString &owner, int extension)
 		{
-			c.unsupported(QStringLiteral("Unsupported %1 extension %2.").arg(owner).arg(extension));
+			c.failUnsupported(QStringLiteral("Unsupported %1 extension %2.").arg(owner).arg(extension));
 		}
 
 		QString indexed(const QString &name, qint64 index)
@@ -30,49 +30,49 @@ namespace MediaEngine::Detail
 			return name + QStringLiteral("[%1]").arg(index);
 		}
 
-		void signed32Fields(AvbCursor &c, const QString &prefix,
+		void signed32Fields(AvbFieldReader &c, const QString &prefix,
 							std::initializer_list<const char *> names)
 		{
 			for (const auto *name : names)
 				c.s32(prefix + QLatin1Char('.') + QString::fromLatin1(name));
 		}
 
-		void references(AvbCursor &c, const QString &name, qint64 count)
+		void references(AvbFieldReader &c, const QString &name, qint64 count)
 		{
 			c.requireCount(count, 4);
 			for (qint64 i = 0; i < count; ++i)
-				c.ref(indexed(name, i));
+				c.readObjectReference(indexed(name, i));
 		}
 
-		void mediaDescriptor(AvbCursor &c)
+		void mediaDescriptor(AvbFieldReader &c)
 		{
-			c.role(AvidObject::Role::Descriptor);
+			c.setObjectRole(AvidObject::Role::Descriptor);
 			section(c, 3);
 			c.u8(QStringLiteral("MediaDescriptor.mob_kind"));
-			c.ref(QStringLiteral("MediaDescriptor.locator"));
+			c.readObjectReference(QStringLiteral("MediaDescriptor.locator"));
 			c.boolean(QStringLiteral("MediaDescriptor.intermediate"));
-			c.ref(QStringLiteral("MediaDescriptor.physical_media"));
-			for (int extension; (extension = c.extension()) >= 0;)
+			c.readObjectReference(QStringLiteral("MediaDescriptor.physical_media"));
+			for (int extension; (extension = c.readExtensionTag()) >= 0;)
 			{
 				switch (extension)
 				{
 				case 1:
-					c.tag(65);
+					c.expectTag(65);
 					if (c.s32(QStringLiteral("MediaDescriptor.uuid_length")) != 16)
-						c.malformed(QStringLiteral("MediaDescriptor UUID length is not 16."));
-					c.rawUuid(QStringLiteral("MediaDescriptor.uuid"));
+						c.failMalformed(QStringLiteral("MediaDescriptor UUID length is not 16."));
+					c.readBinaryUuid(QStringLiteral("MediaDescriptor.uuid"));
 					break;
 				case 2:
 				{
-					c.tag(65);
+					c.expectTag(65);
 					const auto size = c.s32(QStringLiteral("MediaDescriptor.wchar_size"));
 					// The reference grammar does not establish this field's byte order.
-					c.raw(QStringLiteral("MediaDescriptor.wchar"), size);
+					c.readBytes(QStringLiteral("MediaDescriptor.wchar"), size);
 					break;
 				}
 				case 3:
-					c.tag(72);
-					c.ref(QStringLiteral("MediaDescriptor.attributes"));
+					c.expectTag(72);
+					c.readObjectReference(QStringLiteral("MediaDescriptor.attributes"));
 					break;
 				default:
 					unknownExtension(c, QStringLiteral("MediaDescriptor"), extension);
@@ -80,21 +80,21 @@ namespace MediaEngine::Detail
 			}
 		}
 
-		void fileDescriptor(AvbCursor &c)
+		void fileDescriptor(AvbFieldReader &c)
 		{
 			mediaDescriptor(c);
 			section(c, 3);
-			c.exp10(QStringLiteral("MediaFileDescriptor.edit_rate"));
+			c.readMantissaExponent(QStringLiteral("MediaFileDescriptor.edit_rate"));
 			c.s32(QStringLiteral("MediaFileDescriptor.length"));
 			c.s16(QStringLiteral("MediaFileDescriptor.is_omfi"));
 			c.s32(QStringLiteral("MediaFileDescriptor.data_offset"));
 		}
 
-		void audioFields(AvbCursor &c, const QString &owner)
+		void audioFields(AvbFieldReader &c, const QString &owner)
 		{
 			c.u16(owner + QStringLiteral(".channels"));
 			c.u16(owner + QStringLiteral(".quantization_bits"));
-			c.exp10(owner + QStringLiteral(".sample_rate"));
+			c.readMantissaExponent(owner + QStringLiteral(".sample_rate"));
 			c.boolean(owner + QStringLiteral(".locked"));
 			c.s16(owner + QStringLiteral(".audio_ref_level"));
 			c.s32(owner + QStringLiteral(".electro_spatial_formulation"));
@@ -102,7 +102,7 @@ namespace MediaEngine::Detail
 			c.u32(owner + QStringLiteral(".coding_format"));
 		}
 
-		void pcmDescriptor(AvbCursor &c)
+		void pcmDescriptor(AvbFieldReader &c)
 		{
 			fileDescriptor(c);
 			section(c, 1);
@@ -116,59 +116,59 @@ namespace MediaEngine::Detail
 							"peak_envelope_block_size", "peak_channel_count", "peak_frame_count"});
 			c.u64(QStringLiteral("PCMADescriptor.peak_of_peaks_offset"));
 			c.s32(QStringLiteral("PCMADescriptor.peak_envelope_timestamp"));
-			for (int extension; (extension = c.extension()) >= 0;)
+			for (int extension; (extension = c.readExtensionTag()) >= 0;)
 			{
 				switch (extension)
 				{
 				case 1:
-					c.tag(77);
+					c.expectTag(77);
 					c.s64(QStringLiteral("PCMADescriptor.ebu_timestamp"));
 					break;
 				case 2:
 					// Avid PCMAudioDescriptor::Get calls SetSubframeAlignment here.
-					c.tag(71);
+					c.expectTag(71);
 					c.s32(QStringLiteral("PCMADescriptor.sub_frame_alignment"));
 					break;
 				case 3:
-					c.tag(76);
+					c.expectTag(76);
 					c.string(QStringLiteral("PCMADescriptor.timecode_framerate"));
 					break;
 				default:
 					unknownExtension(c, QStringLiteral("PCMADescriptor"), extension);
 				}
 			}
-			c.tag(3);
+			c.expectTag(3);
 		}
 
-		void mpegAudioDescriptor(AvbCursor &c)
+		void mpegAudioDescriptor(AvbFieldReader &c)
 		{
 			fileDescriptor(c);
 			section(c, 1);
 			audioFields(c, QStringLiteral("MPGADescriptor"));
 			c.u32(QStringLiteral("MPGADescriptor.bit_rate"));
-			for (int extension; (extension = c.extension()) >= 0;)
+			for (int extension; (extension = c.readExtensionTag()) >= 0;)
 			{
 				if (extension != 1 && extension != 2)
 					unknownExtension(c, QStringLiteral("MPGADescriptor"), extension);
-				c.tag(77);
+				c.expectTag(77);
 				c.u64(extension == 1 ? QStringLiteral("MPGADescriptor.sub_frame_alignment")
 									 : QStringLiteral("MPGADescriptor.origin"));
 			}
-			c.tag(3);
+			c.expectTag(3);
 		}
 
-		void box(AvbCursor &c, const QString &name)
+		void box(AvbFieldReader &c, const QString &name)
 		{
 			for (int i = 0; i < 4; ++i)
 			{
-				c.tag(71);
+				c.expectTag(71);
 				c.s32(indexed(name, i) + QStringLiteral(".x"));
-				c.tag(71);
+				c.expectTag(71);
 				c.s32(indexed(name, i) + QStringLiteral(".y"));
 			}
 		}
 
-		void didDescriptor(AvbCursor &c)
+		void didDescriptor(AvbFieldReader &c)
 		{
 			fileDescriptor(c);
 			section(c, 2);
@@ -181,45 +181,45 @@ namespace MediaEngine::Detail
 			c.s32(QStringLiteral("DIDDescriptor.aspect_ratio.denominator"));
 			const auto lineMapBytes = c.s32(QStringLiteral("DIDDescriptor.line_map_byte_size"));
 			if (lineMapBytes < 0 || lineMapBytes % 4 != 0)
-				c.malformed(QStringLiteral("DIDDescriptor line map length is not a nonnegative multiple of four."));
+				c.failMalformed(QStringLiteral("DIDDescriptor line map length is not a nonnegative multiple of four."));
 			c.requireCount(lineMapBytes / 4, 4);
 			for (qint32 i = 0; i < lineMapBytes / 4; ++i)
 				c.s32(indexed(QStringLiteral("DIDDescriptor.line_map"), i));
 			c.s32(QStringLiteral("DIDDescriptor.alpha_transparency"));
 			c.boolean(QStringLiteral("DIDDescriptor.uniformness"));
 			c.s32(QStringLiteral("DIDDescriptor.did_image_size"));
-			c.ref(QStringLiteral("DIDDescriptor.next_did_desc"));
-			c.fourcc(QStringLiteral("DIDDescriptor.compress_method"));
+			c.readObjectReference(QStringLiteral("DIDDescriptor.next_did_desc"));
+			c.readFourcc(QStringLiteral("DIDDescriptor.compress_method"));
 			c.s32(QStringLiteral("DIDDescriptor.resolution_id"));
 			c.s32(QStringLiteral("DIDDescriptor.image_alignment_factor"));
-			for (int extension; (extension = c.extension()) >= 0;)
+			for (int extension; (extension = c.readExtensionTag()) >= 0;)
 			{
 				switch (extension)
 				{
 				case 1:
-					c.tag(69);
+					c.expectTag(69);
 					c.s16(QStringLiteral("DIDDescriptor.frame_index_byte_order"));
 					break;
 				case 2:
-					c.tag(71);
+					c.expectTag(71);
 					c.s32(QStringLiteral("DIDDescriptor.frame_sample_size"));
 					break;
 				case 3:
-					c.tag(71);
+					c.expectTag(71);
 					c.s32(QStringLiteral("DIDDescriptor.first_frame_offset"));
 					break;
 				case 4:
-					c.tag(71);
+					c.expectTag(71);
 					c.s32(QStringLiteral("DIDDescriptor.client_fill_start"));
-					c.tag(71);
+					c.expectTag(71);
 					c.s32(QStringLiteral("DIDDescriptor.client_fill_end"));
 					break;
 				case 5:
-					c.tag(71);
+					c.expectTag(71);
 					c.s32(QStringLiteral("DIDDescriptor.offset_to_rle_frame_index"));
 					break;
 				case 6:
-					c.tag(71);
+					c.expectTag(71);
 					c.s32(QStringLiteral("DIDDescriptor.frame_start_offset"));
 					break;
 				case 8:
@@ -229,29 +229,29 @@ namespace MediaEngine::Detail
 					break;
 				case 9:
 					box(c, QStringLiteral("DIDDescriptor.framing_box"));
-					c.tag(71);
+					c.expectTag(71);
 					c.s32(QStringLiteral("DIDDescriptor.reformatting_option"));
 					break;
 				case 10:
-					c.tag(80);
-					c.rawUuid(QStringLiteral("DIDDescriptor.transfer_characteristic"));
+					c.expectTag(80);
+					c.readBinaryUuid(QStringLiteral("DIDDescriptor.transfer_characteristic"));
 					break;
 				case 11:
-					c.tag(80);
-					c.rawUuid(QStringLiteral("DIDDescriptor.color_primaries"));
-					c.tag(80);
-					c.rawUuid(QStringLiteral("DIDDescriptor.coding_equations"));
+					c.expectTag(80);
+					c.readBinaryUuid(QStringLiteral("DIDDescriptor.color_primaries"));
+					c.expectTag(80);
+					c.readBinaryUuid(QStringLiteral("DIDDescriptor.coding_equations"));
 					break;
 				case 12:
-					c.tag(80);
-					c.rawUuid(QStringLiteral("DIDDescriptor.essence_compression"));
+					c.expectTag(80);
+					c.readBinaryUuid(QStringLiteral("DIDDescriptor.essence_compression"));
 					break;
 				case 14:
-					c.tag(68);
+					c.expectTag(68);
 					c.u8(QStringLiteral("DIDDescriptor.essence_element_size_kind"));
 					break;
 				case 15:
-					c.tag(66);
+					c.expectTag(66);
 					c.boolean(QStringLiteral("DIDDescriptor.frame_checked_with_mapper"));
 					break;
 				default:
@@ -260,7 +260,7 @@ namespace MediaEngine::Detail
 			}
 		}
 
-		void cdciDescriptor(AvbCursor &c)
+		void cdciDescriptor(AvbFieldReader &c)
 		{
 			didDescriptor(c);
 			section(c, 2);
@@ -272,63 +272,63 @@ namespace MediaEngine::Detail
 			c.u32(QStringLiteral("CDCIDescriptor.white_ref_level"));
 			c.u32(QStringLiteral("CDCIDescriptor.color_range"));
 			c.s64(QStringLiteral("CDCIDescriptor.frame_index_offset"));
-			for (int extension; (extension = c.extension()) >= 0;)
+			for (int extension; (extension = c.readExtensionTag()) >= 0;)
 			{
 				if (extension != 1 && extension != 2)
 					unknownExtension(c, QStringLiteral("CDCIDescriptor"), extension);
-				c.tag(72);
+				c.expectTag(72);
 				c.u32(extension == 1 ? QStringLiteral("CDCIDescriptor.alpha_sampled_width")
 									 : QStringLiteral("CDCIDescriptor.ignore_bw"));
 			}
 		}
 
-		void rgbaDescriptor(AvbCursor &c)
+		void rgbaDescriptor(AvbFieldReader &c)
 		{
 			didDescriptor(c);
 			section(c, 1);
 			const auto layoutSize = c.u32(QStringLiteral("RGBADescriptor.layout_size"));
-			c.raw(QStringLiteral("RGBADescriptor.pixel_layout.codes"), layoutSize);
+			c.readBytes(QStringLiteral("RGBADescriptor.pixel_layout.codes"), layoutSize);
 			const auto structSize = c.u32(QStringLiteral("RGBADescriptor.struct_size"));
-			c.raw(QStringLiteral("RGBADescriptor.pixel_layout.sizes"), structSize);
+			c.readBytes(QStringLiteral("RGBADescriptor.pixel_layout.sizes"), structSize);
 			if (layoutSize != structSize)
-				c.malformed(QStringLiteral("RGBA component codes and widths have different counts."));
+				c.failMalformed(QStringLiteral("RGBA component codes and widths have different counts."));
 			for (const auto *field : {"palette_layout_size", "palette_struct_size", "palette_size"})
 			{
 				if (c.u32(QStringLiteral("RGBADescriptor.") + QString::fromLatin1(field)) != 0)
-					c.unsupported(QStringLiteral("Nonempty AVB RGBA palettes are not yet understood."));
+					c.failUnsupported(QStringLiteral("Nonempty AVB RGBA palettes are not yet understood."));
 			}
-			for (int extension; (extension = c.extension()) >= 0;)
+			for (int extension; (extension = c.readExtensionTag()) >= 0;)
 			{
 				switch (extension)
 				{
 				case 1:
-					c.tag(77);
+					c.expectTag(77);
 					c.u64(QStringLiteral("RGBADescriptor.frame_index_offset"));
 					break;
 				case 2:
-					c.tag(66);
+					c.expectTag(66);
 					c.boolean(QStringLiteral("RGBADescriptor.has_comp_min_ref"));
-					c.tag(72);
+					c.expectTag(72);
 					c.u32(QStringLiteral("RGBADescriptor.comp_min_ref"));
-					c.tag(66);
+					c.expectTag(66);
 					c.boolean(QStringLiteral("RGBADescriptor.has_comp_max_ref"));
-					c.tag(72);
+					c.expectTag(72);
 					c.u32(QStringLiteral("RGBADescriptor.comp_max_ref"));
 					break;
 				case 3:
-					c.tag(72);
+					c.expectTag(72);
 					c.u32(QStringLiteral("RGBADescriptor.alpha_min_ref"));
-					c.tag(72);
+					c.expectTag(72);
 					c.u32(QStringLiteral("RGBADescriptor.alpha_max_ref"));
 					break;
 				default:
 					unknownExtension(c, QStringLiteral("RGBADescriptor"), extension);
 				}
 			}
-			c.tag(3);
+			c.expectTag(3);
 		}
 
-		void dataDescriptor(AvbCursor &c)
+		void dataDescriptor(AvbFieldReader &c)
 		{
 			fileDescriptor(c);
 			section(c, 1);
@@ -339,34 +339,34 @@ namespace MediaEngine::Detail
 			// DATD itself has no final 0x03 in the reference reader or writer.
 		}
 
-		void waveSummary(AvbCursor &c, bool wave)
+		void waveSummary(AvbFieldReader &c, bool wave)
 		{
 			fileDescriptor(c);
 			section(c, 1);
 			const auto prefix = wave ? QStringLiteral("WaveDescriptor") : QStringLiteral("AIFCDescriptor");
-			const auto signature = c.raw(prefix + QStringLiteral(".signature"), 4);
+			const auto signature = c.readBytes(prefix + QStringLiteral(".signature"), 4);
 			if (signature != (wave ? QByteArrayLiteral("RIFF") : QByteArrayLiteral("FORM")))
-				c.malformed(QStringLiteral("Audio summary has an unexpected signature."));
+				c.failMalformed(QStringLiteral("Audio summary has an unexpected signature."));
 			// Embedded RIFF/FORM lengths retain their own endian order even in a
 			// bin whose scalar fields use the opposite order.
-			const auto bytes = c.raw(prefix + QStringLiteral(".summary_size"), 4);
+			const auto bytes = c.readBytes(prefix + QStringLiteral(".summary_size"), 4);
 			const auto size = wave ? qFromLittleEndian<quint32>(bytes.constData())
 								   : qFromBigEndian<quint32>(bytes.constData());
-			c.raw(prefix + QStringLiteral(".summary"), size);
+			c.readBytes(prefix + QStringLiteral(".summary"), size);
 			if (!wave)
 			{
-				for (int extension; (extension = c.extension()) >= 0;)
+				for (int extension; (extension = c.readExtensionTag()) >= 0;)
 				{
 					if (extension != 1)
 						unknownExtension(c, prefix, extension);
-					c.tag(71);
+					c.expectTag(71);
 					c.s32(QStringLiteral("AIFCDescriptor.data_pos"));
 				}
 			}
-			c.tag(3);
+			c.expectTag(3);
 		}
 
-		void mpegVideoDescriptor(AvbCursor &c)
+		void mpegVideoDescriptor(AvbFieldReader &c)
 		{
 			cdciDescriptor(c);
 			section(c, 1);
@@ -378,37 +378,37 @@ namespace MediaEngine::Detail
 			c.u16(QStringLiteral("MPGIDescriptor.min_gop_length"));
 			c.u16(QStringLiteral("MPGIDescriptor.max_gop_length"));
 			const auto size = c.s32(QStringLiteral("MPGIDescriptor.sequence_hdr_size"));
-			c.raw(QStringLiteral("MPGIDescriptor.sequence_hdr"), size);
-			c.tag(3);
+			c.readBytes(QStringLiteral("MPGIDescriptor.sequence_hdr"), size);
+			c.expectTag(3);
 		}
 
-		void jpegDescriptor(AvbCursor &c)
+		void jpegDescriptor(AvbFieldReader &c)
 		{
 			cdciDescriptor(c);
 			section(c, 1);
 			c.s32(QStringLiteral("JPEGDescriptor.jpeg_table_id"));
 			c.u64(QStringLiteral("JPEGDescriptor.jpeg_frame_index_offset"));
 			const auto size = c.s32(QStringLiteral("JPEGDescriptor.table_size"));
-			c.raw(QStringLiteral("JPEGDescriptor.quantization_tables"), size);
-			for (int extension; (extension = c.extension()) >= 0;)
+			c.readBytes(QStringLiteral("JPEGDescriptor.quantization_tables"), size);
+			for (int extension; (extension = c.readExtensionTag()) >= 0;)
 			{
 				if (extension != 1)
 					unknownExtension(c, QStringLiteral("JPEGDescriptor"), extension);
-				c.tag(71);
+				c.expectTag(71);
 				c.s32(QStringLiteral("JPEGDescriptor.image_start_align"));
 			}
-			c.tag(3);
+			c.expectTag(3);
 		}
 
-		void fileLocator(AvbCursor &c)
+		void fileLocator(AvbFieldReader &c)
 		{
 			section(c, 2);
 			c.string(QStringLiteral("FileLocator.path"));
-			for (int extension; (extension = c.extension()) >= 0;)
+			for (int extension; (extension = c.readExtensionTag()) >= 0;)
 			{
 				if (extension < 1 || extension > 3)
 					unknownExtension(c, QStringLiteral("FileLocator"), extension);
-				c.tag(76);
+				c.expectTag(76);
 				if (extension == 1)
 					c.string(QStringLiteral("FileLocator.path_posix"));
 				else
@@ -416,101 +416,101 @@ namespace MediaEngine::Detail
 											: QStringLiteral("FileLocator.path2_utf8"),
 							 TextEncoding::Utf8);
 			}
-			c.tag(3);
+			c.expectTag(3);
 		}
 
-		void mediaLocator(AvbCursor &c)
+		void mediaLocator(AvbFieldReader &c)
 		{
 			section(c, 2);
 			c.u32(QStringLiteral("MSMLocator.legacy_word0"));
 			c.u32(QStringLiteral("MSMLocator.legacy_word1"));
 			c.string(QStringLiteral("MSMLocator.last_known_volume"));
-			for (int extension; (extension = c.extension()) >= 0;)
+			for (int extension; (extension = c.readExtensionTag()) >= 0;)
 			{
 				switch (extension)
 				{
 				case 1:
-					c.tag(71);
+					c.expectTag(71);
 					c.s32(QStringLiteral("MSMLocator.domain_type"));
 					break;
 				case 2:
-					c.mobId(QStringLiteral("MSMLocator.mob_id"));
+					c.readMobId(QStringLiteral("MSMLocator.mob_id"));
 					break;
 				case 3:
-					c.tag(76);
+					c.expectTag(76);
 					c.string(QStringLiteral("MSMLocator.last_known_volume_utf8"), TextEncoding::Utf8);
 					break;
 				default:
 					unknownExtension(c, QStringLiteral("MSMLocator"), extension);
 				}
 			}
-			c.tag(3);
+			c.expectTag(3);
 		}
 
-		void binReference(AvbCursor &c)
+		void binReference(AvbFieldReader &c)
 		{
 			section(c, 1);
 			c.s32(QStringLiteral("BinRef.uid_high"));
 			c.s32(QStringLiteral("BinRef.uid_low"));
 			c.string(QStringLiteral("BinRef.name"));
-			for (int extension; (extension = c.extension()) >= 0;)
+			for (int extension; (extension = c.readExtensionTag()) >= 0;)
 			{
 				if (extension != 1)
 					unknownExtension(c, QStringLiteral("BinRef"), extension);
-				c.tag(76);
+				c.expectTag(76);
 				c.string(QStringLiteral("BinRef.name_utf8"), TextEncoding::Utf8);
 			}
-			c.tag(3);
+			c.expectTag(3);
 		}
 
-		void mobReference(AvbCursor &c)
+		void mobReference(AvbFieldReader &c)
 		{
 			section(c, 1);
 			c.u32(QStringLiteral("MobRef.mob_hi"));
 			c.u32(QStringLiteral("MobRef.mob_lo"));
 			c.s32(QStringLiteral("MobRef.position"));
-			for (int extension; (extension = c.extension()) >= 0;)
+			for (int extension; (extension = c.readExtensionTag()) >= 0;)
 			{
 				if (extension != 1)
 					unknownExtension(c, QStringLiteral("MobRef"), extension);
-				c.mobId(QStringLiteral("MobRef.mob_id"));
+				c.readMobId(QStringLiteral("MobRef.mob_id"));
 			}
 		}
 
-		void marker(AvbCursor &c)
+		void marker(AvbFieldReader &c)
 		{
 			mobReference(c);
 			section(c, 3);
 			c.s32(QStringLiteral("Marker.comp_offset"));
-			c.ref(QStringLiteral("Marker.attributes"));
+			c.readObjectReference(QStringLiteral("Marker.attributes"));
 			if (c.s16(QStringLiteral("Marker.version")) != 1)
-				c.unsupported(QStringLiteral("Unsupported Marker version."));
+				c.failUnsupported(QStringLiteral("Unsupported Marker version."));
 			for (int i = 0; i < 3; ++i)
 				c.u16(indexed(QStringLiteral("Marker.color"), i));
-			for (int extension; (extension = c.extension()) >= 0;)
+			for (int extension; (extension = c.readExtensionTag()) >= 0;)
 			{
 				if (extension != 1)
 					unknownExtension(c, QStringLiteral("Marker"), extension);
-				c.tag(66);
+				c.expectTag(66);
 				c.boolean(QStringLiteral("Marker.handled_codes"));
 			}
-			c.tag(3);
+			c.expectTag(3);
 		}
 
-		void position(AvbCursor &c)
+		void position(AvbFieldReader &c)
 		{
 			section(c, 1);
 			c.u32(QStringLiteral("Position.mob_id_hi"));
 			c.u32(QStringLiteral("Position.mob_id_lo"));
-			for (int extension; (extension = c.extension()) >= 0;)
+			for (int extension; (extension = c.readExtensionTag()) >= 0;)
 			{
 				if (extension != 1)
 					unknownExtension(c, QStringLiteral("Position"), extension);
-				c.mobId(QStringLiteral("Position.mob_id"));
+				c.readMobId(QStringLiteral("Position.mob_id"));
 			}
 		}
 
-		void bobPosition(AvbCursor &c)
+		void bobPosition(AvbFieldReader &c)
 		{
 			position(c);
 			section(c, 1);
@@ -520,7 +520,7 @@ namespace MediaEngine::Detail
 			c.s16(QStringLiteral("BOBPosition.track_index"));
 		}
 
-		void didPosition(AvbCursor &c)
+		void didPosition(AvbFieldReader &c)
 		{
 			bobPosition(c);
 			section(c, 1);
@@ -530,7 +530,7 @@ namespace MediaEngine::Detail
 			c.boolean(QStringLiteral("DIDPosition.spos_invalid"));
 		}
 
-		void mpegPosition(AvbCursor &c)
+		void mpegPosition(AvbFieldReader &c)
 		{
 			didPosition(c);
 			section(c, 1);
@@ -548,10 +548,10 @@ namespace MediaEngine::Detail
 					c.u32(prefix + QStringLiteral(".length"));
 				}
 			}
-			c.tag(3);
+			c.expectTag(3);
 		}
 
-		void attributes(AvbCursor &c)
+		void attributes(AvbFieldReader &c)
 		{
 			section(c, 1);
 			const auto count = c.u32(QStringLiteral("Attributes.count"));
@@ -570,25 +570,25 @@ namespace MediaEngine::Detail
 					c.string(prefix + QStringLiteral(".value"));
 					break;
 				case 3:
-					c.ref(prefix + QStringLiteral(".value"));
+					c.readObjectReference(prefix + QStringLiteral(".value"));
 					break;
 				case 4:
 				{
 					const auto size = c.u32(prefix + QStringLiteral(".size"));
-					c.raw(prefix + QStringLiteral(".value"), size);
+					c.readBytes(prefix + QStringLiteral(".value"), size);
 					break;
 				}
 				default:
-					c.unsupported(QStringLiteral("Unsupported AVB attribute type %1.").arg(type));
+					c.failUnsupported(QStringLiteral("Unsupported AVB attribute type %1.").arg(type));
 				}
 			}
-			c.tag(3);
+			c.expectTag(3);
 		}
 
-		void parameterItem(AvbCursor &c)
+		void parameterItem(AvbFieldReader &c)
 		{
 			section(c, 2);
-			c.rawUuid(QStringLiteral("ParameterItem.uuid"));
+			c.readBinaryUuid(QStringLiteral("ParameterItem.uuid"));
 			const auto type = c.s16(QStringLiteral("ParameterItem.value_type"));
 			switch (type)
 			{
@@ -599,39 +599,39 @@ namespace MediaEngine::Detail
 				c.f64(QStringLiteral("ParameterItem.value"));
 				break;
 			case 4:
-				c.ref(QStringLiteral("ParameterItem.value"));
+				c.readObjectReference(QStringLiteral("ParameterItem.value"));
 				break;
 			default:
-				c.unsupported(QStringLiteral("Unsupported ParameterItem type %1.").arg(type));
+				c.failUnsupported(QStringLiteral("Unsupported ParameterItem type %1.").arg(type));
 			}
 			c.string(QStringLiteral("ParameterItem.name"));
 			c.boolean(QStringLiteral("ParameterItem.enable"));
-			c.ref(QStringLiteral("ParameterItem.control_track"));
-			for (int extension; (extension = c.extension()) >= 0;)
+			c.readObjectReference(QStringLiteral("ParameterItem.control_track"));
+			for (int extension; (extension = c.readExtensionTag()) >= 0;)
 			{
 				if (extension != 1)
 					unknownExtension(c, QStringLiteral("ParameterItem"), extension);
-				c.tag(66);
+				c.expectTag(66);
 				c.boolean(QStringLiteral("ParameterItem.contribs_to_sig"));
 			}
-			c.tag(3);
+			c.expectTag(3);
 		}
 
-		void userParameter(AvbCursor &c)
+		void userParameter(AvbFieldReader &c)
 		{
 			section(c, 1);
 			if (c.s16(QStringLiteral("CFUserParam.byte_order")) != 0x4949)
-				c.unsupported(QStringLiteral("Unsupported CFUserParam byte order."));
-			c.rawUuid(QStringLiteral("CFUserParam.uuid"));
+				c.failUnsupported(QStringLiteral("Unsupported CFUserParam byte order."));
+			c.readBinaryUuid(QStringLiteral("CFUserParam.uuid"));
 			const auto outerSize = c.s32(QStringLiteral("CFUserParam.value_size1"));
 			const auto innerSize = c.s32(QStringLiteral("CFUserParam.value_size2"));
 			if (outerSize < 4 || innerSize != outerSize - 4)
-				c.malformed(QStringLiteral("CFUserParam nested lengths disagree."));
-			c.raw(QStringLiteral("CFUserParam.data"), innerSize);
-			c.tag(3);
+				c.failMalformed(QStringLiteral("CFUserParam nested lengths disagree."));
+			c.readBytes(QStringLiteral("CFUserParam.data"), innerSize);
+			c.expectTag(3);
 		}
 
-		void effectParameters(AvbCursor &c)
+		void effectParameters(AvbFieldReader &c)
 		{
 			section(c, 18);
 			c.s32(QStringLiteral("EffectParamList.orig_length"));
@@ -657,68 +657,68 @@ namespace MediaEngine::Detail
 				for (qint32 j = 0; j < colors; ++j)
 					c.s32(indexed(prefix + QStringLiteral(".colors"), j));
 				const auto size = c.s32(prefix + QStringLiteral(".param_size"));
-				c.raw(prefix + QStringLiteral(".user_param"), size);
+				c.readBytes(prefix + QStringLiteral(".user_param"), size);
 				c.boolean(prefix + QStringLiteral(".selected"));
 			}
-			c.tag(3);
+			c.expectTag(3);
 		}
 
-		void trackerData(AvbCursor &c)
+		void trackerData(AvbFieldReader &c)
 		{
 			section(c, 1);
 			const auto size = c.s16(QStringLiteral("TrackerData.setting_size"));
-			c.raw(QStringLiteral("TrackerData.settings"), size);
+			c.readBytes(QStringLiteral("TrackerData.settings"), size);
 			c.u32(QStringLiteral("TrackerData.clip_version"));
 			const auto count = c.s16(QStringLiteral("TrackerData.count"));
 			references(c, QStringLiteral("TrackerData.clips"), count);
-			for (int extension; (extension = c.extension()) >= 0;)
+			for (int extension; (extension = c.readExtensionTag()) >= 0;)
 			{
 				switch (extension)
 				{
 				case 1:
-					c.tag(72);
+					c.expectTag(72);
 					c.u32(QStringLiteral("TrackerData.offset_tracking"));
 					break;
 				case 2:
-					c.tag(72);
+					c.expectTag(72);
 					c.u32(QStringLiteral("TrackerData.smoothing"));
 					break;
 				case 3:
-					c.tag(72);
+					c.expectTag(72);
 					c.u32(QStringLiteral("TrackerData.jitter_removal"));
 					break;
 				case 4:
-					c.tag(75);
+					c.expectTag(75);
 					c.f64(QStringLiteral("TrackerData.filter_amount"));
 					break;
 				case 5:
-					c.tag(72);
-					c.ref(QStringLiteral("TrackerData.clip5"));
+					c.expectTag(72);
+					c.readObjectReference(QStringLiteral("TrackerData.clip5"));
 					break;
 				case 6:
-					c.tag(72);
-					c.ref(QStringLiteral("TrackerData.clip6"));
+					c.expectTag(72);
+					c.readObjectReference(QStringLiteral("TrackerData.clip6"));
 					break;
 				default:
 					unknownExtension(c, QStringLiteral("TrackerData"), extension);
 				}
 			}
-			c.tag(3);
+			c.expectTag(3);
 		}
 
-		void trackerDataSlot(AvbCursor &c)
+		void trackerDataSlot(AvbFieldReader &c)
 		{
 			section(c, 1);
 			const auto count = c.s32(QStringLiteral("TrackerDataSlot.count"));
 			references(c, QStringLiteral("TrackerDataSlot.tracker_data"), count);
-			for (int extension; (extension = c.extension()) >= 0;)
+			for (int extension; (extension = c.readExtensionTag()) >= 0;)
 			{
 				if (extension != 1)
 					unknownExtension(c, QStringLiteral("TrackerDataSlot"), extension);
-				c.tag(66);
+				c.expectTag(66);
 				c.boolean(QStringLiteral("TrackerDataSlot.track_fg"));
 			}
-			c.tag(3);
+			c.expectTag(3);
 		}
 	}
 
@@ -738,30 +738,30 @@ namespace MediaEngine::Detail
 		return false;
 	}
 
-	bool readAvbDescriptor(AvbCursor &c, QByteArrayView classId)
+	bool readAvbDescriptor(AvbFieldReader &c, QByteArrayView classId)
 	{
 		if (classId == "MDES")
 		{
 			mediaDescriptor(c);
-			c.tag(3);
+			c.expectTag(3);
 		}
 		else if (classId == "MDTP")
 		{
 			mediaDescriptor(c);
 			section(c, 2);
 			c.s16(QStringLiteral("TapeDescriptor.cframe"));
-			c.tag(3);
+			c.expectTag(3);
 		}
 		else if (classId == "MDFM" || classId == "MDNG")
 		{
 			mediaDescriptor(c);
 			section(c, 1);
-			c.tag(3);
+			c.expectTag(3);
 		}
 		else if (classId == "MDFL")
 		{
 			fileDescriptor(c);
-			c.tag(3);
+			c.expectTag(3);
 		}
 		else if (classId == "MULD")
 		{
@@ -769,7 +769,7 @@ namespace MediaEngine::Detail
 			section(c, 1);
 			const auto count = c.s32(QStringLiteral("MultiDescriptor.count"));
 			references(c, QStringLiteral("MultiDescriptor.descriptors"), count);
-			c.tag(3);
+			c.expectTag(3);
 		}
 		else if (classId == "WAVE" || classId == "AIFC")
 			waveSummary(c, classId == "WAVE");
@@ -780,12 +780,12 @@ namespace MediaEngine::Detail
 		else if (classId == "DIDD")
 		{
 			didDescriptor(c);
-			c.tag(3);
+			c.expectTag(3);
 		}
 		else if (classId == "CDCI")
 		{
 			cdciDescriptor(c);
-			c.tag(3);
+			c.expectTag(3);
 		}
 		else if (classId == "RGBA")
 			rgbaDescriptor(c);
@@ -800,12 +800,12 @@ namespace MediaEngine::Detail
 			dataDescriptor(c);
 			section(c, 1);
 			c.s32(QStringLiteral("ANCDataDescriptor.manifest_element_count"));
-			c.tag(3);
+			c.expectTag(3);
 		}
 		else if (classId == "FILE" || classId == "WINF")
 			fileLocator(c);
 		else if (classId == "URLL")
-			c.tag(3);
+			c.expectTag(3);
 		else if (classId == "MSML")
 			mediaLocator(c);
 		else if (classId == "MCBR")
@@ -813,24 +813,24 @@ namespace MediaEngine::Detail
 		else if (classId == "MCMR")
 		{
 			mobReference(c);
-			c.tag(3);
+			c.expectTag(3);
 		}
 		else if (classId == "TMBC")
 			marker(c);
 		else if (classId == "APOS")
 		{
 			position(c);
-			c.tag(3);
+			c.expectTag(3);
 		}
 		else if (classId == "ABOB")
 		{
 			bobPosition(c);
-			c.tag(3);
+			c.expectTag(3);
 		}
 		else if (classId == "DIDP")
 		{
 			didPosition(c);
-			c.tag(3);
+			c.expectTag(3);
 		}
 		else if (classId == "MPGP")
 			mpegPosition(c);
@@ -843,7 +843,7 @@ namespace MediaEngine::Detail
 			const auto count = classId == "PRLS" ? c.s32(owner + QStringLiteral(".count"))
 												 : c.s16(owner + QStringLiteral(".count"));
 			references(c, owner + QStringLiteral(".items"), count);
-			c.tag(3);
+			c.expectTag(3);
 		}
 		else if (classId == "PRIT")
 			parameterItem(c);
@@ -862,15 +862,15 @@ namespace MediaEngine::Detail
 			const auto field = classId == "GRFX"   ? QStringLiteral(".pict_data")
 							   : classId == "SHLP" ? QStringLiteral(".shape_data")
 												   : QStringLiteral(".color_correction");
-			c.raw(owner + field, size);
-			c.tag(3);
+			c.readBytes(owner + field, size);
+			c.expectTag(3);
 		}
 		else if (classId == "TKMN")
 		{
 			section(c, 1);
-			c.ref(QStringLiteral("TrackerManager.data_slots"));
-			c.ref(QStringLiteral("TrackerManager.param_slots"));
-			c.tag(3);
+			c.readObjectReference(QStringLiteral("TrackerManager.data_slots"));
+			c.readObjectReference(QStringLiteral("TrackerManager.param_slots"));
+			c.expectTag(3);
 		}
 		else if (classId == "TKDS")
 			trackerDataSlot(c);
@@ -881,13 +881,13 @@ namespace MediaEngine::Detail
 			section(c, 1);
 			const auto owner = classId == "TKPS" ? QStringLiteral("TrackerParameterSlot") : QStringLiteral("TrackerParameter");
 			const auto size = c.s16(owner + QStringLiteral(".size"));
-			c.raw(owner + QStringLiteral(".settings"), size);
+			c.readBytes(owner + QStringLiteral(".settings"), size);
 			if (classId == "TKPS")
 			{
 				const auto count = c.s32(owner + QStringLiteral(".count"));
 				references(c, owner + QStringLiteral(".params"), count);
 			}
-			c.tag(3);
+			c.expectTag(3);
 		}
 		else
 			return false;

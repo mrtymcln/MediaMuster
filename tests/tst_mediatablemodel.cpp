@@ -1,6 +1,6 @@
 // Table row notifications, display values and bin-derived metadata ownership.
 
-#include "avbparser.h"
+#include "avbbinloader.h"
 #include "mediaengineadapter.h"
 #include "mediaengine/projection.h"
 #include "mediaengine/scanmodel.h"
@@ -35,21 +35,21 @@ namespace
 			   const QString &uid = QStringLiteral("0000000100000002"))
 	{
 		AvbBin value;
-		value.valid = true;
-		value.complete = true;
+		value.usable = true;
+		value.coverageComplete = true;
 		value.filePath = QStringLiteral("/current/renamed-bin.avb");
 		value.displayName = QStringLiteral("renamed-bin");
-		AvbMob mob;
+		AvbComposition mob;
 		mob.mobId = masterId();
 		mob.name = name;
-		mob.mobType = AvbMob::masterMobType;
-		mob.originalBin = originalBin;
+		mob.mobType = AvbComposition::masterMobType;
+		mob.originalBinName = originalBin;
 		mob.originalBinUid = uid;
 		const auto snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
 			MetadataSource::Avb, value.filePath, {}, SourceReadState::Complete});
 		auto source = QSharedPointer<MediaEngine::ParsedSource>::create();
 		source->snapshot = snapshot;
-		value.source = source;
+		value.sourceGraph = source;
 		const auto observation = [&](const QString &property, const QString &text, const QString &owner)
 		{
 			MetadataObservation result;
@@ -65,7 +65,7 @@ namespace
 			mob.nameObservations.append(observation(QStringLiteral("Component.name"), name, QStringLiteral("7")));
 		if (!originalBin.isEmpty())
 			mob.originalBinObservations.append(observation(QStringLiteral("BinRef.name_utf8"), originalBin, QStringLiteral("12")));
-		value.mobs.append(mob);
+		value.compositions.append(mob);
 		return value;
 	}
 
@@ -77,9 +77,9 @@ namespace
 		snapshot->path = value.filePath;
 		auto source = QSharedPointer<MediaEngine::ParsedSource>::create();
 		source->snapshot = snapshot;
-		value.source = source;
-		value.mobs[0].nameObservations.clear();
-		value.mobs[0].originalBinObservations.clear();
+		value.sourceGraph = source;
+		value.compositions[0].nameObservations.clear();
+		value.compositions[0].originalBinObservations.clear();
 		auto add = [&](const QString &property, const QString &text, quint64 object, bool eligible)
 		{
 			MetadataObservation observation;
@@ -92,9 +92,9 @@ namespace
 			observation.eligible = eligible;
 			return observation;
 		};
-		value.mobs[0].nameObservations.append(add(QStringLiteral("Component.name"), name, 7, true));
-		value.mobs[0].originalBinObservations.append(add(QStringLiteral("BinRef.name"), QStringLiteral("Legacy rushes"), 12, false));
-		value.mobs[0].originalBinObservations.append(add(QStringLiteral("BinRef.name_utf8"), value.mobs[0].originalBin, 12, true));
+		value.compositions[0].nameObservations.append(add(QStringLiteral("Component.name"), name, 7, true));
+		value.compositions[0].originalBinObservations.append(add(QStringLiteral("BinRef.name"), QStringLiteral("Legacy rushes"), 12, false));
+		value.compositions[0].originalBinObservations.append(add(QStringLiteral("BinRef.name_utf8"), value.compositions[0].originalBinName, 12, true));
 		return value;
 	}
 
@@ -769,12 +769,12 @@ void TestMediaTableModel::mediaengine_avb_changes_preserve_physical_rows_and_evi
 	QCOMPARE(current.scanStamp.mobId, file.scanStamp.mobId);
 	QCOMPARE(current.scanStamp.masterMobIds, file.scanStamp.masterMobIds);
 	QCOMPARE(current.mediaEngineAvbSources.size(), 2);
-	QCOMPARE(current.mediaEngineAvbSources[0], first.source);
-	QCOMPARE(current.mediaEngineAvbSources[1], second.source);
+	QCOMPARE(current.mediaEngineAvbSources[0], first.sourceGraph);
+	QCOMPARE(current.mediaEngineAvbSources[1], second.sourceGraph);
 	const auto &names = current.evidence.observations(MediaProperty::ClipName);
 	QCOMPARE(names.size(), 2);
-	QCOMPARE(names[0].rawValue.toByteArray(), first.mobs[0].name.toUtf8());
-	QCOMPARE(names[1].rawValue.toByteArray(), second.mobs[0].name.toUtf8());
+	QCOMPARE(names[0].rawValue.toByteArray(), first.compositions[0].name.toUtf8());
+	QCOMPARE(names[1].rawValue.toByteArray(), second.compositions[0].name.toUtf8());
 	QVERIFY(!names[0].eligible);
 	QVERIFY(!names[1].eligible);
 	auto unchanged = current;
@@ -787,7 +787,7 @@ void TestMediaTableModel::mediaengine_avb_conflicts_clear_previously_selected_ce
 	model.setMediaFiles(TestMediaFile::seeded({mediaEngineRow()}));
 	const auto first = evidenceBin(QStringLiteral("First edit"));
 	auto second = evidenceBin(QStringLiteral("Second edit"));
-	second.mobs[0].originalBinUid = QStringLiteral("0000000100000003");
+	second.compositions[0].originalBinUid = QStringLiteral("0000000100000003");
 	model.setAvbBins({first});
 	QCOMPARE(model.fileAt(0).clipName, QStringLiteral("First edit"));
 	QCOMPARE(model.fileAt(0).originalBin, QStringLiteral("Original rushes"));
@@ -833,9 +833,9 @@ void TestMediaTableModel::metadata_does_not_cross_byte_swapped_identities()
 	MediaFile second = row(QStringLiteral("/media/second"));
 	second.masterMobId = secondId;
 	AvbBin firstBin = bin(QStringLiteral("First clip"), QStringLiteral("First bin"));
-	firstBin.mobs[0].mobId = firstId;
+	firstBin.compositions[0].mobId = firstId;
 	AvbBin secondBin = bin(QStringLiteral("Second clip"), QStringLiteral("Second bin"));
-	secondBin.mobs[0].mobId = secondId;
+	secondBin.compositions[0].mobId = secondId;
 	MediaTableModel model;
 	model.setMediaFiles(TestMediaFile::seeded({first, second}));
 	model.setAvbBins({firstBin});
@@ -869,7 +869,7 @@ void TestMediaTableModel::preserves_scanner_metadata_and_ignores_source_names()
 	QVERIFY(!model.fileAt(0).originalBinFromAvb);
 
 	AvbBin source = bin();
-	source.mobs[0].mobType = 3;
+	source.compositions[0].mobType = 3;
 	model.setMediaFiles(TestMediaFile::seeded({row()}));
 	model.setAvbBins({source});
 	QVERIFY(model.fileAt(0).clipName.isEmpty());
@@ -916,15 +916,15 @@ void TestMediaTableModel::readable_partial_metadata_is_distinct_from_invalid_bin
 	MediaTableModel model;
 	model.setMediaFiles(TestMediaFile::seeded({row()}));
 	AvbBin invalid = bin(QStringLiteral("Unusable name"), QStringLiteral("Unusable bin"));
-	invalid.valid = false;
-	invalid.complete = false;
+	invalid.usable = false;
+	invalid.coverageComplete = false;
 	invalid.error = QStringLiteral("Malformed document");
 	model.setAvbBins({invalid});
 	QVERIFY(model.fileAt(0).clipName.isEmpty());
 	QVERIFY(model.fileAt(0).originalBin.isEmpty());
 
 	AvbBin partial = bin();
-	partial.complete = false;
+	partial.coverageComplete = false;
 	partial.warnings.append(QStringLiteral("A separate dependency is unresolved"));
 	model.setAvbBins({partial, invalid});
 	QCOMPARE(model.fileAt(0).clipName, QStringLiteral("Edited clip"));
@@ -975,11 +975,11 @@ void TestMediaTableModel::avb_evidence_survives_removal_and_reactivation()
 	QVERIFY(!facts[0].eligible);
 	QVERIFY(facts[1].eligible);
 	QCOMPARE(model.fileAt(0).mediaEngineAvbSources.size(), 1);
-	QCOMPARE(model.fileAt(0).mediaEngineAvbSources[0], loaded.source);
+	QCOMPARE(model.fileAt(0).mediaEngineAvbSources[0], loaded.sourceGraph);
 	model.setAvbBins({});
 	QVERIFY(model.fileAt(0).clipName.isEmpty());
 	QVERIFY(model.fileAt(0).originalBin.isEmpty());
-	QCOMPARE(model.fileAt(0).mediaEngineAvbSources[0], loaded.source);
+	QCOMPARE(model.fileAt(0).mediaEngineAvbSources[0], loaded.sourceGraph);
 	for (const auto &fact : model.fileAt(0).evidence.observations(MediaProperty::OriginalBin))
 		QVERIFY(!fact.eligible);
 	model.setAvbBins({loaded});
@@ -1027,9 +1027,9 @@ void TestMediaTableModel::multiple_master_associations_do_not_choose_first()
 {
 	const auto first = evidenceBin(QStringLiteral("First edit"));
 	auto second = evidenceBin(QStringLiteral("Second edit"));
-	second.mobs[0].mobId = QStringLiteral("second exact identity");
+	second.compositions[0].mobId = QStringLiteral("second exact identity");
 	auto file = row();
-	file.masterMobIds = {first.mobs[0].mobId, second.mobs[0].mobId};
+	file.masterMobIds = {first.compositions[0].mobId, second.compositions[0].mobId};
 	MediaTableModel model;
 	model.setMediaFiles(TestMediaFile::seeded({file}));
 	model.setAvbBins({first, second});

@@ -1602,7 +1602,7 @@ void TestFileOperations::skipped_header_checks_database_file_identity()
 	file.sizeBytes = QFileInfo(path).size();
 	file.scanStamp = {path, VolumeIdentity::capture(path).identifier(), QFileInfo(path).lastModified(), condition == QLatin1String("different") ? QStringLiteral("another-database-file-id") : fileId, {QStringLiteral("database-only-master")}};
 	auto scan = QSharedPointer<MediaEngine::ScanResult>::create();
-	MediaEngine::StoredSource unread;
+	MediaEngine::SourceReceipt unread;
 	unread.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mxf, path,
 																			file.scanStamp.modified, SourceReadState::NotRead});
 	unread.readReason = QStringLiteral("Header not read: usable database match supplies required table metadata");
@@ -1669,7 +1669,7 @@ void TestFileOperations::transferred_row_does_not_borrow_another_headers_receipt
 	const auto scan = QSharedPointer<MediaEngine::ScanResult>::create();
 	for (const auto &path : {originalPath, file.mediaFilePath})
 	{
-		MediaEngine::StoredSource source;
+		MediaEngine::SourceReceipt source;
 		source.outcome = path == originalPath ? MediaEngine::ParsedSource::Outcome::IoError : MediaEngine::ParsedSource::Outcome::NotRead;
 		source.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mxf, path, {}, path == originalPath ? SourceReadState::Unreadable : SourceReadState::NotRead});
 		scan->sources.append(source);

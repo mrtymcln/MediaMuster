@@ -22,7 +22,7 @@
 
 namespace
 {
-	BinFileReferences fullIds(std::initializer_list<QString> ids)
+	AvbFileReferences fullIds(std::initializer_list<QString> ids)
 	{
 		return {QSet<QString>(ids), {}};
 	}
@@ -489,9 +489,9 @@ void TestMediaFilterProxy::effect_selection_intersects_volume_and_existing_filte
 	QCOMPARE(proxy.rowCount(), 2);
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::Audio);
 	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({title.fileMobId})}}});
+	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({title.fileMobId})}}});
 	QCOMPARE(proxy.rowCount(), 0);
-	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({custom.fileMobId})}}});
+	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({custom.fileMobId})}}});
 	QCOMPARE(proxy.rowCount(), 1);
 	proxy.setSearchText(QStringLiteral("picture"));
 	QCOMPARE(proxy.rowCount(), 0);
@@ -744,7 +744,7 @@ void TestMediaFilterProxy::precompute_tree_unites_branches_and_preserves_complet
 	QCOMPARE(proxy.rowCount(), 2);
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::Video);
 	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({matte.fileMobId})}}});
+	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({matte.fileMobId})}}});
 	QCOMPARE(proxy.rowCount(), 0);
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::All);
 	QCOMPARE(proxy.rowCount(), 1);
@@ -814,23 +814,23 @@ void TestMediaFilterProxy::bin_filter_excludes_master_only_relatives()
 	const auto videoKey = MobId::format(TestAvb::Source);
 	const auto audioKey = MobId::format(TestAvb::Other);
 	const auto masterKey = MobId::format(TestAvb::Master);
-	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({videoKey})}}});
+	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({videoKey})}}});
 	QCOMPARE(proxy.rowCount(), 1);
 	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 0);
 	// Even an MSML carrying this ID matches file IDs, never row master IDs.
-	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({masterKey})}}});
+	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({masterKey})}}});
 	QCOMPARE(proxy.rowCount(), 0);
-	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({videoKey})},
-						 {BinFilter::Operation::Add, {}, fullIds({masterKey})}}});
+	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({videoKey})},
+						 {AvbFilter::Operation::Add, {}, fullIds({masterKey})}}});
 	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({videoKey})},
-						 {BinFilter::Operation::Add, {}, fullIds({audioKey})}}});
+	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({videoKey})},
+						 {AvbFilter::Operation::Add, {}, fullIds({audioKey})}}});
 	QCOMPARE(proxy.rowCount(), 2);
 }
 
 void TestMediaFilterProxy::bin_filter_compares_full_ids()
 {
-	const BinFilter filter{{{BinFilter::Operation::Intersect, {}, fullIds({MobId::format(TestAvb::Source)})}}};
+	const AvbFilter filter{{{AvbFilter::Operation::Intersect, {}, fullIds({MobId::format(TestAvb::Source)})}}};
 	QVERIFY(filter.matches(MobId::format(TestAvb::Source)));
 	QVERIFY(filter.matches(QString::fromLatin1(TestAvb::Source.toHex().toUpper())));
 	QVERIFY(!filter.matches(MobId::swapMaterialByteOrder(MobId::format(TestAvb::Source))));
@@ -848,33 +848,33 @@ void TestMediaFilterProxy::bin_filter_falls_back_only_for_legacy_identities()
 	const QString modern = MobId::format(TestAvb::Source);
 	const QString old = QStringLiteral("060a2b3401010101.01010f0013000000.98badcfe32107654.060e2b347f7f2a80");
 	const QString wrongOld = QStringLiteral("060a2b3401010101.01010f0013000000.1122334455667788.060e2b347f7f2a80");
-	const auto shortId = BinFileId::fromLegacyWords(0xfedcba98, 0x54761032);
+	const auto shortId = AvbFileId::fromLegacyWords(0xfedcba98, 0x54761032);
 	QCOMPARE(shortId.legacyKey, QStringLiteral("98badcfe32107654"));
 	QVERIFY(shortId.fullId.isEmpty());
-	BinFileReferences legacyRefs;
+	AvbFileReferences legacyRefs;
 	legacyRefs.add(shortId);
-	const BinFilter oldBin{{{BinFilter::Operation::Intersect, {}, legacyRefs}}};
+	const AvbFilter oldBin{{{AvbFilter::Operation::Intersect, {}, legacyRefs}}};
 	QVERIFY(oldBin.matches(modern)); // modern file, old bin
 	QVERIFY(oldBin.matches(old));	 // old file, old bin
 	QVERIFY(!oldBin.matches(wrongOld));
 	QVERIFY(!oldBin.matches(MobId::format(TestAvb::Other)));
-	const BinFilter modernBin{{{BinFilter::Operation::Intersect, {}, fullIds({modern})}}};
+	const AvbFilter modernBin{{{AvbFilter::Operation::Intersect, {}, fullIds({modern})}}};
 	QVERIFY(modernBin.matches(old)); // old file, modern bin
 	QVERIFY(!modernBin.matches(wrongOld));
 	// Both prefix and suffix identify an OMF wrapper. A shared prefix alone
 	// cannot turn a different modern ID into a legacy fallback.
 	const QString modernWithOldPrefix = QStringLiteral("060a2b3401010101.01010f0013000000.98badcfe32107654.0123456789abcdef");
 	QVERIFY(!modernBin.matches(modernWithOldPrefix));
-	BinFileReferences wrappedRefs;
-	wrappedRefs.add(BinFileId::fromMobId(old));
+	AvbFileReferences wrappedRefs;
+	wrappedRefs.add(AvbFileId::fromMobId(old));
 	QVERIFY(wrappedRefs.fullIds.contains(old));
 	QCOMPARE(wrappedRefs.legacyKeys, QSet<QString>{shortId.legacyKey});
-	const BinFilter wrappedBin{{{BinFilter::Operation::Intersect, {}, wrappedRefs}}};
+	const AvbFilter wrappedBin{{{AvbFilter::Operation::Intersect, {}, wrappedRefs}}};
 	QVERIFY(wrappedBin.matches(modern)); // typed wrapper still carries a legacy ID
 	// A mixed selection retains both kinds; adding legacy support must not
 	// shorten unrelated full IDs in the same operand.
 	legacyRefs.unite(fullIds({MobId::format(TestAvb::Other)}));
-	const BinFilter mixed{{{BinFilter::Operation::Intersect, {}, legacyRefs}}};
+	const AvbFilter mixed{{{AvbFilter::Operation::Intersect, {}, legacyRefs}}};
 	QVERIFY(mixed.matches(modern));
 	QVERIFY(mixed.matches(MobId::format(TestAvb::Other)));
 	auto different = TestAvb::Other;
@@ -884,8 +884,8 @@ void TestMediaFilterProxy::bin_filter_falls_back_only_for_legacy_identities()
 
 void TestMediaFilterProxy::bin_filter_rejects_malformed_file_ids()
 {
-	const BinFileReferences refs{{MobId::format(QByteArray(32, '\0'))}, {QStringLiteral("0000000000000000")}};
-	const BinFilter filter{{{BinFilter::Operation::Intersect, {}, refs}}};
+	const AvbFileReferences refs{{MobId::format(QByteArray(32, '\0'))}, {QStringLiteral("0000000000000000")}};
+	const AvbFilter filter{{{AvbFilter::Operation::Intersect, {}, refs}}};
 	for (const auto &id : {QString{}, QStringLiteral("F"), QString(64, 'g'),
 						   QString(32, '0'), QStringLiteral("omf:") + QString(24, '0')})
 		QVERIFY(!filter.matches(id));
@@ -916,8 +916,8 @@ void TestMediaFilterProxy::bin_subtraction_only_uses_file_identity()
 	model.setMediaFiles(TestMediaFile::seeded({row}));
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
-	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({row.fileMobId})},
-						 {BinFilter::Operation::Subtract, {}, fullIds({subtract})}}});
+	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({row.fileMobId})},
+						 {AvbFilter::Operation::Subtract, {}, fullIds({subtract})}}});
 	QCOMPARE(proxy.rowCount(), expected);
 }
 
@@ -931,12 +931,12 @@ void TestMediaFilterProxy::bin_ordered_add_can_restore_a_row()
 	model.setMediaFiles(TestMediaFile::seeded({row, rowNamed(QStringLiteral("unrelated"))}));
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
-	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, refs},
-						 {BinFilter::Operation::Subtract, {}, refs},
-						 {BinFilter::Operation::Add, {}, refs}}});
+	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, refs},
+						 {AvbFilter::Operation::Subtract, {}, refs},
+						 {AvbFilter::Operation::Add, {}, refs}}});
 	QCOMPARE(proxy.rowCount(), 1);
 	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 0);
-	proxy.setBinFilter({{{BinFilter::Operation::Add, {}, refs}}});
+	proxy.setBinFilter({{{AvbFilter::Operation::Add, {}, refs}}});
 	QCOMPARE(proxy.rowCount(), 1); // leading Add starts with its own matches
 }
 
@@ -951,7 +951,7 @@ void TestMediaFilterProxy::bin_leading_subtract_uses_all_media_rows()
 	model.setMediaFiles(TestMediaFile::seeded({hit, outside, unknown}));
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
-	proxy.setBinFilter({{{BinFilter::Operation::Subtract, {}, fullIds({hit.fileMobId, QString{}})}}});
+	proxy.setBinFilter({{{AvbFilter::Operation::Subtract, {}, fullIds({hit.fileMobId, QString{}})}}});
 	QCOMPARE(proxy.rowCount(), 2);
 	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
 	QCOMPARE(proxy.mapToSource(proxy.index(1, 0)).row(), 2);
@@ -965,11 +965,11 @@ void TestMediaFilterProxy::bin_empty_operand_leaves_filter_unchanged()
 	model.setMediaFiles(TestMediaFile::seeded({hit, rowNamed(QStringLiteral("outside"))}));
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
-	for (const auto op : {BinFilter::Operation::Intersect, BinFilter::Operation::Subtract, BinFilter::Operation::Add})
+	for (const auto op : {AvbFilter::Operation::Intersect, AvbFilter::Operation::Subtract, AvbFilter::Operation::Add})
 	{
 		proxy.setBinFilter({{{op, {}, {}}}});
 		QCOMPARE(proxy.rowCount(), 2);
-		proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({hit.fileMobId})}, {op, {}, {}}}});
+		proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({hit.fileMobId})}, {op, {}, {}}}});
 		QCOMPARE(proxy.rowCount(), 1);
 	}
 	proxy.setBinFilter({});
@@ -986,7 +986,7 @@ void TestMediaFilterProxy::bin_expression_intersects_search_and_survives_model_r
 	model.setMediaFiles(TestMediaFile::seeded({first, second}));
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
-	proxy.setBinFilter({{{BinFilter::Operation::Intersect, {}, fullIds({first.fileMobId})}}});
+	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({first.fileMobId})}}});
 	proxy.setSearchText(QStringLiteral("second"));
 	QCOMPARE(proxy.rowCount(), 1);
 	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
@@ -1025,8 +1025,8 @@ void TestMediaFilterProxy::unchanged_bin_criteria_do_not_refilter_rows()
 	QCOMPARE(proxy.rowCount(), 2);
 	QCOMPARE(proxy.rowChecks, 0);
 
-	BinFilter filter{{{BinFilter::Operation::Intersect, {QStringLiteral("First")}, fullIds({first.fileMobId})},
-					  {BinFilter::Operation::Add, {QStringLiteral("Second")}, fullIds({second.fileMobId})}}};
+	AvbFilter filter{{{AvbFilter::Operation::Intersect, {QStringLiteral("First")}, fullIds({first.fileMobId})},
+					  {AvbFilter::Operation::Add, {QStringLiteral("Second")}, fullIds({second.fileMobId})}}};
 	proxy.setBinFilter(filter);
 	QCOMPARE(proxy.rowCount(), 2);
 	QVERIFY(proxy.rowChecks > 0);
@@ -1045,17 +1045,17 @@ void TestMediaFilterProxy::unchanged_bin_criteria_do_not_refilter_rows()
 	QCOMPARE(proxy.rowCount(), 0);
 	QVERIFY(proxy.rowChecks > 0);
 	proxy.rowChecks = 0;
-	filter.steps[1].op = BinFilter::Operation::Add;
+	filter.steps[1].operation = AvbFilter::Operation::Add;
 	proxy.setBinFilter(filter);
 	QCOMPARE(proxy.rowCount(), 2);
 	QVERIFY(proxy.rowChecks > 0);
 	proxy.rowChecks = 0;
-	filter.steps[1].mediaFileIds = fullIds({second.fileMobId});
+	filter.steps[1].fileReferences = fullIds({second.fileMobId});
 	proxy.setBinFilter(filter);
 	QCOMPARE(proxy.rowCount(), 1);
 	QVERIFY(proxy.rowChecks > 0);
 	proxy.rowChecks = 0;
-	filter.steps[1].mediaFileIds.add(BinFileId::fromLegacyWords(0xfedcba98, 0x54761032));
+	filter.steps[1].fileReferences.add(AvbFileId::fromLegacyWords(0xfedcba98, 0x54761032));
 	proxy.setBinFilter(filter);
 	QCOMPARE(proxy.rowCount(), 2);
 	QVERIFY(proxy.rowChecks > 0);

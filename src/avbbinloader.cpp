@@ -1,6 +1,6 @@
-// Compatibility view of MediaEngine's retained bin graph. The reader owns decoding;
-// this adapter supplies the existing table and whole-bin filter contracts.
-#include "avbparser.h"
+// Loads a bin through AvbReader and prepares its clips, evidence and media references
+// for AvbFilterDialog. The reader owns decoding; the loader owns this app-facing view.
+#include "avbbinloader.h"
 #include "mediaengine/avbreader.h"
 #include "mediaengine/avbreferences.h"
 #include "diagnostics.h"
@@ -26,28 +26,28 @@ namespace
 	using Object = MediaEngine::AvidObject;
 	using Property = MediaEngine::RawProperty;
 
-	const Property *field(const Object &object, const QString &name, QStringList &warnings, bool nonEmptyText = false)
+	const Property *field(const Object &avbObject, const QString &name, QStringList &warnings, bool nonEmptyText = false)
 	{
-		const Property *found = nullptr;
-		for (const auto &value : object.properties)
+		const Property *matchingProperty = nullptr;
+		for (const auto &candidateProperty : avbObject.properties)
 		{
-			if (value.locator.name != name || value.state != PropertyReadState::Present || !value.decoded.isValid())
+			if (candidateProperty.locator.name != name || candidateProperty.state != PropertyReadState::Present || !candidateProperty.decoded.isValid())
 				continue;
-			if (nonEmptyText && (value.decoded.metaType().id() != QMetaType::QString || value.decoded.toString().isEmpty()))
+			if (nonEmptyText && (candidateProperty.decoded.metaType().id() != QMetaType::QString || candidateProperty.decoded.toString().isEmpty()))
 				continue;
-			if (found && found->decoded != value.decoded)
+			if (matchingProperty && matchingProperty->decoded != candidateProperty.decoded)
 			{
-				warnings.append(QStringLiteral("Object %1 has conflicting %2 observations; no value was selected.").arg(object.handle).arg(name));
+				warnings.append(QStringLiteral("Object %1 has conflicting %2 observations; no value was selected.").arg(avbObject.handle).arg(name));
 				return nullptr;
 			}
-			found = &value;
+			matchingProperty = &candidateProperty;
 		}
-		return found;
+		return matchingProperty;
 	}
 	bool hasField(const Object &object, const QString &name)
 	{
-		return std::any_of(object.properties.cbegin(), object.properties.cend(), [&](const auto &value)
-						   { return value.locator.name == name; });
+		return std::any_of(object.properties.cbegin(), object.properties.cend(), [&](const auto &property)
+						   { return property.locator.name == name; });
 	}
 	bool nonzero(const QByteArray &bytes)
 	{
@@ -61,8 +61,8 @@ namespace
 			const auto *id = field(object, QStringLiteral("Composition.mob_id"), warnings);
 			if (!id)
 				return {};
-			const auto raw = id->decoded.toByteArray();
-			return raw.size() == 32 ? BinFileId::fromMobId(MobId::format(raw)).fullId : QString{};
+			const auto decodedMobId = id->decoded.toByteArray();
+			return decodedMobId.size() == 32 ? AvbFileId::fromMobId(MobId::format(decodedMobId)).fullId : QString{};
 		}
 		if (!object.avb || !object.avb->interpretationComplete)
 			return {}; // An unread tail may contain a modern ID.
@@ -75,12 +75,12 @@ namespace
 		qToLittleEndian(second->decoded.toUInt(), legacy.data() + 4);
 		return nonzero(legacy) ? OmfUid::toMobIdText(reinterpret_cast<const uchar *>(legacy.constData())) : QString{};
 	}
-	MetadataObservation observation(const Object &object, const Property &field)
+	MetadataObservation observation(const Object &fieldOwner, const Property &field)
 	{
 		MetadataObservation result;
-		result.snapshot = object.snapshot;
+		result.snapshot = fieldOwner.snapshot;
 		result.property = field.locator.name;
-		result.objectIdentity = QString::number(object.handle);
+		result.objectIdentity = QString::number(fieldOwner.handle);
 		result.value = field.decoded;
 		result.rawValue = field.encoding;
 		result.readState = field.state;
@@ -88,26 +88,26 @@ namespace
 		result.textEncodingBasis = field.textEncodingBasis;
 		if (field.textEncodingBasis == EvidenceBasis::Derived)
 			result.basis = EvidenceBasis::Derived;
-		result.explanation = QStringLiteral("Recorded AVB object %1, matched through this file's master association.").arg(object.handle);
+		result.explanation = QStringLiteral("Recorded AVB object %1, matched through this file's master association.").arg(fieldOwner.handle);
 		if (!field.interpretation.isEmpty())
 			result.explanation += QLatin1Char(' ') + field.interpretation;
 		return result;
 	}
-	struct OriginalBin
+	struct OriginalBinMetadata
 	{
 		QString name;
 		QString uid;
-		QVector<MetadataObservation> observations;
+		QVector<MetadataObservation> nameObservations;
 	};
-	OriginalBin originalBin(const Object &composition, const QHash<MediaEngine::ObjectHandle, const Object *> &objects,
+	OriginalBinMetadata originalBin(const Object &composition, const QHash<MediaEngine::ObjectHandle, const Object *> &objects,
 							QStringList &warnings, const MediaEngine::Cancellation &cancel)
 	{
 		const auto *attributes = field(composition, QStringLiteral("Component.attributes"), warnings);
 		const auto *table = attributes ? objects.value(attributes->decoded.toULongLong()) : nullptr;
 		if (!table || !table->avb || table->avb->classId != "ATTR")
 			return {};
-		OriginalBin selected;
-		bool found = false, conflict = false;
+		OriginalBinMetadata selected;
+		bool hasOriginalBin = false, conflict = false;
 		for (const auto &name : table->properties)
 		{
 			if (cancel.cancelled())
@@ -145,39 +145,39 @@ namespace
 						evidence.explanation += property.locator.name == QLatin1String("BinRef.name")
 													? QStringLiteral(" The non-empty UTF-8 bin name takes precedence over the legacy name.")
 													: QStringLiteral(" The modern bin-name field is empty or unreadable.");
-					selected.observations.append(std::move(evidence));
+					selected.nameObservations.append(std::move(evidence));
 				}
-			OriginalBin value;
+			OriginalBinMetadata candidateBin;
 			if (usableModern)
 			{
 				if (modern)
-					value.name = modern->decoded.toString();
+					candidateBin.name = modern->decoded.toString();
 			}
 			else if (legacy)
-				value.name = legacy->decoded.toString();
+				candidateBin.name = legacy->decoded.toString();
 			if (high && low)
-				value.uid = QStringLiteral("%1%2").arg(quint32(high->decoded.toInt()), 8, 16, QLatin1Char('0')).arg(quint32(low->decoded.toInt()), 8, 16, QLatin1Char('0'));
-			if (found && (selected.name != value.name || selected.uid != value.uid))
+				candidateBin.uid = QStringLiteral("%1%2").arg(quint32(high->decoded.toInt()), 8, 16, QLatin1Char('0')).arg(quint32(low->decoded.toInt()), 8, 16, QLatin1Char('0'));
+			if (hasOriginalBin && (selected.name != candidateBin.name || selected.uid != candidateBin.uid))
 			{
 				warnings.append(QStringLiteral("Object %1 has conflicting original-bin references; no original bin was selected.").arg(composition.handle));
 				conflict = true;
 			}
-			selected.name = value.name;
-			selected.uid = value.uid;
-			found = true;
+			selected.name = candidateBin.name;
+			selected.uid = candidateBin.uid;
+			hasOriginalBin = true;
 		}
 		if (conflict)
 		{
 			selected.name.clear();
 			selected.uid.clear();
-			for (auto &value : selected.observations)
-				value.eligible = false;
+			for (auto &observation : selected.nameObservations)
+				observation.eligible = false;
 		}
 		return selected;
 	}
 }
 
-AvbHeaderCheck AvbParser::inspectHeader(const QString &path)
+AvbHeaderResult AvbBinLoader::inspectHeader(const QString &path)
 {
 	const QFileInfo info(path);
 	if (!info.exists())
@@ -187,15 +187,15 @@ AvbHeaderCheck AvbParser::inspectHeader(const QString &path)
 	QFile file(path);
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Unbuffered))
 		return {false, file.errorString()};
-	std::array<char, littleHeader.size()> bytes{};
-	if (file.read(bytes.data(), bytes.size()) != qint64(bytes.size()))
+	std::array<char, littleHeader.size()> headerBytes{};
+	if (file.read(headerBytes.data(), headerBytes.size()) != qint64(headerBytes.size()))
 		return {false, file.error() == QFileDevice::NoError ? QStringLiteral("This file is not an Avid bin.") : file.errorString()};
-	const std::string_view signature(bytes.data(), bytes.size());
-	return signature == littleHeader || signature == bigHeader ? AvbHeaderCheck{true, {}}
-															   : AvbHeaderCheck{false, QStringLiteral("This file is not an Avid bin.")};
+	const std::string_view signature(headerBytes.data(), headerBytes.size());
+	return signature == littleHeader || signature == bigHeader ? AvbHeaderResult{true, {}}
+															   : AvbHeaderResult{false, QStringLiteral("This file is not an Avid bin.")};
 }
 
-AvbBin AvbParser::parse(const QString &path, const std::atomic_bool *cancelled)
+AvbBin AvbBinLoader::load(const QString &path, const std::atomic_bool *cancelled)
 {
 	AvbBin bin;
 	bin.filePath = path;
@@ -223,15 +223,15 @@ AvbBin AvbParser::parse(const QString &path, const std::atomic_bool *cancelled)
 	snapshot->path = path;
 	snapshot->source = MetadataSource::Avb;
 	auto source = QSharedPointer<MediaEngine::ParsedSource>::create(MediaEngine::AvbReader{}.read(file, {snapshot, cancel}));
-	bin.source = source;
+	bin.sourceGraph = source;
 	using Outcome = MediaEngine::ParsedSource::Outcome;
 	MediaEngine::ObjectHandle root = 0;
 	for (const auto &property : source->unownedProperties)
 		if (property.locator.name == QLatin1String("Header.root_index") && property.state == PropertyReadState::Present)
 			root = property.decoded.toULongLong();
-	const bool readable = std::any_of(source->objects.cbegin(), source->objects.cend(), [root](const auto &object)
-									  { return root && object.handle == root && object.avb && (object.avb->classId == "ABIN" || object.avb->classId == "BINF") &&
-											   std::any_of(object.properties.cbegin(), object.properties.cend(), [](const auto &property)
+	const bool readable = std::any_of(source->objects.cbegin(), source->objects.cend(), [root](const auto &binObject)
+									  { return root && binObject.handle == root && binObject.avb && (binObject.avb->classId == "ABIN" || binObject.avb->classId == "BINF") &&
+											   std::any_of(binObject.properties.cbegin(), binObject.properties.cend(), [](const auto &property)
 														   { return property.locator.name == QLatin1String("Bin.version") && property.state == PropertyReadState::Present; }); });
 	const auto changed = [&]
 	{ return file.size() != originalSize || file.fileTime(QFileDevice::FileModificationTime) != originalModified; };
@@ -246,10 +246,10 @@ AvbBin AvbParser::parse(const QString &path, const std::atomic_bool *cancelled)
 	}
 	bin.warnings = source->diagnostics;
 	MediaEngine::AvbReferenceIndex index({source}, cancel);
-	auto resolution = QSharedPointer<MediaEngine::AvbResolution>::create(index.resolve({{0, MediaEngine::AvbScope::Kind::EntireBin, {}}}, cancel));
-	bin.resolution = resolution;
+	auto resolution = QSharedPointer<MediaEngine::AvbReferenceResult>::create(index.resolveReferences({{0, MediaEngine::AvbSelection::Kind::EntireBin, {}}}, cancel));
+	bin.referenceResult = resolution;
 	for (const auto &issue : resolution->issues)
-		bin.warnings.append(QStringLiteral("Object %1: %2").arg(issue.object.object).arg(issue.explanation));
+		bin.warnings.append(QStringLiteral("Object %1: %2").arg(issue.objectKey.objectHandle).arg(issue.explanation));
 	QHash<MediaEngine::ObjectHandle, const Object *> objects;
 	for (const auto &object : source->objects)
 		objects.insert(object.handle, &object);
@@ -269,56 +269,56 @@ AvbBin AvbParser::parse(const QString &path, const std::atomic_bool *cancelled)
 			bin.warnings.append(QStringLiteral("AVB %1 refers to object %2 with an incompatible class; the reference was not used for metadata.").arg(name).arg(relation.target));
 		}
 	}
-	for (const auto &object : source->objects)
+	for (const auto &composition : source->objects)
 	{
 		if (cancel.cancelled())
 			break;
-		if (!object.avb || object.avb->classId != "CMPO")
+		if (!composition.avb || composition.avb->classId != "CMPO")
 			continue;
-		AvbMob mob;
-		mob.mobId = compositionId(object, bin.warnings);
+		AvbComposition mob;
+		mob.mobId = compositionId(composition, bin.warnings);
 		if (mob.mobId.isEmpty())
 			continue;
-		if (const auto *name = field(object, QStringLiteral("Component.name"), bin.warnings))
+		if (const auto *name = field(composition, QStringLiteral("Component.name"), bin.warnings))
 			mob.name = name->decoded.toString();
-		for (const auto &property : object.properties)
+		for (const auto &property : composition.properties)
 			if (property.locator.name == QLatin1String("Component.name"))
-				mob.nameObservations.append(observation(object, property));
-		if (const auto *type = field(object, QStringLiteral("Composition.mob_type"), bin.warnings))
+				mob.nameObservations.append(observation(composition, property));
+		if (const auto *type = field(composition, QStringLiteral("Composition.mob_type"), bin.warnings))
 			mob.mobType = type->decoded.toInt();
-		if (const auto *usage = field(object, QStringLiteral("Composition.usage_code"), bin.warnings))
+		if (const auto *usage = field(composition, QStringLiteral("Composition.usage_code"), bin.warnings))
 			mob.usageCode = usage->decoded.toInt();
-		const auto original = originalBin(object, objects, bin.warnings, cancel);
-		mob.originalBin = original.name;
+		const auto original = originalBin(composition, objects, bin.warnings, cancel);
+		mob.originalBinName = original.name;
 		mob.originalBinUid = original.uid;
-		mob.originalBinObservations = original.observations;
-		bin.mobs.append(std::move(mob));
+		mob.originalBinObservations = original.nameObservations;
+		bin.compositions.append(std::move(mob));
 	}
-	for (const auto &reference : resolution->media)
+	for (const auto &reference : resolution->mediaReferences)
 	{
 		if (cancel.cancelled())
 			break;
 		if (reference.mobId.size() == 32)
-			bin.mediaFileIds.add(BinFileId::fromMobId(MobId::format(reference.mobId)));
+			bin.mediaFileIds.add(AvbFileId::fromMobId(MobId::format(reference.mobId)));
 		else if (reference.legacyId.size() == 8)
-			bin.mediaFileIds.add(BinFileId::fromLegacyWords(qFromLittleEndian<quint32>(reference.legacyId.constData()), qFromLittleEndian<quint32>(reference.legacyId.constData() + 4)));
+			bin.mediaFileIds.add(AvbFileId::fromLegacyWords(qFromLittleEndian<quint32>(reference.legacyId.constData()), qFromLittleEndian<quint32>(reference.legacyId.constData() + 4)));
 	}
 	if (cancel.cancelled() || resolution->cancelled || !bin.error.isEmpty() || changed())
 	{
-		bin.mobs.clear();
+		bin.compositions.clear();
 		bin.mediaFileIds = {};
 		if (bin.error.isEmpty())
 			bin.error = changed() ? QStringLiteral("AVB file changed while reading; load it again.") : QStringLiteral("Bin reading cancelled.");
 		return bin;
 	}
-	std::sort(bin.mobs.begin(), bin.mobs.end(), [](const auto &a, const auto &b)
+	std::sort(bin.compositions.begin(), bin.compositions.end(), [](const auto &a, const auto &b)
 			  {
 		if (a.mobId != b.mobId) return a.mobId < b.mobId;
 		if (a.name != b.name) return a.name < b.name;
 		if (a.originalBinUid != b.originalBinUid) return a.originalBinUid < b.originalBinUid;
-		return a.originalBin < b.originalBin; });
+		return a.originalBinName < b.originalBinName; });
 	bin.warnings.removeDuplicates();
-	bin.valid = true;
-	bin.complete = source->outcome == Outcome::Complete && resolution->complete && bin.warnings.isEmpty();
+	bin.usable = true;
+	bin.coverageComplete = source->outcome == Outcome::Complete && resolution->coverageComplete && bin.warnings.isEmpty();
 	return bin;
 }

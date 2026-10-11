@@ -3,15 +3,20 @@
 // cannot accidentally pass by copying the audio or video into memory.
 
 #include "mediaengine/omfreader.h"
+#include "mediaengine/projection.h"
 #include "mediaengine/audioreader_p.h"
+#include "mediaenginefingerprint.h"
 #include "testmediaenginebento.h"
 
 #include <QBuffer>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
+#include <QTemporaryDir>
 #include <QTest>
 #include <algorithm>
 #include <cstring>
+#include <utility>
 
 namespace
 {
@@ -183,6 +188,8 @@ private slots:
 	void realAvidAudio();
 	void realAudioSummariesMatchNativeFields_data();
 	void realAudioSummariesMatchNativeFields();
+	void genuineProjectionOutlivesInput_data();
+	void genuineProjectionOutlivesInput();
 	void audioSummaryFieldsFollowFragmentedRanges();
 };
 
@@ -730,6 +737,61 @@ void TestMediaEngineLegacy::realAudioSummariesMatchNativeFields()
 		QCOMPARE(compressionName->textEncoding, std::optional<MediaEngine::TextEncoding>(MediaEngine::TextEncoding::Ascii));
 		QCOMPARE(compressionName->locator.ranges.first().offset, summary->locator.ranges.first().offset + 655);
 	}
+}
+
+void TestMediaEngineLegacy::genuineProjectionOutlivesInput_data()
+{
+	QTest::addColumn<QString>("relative");
+	for (const auto &relative : {
+		QStringLiteral("omf/avid_supporting/BLACK_720x576x1_DV411.omf"),
+		QStringLiteral("omf/mc2026_audio/TONE_100A01.6A972974.039700.wav"),
+		QStringLiteral("omf/mc2026_audio/TONE_100A01.6A972997.0C53E0.aif")})
+		QTest::newRow(qPrintable(relative)) << relative;
+}
+
+void TestMediaEngineLegacy::genuineProjectionOutlivesInput()
+{
+	QFETCH(QString, relative);
+	QTemporaryDir temporary;
+	QVERIFY(temporary.isValid());
+	const auto path = temporary.filePath(QFileInfo(relative).fileName());
+	QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR) + '/' + relative, path));
+	MediaEngine::Projection retained;
+	MediaEngine::SourceReceipt receipt;
+	QByteArray expectedDigest;
+	{
+		QFile input(path);
+		QVERIFY2(input.open(QIODevice::ReadOnly), qPrintable(input.errorString()));
+		const SourceSnapshotRef snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Omf, path, QFileInfo(input).lastModified(), SourceReadState::NotRead});
+		const MediaEngine::Cancellation active;
+		auto parsed = MediaEngine::OmfReader{}.read(input, {snapshot, active});
+		QCOMPARE(parsed.outcome, Outcome::Complete);
+		if (relative.endsWith(QStringLiteral(".wav")) || relative.endsWith(QStringLiteral(".aif")))
+			QVERIFY(!parsed.embeddedSources.isEmpty());
+		retained = MediaEngine::projectOmf(parsed, active);
+		QVERIFY(!retained.files.isEmpty());
+		QVERIFY(!retained.files.front().fileMobId.isEmpty());
+		MediaEngineProof::Fingerprint fingerprint;
+		fingerprint.projection(retained);
+		expectedDigest = fingerprint.result();
+		const auto outcome = parsed.outcome;
+		const auto container = parsed.container;
+		const auto publishedSnapshot = parsed.snapshot;
+		const auto diagnostics = parsed.diagnostics;
+		receipt = MediaEngine::SourceReceipt::fromParsed(std::move(parsed));
+		QCOMPARE(receipt.outcome, outcome);
+		QCOMPARE(receipt.container, container);
+		QCOMPARE(receipt.snapshot, publishedSnapshot);
+		QCOMPARE(receipt.diagnostics, diagnostics);
+	}
+	// Qt-owned values, contexts and receipts outlive the reader, device and file.
+	QVERIFY(QFile::remove(path));
+	MediaEngineProof::Fingerprint fingerprint;
+	fingerprint.projection(retained);
+	QCOMPARE(fingerprint.result(), expectedDigest);
+	QCOMPARE(receipt.snapshot->path, path);
+	QCOMPARE(receipt.snapshot->readState, SourceReadState::Complete);
 }
 
 void TestMediaEngineLegacy::audioSummaryFieldsFollowFragmentedRanges()

@@ -8,7 +8,7 @@
 #include "rebalancedialog.h"
 #include "rebalancer.h"
 #include "formatutil.h"
-#include "binfilterdialog.h"
+#include "avbfilterdialog.h"
 #include "testavb.h"
 #include "mobid.h"
 #include "mediaengine/scanmodel.h"
@@ -1303,7 +1303,7 @@ void TestOperationUi::bin_metadata_lifecycle_matches_table_and_csv()
 	QVERIFY(dialog);
 	auto *list = dialog->findChild<QListWidget *>(QStringLiteral("BinList"));
 	QVERIFY(list);
-	QSignalSpy published(dialog, &BinFilterDialog::binsChanged);
+	QSignalSpy published(dialog, &AvbFilterDialog::binsChanged);
 	const auto makeBin = [&](const QString &name)
 	{
 		TestAvb::Document d;

@@ -3,7 +3,7 @@
 #include "mobid.h"
 #include "pathkey.h"
 #include "conventions.h"
-#include "avidmedialayout.h"
+#include "app_avidmedialayout.h"
 
 #include <QDir>
 #include <QDirIterator>
