@@ -14,6 +14,8 @@
 #include "mobid.h"
 #include "testavb.h"
 
+#include <QFile>
+#include <QTemporaryDir>
 #include <QTest>
 
 #include <algorithm>
@@ -41,6 +43,19 @@ namespace
 	// "café" decomposed: 'e' + combining acute (U+0301) — what APFS/SMB
 	// paths frequently contain.
 	const QString kCafeNfd = QStringLiteral("café");
+
+	class CountingMediaFilterProxy : public MediaFilterProxy
+	{
+	public:
+		mutable int rowChecks = 0;
+
+	protected:
+		bool filterAcceptsRow(int row, const QModelIndex &parent) const override
+		{
+			++rowChecks;
+			return MediaFilterProxy::filterAcceptsRow(row, parent);
+		}
+	};
 } // namespace
 
 class TestMediaFilterProxy : public QObject
@@ -86,6 +101,10 @@ private slots:
 	void bin_empty_operand_leaves_filter_unchanged();
 	void bin_expression_intersects_search_and_survives_model_refresh();
 	void unchanged_bin_criteria_do_not_refilter_rows();
+	void unchanged_filter_mode_does_not_refilter_rows();
+	void unchanged_normalised_search_does_not_refilter_rows();
+	void unchanged_project_set_does_not_refilter_rows();
+	void active_filters_survive_source_reset_and_data_change();
 };
 
 void TestMediaFilterProxy::unicode_search_normalises_and_folds_data()
@@ -999,25 +1018,13 @@ void TestMediaFilterProxy::bin_expression_intersects_search_and_survives_model_r
 
 void TestMediaFilterProxy::unchanged_bin_criteria_do_not_refilter_rows()
 {
-	class CountingProxy : public MediaFilterProxy
-	{
-	public:
-		mutable int rowChecks = 0;
-
-	protected:
-		bool filterAcceptsRow(int row, const QModelIndex &parent) const override
-		{
-			++rowChecks;
-			return MediaFilterProxy::filterAcceptsRow(row, parent);
-		}
-	};
 	MediaFile first = rowNamed(QStringLiteral("first"));
 	first.fileMobId = MobId::format(TestAvb::Source);
 	MediaFile second = rowNamed(QStringLiteral("second"));
 	second.fileMobId = MobId::format(TestAvb::Other);
 	MediaTableModel model;
 	model.setMediaFiles(TestMediaFile::seeded({first, second}));
-	CountingProxy proxy;
+	CountingMediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	QCOMPARE(proxy.rowCount(), 2);
 	proxy.rowChecks = 0;
@@ -1063,6 +1070,156 @@ void TestMediaFilterProxy::unchanged_bin_criteria_do_not_refilter_rows()
 	filter.steps.removeLast();
 	proxy.setBinFilter(filter);
 	QCOMPARE(proxy.rowCount(), 1);
+	QVERIFY(proxy.rowChecks > 0);
+}
+
+void TestMediaFilterProxy::unchanged_filter_mode_does_not_refilter_rows()
+{
+	MediaFile video = rowNamed(QStringLiteral("picture"));
+	video.kind = MediaFile::Kind::Video;
+	MediaFile audio = rowNamed(QStringLiteral("sound"));
+	audio.kind = MediaFile::Kind::Audio;
+	MediaTableModel model;
+	model.setMediaFiles(TestMediaFile::seeded({video, audio}));
+	CountingMediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	QCOMPARE(proxy.rowCount(), 2);
+	proxy.rowChecks = 0;
+	proxy.setFilterMode(MediaFilterProxy::FilterMode::All);
+	QCOMPARE(proxy.rowCount(), 2);
+	QCOMPARE(proxy.rowChecks, 0);
+
+	// A disabled Precompute request has the same effective criteria as All.
+	proxy.setFilterMode(MediaFilterProxy::FilterMode::Precompute);
+	QCOMPARE(proxy.rowCount(), 2);
+	QCOMPARE(proxy.rowChecks, 0);
+	proxy.setFilterMode(MediaFilterProxy::FilterMode::Video);
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 0);
+	QVERIFY(proxy.rowChecks > 0);
+	proxy.rowChecks = 0;
+	proxy.setFilterMode(MediaFilterProxy::FilterMode::Video);
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.rowChecks, 0);
+	proxy.setFilterMode(MediaFilterProxy::FilterMode::Audio);
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
+	QVERIFY(proxy.rowChecks > 0);
+}
+
+void TestMediaFilterProxy::unchanged_normalised_search_does_not_refilter_rows()
+{
+	MediaTableModel model;
+	model.setMediaFiles(TestMediaFile::seeded({rowNamed(kCafeNfd), rowNamed(QStringLiteral("sound"))}));
+	CountingMediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	QCOMPARE(proxy.rowCount(), 2);
+	proxy.rowChecks = 0;
+	proxy.setSearchText({});
+	QCOMPARE(proxy.rowCount(), 2);
+	QCOMPARE(proxy.rowChecks, 0);
+
+	proxy.setSearchText(kCafeNfc);
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 0);
+	QVERIFY(proxy.rowChecks > 0);
+	proxy.rowChecks = 0;
+	proxy.setSearchText(kCafeNfc);
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.rowChecks, 0);
+	proxy.setSearchText(kCafeNfd);
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.rowChecks, 0);
+
+	proxy.setSearchText(QStringLiteral("SOUND"));
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
+	QVERIFY(proxy.rowChecks > 0);
+}
+
+void TestMediaFilterProxy::unchanged_project_set_does_not_refilter_rows()
+{
+	MediaFile first = rowNamed(QStringLiteral("first"));
+	first.project = QStringLiteral("Project A");
+	MediaFile second = rowNamed(QStringLiteral("second"));
+	second.project = QStringLiteral("Project B");
+	MediaFile third = rowNamed(QStringLiteral("third"));
+	third.project = QStringLiteral("Project C");
+	MediaTableModel model;
+	model.setMediaFiles(TestMediaFile::seeded({first, second, third}));
+	CountingMediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	QCOMPARE(proxy.rowCount(), 3);
+	proxy.rowChecks = 0;
+	proxy.setProjectFilter({});
+	QCOMPARE(proxy.rowCount(), 3);
+	QCOMPARE(proxy.rowChecks, 0);
+
+	proxy.setProjectFilter({first.project, second.project});
+	QCOMPARE(proxy.rowCount(), 2);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 0);
+	QCOMPARE(proxy.mapToSource(proxy.index(1, 0)).row(), 1);
+	QVERIFY(proxy.rowChecks > 0);
+	proxy.rowChecks = 0;
+	QSet<QString> reordered;
+	reordered.insert(second.project);
+	reordered.insert(first.project);
+	proxy.setProjectFilter(reordered);
+	QCOMPARE(proxy.rowCount(), 2);
+	QCOMPARE(proxy.rowChecks, 0);
+	proxy.setProjectFilter({third.project});
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 2);
+	QVERIFY(proxy.rowChecks > 0);
+}
+
+void TestMediaFilterProxy::active_filters_survive_source_reset_and_data_change()
+{
+	const auto row = [](const QString &name, MediaFile::Kind kind, const QString &project)
+	{
+		auto file = rowNamed(name);
+		file.kind = kind;
+		file.project = project;
+		return file;
+	};
+	const QString project = QStringLiteral("Project A");
+	MediaTableModel model;
+	model.setMediaFiles(TestMediaFile::seeded({row(QStringLiteral("match initial"), MediaFile::Kind::Video, project)}));
+	CountingMediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	proxy.setFilterMode(MediaFilterProxy::FilterMode::Video);
+	proxy.setSearchText(QStringLiteral("match"));
+	proxy.setProjectFilter({project});
+	QCOMPARE(proxy.rowCount(), 1);
+	proxy.rowChecks = 0;
+
+	const auto first = row(QStringLiteral("first"), MediaFile::Kind::Video, project);
+	model.setMediaFiles(TestMediaFile::seeded({first,
+		row(QStringLiteral("match reset"), MediaFile::Kind::Video, project),
+		row(QStringLiteral("match audio"), MediaFile::Kind::Audio, project),
+		row(QStringLiteral("match other project"), MediaFile::Kind::Video, QStringLiteral("Project B"))}));
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
+	QVERIFY(proxy.rowChecks > 0);
+	proxy.rowChecks = 0;
+	proxy.setFilterMode(MediaFilterProxy::FilterMode::Video);
+	proxy.setSearchText(QStringLiteral("match"));
+	proxy.setProjectFilter({project});
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.rowChecks, 0);
+
+	// A real row update emits dataChanged without reapplying the filter setters.
+	QTemporaryDir temporary;
+	QVERIFY(temporary.isValid());
+	const QString destination = temporary.filePath(QStringLiteral("match moved.mxf"));
+	QFile moved(destination);
+	QVERIFY(moved.open(QIODevice::WriteOnly));
+	QCOMPARE(moved.write("media"), qint64(5));
+	moved.close();
+	model.applyTransfer(first.mediaFilePath, destination, false);
+	QCOMPARE(proxy.rowCount(), 2);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 0);
+	QCOMPARE(proxy.mapToSource(proxy.index(1, 0)).row(), 1);
 	QVERIFY(proxy.rowChecks > 0);
 }
 

@@ -31,6 +31,8 @@ public:
 
 	// MARK: - Filter setters
 
+	/// Unchanged criteria do not refilter rows. Source-model notifications
+	/// still update matching rows when scan results or media data change.
 	void setFilterMode(FilterMode mode);
 	void setSearchText(const QString &text);
 	void setProjectFilter(const QSet<QString> &projects);

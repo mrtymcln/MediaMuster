@@ -9,7 +9,7 @@ scan, metadata-selection, bin-filter and file-operation behaviour.
 ## AVB component roles
 
 | Component | What it does |
-|---|---|
+| --- | --- |
 | [`AvbReader`](../src/mediaengine/avbreader.h) | Reads the bin's format, objects, properties and relationships. |
 | [`AvbBinLoader`](../src/avbbinloader.h) | Loads a bin through that reader and prepares its clip metadata, evidence and media references for the app. |
 | [`AvbFilterDialog`](../src/avbfilterdialog.h) | Controls loaded bins and the ordered filter steps. |

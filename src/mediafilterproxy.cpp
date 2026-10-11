@@ -99,21 +99,29 @@ void MediaFilterProxy::setSourceModel(QAbstractItemModel *sourceModel)
 
 void MediaFilterProxy::setFilterMode(FilterMode mode)
 {
-	m_mode = !m_precomputesEnabled && mode == FilterMode::Precompute
-				 ? FilterMode::All
-				 : mode;
+	const FilterMode selected = !m_precomputesEnabled && mode == FilterMode::Precompute
+								   ? FilterMode::All
+								   : mode;
+	if (m_mode == selected)
+		return;
+	m_mode = selected;
 	invalidateRowsFilter();
 }
 
 void MediaFilterProxy::setSearchText(const QString &text)
 {
 	// Normalised once here, not per row in filterAcceptsRow.
-	m_searchNfc = searchForm(text);
+	const QString normalized = searchForm(text);
+	if (m_searchNfc == normalized)
+		return;
+	m_searchNfc = normalized;
 	invalidateRowsFilter();
 }
 
 void MediaFilterProxy::setProjectFilter(const QSet<QString> &projects)
 {
+	if (m_selectedProjects == projects)
+		return;
 	m_selectedProjects = projects;
 	invalidateRowsFilter();
 }

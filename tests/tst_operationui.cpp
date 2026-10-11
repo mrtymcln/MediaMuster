@@ -30,6 +30,7 @@
 #include <QFrame>
 #include <QHeaderView>
 #include <QLabel>
+#include <QLayout>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QMenu>
@@ -147,6 +148,7 @@ class TestOperationUi : public QObject
 private slots:
 	void scan_results_keep_reconciliation_issues();
 	void scan_start_releases_previous_session();
+	void scan_completion_resets_filters_widgets_and_pending_search();
 	void scan_failure_closes_progress_and_restores_actions();
 	void initTestCase();
 	void init();
@@ -165,6 +167,7 @@ private slots:
 	void invert_selection_preserves_hidden_selections_data();
 	void invert_selection_preserves_hidden_selections();
 	void text_editing_shortcuts_remain_native();
+	void search_chips_follow_text_and_clear_the_debounced_filter();
 	void table_widths_change_only_on_request_and_reset_each_session();
 	void precompute_gate_hides_controls_and_clears_filters();
 	void optional_columns_match_csv_and_preserve_retained_sort();
@@ -257,6 +260,56 @@ void TestOperationUi::scan_start_releases_previous_session()
 	QVERIFY(receipt.isNull());
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 10000);
 	QTRY_VERIFY(window.m_operations->isIdle());
+}
+
+void TestOperationUi::scan_completion_resets_filters_widgets_and_pending_search()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile audio;
+	audio.mediaFilePath = path("old-audio.mxf");
+	audio.fileName = QStringLiteral("old-audio.mxf");
+	audio.project = QStringLiteral("Old project");
+	audio.kind = MediaFile::Kind::Audio;
+	MediaFile video = audio;
+	video.mediaFilePath = path("old-video.mxf");
+	video.fileName = QStringLiteral("old-video.mxf");
+	video.kind = MediaFile::Kind::Video;
+	window.onScanFinished(TestMediaFile::seeded({audio, video}));
+	window.m_filterTabs->setCurrentIndex(2); // Audio.
+	window.m_projectList->item(0)->setSelected(true);
+	QSignalSpy searchTimeouts(window.m_searchDebounceTimer, &QTimer::timeout);
+	window.m_searchField->setText(QStringLiteral("old-audio"));
+	window.onSearchChanged(window.m_searchField->text());
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+	window.m_tableView->selectRow(0);
+	QVERIFY(!window.m_persistentSelectedPaths.isEmpty());
+	QVERIFY(window.m_searchDebounceTimer->isActive());
+	QVERIFY(!window.m_chipsBar->isHidden());
+
+	audio.mediaFilePath = path("new-audio.mxf");
+	audio.fileName = QStringLiteral("new-audio.mxf");
+	audio.project = QStringLiteral("New project");
+	video.mediaFilePath = path("new-video.mxf");
+	video.fileName = QStringLiteral("new-video.mxf");
+	video.project = audio.project;
+	window.onScanFinished(TestMediaFile::seeded({audio, video}));
+	QVERIFY(!window.m_searchDebounceTimer->isActive());
+	QVERIFY(window.m_searchField->text().isEmpty());
+	QCOMPARE(window.m_filterTabs->currentIndex(), 0);
+	QCOMPARE(window.m_projectList->count(), 1);
+	QCOMPARE(window.m_projectList->item(0)->text(), QStringLiteral("New project"));
+	QVERIFY(window.m_projectList->selectedItems().isEmpty());
+	QVERIFY(window.m_persistentSelectedPaths.isEmpty());
+	QVERIFY(window.selectedFiles().isEmpty());
+	QCOMPARE(window.m_chipsBar->layout()->count(), 0);
+	QVERIFY(window.m_chipsBar->isHidden());
+	QCOMPARE(window.m_proxy->rowCount(), 2);
+
+	// A reset cancels the queued search rather than invoking it on the new inventory.
+	QTest::qWait(window.m_searchDebounceTimer->interval() + 50);
+	QCOMPARE(searchTimeouts.count(), 0);
+	QCOMPARE(window.m_proxy->rowCount(), 2);
+	QTRY_COMPARE(window.m_statusFiles->text(), QStringLiteral("2 files"));
 }
 
 void TestOperationUi::scan_failure_closes_progress_and_restores_actions()
@@ -1089,6 +1142,41 @@ void TestOperationUi::text_editing_shortcuts_remain_native()
 	QVERIFY(window.m_searchField->text().isEmpty());
 	QTest::keySequence(window.m_searchField, QKeySequence::Paste);
 	QCOMPARE(window.m_searchField->text(), QStringLiteral("native text"));
+}
+
+void TestOperationUi::search_chips_follow_text_and_clear_the_debounced_filter()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile hit;
+	hit.mediaFilePath = path("hit.mxf");
+	hit.fileName = QStringLiteral("hit.mxf");
+	MediaFile miss = hit;
+	miss.mediaFilePath = path("miss.mxf");
+	miss.fileName = QStringLiteral("miss.mxf");
+	window.onScanFinished(TestMediaFile::seeded({hit, miss}));
+
+	window.m_searchField->setText(QStringLiteral("hit"));
+	QVERIFY(window.m_searchDebounceTimer->isActive());
+	QCOMPARE(window.m_proxy->rowCount(), 2); // Typing updates chips before filtering.
+	QCOMPARE(window.m_chipsBar->layout()->count(), 1);
+	auto *chip = qobject_cast<QPushButton *>(window.m_chipsBar->layout()->itemAt(0)->widget());
+	QVERIFY(chip);
+	QCOMPARE(chip->text(), QStringLiteral("Search: \"hit\"  ✕"));
+	QVERIFY(!window.m_chipsBar->isHidden());
+	QTRY_COMPARE(window.m_proxy->rowCount(), 1);
+	QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, hit.mediaFilePath);
+	QCOMPARE(window.m_chipsBar->layout()->count(), 1);
+	chip = qobject_cast<QPushButton *>(window.m_chipsBar->layout()->itemAt(0)->widget());
+	QVERIFY(chip);
+	QCOMPARE(chip->text(), QStringLiteral("Search: \"hit\"  ✕"));
+
+	chip->click();
+	QVERIFY(window.m_searchField->text().isEmpty());
+	QVERIFY(window.m_searchDebounceTimer->isActive());
+	QCOMPARE(window.m_chipsBar->layout()->count(), 0);
+	QVERIFY(window.m_chipsBar->isHidden());
+	QTRY_COMPARE(window.m_proxy->rowCount(), 2);
+	QTRY_COMPARE(window.m_statusFiles->text(), QStringLiteral("2 files"));
 }
 
 void TestOperationUi::table_widths_change_only_on_request_and_reset_each_session()

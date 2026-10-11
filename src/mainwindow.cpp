@@ -814,12 +814,12 @@ void MainWindow::setupConnections()
 
 	// Wait for typing to pause before filtering; update chips immediately.
 	{
-		auto *searchDebounce = new QTimer(this);
-		searchDebounce->setSingleShot(true);
-		searchDebounce->setInterval(200);
-		connect(m_searchField, &QLineEdit::textChanged, searchDebounce,
+		m_searchDebounceTimer = new QTimer(this);
+		m_searchDebounceTimer->setSingleShot(true);
+		m_searchDebounceTimer->setInterval(200);
+		connect(m_searchField, &QLineEdit::textChanged, m_searchDebounceTimer,
 				qOverload<>(&QTimer::start));
-		connect(searchDebounce, &QTimer::timeout, this,
+		connect(m_searchDebounceTimer, &QTimer::timeout, this,
 				[this]()
 				{ onSearchChanged(m_searchField->text()); });
 
@@ -1604,7 +1604,6 @@ void MainWindow::onSearchChanged(const QString &text)
 	applyFilterPreservingSelection([this, &text]()
 								   { m_proxy->setSearchText(text); });
 	updateStatusBar();
-	rebuildFilterChips();
 }
 
 void MainWindow::onSelectionChanged()
@@ -2374,7 +2373,8 @@ void MainWindow::resetFiltersForNewScan()
 		m_filterTabs->setCurrentIndex(0);
 	}
 
-	// Block the clear notification; reset the search filter directly below.
+	// Cancel any pending typed search; reset the search filter directly below.
+	m_searchDebounceTimer->stop();
 	{
 		const QSignalBlocker block(m_searchField);
 		m_searchField->clear();
@@ -2400,6 +2400,4 @@ void MainWindow::resetFiltersForNewScan()
 	m_proxy->setBinFilter({});
 	m_proxy->setPrecomputeTreeFilter({});
 	m_proxy->setPrecomputeVolumeFilter({});
-
-	rebuildFilterChips();
 }

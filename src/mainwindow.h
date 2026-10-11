@@ -259,6 +259,9 @@ private:
 
 	// MARK: - Debounce timers
 
+	/// Debounces typed searches; stopped when a new scan clears the search.
+	QTimer *m_searchDebounceTimer = nullptr;
+
 	/// Debounces the status bar's O(n) byte tally so bursts of
 	/// filter changes coalesce into a single walk.
 	QTimer *m_statusBarUpdateTimer = nullptr;
