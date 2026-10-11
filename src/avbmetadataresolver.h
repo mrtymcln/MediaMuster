@@ -19,9 +19,17 @@ namespace MediaEngine
 class AvbMetadataResolver
 {
 public:
+	/// Scanner output already reflects its selected evidence; transfers and
+	/// other callers can require projection after changing that evidence.
+	enum class RowProjection
+	{
+		Required,
+		AlreadyApplied
+	};
+
 	void setBins(const QVector<AvbBin> &bins);
 	// Returns whether semantic row values changed, including derived effects.
-	bool applyTo(MediaFile &file) const;
+	bool applyTo(MediaFile &file, RowProjection projection = RowProjection::Required) const;
 
 private:
 	struct MasterMobMetadata

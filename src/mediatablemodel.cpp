@@ -66,7 +66,7 @@ void MediaTableModel::setClipDurationEnabled(bool enabled)
 		endRemoveColumns();
 }
 
-void MediaTableModel::setMediaFiles(const QVector<MediaFile> &files)
+void MediaTableModel::setMediaFiles(const QVector<MediaFile> &files, AvbMetadataResolver::RowProjection projection)
 {
 	beginResetModel();
 	m_files = files;
@@ -81,7 +81,7 @@ void MediaTableModel::setMediaFiles(const QVector<MediaFile> &files)
 			file.kelpieId = m_ids.allocate();
 		assigned.insert(file.kelpieId);
 	}
-	applyAvbMetadata(false);
+	applyAvbMetadata(false, projection);
 	endResetModel();
 }
 
@@ -166,7 +166,7 @@ void MediaTableModel::setAvbBins(const QVector<AvbBin> &bins)
 	applyAvbMetadata(true);
 }
 
-void MediaTableModel::applyAvbMetadata(bool notify)
+void MediaTableModel::applyAvbMetadata(bool notify, AvbMetadataResolver::RowProjection projection)
 {
 	int firstChanged = -1;
 	int lastChanged = -1;
@@ -174,7 +174,7 @@ void MediaTableModel::applyAvbMetadata(bool notify)
 	for (int row = 0; row < rows; ++row)
 	{
 		MediaFile &file = m_files[row];
-		if (m_binMetadata.applyTo(file))
+		if (m_binMetadata.applyTo(file, projection))
 		{
 			if (firstChanged < 0)
 				firstChanged = row;

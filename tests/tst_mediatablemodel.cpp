@@ -169,6 +169,8 @@ private slots:
 	void fills_missing_owned_metadata_by_exact_identity();
 	void avb_effect_changes_refresh_visible_cells();
 	void mediaengine_selections_refresh_nonempty_cells_and_sources();
+	void default_model_load_projects_selected_evidence_without_bins();
+	void empty_avb_index_preserves_shared_scanner_evidence();
 	void mediaengine_avb_changes_preserve_physical_rows_and_evidence();
 	void mediaengine_avb_conflicts_clear_previously_selected_cells();
 	void metadata_does_not_cross_byte_swapped_identities_data();
@@ -701,6 +703,91 @@ void TestMediaTableModel::mediaengine_selections_refresh_nonempty_cells_and_sour
 	QCOMPARE(model.fileAt(0).originalBin, QStringLiteral("MDB bin"));
 }
 
+void TestMediaTableModel::default_model_load_projects_selected_evidence_without_bins()
+{
+	auto file = mediaEngineRow();
+	record(file, MediaProperty::ClipName, MetadataSource::Mxf, QStringLiteral("GenericPackage.Name"), QStringLiteral("Sequence,3D_Warp+1"));
+	record(file, MediaProperty::OriginalBin, MetadataSource::Mdb, QStringLiteral("_ORG_BIN"), QStringLiteral("MDB bin"));
+	MediaEngine::selectMetadata(file.evidence);
+	file.type = MediaFile::Type::Media;
+	file.dbStatus = MediaFile::DbStatus::NoDatabase;
+	file.clipName = QStringLiteral("Stale clip");
+	file.clipNameSource = MediaFile::ClipNameSource::MaterialPackage;
+	file.originalBin = QStringLiteral("Stale bin");
+	file.effect = QStringLiteral("Stale effect");
+	file.effectCategory = QStringLiteral("Stale category");
+	file.effectSequence = QStringLiteral("Stale sequence");
+	MediaTableModel model;
+	model.setPrecomputesEnabled(true);
+	model.setMediaFiles({file}); // Default callers still require row projection.
+	const auto &current = model.fileAt(0);
+	QCOMPARE(current.type, MediaFile::Type::Precompute);
+	QCOMPARE(current.dbStatus, MediaFile::DbStatus::NoReference);
+	QCOMPARE(current.clipName, QStringLiteral("Sequence,3D_Warp+1"));
+	QCOMPARE(current.originalBin, QStringLiteral("MDB bin"));
+	QCOMPARE(current.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
+	QVERIFY(!current.originalBinFromAvb);
+	QCOMPARE(current.effect, QStringLiteral("3D Warp"));
+	QCOMPARE(current.effectCategory, QStringLiteral("Blend"));
+	QCOMPARE(current.effectSequence, QStringLiteral("Sequence"));
+	QCOMPARE(model.index(0, int(MediaTableModel::Column::ClipName)).data().toString(), current.clipName);
+	QCOMPARE(model.index(0, int(MediaTableModel::Column::OriginalBin)).data().toString(), current.originalBin);
+	QCOMPARE(model.index(0, int(MediaTableModel::Column::Type)).data().toString(), QStringLiteral("Precompute"));
+	QCOMPARE(model.index(0, int(MediaTableModel::Column::Effect)).data().toString(), current.effect);
+	for (const auto property : {MediaProperty::ClipName, MediaProperty::OriginalBin})
+		for (const auto &observation : current.evidence.observations(property))
+			QVERIFY(observation.snapshot->source != MetadataSource::Avb);
+}
+
+void TestMediaTableModel::empty_avb_index_preserves_shared_scanner_evidence()
+{
+	auto file = mediaEngineRow();
+	file.kelpieId = 91;
+	record(file, MediaProperty::ClipName, MetadataSource::Mxf, QStringLiteral("GenericPackage.Name"), QStringLiteral("Header clip"));
+	record(file, MediaProperty::OriginalBin, MetadataSource::Mdb, QStringLiteral("_ORG_BIN"), QStringLiteral("MDB bin"));
+	MediaEngine::selectMetadata(file.evidence);
+	applyResolvedMetadata(file);
+	const auto expectedCsv = MediaCsv::rowLine(file);
+	MediaTableModel model;
+	model.setMediaFiles(TestMediaFile::seeded({file}), AvbMetadataResolver::RowProjection::AlreadyApplied);
+	QSignalSpy changed(&model, &QAbstractItemModel::dataChanged);
+	const auto checkUnchanged = [&]()
+	{
+		const auto &current = model.fileAt(0);
+		QCOMPARE(MediaCsv::rowLine(current), expectedCsv);
+		QCOMPARE(current.clipNameSource, file.clipNameSource);
+		QCOMPARE(current.originalBinFromAvb, file.originalBinFromAvb);
+		QCOMPARE(current.mediaEngineScan, file.mediaEngineScan);
+		for (const auto property : {MediaProperty::ClipName, MediaProperty::OriginalBin})
+		{
+			const auto &expected = file.evidence.observations(property);
+			QVERIFY(!expected.isEmpty());
+			QCOMPARE(current.evidence.observations(property).constData(), expected.constData());
+			const auto selected = current.evidence.selected(property);
+			const auto previous = file.evidence.selected(property);
+			QCOMPARE(selected.value, previous.value);
+			QCOMPARE(selected.selectedObservation, previous.selectedObservation);
+			QCOMPARE(selected.agreement, previous.agreement);
+		}
+		QCOMPARE(changed.size(), 0);
+	};
+	checkUnchanged();
+	if (QTest::currentTestFailed())
+		return;
+
+	auto unusable = bin();
+	unusable.usable = false;
+	auto sourceOnly = bin();
+	sourceOnly.compositions[0].mobType = 3;
+	for (const auto &bins : {QVector<AvbBin>{}, QVector<AvbBin>{unusable}, QVector<AvbBin>{sourceOnly}})
+	{
+		model.setAvbBins(bins);
+		checkUnchanged();
+		if (QTest::currentTestFailed())
+			return;
+	}
+}
+
 void TestMediaTableModel::mediaengine_avb_changes_preserve_physical_rows_and_evidence()
 {
 	auto file = mediaEngineRow();
@@ -805,6 +892,17 @@ void TestMediaTableModel::mediaengine_avb_conflicts_clear_previously_selected_ce
 	QVERIFY(model.index(0, int(MediaTableModel::Column::ClipName)).data().toString().isEmpty());
 	QVERIFY(model.index(0, int(MediaTableModel::Column::OriginalBin)).data().toString().isEmpty());
 	QVERIFY(MediaCsv::rowLine(current).startsWith(QStringLiteral("\"\",\"No project\",\"\",")));
+	QCOMPARE(current.evidence.observations(MediaProperty::ClipName).size(), 2);
+	QCOMPARE(current.evidence.observations(MediaProperty::OriginalBin).size(), 4);
+	// Blank displayed values still have active AVB conflicts to retract.
+	model.setAvbBins({});
+	for (const auto property : {MediaProperty::ClipName, MediaProperty::OriginalBin})
+	{
+		QVERIFY(!current.evidence.selected(property).value.isValid());
+		QVERIFY(current.evidence.selected(property).agreement != PropertyAgreement::Conflicting);
+		for (const auto &observation : current.evidence.observations(property))
+			QVERIFY(!observation.eligible);
+	}
 	QCOMPARE(current.evidence.observations(MediaProperty::ClipName).size(), 2);
 	QCOMPARE(current.evidence.observations(MediaProperty::OriginalBin).size(), 4);
 	model.setAvbBins({first});
@@ -1018,9 +1116,22 @@ void TestMediaTableModel::field_priorities_retain_avb_alternatives()
 	QCOMPARE(model.fileAt(0).evidence.selected(MediaProperty::OriginalBin).value.toString(), QStringLiteral("MDB bin"));
 	QCOMPARE(model.fileAt(0).evidence.selected(MediaProperty::ClipName).agreement, PropertyAgreement::Conflicting);
 	QCOMPARE(model.fileAt(0).evidence.observations(MediaProperty::ClipName).size(), 3);
+	for (const auto property : {MediaProperty::ClipName, MediaProperty::OriginalBin})
+	{
+		bool hasActiveAvb = false;
+		for (const auto &observation : model.fileAt(0).evidence.observations(property))
+			if (observation.snapshot->source == MetadataSource::Avb && observation.eligible)
+				hasActiveAvb = true;
+		QVERIFY(hasActiveAvb);
+	}
 	model.setAvbBins({});
 	QCOMPARE(model.fileAt(0).clipName, QStringLiteral("Header clip"));
 	QCOMPARE(model.fileAt(0).originalBin, QStringLiteral("MDB bin"));
+	for (const auto property : {MediaProperty::ClipName, MediaProperty::OriginalBin})
+		for (const auto &observation : model.fileAt(0).evidence.observations(property))
+			QCOMPARE(observation.eligible, observation.snapshot->source != MetadataSource::Avb);
+	QCOMPARE(model.fileAt(0).evidence.observations(MediaProperty::ClipName).size(), 3);
+	QCOMPARE(model.fileAt(0).evidence.observations(MediaProperty::OriginalBin).size(), 4);
 }
 
 void TestMediaTableModel::multiple_master_associations_do_not_choose_first()

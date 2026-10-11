@@ -1,0 +1,150 @@
+{
+  "synthetic": true,
+  "baselineCommit": "9f12693c4d531e17035edd309c2292b7a1255c42",
+  "baselineResolverSha256": "7af583172401b8c403d520e89cd11a9dcc03c295424f5a9d9078026976bcb811",
+  "currentResolverSha256": "16c8ba73b327b391fb7261914591f5fd5c6bc8ff2a16c8b05a743cd9f94e31d4",
+  "before": {
+    "architecture": "arm64",
+    "bins": 0,
+    "measuredRuns": 5,
+    "medianNs": 47146375,
+    "projectionHint": "Baseline original one-argument API",
+    "qtVersion": "6.5.3",
+    "rows": 10000,
+    "synthetic": true,
+    "timedWork": "AvbMetadataResolver::applyTo loop only; preparation, row copying, checks and destruction excluded",
+    "trials": [
+      {
+        "changedDisplayRows": 0,
+        "changedRows": 0,
+        "detachedBinObservationArrays": 10000,
+        "detachedClipObservationArrays": 10000,
+        "elapsedNs": 50300416,
+        "run": 1
+      },
+      {
+        "changedDisplayRows": 0,
+        "changedRows": 0,
+        "detachedBinObservationArrays": 10000,
+        "detachedClipObservationArrays": 10000,
+        "elapsedNs": 48163041,
+        "run": 2
+      },
+      {
+        "changedDisplayRows": 0,
+        "changedRows": 0,
+        "detachedBinObservationArrays": 10000,
+        "detachedClipObservationArrays": 10000,
+        "elapsedNs": 46868500,
+        "run": 3
+      },
+      {
+        "changedDisplayRows": 0,
+        "changedRows": 0,
+        "detachedBinObservationArrays": 10000,
+        "detachedClipObservationArrays": 10000,
+        "elapsedNs": 46138833,
+        "run": 4
+      },
+      {
+        "changedDisplayRows": 0,
+        "changedRows": 0,
+        "detachedBinObservationArrays": 10000,
+        "detachedClipObservationArrays": 10000,
+        "elapsedNs": 47146375,
+        "run": 5
+      }
+    ],
+    "variant": "before",
+    "warmupRuns": 1
+  },
+  "after": {
+    "architecture": "arm64",
+    "bins": 0,
+    "measuredRuns": 5,
+    "medianNs": 1022583,
+    "projectionHint": "AlreadyApplied: prepared scan-row path",
+    "qtVersion": "6.5.3",
+    "rows": 10000,
+    "synthetic": true,
+    "timedWork": "AvbMetadataResolver::applyTo loop only; preparation, row copying, checks and destruction excluded",
+    "trials": [
+      {
+        "changedDisplayRows": 0,
+        "changedRows": 0,
+        "detachedBinObservationArrays": 0,
+        "detachedClipObservationArrays": 0,
+        "elapsedNs": 1022583,
+        "run": 1
+      },
+      {
+        "changedDisplayRows": 0,
+        "changedRows": 0,
+        "detachedBinObservationArrays": 0,
+        "detachedClipObservationArrays": 0,
+        "elapsedNs": 1027208,
+        "run": 2
+      },
+      {
+        "changedDisplayRows": 0,
+        "changedRows": 0,
+        "detachedBinObservationArrays": 0,
+        "detachedClipObservationArrays": 0,
+        "elapsedNs": 1014541,
+        "run": 3
+      },
+      {
+        "changedDisplayRows": 0,
+        "changedRows": 0,
+        "detachedBinObservationArrays": 0,
+        "detachedClipObservationArrays": 0,
+        "elapsedNs": 1040916,
+        "run": 4
+      },
+      {
+        "changedDisplayRows": 0,
+        "changedRows": 0,
+        "detachedBinObservationArrays": 0,
+        "detachedClipObservationArrays": 0,
+        "elapsedNs": 1016666,
+        "run": 5
+      }
+    ],
+    "variant": "after",
+    "warmupRuns": 1
+  },
+  "medianSpeedRatio": 46.10518168207373,
+  "limitation": "Synthetic in-memory empty-bin metadata loop; excludes database/media scanning, UI publication and complete app timing.",
+  "validation": {
+    "appBuild": "passed",
+    "configuration": "Release, arm64, C++17, Qt 6.5.3",
+    "testSuites": {
+      "tst_mediatablemodel": {
+        "passed": 39,
+        "failed": 0,
+        "skipped": 0
+      },
+      "tst_mediafilterproxy": {
+        "passed": 36,
+        "failed": 0,
+        "skipped": 0
+      },
+      "tst_operationui": {
+        "passed": 73,
+        "failed": 0,
+        "skipped": 0
+      },
+      "tst_binfilterdialog": {
+        "passed": 49,
+        "failed": 0,
+        "skipped": 0
+      },
+      "tst_precomputefilterdialog": {
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "liveDriveScans": false
+  }
+}

@@ -57,7 +57,10 @@ public:
 
 	// MARK: - Bulk updates
 
-	void setMediaFiles(const QVector<MediaFile> &files);
+	/// Scan results have already been projected by the scanner adapter.
+	/// Other callers retain the default projection of selected evidence.
+	void setMediaFiles(const QVector<MediaFile> &files,
+					   AvbMetadataResolver::RowProjection projection = AvbMetadataResolver::RowProjection::Required);
 	void setScanIssues(const QVector<ScanIssue> &issues) { m_scanIssues = issues; }
 	const QVector<ScanIssue> &scanIssues() const { return m_scanIssues; }
 	/// Confirmed transfers only: moves retain identity; copies allocate a new one.
@@ -90,7 +93,8 @@ public:
 	bool clipDurationEnabled() const { return m_clipDurationEnabled; }
 
 private:
-	void applyAvbMetadata(bool notify);
+	void applyAvbMetadata(bool notify,
+						  AvbMetadataResolver::RowProjection projection = AvbMetadataResolver::RowProjection::AlreadyApplied);
 	AvbMetadataResolver m_binMetadata;
 	QVector<MediaFile> m_files;
 	bool m_precomputesEnabled = false;

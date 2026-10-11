@@ -1504,7 +1504,7 @@ void MainWindow::onScanLogBatch(const QVector<LogMessage> &batch)
 
 void MainWindow::onScanFinished(const QVector<MediaFile> &results)
 {
-	m_model->setMediaFiles(results);
+	m_model->setMediaFiles(results, AvbMetadataResolver::RowProjection::AlreadyApplied);
 	m_persistentSelectedPaths.clear();
 
 	const qint64 elapsed = m_scanTimer.isValid() ? m_scanTimer.elapsed() : 0;

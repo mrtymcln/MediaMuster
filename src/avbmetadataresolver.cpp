@@ -5,6 +5,18 @@
 #include "mediaengine/projection.h"
 #include "mediafile.h"
 
+namespace
+{
+	bool hasAvbNameObservations(const MediaFile &file)
+	{
+		for (const auto property : {MediaProperty::ClipName, MediaProperty::OriginalBin})
+			for (const auto &observation : file.evidence.observations(property))
+				if (observation.snapshot && observation.snapshot->source == MetadataSource::Avb)
+					return true;
+		return false;
+	}
+}
+
 void AvbMetadataResolver::MasterMobMetadata::merge(const AvbComposition &mob, const QSharedPointer<const MediaEngine::ParsedSource> &source)
 {
 	clipNameObservations += mob.nameObservations;
@@ -52,8 +64,15 @@ void AvbMetadataResolver::setBins(const QVector<AvbBin> &bins)
 	}
 }
 
-bool AvbMetadataResolver::applyTo(MediaFile &file) const
+bool AvbMetadataResolver::applyTo(MediaFile &file, RowProjection projection) const
 {
+	// Fresh scan rows need no bin reconciliation when there is nothing to add.
+	// Any bin history still takes the full path, so removal retracts old values
+	// and conflicts even when a database/header value currently wins.
+	if (projection == RowProjection::AlreadyApplied &&
+		m_metadataByMasterMobId.isEmpty() && !hasAvbNameObservations(file))
+		return false;
+
 	const QString previousName = file.clipName;
 	const QString previousBin = file.originalBin;
 	const auto previousNameSource = file.clipNameSource;
