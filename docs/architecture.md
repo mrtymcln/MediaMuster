@@ -163,8 +163,11 @@ scope. Other filters still apply to the resulting rows.
 The main window remembers selected paths across filter changes. Its
 `selectedFiles()` returns the currently visible selected rows, which are the inputs
 to Manage Media and selected-row export. Select Relatives also operates on visible
-rows. [MediaCsv](../src/mediacsv.cpp) writes a snapshot of selected or all visible
-rows in view order. Project sidebar totals and tab counts use the whole model.
+rows. [MediaCsv](../src/mediacsv.cpp) writes the captured selected or all visible
+rows directly in view order, using QTextStream and QSaveFile. The main window waits
+until saving returns, then reports successful commit or failure in Console. No
+background CSV job retains a prior scan during a rescan. Project sidebar totals
+and tab counts use the whole model.
 
 `MainWindow::rebuildProjectList()` groups the inventory by displayed project name
 and counts files and bytes for the sidebar tooltips. It preserves selected
@@ -286,7 +289,7 @@ Qt diagnostic messages also go to the file; the Console does not read the file.
 
 [BackgroundJob](../src/backgroundjob.h) owns a worker thread with cooperative
 cancellation. The MediaEngine scan uses that worker; Qt's shared pool is also used for bin
-loads, previews, exports and history reads. The owner must join a worker before destroying
+loads, previews and history reads. The owner must join a worker before destroying
 data it can access; an in-progress filesystem call can delay shutdown. Do not
 force-stop a worker while its callbacks or file operations are still active.
 

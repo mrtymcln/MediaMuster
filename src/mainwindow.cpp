@@ -29,7 +29,6 @@
 #include <QFileInfo>
 #include <QFont>
 #include <QFontDatabase>
-#include <QFutureWatcher>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QHash>
@@ -56,7 +55,6 @@
 #include <QSysInfo>
 #include <QTabBar>
 #include <QTableView>
-#include <QtConcurrent>
 #include <QTime>
 #include <QKeyEvent>
 #include <QPersistentModelIndex>
@@ -1786,8 +1784,7 @@ void MainWindow::onExportCsv()
 	if (path.isEmpty())
 		return;
 
-	// Snapshot on the main thread; item models are thread-affine.
-	// Also freezes the export against later filter/sort changes.
+	// Collect the chosen rows in export order before writing.
 	QVector<MediaFile> rows;
 	if (exportSelected)
 	{
@@ -1807,22 +1804,15 @@ void MainWindow::onExportCsv()
 	m_exportInProgress = true;
 	updateActivityUi();
 
-	// Dispatch the write to a worker so big exports don't freeze the UI.
-	auto *watcher = new QFutureWatcher<bool>(this);
-	connect(watcher, &QFutureWatcher<bool>::finished, this,
-			[this, watcher, path]()
-			{
-				const bool ok = watcher->result();
-				watcher->deleteLater();
-				m_exportInProgress = false;
-				updateActivityUi();
-				if (!ok)
-					addLog(QtCriticalMsg, QStringLiteral("app"), QStringLiteral("CSV export failed: %1.").arg(path));
-			});
-
-	watcher->setFuture(
-		QtConcurrent::run([path, rows = std::move(rows), csvOptions]()
-						  { return MediaCsv::write(path, rows, csvOptions); }));
+	// Finish saving before returning to the UI. Success means the writer's
+	// stream-status and QSaveFile commit checks both passed.
+	const bool ok = MediaCsv::write(path, rows, csvOptions);
+	m_exportInProgress = false;
+	updateActivityUi();
+	if (ok)
+		addLog(QtInfoMsg, QStringLiteral("app"), QStringLiteral("CSV export complete: %1 %2 rows to %3.").arg(count).arg(label, path));
+	else
+		addLog(QtCriticalMsg, QStringLiteral("app"), QStringLiteral("CSV export failed: %1.").arg(path));
 }
 
 // MARK: - Reveal in Finder

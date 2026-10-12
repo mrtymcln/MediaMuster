@@ -365,6 +365,10 @@ command reports the same totals; existing and hidden selections are retained.
 CSV export offers selected rows or all rows in the current filtered view. Its
 **All** choice does not include filtered-out rows. Filter-tab counts use the whole
 inventory, while the status bar's file count and size describe the visible rows.
+The chosen rows and column options are captured before direct writing. The window
+waits until saving finishes; Console confirms the row count and destination after
+a successful file commit, or reports failure. No background CSV export remains
+running when the user can start another scan.
 
 CSV retains its explicit established export order, ending with Database Status,
 MobId, MasterMobId, KelpieId and OmfScan. The two optional column groups follow

@@ -1,13 +1,13 @@
 # Project Copland
 
-Status: requirements, technical verification and implementation planning.
+Status: implementation in progress; confirmed contract and technical verification.
 Started 11 October 2026; decisions updated
 12 October 2026.
 
 Copland reviews the whole MediaMuster app and defines the smallest useful product
 contract before choosing its implementation. Existing capabilities and Canon's
-retention commitments are open for review. Application code has not been changed
-for this review.
+retention commitments are open for review. Implementation begins with the
+user-selected direct CSV export and completion confirmation below.
 
 This document contains the working decision ledger and proposed implementation
 order. Confirmed requirements, proposals and open questions
@@ -17,8 +17,8 @@ of competing plans.
 
 The [12 October technical verification](technical-verification-2026-10-12.md)
 records genuine-source findings, reproduced cancellation gaps, operation safeguards
-and a controlled local app baseline. It supports this plan; application changes
-and final Copland acceptance have not yet been performed.
+and a controlled local app baseline. It supports this plan; the first implementation
+is recorded below and final Copland acceptance remains outstanding.
 
 ## Mandatory rule for every implementing AI
 
@@ -92,9 +92,10 @@ The primary scale workload is 300,000 database-free NEXIS media headers. Aim bel
 10 GB throughout scanning and ordinary use, without enforcing a runtime memory
 ceiling. Cancellation retains found rows and completed metadata and reports
 cancelled/incomplete in Console. Use this Mac for initial comparisons and validate
-NEXIS later under C97. Q13 is the remaining recorded product-preference question
-about the baseline/scan-time decision. Future implementation crossroads must
-follow C98; they are not already approved.
+NEXIS later under C97. The user set Q13 aside on 12 October 2026 and will judge
+scan time themselves; Q13 is not an implementation prerequisite and no numerical
+scan-time target is imposed. Future implementation crossroads must follow C98;
+they are not already approved.
 No performance saving has been demonstrated
 by this requirements review. See [implementation planning](#implementation-planning).
 
@@ -365,19 +366,51 @@ is uncontrolled. Production logs include discovery/preparation and total worker
 time; the GUI's scan time is captured before final filter/project/count rebuilding
 and first paint. No whole-app memory sampler or full interaction benchmark was
 found. C97 now sets initial comparisons on this Mac and NEXIS validation later;
-Q13 still needs an acceptable wait or an agreed baseline-first approach. The
+the user has set Q13 aside and will make scan-time judgments themselves. The
 initial host observed on 12 October is macOS 15.8.1, Apple M1 Max,
 `MacBookPro18,4`, with 68,719,476,736 bytes (64 GiB) of RAM. Storage/cache/workload
 conditions must be recorded for each run. C86 rejects strict runtime memory
 enforcement; instrumentation should report peak/retained memory and guide
-optimization without introducing a numeric stop threshold. The scan-time
-question remains unanswered; do not infer it from the workstation or memory answers.
+optimization without introducing a numeric stop threshold. Do not infer a
+scan-time target from the workstation or memory answers.
 
 ## Open decisions
 
-| ID | Decision to settle | Why it matters |
-| --- | --- | --- |
-| Q13 | Decide whether to establish a real scan-time baseline first or set a longest acceptable wait now. | C97 settles initial comparisons on this Mac and NEXIS validation later. The scan-time prompt remains unanswered. C09/C86 retain lean-memory optimization without strict runtime enforcement; C55/C87 settle user cancellation and Console incomplete reporting. Benchmark full scan through a usable table plus ordinary interactions, rather than engine return alone. |
+No recorded product-preference question currently blocks implementation.
+
+Q13 was set aside by the user on 12 October 2026: "Ignore Q13. I will make
+judgments myself." Do not ask for a longest acceptable wait or make Q13 an
+implementation prerequisite. No numerical scan-time target or baseline-first
+choice is inferred. C97's local comparisons and later NEXIS validation remain;
+C98 still governs other implementation decisions.
+
+### First implementation choice — 12 October 2026
+
+The user initially chose "Complete CSV lines first". After reviewing the simpler
+Qt export flows, they revised that choice to: "Write directly; add Console success
+confirmation." The direct-writing choice supersedes the background text snapshot.
+
+Capture the chosen rows and column options using the existing timing and ordering,
+then format and write directly with QTextStream/QSaveFile. Confirm success in Console
+only after the writer's stream-status and commit checks pass, including row count
+and destination; retain failure reporting. The window waits until saving returns.
+There is no pending background CSV job to keep the old scan alive during a rescan,
+and no preformatted text snapshot or separate CSV cache is needed. Keep export
+scopes, escaping, UTF-8 BOM and safe file replacement.
+
+Verify actual selected/visible output, success/failure reporting and old-scan release
+after export returns and a new scan starts, then run the relevant existing tests.
+No performance saving is claimed. Broader compact media rows and operation
+receipts remain later work, subject to C98.
+
+Implemented and verified on this Mac with Release arm64 and pinned Qt 6.5.3:
+the app build and all 40 registered test suites passed. The actual export-entry
+regressions cover selected/visible scopes, capture timing, column options, exact
+saved bytes, completion before return, Console confirmation and old-scan release
+on the next scan. A failed read-only replacement preserves the prior file and
+reports failure without success. See [export implementation](../src/mainwindow.cpp#L1808)
+and [UI regressions](../tests/tst_operationui.cpp#L269). Large-export UI wait time
+and whole-process memory remain unmeasured for this change.
 
 Q12 is resolved by C80/C81/C88; no disk-size limit was specified.
 Q24 is resolved by C92/C93/C94/C95/C96. Keep precompute category/effect and Volume
@@ -455,23 +488,25 @@ operations and Rebalance's scope; reviewing helpers does not reopen those decisi
 | Select Relatives | Adds visible files sharing the scalar MasterMobId of visible selected rows, while preserving previously hidden selections. | Keep the helper under C47 using C51's one selected scan association. C50 does not add a catalogue of all clips referencing each file. The current several-ID scalar limitation was not observed in the fresh physical inventory. This helper is separate from exact sequence-used-track filtering. |
 | Select Inverse | Flips visible-row selection while preserving hidden selections. | Keep the helper under C47 and selection restoration under C52. Operations currently consume visible selections only, as already retained under C04; Rebalance uses its separately confirmed whole-root scope. |
 | Selection across filters | Retains selected physical paths during filter changes and restores selections when those rows become visible again. An ordinary manual selection change replaces the saved set; Relatives/Inverse preserve its hidden part. | Keep current behavior under C52. No metadata history is required merely to remember selected physical paths. |
-| CSV scope | Exports selected visible rows or all currently visible filtered rows, using a row snapshot before asynchronous writing. With no visible selection it exports all visible rows. Hidden remembered selections do not export. | Keep both choices and the no-selection default under C53. Snapshot ownership must be simplified to satisfy C09/C15; peak memory is unmeasured. |
+| CSV scope | Exports selected visible rows or all currently visible filtered rows, capturing rows before direct writing. With no visible selection it exports all visible rows. Hidden remembered selections do not export. | Keep both choices and the no-selection default under C53. The user selected direct saving with Console success confirmation; no background export retains an older inventory during a rescan. Peak memory is unmeasured. |
 
 Verified in [row predicates](../src/mediafilterproxy.cpp),
 [selection/export/UI paths](../src/mainwindow.cpp) and
 [association adapter](../src/mediaengineadapter.cpp). Linear row filtering/tallying,
-selection tracking and export snapshots are costs to measure. No percentage saving
-is established by removing a view or helper, and retaining these features does not
+selection tracking, export row capture and writing are costs to measure. No percentage
+saving is established by removing a view or helper, and retaining these features does not
 require reinstating Canon's complete evidence histories.
 
-The current CSV snapshot copies `MediaFile` rows whose shared session pointer retains
-the entire scan result. Even a small export can therefore keep old scan evidence
-alive while a rescan constructs a new inventory; rescan remains enabled during
-export. This is an ownership cost to remove under C09/C15, independent of whether
-selected and all-visible export choices remain. Writing already streams one CSV
-line at a time. See [row ownership](../src/mediafile.h#L30),
-[shared scan session](../src/mediascanner.cpp#L280) and
-[export snapshot](../src/mainwindow.cpp#L1789). No peak-memory reduction is claimed.
+At the verified baseline, asynchronous CSV snapshots copied `MediaFile` rows whose
+shared session pointer retained the entire scan result. Even one export row kept
+old scan evidence alive during a rescan. The user revised the first implementation
+to direct saving with Console success confirmation: it captures rows, streams
+them through the existing writer and returns only after saving finishes. Its local
+row copies are then released before the user can start another scan. No separate
+text cache or background export remains. Actual process-memory changes and large
+export wait time remain to be measured. See [row ownership](../src/mediafile.h#L30),
+[shared scan session](../src/mediascanner.cpp#L280),
+[direct export](../src/mainwindow.cpp#L1789) and [CSV writer](../src/mediacsv.cpp).
 
 ### Scan lifecycle: current facts for review
 
@@ -1111,17 +1146,18 @@ All stages must follow the [mandatory decision rule](#mandatory-rule-for-every-i
 under C98. At every decision or crossroad, present options and wait for the user
 to choose before proceeding with the affected work.
 
-This is the proposed work order for the settled contract, not an implementation
-already performed. C97 sets initial comparison on this Mac and NEXIS validation
-later; Q13's baseline/scan-time decision remains pending. Do not invent a threshold.
+This is the overall proposed work order for the settled contract; the first CSV
+implementation is recorded above. C97 sets initial comparison on this Mac and
+NEXIS validation later; Q13 has been set aside by the user and does not block implementation.
+Do not invent a scan-time threshold.
 Each stage should leave the app usable
 and preserve the retained operation workflow. Measure suspected costs before
 adding a new mechanism to fix them.
 
 | Stage | Work | Completion evidence |
 | --- | --- | --- |
-| 1. Establish baseline | Use this Mac initially under C97. Record the build, actual workload/hardware/storage, cache conditions, source-read counts, time through a usable table and whole-process peak memory. Include rescan, CSV export, loaded bins and normal interactions. Separate genuine complete media from generated or truncated specimens. | Repeatable baseline and field/behavior comparison receipts. Existing engine-only timings remain supporting evidence, not a 300,000-file NEXIS acceptance result. Final Q13 choice recorded. |
-| 2. Compact records and receipts | Introduce selected row values, exact clocks, one selected MasterMobId, compact availability/freshness/membership status and the operation receipts required by existing live checks. Adapt operation consumers before removing their evidence dependencies. Make frozen CSV snapshots independent of the complete scan result. Release prior row/session ownership when a new scan starts. | Retained table/CSV values and eligible operation behavior agree with the contract. Copy/Move/Delete/Rebalance, latest-job Undo and startup recovery preserve their existing protections. A small export or operation snapshot does not keep the old complete inventory/evidence graph alive during rescan. |
+| 1. Establish baseline | Use this Mac initially under C97. Record the build, actual workload/hardware/storage, cache conditions, source-read counts, time through a usable table and whole-process peak memory. Include rescan, CSV export, loaded bins and normal interactions. Separate genuine complete media from generated or truncated specimens. | Repeatable baseline and field/behavior comparison receipts. Existing engine-only timings remain supporting evidence, not a 300,000-file NEXIS acceptance result. Q13 is set aside; no numerical scan-time target is required. |
+| 2. Compact records and receipts | Introduce selected row values, exact clocks, one selected MasterMobId, compact availability/freshness/membership status and the operation receipts required by existing live checks. Adapt operation consumers before removing their evidence dependencies. Keep the user-selected direct CSV writer; release its local captured rows when saving returns, without adding a background text snapshot. Release prior row/session ownership when a new scan starts. | Retained table/CSV values and eligible operation behavior agree with the contract. Copy/Move/Delete/Rebalance, latest-job Undo and startup recovery preserve their existing protections. Completed export and compact operation consumers do not keep the old complete inventory/evidence graph alive during rescan. |
 | 3. Acquisition and cancellation | Apply PMR → MDB → header acquisition to the retained requested fields, using reliable inapplicability to stop unnecessary fallback. Remove Clip Duration and SourceFilename observations, coverage, policies and consumers; use SourcePath instead. Implement either-database membership and both flags. Resolve completed values into compact rows as work finishes, and release unused parsing data. Retain changed-source exclusion and the existing bounded header fallback. | Database-free, partial-index and missing-applicable-field cases resolve correctly; unavailable values remain blank. Cancellation during discovery, database/header reading, final selection, formatting and publication preserves found rows/completed values and consistently reports incomplete. No runtime memory-abort policy is introduced. |
 | 4. AVB references and filtering | Retain only the names, identities, reference relationships/sets and compact coverage needed for loaded-bin/sequence lists and filtering. Drop table enrichment and cross-bin borrowing. Implement independent checked-sequence state and the combined dialog, unload/recalculation, union/AND rules and empty/incomplete outcomes. Avoid keeping unrelated metadata or duplicating full graphs per sequence. | Genuine Avid edits establish exact used tracks/angles and original/render membership. Muted placed media stays included. Failed loads preserve old filters; checked unresolved-zero sequences stay active; valid unmatched bin references apply normally. Unloading releases data; rescan resets filters while keeping bins loaded. |
 | 5. Presentation and support | Show/search/export Source Path; replace Database Status with both boolean columns/views. Keep precompute category/effect/Volume filtering and remaining conveniences. Apply always-visible enabled tabs, Search-only Escape, narrowed folder inputs, startup/manual drive discovery, FDA/Monospace removal and automatic 30-day diagnostic/crash cleanup. Preserve technical Console content while reviewing delivery/flush overhead. | Behavior checks follow C48/C49/C60–C96. Enabled empty tabs remain visible; dialog Escape retains its proper dismissal/cancellation priority. Cleanup preserves recent history and protected operation journals. Removed controls and source-basename storage have no active consumer left. |
@@ -1148,7 +1184,7 @@ Copland to preserve the histories explicitly removed under C15. Retain focused
 defensive tests for source changes and invalid reads, labelled as authored controls;
 use genuine sources to establish format/workflow behavior.
 
-Outstanding technical validation is distinct from unanswered product preference:
+Outstanding technical validation remains necessary:
 exact used-angle/source-track AVB interpretation, required Original Bin reader
 coverage, compact operation receipt equivalence, cancellation at all publication
 stages, and complete-process scale measurement must be demonstrated. The inspected
@@ -1160,8 +1196,10 @@ The [12 October verification](technical-verification-2026-10-12.md) now establis
 specific current gaps: broad AVB traversal, conflict-only Original Bin fallback,
 loss of completed metadata on early cancel and incorrect completion reporting on
 late cancel. Current operation tests pass; compact receipt equivalence remains to
-be implemented. Three controlled local app trials cover 267 database-free complete
-media copies and demonstrate prior-scan ownership retained by one frozen CSV row.
+be implemented. Three controlled local baseline trials cover 267 database-free
+complete media copies and demonstrated the former asynchronous export retaining
+the prior scan through one frozen CSV row. The direct-export implementation above
+has replaced that workflow.
 Media Composer ground truth, native UI/disk-log costs and NEXIS scale remain
 unverified. These findings refine the checks for the stages above without adding
 new product features or a competing implementation plan.

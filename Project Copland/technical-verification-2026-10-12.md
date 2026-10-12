@@ -145,5 +145,7 @@ commands, probe source, hashes, counters, all three trial results and limitation
 
 The remaining external checks are the Media Composer comparison and representative
 NEXIS acceptance. Compact storage/receipt equivalence and corrected behavior need
-verification after implementation. Q13's scan-time expectation remains the one
-unanswered product decision; no timing threshold or promised saving is invented.
+verification after implementation. At verification time, Q13's scan-time
+expectation remained unanswered. The user subsequently set Q13 aside and retained
+scan-time judgments themselves; see the updated [decision ledger](README.md#open-decisions).
+No timing threshold or promised saving is invented.

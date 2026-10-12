@@ -26,6 +26,7 @@
 #include <QEvent>
 #include <QElapsedTimer>
 #include <QFile>
+#include <QFileDialog>
 #include <QFileInfo>
 #include <QFrame>
 #include <QHeaderView>
@@ -38,6 +39,7 @@
 #include <QPlainTextEdit>
 #include <QProgressBar>
 #include <QPushButton>
+#include <QScopeGuard>
 #include <QSignalSpy>
 #include <QTabBar>
 #include <QTableView>
@@ -148,6 +150,9 @@ class TestOperationUi : public QObject
 private slots:
 	void scan_results_keep_reconciliation_issues();
 	void scan_start_releases_previous_session();
+	void csv_export_completes_before_return_data();
+	void csv_export_completes_before_return();
+	void csv_export_failure_preserves_previous_file();
 	void scan_completion_resets_filters_widgets_and_pending_search();
 	void scan_failure_closes_progress_and_restores_actions();
 	void initTestCase();
@@ -262,6 +267,228 @@ void TestOperationUi::scan_start_releases_previous_session()
 	QTRY_VERIFY(window.m_operations->isIdle());
 }
 
+void TestOperationUi::csv_export_completes_before_return_data()
+{
+	QTest::addColumn<QString>("scope");
+	QTest::newRow("visible") << QString();
+	QTest::newRow("selected") << QStringLiteral("Selected");
+	QTest::newRow("all") << QStringLiteral("All");
+}
+
+void TestOperationUi::csv_export_completes_before_return()
+{
+	QFETCH(QString, scope);
+	const bool nonNativeDialogs = QApplication::testAttribute(Qt::AA_DontUseNativeDialogs);
+	QApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
+	const auto restoreDialogs = qScopeGuard([nonNativeDialogs]
+											{ QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, nonNativeDialogs); });
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	window.setClipDurationEnabled(false);
+	QWeakPointer<MediaEngine::ScanResult> previousScan;
+	QString selectedLine;
+	const MediaCsv::Options expectedOptions{true, true};
+	{
+		auto scan = QSharedPointer<MediaEngine::ScanResult>::create();
+		previousScan = scan;
+		QVector<MediaFile> rows;
+		for (int index = 0; index < 3; ++index)
+		{
+			MediaFile row;
+			row.kelpieId = index + 1;
+			row.mediaFilePath = path(QStringLiteral("original-%1.mxf").arg(index));
+			row.fileName = QFileInfo(row.mediaFilePath).fileName();
+			row.clipName = QStringLiteral("Original %1").arg(index);
+			row.project = QStringLiteral("Original project");
+			row.kind = MediaFile::Kind::Video;
+			row.type = MediaFile::Type::Media;
+			row.duration = {250, {25, 1}, {25, 1}, MediaDuration::Source::Descriptor};
+			row.timecodeBase = 25;
+			rows.append(row);
+		}
+		rows = TestMediaFile::seeded(rows);
+		for (auto &row : rows)
+			row.mediaEngineScan = scan;
+		window.onScanFinished(rows);
+		window.m_tableView->sortByColumn(
+			static_cast<int>(MediaTableModel::Column::ClipName), Qt::AscendingOrder);
+		selectedLine = MediaCsv::rowLine(window.fileAtProxyRow(0), expectedOptions);
+	}
+	QVERIFY(!previousScan.isNull());
+	if (!scope.isEmpty())
+		window.m_tableView->selectRow(0);
+
+	const QString exportPath = path(QStringLiteral("export.csv"));
+	QString expectedText;
+	bool sawScopeDialog = false;
+	bool sawSaveDialog = false;
+	bool dialogTimedOut = false;
+	QStringList pickerSelection;
+	QString pickerDirectory;
+	QSignalSpy scanned(window.m_scanner, &MediaScanner::scanFinished);
+	{
+		QElapsedTimer dialogElapsed;
+		dialogElapsed.start();
+		QTimer dialogs;
+		dialogs.setInterval(10);
+		connect(&dialogs, &QTimer::timeout, &window, [&]
+				{
+				auto *modal = QApplication::activeModalWidget();
+				if (dialogElapsed.elapsed() > 5000)
+				{
+					dialogTimedOut = true;
+					if (auto *dialog = qobject_cast<QDialog *>(modal))
+						dialog->reject();
+					return;
+				}
+				if (auto *message = qobject_cast<QMessageBox *>(modal))
+				{
+					sawScopeDialog = true;
+					// The chosen selection is captured before either modal dialog.
+					window.m_tableView->clearSelection();
+					window.m_tableView->selectRow(1);
+					for (auto *button : message->buttons())
+						if (button->text() == scope)
+						{
+							button->click();
+							return;
+						}
+				}
+				if (auto *dialog = qobject_cast<QFileDialog *>(modal); dialog && !sawSaveDialog)
+				{
+					sawSaveDialog = true;
+					auto changed = window.m_model->allFiles();
+					changed[0].clipName = QStringLiteral("Edited first");
+					changed[1].clipName = QStringLiteral("Edited second");
+					changed[2].clipName = QStringLiteral("Hidden after save");
+					window.m_model->setMediaFiles(
+						changed, AvbMetadataResolver::RowProjection::AlreadyApplied);
+					window.m_proxy->setSearchText(QStringLiteral("Edited"));
+					window.m_tableView->sortByColumn(
+						static_cast<int>(MediaTableModel::Column::ClipName), Qt::DescendingOrder);
+					window.setPrecomputesEnabled(true);
+					window.setClipDurationEnabled(true);
+					// Visible rows, ordering and column gates are captured after Save.
+					expectedText = MediaCsv::headerLine(expectedOptions);
+					if (scope == QStringLiteral("Selected"))
+						expectedText += selectedLine;
+					else
+						expectedText += MediaCsv::rowLine(changed[1], expectedOptions) +
+										MediaCsv::rowLine(changed[0], expectedOptions);
+					dialog->setDirectory(m_root);
+					dialog->selectFile(QFileInfo(exportPath).fileName());
+					pickerDirectory = dialog->directory().absolutePath();
+					pickerSelection = dialog->selectedFiles();
+					if (pickerSelection != QStringList{exportPath})
+					{
+						dialog->reject();
+						return;
+					}
+					QMetaObject::invokeMethod(dialog, "accept", Qt::DirectConnection);
+				} });
+		dialogs.start();
+		window.onExportCsv();
+		dialogs.stop();
+		QVERIFY(!dialogTimedOut);
+		QCOMPARE(sawScopeDialog, !scope.isEmpty());
+		QVERIFY(sawSaveDialog);
+		QVERIFY2(pickerSelection == QStringList{exportPath},
+				 qPrintable(QStringLiteral("Save picker directory: %1; selection: %2; expected: %3")
+								.arg(pickerDirectory, pickerSelection.join(QStringLiteral("; ")), exportPath)));
+		QVERIFY(!window.m_exportInProgress);
+		const QString label = scope == QStringLiteral("Selected")
+								  ? QStringLiteral("selected")
+								  : QStringLiteral("visible");
+		const int count = scope == QStringLiteral("Selected") ? 1 : 2;
+		const auto messages = appMessages(window.m_console);
+		const QString confirmation = QStringLiteral("CSV export complete: %1 %2 rows to %3.")
+										 .arg(count)
+										 .arg(label, exportPath);
+		QCOMPARE(messages.count(confirmation), 1);
+		QVERIFY(!messages.contains(QStringLiteral("CSV export failed: %1.").arg(exportPath)));
+		QFile csv(exportPath);
+		QVERIFY2(csv.open(QIODevice::ReadOnly), qPrintable(messages.join('\n')));
+		QCOMPARE(csv.readAll(), QByteArray::fromHex("efbbbf") + expectedText.toUtf8());
+		QVERIFY(!previousScan.isNull());
+		window.startScanWithPaths({m_root});
+		QCOMPARE(window.m_model->rowCount(), 0);
+		QVERIFY(previousScan.isNull());
+	}
+	QTRY_COMPARE_WITH_TIMEOUT(scanned.count(), 1, 10000);
+	QTRY_VERIFY(window.m_operations->isIdle());
+}
+
+void TestOperationUi::csv_export_failure_preserves_previous_file()
+{
+	const bool nonNativeDialogs = QApplication::testAttribute(Qt::AA_DontUseNativeDialogs);
+	QApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
+	const auto restoreDialogs = qScopeGuard([nonNativeDialogs]
+											{ QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, nonNativeDialogs); });
+	const QString exportPath = path(QStringLiteral("previous.csv"));
+	const QByteArray original("previous export\n");
+	QVERIFY(put(exportPath, original));
+	QFile csv(exportPath);
+	const auto permissions = csv.permissions();
+	const auto restorePermissions = qScopeGuard([&]
+												{ csv.setPermissions(permissions); });
+	QVERIFY(csv.setPermissions(QFileDevice::ReadOwner | QFileDevice::ReadUser));
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile row;
+	row.mediaFilePath = path(QStringLiteral("original.mxf"));
+	row.clipName = QStringLiteral("New export row");
+	window.onScanFinished(TestMediaFile::seeded({row}));
+
+	bool sawSaveDialog = false;
+	bool dialogTimedOut = false;
+	QStringList pickerSelection;
+	QString pickerDirectory;
+	QElapsedTimer dialogElapsed;
+	dialogElapsed.start();
+	QTimer dialogs;
+	dialogs.setInterval(10);
+	connect(&dialogs, &QTimer::timeout, &window, [&]
+			{
+			auto *modal = QApplication::activeModalWidget();
+			if (dialogElapsed.elapsed() > 5000)
+			{
+				dialogTimedOut = true;
+				if (auto *dialog = qobject_cast<QDialog *>(modal))
+					dialog->reject();
+				return;
+			}
+			if (auto *dialog = qobject_cast<QFileDialog *>(modal); dialog && !sawSaveDialog)
+			{
+				sawSaveDialog = true;
+				// Exercise the writer's failure, without an additional overwrite prompt.
+				dialog->setOption(QFileDialog::DontConfirmOverwrite);
+				dialog->setDirectory(m_root);
+				dialog->selectFile(QFileInfo(exportPath).fileName());
+				pickerDirectory = dialog->directory().absolutePath();
+				pickerSelection = dialog->selectedFiles();
+				if (pickerSelection != QStringList{exportPath})
+				{
+					dialog->reject();
+					return;
+				}
+				QMetaObject::invokeMethod(dialog, "accept", Qt::DirectConnection);
+			} });
+	dialogs.start();
+	window.onExportCsv();
+	dialogs.stop();
+	QVERIFY(!dialogTimedOut);
+	QVERIFY(sawSaveDialog);
+	QVERIFY2(pickerSelection == QStringList{exportPath},
+			 qPrintable(QStringLiteral("Save picker directory: %1; selection: %2; expected: %3")
+							.arg(pickerDirectory, pickerSelection.join(QStringLiteral("; ")), exportPath)));
+	QVERIFY(!window.m_exportInProgress);
+	const auto messages = appMessages(window.m_console);
+	QCOMPARE(messages.count(QStringLiteral("CSV export failed: %1.").arg(exportPath)), 1);
+	for (const QString &message : messages)
+		QVERIFY(!message.startsWith(QStringLiteral("CSV export complete:")));
+	QVERIFY(csv.open(QIODevice::ReadOnly));
+	QCOMPARE(csv.readAll(), original);
+}
+
 void TestOperationUi::scan_completion_resets_filters_widgets_and_pending_search()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
@@ -322,15 +549,14 @@ void TestOperationUi::scan_failure_closes_progress_and_restores_actions()
 	QTimer dismiss;
 	dismiss.setInterval(1);
 	connect(&dismiss, &QTimer::timeout, [&]
-	{
+			{
 		for (QWidget *widget : QApplication::topLevelWidgets())
 			if (auto *message = qobject_cast<QMessageBox *>(widget))
 				if (message->text() == QStringLiteral("Archive allocation failed"))
 				{
 					explained = true;
 					message->accept();
-				}
-	});
+				} });
 	dismiss.start();
 	// Exercise the worker/UI failure notification, without inventing a bad media format.
 	emit window.m_scanner->scanFailed(QStringLiteral("Archive allocation failed"));
