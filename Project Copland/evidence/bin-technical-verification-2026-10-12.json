@@ -1,0 +1,780 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUtc": "2026-10-11T19:23:37.447857+00:00",
+  "scope": "Read-only verification of current AVB sequence-reference traversal. One genuine bin, existing relevant tests, one independent supplied pyavb structural read. No app, source, project or media edits. This evidence file is the only repository file created by this task.",
+  "status": {
+    "productionAndStructuralReaderComparison": "verified for the recorded samples",
+    "mediaComposerGroundTruth": "pending; not performed by this agent",
+    "coplandExactMembershipImplementation": "not implemented or verified",
+    "performance": "not measured or inferred"
+  },
+  "build": {
+    "gitHead": "3e7246a575f5b0247efbe007f271070cb597d306",
+    "sourceRoot": "/Users/martymclean/Developer/MediaMuster",
+    "buildDirectory": "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release",
+    "configuration": "Release, C++17, arm64, deployment target macOS11.0",
+    "qt": "6.5.3 at /Users/martymclean/Qt/6.5.3/macos",
+    "host": "macOS15.8.1 build24H212",
+    "probeCompiler": "Apple clang17.0.0 clang-1700.0.13.5",
+    "python": "/opt/homebrew/bin/python3 3.14.6",
+    "commands": [
+      "cmake --build build-mediaengine-release --target tst_mediaengineavbreferences tst_mediaengineavb --parallel 2",
+      "./tests/tst_mediaengineavbreferences && ./tests/tst_mediaengineavb (working directory: build-mediaengine-release)",
+      "clang++ -O3 -DNDEBUG -std=c++17 -arch arm64 -mmacosx-version-min=11.0 -I/Users/martymclean/Developer/MediaMuster/src -I/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib /tmp/mediamuster-copland-bin-technical-20261012/probe.cpp /Users/martymclean/Developer/MediaMuster/build-mediaengine-release/libmediamuster_mediaengine_core.a -F/Users/martymclean/Qt/6.5.3/macos/lib -framework QtCore -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /tmp/mediamuster-copland-bin-technical-20261012/probe",
+      "/tmp/mediamuster-copland-bin-technical-20261012/probe \"/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/8645 v1.avb\" 49157 > /tmp/mediamuster-copland-bin-technical-20261012/production-graph.json",
+      "python3 /tmp/mediamuster-copland-bin-technical-20261012/analyze.py",
+      "python3 /tmp/mediamuster-copland-bin-technical-20261012/verify_pyavb.py"
+    ],
+    "results": {
+      "buildExitCode": 0,
+      "referencesTest": {
+        "passed": 22,
+        "failed": 0,
+        "skipped": 0
+      },
+      "readerTest": {
+        "passed": 35,
+        "failed": 0,
+        "skipped": 1,
+        "skipReason": "Optional suppliedBins requires MEDIAMUSTER_MEDIAENGINE_REAL_AVB_FILES; genuine target was independently read with the production probe instead."
+      },
+      "probeExitCode": 0,
+      "pyavbExitCode": 0,
+      "structuralCrossChecks": "passed: identical selector indices/components, requested source track and precomputed object; all recorded selector branches present in current production edges"
+    }
+  },
+  "input": {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/8645 v1.avb",
+    "bytes": 6913702,
+    "sha256": "45ec3861e9f471f7e1a67757bd7605befd782192a7cb8a5da493e3d6a86a62c8",
+    "statUnchangedProductionRead": true,
+    "statUnchangedPyavbRead": true,
+    "sequence": {
+      "object": 49157,
+      "class": "CMPO",
+      "name": "HAA_1729_8645_SUBMASTER.Exported.01",
+      "mediaKind": null,
+      "mediaKindId": 0,
+      "length": 38798,
+      "editRate": 25.0,
+      "mobId": "060a2b340101010501010f101300000033f1acd674110690d605a6e06fdfcbcb"
+    },
+    "userPlaced": true
+  },
+  "productionResult": {
+    "readerOutcome": "Complete",
+    "parsedObjects": 49159,
+    "parsedRelationships": 181711,
+    "broadReachableObjects": 44725,
+    "resolvedEdges": 46797,
+    "referenceCoverageComplete": true,
+    "issues": [],
+    "mediaLocatorCount": 703,
+    "uniqueFullMediaIdSet": {
+      "count": 703,
+      "canonicalIdSetSha256": "e71186763844e3041b39f00f94a4a88ebb80abdaf50421220d03c8a1ca6c97ff",
+      "sampleIds": [
+        "060a2b340101010501010f1013000000009200d627100696695830138b72a179",
+        "060a2b340101010501010f101300000000a5eed7271006967bb630138b72a179",
+        "060a2b340101010501010f101300000000bce3d527100696056630138b72a179",
+        "060a2b340101010501010f101300000001175fd827100696e96b30138b72a179"
+      ]
+    },
+    "reachableSelectors": 105,
+    "reachableSelectedIndexCounts": {
+      "1": 14,
+      "2": 3,
+      "0": 88
+    },
+    "wholeBinSelectorCount": 261,
+    "wholeBinSelectorCountBasis": "Previous genuine-bin structural receipt plus current parsed-object total; not all 261 are reached from this selected sequence."
+  },
+  "findings": [
+    {
+      "id": "selector-expansion",
+      "conclusion": "Current traversal follows every Selector track component, including unselected alternatives. This conflicts with the accepted edited-angle-only requirement. The genuine specimens below have distinct branch identities when source tracks are followed selectively.",
+      "certainty": "Code-traced and directly observed production edges; which branch Media Composer actually edits remains to be validated there.",
+      "sourceAnchors": [
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/avbreferences.cpp",
+          "lines": [
+            270,
+            309,
+            310
+          ]
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/avbcomponents_p.cpp",
+          "lines": [
+            546,
+            551,
+            552
+          ]
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengineavbreferences.cpp",
+          "lines": [
+            220,
+            240,
+            246,
+            247
+          ]
+        }
+      ]
+    },
+    {
+      "id": "source-track-expansion",
+      "conclusion": "SourceClip track ID and media kind are parsed, but current resolution follows all target composition tracks and visits only by object handle. The A3 sample explicitly requests source track3/sound; production also follows V1/A1/A2 of that target.",
+      "certainty": "Code-traced and observed edges. Other tracks may be used elsewhere in the selected timeline, so these edges alone do not establish globally unwanted inventory rows.",
+      "sourceAnchors": [
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/avbreferences.cpp",
+          "lines": [
+            199,
+            200,
+            202,
+            270,
+            310
+          ]
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/avbcomponents_p.cpp",
+          "lines": [
+            42,
+            85,
+            86
+          ]
+        }
+      ]
+    },
+    {
+      "id": "original-and-render-routes",
+      "conclusion": "Current traversal preserves a genuine effect input route and its Component.precomputed route. The recorded V1 effect reaches distinct render and input locator identities, supporting retention of both routes when the effect itself is used.",
+      "certainty": "Observed graph routes; no Media Composer render/playback or physical inventory comparison.",
+      "sourceAnchors": [
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/avbcomponents_p.cpp",
+          "lines": [
+            48
+          ]
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/avbreferences.cpp",
+          "lines": [
+            270,
+            309,
+            310
+          ]
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengineavbreferences.cpp",
+          "lines": [
+            250,
+            253,
+            260
+          ]
+        }
+      ]
+    },
+    {
+      "id": "time-range-context",
+      "conclusion": "Exact edited membership needs reference context beyond object identity: requested source track/media kind and requested time span through nested sequences/groups/effects. Current visitation has no such context. This is an implementation prerequisite, not a demonstrated count of absent or extra physical files.",
+      "certainty": "Current code inspection. Correct range and effect semantics still require primary Media Composer comparison."
+    },
+    {
+      "id": "test-scope",
+      "conclusion": "Passing current tests confirms existing broad behavior. The group control explicitly expects both angles with selected=0. The authored enabled=false property is not proof that genuine AVB mute/disable state is decoded. No current test here establishes the complete Copland membership rule.",
+      "certainty": "Existing authored test source and fresh execution."
+    }
+  ],
+  "genuineSelectorExamples": [
+    {
+      "object": 33508,
+      "selectedIndexZeroBased": 1,
+      "isGanged": true,
+      "location": {
+        "trackSlot": 8,
+        "trackLabel": 1,
+        "mediaKind": "picture",
+        "sequenceComponent": 47105,
+        "componentSlot": 33,
+        "object": 33508,
+        "positionFramesFromSequenceStart": 1830,
+        "positionSecondsAt25": 73.2,
+        "lengthFrames": 120,
+        "relative25FpsTimecode": "00:01:13:05"
+      },
+      "productionIncludesEveryBranch": true,
+      "branches": [
+        {
+          "slotZeroBased": 0,
+          "selected": false,
+          "componentObject": 11225,
+          "clipNamesAlongRoute": [
+            "HAA_1729_8645_SUBMASTER.922",
+            "19-355-01A.new.02",
+            "19-355-01A.new.02",
+            "HAA_1729_8645_SUBMASTER.552",
+            "A789C019_250829_F90B_M_1101PD"
+          ],
+          "fileLocatorReferences": [
+            {
+              "sourceMob": 47466,
+              "sourceMobName": "HAA_1729_8645_SUBMASTER.552",
+              "sourceMobType": "SourceMob",
+              "descriptorClass": "CDCI",
+              "descriptor": 35146,
+              "locator": 13323,
+              "fileMobId": "060a2b340101010501010f10130000009abca8d8271006968bbf30138b72a179",
+              "domainType": 0
+            }
+          ]
+        },
+        {
+          "slotZeroBased": 1,
+          "selected": true,
+          "componentObject": 11224,
+          "clipNamesAlongRoute": [
+            "HAA_1729_8645_SUBMASTER.922",
+            "19-355-01C.new.02",
+            "19-355-01C.new.02",
+            "HAA_1729_8645_SUBMASTER.821",
+            "C784C015_250829_D907_M_10098P"
+          ],
+          "fileLocatorReferences": [
+            {
+              "sourceMob": 47203,
+              "sourceMobName": "HAA_1729_8645_SUBMASTER.821",
+              "sourceMobType": "SourceMob",
+              "descriptorClass": "CDCI",
+              "descriptor": 33925,
+              "locator": 11844,
+              "fileMobId": "060a2b340101010501010f1013000000ea5cbfd827100696af2130138b72a179",
+              "domainType": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "object": 33509,
+      "selectedIndexZeroBased": 1,
+      "isGanged": true,
+      "location": {
+        "trackSlot": 8,
+        "trackLabel": 1,
+        "mediaKind": "picture",
+        "sequenceComponent": 47105,
+        "componentSlot": 32,
+        "object": 33509,
+        "positionFramesFromSequenceStart": 1784,
+        "positionSecondsAt25": 71.36,
+        "lengthFrames": 46,
+        "relative25FpsTimecode": "00:01:11:09"
+      },
+      "productionIncludesEveryBranch": true,
+      "branches": [
+        {
+          "slotZeroBased": 0,
+          "selected": false,
+          "componentObject": 11229,
+          "clipNamesAlongRoute": [
+            "HAA_1729_8645_SUBMASTER.897",
+            "19-353-01A.new.02",
+            "19-353-01A.new.02",
+            "HAA_1729_8645_SUBMASTER.270",
+            "A789C016_250829_F90B_M_1098XZ"
+          ],
+          "fileLocatorReferences": [
+            {
+              "sourceMob": 47740,
+              "sourceMobName": "HAA_1729_8645_SUBMASTER.270",
+              "sourceMobType": "SourceMob",
+              "descriptorClass": "CDCI",
+              "descriptor": 36533,
+              "locator": 15126,
+              "fileMobId": "060a2b340101010501010f10130000004a1807d82710069631b330138b72a179",
+              "domainType": 0
+            }
+          ]
+        },
+        {
+          "slotZeroBased": 1,
+          "selected": true,
+          "componentObject": 11228,
+          "clipNamesAlongRoute": [
+            "HAA_1729_8645_SUBMASTER.897",
+            "19-353-01B.new.02",
+            "19-353-01B.new.02",
+            "HAA_1729_8645_SUBMASTER.572",
+            "B584C017_250829_F90J_M_0868QS"
+          ],
+          "fileLocatorReferences": [
+            {
+              "sourceMob": 47444,
+              "sourceMobName": "HAA_1729_8645_SUBMASTER.572",
+              "sourceMobType": "SourceMob",
+              "descriptorClass": "CDCI",
+              "descriptor": 35034,
+              "locator": 13183,
+              "fileMobId": "060a2b340101010501010f1013000000a0f758d727100696f33b30138b72a179",
+              "domainType": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "object": 33511,
+      "selectedIndexZeroBased": 2,
+      "isGanged": true,
+      "location": {
+        "trackSlot": 8,
+        "trackLabel": 1,
+        "mediaKind": "picture",
+        "sequenceComponent": 47105,
+        "componentSlot": 30,
+        "object": 33511,
+        "positionFramesFromSequenceStart": 1723,
+        "positionSecondsAt25": 68.92,
+        "lengthFrames": 27,
+        "relative25FpsTimecode": "00:01:08:23"
+      },
+      "productionIncludesEveryBranch": true,
+      "branches": [
+        {
+          "slotZeroBased": 0,
+          "selected": false,
+          "componentObject": 11238,
+          "clipNamesAlongRoute": [
+            "HAA_1729_8645_SUBMASTER.911",
+            "07-199-01A.new.02",
+            "07-199-01A.new.02",
+            "HAA_1729_8645_SUBMASTER.21",
+            "A776C025_250825_F90B_M_0840H8"
+          ],
+          "fileLocatorReferences": [
+            {
+              "sourceMob": 47983,
+              "sourceMobName": "HAA_1729_8645_SUBMASTER.21",
+              "sourceMobType": "SourceMob",
+              "descriptorClass": "CDCI",
+              "descriptor": 37804,
+              "locator": 16680,
+              "fileMobId": "060a2b340101010501010f10130000000730c8d927100696bf2130138b72a179",
+              "domainType": 4
+            }
+          ]
+        },
+        {
+          "slotZeroBased": 1,
+          "selected": false,
+          "componentObject": 11237,
+          "clipNamesAlongRoute": [
+            "HAA_1729_8645_SUBMASTER.911",
+            "07-199-01B.new.02",
+            "07-199-01B.new.02",
+            "HAA_1729_8645_SUBMASTER.64",
+            "B571C025_250825_F90J_M_0610N4"
+          ],
+          "fileLocatorReferences": [
+            {
+              "sourceMob": 47938,
+              "sourceMobName": "HAA_1729_8645_SUBMASTER.64",
+              "sourceMobType": "SourceMob",
+              "descriptorClass": "CDCI",
+              "descriptor": 37560,
+              "locator": 16362,
+              "fileMobId": "060a2b340101010501010f10130000001120bbd627100696ab1130138b72a179",
+              "domainType": 0
+            }
+          ]
+        },
+        {
+          "slotZeroBased": 2,
+          "selected": true,
+          "componentObject": 11236,
+          "clipNamesAlongRoute": [
+            "HAA_1729_8645_SUBMASTER.911",
+            "07-199-01C.new.02",
+            "07-199-01C.new.02",
+            "HAA_1729_8645_SUBMASTER.440",
+            "C770C026_250825_D907_M_07774J"
+          ],
+          "fileLocatorReferences": [
+            {
+              "sourceMob": 47571,
+              "sourceMobName": "HAA_1729_8645_SUBMASTER.440",
+              "sourceMobType": "SourceMob",
+              "descriptorClass": "CDCI",
+              "descriptor": 35660,
+              "locator": 13982,
+              "fileMobId": "060a2b340101010501010f101300000079b5ffd9271006969c4330138b72a179",
+              "domainType": 4
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "genuineSourceTrackExample": {
+    "sourceClipObject": 32143,
+    "location": {
+      "trackSlot": 12,
+      "trackLabel": 3,
+      "mediaKind": "sound",
+      "sequenceComponent": 47092,
+      "componentSlot": 140,
+      "object": 32143,
+      "positionFramesFromSequenceStart": 17020,
+      "positionSecondsAt25": 680.8,
+      "lengthFrames": 279,
+      "relative25FpsTimecode": "00:11:20:20"
+    },
+    "requestedTrack": 3,
+    "requestedKind": "sound",
+    "sourceStart": 829,
+    "length": 279,
+    "targetObject": 48412,
+    "targetName": "10-X3-01C.new.02",
+    "targetMobType": "CompositionMob",
+    "targetUsageCode": 2,
+    "allTargetTracks": [
+      {
+        "index": 1,
+        "kind": "picture",
+        "component": 42955,
+        "class": "SCLP"
+      },
+      {
+        "index": 1,
+        "kind": "sound",
+        "component": 42952,
+        "class": "SCLP"
+      },
+      {
+        "index": 2,
+        "kind": "sound",
+        "component": 42950,
+        "class": "SCLP"
+      },
+      {
+        "index": 3,
+        "kind": "sound",
+        "component": 42948,
+        "class": "SCLP"
+      }
+    ],
+    "independentMatchedTrack": {
+      "index": 3,
+      "kind": "sound",
+      "component": 42948,
+      "class": "SCLP"
+    },
+    "independentSelectedRouteLocators": [
+      {
+        "sourceMob": 47561,
+        "sourceMobName": "HAA_1729_8645_SUBMASTER.450",
+        "sourceMobType": "SourceMob",
+        "descriptorClass": "PCMA",
+        "descriptor": 35593,
+        "locator": 13873,
+        "fileMobId": "060a2b340101010501010f10130000007c1a3cd627100696196530138b72a179",
+        "domainType": 4
+      }
+    ],
+    "productionIncludesAllTargetTrackComponents": true
+  },
+  "genuineRenderExample": {
+    "effectObject": 33197,
+    "effectClass": "TKFX",
+    "location": {
+      "trackSlot": 8,
+      "trackLabel": 1,
+      "mediaKind": "picture",
+      "sequenceComponent": 47105,
+      "componentSlot": 344,
+      "object": 33197,
+      "positionFramesFromSequenceStart": 35574,
+      "positionSecondsAt25": 1422.96,
+      "lengthFrames": 2405,
+      "relative25FpsTimecode": "00:23:42:24"
+    },
+    "effectId": "EFF2_BLEND_GRAPHIC",
+    "precomputed": {
+      "object": 9705,
+      "class": "SCLP",
+      "name": null,
+      "mediaKind": "picture",
+      "mediaKindId": 1,
+      "length": 2405,
+      "editRate": 25.0,
+      "mobId": "060a2b340101010501010f10130000006ad07ed5271006964a7e30138b72a179"
+    },
+    "precomputedInitialTargetName": "HAA_1729_8645_SUBMASTER,Title,168.new.01",
+    "inputTracks": [
+      {
+        "index": 1,
+        "kind": "picture",
+        "component": 9703,
+        "class": "SEQU"
+      },
+      {
+        "index": 2,
+        "kind": "picture",
+        "component": 9701,
+        "class": "SCLP"
+      },
+      {
+        "index": 3,
+        "kind": "picture",
+        "component": 9699,
+        "class": "SCLP"
+      }
+    ],
+    "inputRouteIds": [
+      "060a2b340101010501010f10130000008d2840da271006969b8030138b72a179",
+      "060a2b340101010501010f1013000000b02840da27100696ea6730138b72a179",
+      "060a2b340101010501010f1013000000cc2840da27100696385330138b72a179"
+    ],
+    "precomputedRouteIds": [
+      "060a2b340101010501010f10130000002b3265d827100696793e30138b72a179",
+      "060a2b340101010501010f10130000008d2840da271006969b8030138b72a179",
+      "060a2b340101010501010f1013000000b02840da27100696ea6730138b72a179",
+      "060a2b340101010501010f1013000000cc2840da27100696385330138b72a179"
+    ],
+    "precomputedIdsOutsideInputRoutes": [
+      "060a2b340101010501010f10130000002b3265d827100696793e30138b72a179"
+    ],
+    "precomputedRouteLocators": [
+      {
+        "sourceMob": 47846,
+        "sourceMobName": "HAA_1729_8645_SUBMASTER.158",
+        "sourceMobType": "SourceMob",
+        "descriptorClass": "CDCI",
+        "descriptor": 37082,
+        "locator": 15801,
+        "fileMobId": "060a2b340101010501010f10130000002b3265d827100696793e30138b72a179",
+        "domainType": 4
+      },
+      {
+        "sourceMob": 47311,
+        "sourceMobName": "HAA_1729_8645_SUBMASTER.709",
+        "sourceMobType": "SourceMob",
+        "descriptorClass": "RGBA",
+        "descriptor": 34407,
+        "locator": 12439,
+        "fileMobId": "060a2b340101010501010f1013000000cc2840da27100696385330138b72a179",
+        "domainType": 0
+      },
+      {
+        "sourceMob": 47398,
+        "sourceMobName": "HAA_1729_8645_SUBMASTER.613",
+        "sourceMobType": "SourceMob",
+        "descriptorClass": "CDCI",
+        "descriptor": 34798,
+        "locator": 12895,
+        "fileMobId": "060a2b340101010501010f1013000000b02840da27100696ea6730138b72a179",
+        "domainType": 0
+      },
+      {
+        "sourceMob": 47512,
+        "sourceMobName": "HAA_1729_8645_SUBMASTER.508",
+        "sourceMobType": "SourceMob",
+        "descriptorClass": "CDCI",
+        "descriptor": 35380,
+        "locator": 13618,
+        "fileMobId": "060a2b340101010501010f10130000008d2840da271006969b8030138b72a179",
+        "domainType": 0
+      }
+    ],
+    "note": "The precomputed route also reaches original inputs; these are route sets, not mutually exclusive render/original categories."
+  },
+  "diagnosticCounterfactual": {
+    "selectorPruned": {
+      "count": 703,
+      "canonicalIdSetSha256": "e71186763844e3041b39f00f94a4a88ebb80abdaf50421220d03c8a1ca6c97ff",
+      "sampleIds": [
+        "060a2b340101010501010f1013000000009200d627100696695830138b72a179",
+        "060a2b340101010501010f101300000000a5eed7271006967bb630138b72a179",
+        "060a2b340101010501010f101300000000bce3d527100696056630138b72a179",
+        "060a2b340101010501010f101300000001175fd827100696e96b30138b72a179"
+      ]
+    },
+    "sourceTrackPruned": {
+      "count": 703,
+      "canonicalIdSetSha256": "e71186763844e3041b39f00f94a4a88ebb80abdaf50421220d03c8a1ca6c97ff",
+      "sampleIds": [
+        "060a2b340101010501010f1013000000009200d627100696695830138b72a179",
+        "060a2b340101010501010f101300000000a5eed7271006967bb630138b72a179",
+        "060a2b340101010501010f101300000000bce3d527100696056630138b72a179",
+        "060a2b340101010501010f101300000001175fd827100696e96b30138b72a179"
+      ]
+    },
+    "bothPruned": {
+      "count": 682,
+      "canonicalIdSetSha256": "db58cc658b9e455115144606f0579e8ceb71fbc8502e52d7af7aa9e81acd4146",
+      "sampleIds": [
+        "060a2b340101010501010f1013000000009200d627100696695830138b72a179",
+        "060a2b340101010501010f101300000000a5eed7271006967bb630138b72a179",
+        "060a2b340101010501010f101300000000bce3d527100696056630138b72a179",
+        "060a2b340101010501010f101300000001175fd827100696e96b30138b72a179"
+      ]
+    },
+    "removedByBoth": {
+      "count": 21,
+      "canonicalIdSetSha256": "c2ad24a44d962fe89e032d47ec74f5206235da06f3958e869b6049a6a2a7641a",
+      "sampleIds": [
+        "060a2b340101010501010f101300000007657ed7271006968f9630138b72a179",
+        "060a2b340101010501010f10130000000c2a40d627100696f73630138b72a179",
+        "060a2b340101010501010f10130000001120bbd627100696ab1130138b72a179",
+        "060a2b340101010501010f101300000015538fd52710069665ec30138b72a179"
+      ]
+    },
+    "limits": "Structural counterfactual only; not a proposed resolver or proof of playback membership. No requested time-span intersection, transitions, effect/timewarp semantics, attribute-route exclusion or Media Composer comparison.",
+    "note": "Pruning only selector branches or only requested source tracks leaves703 identities in this specimen; pruning both leaves682, excluding21. This is not the exact desired set, a performance claim or a globally verified over-inclusion count. It merely demonstrates that the retained selection fields can change identity membership."
+  },
+  "independentReader": {
+    "path": "/Users/martymclean/Downloads/pyavb-main",
+    "mode": "use_ext=False",
+    "role": "Secondary structural corroboration. MediaMuster layouts themselves cite pyavb, so agreement does not establish independent Avid format authority or Media Composer playback truth. The small route walker is authored for this audit and deliberately has limited semantics.",
+    "sourceAnchors": [
+      {
+        "path": "/Users/martymclean/Downloads/pyavb-main/src/avb/components.py",
+        "lines": [
+          223,
+          225,
+          227,
+          315,
+          322,
+          326
+        ]
+      },
+      {
+        "path": "/Users/martymclean/Downloads/pyavb-main/src/avb/trackgroups.py",
+        "lines": [
+          987,
+          992,
+          1002,
+          1003,
+          1005
+        ]
+      }
+    ]
+  },
+  "limits": [
+    "Single genuine 6.9MB bin; no new corpus-wide scan. Existing earlier99-unique-content receipt is context, not an expanded fresh verification.",
+    "703 refers to unique supported full locator identities, not physical file copies or currently present managed media. Locator domain values alone were not classified as AMA or management status.",
+    "The21-identity counterfactual has no requested time-range intersection, transition overlap, edit-rate conversion, speed/timewarp mapping, context-aware render validation or attribute-route exclusion. It must not become an acceptance oracle.",
+    "Timeline offsets use pyavb Sequence.positions (including its transition handling); they are relative25fps frame positions pending Media Composer confirmation, not absolute sequence timecode.",
+    "No genuine muted/disabled track fixture was identified or compared in Media Composer. The agreed inclusion rule does not require pruning based on mute.",
+    "No media was relinked, rendered, deleted or modified, and this agent did not use the Media Composer UI."
+  ],
+  "mediaComposerComparisonPrerequisites": [
+    "Open a disposable byte-identical copy of the recorded bin in a compatible Media Composer edition; verify input hash, exact sequence name and timeline edit rate.",
+    "At V1 relative00:01:08:23 (frame1723,27frames), confirm selected angle/clip for selector33511 is the C route (07-199-01C.new.02), and inspect alternatives A/B. At relative00:01:13:05 (frame1830,120frames), confirm selector33508 chooses19-355-01C.new.02. Record screenshots or an Avid-generated reference/export showing actual angle/source-track membership.",
+    "At A3 relative00:11:20:20 (frame17020,279frames), confirm source track3 of10-X3-01C.new.02 and distinguish any other source tracks used independently elsewhere.",
+    "At V1 relative00:23:42:24 (frame35574,2405frames), inspect the existing title/effect render and original inputs; verify required file routes rather than assuming the broad graph set equals used media.",
+    "If offline or if the edition cannot interpret the project, record that limit. File-level membership comparison requires corresponding managed media available in the inventory or a genuine Avid-generated identity reference; offline clip labels alone are not physical-file proof.",
+    "For final exact resolver acceptance, compare current and proposed results on these real edits plus simple Avid-produced controls with one unused source track, an edited group angle change, muted placed tracks and a rendered effect. Preserve genuine specimen provenance; do not substitute handwritten graphs for the real-edit comparison."
+  ],
+  "codeAndBinaryHashes": [
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/avbreferences.cpp",
+      "bytes": 14111,
+      "sha256": "4ac791e29f3b739d415696c21fb1385bbf50427f5dc3f7084743c561a7df8290"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/avbcomponents_p.cpp",
+      "bytes": 22125,
+      "sha256": "47fe6cef59538914f8f6960451c876784877cbd1c6afb9c8aa167c25cd510fa1"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/avbobjects_p.cpp",
+      "bytes": 13165,
+      "sha256": "964569d9abbf27e410fb64357506bcf4998930257db135bb47ec8a9420b534d3"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/avbdescriptors_p.cpp",
+      "bytes": 29893,
+      "sha256": "edb0a98d59bcf1354ad46b4a3fd0182bba2b7bc28cdfa6df80094ee97dbb6ca0"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengineavbreferences.cpp",
+      "bytes": 22343,
+      "sha256": "5e767e22ab88470a2b6dba85c6c9af5a7bfe486f8dbc13340817bf7d2f142be1"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengineavb.cpp",
+      "bytes": 22217,
+      "sha256": "acb986cc1eff836d65f7e23e7dc6632a6218bd3200435a3e1f30a37fedf93d3e"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/libmediamuster_mediaengine_core.a",
+      "bytes": 3789200,
+      "sha256": "f9113099445f62136db44a2a40185aafbd176c61d94f6707b32ca7ff1a6a391e"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/tests/tst_mediaengineavbreferences",
+      "bytes": 512640,
+      "sha256": "0d9b8787e36e29284ca63e913530e57ad2eceb1c5290fa9affe629d5cf2e5c25"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/tests/tst_mediaengineavb",
+      "bytes": 416992,
+      "sha256": "aa3d6fe56739c4899c06d11da58943464ec678cc02d61b58873468485c795e92"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/src/avb/components.py",
+      "bytes": 29471,
+      "sha256": "6b3aaf37b7bcdeea0fa7411063a0d35c562aa69453f5e0d70346f2d6bc04b52a"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/src/avb/trackgroups.py",
+      "bytes": 40596,
+      "sha256": "4b9a4a393b7f2fdf346bea138b5ee2f6086700ebd7f3928443eb33f410a80020"
+    },
+    {
+      "path": "/Users/martymclean/Downloads/pyavb-main/src/avb/misc.py",
+      "bytes": 39257,
+      "sha256": "aa82d9c30b28118169a6f5f7f6437044793e17827fc939a5d4bc453e90f40343"
+    }
+  ],
+  "reproducibility": {
+    "temporaryDirectory": "/tmp/mediamuster-copland-bin-technical-20261012",
+    "programs": [
+      {
+        "filename": "probe.cpp",
+        "sha256": "2d9ac97230630ac9a6e06f169b61c7ce9e4a6b57b92bf569641348dfa46dd72a",
+        "source": "#include \"mediaengine/avbreader.h\"\n#include \"mediaengine/avbreferences.h\"\n#include <QCoreApplication>\n#include <QFile>\n#include <QFileInfo>\n#include <QJsonDocument>\n#include <QJsonObject>\n#include <QJsonArray>\n#include <QSet>\n#include <QTextStream>\nusing namespace MediaEngine;\nint main(int argc,char **argv) {\n QCoreApplication app(argc,argv); auto args=app.arguments(); if(args.size()!=3) return 2;\n const QFileInfo before(args[1]); QFile f(args[1]); if(!f.open(QIODevice::ReadOnly|QIODevice::Unbuffered)) return 3;\n Cancellation cancel; auto snap=QSharedPointer<SourceSnapshot>::create(); snap->path=args[1]; snap->source=MetadataSource::Avb;\n auto source=QSharedPointer<ParsedSource>::create(AvbReader{}.read(f,{snap,cancel}));\n AvbReferenceIndex index({source},cancel); ObjectHandle seq=args[2].toULongLong();\n auto result=index.resolveReferences({{0,AvbSelection::Kind::SelectedSequences,{seq}}},cancel);\n QSet<ObjectHandle> reachable; for(auto root:result.roots)reachable.insert(root.objectHandle);\n QJsonArray edges,objects,media,issues,sequences;\n for(auto edge:result.edges) { reachable.insert(edge.origin.objectHandle); reachable.insert(edge.target.objectHandle);\n  const auto &r=source->relationships[edge.relationshipIndex]; edges.append(QJsonObject{{\"origin\",double(edge.origin.objectHandle)},{\"target\",double(edge.target.objectHandle)},{\"field\",r.locator.name}}); }\n for(const auto &o:source->objects) if(reachable.contains(o.handle)) {\n  QJsonObject fields;\n  for(const auto &p:o.properties) if(p.state==PropertyReadState::Present) {\n   const auto &n=p.locator.name;\n   if(n.startsWith(\"Component.\")||n.startsWith(\"Clip.\")||n.startsWith(\"SourceClip.\")||n.startsWith(\"TrackGroup.\")||n.startsWith(\"Composition.\")||n.startsWith(\"Selector.\")||n.startsWith(\"Sequence.\")||n.startsWith(\"MediaLocator.\")||n.startsWith(\"AudioSuitePlugin.\")) {\n    if(p.decoded.metaType().id()==QMetaType::QByteArray) fields[n]=QString::fromLatin1(p.decoded.toByteArray().toHex());\n    else fields[n]=QJsonValue::fromVariant(p.decoded);\n   }\n  }\n  objects.append(QJsonObject{{\"object\",double(o.handle)},{\"class\",o.avb?QString::fromLatin1(o.avb->classId):QString{}},{\"complete\",o.avb&&o.avb->interpretationComplete},{\"identity\",QString::fromLatin1(o.recordedIdentity.toHex())},{\"fields\",fields}});\n }\n for(const auto &m:result.mediaReferences) media.append(QJsonObject{{\"object\",double(m.objectKey.objectHandle)},{\"id\",QString::fromLatin1(m.mobId.toHex())},{\"legacy\",QString::fromLatin1(m.legacyId.toHex())}});\n for(const auto &i:result.issues) issues.append(QJsonObject{{\"kind\",int(i.kind)},{\"object\",double(i.objectKey.objectHandle)},{\"field\",i.propertyLocator.name},{\"explanation\",i.explanation}});\n for(const auto &s:index.sequences()) sequences.append(QJsonObject{{\"object\",double(s.key.objectHandle)},{\"name\",s.name},{\"id\",QString::fromLatin1(s.mobId.toHex())},{\"userPlaced\",s.userPlaced}});\n const QFileInfo after(args[1]); QJsonObject report{{\"path\",args[1]},{\"bytes\",double(before.size())},{\"sizeAndMtimeUnchanged\",before.size()==after.size()&&before.lastModified()==after.lastModified()},{\"readerOutcome\",int(source->outcome)},{\"parsedObjects\",double(source->objects.size())},{\"parsedRelationships\",double(source->relationships.size())},{\"sequence\",double(seq)},{\"sequences\",sequences},{\"coverageComplete\",result.coverageComplete},{\"cancelled\",result.cancelled},{\"issues\",issues},{\"objects\",objects},{\"edges\",edges},{\"media\",media}};\n QTextStream(stdout)<<QJsonDocument(report).toJson(QJsonDocument::Compact)<<'\\n'; return 0;\n}\n"
+      },
+      {
+        "filename": "analyze.py",
+        "sha256": "7b41913ed3d3a26707fc3ef56c780c125fc11d80fb9e34808018350cf5ef1e05",
+        "source": "import json,re,hashlib\nfrom pathlib import Path\nfrom collections import defaultdict,Counter,deque\nroot=Path('/tmp/mediamuster-copland-bin-technical-20261012')\nr=json.loads((root/'production-graph.json').read_text())\nobjects={o['object']:o for o in r['objects']}; outgoing=defaultdict(list); media=defaultdict(set)\nfor e in r['edges']:outgoing[e['origin']].append(e)\nfor m in r['media']:\n if m['id']:media[m['object']].add(m['id'])\ntrack_re=re.compile(r'TrackGroup.tracks\\[(\\d+)\\].component$')\ndef fields(h):return objects[h]['fields']\ndef semantic(e):\n return e['field'].startswith(('TrackGroup.tracks[','Sequence.components[','SourceClip.mob_id','Composition.descriptor','Component.precomputed','MediaDescriptor.locators[','FileDescriptor.','AudioSuitePlugin.'))\ndef walk(start,selected=False,track=False):\n pending=[(start,None)];seen=set();ids=set()\n while pending:\n  h,ctx=pending.pop()\n  if (h,ctx) in seen:continue\n  seen.add((h,ctx));ids.update(media[h]);o=objects[h];f=o['fields']\n  for e in outgoing[h]:\n   m=track_re.match(e['field'])\n   if selected and o['class']=='SLCT' and m and int(m[1])!=f.get('Selector.selected'):continue\n   if track and o['class']=='CMPO' and ctx and m:\n    n=int(m[1]);component=objects[e['target']]\n    if f.get(f'TrackGroup.tracks[{n}].index')!=ctx[0] or component['fields'].get('Component.media_kind_id')!=ctx[1]:continue\n   newctx=None\n   if track and o['class']=='SCLP' and e['field']=='SourceClip.mob_id':newctx=(f.get('SourceClip.track_id'),f.get('Component.media_kind_id'))\n   pending.append((e['target'],newctx))\n return ids,seen\ndef brief(ids):\n return {'count':len(ids),'canonicalIdSetSha256':hashlib.sha256(b''.join(bytes.fromhex(x) for x in sorted(ids))).hexdigest(),'sampleIds':sorted(ids)[:4]}\ndef path(h):\n q=deque([r['sequence']]);prev={r['sequence']:None}\n while q:\n  k=q.popleft()\n  if k==h:break\n  for e in outgoing[k]:\n   if semantic(e) and e['target'] not in prev:prev[e['target']]=e;q.append(e['target'])\n if h not in prev:return None\n p=[]\n while prev[h]:e=prev[h];p.append(e);h=e['origin']\n return p[::-1]\ndef components(h):\n f=fields(h);result=[]\n for e in outgoing[h]:\n  m=track_re.match(e['field'])\n  if m:\n   n=int(m[1]);result.append({'slot':n,'index':f.get(f'TrackGroup.tracks[{n}].index'),'component':e['target'],'mediaKindId':fields(e['target']).get('Component.media_kind_id'),'class':objects[e['target']]['class'],'flags':f.get(f'TrackGroup.tracks[{n}].flags')})\n return sorted(result,key=lambda t:t['slot'])\nselectors=[];sources=[];renders=[]\nfor h,o in sorted(objects.items()):\n f=o['fields']\n if o['class']=='SLCT':\n  branches=components(h);sets=[walk(t['component'])[0] for t in branches];selected=f['Selector.selected'];selectedids=sets[selected]\n  restricted=[walk(t['component'],True,True)[0] for t in branches]\n  for t,ids,usedids in zip(branches,sets,restricted):\n   t['broadClosureIds']=brief(ids);t['idsOutsideSelectedClosure']=brief(ids-selectedids)\n   t['diagnosticRestrictedClosureIds']=brief(usedids)\n   t['diagnosticIdsOutsideSelectedClosure']=brief(usedids-restricted[selected])\n  selectors.append({'object':h,'selected':selected,'length':f.get('TrackGroup.length'),'editRateMantissa':f.get('Component.edit_rate.mantissa'),'mediaKindId':f.get('Component.media_kind_id'),'pathFromSequence':path(h),'branches':branches})\n if o['class']=='SCLP':\n  for e in outgoing[h]:\n   if e['field']=='SourceClip.mob_id' and objects[e['target']]['class']=='CMPO':\n    target=e['target'];branches=components(target)\n    matching=[t for t in branches if t['index']==f.get('SourceClip.track_id') and t['mediaKindId']==f.get('Component.media_kind_id')]\n    nonmatching=[t for t in branches if t not in matching]\n    if matching and nonmatching:\n     wanted=set().union(*(walk(t['component'])[0] for t in matching));unwanted=set().union(*(walk(t['component'])[0] for t in nonmatching))\n     if unwanted-wanted:\n      sources.append({'object':h,'kind':f.get('Component.media_kind_id'),'trackId':f.get('SourceClip.track_id'),'startTime':f.get('SourceClip.start_time'),'length':f.get('Clip.length'),'pathFromSequence':path(h),'target':target,'targetName':fields(target).get('Component.name'),'targetType':fields(target).get('Composition.mob_type'),'targetUsage':fields(target).get('Composition.usage_code'),'matchingTracks':matching,'nonmatchingTracks':nonmatching,'wantedBranchIds':brief(wanted),'otherTrackIdsOutsideWantedClosure':brief(unwanted-wanted)})\n for e in outgoing[h]:\n  if e['field']=='Component.precomputed':\n   rendered=walk(e['target'])[0];inputs=set()\n   for t in outgoing[h]:\n    if t['field'].startswith(('TrackGroup.tracks[','Sequence.components[')) and (t['field'].endswith('.component') or t['field'].startswith('Sequence.components[')):inputs.update(walk(t['target'])[0])\n   if rendered and inputs and rendered-inputs:\n    renders.append({'object':h,'class':o['class'],'precomputedObject':e['target'],'precomputedClass':objects[e['target']]['class'],'name':f.get('Component.name'),'length':f.get('TrackGroup.length',f.get('Clip.length')),'pathFromSequence':path(h),'inputIds':brief(inputs),'precomputedIds':brief(rendered),'precomputedIdsOutsideInputClosure':brief(rendered-inputs)})\ncurrent,_=walk(r['sequence']);selector_only,_=walk(r['sequence'],True,False);track_only,_=walk(r['sequence'],False,True);both,_=walk(r['sequence'],True,True)\n# Diagnostic pruned traversals deliberately do not intersect requested time spans or establish effect semantics.\nselectors.sort(key=lambda s:(s['pathFromSequence'] is None,not any(t['diagnosticIdsOutsideSelectedClosure']['count'] for t in s['branches']),s['selected']==0,min((len(s['pathFromSequence']) if s['pathFromSequence'] else 100),100),s['object']))\nsources.sort(key=lambda s:(s['pathFromSequence'] is None,len(s['pathFromSequence']) if s['pathFromSequence'] else 100,s['targetType']!=2,s['object']))\nrenders.sort(key=lambda s:(s['pathFromSequence'] is None,len(s['pathFromSequence']) if s['pathFromSequence'] else 100,s['object']))\nout={'reader':{k:v for k,v in r.items() if k not in ['objects','edges','media']},'reachableObjectCount':len(objects),'resolvedEdgeCount':len(r['edges']),'classCounts':dict(Counter(o['class'] for o in objects.values())),'selectorCount':len(selectors),'selectorSelectedCounts':dict(Counter(s['selected'] for s in selectors)),'sourceTrackExpansionCount':len(sources),'renderInputPairCount':len(renders),'productionMediaIds':brief(current),'diagnosticOnly':{'selectorPruned':brief(selector_only),'sourceTrackPruned':brief(track_only),'bothPruned':brief(both),'removedByBoth':brief(current-both),'limits':'Structural counterfactual only; not a proposed resolver or proof of playback membership. No requested time-span intersection, transitions, effect/timewarp semantics, attribute-route exclusion or Media Composer comparison.'},'selectorExamples':selectors[:6],'sourceTrackExamples':sources[:8],'renderExamples':renders[:8]}\n(root/'structural-analysis.json').write_text(json.dumps(out,indent=2)+'\\n')\nprint(json.dumps({k:v for k,v in out.items() if k not in ['selectorExamples','sourceTrackExamples','renderExamples']},indent=2))\nfor kind in ['selectorExamples','sourceTrackExamples','renderExamples']:\n print(kind,json.dumps(out[kind][:2],indent=2))\n"
+      },
+      {
+        "filename": "verify_pyavb.py",
+        "sha256": "0449f6280737b7c20ae3fd27a86240c96f7f44a48e201371b59e23cf503f378d",
+        "source": "import sys,json,hashlib\nfrom pathlib import Path\nsys.path.insert(0,'/Users/martymclean/Downloads/pyavb-main/src')\nimport avb\nfrom avb.components import SourceClip,Sequence\nfrom avb.trackgroups import Composition,Selector\nfrom avb.misc import MSMLocator\nroot=Path('/tmp/mediamuster-copland-bin-technical-20261012')\npath=Path('/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/8645 v1.avb')\nbefore=path.stat()\ndef ident(o):return bytes(o.mob_id.bytes_le).hex() if hasattr(o,'mob_id') else None\ndef base(o):return {'object':o.instance_id,'class':o.class_id.decode(),'name':getattr(o,'name',None),'mediaKind':getattr(o,'media_kind',None),'mediaKindId':getattr(o,'media_kind_id',None),'length':getattr(o,'length',None),'editRate':getattr(o,'edit_rate',None),'mobId':ident(o)}\ndef track(t):return {'index':getattr(t,'index',None),'kind':t.media_kind,'component':t.component.instance_id if t.component else None,'class':t.component.class_id.decode() if t.component else None}\ndef used_routes(start):\n pending=[(start,None)];seen=set();clips=[];locators=[]\n while pending:\n  o,ctx=pending.pop()\n  if (o.instance_id,ctx) in seen:continue\n  seen.add((o.instance_id,ctx))\n  if len(seen)>200:raise RuntimeError('bounded route limit exceeded')\n  if isinstance(o,SourceClip):\n   target=o.mob;matched=o.track\n   clips.append({**base(o),'trackId':o.track_id,'sourceStart':o.start_time,'target':base(target) if target else None,'matchedTrack':track(matched) if matched else None})\n   if target:pending.append((target,(o.track_id,o.media_kind)))\n  elif isinstance(o,Composition):\n   desc=getattr(o,'descriptor',None);loc=getattr(desc,'locator',None) if desc else None\n   if isinstance(loc,MSMLocator):locators.append({'sourceMob':o.instance_id,'sourceMobName':o.name,'sourceMobType':o.mob_type,'descriptorClass':desc.class_id.decode(),'descriptor':desc.instance_id,'locator':loc.instance_id,'fileMobId':ident(loc),'domainType':getattr(loc,'domain_type',None)})\n   for t in o.tracks:\n    if t.component and (ctx is None or (getattr(t,'index',None)==ctx[0] and t.media_kind==ctx[1])):pending.append((t.component,None))\n  elif isinstance(o,Sequence):\n   for c in o.components:pending.append((c,None))\n  elif isinstance(o,Selector):\n   pending.append((o.tracks[o.selected].component,None))\n  elif hasattr(o,'tracks'):\n   for t in o.tracks:\n    if t.component:pending.append((t.component,None))\n  pre=getattr(o,'precomputed',None)\n  if pre:pending.append((pre,None))\n return {'visitedObjects':len(seen),'sourceClips':clips,'locators':locators,'uniqueFileMobIds':sorted({l['fileMobId'] for l in locators})}\nwith avb.open(str(path),use_ext=False) as f:\n sequence=f.read_object(49157)\n result={'path':str(path),'reader':'supplied pyavb, use_ext=False','sequence':base(sequence),'sequenceTracks':[track(t) for t in sequence.tracks],'selectors':[],'sourceTrack':None,'render':None}\n for n in [33508,33509,33511]:\n  o=f.read_object(n)\n  result['selectors'].append({**base(o),'selected':o.selected,'isGanged':o.is_ganged,'tracks':[track(t) for t in o.tracks],'branchRoutes':[used_routes(t.component) for t in o.tracks]})\n o=f.read_object(32143);mob=o.mob\n result['sourceTrack']={**base(o),'trackId':o.track_id,'sourceStart':o.start_time,'target':base(mob),'targetType':mob.mob_type,'targetUsage':mob.usage_code,'allTargetTracks':[track(t) for t in mob.tracks],'matchedTrack':track(o.track),'selectedRoute':used_routes(o)}\n o=f.read_object(33197)\n result['render']={**base(o),'effectId':getattr(o,'effect_id',None),'precomputed':base(o.precomputed),'inputTracks':[track(t) for t in o.tracks],'precomputedRoute':used_routes(o.precomputed),'inputRoutes':[used_routes(t.component) for t in o.tracks if t.component]}\n result['timelineLocations']=[]\n for slot,indices in [(8,{33,32,30,344}),(12,{140})]:\n  t=sequence.tracks[slot];s=t.component\n  for index,position,component in s.positions():\n   if index in indices:\n    result['timelineLocations'].append({'trackSlot':slot,'trackLabel':t.index,'mediaKind':t.media_kind,'sequenceComponent':s.instance_id,'componentSlot':index,'object':component.instance_id,'positionFramesFromSequenceStart':position,'positionSecondsAt25':position/25,'lengthFrames':component.length})\nafter=path.stat();result['inputSha256']=hashlib.sha256(path.read_bytes()).hexdigest();result['statUnchanged']=before.st_size==after.st_size and before.st_mtime_ns==after.st_mtime_ns\n(root/'independent-pyavb.json').write_text(json.dumps(result,indent=2)+'\\n')\nprint(json.dumps({'sequence':result['sequence'],'locations':result['timelineLocations'],'selectors':[{k:s[k] for k in ['object','selected','tracks']} for s in result['selectors']],'sourceTrackMatched':result['sourceTrack']['matchedTrack'],'renderPrecomputed':result['render']['precomputed'],'statUnchanged':result['statUnchanged']},indent=2))\n"
+      }
+    ],
+    "temporaryOutputHashes": [
+      {
+        "filename": "production-graph.json",
+        "sha256": "a8fa1c914524aa67aaef3d21c3524b14b4fd4e2548f1fb7a7d85a0eef9ad0f38",
+        "bytes": 15311969
+      },
+      {
+        "filename": "structural-analysis.json",
+        "sha256": "01b98ce5f051611d01d1693043cb440f86ec568a5dd0aebaed54b1ceb06268da",
+        "bytes": 57509
+      },
+      {
+        "filename": "independent-pyavb.json",
+        "sha256": "38057a05f2729327936f1f419edb3c3767918c9926cdeb820e836375ecb79f08",
+        "bytes": 74997
+      }
+    ]
+  }
+}

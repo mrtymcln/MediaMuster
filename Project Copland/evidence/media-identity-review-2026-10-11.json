@@ -1,0 +1,314 @@
+{
+  "verifiedDate": "2026-10-11",
+  "gitHead": "3e7246a575f5b0247efbe007f271070cb597d306",
+  "scope": "All sources admitted by production DiscoveryEngine at located managed roots. User/archive and generated roots counted separately. Identity projection only; physical payload equality not established.",
+  "conclusion": "All 3834 user/archive physical media headers and 12 local databases were Complete. Each physical header establishes one FileMobId and one associated MasterMobId. No several-master association was found per header, across occurrences of the same FileMobId, or in local database projections. Header/database observations do not prove exclusivity of later bin references.",
+  "expectedSources": 5263,
+  "readSources": 5263,
+  "missingPaths": [],
+  "inputStampChanges": [],
+  "openErrors": [],
+  "categories": {
+    "userArchive": {
+      "physicalFiles": 3834,
+      "databaseFiles": 12,
+      "volumes": {
+        "MacintoshHD": 1782,
+        "EDIT": 2052
+      },
+      "headerOutcomes": {
+        "1": 3834
+      },
+      "databaseOutcomes": {
+        "1": 12
+      },
+      "fileMobIdsPerHeader": {
+        "1": 3834
+      },
+      "masterMobIdsPerHeader": {
+        "1": 3834
+      },
+      "distinctHeaderFileMobIds": 2412,
+      "headerFileMobIdsWithSeveralOccurrences": 1417,
+      "headerFileMobIdsWithSeveralMasterIdsAcrossOccurrences": {},
+      "databaseFileMobIdsWithSeveralMasterIds": {},
+      "physicalFileMobIdsWithSeveralMastersHeaderPlusDatabase": {},
+      "headersWithoutIdentitiesCount": 0,
+      "nonCompleteHeadersCount": 0,
+      "nonCompleteDatabasesCount": 0
+    },
+    "generated": {
+      "physicalFiles": 1415,
+      "databaseFiles": 2,
+      "volumes": {
+        "MacintoshHD": 1415
+      },
+      "headerOutcomes": {
+        "1": 618,
+        "4": 2,
+        "2": 795
+      },
+      "databaseOutcomes": {
+        "1": 2
+      },
+      "fileMobIdsPerHeader": {
+        "1": 1413,
+        "0": 2
+      },
+      "masterMobIdsPerHeader": {
+        "1": 1413,
+        "0": 2
+      },
+      "distinctHeaderFileMobIds": 1083,
+      "headerFileMobIdsWithSeveralOccurrences": 268,
+      "headerFileMobIdsWithSeveralMasterIdsAcrossOccurrences": {},
+      "databaseFileMobIdsWithSeveralMasterIds": {},
+      "physicalFileMobIdsWithSeveralMastersHeaderPlusDatabase": {},
+      "headersWithoutIdentitiesCount": 2,
+      "nonCompleteHeadersCount": 797,
+      "nonCompleteDatabasesCount": 0
+    }
+  },
+  "roots": [
+    {
+      "root": "/System/Volumes/Data/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF",
+      "category": "user/archive location; source provenance not individually authenticated",
+      "physicalCandidates": 359,
+      "databaseCandidates": 2,
+      "family": "mxf"
+    },
+    {
+      "root": "/System/Volumes/Data/Users/Shared/AvidMediaComposer/OMFI MediaFiles",
+      "category": "user/archive location; source provenance not individually authenticated",
+      "physicalCandidates": 2,
+      "databaseCandidates": 2,
+      "family": "omf"
+    },
+    {
+      "root": "/System/Volumes/Data/Users/martymclean/Desktop/Avid MediaFiles/MXF",
+      "category": "user/archive location; source provenance not individually authenticated",
+      "physicalCandidates": 1421,
+      "databaseCandidates": 0,
+      "family": "mxf"
+    },
+    {
+      "root": "/System/Volumes/Data/Users/martymclean/Desktop/Avid MediaFiles/MXF/1/Avid MediaFiles/MXF",
+      "category": "user/archive location; source provenance not individually authenticated",
+      "physicalCandidates": 0,
+      "databaseCandidates": 0,
+      "family": "mxf"
+    },
+    {
+      "root": "/System/Volumes/Data/Users/martymclean/MediaMuster_Test_508718ab-00c0-4dae-94b7-e43ee7275d94/bundled/Avid MediaFiles/MXF",
+      "category": "generated test/benchmark tree",
+      "physicalCandidates": 3,
+      "databaseCandidates": 0,
+      "family": "mxf"
+    },
+    {
+      "root": "/System/Volumes/Data/Users/martymclean/MediaMuster_Test_Destination_508718ab-00c0-4dae-94b7-e43ee7275d94/bundled/Avid MediaFiles/MXF",
+      "category": "generated test/benchmark tree",
+      "physicalCandidates": 4,
+      "databaseCandidates": 0,
+      "family": "mxf"
+    },
+    {
+      "root": "/System/Volumes/Data/Users/martymclean/MediaMuster_Test_Destination_d9d826d0-5682-4f65-8e93-610141d029d5/bundled/Avid MediaFiles/MXF",
+      "category": "generated test/benchmark tree",
+      "physicalCandidates": 4,
+      "databaseCandidates": 0,
+      "family": "mxf"
+    },
+    {
+      "root": "/System/Volumes/Data/Users/martymclean/MediaMuster_Test_d9d826d0-5682-4f65-8e93-610141d029d5/bundled/Avid MediaFiles/MXF",
+      "category": "generated test/benchmark tree",
+      "physicalCandidates": 3,
+      "databaseCandidates": 0,
+      "family": "mxf"
+    },
+    {
+      "root": "/System/Volumes/Data/private/tmp/mediaengine-stages12-20261011/complete-media/Avid MediaFiles/MXF",
+      "category": "generated test/benchmark tree",
+      "physicalCandidates": 267,
+      "databaseCandidates": 0,
+      "family": "mxf"
+    },
+    {
+      "root": "/System/Volumes/Data/private/tmp/mediaengine-stages12-20261011/header-only/Avid MediaFiles/MXF",
+      "category": "generated test/benchmark tree",
+      "physicalCandidates": 795,
+      "databaseCandidates": 0,
+      "family": "mxf"
+    },
+    {
+      "root": "/System/Volumes/Data/private/tmp/mediaengine-step3-20261011/legacy-media/OMFI MediaFiles",
+      "category": "generated test/benchmark tree",
+      "physicalCandidates": 82,
+      "databaseCandidates": 0,
+      "family": "omf"
+    },
+    {
+      "root": "/System/Volumes/Data/private/tmp/mediamuster-canon2-mxf-20261010/header-heavy/Avid MediaFiles/MXF",
+      "category": "generated test/benchmark tree",
+      "physicalCandidates": 256,
+      "databaseCandidates": 0,
+      "family": "mxf"
+    },
+    {
+      "root": "/System/Volumes/Data/private/tmp/mediamuster-scan-audit-20261011/fixture/Avid MediaFiles/MXF",
+      "category": "generated test/benchmark tree",
+      "physicalCandidates": 1,
+      "databaseCandidates": 2,
+      "family": "mxf"
+    },
+    {
+      "root": "/Volumes/EDIT/2026/Desktop/Avid MediaFiles/MXF",
+      "category": "user/archive location; source provenance not individually authenticated",
+      "physicalCandidates": 0,
+      "databaseCandidates": 0,
+      "family": "mxf"
+    },
+    {
+      "root": "/Volumes/EDIT/Avid MediaFiles/MXF",
+      "category": "user/archive location; source provenance not individually authenticated",
+      "physicalCandidates": 2052,
+      "databaseCandidates": 8,
+      "family": "mxf"
+    }
+  ],
+  "coverage": {
+    "macintosh": {
+      "base": "/System/Volumes/Data",
+      "directoriesVisited": 204675,
+      "unreadableDirectoryCount": 393,
+      "symlinksNotFollowed": 63240,
+      "otherDeviceMountsNotEntered": [
+        "/System/Volumes/Data/Volumes/EDIT",
+        "/System/Volumes/Data/Library/Developer/CoreSimulator/Volumes/iOS_23D8133",
+        "/System/Volumes/Data/home"
+      ]
+    },
+    "edit": {
+      "base": "/Volumes/EDIT",
+      "directoriesVisited": 23950,
+      "unreadableDirectoryCount": 4,
+      "symlinksNotFollowed": 190,
+      "otherDeviceMountsNotEntered": []
+    }
+  },
+  "coverageLimits": "Accessible Data-volume and EDIT directories searched to locate managed roots. 393 Macintosh directories and four EDIT protected directories denied access. Sealed System volume and other-device mounts were not searched; symlinks not followed. Media admission then used agreed production folder/suffix boundaries. No bypass of protected locations.",
+  "checks": "ReadOnly sources, size/mtime before-after unchanged. No full media-payload hashing; no proof of byte equality or provenance from folder name. Generated specimens excluded from real-world conclusions.",
+  "artifactHashes": {
+    "probe.cpp": "3cebffc8f12b3160bf4bdbabdb5bb83cf210fd6d2b91648fd29b2dd1ecc087aa",
+    "probe": "334cc7219d72838687032cfff18afe80e52758c3a4125d7535b2edfd4ff1d25c",
+    "source-paths.txt": "3a83054833380feafaa77d1276be19aa7eceb0da16e8ed5d08a257ed79cd269c",
+    "manifest.json": "dc03c31323eb9332ae71641be2e20e2ea2bd89fa96eec562e344ff72689d7977",
+    "identities.jsonl": "97c2973b9a559b0e3b8f0a9eb95e7e07d24613ac1b8e9901715da9c49ff041ae",
+    "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "temporaryDetails": "/private/tmp/copland-all-media-identities-20261011",
+  "documents": [
+    {
+      "title": "Avid Media Composer 2026.x Editing Guide",
+      "url": "https://resources.avid.com/SupportFiles/attach/Media_Composer/2026/Media_Composer_v2026.x_Editing_Guide.pdf",
+      "page": 260,
+      "sha256": "d76aa1de66f2b334da88a5e698d0b965e02cbd37698678051399675a8283b73b"
+    },
+    {
+      "title": "Avid Unity MediaManager v4.0 (2004)",
+      "url": "https://resources.avid.com/SupportFiles/attach/MMAdminUser_v4_0.pdf",
+      "page": 128,
+      "sha256": "598e0484daab38781bd90197c5c7a2427a1922a664f6d8a3775e4ecc249fddb7"
+    },
+    {
+      "title": "AAF Object Specification v1.1",
+      "url": "https://static.amwa.tv/ms-01-aaf-object-spec.pdf",
+      "page": 31,
+      "sha256": "82347ebcb516092ac34783f79ff2afe50a72e4eca4761f3670ea4dc1b225d49e"
+    }
+  ],
+  "binSharingReview": {
+    "summary": {
+      "physicalBinPaths": 103,
+      "uniqueBinContents": 99,
+      "readerOutcomeCounts": {
+        "1": 98,
+        "2": 1
+      },
+      "allInputHashesAndStatUnchanged": true,
+      "ordinaryMasterObjectRecords": 6278,
+      "distinctOrdinaryMasterIds": 4864,
+      "distinctListedMasterIds": 4864,
+      "rawDirectLinkRecords": 12201,
+      "distinctMasterFilePairs": 8365,
+      "withinBinFileSharingOccurrences": 0,
+      "withinBinFileSharingWithMultipleListedMasterIds": 0,
+      "directSourceMobAndLocatorIdMismatchCount": 0,
+      "mappingLimitationCounts": {
+        "UnresolvedSourceClipMob": 2,
+        "NoModernMSMLOnDirectSourceDescriptor": 3
+      },
+      "examples": [],
+      "scopeClarification": "All MSML/source locator identities are counted, including original camera-source records outside managed inventory. Counts of shared locator identities DO NOT establish shared managed physical essence files.",
+      "distinctSourceLocatorFileIds": 8356,
+      "locatorIdsReferencedByMultipleOrdinaryMasterIds": 9,
+      "locatorIdsReferencedByMultipleListedMasterIds": 9,
+      "managedPhysicalFileSharingVerifiedByTheseNineIds": false,
+      "allPhysicalPathHashesRechecked": 103,
+      "changedPhysicalPathHashes": [],
+      "readerOutcomeCountsNamed": {
+        "Complete": 98,
+        "Incomplete": 1
+      },
+      "currentManagedHeaderFileIdsMatchingSharedNine": 0,
+      "physicalHeaderSourcesCompared": 5263,
+      "formattingEvidence": "src/mediaengine/avbobjects_p.cpp:258 normalizes AVB typed32 material UUID numeric fields to little endian; src/mobid.h:9-37 MobId::format preserves bytes and inserts grouping dots; current header probe uses current production projection canonical IDs.",
+      "knownSharedSourceExample": {
+        "classification": "recorded original camera-source path, outside managed scan inventory",
+        "nativeSourceDescriptorClass": "MULD",
+        "MSMLDomainType": 0,
+        "recordedPosixPath": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/02_CAM_RUSHES/01_D001/A001/A001_0101TU.RDM/A001_C010_0101WB.RDC/A001_C010_0101WB_002.R3D",
+        "sourceEvidence": "shared-source-classification.json",
+        "independentReader": "pyavb source, secondary corroboration"
+      }
+    },
+    "physicalMatches": {
+      "headerRowsRead": 5263,
+      "incompleteJsonLinesSkipped": 0,
+      "identityConvention": "AVB readMobId already normalized material-LE; headers current canonicalMxfId/canonicalDatabaseId; string dot removal only reverses display grouping, not conversion.",
+      "matchedFileMobIds": 0,
+      "physicalHeaderMatches": {}
+    },
+    "qualification": "Nine shared source/locator identities do not match any admitted physical FileMobId. Independently verified C010 pair shares original R3D camera-source reference, while new master separately references a CDCI source. This is not evidence of shared inventoried managed physical media. No cross-bin lookup feature is implied.",
+    "artifacts": {
+      "summary.json": {
+        "temporaryPath": "/tmp/mediamuster-copland-master-sharing-20261011/summary.json",
+        "sha256": "7a7802239e278c252c9a011be70433e2766ab5f869192ff2401c31d63b092af7"
+      },
+      "multi-master-evidence.json": {
+        "temporaryPath": "/tmp/mediamuster-copland-master-sharing-20261011/multi-master-evidence.json",
+        "sha256": "86d531c85dba3a3298d1fb84229592a4120e92a92d4c3989b60d4b11d1a8433a"
+      },
+      "shared-source-classification.json": {
+        "temporaryPath": "/tmp/mediamuster-copland-master-sharing-20261011/shared-source-classification.json",
+        "sha256": "192504a439d9accf357a24d011f3692f5d1938176aa3b5581f38c108ca8de882"
+      },
+      "physical-header-matches.json": {
+        "temporaryPath": "/tmp/mediamuster-copland-master-sharing-20261011/physical-header-matches.json",
+        "sha256": "420c53d78d504a85126744c570b9a0fe59fae70b3f508cdf4a382788596cd94e"
+      },
+      "independent-pyavb-pair.json": {
+        "temporaryPath": "/tmp/mediamuster-copland-master-sharing-20261011/independent-pyavb-pair.json",
+        "sha256": "be95a30ee4d04b74795c80a89ab36d4a5331b4e0a4e25b7a0e9467df56f5f863"
+      },
+      "provenance.json": {
+        "temporaryPath": "/tmp/mediamuster-copland-master-sharing-20261011/provenance.json",
+        "sha256": "ed0e2a5249b7345b9af72f870b893e0b447724f40231c8b85517433f7487c761"
+      }
+    },
+    "exampleBinSha256s": {
+      "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/02_RUSHES/D001_A001_RUSHES.avb": "87302e0a5ffa343a99d3dbc7f75406c74385e6cb7700048e59f0c94497793d48",
+      "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/01_AVID/FIXING_JAMES_KINGSLEY/03_TRNSCDS/D001_A001_TRNSCDS.avb": "de1d9b374330c357302f379b0f8b5c29516f52512ee3da35132eedcf5cb739f7"
+    }
+  }
+}

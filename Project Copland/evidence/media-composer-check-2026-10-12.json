@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUtc": "2026-10-11T19:30:52.056631+00:00",
+  "purpose": "Attempt native Media Composer ground truth for the genuine sequence specimens; records a limit, not a verified media set.",
+  "originalBin": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/8645 v1.avb",
+  "copiedBin": "/private/tmp/copland-mc-verification-20261012/projects/block 1729/8645 v1.avb",
+  "originalBinSha256Now": "45ec3861e9f471f7e1a67757bd7605befd782192a7cb8a5da493e3d6a86a62c8",
+  "copiedBinSha256Now": "45ec3861e9f471f7e1a67757bd7605befd782192a7cb8a5da493e3d6a86a62c8",
+  "copyStillMatchesOriginal": true,
+  "copiedProjectRoot": "/private/tmp/copland-mc-verification-20261012/projects/block 1729",
+  "observations": [
+    "Installed official app launched via cua; splash displayed Media Composer First 2026.8.0, License Type None.",
+    "A disposable project copy was selected and opened; the window title showed Avid Media Composer First - block 1729.",
+    "The copied 8645 v1.avb was selected using Open a Bin; after opening, repeated AX and screenshot reads returned Computer Use server error -10005: timeoutReached.",
+    "No sequence timeline or angle/source-track membership was successfully inspected. This does not establish why opening stalled or a general limitation of the First edition.",
+    "The user explicitly approved force-quitting the stalled test session. Subsequent Activity Monitor inventory and cua app inventory showed the main Media Composer process gone/isRunning false."
+  ],
+  "result": "Media Composer timeline/file membership comparison remains unverified.",
+  "originalsHandling": "Only copied project/bin files were opened in Avid. No original bin/project was opened or edited. Existing Avid helper services may have run in their ordinary environment. No broad original-media/database immutability claim is made for the native-app launch.",
+  "remainingCheck": "Use the exact sequence name and relative frame offsets in bin-technical-verification-2026-10-12.json once Media Composer can inspect this copied bin."
+}

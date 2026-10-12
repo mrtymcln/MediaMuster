@@ -1,0 +1,2281 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUtc": "2026-10-11T19:20:51.388596+00:00",
+  "purpose": "Bounded read-only verification of existing Original Bin mappings and genuine paired source values for Project Copland. Verification only; no application changes.",
+  "sourceState": {
+    "commit": "3e7246a575f5b0247efbe007f271070cb597d306",
+    "gitStatus": "?? \"Project Copland/\"",
+    "applicationSourceReceipts": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/mdbprojection.cpp",
+        "bytes": 72079,
+        "mtimeNs": 1791679192772179328,
+        "sha256": "a3f073cd007b63c778198b08421bd733af3d5385ea8209113f866414e129ad60"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/omfprojection.cpp",
+        "bytes": 81088,
+        "mtimeNs": 1791679192756647443,
+        "sha256": "1573950415e11e55e32ccb5e08cef342c49d6a012e53c81d385ae91282f8b170"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/mxfprojection.cpp",
+        "bytes": 65741,
+        "mtimeNs": 1791679192760607260,
+        "sha256": "a10ef45f14e00c468c1df348a64abe3900612ec60488686d36dbcc13f97f0e29"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/pmrprojection.cpp",
+        "bytes": 4367,
+        "mtimeNs": 1791665448654232962,
+        "sha256": "2b89e4df00fa29cde9e8ba41b07eb428da80a12ae688213379276a1e7a865111"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/mdbobjects_p.cpp",
+        "bytes": 25843,
+        "mtimeNs": 1791638142627965890,
+        "sha256": "a9cb68cf4e757fe859645c5d37121bb7c0e9f02014367fa834a13e8bdeebeeae"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/omfobjects_p.cpp",
+        "bytes": 26173,
+        "mtimeNs": 1791638142627504756,
+        "sha256": "b1a3bb7c0151bb7913a5342caf3e2d866a1f43d458827041db26967298e49229"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/scancoordinator.cpp",
+        "bytes": 32034,
+        "mtimeNs": 1791670371616864281,
+        "sha256": "ba00a9a644623a6d7509fdd02df4485d62fe238f92584a2b4502b1062fe8df81"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/metadataselectionpolicy.cpp",
+        "bytes": 11868,
+        "mtimeNs": 1791689731125703220,
+        "sha256": "5eb8478378d93b62cb96cdea49b7df04d43c63951970d04c0e4843edaaa49ff2"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/projection.cpp",
+        "bytes": 8705,
+        "mtimeNs": 1791679192763293054,
+        "sha256": "5930162f18ea8f98f4334d1b22934d157b0ddfb8c1ebe46ba4dfd34ac78e6280"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/avbdescriptors_p.cpp",
+        "bytes": 29893,
+        "mtimeNs": 1791678949690978424,
+        "sha256": "edb0a98d59bcf1354ad46b4a3fd0182bba2b7bc28cdfa6df80094ee97dbb6ca0"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/avbbinloader.cpp",
+        "bytes": 15022,
+        "mtimeNs": 1791679192724102275,
+        "sha256": "e2c64bc79b0448689d75ed4574aac7d73652f2899d4745badcd2a7b4a8f3007d"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+        "bytes": 28376,
+        "mtimeNs": 1791664913773357582,
+        "sha256": "881fbe650523d58cfd3e43d481221f624f13df01ca8eceb4a1fa101df2922544"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginemdb.cpp",
+        "bytes": 33123,
+        "mtimeNs": 1791638142634290384,
+        "sha256": "867d556eaef78fd2495be8529fc7dd81403235d4cc0cc08c278fcbb5a4c708e3"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_omfprojection.cpp",
+        "bytes": 120112,
+        "mtimeNs": 1791638142637358234,
+        "sha256": "e65600d6fa4371572a059d5e820936d2971a17fc343eb469de6e6d502b32852c"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengineavb.cpp",
+        "bytes": 22217,
+        "mtimeNs": 1791638142638441504,
+        "sha256": "acb986cc1eff836d65f7e23e7dc6632a6218bd3200435a3e1f30a37fedf93d3e"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_scanner.cpp",
+        "bytes": 165741,
+        "mtimeNs": 1791670368175984551,
+        "sha256": "f89361b8cf96f45b4db1accf8965b5118d314aed85d98066a5295afb6e538d63"
+      }
+    ]
+  },
+  "environment": {
+    "os": "macOS 15.8.1 (24H212)",
+    "executionArchitecture": "arm64",
+    "Qt": "6.5.3 pinned CMake build",
+    "buildType": "Debug",
+    "compilerForTemporaryProbe": "Apple clang 17.0.0 (clang-1700.0.13.5)",
+    "coreAndTestBuildCheck": "ninja -C build -n mediamuster_mediaengine_core tst_mediaenginemdb tst_mediaengine_omfprojection tst_mediaengineavb; ninja -C build -n tst_scanner: both reported no work to do. Existing binaries/core library used; application binary not rebuilt.",
+    "buildReceipts": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/build/libmediamuster_mediaengine_core.a",
+        "bytes": 99203584,
+        "mtimeNs": 1791690311384535000,
+        "sha256": "e4dbef39a3fd2d05e2c4f31e4f8284ca51b65167950ba9ab480a3d63bdbc1c26"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_mediaenginemdb",
+        "bytes": 2809280,
+        "mtimeNs": 1791695199035477672,
+        "sha256": "c0436a0be4e21aa493177db0ceb9aef0e404b3fdd98dc19473f26a79d9b36415"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_mediaengine_omfprojection",
+        "bytes": 7734464,
+        "mtimeNs": 1791695209664652886,
+        "sha256": "9174e89462f65dfad7bd654216d70072fde5f1566bb6e062662bafe808e5d268"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_mediaengineavb",
+        "bytes": 2095872,
+        "mtimeNs": 1791695199024585970,
+        "sha256": "3bdc8393546375bd36e2a852708faccc75356870501aeb29997c0a31ae2d6d21"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/build/tests/tst_scanner",
+        "bytes": 13969512,
+        "mtimeNs": 1791695210116485691,
+        "sha256": "a3628553ab9a166f7b7a774cfc97849ba666cce471b23a40d176c0888485f134"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/build/CMakeCache.txt",
+        "bytes": 52474,
+        "mtimeNs": 1791640036125375660,
+        "sha256": "5415d4b9e80ad08d1afd94961e5171c26ef2df10acda27ea5c40fd6731b44dc8"
+      }
+    ]
+  },
+  "scope": {
+    "physicalHeaders": 8,
+    "databases": 13,
+    "bins": 5,
+    "totalUniqueSources": 26,
+    "inputOpenMode": "QIODevice::ReadOnly | QIODevice::Unbuffered; hash receipts read files read-only. Existing scanner tests copy fixtures and mutate only temporary copies.",
+    "matching": "Header FileMobId compared exactly with projected database FileMobId; AVB corroboration matched the header-associated MasterMobId. Archived DB joins are labelled and do not authorize cross-folder metadata borrowing.",
+    "notPerformed": [
+      "No new full-volume or 300k scan",
+      "No app, original media, database or AVB modifications",
+      "No application memory or performance acceptance measurement",
+      "No new parser mappings or guess based on Avid binary string presence"
+    ],
+    "databaseBreakdown": {
+      "mdb": 7,
+      "pmr": 6
+    }
+  },
+  "enumLegend": {
+    "readerOutcome": {
+      "1": "Complete"
+    },
+    "container": {
+      "1": "Pmr",
+      "2": "Bento",
+      "3": "Mxf",
+      "4": "Omf",
+      "5": "Wave",
+      "6": "Aiff",
+      "7": "Avb"
+    },
+    "readState": {
+      "0": "NotRead",
+      "1": "Present",
+      "2": "Absent",
+      "3": "Unreadable"
+    },
+    "readReason": {
+      "0": "None",
+      "5": "CoverageNotEstablished",
+      "6": "NotStoredByFormat"
+    },
+    "applicability": {
+      "0": "Unknown",
+      "1": "Applicable",
+      "2": "NotApplicable"
+    },
+    "agreement": {
+      "0": "NotCompared",
+      "1": "SingleSource",
+      "2": "Agreeing",
+      "3": "Conflicting"
+    }
+  },
+  "conclusions": [
+    {
+      "id": "OB1",
+      "status": "Verified existing coverage",
+      "statement": "MDB and OMF project linked _ORG_BIN object attributes targeting MCBR. A readable nonempty binNameUTF8 wins; legacy binName is used when the modern value is absent, empty or unreadable. Equal-priority conflicting modern values remain unresolved.",
+      "code": [
+        "src/mediaengine/mdbprojection.cpp:965-1042",
+        "src/mediaengine/omfprojection.cpp:1053-1130"
+      ],
+      "proof": [
+        "Genuine non-English MDB + matching bin and header identities",
+        "Genuine MC2026 audio MDB + physical header/bin identity pairs",
+        "Genuine BLACK OMF + same-folder MDB pair",
+        "Five authored MDB projection text-priority rows; this test lives in tst_mediaengine_omfprojection but reads the authored bytes through MdbReader"
+      ]
+    },
+    {
+      "id": "OB2",
+      "status": "Verified successful database source",
+      "statement": "The non-English MDB supplies Nön English bin náme™ 你好 漢; matching physical MXF header supplies no Original Bin observation, while the matching bin independently corroborates the same original-bin name and UID. AVB use here is evidence only; it is not target enrichment."
+    },
+    {
+      "id": "OB3",
+      "status": "Verified source-specific result",
+      "statement": "The genuine WAVE and AIFF-C headers supply no Original Bin observations (NotRead/CoverageNotEstablished/Unknown). Their same-folder MDB supplies WAVE(OMF) and AIFF-C(OMF); matching bins corroborate. A genuine BLACK OMF header supplies Media Slides and agrees with its same-folder MDB. A genuine FORMAT OMF and its MDB remain without a selected Original Bin."
+    },
+    {
+      "id": "OB4",
+      "status": "Coverage not established for MXF",
+      "statement": "Current Mxf projection has no OriginalBin mapping. All four inspected complete MXF headers returned NotRead/CoverageNotEstablished/Unknown with no Original Bin observation. None of their interpreted TaggedValue.Name sets contains _ORG_BIN. These checks do not prove every private MXF object/key or every Avid producer omits Original Bin."
+    },
+    {
+      "id": "OB5",
+      "status": "Current PMR known-layout result only",
+      "statement": "All six inspected PMRs produce no Original Bin observation and report Absent/NotStoredByFormat/Unknown from projectPmr default coverage. Known supported PMR record layouts project filename, project and file/master IDs. This is not a published universal PMR field-schema claim and does not settle MDB/header coverage."
+    },
+    {
+      "id": "OB6",
+      "status": "Verified current fallback gap",
+      "statement": "headerFallbackMissingProperties requires an extra header read for unresolved Original Bin only when selected agreement is Conflicting. Missing or uncovered Original Bin alone does not trigger a header read, unlike Copland C12/C40.",
+      "code": [
+        "src/mediaengine/scancoordinator.cpp:159-167"
+      ]
+    },
+    {
+      "id": "OB7",
+      "status": "Verified no generic missing-value absence proof",
+      "statement": "MDB/OMF explicitly record OriginalBin property coverage when a linked MCBR object is reached. Missing Original Bin elsewhere in the checked genuine sources remains NotRead/CoverageNotEstablished. A complete reader outcome alone is not sufficient to report checked absence."
+    }
+  ],
+  "neededImplementationChanges": [
+    {
+      "id": "OB-F1",
+      "scope": "C12/C40 bounded checklist",
+      "change": "Replace the conflict-only Original Bin header gate with the settled value/coverage checklist: use the preferred identity-matched MDB value when present; if the field is still required and not established inapplicable, a missing/unresolved value follows the next allowed source even when absence was checked in the MDB. Allow the one authorized header fallback and leave the terminal unavailable result explicit when sources are exhausted or header coverage is unsupported.",
+      "limit": "One bounded fallback; no AVB enrichment, whole-database expansion, cross-folder lookup or indefinite retry."
+    },
+    {
+      "id": "OB-F2",
+      "scope": "Original Bin compact projection and status",
+      "change": "Retain the existing understood _ORG_BIN-to-MCBR mapping, UTF-8/legacy precedence, owning-file/master association and compact result. Record checked absence only after a complete understood relevant attribute graph establishes it; preserve NotRead/unsupported/incomplete/unreadable in every other case.",
+      "limit": "Do not treat a missing observation, a complete parse, a bin filename or binary string presence as proof of absence or as a replacement Bin value."
+    },
+    {
+      "id": "OB-F3",
+      "scope": "MXF coverage investigation prerequisite",
+      "change": "Keep MXF Original Bin coverage explicitly unresolved. Adding a mapper requires a genuine MXF that records this fact plus established native key/type and owning-package relationship. Existing MDB/AVB MCBR spellings do not by themselves provide an MXF mapping.",
+      "limit": "No justified new MXF parser mapping was identified in this bounded verification. Do not mark this as implemented or checked absence."
+    },
+    {
+      "id": "OB-F4",
+      "scope": "Target regression coverage",
+      "change": "Preserve the genuine non-English MDB/PMR/MXF pair, both MC2026 audio MDB/header/bin pairs, and BLACK OMF/MDB pair as regression specimens for compact selection and coverage semantics. Ensure the bounded fallback test distinguishes absence from unsupported coverage.",
+      "limit": "AVB regression specimen may corroborate stored values; scanned row metadata must not be enriched from loaded bins under C16."
+    }
+  ],
+  "nativeBinaryEvidence": {
+    "product": "Media Composer",
+    "version": "26.8.0.58987",
+    "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+    "bytes": 73527536,
+    "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+    "method": "Fresh read-only exact null-delimited ASCII byte search of the installed universal libameLibrary. Offsets are physical file offsets, not virtual addresses; no Avid code executed.",
+    "nativePropertyStringOffsets": {
+      "_ORG_BIN": [
+        "0x1118496",
+        "0x331f2f2"
+      ],
+      "OMFI:MCBR:MC:binID.high": [
+        "0x110789e",
+        "0x330e6bc"
+      ],
+      "OMFI:MCBR:MC:binID.low": [
+        "0x11078b6",
+        "0x330e6d4"
+      ],
+      "OMFI:MCBR:MC:binName": [
+        "0x11078cd",
+        "0x330e6eb"
+      ],
+      "OMFI:MCBR:MC:binNameUTF8": [
+        "0x11078e2",
+        "0x330e700"
+      ]
+    },
+    "meaningLimit": "Native name occurrence corroborates spelling. It does not establish MXF storage, object ownership, encoding or standardized OMF meaning.",
+    "priorSupportingReceipts": [
+      {
+        "path": "/tmp/mediamuster-copland-binary-20261011/receipt.json",
+        "bytes": 132178,
+        "mtimeNs": 1791696250662813367,
+        "sha256": "8b65b459aa4cdf0916248d0822d32527c69dbab9cb0d4f4447901321e84249b4"
+      },
+      {
+        "path": "/tmp/mediamuster-copland-binary-20261011/additional-property-evidence.json",
+        "bytes": 4825,
+        "mtimeNs": 1791696331602317936,
+        "sha256": "dfd29621445ecba19aa385528b49cea44268323cc3d44854239011dc8343a530"
+      }
+    ]
+  },
+  "tests": [
+    {
+      "command": "build/tests/tst_mediaenginemdb realNonEnglishEvidence",
+      "exitCode": 0,
+      "output": "********* Start testing of TestMediaEngineMdb *********\nConfig: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8\nPASS   : TestMediaEngineMdb::initTestCase()\nPASS   : TestMediaEngineMdb::realNonEnglishEvidence()\nPASS   : TestMediaEngineMdb::cleanupTestCase()\nTotals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 14ms\n********* Finished testing of TestMediaEngineMdb *********\n"
+    },
+    {
+      "command": "build/tests/tst_mediaengine_omfprojection originalBinTextPriority",
+      "exitCode": 0,
+      "output": "********* Start testing of TestMediaEngineOmfProjection *********\nConfig: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8\nPASS   : TestMediaEngineOmfProjection::initTestCase()\nPASS   : TestMediaEngineOmfProjection::originalBinTextPriority(legacy-only)\nPASS   : TestMediaEngineOmfProjection::originalBinTextPriority(empty-modern)\nPASS   : TestMediaEngineOmfProjection::originalBinTextPriority(unreadable-modern)\nPASS   : TestMediaEngineOmfProjection::originalBinTextPriority(usable-modern)\nPASS   : TestMediaEngineOmfProjection::originalBinTextPriority(conflicting-modern)\nPASS   : TestMediaEngineOmfProjection::cleanupTestCase()\nTotals: 7 passed, 0 failed, 0 skipped, 0 blacklisted, 9ms\n********* Finished testing of TestMediaEngineOmfProjection *********\n"
+    },
+    {
+      "command": "build/tests/tst_mediaengineavb bothTextRepresentationsRemainSeparate invalidUtf8RetainsOriginalBytes",
+      "exitCode": 0,
+      "output": "********* Start testing of TestMediaEngineAvb *********\nConfig: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8\nPASS   : TestMediaEngineAvb::initTestCase()\nPASS   : TestMediaEngineAvb::bothTextRepresentationsRemainSeparate(little-endian)\nPASS   : TestMediaEngineAvb::bothTextRepresentationsRemainSeparate(big-endian)\nPASS   : TestMediaEngineAvb::invalidUtf8RetainsOriginalBytes()\nPASS   : TestMediaEngineAvb::cleanupTestCase()\nTotals: 5 passed, 0 failed, 0 skipped, 0 blacklisted, 2ms\n********* Finished testing of TestMediaEngineAvb *********\n"
+    },
+    {
+      "command": "build/tests/tst_scanner scans_folder_with_pmr_mdb_and_audio_mxf omf_root_pointed_at_directly_never_scans_as_mxf_folders omf_root_without_a_pmr_gets_identity_from_its_header",
+      "exitCode": 0,
+      "output": "********* Start testing of TestScanner *********\nConfig: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8\nPASS   : TestScanner::initTestCase()\nPASS   : TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()\nPASS   : TestScanner::omf_root_pointed_at_directly_never_scans_as_mxf_folders()\nPASS   : TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()\nPASS   : TestScanner::cleanupTestCase()\nTotals: 5 passed, 0 failed, 0 skipped, 0 blacklisted, 51ms\n********* Finished testing of TestScanner *********\n"
+    }
+  ],
+  "inputReceipts": [
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmMMOB.mdb",
+      "sha256": "db91f1b0e0dcfaef92c263417e51f65e6821c5ef73f628fb01b1d4305d05f34d",
+      "bytes": 53688,
+      "mtimeNs": 1779716614000000000,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmMMOB_macroman.mdb",
+      "sha256": "23b6b7ec29483251d1c71f1c10a4e943028e923ea2479a0f8f1ba7a53a18e393",
+      "bytes": 515968,
+      "mtimeNs": 1784544830980208569,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmFMID.pmr",
+      "sha256": "1701b03566019a2957950d1edcc3481b211e7269e774facf925a0cdef9cbda03",
+      "bytes": 248,
+      "mtimeNs": 1779716614000000000,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "sha256": "07eea423b0d5d04a87a67c18936017dc06e0cc53f2d5e2385bfe99ef55ead351",
+      "bytes": 6411016,
+      "mtimeNs": 1786262281141627428,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmFMID_round3.pmr",
+      "sha256": "d56cc87c811040cdb1dc9bc60cb8af4d17c0df3b65325042da6fdd2a73285d69",
+      "bytes": 86996,
+      "mtimeNs": 1786262281135586754,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/msmMMOB.mdb",
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "bytes": 60680,
+      "mtimeNs": 1788314697919056904,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/msmFMID.pmr",
+      "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928",
+      "bytes": 392,
+      "mtimeNs": 1788314697918836869,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/TONE_100A01.6A972974.039700.wav",
+      "sha256": "3c729948415822f1c688bcc8ba438ab203147af060386585158bf82b124adad3",
+      "bytes": 8665912,
+      "mtimeNs": 1788314697912954383,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/TONE_100A01.6A972997.0C53E0.aif",
+      "sha256": "2a6cd6b86abda8ab6b34b8faffd3df422ae4713170318044177195c0d5c059b6",
+      "bytes": 8659584,
+      "mtimeNs": 1788314697918413674,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/bins/WAVE(OMF).avb",
+      "sha256": "04ff9cf1ba654c0b169ee6423d262c7022c8aed72fedc77af91fa65baa003426",
+      "bytes": 34540,
+      "mtimeNs": 1788314697921107425,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/bins/AIFF-C(OMF).avb",
+      "sha256": "ba9f7d4beb9798f258e0aa6b65468be97c20c17b5a6324ae2f06b61c02bde4c2",
+      "bytes": 31125,
+      "mtimeNs": 1788314697921551078,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "bytes": 587424,
+      "mtimeNs": 1788314697909035712,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmFMID.pmr",
+      "sha256": "be38daf54e5a4cf072dfd13b40a680eb49ddc9fdc55e71f536dd7ec444365dfe",
+      "bytes": 12352,
+      "mtimeNs": 1788314697907273516,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/BLACK_720x576x1_JFIF30P.omf",
+      "sha256": "f5700186b33e18e5dff066b09eed300d48fb78bab62c61d2183e925952d14af0",
+      "bytes": 26368,
+      "mtimeNs": 1788314697889902926,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/FORMAT_1280x720x1_DV100_90.omf",
+      "sha256": "ecd4e8ba029a415e23d67b78d0184d5b865fd99f5eb8cb9096941a2ea9220367",
+      "bytes": 278728,
+      "mtimeNs": 1788314697891862324,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/FEB_79.0V02.2232CBEE.586550.mxf",
+      "sha256": "05181638fcba3bcad81a4791bd0fb1e5adab8f814c25b2e8cb1ae170f2fe1ab5",
+      "bytes": 2490977,
+      "mtimeNs": 1561095046000000000,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1001.WAVA01.D8875D202DA97BA.mxf",
+      "sha256": "4fa8000f5c0adb462f7fca1dcc65381a8d42d367d0949f74d4149224565536cf",
+      "bytes": 10403042,
+      "mtimeNs": 1549865621000000000,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "bytes": 5159032,
+      "mtimeNs": 1561096331000000000,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+      "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544",
+      "bytes": 97250,
+      "mtimeNs": 1561095049000000000,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69671C4_DEDE70DEDE787V.mxf",
+      "sha256": "2a48826b38233806801998c27221cd04a3a765729169f2506e691c0ebd66ef3f",
+      "bytes": 76087393,
+      "mtimeNs": 1785738408920225432,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "bytes": 3668720,
+      "mtimeNs": 1788291273218255487,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+      "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a",
+      "bytes": 86754,
+      "mtimeNs": 1790740372078265906,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/Nön English bin náme™ 你好 漢.avb",
+      "sha256": "dcadf7d11c596ee046c9982efe7dffd5b4c7ba140143b5223257c93a654a4957",
+      "bytes": 64500,
+      "mtimeNs": 1778755397000000000,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1730/Nön English bin náme™ 你好 漢 🚀.avb",
+      "sha256": "3f8c9ff0b025054c2c4e1a84f858e91130ead0958ba83f49729976916b8c4aca",
+      "bytes": 62742,
+      "mtimeNs": 1778754980000000000,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/tëst_uhd_23.976P/tëst_import.avb",
+      "sha256": "2cbf68bb50cbf2758fd3a2a1a13e19cf3ba91326686ed8ca8751cf94bad86b19",
+      "bytes": 325170,
+      "mtimeNs": 1785054902450926780,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/TONE_100A01.EA7D504A.611740.mxf",
+      "sha256": "e545ab93dbf5227813b7cbb7ce2db50e9ff5660d2273cb7875e4dbe03071fe2b",
+      "bytes": 8909409,
+      "mtimeNs": 1779716614000000000,
+      "bytesSha256UnchangedAfterAllChecks": true,
+      "sizeAndMtimeNsUnchangedAfterAllChecks": true
+    }
+  ],
+  "sourceSummaries": [
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmMMOB.mdb",
+      "readerOutcome": 1,
+      "container": 2,
+      "objectCount": 875,
+      "projectedFileCandidates": 1,
+      "projectedMasterCandidates": 1,
+      "filesWithSelectedOriginalBin": 1,
+      "originalBinValueSet": [
+        "Nön English bin náme™ 你好 漢"
+      ],
+      "originalBinReadStateCounts": [
+        {
+          "state": 1,
+          "reason": 0,
+          "applicability": 1,
+          "count": 1
+        }
+      ],
+      "nativeOriginalBinObjectCount": 2,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [
+        "2 dictionary IDs have ambiguous definitions; all definitions are retained without choosing a name."
+      ],
+      "projectionDiagnostics": [
+        "OMFI:SourceMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.",
+        "OMFI:CompositionMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained."
+      ],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmMMOB_macroman.mdb",
+      "readerOutcome": 1,
+      "container": 2,
+      "objectCount": 3270,
+      "projectedFileCandidates": 61,
+      "projectedMasterCandidates": 23,
+      "filesWithSelectedOriginalBin": 61,
+      "originalBinValueSet": [
+        "Café tëst",
+        "tst_23.976 clips",
+        "tst_23.976 precomp",
+        "tst_25 clip",
+        "tst_25 precomp",
+        "tst_29.97 clip",
+        "tst_29.97 precomp"
+      ],
+      "originalBinReadStateCounts": [
+        {
+          "state": 1,
+          "reason": 0,
+          "applicability": 1,
+          "count": 61
+        }
+      ],
+      "nativeOriginalBinObjectCount": 46,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [
+        "2 dictionary IDs have ambiguous definitions; all definitions are retained without choosing a name."
+      ],
+      "projectionDiagnostics": [
+        "OMFI:SourceMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.",
+        "OMFI:CompositionMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained."
+      ],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmFMID.pmr",
+      "readerOutcome": 1,
+      "container": 1,
+      "objectCount": 2,
+      "projectedFileCandidates": 2,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [
+        {
+          "state": 2,
+          "reason": 6,
+          "applicability": 0,
+          "count": 2
+        }
+      ],
+      "nativeOriginalBinObjectCount": 0,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "readerOutcome": 1,
+      "container": 2,
+      "objectCount": 33907,
+      "projectedFileCandidates": 810,
+      "projectedMasterCandidates": 300,
+      "filesWithSelectedOriginalBin": 780,
+      "originalBinValueSet": [
+        "tëst_uhd_24P Bin",
+        "tëst_uhd_24P Bin1",
+        "tëst_uhd_25P Bin",
+        "tëst_uhd_25P Bin1",
+        "tëst_ama",
+        "tëst_import",
+        "tëst_uhd_23.976P Bin",
+        "zTeßt_1080i_59.94 Bin",
+        "zTeßt_1080i_59.94 Bin1",
+        "zTeßt_1080p_23.976 Bin",
+        "zTeßt_1080p_23.976 Bin1",
+        "zTeßt_1080p_29.97 Bin",
+        "zTeßt_720p_23.976 Bin",
+        "zTeßt_NTSC_30i Bin",
+        "zTeßt_PAL_25p Bin",
+        "zTëst_uhd_29.97P Bin",
+        "zTëst_uhd_29.97P Bin1",
+        "zTëst_uhd_30P Bin1",
+        "zTęßt_1080i_50 Bin",
+        "zTęßt_1080i_50 Bin1",
+        "zTëst_1080i_50 Bin",
+        "zTëst_1080i_50 Bin1",
+        "zTëst_uhd_30P Bin",
+        "zTëst_uhd_30P Bin1",
+        "zTëst_uhd_50P Bin",
+        "zTëst_uhd_50P Bin1"
+      ],
+      "originalBinReadStateCounts": [
+        {
+          "state": 0,
+          "reason": 5,
+          "applicability": 0,
+          "count": 30
+        },
+        {
+          "state": 1,
+          "reason": 0,
+          "applicability": 1,
+          "count": 780
+        }
+      ],
+      "nativeOriginalBinObjectCount": 556,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [
+        "2 dictionary IDs have ambiguous definitions; all definitions are retained without choosing a name."
+      ],
+      "projectionDiagnostics": [
+        "OMFI:SourceMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.",
+        "OMFI:CompositionMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained."
+      ],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmFMID_round3.pmr",
+      "readerOutcome": 1,
+      "container": 1,
+      "objectCount": 720,
+      "projectedFileCandidates": 720,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [
+        {
+          "state": 2,
+          "reason": 6,
+          "applicability": 0,
+          "count": 720
+        }
+      ],
+      "nativeOriginalBinObjectCount": 0,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/msmMMOB.mdb",
+      "readerOutcome": 1,
+      "container": 2,
+      "objectCount": 859,
+      "projectedFileCandidates": 2,
+      "projectedMasterCandidates": 2,
+      "filesWithSelectedOriginalBin": 2,
+      "originalBinValueSet": [
+        "AIFF-C(OMF)",
+        "WAVE(OMF)"
+      ],
+      "originalBinReadStateCounts": [
+        {
+          "state": 1,
+          "reason": 0,
+          "applicability": 1,
+          "count": 2
+        }
+      ],
+      "nativeOriginalBinObjectCount": 4,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [
+        "2 dictionary IDs have ambiguous definitions; all definitions are retained without choosing a name."
+      ],
+      "projectionDiagnostics": [
+        "OMFI:SourceMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained."
+      ],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/msmFMID.pmr",
+      "readerOutcome": 1,
+      "container": 1,
+      "objectCount": 4,
+      "projectedFileCandidates": 4,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [
+        {
+          "state": 2,
+          "reason": 6,
+          "applicability": 0,
+          "count": 4
+        }
+      ],
+      "nativeOriginalBinObjectCount": 0,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/TONE_100A01.6A972974.039700.wav",
+      "readerOutcome": 1,
+      "container": 5,
+      "objectCount": 0,
+      "projectedFileCandidates": 1,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [
+        {
+          "state": 0,
+          "reason": 5,
+          "applicability": 0,
+          "count": 1
+        }
+      ],
+      "nativeOriginalBinObjectCount": 0,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [
+        "OMFI:SourceMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained."
+      ],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/TONE_100A01.6A972997.0C53E0.aif",
+      "readerOutcome": 1,
+      "container": 6,
+      "objectCount": 0,
+      "projectedFileCandidates": 1,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [
+        {
+          "state": 0,
+          "reason": 5,
+          "applicability": 0,
+          "count": 1
+        }
+      ],
+      "nativeOriginalBinObjectCount": 0,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [
+        "OMFI:SourceMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained."
+      ],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/bins/WAVE(OMF).avb",
+      "readerOutcome": 1,
+      "container": 7,
+      "objectCount": 22,
+      "projectedFileCandidates": 0,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [],
+      "nativeOriginalBinObjectCount": 2,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true,
+      "avb": {
+        "usable": true,
+        "coverageComplete": true,
+        "compositionCount": 3,
+        "recordedOriginalBinValueSet": [
+          "WAVE(OMF)"
+        ]
+      }
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/bins/AIFF-C(OMF).avb",
+      "readerOutcome": 1,
+      "container": 7,
+      "objectCount": 22,
+      "projectedFileCandidates": 0,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [],
+      "nativeOriginalBinObjectCount": 2,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true,
+      "avb": {
+        "usable": true,
+        "coverageComplete": true,
+        "compositionCount": 3,
+        "recordedOriginalBinValueSet": [
+          "AIFF-C(OMF)"
+        ]
+      }
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "readerOutcome": 1,
+      "container": 2,
+      "objectCount": 2795,
+      "projectedFileCandidates": 80,
+      "projectedMasterCandidates": 80,
+      "filesWithSelectedOriginalBin": 35,
+      "originalBinValueSet": [
+        "1080i60 HDV Bin",
+        "Media Slides",
+        "NTSC slides",
+        "PAL 420 Bin2",
+        "PAL slides",
+        "PAL1 Bin1",
+        "Slides Bin",
+        "SlidesPAL Bin",
+        "Uncompressed media slides",
+        "newpal411 Bin"
+      ],
+      "originalBinReadStateCounts": [
+        {
+          "state": 0,
+          "reason": 5,
+          "applicability": 0,
+          "count": 45
+        },
+        {
+          "state": 1,
+          "reason": 0,
+          "applicability": 1,
+          "count": 35
+        }
+      ],
+      "nativeOriginalBinObjectCount": 70,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmFMID.pmr",
+      "readerOutcome": 1,
+      "container": 1,
+      "objectCount": 160,
+      "projectedFileCandidates": 160,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [
+        {
+          "state": 2,
+          "reason": 6,
+          "applicability": 0,
+          "count": 160
+        }
+      ],
+      "nativeOriginalBinObjectCount": 0,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/BLACK_720x576x1_JFIF30P.omf",
+      "readerOutcome": 1,
+      "container": 4,
+      "objectCount": 211,
+      "projectedFileCandidates": 1,
+      "projectedMasterCandidates": 1,
+      "filesWithSelectedOriginalBin": 1,
+      "originalBinValueSet": [
+        "Media Slides"
+      ],
+      "originalBinReadStateCounts": [
+        {
+          "state": 1,
+          "reason": 0,
+          "applicability": 1,
+          "count": 1
+        }
+      ],
+      "nativeOriginalBinObjectCount": 2,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/FORMAT_1280x720x1_DV100_90.omf",
+      "readerOutcome": 1,
+      "container": 4,
+      "objectCount": 215,
+      "projectedFileCandidates": 1,
+      "projectedMasterCandidates": 1,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [
+        {
+          "state": 0,
+          "reason": 5,
+          "applicability": 0,
+          "count": 1
+        }
+      ],
+      "nativeOriginalBinObjectCount": 0,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/FEB_79.0V02.2232CBEE.586550.mxf",
+      "readerOutcome": 1,
+      "container": 3,
+      "objectCount": 702,
+      "projectedFileCandidates": 1,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [
+        {
+          "state": 0,
+          "reason": 5,
+          "applicability": 0,
+          "count": 1
+        }
+      ],
+      "nativeOriginalBinObjectCount": 0,
+      "taggedValueNameSet": [
+        "_ATN_IMPORT_AUD_BWF_MONO_GROUP",
+        "_COLORLEVEL",
+        "_DOMINANCE",
+        "_IGNOREALPHA",
+        "_IMPORTASPECT",
+        "_IMPORTPICTSEQ",
+        "_IMPORTSETTING",
+        "_INVERTALPHA",
+        "_LAYERED",
+        "_PJ",
+        "_SRCFILE"
+      ],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1001.WAVA01.D8875D202DA97BA.mxf",
+      "readerOutcome": 1,
+      "container": 3,
+      "objectCount": 706,
+      "projectedFileCandidates": 1,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [
+        {
+          "state": 0,
+          "reason": 5,
+          "applicability": 0,
+          "count": 1
+        }
+      ],
+      "nativeOriginalBinObjectCount": 0,
+      "taggedValueNameSet": [
+        "Shoot Date",
+        "TapeID",
+        "UNC Path",
+        "_ATN_IMPORT_AUD_BWF_MONO_GROUP",
+        "_COLORLEVEL",
+        "_DOMINANCE",
+        "_IGNOREALPHA",
+        "_IMPORTASPECT",
+        "_IMPORTPICTSEQ",
+        "_IMPORTSETTING",
+        "_INVERTALPHA",
+        "_PJ",
+        "_SRCFILE"
+      ],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "readerOutcome": 1,
+      "container": 2,
+      "objectCount": 26434,
+      "projectedFileCandidates": 392,
+      "projectedMasterCandidates": 153,
+      "filesWithSelectedOriginalBin": 232,
+      "originalBinValueSet": [
+        "D001_SOUND",
+        "D002_A001",
+        "D003_A001",
+        "D003_A002"
+      ],
+      "originalBinReadStateCounts": [
+        {
+          "state": 0,
+          "reason": 5,
+          "applicability": 0,
+          "count": 160
+        },
+        {
+          "state": 1,
+          "reason": 0,
+          "applicability": 1,
+          "count": 232
+        }
+      ],
+      "nativeOriginalBinObjectCount": 182,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [
+        "2 dictionary IDs have ambiguous definitions; all definitions are retained without choosing a name."
+      ],
+      "projectionDiagnostics": [
+        "OMFI:SourceMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.",
+        "OMFI:CompositionMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained."
+      ],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+      "readerOutcome": 1,
+      "container": 1,
+      "objectCount": 778,
+      "projectedFileCandidates": 778,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [
+        {
+          "state": 2,
+          "reason": 6,
+          "applicability": 0,
+          "count": 778
+        }
+      ],
+      "nativeOriginalBinObjectCount": 0,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69671C4_DEDE70DEDE787V.mxf",
+      "readerOutcome": 1,
+      "container": 3,
+      "objectCount": 748,
+      "projectedFileCandidates": 1,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [
+        {
+          "state": 0,
+          "reason": 5,
+          "applicability": 0,
+          "count": 1
+        }
+      ],
+      "nativeOriginalBinObjectCount": 0,
+      "taggedValueNameSet": [
+        "UNC Path",
+        "Video",
+        "_ATN_IMPORT_AUD_AUD_CD_ONLY",
+        "_ATN_IMPORT_AUD_BWF_MONO_GROUP",
+        "_ATN_IMPORT_AUD_GAIN",
+        "_ATN_IMPORT_AUD_SAMPRATE_CVT",
+        "_ATN_IMPORT_AUD_SAMPSIZE_CVT",
+        "_ATN_IMPORT_AUD_USE_GAIN",
+        "_CHANNEL_GROUP_LIST",
+        "_COLORLEVEL",
+        "_DOMINANCE",
+        "_IGNOREALPHA",
+        "_IMPORTASPECT",
+        "_IMPORTPICTSEQ",
+        "_IMPORTSETTING",
+        "_INVERTALPHA",
+        "_PJ",
+        "_SRCFILE"
+      ],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "readerOutcome": 1,
+      "container": 2,
+      "objectCount": 20328,
+      "projectedFileCandidates": 359,
+      "projectedMasterCandidates": 124,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [
+        {
+          "state": 0,
+          "reason": 5,
+          "applicability": 0,
+          "count": 359
+        }
+      ],
+      "nativeOriginalBinObjectCount": 0,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [
+        "OMFI:SourceMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.",
+        "OMFI:CompositionMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained."
+      ],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+      "readerOutcome": 1,
+      "container": 1,
+      "objectCount": 718,
+      "projectedFileCandidates": 718,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [
+        {
+          "state": 2,
+          "reason": 6,
+          "applicability": 0,
+          "count": 718
+        }
+      ],
+      "nativeOriginalBinObjectCount": 0,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true
+    },
+    {
+      "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/Nön English bin náme™ 你好 漢.avb",
+      "readerOutcome": 1,
+      "container": 7,
+      "objectCount": 22,
+      "projectedFileCandidates": 0,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [],
+      "nativeOriginalBinObjectCount": 2,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true,
+      "avb": {
+        "usable": true,
+        "coverageComplete": true,
+        "compositionCount": 3,
+        "recordedOriginalBinValueSet": [
+          "Nön English bin náme™ 你好 漢"
+        ]
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1730/Nön English bin náme™ 你好 漢 🚀.avb",
+      "readerOutcome": 1,
+      "container": 7,
+      "objectCount": 4,
+      "projectedFileCandidates": 0,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [],
+      "nativeOriginalBinObjectCount": 0,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true,
+      "avb": {
+        "usable": true,
+        "coverageComplete": true,
+        "compositionCount": 0,
+        "recordedOriginalBinValueSet": []
+      }
+    },
+    {
+      "path": "/Users/martymclean/Documents/Avid Projects/tëst_uhd_23.976P/tëst_import.avb",
+      "readerOutcome": 1,
+      "container": 7,
+      "objectCount": 1376,
+      "projectedFileCandidates": 0,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [],
+      "nativeOriginalBinObjectCount": 40,
+      "taggedValueNameSet": [],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true,
+      "avb": {
+        "usable": true,
+        "coverageComplete": true,
+        "compositionCount": 99,
+        "recordedOriginalBinValueSet": [
+          "tëst_ama",
+          "tëst_import"
+        ]
+      }
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/TONE_100A01.EA7D504A.611740.mxf",
+      "readerOutcome": 1,
+      "container": 3,
+      "objectCount": 701,
+      "projectedFileCandidates": 1,
+      "projectedMasterCandidates": 0,
+      "filesWithSelectedOriginalBin": 0,
+      "originalBinValueSet": [],
+      "originalBinReadStateCounts": [
+        {
+          "state": 0,
+          "reason": 5,
+          "applicability": 0,
+          "count": 1
+        }
+      ],
+      "nativeOriginalBinObjectCount": 0,
+      "taggedValueNameSet": [
+        "_PJ"
+      ],
+      "readerDiagnostics": [],
+      "projectionDiagnostics": [],
+      "stableDuringReader": true
+    }
+  ],
+  "pairedGenuineSpecimens": [
+    {
+      "physicalPath": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/TONE_100A01.6A972974.039700.wav",
+      "header": {
+        "clipName": "TONE: 1000 Hz @ -14.0 dB.1",
+        "fileId": "060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80",
+        "filenames": [],
+        "masterIds": [
+          "060a2b3401010101.01010f0013000000.7429976a4e397047.060e2b347f7f2a80"
+        ],
+        "originalBin": {
+          "agreement": 0,
+          "applicability": 0,
+          "observations": [],
+          "readReason": 5,
+          "readState": 0,
+          "selected": null
+        },
+        "project": "zTeßt_PAL_25p"
+      },
+      "identityMatchedDatabases": [
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/msmMMOB.mdb",
+          "samePhysicalParentFolder": true,
+          "fileId": "060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.7429976a4e397047.060e2b347f7f2a80"
+          ],
+          "clipName": "TONE: 1000 Hz @ -14.0 dB.1",
+          "originalBin": {
+            "agreement": 1,
+            "applicability": 1,
+            "observations": [
+              {
+                "basis": 1,
+                "eligible": false,
+                "explanation": "All recorded text bytes are ASCII; the producer's broader character set is not established. A non-empty UTF-8 bin name takes precedence over the legacy name.",
+                "object": "object:68057",
+                "property": "OMFI:MCBR:MC:binName",
+                "raw": {
+                  "bytesHex": "57415645284f4d462900"
+                },
+                "readState": 1,
+                "value": "WAVE(OMF)"
+              },
+              {
+                "basis": 0,
+                "eligible": true,
+                "explanation": "",
+                "object": "object:68057",
+                "property": "OMFI:MCBR:MC:binNameUTF8",
+                "raw": {
+                  "bytesHex": "57415645284f4d462900"
+                },
+                "readState": 1,
+                "value": "WAVE(OMF)"
+              }
+            ],
+            "readReason": 0,
+            "readState": 1,
+            "selected": "WAVE(OMF)"
+          }
+        }
+      ],
+      "masterMatchedBinCorroborationOnly": [
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/bins/WAVE(OMF).avb",
+          "binUid": "6a97295f476fe94d",
+          "clipName": "TONE: 1000 Hz @ -14.0 dB.1",
+          "masterId": "060a2b3401010101.01010f0013000000.7429976a4e397047.060e2b347f7f2a80",
+          "observations": [
+            {
+              "basis": 0,
+              "eligible": false,
+              "explanation": "Recorded AVB object 4, matched through this file's master association. The non-empty UTF-8 bin name takes precedence over the legacy name.",
+              "object": "4",
+              "property": "BinRef.name",
+              "raw": {
+                "bytesHex": "090057415645284f4d4629"
+              },
+              "readState": 1,
+              "value": "WAVE(OMF)"
+            },
+            {
+              "basis": 0,
+              "eligible": true,
+              "explanation": "Recorded AVB object 4, matched through this file's master association.",
+              "object": "4",
+              "property": "BinRef.name_utf8",
+              "raw": {
+                "bytesHex": "0b00000057415645284f4d4629"
+              },
+              "readState": 1,
+              "value": "WAVE(OMF)"
+            }
+          ],
+          "originalBin": "WAVE(OMF)"
+        }
+      ]
+    },
+    {
+      "physicalPath": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/TONE_100A01.6A972997.0C53E0.aif",
+      "header": {
+        "clipName": "TONE: 1000 Hz @ -20.0 dB.2",
+        "fileId": "060a2b3401010101.01010f0013000000.9729976a3ec57047.060e2b347f7f2a80",
+        "filenames": [],
+        "masterIds": [
+          "060a2b3401010101.01010f0013000000.9729976a3dc57047.060e2b347f7f2a80"
+        ],
+        "originalBin": {
+          "agreement": 0,
+          "applicability": 0,
+          "observations": [],
+          "readReason": 5,
+          "readState": 0,
+          "selected": null
+        },
+        "project": "zTeßt_PAL_25p"
+      },
+      "identityMatchedDatabases": [
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/msmMMOB.mdb",
+          "samePhysicalParentFolder": true,
+          "fileId": "060a2b3401010101.01010f0013000000.9729976a3ec57047.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.9729976a3dc57047.060e2b347f7f2a80"
+          ],
+          "clipName": "TONE: 1000 Hz @ -20.0 dB.2",
+          "originalBin": {
+            "agreement": 1,
+            "applicability": 1,
+            "observations": [
+              {
+                "basis": 1,
+                "eligible": false,
+                "explanation": "All recorded text bytes are ASCII; the producer's broader character set is not established. A non-empty UTF-8 bin name takes precedence over the legacy name.",
+                "object": "object:68114",
+                "property": "OMFI:MCBR:MC:binName",
+                "raw": {
+                  "bytesHex": "414946462d43284f4d462900"
+                },
+                "readState": 1,
+                "value": "AIFF-C(OMF)"
+              },
+              {
+                "basis": 0,
+                "eligible": true,
+                "explanation": "",
+                "object": "object:68114",
+                "property": "OMFI:MCBR:MC:binNameUTF8",
+                "raw": {
+                  "bytesHex": "414946462d43284f4d462900"
+                },
+                "readState": 1,
+                "value": "AIFF-C(OMF)"
+              }
+            ],
+            "readReason": 0,
+            "readState": 1,
+            "selected": "AIFF-C(OMF)"
+          }
+        }
+      ],
+      "masterMatchedBinCorroborationOnly": [
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/bins/AIFF-C(OMF).avb",
+          "binUid": "6a97298947708c64",
+          "clipName": "TONE: 1000 Hz @ -20.0 dB.2",
+          "masterId": "060a2b3401010101.01010f0013000000.9729976a3dc57047.060e2b347f7f2a80",
+          "observations": [
+            {
+              "basis": 0,
+              "eligible": false,
+              "explanation": "Recorded AVB object 4, matched through this file's master association. The non-empty UTF-8 bin name takes precedence over the legacy name.",
+              "object": "4",
+              "property": "BinRef.name",
+              "raw": {
+                "bytesHex": "0b00414946462d43284f4d4629"
+              },
+              "readState": 1,
+              "value": "AIFF-C(OMF)"
+            },
+            {
+              "basis": 0,
+              "eligible": true,
+              "explanation": "Recorded AVB object 4, matched through this file's master association.",
+              "object": "4",
+              "property": "BinRef.name_utf8",
+              "raw": {
+                "bytesHex": "0d000000414946462d43284f4d4629"
+              },
+              "readState": 1,
+              "value": "AIFF-C(OMF)"
+            }
+          ],
+          "originalBin": "AIFF-C(OMF)"
+        }
+      ]
+    },
+    {
+      "physicalPath": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/BLACK_720x576x1_JFIF30P.omf",
+      "header": {
+        "clipName": "Black 720x576.PICT",
+        "fileId": "060a2b3401010101.01010f0013000000.de91e53639cdb005.060e2b347f7f2a80",
+        "filenames": [],
+        "masterIds": [
+          "060a2b3401010101.01010f0013000000.de91e53638cdb005.060e2b347f7f2a80"
+        ],
+        "originalBin": {
+          "agreement": 1,
+          "applicability": 1,
+          "observations": [
+            {
+              "basis": 1,
+              "eligible": true,
+              "explanation": "All recorded text bytes are ASCII; the producer's broader character set is not established.",
+              "object": "object:68014",
+              "property": "OMFI:MCBR:MC:binName",
+              "raw": {
+                "bytesHex": "4d6564696120536c6964657300"
+              },
+              "readState": 1,
+              "value": "Media Slides"
+            }
+          ],
+          "readReason": 0,
+          "readState": 1,
+          "selected": "Media Slides"
+        },
+        "project": "PAL Film"
+      },
+      "identityMatchedDatabases": [
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+          "samePhysicalParentFolder": true,
+          "fileId": "060a2b3401010101.01010f0013000000.de91e53639cdb005.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.de91e53638cdb005.060e2b347f7f2a80"
+          ],
+          "clipName": "Black 720x576.PICT",
+          "originalBin": {
+            "agreement": 1,
+            "applicability": 1,
+            "observations": [
+              {
+                "basis": 1,
+                "eligible": false,
+                "explanation": "All recorded text bytes are ASCII; the producer's broader character set is not established. A non-empty UTF-8 bin name takes precedence over the legacy name.",
+                "object": "object:68571",
+                "property": "OMFI:MCBR:MC:binName",
+                "raw": {
+                  "bytesHex": "4d6564696120536c6964657300"
+                },
+                "readState": 1,
+                "value": "Media Slides"
+              },
+              {
+                "basis": 0,
+                "eligible": true,
+                "explanation": "",
+                "object": "object:68571",
+                "property": "OMFI:MCBR:MC:binNameUTF8",
+                "raw": {
+                  "bytesHex": "4d6564696120536c6964657300"
+                },
+                "readState": 1,
+                "value": "Media Slides"
+              }
+            ],
+            "readReason": 0,
+            "readState": 1,
+            "selected": "Media Slides"
+          }
+        }
+      ],
+      "masterMatchedBinCorroborationOnly": []
+    },
+    {
+      "physicalPath": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/FORMAT_1280x720x1_DV100_90.omf",
+      "header": {
+        "clipName": "Wrong Format 1280 x 720.bmp",
+        "fileId": "060a2b3401010101.01010f0013000000.3eba9241ac792001.060e2b347f7f2a80",
+        "filenames": [],
+        "masterIds": [
+          "060a2b3401010101.01010f0013000000.3eba9241ab792001.060e2b347f7f2a80"
+        ],
+        "originalBin": {
+          "agreement": 0,
+          "applicability": 0,
+          "observations": [],
+          "readReason": 5,
+          "readState": 0,
+          "selected": null
+        },
+        "project": "DC 720p 59.94"
+      },
+      "identityMatchedDatabases": [
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+          "samePhysicalParentFolder": true,
+          "fileId": "060a2b3401010101.01010f0013000000.3eba9241ac792001.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.3eba9241ab792001.060e2b347f7f2a80"
+          ],
+          "clipName": "Wrong Format 1280 x 720.bmp",
+          "originalBin": {
+            "agreement": 0,
+            "applicability": 0,
+            "observations": [],
+            "readReason": 5,
+            "readState": 0,
+            "selected": null
+          }
+        }
+      ],
+      "masterMatchedBinCorroborationOnly": []
+    },
+    {
+      "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/FEB_79.0V02.2232CBEE.586550.mxf",
+      "header": {
+        "clipName": "FEB_79.01",
+        "fileId": "060a2b3401010105.01010f1013000000.eecb322255860590.cd9134363bcdaf64",
+        "filenames": [],
+        "masterIds": [
+          "060a2b3401010105.01010f1013000000.0542322255860590.370e34363bcdaf64"
+        ],
+        "originalBin": {
+          "agreement": 0,
+          "applicability": 0,
+          "observations": [],
+          "readReason": 5,
+          "readState": 0,
+          "selected": null
+        },
+        "project": "FIXING_JAMES_KINGSLEY"
+      },
+      "identityMatchedDatabases": [
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+          "samePhysicalParentFolder": true,
+          "fileId": "060a2b3401010105.01010f1013000000.eecb322255860590.cd9134363bcdaf64",
+          "masterIds": [
+            "060a2b3401010105.01010f1013000000.0542322255860590.370e34363bcdaf64"
+          ],
+          "clipName": "FEB_79.01",
+          "originalBin": {
+            "agreement": 0,
+            "applicability": 0,
+            "observations": [],
+            "readReason": 5,
+            "readState": 0,
+            "selected": null
+          }
+        }
+      ],
+      "masterMatchedBinCorroborationOnly": []
+    },
+    {
+      "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1001.WAVA01.D8875D202DA97BA.mxf",
+      "header": {
+        "clipName": "1001.WAV",
+        "fileId": "060a2b3401010105.01010f1013000000.7ba92d2025850591.52bc34363bcdaf64",
+        "filenames": [],
+        "masterIds": [
+          "060a2b3401010105.01010f1013000000.2f36262025850591.79ee34363bcdaf64"
+        ],
+        "originalBin": {
+          "agreement": 0,
+          "applicability": 0,
+          "observations": [],
+          "readReason": 5,
+          "readState": 0,
+          "selected": null
+        },
+        "project": "FIXING_JAMES_KINGSLEY"
+      },
+      "identityMatchedDatabases": [
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+          "samePhysicalParentFolder": true,
+          "fileId": "060a2b3401010105.01010f1013000000.7ba92d2025850591.52bc34363bcdaf64",
+          "masterIds": [
+            "060a2b3401010105.01010f1013000000.2f36262025850591.79ee34363bcdaf64"
+          ],
+          "clipName": "1001.WAV",
+          "originalBin": {
+            "agreement": 1,
+            "applicability": 1,
+            "observations": [
+              {
+                "basis": 1,
+                "eligible": false,
+                "explanation": "All recorded text bytes are ASCII; the producer's broader character set is not established. A non-empty UTF-8 bin name takes precedence over the legacy name.",
+                "object": "object:91562",
+                "property": "OMFI:MCBR:MC:binName",
+                "raw": {
+                  "bytesHex": "443030315f534f554e4400"
+                },
+                "readState": 1,
+                "value": "D001_SOUND"
+              },
+              {
+                "basis": 0,
+                "eligible": true,
+                "explanation": "",
+                "object": "object:91562",
+                "property": "OMFI:MCBR:MC:binNameUTF8",
+                "raw": {
+                  "bytesHex": "443030315f534f554e4400"
+                },
+                "readState": 1,
+                "value": "D001_SOUND"
+              }
+            ],
+            "readReason": 0,
+            "readState": 1,
+            "selected": "D001_SOUND"
+          }
+        }
+      ],
+      "masterMatchedBinCorroborationOnly": []
+    },
+    {
+      "physicalPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69671C4_DEDE70DEDE787V.mxf",
+      "header": {
+        "clipName": "Apple ProRes 422 Proxy",
+        "fileId": "060a2b3401010105.01010f1013000000.87e7ed0d55120690.92f846fc807fda72",
+        "filenames": [],
+        "masterIds": [
+          "060a2b3401010105.01010f1013000000.80e7ed0d55120690.2c6f46fc807fda72"
+        ],
+        "originalBin": {
+          "agreement": 0,
+          "applicability": 0,
+          "observations": [],
+          "readReason": 5,
+          "readState": 0,
+          "selected": null
+        },
+        "project": "zTeßt_1080i_59.94"
+      },
+      "identityMatchedDatabases": [
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+          "samePhysicalParentFolder": false,
+          "fileId": "060a2b3401010105.01010f1013000000.87e7ed0d55120690.92f846fc807fda72",
+          "masterIds": [
+            "060a2b3401010105.01010f1013000000.80e7ed0d55120690.2c6f46fc807fda72"
+          ],
+          "clipName": "Apple ProRes 422 Proxy",
+          "originalBin": {
+            "agreement": 1,
+            "applicability": 1,
+            "observations": [
+              {
+                "basis": 1,
+                "eligible": false,
+                "explanation": "MacRoman inferred for unlabelled legacy text after UTF-8 validation failed, under the approved display policy. Original bytes retained. A non-empty UTF-8 bin name takes precedence over the legacy name.",
+                "object": "object:92167",
+                "property": "OMFI:MCBR:MC:binName",
+                "raw": {
+                  "bytesHex": "7a5465a7745f31303830695f35392e39342042696e3100"
+                },
+                "readState": 1,
+                "value": "zTeßt_1080i_59.94 Bin1"
+              },
+              {
+                "basis": 0,
+                "eligible": true,
+                "explanation": "",
+                "object": "object:92167",
+                "property": "OMFI:MCBR:MC:binNameUTF8",
+                "raw": {
+                  "bytesHex": "7a5465c39f745f31303830695f35392e39342042696e3100"
+                },
+                "readState": 1,
+                "value": "zTeßt_1080i_59.94 Bin1"
+              }
+            ],
+            "readReason": 0,
+            "readState": 1,
+            "selected": "zTeßt_1080i_59.94 Bin1"
+          }
+        },
+        {
+          "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+          "samePhysicalParentFolder": true,
+          "fileId": "060a2b3401010105.01010f1013000000.87e7ed0d55120690.92f846fc807fda72",
+          "masterIds": [
+            "060a2b3401010105.01010f1013000000.80e7ed0d55120690.2c6f46fc807fda72"
+          ],
+          "clipName": "Apple ProRes 422 Proxy",
+          "originalBin": {
+            "agreement": 0,
+            "applicability": 0,
+            "observations": [],
+            "readReason": 5,
+            "readState": 0,
+            "selected": null
+          }
+        }
+      ],
+      "masterMatchedBinCorroborationOnly": []
+    },
+    {
+      "physicalPath": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/TONE_100A01.EA7D504A.611740.mxf",
+      "header": {
+        "clipName": "TONE: 1000 Hz @ -14.0 dB.1",
+        "fileId": "060a2b3401010105.01010f1013000000.4a507dea74110690.7a361e6a605d3613",
+        "filenames": [],
+        "masterIds": [
+          "060a2b3401010105.01010f1013000000.d2467dea74110690.91901e6a605d3613"
+        ],
+        "originalBin": {
+          "agreement": 0,
+          "applicability": 0,
+          "observations": [],
+          "readReason": 5,
+          "readState": 0,
+          "selected": null
+        },
+        "project": "block 1729"
+      },
+      "identityMatchedDatabases": [
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmMMOB.mdb",
+          "samePhysicalParentFolder": true,
+          "fileId": "060a2b3401010105.01010f1013000000.4a507dea74110690.7a361e6a605d3613",
+          "masterIds": [
+            "060a2b3401010105.01010f1013000000.d2467dea74110690.91901e6a605d3613"
+          ],
+          "clipName": "TONE: 1000 Hz @ -14.0 dB.1",
+          "originalBin": {
+            "agreement": 1,
+            "applicability": 1,
+            "observations": [
+              {
+                "basis": 1,
+                "eligible": false,
+                "explanation": "MacRoman inferred for unlabelled legacy text after UTF-8 validation failed, under the approved display policy. Original bytes retained. A non-empty UTF-8 bin name takes precedence over the legacy name.",
+                "object": "object:68111",
+                "property": "OMFI:MCBR:MC:binName",
+                "raw": {
+                  "bytesHex": "4e9a6e20456e676c6973682062696e206e876d65aa203f3f203f00"
+                },
+                "readState": 1,
+                "value": "Nön English bin náme™ ?? ?"
+              },
+              {
+                "basis": 0,
+                "eligible": true,
+                "explanation": "",
+                "object": "object:68111",
+                "property": "OMFI:MCBR:MC:binNameUTF8",
+                "raw": {
+                  "bytesHex": "4e6fcc886e20456e676c6973682062696e206e61cc816d65e284a220e4bda0e5a5bd20e6bca200"
+                },
+                "readState": 1,
+                "value": "Nön English bin náme™ 你好 漢"
+              }
+            ],
+            "readReason": 0,
+            "readState": 1,
+            "selected": "Nön English bin náme™ 你好 漢"
+          }
+        }
+      ],
+      "masterMatchedBinCorroborationOnly": [
+        {
+          "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/Nön English bin náme™ 你好 漢.avb",
+          "binUid": "6a05a6d502994334",
+          "clipName": "TONE: 1000 Hz @ -14.0 dB.1",
+          "masterId": "060a2b3401010105.01010f1013000000.d2467dea74110690.91901e6a605d3613",
+          "observations": [
+            {
+              "basis": 0,
+              "eligible": false,
+              "explanation": "Recorded AVB object 4, matched through this file's master association. The non-empty UTF-8 bin name takes precedence over the legacy name.",
+              "object": "4",
+              "property": "BinRef.name",
+              "raw": {
+                "bytesHex": "1a004e9a6e20456e676c6973682062696e206e876d65aa203f3f203f"
+              },
+              "readState": 1,
+              "value": "Nön English bin náme™ ?? ?"
+            },
+            {
+              "basis": 0,
+              "eligible": true,
+              "explanation": "Recorded AVB object 4, matched through this file's master association.",
+              "object": "4",
+              "property": "BinRef.name_utf8",
+              "raw": {
+                "bytesHex": "280000004e6fcc886e20456e676c6973682062696e206e61cc816d65e284a220e4bda0e5a5bd20e6bca2"
+              },
+              "readState": 1,
+              "value": "Nön English bin náme™ 你好 漢"
+            }
+          ],
+          "originalBin": "Nön English bin náme™ 你好 漢"
+        }
+      ]
+    }
+  ],
+  "exactNativeGraphs": {
+    "nonEnglishMdb": [
+      {
+        "class": "MCBR",
+        "embeddingDepth": 0,
+        "object": 68111,
+        "properties": [
+          {
+            "decoded": "MCBR",
+            "name": "OMFI:ObjID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 50532
+              }
+            ],
+            "rawHex": "4d434252",
+            "state": 1
+          },
+          {
+            "decoded": 1778755285,
+            "name": "OMFI:MCBR:MC:binID.high",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 50556
+              }
+            ],
+            "rawHex": "d5a6056a",
+            "state": 1
+          },
+          {
+            "decoded": 43598644,
+            "name": "OMFI:MCBR:MC:binID.low",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 50580
+              }
+            ],
+            "rawHex": "34439902",
+            "state": 1
+          },
+          {
+            "decoded": "Nön English bin náme™ ?? ?",
+            "name": "OMFI:MCBR:MC:binName",
+            "ranges": [
+              {
+                "length": 27,
+                "offset": 2065
+              }
+            ],
+            "rawHex": "4e9a6e20456e676c6973682062696e206e876d65aa203f3f203f00",
+            "state": 1
+          },
+          {
+            "decoded": 1,
+            "name": "OMFI:MinorVersion",
+            "ranges": [
+              {
+                "length": 1,
+                "offset": 50628
+              }
+            ],
+            "rawHex": "01",
+            "state": 1
+          },
+          {
+            "decoded": "Nön English bin náme™ 你好 漢",
+            "name": "OMFI:MCBR:MC:binNameUTF8",
+            "ranges": [
+              {
+                "length": 39,
+                "offset": 2092
+              }
+            ],
+            "rawHex": "4e6fcc886e20456e676c6973682062696e206e61cc816d65e284a220e4bda0e5a5bd20e6bca200",
+            "state": 1
+          },
+          {
+            "decoded": null,
+            "name": "OMFI:MCBR:AMEVersion",
+            "ranges": [
+              {
+                "length": 2,
+                "offset": 50676
+              }
+            ],
+            "rawHex": "0101",
+            "state": 1
+          }
+        ],
+        "recordedIdentityHex": "",
+        "relations": [
+          {
+            "origin": 68112,
+            "property": "OMFI:ATTB:ObjAttribute",
+            "target": 68111
+          }
+        ]
+      },
+      {
+        "class": "ATTB",
+        "embeddingDepth": 0,
+        "object": 68112,
+        "properties": [
+          {
+            "decoded": "ATTB",
+            "name": "OMFI:ObjID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 50700
+              }
+            ],
+            "rawHex": "41545442",
+            "state": 1
+          },
+          {
+            "decoded": 3,
+            "name": "OMFI:ATTB:Kind",
+            "ranges": [
+              {
+                "length": 2,
+                "offset": 50724
+              }
+            ],
+            "rawHex": "0300",
+            "state": 1
+          },
+          {
+            "decoded": "_ORG_BIN",
+            "name": "OMFI:ATTB:Name",
+            "ranges": [
+              {
+                "length": 9,
+                "offset": 2131
+              }
+            ],
+            "rawHex": "5f4f52475f42494e00",
+            "state": 1
+          },
+          {
+            "decoded": null,
+            "name": "OMFI:ATTB:ObjAttribute",
+            "ranges": [
+              {
+                "length": 8,
+                "offset": 2140
+              }
+            ],
+            "rawHex": "0f0a010000000000",
+            "state": 1
+          }
+        ],
+        "recordedIdentityHex": "",
+        "relations": [
+          {
+            "origin": 68112,
+            "property": "OMFI:ATTB:ObjAttribute",
+            "target": 68111
+          },
+          {
+            "origin": 68113,
+            "property": "OMFI:ATTR:AttrRefs",
+            "target": 68112
+          }
+        ]
+      }
+    ],
+    "blackOmf": [
+      {
+        "class": "MCBR",
+        "embeddingDepth": 0,
+        "object": 68014,
+        "properties": [
+          {
+            "decoded": "MCBR",
+            "name": "OMFI:ObjID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 20212
+              }
+            ],
+            "rawHex": "4d434252",
+            "state": 1
+          },
+          {
+            "decoded": 921014660,
+            "name": "OMFI:MCBR:MC:binID.high",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 20236
+              }
+            ],
+            "rawHex": "8491e536",
+            "state": 1
+          },
+          {
+            "decoded": 95382973,
+            "name": "OMFI:MCBR:MC:binID.low",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 20260
+              }
+            ],
+            "rawHex": "bd6daf05",
+            "state": 1
+          },
+          {
+            "decoded": "Media Slides",
+            "name": "OMFI:MCBR:MC:binName",
+            "ranges": [
+              {
+                "length": 13,
+                "offset": 10334
+              }
+            ],
+            "rawHex": "4d6564696120536c6964657300",
+            "state": 1
+          },
+          {
+            "decoded": null,
+            "name": "OMFI:MCBR:AMEVersion",
+            "ranges": [
+              {
+                "length": 1,
+                "offset": 20308
+              }
+            ],
+            "rawHex": "01",
+            "state": 1
+          }
+        ],
+        "recordedIdentityHex": "",
+        "relations": [
+          {
+            "origin": 68015,
+            "property": "OMFI:ATTB:ObjAttribute",
+            "target": 68014
+          }
+        ]
+      },
+      {
+        "class": "ATTB",
+        "embeddingDepth": 0,
+        "object": 68015,
+        "properties": [
+          {
+            "decoded": "ATTB",
+            "name": "OMFI:ObjID",
+            "ranges": [
+              {
+                "length": 4,
+                "offset": 20332
+              }
+            ],
+            "rawHex": "41545442",
+            "state": 1
+          },
+          {
+            "decoded": 3,
+            "name": "OMFI:ATTB:Kind",
+            "ranges": [
+              {
+                "length": 2,
+                "offset": 20356
+              }
+            ],
+            "rawHex": "0300",
+            "state": 1
+          },
+          {
+            "decoded": "_ORG_BIN",
+            "name": "OMFI:ATTB:Name",
+            "ranges": [
+              {
+                "length": 9,
+                "offset": 10347
+              }
+            ],
+            "rawHex": "5f4f52475f42494e00",
+            "state": 1
+          },
+          {
+            "decoded": null,
+            "name": "OMFI:ATTB:ObjAttribute",
+            "ranges": [
+              {
+                "length": 8,
+                "offset": 10356
+              }
+            ],
+            "rawHex": "ae09010000000000",
+            "state": 1
+          }
+        ],
+        "recordedIdentityHex": "",
+        "relations": [
+          {
+            "origin": 68015,
+            "property": "OMFI:ATTB:ObjAttribute",
+            "target": 68014
+          },
+          {
+            "origin": 68016,
+            "property": "OMFI:ATTR:AttrRefs",
+            "target": 68015
+          }
+        ]
+      }
+    ]
+  },
+  "temporaryProbeProvenance": {
+    "receipts": [
+      {
+        "path": "/tmp/copland-original-bin-20261012/probe.cpp",
+        "bytes": 5905,
+        "mtimeNs": 1791746150324491664,
+        "sha256": "a1d6b15c23053d702016287cad97caa29a673134fe694aeaf92099c2991427b9"
+      },
+      {
+        "path": "/tmp/copland-original-bin-20261012/probe",
+        "bytes": 5613016,
+        "mtimeNs": 1791746152189536398,
+        "sha256": "8fe5bbf911ae8075a5193ed9617a83f56d30aa2aaa884c1e8b637d0b03f92f66"
+      },
+      {
+        "path": "/tmp/copland-original-bin-20261012/results.jsonl",
+        "bytes": 3144034,
+        "mtimeNs": 1791746187828578062,
+        "sha256": "0c57b57a81b7658eaef561feeee2b16d194242069489efbd4faf2ca13ef96b6c"
+      },
+      {
+        "path": "/tmp/copland-original-bin-20261012/additional-results.jsonl",
+        "bytes": 724,
+        "mtimeNs": 1791746246031856969,
+        "sha256": "d94bc1dd36f64fe4e72c0ff537a4f35c8f48eadbb9c019c3a65a540dbae3f410"
+      },
+      {
+        "path": "/tmp/copland-original-bin-20261012/test-receipts.json",
+        "bytes": 3262,
+        "mtimeNs": 1791746337447680954,
+        "sha256": "c39a881ffbcfb80ec453601acf86218891558f6e367d7315aa4323edfd25c304"
+      }
+    ],
+    "compileCommand": "/usr/bin/clang++ -std=c++17 -arch arm64 -mmacosx-version-min=11.0 -DQT_CORE_LIB -Isrc -isystem /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -iframework /Users/martymclean/Qt/6.5.3/macos/lib -isystem /Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang -isystem /Users/martymclean/Qt/6.5.3/macos/include /tmp/copland-original-bin-20261012/probe.cpp src/avbbinloader.cpp build/libmediamuster_mediaengine_core.a -F/Users/martymclean/Qt/6.5.3/macos/lib -framework QtCore -framework DiskArbitration -framework CoreFoundation -framework IOKit -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /tmp/copland-original-bin-20261012/probe",
+    "execution": "probe invoked with the 25 paths in paths.json, then separately with genuine fixtures/TONE_100A01.EA7D504A.611740.mxf. Every input exists, every parser outcome Complete, every before/after input hash and size/mtime stamp unchanged."
+  },
+  "limits": [
+    "Bounded verification covers these exact source hashes and build state; no exhaustive Avid/OMF/MXF format claim.",
+    "Current MDB projected candidate counts include recorded database references; they are not counts of physical rows scanned.",
+    "All inspected sources were Complete, so this pass does not newly validate hostile/incomplete/private-version Original Bin graphs.",
+    "No genuine MXF header with recorded Original Bin was identified. A future producer may use unsupported native metadata, so unsupported coverage is not checked absence.",
+    "An old archived database having a value while a regenerated same-folder database does not is evidence of differing metadata copies, not authorization to borrow the archived value."
+  ]
+}

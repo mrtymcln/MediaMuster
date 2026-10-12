@@ -1,0 +1,908 @@
+{
+  "schemaVersion": 1,
+  "dateLocal": "2026-10-12",
+  "writtenUtc": "2026-10-11T19:19:42.074337+00:00",
+  "purpose": "Read-only verification of current scan cancellation and operation/Undo/recovery safeguards; compact Copland implementation readiness audit, not implementation acceptance.",
+  "scope": {
+    "repository": "/Users/martymclean/Developer/MediaMuster",
+    "gitHead": "3e7246a575f5b0247efbe007f271070cb597d306",
+    "trackedSourceChanges": [],
+    "platform": "ProductName:\t\tmacOS\nProductVersion:\t\t15.8.1\nBuildVersion:\t\t24H212",
+    "architecture": "arm64",
+    "buildType": "Release",
+    "qtVersion": "6.5.3 EXACT",
+    "compiler": "Apple clang version 17.0.0 (clang-1700.0.13.5)",
+    "deploymentMinimum": "macOS 11.0",
+    "sourceHashScope": "Named production ownership/validation and test sources; linked library/binary hashes additionally identify the reader and projection stack."
+  },
+  "build": {
+    "command": [
+      "cmake",
+      "--build",
+      "build-mediaengine-release",
+      "--parallel",
+      "4",
+      "--target",
+      "tst_mediaenginescan",
+      "tst_fileoperations",
+      "tst_opjournal",
+      "tst_opcleanup",
+      "tst_scanner"
+    ],
+    "exitCode": 0,
+    "logPath": "/private/tmp/copland-scan-operation-verification-20261012/build.log",
+    "logSha256": "15fae9acaf3906abb9a805ec0cb263e916c53b12e21206c3b0d9b4046fd561f7",
+    "logText": "[1/3] Linking CXX executable tests/tst_scanner\n[2/3] Linking CXX executable tests/tst_mediaenginescan\n[3/3] Linking CXX executable tests/tst_fileoperations\n",
+    "cachePath": "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeCache.txt",
+    "cacheSha256": "c16c6d3fb4ee6c7d20dc1514ccd399c7774d7536f2d8d922945bedc1e41bd452",
+    "operationFixtureRedirect": {
+      "method": "Compile the unchanged tests/tst_fileoperations.cpp against copied fixture paths, then relink with the fresh production object/library set. Only FIXTURES_DIR and temporary object/output paths differ; no application or test source changed. All file-operation source/destination/journal files are disposable.",
+      "commands": {
+        "compile": [
+          "/usr/bin/c++",
+          "-DFIXTURES_DIR=\"/private/tmp/copland-scan-operation-verification-20261012/fixtures\"",
+          "-DQT_CORE_LIB",
+          "-DQT_NO_DEBUG",
+          "-DQT_TESTCASE_BUILDDIR=\"/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/tests\"",
+          "-DQT_TESTCASE_SOURCEDIR=\"/Users/martymclean/Developer/MediaMuster/tests\"",
+          "-DQT_TESTLIB_LIB",
+          "-I/Users/martymclean/Developer/MediaMuster/src",
+          "-isystem",
+          "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/tests/tst_fileoperations_autogen/include",
+          "-isystem",
+          "/Users/martymclean/Qt/6.5.3/macos/lib/QtTest.framework/Headers",
+          "-iframework",
+          "/Users/martymclean/Qt/6.5.3/macos/lib",
+          "-isystem",
+          "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers",
+          "-isystem",
+          "/Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang",
+          "-isystem",
+          "/Users/martymclean/Qt/6.5.3/macos/include",
+          "-O3",
+          "-DNDEBUG",
+          "-std=c++17",
+          "-arch",
+          "arm64",
+          "-mmacosx-version-min=11.0",
+          "-Wall",
+          "-Wextra",
+          "-MD",
+          "-MT",
+          "tests/CMakeFiles/tst_fileoperations.dir/tst_fileoperations.cpp.o",
+          "-MF",
+          "/private/tmp/copland-scan-operation-verification-20261012/tst_fileoperations-copied-fixtures.d",
+          "-o",
+          "/private/tmp/copland-scan-operation-verification-20261012/tst_fileoperations-copied-fixtures.o",
+          "-c",
+          "/Users/martymclean/Developer/MediaMuster/tests/tst_fileoperations.cpp"
+        ],
+        "link": [
+          "/usr/bin/c++",
+          "-O3",
+          "-DNDEBUG",
+          "-arch",
+          "arm64",
+          "-mmacosx-version-min=11.0",
+          "-Wl,-search_paths_first",
+          "-Wl,-headerpad_max_install_names",
+          "tests/CMakeFiles/tst_fileoperations.dir/tst_fileoperations_autogen/mocs_compilation.cpp.o",
+          "/private/tmp/copland-scan-operation-verification-20261012/tst_fileoperations-copied-fixtures.o",
+          "tests/CMakeFiles/tst_fileoperations.dir/__/src/rebalancer.cpp.o",
+          "tests/CMakeFiles/tst_fileoperations.dir/__/src/rebalanceplanner.cpp.o",
+          "tests/CMakeFiles/tst_fileoperations.dir/__/src/opscanreceipt.cpp.o",
+          "tests/CMakeFiles/tst_fileoperations.dir/__/src/opmanager.cpp.o",
+          "tests/CMakeFiles/tst_fileoperations.dir/__/src/oprunner.cpp.o",
+          "tests/CMakeFiles/tst_fileoperations.dir/__/src/operationplan.cpp.o",
+          "tests/CMakeFiles/tst_fileoperations.dir/__/src/opcopier.cpp.o",
+          "tests/CMakeFiles/tst_fileoperations.dir/__/src/opjournal.cpp.o",
+          "tests/CMakeFiles/tst_fileoperations.dir/__/src/operationrecovery.cpp.o",
+          "tests/CMakeFiles/tst_fileoperations.dir/__/src/opfile.cpp.o",
+          "tests/CMakeFiles/tst_fileoperations.dir/__/src/volumeidentity.cpp.o",
+          "tests/CMakeFiles/tst_fileoperations.dir/__/src/nativefile.cpp.o",
+          "tests/CMakeFiles/tst_fileoperations.dir/__/src/mediametadata.cpp.o",
+          "tests/CMakeFiles/tst_fileoperations.dir/__/src/diagnostics.cpp.o",
+          "tests/CMakeFiles/tst_fileoperations.dir/__/src/optrash.cpp.o",
+          "tests/CMakeFiles/tst_fileoperations.dir/__/src/optrash_mac.mm.o",
+          "-o",
+          "/private/tmp/copland-scan-operation-verification-20261012/tst_fileoperations-copied-fixtures",
+          "-F/Users/martymclean/Qt/6.5.3/macos/lib",
+          "-Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib",
+          "/Users/martymclean/Qt/6.5.3/macos/lib/QtTest.framework/Versions/A/QtTest",
+          "libmediamuster_mediaengine_core.a",
+          "-framework",
+          "Security",
+          "-framework",
+          "AppKit",
+          "-framework",
+          "ApplicationServices",
+          "-framework",
+          "Foundation",
+          "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Versions/A/QtCore",
+          "-framework",
+          "IOKit",
+          "-framework",
+          "DiskArbitration"
+        ]
+      },
+      "exitCode": 0
+    }
+  },
+  "fixtures": [
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/TONE_100A01.EA7D504A.611740.mxf",
+      "copy": "/private/tmp/copland-scan-operation-verification-20261012/fixtures/TONE_100A01.EA7D504A.611740.mxf",
+      "sizeBytes": 8909409,
+      "sha256": "e545ab93dbf5227813b7cbb7ce2db50e9ff5660d2273cb7875e4dbe03071fe2b",
+      "copySha256": "e545ab93dbf5227813b7cbb7ce2db50e9ff5660d2273cb7875e4dbe03071fe2b",
+      "sourceSha256After": "e545ab93dbf5227813b7cbb7ce2db50e9ff5660d2273cb7875e4dbe03071fe2b",
+      "copySha256After": "e545ab93dbf5227813b7cbb7ce2db50e9ff5660d2273cb7875e4dbe03071fe2b",
+      "originalAndCopyBytesUnchanged": true
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/TONE_100A01.6A972974.039700.wav",
+      "copy": "/private/tmp/copland-scan-operation-verification-20261012/fixtures/omf/mc2026_audio/TONE_100A01.6A972974.039700.wav",
+      "sizeBytes": 8665912,
+      "sha256": "3c729948415822f1c688bcc8ba438ab203147af060386585158bf82b124adad3",
+      "copySha256": "3c729948415822f1c688bcc8ba438ab203147af060386585158bf82b124adad3",
+      "sourceSha256After": "3c729948415822f1c688bcc8ba438ab203147af060386585158bf82b124adad3",
+      "copySha256After": "3c729948415822f1c688bcc8ba438ab203147af060386585158bf82b124adad3",
+      "originalAndCopyBytesUnchanged": true
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/TONE_100A01.6A972997.0C53E0.aif",
+      "copy": "/private/tmp/copland-scan-operation-verification-20261012/fixtures/omf/mc2026_audio/TONE_100A01.6A972997.0C53E0.aif",
+      "sizeBytes": 8659584,
+      "sha256": "2a6cd6b86abda8ab6b34b8faffd3df422ae4713170318044177195c0d5c059b6",
+      "copySha256": "2a6cd6b86abda8ab6b34b8faffd3df422ae4713170318044177195c0d5c059b6",
+      "sourceSha256After": "2a6cd6b86abda8ab6b34b8faffd3df422ae4713170318044177195c0d5c059b6",
+      "copySha256After": "2a6cd6b86abda8ab6b34b8faffd3df422ae4713170318044177195c0d5c059b6",
+      "originalAndCopyBytesUnchanged": true
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/BLACK_720x576x1_JFIF30P.omf",
+      "copy": "/private/tmp/copland-scan-operation-verification-20261012/fixtures/omf/avid_supporting/BLACK_720x576x1_JFIF30P.omf",
+      "sizeBytes": 26368,
+      "sha256": "f5700186b33e18e5dff066b09eed300d48fb78bab62c61d2183e925952d14af0",
+      "copySha256": "f5700186b33e18e5dff066b09eed300d48fb78bab62c61d2183e925952d14af0",
+      "sourceSha256After": "f5700186b33e18e5dff066b09eed300d48fb78bab62c61d2183e925952d14af0",
+      "copySha256After": "f5700186b33e18e5dff066b09eed300d48fb78bab62c61d2183e925952d14af0",
+      "originalAndCopyBytesUnchanged": true
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/BLACK_720x486x1_MPEG50.omf",
+      "copy": "/private/tmp/copland-scan-operation-verification-20261012/fixtures/omf/avid_supporting/BLACK_720x486x1_MPEG50.omf",
+      "sizeBytes": 279512,
+      "sha256": "6ee0b7831f309621229c173e3b7b87d904b5daeb564fa2d6887f32036594f012",
+      "copySha256": "6ee0b7831f309621229c173e3b7b87d904b5daeb564fa2d6887f32036594f012",
+      "sourceSha256After": "6ee0b7831f309621229c173e3b7b87d904b5daeb564fa2d6887f32036594f012",
+      "copySha256After": "6ee0b7831f309621229c173e3b7b87d904b5daeb564fa2d6887f32036594f012",
+      "originalAndCopyBytesUnchanged": true
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/avid_headers/A01.E683CD73_FF4BEFF4BE934A.mxf",
+      "copy": "/private/tmp/copland-scan-operation-verification-20261012/fixtures/avid_headers/A01.E683CD73_FF4BEFF4BE934A.mxf",
+      "sizeBytes": 262144,
+      "sha256": "39f8ac582288806649b7bab87ea30a7c9ae073189a920dfc105b89f546ffb316",
+      "copySha256": "39f8ac582288806649b7bab87ea30a7c9ae073189a920dfc105b89f546ffb316",
+      "sourceSha256After": "39f8ac582288806649b7bab87ea30a7c9ae073189a920dfc105b89f546ffb316",
+      "copySha256After": "39f8ac582288806649b7bab87ea30a7c9ae073189a920dfc105b89f546ffb316",
+      "originalAndCopyBytesUnchanged": true
+    },
+    {
+      "source": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/avid_headers/A02.E683CD74_FF4BEFF4BE93AA.mxf",
+      "copy": "/private/tmp/copland-scan-operation-verification-20261012/fixtures/avid_headers/A02.E683CD74_FF4BEFF4BE93AA.mxf",
+      "sizeBytes": 262144,
+      "sha256": "1307aafe2c4d6ed6a6cedadaed4dc0c99980ed5370eb918772bea56261b046cd",
+      "copySha256": "1307aafe2c4d6ed6a6cedadaed4dc0c99980ed5370eb918772bea56261b046cd",
+      "sourceSha256After": "1307aafe2c4d6ed6a6cedadaed4dc0c99980ed5370eb918772bea56261b046cd",
+      "copySha256After": "1307aafe2c4d6ed6a6cedadaed4dc0c99980ed5370eb918772bea56261b046cd",
+      "originalAndCopyBytesUnchanged": true
+    }
+  ],
+  "testRuns": [
+    {
+      "name": "mediaenginescan",
+      "command": [
+        "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/tests/tst_mediaenginescan",
+        "-o",
+        "/private/tmp/copland-scan-operation-verification-20261012/mediaenginescan.txt,txt",
+        "-o",
+        "/private/tmp/copland-scan-operation-verification-20261012/mediaenginescan.xml,junitxml"
+      ],
+      "startedUtc": "2026-10-11T19:15:08.704056+00:00",
+      "elapsedSeconds": 0.454,
+      "exitCode": 0,
+      "textLog": "/private/tmp/copland-scan-operation-verification-20261012/mediaenginescan.txt",
+      "junitXml": "/private/tmp/copland-scan-operation-verification-20261012/mediaenginescan.xml",
+      "junitSummary": {
+        "tests": "31",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "1"
+      },
+      "textLogSha256": "33a8c153a483d52ec20de420fee8a41d0fe2e5ef62eaa1cf6a141cd2647448e6",
+      "junitSha256": "56dd74e09fba99f55909eddffda53e909a5186e53265997bd59c09e5a59ce8b6",
+      "skips": [
+        {
+          "testcase": "normalized_name_does_not_assign_one_record_to_two_files",
+          "reason": "Temporary filesystem does not preserve case-distinct file locations"
+        }
+      ],
+      "selectedPassedCases": [
+        "external_cancellation_is_observed",
+        "cancellation_before_source_open(database-progress)",
+        "cancellation_before_source_open(header-progress)",
+        "cancellation_before_source_open(database-reading)",
+        "cancellation_before_source_open(header-reading)",
+        "cancellation_after_database_read_keeps_source_receipt",
+        "row_conversion_reuses_known_volume_and_does_not_probe_after_cancel"
+      ]
+    },
+    {
+      "name": "fileoperations",
+      "command": [
+        "/private/tmp/copland-scan-operation-verification-20261012/tst_fileoperations-copied-fixtures",
+        "-o",
+        "/private/tmp/copland-scan-operation-verification-20261012/fileoperations.txt,txt",
+        "-o",
+        "/private/tmp/copland-scan-operation-verification-20261012/fileoperations.xml,junitxml"
+      ],
+      "startedUtc": "2026-10-11T19:15:09.158969+00:00",
+      "elapsedSeconds": 18.537,
+      "exitCode": 0,
+      "textLog": "/private/tmp/copland-scan-operation-verification-20261012/fileoperations.txt",
+      "junitXml": "/private/tmp/copland-scan-operation-verification-20261012/fileoperations.xml",
+      "junitSummary": {
+        "tests": "150",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      "textLogSha256": "fd523c18e27dcdf70edff0be97e862f440f188fe06fa8aae4f4bf9899967d690",
+      "junitSha256": "f6d70e6f32deb07a7eb3cb5b6f45fca925e836f0c2723cf634dcd0288d4123e3",
+      "skips": [],
+      "selectedPassedCases": [
+        "undo_already_restored_object_finishes_without_changes",
+        "undo_late_collision_remains_resumable",
+        "native_trash_cancellation_never_offers_fallback",
+        "native_trash_fallback_crash_resume(crash-awaiting-consent)",
+        "native_trash_fallback_crash_resume(crash-after-durable-consent)",
+        "undo_copy_native_refusal_uses_consented_fallback",
+        "native_copy_error_classification(cancelled)",
+        "native_copy_retry_policy(move-transient-recovers)",
+        "native_copy_retry_policy(copy-transient-recovers)",
+        "native_copy_retry_cancellation(native-copy-cancelled)",
+        "native_copy_retry_cancellation(before-retry)",
+        "undo_rebalance_retires_regenerated_indexes",
+        "undo_original_in_retirement",
+        "removal_crash_boundaries_resume",
+        "undo_copy_is_gated_and_claims_forward",
+        "undo_partial_move_restores_only_completed_changes",
+        "undo_interrupted_copy_and_changed_result",
+        "undo_move_resumes_after_publication(unchanged-destination)",
+        "undo_move_resumes_after_publication(changed-destination)",
+        "local_trash_and_undo_roundtrip",
+        "source_edit_is_retained",
+        "cancellation_preserves_replacement",
+        "cancel_during_retirement_restores_original(before-source-retirement)",
+        "cancel_during_retirement_restores_original(source-retired)",
+        "restoration_crash_boundaries_are_idempotent(restoring-source)",
+        "restoration_crash_boundaries_are_idempotent(before-source-restore)",
+        "restoration_crash_boundaries_are_idempotent(source-restored-on-disk)",
+        "restoration_crash_boundaries_are_idempotent(source-restored)",
+        "cleanup_crash_boundaries_are_recoverable(published)",
+        "cleanup_crash_boundaries_are_recoverable(done)",
+        "cleanup_crash_boundaries_are_recoverable(before-directory-cleanup)",
+        "cleanup_crash_boundaries_are_recoverable(directory-cleaned)",
+        "cleanup_crash_boundaries_are_recoverable(before-partial-cleanup)",
+        "cleanup_crash_boundaries_are_recoverable(partial-cleaned)",
+        "undo_settles_interrupted_retirement_cleanup(retired-original)",
+        "undo_settles_interrupted_retirement_cleanup(removed-original)",
+        "crash_before_publication_is_not_complete",
+        "crash_after_publication_is_reconciled",
+        "different_source_on_resume_is_refused",
+        "mediaengine_scan_receipt_checks_location_and_header_subset",
+        "skipped_header_checks_database_file_identity(copy-matching)",
+        "skipped_header_checks_database_file_identity(copy-different)",
+        "skipped_header_checks_database_file_identity(copy-unreadable)",
+        "skipped_header_checks_database_file_identity(move-matching)",
+        "skipped_header_checks_database_file_identity(move-different)",
+        "skipped_header_checks_database_file_identity(move-unreadable)",
+        "skipped_header_checks_database_file_identity(delete-matching)",
+        "skipped_header_checks_database_file_identity(delete-different)",
+        "skipped_header_checks_database_file_identity(delete-unreadable)",
+        "transferred_row_does_not_borrow_another_headers_receipt",
+        "changed_scan_header_cannot_become_unknown",
+        "facade_refuses_second_job_without_cancelling_first",
+        "rebalance_cancel_before_queued_dispatch_keeps_source",
+        "rebalance_refuses_different_file_from_same_master",
+        "abrupt_process_exit_is_recoverable"
+      ]
+    },
+    {
+      "name": "opjournal",
+      "command": [
+        "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/tests/tst_opjournal",
+        "-o",
+        "/private/tmp/copland-scan-operation-verification-20261012/opjournal.txt,txt",
+        "-o",
+        "/private/tmp/copland-scan-operation-verification-20261012/opjournal.xml,junitxml"
+      ],
+      "startedUtc": "2026-10-11T19:15:27.696628+00:00",
+      "elapsedSeconds": 1.471,
+      "exitCode": 0,
+      "textLog": "/private/tmp/copland-scan-operation-verification-20261012/opjournal.txt",
+      "junitXml": "/private/tmp/copland-scan-operation-verification-20261012/opjournal.xml",
+      "junitSummary": {
+        "tests": "85",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      "textLogSha256": "ebdae690c2b0c8ed187f75979df8f3da9a7bc7fd92f82ad2df87e602650a9112",
+      "junitSha256": "9520f25e284817d64171b8628e8d9f8e52841b4dba8ed1bd9f8fe2e2b5dcf8d5",
+      "skips": [],
+      "selectedPassedCases": [
+        "scan_receipt_round_trips_and_accepts_older_journals",
+        "malformed_scan_receipt_is_refused",
+        "interrupted_source_removal_remains_undo_candidate",
+        "undo_does_not_expose_an_older_job",
+        "pruning_preserves_recovery_evidence(completed)",
+        "pruning_preserves_recovery_evidence(completed-source-removal)",
+        "pruning_preserves_recovery_evidence(completed-source-restoration)",
+        "pruning_preserves_recovery_evidence(restoration-intent)",
+        "pruning_preserves_recovery_evidence(completed-with-pending-cleanup)",
+        "pruning_preserves_recovery_evidence(dismissed-with-pending-cleanup)",
+        "pruning_preserves_recovery_evidence(skipped)",
+        "pruning_preserves_recovery_evidence(no-effect)",
+        "pruning_preserves_recovery_evidence(planned)",
+        "pruning_preserves_recovery_evidence(cancelled)",
+        "pruning_preserves_recovery_evidence(failed)",
+        "pruning_preserves_recovery_evidence(awaiting-source-removal)",
+        "pruning_preserves_recovery_evidence(source-retained)",
+        "pruning_preserves_recovery_evidence(needs-attention)",
+        "pruning_preserves_recovery_evidence(dismissed-failure)",
+        "pruning_preserves_recovery_evidence(missing-final-stop)",
+        "pruning_preserves_recovery_evidence(torn-final-append)",
+        "pruning_preserves_recovery_evidence(corrupt-append)",
+        "pruning_preserves_recovery_evidence(retained-artifact)",
+        "pruning_preserves_recovery_evidence(unfinished-temporary-file)",
+        "pruning_keeps_the_latest_undo_candidate_with_undo_disabled",
+        "pruning_keeps_the_completed_undo_barrier"
+      ]
+    },
+    {
+      "name": "opcleanup",
+      "command": [
+        "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/tests/tst_opcleanup",
+        "-o",
+        "/private/tmp/copland-scan-operation-verification-20261012/opcleanup.txt,txt",
+        "-o",
+        "/private/tmp/copland-scan-operation-verification-20261012/opcleanup.xml,junitxml"
+      ],
+      "startedUtc": "2026-10-11T19:15:29.168239+00:00",
+      "elapsedSeconds": 0.132,
+      "exitCode": 0,
+      "textLog": "/private/tmp/copland-scan-operation-verification-20261012/opcleanup.txt",
+      "junitXml": "/private/tmp/copland-scan-operation-verification-20261012/opcleanup.xml",
+      "junitSummary": {
+        "tests": "17",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      "textLogSha256": "2298d787842abcbf14e7d90e4c1729f7ca3ede9a3c99a89b37ce72e5d2258688",
+      "junitSha256": "268f7ac75af52b8b230187b54aab1de7b53886ca8eea68147b8ced237bf31e45",
+      "skips": [],
+      "selectedPassedCases": []
+    },
+    {
+      "name": "scanner-focused",
+      "command": [
+        "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/tests/tst_scanner",
+        "cancellation_during_root_preparation_stops_scan",
+        "cancellation_during_finalising_reports_cancelled",
+        "completed_scan_can_restart_from_its_queued_receiver",
+        "cancelled_scan_does_not_leak_databases_into_the_next",
+        "-o",
+        "/private/tmp/copland-scan-operation-verification-20261012/scanner-focused.txt,txt",
+        "-o",
+        "/private/tmp/copland-scan-operation-verification-20261012/scanner-focused.xml,junitxml"
+      ],
+      "startedUtc": "2026-10-11T19:15:29.300894+00:00",
+      "elapsedSeconds": 4.447,
+      "exitCode": 0,
+      "textLog": "/private/tmp/copland-scan-operation-verification-20261012/scanner-focused.txt",
+      "junitXml": "/private/tmp/copland-scan-operation-verification-20261012/scanner-focused.xml",
+      "junitSummary": {
+        "tests": "6",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      "textLogSha256": "0e57f2ef22175e0e5f32547fd24d60e2894992d7d84d39793c930a505bb8e1a6",
+      "junitSha256": "44aa2f93d4c6cf5bd9ecfbf1c791c2891c101425293804466fc6be8a0e0992aa",
+      "skips": [],
+      "selectedPassedCases": [
+        "cancellation_during_root_preparation_stops_scan",
+        "cancellation_during_finalising_reports_cancelled",
+        "cancelled_scan_does_not_leak_databases_into_the_next"
+      ]
+    }
+  ],
+  "cancellationProbe": {
+    "method": "Temporary QCoreApplication probe calls the production ScanEngine and freshly built MediaScanner/adapter objects. Controls: copied genuine tone MXF; PMR record is authored solely to deterministically carry a known applicable project/ID. Cancel uses existing progress/finalising/scanLogBatch callbacks via DirectConnection where stated; no production instrumentation or source edits.",
+    "buildCommands": {
+      "compile": [
+        "/usr/bin/c++",
+        "-DFIXTURES_DIR=\"/Users/martymclean/Developer/MediaMuster/tests/fixtures\"",
+        "-DQT_CONCURRENT_LIB",
+        "-DQT_CORE_LIB",
+        "-DQT_NO_DEBUG",
+        "-DQT_TESTCASE_BUILDDIR=\"/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/tests\"",
+        "-DQT_TESTCASE_SOURCEDIR=\"/Users/martymclean/Developer/MediaMuster/tests\"",
+        "-DQT_TESTLIB_LIB",
+        "-I/Users/martymclean/Developer/MediaMuster/src",
+        "-isystem",
+        "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/tests/tst_scanner_autogen/include",
+        "-isystem",
+        "/Users/martymclean/Qt/6.5.3/macos/lib/QtTest.framework/Headers",
+        "-iframework",
+        "/Users/martymclean/Qt/6.5.3/macos/lib",
+        "-isystem",
+        "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers",
+        "-isystem",
+        "/Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang",
+        "-isystem",
+        "/Users/martymclean/Qt/6.5.3/macos/include",
+        "-isystem",
+        "/Users/martymclean/Qt/6.5.3/macos/lib/QtConcurrent.framework/Headers",
+        "-O3",
+        "-DNDEBUG",
+        "-std=c++17",
+        "-arch",
+        "arm64",
+        "-mmacosx-version-min=11.0",
+        "-Wall",
+        "-Wextra",
+        "-MD",
+        "-MT",
+        "tests/CMakeFiles/tst_scanner.dir/tst_scanner.cpp.o",
+        "-MF",
+        "/private/tmp/copland-scan-operation-verification-20261012/cancellation-probe.d",
+        "-o",
+        "/private/tmp/copland-scan-operation-verification-20261012/cancellation-probe.o",
+        "-c",
+        "/private/tmp/copland-scan-operation-verification-20261012/cancellation-probe.cpp"
+      ],
+      "link": [
+        "/usr/bin/c++",
+        "-O3",
+        "-DNDEBUG",
+        "-arch",
+        "arm64",
+        "-mmacosx-version-min=11.0",
+        "-Wl,-search_paths_first",
+        "-Wl,-headerpad_max_install_names",
+        "tests/CMakeFiles/tst_scanner.dir/tst_scanner_autogen/mocs_compilation.cpp.o",
+        "/private/tmp/copland-scan-operation-verification-20261012/cancellation-probe.o",
+        "tests/CMakeFiles/tst_scanner.dir/__/src/mediaengineadapter.cpp.o",
+        "tests/CMakeFiles/tst_scanner.dir/__/src/mediacsv.cpp.o",
+        "tests/CMakeFiles/tst_scanner.dir/__/src/volumeidentity.cpp.o",
+        "tests/CMakeFiles/tst_scanner.dir/__/src/nativefile.cpp.o",
+        "tests/CMakeFiles/tst_scanner.dir/__/src/mediascanner.cpp.o",
+        "tests/CMakeFiles/tst_scanner.dir/__/src/mediametadata.cpp.o",
+        "tests/CMakeFiles/tst_scanner.dir/__/src/effectcatalogue.cpp.o",
+        "tests/CMakeFiles/tst_scanner.dir/__/src/diagnostics.cpp.o",
+        "-o",
+        "/private/tmp/copland-scan-operation-verification-20261012/cancellation-probe",
+        "-F/Users/martymclean/Qt/6.5.3/macos/lib",
+        "-Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib",
+        "/Users/martymclean/Qt/6.5.3/macos/lib/QtTest.framework/Versions/A/QtTest",
+        "/Users/martymclean/Qt/6.5.3/macos/lib/QtConcurrent.framework/Versions/A/QtConcurrent",
+        "libmediamuster_mediaengine.a",
+        "-framework",
+        "Security",
+        "-framework",
+        "AppKit",
+        "-framework",
+        "ApplicationServices",
+        "-framework",
+        "Foundation",
+        "libmediamuster_mediaengine_core.a",
+        "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Versions/A/QtCore",
+        "-framework",
+        "IOKit",
+        "-framework",
+        "DiskArbitration"
+      ]
+    },
+    "buildExitCode": 0,
+    "run": {
+      "command": [
+        "/private/tmp/copland-scan-operation-verification-20261012/cancellation-probe",
+        "/private/tmp/copland-scan-operation-verification-20261012/fixtures/TONE_100A01.EA7D504A.611740.mxf"
+      ],
+      "exitCode": 0
+    },
+    "sourcePath": "/private/tmp/copland-scan-operation-verification-20261012/cancellation-probe.cpp",
+    "sourceSha256": "68f1d8a343d7b4ef9dc1da4f5d1d3597abd33793b6b6a819750161d5b2266b30",
+    "sourceText": "#include \"mediaengine/scanengine.h\"\n#include \"mediaengine/scancoordinator.h\"\n#include \"mediaengineadapter.h\"\n#include \"mediascanner.h\"\n#include <QCoreApplication>\n#include <QDir>\n#include <QFile>\n#include <QTemporaryDir>\n#include <QEventLoop>\n#include <QTimer>\n#include <QJsonDocument>\n#include <QJsonArray>\n#include <QJsonObject>\n#include <QTextStream>\n#include <QtEndian>\n#include <atomic>\n#include <stdexcept>\nusing namespace MediaEngine;\nnamespace {\nvoid require(bool ok, const char *message) { if (!ok) throw std::runtime_error(message); }\ntemplate<typename T> void appendNumber(QByteArray &bytes, T value) { char encoded[sizeof(T)]; qToLittleEndian(value, encoded); bytes.append(encoded, sizeof(T)); }\nQByteArray pmr(const QString &fileId, const QString &masterId) {\n QByteArray b; appendNumber<quint32>(b,0x7a9); appendNumber<qint32>(b,8); appendNumber<quint32>(b,1);\n b.append(QByteArray::fromHex(fileId.toLatin1().replace(\".\",\"\")));\n QByteArray filename(\"take.mxf\"), project(\"Completed PMR project\");\n appendNumber<quint16>(b,filename.size()); b.append(filename); appendNumber<quint16>(b,project.size()); b.append(project);\n b.append(QByteArray::fromHex(masterId.toLatin1().replace(\".\",\"\"))); appendNumber<quint32>(b,0); return b;\n}\nvoid write(const QString &path,const QByteArray &data) { QFile f(path); require(f.open(QIODevice::WriteOnly),\"cannot write control\"); require(f.write(data)==data.size(),\"short control write\"); }\nQJsonObject describe(const ScanResult &s) {\n QJsonArray sources,rows;\n for(const auto &source:s.sources) sources.append(QJsonObject{{\"path\",source.snapshot->path},{\"outcome\",int(source.outcome)},{\"readState\",int(source.snapshot->readState)}});\n for(const auto &file:s.files) {\n  const auto row=mediaEngineMediaFile(file,{},QStringLiteral(\"captured-test-volume\"),QStringLiteral(\"test\"));\n  rows.append(QJsonObject{{\"path\",file.path},{\"fileMobId\",row.fileMobId},{\"masterMobId\",row.masterMobId},{\"clipName\",row.clipName},{\"project\",row.project},{\"duration\",row.durationDisplay()},{\"fileMobIdObservationCount\",file.evidence.observations(MediaProperty::FileMobId).size()},{\"projectObservationCount\",file.evidence.observations(MediaProperty::Project).size()}});\n }\n return {{\"cancelled\",s.cancelled},{\"discoveryComplete\",s.discoveryComplete},{\"parsingComplete\",s.parsingComplete},{\"reconciliationComplete\",s.reconciliationComplete},{\"sources\",sources},{\"rows\",rows}};\n}\nQJsonObject scannerRun(const QString &root, bool cancelAtFinalising) {\n MediaScanner scanner; QEventLoop loop; QTimer timeout; timeout.setSingleShot(true); bool timedOut=false,failed=false; QString failure;\n QStringList messages; QVector<::MediaFile> rows; std::atomic_bool triggered{false};\n QObject::connect(&timeout,&QTimer::timeout,&loop,[&]{timedOut=true; scanner.cancelScan();loop.quit();});\n QObject::connect(&scanner,&MediaScanner::scanFinalising,&scanner,[&]{if(cancelAtFinalising){triggered=true;scanner.cancelScan();}},Qt::DirectConnection);\n QObject::connect(&scanner,&MediaScanner::scanLogBatch,&scanner,[&](const QVector<LogMessage>&batch){\n  for(const auto &message:batch){messages.append(message.message);if(!cancelAtFinalising&&message.message.startsWith(QStringLiteral(\"Scan complete:\"))){triggered=true;scanner.cancelScan();}}\n },Qt::DirectConnection);\n QObject::connect(&scanner,&MediaScanner::scanFinished,&loop,[&](const QVector<::MediaFile>&result){rows=result;loop.quit();},Qt::QueuedConnection);\n QObject::connect(&scanner,&MediaScanner::scanFailed,&loop,[&](const QString&error){failed=true;failure=error;loop.quit();},Qt::QueuedConnection);\n MediaScanner::Options options; options.volumePaths={root}; scanner.startScan(options);timeout.start(5000);loop.exec();\n QJsonArray fields;for(const auto &row:rows)fields.append(QJsonObject{{\"fileMobId\",row.fileMobId},{\"clipName\",row.clipName},{\"duration\",row.durationDisplay()},{\"capturedSessionCancelled\",row.mediaEngineScan?row.mediaEngineScan->cancelled:false}});\n return {{\"cancelHook\",cancelAtFinalising?\"scanFinalising DirectConnection\":\"scanLogBatch DirectConnection at final complete-message flush\"},{\"cancelTriggered\",triggered.load()},{\"timedOut\",timedOut},{\"failed\",failed},{\"failure\",failure},{\"rowCount\",rows.size()},{\"rows\",fields},{\"messages\",QJsonArray::fromStringList(messages)}};\n}\n}\nint main(int argc,char **argv) {\n QCoreApplication app(argc,argv);qRegisterMetaType<QVector<::MediaFile>>();qRegisterMetaType<QVector<LogMessage>>();\n try {\n  require(app.arguments().size()==2,\"need disposable specimen path\"); const QString specimen=app.arguments()[1]; QTemporaryDir temp;require(temp.isValid(),\"temp failed\");\n  const QString folder=temp.path()+\"/Avid MediaFiles/MXF/1\", path=folder+\"/take.mxf\"; require(QDir().mkpath(folder),\"mkdir failed\");require(QFile::copy(specimen,path),\"copy failed\");\n  Cancellation normal;const auto baseline=ScanEngine{}.scan({{temp.path()},false},normal); require(baseline.files.size()==1,\"baseline row count\");\n  const auto fileId=baseline.files[0].evidence.selected(MediaProperty::FileMobId).value.toString();const auto masters=baseline.files[0].evidence.selected(MediaProperty::MasterMobId).value.toStringList();require(!fileId.isEmpty()&&!masters.isEmpty(),\"genuine baseline IDs missing\");\n  write(folder+\"/index.pmr\",pmr(fileId,masters.front()));Cancellation normalWithPmr;const auto baselineWithPmr=ScanEngine{}.scan({{temp.path()},false},normalWithPmr);Cancellation afterDatabase; ScanCallbacks databaseCallbacks;databaseCallbacks.progress=[&](int,int,const QString&current){if(current==path)afterDatabase.cancel();};const auto databaseCancel=ScanEngine{}.scan({{temp.path()},false},afterDatabase,databaseCallbacks);\n  require(QFile::remove(folder+\"/index.pmr\"),\"remove control failed\");Cancellation beforeMatching;ScanCallbacks headerCallbacks;headerCallbacks.finalising=[&]{beforeMatching.cancel();};const auto headerCancel=ScanEngine{}.scan({{temp.path()},false},beforeMatching,headerCallbacks);\n  QJsonObject report{{\"specimenCopy\",specimen},{\"baseline\",describe(baseline)},{\"baselineWithConstructedPmr\",describe(baselineWithPmr)},{\"cancelAfterCompletePmrBeforeHeader\",describe(databaseCancel)},{\"cancelAfterCompleteHeaderBeforeMatching\",describe(headerCancel)},{\"productionScannerFinalisingCancel\",scannerRun(temp.path(),true)},{\"productionScannerLateCancelAtFinalLogFlush\",scannerRun(temp.path(),false)}};\n  QTextStream(stdout)<<QJsonDocument(report).toJson();return 0;\n } catch(const std::exception&e){QTextStream(stderr)<<e.what()<<'\\n';return 1;}\n}\n",
+    "stderr": "",
+    "currentBehaviorChecks": {
+      "genuine_header_baseline_has_id_name_duration": true,
+      "constructed_pmr_normal_scan_resolves_project": true,
+      "cancel_after_pmr_retains_complete_source_but_drops_row_id_and_project": true,
+      "cancel_after_genuine_header_retains_complete_source_but_drops_metadata": true,
+      "production_finalising_cancel_is_acknowledged_but_values_empty": true,
+      "production_late_cancel_retains_values_but_is_not_acknowledged": true,
+      "production_probe_no_timeout_or_scan_failure": true
+    },
+    "observed": {
+      "baseline": {
+        "cancelled": false,
+        "discoveryComplete": true,
+        "parsingComplete": true,
+        "reconciliationComplete": true,
+        "rows": [
+          {
+            "clipName": "TONE: 1000 Hz @ -14.0 dB.1",
+            "duration": "00:01:00:00",
+            "fileMobId": "060a2b3401010105.01010f1013000000.4a507dea74110690.7a361e6a605d3613",
+            "fileMobIdObservationCount": 3,
+            "masterMobId": "060a2b3401010105.01010f1013000000.d2467dea74110690.91901e6a605d3613",
+            "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/cancellation-probe-dmMAhJ/Avid MediaFiles/MXF/1/take.mxf",
+            "project": "block 1729",
+            "projectObservationCount": 2
+          }
+        ],
+        "sources": [
+          {
+            "outcome": 1,
+            "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/cancellation-probe-dmMAhJ/Avid MediaFiles/MXF/1/take.mxf",
+            "readState": 1
+          }
+        ]
+      },
+      "baselineWithConstructedPmr": {
+        "cancelled": false,
+        "discoveryComplete": true,
+        "parsingComplete": true,
+        "reconciliationComplete": true,
+        "rows": [
+          {
+            "clipName": "TONE: 1000 Hz @ -14.0 dB.1",
+            "duration": "00:01:00:00",
+            "fileMobId": "060a2b3401010105.01010f1013000000.4a507dea74110690.7a361e6a605d3613",
+            "fileMobIdObservationCount": 4,
+            "masterMobId": "060a2b3401010105.01010f1013000000.d2467dea74110690.91901e6a605d3613",
+            "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/cancellation-probe-dmMAhJ/Avid MediaFiles/MXF/1/take.mxf",
+            "project": "Completed PMR project",
+            "projectObservationCount": 3
+          }
+        ],
+        "sources": [
+          {
+            "outcome": 1,
+            "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/cancellation-probe-dmMAhJ/Avid MediaFiles/MXF/1/index.pmr",
+            "readState": 1
+          },
+          {
+            "outcome": 1,
+            "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/cancellation-probe-dmMAhJ/Avid MediaFiles/MXF/1/take.mxf",
+            "readState": 1
+          }
+        ]
+      },
+      "cancelAfterCompleteHeaderBeforeMatching": {
+        "cancelled": true,
+        "discoveryComplete": true,
+        "parsingComplete": true,
+        "reconciliationComplete": false,
+        "rows": [
+          {
+            "clipName": "",
+            "duration": "",
+            "fileMobId": "",
+            "fileMobIdObservationCount": 0,
+            "masterMobId": "",
+            "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/cancellation-probe-dmMAhJ/Avid MediaFiles/MXF/1/take.mxf",
+            "project": "",
+            "projectObservationCount": 0
+          }
+        ],
+        "sources": [
+          {
+            "outcome": 1,
+            "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/cancellation-probe-dmMAhJ/Avid MediaFiles/MXF/1/take.mxf",
+            "readState": 1
+          }
+        ]
+      },
+      "cancelAfterCompletePmrBeforeHeader": {
+        "cancelled": true,
+        "discoveryComplete": true,
+        "parsingComplete": false,
+        "reconciliationComplete": false,
+        "rows": [
+          {
+            "clipName": "",
+            "duration": "",
+            "fileMobId": "",
+            "fileMobIdObservationCount": 0,
+            "masterMobId": "",
+            "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/cancellation-probe-dmMAhJ/Avid MediaFiles/MXF/1/take.mxf",
+            "project": "",
+            "projectObservationCount": 0
+          }
+        ],
+        "sources": [
+          {
+            "outcome": 1,
+            "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/cancellation-probe-dmMAhJ/Avid MediaFiles/MXF/1/index.pmr",
+            "readState": 1
+          },
+          {
+            "outcome": 0,
+            "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/T/cancellation-probe-dmMAhJ/Avid MediaFiles/MXF/1/take.mxf",
+            "readState": 0
+          }
+        ]
+      },
+      "productionScannerFinalisingCancel": {
+        "cancelHook": "scanFinalising DirectConnection",
+        "cancelTriggered": true,
+        "failed": false,
+        "failure": "",
+        "messages": [
+          "Scanning 1 location(s) with MediaEngine...",
+          "Root lookup: 0 ms",
+          "Discovery and source preparation: 0 ms",
+          "Finalising scan: matching media and selecting metadata",
+          "Scan evidence: 1 source receipts plus extracted metadata and observations",
+          "Scan cancelled: 1 files found",
+          "Scan total including row formatting: 16 ms",
+          "Scan cancelled by user"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "capturedSessionCancelled": true,
+            "clipName": "",
+            "duration": "",
+            "fileMobId": ""
+          }
+        ],
+        "timedOut": false
+      },
+      "productionScannerLateCancelAtFinalLogFlush": {
+        "cancelHook": "scanLogBatch DirectConnection at final complete-message flush",
+        "cancelTriggered": true,
+        "failed": false,
+        "failure": "",
+        "messages": [
+          "Scanning 1 location(s) with MediaEngine...",
+          "Root lookup: 0 ms",
+          "Discovery and source preparation: 0 ms",
+          "Finalising scan: matching media and selecting metadata",
+          "Scan evidence: 1 source receipts plus extracted metadata and observations",
+          "Scan complete: 1 files found",
+          "Scan total including row formatting: 16 ms"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "capturedSessionCancelled": false,
+            "clipName": "TONE: 1000 Hz @ -14.0 dB.1",
+            "duration": "00:01:00:00",
+            "fileMobId": "060a2b3401010105.01010f1013000000.4a507dea74110690.7a361e6a605d3613"
+          }
+        ],
+        "timedOut": false
+      },
+      "specimenCopy": "/private/tmp/copland-scan-operation-verification-20261012/fixtures/TONE_100A01.EA7D504A.611740.mxf"
+    },
+    "findings": [
+      {
+        "fact": "A complete constructed PMR read does not survive as selected row Project/FileMobId when cancellation happens before the physical header request. The physical row and complete PMR source receipt survive.",
+        "nature": "Runtime control-record result; not a genuine PMR pathology.",
+        "codeAnchor": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/scancoordinator.cpp:686"
+      },
+      {
+        "fact": "A complete genuine MXF header read loses FileMobId, ClipName, Project and physical duration when cancelled at finalising before row matching; the physical row and complete source receipt survive. Production MediaScanner reproduces this.",
+        "nature": "Runtime result using a disposable copy of genuine fixture bytes.",
+        "codeAnchor": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/scancoordinator.cpp:694"
+      },
+      {
+        "fact": "Cancel invoked synchronously from the final Scan complete log batch, after formatting but before scanFinished delivery, is not reflected in the captured session or Console: values remain and scan is reported complete.",
+        "nature": "Runtime late-publication boundary result through an existing production signal. Not a mid-adapter-loop timing reproduction.",
+        "codeAnchor": "/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp:308"
+      }
+    ]
+  },
+  "compactReceiptReadiness": {
+    "status": "Audit only. Existing production safeguards passed; no compact receipt/storage implementation exists or was verified by this work.",
+    "equivalentsRequired": [
+      {
+        "data": "Current physical path, byte size, modification stamp, volume identity and supported managed family, plus selected FileMobId and one selected row MasterMobId.",
+        "reason": "Maintain current scan-location/native-handle and operation identity checks.",
+        "codeAnchor": "/Users/martymclean/Developer/MediaMuster/src/oprunner.cpp:146"
+      },
+      {
+        "data": "Original physical receipt-owner path separate from location/stamps refreshed after a confirmed transfer.",
+        "reason": "Current evidence history identifies which header receipt/changed-source issue belongs to the transferred row; another row at a reused destination must not lend its receipt. Replace this dependency explicitly.",
+        "codeAnchors": [
+          "/Users/martymclean/Developer/MediaMuster/src/opscanreceipt.cpp:9",
+          "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp:112",
+          "/Users/martymclean/Developer/MediaMuster/tests/tst_fileoperations.cpp:1661"
+        ]
+      },
+      {
+        "data": "Deliberately skipped header versus attempted/unreadable header; selected usable database FileMobId expectation when deliberately skipped.",
+        "reason": "Skipped-header Copy/Move/Delete must confirm the selected database identity through the subsequently opened header. Preserve the existing different policy for an attempted unreadable header.",
+        "codeAnchors": [
+          "/Users/martymclean/Developer/MediaMuster/src/opscanreceipt.cpp:20",
+          "/Users/martymclean/Developer/MediaMuster/tests/tst_fileoperations.cpp:1585"
+        ]
+      },
+      {
+        "data": "Header-established identity/corroboration and explicit unavailable changed/conflicting-header state, kept distinct from selected database-only master associations.",
+        "reason": "Database-only associations must not be imposed on the header, and a detected changed/conflicting header must not become an innocuous unknown identity after evidence removal. Exact compact encoding remains implementation work.",
+        "codeAnchors": [
+          "/Users/martymclean/Developer/MediaMuster/src/opscanreceipt.cpp:42",
+          "/Users/martymclean/Developer/MediaMuster/src/oprunner.cpp:102",
+          "/Users/martymclean/Developer/MediaMuster/tests/tst_fileoperations.cpp:1702"
+        ]
+      }
+    ],
+    "removalDependencies": [
+      "Migrate opscanreceipt evidence/source traversal before deleting row MediaEvidence or shared complete ScanResult ownership.",
+      "Replace transfer-time filesystem/membership observations and original-owner lookup with compact row/receipt updates.",
+      "Preserve journal serialization and old-journal parsing compatibility. Current tests include several-master legacy scan claims; newly scanned Copland rows use one selected MasterMobId, without weakening separate header corroboration or rewriting old recovery claims.",
+      "Preserve source-changed exclusion and bounded changed-database header fallback; do not promote a read into completed usable metadata until necessary existing validation/selection is finished."
+    ],
+    "journalCompatibilityAnchor": "/Users/martymclean/Developer/MediaMuster/tests/tst_opjournal.cpp:181",
+    "selectedRisk": "Current tests validate the old data shape. They are migration safeguards, not evidence that deleting fields or replacing receipts is already correct."
+  },
+  "limits": [
+    "No application/test source edits; only this owned durable evidence JSON was added to the repository. Temporary probes, fixtures, logs, objects and binaries remain outside it.",
+    "No file operation on original media/fixtures: operations suite compile-time fixture root points to disposable byte-for-byte copies. Original and copied seed bytes remain unchanged.",
+    "One case-distinct-name test skipped on the case-insensitive temporary filesystem. This does not verify that branch on a case-sensitive filesystem.",
+    "No real NEXIS/Windows workload, large scan, GUI manipulation, memory benchmark, future compact implementation or runtime memory ceiling verification.",
+    "Late cancellation is exercised after row formatting at final logging before result delivery. Mid-formatting cancellation remains a source-audited gap, not a separately reproduced runtime timing window.",
+    "These are current implementation results at the recorded source/build state; no future cancellation or retention improvement is claimed."
+  ],
+  "sourceHashes": [
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/scancoordinator.cpp",
+      "sha256": "ba00a9a644623a6d7509fdd02df4485d62fe238f92584a2b4502b1062fe8df81"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/scanmodel.h",
+      "sha256": "b42b37f224f3d8c873fb85afb8bf1d79f58333f0ae07204d5fbab10a4e3db524"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/scanengine.cpp",
+      "sha256": "11b4748216ea54910f8c3aa29ea2b1d363b18be304fe98d003159f0192823866"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/databasesource.cpp",
+      "sha256": "fe4235c24e024ffd31431c68e01a40626188e1e8ed46d1212f6adad40b84f6b8"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/mxfsource.cpp",
+      "sha256": "afc2e5170ffc4902006fe1ce9bec10e99619074304b0b7cfc0b9983f1861b479"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengineadapter.cpp",
+      "sha256": "255b5bc9f91adec7dfa315501627f88ae99edb3759212113c6681b51ac589574"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediascanner.cpp",
+      "sha256": "d15e290e297a723edbffc24bc7577c67253406577f568f1b992ef82554630933"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+      "sha256": "378d0aa69d401fbabd879c2556b2ddcf0cc7ee615ae7d0f0eae857c319432ee3"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/opscanreceipt.cpp",
+      "sha256": "0f7c9d8c9b9e09b780632f47fec27fe7fb15b438b300086530aad48598c03a4c"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oprequest.h",
+      "sha256": "79b9658de2a4e7b29fcf77517e3070969f23a5ce23c955ec9ef0dc3ef53cb750"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oprunner.cpp",
+      "sha256": "cbb2b9d9661a1c4cb4abb3601d9dfbad9456d587ae7e85c2b5070320bcacb911"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/opjournal.cpp",
+      "sha256": "40aabdea82dd4e284d9fe94726300f30213d30ec65a4a5cc48d301f2adf56784"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/operationrecovery.cpp",
+      "sha256": "5de005ee6eb0c89062d07d62f395c0e5a4ad393438639034d6bae461112557a4"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+      "sha256": "11b01523bd0033a7d60907abd47c5f5894f82d1cd1c5c168f7088cc6535d8450"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/backgroundjob.h",
+      "sha256": "b4a3488d0ed3cdd917c474e47366a658def978471987df0ece9523d7274bd9c2"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginescan.cpp",
+      "sha256": "2d763f8d9dbbb16f1e34c7ebbb0cd502aea235e7458deb7e6fc35c690263b3b3"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_fileoperations.cpp",
+      "sha256": "e2c3fcfb30abdfc5ffb8dc0e9588d22a5e4acdba5f12a7be0b18d1c1e3b0de48"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_opjournal.cpp",
+      "sha256": "2de03172ea9feea4f60d7ac7ce53d55fb797cf13ca27f07c21e9d8e49e1d92f3"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_opcleanup.cpp",
+      "sha256": "914c6a2fac2c819299a364c9425a1b3b6d55ad35b8b792b9c6582fe53397cf5d"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_scanner.cpp",
+      "sha256": "f89361b8cf96f45b4db1accf8965b5118d314aed85d98066a5295afb6e538d63"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/CMakeLists.txt",
+      "sha256": "75e99f897c7575d81a9df7a218d5ca7fe7bad601ffc6106ca06eb8e0de2906ef"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/CMakeLists.txt",
+      "sha256": "7f82296e361119f6a88b4e491153332a1c08c38e587a4ed4d6ee6284393e1dca"
+    }
+  ],
+  "binaryHashes": [
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/libmediamuster_mediaengine.a",
+      "sha256": "d330d0663e854bfd7ed6aff6353081ce43790f943366ba2bd6bd48eb255f7c37",
+      "sizeBytes": 1272
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/libmediamuster_mediaengine_core.a",
+      "sha256": "f9113099445f62136db44a2a40185aafbd176c61d94f6707b32ca7ff1a6a391e",
+      "sizeBytes": 3789200
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/tests/tst_mediaenginescan",
+      "sha256": "6319e22bfcc2f9601e2b4b12711a8bc0de6d848911057d548fd7739fcc62078a",
+      "sizeBytes": 1800336
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/tests/tst_scanner",
+      "sha256": "d334cb216074fdd93069f52465b7c85f4bcb690e5302bca6088e2a789b49871a",
+      "sizeBytes": 2306712
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/tests/tst_opjournal",
+      "sha256": "c14a1b41012722ceb60d9805276e81727f7e7f49b8e7394c2515d3aec6f6a6a4",
+      "sizeBytes": 476720
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/tests/tst_opcleanup",
+      "sha256": "7548f66c30d38cd4d3db08d0b8df1a559ab115dd58faa73eb523bfb962390cfe",
+      "sizeBytes": 150864
+    },
+    {
+      "path": "/private/tmp/copland-scan-operation-verification-20261012/tst_fileoperations-copied-fixtures",
+      "sha256": "f01244d3b2cf49a79d2b55969862813577617b7f3d28cc5dedfa8661b28179d4",
+      "sizeBytes": 2822048
+    },
+    {
+      "path": "/private/tmp/copland-scan-operation-verification-20261012/cancellation-probe",
+      "sha256": "7bcbd7ca317242c363c433b0ecd23bce632bed9ff424636915b49c91831a6ed9",
+      "sizeBytes": 1765040
+    }
+  ]
+}
