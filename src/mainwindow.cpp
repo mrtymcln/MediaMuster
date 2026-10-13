@@ -1074,13 +1074,6 @@ void MainWindow::onFilterByBins()
 					addLog(QtWarningMsg, QStringLiteral("filters"),
 						   tr("Bin unavailable: %1: %2").arg(path, reason));
 				});
-		connect(m_binFilterDialog, &AvbFilterDialog::binsChanged, this,
-				[this](const QVector<AvbBin> &bins)
-				{
-					applyFilterPreservingSelection([this, &bins]
-												   { m_model->setAvbBins(bins); });
-					updateStatusBar();
-				});
 		// Apply the chain change through the selection-preserving
 		// helper so the user's selection survives the filter shuffle.
 		connect(m_binFilterDialog, &AvbFilterDialog::filterChainChanged, this,
@@ -1502,7 +1495,7 @@ void MainWindow::onScanLogBatch(const QVector<LogMessage> &batch)
 
 void MainWindow::onScanFinished(const QVector<MediaFile> &results)
 {
-	m_model->setMediaFiles(results, AvbMetadataResolver::RowProjection::AlreadyApplied);
+	m_model->setMediaFiles(results);
 	m_persistentSelectedPaths.clear();
 
 	const qint64 elapsed = m_scanTimer.isValid() ? m_scanTimer.elapsed() : 0;

@@ -529,7 +529,6 @@ void AvbFilterDialog::completeBinLoad(quint64 id, const AvbBin &bin)
 			m_newlyLoadedIds.insert(id);
 		updateBinItem(binRow);
 		refreshBinSelectionUi();
-		m_metadataUpdatePending = true;
 		emit binLoaded(bin);
 		return;
 	}
@@ -571,10 +570,7 @@ void AvbFilterDialog::finishLoadingBatch()
 {
 	if (hasLoadingBins())
 		return;
-	// Both metadata and initial filtering use the settled set of retained
-	// bins. This avoids rebuilding all media metadata on every file result.
-	if (m_metadataUpdatePending)
-		emitBinsChanged();
+	// Initial filtering uses the settled set of retained bins.
 	// Rejected attempts must not reactivate a previously cleared filter.
 	if (!m_newlyLoadedIds.isEmpty())
 		tryAutoIntersect();
@@ -623,18 +619,6 @@ void AvbFilterDialog::updateBinItem(int binIndex)
 	item->setToolTip(details.join(QStringLiteral("\n")));
 }
 
-void AvbFilterDialog::emitBinsChanged()
-{
-	m_metadataUpdatePending = false;
-	QVector<AvbBin> bins;
-	for (const BinLoadEntry &entry : std::as_const(m_bins))
-	{
-		if (!entry.loading && entry.bin.isUsable())
-			bins.append(entry.bin);
-	}
-	emit binsChanged(bins);
-}
-
 void AvbFilterDialog::onAddBinsClicked()
 {
 	const QStringList paths = QFileDialog::getOpenFileNames(
@@ -666,9 +650,7 @@ void AvbFilterDialog::onRemoveSelectedBinsClicked()
 	// state ourselves; otherwise they'd stay stale when the last bin goes.
 	refreshBinSelectionUi();
 
-	// Chain operands are snapshots and remain unchanged, including a
-	// leading Subtract. Metadata, however, belongs to the retained bins.
-	emitBinsChanged();
+	// Chain operands are snapshots and remain unchanged, including a leading Subtract.
 	publishFilter();
 	QTimer::singleShot(0, this, &AvbFilterDialog::finishLoadingBatch);
 }

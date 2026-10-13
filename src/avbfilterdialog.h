@@ -82,11 +82,6 @@ signals:
 	/// Readable partial bins remain available, with their uncertainty visible.
 	void loadWarning(const QString &filePath, const QString &reason);
 
-	/// Current successfully parsed bins, for provenance-aware enrichment.
-	/// Emitted once when a loading batch settles, or immediately when bins
-	/// are removed so their fallback metadata can be retracted.
-	void binsChanged(const QVector<AvbBin> &bins);
-
 protected:
 	// MARK: - Drag-drop
 
@@ -126,7 +121,6 @@ private:
 	void removeBinRow(int row);
 	void reportLoadFailure(const AvbBin &bin);
 	bool hasLoadingBins() const;
-	void emitBinsChanged();
 	void rebuildChainList();
 	void publishFilter();
 	void applyOperation(Operation op);
@@ -154,7 +148,6 @@ private:
 	QThreadPool m_loadPool;
 	quint64 m_nextBinId = 1;
 	bool m_autoIntersectPending = false;
-	bool m_metadataUpdatePending = false;
 
 	// Non-owning observers; the widget/layout parent tree owns the controls.
 	QListWidget *m_binList = nullptr;

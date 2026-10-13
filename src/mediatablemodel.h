@@ -1,14 +1,11 @@
 #pragma once
 
 #include "mediafile.h"
-#include "avbmetadataresolver.h"
 
 #include <QAbstractTableModel>
 #include <QSet>
 #include <QString>
 #include <QVector>
-
-struct AvbBin;
 
 /// One row per MediaFile. Optional columns are appended to keep logical indexes
 /// stable; the view positions Clip Duration beside Duration and details beside Type.
@@ -57,10 +54,8 @@ public:
 
 	// MARK: - Bulk updates
 
-	/// Scan results have already been projected by the scanner adapter.
-	/// Other callers retain the default projection of selected evidence.
-	void setMediaFiles(const QVector<MediaFile> &files,
-					   AvbMetadataResolver::RowProjection projection = AvbMetadataResolver::RowProjection::Required);
+	/// Rows arrive with table values prepared by the scanner adapter.
+	void setMediaFiles(const QVector<MediaFile> &files);
 	void setScanIssues(const QVector<ScanIssue> &issues) { m_scanIssues = issues; }
 	const QVector<ScanIssue> &scanIssues() const { return m_scanIssues; }
 	/// Confirmed transfers only: moves retain identity; copies allocate a new one.
@@ -68,11 +63,6 @@ public:
 	void setOmfScanEnabled(bool enabled);
 	bool omfScanEnabled() const { return m_omfScanEnabled; }
 	int omfScanColumn() const;
-
-	/// Attach or retract matching master-clip observations from loaded bins.
-	/// MediaEngine rows refresh under the shared policy; unresolved ties stay blank.
-	/// Removing a bin retains its evidence history while excluding its values.
-	void setAvbBins(const QVector<AvbBin> &bins);
 
 	/// Groups contiguous deletions into single beginRemoveRows /
 	/// endRemoveRows ranges, so the view is preserved.
@@ -93,9 +83,6 @@ public:
 	bool clipDurationEnabled() const { return m_clipDurationEnabled; }
 
 private:
-	void applyAvbMetadata(bool notify,
-						  AvbMetadataResolver::RowProjection projection = AvbMetadataResolver::RowProjection::AlreadyApplied);
-	AvbMetadataResolver m_binMetadata;
 	QVector<MediaFile> m_files;
 	bool m_precomputesEnabled = false;
 	bool m_clipDurationEnabled = false;

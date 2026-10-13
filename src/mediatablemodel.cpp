@@ -1,5 +1,6 @@
 #include "mediatablemodel.h"
 #include "mediaengine/scancoordinator.h"
+#include "mediaengineadapter.h"
 #include "enumutil.h"
 
 #include <QStringList>
@@ -66,7 +67,7 @@ void MediaTableModel::setClipDurationEnabled(bool enabled)
 		endRemoveColumns();
 }
 
-void MediaTableModel::setMediaFiles(const QVector<MediaFile> &files, AvbMetadataResolver::RowProjection projection)
+void MediaTableModel::setMediaFiles(const QVector<MediaFile> &files)
 {
 	beginResetModel();
 	m_files = files;
@@ -81,7 +82,6 @@ void MediaTableModel::setMediaFiles(const QVector<MediaFile> &files, AvbMetadata
 			file.kelpieId = m_ids.allocate();
 		assigned.insert(file.kelpieId);
 	}
-	applyAvbMetadata(false, projection);
 	endResetModel();
 }
 
@@ -142,7 +142,7 @@ void MediaTableModel::applyTransfer(const QString &source, const QString &destin
 		// Update only this row's evidence. The retained scan is an immutable
 		// receipt of the original location, shared with other physical rows.
 		MediaEngine::selectMetadata(transferred.evidence);
-		m_binMetadata.applyTo(transferred);
+	applyResolvedMetadata(transferred);
 		if (copy)
 		{
 			transferred.kelpieId = m_ids.allocate();
@@ -158,33 +158,6 @@ void MediaTableModel::applyTransfer(const QString &source, const QString &destin
 		}
 		return;
 	}
-}
-
-void MediaTableModel::setAvbBins(const QVector<AvbBin> &bins)
-{
-	m_binMetadata.setBins(bins);
-	applyAvbMetadata(true);
-}
-
-void MediaTableModel::applyAvbMetadata(bool notify, AvbMetadataResolver::RowProjection projection)
-{
-	int firstChanged = -1;
-	int lastChanged = -1;
-	const int rows = rowCount();
-	for (int row = 0; row < rows; ++row)
-	{
-		MediaFile &file = m_files[row];
-		if (m_binMetadata.applyTo(file, projection))
-		{
-			if (firstChanged < 0)
-				firstChanged = row;
-			lastChanged = row;
-		}
-	}
-	if (notify && firstChanged >= 0)
-		emit dataChanged(index(firstChanged, static_cast<int>(Column::ClipName)),
-						 index(lastChanged, columnCount() - 1),
-						 {Qt::DisplayRole, Qt::UserRole});
 }
 
 void MediaTableModel::removeFilesByPath(const QSet<QString> &paths)

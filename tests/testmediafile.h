@@ -43,11 +43,9 @@ namespace TestMediaFile
 				observation.readState = PropertyReadState::Present;
 				file.evidence.observe(property, std::move(observation));
 			};
-			const auto nameSource = file.clipNameSource == MediaFile::ClipNameSource::Mdb ? source(MetadataSource::Mdb)
-								: file.clipNameSource == MediaFile::ClipNameSource::Avb ? source(MetadataSource::Avb)
-																						: header;
+			const auto nameSource = file.clipNameSource == MediaFile::ClipNameSource::Mdb ? source(MetadataSource::Mdb) : header;
 			add(MediaProperty::ClipName, file.clipName, nameSource);
-			add(MediaProperty::OriginalBin, file.originalBin, file.originalBinFromAvb ? source(MetadataSource::Avb) : nameSource);
+			add(MediaProperty::OriginalBin, file.originalBin, nameSource);
 			add(MediaProperty::FileMobId, file.fileMobId, header);
 			const auto masters = file.masterMobIds.isEmpty() ? QStringList{file.masterMobId} : file.masterMobIds;
 			add(MediaProperty::MasterMobId, masters, header);

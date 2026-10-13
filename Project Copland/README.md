@@ -7,7 +7,8 @@ Started 11 October 2026; decisions updated
 Copland reviews the whole MediaMuster app and defines the smallest useful product
 contract before choosing its implementation. Existing capabilities and Canon's
 retention commitments are open for review. Implementation has begun with the
-user-selected direct CSV export and small safety-check migration below.
+user-selected direct CSV export, small safety-check migration, identity naming
+and bin name filling removal below.
 
 This document contains the working decision ledger and proposed implementation
 order. Confirmed requirements, proposals and open questions
@@ -299,8 +300,8 @@ These describe today's code, not Copland requirements:
   for filtering and operations. C33–C45/C48 settle the target presentation.
   See [table columns](../src/mediatablemodel.cpp) and
   [CSV fields](../src/mediacsv.cpp).
-- Live AVB filtering uses recovered file identities. Name enrichment uses master
-  associations. Whole-bin resolution currently starts from every parsed object,
+- Live AVB filtering uses recovered file identities; loaded bins no longer supply
+  inventory-row names or Original Bin values. Whole-bin resolution currently starts from every parsed object,
   and sequence discovery runs even though the live sequence picker is disabled.
   See [reference resolution](../src/mediaengine/avbreferences.cpp) and
   [bin loading](../src/avbbinloader.cpp).
@@ -309,10 +310,10 @@ These describe today's code, not Copland requirements:
   path-only or unresolved reference can produce an incomplete-result warning, but
   that alone does not establish AMA linkage. C19 defines the target external-media
   scope and Console notices. See [filtering](../src/mediafilterproxy.cpp).
-- Loaded bins, applied filter steps and enriched rows can keep shared AVB graphs
-  alive. Removing a bin retracts its eligible name enrichment but leaves historical
-  graph references and existing filter snapshots. See
-  [bin metadata resolution](../src/avbmetadataresolver.cpp) and
+- Loaded bins and applied filter steps keep shared AVB graphs alive. Inventory
+  rows no longer attach bin graphs for name enrichment. Removing a bin keeps
+  existing filter snapshots; broader compact-bin ownership remains outstanding. See
+  [bin loading](../src/avbfilterdialog.cpp) and
   [filter steps](../src/avbfilter.h).
 - Loading bins currently creates a first whole-bin Intersect automatically when
   no chain exists. C22 retains this behavior, while C18 allows loaded bins to supply
@@ -322,8 +323,8 @@ These describe today's code, not Copland requirements:
   properties from 14.5 MB of AVBs. Its 9.1 MB sequence bin reached about 1.1 GB
   process peak in a Debug x86_64 probe under Rosetta, including reader/index and
   reporting work. This is a measured reason to review retained AVB detail, not an
-  app benchmark or a predicted Copland saving. C16 removes table enrichment as a
-  consumer; filtering still needs sequence/reference structure. See
+  app benchmark or a predicted Copland saving. C16's table-enrichment consumer
+  has been removed; filtering still needs sequence/reference structure. See
   [the bounded corpus measurement](../Project%20Canon/avb-corpus-check-2026-10-04.md#timing-and-memory-observations).
 - Discovery currently scans recognised managed-media layouts rather than every
   folder on a drive. Adding `Avid MediaFiles/MXF/1` resolves to the MXF root and
@@ -1274,6 +1275,52 @@ but hypothetical disagreements must not justify broad permanent evidence retenti
 
 ## Implementation planning
 
+### Bin name filling removal choice — 13 October 2026
+
+The user chose **Remove bin name filling first**, followed by removal of the
+large scan histories, rather than combining both removals. Implement C16's
+filtering-only role for loaded AVBs: loading, removing or reloading bins must not
+fill, replace or retract scanned Clip Name, Original Bin or derived effect values.
+Keep Intersect/Subtract/Add, identity matching, partial-result warnings and the
+retained selection workflow. Remove the enrichment-only resolver and row graph
+ownership, and update obsolete tests/comments/current descriptions. Ordinary scan
+histories remain for the following compact-row change; no memory or speed saving
+is claimed by this checkpoint.
+
+The read-only consumer audit found that the enrichment resolver also projects
+selected scan facts into table values, including when no bins are loaded, and
+refreshes confirmed-transfer rows. Preserve those necessary responsibilities at
+an explicit boundary; their placement is a separate implementation crossroad
+under C98, not permission to discard prepared metadata accidentally.
+
+The user then chose **Just show prepared results**: the scanner/presentation
+adapter prepares table values before insertion, and the model accepts those rows
+without re-projecting their evidence. Remove the extra row-preparation switch.
+Confirmed Copy/Move updates explicitly refresh their changed row after the
+existing filesystem/membership update and metadata selection; preserve selected
+values, physical row identity and the frozen operation safety record. This step
+does not yet replace transfer evidence with compact status or remove ordinary
+row/scan histories.
+
+Implemented and verified on this Mac with Release arm64 and pinned Qt 6.5.3:
+the app and all targets built; all nine focused suites and all 40 registered test
+suites passed. Removed the enrichment resolver, its model/dialog connection and
+batch signal, per-row AVB graph owner and fallback flags, and obsolete enrichment
+tests. Compiled name/effect selection no longer admits loaded AVB observations.
+
+The [UI regression](../tests/tst_operationui.cpp) exercises actual loading of
+authored AVBs through the production reader/dialog, including matching file IDs,
+partial results, initial Intersect, Subtract/Add, removal and rescan. Blank and
+scanned names, Original Bin, effect values, displayed cells and exact CSV bytes
+remain stable. Weak-owner checks release unloaded bin graphs after filter
+snapshots are also cleared, while table rows remain populated. The
+[model regressions](../tests/tst_mediatablemodel.cpp) preserve prepared values
+without table reprojection and retain Copy/Move identity, destination-membership
+and frozen-safety checks. Existing genuine-source/parser and operation recovery/
+Undo suites pass. These tests do not establish exact used-angle/track handling,
+whole-process memory savings or NEXIS scale performance. Ordinary scan histories
+and the remaining loaded-bin/filter graph compaction are still outstanding.
+
 All stages must follow the [mandatory decision rule](#mandatory-rule-for-every-implementing-ai)
 under C98. At every decision or crossroad, present options and wait for the user
 to choose before proceeding with the affected work.
@@ -1291,7 +1338,7 @@ adding a new mechanism to fix them.
 | 1. Establish baseline | Use this Mac initially under C97. Record the build, actual workload/hardware/storage, cache conditions, source-read counts, time through a usable table and whole-process peak memory. Include rescan, CSV export, loaded bins and normal interactions. Separate genuine complete media from generated or truncated specimens. | Repeatable baseline and field/behavior comparison receipts. Existing engine-only timings remain supporting evidence, not a 300,000-file NEXIS acceptance result. Q13 is set aside; no numerical scan-time target is required. |
 | 2. Compact records and receipts | Introduce selected row values, exact clocks, one selected MasterMobId, compact availability/freshness/membership status and the operation receipts required by existing live checks. Adapt operation consumers before removing their evidence dependencies. Keep the user-selected direct CSV writer; release its local captured rows when saving returns, without adding a background text snapshot. Release prior row/session ownership when a new scan starts. | Retained table/CSV values and eligible operation behavior agree with the contract. Copy/Move/Delete/Rebalance, latest-job Undo and startup recovery preserve their existing protections. Completed export and compact operation consumers do not keep the old complete inventory/evidence graph alive during rescan. |
 | 3. Acquisition and cancellation | Apply PMR → MDB → header acquisition to the retained requested fields, using reliable inapplicability to stop unnecessary fallback. Remove Clip Duration and SourceFilename observations, coverage, policies and consumers; use SourcePath instead. Implement either-database membership and both flags. Resolve completed values into compact rows as work finishes, and release unused parsing data. Retain changed-source exclusion and the existing bounded header fallback. | Database-free, partial-index and missing-applicable-field cases resolve correctly; unavailable values remain blank. Cancellation during discovery, database/header reading, final selection, formatting and publication preserves found rows/completed values and consistently reports incomplete. No runtime memory-abort policy is introduced. |
-| 4. AVB references and filtering | Retain only the names, identities, reference relationships/sets and compact coverage needed for loaded-bin/sequence lists and filtering. Drop table enrichment and cross-bin borrowing. Implement independent checked-sequence state and the combined dialog, unload/recalculation, union/AND rules and empty/incomplete outcomes. Avoid keeping unrelated metadata or duplicating full graphs per sequence. | Genuine Avid edits establish exact used tracks/angles and original/render membership. Muted placed media stays included. Failed loads preserve old filters; checked unresolved-zero sequences stay active; valid unmatched bin references apply normally. Unloading releases data; rescan resets filters while keeping bins loaded. |
+| 4. AVB references and filtering | Retain only the names, identities, reference relationships/sets and compact coverage needed for loaded-bin/sequence lists and filtering. Table enrichment is removed; drop cross-bin borrowing. Implement independent checked-sequence state and the combined dialog, unload/recalculation, union/AND rules and empty/incomplete outcomes. Avoid keeping unrelated metadata or duplicating full graphs per sequence. | Genuine Avid edits establish exact used tracks/angles and original/render membership. Muted placed media stays included. Failed loads preserve old filters; checked unresolved-zero sequences stay active; valid unmatched bin references apply normally. Unloading releases data; rescan resets filters while keeping bins loaded. |
 | 5. Presentation and support | Show/search/export Source Path; replace Database Status with both boolean columns/views. Keep precompute category/effect/Volume filtering and remaining conveniences. Apply always-visible enabled tabs, Search-only Escape, narrowed folder inputs, startup/manual drive discovery, FDA/Monospace removal and automatic 30-day diagnostic/crash cleanup. Preserve technical Console content while reviewing delivery/flush overhead. | Behavior checks follow C48/C49/C60–C96. Enabled empty tabs remain visible; dialog Escape retains its proper dismissal/cancellation priority. Cleanup preserves recent history and protected operation journals. Removed controls and source-basename storage have no active consumer left. |
 | 6. Full workload verification | Exercise the retained product after the new ownership/acquisition paths are in place. Compare usable-table time, source reads and whole-process memory against stage 1, including subsequent sorting/filtering/bin loading, operations, export and rescan. Validate the 300,000-file database-free workload on its representative NEXIS setup. | Correct physical inventory and selected metadata, clean cancellation, retained operation safety and measured scale behavior. Explain any remaining memory/time costs and limitations. The below-10-GB aim is measured, never enforced by aborting the scan. |
 
@@ -1324,10 +1371,11 @@ local corpus and authored defensive tests cannot certify every format or real
 workflow. Borrowing other bins, AVB metadata enrichment, mid-scan source switching,
 Clip Duration and permanent inspection histories remain outside the agreed target.
 
-The [12 October verification](technical-verification-2026-10-12.md) now establishes
-specific current gaps: broad AVB traversal, conflict-only Original Bin fallback,
-loss of completed metadata on early cancel and incorrect completion reporting on
-late cancel. The compact safety-check migration above now passes its bounded
+The [12 October verification](technical-verification-2026-10-12.md) recorded
+broad AVB traversal, conflict-only AVB Original Bin fallback, loss of completed
+metadata on early cancel and incorrect completion reporting on late cancel.
+The AVB row fallback has since been removed under C16; the other gaps remain.
+The compact safety-check migration above now passes its bounded
 equivalence checks; ordinary row history removal is still outstanding. Three
 controlled local baseline trials cover 267 database-free
 complete media copies and demonstrated the former asynchronous export retaining

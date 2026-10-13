@@ -42,16 +42,11 @@ bool applyResolvedMetadata(MediaFile &row)
 	if (clip.selectedObservation >= 0 && clip.selectedObservation < names.size() && names[clip.selectedObservation].snapshot)
 	{
 		const auto source = names[clip.selectedObservation].snapshot->source;
-		nameSource = source == MetadataSource::Mdb ? MediaFile::ClipNameSource::Mdb : source == MetadataSource::Avb ? MediaFile::ClipNameSource::Avb
-																													: MediaFile::ClipNameSource::MaterialPackage;
+		nameSource = source == MetadataSource::Mdb ? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage;
 	}
 	assign(row.clipNameSource, nameSource);
 	assign(row.project, value(MediaProperty::Project).toString());
 	assign(row.originalBin, value(MediaProperty::OriginalBin).toString());
-	const auto bin = row.evidence.selected(MediaProperty::OriginalBin);
-	const auto &bins = row.evidence.observations(MediaProperty::OriginalBin);
-	assign(row.originalBinFromAvb, bin.selectedObservation >= 0 && bin.selectedObservation < bins.size() &&
-									   bins[bin.selectedObservation].snapshot && bins[bin.selectedObservation].snapshot->source == MetadataSource::Avb);
 	assign(row.compression, value(MediaProperty::Compression).toString());
 	assign(row.resolution, value(MediaProperty::Resolution).toString());
 	assignRate(row.frameRateRatio, MediaEngine::mediaRate(value(MediaProperty::FrameRate)));

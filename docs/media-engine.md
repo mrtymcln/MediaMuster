@@ -14,7 +14,7 @@ namespace `MediaEngine`.
 | `SourceReceipt` | Keeps a source's captured context, container, read outcome, reason and warnings. It owns no complete source image or graph. |
 | `SourceSnapshot` | Identifies the source and captured context behind an observation. |
 | `MediaEvidence` | Keeps observations, alternatives, read states, basis, eligibility, agreement and selected results. |
-| Metadata selection policy | One compiled preference row per supported property. Scanning and loaded-bin enrichment consume the same selections. |
+| Metadata selection policy | One compiled preference row per supported property. Scanning selects Clip Name from header then MDB, and Original Bin from MDB then header; loaded bins do not enrich rows. |
 | `MediaFile` and `KelpieId` | Represent one physical media-file location and its scan-session identity. Matching Avid IDs do not merge copies. |
 
 The two build targets, `mediamuster_mediaengine_core` and
@@ -30,7 +30,8 @@ diagnostics without keeping their unused reading storage.
 Databases are still read first and buffered in RAM during parsing. Projected
 database facts remain available for matching across folders and reporting unmatched
 references. AVB loading is independent: bin graphs remain retained because reference
-resolution, filtering and enrichment actively use them.
+resolution and filtering use them. Loaded bins do not supply names or derived effect
+fields to the media inventory, and rows no longer retain separate AVB history owners.
 
 The read-only scan probe uses this same engine. It checks retained row evidence,
 source receipts, read decisions, callbacks, input stamps and CSV, and measures
@@ -39,7 +40,11 @@ records directly while those inputs are alive; they also check that extracted
 evidence survives the reading storage's lifetime.
 
 Outside this folder, `MediaScanner` owns the background/UI boundary. The
-presentation adapter supplies selected facts to the table and CSV. The interface
-owns presentation and selection; the file-operation engine owns mutations,
+presentation adapter prepares selected facts for the table and CSV. Table insertion
+stores prepared values without reselecting or projecting metadata. Confirmed
+transfers explicitly project their updated row selections. Ordinary scan/row
+evidence histories and the loaded-bin graphs still await compact-record cleanup;
+this step establishes no measured memory or scan-time saving. The interface owns
+presentation and selection; the file-operation engine owns mutations,
 identity checks, recovery and Undo. See [architecture](architecture.md) for the
 full ownership map.

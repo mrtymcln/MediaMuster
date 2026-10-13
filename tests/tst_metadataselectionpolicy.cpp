@@ -76,6 +76,21 @@ private slots:
 		}
 	}
 
+	void loaded_bins_cannot_supply_table_metadata()
+	{
+		for (const auto property : {MediaProperty::ClipName, MediaProperty::OriginalBin,
+			MediaProperty::Effect, MediaProperty::EffectCategory, MediaProperty::EffectSequence})
+		{
+			MediaEvidence evidence;
+			evidence.observe(property, observation(MetadataSource::Avb, QStringLiteral("bin value")));
+			const auto &policy = MediaEngine::propertyPolicy(property);
+			QCOMPARE(policy.sources.priority(MetadataSource::Avb), 0);
+			const auto selected = MediaEngine::resolveProperty(evidence, policy);
+			QVERIFY(!selected.value.isValid());
+			QCOMPARE(selected.selectedObservation, -1);
+		}
+	}
+
 	void zero_priority_excludes_selection_without_erasing_presence()
 	{
 		MediaEvidence evidence;
@@ -125,7 +140,7 @@ private slots:
 		evidence.excludeSource(MediaProperty::ClipName, MetadataSource::Mxf);
 		QCOMPARE(MediaEngine::resolveProperty(evidence, policy).value.toString(), QStringLiteral("database"));
 		evidence.excludeSource(MediaProperty::ClipName, MetadataSource::Mdb);
-		QCOMPARE(MediaEngine::resolveProperty(evidence, policy).value.toString(), QStringLiteral("bin"));
+		QVERIFY(!MediaEngine::resolveProperty(evidence, policy).value.isValid());
 		evidence.excludeSource(MediaProperty::ClipName, MetadataSource::Avb);
 		QVERIFY(!MediaEngine::resolveProperty(evidence, policy).value.isValid());
 		QCOMPARE(evidence.observations(MediaProperty::ClipName).size(), 3);
@@ -148,7 +163,7 @@ private slots:
 			QCOMPARE(MediaEngine::resolveProperty(evidence, policy).value.toString(),
 				QStringLiteral("database"));
 			evidence.excludeSource(MediaProperty::ClipName, MetadataSource::Mdb);
-			QCOMPARE(MediaEngine::resolveProperty(evidence, policy).value.toString(), QStringLiteral("bin"));
+			QVERIFY(!MediaEngine::resolveProperty(evidence, policy).value.isValid());
 			QCOMPARE(evidence.observations(MediaProperty::ClipName).first().readState, state);
 			QCOMPARE(evidence.observations(MediaProperty::ClipName).first().rawValue,
 				unavailable.rawValue);
@@ -237,7 +252,7 @@ private slots:
 		wrongOwner.eligible = false;
 		evidence.observe(MediaProperty::ClipName, wrongOwner);
 		evidence.observe(MediaProperty::ClipName,
-			observation(MetadataSource::Avb, QStringLiteral("associated master")));
+			observation(MetadataSource::Mdb, QStringLiteral("associated master")));
 		QCOMPARE(MediaEngine::resolveProperty(evidence, MediaEngine::propertyPolicy(MediaProperty::ClipName))
 			.value.toString(), QStringLiteral("associated master"));
 		QCOMPARE(evidence.observations(MediaProperty::ClipName).size(), 2);
@@ -255,9 +270,9 @@ private slots:
 		{
 			const auto &policy = MediaEngine::propertyPolicy(field);
 			QCOMPARE(policy.rule, MediaEngine::SelectionRule::DerivedEffect);
-			// Derivation retains the selected name's actual source, including AVB fallback.
+			// Derivation retains the selected scanned name's actual source.
 			MediaEvidence evidence;
-			auto effect = observation(MetadataSource::Avb, QStringLiteral("derived effect"));
+			auto effect = observation(MetadataSource::Mxf, QStringLiteral("derived effect"));
 			effect.basis = EvidenceBasis::Derived;
 			evidence.observe(field, effect);
 			const auto selected = MediaEngine::resolveProperty(evidence, policy);

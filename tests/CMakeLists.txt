@@ -255,11 +255,10 @@ mediamuster_link_native_operations(tst_fileoperations)
 # MediaCsv: the export's header/field alignment and shared display columns.
 mediamuster_add_test(tst_mediacsv ui ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp)
 
-# Table rows, Qt notifications and bin metadata enrichment/conflicts.
+# Prepared table rows, Qt notifications and transfer updates.
 # The model is QtCore only (QAbstractTableModel); no widgets, no icons.
 mediamuster_add_test(tst_mediatablemodel ui
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/avbmetadataresolver.cpp
     ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp
 )
 
@@ -267,7 +266,6 @@ mediamuster_add_test(tst_mediatablemodel ui
 mediamuster_add_test(tst_mediafilterproxy ui
     ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/avbmetadataresolver.cpp
 )
 
 # Precompute picker: choose branches and a volume, then use the table filter.
@@ -275,7 +273,6 @@ mediamuster_add_test(tst_precomputefilterdialog ui
     ${CMAKE_SOURCE_DIR}/src/precomputefilterdialog.cpp
     ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/avbmetadataresolver.cpp
 )
 target_link_libraries(tst_precomputefilterdialog PRIVATE Qt6::Widgets)
 
@@ -286,7 +283,6 @@ mediamuster_add_test(tst_binfilterdialog ui
     ${CMAKE_SOURCE_DIR}/src/avbbinloader.cpp
     ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
-    ${CMAKE_SOURCE_DIR}/src/avbmetadataresolver.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 target_link_libraries(tst_binfilterdialog PRIVATE Qt6::Widgets Qt6::Concurrent mediamuster_mediaengine_core)

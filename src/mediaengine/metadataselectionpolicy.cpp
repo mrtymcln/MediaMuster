@@ -57,17 +57,17 @@ namespace MediaEngine
 		// These are application field names; observations retain original source property names.
 		// Edit one row for the next build. Keep one row per property in catalogue order.
 		constexpr PropertyPolicies kPropertyPolicies{{
-			// Editor's clip name: header first, MDB second, loaded AVB third.
+			// Editor's clip name: header first, MDB second. Loaded bins only filter rows.
 			{MediaProperty::ClipName, SelectionRule::PreferredValue,
-			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb}, {Source::Avb})},
+			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb})},
 
 			// Project association: PMR first, MDB second, media header third.
 			{MediaProperty::Project, SelectionRule::PreferredValue,
 			 prefer({Source::Pmr}, {Source::Mdb}, {Source::Mxf, Source::Omf})},
 
-			// Original bin association: MDB first, a supplied header value second, AVB third.
+			// Original bin association: MDB first, a supplied header value second.
 			{MediaProperty::OriginalBin, SelectionRule::PreferredValue,
-			 prefer({Source::Mdb}, {Source::Mxf, Source::Omf}, {Source::Avb})},
+			 prefer({Source::Mdb}, {Source::Mxf, Source::Omf})},
 
 			// Audio or video, interpreted from the owning descriptor or recorded labels.
 			{MediaProperty::Kind, SelectionRule::PreferredValue,
@@ -137,16 +137,16 @@ namespace MediaEngine
 			// Effect catalogue category inferred from the selected precompute name; not proof of
 			// effect identity.
 			{MediaProperty::EffectCategory, SelectionRule::DerivedEffect,
-			 prefer({Source::Mdb, Source::Mxf, Source::Omf, Source::Avb})},
+			 prefer({Source::Mdb, Source::Mxf, Source::Omf})},
 
 			// Readable effect description inferred from the selected precompute name.
 			{MediaProperty::Effect, SelectionRule::DerivedEffect,
-			 prefer({Source::Mdb, Source::Mxf, Source::Omf, Source::Avb})},
+			 prefer({Source::Mdb, Source::Mxf, Source::Omf})},
 
 			// Sequence name inferred from the selected precompute name when the naming pattern
 			// supplies it.
 			{MediaProperty::EffectSequence, SelectionRule::DerivedEffect,
-			 prefer({Source::Mdb, Source::Mxf, Source::Omf, Source::Avb})},
+			 prefer({Source::Mdb, Source::Mxf, Source::Omf})},
 
 			// Filesystem birth time for Date Created; not an Avid clip or mob creation date.
 			{MediaProperty::Created, SelectionRule::PreferredValue,

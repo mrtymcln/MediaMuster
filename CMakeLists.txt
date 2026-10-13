@@ -171,7 +171,6 @@ set(SOURCES
     src/diagnostics.cpp
     src/mediafilterproxy.cpp
     src/mediatablemodel.cpp
-    src/avbmetadataresolver.cpp
     src/revealinfinder.cpp
     src/volumelistwidget.cpp
     src/volumemanager.cpp

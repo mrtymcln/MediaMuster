@@ -62,7 +62,6 @@ namespace
 	{
 		file.evidence = {};
 		file.mediaEngineScan.clear();
-		file.mediaEngineAvbSources.clear();
 	}
 
 	void put(const QString &path, const QByteArray &bytes)
@@ -1987,10 +1986,7 @@ void TestFileOperations::conflicting_scan_header_is_refused_without_history()
 	file.scanStamp = {f.src, VolumeIdentity::capture(f.src).identifier(), QFileInfo(f.src).lastModified(), {}, {}};
 	auto scan = QSharedPointer<MediaEngine::ScanResult>::create();
 	const QWeakPointer<MediaEngine::ScanResult> scanOwner(scan);
-	auto avb = QSharedPointer<MediaEngine::ParsedSource>::create();
-	const QWeakPointer<MediaEngine::ParsedSource> avbOwner(avb);
 	file.mediaEngineScan = scan;
-	file.mediaEngineAvbSources.append(avb);
 	for (const auto *id : {"first-header-id", "second-header-id"})
 	{
 		MetadataObservation observation;
@@ -2004,9 +2000,7 @@ void TestFileOperations::conflicting_scan_header_is_refused_without_history()
 	QVERIFY(file.operationScanReceipt);
 	releaseScanHistory(file);
 	scan.clear();
-	avb.clear();
 	QVERIFY(scanOwner.isNull());
-	QVERIFY(avbOwner.isNull());
 	auto request = f.request(OpKind::Move);
 	request.items = OpManager::itemsFromMediaFiles({file}, {});
 	QVERIFY(request.items.front().headerIdentity);

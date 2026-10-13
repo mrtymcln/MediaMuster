@@ -17,8 +17,8 @@ For what the user sees, start with [How MediaMuster works](current-behaviour.md)
 4. The [MediaEngine adapter](../src/mediaengineadapter.cpp) supplies one compatibility
    [MediaFile](../src/mediafile.h) row per physical file. Each row retains the MediaEngine
    evidence, a shared immutable scan receipt and a small frozen operation safety
-   record; [MediaTableModel](../src/mediatablemodel.cpp)
-   stores the rows and supplies cells.
+   record. [MediaTableModel](../src/mediatablemodel.cpp) stores the prepared rows
+   and supplies cells without reselecting or projecting their metadata.
 5. [MediaFilterProxy](../src/mediafilterproxy.cpp) filters and sorts the rows for the
    view. It leaves the underlying inventory intact.
 
@@ -76,8 +76,7 @@ Applicability, agreement, eligibility and freshness remain separate facts; see t
 | [MediaEngine::ScanCoordinator](../src/mediaengine/scancoordinator.cpp) | Coordinates discovery, database-first reads, exact-name/identity matching, field selection and scoped unmatched-reference issues. |
 | [MediaEngine selection policy](../src/mediaengine/metadataselectionpolicy.cpp) | One compiled row per semantic property, using source preferences 3 > 2 > 1 > 0 and explicit duration, association and effect rules. |
 | [MediaEvidence](../src/mediaevidence.h) | Stores observations separately from selected values, with read state, agreement, eligibility, source, basis and explanation. |
-| [AvbBinLoader](../src/avbbinloader.cpp) | Loads bin files through AvbReader and prepares clip metadata, evidence and media references for AvbFilterDialog. |
-| [AvbMetadataResolver](../src/avbmetadataresolver.cpp) | Applies and retracts eligible AVB name/bin observations without erasing scan evidence. |
+| [AvbBinLoader](../src/avbbinloader.cpp) | Loads bin files through AvbReader and prepares bin/clip metadata and media references for AvbFilterDialog. These do not enrich media inventory rows. |
 | [MediaEngine presentation adapter](../src/mediaengineadapter.cpp) | Refreshes semantic table/filter/CSV fields from selected evidence, including clearing unresolved values; physical operation fields keep their current location and identity. |
 | [AvidEffects](../src/effectcatalogue.cpp) | Maps the selected name of an established precompute to derived effect details; it does not classify the file. |
 
@@ -127,8 +126,10 @@ Known contradictory active file identities remain conflict evidence in an ownerl
 carrier; ScanCoordinator indexes its eligible claims so the disagreement reaches
 reconciliation and header fallback. The selection engine then applies the approved
 per-field priorities; original observation bytes and
-alternatives are not replaced by the selected display value. Scanning and bin
-enrichment share the [compiled policy table](../src/mediaengine/metadataselectionpolicy.cpp).
+alternatives are not replaced by the selected display value. Scanning uses the
+[compiled policy table](../src/mediaengine/metadataselectionpolicy.cpp): Clip Name
+prefers header then MDB; Original Bin prefers MDB then header. Loaded AVBs do not
+supply row names or derived effect fields.
 Zero excludes a source from value selection while retaining its read state and
 comparable observations for agreement. Source qualification and header-read
 scheduling remain separate from display preference. The presentation adapter
@@ -144,7 +145,9 @@ completion flags describe their respective stages, not universal format support.
 The model holds current row locations and transfer receipts. Its shared `mediaEngineScan`
 remains an immutable receipt of the original scan, so confirmed moves/copies update
 row-owned filesystem evidence and selection rather than rewriting history. The
-new inventory is delivered before its reconciliation issues so model reset cannot
+transfer path explicitly projects those changed selections into the destination row;
+ordinary table insertion accepts values already prepared by the scanner. The new
+inventory is delivered before its reconciliation issues so model reset cannot
 discard the arriving issues.
 
 For supported locations and formats, see [release scope](release-feature-gates.md)
@@ -158,6 +161,10 @@ row's file or every established master identifier. Applied partial steps retain 
 source graphs and persistent “Results may be incomplete” warning. The future sequence
 picker remains disabled behind `SequenceFilter`; the current dialog applies whole-bin
 scope. Other filters still apply to the resulting rows.
+Loading or removing bins changes filtering only; no bin-enrichment resolver or row
+AVB history owner remains. The loaded bins and applied filter snapshots still retain
+their current metadata and graphs. Compacting those graphs and ordinary scan/row
+evidence histories remains outstanding; no memory or scan-time saving is measured.
 [PrecomputeFilterDialog](../src/precomputefilterdialog.cpp) builds the optional
 [PrecomputeFilter](../src/precomputefilter.h).
 

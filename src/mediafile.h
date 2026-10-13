@@ -19,7 +19,6 @@
 namespace MediaEngine
 {
 	struct ScanResult;
-	struct ParsedSource;
 }
 
 /// One physical file in the scan inventory, identified by its path.
@@ -36,9 +35,7 @@ struct MediaFile
 	// Shared scan results own supported observations, associations and source receipts.
 	// This row's current path/identity fields continue to follow moves and copies.
 	QSharedPointer<const MediaEngine::ScanResult> mediaEngineScan;
-	/// Bin evidence remains inspectable after its current fallback is retracted.
-	QVector<QSharedPointer<const MediaEngine::ParsedSource>> mediaEngineAvbSources;
-	QStringList masterMobIds; ///< All established associations; the scalar below is compatibility only.
+	QStringList masterMobIds; ///< Established scan associations; the scalar below is set for a single association.
 	QString masterMobIdDisplay() const
 	{
 		return masterMobIds.isEmpty() ? masterMobId : masterMobIds.join(QStringLiteral("; "));
@@ -61,7 +58,6 @@ struct MediaFile
 	enum class ClipNameSource
 	{
 		None = 0,
-		Avb = 1,
 		Mdb = 2,
 		MaterialPackage = 3,
 	};
@@ -70,8 +66,7 @@ struct MediaFile
 	/// Selected project name under MediaEngine's shared policy. Empty means unknown,
 	/// independently of whether the folder's PMR currently lists this file.
 	QString project;
-	QString originalBin;			 ///< The recorded import-time _ORG_BIN, from media metadata or a bin reference.
-	bool originalBinFromAvb = false; ///< Loaded-bin fallback; cleared when its supporting bins change.
+	QString originalBin; ///< The recorded import-time _ORG_BIN, from scanned media metadata.
 
 	// MARK: MXF or MDB technical metadata
 

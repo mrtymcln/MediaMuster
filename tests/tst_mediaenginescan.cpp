@@ -545,7 +545,6 @@ private slots:
 		const qint64 modifiedMs = converted.scanStamp.modified.toMSecsSinceEpoch();
 		converted.evidence = {};
 		converted.mediaEngineScan.clear();
-		converted.mediaEngineAvbSources.clear();
 		scan.clear();
 		// Neither the temporary lookup nor the compact record owns the original sources.
 		QVERIFY(scanOwner.isNull());

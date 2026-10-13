@@ -156,9 +156,8 @@ properties and framing details are released, including those from partial or
 failed reads. Outcomes and diagnostics remain recorded; scan-time source replay
 is unavailable. Projected database facts remain available for matching and unmatched
 reference reporting. Known recording payloads are skipped rather than loaded as
-metadata. Independently loaded AVB bin graphs remain retained because filtering,
-reference resolution and enrichment use them. Readers do not invent meanings for
-unknown properties.
+metadata. Independently loaded AVB bin graphs remain retained for filtering and
+reference resolution. Readers do not invent meanings for unknown properties.
 
 PMR association prefers an exact filename. A normalized spelling is a fallback only
 when it identifies one physical location; contradictory or ambiguous identities
@@ -169,8 +168,9 @@ A source that changes while being read is excluded from selection; a changed med
 file cannot be made trustworthy by falling back to a database.
 
 Technical fields prefer coherent file-owned header observations, then qualified
-matching MDB values. The approved editorial priorities are Clip Name: header, MDB,
-AVB; Project: PMR, MDB, header; Original Bin: MDB, header, AVB. The shared policy
+matching MDB values. The editorial priorities are Clip Name: header, then MDB;
+Project: PMR, then MDB, then header; Original Bin: MDB, then header. Loaded bins
+supply filtering references only. The shared policy
 lists named source groups from first choice to final fallback. Sources in one
 group have equal preference; omitted sources remain in evidence but cannot supply
 the selected value. Incompatible values in the preferred available group leave
@@ -195,6 +195,11 @@ issues distinguish local absence, matches elsewhere and unmatched MDB identities
 An unmatched identity alone does not prove a missing physical file. Current checks
 and limits are recorded in the [live connection report](../Project%20Canon/live-connection-2026-10-04.md).
 
+The scanner prepares display values before passing rows to the table. The table
+stores those values without a second metadata-selection pass. Ordinary rows still
+retain scan/evidence histories; their compact-record cleanup remains outstanding.
+This preparatory change establishes no measured memory or scan-time saving.
+
 `FileMobId` identifies the file media object, while `MasterMobId` identifies its
 associated master object. Related video and audio files can share a MasterMobId
 while having different FileMobIds. Physical copies can retain both identifiers;
@@ -211,7 +216,7 @@ starting new reads, freshness checks and matching work, retaining gathered rows
 and evidence. An operating-system request already in progress may delay stopping.
 The Console records root lookup, discovery/source preparation and total worker
 times separately so shared-storage delays can be located.
-Loaded bins remain available and can still supply missing names after a rescan.
+Loaded bins remain available after a rescan; they do not fill missing row metadata.
 
 ## Reading the labels
 
@@ -350,11 +355,11 @@ source evidence even if the loaded-bin row is later removed. The future sequence
 picker remains disabled behind `SequenceFilter`; the live dialog uses whole-bin
 scope.
 
-Loaded bins can also fill missing clip names and original-bin names. Conflicting
-fallback values stay unknown. Removing bins retracts information supplied only by
-those bins, while information recovered during scanning takes precedence. Original
-AVB properties and source graphs remain retained as evidence even when their current
-selection is retracted.
+Loading or removing bins does not change Clip Name, Original Bin or derived effect
+details in the media table or CSV. Those values come from scanned media and folder
+databases. Missing applicable values remain blank when those sources cannot supply
+them. Loaded bins and applied filter steps still retain source graphs and bin
+metadata for filtering; compacting those graphs remains outstanding.
 
 Selections are remembered across filter changes, but **file operations use only
 currently visible selected rows**. Hidden selections can reappear when the filter
