@@ -80,10 +80,10 @@ bool AvbMetadataResolver::applyTo(MediaFile &file, RowProjection projection) con
 	file.evidence.excludeSource(MediaProperty::ClipName, MetadataSource::Avb);
 	file.evidence.excludeSource(MediaProperty::OriginalBin, MetadataSource::Avb);
 	MasterMobMetadata combined;
-	const auto identities = file.evidence.selected(MediaProperty::MasterMobId).value.toStringList();
-	for (const auto &identity : identities)
+	const auto masterMobIds = file.evidence.selected(MediaProperty::MasterMobId).value.toStringList();
+	for (const auto &masterMobId : masterMobIds)
 	{
-		const auto found = m_metadataByMasterMobId.constFind(identity);
+		const auto found = m_metadataByMasterMobId.constFind(masterMobId);
 		if (found == m_metadataByMasterMobId.cend())
 			continue;
 		const auto &value = found.value();

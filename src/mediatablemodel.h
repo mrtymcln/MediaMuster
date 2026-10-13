@@ -36,7 +36,7 @@ public:
 		FileName,
 		SourceFile,
 		Location,
-		MobId,
+		FileMobId,
 		MasterMobId,
 		KelpieId,
 		PrecomputeCategory,

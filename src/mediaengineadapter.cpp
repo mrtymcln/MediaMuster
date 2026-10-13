@@ -109,7 +109,8 @@ bool applyResolvedMetadata(MediaFile &row)
 }
 
 MediaFile mediaEngineMediaFile(const MediaEngine::MediaFile &file, const QSharedPointer<const MediaEngine::ScanResult> &scan,
-						const QString &volumePath, const QString &volumeName)
+						const QString &volumePath, const QString &volumeName,
+						const OpScanReceiptLookup *operationChecks)
 {
 	MediaFile row;
 	row.mediaEngineScan = scan;
@@ -144,5 +145,9 @@ MediaFile mediaEngineMediaFile(const MediaEngine::MediaFile &file, const QShared
 	const QString allowed = QStringLiteral("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._- ,()[]+='~@#%&");
 	for (const QChar character : row.fileName)
 		row.isNonPortable |= !allowed.contains(character);
+	if (operationChecks)
+		captureOpScanReceipt(row, *operationChecks);
+	else
+		captureOpScanReceipt(row);
 	return row;
 }

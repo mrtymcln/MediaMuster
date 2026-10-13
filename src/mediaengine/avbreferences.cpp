@@ -227,6 +227,7 @@ namespace MediaEngine
 
 			if (object.avb && object.avb->classId == "MSML")
 			{
+				// MSML locators identify media by FileMobId; other graph MobIds keep their roles.
 				const auto *full = property(object.properties, QStringLiteral("MSMLocator.mob_id"));
 				if (full && full->decoded.toByteArray().size() == 32 && !terminal(full->decoded.toByteArray()))
 					result.mediaReferences.append({key, full - object.properties.constData(), full->decoded.toByteArray(), {}});

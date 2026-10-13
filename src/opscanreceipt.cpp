@@ -17,29 +17,22 @@ namespace
 		return file.scanStamp.path;
 	}
 
-	QString databaseIdentityForSkippedHeader(const MediaFile &file)
+	QString databaseIdentityForSkippedHeader(const MediaFile &file, const OpScanReceiptLookup &lookup)
 	{
-		if (!file.mediaEngineScan || file.scanStamp.mobId.isEmpty() || MobId::isAllZero(file.scanStamp.mobId))
+		if (file.scanStamp.fileMobId.isEmpty() || MobId::isAllZero(file.scanStamp.fileMobId))
 			return {};
 		const QString scannedPath = originalLocation(file);
-		const bool skipped = std::any_of(file.mediaEngineScan->sources.cbegin(), file.mediaEngineScan->sources.cend(),
-											 [&](const MediaEngine::SourceReceipt &source)
-										 {
-											 return source.snapshot && scannedPath == source.snapshot->path &&
-													(source.snapshot->source == MetadataSource::Mxf || source.snapshot->source == MetadataSource::Omf) &&
-													source.outcome == MediaEngine::ParsedSource::Outcome::NotRead;
-										 });
-		if (!skipped)
+		if (!lookup.headerWasSkipped(scannedPath))
 			return {};
 		for (const auto &observation : file.evidence.observations(MediaProperty::FileMobId))
 			if (observation.snapshot && observation.eligible && observation.readState == PropertyReadState::Present &&
 				(observation.snapshot->source == MetadataSource::Pmr || observation.snapshot->source == MetadataSource::Mdb) &&
-				observation.value.toString() == file.scanStamp.mobId)
-				return file.scanStamp.mobId;
+				observation.value.toString() == file.scanStamp.fileMobId)
+				return file.scanStamp.fileMobId;
 		return {};
 	}
 
-	OpHeaderIdentity headerIdentity(const MediaFile &file)
+	OpHeaderIdentity headerIdentity(const MediaFile &file, const OpScanReceiptLookup &lookup)
 	{
 		OpHeaderIdentity identity;
 		QStringList fileIds;
@@ -64,18 +57,48 @@ namespace
 		identity.masterMobIds.removeDuplicates();
 		std::sort(identity.masterMobIds.begin(), identity.masterMobIds.end());
 		if (fileIds.size() == 1)
-			identity.mobId = fileIds.front();
+			identity.fileMobId = fileIds.front();
 		else if (fileIds.size() > 1)
 			identity.unavailableReason = QStringLiteral("The media header has conflicting file identities. Rescan before proceeding.");
-		if (file.mediaEngineScan)
-		{
-			const QString scannedPath = originalLocation(file);
-			for (const auto &issue : file.mediaEngineScan->reconciliationIssues)
-				if (issue.kind == ScanIssue::Kind::SourceChanged && issue.source && issue.source->path == scannedPath)
-					identity.unavailableReason = QStringLiteral("The media header changed during scanning. Rescan before proceeding.");
-		}
+		if (lookup.sourceChanged(originalLocation(file)))
+			identity.unavailableReason = QStringLiteral("The media header changed during scanning. Rescan before proceeding.");
 		return identity;
 	}
+}
+
+OpScanReceiptLookup::OpScanReceiptLookup(const MediaEngine::ScanResult &scan)
+{
+	for (const auto &source : scan.sources)
+		if (source.snapshot &&
+			(source.snapshot->source == MetadataSource::Mxf || source.snapshot->source == MetadataSource::Omf) &&
+			source.outcome == MediaEngine::ParsedSource::Outcome::NotRead)
+			m_flags[source.snapshot->path].headerSkipped = true;
+	for (const auto &issue : scan.reconciliationIssues)
+		if (issue.kind == ScanIssue::Kind::SourceChanged && issue.source)
+			m_flags[issue.source->path].sourceChanged = true;
+}
+
+bool OpScanReceiptLookup::headerWasSkipped(const QString &path) const
+{
+	const auto found = m_flags.constFind(path);
+	return found != m_flags.cend() && found->headerSkipped;
+}
+
+bool OpScanReceiptLookup::sourceChanged(const QString &path) const
+{
+	const auto found = m_flags.constFind(path);
+	return found != m_flags.cend() && found->sourceChanged;
+}
+
+void captureOpScanReceipt(MediaFile &file, const OpScanReceiptLookup &lookup)
+{
+	file.operationScanReceipt = OpScanReceipt{headerIdentity(file, lookup), databaseIdentityForSkippedHeader(file, lookup)};
+}
+
+void captureOpScanReceipt(MediaFile &file)
+{
+	const auto lookup = file.mediaEngineScan ? OpScanReceiptLookup{*file.mediaEngineScan} : OpScanReceiptLookup{};
+	captureOpScanReceipt(file, lookup);
 }
 
 OpItem opItemFromMediaFile(const MediaFile &mf)
@@ -89,7 +112,7 @@ OpItem opItemFromMediaFile(const MediaFile &mf)
 	it.modifiedMs = mf.modified.isValid() ? mf.modified.toMSecsSinceEpoch() : -1;
 	// Retain all scan claims for replay and reporting. The separate header
 	// receipt below identifies which claims the opened file can corroborate.
-	it.mobId = mf.fileMobId;
+	it.fileMobId = mf.fileMobId;
 	it.masterMobId = mf.masterMobId;
 	it.masterMobIds = mf.masterMobIds;
 	if (!mf.scanStamp.path.isEmpty())
@@ -97,12 +120,17 @@ OpItem opItemFromMediaFile(const MediaFile &mf)
 		it.scanPath = mf.scanStamp.path;
 		it.scanVolumeIdentifier = mf.scanStamp.volumeIdentifier;
 		it.modifiedMs = mf.scanStamp.modified.isValid() ? mf.scanStamp.modified.toMSecsSinceEpoch() : -1;
-		it.mobId = mf.scanStamp.mobId;
+		it.fileMobId = mf.scanStamp.fileMobId;
 		it.masterMobIds = mf.scanStamp.masterMobIds;
 		it.masterMobId = it.masterMobIds.size() == 1 ? it.masterMobIds.front() : QString();
-		it.headerIdentity = headerIdentity(mf);
-		it.databaseMobIdToVerify = databaseIdentityForSkippedHeader(mf);
+		if (mf.operationScanReceipt)
+		{
+			it.headerIdentity = mf.operationScanReceipt->headerIdentity;
+			it.databaseFileMobIdToVerify = mf.operationScanReceipt->databaseFileMobIdToVerify;
+		}
 	}
+	if (!mf.operationScanReceipt)
+		it.headerIdentity = OpHeaderIdentity{{}, {}, QStringLiteral("Scan safety record unavailable. Rescan before proceeding.")};
 	it.clipName = mf.clipName;
 	return it;
 }

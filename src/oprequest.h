@@ -103,7 +103,7 @@ inline std::optional<ConflictPolicy> conflictPolicyFromName(const QString &name)
 /// remain in the scan claims; they are not requirements imposed on the header.
 struct OpHeaderIdentity
 {
-	QString mobId;
+	QString fileMobId;
 	QStringList masterMobIds;
 	QString unavailableReason; ///< A changed or contradictory header cannot authorize an operation.
 };
@@ -127,16 +127,16 @@ struct OpItem
 	QString policy;			  ///< Conflict policy by name; empty = none chosen.
 
 	// Scan claims about the media inside the file (empty when unknown).
-	QString mobId;			  ///< Avid MOB ID of this essence file.
-	QString masterMobId;	  ///< The master clip's MOB ID.
+	QString fileMobId;		  ///< FileMobId of this essence file.
+	QString masterMobId;	  ///< MasterMobId of the associated master clip.
 	QString clipName;		  ///< The human name the editor knows the clip by.
 	QStringList masterMobIds; ///< Every established association, including database observations.
 	QString scanPath;
 	QString scanVolumeIdentifier;					///< VolumeIdentity identifier, distinct from native expectedVolumeId.
-	std::optional<OpHeaderIdentity> headerIdentity; ///< Absent in older requests/journals.
+	std::optional<OpHeaderIdentity> headerIdentity; ///< Captured media checks; absent for non-scanned inputs.
 	/// PMR/MDB file identity to verify when the scan deliberately skipped its header.
 	/// Kept separate from header-established IDs and database-only master associations.
-	QString databaseMobIdToVerify;
+	QString databaseFileMobIdToVerify;
 
 	// Inverse operations must target the object recorded by the original job,
 	// not whichever file happens to occupy its path while building the new plan.

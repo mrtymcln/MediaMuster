@@ -283,18 +283,22 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 				 QStringLiteral("Scan evidence: %1 source receipts plus extracted metadata and observations").arg(session->sources.size())});
 	QVector<MediaFile> rows;
 	rows.reserve(session->files.size());
-	for (const auto &file : session->files)
 	{
-		QString volumePath;
-		QString volumeName;
-		for (const auto &context : contexts)
-			if (file.path.startsWith(context.path + QLatin1Char('/')))
-			{
-				volumePath = context.volumePath;
-				volumeName = labels.value(context.path);
-				break;
-			}
-		rows.append(mediaEngineMediaFile(file, session, volumePath, volumeName));
+		// Share one temporary lookup while preparing rows; it owns no scan graphs.
+		const OpScanReceiptLookup operationChecks(*session);
+		for (const auto &file : session->files)
+		{
+			QString volumePath;
+			QString volumeName;
+			for (const auto &context : contexts)
+				if (file.path.startsWith(context.path + QLatin1Char('/')))
+				{
+					volumePath = context.volumePath;
+					volumeName = labels.value(context.path);
+					break;
+				}
+			rows.append(mediaEngineMediaFile(file, session, volumePath, volumeName, &operationChecks));
+		}
 	}
 	for (const auto &issue : session->reconciliationIssues)
 		callbacks.warning(QStringLiteral("%1: %2%3").arg(issue.expectedPath.isEmpty() && issue.source ? issue.source->path : issue.expectedPath, issue.explanation, issue.matchingPaths.isEmpty() ? QString{} : QStringLiteral("; matching locations: %1").arg(issue.matchingPaths.join(QStringLiteral("; ")))));

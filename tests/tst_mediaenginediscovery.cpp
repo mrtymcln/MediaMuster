@@ -166,7 +166,7 @@ private slots:
 			legacy += int(file.omfScan);
 			quarantined += int(file.quarantined);
 			QCOMPARE(file.stamp.path, file.path);
-			QVERIFY(file.stamp.mobId.isEmpty());
+			QVERIFY(file.stamp.fileMobId.isEmpty());
 			QCOMPARE(file.evidence.selected(MediaProperty::Compression).readState, PropertyReadState::NotRead);
 			QCOMPARE(file.evidence.observations(MediaProperty::Size).first().value.toLongLong(), qint64(12));
 		}

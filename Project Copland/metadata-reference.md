@@ -10,6 +10,12 @@ the [Copland decision ledger](README.md). A field appearing here does not author
 a new column, reader or permanent evidence history. Update the corresponding row
 when its meaning or verified source mapping changes.
 
+Identity terminology was rechecked on 13 October 2026 against primary Avid
+documentation, the installed Media Composer library and genuine PMR/MDB bytes;
+see the [terminology evidence](evidence/identity-terminology-2026-10-13.json).
+The [role evidence](evidence/identity-roles-2026-10-13.json) adds sequence and
+mixed-object roles, fresh AVB/MDB specimens and an exported AAF from EDIT.
+
 ## Sources and authority
 
 | Key | Source | What it establishes |
@@ -58,7 +64,7 @@ These names must not be substituted for one another just because they look simil
 | Location | Current absolute physical path, including filename. Locates the file that operations act upon. | Filesystem fact. A: closest heading `MediaFilePath`, p. 276, for media/precompute file objects. | `mediaFilePath`, updated after confirmed operations. Distinct from recorded SourcePath. [Table mapping](../src/mediatablemodel.cpp#L303). Confirmed C36. |
 | Database Status / internal result | App-derived local index membership/readability result. | App field; D explains database roles rather than this enum. | Current `Listed`, `NoReference`, `NoDatabase`, `DbUnreadable` derives from PMR matching and database outcomes. A header-recovered name does not make a file Listed. C48 replaces the visible CSV/status-column target with two boolean columns; compact internal status remains useful. Not proof of freshness, complete metadata or sequence usage. [Current code](../src/mediaengine/scancoordinator.cpp#L555). |
 | No Database | Target true/false column and view: reference membership could not be checked locally because the relevant databases are missing or unreadable. | App field, no standard OMF/MXF property. | Confirmed C48/C49, not yet implemented. A validated local PMR or same-folder MDB reference keeps this false even if another database is missing or unreadable; read failures go to Console. Missing and unreadable reasons can remain in compact internal status. |
-| No Reference | Target true/false column and view: readable local database checks did not establish a reference to this physical file. | App field, no standard OMF/MXF property. | Confirmed C48/C49, not yet implemented. A validated same-folder MDB match to the physical MobId counts even when PMR misses the file or is absent. False on a couldn't-check row means absence was not established; it does not certify listing. |
+| No Reference | Target true/false column and view: readable local database checks did not establish a reference to this physical file. | App field, no standard OMF/MXF property. | Confirmed C48/C49, not yet implemented. A validated same-folder MDB match to the physical FileMobId counts even when PMR misses the file or is absent. False on a couldn't-check row means absence was not established; it does not certify listing. |
 
 The ordinary-column review retains Clip Name, Kind, Size and Type under C45
 in table/CSV, alongside the already confirmed ordinary fields, identifiers and
@@ -138,20 +144,98 @@ would leave the old derived value and its acquisition dependencies in place.
 
 ## Identities and relationships
 
+**Verified names:** Avid itself uses **File Mob ID / FileMobID** for the file role
+and **Master Mob ID / MasterMobID** for the master role. These are not terms
+invented by MediaMuster. **MobID** remains the general identifier/property name;
+qualifying it specifies which object's identity is meant. Avid capitalization and
+spacing vary across publications.
+
+The [Interplay Production Best Practices guide](https://resources.avid.com/SupportFiles/attach/InterplayBestPractices_V3_7.pdf#page=230)
+lists FilemobID and MasterMobID for the Media Indexer Storage Browser. The
+[Capture guide](https://resources.avid.com/SupportFiles/attach/Broadcast/Capture_UG_v3_7.pdf#page=117)
+labels the file identity File Mob ID. The
+[Production Management ReadMe](https://resources.avid.com/SupportFiles/attach/MediaCentral_Production/MCPM_2023_7_2_ReadMe.pdf#page=4)
+uses FileMobID explicitly in its Media Indexer fixes.
+
+Fresh read-only inspection of the installed 26.8.0.58987 library confirms native
+`GetFileMobID` and `GetMasterMobID` methods and `fileMobID` / `masterMobID` keys.
+The live MDB contains the literal property `OMFI:MOBJ:MobID`; file and master
+objects both use that property, with ownership/role establishing its meaning.
+PMR uses packed positional IDs without embedded field-name labels; the native
+`ReadPmrRec` calls label both reads `mobID`. In MXF, the corresponding standard
+property is Package UID on objects with different package roles. The exact names,
+addresses, byte offsets and scope limits are in the
+[13 October receipt](evidence/identity-terminology-2026-10-13.json).
+
+MediaMuster uses the user-selected spelling **FileMobId** for the file-role
+identity and **MasterMobId** for the master-role identity in code, table/CSV
+headings and current documentation. These names replace the file-role `MobId`
+label without changing identifier values or checks. Exact external names remain
+literal. Journal identity keys now use the same names, without legacy aliases,
+under the user's [beta policy](README.md#beta-compatibility-policy--13-october-2026). See the
+[naming choice](README.md#identity-naming-choice--13-october-2026).
+
+### Stored names, parser labels and object roles
+
+Preserve the spelling of an external format property or class tag that the reader
+uses to interpret the input. This is separate from supporting previous versions
+of MediaMuster's own saved journals.
+
+| Format | Identity names or tags being preserved | How they occur |
+| --- | --- | --- |
+| OMF / MDB | `OMFI:MOBJ:MobID`, `OMFI:SCLP:SourceID`, `OMFI:MDAT:MobID`, `OMFI:WAVE:MobID`, `OMFI:AIFC:MobID`, `OMFI:TIFF:MobID`; types `omfi:UID`, `omfi:MobIndex` | Literal dictionary strings. The owning object's role determines whether its MobID is a composition, master or source identity. |
+| AAF | `MobID`, `MasterMobID`, `EssenceFileMobID`; classes `CompositionMob`, `MasterMob`, `SourceMob` | Literal dictionary names in the inspected exported AAF. MediaMuster does not currently add an AAF reader through this naming work. |
+| MXF | `GenericPackage.PackageUID`, `EssenceContainerData.LinkedPackageUID`, `SourceClip.SourcePackageID`, `Preface.MasterMobID`, `Preface.EssenceFileMobID` | Catalogue names for binary property labels. The dotted strings are not stored as property-name text on the wire. `InterchangeObject.InstanceUID` is a separate object identifier, not the package's Mob identity. |
+| AVB | `CMPO`, `SCLP`, `MSML`, `MOBR`, `ASPI` | Literal four-byte class tags. Identity fields use tagged binary layouts. |
+| PMR | No embedded identity field names | The reader interprets positional records. Native diagnostics call both identity reads `mobID`; that is not an on-disk field-name string. |
+
+AVB labels such as `Composition.mob_id`, `Composition.mob_type`,
+`SourceClip.mob_id`, `MSMLocator.mob_id`, `MobRef.mob_id`, `Position.mob_id` and
+`AudioSuitePluginEffect.mob_id` are supplied by MediaMuster's parser. They are
+not literal property-name strings stored in AVB files. Likewise,
+`AVB.MobId.MaterialLE` is an internal encoding tag. These labels can be improved
+together with their consumers; external format compatibility does not require
+their spelling. This naming change leaves the parser's general labels in place
+because the parsed objects and references can have several Mob roles.
+
+The installed binary's `AComposition` class stores one MobID with a Mob type and
+can create composition, master or source AAF objects. Genuine AVBs contain the
+same three roles under `CMPO`. In the inspected exported AAF, one composition,
+128 masters and 256 sources all use the inherited 32-byte `MobID` property.
+Consequently, `AvbComposition.mobId` and mixed-object lookups keep the general
+name alongside the object type.
+
+The sequence-only `AvbSequenceEntry` admits composition objects with Mob type 1
+and usage code 0. Its field uses the user-selected `compositionMobId` /
+**CompositionMobId** spelling. Avid also uses Sequence Mob ID in its
+[Transfer guide](https://resources.avid.com/SupportFiles/attach/MediaCentral_Production/MCPM_2024_10_0_Transfer_Guide.pdf#page=72)
+and sequence-specific integration metadata in the
+[Shared Library reference](https://resources.avid.com/SupportFiles/attach/MediaCentral_SharedLibrary/MCSL_2024_10_ProcessesReference.pdf#page=35).
+Both descriptions identify the composition's MobID. A SourceClip's reference
+can target a master or another composition, so its general referenced-Mob
+identity cannot always be called FileMobId or SourceMobId (O pp. 197–199).
+
+The fresh inspection covered the installed Media Composer version, bounded
+discovery on Macintosh HD and EDIT, selected genuine specimens and relevant
+primary publications. Protected/skipped directories and depth limits remain;
+this is not an exhaustive claim about every file or Avid publication. The
+[receipt](evidence/identity-roles-2026-10-13.json) records counts, limits, binary
+addresses, source/probe hashes and source links.
+
 | Field/concept | Official name or role | Definition and place in MediaMuster |
 | --- | --- | --- |
-| MobId column | OMF File Source Mob `MobID`; MXF File Source Package `Package UID` | App-specific choice of the file/essence-owning media object identity. MXF ownership follows EssenceContainerData `Linked Package UID` to its SourcePackage. Not a unique physical occurrence on disk. [Ownership](../src/mediaengine/mxfprojection.cpp#L246), O Chapter 4; M A.5/B.1/E; P. |
+| FileMobId column | OMF File Source Mob `MobID`; MXF File Source Package `Package UID` | App-specific choice of the file/essence-owning media object identity. MXF ownership follows EssenceContainerData `Linked Package UID` to its SourcePackage. Not a unique physical occurrence on disk. [Ownership](../src/mediaengine/mxfprojection.cpp#L246), O Chapter 4; M A.5/B.1/E; P. |
 | MasterMobId column | OMF Master Mob `MobID`; MXF associated MaterialPackage `Package UID` | C51 requires one associated master identity selected from PMR/MDB/header using the agreed source policy and existing validation. Same general ID type, different object role. The current implementation can represent a set; the fresh user-media scan established one ID per physical header. Independent duplicate clips can share media (A p. 260; S p. 128), but this does not establish several master IDs in the header or justify collecting every incoming clip reference under C50. Loaded AVBs remain filtering-only. [Current association](../src/mediaengine/mxfprojection.cpp#L1175), O pp. 94–95; P; F §6.8. |
-| Composition Mob / sequence | OMF Composition Mob; Avid composition/sequence object | Describes an edit through track/component references. Not a physical file row or the same thing as a master clip. AVB sequence filtering resolves these references independently per bin under C26. O Chapter 4. |
+| CompositionMobId / sequence | Composition Mob's inherited `MobID`; Avid also says Sequence Mob ID | Describes an edit through track/component references. The sequence-only record uses `compositionMobId`; mixed-role records keep `mobId` with their type. AVB sequence filtering resolves these references independently per bin under C26. O Chapter 4. |
 | Physical Source Mob / package | Lower-level source/package role | Describes upstream physical/source material. Do not confuse it with the top-level file package that owns this file's essence. P pp. 4–9. |
 | Source reference | Source ID/package ID, source track/slot ID and start position | Connects the correct source and track/time. Mob identity alone is insufficient for C06/C23's exact used-track/angle filtering. [Current traversal](../src/mediaengine/avbreferences.cpp), O SourceClip pp. 197–199; M B.10. |
 | KelpieId | MediaMuster scan/session row token; no Avid equivalent | Identifies the physical inventory row. Confirmed moves retain it; separate copies get new tokens; rescans allocate fresh identities. Not a persistent Avid identifier. [Allocator](../src/mediaevidence.h#L32). |
 | OmfScan | MediaMuster managed-folder-family flag; no Avid equivalent | True for rows admitted through the OMFI family, including its eligible WAV/AIFF files. Does not prove the actual container is OMF or parsing succeeded. [Discovery](../src/mediaengine/discoveryengine.cpp#L118). |
 
-C33 retains MobId, MasterMobId, KelpieId and OmfScan in the table, CSV and internal
+C33 retains FileMobId, MasterMobId, KelpieId and OmfScan in the table, CSV and internal
 records. A bit-for-bit filesystem copy shares embedded IDs but has a separate
 physical row. Avid-created new representations/assets can receive new IDs. Neither
-MobId nor MasterMobId proves byte equality or replaces operation-time file checks.
+FileMobId nor MasterMobId proves byte equality or replaces operation-time file checks.
 
 Modern Basic UMIDs contain 32 bytes: label, length, instance and material number
 (U). Historical OMF `omfi:UID` is 96 bits / three 32-bit words (O Appendix B p. 222).

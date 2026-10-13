@@ -4,6 +4,7 @@
 #include "mediaengine/projection.h"
 #include "mediaengine/metadataselectionpolicy.h"
 #include "mediaengineadapter.h"
+#include "opscanreceipt.h"
 #include "testutil.h"
 #include "testmediaenginebento.h"
 #include <QtEndian>
@@ -482,6 +483,86 @@ private slots:
 			QCOMPARE(distinct.observations(MediaProperty::ClipDuration).first().value.toList(), (QVariantList{first, other}));
 		}
 	}
+	void adapter_operation_checks_survive_releasing_source_history_data()
+	{
+		QTest::addColumn<QString>("condition");
+		QTest::newRow("genuine-header") << QStringLiteral("header");
+		QTest::newRow("authored-skipped-header") << QStringLiteral("skipped");
+		QTest::newRow("authored-unreadable-header") << QStringLiteral("unreadable");
+	}
+
+	void adapter_operation_checks_survive_releasing_source_history()
+	{
+		QFETCH(QString, condition);
+		QTemporaryDir temporary;
+		QVERIFY(temporary.isValid());
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		const QString path = folder + QStringLiteral("/take.mxf");
+		const bool genuineHeader = condition == QStringLiteral("header");
+		const bool headerSkipped = condition == QStringLiteral("skipped");
+		if (genuineHeader)
+		{
+			QVERIFY(QDir().mkpath(folder));
+			QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR) + QStringLiteral("/TONE_100A01.EA7D504A.611740.mxf"), path));
+		}
+		else
+		{
+			// Authored database/header controls exercise read decisions, not format ground truth.
+			QVERIFY(tryWriteFile(path, "Unreadable test header"));
+			QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("take.mxf", toneFileId, "Project")})));
+			QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"), audioDatabase(headerSkipped ? 24 : 0)));
+		}
+		const MediaEngine::Cancellation cancellation;
+		auto scan = QSharedPointer<MediaEngine::ScanResult>::create(
+			MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation));
+		QCOMPARE(scan->files.size(), 1);
+		QVERIFY(scan->reconciliationComplete);
+		const auto *header = mediaSource(*scan, path);
+		QVERIFY(header && header->snapshot);
+		QCOMPARE(header->outcome == MediaEngine::ParsedSource::Outcome::NotRead, headerSkipped);
+		const QWeakPointer<MediaEngine::ScanResult> scanOwner(scan);
+		const QWeakPointer<const SourceSnapshot> headerOwner(header->snapshot);
+		const OpScanReceiptLookup lookup(*scan);
+		auto converted = mediaEngineMediaFile(scan->files.front(), scan, temporary.path(), QStringLiteral("Test volume"), &lookup);
+		QVERIFY(converted.operationScanReceipt);
+		const QString fileId = MediaEngine::canonicalDatabaseId(toneFileId);
+		const QString master = MediaEngine::canonicalDatabaseId(toneMasterId);
+		const auto &checks = *converted.operationScanReceipt;
+		QCOMPARE(checks.headerIdentity.fileMobId, genuineHeader ? fileId : QString{});
+		QCOMPARE(checks.headerIdentity.masterMobIds, genuineHeader ? QStringList{master} : QStringList{});
+		QVERIFY(checks.headerIdentity.unavailableReason.isEmpty());
+		QCOMPARE(checks.databaseFileMobIdToVerify, headerSkipped ? fileId : QString{});
+		{
+			const auto independent = mediaEngineMediaFile(scan->files.front(), scan, temporary.path(), QStringLiteral("Test volume"));
+			QVERIFY(independent.operationScanReceipt);
+			QCOMPARE(independent.operationScanReceipt->headerIdentity.fileMobId, checks.headerIdentity.fileMobId);
+			QCOMPARE(independent.operationScanReceipt->headerIdentity.masterMobIds, checks.headerIdentity.masterMobIds);
+			QCOMPARE(independent.operationScanReceipt->headerIdentity.unavailableReason, checks.headerIdentity.unavailableReason);
+			QCOMPARE(independent.operationScanReceipt->databaseFileMobIdToVerify, checks.databaseFileMobIdToVerify);
+		}
+		const QString scanPath = converted.scanStamp.path;
+		const QString volume = converted.scanStamp.volumeIdentifier;
+		const qint64 modifiedMs = converted.scanStamp.modified.toMSecsSinceEpoch();
+		converted.evidence = {};
+		converted.mediaEngineScan.clear();
+		converted.mediaEngineAvbSources.clear();
+		scan.clear();
+		// Neither the temporary lookup nor the compact record owns the original sources.
+		QVERIFY(scanOwner.isNull());
+		QVERIFY(headerOwner.isNull());
+		QCOMPARE(lookup.headerWasSkipped(path), headerSkipped);
+		const auto item = opItemFromMediaFile(converted);
+		QVERIFY(item.headerIdentity);
+		QCOMPARE(item.headerIdentity->fileMobId, genuineHeader ? fileId : QString{});
+		QCOMPARE(item.headerIdentity->masterMobIds, genuineHeader ? QStringList{master} : QStringList{});
+		QVERIFY(item.headerIdentity->unavailableReason.isEmpty());
+		QCOMPARE(item.databaseFileMobIdToVerify, headerSkipped ? fileId : QString{});
+		QCOMPARE(item.fileMobId, fileId);
+		QCOMPARE(item.scanPath, scanPath);
+		QCOMPARE(item.scanVolumeIdentifier, volume);
+		QCOMPARE(item.modifiedMs, modifiedMs);
+	}
+
 	void copies_own_rows_and_share_source_receipts()
 	{
 		QTemporaryDir temporary;
@@ -506,7 +587,7 @@ private slots:
 		QCOMPARE(first.fileMobId, second.fileMobId);
 		QVERIFY(first.mediaFilePath != second.mediaFilePath);
 		QCOMPARE(first.mediaEngineScan, second.mediaEngineScan);
-		QCOMPARE(first.scanStamp.mobId, first.fileMobId);
+		QCOMPARE(first.scanStamp.fileMobId, first.fileMobId);
 		const auto &stored = first.mediaEngineScan->sources.front();
 		QCOMPARE(stored.outcome, MediaEngine::ParsedSource::Outcome::Complete);
 		QCOMPARE(stored.snapshot->readState, SourceReadState::Complete);

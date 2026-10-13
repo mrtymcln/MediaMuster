@@ -16,7 +16,8 @@ For what the user sees, start with [How MediaMuster works](current-behaviour.md)
    databases first, schedules necessary headers, then matches and selects metadata.
 4. The [MediaEngine adapter](../src/mediaengineadapter.cpp) supplies one compatibility
    [MediaFile](../src/mediafile.h) row per physical file. Each row retains the MediaEngine
-   evidence and a shared immutable scan receipt; [MediaTableModel](../src/mediatablemodel.cpp)
+   evidence, a shared immutable scan receipt and a small frozen operation safety
+   record; [MediaTableModel](../src/mediatablemodel.cpp)
    stores the rows and supplies cells.
 5. [MediaFilterProxy](../src/mediafilterproxy.cpp) filters and sorts the rows for the
    view. It leaves the underlying inventory intact.
@@ -182,7 +183,7 @@ projects when rebuilding the list.
 | [FileOperationController](../src/fileoperationcontroller.cpp) | Coordinates activity, progress, recovery choices, Undo availability and dispatch from the main window. |
 | [OpRequest / OpItem](../src/oprequest.h) | Carry the choices and file facts needed to run or resume a job without depending on the table model. |
 | [OpManager](../src/opmanager.cpp) | Owns the execution worker and passes progress/results between it and the interface. |
-| [Scan receipt adapter](../src/opscanreceipt.cpp) | Carries scan path/volume/time and Avid claims into requests, keeping header-established identities separate from database associations. |
+| [Scan receipt adapter](../src/opscanreceipt.cpp) | Captures compact safety conclusions after scanning; combines them with current row path/volume/time and Avid claims when preparing requests. |
 | [OpRunner](../src/oprunner.cpp) | Coordinates journal preparation, execution, recovery and Undo in one implementation file, organized with `MARK` sections. |
 | [OpFile](../src/opfile.cpp) | Holds file handles and checks file identity, metadata and relocation outcomes. |
 | [OpCopier](../src/opcopier.cpp), [OpTrash](../src/optrash.cpp) | Perform native copying and platform Trash handling. |
@@ -193,6 +194,22 @@ The main window prepares a request from the visible selection. The controller
 checks activity, prior unfinished work and journal availability, then dispatches to
 the manager. The runner owns changes on disk. The interface preview does not
 authorize using stale paths, identities or free-space assumptions.
+
+After scanning, one temporary path lookup records deliberately skipped headers and
+changed sources. The presentation adapter uses it to capture each row's
+`OpScanReceipt`: header-established identities, any header refusal reason and the
+database file identity that must be verified when a header was deliberately skipped.
+The lookup owns no source or scan objects and is discarded before row publication.
+`opItemFromMediaFile()` reads only the captured record and current row fields; it
+does not consult evidence or the shared scan. A row without a captured record
+produces a refusal asking for a rescan. Captured unknown identities still follow
+the existing operation rules. Ordinary rows retain their larger history during
+this preparatory Copland migration.
+
+Confirmed copies and moves preserve the frozen record while updating the current
+row path, modification time and volume stamp. Destination paths cannot borrow
+another source's original scan checks. Requests and journals carry those values,
+so recovery and Undo remain independent of the original inventory.
 
 The interface serializes scans, recovery, ordinary file jobs and the Rebalance
 dialog through its activity state. The engine additionally uses the journal lock
@@ -226,10 +243,11 @@ These helpers use the same journal and recovery state machine.
 - Recheck native source identity, size and supplied modification time. New scan
   receipts also check path and persistent volume identity. Fresh MediaEngine MXF/legacy
   readers recheck applicable header-established Avid identities through the opened
-  source. If scanning deliberately skipped the header, the selected PMR/MDB file
-  MobId must instead be confirmed at operation time. Database-only master
+  source. If scanning deliberately skipped the header, the selected PMR/MDB
+  FileMobId must instead be confirmed at operation time. Database-only master
   associations are not imposed as header requirements.
   Changed or contradictory scan-time headers cannot authorize a stale row.
+  A missing captured row safety record cannot authorize an operation either.
 - Never replace an occupied destination. Keep Both chooses a free name; explicit
   Skip leaves the file alone. An unapproved conflict fails the item. A confirmed
   same-file destination is `NoEffect`, excluded from removal and Undo.
@@ -244,8 +262,11 @@ These helpers use the same journal and recovery state machine.
   a job, restoring retained originals, stopping unfinished work and Undo are distinct
   actions. Stop abandons the remaining work and keeps the job's completed effects.
 
-The current build and intended public v1 release use journal schema 2, without
-checksum fields. Mechanism, Trash provider and Undo action use `QString` internally
+The current beta build uses journal schema 3, without checksum fields. Identity
+keys match the code: `fileMobId`, `masterMobId`, `masterMobIds` and
+`databaseFileMobIdToVerify`. Legacy keys and optional-field compatibility paths
+are removed. During beta, simplicity takes precedence over older journal formats.
+Mechanism, Trash provider and Undo action use `QString` internally
 and explicit names in JSON,
 including `"none"` for an unset choice (an empty string inside the program). Loading
 rejects unknown names in both entries and nested items. Other schema versions are

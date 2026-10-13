@@ -1,0 +1,350 @@
+{
+  "recordedUtc": "2026-10-13T10:27:07Z",
+  "mountedDrives": [
+    "Macintosh HD (/)",
+    "EDIT (/Volumes/EDIT)"
+  ],
+  "discovery": {
+    "candidateCount": 5261,
+    "bounds": {
+      "maximumDepth": 16,
+      "maximumDirectoriesPerRoot": 180000,
+      "noSymlinkFollowing": true,
+      "skips": [
+        ".Spotlight-V100",
+        ".Trash",
+        ".Trashes",
+        ".build",
+        ".cargo",
+        ".codex",
+        ".fseventsd",
+        ".git",
+        ".gradle",
+        ".npm",
+        ".rustup",
+        ".swiftpm",
+        ".venv",
+        "Cache",
+        "Caches",
+        "DerivedData",
+        "node_modules",
+        "venv"
+      ],
+      "notTraversed": [
+        "/System",
+        "/private (except temporary probe outputs)",
+        "/Applications (application binary work belongs to sibling investigation)"
+      ]
+    },
+    "rootResults": [
+      {
+        "root": "/Volumes/EDIT",
+        "directoriesRead": 21483,
+        "counts": {
+          ".mxf": 2410,
+          ".pmr": 6,
+          ".mdb": 6,
+          ".avb": 51,
+          ".aaf": 1
+        },
+        "skipped": {
+          ".fseventsd": 1,
+          ".Spotlight-V100": 1,
+          ".Trashes": 1,
+          "Cache": 3,
+          ".git": 4
+        },
+        "depthStops": 0,
+        "errorCount": 2
+      },
+      {
+        "root": "/Users/martymclean",
+        "directoriesRead": 74024,
+        "counts": {
+          ".mxf": 2259,
+          ".avb": 68,
+          ".pmr": 9,
+          ".mdb": 6,
+          ".omf": 80
+        },
+        "skipped": {
+          ".codex": 1,
+          ".Trash": 2,
+          ".swiftpm": 1,
+          "node_modules": 3,
+          "venv": 1,
+          ".git": 9,
+          "Caches": 2751,
+          "Cache": 5,
+          "DerivedData": 1
+        },
+        "depthStops": 1361,
+        "errorCount": 123
+      },
+      {
+        "root": "/Users/Shared",
+        "directoriesRead": 214,
+        "counts": {
+          ".avb": 2,
+          ".mdb": 2,
+          ".pmr": 2,
+          ".mxf": 359
+        },
+        "skipped": {},
+        "depthStops": 0,
+        "errorCount": 0
+      },
+      {
+        "root": "/Library/Application Support/Avid",
+        "directoriesRead": 717,
+        "counts": {},
+        "skipped": {},
+        "depthStops": 0,
+        "errorCount": 0
+      }
+    ]
+  },
+  "inspection": {
+    "parsedMediaEngineSourceCount": 23,
+    "parsedCounts": {
+      ".avb": 15,
+      ".mdb": 8
+    },
+    "allComplete": true,
+    "allSizeMtimeStable": true,
+    "avbObjectCount": 171398,
+    "mdbObjectCount": 390120,
+    "aafPropertyStreamsParsed": 11957,
+    "aafMobCounts": {
+      "MasterMob": 128,
+      "SourceMob": 256,
+      "CompositionMob": 1
+    },
+    "aafStable": true
+  },
+  "qualifications": [
+    "Extension inventory includes fixture/developer/backup copies; these counts are not all parsed source counts.",
+    "Protected/depth-limited/skipped directories and system roots prevent an exhaustive whole-disk claim.",
+    "Composition.mob_id and Composition.mob_type are reader layout labels; AVB encodes values by tagged binary layout rather than these literal name strings.",
+    "All actual managed MDB specimens inspected use legacy MOBJ classes. No fresh genuine CMOB/SMOB/MMOB MDB specimen found in selected inspections.",
+    "AAF dictionary supplies literal MobID, MobIDType and CompositionMob/MasterMob/SourceMob class names. Private EssenceFileMobID/MasterMobID definitions corroborate role-qualified terms; generic MobID remains inherited on mixed Mob objects.",
+    "Relevant primary Avid/AAF/OMF publications were consulted; not every Avid publication or private SDK was available or read.",
+    "Binary symbols and strings describe the inspected installed version; an occurrence alone does not prove stored format spelling or ownership.",
+    "The prior identity-terminology receipt records the source state before the role-name rename and is retained as dated evidence."
+  ],
+  "probeArtifacts": [
+    {
+      "path": "/tmp/mediamuster-identities-drive-inventory.py",
+      "sha256": "764df22858ab865e0e617b33deedad2e165a461594770c254175ce549aee900f"
+    },
+    {
+      "path": "/tmp/mediamuster-identities-drive-inventory.json",
+      "sha256": "dfef36e4e7e585c05603c4657b5b0c940b2c613241a5c57ee0324e99b210ec42"
+    },
+    {
+      "path": "/tmp/mediamuster-identities-role-probe.cpp",
+      "sha256": "7d9009e381d8e8cb34d6a3c7c0e4a7dde0f6d01689c8a1b1e6a6a462d820ef88"
+    },
+    {
+      "path": "/tmp/mediamuster-identities-role-probe",
+      "sha256": "49d933f6d680111ef68b2d8b4e2003af2e1f367b17a69dedb7fd81dcd86e3fa9"
+    },
+    {
+      "path": "/tmp/mediamuster-identities-role-runner.py",
+      "sha256": "f617bcd3196cd4fa5b9b4613a2cf81165fe6172fe8ed51b3a3c66ba741e40d73"
+    },
+    {
+      "path": "/tmp/mediamuster-identities-role-results.jsonl",
+      "sha256": "efc724f6f00f33064d032e9723ba3a8edd7ce31c93cf3abf3e978c1f44fce08f"
+    },
+    {
+      "path": "/tmp/mediamuster-aaf-identity-probe.py",
+      "sha256": "a89d9fda1ef3a247df3576e862891a436f4cb5462a63579ec6c09a4fde55ecbb"
+    },
+    {
+      "path": "/tmp/mediamuster-aaf-identity-results.json",
+      "sha256": "04c1f73ac009e8880ba223ba629329091ade81222cad8f4bd7adbfad20aa4b62"
+    }
+  ],
+  "library": {
+    "path": "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/libmediamuster_mediaengine_core.a",
+    "sha256": "53aa22fdb37d0a0a2e903d236be23238f11436bf819bce8c2cf523afe48263a1"
+  },
+  "compilerCommand": "clang++ -std=c++17 -O2 -arch arm64 -I /Users/martymclean/Developer/MediaMuster/src -I /Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers -F /Users/martymclean/Qt/6.5.3/macos/lib /tmp/mediamuster-identities-role-probe.cpp /Users/martymclean/Developer/MediaMuster/build-mediaengine-release/libmediamuster_mediaengine_core.a -framework QtCore -Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib -o /tmp/mediamuster-identities-role-probe",
+  "replayCommands": [
+    "python3 -B /tmp/mediamuster-identities-drive-inventory.py",
+    "python3 -B /tmp/mediamuster-identities-role-runner.py (Qt host CPU query requires outside sandbox)",
+    "python3 -B /tmp/mediamuster-aaf-identity-probe.py"
+  ],
+  "purpose": "Supplement the earlier identity terminology receipt with sequence and mixed-object roles, stored names and parser labels; read-only inspection.",
+  "binary": {
+    "version": "26.8.0.58987",
+    "images": {
+      "Contents/MacOS/libameLibrary.dylib": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+      "Contents/MacOS/AvidMediaComposer": "a4a1d1b41f2f8b509781c3b8a50286c0cd7c9746cf85e609ec5a7bcbf45a727a",
+      "Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb"
+    },
+    "method": "Read-only arm64 symbol/disassembly and universal-image string inspection; no Avid code executed.",
+    "unslidArm64Addresses": {
+      "AComposition::GetMobID() const": "0x180928",
+      "AComposition::GetMobType()": "0x183ae4",
+      "AComposition::SetMobID(_aafMCMobID_t)": "0x183aec",
+      "AComposition::CreateAAFMob(AAFDomain*)": "0x184a8c",
+      "ASourceClip::GetSrcMobID()": "0x1dd5ac",
+      "GetSourceMobID(AComponent*)": "0x832934"
+    },
+    "compositionObject": {
+      "mobIdentityOffset": "0x12c",
+      "identityBytes": 32,
+      "mobTypeOffset": "0x160",
+      "aafCreationRoles": {
+        "1": "IAAFCompositionMob",
+        "2": "IAAFMasterMob (special export path can create composition)",
+        "3": "IAAFSourceMob"
+      },
+      "meaning": "The private AComposition class is not limited to the formal Composition Mob role."
+    },
+    "exactStringsWithPhysicalUniversalOffsets": {
+      "sequenceMobId=": [
+        "0x2490c29",
+        "0x8b4747f"
+      ],
+      "effectCompMobID": [
+        "0x24911f0",
+        "0x8b47a46"
+      ],
+      "PCLASS_EXTENSIONS2( PCLASS_EXT(CreationTime, 1), PCLASS_EXT(MobID, 2 ) )": [
+        "0x111ac8b",
+        "0x3321af3"
+      ]
+    }
+  },
+  "storedNamesAndLabels": {
+    "omfMdbLiteralProperties": [
+      "OMFI:MOBJ:MobID",
+      "OMFI:SCLP:SourceID",
+      "OMFI:MDAT:MobID",
+      "OMFI:WAVE:MobID",
+      "OMFI:AIFC:MobID",
+      "OMFI:TIFF:MobID"
+    ],
+    "omfMdbLiteralTypes": [
+      "omfi:UID",
+      "omfi:MobIndex"
+    ],
+    "aafLiteralDictionaryProperties": [
+      "MobID",
+      "MasterMobID",
+      "EssenceFileMobID"
+    ],
+    "aafLiteralClassNames": [
+      "CompositionMob",
+      "MasterMob",
+      "SourceMob"
+    ],
+    "mxfCatalogueNamesForBinaryLabels": [
+      "GenericPackage.PackageUID",
+      "EssenceContainerData.LinkedPackageUID",
+      "SourceClip.SourcePackageID",
+      "InterchangeObject.InstanceUID",
+      "Preface.MasterMobID",
+      "Preface.EssenceFileMobID"
+    ],
+    "avbLiteralClassTags": [
+      "CMPO",
+      "SCLP",
+      "MSML",
+      "MOBR",
+      "ASPI"
+    ],
+    "avbParserAddedLabelsNotStoredStrings": [
+      "Composition.mob_id",
+      "Composition.mob_type",
+      "SourceClip.mob_id",
+      "MSMLocator.mob_id",
+      "MobRef.mob_id",
+      "Position.mob_id",
+      "AudioSuitePluginEffect.mob_id"
+    ],
+    "internalEncodingTagNotExternalName": "AVB.MobId.MaterialLE",
+    "pmrEmbeddedIdentityFieldNames": false,
+    "note": "MXF readers match registered binary labels; dotted catalogue names are not literal strings on the wire. AVB semantic property names are assigned by the parser. External input spellings are distinct from MediaMuster journal schema compatibility."
+  },
+  "aafSpecimen": {
+    "path": "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/07_EXPORTS/FIXING_JAMES_KINGSLEY_PIC_LOCK.aaf",
+    "sizeBytes": 5877760,
+    "mobIdentityPropertyId": "0x4401",
+    "identityBytes": 32,
+    "compositionExample": {
+      "name": "FINE_06.Relinked.01.Exported.02",
+      "mobIdentityPhysicalOffset": 586128
+    },
+    "privateDefinitions": {
+      "EssenceFileMobID": {
+        "namePhysicalOffset": 54277,
+        "localPropertyId": "0xfffe",
+        "definitionId": "abf1b771-8efd-4802-8b2f-680dff611381"
+      },
+      "MasterMobID": {
+        "namePhysicalOffset": 54661,
+        "localPropertyId": "0xffff",
+        "definitionId": "ffdd41e1-ae2c-49c6-ae58-78e041454179"
+      }
+    },
+    "note": "All 1 composition, 128 master and 256 source objects share the inherited 32-byte MobID property. PID assignments for private properties are file-local."
+  },
+  "primaryDocuments": [
+    {
+      "title": "Avid MediaCentral Production Management Transfer Guide 2024.10",
+      "url": "https://resources.avid.com/SupportFiles/attach/MediaCentral_Production/MCPM_2024_10_0_Transfer_Guide.pdf#page=72",
+      "page": 72,
+      "finding": "MOBID tag described as Sequence Mob ID."
+    },
+    {
+      "title": "Avid MediaCentral Shared Library Processes Reference 2024.10",
+      "url": "https://resources.avid.com/SupportFiles/attach/MediaCentral_SharedLibrary/MCSL_2024_10_ProcessesReference.pdf#page=35",
+      "page": 35,
+      "finding": "PAM_SEQUENCE_MOBID names a sequence identity; adjacent master clip metadata uses MOB_ID."
+    },
+    {
+      "title": "Avid Open Media Framework Interchange Specification 2.1 (mirror of Avid-authored document)",
+      "url": "https://www.cubase.it/wp/wp-content/uploads/2014/12/omfspec21.pdf",
+      "finding": "CompositionMob, MasterMob and SourceMob inherit OMFI:MOBJ:MobID. SourceClip OMFI:SCLP:SourceID can target a MasterMob or another CompositionMob.",
+      "printedPages": [
+        126,
+        162,
+        197,
+        198,
+        199,
+        200
+      ]
+    },
+    {
+      "title": "AAF Object Specification 1.0.1",
+      "url": "https://aafassociation.org/html/specs/aafspec-v1.0.1.pdf",
+      "finding": "Mob base class defines MobID; SourceClip SourceID identifies a referenced Mob."
+    },
+    {
+      "title": "Avid Proxy Workflows white paper",
+      "url": "https://connect.avid.com/rs/avid/images/Proxy%20WP.pdf#page=6",
+      "finding": "Distinguishes master, file source and physical source roles."
+    },
+    {
+      "title": "Avid CTMS Common Object Properties",
+      "url": "https://developer.avid.com/ctms/api/rs_common_object_properties.html",
+      "finding": "base.id and base.type identify assets including sequences and master clips; these API fields are not AVB or MDB stored-property names."
+    }
+  ],
+  "applicationRecommendation": {
+    "fileRole": "fileMobId",
+    "masterRole": "masterMobId",
+    "sequenceOnlyRole": "compositionMobId (CompositionMobId selected by the user under Copland C98)",
+    "mixedRole": "mobId with object type",
+    "mixedRoleExamples": [
+      "MediaEngine::AvbComposition",
+      "MDB/OMF object lookup by MobID"
+    ],
+    "sequenceOnlyExample": "MediaEngine::AvbSequenceEntry (CMPO, mob_type 1, usage_code 0)",
+    "sourceReferences": "Keep a generic referenced Mob identity unless the target role is established; a SourceClip can reference a master or composition."
+  }
+}

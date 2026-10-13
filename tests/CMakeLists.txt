@@ -104,6 +104,7 @@ target_link_libraries(tst_mediaengineavbreferences PRIVATE mediamuster_mediaengi
 # MediaEngine matching, projections, header scheduling and presentation.
 mediamuster_add_test(tst_mediaenginescan media
     ${CMAKE_SOURCE_DIR}/src/mediaengineadapter.cpp
+    ${CMAKE_SOURCE_DIR}/src/opscanreceipt.cpp
     ${CMAKE_SOURCE_DIR}/src/effectcatalogue.cpp
 )
 target_link_libraries(tst_mediaenginescan PRIVATE mediamuster_mediaengine)
@@ -121,6 +122,7 @@ target_compile_definitions(tst_mediaenginemxfsource PRIVATE FIXTURES_DIR="${CMAK
 # Read-only scan profiler and supported-metadata/evidence comparison.
 add_executable(mediaengine_compare mediaengine_compare.cpp
     ${CMAKE_SOURCE_DIR}/src/mediaengineadapter.cpp
+    ${CMAKE_SOURCE_DIR}/src/opscanreceipt.cpp
     ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp
 )
 set_target_properties(mediaengine_compare PROPERTIES AUTOMOC OFF)
@@ -179,6 +181,7 @@ mediamuster_add_test(tst_avideffects media
 
 mediamuster_add_test(tst_scanner media
     ${CMAKE_SOURCE_DIR}/src/mediaengineadapter.cpp
+    ${CMAKE_SOURCE_DIR}/src/opscanreceipt.cpp
     ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp
     ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
@@ -311,6 +314,7 @@ foreach(_model_test tst_mediatablemodel tst_mediafilterproxy tst_precomputefilte
     target_link_libraries(${_model_test} PRIVATE mediamuster_mediaengine_core)
     target_sources(${_model_test} PRIVATE
         ${CMAKE_SOURCE_DIR}/src/mediaengineadapter.cpp
+        ${CMAKE_SOURCE_DIR}/src/opscanreceipt.cpp
         ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
         ${CMAKE_SOURCE_DIR}/src/nativefile.cpp)
 endforeach()

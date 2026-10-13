@@ -244,7 +244,7 @@ inline QString mediaPropertyName(MediaProperty property)
 	case MediaProperty::VolumeIdentifier:
 		return QStringLiteral("Volume Identifier");
 	case MediaProperty::FileMobId:
-		return QStringLiteral("MobId");
+		return QStringLiteral("FileMobId");
 	case MediaProperty::MasterMobId:
 		return QStringLiteral("MasterMobId");
 	case MediaProperty::DatabaseStatus:
@@ -768,7 +768,7 @@ struct MediaScanStamp
 	QString path;
 	QString volumeIdentifier;
 	QDateTime modified;
-	QString mobId;
+	QString fileMobId;
 	QStringList masterMobIds;
 };
 

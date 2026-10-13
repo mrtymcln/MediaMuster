@@ -17,7 +17,11 @@ namespace TestMediaFile
 		for (auto &file : files)
 		{
 			if (file.mediaEngineScan)
+			{
+				if (!file.operationScanReceipt)
+					captureOpScanReceipt(file);
 				continue; // Deliberate engine/evidence fixtures already supply their own facts.
+			}
 			const auto source = [&](MetadataSource kind)
 			{
 				return QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
@@ -83,6 +87,8 @@ namespace TestMediaFile
 			add(MediaProperty::DatabaseStatus, int(file.dbStatus), filesystem);
 			MediaEngine::selectMetadata(file.evidence);
 			applyResolvedMetadata(file);
+			if (!file.operationScanReceipt)
+				captureOpScanReceipt(file);
 		}
 		return files;
 	}

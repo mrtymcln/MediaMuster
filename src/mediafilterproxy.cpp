@@ -332,7 +332,7 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 		return QString::compare(leftFile.mediaFilePath, rightFile.mediaFilePath, Qt::CaseInsensitive) < 0;
 	case Col::KelpieId:
 		return leftFile.kelpieId < rightFile.kelpieId;
-	case Col::MobId:
+	case Col::FileMobId:
 		return leftFile.fileMobId < rightFile.fileMobId;
 	case Col::MasterMobId:
 		return leftFile.masterMobIdDisplay() < rightFile.masterMobIdDisplay();

@@ -340,8 +340,8 @@ namespace MediaEngine
 					}
 					if (m_disputedMobs.contains(object.handle))
 						continue;
-					const auto *mobId = unique(object, {"OMFI:MOBJ:MobID"});
-					const QString id = identity(mobId);
+					const auto *mobIdProperty = unique(object, {"OMFI:MOBJ:MobID"});
+					const QString id = identity(mobIdProperty);
 					if (id.isEmpty())
 						continue;
 					for (const auto *descriptor : targets(object.handle, {"OMFI:MOBJ:PhysicalMedia", "OMFI:SMOB:MediaDescription"}))
@@ -352,7 +352,7 @@ namespace MediaEngine
 						file.fileMobId = id;
 						link(file, m_source, object);
 						link(file, m_source, *descriptor);
-						observe(file, MediaProperty::FileMobId, m_source, object, *mobId, id, EvidenceBasis::Derived,
+						observe(file, MediaProperty::FileMobId, m_source, object, *mobIdProperty, id, EvidenceBasis::Derived,
 								QStringLiteral("Canonical identity of the mob owning this media descriptor; original UID retained."));
 						technical(file, *descriptor, editRate(object));
 						timecode(file, object);
@@ -372,12 +372,12 @@ namespace MediaEngine
 						return result;
 					if (!m_activeMobs.contains(master.handle) || m_disputedMobs.contains(master.handle) || !isMaster(master))
 						continue;
-					const auto *masterProperty = unique(master, {"OMFI:MOBJ:MobID"});
-					const auto masterId = identity(masterProperty);
-					if (masterId.isEmpty())
+					const auto *masterMobIdProperty = unique(master, {"OMFI:MOBJ:MobID"});
+					const auto masterMobId = identity(masterMobIdProperty);
+					if (masterMobId.isEmpty())
 						continue;
 					ProjectedFile masterFacts;
-					masterFacts.masterMobIds.append(masterId);
+					masterFacts.masterMobIds.append(masterMobId);
 					link(masterFacts, m_source, master);
 					recordPropertyCoverage(masterFacts, MediaProperty::ClipName, m_source, master,
 										   {"OMFI:CPNT:Name", "OMFI:MOBJ:Name"}, completeObject(m_source, master));
@@ -385,7 +385,7 @@ namespace MediaEngine
 										   {"OMFI:MOBJ:UsageCode"}, false);
 					recordPropertyCoverage(masterFacts, MediaProperty::PrecomputeCategory, m_source, master,
 										   {"OMFI:MOBJ:UsageCode", "OMFI:CPNT:Attributes", "OMFI:TRKG:Tracks"}, false);
-					observe(masterFacts, MediaProperty::MasterMobId, m_source, master, *masterProperty, masterId,
+					observe(masterFacts, MediaProperty::MasterMobId, m_source, master, *masterMobIdProperty, masterMobId,
 							EvidenceBasis::Derived, QStringLiteral("Canonical identity of this recorded master object."));
 					for (const auto *name : properties(master, {"OMFI:CPNT:Name", "OMFI:MOBJ:Name"}))
 						text(masterFacts, MediaProperty::ClipName, master, *name);
@@ -396,10 +396,10 @@ namespace MediaEngine
 						for (const auto index : fileSubjects.value(handle))
 						{
 							auto &file = result.files[index];
-							if (!file.masterMobIds.contains(masterId))
-								file.masterMobIds.append(masterId);
+							if (!file.masterMobIds.contains(masterMobId))
+								file.masterMobIds.append(masterMobId);
 							link(file, m_source, master);
-							observe(file, MediaProperty::MasterMobId, m_source, master, *masterProperty, masterId,
+							observe(file, MediaProperty::MasterMobId, m_source, master, *masterMobIdProperty, masterMobId,
 									EvidenceBasis::Derived, QStringLiteral("This master's source-clip graph references the file mob."));
 							appendEvidence(file.evidence, masterFacts.evidence);
 							clipDurations[index] += trackDurations(master, *m_objects.value(handle), file);
@@ -988,7 +988,7 @@ namespace MediaEngine
 			QVariantList trackDurations(const AvidObject &master, const AvidObject &fileMob, const ProjectedFile &file) const
 			{
 				QVariantList result;
-				const auto masterId = identity(unique(master, {"OMFI:MOBJ:MobID"}));
+				const auto masterMobId = identity(unique(master, {"OMFI:MOBJ:MobID"}));
 				const auto drop = file.evidence.resolve(MediaProperty::DropFrame, [](MetadataSource)
 														{ return 1; }, QStringLiteral("Associated OMF timecode values"));
 				const auto kind = file.evidence.resolve(MediaProperty::Kind, [](MetadataSource)
@@ -1024,7 +1024,7 @@ namespace MediaEngine
 								length = ComponentLength{*count, property->locator.name, {}};
 						if (!length)
 							continue;
-						QVariantMap duration{{QStringLiteral("MasterMobId"), masterId}, {QStringLiteral("TrackId"), quint32(*trackId)}, {QStringLiteral("DurationObject"), segment->handle}, {QStringLiteral("DurationProperty"), length->property}, {QStringLiteral("Duration"), durationValue({length->units, clock, fileClock.valid() ? fileClock : video ? clock
+						QVariantMap duration{{QStringLiteral("MasterMobId"), masterMobId}, {QStringLiteral("TrackId"), quint32(*trackId)}, {QStringLiteral("DurationObject"), segment->handle}, {QStringLiteral("DurationProperty"), length->property}, {QStringLiteral("Duration"), durationValue({length->units, clock, fileClock.valid() ? fileClock : video ? clock
 																																																																																							 : MediaRate{},
 																																																																								 MediaDuration::Source::ClipReference})}};
 						if (!length->components.isEmpty())

@@ -23,7 +23,7 @@ namespace MediaEngine
 	{
 		AvbObjectRef key;
 		QString name;
-		QByteArray mobId;
+		QByteArray compositionMobId;
 		bool userPlaced = false;
 		PropertyLocator membershipEvidence;
 	};
@@ -51,7 +51,7 @@ namespace MediaEngine
 	{
 		AvbObjectRef objectKey;
 		qsizetype propertyIndex = -1; ///< Index of the full identity, or first legacy word.
-		QByteArray mobId;		 ///< Canonical 32-byte identity, material numeric fields little-endian.
+		QByteArray fileMobId;	 ///< Canonical 32-byte FileMobId, material numeric fields little-endian.
 		QByteArray legacyId;	 ///< Eight explicitly legacy bytes; never truncate a modern ID into this field.
 	};
 

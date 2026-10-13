@@ -202,8 +202,9 @@ namespace MediaEngine
 		QStringList diagnostics;
 	};
 
-	// Matching and file-operation checks use these small receipts. Supported
-	// observations own their evidence independently of temporary reader records.
+	// Matching and capture of operation safety checks use these small receipts.
+	// Operation requests use the captured row checks, without consulting these arrays.
+	// Supported observations own their evidence independently of temporary reader records.
 	struct SourceReceipt
 	{
 		ParsedSource::Outcome outcome = ParsedSource::Outcome::NotRead;

@@ -615,7 +615,7 @@ void TestRebalancePlanner::file_identity_survives_plan_and_request()
 	QCOMPARE(plan.ops.first().fileMobId, moved.fileMobId);
 	const auto request = RebalancePlanner::requestForPlan(plan);
 	QCOMPARE(request.items.size(), 1);
-	QCOMPARE(request.items.first().mobId, moved.fileMobId);
+	QCOMPARE(request.items.first().fileMobId, moved.fileMobId);
 	QCOMPARE(request.items.first().masterMobId, moved.masterMobId);
 
 	moved.scanStamp = {moved.mediaFilePath, QStringLiteral("uuid:scanned-volume"), QDateTime::fromMSecsSinceEpoch(123456), moved.fileMobId, {moved.masterMobId, QStringLiteral("database-only-master")}};
@@ -625,6 +625,8 @@ void TestRebalancePlanner::file_identity_survives_plan_and_request()
 	observation.readState = PropertyReadState::Present;
 	observation.value = moved.masterMobId;
 	moved.evidence.observe(MediaProperty::MasterMobId, observation);
+	captureOpScanReceipt(moved);
+	moved.evidence = {};
 	const auto stampedPlan = RebalancePlanner::computePlan(root, "Test",
 														   {makeMxf(root, "1", "home.mxf", "same"), moved});
 	const auto stampedRequest = RebalancePlanner::requestForPlan(stampedPlan);

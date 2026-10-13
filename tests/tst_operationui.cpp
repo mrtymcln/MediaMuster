@@ -1581,11 +1581,13 @@ void TestOperationUi::optional_columns_match_csv_and_preserve_retained_sort()
 				QVERIFY(!window.m_tableView->isColumnHidden(logical));
 				headings.append(window.m_model->headerData(logical, Qt::Horizontal, Qt::DisplayRole).toString());
 			}
-			headings.removeAll(QStringLiteral("MobId"));
+			QCOMPARE(headings.count(QStringLiteral("FileMobId")), 1);
+			QCOMPARE(headings.count(QStringLiteral("MasterMobId")), 1);
+			headings.removeAll(QStringLiteral("FileMobId"));
 			headings.removeAll(QStringLiteral("MasterMobId"));
 			headings.removeAll(QStringLiteral("KelpieId"));
 			headings.removeAll(QStringLiteral("OmfScan"));
-			headings.append({QStringLiteral("Database Status"), QStringLiteral("MobId"), QStringLiteral("MasterMobId"), QStringLiteral("KelpieId"), QStringLiteral("OmfScan")});
+			headings.append({QStringLiteral("Database Status"), QStringLiteral("FileMobId"), QStringLiteral("MasterMobId"), QStringLiteral("KelpieId"), QStringLiteral("OmfScan")});
 			QCOMPARE(MediaCsv::headerLine({precomputes, clip}), headings.join(',') + '\n');
 		}
 	}

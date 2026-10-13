@@ -117,7 +117,7 @@ namespace
 	{
 		QSet<QByteArray> ids;
 		for (const auto &media : result.mediaReferences)
-			ids.insert(media.mobId);
+			ids.insert(media.fileMobId);
 		return ids;
 	}
 	bool hasIssue(const AvbReferenceResult &result, Issue kind)
@@ -212,7 +212,7 @@ void TestMediaEngineAvbReferences::sequenceIdentityIsNotItsNameOrPlacement()
 	const auto &b = index.sequences()[1];
 	QCOMPARE(a.name, b.name);
 	QVERIFY(!(a.key == b.key));
-	QVERIFY(a.mobId != b.mobId);
+	QVERIFY(a.compositionMobId != b.compositionMobId);
 	QVERIFY(a.userPlaced != b.userPlaced);
 	QVERIFY(!a.membershipEvidence.name.isEmpty() && !b.membershipEvidence.name.isEmpty());
 }

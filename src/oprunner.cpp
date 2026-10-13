@@ -108,11 +108,11 @@ namespace
 		const bool mxf = Conventions::hasMxfExtension(item.src);
 		if (!mxf && !Conventions::hasOmfEraExtension(item.src))
 			return true;
-		const QString fileId = !item.databaseMobIdToVerify.isEmpty() ? item.databaseMobIdToVerify
-							   : item.headerIdentity				 ? item.headerIdentity->mobId
-																	 : item.mobId;
+		const QString fileId = !item.databaseFileMobIdToVerify.isEmpty() ? item.databaseFileMobIdToVerify
+							   : item.headerIdentity				 ? item.headerIdentity->fileMobId
+																	 : item.fileMobId;
 		QStringList expectedMasters = item.headerIdentity					 ? item.headerIdentity->masterMobIds
-									  : item.databaseMobIdToVerify.isEmpty() ? QStringList{item.masterMobId}
+									  : item.databaseFileMobIdToVerify.isEmpty() ? QStringList{item.masterMobId}
 																			 : QStringList{};
 		expectedMasters.removeIf([](const QString &id)
 								 { return id.isEmpty() || MobId::isAllZero(id); });
@@ -136,7 +136,7 @@ namespace
 											  { return masters.contains(id); });
 		if ((fileKnown && fileId != actualFile) || !mastersMatch)
 		{
-			error = item.databaseMobIdToVerify.isEmpty()
+			error = item.databaseFileMobIdToVerify.isEmpty()
 						? QStringLiteral("The file's Avid identity is missing or differs from the scan. Rescan before proceeding.")
 						: QStringLiteral("The opened media header cannot confirm the PMR/MDB FileMobId selected during scanning. The identity is missing, unreadable or different; rescan before proceeding.");
 			return false;
@@ -146,7 +146,7 @@ namespace
 	bool scanLocationMatches(const OpItem &item, QString &error)
 	{
 		if (item.scanPath.isEmpty())
-			return true; // Older requests and operation-only maintenance have no scan receipt.
+			return true; // Non-scanned inputs and operation-only maintenance have no scan receipt.
 		if (QDir::cleanPath(item.scanPath) != QDir::cleanPath(item.src))
 			error = QStringLiteral("The selected path differs from its scan receipt. Rescan before proceeding.");
 		else if (item.scanVolumeIdentifier.isEmpty())

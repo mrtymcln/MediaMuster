@@ -298,8 +298,8 @@ AvbBin AvbBinLoader::load(const QString &path, const std::atomic_bool *cancelled
 	{
 		if (cancel.cancelled())
 			break;
-		if (reference.mobId.size() == 32)
-			bin.mediaFileIds.add(AvbFileId::fromMobId(MobId::format(reference.mobId)));
+		if (reference.fileMobId.size() == 32)
+			bin.mediaFileIds.add(AvbFileId::fromMobId(MobId::format(reference.fileMobId)));
 		else if (reference.legacyId.size() == 8)
 			bin.mediaFileIds.add(AvbFileId::fromLegacyWords(qFromLittleEndian<quint32>(reference.legacyId.constData()), qFromLittleEndian<quint32>(reference.legacyId.constData() + 4)));
 	}

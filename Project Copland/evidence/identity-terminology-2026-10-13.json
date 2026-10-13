@@ -1,0 +1,117 @@
+{
+  "verifiedDate": "2026-10-13",
+  "purpose": "Settle Avid identity terminology before further Copland implementation; read-only binary/database inspection and primary-document research.",
+  "conclusion": {
+    "generalName": "MobID",
+    "fileRoleName": "File Mob ID / FileMobID",
+    "masterRoleName": "Master Mob ID / MasterMobID",
+    "distinction": "Role-qualified names for identifiers of different metadata objects, not separate identifier formats.",
+    "mediaMusterCurrentLabels": ["MobId", "MasterMobId"],
+    "labelRenameImplemented": false
+  },
+  "primaryDocuments": [
+    {
+      "title": "Avid Interplay Production Best Practices Guide v3.7",
+      "url": "https://resources.avid.com/SupportFiles/attach/InterplayBestPractices_V3_7.pdf#page=230",
+      "printedPage": 230,
+      "context": "Media Indexer Storage Browser",
+      "exactNames": ["FilemobID", "original FilemobID", "MasterMobID"]
+    },
+    {
+      "title": "Avid Interplay Capture User's Guide v3.7",
+      "url": "https://resources.avid.com/SupportFiles/attach/Broadcast/Capture_UG_v3_7.pdf#page=117",
+      "printedPages": [117, 118],
+      "exactNames": ["File Mob ID", "File Mob IDs", "Interplay Capture Master Clip MOB ID"],
+      "context": "File Locations display and a comparison distinguishing file identities from the associated master clip identity."
+    },
+    {
+      "title": "MediaCentral Production Management 2023.7.2 ReadMe",
+      "url": "https://resources.avid.com/SupportFiles/attach/MediaCentral_Production/MCPM_2023_7_2_ReadMe.pdf#page=4",
+      "printedPage": 4,
+      "exactName": "FileMobID",
+      "context": "Media Indexer fix IPI-3599 distinguishes searches by SourceID and FileMobID."
+    },
+    {
+      "title": "Avid CTMS pa:asset-medias developer reference",
+      "url": "https://developer.avid.com/ctms/api/pa/resources/asset-medias.html",
+      "exactNames": ["file MOB ID", "filemob"],
+      "context": "Media-file information for an asset."
+    },
+    {
+      "title": "Avid Reimagining the Possibilities of Proxy Workflows for Media Production",
+      "url": "https://connect.avid.com/rs/avid/images/Proxy%20WP.pdf#page=6",
+      "printedPage": 6,
+      "roles": {
+        "Material Package": "Master Mob",
+        "Top-Level File Package": "File Source Mob",
+        "Lower-Level Source Package": "Physical Source Mob"
+      }
+    }
+  ],
+  "mediaComposerBinary": {
+    "version": "26.8.0.58987",
+    "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+    "universalSha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+    "method": "Fresh read-only nm -arch arm64 -C and exact NUL-delimited ASCII searches; no Avid code executed.",
+    "symbolsWithUnslidArm64Addresses": {
+      "MXFFrameWrappedEssenceData::GetFileMobID(_aafMobID_t*)": "0xadf0b8",
+      "MSMDBMediaStreamMgr::GetMasterMobID(_aafMCMobID_t)": "0x43a7ac",
+      "ameAMAFI::AlternateSource::GetFileMobID() const": "0xa8dd3c",
+      "ameAMAFI::AlternateSource::GetMasterMobID() const": "0xa8dd40",
+      "_kAAFPropID_MXFHeaderEssenceFileMobID": "0x10e1278",
+      "_kAAFPropID_MXFHeaderMasterMobID": "0x10e1268",
+      "AComposition::GetMobID() const": "0x180928"
+    },
+    "exactStringsWithPhysicalUniversalFileOffsets": {
+      "fileMobID": ["0x11586e0", "0x335f6ac"],
+      "masterMobID": ["0x11586ea", "0x335f6b6"],
+      "OMFI:MOBJ:MobID": ["0x1107086", "0x330dea4"]
+    },
+    "pmrReader": {
+      "preservedDisassembly": "docs/reviews/2026-10-03-format-audit/evidence/libame-excerpts.txt",
+      "firstIdentityReadAddresses": ["0x44755c", "0x44757c"],
+      "associatedIdentityReadAddresses": ["0x447830", "0x447848"],
+      "readApis": ["Read_OMFMobID", "Read_AAFMobID"],
+      "diagnosticLabelForBoth": "mobID",
+      "note": "The two IDs occupy distinct record members. The diagnostic label is not an on-disk PMR field-name string."
+    }
+  },
+  "databases": {
+    "liveFolder": "/Volumes/EDIT/Avid MediaFiles/MXF/1",
+    "mdb": {
+      "file": "msmMMOB.mdb",
+      "exactPropertyName": "OMFI:MOBJ:MobID",
+      "propertyNamePhysicalOffset": "0x15b01d",
+      "exactTypeName": "omfi:UID",
+      "typeNamePhysicalOffset": "0x15a898",
+      "note": "File/source and associated master objects use the same named property; ownership and object role establish its meaning. Numeric dictionary IDs are file-local."
+    },
+    "pmr": {
+      "file": "msmFMID.pmr",
+      "version": 8,
+      "firstRecordFileIdentityOffset": 12,
+      "firstRecordAssociatedIdentityOffset": 100,
+      "identityBytes": 32,
+      "embeddedFieldNames": false,
+      "note": "Packed positional records. MediaMuster's FileMobId/MasterMobId locator labels are assigned by its reader, not read as PMR dictionary names."
+    },
+    "genuineFixtureMdb": {
+      "file": "tests/fixtures/msmMMOB.mdb",
+      "propertyNamePhysicalOffset": "0x13d3",
+      "fileObject": 68021,
+      "masterObject": 68060,
+      "fileIdentityPhysicalOffset": "0x23d",
+      "masterIdentityPhysicalOffset": "0x5cc",
+      "propertyNameForBoth": "OMFI:MOBJ:MobID",
+      "identityBytes": 32
+    }
+  },
+  "limits": [
+    "The research covered relevant public Avid user/developer/format documents, not every Avid publication or a complete public PMR schema.",
+    "Avid spelling varies across documentation: File Mob ID, FilemobID and FileMobID are all observed.",
+    "Native addresses describe the inspected Media Composer version and arm64 slice; physical offsets describe the universal library.",
+    "MDB property names and PMR record positions describe inspected specimens, not every possible database version.",
+    "A name's occurrence alone does not establish ownership; roles are corroborated by native methods, format relationships and genuine cross-source examples.",
+    "KelpieId remains MediaMuster's separate scan/session physical-row identity."
+  ]
+}

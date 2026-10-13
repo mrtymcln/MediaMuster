@@ -9,8 +9,10 @@
 #include "mediafile.h"
 #include "mediacsv.h"
 #include "mediatablemodel.h"
+#include "opscanreceipt.h"
 #include "testmediafile.h"
 #include "mobid.h"
+#include "volumeidentity.h"
 
 #include <QAbstractItemModelTester>
 #include <QDateTime>
@@ -146,6 +148,7 @@ private slots:
 	// removed 2026-07: an unknown coerced to a different fact is a wrong
 	// value wearing a confident face).
 	void unknown_created_date_displays_blank();
+	void physical_row_ids_survive_moves_and_separate_copies_data();
 	void physical_row_ids_survive_moves_and_separate_copies();
 	void omf_gate_preserves_optional_column_indexes();
 
@@ -296,8 +299,16 @@ void TestMediaTableModel::location_cell_shows_the_full_path()
 			 QStringLiteral("Location"));
 }
 
+void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies_data()
+{
+	QTest::addColumn<bool>("headerSkipped");
+	QTest::newRow("header-backed") << false;
+	QTest::newRow("database-backed-skipped-header") << true;
+}
+
 void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 {
+	QFETCH(bool, headerSkipped);
 	QTemporaryDir temp;
 	QVERIFY(temp.isValid());
 	const auto put = [&](const QString &name)
@@ -314,13 +325,16 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 	QVERIFY(!original.isEmpty() && !copy.isEmpty() && !moved.isEmpty());
 	MediaTableModel model;
 	QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
+	// Authored transfer controls retain the same selected fields through either receipt route.
 	auto originalRow = row(original);
 	originalRow.compression = QStringLiteral("Avid DNx HQX");
 	originalRow.bitDepth = QStringLiteral("10-bit");
 	originalRow.fileMobId = masterId();
+	originalRow.scanStamp = {original, VolumeIdentity::capture(original).identifier(),
+		QFileInfo(original).lastModified(), originalRow.fileMobId, {originalRow.masterMobId}};
 	auto snapshot = QSharedPointer<SourceSnapshot>::create();
-	snapshot->source = MetadataSource::Mxf;
-	snapshot->path = original;
+	snapshot->source = headerSkipped ? MetadataSource::Mdb : MetadataSource::Mxf;
+	snapshot->path = headerSkipped ? temp.filePath("index.mdb") : original;
 	const auto observe = [&](MediaProperty property, const QVariant &value, const SourceSnapshotRef &receipt)
 	{
 		MetadataObservation item;
@@ -333,6 +347,7 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 	observe(MediaProperty::Compression, originalRow.compression, snapshot);
 	observe(MediaProperty::BitDepth, originalRow.bitDepth, snapshot);
 	observe(MediaProperty::FileMobId, originalRow.fileMobId, snapshot);
+	observe(MediaProperty::MasterMobId, QStringList{originalRow.masterMobId}, snapshot);
 	auto filesystem = QSharedPointer<SourceSnapshot>::create();
 	filesystem->source = MetadataSource::Filesystem;
 	filesystem->path = original;
@@ -342,7 +357,20 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 	MediaEngine::MediaFile retained;
 	retained.path = original;
 	receipt->files.append(retained);
+	MediaEngine::SourceReceipt mediaSource;
+	mediaSource.outcome = headerSkipped ? MediaEngine::ParsedSource::Outcome::NotRead
+		: MediaEngine::ParsedSource::Outcome::Complete;
+	mediaSource.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+		MetadataSource::Mxf, original, originalRow.scanStamp.modified,
+		headerSkipped ? SourceReadState::NotRead : SourceReadState::Complete});
+	receipt->sources.append(mediaSource);
 	originalRow.mediaEngineScan = receipt;
+	captureOpScanReceipt(originalRow);
+	QVERIFY(originalRow.operationScanReceipt);
+	const auto checks = *originalRow.operationScanReceipt;
+	QCOMPARE(checks.headerIdentity.fileMobId, headerSkipped ? QString{} : originalRow.fileMobId);
+	QCOMPARE(checks.headerIdentity.masterMobIds, headerSkipped ? QStringList{} : QStringList{masterId()});
+	QCOMPARE(checks.databaseFileMobIdToVerify, headerSkipped ? originalRow.fileMobId : QString{});
 	model.setMediaFiles(TestMediaFile::seeded({originalRow}));
 	const KelpieId originalId = model.allFiles().first().kelpieId;
 	QVERIFY(originalId != 0);
@@ -371,6 +399,28 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 		QCOMPARE(file.evidence.observations(MediaProperty::DatabaseStatus).first().basis, EvidenceBasis::Derived);
 		QCOMPARE(file.mediaEngineScan, originalRow.mediaEngineScan);
 		QCOMPARE(file.mediaEngineScan->files.first().path, original); // Original scan receipt was not rewritten.
+		QVERIFY(file.operationScanReceipt);
+		QCOMPARE(file.operationScanReceipt->headerIdentity.fileMobId, checks.headerIdentity.fileMobId);
+		QCOMPARE(file.operationScanReceipt->headerIdentity.masterMobIds, checks.headerIdentity.masterMobIds);
+		QCOMPARE(file.operationScanReceipt->headerIdentity.unavailableReason, checks.headerIdentity.unavailableReason);
+		QCOMPARE(file.operationScanReceipt->databaseFileMobIdToVerify, checks.databaseFileMobIdToVerify);
+		QCOMPARE(file.scanStamp.path, file.mediaFilePath);
+		QCOMPARE(file.scanStamp.modified, file.modified);
+		QCOMPARE(file.scanStamp.volumeIdentifier, VolumeIdentity::capture(file.mediaFilePath).identifier());
+		// A later operation must use the frozen checks even without its old history.
+		auto compactOnly = file;
+		compactOnly.evidence = {};
+		compactOnly.mediaEngineScan.clear();
+		compactOnly.mediaEngineAvbSources.clear();
+		const auto item = opItemFromMediaFile(compactOnly);
+		QVERIFY(item.headerIdentity);
+		QCOMPARE(item.headerIdentity->fileMobId, checks.headerIdentity.fileMobId);
+		QCOMPARE(item.headerIdentity->masterMobIds, checks.headerIdentity.masterMobIds);
+		QCOMPARE(item.headerIdentity->unavailableReason, checks.headerIdentity.unavailableReason);
+		QCOMPARE(item.databaseFileMobIdToVerify, checks.databaseFileMobIdToVerify);
+		QCOMPARE(item.scanPath, file.mediaFilePath);
+		QCOMPARE(item.scanVolumeIdentifier, file.scanStamp.volumeIdentifier);
+		QCOMPARE(item.modifiedMs, file.modified.toMSecsSinceEpoch());
 	}
 	model.setMediaFiles(TestMediaFile::seeded({row(copy)}));
 	QCOMPARE(model.allFiles()[0].kelpieId, KelpieId(1));
@@ -807,7 +857,7 @@ void TestMediaTableModel::mediaengine_avb_changes_preserve_physical_rows_and_evi
 	file.scanStamp.path = QStringLiteral("/original/clip.omf");
 	file.scanStamp.volumeIdentifier = QStringLiteral("original-volume");
 	file.scanStamp.modified = QDateTime::fromSecsSinceEpoch(50, Qt::UTC);
-	file.scanStamp.mobId = QStringLiteral("original-file-id");
+	file.scanStamp.fileMobId = QStringLiteral("original-file-id");
 	file.scanStamp.masterMobIds = {masterId()};
 	MediaTableModel model;
 	model.setPrecomputesEnabled(true);
@@ -853,7 +903,7 @@ void TestMediaTableModel::mediaengine_avb_changes_preserve_physical_rows_and_evi
 	QCOMPARE(current.scanStamp.path, file.scanStamp.path);
 	QCOMPARE(current.scanStamp.volumeIdentifier, file.scanStamp.volumeIdentifier);
 	QCOMPARE(current.scanStamp.modified, file.scanStamp.modified);
-	QCOMPARE(current.scanStamp.mobId, file.scanStamp.mobId);
+	QCOMPARE(current.scanStamp.fileMobId, file.scanStamp.fileMobId);
 	QCOMPARE(current.scanStamp.masterMobIds, file.scanStamp.masterMobIds);
 	QCOMPARE(current.mediaEngineAvbSources.size(), 2);
 	QCOMPARE(current.mediaEngineAvbSources[0], first.sourceGraph);

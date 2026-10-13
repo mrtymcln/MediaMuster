@@ -24,6 +24,7 @@ struct AvbFileId
 		return canonical.mid(kCoreHexOffset, 2 * OmfUid::kPmrSize);
 	}
 
+	/// Validates a canonical MobId of any role; composition loading shares these rules.
 	static AvbFileId fromMobId(const QString &mobId)
 	{
 		QString hex = mobId;

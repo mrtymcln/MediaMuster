@@ -188,16 +188,18 @@ whole file set as having one proven encoding.
 
 Every physical row receives a scan-session `KelpieId`. Copies with matching metadata
 still have separate rows and IDs. The five-field RAM scan receipt records path,
-volume identifier, modification timestamp, file MobId and every established master
+volume identifier, modification timestamp, FileMobId and every established master
 association. Operation requests carry these claims and separately preserve which
 Avid identities were established in a readable header. Scoped database reference
 issues distinguish local absence, matches elsewhere and unmatched MDB identities.
 An unmatched identity alone does not prove a missing physical file. Current checks
 and limits are recorded in the [live connection report](../Project%20Canon/live-connection-2026-10-04.md).
 
-Avid identifiers, called MOB IDs or UMIDs in the code, connect files to clips.
-They are different from filenames. Files belonging to the same master clip can
-share a master identifier even though their individual file identifiers differ.
+`FileMobId` identifies the file media object, while `MasterMobId` identifies its
+associated master object. Related video and audio files can share a MasterMobId
+while having different FileMobIds. Physical copies can retain both identifiers;
+KelpieId distinguishes their inventory rows. These identities are separate from
+filenames and current paths.
 
 Scanning reads media and databases; it does not rewrite them. A scan replaces the
 previous inventory and clears active filters and selections. Cancelling a scan
@@ -235,7 +237,7 @@ to delete.
 
 The default column order is Clip Name, Project, Bin, Kind, Duration, Size (MB),
 Compression, Resolution, Frame Rate, Sample Rate, Bit Depth, Type, Date Created, Filename,
-Source Filename, Location, MobId, MasterMobId and KelpieId, followed by OmfScan
+Source Filename, Location, FileMobId, MasterMobId and KelpieId, followed by OmfScan
 when its flag is enabled. Multiple master IDs share a cell separated by `;`.
 Compression is the readable format name, such as `Avid DNx HQX [DNxHD 175x]`.
 The selected property is `MediaProperty::Compression` and the row value is
@@ -371,7 +373,7 @@ a successful file commit, or reports failure. No background CSV export remains
 running when the user can start another scan.
 
 CSV retains its explicit established export order, ending with Database Status,
-MobId, MasterMobId, KelpieId and OmfScan. The two optional column groups follow
+FileMobId, MasterMobId, KelpieId and OmfScan. The two optional column groups follow
 the table's settings: 21 columns with both off, 22 with Clip Duration only,
 25 with Precomputes only and 26 with both on. Disabled optional columns are absent,
 not exported as blank fields. CSV always includes OmfScan, even when its table
@@ -416,11 +418,17 @@ file identity, size, metadata and storage persistence. The app does not read and
 compare the complete source and destination contents after copying.
 
 Before acting on a scanned row, operation checks compare the applicable scan path,
-volume identifier and modification time. Header-established file/master identities
+volume identifier and modification time. Scanning captures the necessary safety
+facts in a small record per row. If that record was never captured, the operation
+refuses the row and asks for a rescan. A captured record with unknown Avid identities
+still follows the existing checks. Header-established file/master identities
 are checked with the fresh MediaEngine MXF or legacy reader through the opened source.
 Database-only master associations remain retained claims; they are not imposed on a
 header that did not establish them. A changed or contradictory header cannot be used
-to authorize a stale scan record. These scan checks remain separate from the native
+to authorize a stale scan record. When scanning deliberately skipped a header, the
+selected database file identity must be confirmed in the media file before acting.
+An attempted but unreadable header does not count as deliberately skipped. These
+scan checks remain separate from the native
 operation-time file/volume/size/time safeguards. They are not proof of byte equality;
 see [file-operation checks](../Project%20Canon/file-operation-checks.md).
 
@@ -434,8 +442,10 @@ and retains its KelpieId. Delete removes rows whose sources were confirmed remov
 A confirmed ordinary Copy adds a destination row with a new KelpieId and leaves
 the original row intact. Counts, sizes and filters refresh after these updates.
 The transferred row keeps the original source receipt and gains fresh destination
-filesystem observations. Its selected metadata is recomputed without dropping codec
-or identity evidence. Destination databases are enumerated but not parsed by the
+filesystem observations. It also keeps the safety facts captured during scanning
+while its current path, date and volume checks follow the destination. Its selected
+metadata is recomputed without dropping codec or identity evidence. Destination
+databases are enumerated but not parsed by the
 transfer, so membership remains unverified when databases are present. Rescan to
 refresh that membership or observe external changes. Recovery and rebalance use
 their existing rescan/refresh paths.
@@ -444,9 +454,9 @@ their existing rescan/refresh paths.
 
 Every file job requires a writable journal: a saved record of its plan, file
 identities and progress. If the journal cannot be written, a new job cannot start.
-The current build reads and writes schema-2 journals, which is also the intended
-internal schema for the public v1 release. Other schema versions are not supported
-for recovery or Undo, and are not migrated. Operation mechanism, Trash provider and
+The current beta build reads and writes schema-3 journals. Older beta journals
+are unsupported and are not migrated. New jobs retain their normal recovery and
+Undo checks. Operation mechanism, Trash provider and
 Undo action are saved as explicit names; unset choices use
 `"none"`. Unknown names are rejected when loading.
 

@@ -84,7 +84,7 @@ private slots:
 	void serialized_policy_names_round_trip();
 	void unknown_serialized_policy_name_is_refused();
 	void saved_policy_and_inverse_identity_survive_restart();
-	void scan_receipt_round_trips_and_accepts_older_journals();
+	void scan_receipt_round_trips_with_current_names();
 	void malformed_scan_receipt_is_refused();
 	void incomplete_moves_are_not_completed_by_source_retention();
 	void no_effect_requires_identity_evidence();
@@ -174,17 +174,19 @@ void TestOpJournal::unknown_serialized_policy_name_is_refused()
 	QVERIFY(!conflictPolicyFromName(QString()).has_value());
 }
 
-void TestOpJournal::scan_receipt_round_trips_and_accepts_older_journals()
+void TestOpJournal::scan_receipt_round_trips_with_current_names()
 {
 	QTemporaryDir temp;
 	QVERIFY(temp.isValid());
 	auto request = requestFor(temp.path());
 	auto &item = request.items[0];
+	item.fileMobId = QStringLiteral("file-identity");
+	item.masterMobId = QStringLiteral("master-identity");
 	item.scanPath = item.src;
 	item.scanVolumeIdentifier = QStringLiteral("uuid:scan-volume");
 	item.masterMobIds = {QStringLiteral("header-master"), QStringLiteral("database-master")};
 	item.headerIdentity = OpHeaderIdentity{QStringLiteral("header-file"), {QStringLiteral("header-master")}, {}};
-	item.databaseMobIdToVerify = QStringLiteral("database-file-expectation");
+	item.databaseFileMobIdToVerify = QStringLiteral("database-file-expectation");
 	QString path, error;
 	{
 		OpJournal journal;
@@ -194,25 +196,21 @@ void TestOpJournal::scan_receipt_round_trips_and_accepts_older_journals()
 	const auto saved = OpJournal::readOne(path);
 	QVERIFY(saved);
 	const auto &entry = saved->entries[0];
+	QCOMPARE(entry.item.fileMobId, item.fileMobId);
+	QCOMPARE(entry.item.masterMobId, item.masterMobId);
 	QCOMPARE(entry.item.scanPath, item.scanPath);
 	QCOMPARE(entry.item.scanVolumeIdentifier, item.scanVolumeIdentifier);
 	QCOMPARE(entry.item.masterMobIds, item.masterMobIds);
 	QVERIFY(entry.item.headerIdentity);
-	QCOMPARE(entry.item.headerIdentity->mobId, item.headerIdentity->mobId);
+	QCOMPARE(entry.item.headerIdentity->fileMobId, item.headerIdentity->fileMobId);
 	QCOMPARE(entry.item.headerIdentity->masterMobIds, item.headerIdentity->masterMobIds);
 	QCOMPARE(entry.item.headerIdentity->unavailableReason, QString());
-	QCOMPARE(entry.item.databaseMobIdToVerify, item.databaseMobIdToVerify);
-	auto json = entry.json();
-	auto oldItem = json["item"].toObject();
-	for (const auto *key : {"scanPath", "scanVolumeIdentifier", "masters", "headerIdentity", "databaseMobIdToVerify"})
-		oldItem.remove(key);
-	json["item"] = oldItem;
-	const auto old = OpJournal::Entry::fromJson(json);
-	QVERIFY(old);
-	QVERIFY(!old->item.headerIdentity);
-	QVERIFY(old->item.scanVolumeIdentifier.isEmpty());
-	QVERIFY(old->item.databaseMobIdToVerify.isEmpty());
-	QCOMPARE(old->item.src, item.src);
+	QCOMPARE(entry.item.databaseFileMobIdToVerify, item.databaseFileMobIdToVerify);
+	const auto savedItem = entry.json()["item"].toObject();
+	QCOMPARE(savedItem["fileMobId"].toString(), item.fileMobId);
+	QCOMPARE(savedItem["masterMobId"].toString(), item.masterMobId);
+	QCOMPARE(savedItem["headerIdentity"].toObject()["fileMobId"].toString(), item.headerIdentity->fileMobId);
+	QCOMPARE(savedItem["databaseFileMobIdToVerify"].toString(), item.databaseFileMobIdToVerify);
 }
 
 void TestOpJournal::malformed_scan_receipt_is_refused()
@@ -223,7 +221,7 @@ void TestOpJournal::malformed_scan_receipt_is_refused()
 	entry.item.name = QStringLiteral("source.bin");
 	const auto valid = entry.json();
 	QVERIFY(OpJournal::Entry::fromJson(valid));
-	for (const auto *key : {"scanPath", "scanVolumeIdentifier", "masters", "headerIdentity", "databaseMobIdToVerify"})
+	for (const auto *key : {"fileMobId", "masterMobId", "scanPath", "scanVolumeIdentifier", "masterMobIds", "headerIdentity", "databaseFileMobIdToVerify"})
 	{
 		auto json = valid;
 		auto item = json["item"].toObject();
@@ -231,9 +229,17 @@ void TestOpJournal::malformed_scan_receipt_is_refused()
 		json["item"] = item;
 		QVERIFY2(!OpJournal::Entry::fromJson(json), key);
 	}
+	for (const auto *key : {"fileMobId", "masterMobId", "scanPath", "scanVolumeIdentifier", "masterMobIds", "databaseFileMobIdToVerify"})
+	{
+		auto json = valid;
+		auto item = json["item"].toObject();
+		item.remove(key);
+		json["item"] = item;
+		QVERIFY2(!OpJournal::Entry::fromJson(json), key);
+	}
 	auto json = valid;
 	auto item = json["item"].toObject();
-	item["headerIdentity"] = QJsonObject{{"mob", "known"}, {"masters", QJsonArray{123}}, {"unavailableReason", ""}};
+	item["headerIdentity"] = QJsonObject{{"fileMobId", "known"}, {"masterMobIds", QJsonArray{123}}, {"unavailableReason", ""}};
 	json["item"] = item;
 	QVERIFY(!OpJournal::Entry::fromJson(json));
 }
@@ -333,7 +339,7 @@ void TestOpJournal::unsupported_schema_is_rejected_data()
 {
 	QTest::addColumn<int>("savedSchema");
 	QTest::newRow("beta-2") << 1;
-	QTest::newRow("development-3") << 3;
+	QTest::newRow("previous-beta") << 2;
 	QTest::newRow("development-4") << 4;
 }
 
@@ -353,7 +359,7 @@ void TestOpJournal::unsupported_schema_is_rejected()
 	const auto firstLine = bytes.indexOf('\n');
 	QVERIFY(firstLine >= 0);
 	auto begin = QJsonDocument::fromJson(bytes.left(firstLine)).object();
-	QCOMPARE(begin["schema"].toInt(), 2);
+	QCOMPARE(begin["schema"].toInt(), 3);
 	begin["schema"] = savedSchema;
 	QVERIFY(writeBytes(path, QJsonDocument(begin).toJson(QJsonDocument::Compact) + bytes.mid(firstLine)));
 	QVERIFY(!OpJournal::readOne(path));
@@ -376,7 +382,7 @@ void TestOpJournal::missing_required_policy_is_rejected()
 	}
 	const auto bytes = readBytes(path);
 	auto record = QJsonDocument::fromJson(bytes.trimmed()).object();
-	QCOMPARE(record["schema"].toInt(), 2);
+	QCOMPARE(record["schema"].toInt(), 3);
 	record.remove("copyThenRemove");
 	QVERIFY(writeBytes(path, QJsonDocument(record).toJson(QJsonDocument::Compact) + '\n'));
 	QVERIFY(!OpJournal::readOne(path));

@@ -12,7 +12,7 @@
 
 namespace
 {
-	constexpr int schema = 2;
+	constexpr int schema = 3;
 	QString savedChoice(const QString &choice)
 	{
 		return choice.isEmpty() ? QStringLiteral("none") : choice;
@@ -36,12 +36,12 @@ namespace
 						  {"modifiedMs", QString::number(i.modifiedMs)},
 						  {"maintenance", i.maintenance},
 						  {"policy", i.policy},
-						  {"mob", i.mobId},
-						  {"master", i.masterMobId},
-						  {"masters", QJsonArray::fromStringList(i.masterMobIds)},
+						  {"fileMobId", i.fileMobId},
+						  {"masterMobId", i.masterMobId},
+						  {"masterMobIds", QJsonArray::fromStringList(i.masterMobIds)},
 						  {"scanPath", i.scanPath},
 						  {"scanVolumeIdentifier", i.scanVolumeIdentifier},
-						  {"databaseMobIdToVerify", i.databaseMobIdToVerify},
+						  {"databaseFileMobIdToVerify", i.databaseFileMobIdToVerify},
 						  {"clip", i.clipName},
 						  {"rename", i.renameDst},
 						  {"group", i.groupKey},
@@ -52,18 +52,17 @@ namespace
 						  {"undoEntryId", i.undoEntryId},
 						  {"trashReceipt", i.trashReceipt}};
 		if (i.headerIdentity)
-			value.insert("headerIdentity", QJsonObject{{"mob", i.headerIdentity->mobId},
-													   {"masters", QJsonArray::fromStringList(i.headerIdentity->masterMobIds)},
+			value.insert("headerIdentity", QJsonObject{{"fileMobId", i.headerIdentity->fileMobId},
+													   {"masterMobIds", QJsonArray::fromStringList(i.headerIdentity->masterMobIds)},
 													   {"unavailableReason", i.headerIdentity->unavailableReason}});
 		return value;
 	}
 	std::optional<OpItem> itemFromJson(const QJsonObject &v)
 	{
 		OpItem i;
-		// Additive scan-receipt fields are optional in older schema-2 journals,
-		// but a supplied malformed receipt must never silently become "unknown".
-		for (const auto *key : {"scanPath", "scanVolumeIdentifier", "databaseMobIdToVerify"})
-			if (v.contains(key) && !v[key].isString())
+		// Current journals always record these fields, even when their values are unknown.
+		for (const auto *key : {"fileMobId", "masterMobId", "scanPath", "scanVolumeIdentifier", "databaseFileMobIdToVerify"})
+			if (!v[key].isString())
 				return {};
 		auto strings = [](const QJsonValue &value, QStringList &out)
 		{
@@ -77,7 +76,7 @@ namespace
 			}
 			return true;
 		};
-		if (v.contains("masters") && !strings(v["masters"], i.masterMobIds))
+		if (!strings(v["masterMobIds"], i.masterMobIds))
 			return {};
 		if (v.contains("headerIdentity"))
 		{
@@ -85,16 +84,16 @@ namespace
 				return {};
 			const auto header = v["headerIdentity"].toObject();
 			OpHeaderIdentity identity;
-			if (!header["mob"].isString() || !header["unavailableReason"].isString() ||
-				!strings(header["masters"], identity.masterMobIds))
+			if (!header["fileMobId"].isString() || !header["unavailableReason"].isString() ||
+				!strings(header["masterMobIds"], identity.masterMobIds))
 				return {};
-			identity.mobId = header["mob"].toString();
+			identity.fileMobId = header["fileMobId"].toString();
 			identity.unavailableReason = header["unavailableReason"].toString();
 			i.headerIdentity = std::move(identity);
 		}
 		i.scanPath = v["scanPath"].toString();
 		i.scanVolumeIdentifier = v["scanVolumeIdentifier"].toString();
-		i.databaseMobIdToVerify = v["databaseMobIdToVerify"].toString();
+		i.databaseFileMobIdToVerify = v["databaseFileMobIdToVerify"].toString();
 		i.src = v["src"].toString();
 		i.name = v["name"].toString();
 		i.mediaFolderName = v["folder"].toString();
@@ -103,8 +102,8 @@ namespace
 		i.omfEra = v["omf"].toBool();
 		i.bytes = v["bytes"].toString().toLongLong();
 		i.policy = v["policy"].toString();
-		i.mobId = v["mob"].toString();
-		i.masterMobId = v["master"].toString();
+		i.fileMobId = v["fileMobId"].toString();
+		i.masterMobId = v["masterMobId"].toString();
 		i.clipName = v["clip"].toString();
 		i.renameDst = v["rename"].toString();
 		i.groupKey = v["group"].toString();

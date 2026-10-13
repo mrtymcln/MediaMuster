@@ -390,11 +390,11 @@ void TestScanner::optional_read_only_real_scan()
 		QCOMPARE(file.scanStamp.path, file.mediaFilePath);
 		MediaEngineProof::Fingerprint evidence;
 		evidence.evidence(file.evidence); // All supported fields, observations, coverage and selections.
-		inventory.append(QJsonObject{{"path", file.mediaFilePath}, {"kelpieId", QString::number(file.kelpieId)}, {"mobId", file.fileMobId}, {"masterMobIds", QJsonArray::fromStringList(file.masterMobIds)}, {"codec", file.compression}, {"bitDepth", file.bitDepth}, {"sampleFormat", file.sampleFormat}, {"omfScan", file.omfEra}, {"codecObservations", int(file.evidence.observations(MediaProperty::Compression).size())}, {"evidenceSha256", QString::fromLatin1(evidence.result())}});
+		inventory.append(QJsonObject{{"path", file.mediaFilePath}, {"kelpieId", QString::number(file.kelpieId)}, {"fileMobId", file.fileMobId}, {"masterMobIds", QJsonArray::fromStringList(file.masterMobIds)}, {"codec", file.compression}, {"bitDepth", file.bitDepth}, {"sampleFormat", file.sampleFormat}, {"omfScan", file.omfEra}, {"codecObservations", int(file.evidence.observations(MediaProperty::Compression).size())}, {"evidenceSha256", QString::fromLatin1(evidence.result())}});
 	}
 	QJsonArray issueDetails;
 	for (const auto &issue : qvariant_cast<QVector<ScanIssue>>(issues.first().first()))
-		issueDetails.append(QJsonObject{{"kind", int(issue.kind)}, {"source", issue.source ? issue.source->path : QString{}}, {"expectedPath", issue.expectedPath}, {"mobId", issue.fileMobId}, {"matchingPaths", QJsonArray::fromStringList(issue.matchingPaths)}, {"scopeComplete", issue.scopeComplete}, {"explanation", issue.explanation}});
+		issueDetails.append(QJsonObject{{"kind", int(issue.kind)}, {"source", issue.source ? issue.source->path : QString{}}, {"expectedPath", issue.expectedPath}, {"fileMobId", issue.fileMobId}, {"matchingPaths", QJsonArray::fromStringList(issue.matchingPaths)}, {"scopeComplete", issue.scopeComplete}, {"explanation", issue.explanation}});
 	const QString output = qEnvironmentVariable("MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_REPORT");
 	if (!output.isEmpty())
 	{
@@ -452,7 +452,7 @@ void TestScanner::mediaengine_extension_discovery_keeps_copies_and_local_referen
 	for (const auto &file : files)
 	{
 		QCOMPARE(file.scanStamp.path, file.mediaFilePath);
-		QCOMPARE(file.scanStamp.mobId, file.fileMobId);
+		QCOMPARE(file.scanStamp.fileMobId, file.fileMobId);
 		for (const auto &observation : file.evidence.observations(MediaProperty::Compression))
 			if (observation.snapshot->path.endsWith("future.MDB"))
 				readRenamedDatabase = true;

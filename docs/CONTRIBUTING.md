@@ -22,6 +22,11 @@ constants. Name booleans as facts or options (`hasPendingJob`, `precomputesEnabl
 units when the type does not express them (`retryDelayMs`, `sampleRateHz`). Preserve
 the native unit of opaque platform timestamps. Treat acronyms as words (`MxfReader`,
 `MobId`), while keeping SDK symbols and actual Avid identifiers unchanged.
+Use `FileMobId` and `MasterMobId` for the respective roles in code, table/CSV
+headings and documentation. Use `CompositionMobId` for composition-only records.
+Reserve general `MobId` for unspecified or mixed mob roles, with their object type.
+Parser-added locator labels are not automatically literal Avid format strings;
+see the [identity reference](../Project%20Copland/metadata-reference.md#stored-names-parser-labels-and-object-roles).
 
 Feature flag constants use `k` plus the feature name, without an `Enabled` suffix:
 `FeatureFlags::kOmfScan`, `FeatureFlags::kMonospaceTable`, `FeatureFlags::kClipDuration`.
@@ -29,6 +34,12 @@ Feature flag constants use `k` plus the feature name, without an `Enabled` suffi
 Use structs for related data and classes for resource ownership or enforced rules.
 Structs may have useful methods. Give helpers a focused home; avoid a general dumping
 ground named `Utils`. Keep `RevealInFinder` as the agreed cross-platform feature name.
+
+During beta, prioritize code improvements and simplicity over backwards
+compatibility. Saved Undo/recovery journals need no legacy aliases or migration.
+Keep current-format Undo, recovery and file safeguards correct; reject unsupported
+journal schemas. Literal Avid format properties remain exact so the readers can
+interpret the user's existing media.
 
 ## Formatting and scope
 

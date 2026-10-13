@@ -3,6 +3,7 @@
 #include "precompute.h"
 #include "mediaduration.h"
 #include "mediaevidence.h"
+#include "opscanreceipt.h"
 
 #include <QString>
 #include <QStringList>
@@ -10,6 +11,7 @@
 #include <QVector>
 #include <QMetaType>
 #include <cmath>
+#include <optional>
 #include <tuple>
 
 // MARK: - MediaFile
@@ -21,7 +23,7 @@ namespace MediaEngine
 }
 
 /// One physical file in the scan inventory, identified by its path.
-/// File and master MOB IDs connect it to Avid records, bins and relatives;
+/// FileMobId and MasterMobId connect it to Avid records, bins and relatives;
 /// either ID may be unknown. Display helpers are shared with the table and CSV.
 struct MediaFile
 {
@@ -29,6 +31,8 @@ struct MediaFile
 	KelpieId kelpieId = 0; ///< Physical row identity within this scan session only.
 	MediaEvidence evidence;
 	MediaScanStamp scanStamp;
+	/// Frozen operation checks; absence means they were never captured.
+	std::optional<OpScanReceipt> operationScanReceipt;
 	// Shared scan results own supported observations, associations and source receipts.
 	// This row's current path/identity fields continue to follow moves and copies.
 	QSharedPointer<const MediaEngine::ScanResult> mediaEngineScan;
@@ -42,8 +46,8 @@ struct MediaFile
 
 	// Full IDs use PMR/MDB field order. The scanner converts MXF header IDs
 	// before storing them; database, OMF and AVB readers already use this order.
-	QString fileMobId;	 ///< Avid file MobId recovered from databases or media metadata.
-	QString masterMobId; ///< Master MOB — the master clip's MOB (AAF MasterMob);
+	QString fileMobId;	 ///< FileMobId recovered from databases or media metadata.
+	QString masterMobId; ///< MasterMobId of the associated master clip (AAF MasterMob);
 						 ///< V01/A01/A02 relatives share this.
 
 	// MARK: MDB and PMR metadata
@@ -169,7 +173,7 @@ struct MediaFile
 	/// membership or whether a sequence uses the file.
 	bool hasNoProject() const { return project.isEmpty(); }
 
-	/// A recovered file or master MOB ID is all zeros. Missing IDs alone do
+	/// A recovered FileMobId or MasterMobId is all zeros. Missing IDs alone do
 	/// not set this flag; it is not a general identifier-validity check.
 	bool isInvalidUmid = false;
 	bool isNonPortable = false; ///< Filename falls outside the scanner's character allowlist.

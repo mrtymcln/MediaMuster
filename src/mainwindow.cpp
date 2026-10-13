@@ -1722,9 +1722,8 @@ void MainWindow::openManageMedia(ManageMediaDialog::Operation initialOp)
 bool MainWindow::dispatchOperation(OpKind kind, QVector<MediaFile> files, const QString &dest,
 								   bool preserve, const QHash<QString, ConflictPolicy> &policies)
 {
-	// One shape for every dispatch: the selection becomes a request (the
-	// engine's whole read of a MediaFile happens in itemsFromMediaFiles),
-	// and the shared tail below does the gate + engine call.
+	// Extract request fields and captured safety checks from the selection,
+	// then let the controller gate and dispatch the request.
 	OpRequest req;
 	req.kind = kind;
 	req.destRoot = dest;
@@ -2080,7 +2079,7 @@ void MainWindow::updateActivityUi()
 void MainWindow::updateSelectionActions()
 {
 	const auto selection = m_tableView->selectionModel()->selection();
-	// Cache whether selection contains a master MobId; activity updates reuse it.
+	// Cache whether selection contains a MasterMobId; activity updates reuse it.
 	m_selectionHasMasterMob = false;
 	for (const auto &range : selection)
 	{

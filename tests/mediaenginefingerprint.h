@@ -304,7 +304,7 @@ public:
 		text(value.stamp.path);
 		text(value.stamp.volumeIdentifier);
 		dateTime(value.stamp.modified);
-		text(value.stamp.mobId);
+		text(value.stamp.fileMobId);
 		texts(value.stamp.masterMobIds);
 		objectReferences(value.objects);
 	}

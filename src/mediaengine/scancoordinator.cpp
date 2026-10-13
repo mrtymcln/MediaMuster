@@ -550,7 +550,7 @@ namespace MediaEngine
 						   unchanged[entry.first] && !physicalChanged && selectedMasters.contains(master));
 				}
 			selectMetadata(file.evidence);
-			file.stamp.mobId = file.evidence.selected(MediaProperty::FileMobId).value.toString();
+			file.stamp.fileMobId = file.evidence.selected(MediaProperty::FileMobId).value.toString();
 			file.stamp.masterMobIds = file.evidence.selected(MediaProperty::MasterMobId).value.toStringList();
 			// DatabaseStatus uses the UI's stable values: Listed/NoReference/NoDatabase/DbUnreadable.
 			if (cancellation.cancelled())
@@ -584,7 +584,7 @@ namespace MediaEngine
 				ScanIssue issue;
 				issue.kind = ScanIssue::Kind::MetadataConflict;
 				issue.expectedPath = file.path;
-				issue.fileMobId = file.stamp.mobId;
+				issue.fileMobId = file.stamp.fileMobId;
 				issue.explanation = QStringLiteral("%1: %2").arg(mediaPropertyName(property), selected.reason.text());
 				if (reportIssues)
 					result.reconciliationIssues.append(issue);
@@ -696,10 +696,10 @@ namespace MediaEngine
 			if (cancellation.cancelled())
 				break;
 			matchFile(file, true);
-			if (!file.stamp.mobId.isEmpty())
+			if (!file.stamp.fileMobId.isEmpty())
 			{
-				pathsById[file.stamp.mobId].append(file.path);
-				identitiesByFolder[cachedFolderKey(QFileInfo(file.path).absolutePath())].insert(file.stamp.mobId);
+				pathsById[file.stamp.fileMobId].append(file.path);
+				identitiesByFolder[cachedFolderKey(QFileInfo(file.path).absolutePath())].insert(file.stamp.fileMobId);
 			}
 		}
 		for (qsizetype index = 0; index < result.sources.size(); ++index)

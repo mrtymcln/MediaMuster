@@ -2,12 +2,12 @@
 
 Status: implementation in progress; confirmed contract and technical verification.
 Started 11 October 2026; decisions updated
-12 October 2026.
+13 October 2026.
 
 Copland reviews the whole MediaMuster app and defines the smallest useful product
 contract before choosing its implementation. Existing capabilities and Canon's
-retention commitments are open for review. Implementation begins with the
-user-selected direct CSV export and completion confirmation below.
+retention commitments are open for review. Implementation has begun with the
+user-selected direct CSV export and small safety-check migration below.
 
 This document contains the working decision ledger and proposed implementation
 order. Confirmed requirements, proposals and open questions
@@ -18,7 +18,7 @@ of competing plans.
 The [12 October technical verification](technical-verification-2026-10-12.md)
 records genuine-source findings, reproduced cancellation gaps, operation safeguards
 and a controlled local app baseline. It supports this plan; the first implementation
-is recorded below and final Copland acceptance remains outstanding.
+steps are recorded below and final Copland acceptance remains outstanding.
 
 ## Mandatory rule for every implementing AI
 
@@ -65,7 +65,7 @@ compiled preferred/fallback policy. Loaded AVBs supply filtering references only
 Required ordinary table/CSV columns are Clip Name, Project, Bin (recorded Original
 Bin), Kind, physical Duration, Size, Compression, Resolution, Frame Rate, Sample
 Rate, Bit Depth, Type, Date Created, Filename, Source Path and Location. Also keep
-MobId, MasterMobId, KelpieId, OmfScan, No Database and No Reference. Detailed
+FileMobId, MasterMobId, KelpieId, OmfScan, No Database and No Reference. Detailed
 Precompute Category, Effect Category, Effect and Effect Sequence remain behind
 their flag. Source Filename and Clip Duration are removed. Source Path participates
 in global Search; it remains distinct from the managed file's current Location.
@@ -135,7 +135,7 @@ by this requirements review. See [implementation planning](#implementation-plann
 | C30 | Keep whole-media-root scanning within an admitted managed tree. | Scan eligible sibling folders within the chosen media root. The initial decision also retained manual entry of `Avid MediaFiles/MXF/1`; C76 later narrows manual inputs to the managed-folder root or a drive with managed folders at its root. The whole-root scan scope survives that input change; recursive archive searching remains excluded. |
 | C31 | Keep current managed-media discovery boundaries. | Include eligible managed MXF folders, named ingest folders, quarantine and enabled OMF/AIF/WAV locations. Retain exclusions for loose files, deeper nested folders, UME, hidden entries, symlinks and `Creating`. Every admitted media candidate keeps its physical row even if empty or malformed. |
 | C32 | Keep Rebalance as it is, including its current scope. | Operate on eligible numbered/workstation-numbered folders in the chosen MXF root across the scan, regardless of table filters or selection. Retain its current grouping, folder rules and operation behavior under C04. |
-| C33 | Keep MobId, MasterMobId, KelpieId and OmfScan in the table, CSV and internal records. | Use the verified definitions below. A media-object ID is distinct from a physical row ID; OmfScan records the admitted managed-folder family. |
+| C33 | Keep FileMobId, MasterMobId, KelpieId and OmfScan in the table, CSV and internal records. | Use the verified definitions below. A media-object ID is distinct from a physical row ID; OmfScan records the admitted managed-folder family. |
 | C34 | Keep Date Created as the physical file's filesystem creation date. | Leave it blank when unavailable; do not replace it with an Avid package/clip creation date. |
 | C35 | Use the same requested property checklist for all rows, retaining compact unavailable status; established inapplicability stops fallback for that property. | If reliable PMR/MDB metadata establishes an audio-only file, picture Resolution remains blank without a header read merely for that field. A property absent from one source may still be supplied by the next source under C12. Unread, failed or unresolved checks do not prove absence or inapplicability. Other missing applicable fields can still require a header read. |
 | C36 | Keep physical Filename and Location; the initial Source Filename decision is superseded by C94/C95. | Filename is the current physical basename; Location is the current full physical path including filename. The earlier decision kept derived Source Filename too. C94 replaces that source/import direction with Source Path only; C95/C96 settle table/CSV presentation and Search use. |
@@ -151,7 +151,7 @@ by this requirements review. See [implementation planning](#implementation-plann
 | C46 | Keep the Video, Audio, Precomputes, Non-Portable and Quarantined convenience views. | Preserve their established meanings; Precomputes follows the feature flag. C48 settles the separate database views. Non-Portable is the filename allowlist verdict and Quarantined is a discovered location, not a corruption diagnosis. |
 | C47 | Keep Select Relatives and Select Inverse. | Both helpers operate on visible rows. Relatives groups by the associated master established from scan sources; C50 clarifies that the row need not catalogue every clip referencing the file. C52 retains selection restoration across filters. Existing file-operation and Rebalance scopes remain under C04/C32. |
 | C48 | Replace Database Status in the table and CSV with No Database and No Reference true/false columns, with a view for each. | No Database covers missing/unreadable local reference checks; No Reference covers physical files absent from readable local databases. Established membership excludes the file from both views even if another database is unreadable; report that problem in Console. C49 permits either local database to establish a valid reference. A small internal status is sufficient; permanent database evidence histories are not required. |
-| C49 | Either local database can establish a valid physical-file reference. | A validated same-folder MDB match to the physical file's MobId counts even when PMR is missing or does not list it. Both flags are false. This changes the target membership rule from the current PMR-only implementation; it does not imply every metadata field is complete. |
+| C49 | Either local database can establish a valid physical-file reference. | A validated same-folder MDB match to the physical file's FileMobId counts even when PMR is missing or does not list it. Both flags are false. This changes the target membership rule from the current PMR-only implementation; it does not imply every metadata field is complete. |
 | C50 | Keep the physical-file perspective when interpreting master identities. | One row represents one physical media file. Several clips referencing that file does not establish several MasterMobIds recorded by its header. The Duplicate workflow alone does not justify collecting all incoming clip references or expanding row metadata from AVBs. Bin/sequence references still resolve to physical rows for filtering under C16/C26; no multiple-master row was demonstrated by the fresh scan. |
 | C51 | Keep one associated MasterMobId per physical media file using the agreed source policy and existing validation checks. | PMR/MDB/header acquisition and per-field preferred/fallback selection follow C07/C12. Retain the selected master identity, not a permanent association set or all incoming AVB clip references. Missing values follow normal fallback and remain blank when exhausted. This does not add a new warning system; existing validation handles unusable or ambiguous associations. Loaded bins remain filtering-only under C16. |
 | C52 | Keep the current selection behavior across filters. | Remember selected physical paths when filtering hides them and restore selection when they reappear. An ordinary manual selection change replaces the saved set and forgets hidden choices; Select Relatives and Select Inverse preserve hidden choices. File operations still consume visible selected rows only under C04. Starting a new scan clears the old table under C54. |
@@ -201,6 +201,7 @@ by this requirements review. See [implementation planning](#implementation-plann
 | C96 | Search the recorded Source Path instead of Source Filename. | Apply C41's existing substring/normalization behavior to the retained path, including filenames within it. Search does not require a separately derived basename. |
 | C97 | Use this Mac for initial comparisons, then validate the large workload on NEXIS later. | Record the actual Mac/build/storage/workload and whole-process measurements. Local comparisons do not replace the 300,000-file database-free NEXIS acceptance workload under C08. The representative NEXIS deployment details can be established at that later validation stage; no scan-time target has been answered by this choice. |
 | C98 | Every implementing AI must always ask the user at every decision or crossroad; never assume or choose for them. | Follow the [mandatory decision rule](#mandatory-rule-for-every-implementing-ai): explain a few realistic options in plain language, with pros/cons and a recommendation; wait for the user's explicit choice and record it before dependent work. Applies to delegated AIs and technical choices as well as product decisions. |
+| C99 | During beta, never sacrifice code improvements or simplicity to preserve backwards compatibility. | The user explicitly removes compatibility with saved Undo/recovery journals as a constraint. Current jobs still require correct operation safeguards, Undo and recovery; older beta formats need no aliases or migration. Exact Avid file-format names remain required for reading existing media and are a separate concern. |
 
 ## Capabilities identified as unnecessary
 
@@ -257,9 +258,10 @@ objects used to find the length, or all lower-priority duration observations.
 
 Changing source preferences means another build/scan. Deeper source inspection
 requires rereading; if the original changed or disappeared, its earlier discarded
-alternatives and bytes cannot be recovered. Compact operation receipts must replace
-the current operation code's traversal of full evidence rather than weakening those
-checks. This direction targets retained storage; temporary parser peak memory and
+alternatives and bytes cannot be recovered. The first safety-check migration below
+replaces operation request preparation's traversal of full evidence with compact
+captured checks. Ordinary rows still retain their histories pending the broader
+cleanup. This direction targets retained storage; temporary parser peak memory and
 300,000-file NEXIS throughput still require measurement.
 
 ## Current implementation facts
@@ -289,7 +291,7 @@ These describe today's code, not Copland requirements:
 - The ordinary descriptive table/CSV fields are Clip Name, Project, Bin, Kind,
   physical Duration, Size, Compression, Resolution, Frame Rate, Sample Rate,
   Bit Depth, Type, Date Created, Filename, Source Filename and Location.
-  MobId, MasterMobId and KelpieId are also exposed; OmfScan is feature-gated in
+  FileMobId, MasterMobId and KelpieId are also exposed; OmfScan is feature-gated in
   the table and always included in CSV. CSV additionally exposes Database Status.
   Date Created currently means filesystem birth time, left blank when unavailable.
   Source Filename's tooltip currently shows the full recorded source path.
@@ -411,6 +413,125 @@ on the next scan. A failed read-only replacement preserves the prior file and
 reports failure without success. See [export implementation](../src/mainwindow.cpp#L1808)
 and [UI regressions](../tests/tst_operationui.cpp#L269). Large-export UI wait time
 and whole-process memory remain unmeasured for this change.
+
+### Safety-check migration choice — 13 October 2026
+
+The user chose "Small safety-check migration first" for the next implementation
+step. Capture only the scan facts required by the existing file-operation checks,
+make Copy/Move/Delete/Rebalance consume that compact result, and verify the checks
+with the full scan/evidence fallback unavailable, including Undo and recovery.
+Preserve existing operation-time checks of the actual files, original receipt
+ownership after transfer, deliberately skipped versus attempted/unreadable headers,
+database identity verification, separate header corroboration, changed/conflicting
+header rejection and old journal compatibility.
+
+Keep ordinary row history during this bounded migration; its removal remains the
+following work. This choice does not change source preferences or settle the later
+single-MasterMobId selection policy. No memory saving is claimed by this preparatory
+step. Remaining implementation crossroads follow C98.
+
+The user then chose preparation after scanning with one temporary source-result
+lookup, one grouped record per file reusing the existing header-check fields,
+and refusal with a rescan message if a safety record was never captured. Captured
+checks with unknown IDs retain the existing rules. The temporary lookup is
+discarded after row preparation; the readers, matching policy and old journal
+format remain unchanged. No legacy scan/evidence fallback is allowed in operation
+request extraction.
+
+Implemented and verified on 13 October 2026 on this Mac with Release arm64 and
+pinned Qt 6.5.3: the app and all targets built, focused checks passed, and all 40
+registered test suites passed. Each ordinary scanner row receives an
+`OpScanReceipt`; Copy/Move/Delete and Rebalance request preparation reads it without
+consulting the row's evidence or scan session. Transfers preserve its original
+safety conclusions while updating the current path/time/volume checks.
+
+The [adapter regressions](../tests/tst_mediaenginescan.cpp) prove that the scan and
+source owners can be released while the temporary lookup and captured values
+remain usable. [Operation regressions](../tests/tst_fileoperations.cpp) cover
+history-free real MXF execution, interrupted-job recovery and Undo for all four
+operations, plus compact genuine WAVE/OMF header checks. Authored controls retain
+missing-versus-unknown handling, changed/conflicting header rejection, deliberately
+skipped-versus-unreadable distinction, database file verification and original
+source ownership after transfer. Existing schema-2 journal/recovery tests also
+pass without a format change. The [table transfer](../tests/tst_mediatablemodel.cpp)
+and [Rebalance request](../tests/tst_rebalanceplanner.cpp) checks exercise the same
+captured path. Stale active comments and the architecture/behavior guides were
+updated; the dated 12 October evidence remains historical. Ordinary row histories
+are still retained. Their removal and the rest of Stage 2 remain outstanding;
+this step establishes no measured memory or scan-time improvement.
+
+### Identity naming choice — 13 October 2026
+
+The user chose **FileMobId** and **MasterMobId** consistently in MediaMuster's
+code, table, CSV and current documentation before further Copland implementation.
+Rename file-role fields and labels that currently say MobId; retain the general
+MobId term for utilities or metadata objects whose role is unspecified. Exact Avid
+property names, SDK/binary symbols and quoted source spellings remain literal.
+Saved operation journals retain compatibility so the naming cleanup preserves
+Undo and recovery. Historical receipts continue to describe their recorded source
+state. This choice changes names, not identifier values or operation checks.
+
+Implemented and verified on this Mac with Release arm64 and pinned Qt 6.5.3:
+the app and all targets built, the focused CSV/table/UI/journal checks passed,
+and all 40 registered test suites passed. File-role scan stamps, header checks,
+operation requests and bin media references use `fileMobId`; the table and CSV
+heading is **FileMobId**. Master-role fields and headings use **MasterMobId**.
+Current documentation follows the same spelling. The tests confirm exact
+headings, retained identifier values and compatibility with older schema-2
+journals. General MobId utilities/composition identities and literal external
+property names remain correctly scoped. This completes the naming cleanup before
+further Copland behavior changes.
+
+### Beta compatibility policy — 13 October 2026
+
+The user clarified that saved Undo/recovery journal compatibility is unnecessary
+during beta, and that code improvements and simplicity must never be sacrificed
+for backwards compatibility. This supersedes the compatibility constraint recorded
+in the earlier naming and safety-check steps. Simplify journal identity keys to
+`fileMobId`, `masterMobId`, `masterMobIds` and `databaseFileMobIdToVerify`, without
+legacy aliases. Follow the existing journal rule that changed on-disk names use a
+new schema and unsupported schemas are rejected. Preserve current-format recovery
+and Undo and all file-operation safeguards. No media or existing journal files are
+to be deleted as part of this source cleanup.
+
+The user also requested a fresh check of sequence/other-object identifier names
+against the installed Media Composer binary, available files on all drives and
+primary Avid documentation. Research findings must distinguish actual stored
+property names, role-specific application names and parser-added locator labels.
+Renaming further object-role fields depends on that evidence and C98.
+
+Implemented and verified on this Mac with Release arm64 and pinned Qt 6.5.3:
+all targets built, the focused journal/operation/UI suites passed, and all 40
+registered test suites passed. New journals use schema 3 and the current identity
+names; schemas 1, 2 and 4 are rejected without modifying their files. Current-job
+Copy/Move/Delete/Rebalance recovery and Undo continue to pass. No old-key aliases
+or saved-journal migration remain.
+
+### Composition identity choice — 13 October 2026
+
+The user chose **CompositionMobId** for the record containing editing sequences
+only, after reviewing SequenceMobId and CompositionMobId. Rename
+`AvbSequenceEntry.mobId` to `compositionMobId`. Keep `AvbComposition.mobId` and
+mixed-object identity lookups general: despite its class name, the former holds
+composition, master and source objects, distinguished by `mobType`. Do not infer
+a file/source role from an arbitrary SourceClip reference; it can target a master
+or another composition.
+
+The [fresh role evidence](evidence/identity-roles-2026-10-13.json) covers the
+installed Media Composer binary, bounded discovery on both currently mounted
+drives, genuine AVB/MDB specimens, an exported AAF and relevant primary
+documentation. It distinguishes literal OMF/AAF names and AVB class tags from
+MXF binary-label catalogue names and parser-added AVB labels. Neither discovery
+nor documentation review is claimed exhaustive. This choice changes names only;
+identifier bytes, matching and file-operation checks remain unchanged.
+
+Implemented and verified on this Mac with Release arm64 and pinned Qt 6.5.3:
+the app and all targets rebuilt successfully after the field rename. The five
+affected AVB/parser/bin-dialog/operation-UI suites passed. The full 40-suite run
+had already passed for the integrated FileMobId/MasterMobId and schema-3 cleanup;
+only the sequence-only field name and its existing assertion changed afterward.
+The current identity reference and contributor guidance now distinguish stored
+names from parser labels and record CompositionMobId for composition-only fields.
 
 Q12 is resolved by C80/C81/C88; no disk-size limit was specified.
 Q24 is resolved by C92/C93/C94/C95/C96. Keep precompute category/effect and Volume
@@ -800,7 +921,7 @@ status; permanent candidate histories are unnecessary. Missing and unreadable
 outcomes can remain distinct in Console/internal status while sharing No Database.
 
 Either database can establish a valid reference under C49. A validated same-folder
-MDB match to the physical MobId keeps both flags false when PMR is missing or does
+MDB match to the physical FileMobId keeps both flags false when PMR is missing or does
 not list the file. Established membership also takes precedence over an unreadable
 other database; report that problem in Console. This establishes reference presence,
 not complete metadata. The current code uses PMR membership only and can let a
@@ -857,18 +978,29 @@ filename. No operations or bin identities depend on the recorded import basename
 
 | Column | Verified definition |
 | --- | --- |
-| MobId | The media's File Mob/File Source Package identity. For MXF, the app uses the essence-owning SourcePackage identified by EssenceContainerData. It identifies the recorded media object/package, not a unique physical occurrence on disk. |
+| FileMobId | The media's File Mob/File Source Package identity. For MXF, the app uses the essence-owning SourcePackage identified by EssenceContainerData. It identifies the recorded media object/package, not a unique physical occurrence on disk. |
 | MasterMobId | One associated Master Mob identity selected from the physical row's scan sources under C51; MXF uses the linked MaterialPackage role. A master groups/references source tracks and files. This is the MobID of a master object, not a separate ID format. C50 does not collect every master clip that later references the file. |
 | KelpieId | MediaMuster's row identity within a scan/session. A filesystem copy gets a separate row ID; a confirmed move retains its row ID. A rescan creates fresh row identities. This is an app field, not an Avid/OMF/MXF identifier. |
 | OmfScan | MediaMuster's flag that discovery admitted the row through the OMFI managed-folder family. That family includes OMF, WAV and AIFF. It does not certify that the actual container is OMF or that parsing succeeded. |
 
 A byte-for-byte filesystem copy retains its embedded file/master identifiers, so
 multiple physical rows may legitimately share them. Avid-created new assets or
-new essence representations may receive different identifiers. Neither MobId nor
+new essence representations may receive different identifiers. Neither FileMobId nor
 MasterMobId proves byte equality. This is why the physical row and operation
 checks remain separate under C03/C15.
 
 Primary documentation supporting the roles and identity distinction:
+
+The [13 October terminology check](evidence/identity-terminology-2026-10-13.json)
+confirms that **File Mob ID / FileMobID** and **Master Mob ID / MasterMobID** are
+Avid's own role-specific names in documentation and the installed Media Composer
+library. The general MDB property remains `OMFI:MOBJ:MobID`; PMR stores positional
+IDs without embedded field-name labels. See the updated
+[identity reference](metadata-reference.md#identities-and-relationships).
+MediaMuster uses the user-selected spelling FileMobId and MasterMobId for these
+roles. The naming choice above applies to current code, table/CSV headings and
+documentation; exact external names remain literal. The later beta policy removes
+the older-journal compatibility constraint.
 
 - [Avid's Proxy Workflows white paper](https://connect.avid.com/rs/avid/images/Proxy%20WP.pdf#page=6),
   pages 4–9: maps Material Package to Master Mob and the top-level File Package to
@@ -1186,7 +1318,7 @@ use genuine sources to establish format/workflow behavior.
 
 Outstanding technical validation remains necessary:
 exact used-angle/source-track AVB interpretation, required Original Bin reader
-coverage, compact operation receipt equivalence, cancellation at all publication
+coverage, broader compact-row equivalence, cancellation at all publication
 stages, and complete-process scale measurement must be demonstrated. The inspected
 local corpus and authored defensive tests cannot certify every format or real
 workflow. Borrowing other bins, AVB metadata enrichment, mid-scan source switching,
@@ -1195,8 +1327,9 @@ Clip Duration and permanent inspection histories remain outside the agreed targe
 The [12 October verification](technical-verification-2026-10-12.md) now establishes
 specific current gaps: broad AVB traversal, conflict-only Original Bin fallback,
 loss of completed metadata on early cancel and incorrect completion reporting on
-late cancel. Current operation tests pass; compact receipt equivalence remains to
-be implemented. Three controlled local baseline trials cover 267 database-free
+late cancel. The compact safety-check migration above now passes its bounded
+equivalence checks; ordinary row history removal is still outstanding. Three
+controlled local baseline trials cover 267 database-free
 complete media copies and demonstrated the former asynchronous export retaining
 the prior scan through one frozen CSV row. The direct-export implementation above
 has replaced that workflow.

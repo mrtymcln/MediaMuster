@@ -20,6 +20,7 @@ struct AvbComposition
 {
 	static constexpr int masterMobType = 2;
 
+	/// Generic composition MobId; mobType identifies its role.
 	/// Keep material fields little-endian so the MobId stays the same across AVB byte orders.
 	QString mobId;
 	QString name;

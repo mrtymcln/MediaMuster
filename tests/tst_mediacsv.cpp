@@ -98,6 +98,9 @@ void TestMediaCsv::all_master_ids_and_physical_row_identity_are_exported()
 	file.omfEra = true;
 	const auto headers = readCsvRecord(MediaCsv::headerLine());
 	const auto values = readCsvRecord(MediaCsv::rowLine(file));
+	QCOMPARE(headers.count(QStringLiteral("FileMobId")), 1);
+	QCOMPARE(headers.count(QStringLiteral("MasterMobId")), 1);
+	QCOMPARE(values.at(headers.indexOf(QStringLiteral("FileMobId"))), QStringLiteral("file-id"));
 	QCOMPARE(values.at(headers.indexOf(QStringLiteral("MasterMobId"))), QStringLiteral("master-a; master-b"));
 	QCOMPARE(values.at(headers.indexOf(QStringLiteral("KelpieId"))), QStringLiteral("42"));
 	QCOMPARE(values.at(headers.indexOf(QStringLiteral("OmfScan"))), QStringLiteral("true"));
@@ -140,7 +143,7 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 	{
 		QStringList expectedHeaders = QStringLiteral(
 										  "Clip Name,Project,Bin,Kind,Duration,Size (MB),Compression,Resolution,Frame Rate,Sample Rate,Bit Depth,Type,"
-										  "Date Created,Filename,Source Filename,Location,Database Status,MobId,MasterMobId,KelpieId,OmfScan")
+										  "Date Created,Filename,Source Filename,Location,Database Status,FileMobId,MasterMobId,KelpieId,OmfScan")
 										  .split(QLatin1Char(','));
 		QStringList expectedFields{
 			QStringLiteral("Scene 1 - Take 3"), QStringLiteral("MyFilm"), QStringLiteral("Rushes"),

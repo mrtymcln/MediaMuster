@@ -15,7 +15,7 @@ namespace MediaEngine
 }
 
 /// Ordered operations on files identified by the selected bins' MSML locators.
-/// A shared master MobId does not establish bin-filter membership.
+/// A shared MasterMobId does not establish bin-filter membership.
 struct AvbFilter
 {
 	enum class Operation

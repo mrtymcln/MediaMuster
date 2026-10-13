@@ -300,7 +300,7 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.sourceFileName;
 		case Column::Location:
 			return f.mediaFilePath;
-		case Column::MobId:
+		case Column::FileMobId:
 			return f.fileMobId;
 		case Column::MasterMobId:
 			return f.masterMobIdDisplay();
@@ -367,7 +367,7 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 
 	const char *headers[] = {"Clip Name", "Project", "Bin", "Kind", "Duration", "Size (MB)",
 							 "Compression", "Resolution", "Frame Rate", "Sample Rate", "Bit Depth", "Type",
-							 "Date Created", "Filename", "Source Filename", "Location", "MobId", "MasterMobId", "KelpieId",
+							 "Date Created", "Filename", "Source Filename", "Location", "FileMobId", "MasterMobId", "KelpieId",
 							 "Precompute Category", "Effect Category", "Effect", "Effect Sequence"};
 	static_assert(sizeof(headers) / sizeof(headers[0]) == Enum::to_underlying(Column::Count_),
 				  "Column enum and headers[] array got out of sync — "

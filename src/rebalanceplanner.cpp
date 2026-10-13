@@ -536,7 +536,7 @@ OpRequest RebalancePlanner::requestForPlan(const RebalancePlan &plan)
 			{
 				it.modifiedMs = op.modifiedMs;
 				it.masterMobId = op.masterMobId;
-				it.mobId = op.fileMobId;
+				it.fileMobId = op.fileMobId;
 			}
 			it.renameDst =
 				plan.mxfRootPath + QLatin1Char('/') + op.dest.display() + QLatin1Char('/') + fileName;

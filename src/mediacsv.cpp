@@ -46,7 +46,7 @@ namespace MediaCsv
 		line += QStringLiteral("Size (MB),Compression,Resolution,Frame Rate,Sample Rate,Bit Depth,Type,");
 		if (options.includePrecomputeDetails)
 			line += QStringLiteral("Precompute Category,Effect Category,Effect,Effect Sequence,");
-		line += QStringLiteral("Date Created,Filename,Source Filename,Location,Database Status,MobId,MasterMobId,KelpieId,OmfScan");
+		line += QStringLiteral("Date Created,Filename,Source Filename,Location,Database Status,FileMobId,MasterMobId,KelpieId,OmfScan");
 		return line + QLatin1Char('\n');
 	}
 
