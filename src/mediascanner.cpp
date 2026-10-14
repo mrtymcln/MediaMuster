@@ -1,5 +1,5 @@
 // Owns the background scan and forwards progress/results to the existing UI.
-// MediaEngine owns source reading, matching and retained scan evidence.
+// MediaEngine owns source reading, matching and temporary working scan evidence.
 #include "mediascanner.h"
 #include "mediaengine/scanengine.h"
 #include "mediaengineadapter.h"
@@ -284,8 +284,8 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 	QVector<MediaFile> rows;
 	rows.reserve(session->files.size());
 	{
-		// Share one temporary lookup while preparing rows; it owns no scan graphs.
-		const OpScanReceiptLookup operationChecks(*session);
+		// Capture read outcomes and safety flags once; the rows keep no scan owners.
+		const ScanRowLookup rowChecks(*session);
 		for (const auto &file : session->files)
 		{
 			QString volumePath;
@@ -297,7 +297,7 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 					volumeName = labels.value(context.path);
 					break;
 				}
-			rows.append(mediaEngineMediaFile(file, session, volumePath, volumeName, &operationChecks));
+			rows.append(mediaEngineMediaFile(file, rowChecks, volumePath, volumeName, session->cancelled));
 		}
 	}
 	for (const auto &issue : session->reconciliationIssues)

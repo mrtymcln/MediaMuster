@@ -1,7 +1,7 @@
 #pragma once
 
 // UI fixtures describe selected facts, not another parser or metadata engine.
-// Give hand-written rows the same evidence/selection contract as scanned rows.
+// Use temporary authored evidence to prepare values/statuses and safety checks.
 // Effect names are derived by the real catalogue; display-only labels cannot
 // override the recorded clip-name evidence.
 
@@ -16,12 +16,9 @@ namespace TestMediaFile
 	{
 		for (auto &file : files)
 		{
-			if (file.mediaEngineScan)
-			{
-				if (!file.operationScanReceipt)
-					captureOpScanReceipt(file);
-				continue; // Deliberate engine/evidence fixtures already supply their own facts.
-			}
+			if (file.metadataStatus.field(MediaProperty::ClipName).captured)
+				continue; // Already prepared rows, including intentionally missing safety records.
+			MediaEvidence evidence;
 			const auto source = [&](MetadataSource kind)
 			{
 				return QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
@@ -31,7 +28,7 @@ namespace TestMediaFile
 			const auto filesystem = source(MetadataSource::Filesystem);
 			const auto add = [&](MediaProperty property, const QVariant &value, const SourceSnapshotRef &snapshot)
 			{
-				if (!value.isValid() || !file.evidence.observations(property).isEmpty())
+				if (!value.isValid() || !evidence.observations(property).isEmpty())
 					return;
 				if (value.metaType().id() == QMetaType::QString && value.toString().isEmpty())
 					return;
@@ -41,7 +38,7 @@ namespace TestMediaFile
 				observation.objectIdentity = QStringLiteral("UI fixture");
 				observation.value = value;
 				observation.readState = PropertyReadState::Present;
-				file.evidence.observe(property, std::move(observation));
+				evidence.observe(property, std::move(observation));
 			};
 			const auto nameSource = file.clipNameSource == MediaFile::ClipNameSource::Mdb ? source(MetadataSource::Mdb) : header;
 			add(MediaProperty::ClipName, file.clipName, nameSource);
@@ -83,10 +80,11 @@ namespace TestMediaFile
 			add(MediaProperty::SourceContainer, file.sourceContainer, header);
 			add(MediaProperty::Imported, file.isImported, header);
 			add(MediaProperty::DatabaseStatus, int(file.dbStatus), filesystem);
-			MediaEngine::selectMetadata(file.evidence);
-			applyResolvedMetadata(file);
+			MediaEngine::selectMetadata(evidence);
+			applyResolvedMetadata(file, evidence);
+			file.metadataStatus = makeMediaMetadataStatus(evidence);
 			if (!file.operationScanReceipt)
-				captureOpScanReceipt(file);
+				file.operationScanReceipt = makeOpScanReceipt(evidence, file.scanStamp);
 		}
 		return files;
 	}

@@ -10,7 +10,6 @@
 #include "mediaengine/pmrreader.h"
 #include "mediaengine/scancoordinator.h"
 #include "mediaengineadapter.h"
-#include "mediaenginefingerprint.h"
 #include "featureflags.h"
 #include "mediafile.h"
 #include "mediametadata.h"
@@ -56,9 +55,10 @@ namespace
 	MediaFile projectedMetadata(const MediaEngine::ProjectedFile &projected)
 	{
 		MediaFile row;
-		row.evidence = projected.evidence;
-		MediaEngine::selectMetadata(row.evidence);
-		applyResolvedMetadata(row);
+		auto evidence = projected.evidence;
+		MediaEngine::selectMetadata(evidence);
+		applyResolvedMetadata(row, evidence);
+		row.metadataStatus = makeMediaMetadataStatus(evidence);
 		return row;
 	}
 
@@ -111,44 +111,34 @@ namespace
 
 	bool headerWasRead(const MediaFile &file)
 	{
-		if (!file.mediaEngineScan)
-			return false;
-		for (const auto &source : file.mediaEngineScan->sources)
-			if (source.snapshot && source.snapshot->path == file.mediaFilePath &&
-				source.outcome != MediaEngine::ParsedSource::Outcome::NotRead)
-				return true;
-		return false;
+		return file.metadataStatus.headerOutcome != MediaHeaderReadOutcome::NoReceipt &&
+			file.metadataStatus.headerOutcome != MediaHeaderReadOutcome::NotRead;
 	}
 	bool hasDatabaseFileEvidence(const MediaFile &file)
 	{
-		for (const auto &item : file.evidence.observations(MediaProperty::FileMobId))
-			if (item.eligible && item.snapshot && item.snapshot->source == MetadataSource::Mdb)
-				return true;
-		return false;
+		return file.metadataStatus.field(MediaProperty::FileMobId).presentSources.contains(MetadataSource::Mdb);
 	}
 	bool hasDatabaseEvidence(const MediaFile &file)
 	{
 		for (int field = int(MediaProperty::ClipName); field <= int(MediaProperty::ComponentDepth); ++field)
-			for (const auto &observation : file.evidence.observations(MediaProperty(field)))
-				if (observation.eligible && observation.snapshot && observation.snapshot->source == MetadataSource::Mdb &&
-					observation.readState == PropertyReadState::Present)
-					return true;
+			if (file.metadataStatus.field(MediaProperty(field)).presentSources.contains(MetadataSource::Mdb))
+				return true;
 		return false;
 	}
 	void checkDatabaseOnlyRead(const MediaFile &file)
 	{
-		QVERIFY(file.mediaEngineScan);
-		const auto source = std::find_if(file.mediaEngineScan->sources.cbegin(), file.mediaEngineScan->sources.cend(), [&](const MediaEngine::SourceReceipt &candidate)
-										 { return candidate.snapshot && candidate.snapshot->path == file.mediaFilePath; });
-		QVERIFY(source != file.mediaEngineScan->sources.cend());
-		QCOMPARE(source->outcome, MediaEngine::ParsedSource::Outcome::NotRead);
-		QCOMPARE(source->snapshot->readState, SourceReadState::NotRead);
-		QVERIFY(source->readReason.startsWith(QStringLiteral("Header not read:")));
+		QCOMPARE(file.metadataStatus.headerOutcome, MediaHeaderReadOutcome::NotRead);
 		QVERIFY(hasDatabaseEvidence(file));
 		for (int field = int(MediaProperty::ClipName); field <= int(MediaProperty::ComponentDepth); ++field)
-			for (const auto &item : file.evidence.observations(MediaProperty(field)))
-				if (item.eligible && item.snapshot && item.snapshot->source == MetadataSource::Mdb)
-					QCOMPARE(item.freshness, SourceFreshness::Unknown);
+		{
+			const auto &status = file.metadataStatus.field(MediaProperty(field));
+			if (status.presentSources.contains(MetadataSource::Mdb))
+			{
+				QVERIFY(status.unknownFreshnessSources.contains(MetadataSource::Mdb));
+				QVERIFY(!status.timestampConsistentSources.contains(MetadataSource::Mdb));
+				QVERIFY(!status.changedSources.contains(MetadataSource::Mdb));
+			}
+		}
 	}
 	void removeDatabaseClipNames(const QString &path)
 	{
@@ -353,31 +343,11 @@ void TestScanner::optional_read_only_real_scan()
 	QTRY_COMPARE(issues.count(), 1);
 	const qint64 elapsed = timer.elapsed();
 	const auto files = qvariant_cast<QVector<MediaFile>>(finished.first().first());
-	// Measure the finished scan while its rows and source receipts remain alive.
+	// Measure the prepared rows after the ordinary scan histories have been released.
 	const QJsonObject memoryRetained = auditMemory();
 	const QString csvOutput = qEnvironmentVariable("MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_CSV");
 	if (!csvOutput.isEmpty())
 		QVERIFY(MediaCsv::write(csvOutput, files, {true, true}));
-	QJsonArray sourceDetails;
-	if (!files.isEmpty() && files.first().mediaEngineScan)
-	{
-		const auto &scan = *files.first().mediaEngineScan;
-		QVERIFY(scan.discoveryComplete);
-		QVERIFY(scan.parsingComplete);
-		QVERIFY(scan.reconciliationComplete);
-		QVERIFY(!scan.cancelled);
-		for (const auto &source : scan.sources)
-		{
-			const QJsonObject detail{
-				{"path", source.snapshot ? source.snapshot->path : QString{}},
-				{"source", source.snapshot ? int(source.snapshot->source) : -1},
-				{"outcome", int(source.outcome)},
-				{"readReason", source.readReason},
-				{"container", int(source.container)},
-				{"diagnostics", QJsonArray::fromStringList(source.diagnostics)}};
-			sourceDetails.append(detail);
-		}
-	}
 	QSet<KelpieId> ids;
 	QSet<QString> paths;
 	QJsonArray inventory;
@@ -388,9 +358,29 @@ void TestScanner::optional_read_only_real_scan()
 		ids.insert(file.kelpieId);
 		paths.insert(file.mediaFilePath);
 		QCOMPARE(file.scanStamp.path, file.mediaFilePath);
-		MediaEngineProof::Fingerprint evidence;
-		evidence.evidence(file.evidence); // All supported fields, observations, coverage and selections.
-		inventory.append(QJsonObject{{"path", file.mediaFilePath}, {"kelpieId", QString::number(file.kelpieId)}, {"fileMobId", file.fileMobId}, {"masterMobIds", QJsonArray::fromStringList(file.masterMobIds)}, {"codec", file.compression}, {"bitDepth", file.bitDepth}, {"sampleFormat", file.sampleFormat}, {"omfScan", file.omfEra}, {"codecObservations", int(file.evidence.observations(MediaProperty::Compression).size())}, {"evidenceSha256", QString::fromLatin1(evidence.result())}});
+		QJsonArray statuses;
+		for (int field = 0; field < int(MediaProperty::Count); ++field)
+		{
+			const auto property = MediaProperty(field);
+			const auto &status = file.metadataStatus.field(property);
+			statuses.append(QJsonObject{
+				{"property", mediaPropertyName(property)},
+				{"readState", int(status.readState)}, {"readReason", int(status.readReason)},
+				{"agreement", int(status.agreement)}, {"applicability", int(status.applicability)},
+				{"hasSelectedValue", status.hasSelectedValue}, {"captured", status.captured},
+				{"selectedSource", status.selectedSource ? int(*status.selectedSource) : -1},
+				{"selectedBasis", status.selectedBasis ? int(*status.selectedBasis) : -1},
+				{"selectedFreshness", status.selectedFreshness ? int(*status.selectedFreshness) : -1},
+				{"presentSources", int(status.presentSources.bits())},
+				{"unknownFreshnessSources", int(status.unknownFreshnessSources.bits())},
+				{"timestampConsistentSources", int(status.timestampConsistentSources.bits())},
+				{"changedSources", int(status.changedSources.bits())}});
+		}
+		inventory.append(QJsonObject{{"path", file.mediaFilePath}, {"kelpieId", QString::number(file.kelpieId)},
+			{"fileMobId", file.fileMobId}, {"masterMobIds", QJsonArray::fromStringList(file.masterMobIds)},
+			{"codec", file.compression}, {"bitDepth", file.bitDepth}, {"sampleFormat", file.sampleFormat},
+			{"omfScan", file.omfEra}, {"headerOutcome", int(file.metadataStatus.headerOutcome)},
+			{"selectedCsv", MediaCsv::rowLine(file, {true, true})}, {"fieldStatuses", statuses}});
 	}
 	QJsonArray issueDetails;
 	for (const auto &issue : qvariant_cast<QVector<ScanIssue>>(issues.first().first()))
@@ -403,7 +393,7 @@ void TestScanner::optional_read_only_real_scan()
 		const QJsonDocument document(QJsonObject{{"roots", QJsonArray::fromStringList(options.manualPaths)},
 												 {"memoryBefore", memoryBefore},
 												 {"memoryRetained", memoryRetained},
-												 {"sources", sourceDetails},
+												 {"scope", QStringLiteral("Prepared rows and compact metadata status")},
 												 {"scanMs", elapsed},
 												 {"rows", files.size()},
 												 {"issueCount", qvariant_cast<QVector<ScanIssue>>(issues.first().first()).size()},
@@ -453,9 +443,9 @@ void TestScanner::mediaengine_extension_discovery_keeps_copies_and_local_referen
 	{
 		QCOMPARE(file.scanStamp.path, file.mediaFilePath);
 		QCOMPARE(file.scanStamp.fileMobId, file.fileMobId);
-		for (const auto &observation : file.evidence.observations(MediaProperty::Compression))
-			if (observation.snapshot->path.endsWith("future.MDB"))
-				readRenamedDatabase = true;
+		// The renamed file is the only MDB in this folder.
+		readRenamedDatabase |= file.metadataStatus.field(MediaProperty::Compression)
+			.presentSources.contains(MetadataSource::Mdb);
 	}
 	QVERIFY(readRenamedDatabase);
 	bool foundScopedReference = false;
@@ -498,20 +488,9 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 
 	const MediaFile &mf = results.first();
 
-	// Exercise the live adapter, not just the standalone MediaEngine coordinator.
-	// Each database keeps its source receipt and extracted evidence.
-	QVERIFY(mf.mediaEngineScan);
-	int databaseSources = 0;
-	for (const auto &source : mf.mediaEngineScan->sources)
-	{
-		if (!source.snapshot || (source.snapshot->source != MetadataSource::Pmr &&
-							 source.snapshot->source != MetadataSource::Mdb))
-			continue;
-		QCOMPARE(source.outcome, MediaEngine::ParsedSource::Outcome::Complete);
-		QCOMPARE(source.snapshot->readState, SourceReadState::Complete);
-		++databaseSources;
-	}
-	QCOMPARE(databaseSources, 2);
+	// Exercise the live adapter's prepared database facts and compact source kinds.
+	QVERIFY(mf.metadataStatus.field(MediaProperty::FileMobId).presentSources.contains(MetadataSource::Pmr));
+	QVERIFY(mf.metadataStatus.field(MediaProperty::Compression).presentSources.contains(MetadataSource::Mdb));
 
 	QCOMPARE(mf.fileName, QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"));
 	QCOMPARE(mf.mediaFolderName, QStringLiteral("1"));
@@ -1271,7 +1250,10 @@ void TestScanner::completed_scan_can_restart_from_its_queued_receiver()
 	QCOMPARE(second.size(), 1);
 	QCOMPARE(first.front().fileMobId, second.front().fileMobId);
 	QVERIFY(!first.front().fileMobId.isEmpty());
-	QVERIFY(first.front().mediaEngineScan != second.front().mediaEngineScan);
+	QCOMPARE(MediaCsv::rowLine(first.front(), {true, true}), MediaCsv::rowLine(second.front(), {true, true}));
+	QCOMPARE(first.front().metadataStatus.headerOutcome, second.front().metadataStatus.headerOutcome);
+	QVERIFY(first.front().operationScanReceipt);
+	QVERIFY(second.front().operationScanReceipt);
 }
 
 void TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()
@@ -1771,8 +1753,12 @@ void TestScanner::unreadable_header_keeps_qualified_database_fallback()
 	QVERIFY(headerWasRead(mf));
 	QCOMPARE(mf.compression, QStringLiteral("PCM"));
 	QCOMPARE(mf.sampleRate, 48000);
-	for (const auto &observation : mf.evidence.observations(MediaProperty::Compression))
-		QCOMPARE(observation.freshness, SourceFreshness::Unknown);
+	const auto &codecStatus = mf.metadataStatus.field(MediaProperty::Compression);
+	QVERIFY(codecStatus.presentSources.contains(MetadataSource::Mdb));
+	QVERIFY(codecStatus.unknownFreshnessSources.contains(MetadataSource::Mdb));
+	QVERIFY(!codecStatus.timestampConsistentSources.contains(MetadataSource::Mdb));
+	QVERIFY(!codecStatus.changedSources.contains(MetadataSource::Mdb));
+	QVERIFY(codecStatus.selectedFreshness == SourceFreshness::Unknown);
 	QCOMPARE(mf.clipName, kToneClip);
 	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::Mdb);
 	QCOMPARE(mf.project, QStringLiteral("block 1729"));
@@ -2210,28 +2196,24 @@ void TestScanner::folder_without_databases_reads_every_header()
 	QVERIFY(!mf.compression.isEmpty());
 	QVERIFY(mf.sampleRate > 0);
 
-	QVERIFY(mf.mediaEngineScan);
-	QCOMPARE(mf.mediaEngineScan->sources.size(), 1);
-	const auto &stored = mf.mediaEngineScan->sources.first();
-	QCOMPARE(stored.outcome, MediaEngine::ParsedSource::Outcome::Complete);
-	QCOMPARE(mf.mediaEngineScan->files.size(), 1);
-	MediaEngineProof::Fingerprint before;
-	before.file(mf.mediaEngineScan->files.front());
-	const auto beforeDigest = before.result();
-	// Removing only the disposable copy proves the row owns its extracted facts.
+	QCOMPARE(mf.metadataStatus.headerOutcome, MediaHeaderReadOutcome::Complete);
+	for (const auto property : {MediaProperty::FileMobId, MediaProperty::ClipName, MediaProperty::Compression})
+	{
+		const auto &status = mf.metadataStatus.field(property);
+		QVERIFY(status.captured);
+		QVERIFY(status.hasSelectedValue);
+		QCOMPARE(status.readState, PropertyReadState::Present);
+		QVERIFY(status.presentSources.contains(MetadataSource::Mxf));
+	}
+	const auto preparedCsv = MediaCsv::rowLine(mf, {true, true});
+	const auto item = opItemFromMediaFile(mf);
+	QVERIFY(item.headerIdentity);
+	QCOMPARE(item.headerIdentity->fileMobId, mf.fileMobId);
+	// Removing only the disposable copy cannot alter the already prepared row.
 	QVERIFY(QFile::remove(mf.mediaFilePath));
-	MediaEngineProof::Fingerprint after;
-	after.file(mf.mediaEngineScan->files.front());
-	QCOMPARE(after.result(), beforeDigest);
-	const auto retained = mediaEngineMediaFile(mf.mediaEngineScan->files.front(), mf.mediaEngineScan);
-	QCOMPARE(retained.fileMobId, mf.fileMobId);
-	QCOMPARE(retained.clipName, mf.clipName);
-	QCOMPARE(retained.compression, mf.compression);
-	QCOMPARE(retained.sampleRate, mf.sampleRate);
-	bool sharedReceipt = false;
-	for (const auto &observation : mf.evidence.observations(MediaProperty::FileMobId))
-		sharedReceipt |= observation.snapshot == stored.snapshot;
-	QVERIFY(sharedReceipt);
+	QCOMPARE(MediaCsv::rowLine(mf, {true, true}), preparedCsv);
+	QCOMPARE(mf.metadataStatus.headerOutcome, MediaHeaderReadOutcome::Complete);
+	QCOMPARE(opItemFromMediaFile(mf).headerIdentity->fileMobId, item.headerIdentity->fileMobId);
 }
 
 void TestScanner::mpeg_audio_falls_back_to_its_header()

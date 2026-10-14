@@ -6,38 +6,54 @@
 
 namespace
 {
-	QString originalLocation(const MediaFile &file)
+	MediaHeaderReadOutcome headerReadOutcome(MediaEngine::ParsedSource::Outcome outcome)
 	{
-		// Confirmed moves/copies keep the original scan and this row's location
-		// history. The header receipt still refers to that original location.
-		for (const auto &observation : file.evidence.observations(MediaProperty::Location))
+		using Outcome = MediaEngine::ParsedSource::Outcome;
+		switch (outcome)
+		{
+		case Outcome::NotRead: return MediaHeaderReadOutcome::NotRead;
+		case Outcome::Complete: return MediaHeaderReadOutcome::Complete;
+		case Outcome::Incomplete: return MediaHeaderReadOutcome::Incomplete;
+		case Outcome::Malformed: return MediaHeaderReadOutcome::Malformed;
+		case Outcome::Unsupported: return MediaHeaderReadOutcome::Unsupported;
+		case Outcome::IoError: return MediaHeaderReadOutcome::IoError;
+		case Outcome::Cancelled: return MediaHeaderReadOutcome::Cancelled;
+		}
+		return MediaHeaderReadOutcome::NoReceipt;
+	}
+
+	QString originalLocation(const MediaEvidence &evidence, const MediaScanStamp &stamp)
+	{
+		// Capture from temporary evidence before publishing the row. The first
+		// filesystem location identifies the original header receipt owner.
+		for (const auto &observation : evidence.observations(MediaProperty::Location))
 			if (observation.snapshot && observation.snapshot->source == MetadataSource::Filesystem &&
 				observation.readState == PropertyReadState::Present)
 				return observation.value.toString(); // Later locations may belong to another scan receipt.
-		return file.scanStamp.path;
+		return stamp.path;
 	}
 
-	QString databaseIdentityForSkippedHeader(const MediaFile &file, const OpScanReceiptLookup &lookup)
+	QString databaseIdentityForSkippedHeader(const MediaEvidence &evidence, const MediaScanStamp &stamp, const ScanRowLookup &lookup)
 	{
-		if (file.scanStamp.fileMobId.isEmpty() || MobId::isAllZero(file.scanStamp.fileMobId))
+		if (stamp.fileMobId.isEmpty() || MobId::isAllZero(stamp.fileMobId))
 			return {};
-		const QString scannedPath = originalLocation(file);
+		const QString scannedPath = originalLocation(evidence, stamp);
 		if (!lookup.headerWasSkipped(scannedPath))
 			return {};
-		for (const auto &observation : file.evidence.observations(MediaProperty::FileMobId))
+		for (const auto &observation : evidence.observations(MediaProperty::FileMobId))
 			if (observation.snapshot && observation.eligible && observation.readState == PropertyReadState::Present &&
 				(observation.snapshot->source == MetadataSource::Pmr || observation.snapshot->source == MetadataSource::Mdb) &&
-				observation.value.toString() == file.scanStamp.fileMobId)
-				return file.scanStamp.fileMobId;
+				observation.value.toString() == stamp.fileMobId)
+				return stamp.fileMobId;
 		return {};
 	}
 
-	OpHeaderIdentity headerIdentity(const MediaFile &file, const OpScanReceiptLookup &lookup)
+	OpHeaderIdentity headerIdentity(const MediaEvidence &evidence, const MediaScanStamp &stamp, const ScanRowLookup &lookup)
 	{
 		OpHeaderIdentity identity;
 		QStringList fileIds;
 		for (const auto property : {MediaProperty::FileMobId, MediaProperty::MasterMobId})
-			for (const auto &observation : file.evidence.observations(property))
+			for (const auto &observation : evidence.observations(property))
 			{
 				if (!observation.snapshot ||
 					(observation.snapshot->source != MetadataSource::Mxf && observation.snapshot->source != MetadataSource::Omf))
@@ -60,45 +76,52 @@ namespace
 			identity.fileMobId = fileIds.front();
 		else if (fileIds.size() > 1)
 			identity.unavailableReason = QStringLiteral("The media header has conflicting file identities. Rescan before proceeding.");
-		if (lookup.sourceChanged(originalLocation(file)))
+		if (lookup.sourceChanged(originalLocation(evidence, stamp)))
 			identity.unavailableReason = QStringLiteral("The media header changed during scanning. Rescan before proceeding.");
 		return identity;
 	}
 }
 
-OpScanReceiptLookup::OpScanReceiptLookup(const MediaEngine::ScanResult &scan)
+ScanRowLookup::ScanRowLookup(const MediaEngine::ScanResult &scan)
 {
 	for (const auto &source : scan.sources)
 		if (source.snapshot &&
-			(source.snapshot->source == MetadataSource::Mxf || source.snapshot->source == MetadataSource::Omf) &&
-			source.outcome == MediaEngine::ParsedSource::Outcome::NotRead)
-			m_flags[source.snapshot->path].headerSkipped = true;
+			(source.snapshot->source == MetadataSource::Mxf || source.snapshot->source == MetadataSource::Omf))
+		{
+			auto &flags = m_flags[source.snapshot->path];
+			flags.headerSkipped |= source.outcome == MediaEngine::ParsedSource::Outcome::NotRead;
+			// An attempted read remains attempted if another receipt records no read.
+			if (source.outcome != MediaEngine::ParsedSource::Outcome::NotRead ||
+				flags.headerOutcome == MediaHeaderReadOutcome::NoReceipt)
+				flags.headerOutcome = headerReadOutcome(source.outcome);
+		}
 	for (const auto &issue : scan.reconciliationIssues)
 		if (issue.kind == ScanIssue::Kind::SourceChanged && issue.source)
 			m_flags[issue.source->path].sourceChanged = true;
 }
 
-bool OpScanReceiptLookup::headerWasSkipped(const QString &path) const
+bool ScanRowLookup::headerWasSkipped(const QString &path) const
 {
 	const auto found = m_flags.constFind(path);
 	return found != m_flags.cend() && found->headerSkipped;
 }
 
-bool OpScanReceiptLookup::sourceChanged(const QString &path) const
+bool ScanRowLookup::sourceChanged(const QString &path) const
 {
 	const auto found = m_flags.constFind(path);
 	return found != m_flags.cend() && found->sourceChanged;
 }
 
-void captureOpScanReceipt(MediaFile &file, const OpScanReceiptLookup &lookup)
+MediaHeaderReadOutcome ScanRowLookup::headerOutcome(const QString &path) const
 {
-	file.operationScanReceipt = OpScanReceipt{headerIdentity(file, lookup), databaseIdentityForSkippedHeader(file, lookup)};
+	const auto found = m_flags.constFind(path);
+	return found == m_flags.cend() ? MediaHeaderReadOutcome::NoReceipt : found->headerOutcome;
 }
 
-void captureOpScanReceipt(MediaFile &file)
+OpScanReceipt makeOpScanReceipt(const MediaEvidence &evidence, const MediaScanStamp &stamp,
+							   const ScanRowLookup &lookup)
 {
-	const auto lookup = file.mediaEngineScan ? OpScanReceiptLookup{*file.mediaEngineScan} : OpScanReceiptLookup{};
-	captureOpScanReceipt(file, lookup);
+	return {headerIdentity(evidence, stamp, lookup), databaseIdentityForSkippedHeader(evidence, stamp, lookup)};
 }
 
 OpItem opItemFromMediaFile(const MediaFile &mf)

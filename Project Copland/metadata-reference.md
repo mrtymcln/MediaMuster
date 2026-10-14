@@ -49,7 +49,7 @@ These names must not be substituted for one another just because they look simil
 | Project | Original Avid project name. Required for display and filtering under C39; does not identify the app's currently open project or the project of a loaded AVB. | A: `Project` p. 277 describes the original capture project. No standardized project property established here. | PMR project entry, MDB/OMF `_PJ`; MXF `Preface.ProjectName`, `_PJ` / `PROJNAME` tagged values. These are private/source-specific mappings. Their presence does not prove the project still exists. [Code](../src/mediaengine/mxfprojection.cpp#L636). |
 | Bin / OriginalBin | Recorded original-bin name/reference. Required for display under C40; describes origin, not current membership in every bin or the user's loaded filter bins. | No standardized OMF/MXF equivalent established here. Avid private `_ORG_BIN` / `MCBR` relationship. | MDB/OMF `_ORG_BIN` object → `MCBR` → `OMFI:MCBR:MC:binNameUTF8` / `binName`. No current MXF OriginalBin projection. AVB enrichment has been removed under C16; selection prefers MDB then a supplied header value. [Code](../src/mediaengine/mdbprojection.cpp#L1007). |
 | Kind | Audio / Video essence classification. Determines applicable technical properties and supports filtering. | O: `OMFI:CPNT:DataKind`, pp. 145, 224–225. M: `Data Definition`, B.8. | Correctly owned sound/picture descriptor class and properties; native WAV/AIFF headers establish audio. Distinct from Master/Source/Composition role and from Type. Unknown Kind does not prove any field inapplicable. [Code](../src/mediaengine/mxfprojection.cpp#L754). |
-| Duration | Physical file's temporal length. Retain the exact count and its unit rate; display clock/timecode formatting is separate. | O: `OMFI:MDFL:Length` / `SampleRate`, pp. 167–168. M: `Container Duration` / appropriate rate, F.2. | MXF `FileDescriptor.ContainerDuration` / `SampleRate`; MDB/OMF equivalent; native audio sample-frame count/rate. Linked file-track duration can supply the fallback when descriptor duration is absent. Avid's bin `Duration` is clip length and is not this field. Clip Duration is removed under C13. [Code](../src/mediaengine/mxfprojection.cpp#L837). |
+| Duration | Physical file's temporal length. Retain the exact count and its unit rate; display clock/timecode formatting is separate. | O: `OMFI:MDFL:Length` / `SampleRate`, pp. 167–168. M: `Container Duration` / appropriate rate, F.2. | MXF `FileDescriptor.ContainerDuration` / `SampleRate`; MDB/OMF equivalent; native audio sample-frame count/rate. Linked file-track duration can supply the fallback when descriptor duration is absent. Avid's bin `Duration` is clip length and is not this field. C13 requires separate Clip Duration removal; its current selected values remain in this history-only cleanup. [Code](../src/mediaengine/mxfprojection.cpp#L837). |
 | Size (MB) | Entire physical file's size, displayed as decimal bytes / 1,000,000. Helps plan operations. | Filesystem fact; no metadata substitute. | `QFileInfo::size()`, with exact bytes retained. Not essence payload size or a duration estimate. [Code](../src/mediaengine/discoveryengine.cpp#L143). |
 | Compression | Readable encoding/codec label for this file's essence. | O: picture `OMFI:DIDD:Compression`, pp. 133–136. M: `Picture Essence Coding`, F.4.1; `Sound Essence Coding`, F.5. | Coding ULs, Avid `DIDResolutionID`, legacy compression and descriptor/operating-point facts feed the app catalogue. The local MXF reader key `GenericSoundEssenceDescriptor.SoundEssenceCompression` corresponds to the standard's Sound Essence Coding terminology. Wrapping/container identity is separate. [Code](../src/mediaengine/mxfprojection.cpp#L1008). |
 | Resolution | Selected visible picture dimensions, e.g. `1920x1080`. No picture raster applies to audio-only media. | O: DIDD stored/sampled/display geometry, pp. 134–136. M: picture geometry and `Frame Layout`, F.4.1/G. | Validated Stored/Sampled/Display dimensions, offsets and field layout; current qualified proxy handling can choose the stored proxy raster. Avid's term “resolution” can instead describe codec/quality. `DIDResolutionID` is not a pixel width/height pair. [Code](../src/mediaengine/mxfprojection.cpp#L965). |
@@ -261,13 +261,30 @@ order conversion; it need not equal a raw MXF byte dump or pyavb's URN.
 C14 keeps precompute details behind their feature flag for now. It does not make
 the inferred fields authoritative membership evidence or remove C45's ordinary
 Media/Precompute Type column. C92/C93 retain the current category/effect filtering
-workflow and its Volume control. Clip Duration and retained master lengths
-solely for that feature are removed under C13.
+workflow and its Volume control. C13 requires removing Clip Duration and master
+lengths retained solely for that feature in a separate step; they remain in the
+current implementation.
 
 ## Availability and fallback contract
 
 Use the same enabled property checklist for every row. Keep a compact conclusion
 for each property rather than every observation that established it.
+
+Ordinary UI rows now store selected typed values, `MediaMetadataStatus`,
+`MediaScanStamp` and an optional frozen `OpScanReceipt`. The fixed inline status
+checklist covers the current property catalogue and contains availability,
+applicability, agreement, source-kind/freshness
+flags and selected origin/basis/freshness tags where established. It contains no
+values, explanation strings, observations or source owners. The current
+master-association union has no single principal origin. This bounded change does
+not alter the acquisition checklist.
+
+The scanner borrows working evidence and uses one scoped `ScanRowLookup` for
+header outcomes and change/skipped flags while preparing rows. It then discards
+the full working scan before delivery to the UI. Reconciliation issue snapshots
+and loaded-bin/filter graphs are separate retained owners. Confirmed copies/moves
+directly update physical values, status and destination membership without
+rebuilding histories or reselecting metadata.
 
 | Conclusion | Meaning | Next-source behavior |
 | --- | --- | --- |
@@ -369,10 +386,14 @@ UTF-16, dynamically assembled names and other images may carry it.
   to a hobby-reader label or treating an unsupported read as checked absence.
 - Keep exact used-track/group-angle validation on genuine AVBs outstanding as
   recorded in the ledger. A package/Mob ID match alone does not prove that outcome.
-- Bin-based row name/effect enrichment and row AVB history owners have been removed
-  under C16. Table insertion receives already prepared values. Ordinary scan/row
-  histories and loaded-bin/filter graphs are still retained; their compact-record
-  cleanup remains outstanding. No memory or scan-time saving has been measured.
+- Bin-based row name/effect enrichment and ordinary row/scan history owners have
+  been removed. Table insertion receives prepared values and the fixed status
+  checklist. Core reader/engine evidence remains working storage for matching and
+  validation. Reconciliation diagnostics and loaded-bin/filter graphs retain their
+  separate owners; compacting those graphs remains outstanding. Current fields
+  and master unions remain: Source Filename, Clip Duration, single-master selection,
+  acquisition and cancellation changes are separate tasks. No memory or scan-time
+  saving has been measured.
 - C54 clears the previous media table at scan start; C55 retains found physical
   rows and successfully resolved values on clean user cancellation. C87 requires
   Console to say the scan was cancelled and results are incomplete, including late

@@ -1,5 +1,7 @@
 #include "rebalanceplanner.h"
 #include "mediafile.h"
+#include "mediaevidence.h"
+#include "opscanreceipt.h"
 #include "rebalanceplan.h"
 #include "mobid.h"
 #include <QCryptographicHash>
@@ -624,9 +626,10 @@ void TestRebalancePlanner::file_identity_survives_plan_and_request()
 																				 moved.mediaFilePath, moved.scanStamp.modified, SourceReadState::Complete});
 	observation.readState = PropertyReadState::Present;
 	observation.value = moved.masterMobId;
-	moved.evidence.observe(MediaProperty::MasterMobId, observation);
-	captureOpScanReceipt(moved);
-	moved.evidence = {};
+	MediaEvidence evidence;
+	evidence.observe(MediaProperty::MasterMobId, observation);
+	moved.operationScanReceipt = makeOpScanReceipt(evidence, moved.scanStamp, ScanRowLookup{});
+	evidence = {};
 	const auto stampedPlan = RebalancePlanner::computePlan(root, "Test",
 														   {makeMxf(root, "1", "home.mxf", "same"), moved});
 	const auto stampedRequest = RebalancePlanner::requestForPlan(stampedPlan);

@@ -244,8 +244,15 @@ void TestBinFilterDialog::partial_results_keep_warnings_and_evidence()
 			QCOMPARE(file.effect, originalRows[row].effect);
 			QCOMPARE(file.effectCategory, originalRows[row].effectCategory);
 			QCOMPARE(file.effectSequence, originalRows[row].effectSequence);
-			for (const auto &coverage : file.evidence.sourceCoverage())
-				QVERIFY(!coverage.snapshot || coverage.snapshot->source != MetadataSource::Avb);
+			for (int field = 0; field < int(MediaProperty::Count); ++field)
+			{
+				const auto &status = file.metadataStatus.field(MediaProperty(field));
+				QVERIFY(!status.presentSources.contains(MetadataSource::Avb));
+				QVERIFY(!status.unknownFreshnessSources.contains(MetadataSource::Avb));
+				QVERIFY(!status.timestampConsistentSources.contains(MetadataSource::Avb));
+				QVERIFY(!status.changedSources.contains(MetadataSource::Avb));
+				QVERIFY(status.selectedSource != MetadataSource::Avb);
+			}
 		}
 	};
 	// Keep the existing operand while a second bin brings qualified evidence.

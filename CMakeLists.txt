@@ -133,6 +133,7 @@ add_library(mediamuster_mediaengine_core STATIC
     src/mediaengine/scancoordinator.cpp
     src/effectcatalogue.cpp
     src/mediametadata.cpp
+    src/mediametadatastatus.cpp
     src/diagnostics.cpp
     src/volumeidentity.cpp
     src/nativefile.cpp

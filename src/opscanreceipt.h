@@ -1,6 +1,7 @@
 #pragma once
 
 #include "oprequest.h"
+#include "mediametadatastatus.h"
 #include <QHash>
 
 struct MediaFile;
@@ -16,26 +17,28 @@ struct OpScanReceipt
 	QString databaseFileMobIdToVerify;
 };
 
-/// Temporary path lookup shared while capturing a completed scan's row receipts.
-class OpScanReceiptLookup
+/// Scoped read outcomes and change flags used while preparing completed scan rows.
+class ScanRowLookup
 {
 public:
-	OpScanReceiptLookup() = default;
-	explicit OpScanReceiptLookup(const MediaEngine::ScanResult &scan);
+	ScanRowLookup() = default;
+	explicit ScanRowLookup(const MediaEngine::ScanResult &scan);
 	bool headerWasSkipped(const QString &path) const;
 	bool sourceChanged(const QString &path) const;
+	MediaHeaderReadOutcome headerOutcome(const QString &path) const;
 
 private:
 	struct Flags
 	{
 		bool headerSkipped = false;
 		bool sourceChanged = false;
+		MediaHeaderReadOutcome headerOutcome = MediaHeaderReadOutcome::NoReceipt;
 	};
 	QHash<QString, Flags> m_flags;
 };
 
-void captureOpScanReceipt(MediaFile &file, const OpScanReceiptLookup &lookup);
-void captureOpScanReceipt(MediaFile &file);
+OpScanReceipt makeOpScanReceipt(const MediaEvidence &evidence, const MediaScanStamp &stamp,
+							   const ScanRowLookup &lookup = {});
 
 // Preserve the scan receipt and the Avid identity claims to verify on the opened file.
 OpItem opItemFromMediaFile(const MediaFile &file);

@@ -9,7 +9,7 @@
 #include <tuple>
 #include <utility>
 
-bool applyResolvedMetadata(MediaFile &row)
+bool applyResolvedMetadata(MediaFile &row, const MediaEvidence &evidence)
 {
 	bool changed = false;
 	const auto assign = [&](auto &destination, const auto &selected)
@@ -31,14 +31,14 @@ bool applyResolvedMetadata(MediaFile &row)
 						duration.displayRate.numerator, duration.displayRate.denominator, duration.source);
 	};
 	const auto value = [&](MediaProperty property)
-	{ return row.evidence.selected(property).value; };
+	{ return evidence.selected(property).value; };
 	assign(row.fileMobId, value(MediaProperty::FileMobId).toString());
 	assign(row.masterMobIds, value(MediaProperty::MasterMobId).toStringList());
 	assign(row.masterMobId, row.masterMobIds.size() == 1 ? row.masterMobIds.front() : QString{});
 	assign(row.clipName, value(MediaProperty::ClipName).toString());
 	auto nameSource = MediaFile::ClipNameSource::None;
-	const auto clip = row.evidence.selected(MediaProperty::ClipName);
-	const auto &names = row.evidence.observations(MediaProperty::ClipName);
+	const auto clip = evidence.selected(MediaProperty::ClipName);
+	const auto &names = evidence.observations(MediaProperty::ClipName);
 	if (clip.selectedObservation >= 0 && clip.selectedObservation < names.size() && names[clip.selectedObservation].snapshot)
 	{
 		const auto source = names[clip.selectedObservation].snapshot->source;
@@ -103,14 +103,12 @@ bool applyResolvedMetadata(MediaFile &row)
 	return changed;
 }
 
-MediaFile mediaEngineMediaFile(const MediaEngine::MediaFile &file, const QSharedPointer<const MediaEngine::ScanResult> &scan,
+MediaFile mediaEngineMediaFile(const MediaEngine::MediaFile &file, const ScanRowLookup &lookup,
 						const QString &volumePath, const QString &volumeName,
-						const OpScanReceiptLookup *operationChecks)
+						bool cancelled)
 {
 	MediaFile row;
-	row.mediaEngineScan = scan;
 	row.kelpieId = file.kelpieId;
-	row.evidence = file.evidence;
 	row.scanStamp = file.stamp;
 	row.mediaFilePath = file.path;
 	const QFileInfo info(file.path);
@@ -123,7 +121,7 @@ MediaFile mediaEngineMediaFile(const MediaEngine::MediaFile &file, const QShared
 		row.volumePath = volumePath;
 		row.volumeName = volumeName;
 	}
-	else if (!scan || !scan->cancelled)
+	else if (!cancelled)
 	{
 		const QStorageInfo volume(file.path);
 		row.volumePath = volume.rootPath();
@@ -136,13 +134,11 @@ MediaFile mediaEngineMediaFile(const MediaEngine::MediaFile &file, const QShared
 	row.modified = file.modified;
 	row.omfEra = file.omfScan;
 	row.isQuarantined = file.quarantined;
-	applyResolvedMetadata(row);
+	applyResolvedMetadata(row, file.evidence);
+	row.metadataStatus = makeMediaMetadataStatus(file.evidence, lookup.headerOutcome(file.path));
+	row.operationScanReceipt = makeOpScanReceipt(file.evidence, file.stamp, lookup);
 	const QString allowed = QStringLiteral("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._- ,()[]+='~@#%&");
 	for (const QChar character : row.fileName)
 		row.isNonPortable |= !allowed.contains(character);
-	if (operationChecks)
-		captureOpScanReceipt(row, *operationChecks);
-	else
-		captureOpScanReceipt(row);
 	return row;
 }

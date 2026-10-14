@@ -1,13 +1,33 @@
 #include "mediatablemodel.h"
-#include "mediaengine/scancoordinator.h"
-#include "mediaengineadapter.h"
 #include "enumutil.h"
 
 #include <QStringList>
 #include <QFileInfo>
 #include <QStorageInfo>
 #include "volumeidentity.h"
-#include "mediaobservations.h"
+
+namespace
+{
+	MediaFieldStatus filesystemStatus(bool known, EvidenceBasis basis = EvidenceBasis::Recorded)
+	{
+		MediaFieldStatus status;
+		status.captured = true;
+		status.readState = known ? PropertyReadState::Present : PropertyReadState::NotRead;
+		status.readReason = known ? PropertyReadReason::None : PropertyReadReason::CoverageNotEstablished;
+		status.applicability = PropertyApplicability::Applicable;
+		status.agreement = known ? PropertyAgreement::SingleSource : PropertyAgreement::NotCompared;
+		status.hasSelectedValue = known;
+		status.unknownFreshnessSources.add(MetadataSource::Filesystem);
+		if (known)
+		{
+			status.selectedSource = MetadataSource::Filesystem;
+			status.selectedBasis = basis;
+			status.selectedFreshness = SourceFreshness::Unknown;
+			status.presentSources.add(MetadataSource::Filesystem);
+		}
+		return status;
+	}
+}
 
 MediaTableModel::MediaTableModel(QObject *parent)
 	: QAbstractTableModel(parent)
@@ -112,37 +132,20 @@ void MediaTableModel::applyTransfer(const QString &source, const QString &destin
 		transferred.scanStamp.path = transferred.mediaFilePath;
 		transferred.scanStamp.modified = transferred.modified;
 		transferred.scanStamp.volumeIdentifier = VolumeIdentity::capture(destination).identifier();
-		transferred.evidence.excludeSource(MetadataSource::Filesystem);
 		transferred.isQuarantined = info.dir().dirName().compare(QStringLiteral("Quarantined Files"), Qt::CaseInsensitive) == 0;
-		const auto snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
-			MetadataSource::Filesystem, transferred.mediaFilePath, transferred.modified, SourceReadState::Complete});
-		MediaObservations::add(transferred, MediaProperty::Location, snapshot, QStringLiteral("filesystem path after confirmed transfer"), transferred.mediaFilePath);
-		MediaObservations::add(transferred, MediaProperty::Filename, snapshot, QStringLiteral("filesystem filename after confirmed transfer"), transferred.fileName);
-		MediaObservations::add(transferred, MediaProperty::Size, snapshot, QStringLiteral("filesystem byte size after confirmed transfer"), transferred.sizeBytes);
-		MediaObservations::add(transferred, MediaProperty::Created, snapshot, QStringLiteral("filesystem birth time after confirmed transfer"), transferred.created.isValid() ? QVariant(transferred.created) : QVariant{});
-		MediaObservations::add(transferred, MediaProperty::Modified, snapshot, QStringLiteral("filesystem modification time after confirmed transfer"), transferred.modified);
-		MediaObservations::add(transferred, MediaProperty::VolumeIdentifier, snapshot, QStringLiteral("native volume identifier after confirmed transfer"), transferred.scanStamp.volumeIdentifier);
+		// Only physical facts change. Metadata and the frozen scan safety record
+		// still describe this media; no old observations need to be rebuilt.
+		for (const auto property : {MediaProperty::Location, MediaProperty::Filename, MediaProperty::Size,
+			MediaProperty::Modified})
+			transferred.metadataStatus.field(property) = filesystemStatus(true);
+		transferred.metadataStatus.field(MediaProperty::Created) = filesystemStatus(transferred.created.isValid());
+		transferred.metadataStatus.field(MediaProperty::VolumeIdentifier) = filesystemStatus(!transferred.scanStamp.volumeIdentifier.isEmpty());
 
 		// Destination databases have not been parsed by this transfer. Their
 		// presence cannot establish that this new location is absent from them.
 		const auto databases = info.dir().entryList({QStringLiteral("*.pmr"), QStringLiteral("*.mdb")}, QDir::Files | QDir::NoSymLinks);
 		transferred.dbStatus = databases.isEmpty() ? MediaFile::DbStatus::NoDatabase : MediaFile::DbStatus::DbUnreadable;
-		MetadataObservation membership;
-		membership.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
-			MetadataSource::Filesystem, info.absolutePath(), QFileInfo(info.absolutePath()).lastModified(), SourceReadState::Complete});
-		membership.property = QStringLiteral("Destination folder database enumeration after confirmed transfer");
-		membership.value = int(transferred.dbStatus);
-		membership.rawValue = databases;
-		membership.readState = PropertyReadState::Present;
-		membership.basis = EvidenceBasis::Derived;
-		membership.explanation = databases.isEmpty()
-									 ? QStringLiteral("No PMR or MDB files found in the destination folder.")
-									 : QStringLiteral("Destination database files are present but were not read; destination membership remains unverified.");
-		transferred.evidence.observe(MediaProperty::DatabaseStatus, std::move(membership));
-		// Update only this row's evidence. The retained scan is an immutable
-		// receipt of the original location, shared with other physical rows.
-		MediaEngine::selectMetadata(transferred.evidence);
-	applyResolvedMetadata(transferred);
+		transferred.metadataStatus.field(MediaProperty::DatabaseStatus) = filesystemStatus(true, EvidenceBasis::Derived);
 		if (copy)
 		{
 			transferred.kelpieId = m_ids.allocate();

@@ -4,6 +4,7 @@
 #include "mediaengine/projection.h"
 #include "mediaengine/metadataselectionpolicy.h"
 #include "mediaengineadapter.h"
+#include "mediametadatastatus.h"
 #include "opscanreceipt.h"
 #include "testutil.h"
 #include "testmediaenginebento.h"
@@ -11,6 +12,7 @@
 #include <algorithm>
 #include <chrono>
 #include <filesystem>
+#include <stdexcept>
 #include <QDir>
 #include <QFile>
 #include <QTemporaryDir>
@@ -483,6 +485,181 @@ private slots:
 			QCOMPARE(distinct.observations(MediaProperty::ClipDuration).first().value.toList(), (QVariantList{first, other}));
 		}
 	}
+	void compact_status_preserves_unavailable_and_empty_results()
+	{
+		const MediaMetadataStatus uncaptured;
+		QVERIFY(!uncaptured.field(MediaProperty::ClipName).captured);
+		const auto unknown = makeMediaMetadataStatus({});
+		for (int index = 0; index < static_cast<int>(MediaProperty::Count); ++index)
+		{
+			const auto &status = unknown.field(static_cast<MediaProperty>(index));
+			QVERIFY(status.captured);
+			QCOMPARE(status.readState, PropertyReadState::NotRead);
+			QCOMPARE(status.readReason, PropertyReadReason::NoAssociatedSource);
+			QVERIFY(!status.hasSelectedValue);
+			QVERIFY(!status.selectedSource && !status.selectedBasis && !status.selectedFreshness);
+		}
+		QCOMPARE(unknown.headerOutcome, MediaHeaderReadOutcome::NoReceipt);
+
+		MediaEvidence evidence;
+		const auto header = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mxf, QStringLiteral("authored.mxf"), {}, SourceReadState::Complete});
+		const QString owner = QStringLiteral("audio-descriptor");
+		evidence.recordReadStatus(MediaProperty::Resolution, header, owner,
+			{PropertyReadState::Absent, PropertyReadReason::NotPresentInObject, PropertyApplicability::NotApplicable, {}});
+		evidence.recordReadStatus(MediaProperty::Project, header, owner,
+			{PropertyReadState::Absent, PropertyReadReason::NotPresentInObject, PropertyApplicability::Applicable, {}});
+		evidence.recordReadStatus(MediaProperty::SourcePath, header, owner,
+			{PropertyReadState::Unreadable, PropertyReadReason::ValueUnreadable, PropertyApplicability::Applicable, {}});
+		const auto observe = [&](MediaProperty property, const QVariant &value)
+		{
+			MetadataObservation observation;
+			observation.snapshot = header;
+			observation.objectIdentity = owner;
+			observation.readState = PropertyReadState::Present;
+			observation.value = value;
+			evidence.observe(property, std::move(observation));
+		};
+		observe(MediaProperty::ClipName, QStringLiteral(""));
+		observe(MediaProperty::Imported, false);
+		observe(MediaProperty::Channels, 0);
+		MediaEngine::selectMetadata(evidence);
+		const auto captured = makeMediaMetadataStatus(evidence, MediaHeaderReadOutcome::Incomplete);
+		QCOMPARE(captured.headerOutcome, MediaHeaderReadOutcome::Incomplete);
+		const auto &resolution = captured.field(MediaProperty::Resolution);
+		QCOMPARE(resolution.readState, PropertyReadState::Absent);
+		QCOMPARE(resolution.applicability, PropertyApplicability::NotApplicable);
+		QVERIFY(!resolution.hasSelectedValue);
+		const auto &project = captured.field(MediaProperty::Project);
+		QCOMPARE(project.readState, PropertyReadState::Absent);
+		QCOMPARE(project.readReason, PropertyReadReason::NotPresentInObject);
+		QCOMPARE(project.applicability, PropertyApplicability::Applicable);
+		const auto &path = captured.field(MediaProperty::SourcePath);
+		QCOMPARE(path.readState, PropertyReadState::Unreadable);
+		QCOMPARE(path.readReason, PropertyReadReason::ValueUnreadable);
+		QVERIFY(!path.hasSelectedValue);
+		const auto &empty = captured.field(MediaProperty::ClipName);
+		QCOMPARE(empty.readState, PropertyReadState::Present);
+		QVERIFY(!empty.hasSelectedValue && !empty.selectedSource);
+		QVERIFY(empty.presentSources.contains(MetadataSource::Mxf));
+		for (const auto property : {MediaProperty::Imported, MediaProperty::Channels})
+		{
+			const auto &status = captured.field(property);
+			QCOMPARE(status.readState, PropertyReadState::Present);
+			QVERIFY(status.hasSelectedValue && status.selectedSource);
+			QCOMPARE(*status.selectedSource, MetadataSource::Mxf);
+		}
+
+		MediaEvidence unopened;
+		unopened.registerSource(QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Omf, QStringLiteral("unopened.omf"), {}, SourceReadState::NotRead}));
+		const auto deferred = makeMediaMetadataStatus(unopened, MediaHeaderReadOutcome::NotRead);
+		QCOMPARE(deferred.field(MediaProperty::Compression).readState, PropertyReadState::NotRead);
+		QCOMPARE(deferred.field(MediaProperty::Compression).readReason, PropertyReadReason::SourceNotRead);
+		QVERIFY(!deferred.field(MediaProperty::Compression).selectedSource);
+	}
+
+	void compact_status_preserves_conflicts_and_excluded_changes()
+	{
+		MediaEvidence evidence;
+		const auto header = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mxf, QStringLiteral("header.mxf"), {}, SourceReadState::Complete});
+		const auto database = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mdb, QStringLiteral("database.mdb"), {}, SourceReadState::Complete});
+		const auto changed = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Pmr, QStringLiteral("changed.pmr"), {}, SourceReadState::Complete});
+		const auto observe = [&](MediaProperty property, const SourceSnapshotRef &source, const QVariant &value)
+		{
+			MetadataObservation observation;
+			observation.snapshot = source;
+			observation.readState = PropertyReadState::Present;
+			observation.value = value;
+			evidence.observe(property, std::move(observation));
+		};
+		observe(MediaProperty::ClipName, header, QStringLiteral("Header clip"));
+		observe(MediaProperty::ClipName, database, QStringLiteral("Database clip"));
+		observe(MediaProperty::ClipName, changed, QStringLiteral("Excluded clip"));
+		observe(MediaProperty::FrameRate, header, MediaEngine::rateValue({25, 1}));
+		observe(MediaProperty::FrameRate, header, MediaEngine::rateValue({24, 1}));
+		evidence.qualifySource(header, true, SourceFreshness::TimestampConsistent);
+		evidence.qualifySource(changed, false, SourceFreshness::Changed);
+		MediaEngine::selectMetadata(evidence);
+		const auto captured = makeMediaMetadataStatus(evidence);
+		const auto &name = captured.field(MediaProperty::ClipName);
+		QCOMPARE(name.agreement, PropertyAgreement::Conflicting);
+		QVERIFY(name.hasSelectedValue && name.selectedSource && name.selectedBasis && name.selectedFreshness);
+		QCOMPARE(*name.selectedSource, MetadataSource::Mxf);
+		QCOMPARE(*name.selectedBasis, EvidenceBasis::Recorded);
+		QCOMPARE(*name.selectedFreshness, SourceFreshness::TimestampConsistent);
+		QVERIFY(name.presentSources.contains(MetadataSource::Mxf));
+		QVERIFY(name.presentSources.contains(MetadataSource::Mdb));
+		QVERIFY(!name.presentSources.contains(MetadataSource::Pmr));
+		QVERIFY(name.timestampConsistentSources.contains(MetadataSource::Mxf));
+		QVERIFY(name.unknownFreshnessSources.contains(MetadataSource::Mdb));
+		QVERIFY(name.changedSources.contains(MetadataSource::Pmr));
+		const auto &rate = captured.field(MediaProperty::FrameRate);
+		QCOMPARE(rate.readState, PropertyReadState::Present);
+		QCOMPARE(rate.agreement, PropertyAgreement::Conflicting);
+		QVERIFY(!rate.hasSelectedValue);
+		QVERIFY(!rate.selectedSource && !rate.selectedBasis && !rate.selectedFreshness);
+		QVERIFY(rate.presentSources.contains(MetadataSource::Mxf));
+	}
+
+	void compact_status_does_not_invent_union_or_clock_origins()
+	{
+		MediaEvidence evidence;
+		const auto header = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mxf, QStringLiteral("header.mxf"), {}, SourceReadState::Complete});
+		const auto database = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mdb, QStringLiteral("database.mdb"), {}, SourceReadState::Complete});
+		const auto observe = [&](MediaProperty property, const SourceSnapshotRef &source, const QVariant &value)
+		{
+			MetadataObservation observation;
+			observation.snapshot = source;
+			observation.readState = PropertyReadState::Present;
+			observation.value = value;
+			evidence.observe(property, std::move(observation));
+		};
+		observe(MediaProperty::MasterMobId, header, QStringLiteral("header-master"));
+		observe(MediaProperty::MasterMobId, database, QStringLiteral("database-master"));
+		observe(MediaProperty::FileDuration, header,
+			MediaEngine::durationValue({2400, {25, 1}, {}, MediaDuration::Source::Descriptor}));
+		observe(MediaProperty::FileDuration, database,
+			MediaEngine::durationValue({2400, {25, 1}, {25, 1}, MediaDuration::Source::Descriptor}));
+		observe(MediaProperty::ClipName, header, QStringLiteral("Sequence,3D_Warp+1"));
+		observe(MediaProperty::Type, header, int(MediaFile::Type::Precompute));
+		MediaEngine::selectMetadata(evidence);
+		const auto captured = makeMediaMetadataStatus(evidence);
+		const auto &master = captured.field(MediaProperty::MasterMobId);
+		QVERIFY(master.hasSelectedValue);
+		QVERIFY(!master.selectedSource && !master.selectedBasis && !master.selectedFreshness);
+		QVERIFY(master.presentSources.contains(MetadataSource::Mxf));
+		QVERIFY(master.presentSources.contains(MetadataSource::Mdb));
+		const auto &duration = captured.field(MediaProperty::FileDuration);
+		QVERIFY(duration.hasSelectedValue && duration.selectedSource);
+		QCOMPARE(*duration.selectedSource, MetadataSource::Mxf); // Principal length, not the supplemental clock.
+		QVERIFY(duration.presentSources.contains(MetadataSource::Mdb));
+		QVERIFY(MediaEngine::mediaDuration(evidence.selected(MediaProperty::FileDuration).value).displayRate.valid());
+		const auto &effect = captured.field(MediaProperty::Effect);
+		QVERIFY(effect.hasSelectedValue && effect.selectedSource && effect.selectedBasis);
+		QCOMPARE(*effect.selectedSource, MetadataSource::Mxf);
+		QCOMPARE(*effect.selectedBasis, EvidenceBasis::Derived);
+	}
+
+	void compact_status_checks_property_and_source_bounds()
+	{
+		MediaMetadataStatus status;
+		QVERIFY_THROWS_EXCEPTION(std::out_of_range, status.field(MediaProperty::Count));
+		QVERIFY_THROWS_EXCEPTION(std::out_of_range, status.field(static_cast<MediaProperty>(-1)));
+		MetadataSourceSet sources;
+		QCOMPARE(sources.bits(), quint8{0});
+		sources.add(MetadataSource::Mxf);
+		QVERIFY(sources.contains(MetadataSource::Mxf));
+		QVERIFY(!sources.contains(MetadataSource::Omf));
+		QVERIFY_THROWS_EXCEPTION(std::invalid_argument, sources.add(static_cast<MetadataSource>(255)));
+		QVERIFY_THROWS_EXCEPTION(std::invalid_argument, sources.contains(static_cast<MetadataSource>(255)));
+	}
+
 	void adapter_operation_checks_survive_releasing_source_history_data()
 	{
 		QTest::addColumn<QString>("condition");
@@ -522,8 +699,8 @@ private slots:
 		QCOMPARE(header->outcome == MediaEngine::ParsedSource::Outcome::NotRead, headerSkipped);
 		const QWeakPointer<MediaEngine::ScanResult> scanOwner(scan);
 		const QWeakPointer<const SourceSnapshot> headerOwner(header->snapshot);
-		const OpScanReceiptLookup lookup(*scan);
-		auto converted = mediaEngineMediaFile(scan->files.front(), scan, temporary.path(), QStringLiteral("Test volume"), &lookup);
+		const ScanRowLookup lookup(*scan);
+		const auto converted = mediaEngineMediaFile(scan->files.front(), lookup, temporary.path(), QStringLiteral("Test volume"), scan->cancelled);
 		QVERIFY(converted.operationScanReceipt);
 		const QString fileId = MediaEngine::canonicalDatabaseId(toneFileId);
 		const QString master = MediaEngine::canonicalDatabaseId(toneMasterId);
@@ -532,21 +709,18 @@ private slots:
 		QCOMPARE(checks.headerIdentity.masterMobIds, genuineHeader ? QStringList{master} : QStringList{});
 		QVERIFY(checks.headerIdentity.unavailableReason.isEmpty());
 		QCOMPARE(checks.databaseFileMobIdToVerify, headerSkipped ? fileId : QString{});
-		{
-			const auto independent = mediaEngineMediaFile(scan->files.front(), scan, temporary.path(), QStringLiteral("Test volume"));
-			QVERIFY(independent.operationScanReceipt);
-			QCOMPARE(independent.operationScanReceipt->headerIdentity.fileMobId, checks.headerIdentity.fileMobId);
-			QCOMPARE(independent.operationScanReceipt->headerIdentity.masterMobIds, checks.headerIdentity.masterMobIds);
-			QCOMPARE(independent.operationScanReceipt->headerIdentity.unavailableReason, checks.headerIdentity.unavailableReason);
-			QCOMPARE(independent.operationScanReceipt->databaseFileMobIdToVerify, checks.databaseFileMobIdToVerify);
-		}
+		QCOMPARE(converted.metadataStatus.headerOutcome, lookup.headerOutcome(path));
+		if (genuineHeader || headerSkipped)
+			QCOMPARE(converted.metadataStatus.headerOutcome, headerSkipped ? MediaHeaderReadOutcome::NotRead : MediaHeaderReadOutcome::Complete);
+		const auto &identityStatus = converted.metadataStatus.field(MediaProperty::FileMobId);
+		QVERIFY(identityStatus.captured && identityStatus.hasSelectedValue);
+		QVERIFY(identityStatus.selectedSource);
+		QCOMPARE(*identityStatus.selectedSource, genuineHeader ? MetadataSource::Mxf : MetadataSource::Mdb);
 		const QString scanPath = converted.scanStamp.path;
 		const QString volume = converted.scanStamp.volumeIdentifier;
 		const qint64 modifiedMs = converted.scanStamp.modified.toMSecsSinceEpoch();
-		converted.evidence = {};
-		converted.mediaEngineScan.clear();
 		scan.clear();
-		// Neither the temporary lookup nor the compact record owns the original sources.
+		// Published rows and the temporary lookup never retain the scan or sources.
 		QVERIFY(scanOwner.isNull());
 		QVERIFY(headerOwner.isNull());
 		QCOMPARE(lookup.headerWasSkipped(path), headerSkipped);
@@ -562,7 +736,7 @@ private slots:
 		QCOMPARE(item.modifiedMs, modifiedMs);
 	}
 
-	void copies_own_rows_and_share_source_receipts()
+	void copies_keep_physical_rows_after_source_release()
 	{
 		QTemporaryDir temporary;
 		QVERIFY(temporary.isValid());
@@ -574,28 +748,38 @@ private slots:
 			QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR) + '/' + name, path + '/' + name));
 		}
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = QSharedPointer<MediaEngine::ScanResult>::create(MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation));
+		auto scan = QSharedPointer<MediaEngine::ScanResult>::create(MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation));
 		QCOMPARE(scan->files.size(), 2);
 		QVERIFY(scan->reconciliationComplete);
 		QVERIFY(scan->files[0].kelpieId != scan->files[1].kelpieId);
 		QVERIFY(scan->files[0].kelpieId != 0);
 		QCOMPARE(scan->sources.size(), 2);
-		const auto first = mediaEngineMediaFile(scan->files[0], scan);
-		const auto second = mediaEngineMediaFile(scan->files[1], scan);
+		const ScanRowLookup lookup(*scan);
+		const auto first = mediaEngineMediaFile(scan->files[0], lookup);
+		const auto second = mediaEngineMediaFile(scan->files[1], lookup);
 		QVERIFY(!first.fileMobId.isEmpty());
 		QCOMPARE(first.fileMobId, second.fileMobId);
 		QVERIFY(first.mediaFilePath != second.mediaFilePath);
-		QCOMPARE(first.mediaEngineScan, second.mediaEngineScan);
 		QCOMPARE(first.scanStamp.fileMobId, first.fileMobId);
-		const auto &stored = first.mediaEngineScan->sources.front();
+		// Reader evidence still shares source receipts while the engine result lives.
+		const auto &stored = scan->sources.front();
 		QCOMPARE(stored.outcome, MediaEngine::ParsedSource::Outcome::Complete);
 		QCOMPARE(stored.snapshot->readState, SourceReadState::Complete);
-		QVERIFY(std::any_of(first.evidence.observations(MediaProperty::FileMobId).cbegin(),
-			first.evidence.observations(MediaProperty::FileMobId).cend(),
+		QVERIFY(std::any_of(scan->files[0].evidence.observations(MediaProperty::FileMobId).cbegin(),
+			scan->files[0].evidence.observations(MediaProperty::FileMobId).cend(),
 			[&](const MetadataObservation &observation) { return observation.snapshot == stored.snapshot; }));
-		QVERIFY(!first.evidence.observations(MediaProperty::FileMobId).isEmpty());
+		QVERIFY(!scan->files[0].evidence.observations(MediaProperty::FileMobId).isEmpty());
 		QCOMPARE(first.kind, MediaFile::Kind::Audio);
 		QCOMPARE(first.dbStatus, MediaFile::DbStatus::NoDatabase);
+		const QWeakPointer<MediaEngine::ScanResult> scanOwner(scan);
+		const QWeakPointer<const SourceSnapshot> sourceOwner(stored.snapshot);
+		scan.clear();
+		QVERIFY(scanOwner.isNull());
+		QVERIFY(sourceOwner.isNull());
+		QCOMPARE(first.metadataStatus.headerOutcome, MediaHeaderReadOutcome::Complete);
+		QCOMPARE(second.metadataStatus.headerOutcome, MediaHeaderReadOutcome::Complete);
+		QVERIFY(first.metadataStatus.field(MediaProperty::FileMobId).hasSelectedValue);
+		QVERIFY(second.metadataStatus.field(MediaProperty::FileMobId).hasSelectedValue);
 	}
 	void pmr_exact_name_wins_before_normalized_candidates()
 	{
@@ -908,12 +1092,13 @@ private slots:
 		file.path = QStringLiteral("/unavailable/Avid MediaFiles/MXF/1/take.mxf");
 		file.volumeIdentifier = QStringLiteral("captured-physical-volume");
 		file.stamp.volumeIdentifier = file.volumeIdentifier;
-		const auto known = mediaEngineMediaFile(file, scan, QStringLiteral("/selected-volume"), QStringLiteral("NEXIS workspace"));
+		const ScanRowLookup lookup(*scan);
+		const auto known = mediaEngineMediaFile(file, lookup, QStringLiteral("/selected-volume"), QStringLiteral("NEXIS workspace"), scan->cancelled);
 		QCOMPARE(known.volumePath, QStringLiteral("/selected-volume"));
 		QCOMPARE(known.volumeName, QStringLiteral("NEXIS workspace"));
 		QCOMPARE(known.kelpieId, KelpieId(42));
 		QCOMPARE(known.scanStamp.volumeIdentifier, file.volumeIdentifier);
-		const auto unknown = mediaEngineMediaFile(file, scan);
+		const auto unknown = mediaEngineMediaFile(file, lookup, {}, {}, scan->cancelled);
 		QVERIFY(unknown.volumePath.isEmpty());
 		QVERIFY(unknown.volumeName.isEmpty());
 		QCOMPARE(unknown.mediaFilePath, file.path);

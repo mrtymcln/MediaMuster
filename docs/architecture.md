@@ -11,14 +11,16 @@ For what the user sees, start with [How MediaMuster works](current-behaviour.md)
 2. [MainWindow](../src/mainwindow.cpp) passes the selected detected and manually
    added paths to [MediaScanner](../src/mediascanner.cpp).
 3. The worker calls [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp), which
-   supplies the read/project/retain pipeline to [ScanCoordinator](../src/mediaengine/scancoordinator.cpp).
+   supplies the read/project/match pipeline to [ScanCoordinator](../src/mediaengine/scancoordinator.cpp).
    The coordinator uses [DiscoveryEngine](../src/mediaengine/discoveryengine.cpp), reads
    databases first, schedules necessary headers, then matches and selects metadata.
-4. The [MediaEngine adapter](../src/mediaengineadapter.cpp) supplies one compatibility
-   [MediaFile](../src/mediafile.h) row per physical file. Each row retains the MediaEngine
-   evidence, a shared immutable scan receipt and a small frozen operation safety
-   record. [MediaTableModel](../src/mediatablemodel.cpp) stores the prepared rows
-   and supplies cells without reselecting or projecting their metadata.
+4. The [MediaEngine adapter](../src/mediaengineadapter.cpp) prepares one
+   [MediaFile](../src/mediafile.h) row per physical file: typed selected values,
+   inline metadata status, a scan stamp and an optional frozen operation receipt.
+   It borrows working evidence; the scanner releases the working scan result and
+   temporary lookup before rows reach the UI.
+   [MediaTableModel](../src/mediatablemodel.cpp) stores the prepared rows and supplies
+   cells without reselecting or projecting their metadata.
 5. [MediaFilterProxy](../src/mediafilterproxy.cpp) filters and sorts the rows for the
    view. It leaves the underlying inventory intact.
 
@@ -57,8 +59,8 @@ Qt controls' built-in keyboard shortcuts and context menus.
 
 ## Readers and metadata
 
-`MediaEvidence` retains value observations separately from source/object field
-coverage. A readable source does not imply that an unprojected field is absent.
+During scanning, `MediaEvidence` retains value observations separately from
+source/object field coverage. A readable source does not imply that an unprojected field is absent.
 Sparse receipts and explicit checked-field exceptions distinguish format omission,
 object absence, failed reads, unsupported interpretation and unopened headers.
 Applicability, agreement, eligibility and freshness remain separate facts; see the
@@ -72,24 +74,29 @@ Applicability, agreement, eligibility and freshness remain separate facts; see t
 | [MediaEngine::OmfReader](../src/mediaengine/omfreader.cpp) | Reads OMF and native WAV/AIFF metadata for projection; embedded OMF graphs have separate source contexts. |
 | [MediaEngine::AvbReader](../src/mediaengine/avbreader.cpp) and [reference engine](../src/mediaengine/avbreferences.cpp) | Retain bin objects and resolve whole-bin or selected-sequence references with explicit completeness warnings. |
 | [MediaEngine source projections](../src/mediaengine/projection.h) | Interpret recorded properties as file-owned or master-owned observations, preserving supported observation bytes and competing evidence independently of temporary reading storage. |
-| [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp) | Public entry point for database-first scanning. Supported evidence and `SourceReceipt`s outlive temporary images and unused graphs. AVB graphs remain independently retained for active use. |
+| [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp) | Public entry point for database-first scanning. Its working result keeps evidence and `SourceReceipt`s after parser storage is released; the scanner discards that result after preparing UI rows and diagnostics. |
 | [MediaEngine::ScanCoordinator](../src/mediaengine/scancoordinator.cpp) | Coordinates discovery, database-first reads, exact-name/identity matching, field selection and scoped unmatched-reference issues. |
 | [MediaEngine selection policy](../src/mediaengine/metadataselectionpolicy.cpp) | One compiled row per semantic property, using source preferences 3 > 2 > 1 > 0 and explicit duration, association and effect rules. |
-| [MediaEvidence](../src/mediaevidence.h) | Stores observations separately from selected values, with read state, agreement, eligibility, source, basis and explanation. |
+| [MediaEvidence](../src/mediaevidence.h) | Stores scan-time observations separately from selected values, with read state, agreement, eligibility, source, basis and explanation. Ordinary UI rows do not own it. |
+| [MediaMetadataStatus](../src/mediametadatastatus.h) | Fixed inline checklist of field conclusions and header outcome. Contains flags and enum tags, with no selected values, strings or source owners. |
 | [AvbBinLoader](../src/avbbinloader.cpp) | Loads bin files through AvbReader and prepares bin/clip metadata and media references for AvbFilterDialog. These do not enrich media inventory rows. |
-| [MediaEngine presentation adapter](../src/mediaengineadapter.cpp) | Refreshes semantic table/filter/CSV fields from selected evidence, including clearing unresolved values; physical operation fields keep their current location and identity. |
+| [MediaEngine presentation adapter](../src/mediaengineadapter.cpp) | Borrows completed scan evidence to prepare typed table/filter/CSV values, inline status and frozen operation checks without retaining the evidence or scan. |
 | [AvidEffects](../src/effectcatalogue.cpp) | Maps the selected name of an established precompute to derived effect details; it does not classify the file. |
 
 `MediaScanner::doScan()` owns the background/UI boundary, cancellation, progress,
 logs and result delivery. MediaEngine owns per-scan source storage and reconciliation;
-the compatibility adapter formats selected facts for existing consumers. The
+the adapter prepares selected facts for existing consumers. One scoped
+`ScanRowLookup` captures header outcomes and change/skipped flags by path, with no
+source or scan owners. The full working `ScanResult` is discarded before row
+delivery. Reconciliation issues may independently retain `SourceSnapshot`
+diagnostics; those are not owners of the complete scan or ordinary row history. The
 live source loop currently reads candidates sequentially. Checked stateless
 codec/path utilities and media value types remain shared with the application.
 
 Discovery reports the location before root and folder access, while the file
 total is still unknown. Cancellation checks stop subsequent source reads,
 freshness checks and matching once the request is observed; discovered rows and
-obtained source evidence remain available as partial results. The scanner passes
+obtained working evidence can supply partial prepared rows. The scanner passes
 its existing display-volume path and label to the presentation adapter, avoiding
 a storage query for each row with that context. Native volume identity remains
 separate discovery evidence. A filesystem call already in progress can still
@@ -97,10 +104,11 @@ delay cancellation. Windows/NEXIS performance needs a real-world retest; these
 changes do not establish a measured improvement there.
 
 A `MediaEngine::ParsedSource` temporarily contains source-local objects, raw properties
-and edges while readers and projectors establish supported facts. Normal scans retain
-those facts and their observation evidence, not every original record or framing
-detail. Reader/projector tests inspect temporary source records directly and check
-that extracted evidence owns its values. AVB graphs remain retained for bin consumers.
+and edges while readers and projectors establish supported facts. The working scan
+retains those facts and their evidence for matching, validation and row preparation;
+ordinary UI rows retain selected values and status only. Reader/projector tests can
+inspect working source records and evidence directly. AVB graphs remain separately
+retained for bin consumers.
 An object reference is a source receipt plus handle, not a globally unique Avid ID.
 Native WAV/AIFF and embedded OMF graphs keep separate handles and receipts. MXF
 partition copies also remain separate observations. Every physical location keeps
@@ -121,33 +129,37 @@ and [bounded specimen evidence](../Project%20Canon/root-membership-specimens-202
 Matching prefers exact local PMR filenames, with normalized fallback only for an
 unambiguous physical location and compatible identity. MDB file facts join by full
 canonical file identities; master-only facts require an established association.
-Supported observations from changed or disputed sources remain retained but ineligible.
+Supported observations from changed or disputed sources remain available but ineligible
+within the working scan.
 Known contradictory active file identities remain conflict evidence in an ownerless
 carrier; ScanCoordinator indexes its eligible claims so the disagreement reaches
 reconciliation and header fallback. The selection engine then applies the approved
-per-field priorities; original observation bytes and
-alternatives are not replaced by the selected display value. Scanning uses the
+per-field priorities; original observation bytes and alternatives remain available
+until row preparation finishes, then are released with the working scan. Scanning uses the
 [compiled policy table](../src/mediaengine/metadataselectionpolicy.cpp): Clip Name
 prefers header then MDB; Original Bin prefers MDB then header. Loaded AVBs do not
 supply row names or derived effect fields.
 Zero excludes a source from value selection while retaining its read state and
-comparable observations for agreement. Source qualification and header-read
-scheduling remain separate from display preference. The presentation adapter
+comparable observations for agreement during scanning. Source qualification and
+header-read scheduling remain separate from display preference. The presentation adapter
 refreshes nonempty MediaEngine cells as well as missing ones, so changing a policy for a
 new build applies consistently to table values, filters and CSV.
 
 Source read outcomes, property read states, agreement and selection are different
 facts. A sparse property with no observation is not proof of absence: its owning
-source may be unreadable, incomplete or uninterpreted. Consumers must inspect the
-source receipt as well as property evidence. Discovery/parsing/reconciliation
+source may be unreadable, incomplete or uninterpreted. Scan-time consumers inspect
+source receipts and property evidence. Prepared rows keep the resulting fixed
+status checklist, including selected origin/basis/freshness tags where established
+and source-kind flags for present, unknown, consistent or changed inputs. The
+master-association union has no single selected origin. Discovery/parsing/reconciliation
 completion flags describe their respective stages, not universal format support.
 
-The model holds current row locations and transfer receipts. Its shared `mediaEngineScan`
-remains an immutable receipt of the original scan, so confirmed moves/copies update
-row-owned filesystem evidence and selection rather than rewriting history. The
-transfer path explicitly projects those changed selections into the destination row;
-ordinary table insertion accepts values already prepared by the scanner. The new
-inventory is delivered before its reconciliation issues so model reset cannot
+The model holds selected row values, `MediaMetadataStatus`, `MediaScanStamp` and
+the optional frozen `OpScanReceipt`, with no `MediaEvidence` or `mediaEngineScan`
+owner. Confirmed copies/moves directly update current physical values, their status
+and destination membership. They do not rebuild observations, reselect values or
+reproject metadata. Ordinary table insertion accepts values already prepared by
+the scanner. The new inventory is delivered before its reconciliation issues so model reset cannot
 discard the arriving issues.
 
 For supported locations and formats, see [release scope](release-feature-gates.md)
@@ -163,8 +175,10 @@ picker remains disabled behind `SequenceFilter`; the current dialog applies whol
 scope. Other filters still apply to the resulting rows.
 Loading or removing bins changes filtering only; no bin-enrichment resolver or row
 AVB history owner remains. The loaded bins and applied filter snapshots still retain
-their current metadata and graphs. Compacting those graphs and ordinary scan/row
-evidence histories remains outstanding; no memory or scan-time saving is measured.
+their current metadata and graphs. Compacting those graphs remains outstanding.
+Current fields and the master-association union are preserved; Source Filename,
+Clip Duration and single-master selection are separate Copland changes. Acquisition
+and cancellation changes are also separate. No memory or scan-time saving is measured.
 [PrecomputeFilterDialog](../src/precomputefilterdialog.cpp) builds the optional
 [PrecomputeFilter](../src/precomputefilter.h).
 
@@ -202,16 +216,17 @@ checks activity, prior unfinished work and journal availability, then dispatches
 the manager. The runner owns changes on disk. The interface preview does not
 authorize using stale paths, identities or free-space assumptions.
 
-After scanning, one temporary path lookup records deliberately skipped headers and
-changed sources. The presentation adapter uses it to capture each row's
-`OpScanReceipt`: header-established identities, any header refusal reason and the
+After scanning, the scoped `ScanRowLookup` records header outcomes, deliberately
+skipped headers and changed sources. The presentation adapter uses it to capture
+each row's `OpScanReceipt`: header-established identities, any header refusal reason and the
 database file identity that must be verified when a header was deliberately skipped.
 The lookup owns no source or scan objects and is discarded before row publication.
 `opItemFromMediaFile()` reads only the captured record and current row fields; it
-does not consult evidence or the shared scan. A row without a captured record
+has no row evidence or shared scan to consult. A row without a captured record
 produces a refusal asking for a rescan. Captured unknown identities still follow
-the existing operation rules. Ordinary rows retain their larger history during
-this preparatory Copland migration.
+the existing operation rules. Metadata status and operation receipts are separate:
+the status checklist describes interpretation; the receipt supplies live-operation
+checks.
 
 Confirmed copies and moves preserve the frozen record while updating the current
 row path, modification time and volume stamp. Destination paths cannot borrow

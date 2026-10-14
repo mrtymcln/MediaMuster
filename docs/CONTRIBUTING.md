@@ -35,6 +35,18 @@ Use structs for related data and classes for resource ownership or enforced rule
 Structs may have useful methods. Give helpers a focused home; avoid a general dumping
 ground named `Utils`. Keep `RevealInFinder` as the agreed cross-platform feature name.
 
+Prefer value records and return values for selected metadata and status, with
+compiler-generated lifetime/copy/move operations when member types suffice
+(Rule of Zero). Use scoped RAII owners for temporary scan/reader storage and borrow
+inputs only for the scope that needs
+them, through `const` inputs where no mutation is required. Keep enum/strong-type
+distinctions for identities, units and status, and check lossy conversions; avoid
+untyped flag or string protocols where a domain type fits. Stay within C++17, Qt
+and the repository's established naming and formatting conventions. Ordinary UI
+rows must not acquire working scan/evidence owners; retain diagnostics and
+loaded-bin graphs only through their separate consumers. Make performance claims
+only when supported by measurements.
+
 During beta, prioritize code improvements and simplicity over backwards
 compatibility. Saved Undo/recovery journals need no legacy aliases or migration.
 Keep current-format Undo, recovery and file safeguards correct; reject unsupported

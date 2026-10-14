@@ -7,11 +7,11 @@
 #include "mediaengine/scanmodel.h"
 
 MediaFile mediaEngineMediaFile(const MediaEngine::MediaFile &file,
-						 const QSharedPointer<const MediaEngine::ScanResult> &scan,
+						 const ScanRowLookup &lookup,
 						 const QString &volumePath = {}, const QString &volumeName = {},
-						 const OpScanReceiptLookup *operationChecks = nullptr);
+						 bool cancelled = false);
 
-// Refresh only semantic fields from current selections. Physical row identity,
+// Format semantic fields from borrowed selected evidence. Physical row identity,
 // filesystem/volume/family details and operation stamps remain unchanged.
 // Returns whether any semantic row value changed.
-bool applyResolvedMetadata(MediaFile &file);
+bool applyResolvedMetadata(MediaFile &file, const MediaEvidence &evidence);

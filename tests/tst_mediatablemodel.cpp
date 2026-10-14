@@ -39,11 +39,11 @@ namespace
 		return file;
 	}
 
-	void record(MediaFile &file, MediaProperty field, MetadataSource source, const QString &property, const QVariant &value)
+	void record(MediaEvidence &evidence, const QString &path, MediaProperty field, MetadataSource source, const QString &property, const QVariant &value)
 	{
 		auto snapshot = QSharedPointer<SourceSnapshot>::create();
 		snapshot->source = source;
-		snapshot->path = source == MetadataSource::Mdb ? QStringLiteral("/media/msmMMOB.mdb") : file.mediaFilePath;
+		snapshot->path = source == MetadataSource::Mdb ? QStringLiteral("/media/msmMMOB.mdb") : path;
 		snapshot->readState = SourceReadState::Complete;
 		MetadataObservation observation;
 		observation.snapshot = snapshot;
@@ -52,19 +52,16 @@ namespace
 		observation.value = value;
 		observation.rawValue = value.metaType().id() == QMetaType::QString ? QVariant(value.toString().toUtf8()) : value;
 		observation.readState = PropertyReadState::Present;
-		file.evidence.observe(field, observation);
+		evidence.observe(field, observation);
 	}
 
-	MediaFile mediaEngineRow()
+	MediaEvidence mediaEngineEvidence(const QString &path)
 	{
-		auto file = row();
-		file.mediaEngineScan = QSharedPointer<MediaEngine::ScanResult>::create();
-		record(file, MediaProperty::MasterMobId, MetadataSource::Mdb, QStringLiteral("OMFI:MOBJ:MobID"), masterId());
-		record(file, MediaProperty::Type, MetadataSource::Mdb, QStringLiteral("OMFI:MOBJ:UsageCode"), int(MediaFile::Type::Precompute));
-		record(file, MediaProperty::DatabaseStatus, MetadataSource::Filesystem, QStringLiteral("PMR membership"), int(MediaFile::DbStatus::NoReference));
-		MediaEngine::selectMetadata(file.evidence);
-		applyResolvedMetadata(file);
-		return file;
+		MediaEvidence evidence;
+		record(evidence, path, MediaProperty::MasterMobId, MetadataSource::Mdb, QStringLiteral("OMFI:MOBJ:MobID"), masterId());
+		record(evidence, path, MediaProperty::Type, MetadataSource::Mdb, QStringLiteral("OMFI:MOBJ:UsageCode"), int(MediaFile::Type::Precompute));
+		record(evidence, path, MediaProperty::DatabaseStatus, MetadataSource::Filesystem, QStringLiteral("PMR membership"), int(MediaFile::DbStatus::NoReference));
+		return evidence;
 	}
 }
 
@@ -102,7 +99,7 @@ private slots:
 
 	// Metadata preparation boundaries; the ownership migration retains these checks.
 	void prepared_metadata_reaches_table_cells();
-	void prepared_scan_load_preserves_shared_scanner_evidence();
+	void prepared_scan_load_releases_history_and_preserves_results();
 
 private:
 	/// Build `n` MediaFiles with sequential filePaths, nothing else.
@@ -249,46 +246,54 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 	originalRow.fileMobId = masterId();
 	originalRow.scanStamp = {original, VolumeIdentity::capture(original).identifier(),
 		QFileInfo(original).lastModified(), originalRow.fileMobId, {originalRow.masterMobId}};
-	auto snapshot = QSharedPointer<SourceSnapshot>::create();
-	snapshot->source = headerSkipped ? MetadataSource::Mdb : MetadataSource::Mxf;
-	snapshot->path = headerSkipped ? temp.filePath("index.mdb") : original;
-	const auto observe = [&](MediaProperty property, const QVariant &value, const SourceSnapshotRef &receipt)
+	QWeakPointer<MediaEngine::ScanResult> oldScan;
+	QWeakPointer<const SourceSnapshot> oldSource;
 	{
-		MetadataObservation item;
-		item.snapshot = receipt;
-		item.property = QStringLiteral("Authored field");
-		item.value = value;
-		item.readState = PropertyReadState::Present;
-		originalRow.evidence.observe(property, item);
-	};
-	observe(MediaProperty::Compression, originalRow.compression, snapshot);
-	observe(MediaProperty::BitDepth, originalRow.bitDepth, snapshot);
-	observe(MediaProperty::FileMobId, originalRow.fileMobId, snapshot);
-	observe(MediaProperty::MasterMobId, QStringList{originalRow.masterMobId}, snapshot);
-	auto filesystem = QSharedPointer<SourceSnapshot>::create();
-	filesystem->source = MetadataSource::Filesystem;
-	filesystem->path = original;
-	observe(MediaProperty::Location, original, filesystem);
-	MediaEngine::selectMetadata(originalRow.evidence);
-	auto receipt = QSharedPointer<MediaEngine::ScanResult>::create();
-	MediaEngine::MediaFile retained;
-	retained.path = original;
-	receipt->files.append(retained);
-	MediaEngine::SourceReceipt mediaSource;
-	mediaSource.outcome = headerSkipped ? MediaEngine::ParsedSource::Outcome::NotRead
-		: MediaEngine::ParsedSource::Outcome::Complete;
-	mediaSource.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
-		MetadataSource::Mxf, original, originalRow.scanStamp.modified,
-		headerSkipped ? SourceReadState::NotRead : SourceReadState::Complete});
-	receipt->sources.append(mediaSource);
-	originalRow.mediaEngineScan = receipt;
-	captureOpScanReceipt(originalRow);
+		MediaEvidence evidence;
+		auto snapshot = QSharedPointer<SourceSnapshot>::create();
+		snapshot->source = headerSkipped ? MetadataSource::Mdb : MetadataSource::Mxf;
+		snapshot->path = headerSkipped ? temp.filePath("index.mdb") : original;
+		oldSource = snapshot;
+		const auto observe = [&](MediaProperty property, const QVariant &value, const SourceSnapshotRef &receipt)
+		{
+			MetadataObservation item;
+			item.snapshot = receipt;
+			item.property = QStringLiteral("Authored field");
+			item.value = value;
+			item.readState = PropertyReadState::Present;
+			evidence.observe(property, item);
+		};
+		observe(MediaProperty::Compression, originalRow.compression, snapshot);
+		observe(MediaProperty::BitDepth, originalRow.bitDepth, snapshot);
+		observe(MediaProperty::FileMobId, originalRow.fileMobId, snapshot);
+		observe(MediaProperty::MasterMobId, QStringList{originalRow.masterMobId}, snapshot);
+		auto filesystem = QSharedPointer<SourceSnapshot>::create();
+		filesystem->source = MetadataSource::Filesystem;
+		filesystem->path = original;
+		observe(MediaProperty::Location, original, filesystem);
+		MediaEngine::selectMetadata(evidence);
+		auto scan = QSharedPointer<MediaEngine::ScanResult>::create();
+		oldScan = scan;
+		MediaEngine::SourceReceipt mediaSource;
+		mediaSource.outcome = headerSkipped ? MediaEngine::ParsedSource::Outcome::NotRead
+			: MediaEngine::ParsedSource::Outcome::Complete;
+		mediaSource.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mxf, original, originalRow.scanStamp.modified,
+			headerSkipped ? SourceReadState::NotRead : SourceReadState::Complete});
+		scan->sources.append(mediaSource);
+		const ScanRowLookup lookup(*scan);
+		applyResolvedMetadata(originalRow, evidence);
+		originalRow.metadataStatus = makeMediaMetadataStatus(evidence, lookup.headerOutcome(original));
+		originalRow.operationScanReceipt = makeOpScanReceipt(evidence, originalRow.scanStamp, lookup);
+	}
+	QVERIFY(oldScan.isNull());
+	QVERIFY(oldSource.isNull());
 	QVERIFY(originalRow.operationScanReceipt);
 	const auto checks = *originalRow.operationScanReceipt;
 	QCOMPARE(checks.headerIdentity.fileMobId, headerSkipped ? QString{} : originalRow.fileMobId);
 	QCOMPARE(checks.headerIdentity.masterMobIds, headerSkipped ? QStringList{} : QStringList{masterId()});
 	QCOMPARE(checks.databaseFileMobIdToVerify, headerSkipped ? originalRow.fileMobId : QString{});
-	model.setMediaFiles(TestMediaFile::seeded({originalRow}));
+	model.setMediaFiles({originalRow});
 	const KelpieId originalId = model.allFiles().first().kelpieId;
 	QVERIFY(originalId != 0);
 	model.applyTransfer(original, copy, true);
@@ -296,7 +301,7 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 	QCOMPARE(model.allFiles()[0].kelpieId, originalId);
 	QVERIFY(model.allFiles()[1].kelpieId != originalId);
 	QCOMPARE(model.allFiles()[0].masterMobId, model.allFiles()[1].masterMobId);
-	QCOMPARE(model.allFiles()[0].evidence.selected(MediaProperty::Location).value.toString(), original);
+	QCOMPARE(model.allFiles()[0].mediaFilePath, original);
 	QCOMPARE(model.allFiles()[1].dbStatus, MediaFile::DbStatus::NoDatabase);
 	QVERIFY(!put("future.pmr").isEmpty()); // Presence cannot prove membership without parsing this database.
 	model.applyTransfer(original, moved, false);
@@ -307,15 +312,27 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 	QCOMPARE(model.allFiles()[0].mediaFilePath, moved);
 	for (const auto &file : model.allFiles())
 	{
-		QCOMPARE(file.evidence.selected(MediaProperty::Compression).value.toString(), file.compression);
-		QCOMPARE(file.evidence.selected(MediaProperty::BitDepth).value.toString(), file.bitDepth);
-		QCOMPARE(file.evidence.selected(MediaProperty::FileMobId).value.toString(), file.fileMobId);
-		QCOMPARE(file.evidence.selected(MediaProperty::Location).value.toString(), file.mediaFilePath);
-		QCOMPARE(file.evidence.selected(MediaProperty::DatabaseStatus).value.toInt(), int(file.dbStatus));
-		QCOMPARE(file.evidence.observations(MediaProperty::DatabaseStatus).size(), 1);
-		QCOMPARE(file.evidence.observations(MediaProperty::DatabaseStatus).first().basis, EvidenceBasis::Derived);
-		QCOMPARE(file.mediaEngineScan, originalRow.mediaEngineScan);
-		QCOMPARE(file.mediaEngineScan->files.first().path, original); // Original scan receipt was not rewritten.
+		QCOMPARE(file.compression, originalRow.compression);
+		QCOMPARE(file.bitDepth, originalRow.bitDepth);
+		QCOMPARE(file.fileMobId, originalRow.fileMobId);
+		for (const auto property : {MediaProperty::Compression, MediaProperty::BitDepth, MediaProperty::FileMobId})
+		{
+			const auto &status = file.metadataStatus.field(property);
+			const auto &before = originalRow.metadataStatus.field(property);
+			QCOMPARE(status.readState, before.readState);
+			QCOMPARE(status.agreement, before.agreement);
+			QVERIFY(status.selectedSource == before.selectedSource);
+			QVERIFY(status.selectedBasis == before.selectedBasis);
+		}
+		const auto &location = file.metadataStatus.field(MediaProperty::Location);
+		QVERIFY(location.hasSelectedValue);
+		QVERIFY(location.selectedSource == MetadataSource::Filesystem);
+		const auto &membership = file.metadataStatus.field(MediaProperty::DatabaseStatus);
+		QVERIFY(membership.hasSelectedValue);
+		QVERIFY(membership.selectedBasis == EvidenceBasis::Derived);
+		QCOMPARE(file.metadataStatus.headerOutcome, originalRow.metadataStatus.headerOutcome);
+		QVERIFY(oldScan.isNull());
+		QVERIFY(oldSource.isNull());
 		QVERIFY(file.operationScanReceipt);
 		QCOMPARE(file.operationScanReceipt->headerIdentity.fileMobId, checks.headerIdentity.fileMobId);
 		QCOMPARE(file.operationScanReceipt->headerIdentity.masterMobIds, checks.headerIdentity.masterMobIds);
@@ -324,11 +341,8 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 		QCOMPARE(file.scanStamp.path, file.mediaFilePath);
 		QCOMPARE(file.scanStamp.modified, file.modified);
 		QCOMPARE(file.scanStamp.volumeIdentifier, VolumeIdentity::capture(file.mediaFilePath).identifier());
-		// A later operation must use the frozen checks even without its old history.
-		auto compactOnly = file;
-		compactOnly.evidence = {};
-		compactOnly.mediaEngineScan.clear();
-		const auto item = opItemFromMediaFile(compactOnly);
+		// A later operation uses the frozen checks after all temporary owners expired.
+		const auto item = opItemFromMediaFile(file);
 		QVERIFY(item.headerIdentity);
 		QCOMPARE(item.headerIdentity->fileMobId, checks.headerIdentity.fileMobId);
 		QCOMPARE(item.headerIdentity->masterMobIds, checks.headerIdentity.masterMobIds);
@@ -585,10 +599,11 @@ void TestMediaTableModel::precompute_categories_and_unknown_effects_display_cons
 
 void TestMediaTableModel::prepared_metadata_reaches_table_cells()
 {
-	auto file = mediaEngineRow();
-	record(file, MediaProperty::ClipName, MetadataSource::Mxf, QStringLiteral("GenericPackage.Name"), QStringLiteral("Sequence,3D_Warp+1"));
-	record(file, MediaProperty::OriginalBin, MetadataSource::Mdb, QStringLiteral("_ORG_BIN"), QStringLiteral("MDB bin"));
-	MediaEngine::selectMetadata(file.evidence);
+	auto file = row();
+	auto evidence = mediaEngineEvidence(file.mediaFilePath);
+	record(evidence, file.mediaFilePath, MediaProperty::ClipName, MetadataSource::Mxf, QStringLiteral("GenericPackage.Name"), QStringLiteral("Sequence,3D_Warp+1"));
+	record(evidence, file.mediaFilePath, MediaProperty::OriginalBin, MetadataSource::Mdb, QStringLiteral("_ORG_BIN"), QStringLiteral("MDB bin"));
+	MediaEngine::selectMetadata(evidence);
 	file.type = MediaFile::Type::Media;
 	file.dbStatus = MediaFile::DbStatus::NoDatabase;
 	file.clipName = QStringLiteral("Stale clip");
@@ -598,7 +613,8 @@ void TestMediaTableModel::prepared_metadata_reaches_table_cells()
 	file.effectCategory = QStringLiteral("Stale category");
 	file.effectSequence = QStringLiteral("Stale sequence");
 	// Preparation happens before insertion; the model displays the supplied result.
-	applyResolvedMetadata(file);
+	applyResolvedMetadata(file, evidence);
+	file.metadataStatus = makeMediaMetadataStatus(evidence);
 	MediaTableModel model;
 	model.setPrecomputesEnabled(true);
 	model.setMediaFiles({file});
@@ -615,46 +631,65 @@ void TestMediaTableModel::prepared_metadata_reaches_table_cells()
 	QCOMPARE(model.index(0, int(MediaTableModel::Column::OriginalBin)).data().toString(), current.originalBin);
 	QCOMPARE(model.index(0, int(MediaTableModel::Column::Type)).data().toString(), QStringLiteral("Precompute"));
 	QCOMPARE(model.index(0, int(MediaTableModel::Column::Effect)).data().toString(), current.effect);
+	QVERIFY(current.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mxf);
+	QVERIFY(current.metadataStatus.field(MediaProperty::OriginalBin).selectedSource == MetadataSource::Mdb);
 	for (const auto property : {MediaProperty::ClipName, MediaProperty::OriginalBin})
-		for (const auto &observation : current.evidence.observations(property))
-			QVERIFY(observation.snapshot->source != MetadataSource::Avb);
+		QVERIFY(!current.metadataStatus.field(property).presentSources.contains(MetadataSource::Avb));
 }
 
-void TestMediaTableModel::prepared_scan_load_preserves_shared_scanner_evidence()
+void TestMediaTableModel::prepared_scan_load_releases_history_and_preserves_results()
 {
-	auto file = mediaEngineRow();
-	file.kelpieId = 91;
-	record(file, MediaProperty::ClipName, MetadataSource::Mxf, QStringLiteral("GenericPackage.Name"), QStringLiteral("Header clip"));
-	record(file, MediaProperty::OriginalBin, MetadataSource::Mdb, QStringLiteral("_ORG_BIN"), QStringLiteral("MDB bin"));
-	MediaEngine::selectMetadata(file.evidence);
-	applyResolvedMetadata(file);
-	// This authored display label detects accidental table reprojection from
-	// the still-retained evidence, whose selected name remains "Header clip".
-	file.clipName = QStringLiteral("Prepared clip label");
-	const auto expectedCsv = MediaCsv::rowLine(file);
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({file}));
-	QSignalSpy changed(&model, &QAbstractItemModel::dataChanged);
-	const auto checkUnchanged = [&]()
+	model.setPrecomputesEnabled(true);
+	QWeakPointer<MediaEngine::ScanResult> oldScan;
+	QWeakPointer<const SourceSnapshot> oldSource;
+	MediaFile file;
 	{
-		const auto &current = model.fileAt(0);
-		QCOMPARE(MediaCsv::rowLine(current), expectedCsv);
-		QCOMPARE(current.clipNameSource, file.clipNameSource);
-		QCOMPARE(current.mediaEngineScan, file.mediaEngineScan);
-		for (const auto property : {MediaProperty::ClipName, MediaProperty::OriginalBin})
-		{
-			const auto &expected = file.evidence.observations(property);
-			QVERIFY(!expected.isEmpty());
-			QCOMPARE(current.evidence.observations(property).constData(), expected.constData());
-			const auto selected = current.evidence.selected(property);
-			const auto previous = file.evidence.selected(property);
-			QCOMPARE(selected.value, previous.value);
-			QCOMPARE(selected.selectedObservation, previous.selectedObservation);
-			QCOMPARE(selected.agreement, previous.agreement);
-		}
-		QCOMPARE(changed.size(), 0);
-	};
-	checkUnchanged();
+		auto scan = QSharedPointer<MediaEngine::ScanResult>::create();
+		oldScan = scan;
+		MediaEngine::MediaFile engineFile;
+		engineFile.kelpieId = 91;
+		engineFile.path = QStringLiteral("/media/clip.mxf");
+		engineFile.stamp.path = engineFile.path;
+		engineFile.evidence = mediaEngineEvidence(engineFile.path);
+		record(engineFile.evidence, engineFile.path, MediaProperty::ClipName, MetadataSource::Mxf,
+			QStringLiteral("GenericPackage.Name"), QStringLiteral("Header clip"));
+		record(engineFile.evidence, engineFile.path, MediaProperty::OriginalBin, MetadataSource::Mdb,
+			QStringLiteral("_ORG_BIN"), QStringLiteral("MDB bin"));
+		MediaEngine::selectMetadata(engineFile.evidence);
+		oldSource = engineFile.evidence.observations(MediaProperty::ClipName).first().snapshot;
+		scan->files.append(engineFile);
+		file = mediaEngineMediaFile(scan->files.first(), ScanRowLookup(*scan), QStringLiteral("/media"), QStringLiteral("Test"));
+		// An authored label proves insertion displays the prepared row without reselection.
+		file.clipName = QStringLiteral("Prepared clip label");
+		model.setMediaFiles({file});
+	}
+	QVERIFY(oldScan.isNull());
+	QVERIFY(oldSource.isNull());
+	QCOMPARE(model.rowCount(), 1);
+	const auto expectedCsv = MediaCsv::rowLine(file);
+	QSignalSpy changed(&model, &QAbstractItemModel::dataChanged);
+	const auto &current = model.fileAt(0);
+	QCOMPARE(current.kelpieId, KelpieId(91));
+	QCOMPARE(MediaCsv::rowLine(current), expectedCsv);
+	QCOMPARE(current.clipNameSource, file.clipNameSource);
+	QCOMPARE(model.index(0, int(MediaTableModel::Column::ClipName)).data().toString(), QStringLiteral("Prepared clip label"));
+	QCOMPARE(current.originalBin, QStringLiteral("MDB bin"));
+	for (const auto property : {MediaProperty::ClipName, MediaProperty::OriginalBin})
+	{
+		const auto &status = current.metadataStatus.field(property);
+		const auto &previous = file.metadataStatus.field(property);
+		QVERIFY(status.captured);
+		QVERIFY(status.hasSelectedValue);
+		QCOMPARE(status.readState, PropertyReadState::Present);
+		QCOMPARE(status.agreement, previous.agreement);
+		QVERIFY(status.selectedSource == previous.selectedSource);
+		QVERIFY(status.selectedBasis == previous.selectedBasis);
+		QVERIFY(status.selectedFreshness == previous.selectedFreshness);
+	}
+	QVERIFY(current.operationScanReceipt);
+	QVERIFY(opItemFromMediaFile(current).headerIdentity);
+	QCOMPARE(changed.size(), 0);
 }
 
 QTEST_GUILESS_MAIN(TestMediaTableModel)

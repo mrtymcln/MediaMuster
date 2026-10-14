@@ -261,8 +261,9 @@ Changing source preferences means another build/scan. Deeper source inspection
 requires rereading; if the original changed or disappeared, its earlier discarded
 alternatives and bytes cannot be recovered. The first safety-check migration below
 replaces operation request preparation's traversal of full evidence with compact
-captured checks. Ordinary rows still retain their histories pending the broader
-cleanup. This direction targets retained storage; temporary parser peak memory and
+captured checks. Ordinary rows now keep selected values, a fixed status checklist
+and frozen operation checks; they no longer retain their histories or the complete
+scan result. This direction targets retained storage; temporary parser peak memory and
 300,000-file NEXIS throughput still require measurement.
 
 ## Current implementation facts
@@ -271,7 +272,8 @@ These describe today's code, not Copland requirements:
 
 - PMR/MDB acquisition buffers the whole database temporarily. Reading and
   projection use temporary decoded records; source images and unused graphs are
-  released afterward. Supported facts, alternatives and receipts remain.
+  released afterward. Supported facts, alternatives and receipts remain in the
+  working scan until row preparation, then the scanner releases that result.
   See [database preparation](../src/mediaengine/databasesource.cpp) and
   [source lifetimes](../Project%20Canon/source-lifetimes.md).
 - Database-first scheduling can open a media header because required metadata is
@@ -280,8 +282,16 @@ These describe today's code, not Copland requirements:
   parsing, retention or fallback cost. See
   [scan coordination](../src/mediaengine/scancoordinator.cpp).
 - Source preferences are compiled per-property rules. The current resolver also
-  retains observations from sources that cannot supply the selected value. See
+  retains observations from sources that cannot supply the selected value during
+  scanning. Prepared UI rows keep only selected values and compact conclusions. See
   [selection policy](../src/mediaengine/metadataselectionpolicy.cpp).
+- Ordinary UI rows keep selected values, `MediaMetadataStatus`, `MediaScanStamp`
+  and the optional frozen `OpScanReceipt`. The inline checklist distinguishes
+  availability, applicability, agreement and source freshness without retaining
+  values, explanation strings or source owners. The working scan and its temporary
+  `ScanRowLookup` are released before delivery. See
+  [row ownership](../src/mediafile.h) and
+  [status checklist](../src/mediametadatastatus.h).
 - Project filtering currently uses selected names from the sidebar; several names
   are alternatives and no selected names leaves that restriction inactive. C39
   retains the original-project value for display/filtering. Original Bin has no
@@ -625,9 +635,11 @@ old scan evidence alive during a rescan. The user revised the first implementati
 to direct saving with Console success confirmation: it captures rows, streams
 them through the existing writer and returns only after saving finishes. Its local
 row copies are then released before the user can start another scan. No separate
-text cache or background export remains. Actual process-memory changes and large
-export wait time remain to be measured. See [row ownership](../src/mediafile.h#L30),
-[shared scan session](../src/mediascanner.cpp#L280),
+text cache or background export remains. Ordinary rows now also contain no scan
+owner or evidence history, so their copies cannot retain the complete inventory.
+Actual process-memory changes and large export wait time remain to be measured.
+See [row ownership](../src/mediafile.h),
+[temporary working scan](../src/mediascanner.cpp),
 [direct export](../src/mainwindow.cpp#L1789) and [CSV writer](../src/mediacsv.cpp).
 
 ### Scan lifecycle: current facts for review
@@ -1275,6 +1287,46 @@ but hypothetical disagreements must not justify broad permanent evidence retenti
 
 ## Implementation planning
 
+### Ordinary scan history removal choice — 13 October 2026
+
+The user requested removal of the larger ordinary scan notes, with simple
+explanations and the attached C++ Coding Standards kept in mind. They chose
+**Fixed status checklist** and **Remove histories only**. Keep the current table
+fields, scan rules, source preferences and master-association behavior for this
+bounded change. Source Filename, Clip Duration, single-MasterMobId selection and
+acquisition changes remain their separate Copland steps.
+
+Prepare selected row values, a fixed inline checklist of small typed property
+statuses and the existing operation safety record from temporary scan inputs.
+Publish rows without `MediaEvidence` or shared `ScanResult` ownership. Preserve
+read state/reason, applicability, agreement, selected-value presence, source kind
+and freshness/change facts rather than inferring them from blank cells. Source
+kind summaries must not pretend that a master-association union or a supplemented
+duration has one source for all its inputs. Raw values, alternative observations,
+object chains and detailed interpretation histories are discarded after
+preparation; normal Console diagnostics and compact operation refusals remain.
+
+Confirmed Copy/Move updates change physical fields, scan stamps and destination
+membership/status directly, preserving other prepared metadata and frozen safety
+checks. Readers and matching may still need temporary history while scanning.
+Small reconciliation-issue snapshots and independently loaded bin/filter graphs
+are separate from ordinary row history. No measured application-memory or speed
+improvement is claimed in advance.
+
+Apply the attached guidance's value semantics, scoped immutable inputs, strong
+types, automatic lifetimes and measurement discipline within the existing C++17
+and Qt codebase. Preserve the repository's naming/formatting and established file
+operation safeguards; this is not a compiler, library or exception-policy rewrite.
+
+Implemented and verified on this Mac: the Release application and all test targets
+build, and all 40 CTest suites pass. Genuine-source and authored-control checks
+prove that scan and source owners expire while prepared rows, exact clocks, CSV
+output and operation checks remain usable. Transfer, filtering, missing/conflicting
+or changed metadata, Undo and recovery assertions remain covered. Obsolete row
+history helpers and tests were removed or adapted, and current documentation now
+describes the new ownership. Whole-process memory savings, Windows behavior and
+the representative NEXIS workload have not been measured by this checkpoint.
+
 ### Bin name filling removal choice — 13 October 2026
 
 The user chose **Remove bin name filling first**, followed by removal of the
@@ -1375,8 +1427,10 @@ The [12 October verification](technical-verification-2026-10-12.md) recorded
 broad AVB traversal, conflict-only AVB Original Bin fallback, loss of completed
 metadata on early cancel and incorrect completion reporting on late cancel.
 The AVB row fallback has since been removed under C16; the other gaps remain.
-The compact safety-check migration above now passes its bounded
-equivalence checks; ordinary row history removal is still outstanding. Three
+The compact safety-check migration above passes its bounded equivalence checks.
+Ordinary row history removal is now implemented, with current fields and the
+master-association union preserved; the remaining compact-row, acquisition and
+cancellation work still requires its own verification. Three
 controlled local baseline trials cover 267 database-free
 complete media copies and demonstrated the former asynchronous export retaining
 the prior scan through one frozen CSV row. The direct-export implementation above

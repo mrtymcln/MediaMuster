@@ -3,6 +3,7 @@
 #include "precompute.h"
 #include "mediaduration.h"
 #include "mediaevidence.h"
+#include "mediametadatastatus.h"
 #include "opscanreceipt.h"
 
 #include <QString>
@@ -16,11 +17,6 @@
 
 // MARK: - MediaFile
 
-namespace MediaEngine
-{
-	struct ScanResult;
-}
-
 /// One physical file in the scan inventory, identified by its path.
 /// FileMobId and MasterMobId connect it to Avid records, bins and relatives;
 /// either ID may be unknown. Display helpers are shared with the table and CSV.
@@ -28,13 +24,10 @@ struct MediaFile
 {
 	// MARK: Identity
 	KelpieId kelpieId = 0; ///< Physical row identity within this scan session only.
-	MediaEvidence evidence;
+	MediaMetadataStatus metadataStatus;
 	MediaScanStamp scanStamp;
 	/// Frozen operation checks; absence means they were never captured.
 	std::optional<OpScanReceipt> operationScanReceipt;
-	// Shared scan results own supported observations, associations and source receipts.
-	// This row's current path/identity fields continue to follow moves and copies.
-	QSharedPointer<const MediaEngine::ScanResult> mediaEngineScan;
 	QStringList masterMobIds; ///< Established scan associations; the scalar below is set for a single association.
 	QString masterMobIdDisplay() const
 	{

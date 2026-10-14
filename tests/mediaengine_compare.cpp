@@ -323,9 +323,9 @@ int main(int argc, char **argv)
 			QVector<MediaFile> rows;
 			rows.reserve(scan->files.size());
 			{
-				const OpScanReceiptLookup operationChecks(*scan);
+				const ScanRowLookup rowChecks(*scan);
 				for (const auto &file : scan->files)
-					rows.append(mediaEngineMediaFile(file, scan, {}, {}, &operationChecks));
+					rows.append(mediaEngineMediaFile(file, rowChecks, {}, {}, scan->cancelled));
 			}
 			if (!MediaCsv::write(parser.value(csvOption), rows, {true, true}))
 				throw std::runtime_error("CSV write failed");

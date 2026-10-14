@@ -139,7 +139,7 @@ The scanner combines information from three places:
 | --- | --- |
 | The disk's file listing | Filename, location, size, creation time when available, and modification time. |
 | Avid's folder databases | The PMR file index connects filenames to Avid identifiers. MDB records provide clip relationships, names and technical details. Project information can also come from these databases. |
-| Metadata inside the media file | Independent technical details, identifiers and other recorded information retained alongside matching database observations. |
+| Metadata inside the media file | Independent technical details, identifiers and other recorded information checked against matching database observations during scanning. |
 
 The live scanner uses MediaEngine discovery, PMR/MDB/MXF/legacy readers and
 metadata selection engine. It reads every `.pmr` and `.mdb` in admitted folders
@@ -148,20 +148,21 @@ database match or required table metadata is missing or conflicting. A deliberat
 unopened header keeps a `NotRead` receipt and the scheduling reason. Empty or malformed
 files remain physical inventory rows.
 
-PMR/MDB/MXF/OMF reading storage is temporary. Databases are buffered in RAM while
-parsing; after projection, the scan keeps supported observations and their original
-bytes, alternatives, field coverage, selected values and selection reasons, plus
-immutable source receipts. Full source images and unused graphs, unprojected
-properties and framing details are released, including those from partial or
-failed reads. Outcomes and diagnostics remain recorded; scan-time source replay
-is unavailable. Projected database facts remain available for matching and unmatched
-reference reporting. Known recording payloads are skipped rather than loaded as
-metadata. Independently loaded AVB bin graphs remain retained for filtering and
-reference resolution. Readers do not invent meanings for unknown properties.
+PMR/MDB/MXF/OMF reading storage and the working scan history are temporary.
+Databases are buffered in RAM while parsing. Observations, original bytes,
+alternatives and source receipts support matching and validation while the scanner
+works. Before rows reach the table, the app keeps the selected values, a fixed
+checklist of metadata status and the facts needed for operation checks, then
+discards the working scan result. Ordinary rows keep no observation history or
+scan owner. Reconciliation notices can retain their own source diagnostics, and
+loaded AVB bins retain graphs for filtering and reference resolution. These are
+separate owners. Known recording payloads are skipped rather than loaded as
+metadata. Readers do not invent meanings for unknown properties.
 
 PMR association prefers an exact filename. A normalized spelling is a fallback only
 when it identifies one physical location; contradictory or ambiguous identities
-exclude the candidate metadata while retaining its observations. MDB file facts
+exclude the candidate metadata while preserving its observations for scan-time
+validation. MDB file facts
 join through complete file identities. Master-only editorial facts can join through
 an established master association, but cannot supply another file's descriptor.
 A source that changes while being read is excluded from selection; a changed media
@@ -172,19 +173,21 @@ matching MDB values. The editorial priorities are Clip Name: header, then MDB;
 Project: PMR, then MDB, then header; Original Bin: MDB, then header. Loaded bins
 supply filtering references only. The shared policy
 lists named source groups from first choice to final fallback. Sources in one
-group have equal preference; omitted sources remain in evidence but cannot supply
+group have equal preference; omitted sources cannot supply
 the selected value. Incompatible values in the preferred available group leave
 the cell blank with a Console explanation. Lower-priority editorial alternatives
-stay in evidence without producing a warning for every resolved difference. An
+remain available during scanning without producing a warning for every resolved
+difference. Their histories do not reach the table. An
 unreadable header can use matching database values with freshness recorded as
 unknown; a raw PMR modification word is not treated as a proven filesystem timestamp.
 Unknown clip names stay blank; filenames are not substitutes.
 
 For unlabelled text, valid UTF-8 may supply a displayed value as an explicit inference.
 Legacy OMF/MDB text may fall back to inferred MacRoman when UTF-8 is invalid. The
-original bytes remain in the observation evidence, alongside the inferred encoding
-and an explanation that the source did not declare it. This does not relabel a
-whole file set as having one proven encoding.
+original bytes and inferred encoding remain available during interpretation. The
+row checklist can retain a selected value's recorded or derived basis without
+keeping those bytes or an explanation history. This does not relabel a whole file
+set as having one proven encoding.
 
 Every physical row receives a scan-session `KelpieId`. Copies with matching metadata
 still have separate rows and IDs. The five-field RAM scan receipt records path,
@@ -196,9 +199,12 @@ An unmatched identity alone does not prove a missing physical file. Current chec
 and limits are recorded in the [live connection report](../Project%20Canon/live-connection-2026-10-04.md).
 
 The scanner prepares display values before passing rows to the table. The table
-stores those values without a second metadata-selection pass. Ordinary rows still
-retain scan/evidence histories; their compact-record cleanup remains outstanding.
-This preparatory change establishes no measured memory or scan-time saving.
+stores those values without a second metadata-selection pass. Each row's status
+checklist distinguishes availability, applicability, agreement and freshness; it
+contains no metadata values, explanation strings or source owners. A temporary
+lookup supplies header outcomes and safety flags during preparation, then goes
+away with the working scan. Current columns and master associations remain in this
+bounded cleanup. No memory or scan-time saving has been measured.
 
 `FileMobId` identifies the file media object, while `MasterMobId` identifies its
 associated master object. Related video and audio files can share a MasterMobId
@@ -212,8 +218,9 @@ still displays the files gathered so far, with potentially incomplete metadata.
 While discovering folders, the progress dialog shows **Finding media files…**
 and the location being checked. Once source files are known, it reports the
 database or media file being processed. After observing Cancel, the worker stops
-starting new reads, freshness checks and matching work, retaining gathered rows
-and evidence. An operating-system request already in progress may delay stopping.
+starting new reads, freshness checks and matching work. The gathered working
+results supply prepared rows before their histories are released. An
+operating-system request already in progress may delay stopping.
 The Console records root lookup, discovery/source preparation and total worker
 times separately so shared-storage delays can be located.
 Loaded bins remain available after a rescan; they do not fill missing row metadata.
@@ -247,7 +254,8 @@ when its flag is enabled. Multiple master IDs share a cell separated by `;`.
 Compression is the readable format name, such as `Avid DNx HQX [DNxHD 175x]`.
 The selected property is `MediaProperty::Compression` and the row value is
 `MediaFile::compression`. `CompressionLabel` remains separate internal coding
-evidence; observations retain recorded property names and original value bytes.
+evidence used during scanning; recorded property names and raw observation histories
+remain temporary.
 OmfScan is true for admitted legacy-folder media, including AIF/WAV; it is false
 for MXF-family media. Type is always visible. Enabling
 the Clip Duration feature flag places Clip Duration immediately after Duration
@@ -270,10 +278,11 @@ RAM property with no table or CSV column. Unknown values, including Kind, stay b
 **Resolution** shows the visible picture raster, using valid descriptor crops and
 format-correct field handling. Recorded display geometry can remove storage padding
 (1920×1088 to 1920×1080). Verified Avid small-proxy configurations use their actual
-stored dimensions, such as 480×270 or 320×180, with the inference retained in evidence.
+stored dimensions, such as 480×270 or 320×180, with the inference made during scanning.
 Unexplained invalid geometry stays unresolved and can trigger the database-first
 header fallback. Padding is never trimmed by a universal height rule. Stored,
-sampled and display rectangles, offsets and pixel aspect remain in RAM. See
+sampled and display rectangles, offsets and pixel aspect are interpretation inputs;
+the row keeps its selected resolution and status rather than those histories. See
 [the geometry policy and proof](../Project%20Canon/visible-resolution-2026-10-07.md).
 
 **Duration** describes the selected physical file. Readers retain the original
@@ -305,7 +314,7 @@ summing associated files.
 experimental **Clip Duration** column and CSV field show separately
 recovered material/master track lengths, labelled by track ID. It preserves
 multiple track lengths rather than inventing one aggregate. MediaEngine reads media
-headers and retains underlying evidence independently of this display flag.
+headers and prepares the selected per-track values independently of this display flag.
 MXF and supported OMF/MDB graph projections can supply associated track lengths;
 unavailable clip lengths stay blank. AVB clip lengths are not currently projected
 into this column. The ordinary **Duration** heading and meaning remain unchanged.
@@ -324,7 +333,8 @@ the order. Blank durations come first when sorting upwards and last downwards.
 The filter tabs are All, Video, Audio, No Database, Non-Portable and Quarantined.
 Enabling precompute features also adds Precomputes. Project selection, including
 **No project**, is available in the sidebar. Database membership remains visible
-in Project tooltips. Invalid identity observations remain in the scan evidence.
+in Project tooltips. The row retains the selected identifiers and invalid-ID flag;
+invalid observations are examined during scanning rather than stored in the table.
 
 The table's filters work on the current inventory. They do not modify disk files.
 Project, tab, search, bin and enabled precompute filters combine: a row must pass
@@ -446,11 +456,10 @@ After a confirmed ordinary Move, the existing row updates to the destination
 and retains its KelpieId. Delete removes rows whose sources were confirmed removed.
 A confirmed ordinary Copy adds a destination row with a new KelpieId and leaves
 the original row intact. Counts, sizes and filters refresh after these updates.
-The transferred row keeps the original source receipt and gains fresh destination
-filesystem observations. It also keeps the safety facts captured during scanning
-while its current path, date and volume checks follow the destination. Its selected
-metadata is recomputed without dropping codec or identity evidence. Destination
-databases are enumerated but not parsed by the
+The transferred row keeps its selected media values and frozen safety facts while
+its current path, size, dates, volume and physical-field status follow the
+destination. The app updates those facts directly without rebuilding observations
+or reselecting metadata. Destination databases are enumerated but not parsed by the
 transfer, so membership remains unverified when databases are present. Rescan to
 refresh that membership or observe external changes. Recovery and rebalance use
 their existing rescan/refresh paths.
