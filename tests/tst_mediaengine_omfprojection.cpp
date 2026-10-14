@@ -171,10 +171,7 @@ private slots:
 	void nativeAudioReadCoverage();
 	void originalBinTextPriority_data();
 	void originalBinTextPriority();
-	void associatedTimecodeAndClipDuration();
-	void legacySequenceClipDuration_data();
-	void legacySequenceClipDuration();
-	void genuineDatabaseSequenceDurations();
+	void physicalDurationAndAssociatedTimecode();
 	void genuineVideoCodecNames_data();
 	void genuineVideoCodecNames();
 	void legacyCompressionDescriptorContexts_data();
@@ -753,7 +750,6 @@ void TestMediaEngineOmfProjection::incompleteDependentReferences()
 			QVERIFY(file.masterMobIds.isEmpty());
 			QVERIFY(file.evidence.observations(MediaProperty::ClipName).isEmpty());
 			QCOMPARE(single(file, MediaProperty::Project).toString(), QStringLiteral("Owned project"));
-			QVERIFY(file.evidence.observations(MediaProperty::ClipDuration).isEmpty());
 		}
 	}
 	QVERIFY2(result.diagnostics.join('\n').contains(property), qPrintable(result.diagnostics.join('\n')));
@@ -1483,7 +1479,7 @@ void TestMediaEngineOmfProjection::originalBinTextPriority()
 	QCOMPARE(selected.value.toString(), expected);
 }
 
-void TestMediaEngineOmfProjection::associatedTimecodeAndClipDuration()
+void TestMediaEngineOmfProjection::physicalDurationAndAssociatedTimecode()
 {
 	TypedBento writer;
 	writer.head(1);
@@ -1504,132 +1500,28 @@ void TestMediaEngineOmfProjection::associatedTimecodeAndClipDuration()
 	QCOMPARE(result.files.size(), 1);
 	const auto &file = result.files.first();
 	QCOMPARE(single(file, MediaProperty::DropFrame).toBool(), true);
-	const auto durations = single(file, MediaProperty::ClipDuration).toList();
-	QCOMPARE(durations.size(), 1);
-	const auto track = durations.first().toMap();
-	QCOMPARE(track.value(QStringLiteral("MasterMobId")).toString(), MediaEngine::canonicalDatabaseId(uid(21)));
-	QCOMPARE(track.value(QStringLiteral("TrackId")).toUInt(), 7u);
-	QCOMPARE(track.value(QStringLiteral("DropFrame")).toBool(), true);
-	QCOMPARE(MediaEngine::mediaDuration(track.value(QStringLiteral("Duration"))).units, 375);
-	QCOMPARE(MediaEngine::mediaDuration(track.value(QStringLiteral("Duration"))).rate.denominator, 1001);
+	QCOMPARE(file.masterMobIds, QStringList{MediaEngine::canonicalDatabaseId(uid(21))});
+	QCOMPARE(single(file, MediaProperty::ClipName).toString(), QStringLiteral("Linked master"));
+	// The master's longer track and different clock do not replace physical duration.
+	const auto duration = MediaEngine::mediaDuration(single(file, MediaProperty::FileDuration));
+	QCOMPARE(duration.units, 250);
+	QCOMPARE(duration.rate.numerator, 25);
+	QCOMPARE(duration.rate.denominator, 1);
+	QVERIFY(duration.displayRate.sameRate({25, 1}));
+	QCOMPARE(duration.source, MediaDuration::Source::Descriptor);
 	writer.add(602, "OMFI:TCCP:Flags", "omfi:Int32", number<qint32>(0));
 	result = project(read(writer.build()));
 	const auto &conflicting = result.files.first();
 	QCOMPARE(conflicting.evidence.observations(MediaProperty::DropFrame).size(), 2);
-	QVERIFY(!single(conflicting, MediaProperty::ClipDuration).toList().first().toMap().contains(QStringLiteral("DropFrame")));
-}
-
-void TestMediaEngineOmfProjection::legacySequenceClipDuration_data()
-{
-	QTest::addColumn<QString>("variation");
-	QTest::addColumn<qint64>("expected");
-	QTest::newRow("segments-minus-transition") << QString{} << qint64(110);
-	QTest::newRow("nested-sequence") << QStringLiteral("nested") << qint64(110);
-	QTest::newRow("repeated-segment-occurrence") << QStringLiteral("repeat") << qint64(210);
-	QTest::newRow("stale-count-prefix") << QStringLiteral("stale-prefix") << qint64(110);
-	QTest::newRow("overflow-count-marker") << QStringLiteral("count-marker") << qint64(110);
-	for (const auto &variation : {"missing-length", "missing-clock", "different-clock", "cycle", "missing-reference", "overflow", "negative-total", "unknown-component", "truncated-reference"})
-		QTest::newRow(variation) << QString::fromLatin1(variation) << qint64(-1);
-}
-
-void TestMediaEngineOmfProjection::legacySequenceClipDuration()
-{
-	QFETCH(QString, variation);
-	QFETCH(qint64, expected);
-	TypedBento writer;
-	writer.head(1);
-	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 301}, 1);
-	fileMob(writer, 101, 201, 11);
-	master(writer, 301, 401, 501, 21, 11, "Sequence-backed master");
-	writer.add(301, "OMFI:TRKG:GroupLength", "omfi:Long", number<qint32>(999)); // Not this track's length.
-	writer.add(401, "OMFI:TRAK:LabelNumber", "omfi:Short", number<qint16>(7));
-	for (auto &entry : writer.entries)
-		if (entry.object == 401 && entry.property == writer.properties.value("OMFI:TRAK:TrackComponent"))
-			entry.bytes = writer.reference(601, 1);
-	object(writer, 601, "SEQU");
-	object(writer, 602, variation == QLatin1String("unknown-component") ? "PRIV" : "FILL");
-	object(writer, 603, "TRAN");
-	QVector<quint32> children{501, 602, 603};
-	if (variation == QLatin1String("repeat"))
-		children.prepend(501);
-	if (variation == QLatin1String("cycle"))
-		children.append(601);
-	if (variation == QLatin1String("missing-reference"))
-		children.append(999);
-	const auto references = [&](const QVector<quint32> &handles)
-	{
-		// OMF toolkit array length comes from byte extent; a stale prefix or
-		// overflow marker does not discard otherwise complete references.
-		const quint16 prefix = variation == QLatin1String("count-marker") ? 0xffff
-			: quint16(handles.size() + (variation == QLatin1String("stale-prefix") ? 1 : 0));
-		QByteArray bytes = number(prefix);
-		for (const auto handle : handles)
-			bytes += writer.reference(handle, 1);
-		if (variation == QLatin1String("truncated-reference"))
-			bytes += writer.reference(999, 1).first(4);
-		return bytes;
-	};
-	if (variation == QLatin1String("nested"))
-	{
-		object(writer, 604, "SEQU");
-		writer.add(604, "OMFI:CPNT:EditRate", "omfi:ExactEditRate", number<qint32>(25) + number<qint32>(1));
-		writer.add(604, "OMFI:SEQU:Sequence", "omfi:ObjRefArray", references({501, 603}));
-		children = {604, 602};
-	}
-	writer.add(601, "OMFI:SEQU:Sequence", "omfi:ObjRefArray", references(children));
-	for (const quint32 handle : {501u, 601u, 602u, 603u})
-	{
-		if (handle == 602 && variation == QLatin1String("missing-clock"))
-			continue;
-		writer.add(handle, "OMFI:CPNT:EditRate", "omfi:ExactEditRate",
-				   number<qint32>(handle == 602 && variation == QLatin1String("different-clock") ? 24 : 25) + number<qint32>(1));
-	}
-	if (variation != QLatin1String("missing-length"))
-		writer.add(501, "OMFI:CLIP:Length", "omfi:Length64", number<qint64>(variation == QLatin1String("overflow") ? std::numeric_limits<qint64>::max() : variation == QLatin1String("negative-total") ? 1
-																																																	   : 100));
-	writer.add(602, "OMFI:CLIP:Length", "omfi:Length32", number<qint32>(variation == QLatin1String("negative-total") ? 0 : 20));
-	writer.add(603, "OMFI:TRKG:GroupLength", "omfi:Long", number<qint32>(10));
-	const auto source = read(writer.build());
-	const auto result = project(source);
-	QCOMPARE(result.files.size(), 1);
-	const auto tracks = single(result.files.front(), MediaProperty::ClipDuration).toList();
-	if (expected < 0)
-	{
-		QVERIFY(tracks.isEmpty());
-		return;
-	}
-	QCOMPARE(tracks.size(), 1);
-	const auto track = tracks.front().toMap();
-	QCOMPARE(MediaEngine::mediaDuration(track.value(QStringLiteral("Duration"))).units, expected);
-	QCOMPARE(track.value(QStringLiteral("DurationProperty")).toString(), QStringLiteral("OMFI:SEQU:Sequence"));
-	const auto provenance = track.value(QStringLiteral("DurationComponents")).toList();
-	QVERIFY(provenance.size() >= 4);
-	QVERIFY(std::any_of(provenance.cbegin(), provenance.cend(), [](const QVariant &item)
-						{ return item.toMap().value(QStringLiteral("Object")).toUInt() == 603 &&
-								 item.toMap().value(QStringLiteral("Property")).toString() == QLatin1String("OMFI:TRKG:GroupLength"); }));
-	const auto contributions = provenance.last().toMap().value(QStringLiteral("Contributions")).toList();
-	QVERIFY(!contributions.isEmpty());
-}
-
-void TestMediaEngineOmfProjection::genuineDatabaseSequenceDurations()
-{
-	QFile input(QStringLiteral(FIXTURES_DIR "/omf/avid_supporting/msmMMOB.mdb"));
-	QVERIFY(input.open(QIODevice::ReadOnly));
-	MediaEngine::Cancellation cancellation;
-	const auto source = MediaEngine::MdbReader{}.read(input, {{}, cancellation});
-	QCOMPARE(source.outcome, MediaEngine::ParsedSource::Outcome::Complete);
-	const auto result = project(source);
-	qsizetype withDuration = 0, withSequence = 0;
-	for (const auto &file : result.files)
-	{
-		const auto tracks = single(file, MediaProperty::ClipDuration).toList();
-		withDuration += !tracks.isEmpty();
-		for (const auto &track : tracks)
-			withSequence += !track.toMap().value(QStringLiteral("DurationComponents")).toList().isEmpty();
-	}
-	QCOMPARE(result.files.size(), 80);
-	QCOMPARE(withDuration, 80);
-	QCOMPARE(withSequence, 3);
+	const auto drop = conflicting.evidence.resolve(MediaProperty::DropFrame, [](MetadataSource)
+												  { return 1; }, QStringLiteral("Associated timecode values"));
+	QVERIFY(!drop.value.isValid());
+	QCOMPARE(drop.agreement, PropertyAgreement::Conflicting);
+	const auto physical = MediaEngine::mediaDuration(single(conflicting, MediaProperty::FileDuration));
+	QCOMPARE(physical.units, duration.units);
+	QCOMPARE(physical.rate.numerator, duration.rate.numerator);
+	QCOMPARE(physical.rate.denominator, duration.rate.denominator);
+	QVERIFY(physical.displayRate.sameRate(duration.displayRate));
 }
 
 void TestMediaEngineOmfProjection::genuineVideoCodecNames_data()

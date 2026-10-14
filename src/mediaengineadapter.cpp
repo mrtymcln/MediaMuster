@@ -5,9 +5,7 @@
 #include <QStorageInfo>
 #include <QDir>
 #include <QRegularExpression>
-#include <algorithm>
 #include <tuple>
-#include <utility>
 
 bool applyResolvedMetadata(MediaFile &row, const MediaEvidence &evidence)
 {
@@ -71,20 +69,6 @@ bool applyResolvedMetadata(MediaFile &row, const MediaEvidence &evidence)
 	}
 	assign(row.dropFrame, value(MediaProperty::DropFrame).toBool());
 	assign(row.timecodeBase, qRound(row.duration.displayRate.value()));
-	QVector<ClipTrackDuration> clipDurations;
-	for (const auto &item : value(MediaProperty::ClipDuration).toList())
-	{
-		const auto track = item.toMap();
-		clipDurations.append({track.value(QStringLiteral("TrackId")).toUInt(),
-							  MediaEngine::mediaDuration(track.value(QStringLiteral("Duration"))), track.value(QStringLiteral("DropFrame")).toBool()});
-	}
-	if (row.clipDurations.size() != clipDurations.size() ||
-		!std::equal(row.clipDurations.cbegin(), row.clipDurations.cend(), clipDurations.cbegin(), [&](const auto &first, const auto &second)
-					{ return first.trackId == second.trackId && first.dropFrame == second.dropFrame && durationValues(first.duration) == durationValues(second.duration); }))
-	{
-		row.clipDurations = std::move(clipDurations);
-		changed = true;
-	}
 	assign(row.sourceFilePath, value(MediaProperty::SourcePath).toString());
 	assign(row.sourceFileName, value(MediaProperty::SourceFilename).toString());
 	assign(row.sourceContainer, value(MediaProperty::SourceContainer).toString());

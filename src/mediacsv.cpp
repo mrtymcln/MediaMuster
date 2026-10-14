@@ -41,8 +41,6 @@ namespace MediaCsv
 	QString headerLine(Options options)
 	{
 		QString line = QStringLiteral("Clip Name,Project,Bin,Kind,Duration,");
-		if (options.includeClipDuration)
-			line += QStringLiteral("Clip Duration,");
 		line += QStringLiteral("Size (MB),Compression,Resolution,Frame Rate,Sample Rate,Bit Depth,Type,");
 		if (options.includePrecomputeDetails)
 			line += QStringLiteral("Precompute Category,Effect Category,Effect,Effect Sequence,");
@@ -57,8 +55,6 @@ namespace MediaCsv
 		out << CsvUtil::quoted(f.clipName) << ',' << CsvUtil::quoted(f.projectDisplay()) << ','
 			<< CsvUtil::quoted(f.originalBin) << ',' << CsvUtil::quoted(f.kindDisplay()) << ','
 			<< CsvUtil::quoted(f.durationDisplay()) << ',';
-		if (options.includeClipDuration)
-			out << CsvUtil::quoted(f.clipDurationDisplay()) << ',';
 		out << f.sizeMBDisplay() << ',' << CsvUtil::quoted(f.compression) << ',' << CsvUtil::quoted(f.resolution) << ','
 			<< CsvUtil::quoted(f.frameRate) << ',' << CsvUtil::quoted(f.sampleRateDisplay()) << ','
 			<< CsvUtil::quoted(f.bitDepth) << ',' << CsvUtil::quoted(f.typeDisplay()) << ',';

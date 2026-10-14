@@ -7,12 +7,12 @@
 
 // MARK: - MediaCsv
 /// One header line and one line per physical MediaFile. Optional columns carry
-/// precompute details and separately recovered per-track clip durations. The explicit export schema follows
+/// precompute details. The explicit export schema follows
 /// the established export order, ending with database status, MOB IDs, KelpieId
 /// and the OmfScan family boolean;
 /// dragging table columns does not change export order. The caller captures
 /// the enabled column groups from the table model. Tests compare headings with
-/// the default table layout for all four gate combinations and check emitted values.
+/// the default table layout with precompute details enabled and disabled, and check emitted values.
 
 namespace MediaCsv
 {
@@ -20,7 +20,6 @@ namespace MediaCsv
 	{
 		/// Adds four precompute detail columns after the always-present Type.
 		bool includePrecomputeDetails = false;
-		bool includeClipDuration = false;
 	};
 
 	/// Column headings in emission order, using the same options as rows.

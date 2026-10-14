@@ -347,7 +347,7 @@ void TestScanner::optional_read_only_real_scan()
 	const QJsonObject memoryRetained = auditMemory();
 	const QString csvOutput = qEnvironmentVariable("MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_CSV");
 	if (!csvOutput.isEmpty())
-		QVERIFY(MediaCsv::write(csvOutput, files, {true, true}));
+		QVERIFY(MediaCsv::write(csvOutput, files, {true}));
 	QSet<KelpieId> ids;
 	QSet<QString> paths;
 	QJsonArray inventory;
@@ -380,7 +380,7 @@ void TestScanner::optional_read_only_real_scan()
 			{"fileMobId", file.fileMobId}, {"masterMobIds", QJsonArray::fromStringList(file.masterMobIds)},
 			{"codec", file.compression}, {"bitDepth", file.bitDepth}, {"sampleFormat", file.sampleFormat},
 			{"omfScan", file.omfEra}, {"headerOutcome", int(file.metadataStatus.headerOutcome)},
-			{"selectedCsv", MediaCsv::rowLine(file, {true, true})}, {"fieldStatuses", statuses}});
+			{"selectedCsv", MediaCsv::rowLine(file, {true})}, {"fieldStatuses", statuses}});
 	}
 	QJsonArray issueDetails;
 	for (const auto &issue : qvariant_cast<QVector<ScanIssue>>(issues.first().first()))
@@ -1250,7 +1250,7 @@ void TestScanner::completed_scan_can_restart_from_its_queued_receiver()
 	QCOMPARE(second.size(), 1);
 	QCOMPARE(first.front().fileMobId, second.front().fileMobId);
 	QVERIFY(!first.front().fileMobId.isEmpty());
-	QCOMPARE(MediaCsv::rowLine(first.front(), {true, true}), MediaCsv::rowLine(second.front(), {true, true}));
+	QCOMPARE(MediaCsv::rowLine(first.front(), {true}), MediaCsv::rowLine(second.front(), {true}));
 	QCOMPARE(first.front().metadataStatus.headerOutcome, second.front().metadataStatus.headerOutcome);
 	QVERIFY(first.front().operationScanReceipt);
 	QVERIFY(second.front().operationScanReceipt);
@@ -1629,8 +1629,8 @@ void TestScanner::current_mxf_audio_database_rounds_partial_frames()
 	QVERIFY(tmp.isValid());
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
-	// Isolate database duration recovery from any usable MXF header. This
-	// generated graph lacks clip-track duration, requiring a fallback read.
+	// The generated database has no master-track lengths. Its physical-file
+	// duration and other required metadata suffice without opening the header.
 	writeJunk(folder + QLatin1Char('/') + kToneName, 1024);
 	setModified(folder + QLatin1Char('/') + kToneName, kToneModified);
 
@@ -1665,7 +1665,7 @@ void TestScanner::current_mxf_audio_database_rounds_partial_frames()
 	const MediaFile &row = rows.first();
 	QCOMPARE(row.dbStatus, MediaFile::DbStatus::Listed);
 	QVERIFY(hasDatabaseEvidence(row));
-	QVERIFY(headerWasRead(row));
+	checkDatabaseOnlyRead(row);
 	QVERIFY(!row.omfEra);
 	QCOMPARE(row.clipNameSource, MediaFile::ClipNameSource::Mdb);
 	QCOMPARE(row.clipName, QStringLiteral("Partial frame duration"));
@@ -1694,7 +1694,7 @@ void TestScanner::database_coverage_is_independent_of_unproven_pmr_time()
 	copyFixture(kToneName, folder);
 	setModified(folder + QLatin1Char('/') + kToneName, kToneModified);
 
-	// The complete database supplies both file and clip duration. Matching
+	// The complete database supplies the file duration. Matching
 	// timestamp-looking words do not establish database freshness.
 	const auto normal = runScan(tmp.path());
 	QCOMPARE(normal.size(), 1);
@@ -2009,8 +2009,9 @@ void TestScanner::pmr_v1_recovers_unique_master_from_mdb()
 	QCOMPARE(mf.project, QStringLiteral("WAVE project"));
 	QCOMPARE(mf.type, MediaFile::Type::Media);
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
-	QVERIFY(hasDatabaseEvidence(mf));
-	QVERIFY(headerWasRead(mf));
+	checkDatabaseOnlyRead(mf);
+	QVERIFY(mf.operationScanReceipt);
+	QCOMPARE(mf.operationScanReceipt->databaseFileMobIdToVerify, mf.fileMobId);
 }
 
 void TestScanner::omf2_header_keeps_master_identity_with_unknown_classification()
@@ -2205,13 +2206,13 @@ void TestScanner::folder_without_databases_reads_every_header()
 		QCOMPARE(status.readState, PropertyReadState::Present);
 		QVERIFY(status.presentSources.contains(MetadataSource::Mxf));
 	}
-	const auto preparedCsv = MediaCsv::rowLine(mf, {true, true});
+	const auto preparedCsv = MediaCsv::rowLine(mf, {true});
 	const auto item = opItemFromMediaFile(mf);
 	QVERIFY(item.headerIdentity);
 	QCOMPARE(item.headerIdentity->fileMobId, mf.fileMobId);
 	// Removing only the disposable copy cannot alter the already prepared row.
 	QVERIFY(QFile::remove(mf.mediaFilePath));
-	QCOMPARE(MediaCsv::rowLine(mf, {true, true}), preparedCsv);
+	QCOMPARE(MediaCsv::rowLine(mf, {true}), preparedCsv);
 	QCOMPARE(mf.metadataStatus.headerOutcome, MediaHeaderReadOutcome::Complete);
 	QCOMPARE(opItemFromMediaFile(mf).headerIdentity->fileMobId, item.headerIdentity->fileMobId);
 }
@@ -2574,7 +2575,15 @@ void TestScanner::stale_omf_database_does_not_describe_replacement()
 	QVERIFY(tmp.isValid());
 	const QString folder = Conventions::omfRootUnder(tmp.path());
 	QVERIFY(QDir().mkpath(folder));
-	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"), waveOmf(false)));
+	const QString databasePath = folder + QStringLiteral("/msmMMOB.mdb");
+	QVERIFY(tryWriteFile(databasePath, waveOmf(false)));
+	// A missing required Clip Name triggers the header read that must reject
+	// the old database identity; master-track lengths no longer gate reading.
+	removeDatabaseClipNames(databasePath);
+	const auto database = databaseProjection(databasePath);
+	QVERIFY(!database.masters.isEmpty());
+	for (const auto &master : database.masters)
+		QVERIFY(projectedMetadata(master).clipName.isEmpty());
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"), singleLegacyPmr("replaced.omf", kToneModified)));
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/replaced.omf"), waveOmf(false, true, 4)));
 	setModified(folder + QStringLiteral("/replaced.omf"), kToneModified + 10);

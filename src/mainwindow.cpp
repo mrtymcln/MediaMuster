@@ -187,7 +187,6 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	setupConnections();
 	setOmfScanEnabled(FeatureFlags::kOmfScan);
 	setPrecomputesEnabled(FeatureFlags::kPrecomputeFilter);
-	setClipDurationEnabled(FeatureFlags::kClipDuration);
 	updateFilterCounts();
 	updateActivityUi();
 
@@ -954,23 +953,6 @@ void MainWindow::setOmfScanEnabled(bool enabled)
 }
 
 // MARK: - Precompute classification, details and filter
-
-void MainWindow::setClipDurationEnabled(bool enabled)
-{
-	if (!m_operations->isIdle() || m_model->clipDurationEnabled() == enabled)
-		return;
-	if (!enabled && m_proxy->sortColumn() == m_model->clipDurationColumn())
-		m_tableView->sortByColumn(Enum::to_underlying(MediaTableModel::Column::ClipName), Qt::AscendingOrder);
-	m_model->setClipDurationEnabled(enabled);
-	if (enabled)
-	{
-		m_tableView->setColumnWidth(m_model->clipDurationColumn(), 260);
-		// Keep logical column indexes stable; place the optional column beside Duration visually.
-		auto *header = m_tableView->horizontalHeader();
-		header->moveSection(header->visualIndex(m_model->clipDurationColumn()),
-							header->visualIndex(Enum::to_underlying(MediaTableModel::Column::Duration)) + 1);
-	}
-}
 
 void MainWindow::setPrecomputesEnabled(bool enabled)
 {
@@ -1790,7 +1772,7 @@ void MainWindow::onExportCsv()
 	}
 
 	const int count = rows.size();
-	const MediaCsv::Options csvOptions{m_model->precomputesEnabled(), m_model->clipDurationEnabled()};
+	const MediaCsv::Options csvOptions{m_model->precomputesEnabled()};
 	const QString label = exportSelected ? "selected" : "visible";
 	addLog(QtInfoMsg, QStringLiteral("app"), QStringLiteral("CSV export of %1 %2 rows to %3.").arg(count).arg(label, path));
 	m_exportInProgress = true;

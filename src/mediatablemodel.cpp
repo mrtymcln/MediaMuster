@@ -45,14 +45,9 @@ int MediaTableModel::columnCount(const QModelIndex &parent) const
 	return omfScanColumn() + (m_omfScanEnabled ? 1 : 0);
 }
 
-int MediaTableModel::clipDurationColumn() const
-{
-	return Enum::to_underlying(m_precomputesEnabled ? Column::Count_ : Column::PrecomputeCategory);
-}
-
 int MediaTableModel::omfScanColumn() const
 {
-	return clipDurationColumn() + (m_clipDurationEnabled ? 1 : 0);
+	return Enum::to_underlying(m_precomputesEnabled ? Column::Count_ : Column::PrecomputeCategory);
 }
 
 void MediaTableModel::setOmfScanEnabled(bool enabled)
@@ -65,22 +60,6 @@ void MediaTableModel::setOmfScanEnabled(bool enabled)
 	else
 		beginRemoveColumns({}, column, column);
 	m_omfScanEnabled = enabled;
-	if (enabled)
-		endInsertColumns();
-	else
-		endRemoveColumns();
-}
-
-void MediaTableModel::setClipDurationEnabled(bool enabled)
-{
-	if (m_clipDurationEnabled == enabled)
-		return;
-	const int column = clipDurationColumn();
-	if (enabled)
-		beginInsertColumns({}, column, column);
-	else
-		beginRemoveColumns({}, column, column);
-	m_clipDurationEnabled = enabled;
 	if (enabled)
 		endInsertColumns();
 	else
@@ -237,8 +216,6 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 	if (m_omfScanEnabled && index.column() == omfScanColumn())
 		return role == Qt::DisplayRole ? QVariant(f.omfEra ? QStringLiteral("true") : QStringLiteral("false")) : role == Qt::UserRole ? QVariant(f.omfEra)
 																																	  : QVariant{};
-	if (m_clipDurationEnabled && index.column() == clipDurationColumn())
-		return role == Qt::DisplayRole ? QVariant(f.clipDurationDisplay()) : QVariant{};
 
 	if (role == Qt::DisplayRole)
 	{
@@ -337,9 +314,6 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 
 	if (m_omfScanEnabled && section == omfScanColumn())
 		return QStringLiteral("OmfScan");
-
-	if (m_clipDurationEnabled && section == clipDurationColumn())
-		return QStringLiteral("Clip Duration");
 
 	const char *headers[] = {"Clip Name", "Project", "Bin", "Kind", "Duration", "Size (MB)",
 							 "Compression", "Resolution", "Frame Rate", "Sample Rate", "Bit Depth", "Type",

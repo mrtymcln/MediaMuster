@@ -138,7 +138,6 @@ enum class MediaProperty
 	OriginalBin,
 	Kind,
 	FileDuration,
-	ClipDuration,
 	Size,
 	Compression,
 	NewDnx,
@@ -191,8 +190,6 @@ inline QString mediaPropertyName(MediaProperty property)
 		return QStringLiteral("Kind");
 	case MediaProperty::FileDuration:
 		return QStringLiteral("File Duration");
-	case MediaProperty::ClipDuration:
-		return QStringLiteral("Clip Duration");
 	case MediaProperty::Size:
 		return QStringLiteral("Size");
 	case MediaProperty::Compression:
@@ -584,30 +581,6 @@ public:
 			const qint64 bn = b.value(QStringLiteral("Numerator")).toInt(), bd = b.value(QStringLiteral("Denominator")).toInt();
 			return an > 0 && ad > 0 && bn > 0 && bd > 0 && an * bd == bn * ad;
 		};
-		const auto sameTrack = [&](const QVariant &leftTrack, const QVariant &rightTrack)
-		{
-			const auto x = leftTrack.toMap(), y = rightTrack.toMap();
-			const auto xd = x.value(QStringLiteral("Duration")).toMap(), yd = y.value(QStringLiteral("Duration")).toMap();
-			const auto xc = xd.value(QStringLiteral("DisplayRate")), yc = yd.value(QStringLiteral("DisplayRate"));
-			return x.contains(QStringLiteral("MasterMobId")) && y.contains(QStringLiteral("MasterMobId")) &&
-				   x.contains(QStringLiteral("TrackId")) && y.contains(QStringLiteral("TrackId")) &&
-				   x.value(QStringLiteral("MasterMobId")) == y.value(QStringLiteral("MasterMobId")) &&
-				   x.value(QStringLiteral("TrackId")) == y.value(QStringLiteral("TrackId")) &&
-				   x.value(QStringLiteral("DropFrame")) == y.value(QStringLiteral("DropFrame")) &&
-				   xd.contains(QStringLiteral("Units")) && yd.contains(QStringLiteral("Units")) &&
-				   xd.value(QStringLiteral("Units")) == yd.value(QStringLiteral("Units")) &&
-				   equalRate(xd.value(QStringLiteral("Rate")), yd.value(QStringLiteral("Rate"))) &&
-				   (xc == yc || equalRate(xc, yc));
-		};
-		const auto uniqueTracks = [&](const QVariant &value)
-		{
-			QVariantList result;
-			for (const auto &track : value.toList())
-				if (std::none_of(result.cbegin(), result.cend(), [&](const QVariant &existing)
-								 { return sameTrack(track, existing); }))
-					result.append(track);
-			return result;
-		};
 		const auto equivalent = [&](const QVariant &left, const QVariant &right)
 		{
 			if (left == right)
@@ -620,15 +593,6 @@ public:
 				return a.contains(QStringLiteral("Units")) && b.contains(QStringLiteral("Units")) &&
 					   a.value(QStringLiteral("Units")) == b.value(QStringLiteral("Units")) &&
 					   equalRate(a.value(QStringLiteral("Rate")), b.value(QStringLiteral("Rate")));
-			}
-			if (property == MediaProperty::ClipDuration)
-			{
-				const auto a = uniqueTracks(left), b = uniqueTracks(right);
-				// Source-local handles, repeated evidence and enumeration order do
-				// not change the set of recorded master-track timing facts.
-				return !a.isEmpty() && a.size() == b.size() && std::all_of(a.cbegin(), a.cend(), [&](const QVariant &track)
-																		   { return std::any_of(b.cbegin(), b.cend(), [&](const QVariant &other)
-																								{ return sameTrack(track, other); }); });
 			}
 			return false;
 		};
@@ -689,33 +653,7 @@ public:
 			result.reason = EvidenceExplanation(EvidenceExplanation::Reason::EqualRankConflict);
 		}
 		else if (result.selectedObservation >= 0)
-		{
 			result.reason = EvidenceExplanation(EvidenceExplanation::Reason::PreferredSource);
-			if (property == MediaProperty::ClipDuration)
-			{
-				// Coalesce duplicate facts only in the selected value. The source
-				// observations retain every object and its original provenance.
-				const auto tracks = uniqueTracks(result.value);
-				bool conflictingTrack = false;
-				for (qsizetype i = 0; i < tracks.size(); ++i)
-					for (qsizetype j = i + 1; j < tracks.size(); ++j)
-					{
-						const auto a = tracks[i].toMap(), b = tracks[j].toMap();
-						conflictingTrack |= a.contains(QStringLiteral("MasterMobId")) && a.contains(QStringLiteral("TrackId")) &&
-											a.value(QStringLiteral("MasterMobId")) == b.value(QStringLiteral("MasterMobId")) &&
-											a.value(QStringLiteral("TrackId")) == b.value(QStringLiteral("TrackId"));
-					}
-				if (conflictingTrack)
-				{
-					result.value.clear();
-					result.selectedObservation = -1;
-					result.agreement = PropertyAgreement::Conflicting;
-					result.reason = EvidenceExplanation(EvidenceExplanation::Reason::ContradictoryMasterTiming);
-				}
-				else
-					result.value = tracks;
-			}
-		}
 		else if (present > 0)
 			result.reason = EvidenceExplanation(EvidenceExplanation::Reason::ExcludedSources);
 		return result;

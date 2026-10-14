@@ -77,10 +77,6 @@ namespace MediaEngine
 			{MediaProperty::FileDuration, SelectionRule::FileDuration,
 			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb})},
 
-			// Master-clip track lengths retain their individual master and track context.
-			{MediaProperty::ClipDuration, SelectionRule::PreferredValue,
-			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb})},
-
 			// Physical file size from the filesystem, independently of any Avid descriptor.
 			{MediaProperty::Size, SelectionRule::PreferredValue,
 			 prefer({Source::Filesystem})},

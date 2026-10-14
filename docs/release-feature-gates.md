@@ -93,7 +93,6 @@ switches and their current values. Rebuild after changing a value.
 | kOmfScan | Scans discover and parse managed OMF essence. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. |
 | kPrecomputeFilter | Adds precompute detail columns and CSV fields, the Precomputes tab, toolbar filter and Special > Filter Precomputes. | Hides precompute details and filtering; rendered media remains in ordinary scan results. |
 | kSequenceFilter | Reserved for the deferred v2 sequence picker; currently false. The reference engine supports sequence scopes, but the live dialog applies whole-bin references. | Keeps the sequence picker unavailable; whole-bin filtering remains available. |
-| kClipDuration | Adds separate per-track Clip Duration values to the table and CSV. Required durations missing or unresolved in matching MDB metadata trigger header fallback. | Omits the Clip Duration column and its sufficiency check when scheduling headers. |
 | kUndo | Makes file-operation Undo available in Edit, with its shortcut, for eligible recorded jobs. | Hides file-operation Undo, removes its shortcut and rejects new Undo requests. Normal text-editing Undo still works. |
 | kDebugMenu | Shows feature toggles and Fusion style in the Debug menu. | Omits the Debug menu. |
 | kMonospaceTable | Uses the system monospaced font for table rows and headers. | Uses normal Qt table font styling. |
@@ -121,17 +120,3 @@ to omit the developer menu; select each feature's availability separately.
 
 The operation UI tests check startup configuration against these constants and
 verify that the removed feature toggles are absent. Rebuild after changing flags.
-
-## Experimental Clip Duration
-
-`FeatureFlags::kClipDuration` controls this experiment. Enabling it adds
-**Clip Duration** to the table and CSV. MediaEngine projects separate, identified
-master tracks from MXF and OMF/MDB graphs. Supported OMF1 sequence-backed tracks
-retain their recorded component/transition calculation. AVB recovery is not
-included. Unknown clip lengths stay blank. Each track is labelled separately;
-different tracks are not summed into one guessed clip length.
-
-With this flag enabled, usable matching MDB clip-track durations can satisfy the
-scan without a media-header read. Missing or unresolved required durations force
-the header fallback. File **Duration** still uses the selected descriptor first
-with a linked file-track fallback; Clip Duration does not replace it.

@@ -147,15 +147,6 @@ namespace MediaEngine
 				require(MediaProperty::SampleRate, mediaRate(value(MediaProperty::SampleRate)).valid());
 			if (FeatureFlags::kPrecomputeFilter && type.isValid() && type.toInt() == int(MediaType::Precompute))
 				require(MediaProperty::PrecomputeCategory, value(MediaProperty::PrecomputeCategory).toInt() > 0);
-			if (FeatureFlags::kClipDuration)
-			{
-				const auto tracks = value(MediaProperty::ClipDuration).toList();
-				const bool usable = !tracks.isEmpty() && std::all_of(tracks.cbegin(), tracks.cend(), [](const QVariant &track)
-																	 {
-					const auto duration = mediaDuration(track.toMap().value(QStringLiteral("Duration")));
-					return duration.units >= 0 && duration.rate.valid() && duration.displayRate.valid(); });
-				require(MediaProperty::ClipDuration, usable);
-			}
 			// Bin/source names and effect details may legitimately be absent.
 			// A recorded disagreement is still worth a header read; absence alone
 			// is not. Internal sample representation and channels do not gate I/O.

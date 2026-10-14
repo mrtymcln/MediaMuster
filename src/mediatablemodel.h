@@ -8,7 +8,7 @@
 #include <QVector>
 
 /// One row per MediaFile. Optional columns are appended to keep logical indexes
-/// stable; the view positions Clip Duration beside Duration and details beside Type.
+/// stable; the view positions precompute details beside Type.
 class MediaTableModel : public QAbstractTableModel
 {
 	Q_OBJECT
@@ -76,16 +76,9 @@ public:
 	void setPrecomputesEnabled(bool enabled);
 	bool precomputesEnabled() const { return m_precomputesEnabled; }
 
-	/// Logically appended after active columns; the view places it beside Duration.
-	/// Its logical index moves when precompute details toggle.
-	void setClipDurationEnabled(bool enabled);
-	int clipDurationColumn() const;
-	bool clipDurationEnabled() const { return m_clipDurationEnabled; }
-
 private:
 	QVector<MediaFile> m_files;
 	bool m_precomputesEnabled = false;
-	bool m_clipDurationEnabled = false;
 	bool m_omfScanEnabled = false;
 	KelpieIdAllocator m_ids;
 	QVector<ScanIssue> m_scanIssues;

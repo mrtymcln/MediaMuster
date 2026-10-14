@@ -26,7 +26,6 @@ public:
 		SoundDescriptor,
 		EqualRankConflict,
 		PreferredSource,
-		ContradictoryMasterTiming,
 		ExcludedSources,
 		MasterAssociations,
 		AvbAssociationConflict,
@@ -119,8 +118,6 @@ private:
 			return QStringLiteral("Equally eligible sources disagree; no defensible winner");
 		case Reason::PreferredSource:
 			return QStringLiteral("Selected by the field-specific source priority; alternatives retained");
-		case Reason::ContradictoryMasterTiming:
-			return QStringLiteral("Selected source records contradictory timing for the same master track; alternatives retained");
 		case Reason::ExcludedSources:
 			return QStringLiteral("Read values retained; the policy excludes their sources from selection");
 		case Reason::MasterAssociations:

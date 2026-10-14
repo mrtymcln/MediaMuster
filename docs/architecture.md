@@ -176,8 +176,8 @@ scope. Other filters still apply to the resulting rows.
 Loading or removing bins changes filtering only; no bin-enrichment resolver or row
 AVB history owner remains. The loaded bins and applied filter snapshots still retain
 their current metadata and graphs. Compacting those graphs remains outstanding.
-Current fields and the master-association union are preserved; Source Filename,
-Clip Duration and single-master selection are separate Copland changes. Acquisition
+The master-association union is preserved; Source Filename and single-master
+selection are separate Copland changes. Clip Duration has been removed. Acquisition
 and cancellation changes are also separate. No memory or scan-time saving is measured.
 [PrecomputeFilterDialog](../src/precomputefilterdialog.cpp) builds the optional
 [PrecomputeFilter](../src/precomputefilter.h).
@@ -352,7 +352,7 @@ See [CONTRIBUTING](CONTRIBUTING.md) for development and documentation convention
 ## Duration ownership
 
 `MediaDuration` carries original units, their rational rate, a separate display
-frame rate, and descriptor/file-track/clip-reference provenance in MediaEngine observations.
+frame rate, and descriptor/file-track provenance in MediaEngine observations.
 The compatibility adapter supplies the selected measurement to `MediaFile`.
 Frame rounding is confined to display and the
 existing sort-by-displayed-timecode rule. Exact integer conversion avoids losing
@@ -364,13 +364,12 @@ edit-unit clocks remain distinct. AIFF header fallback also retains its 80-bit
 sample-rate encoding and only sets a duration fraction when it fits exactly.
 
 File-duration selection compares equivalent recorded units/rates and resolves its
-optional display clock separately. Associated Clip Duration observations preserve
-master and track context; the adapter supplies their display vector. They never establish a file's
-stored length or a duration-based association constraint. The optional Clip Duration
-column is logically appended after currently enabled columns, while the view places
-it immediately after Duration. Toggling precompute details moves that logical index
-without changing base column indexes or its visual position. CSV also places
-Clip Duration immediately after Duration when enabled.
+optional display clock separately. Copland C13 removes clip-track duration
+calculations, observations, retained values, table/CSV columns and the header-read
+condition for missing clip lengths. Master graph traversal still establishes
+association/name/type/project facts, and shared rate/timecode helpers still supply
+the physical file's clock and drop-frame interpretation. No master-track minimum
+replaces a file's stored length or constrains its association.
 
 Current associations establish package/mob membership. Exact SourceTrackID and
 SourceClip start-position qualification, applicable timecode branches and offsets,

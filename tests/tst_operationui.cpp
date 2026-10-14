@@ -324,11 +324,10 @@ void TestOperationUi::csv_export_completes_before_return()
 											{ QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, nonNativeDialogs); });
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	window.setPrecomputesEnabled(false);
-	window.setClipDurationEnabled(false);
 	QWeakPointer<MediaEngine::ScanResult> previousScan;
 	QWeakPointer<const SourceSnapshot> previousSource;
 	QString selectedLine;
-	const MediaCsv::Options expectedOptions{true, true};
+	const MediaCsv::Options expectedOptions{true};
 	{
 		auto scan = QSharedPointer<MediaEngine::ScanResult>::create();
 		previousScan = scan;
@@ -398,7 +397,6 @@ void TestOperationUi::csv_export_completes_before_return()
 					window.m_tableView->sortByColumn(
 						static_cast<int>(MediaTableModel::Column::ClipName), Qt::DescendingOrder);
 					window.setPrecomputesEnabled(true);
-					window.setClipDurationEnabled(true);
 					// Visible rows, ordering and column gates are captured after Save.
 					expectedText = MediaCsv::headerLine(expectedOptions);
 					if (scope == QStringLiteral("Selected"))
@@ -1487,17 +1485,6 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	using Column = MediaTableModel::Column;
 	const int typeColumn = static_cast<int>(Column::Type);
 	const int precomputeTab = 3;
-	const auto checkClipDurationPosition = [&]
-	{
-		QCOMPARE(window.m_model->clipDurationEnabled(), FeatureFlags::kClipDuration);
-		if (FeatureFlags::kClipDuration)
-		{
-			auto *header = window.m_tableView->horizontalHeader();
-			QCOMPARE(header->visualIndex(window.m_model->clipDurationColumn()),
-					 header->visualIndex(static_cast<int>(Column::Duration)) + 1);
-		}
-	};
-	checkClipDurationPosition();
 	MediaFile media;
 	media.mediaFilePath = path("media.mxf");
 	media.fileName = QStringLiteral("media.mxf");
@@ -1518,7 +1505,7 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	QVERIFY(!window.m_model->precomputesEnabled());
 	QVERIFY(!window.m_proxy->precomputesEnabled());
 	QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
-	QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::PrecomputeCategory) + int(FeatureFlags::kClipDuration));
+	QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::PrecomputeCategory));
 	QVERIFY(window.m_precomputeFilterButton->isHidden());
 	QVERIFY(!window.m_precomputeFilterAction->isVisible());
 	QVERIFY(!window.m_precomputeFilterAction->isEnabled());
@@ -1544,8 +1531,7 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	window.setPrecomputesEnabled(true);
 	QVERIFY(window.m_precomputesEnabled);
 	QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
-	QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::Count_) + int(FeatureFlags::kClipDuration));
-	checkClipDurationPosition();
+	QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::Count_));
 	int detailPosition = window.m_tableView->horizontalHeader()->visualIndex(typeColumn) + 1;
 	for (const auto column : {Column::PrecomputeCategory, Column::EffectCategory, Column::Effect, Column::EffectSequence})
 		QCOMPARE(window.m_tableView->horizontalHeader()->visualIndex(static_cast<int>(column)), detailPosition++);
@@ -1597,12 +1583,22 @@ void TestOperationUi::optional_columns_match_csv_and_preserve_retained_sort()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	MediaFile file;
-	file.clipName = QStringLiteral("Clip");
-	window.m_model->setMediaFiles(TestMediaFile::seeded({file}));
+	file.mediaFilePath = path(QStringLiteral("short.mxf"));
+	file.fileName = QStringLiteral("short.mxf");
+	file.clipName = QStringLiteral("Short clip");
+	file.kind = MediaFile::Kind::Video;
+	file.duration = {19, {25, 1}, {25, 1}, MediaDuration::Source::Descriptor};
+	file.timecodeBase = 25;
+	MediaFile longer = file;
+	longer.mediaFilePath = path(QStringLiteral("long.mxf"));
+	longer.fileName = QStringLiteral("long.mxf");
+	longer.clipName = QStringLiteral("Long clip");
+	longer.duration = {250, {25, 1}, {25, 1}, MediaDuration::Source::Descriptor};
+	window.m_model->setMediaFiles(TestMediaFile::seeded({file, longer}));
 	// Exercise both gates in one window, including removing and reinserting columns.
-	for (const bool clip : {true, false, true})
+	for (const bool omf : {true, false, true})
 	{
-		window.setClipDurationEnabled(clip);
+		window.setOmfScanEnabled(omf);
 		for (const bool precomputes : {false, true, false})
 		{
 			window.setPrecomputesEnabled(precomputes);
@@ -1621,16 +1617,26 @@ void TestOperationUi::optional_columns_match_csv_and_preserve_retained_sort()
 			headings.removeAll(QStringLiteral("KelpieId"));
 			headings.removeAll(QStringLiteral("OmfScan"));
 			headings.append({QStringLiteral("Database Status"), QStringLiteral("FileMobId"), QStringLiteral("MasterMobId"), QStringLiteral("KelpieId"), QStringLiteral("OmfScan")});
-			QCOMPARE(MediaCsv::headerLine({precomputes, clip}), headings.join(',') + '\n');
+			QCOMPARE(MediaCsv::headerLine({precomputes}), headings.join(',') + '\n');
 		}
 	}
 	window.setPrecomputesEnabled(true);
-	window.m_tableView->sortByColumn(window.m_model->clipDurationColumn(), Qt::DescendingOrder);
-	window.setPrecomputesEnabled(false);
-	QCOMPARE(window.m_proxy->sortColumn(), window.m_model->clipDurationColumn());
-	QCOMPARE(window.m_proxy->sortOrder(), Qt::DescendingOrder);
-	window.setClipDurationEnabled(false);
-	QCOMPARE(window.m_proxy->sortColumn(), static_cast<int>(MediaTableModel::Column::ClipName));
+	const int duration = static_cast<int>(MediaTableModel::Column::Duration);
+	window.m_tableView->sortByColumn(duration, Qt::DescendingOrder);
+	for (const bool precomputes : {false, true, false})
+	{
+		window.setPrecomputesEnabled(precomputes);
+		for (const bool omf : {false, true})
+		{
+			window.setOmfScanEnabled(omf);
+			QCOMPARE(window.m_proxy->sortColumn(), duration);
+			QCOMPARE(window.m_proxy->sortOrder(), Qt::DescendingOrder);
+			QCOMPARE(window.m_proxy->rowCount(), 2);
+			QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, longer.mediaFilePath);
+			QCOMPARE(window.m_proxy->index(0, duration).data().toString(), QStringLiteral("00:00:10:00"));
+			QCOMPARE(window.m_proxy->index(1, duration).data().toString(), QStringLiteral("00:00:00:19"));
+		}
+	}
 }
 
 void TestOperationUi::bin_loading_keeps_prepared_table_and_csv_metadata()
@@ -1639,7 +1645,6 @@ void TestOperationUi::bin_loading_keeps_prepared_table_and_csv_metadata()
 	QVERIFY(tmp.isValid());
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	window.setPrecomputesEnabled(true);
-	window.setClipDurationEnabled(false);
 	MediaFile missing;
 	missing.mediaFilePath = tmp.filePath("missing.mxf");
 	missing.fileMobId = MobId::format(TestAvb::Source);
@@ -1678,7 +1683,7 @@ void TestOperationUi::bin_loading_keeps_prepared_table_and_csv_metadata()
 			d.objects.append({"ZZZZ", QByteArray::fromHex("020103")});
 		return TestAvb::write(tmp.filePath(name + ".avb"), d.bytes());
 	};
-	const MediaCsv::Options options{true, false};
+	const MediaCsv::Options options{true};
 	const auto check = [&](const QVector<MediaFile> &expected, int visibleRows = 2)
 	{
 		QCOMPARE(window.m_model->rowCount(), expected.size());

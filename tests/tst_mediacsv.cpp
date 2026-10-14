@@ -68,7 +68,6 @@ class TestMediaCsv : public QObject
 {
 	Q_OBJECT
 private slots:
-	void clip_duration_column_is_explicit();
 	void header_and_row_have_the_same_field_count();
 	void all_master_ids_and_physical_row_identity_are_exported();
 	void header_order_and_values_follow_the_export_schema();
@@ -402,30 +401,6 @@ void TestMediaCsv::precompute_categories_preserve_unknown_details()
 		QCOMPARE(fields[headers.indexOf(QStringLiteral("Effect Category"))], QStringLiteral("unknown"));
 		QCOMPARE(fields[headers.indexOf(QStringLiteral("Effect"))], QStringLiteral("unknown"));
 	}
-}
-
-void TestMediaCsv::clip_duration_column_is_explicit()
-{
-	MediaFile file;
-	file.duration = {1, {24, 1}, {24, 1}, MediaDuration::Source::Descriptor};
-	file.timecodeBase = 24;
-	file.clipDurations = {{1, {2880, {24, 1}, {24, 1}, MediaDuration::Source::ClipReference}, false}};
-	for (bool precomputes : {false, true})
-	{
-		auto headers = readCsvRecord(MediaCsv::headerLine({precomputes, true}));
-		auto fields = readCsvRecord(MediaCsv::rowLine(file, {precomputes, true}));
-		QCOMPARE(fields.size(), headers.size());
-		const int duration = headers.indexOf(QStringLiteral("Duration"));
-		QVERIFY(duration >= 0);
-		QCOMPARE(headers.at(duration + 1), QStringLiteral("Clip Duration"));
-		QCOMPARE(fields.at(duration + 1), QStringLiteral("Track 1: 00:02:00:00"));
-		QCOMPARE(fields.at(duration), QStringLiteral("00:00:00:01"));
-		headers.removeAt(duration + 1);
-		fields.removeAt(duration + 1);
-		QCOMPARE(headers, readCsvRecord(MediaCsv::headerLine({precomputes, false})));
-		QCOMPARE(fields, readCsvRecord(MediaCsv::rowLine(file, {precomputes, false})));
-	}
-	QVERIFY(!MediaCsv::headerLine().contains(QStringLiteral("Clip Duration")));
 }
 
 QTEST_APPLESS_MAIN(TestMediaCsv)

@@ -68,13 +68,6 @@ namespace TestMediaFile
 			add(MediaProperty::DropFrame, file.dropFrame, header);
 			if (file.duration.known())
 				add(MediaProperty::FileDuration, MediaEngine::durationValue(file.duration), header);
-			QVariantList tracks;
-			for (const auto &track : file.clipDurations)
-				tracks.append(QVariantMap{{QStringLiteral("TrackId"), track.trackId},
-					{QStringLiteral("Duration"), MediaEngine::durationValue(track.duration)},
-					{QStringLiteral("DropFrame"), track.dropFrame}});
-			if (!tracks.isEmpty())
-				add(MediaProperty::ClipDuration, tracks, header);
 			add(MediaProperty::SourcePath, file.sourceFilePath, header);
 			add(MediaProperty::SourceFilename, file.sourceFileName, header);
 			add(MediaProperty::SourceContainer, file.sourceContainer, header);

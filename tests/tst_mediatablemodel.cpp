@@ -93,7 +93,6 @@ private slots:
 	void status_words_come_from_one_table();
 	void unknown_classification_displays_without_guessing();
 	void precomputes_gate_preserves_rows_and_existing_indexes();
-	void clip_duration_is_separate_and_gated();
 	void effect_columns_only_display_precompute_details();
 	void precompute_categories_and_unknown_effects_display_consistently();
 
@@ -362,21 +361,30 @@ void TestMediaTableModel::omf_gate_preserves_optional_column_indexes()
 	QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
 	MediaFile file = row();
 	file.omfEra = true;
+	file.duration = {19, {25, 1}, {25, 1}, MediaDuration::Source::Descriptor};
+	file.timecodeBase = 25;
 	model.setMediaFiles(TestMediaFile::seeded({file}));
+	const QPersistentModelIndex duration(model.index(0, int(MediaTableModel::Column::Duration)));
 	for (bool omf : {true, false, true})
-		for (bool clip : {true, false})
-			for (bool precompute : {true, false})
+	{
+		model.setOmfScanEnabled(omf);
+		const QPersistentModelIndex family = omf ? model.index(0, model.omfScanColumn()) : QModelIndex{};
+		for (bool precompute : {true, false, true})
+		{
+			model.setPrecomputesEnabled(precompute);
+			QCOMPARE(model.columnCount(), 19 + int(omf) + 4 * int(precompute));
+			QVERIFY(duration.isValid());
+			QCOMPARE(duration.column(), int(MediaTableModel::Column::Duration));
+			QCOMPARE(duration.data().toString(), QStringLiteral("00:00:00:19"));
+			if (omf)
 			{
-				model.setOmfScanEnabled(omf);
-				model.setClipDurationEnabled(clip);
-				model.setPrecomputesEnabled(precompute);
-				QCOMPARE(model.columnCount(), 19 + int(omf) + int(clip) + 4 * int(precompute));
-				if (omf)
-				{
-					QCOMPARE(model.headerData(model.omfScanColumn(), Qt::Horizontal, Qt::DisplayRole).toString(), QStringLiteral("OmfScan"));
-					QCOMPARE(model.data(model.index(0, model.omfScanColumn()), Qt::DisplayRole).toString(), QStringLiteral("true"));
-				}
+				QVERIFY(family.isValid());
+				QCOMPARE(family.column(), model.omfScanColumn());
+				QCOMPARE(model.headerData(family.column(), Qt::Horizontal, Qt::DisplayRole).toString(), QStringLiteral("OmfScan"));
+				QCOMPARE(family.data().toString(), QStringLiteral("true"));
 			}
+		}
+	}
 }
 
 void TestMediaTableModel::unknown_created_date_displays_blank()
@@ -477,33 +485,6 @@ void TestMediaTableModel::unknown_classification_displays_without_guessing()
 	QCOMPARE(model.index(1, type).data().toString(), QStringLiteral("Media"));
 	QCOMPARE(model.index(2, kind).data().toString(), QStringLiteral("Audio"));
 	QCOMPARE(model.index(2, type).data().toString(), QStringLiteral("Precompute"));
-}
-
-void TestMediaTableModel::clip_duration_is_separate_and_gated()
-{
-	MediaTableModel model;
-	MediaFile file = row();
-	file.duration = {19, {25, 1}, {25, 1}, MediaDuration::Source::Descriptor};
-	file.timecodeBase = 25;
-	file.clipDurations = {{1, {344, {25, 1}, {25, 1}, MediaDuration::Source::ClipReference}, false},
-						  {2, {250, {25, 1}, {25, 1}, MediaDuration::Source::ClipReference}, false}};
-	model.setMediaFiles(TestMediaFile::seeded({file}));
-	const int base = model.columnCount();
-	QCOMPARE(model.headerData(int(MediaTableModel::Column::Duration), Qt::Horizontal, Qt::DisplayRole).toString(), QStringLiteral("Duration"));
-	model.setClipDurationEnabled(true);
-	QCOMPARE(model.columnCount(), base + 1);
-	QCOMPARE(model.headerData(model.clipDurationColumn(), Qt::Horizontal, Qt::DisplayRole).toString(), QStringLiteral("Clip Duration"));
-	QPersistentModelIndex clip(model.index(0, model.clipDurationColumn()));
-	QCOMPARE(clip.data().toString(), QStringLiteral("Track 1: 00:00:13:19; Track 2: 00:00:10:00"));
-	QCOMPARE(model.index(0, int(MediaTableModel::Column::Duration)).data().toString(), QStringLiteral("00:00:00:19"));
-	model.setPrecomputesEnabled(true);
-	QCOMPARE(clip.column(), model.clipDurationColumn());
-	QCOMPARE(clip.data().toString(), file.clipDurationDisplay());
-	model.setPrecomputesEnabled(false);
-	QCOMPARE(clip.column(), model.clipDurationColumn());
-	model.setClipDurationEnabled(false);
-	QCOMPARE(model.columnCount(), base);
-	QVERIFY(!clip.isValid());
 }
 
 void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()

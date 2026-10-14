@@ -1099,10 +1099,8 @@ namespace MediaEngine
 				return result;
 			}
 
-			QVariant projectDropFrame(ProjectedFile &file, const AvidObject &package) const
+			void projectDropFrame(ProjectedFile &file, const AvidObject &package) const
 			{
-				QVariant selected;
-				bool conflict = false;
 				for (const auto *timecode : timecodes(package))
 					if (const auto *drop = unique(*timecode, "TimecodeComponent.DropFrame");
 						drop && drop->decoded.metaType().id() == QMetaType::Bool)
@@ -1110,17 +1108,12 @@ namespace MediaEngine
 						remember(file, *timecode);
 						observe(file, MediaProperty::DropFrame, m_source, *timecode, *drop, drop->decoded,
 								EvidenceBasis::Recorded, QStringLiteral("Drop-frame flag from a timecode component belonging to this file or an explicitly linked material package; never inferred from frame rate."));
-						conflict |= selected.isValid() && selected != drop->decoded;
-						selected = drop->decoded;
 					}
-				return conflict ? QVariant{} : selected;
 			}
 
 			void projectMasters(ProjectedFile &file, const AvidObject &package)
 			{
-				QVariantList durations;
 				projectDropFrame(file, package);
-				const auto displayRate = projectRate(package);
 				const auto *root = rootFor(package);
 				if (!root)
 					return;
@@ -1179,30 +1172,7 @@ namespace MediaEngine
 					copy(file, master, "GenericPackage.Name", MediaProperty::ClipName);
 					projectAttributes(file, master);
 					projectClassification(file, master, *id);
-					const auto dropFrame = projectDropFrame(file, master);
-					for (const auto *track : referencingTracks)
-					{
-						remember(file, *track);
-						const auto trackId = integer(unique(*track, "GenericTrack.TrackID"));
-						const auto clock = rate(unique(*track, "Track.EditRate"));
-						if (!trackId || *trackId < 0 || *trackId > std::numeric_limits<quint32>::max() || !clock.valid())
-							continue;
-						for (const auto *sequence : children(*track, "GenericTrack.Sequence"))
-						{
-							remember(file, *sequence);
-							const auto *length = unique(*sequence, "StructuralComponent.Duration");
-							const auto count = integer(length);
-							if (!count || *count < 0)
-								continue;
-							const auto display = displayRate.valid() ? displayRate : clock;
-							durations.append(QVariantMap{{QStringLiteral("MasterMobId"), masterId},
-														 {QStringLiteral("TrackId"), quint32(*trackId)},
-														 {QStringLiteral("DropFrame"), dropFrame},
-														 {QStringLiteral("DurationObject"), sequence->handle},
-														 {QStringLiteral("DurationProperty"), length->locator.name},
-														 {QStringLiteral("Duration"), durationValue({*count, clock, display, MediaDuration::Source::ClipReference})}});
-						}
-					}
+					projectDropFrame(file, master);
 				}
 				const auto &preface = *root->preface;
 				for (const auto &recorded : preface.properties)
@@ -1222,12 +1192,6 @@ namespace MediaEngine
 					if (!file.masterMobIds.isEmpty() && !file.masterMobIds.contains(masterId))
 						m_result.diagnostics.append(QStringLiteral("MXF Preface.MasterMobID is not among the file's established material-package associations; the observation remains ineligible and retained."));
 				}
-				// One list preserves independent tracks without making different track
-				// durations appear to be competing answers to one file-duration field.
-				if (!durations.isEmpty())
-					if (const auto *id = unique(package, "GenericPackage.PackageUID"))
-						observe(file, MediaProperty::ClipDuration, m_source, package, *id, durations, EvidenceBasis::Derived,
-								QStringLiteral("Independent linked-master track lengths; each entry retains master ID, TrackID, original clock and display clock. Unrecorded drop-frame status is omitted."));
 			}
 
 			void projectClassification(ProjectedFile &file, const AvidObject &master, const RawProperty &anchor) const

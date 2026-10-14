@@ -248,9 +248,6 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 	const MediaFile &leftFile = m_sourceModel->fileAt(left.row());
 	const MediaFile &rightFile = m_sourceModel->fileAt(right.row());
 
-	if (m_sourceModel->clipDurationEnabled() && left.column() == m_sourceModel->clipDurationColumn())
-		return QString::compare(leftFile.clipDurationDisplay(), rightFile.clipDurationDisplay(), Qt::CaseInsensitive) < 0;
-
 	if (m_sourceModel->omfScanEnabled() && left.column() == m_sourceModel->omfScanColumn())
 		return leftFile.omfEra < rightFile.omfEra;
 

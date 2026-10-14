@@ -277,7 +277,6 @@ int main()
 	{
 		report.insert("partial_master_tracks_selected_master_count", parsed.files.first().masterMobIds.size());
 		report.insert("partial_master_tracks_clip_name", value(parsed.files.first(), MediaProperty::ClipName).toString());
-		report.insert("partial_master_tracks_clip_duration_count", value(parsed.files.first(), MediaProperty::ClipDuration).toList().size());
 	}
 	std::cout << QJsonDocument(report).toJson().constData();
 }

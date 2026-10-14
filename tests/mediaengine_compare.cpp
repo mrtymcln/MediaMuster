@@ -327,7 +327,7 @@ int main(int argc, char **argv)
 				for (const auto &file : scan->files)
 					rows.append(mediaEngineMediaFile(file, rowChecks, {}, {}, scan->cancelled));
 			}
-			if (!MediaCsv::write(parser.value(csvOption), rows, {true, true}))
+			if (!MediaCsv::write(parser.value(csvOption), rows, {true}))
 				throw std::runtime_error("CSV write failed");
 			report.insert(QStringLiteral("csv"), parser.value(csvOption));
 			report.insert(QStringLiteral("csvSha256"), QString::fromLatin1(fileDigest(parser.value(csvOption))));
@@ -376,7 +376,7 @@ int main(int argc, char **argv)
 			{QStringLiteral("memory"), QStringLiteral("Fresh-process current resident/physical footprint or Windows private bytes and peak resident sampled immediately after scan return, retaining session; before proof fingerprints and adapter rows. Peak includes process setup, preflight discovery and the scan. Unsupported counters are omitted.")},
 			{QStringLiteral("setup"), QStringLiteral("Preflight discovery enumerates input stamps before timing. Its inventory is released before memoryBefore; stamps and bounded callback sink remain. Filesystem cache is uncontrolled; no cold-cache claim.")},
 			{QStringLiteral("verification"), QStringLiteral("Hashes every final row's property fields, read coverage, observations, alternatives, selections and receipt aliases; scheduling receipts, stamps, issues, callbacks and completion flags. CSV and source/folder stamp checks also run. Dedicated format-reader tests verify parsed records separately.")},
-			{QStringLiteral("csv"), QStringLiteral("Existing MediaEngine adapter and MediaCsv with precompute details and clip duration enabled; created after memory sample.")}});
+			{QStringLiteral("csv"), QStringLiteral("Existing MediaEngine adapter and MediaCsv with precompute details enabled; created after memory sample.")}});
 	}
 	catch (const std::exception &error)
 	{

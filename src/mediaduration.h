@@ -28,7 +28,6 @@ struct MediaDuration
 		Unknown,
 		Descriptor,		///< Stored essence length in the selected descriptor's units.
 		FileTrack,		///< File-track fallback; may include a held frame.
-		ClipReference,	///< Referenced timeline length; not proof of full stored length.
 		LegacyHeuristic ///< Graphless recovery with uncertain ownership/rate.
 	};
 
@@ -92,12 +91,4 @@ struct MediaDuration
 		}
 		return qint64(result);
 	}
-};
-
-/// A separately recorded material/master track, never substituted for file duration.
-struct ClipTrackDuration
-{
-	quint32 trackId = 0;
-	MediaDuration duration;
-	bool dropFrame = false;
 };

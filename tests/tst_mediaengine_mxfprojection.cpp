@@ -485,7 +485,7 @@ private slots:
 		auto result = project(graph);
 		QCOMPARE(result.files.size(), 1);
 		QVERIFY(result.files.first().masterMobIds.isEmpty());
-		for (const auto field : {MediaProperty::MasterMobId, MediaProperty::ClipName, MediaProperty::ClipDuration, MediaProperty::Type})
+		for (const auto field : {MediaProperty::MasterMobId, MediaProperty::ClipName, MediaProperty::Type})
 			QVERIFY(!value(result.files.first(), field).isValid());
 		QCOMPARE(selectedIdentity(result).value.toString(), canonicalMxfId(graph.fileId));
 
@@ -508,7 +508,8 @@ private slots:
 		component.refreshLinks(track);
 		result = project(component);
 		QVERIFY(result.files.first().masterMobIds.isEmpty());
-		QVERIFY(!value(result.files.first(), MediaProperty::ClipDuration).isValid());
+		for (const auto field : {MediaProperty::MasterMobId, MediaProperty::ClipName, MediaProperty::Type})
+			QVERIFY(!value(result.files.first(), field).isValid());
 	}
 
 	void partial_multiple_descriptor_list_cannot_promote_one_resolved_descriptor()
@@ -556,7 +557,7 @@ private slots:
 		graph.refreshLinks(track);
 		const auto result = project(graph);
 		QCOMPARE(result.files.first().masterMobIds, QStringList{canonicalMxfId(umid('m'))});
-		QCOMPARE(value(result.files.first(), MediaProperty::ClipDuration).toList().size(), 1);
+		QCOMPARE(value(result.files.first(), MediaProperty::ClipName).toString(), QStringLiteral("Clip m"));
 		// Raw arrays retain both occurrences and both recorded property copies.
 		QCOMPARE(graph.at(sequence).properties[1].decoded.toList().size(), 2);
 		QCOMPARE(graph.at(sequence).properties[2].decoded.toList().size(), 2);
@@ -615,7 +616,7 @@ private slots:
 		auto result = project(graph);
 		QCOMPARE(result.files.size(), 1);
 		QCOMPARE(result.files.first().masterMobIds.size(), 2);
-		QCOMPARE(value(result.files.first(), MediaProperty::ClipDuration).toList().size(), 2);
+
 		const auto ecd = graph.object("EssenceContainerData", 999);
 		graph.property(ecd, "EssenceContainerData.LinkedPackageUID", graph.fileId);
 		const auto package = graph.object("SourcePackage", 999);
@@ -630,6 +631,8 @@ private slots:
 	void drop_frame_comes_from_associated_timecode_only()
 	{
 		Graph graph;
+		graph.property(graph.descriptor, "FileDescriptor.SampleRate", rateValue({30000, 1001}));
+		graph.property(graph.descriptor, "FileDescriptor.ContainerDuration", qint64(240));
 		const auto master = graph.master();
 		QVERIFY(!value(project(graph).files.first(), MediaProperty::DropFrame).isValid());
 		const auto track = graph.object("Track"), timecode = graph.object("TimecodeComponent");
@@ -641,7 +644,13 @@ private slots:
 		graph.appendToBatch(master, "GenericPackage.Tracks", track);
 		const auto result = project(graph).files.first();
 		QCOMPARE(value(result, MediaProperty::DropFrame).toBool(), true);
-		QCOMPARE(value(result, MediaProperty::ClipDuration).toList().first().toMap().value(QStringLiteral("DropFrame")).toBool(), true);
+		const auto duration = mediaDuration(value(result, MediaProperty::FileDuration));
+		QCOMPARE(duration.units, 240);
+		QCOMPARE(duration.rate.numerator, 30000);
+		QCOMPARE(duration.rate.denominator, 1001);
+		QVERIFY(duration.displayRate.sameRate({30000, 1001}));
+		QCOMPARE(duration.source, MediaDuration::Source::Descriptor);
+		QCOMPARE(result.masterMobIds, QStringList{canonicalMxfId(umid('m'))});
 	}
 
 	void audio_keeps_sample_units_and_does_not_invent_video_rate()

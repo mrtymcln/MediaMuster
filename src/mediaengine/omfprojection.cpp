@@ -311,7 +311,6 @@ namespace MediaEngine
 				if (!m_contentsComplete)
 					return result;
 				QHash<ObjectHandle, QVector<qsizetype>> fileSubjects;
-				QHash<qsizetype, QVariantList> clipDurations;
 				for (const auto &object : m_source.objects)
 				{
 					if (m_cancellation.cancelled())
@@ -402,21 +401,11 @@ namespace MediaEngine
 							observe(file, MediaProperty::MasterMobId, m_source, master, *masterMobIdProperty, masterMobId,
 									EvidenceBasis::Derived, QStringLiteral("This master's source-clip graph references the file mob."));
 							appendEvidence(file.evidence, masterFacts.evidence);
-							clipDurations[index] += trackDurations(master, *m_objects.value(handle), file);
 						}
 					result.masters.append(std::move(masterFacts));
 				}
-				for (qsizetype index = 0; index < result.files.size(); ++index)
-				{
-					auto &file = result.files[index];
+				for (auto &file : result.files)
 					file.masterMobIds.sort();
-					if (clipDurations.value(index).isEmpty())
-						continue;
-					const auto *owner = m_objects.value(file.objects.first().handle);
-					const auto *id = unique(*owner, {"OMFI:MOBJ:MobID"});
-					observe(file, MediaProperty::ClipDuration, m_source, *owner, *id, clipDurations.value(index), EvidenceBasis::Derived,
-							QStringLiteral("Independent recorded master-track lengths linked to this file; unknown lengths, clocks or drop-frame status are not invented."));
-				}
 				result.diagnostics += m_referenceDiagnostics;
 				if (m_disputedMedia)
 				{
@@ -892,149 +881,6 @@ namespace MediaEngine
 							}
 					pending += sourceMobs(*mob);
 				}
-			}
-
-			struct ComponentLength
-			{
-				qint64 units = 0;
-				QString property;
-				QVariantList components;
-			};
-
-			std::optional<ComponentLength> legacyComponentLength(const AvidObject &component, MediaRate clock) const
-			{
-				// OMF toolkit omMobGet.c/Get1xSequLength adds segments and subtracts
-				// transitions. OMF1 sequences have no CLIP:Length of their own.
-				// Walk iteratively so nested sequences cannot exhaust the C++ stack.
-				struct Visit
-				{
-					const AvidObject *object;
-					bool expanded;
-				};
-				QVector<Visit> pending{{&component, false}};
-				QSet<ObjectHandle> active;
-				QHash<ObjectHandle, qint64> lengths;
-				QVariantList provenance;
-				QString rootProperty;
-				while (!pending.isEmpty())
-				{
-					if (m_cancellation.cancelled())
-						return {};
-					const auto visit = pending.takeLast();
-					const auto &object = *visit.object;
-					if (lengths.contains(object.handle))
-						continue;
-					if (!rate(unique(object, {"OMFI:CPNT:EditRate"})).sameRate(clock))
-						return {};
-					const auto cls = objectClass(object);
-					const bool sequence = cls == QLatin1String("SEQU");
-					if (!visit.expanded && sequence)
-					{
-						if (active.contains(object.handle) || properties(object, {"OMFI:SEQU:Sequence"}).size() != 1 ||
-							!completeReferences(object, "OMFI:SEQU:Sequence"))
-							return {};
-						active.insert(object.handle);
-						pending.append({&object, true});
-						const auto children = targets(object.handle, {"OMFI:SEQU:Sequence"});
-						for (auto it = children.crbegin(); it != children.crend(); ++it)
-							pending.append({*it, false});
-						continue;
-					}
-					qint64 units = 0;
-					QString property;
-					QVariantList contributions;
-					if (sequence)
-					{
-						property = QStringLiteral("OMFI:SEQU:Sequence");
-						for (const auto *child : targets(object.handle, {"OMFI:SEQU:Sequence"}))
-						{
-							const auto found = lengths.constFind(child->handle);
-							if (found == lengths.cend())
-								return {};
-							const bool subtract = objectClass(*child) == QLatin1String("TRAN");
-							if (subtract ? units < std::numeric_limits<qint64>::min() + *found
-										 : units > std::numeric_limits<qint64>::max() - *found)
-								return {};
-							units += subtract ? -*found : *found;
-							contributions.append(QVariantMap{{QStringLiteral("Object"), child->handle},
-															 {QStringLiteral("Units"), *found},
-															 {QStringLiteral("Subtract"), subtract}});
-						}
-					}
-					else
-					{
-						const bool transition = cls == QLatin1String("TRAN");
-						if (!transition && !named(cls, {"SCLP", "FILL", "TCCP", "ECCP"}))
-							return {}; // Unknown component length semantics remain unclaimed.
-						const auto *length = unique(object, {transition ? "OMFI:TRKG:GroupLength" : "OMFI:CLIP:Length"});
-						const auto count = integer(length);
-						if (!count)
-							return {};
-						units = *count;
-						property = length->locator.name;
-					}
-					if (units < 0)
-						return {};
-					lengths.insert(object.handle, units);
-					active.remove(object.handle);
-					provenance.append(QVariantMap{{QStringLiteral("Object"), object.handle}, {QStringLiteral("Property"), property}, {QStringLiteral("Units"), units}, {QStringLiteral("Rate"), rateValue(clock)}, {QStringLiteral("Contributions"), contributions}});
-					if (object.handle == component.handle)
-						rootProperty = property;
-				}
-				return ComponentLength{lengths.value(component.handle), rootProperty,
-									   objectClass(component) == QLatin1String("SEQU") ? provenance : QVariantList{}};
-			}
-
-			QVariantList trackDurations(const AvidObject &master, const AvidObject &fileMob, const ProjectedFile &file) const
-			{
-				QVariantList result;
-				const auto masterMobId = identity(unique(master, {"OMFI:MOBJ:MobID"}));
-				const auto drop = file.evidence.resolve(MediaProperty::DropFrame, [](MetadataSource)
-														{ return 1; }, QStringLiteral("Associated OMF timecode values"));
-				const auto kind = file.evidence.resolve(MediaProperty::Kind, [](MetadataSource)
-														{ return 1; }, QStringLiteral("Associated descriptor kind"));
-				const bool video = kind.value.isValid() && kind.value.toInt() == 0;
-				const auto fileClock = editRate(fileMob);
-				for (const auto *track : targets(master.handle, {"OMFI:TRKG:Tracks", "OMFI:MOBJ:Slots"}))
-				{
-					if (!sourceMobs(*track).contains(fileMob.handle))
-						continue;
-					const bool omf1 = objectClass(*track) == QLatin1String("TRAK");
-					std::optional<qint64> trackId;
-					if (omf1)
-						trackId = integer(unique(*track, {"OMFI:TRAK:LabelNumber"}));
-					else if (objectClass(*track) == QLatin1String("MSLT"))
-					{
-						const auto descriptors = targets(track->handle, {"OMFI:MSLT:TrackDesc"});
-						if (descriptors.size() == 1 && objectClass(*descriptors.first()) == QLatin1String("TRKD"))
-							trackId = integer(unique(*descriptors.first(), {"OMFI:TRKD:TrackID"}));
-					}
-					if (!trackId || *trackId < 0 || *trackId > std::numeric_limits<quint32>::max())
-						continue;
-					for (const auto *segment : targets(track->handle, {"OMFI:TRAK:TrackComponent", "OMFI:MSLT:Segment"}))
-					{
-						const auto clock = rate(omf1 ? unique(*segment, {"OMFI:CPNT:EditRate"}) : unique(*track, {"OMFI:MSLT:EditRate"}));
-						if (!clock.valid())
-							continue;
-						std::optional<ComponentLength> length;
-						if (omf1)
-							length = legacyComponentLength(*segment, clock);
-						else if (const auto *property = unique(*segment, {"OMFI:CPNT:Length"}))
-							if (const auto count = integer(property); count && *count >= 0)
-								length = ComponentLength{*count, property->locator.name, {}};
-						if (!length)
-							continue;
-						QVariantMap duration{{QStringLiteral("MasterMobId"), masterMobId}, {QStringLiteral("TrackId"), quint32(*trackId)}, {QStringLiteral("DurationObject"), segment->handle}, {QStringLiteral("DurationProperty"), length->property}, {QStringLiteral("Duration"), durationValue({length->units, clock, fileClock.valid() ? fileClock : video ? clock
-																																																																																							 : MediaRate{},
-																																																																								 MediaDuration::Source::ClipReference})}};
-						if (!length->components.isEmpty())
-							duration.insert(QStringLiteral("DurationComponents"), length->components);
-						if (drop.value.isValid())
-							duration.insert(QStringLiteral("DropFrame"), drop.value);
-						result.append(std::move(duration));
-					}
-				}
-				return result;
 			}
 
 			void text(ProjectedFile &file, MediaProperty field, const AvidObject &object, const RawProperty &property)

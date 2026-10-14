@@ -9,7 +9,6 @@
 #include <QString>
 #include <QStringList>
 #include <QDateTime>
-#include <QVector>
 #include <QMetaType>
 #include <cmath>
 #include <optional>
@@ -76,7 +75,6 @@ struct MediaFile
 	/// File duration with exact source units/rate and provenance. Master and
 	/// sibling lengths may differ; association never depends on equal duration.
 	MediaDuration duration;
-	QVector<ClipTrackDuration> clipDurations; ///< Separate per-track clip values, not an aggregate.
 	/// Nominal timecode base for duration rendering (24, 25, 30, 60...).
 	/// Parser-derived; 0 = unknown (durationDisplay falls back to the frameRate
 	/// display string, and shows blank when neither is available).
@@ -369,26 +367,6 @@ struct MediaFile
 			minutes = totalSecs / 60;
 		}
 		return {minutes / 60, static_cast<int>(minutes % 60), secs, frames};
-	}
-
-	/// Experimental Clip Duration column: preserve per-track distinctions, never sum.
-	QString clipDurationDisplay() const
-	{
-		QStringList values;
-		for (const auto &track : clipDurations)
-		{
-			if (!track.duration.known())
-				continue;
-			MediaFile display;
-			display.duration = track.duration;
-			display.timecodeBase = qRound(track.duration.displayRate.value());
-			display.dropFrame = track.dropFrame;
-			QString text = display.durationDisplay();
-			if (text.isEmpty())
-				text = QStringLiteral("%1 units @ %2/%3").arg(track.duration.units).arg(track.duration.rate.numerator).arg(track.duration.rate.denominator);
-			values.append(QStringLiteral("Track %1: %2").arg(track.trackId).arg(text));
-		}
-		return values.join(QStringLiteral("; "));
 	}
 
 	/// Duration as timecode; drop-frame uses semicolons. Unknown stays blank.

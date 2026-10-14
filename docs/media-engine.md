@@ -51,10 +51,16 @@ presentation adapter prepares selected facts for the table and CSV. Table insert
 stores prepared values without reselecting or projecting metadata. Confirmed
 transfers directly update physical values, field status and destination membership
 while keeping selected media values and frozen operation checks. No histories are
-rebuilt. Current fields and the master-association union remain; Source Filename,
-Clip Duration, single-master selection, acquisition/cancellation changes and
+rebuilt. The master-association union remains; Source Filename,
+single-master selection, acquisition/cancellation changes and
 loaded-bin graph compaction are separate tasks. This step establishes no measured
 memory or scan-time saving. The interface owns
 presentation and selection; the file-operation engine owns mutations,
 identity checks, recovery and Undo. See [architecture](architecture.md) for the
 full ownership map.
+
+Clip Duration has been removed under Copland C13, including master-track length
+calculations, its property/policy/status slot, retained row values and the
+header-sufficiency condition for missing clip lengths. Physical-file Duration,
+exact rates, display clocks/drop-frame interpretation and master associations
+remain required.

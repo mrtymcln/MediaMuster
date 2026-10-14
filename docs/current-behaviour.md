@@ -54,7 +54,9 @@ a `console/` or `mediamuster.` prefix to these labels. The category identifies t
 source of a message; its severity is separate.
 
 OMF support, precompute classification/filtering and file-operation Undo are
-controlled independently by compile-time flags in `src/featureflags.h`. This build enables OmfScan, precompute details, Clip Duration and Undo by default. Change a flag and rebuild to enable it; these controls do not
+controlled independently by compile-time flags in `src/featureflags.h`. This build
+enables OmfScan, precompute details and Undo by default. Change a flag and rebuild
+to enable it; these controls do not
 appear in the Debug menu. Rendered media remains in ordinary scan results when
 precompute details and filtering are disabled.
 
@@ -258,8 +260,6 @@ evidence used during scanning; recorded property names and raw observation histo
 remain temporary.
 OmfScan is true for admitted legacy-folder media, including AIF/WAV; it is false
 for MXF-family media. Type is always visible. Enabling
-the Clip Duration feature flag places Clip Duration immediately after Duration
-in both the table and CSV. Enabling
 Precomputes inserts Precompute Category, Effect Category, Effect and Effect
 Sequence after Type and exposes the Filter Precomputes dialog.
 
@@ -298,8 +298,8 @@ clocks need not be identical. Legacy AIFF rates retain their original ten-byte
 encoding; an exactly representable fraction is also kept. An unsupported fraction
 does not become an exact duration rate merely by rounding it to whole Hz.
 
-The selected descriptor/file-owned length is kept separately from linked master
-reference lengths. A master reference does not establish complete stored essence
+The selected descriptor/file-owned length describes the physical media. A master
+reference does not establish complete stored essence
 length. Duration provenance remains attached to the value. Equivalent fractions
 do not create false conflicts. A missing or conflicting display clock leaves the
 source measurement intact and the timecode blank.
@@ -310,17 +310,10 @@ These differences do not invalidate files, identities or bin/master associations
 No master length is copied over a known descriptor length or calculated by
 summing associated files.
 
-`FeatureFlags::kClipDuration` controls this experiment. When enabled, an
-experimental **Clip Duration** column and CSV field show separately
-recovered material/master track lengths, labelled by track ID. It preserves
-multiple track lengths rather than inventing one aggregate. MediaEngine reads media
-headers and prepares the selected per-track values independently of this display flag.
-MXF and supported OMF/MDB graph projections can supply associated track lengths;
-unavailable clip lengths stay blank. AVB clip lengths are not currently projected
-into this column. The ordinary **Duration** heading and meaning remain unchanged.
-
-Does the AVB give us the same Clip Duration as the MXF? Needs more testing.
-Can't bank on the user loading the matching bin, either.
+Clip Duration has been removed under Copland C13. The scanner does not calculate
+or retain associated master-track lengths for a separate column, and missing
+clip lengths cannot require a header read. Shared timecode/rate interpretation
+still supplies physical-file Duration and drop-frame formatting.
 
 Exact file counts and rates cannot by themselves answer how a bin entry uses
 the media. CSV durations remain display timecodes; they do not export the raw
@@ -388,14 +381,13 @@ a successful file commit, or reports failure. No background CSV export remains
 running when the user can start another scan.
 
 CSV retains its explicit established export order, ending with Database Status,
-FileMobId, MasterMobId, KelpieId and OmfScan. The two optional column groups follow
-the table's settings: 21 columns with both off, 22 with Clip Duration only,
-25 with Precomputes only and 26 with both on. Disabled optional columns are absent,
+FileMobId, MasterMobId, KelpieId and OmfScan. Optional precompute details follow
+the table's setting: 21 columns without them and 25 with them. Disabled optional columns are absent,
 not exported as blank fields. CSV always includes OmfScan, even when its table
 column is hidden.
 Moving table columns does not change export order. The exporter maintains its
 own explicit column list; a UI test compares its headings against the table's
-visual order for all four flag combinations. Location is the managed
+visual order with precompute details enabled and disabled. Location is the managed
 media file's full path; Source File is its recorded original import filename.
 Separate Volume, Source Path, Source Container and Imported fields are not exported.
 

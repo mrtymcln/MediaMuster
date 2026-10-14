@@ -2,13 +2,14 @@
 
 Status: implementation in progress; confirmed contract and technical verification.
 Started 11 October 2026; decisions updated
-13 October 2026.
+14 October 2026.
 
 Copland reviews the whole MediaMuster app and defines the smallest useful product
 contract before choosing its implementation. Existing capabilities and Canon's
 retention commitments are open for review. Implementation has begun with the
-user-selected direct CSV export, small safety-check migration, identity naming
-and bin name filling removal below.
+user-selected direct CSV export, small safety-check migration, identity naming,
+bin name filling removal, ordinary scan history removal and Clip Duration removal
+below.
 
 This document contains the working decision ledger and proposed implementation
 order. Confirmed requirements, proposals and open questions
@@ -277,8 +278,9 @@ These describe today's code, not Copland requirements:
   See [database preparation](../src/mediaengine/databasesource.cpp) and
   [source lifetimes](../Project%20Canon/source-lifetimes.md).
 - Database-first scheduling can open a media header because required metadata is
-  missing or conflicting. Enabled Clip Duration and precompute category detail
-  can affect that decision. Hiding a column does not necessarily remove its
+  missing or conflicting. Enabled precompute category detail can affect that
+  decision; Clip Duration and its sufficiency check have been removed under C13.
+  Hiding a remaining column does not necessarily remove its
   parsing, retention or fallback cost. See
   [scan coordination](../src/mediaengine/scancoordinator.cpp).
 - Source preferences are compiled per-property rules. The current resolver also
@@ -1287,6 +1289,43 @@ but hypothetical disagreements must not justify broad permanent evidence retenti
 
 ## Implementation planning
 
+### Clip Duration removal choice — 14 October 2026
+
+The user chose **Remove Clip Duration first**, before the remaining migration to
+one selected MasterMobId per physical file. Implement the confirmed C13 removal completely:
+remove clip-track duration calculations and observations, the property/policy and
+fixed status slot, retained clip lengths/display helpers, feature flag, table
+column/gate/sorting and CSV option/column. Remove the header-sufficiency condition
+that exists solely to obtain these lengths, rather than hiding the feature while
+continuing its work.
+
+Keep ordinary physical-file Duration, exact unit/display rates and drop-frame
+formatting. Preserve master graph traversal, association/name/project/type facts
+and any shared timecode/rate helper still needed by those retained meanings.
+Source Filename/Source Path, master selection preferences, database membership,
+broader acquisition/cancellation behavior and bin/sequence graph compaction
+remain separate Copland steps. Update obsolete tests/comments/current documents;
+preserve historical receipts. No legacy feature or app-format compatibility is
+required during beta. Verify retained physical clocks/values, identities and
+operation protections, header scheduling without the removed condition, and
+table/CSV layout with the remaining feature gates. No memory or speed saving is
+claimed without measurement.
+
+Implemented and verified on this Mac with Release arm64 and pinned Qt 6.5.3:
+the app and all test targets build, and all 40 registered CTest suites pass.
+The removed feature has no active flag, property/status slot, row value,
+calculation or table/CSV consumer. Dedicated clip-length tests were removed;
+mixed timing, identity and UI tests retain their relevant checks. Physical
+duration/rate/display-clock and associated drop-frame tests pass, including
+master tracks whose lengths and clocks differ from the physical file. Complete
+database cases without master-track timing explicitly leave headers unread and
+retain the database identity required by live operations. The replacement-file
+test still rejects the old database identity after missing required Clip Name
+triggers the existing header fallback. Column/index/sort/CSV, bin filtering,
+Copy/Move/Delete/Rebalance, Undo and recovery checks pass. Current documentation
+and obsolete comments/helpers were updated. No application-memory or scan-time
+saving, Windows result or NEXIS-scale acceptance follows from this checkpoint.
+
 ### Ordinary scan history removal choice — 13 October 2026
 
 The user requested removal of the larger ordinary scan notes, with simple
@@ -1389,7 +1428,7 @@ adding a new mechanism to fix them.
 | --- | --- | --- |
 | 1. Establish baseline | Use this Mac initially under C97. Record the build, actual workload/hardware/storage, cache conditions, source-read counts, time through a usable table and whole-process peak memory. Include rescan, CSV export, loaded bins and normal interactions. Separate genuine complete media from generated or truncated specimens. | Repeatable baseline and field/behavior comparison receipts. Existing engine-only timings remain supporting evidence, not a 300,000-file NEXIS acceptance result. Q13 is set aside; no numerical scan-time target is required. |
 | 2. Compact records and receipts | Introduce selected row values, exact clocks, one selected MasterMobId, compact availability/freshness/membership status and the operation receipts required by existing live checks. Adapt operation consumers before removing their evidence dependencies. Keep the user-selected direct CSV writer; release its local captured rows when saving returns, without adding a background text snapshot. Release prior row/session ownership when a new scan starts. | Retained table/CSV values and eligible operation behavior agree with the contract. Copy/Move/Delete/Rebalance, latest-job Undo and startup recovery preserve their existing protections. Completed export and compact operation consumers do not keep the old complete inventory/evidence graph alive during rescan. |
-| 3. Acquisition and cancellation | Apply PMR → MDB → header acquisition to the retained requested fields, using reliable inapplicability to stop unnecessary fallback. Remove Clip Duration and SourceFilename observations, coverage, policies and consumers; use SourcePath instead. Implement either-database membership and both flags. Resolve completed values into compact rows as work finishes, and release unused parsing data. Retain changed-source exclusion and the existing bounded header fallback. | Database-free, partial-index and missing-applicable-field cases resolve correctly; unavailable values remain blank. Cancellation during discovery, database/header reading, final selection, formatting and publication preserves found rows/completed values and consistently reports incomplete. No runtime memory-abort policy is introduced. |
+| 3. Acquisition and cancellation | Apply PMR → MDB → header acquisition to the retained requested fields, using reliable inapplicability to stop unnecessary fallback. Clip Duration removal is complete under C13; remove SourceFilename observations, coverage, policies and consumers and use SourcePath instead. Implement either-database membership and both flags. Resolve completed values into compact rows as work finishes, and release unused parsing data. Retain changed-source exclusion and the existing bounded header fallback. | Database-free, partial-index and missing-applicable-field cases resolve correctly; unavailable values remain blank. Cancellation during discovery, database/header reading, final selection, formatting and publication preserves found rows/completed values and consistently reports incomplete. No runtime memory-abort policy is introduced. |
 | 4. AVB references and filtering | Retain only the names, identities, reference relationships/sets and compact coverage needed for loaded-bin/sequence lists and filtering. Table enrichment is removed; drop cross-bin borrowing. Implement independent checked-sequence state and the combined dialog, unload/recalculation, union/AND rules and empty/incomplete outcomes. Avoid keeping unrelated metadata or duplicating full graphs per sequence. | Genuine Avid edits establish exact used tracks/angles and original/render membership. Muted placed media stays included. Failed loads preserve old filters; checked unresolved-zero sequences stay active; valid unmatched bin references apply normally. Unloading releases data; rescan resets filters while keeping bins loaded. |
 | 5. Presentation and support | Show/search/export Source Path; replace Database Status with both boolean columns/views. Keep precompute category/effect/Volume filtering and remaining conveniences. Apply always-visible enabled tabs, Search-only Escape, narrowed folder inputs, startup/manual drive discovery, FDA/Monospace removal and automatic 30-day diagnostic/crash cleanup. Preserve technical Console content while reviewing delivery/flush overhead. | Behavior checks follow C48/C49/C60–C96. Enabled empty tabs remain visible; dialog Escape retains its proper dismissal/cancellation priority. Cleanup preserves recent history and protected operation journals. Removed controls and source-basename storage have no active consumer left. |
 | 6. Full workload verification | Exercise the retained product after the new ownership/acquisition paths are in place. Compare usable-table time, source reads and whole-process memory against stage 1, including subsequent sorting/filtering/bin loading, operations, export and rescan. Validate the 300,000-file database-free workload on its representative NEXIS setup. | Correct physical inventory and selected metadata, clean cancellation, retained operation safety and measured scale behavior. Explain any remaining memory/time costs and limitations. The below-10-GB aim is measured, never enforced by aborting the scan. |
@@ -1429,7 +1468,8 @@ metadata on early cancel and incorrect completion reporting on late cancel.
 The AVB row fallback has since been removed under C16; the other gaps remain.
 The compact safety-check migration above passes its bounded equivalence checks.
 Ordinary row history removal is now implemented, with current fields and the
-master-association union preserved; the remaining compact-row, acquisition and
+master-association union preserved at that checkpoint. Clip Duration has since
+been removed under C13; the remaining compact-row, acquisition and
 cancellation work still requires its own verification. Three
 controlled local baseline trials cover 267 database-free
 complete media copies and demonstrated the former asynchronous export retaining

@@ -75,8 +75,6 @@ namespace
 		writer.add(401, "OMFI:TRAK:LabelNumber", "omfi:UInt16", number<quint16>(1), true);
 		writer.add(401, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(501, 1));
 		writer.add(501, "OMFI:SCLP:SourceID", "omfi:UID", toneFileId);
-		writer.add(501, "OMFI:CLIP:Length", "omfi:Length32", number<quint32>(50));
-		writer.add(501, "OMFI:CPNT:EditRate", "omfi:Rational", number<qint32>(25) + number<qint32>(1));
 		if (contradictoryFileIdentity)
 		{
 			QByteArray alternative = toneFileId;
@@ -186,7 +184,7 @@ private slots:
 			MediaEngine::canonicalDatabaseId(toneFileId));
 	}
 
-	void complete_database_does_not_open_media_header()
+	void complete_database_without_master_track_lengths_does_not_open_media_header()
 	{
 		QTemporaryDir temporary;
 		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
@@ -220,6 +218,16 @@ private slots:
 			}
 		QCOMPARE(evidence.selected(MediaProperty::ClipName).value.toString(), QStringLiteral("Database clip"));
 		QCOMPARE(evidence.selected(MediaProperty::Compression).value.toString(), QStringLiteral("PCM"));
+		QCOMPARE(evidence.selected(MediaProperty::FileMobId).value.toString(),
+			MediaEngine::canonicalDatabaseId(toneFileId));
+		QCOMPARE(evidence.selected(MediaProperty::MasterMobId).value.toStringList(),
+			QStringList{MediaEngine::canonicalDatabaseId(toneMasterId)});
+		const auto duration = MediaEngine::mediaDuration(evidence.selected(MediaProperty::FileDuration).value);
+		QCOMPARE(duration.units, qint64(96000));
+		QCOMPARE(duration.rate.numerator, 48000);
+		QCOMPARE(duration.rate.denominator, 1);
+		QCOMPARE(duration.displayRate.numerator, 25);
+		QCOMPARE(duration.displayRate.denominator, 1);
 		QVERIFY(!evidence.selected(MediaProperty::OriginalBin).value.isValid());
 		QVERIFY(!evidence.selected(MediaProperty::SourceFilename).value.isValid());
 		for (const auto &value : evidence.observations(MediaProperty::Compression))
@@ -402,88 +410,6 @@ private slots:
 		MediaEngine::selectMetadata(evidence);
 		QVERIFY(!evidence.selected(MediaProperty::ClipName).value.isValid());
 		QCOMPARE(evidence.observations(MediaProperty::ClipName).size(), 4);
-	}
-	void clip_duration_agreement_ignores_graph_numbering_and_track_order()
-	{
-		MediaEvidence evidence;
-		const auto track = [](quint32 trackId, quint64 object, qint64 units)
-		{
-			return QVariantMap{{QStringLiteral("MasterMobId"), QStringLiteral("master")}, {QStringLiteral("TrackId"), trackId}, {QStringLiteral("DurationObject"), object}, {QStringLiteral("DurationProperty"), QStringLiteral("OMFI:SEQU:Sequence")}, {QStringLiteral("DurationComponents"), QVariantList{QVariantMap{{QStringLiteral("Object"), object + 1}}}}, {QStringLiteral("DropFrame"), false}, {QStringLiteral("Duration"), MediaEngine::durationValue({units, {25, 1}, {25, 1}, MediaDuration::Source::ClipReference})}};
-		};
-		MetadataObservation observation;
-		observation.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mdb, QStringLiteral("first.mdb"), {}, SourceReadState::Complete});
-		observation.readState = PropertyReadState::Present;
-		observation.value = QVariantList{track(1, 11, 250), track(2, 12, 300)};
-		evidence.observe(MediaProperty::ClipDuration, observation);
-		observation.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mdb, QStringLiteral("second.mdb"), {}, SourceReadState::Complete});
-		observation.value = QVariantList{track(2, 102, 300), track(1, 101, 250)};
-		evidence.observe(MediaProperty::ClipDuration, observation);
-		MediaEngine::selectMetadata(evidence);
-		QCOMPARE(evidence.selected(MediaProperty::ClipDuration).agreement, PropertyAgreement::Agreeing);
-		QVERIFY(evidence.selected(MediaProperty::ClipDuration).value.isValid());
-		QCOMPARE(evidence.observations(MediaProperty::ClipDuration).size(), 2);
-		for (const auto &contradiction : {QStringLiteral("length"), QStringLiteral("clock"), QStringLiteral("drop frame"), QStringLiteral("track identity")})
-		{
-			auto variant = evidence;
-			auto changed = track(1, 201, contradiction == QLatin1String("length") ? 251 : 250);
-			if (contradiction == QLatin1String("clock"))
-				changed[QStringLiteral("Duration")] = MediaEngine::durationValue({250, {25, 1}, {24, 1}, MediaDuration::Source::ClipReference});
-			if (contradiction == QLatin1String("drop frame"))
-				changed[QStringLiteral("DropFrame")] = true;
-			if (contradiction == QLatin1String("track identity"))
-				changed[QStringLiteral("TrackId")] = 9;
-			observation.value = QVariantList{changed, track(2, 202, 300)};
-			variant.observe(MediaProperty::ClipDuration, observation);
-			MediaEngine::selectMetadata(variant);
-			QVERIFY2(!variant.selected(MediaProperty::ClipDuration).value.isValid(), qPrintable(contradiction));
-			QCOMPARE(variant.selected(MediaProperty::ClipDuration).agreement, PropertyAgreement::Conflicting);
-		}
-	}
-	void clip_duration_coalesces_duplicate_facts_without_discarding_evidence()
-	{
-		const QVariantMap first{{QStringLiteral("MasterMobId"), QStringLiteral("master")}, {QStringLiteral("TrackId"), 1}, {QStringLiteral("DurationObject"), quint64(11)}, {QStringLiteral("DropFrame"), false}, {QStringLiteral("Duration"), MediaEngine::durationValue({250, {25, 1}, {25, 1}, MediaDuration::Source::ClipReference})}};
-		auto duplicate = first;
-		duplicate[QStringLiteral("DurationObject")] = quint64(22);
-		duplicate[QStringLiteral("Duration")] = MediaEngine::durationValue({250, {50, 2}, {50, 2}, MediaDuration::Source::ClipReference});
-		MetadataObservation observation;
-		observation.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mdb, QStringLiteral("first.mdb"), {}, SourceReadState::Complete});
-		observation.readState = PropertyReadState::Present;
-		observation.value = QVariantList{first, duplicate};
-		MediaEvidence evidence;
-		evidence.observe(MediaProperty::ClipDuration, observation);
-		MediaEngine::selectMetadata(evidence);
-		QCOMPARE(evidence.selected(MediaProperty::ClipDuration).value.toList().size(), 1);
-		QCOMPARE(evidence.observations(MediaProperty::ClipDuration).first().value.toList(), (QVariantList{first, duplicate}));
-		// Another database may encode this same fact only once.
-		observation.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mdb, QStringLiteral("second.mdb"), {}, SourceReadState::Complete});
-		observation.value = QVariantList{duplicate};
-		evidence.observe(MediaProperty::ClipDuration, observation);
-		MediaEngine::selectMetadata(evidence);
-		QCOMPARE(evidence.selected(MediaProperty::ClipDuration).agreement, PropertyAgreement::Agreeing);
-		QCOMPARE(evidence.selected(MediaProperty::ClipDuration).value.toList().size(), 1);
-		QCOMPARE(evidence.observations(MediaProperty::ClipDuration).size(), 2);
-		for (const auto &difference : {QStringLiteral("master"), QStringLiteral("track"), QStringLiteral("timing")})
-		{
-			auto other = duplicate;
-			if (difference == QLatin1String("master"))
-				other[QStringLiteral("MasterMobId")] = QStringLiteral("another master");
-			else if (difference == QLatin1String("track"))
-				other[QStringLiteral("TrackId")] = 2;
-			else
-				other[QStringLiteral("Duration")] = MediaEngine::durationValue({251, {25, 1}, {25, 1}, MediaDuration::Source::ClipReference});
-			MediaEvidence distinct;
-			observation.value = QVariantList{first, other};
-			distinct.observe(MediaProperty::ClipDuration, observation);
-			MediaEngine::selectMetadata(distinct);
-			if (difference == QLatin1String("timing"))
-			{
-				QVERIFY(!distinct.selected(MediaProperty::ClipDuration).value.isValid());
-				QCOMPARE(distinct.selected(MediaProperty::ClipDuration).agreement, PropertyAgreement::Conflicting);
-			}
-			else
-				QCOMPARE(distinct.selected(MediaProperty::ClipDuration).value.toList().size(), 2);
-			QCOMPARE(distinct.observations(MediaProperty::ClipDuration).first().value.toList(), (QVariantList{first, other}));
-		}
 	}
 	void compact_status_preserves_unavailable_and_empty_results()
 	{
