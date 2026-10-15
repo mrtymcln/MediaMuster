@@ -620,7 +620,7 @@ void TestRebalancePlanner::file_identity_survives_plan_and_request()
 	QCOMPARE(request.items.first().fileMobId, moved.fileMobId);
 	QCOMPARE(request.items.first().masterMobId, moved.masterMobId);
 
-	moved.scanStamp = {moved.mediaFilePath, QStringLiteral("uuid:scanned-volume"), QDateTime::fromMSecsSinceEpoch(123456), moved.fileMobId, {moved.masterMobId, QStringLiteral("database-only-master")}};
+	moved.scanStamp = {moved.mediaFilePath, QStringLiteral("uuid:scanned-volume"), QDateTime::fromMSecsSinceEpoch(123456), moved.fileMobId, QStringLiteral("database-only-master")};
 	MetadataObservation observation;
 	observation.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mxf,
 																				 moved.mediaFilePath, moved.scanStamp.modified, SourceReadState::Complete});
@@ -638,7 +638,7 @@ void TestRebalancePlanner::file_identity_survives_plan_and_request()
 	QCOMPARE(item.scanPath, moved.scanStamp.path);
 	QCOMPARE(item.scanVolumeIdentifier, moved.scanStamp.volumeIdentifier);
 	QCOMPARE(item.modifiedMs, moved.scanStamp.modified.toMSecsSinceEpoch());
-	QCOMPARE(item.masterMobIds, moved.scanStamp.masterMobIds);
+	QCOMPARE(item.masterMobId, moved.scanStamp.masterMobId);
 	QVERIFY(item.headerIdentity);
 	QCOMPARE(item.headerIdentity->masterMobIds, QStringList{moved.masterMobId});
 }

@@ -272,6 +272,8 @@ private slots:
 	void same_volume_keep_both_handles_late_conflict();
 	void real_mxf_identity_is_checked();
 	void mediaengine_scan_receipt_checks_location_and_header_subset();
+	void header_checks_remain_independent_of_selected_master_data();
+	void header_checks_remain_independent_of_selected_master();
 	void operation_scan_receipt_is_required_data();
 	void operation_scan_receipt_is_required();
 	void compact_scan_receipt_operations_and_recovery_data();
@@ -1503,7 +1505,7 @@ void TestFileOperations::real_mxf_identity_is_checked()
 	Fixture f;
 	const QString sample = QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf");
 	const auto header = mxfEvidence(readMxf(sample));
-	QVERIFY(!header.selected(MediaProperty::MasterMobId).value.toStringList().isEmpty());
+	QVERIFY(!header.selected(MediaProperty::MasterMobId).value.toString().isEmpty());
 	QVERIFY(!header.selected(MediaProperty::FileMobId).value.toString().isEmpty());
 	OpRequest request;
 	request.destRoot = f.dest;
@@ -1513,7 +1515,7 @@ void TestFileOperations::real_mxf_identity_is_checked()
 	item.bytes = QFileInfo(sample).size();
 	// Operation requests use the canonical database-order IDs stored by the scan.
 	item.fileMobId = header.selected(MediaProperty::FileMobId).value.toString();
-	item.masterMobId = header.selected(MediaProperty::MasterMobId).value.toStringList().value(0);
+	item.masterMobId = header.selected(MediaProperty::MasterMobId).value.toString();
 	request.items.append(item);
 	Sink sink;
 	std::atomic<bool> cancel{false};
@@ -1531,13 +1533,13 @@ void TestFileOperations::mediaengine_scan_receipt_checks_location_and_header_sub
 	const QString sample = QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf");
 	const auto header = mxfEvidence(readMxf(sample));
 	const QString fileId = header.selected(MediaProperty::FileMobId).value.toString();
-	const QString headerMaster = header.selected(MediaProperty::MasterMobId).value.toStringList().value(0);
+	const QString headerMaster = header.selected(MediaProperty::MasterMobId).value.toString();
 	MediaFile file;
 	MediaEvidence evidence;
 	file.mediaFilePath = sample;
 	file.fileName = QStringLiteral("sample.mxf");
 	file.sizeBytes = QFileInfo(sample).size();
-	file.scanStamp = {sample, VolumeIdentity::capture(sample).identifier(), QFileInfo(sample).lastModified(), fileId, {headerMaster, QStringLiteral("database-only-master")}};
+	file.scanStamp = {sample, VolumeIdentity::capture(sample).identifier(), QFileInfo(sample).lastModified(), fileId, QStringLiteral("database-only-master")};
 	QVERIFY(!file.scanStamp.volumeIdentifier.isEmpty());
 	const auto receipt = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mxf, sample,
 																			   file.scanStamp.modified, SourceReadState::Complete});
@@ -1556,8 +1558,8 @@ void TestFileOperations::mediaengine_scan_receipt_checks_location_and_header_sub
 	request.destRoot = f.dest;
 	request.items = OpManager::itemsFromMediaFiles({file}, {});
 	QCOMPARE(request.items[0].fileMobId, fileId);
-	QCOMPARE(request.items[0].masterMobIds, file.scanStamp.masterMobIds);
-	QVERIFY(request.items[0].masterMobId.isEmpty());
+	QCOMPARE(request.items[0].masterMobId, file.scanStamp.masterMobId);
+	QCOMPARE(request.items[0].masterMobId, QStringLiteral("database-only-master"));
 	QVERIFY(request.items[0].headerIdentity);
 	QCOMPARE(request.items[0].headerIdentity->masterMobIds, QStringList{headerMaster});
 	Sink sink;
@@ -1583,6 +1585,47 @@ void TestFileOperations::mediaengine_scan_receipt_checks_location_and_header_sub
 		QVERIFY2(totals.failed == 1, fault);
 		QVERIFY(!QFile::exists(f.dest + '/' + item.name));
 	}
+}
+
+void TestFileOperations::header_checks_remain_independent_of_selected_master_data()
+{
+	QTest::addColumn<QString>("selectedMasterMobId");
+	QTest::newRow("selected-header") << QStringLiteral("header-a");
+	QTest::newRow("selected-database") << QStringLiteral("database-only-master");
+	QTest::newRow("unresolved-selection") << QString{};
+}
+
+void TestFileOperations::header_checks_remain_independent_of_selected_master()
+{
+	QFETCH(QString, selectedMasterMobId);
+	MediaFile file;
+	file.mediaFilePath = QStringLiteral("/source/clip.mxf");
+	file.masterMobId = selectedMasterMobId;
+	file.scanStamp = {file.mediaFilePath, {}, {}, QStringLiteral("file-id"), selectedMasterMobId};
+	{
+		MediaEvidence evidence;
+		MetadataObservation header;
+		header.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mxf, file.mediaFilePath, {}, SourceReadState::Complete});
+		header.readState = PropertyReadState::Present;
+		header.value = QStringLiteral("file-id");
+		evidence.observe(MediaProperty::FileMobId, header);
+		header.value = QStringList{QStringLiteral("header-b"), QStringLiteral("header-a"), QStringLiteral("header-b")};
+		evidence.observe(MediaProperty::MasterMobId, header);
+		MetadataObservation database;
+		database.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mdb, QStringLiteral("/source/index.mdb"), {}, SourceReadState::Complete});
+		database.readState = PropertyReadState::Present;
+		database.value = QStringLiteral("database-only-master");
+		evidence.observe(MediaProperty::MasterMobId, database);
+		file.operationScanReceipt = makeOpScanReceipt(evidence, file.scanStamp);
+	}
+	const auto item = OpManager::itemsFromMediaFiles({file}, {}).front();
+	QCOMPARE(item.masterMobId, selectedMasterMobId);
+	QVERIFY(item.headerIdentity);
+	QCOMPARE(item.headerIdentity->masterMobIds,
+		(QStringList{QStringLiteral("header-a"), QStringLiteral("header-b")}));
+	QVERIFY(item.headerIdentity->unavailableReason.isEmpty());
 }
 
 void TestFileOperations::operation_scan_receipt_is_required_data()
@@ -1704,10 +1747,9 @@ void TestFileOperations::compact_scan_receipt_operations_and_recovery()
 			row.sizeBytes = QFileInfo(path).size();
 			auto evidence = mxfEvidence(parsed);
 			row.fileMobId = evidence.selected(MediaProperty::FileMobId).value.toString();
-			row.masterMobIds = evidence.selected(MediaProperty::MasterMobId).value.toStringList();
-			row.masterMobId = row.masterMobIds.value(0);
+			row.masterMobId = evidence.selected(MediaProperty::MasterMobId).value.toString();
 			row.scanStamp = {path, VolumeIdentity::capture(path).identifier(), QFileInfo(path).lastModified(),
-				row.fileMobId, row.masterMobIds};
+				row.fileMobId, row.masterMobId};
 			scan->sources.append(MediaEngine::SourceReceipt::fromParsed(std::move(parsed)));
 			return ScannedRow{std::move(row), std::move(evidence)};
 		};
@@ -1829,7 +1871,7 @@ void TestFileOperations::skipped_header_checks_database_file_identity()
 	file.mediaFilePath = path;
 	file.fileName = QFileInfo(path).fileName();
 	file.sizeBytes = QFileInfo(path).size();
-	file.scanStamp = {path, VolumeIdentity::capture(path).identifier(), QFileInfo(path).lastModified(), condition == QLatin1String("different") ? QStringLiteral("another-database-file-id") : fileId, {QStringLiteral("database-only-master")}};
+	file.scanStamp = {path, VolumeIdentity::capture(path).identifier(), QFileInfo(path).lastModified(), condition == QLatin1String("different") ? QStringLiteral("another-database-file-id") : fileId, QStringLiteral("database-only-master")};
 	auto scan = QSharedPointer<MediaEngine::ScanResult>::create();
 	MediaEngine::SourceReceipt unread;
 	unread.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mxf, path,
@@ -1857,7 +1899,7 @@ void TestFileOperations::skipped_header_checks_database_file_identity()
 	request.items = OpManager::itemsFromMediaFiles({compact}, {});
 	const auto &item = request.items.front();
 	QCOMPARE(item.databaseFileMobIdToVerify, file.scanStamp.fileMobId);
-	QCOMPARE(item.masterMobIds, QStringList{QStringLiteral("database-only-master")});
+	QCOMPARE(item.masterMobId, QStringLiteral("database-only-master"));
 	QVERIFY(item.headerIdentity);
 	QVERIFY(item.headerIdentity->fileMobId.isEmpty());
 	QVERIFY(item.headerIdentity->masterMobIds.isEmpty());
@@ -2045,9 +2087,7 @@ void TestFileOperations::real_legacy_header_identity_is_checked()
 	item.src = sample;
 	item.name = QStringLiteral("legacy.") + QFileInfo(sample).suffix();
 	item.bytes = QFileInfo(sample).size();
-	item.headerIdentity = OpHeaderIdentity{evidence.selected(MediaProperty::FileMobId).value.toString(),
-										   evidence.selected(MediaProperty::MasterMobId).value.toStringList(),
-										   {}};
+	item.headerIdentity = makeOpScanReceipt(evidence, {}).headerIdentity;
 	if (compact)
 	{
 		MediaFile file;
@@ -2056,7 +2096,7 @@ void TestFileOperations::real_legacy_header_identity_is_checked()
 		file.sizeBytes = item.bytes;
 		file.omfEra = true;
 		file.scanStamp = {sample, VolumeIdentity::capture(sample).identifier(), QFileInfo(sample).lastModified(),
-			item.headerIdentity->fileMobId, item.headerIdentity->masterMobIds};
+			item.headerIdentity->fileMobId, evidence.selected(MediaProperty::MasterMobId).value.toString()};
 		file.operationScanReceipt = makeOpScanReceipt(evidence, file.scanStamp, ScanRowLookup{});
 		QVERIFY(file.operationScanReceipt);
 		evidence = {};
@@ -2437,8 +2477,8 @@ void TestFileOperations::rebalance_refuses_different_file_from_same_master()
 	const auto secondHeader = mxfEvidence(readMxf(second));
 	const QString firstFileId = firstHeader.selected(MediaProperty::FileMobId).value.toString();
 	const QString secondFileId = secondHeader.selected(MediaProperty::FileMobId).value.toString();
-	const QString firstMaster = firstHeader.selected(MediaProperty::MasterMobId).value.toStringList().value(0);
-	const QString secondMaster = secondHeader.selected(MediaProperty::MasterMobId).value.toStringList().value(0);
+	const QString firstMaster = firstHeader.selected(MediaProperty::MasterMobId).value.toString();
+	const QString secondMaster = secondHeader.selected(MediaProperty::MasterMobId).value.toString();
 	QVERIFY(!firstMaster.isEmpty());
 	QVERIFY(!secondMaster.isEmpty());
 	QVERIFY(!firstFileId.isEmpty());

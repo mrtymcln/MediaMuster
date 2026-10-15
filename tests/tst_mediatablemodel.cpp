@@ -98,6 +98,7 @@ private slots:
 
 	// Metadata preparation boundaries; the ownership migration retains these checks.
 	void prepared_metadata_reaches_table_cells();
+	void selected_master_and_source_status_reach_table();
 	void prepared_scan_load_releases_history_and_preserves_results();
 
 private:
@@ -244,7 +245,7 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 	originalRow.bitDepth = QStringLiteral("10-bit");
 	originalRow.fileMobId = masterId();
 	originalRow.scanStamp = {original, VolumeIdentity::capture(original).identifier(),
-		QFileInfo(original).lastModified(), originalRow.fileMobId, {originalRow.masterMobId}};
+		QFileInfo(original).lastModified(), originalRow.fileMobId, originalRow.masterMobId};
 	QWeakPointer<MediaEngine::ScanResult> oldScan;
 	QWeakPointer<const SourceSnapshot> oldSource;
 	{
@@ -265,7 +266,7 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 		observe(MediaProperty::Compression, originalRow.compression, snapshot);
 		observe(MediaProperty::BitDepth, originalRow.bitDepth, snapshot);
 		observe(MediaProperty::FileMobId, originalRow.fileMobId, snapshot);
-		observe(MediaProperty::MasterMobId, QStringList{originalRow.masterMobId}, snapshot);
+		observe(MediaProperty::MasterMobId, originalRow.masterMobId, snapshot);
 		auto filesystem = QSharedPointer<SourceSnapshot>::create();
 		filesystem->source = MetadataSource::Filesystem;
 		filesystem->path = original;
@@ -314,7 +315,10 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 		QCOMPARE(file.compression, originalRow.compression);
 		QCOMPARE(file.bitDepth, originalRow.bitDepth);
 		QCOMPARE(file.fileMobId, originalRow.fileMobId);
-		for (const auto property : {MediaProperty::Compression, MediaProperty::BitDepth, MediaProperty::FileMobId})
+		QCOMPARE(file.masterMobId, originalRow.masterMobId);
+		QCOMPARE(file.scanStamp.masterMobId, originalRow.masterMobId);
+		for (const auto property : {MediaProperty::Compression, MediaProperty::BitDepth,
+			MediaProperty::FileMobId, MediaProperty::MasterMobId})
 		{
 			const auto &status = file.metadataStatus.field(property);
 			const auto &before = originalRow.metadataStatus.field(property);
@@ -616,6 +620,38 @@ void TestMediaTableModel::prepared_metadata_reaches_table_cells()
 	QVERIFY(current.metadataStatus.field(MediaProperty::OriginalBin).selectedSource == MetadataSource::Mdb);
 	for (const auto property : {MediaProperty::ClipName, MediaProperty::OriginalBin})
 		QVERIFY(!current.metadataStatus.field(property).presentSources.contains(MetadataSource::Avb));
+}
+
+void TestMediaTableModel::selected_master_and_source_status_reach_table()
+{
+	auto file = row();
+	MediaEvidence evidence;
+	const QString headerMaster = masterId();
+	QString databaseMaster = headerMaster;
+	databaseMaster[databaseMaster.size() - 1] = QLatin1Char('1');
+	record(evidence, file.mediaFilePath, MediaProperty::MasterMobId, MetadataSource::Mdb,
+		QStringLiteral("OMFI:MOBJ:MobID"), databaseMaster);
+	record(evidence, file.mediaFilePath, MediaProperty::MasterMobId, MetadataSource::Mxf,
+		QStringLiteral("MaterialPackage.PackageUID"), headerMaster);
+	MediaEngine::selectMetadata(evidence);
+	applyResolvedMetadata(file, evidence);
+	file.metadataStatus = makeMediaMetadataStatus(evidence);
+	evidence = {};
+	MediaTableModel model;
+	model.setMediaFiles({file});
+	const auto &current = model.fileAt(0);
+	QCOMPARE(current.masterMobId, headerMaster);
+	QCOMPARE(model.index(0, int(MediaTableModel::Column::MasterMobId)).data().toString(), headerMaster);
+	const auto &status = current.metadataStatus.field(MediaProperty::MasterMobId);
+	QVERIFY(status.captured && status.hasSelectedValue);
+	QCOMPARE(status.readState, PropertyReadState::Present);
+	QVERIFY(status.selectedSource == MetadataSource::Mxf);
+	QVERIFY(status.selectedBasis == EvidenceBasis::Recorded);
+	QVERIFY(status.selectedFreshness == SourceFreshness::Unknown);
+	QVERIFY(status.presentSources.contains(MetadataSource::Mxf));
+	QVERIFY(status.presentSources.contains(MetadataSource::Mdb));
+	QVERIFY(MediaCsv::rowLine(current).contains(headerMaster));
+	QVERIFY(!MediaCsv::rowLine(current).contains(databaseMaster));
 }
 
 void TestMediaTableModel::prepared_scan_load_releases_history_and_preserves_results()

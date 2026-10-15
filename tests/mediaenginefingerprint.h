@@ -305,7 +305,7 @@ public:
 		text(value.stamp.volumeIdentifier);
 		dateTime(value.stamp.modified);
 		text(value.stamp.fileMobId);
-		texts(value.stamp.masterMobIds);
+		text(value.stamp.masterMobId);
 		objectReferences(value.objects);
 	}
 	void candidate(const MediaEngine::SourceCandidate &value)
@@ -324,7 +324,7 @@ public:
 	}
 	void projection(const MediaEngine::Projection &value)
 	{
-		projectedFiles(value.files);
+		projectedFiles(value.files, &value);
 		projectedFiles(value.masters);
 		texts(value.diagnostics);
 	}
@@ -336,7 +336,7 @@ public:
 	}
 
 private:
-	void projectedFiles(const QVector<MediaEngine::ProjectedFile> &values)
+	void projectedFiles(const QVector<MediaEngine::ProjectedFile> &values, const MediaEngine::Projection *projection = nullptr)
 	{
 		stream << qint64(values.size());
 		for (const auto &value : values)
@@ -345,8 +345,9 @@ private:
 			texts(value.masterMobIds);
 			texts(value.filenames);
 			objectReferences(value.objects);
-			auto selected = value.evidence;
-			MediaEngine::selectMetadata(selected);
+			auto selected = projection ? MediaEngine::selectedProjectedEvidence(value, *projection) : value.evidence;
+			if (!projection)
+				MediaEngine::selectMetadata(selected);
 			evidence(selected);
 		}
 	}

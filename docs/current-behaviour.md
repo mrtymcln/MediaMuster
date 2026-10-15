@@ -193,8 +193,8 @@ set as having one proven encoding.
 
 Every physical row receives a scan-session `KelpieId`. Copies with matching metadata
 still have separate rows and IDs. The five-field RAM scan receipt records path,
-volume identifier, modification timestamp, FileMobId and every established master
-association. Operation requests carry these claims and separately preserve which
+volume identifier, modification timestamp, FileMobId and one selected MasterMobId.
+Operation requests carry these claims and separately preserve which
 Avid identities were established in a readable header. Scoped database reference
 issues distinguish local absence, matches elsewhere and unmatched MDB identities.
 An unmatched identity alone does not prove a missing physical file. Current checks
@@ -205,8 +205,22 @@ stores those values without a second metadata-selection pass. Each row's status
 checklist distinguishes availability, applicability, agreement and freshness; it
 contains no metadata values, explanation strings or source owners. A temporary
 lookup supplies header outcomes and safety flags during preparation, then goes
-away with the working scan. Current columns and master associations remain in this
-bounded cleanup. No memory or scan-time saving has been measured.
+away with the working scan. No memory or scan-time saving has been measured.
+
+MasterMobId selection prefers an already-read media header, then matching MDB,
+then PMR. This does not open every indexed file merely to obtain a preferred
+header value. A unique preferred ID wins; conflicting IDs at that preferred rank
+leave it blank. Missing selection can trigger the existing required-field header
+fallback. Lower-priority disagreement retains status without forcing a read when
+the selected ID is usable.
+
+MDB/OMF/MXF projectors keep master details in temporary groups. The scanner chooses
+the association before admitting the selected master's name, bin, classification
+and other master-owned details. Same-ID groups in a header must also belong to the
+file's qualified source/object context. File/package-owned project, origin,
+descriptor duration/rates and timecode remain separate. Each field keeps its own
+source preference within those admitted facts; effects derive from final Clip Name
+and Type. The temporary groups are released with the working scan.
 
 `FileMobId` identifies the file media object, while `MasterMobId` identifies its
 associated master object. Related video and audio files can share a MasterMobId
@@ -252,7 +266,8 @@ to delete.
 The default column order is Clip Name, Project, Bin, Kind, Duration, Size (MB),
 Compression, Resolution, Frame Rate, Sample Rate, Bit Depth, Type, Date Created, Filename,
 Source Filename, Location, FileMobId, MasterMobId and KelpieId, followed by OmfScan
-when its flag is enabled. Multiple master IDs share a cell separated by `;`.
+when its flag is enabled. MasterMobId displays the one selected association,
+or stays blank when none can be selected.
 Compression is the readable format name, such as `Avid DNx HQX [DNxHD 175x]`.
 The selected property is `MediaProperty::Compression` and the row value is
 `MediaFile::compression`. `CompressionLabel` remains separate internal coding
@@ -460,9 +475,12 @@ their existing rescan/refresh paths.
 
 Every file job requires a writable journal: a saved record of its plan, file
 identities and progress. If the journal cannot be written, a new job cannot start.
-The current beta build reads and writes schema-3 journals. Older beta journals
+The current beta build reads and writes schema-4 journals. Older beta journals
 are unsupported and are not migrated. New jobs retain their normal recovery and
-Undo checks. Operation mechanism, Trash provider and
+Undo checks. Ordinary reporting carries scalar `masterMobId`; the separate
+header safety record retains every captured header ID, each of which must still
+be corroborated when the file is opened. Database-only master associations are
+not imposed on the header. Operation mechanism, Trash provider and
 Undo action are saved as explicit names; unset choices use
 `"none"`. Unknown names are rejected when loading.
 

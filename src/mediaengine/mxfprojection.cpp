@@ -1169,10 +1169,20 @@ namespace MediaEngine
 						file.masterMobIds.append(masterId);
 					observe(file, MediaProperty::MasterMobId, m_source, master, *id, masterId, EvidenceBasis::Derived,
 							QStringLiteral("This MaterialPackage's referenced SourceClip explicitly names the file SourcePackage."));
-					copy(file, master, "GenericPackage.Name", MediaProperty::ClipName);
-					projectAttributes(file, master);
-					projectClassification(file, master, *id);
-					projectDropFrame(file, master);
+					if (!m_projectedMasters.contains(master.handle))
+					{
+						ProjectedFile masterFacts;
+						masterFacts.masterMobIds.append(masterId);
+						remember(masterFacts, master);
+						observe(masterFacts, MediaProperty::MasterMobId, m_source, master, *id, masterId,
+							EvidenceBasis::Derived, QStringLiteral("Canonical identity of this recorded material package."));
+						copy(masterFacts, master, "GenericPackage.Name", MediaProperty::ClipName);
+						projectAttributes(masterFacts, master);
+						projectClassification(masterFacts, master, *id);
+						projectDropFrame(masterFacts, master);
+						m_result.masters.append(std::move(masterFacts));
+						m_projectedMasters.insert(master.handle);
+					}
 				}
 				const auto &preface = *root->preface;
 				for (const auto &recorded : preface.properties)
@@ -1317,6 +1327,7 @@ namespace MediaEngine
 			QHash<ObjectHandle, const AvidObject *> m_objects;
 			QHash<ObjectHandle, QVector<const Relationship *>> m_links;
 			QHash<qint64, Root> m_roots;
+			QSet<ObjectHandle> m_projectedMasters;
 			Projection m_result;
 		};
 	}

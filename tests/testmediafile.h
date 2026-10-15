@@ -44,8 +44,7 @@ namespace TestMediaFile
 			add(MediaProperty::ClipName, file.clipName, nameSource);
 			add(MediaProperty::OriginalBin, file.originalBin, nameSource);
 			add(MediaProperty::FileMobId, file.fileMobId, header);
-			const auto masters = file.masterMobIds.isEmpty() ? QStringList{file.masterMobId} : file.masterMobIds;
-			add(MediaProperty::MasterMobId, masters, header);
+			add(MediaProperty::MasterMobId, file.masterMobId, header);
 			add(MediaProperty::Project, file.project, header);
 			add(MediaProperty::Compression, file.compression, header);
 			add(MediaProperty::Resolution, file.resolution, header);

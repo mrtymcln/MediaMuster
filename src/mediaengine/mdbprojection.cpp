@@ -383,7 +383,6 @@ namespace MediaEngine
 							link(file, m_source, master);
 							observe(file, MediaProperty::MasterMobId, m_source, master, *masterMobIdProperty, masterMobId,
 									EvidenceBasis::Derived, QStringLiteral("This master's source-clip graph references the file mob."));
-							appendEvidence(file.evidence, masterFacts.evidence);
 						}
 					result.masters.append(std::move(masterFacts));
 				}

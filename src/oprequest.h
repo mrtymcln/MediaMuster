@@ -99,8 +99,9 @@ inline std::optional<ConflictPolicy> conflictPolicyFromName(const QString &name)
 
 // MARK: - OpItem
 
-/// Header identities established during scanning. Database-only associations
-/// remain in the scan claims; they are not requirements imposed on the header.
+/// Header identities established during scanning. Every established header identity
+/// remains a safety requirement, independently of the row's selected MasterMobId.
+/// Database-only master associations are not requirements imposed on the header.
 struct OpHeaderIdentity
 {
 	QString fileMobId;
@@ -128,9 +129,8 @@ struct OpItem
 
 	// Scan claims about the media inside the file (empty when unknown).
 	QString fileMobId;		  ///< FileMobId of this essence file.
-	QString masterMobId;	  ///< MasterMobId of the associated master clip.
+	QString masterMobId;	  ///< The scan's one selected MasterMobId, empty when unresolved.
 	QString clipName;		  ///< The human name the editor knows the clip by.
-	QStringList masterMobIds; ///< Every established association, including database observations.
 	QString scanPath;
 	QString scanVolumeIdentifier;					///< VolumeIdentity identifier, distinct from native expectedVolumeId.
 	std::optional<OpHeaderIdentity> headerIdentity; ///< Captured media checks; absent for non-scanned inputs.

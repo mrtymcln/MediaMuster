@@ -27,7 +27,6 @@ public:
 		EqualRankConflict,
 		PreferredSource,
 		ExcludedSources,
-		MasterAssociations,
 		AvbAssociationConflict,
 		DisplayClock
 	};
@@ -120,8 +119,6 @@ private:
 			return QStringLiteral("Selected by the field-specific source priority; alternatives retained");
 		case Reason::ExcludedSources:
 			return QStringLiteral("Read values retained; the policy excludes their sources from selection");
-		case Reason::MasterAssociations:
-			return QStringLiteral("Every eligible master association retained; multiple masters do not merge physical files");
 		case Reason::AvbAssociationConflict:
 			return QStringLiteral("Matching AVB master or original-bin associations disagree; no value selected.");
 		case Reason::None:

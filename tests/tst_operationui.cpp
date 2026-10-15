@@ -202,6 +202,7 @@ private slots:
 	void select_relatives_counts_all_visible_matches_data();
 	void select_relatives_counts_all_visible_matches();
 	void select_relatives_counts_master_ids_even_when_names_match();
+	void select_relatives_use_selected_master_and_disable_ambiguous_seed();
 	void select_relatives_preserves_hidden_selections_without_using_them_as_seeds();
 	void invert_selection_preserves_hidden_selections_data();
 	void invert_selection_preserves_hidden_selections();
@@ -1275,6 +1276,75 @@ void TestOperationUi::select_relatives_counts_master_ids_even_when_names_match()
 	window.onSelectRelatives();
 	QCOMPARE(appMessages(window.m_console), expectedMessages);
 	QCOMPARE(window.selectedFiles().size(), 5);
+}
+
+void TestOperationUi::select_relatives_use_selected_master_and_disable_ambiguous_seed()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	const QString firstMaster = MobId::format(TestAvb::Master);
+	const QString otherMaster = MobId::format(TestAvb::Other);
+	QVector<MediaFile> rows;
+	for (int index = 0; index < 4; ++index)
+	{
+		auto file = authoredScanRow(path(QStringLiteral("selected-master-%1.mxf").arg(index)), index);
+		const auto header = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mxf, file.path, {}, SourceReadState::Complete});
+		const auto addMaster = [&](const SourceSnapshotRef &source, const QString &identity)
+		{
+			MetadataObservation observation;
+			observation.snapshot = source;
+			observation.property = mediaPropertyName(MediaProperty::MasterMobId);
+			observation.objectIdentity = identity;
+			observation.value = identity;
+			observation.readState = PropertyReadState::Present;
+			file.evidence.observe(MediaProperty::MasterMobId, observation);
+		};
+		addMaster(header, index == 2 ? otherMaster : firstMaster);
+		if (index == 3)
+			addMaster(header, otherMaster);
+		if (index == 0 || index == 3)
+		{
+			const auto database = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+				MetadataSource::Mdb, path(QStringLiteral("index.mdb")), {}, SourceReadState::Complete});
+			addMaster(database, index == 0 ? otherMaster : firstMaster);
+		}
+		MediaEngine::selectMetadata(file.evidence);
+		file.stamp.masterMobId = file.evidence.selected(MediaProperty::MasterMobId).value.toString();
+		rows.append(mediaEngineMediaFile(file, ScanRowLookup{}, m_root, QStringLiteral("Test media")));
+	}
+	QCOMPARE(rows[0].masterMobId, firstMaster);
+	QCOMPARE(rows[1].masterMobId, firstMaster);
+	QCOMPARE(rows[2].masterMobId, otherMaster);
+	QVERIFY(rows[3].masterMobId.isEmpty());
+	QVERIFY(rows[3].operationScanReceipt);
+	QCOMPARE(rows[3].operationScanReceipt->headerIdentity.masterMobIds.size(), 2);
+	window.onScanFinished(rows);
+	auto *command = window.findChild<QAction *>(QStringLiteral("selectRelativesAction"));
+	QVERIFY(command);
+	window.m_tableView->selectionModel()->select(
+		window.m_proxy->mapFromSource(window.m_model->index(0, 0)),
+		QItemSelectionModel::Select | QItemSelectionModel::Rows);
+	QVERIFY(command->isEnabled());
+	window.m_console->clear();
+	command->trigger();
+	QCOMPARE(appMessages(window.m_console), QStringList{
+		QStringLiteral("Selected 2 files across 1 master clip.")});
+	QSet<QString> selectedPaths;
+	for (const auto &file : window.selectedFiles())
+		selectedPaths.insert(file.mediaFilePath);
+	QCOMPARE(selectedPaths, (QSet<QString>{rows[0].mediaFilePath, rows[1].mediaFilePath}));
+
+	window.m_tableView->clearSelection();
+	window.m_tableView->selectionModel()->select(
+		window.m_proxy->mapFromSource(window.m_model->index(3, 0)),
+		QItemSelectionModel::Select | QItemSelectionModel::Rows);
+	QVERIFY(!command->isEnabled());
+	window.m_console->clear();
+	window.onSelectRelatives();
+	QCOMPARE(appMessages(window.m_console), QStringList{
+		QStringLiteral("No MasterMobId found in the selected files. Relatives can't be matched.")});
+	QCOMPARE(window.selectedFiles().size(), 1);
+	QCOMPARE(window.selectedFiles().first().mediaFilePath, rows[3].mediaFilePath);
 }
 
 void TestOperationUi::select_relatives_preserves_hidden_selections_without_using_them_as_seeds()

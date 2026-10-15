@@ -225,7 +225,7 @@ addresses, source/probe hashes and source links.
 | Field/concept | Official name or role | Definition and place in MediaMuster |
 | --- | --- | --- |
 | FileMobId column | OMF File Source Mob `MobID`; MXF File Source Package `Package UID` | App-specific choice of the file/essence-owning media object identity. MXF ownership follows EssenceContainerData `Linked Package UID` to its SourcePackage. Not a unique physical occurrence on disk. [Ownership](../src/mediaengine/mxfprojection.cpp#L246), O Chapter 4; M A.5/B.1/E; P. |
-| MasterMobId column | OMF Master Mob `MobID`; MXF associated MaterialPackage `Package UID` | C51 requires one associated master identity selected from PMR/MDB/header using the agreed source policy and existing validation. Same general ID type, different object role. The current implementation can represent a set; the fresh user-media scan established one ID per physical header. Independent duplicate clips can share media (A p. 260; S p. 128), but this does not establish several master IDs in the header or justify collecting every incoming clip reference under C50. Loaded AVBs remain filtering-only. [Current association](../src/mediaengine/mxfprojection.cpp#L1175), O pp. 94–95; P; F §6.8. |
+| MasterMobId column | OMF Master Mob `MobID`; MXF associated MaterialPackage `Package UID` | C51 keeps one selected association, preferring already-read eligible header facts, then matching MDB, then PMR. Conflicting preferred-rank IDs leave it blank. Master-owned details come only from the selected master's temporary group; physical/package facts remain independent. Same general ID type, different object role. The fresh user-media scan established one ID per physical header. Independent duplicate clips can share media (A p. 260; S p. 128), but this does not justify collecting every incoming clip reference under C50. Loaded AVBs remain filtering-only. [Current association](../src/mediaengine/mxfprojection.cpp), O pp. 94–95; P; F §6.8. |
 | CompositionMobId / sequence | Composition Mob's inherited `MobID`; Avid also says Sequence Mob ID | Describes an edit through track/component references. The sequence-only record uses `compositionMobId`; mixed-role records keep `mobId` with their type. AVB sequence filtering resolves these references independently per bin under C26. O Chapter 4. |
 | Physical Source Mob / package | Lower-level source/package role | Describes upstream physical/source material. Do not confuse it with the top-level file package that owns this file's essence. P pp. 4–9. |
 | Source reference | Source ID/package ID, source track/slot ID and start position | Connects the correct source and track/time. Mob identity alone is insufficient for C06/C23's exact used-track/angle filtering. [Current traversal](../src/mediaengine/avbreferences.cpp), O SourceClip pp. 197–199; M B.10. |
@@ -276,9 +276,18 @@ Ordinary UI rows now store selected typed values, `MediaMetadataStatus`,
 checklist covers the current property catalogue and contains availability,
 applicability, agreement, source-kind/freshness
 flags and selected origin/basis/freshness tags where established. It contains no
-values, explanation strings, observations or source owners. The current
-master-association union has no single principal origin. This bounded change does
-not alter the acquisition checklist.
+values, explanation strings, observations or source owners. The selected
+MasterMobId records its principal source like other scalar fields. Selection keeps
+database-first/header-as-needed acquisition; preferring a header does not demand
+opening every physical file.
+
+MDB, OMF and MXF keep master details in temporary `Projection.masters` groups.
+Matching chooses the associated ID before admitting its group's metadata, with
+qualified source/object context required for groups in that file's own header.
+Other masters cannot supply the chosen master's name, bin or classification.
+Physical file/package facts and clocks remain independent. Groups are released
+with the working scan; the separate operation receipt still captures every
+eligible header identity needed by existing live checks.
 
 The scanner borrows working evidence and uses one scoped `ScanRowLookup` for
 header outcomes and change/skipped flags while preparing rows. It then discards
@@ -392,9 +401,10 @@ UTF-16, dynamically assembled names and other images may carry it.
   checklist. Core reader/engine evidence remains working storage for matching and
   validation. Reconciliation diagnostics and loaded-bin/filter graphs retain their
   separate owners; compacting those graphs remains outstanding. Clip Duration and
-  its separate master-track calculations have been removed. Master unions remain:
-  Source Filename, single-master selection,
-  acquisition and cancellation changes are separate tasks. No memory or scan-time
+  its separate master-track calculations have been removed. Ordinary row/stamp
+  associations now retain one selected MasterMobId, with associated details kept
+  consistent. Source Filename, acquisition and cancellation changes are separate
+  tasks. No memory or scan-time
   saving has been measured.
 - C54 clears the previous media table at scan start; C55 retains found physical
   rows and successfully resolved values on clean user cancellation. C87 requires

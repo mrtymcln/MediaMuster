@@ -69,13 +69,22 @@ namespace MediaEngine
 			const ReaderContext context{snapshot, cancellation};
 			return OmfReader{}.read(input, context);
 		}
-		void attach(MediaFile &file, const ProjectedFile &facts, bool eligible)
+		void attachObjects(MediaFile &file, const ProjectedFile &facts)
 		{
-			appendEvidence(file.evidence, facts.evidence, eligible);
 			for (const auto &object : facts.objects)
 				if (std::none_of(file.objects.cbegin(), file.objects.cend(), [&](const ObjectReference &existing)
 								 { return existing.source == object.source && existing.handle == object.handle; }))
 					file.objects.append(object);
+		}
+		void attach(MediaFile &file, const ProjectedFile &facts, bool eligible)
+		{
+			appendEvidence(file.evidence, facts.evidence, eligible);
+			attachObjects(file, facts);
+		}
+		void attachMasterDetails(MediaFile &file, const ProjectedFile &facts, bool eligible)
+		{
+			appendMasterMetadata(file.evidence, facts.evidence, eligible);
+			attachObjects(file, facts);
 		}
 
 		QStringList fileIdentityClaims(const ProjectedFile &facts)
@@ -91,22 +100,6 @@ namespace MediaEngine
 						claims.append(id);
 				}
 			return claims;
-		}
-
-		QStringList eligibleMasterIds(const MediaEvidence &evidence)
-		{
-			QStringList masters;
-			for (const auto &item : evidence.observations(MediaProperty::MasterMobId))
-				if (item.eligible && item.readState == PropertyReadState::Present)
-				{
-					if (item.value.metaType().id() == QMetaType::QStringList)
-						masters.append(item.value.toStringList());
-					else if (!item.value.toString().isEmpty())
-						masters.append(item.value.toString());
-				}
-			masters.removeDuplicates();
-			std::sort(masters.begin(), masters.end());
-			return masters;
 		}
 
 		void selectMatchingEffects(MediaEvidence &evidence)
@@ -131,7 +124,7 @@ namespace MediaEngine
 			for (const auto property : {MediaProperty::ClipName, MediaProperty::Project, MediaProperty::Compression,
 										MediaProperty::BitDepth, MediaProperty::FileMobId})
 				require(property, value(property).isValid() && !value(property).toString().isEmpty());
-			require(MediaProperty::MasterMobId, !value(MediaProperty::MasterMobId).toStringList().isEmpty());
+			require(MediaProperty::MasterMobId, !value(MediaProperty::MasterMobId).toString().isEmpty());
 			const auto kind = value(MediaProperty::Kind);
 			require(MediaProperty::Kind, kind.isValid() && (kind.toInt() == 0 || kind.toInt() == 1));
 			const auto type = value(MediaProperty::Type);
@@ -192,23 +185,21 @@ namespace MediaEngine
 				field.value = value;
 				field.reason = EvidenceExplanation::withDisplayClock(field.reason, clock.reason);
 			}
-			else if (policy.rule == SelectionRule::MasterAssociations)
-			{
-				// Master associations are relationships, not competing scalar values.
-				const auto masters = eligibleMasterIds(evidence);
-				if (!masters.isEmpty())
-				{
-					field.value = masters;
-					field.readState = PropertyReadState::Present;
-					field.readReason = PropertyReadReason::None;
-					field.applicability = PropertyApplicability::Applicable;
-					field.agreement = PropertyAgreement::NotCompared;
-					field.reason = EvidenceExplanation(EvidenceExplanation::Reason::MasterAssociations);
-				}
-			}
 			evidence.select(policy.property, std::move(field));
 		}
 		selectEffectMetadata(evidence);
+	}
+
+	MediaEvidence selectedProjectedEvidence(const ProjectedFile &file, const Projection &projection)
+	{
+		MediaEvidence result = file.evidence;
+		const QString masterMobId = resolveProperty(result, propertyPolicy(MediaProperty::MasterMobId)).value.toString();
+		if (!masterMobId.isEmpty())
+			for (const auto &master : projection.masters)
+				if (masterGroupMatchesAssociation(result, master, masterMobId))
+					appendMasterMetadata(result, master.evidence);
+		selectMetadata(result);
+		return result;
 	}
 
 	ScanResult ScanCoordinator::scan(const ScanRequest &request, const Cancellation &cancellation,
@@ -522,27 +513,31 @@ namespace MediaEngine
 					completeMdbMatch |= eligible && result.sources[entry.first].outcome == ParsedSource::Outcome::Complete;
 				}
 			selectMatchingEffects(file.evidence);
-			const auto selectedMasters = eligibleMasterIds(file.evidence);
-			QSet<QString> candidateMasters;
-			for (const auto &item : file.evidence.observations(MediaProperty::MasterMobId))
-				if (item.readState == PropertyReadState::Present)
+			const QString selectedMaster = resolveProperty(file.evidence, propertyPolicy(MediaProperty::MasterMobId)).value.toString();
+			if (!selectedMaster.isEmpty())
+			{
+				if (headers.contains(file.kelpieId))
 				{
-					const auto identities = item.value.metaType().id() == QMetaType::QStringList ? item.value.toStringList() : QStringList{item.value.toString()};
-					for (const auto &master : identities)
-						if (!master.isEmpty())
-							candidateMasters.insert(master);
+					const auto sourceIndex = headers.value(file.kelpieId);
+					for (const auto &master : projections[sourceIndex].masters)
+					{
+						if (cancellation.cancelled())
+							return false;
+						if (masterGroupMatchesAssociation(file.evidence, master, selectedMaster))
+							attachMasterDetails(file, master, unchanged[sourceIndex] && !physicalChanged);
+					}
 				}
-			for (const auto &master : candidateMasters)
-				for (const auto &entry : mastersById.value(master))
+				for (const auto &entry : mastersById.value(selectedMaster))
 				{
 					if (cancellation.cancelled())
 						return false;
-					attach(file, projections[entry.first].masters[entry.second],
-						   unchanged[entry.first] && !physicalChanged && selectedMasters.contains(master));
+					attachMasterDetails(file, projections[entry.first].masters[entry.second],
+						unchanged[entry.first] && !physicalChanged);
 				}
+			}
 			selectMetadata(file.evidence);
 			file.stamp.fileMobId = file.evidence.selected(MediaProperty::FileMobId).value.toString();
-			file.stamp.masterMobIds = file.evidence.selected(MediaProperty::MasterMobId).value.toStringList();
+			file.stamp.masterMobId = file.evidence.selected(MediaProperty::MasterMobId).value.toString();
 			// DatabaseStatus uses the UI's stable values: Listed/NoReference/NoDatabase/DbUnreadable.
 			if (cancellation.cancelled())
 				return false;

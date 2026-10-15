@@ -256,7 +256,7 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 		case Column::FileMobId:
 			return f.fileMobId;
 		case Column::MasterMobId:
-			return f.masterMobIdDisplay();
+			return f.masterMobId;
 		case Column::KelpieId:
 			return QVariant::fromValue(f.kelpieId);
 		case Column::PrecomputeCategory:

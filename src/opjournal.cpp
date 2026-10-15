@@ -12,7 +12,7 @@
 
 namespace
 {
-	constexpr int schema = 3;
+	constexpr int schema = 4;
 	QString savedChoice(const QString &choice)
 	{
 		return choice.isEmpty() ? QStringLiteral("none") : choice;
@@ -38,7 +38,6 @@ namespace
 						  {"policy", i.policy},
 						  {"fileMobId", i.fileMobId},
 						  {"masterMobId", i.masterMobId},
-						  {"masterMobIds", QJsonArray::fromStringList(i.masterMobIds)},
 						  {"scanPath", i.scanPath},
 						  {"scanVolumeIdentifier", i.scanVolumeIdentifier},
 						  {"databaseFileMobIdToVerify", i.databaseFileMobIdToVerify},
@@ -76,8 +75,6 @@ namespace
 			}
 			return true;
 		};
-		if (!strings(v["masterMobIds"], i.masterMobIds))
-			return {};
 		if (v.contains("headerIdentity"))
 		{
 			if (!v["headerIdentity"].isObject())

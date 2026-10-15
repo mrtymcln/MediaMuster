@@ -65,7 +65,7 @@ MediaMetadataStatus makeMediaMetadataStatus(const MediaEvidence &evidence, Media
 		status.hasSelectedValue = selected.value.isValid();
 		status.captured = true;
 		const auto &observations = evidence.observations(property);
-		if (property != MediaProperty::MasterMobId && status.hasSelectedValue &&
+		if (status.hasSelectedValue &&
 			selected.selectedObservation >= 0 && selected.selectedObservation < observations.size())
 		{
 			const auto &principal = observations[selected.selectedObservation];

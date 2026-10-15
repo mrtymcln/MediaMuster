@@ -25,7 +25,6 @@ namespace MediaEngine
 	enum class SelectionRule
 	{
 		PreferredValue,
-		MasterAssociations,
 		FileDuration,
 		DerivedEffect
 	};
@@ -46,6 +45,6 @@ namespace MediaEngine
 	const PropertyPolicies &propertyPolicies() noexcept;
 
 	// Source-ranked resolution retains alternatives. selectMetadata coordinates
-	// master unions, compatible duration clocks and effect derivation separately.
+	// compatible duration clocks and effect derivation separately.
 	ResolvedField resolveProperty(const MediaEvidence &evidence, const PropertyPolicy &policy);
 }

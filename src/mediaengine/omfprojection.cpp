@@ -400,7 +400,6 @@ namespace MediaEngine
 							link(file, m_source, master);
 							observe(file, MediaProperty::MasterMobId, m_source, master, *masterMobIdProperty, masterMobId,
 									EvidenceBasis::Derived, QStringLiteral("This master's source-clip graph references the file mob."));
-							appendEvidence(file.evidence, masterFacts.evidence);
 						}
 					result.masters.append(std::move(masterFacts));
 				}
@@ -1644,6 +1643,7 @@ namespace MediaEngine
 				return result;
 			auto projection = OmfProjection(child, cancellation).project();
 			result.diagnostics += projection.diagnostics;
+			result.masters += std::move(projection.masters);
 			for (auto &candidate : projection.files)
 			{
 				for (const auto &value : candidate.evidence.observations(MediaProperty::FileMobId))

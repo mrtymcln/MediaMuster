@@ -184,8 +184,9 @@ namespace MediaEngine
 			{MediaProperty::FileMobId, SelectionRule::PreferredValue,
 			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb}, {Source::Pmr})},
 
-			// Keep every eligible master association. This union rule does not use source preferences.
-			{MediaProperty::MasterMobId, SelectionRule::MasterAssociations, {}},
+			// One associated master: header first, matching MDB second, PMR claim third.
+			{MediaProperty::MasterMobId, SelectionRule::PreferredValue,
+			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb}, {Source::Pmr})},
 
 			// Local database membership/readability, derived from this folder's scan outcomes.
 			{MediaProperty::DatabaseStatus, SelectionRule::PreferredValue,

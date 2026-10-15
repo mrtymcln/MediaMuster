@@ -332,7 +332,7 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 	case Col::FileMobId:
 		return leftFile.fileMobId < rightFile.fileMobId;
 	case Col::MasterMobId:
-		return leftFile.masterMobIdDisplay() < rightFile.masterMobIdDisplay();
+		return leftFile.masterMobId < rightFile.masterMobId;
 	case Col::Type:
 		return typeSortRank(leftFile.type) < typeSortRank(rightFile.type);
 	case Col::PrecomputeCategory:

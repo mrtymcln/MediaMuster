@@ -69,7 +69,7 @@ class TestMediaCsv : public QObject
 	Q_OBJECT
 private slots:
 	void header_and_row_have_the_same_field_count();
-	void all_master_ids_and_physical_row_identity_are_exported();
+	void selected_master_and_physical_row_identity_are_exported();
 	void header_order_and_values_follow_the_export_schema();
 	void created_date_carries_time_of_day();
 	void unknown_created_date_is_blank();
@@ -87,20 +87,19 @@ private slots:
 	void precompute_categories_preserve_unknown_details();
 };
 
-void TestMediaCsv::all_master_ids_and_physical_row_identity_are_exported()
+void TestMediaCsv::selected_master_and_physical_row_identity_are_exported()
 {
 	MediaFile file = sampleRow();
 	file.kelpieId = 42;
 	file.fileMobId = QStringLiteral("file-id");
-	file.masterMobId = QStringLiteral("compatibility-only");
-	file.masterMobIds = {QStringLiteral("master-a"), QStringLiteral("master-b")};
+	file.masterMobId = QStringLiteral("selected-master");
 	file.omfEra = true;
 	const auto headers = readCsvRecord(MediaCsv::headerLine());
 	const auto values = readCsvRecord(MediaCsv::rowLine(file));
 	QCOMPARE(headers.count(QStringLiteral("FileMobId")), 1);
 	QCOMPARE(headers.count(QStringLiteral("MasterMobId")), 1);
 	QCOMPARE(values.at(headers.indexOf(QStringLiteral("FileMobId"))), QStringLiteral("file-id"));
-	QCOMPARE(values.at(headers.indexOf(QStringLiteral("MasterMobId"))), QStringLiteral("master-a; master-b"));
+	QCOMPARE(values.at(headers.indexOf(QStringLiteral("MasterMobId"))), QStringLiteral("selected-master"));
 	QCOMPARE(values.at(headers.indexOf(QStringLiteral("KelpieId"))), QStringLiteral("42"));
 	QCOMPARE(values.at(headers.indexOf(QStringLiteral("OmfScan"))), QStringLiteral("true"));
 	QVERIFY(!headers.contains(QStringLiteral("Sample Format")));

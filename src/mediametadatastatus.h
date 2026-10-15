@@ -26,8 +26,8 @@ struct MediaFieldStatus
 	PropertyApplicability applicability = PropertyApplicability::Unknown;
 	bool hasSelectedValue = false;
 	bool captured = false;
-	// Principal selected observation only. Master-association unions have no
-	// principal origin; a duration's supplementary display clock may use other inputs.
+	// Principal selected observation only. A duration's supplementary display
+	// clock may use other inputs.
 	std::optional<MetadataSource> selectedSource;
 	std::optional<EvidenceBasis> selectedBasis;
 	std::optional<SourceFreshness> selectedFreshness;

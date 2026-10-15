@@ -140,9 +140,7 @@ void TestReaderRegressions::genuineDatabaseHeaderJoins()
 		const auto *master = findMaster(database.masters, record.masterMobIds.first());
 		QVERIFY2(file, qPrintable(path + QStringLiteral(": MDB file identity")));
 		QVERIFY2(master, qPrintable(path + QStringLiteral(": MDB master identity")));
-		MediaEvidence databaseEvidence = file->evidence;
-		MediaEngine::appendEvidence(databaseEvidence, master->evidence);
-		MediaEngine::selectMetadata(databaseEvidence);
+		const auto databaseEvidence = MediaEngine::selectedProjectedEvidence(*file, database);
 		const auto source = omf ? read(MediaEngine::OmfReader{}, path, MetadataSource::Omf)
 								: read(MediaEngine::MxfReader{}, path, MetadataSource::Mxf);
 		QVERIFY2(source.outcome == MediaEngine::ParsedSource::Outcome::Complete || (!omf && source.outcome == MediaEngine::ParsedSource::Outcome::Incomplete),
@@ -179,8 +177,7 @@ void TestReaderRegressions::genuineDatabaseHeaderJoins()
 		}
 		QCOMPARE(header.files.first().fileMobId, record.fileMobId);
 		QVERIFY2(header.files.first().masterMobIds.contains(record.masterMobIds.first()), qPrintable(path + QStringLiteral(": header master identity")));
-		MediaEvidence headerEvidence = header.files.first().evidence;
-		MediaEngine::selectMetadata(headerEvidence);
+		const auto headerEvidence = MediaEngine::selectedProjectedEvidence(header.files.first(), header);
 		QCOMPARE(databaseEvidence.selected(MediaProperty::ClipName).value, headerEvidence.selected(MediaProperty::ClipName).value);
 		QCOMPARE(databaseEvidence.selected(MediaProperty::Kind).value, headerEvidence.selected(MediaProperty::Kind).value);
 		QCOMPARE(databaseEvidence.selected(MediaProperty::Type).value, headerEvidence.selected(MediaProperty::Type).value);

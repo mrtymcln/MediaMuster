@@ -7,7 +7,6 @@
 #include "opscanreceipt.h"
 
 #include <QString>
-#include <QStringList>
 #include <QDateTime>
 #include <QMetaType>
 #include <cmath>
@@ -27,16 +26,10 @@ struct MediaFile
 	MediaScanStamp scanStamp;
 	/// Frozen operation checks; absence means they were never captured.
 	std::optional<OpScanReceipt> operationScanReceipt;
-	QStringList masterMobIds; ///< Established scan associations; the scalar below is set for a single association.
-	QString masterMobIdDisplay() const
-	{
-		return masterMobIds.isEmpty() ? masterMobId : masterMobIds.join(QStringLiteral("; "));
-	}
-
 	// Full IDs use PMR/MDB field order. The scanner converts MXF header IDs
 	// before storing them; database, OMF and AVB readers already use this order.
 	QString fileMobId;	 ///< FileMobId recovered from databases or media metadata.
-	QString masterMobId; ///< MasterMobId of the associated master clip (AAF MasterMob);
+	QString masterMobId; ///< Selected MasterMobId of the associated master clip (AAF MasterMob);
 						 ///< V01/A01/A02 relatives share this.
 
 	// MARK: MDB and PMR metadata

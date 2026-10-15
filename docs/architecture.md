@@ -129,6 +129,18 @@ and [bounded specimen evidence](../Project%20Canon/root-membership-specimens-202
 Matching prefers exact local PMR filenames, with normalized fallback only for an
 unambiguous physical location and compatible identity. MDB file facts join by full
 canonical file identities; master-only facts require an established association.
+MDB/OMF/MXF keep master facts in temporary `Projection.masters` groups rather than
+merging every master's details into a physical file. Association claims remain in
+the file evidence. MasterMobId uses Header → MDB → PMR preference among acquired
+eligible facts; conflicting highest-rank IDs leave selection blank. The coordinator
+then admits only the selected master's details. Its own header groups require
+matching qualified source/object association context as well as ID; the existing
+MDB master-only lookup uses the established selected identity. Physical file and
+package facts remain independent, including project/origin and clocks/timecode.
+`appendMasterMetadata()` copies detail observations/coverage without turning the
+master object's canonical identity into a new file-to-master association.
+`selectedProjectedEvidence()` supplies the equivalent preparation for direct
+standalone-projection consumers. These groups never become UI row owners.
 Supported observations from changed or disputed sources remain available but ineligible
 within the working scan.
 Known contradictory active file identities remain conflict evidence in an ownerless
@@ -151,8 +163,9 @@ source may be unreadable, incomplete or uninterpreted. Scan-time consumers inspe
 source receipts and property evidence. Prepared rows keep the resulting fixed
 status checklist, including selected origin/basis/freshness tags where established
 and source-kind flags for present, unknown, consistent or changed inputs. The
-master-association union has no single selected origin. Discovery/parsing/reconciliation
-completion flags describe their respective stages, not universal format support.
+selected MasterMobId now records its principal source like other scalar fields.
+Discovery/parsing/reconciliation completion flags describe their respective
+stages, not universal format support.
 
 The model holds selected row values, `MediaMetadataStatus`, `MediaScanStamp` and
 the optional frozen `OpScanReceipt`, with no `MediaEvidence` or `mediaEngineScan`
@@ -169,16 +182,18 @@ and [parser compatibility](parser-compatibility.md).
 
 [AvbFilterDialog](../src/avbfilterdialog.cpp) controls loaded bins and builds an ordered
 [AvbFilter](../src/avbfilter.h) expression. The proxy evaluates each step against a
-row's file or every established master identifier. Applied partial steps retain their
-source graphs and persistent “Results may be incomplete” warning. The future sequence
+row's FileMobId. A shared MasterMobId alone does not establish membership.
+Applied partial steps retain their source graphs and persistent “Results may be
+incomplete” warning. The future sequence
 picker remains disabled behind `SequenceFilter`; the current dialog applies whole-bin
 scope. Other filters still apply to the resulting rows.
 Loading or removing bins changes filtering only; no bin-enrichment resolver or row
 AVB history owner remains. The loaded bins and applied filter snapshots still retain
 their current metadata and graphs. Compacting those graphs remains outstanding.
-The master-association union is preserved; Source Filename and single-master
-selection are separate Copland changes. Clip Duration has been removed. Acquisition
-and cancellation changes are also separate. No memory or scan-time saving is measured.
+The ordinary master-association union has been replaced by one selected
+MasterMobId. Source Filename remains a separate Copland change. Clip Duration has
+been removed. Acquisition and cancellation changes are also separate. No memory
+or scan-time saving is measured.
 [PrecomputeFilterDialog](../src/precomputefilterdialog.cpp) builds the optional
 [PrecomputeFilter](../src/precomputefilter.h).
 
@@ -227,6 +242,13 @@ produces a refusal asking for a rescan. Captured unknown identities still follow
 the existing operation rules. Metadata status and operation receipts are separate:
 the status checklist describes interpretation; the receipt supplies live-operation
 checks.
+
+The ordinary row/stamp/request carries only scalar `masterMobId`. Its frozen
+header-only record can contain several captured header IDs because each is an
+existing live check. `OpRunner` gathers all eligible actual header claims through
+the same capture logic, independently of ordinary scalar selection; every saved
+header ID must remain present. A database-only selected master does not become a
+header requirement, and skipped headers retain separate FileMobId verification.
 
 Confirmed copies and moves preserve the frozen record while updating the current
 row path, modification time and volume stamp. Destination paths cannot borrow
@@ -284,10 +306,11 @@ These helpers use the same journal and recovery state machine.
   a job, restoring retained originals, stopping unfinished work and Undo are distinct
   actions. Stop abandons the remaining work and keeps the job's completed effects.
 
-The current beta build uses journal schema 3, without checksum fields. Identity
-keys match the code: `fileMobId`, `masterMobId`, `masterMobIds` and
-`databaseFileMobIdToVerify`. Legacy keys and optional-field compatibility paths
-are removed. During beta, simplicity takes precedence over older journal formats.
+The current beta build uses journal schema 4, without checksum fields. Ordinary
+identity keys are `fileMobId`, `masterMobId` and `databaseFileMobIdToVerify`;
+only nested `headerIdentity` retains its safety-only `masterMobIds` array.
+Legacy keys and optional-field compatibility paths are removed. During beta,
+simplicity takes precedence over older journal formats.
 Mechanism, Trash provider and Undo action use `QString` internally
 and explicit names in JSON,
 including `"none"` for an unset choice (an empty string inside the program). Loading

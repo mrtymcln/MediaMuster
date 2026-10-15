@@ -74,6 +74,7 @@ private slots:
 	void sample_rate_column_sorts_numerically();
 	void bit_depth_column_sorts_numbers_before_labels();
 	void duration_column_sorts_displayed_timecode();
+	void master_column_sorts_selected_identity();
 
 	// Search covers the path (2026-08-18). The Location column shows the
 	// full path, so the search box has to match it — and because the
@@ -181,6 +182,36 @@ void TestMediaFilterProxy::search_matches_the_path_shown_in_the_location_column(
 	// ("E:/...") need not contain the label the user knows it by.
 	proxy.setSearchText(QStringLiteral("BACKUP"));
 	QCOMPARE(proxy.rowCount(), 1);
+}
+
+void TestMediaFilterProxy::master_column_sorts_selected_identity()
+{
+	MediaFile later = rowNamed(QStringLiteral("Same clip name"));
+	later.masterMobId = MobId::format(TestAvb::Master);
+	later.mediaFilePath = QStringLiteral("/vol/later.mxf");
+	MediaFile earlier = later;
+	earlier.masterMobId = MobId::format(TestAvb::Other);
+	earlier.mediaFilePath = QStringLiteral("/vol/earlier.mxf");
+	MediaFile unknown = later;
+	unknown.masterMobId.clear();
+	unknown.mediaFilePath = QStringLiteral("/vol/unknown.mxf");
+	QVERIFY(earlier.masterMobId < later.masterMobId);
+	MediaTableModel model;
+	model.setMediaFiles(TestMediaFile::seeded({later, earlier, unknown}));
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	const int column = int(MediaTableModel::Column::MasterMobId);
+	proxy.sort(column, Qt::AscendingOrder);
+	QCOMPARE(proxy.index(0, column).data().toString(), QString());
+	QCOMPARE(proxy.index(1, column).data().toString(), earlier.masterMobId);
+	QCOMPARE(proxy.index(2, column).data().toString(), later.masterMobId);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 2);
+	QCOMPARE(proxy.mapToSource(proxy.index(1, 0)).row(), 1);
+	QCOMPARE(proxy.mapToSource(proxy.index(2, 0)).row(), 0);
+	proxy.sort(column, Qt::DescendingOrder);
+	QCOMPARE(proxy.index(0, column).data().toString(), later.masterMobId);
+	QCOMPARE(proxy.index(1, column).data().toString(), earlier.masterMobId);
+	QCOMPARE(proxy.index(2, column).data().toString(), QString());
 }
 
 void TestMediaFilterProxy::size_column_sorts_on_exact_bytes()

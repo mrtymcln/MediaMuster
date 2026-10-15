@@ -31,8 +31,7 @@ bool applyResolvedMetadata(MediaFile &row, const MediaEvidence &evidence)
 	const auto value = [&](MediaProperty property)
 	{ return evidence.selected(property).value; };
 	assign(row.fileMobId, value(MediaProperty::FileMobId).toString());
-	assign(row.masterMobIds, value(MediaProperty::MasterMobId).toStringList());
-	assign(row.masterMobId, row.masterMobIds.size() == 1 ? row.masterMobIds.front() : QString{});
+	assign(row.masterMobId, value(MediaProperty::MasterMobId).toString());
 	assign(row.clipName, value(MediaProperty::ClipName).toString());
 	auto nameSource = MediaFile::ClipNameSource::None;
 	const auto clip = evidence.selected(MediaProperty::ClipName);
@@ -77,10 +76,7 @@ bool applyResolvedMetadata(MediaFile &row, const MediaEvidence &evidence)
 	assign(row.type, value(MediaProperty::Type).isValid() ? MediaFile::Type(value(MediaProperty::Type).toInt()) : MediaFile::Type::Unknown);
 	assign(row.precomputeCategory, value(MediaProperty::PrecomputeCategory).isValid() ? MediaFile::PrecomputeCategory(value(MediaProperty::PrecomputeCategory).toInt()) : MediaFile::PrecomputeCategory::Unknown);
 	assign(row.dbStatus, value(MediaProperty::DatabaseStatus).isValid() ? MediaFile::DbStatus(value(MediaProperty::DatabaseStatus).toInt()) : MediaFile::DbStatus::DbUnreadable);
-	bool invalidUmid = MobId::isAllZero(row.fileMobId);
-	for (const auto &master : row.masterMobIds)
-		invalidUmid |= MobId::isAllZero(master);
-	assign(row.isInvalidUmid, invalidUmid);
+	assign(row.isInvalidUmid, MobId::isAllZero(row.fileMobId) || MobId::isAllZero(row.masterMobId));
 	assign(row.effect, value(MediaProperty::Effect).toString());
 	assign(row.effectCategory, value(MediaProperty::EffectCategory).toString());
 	assign(row.effectSequence, value(MediaProperty::EffectSequence).toString());

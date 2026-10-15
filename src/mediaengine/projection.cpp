@@ -192,4 +192,41 @@ namespace MediaEngine
 				target.observe(MediaProperty(index), std::move(value));
 			}
 	}
+	void appendMasterMetadata(MediaEvidence &target, const MediaEvidence &source, bool eligible)
+	{
+		for (auto coverage : source.sourceCoverage())
+		{
+			coverage.fields.remove(MediaProperty::MasterMobId);
+			target.appendCoverage(coverage, eligible);
+		}
+		for (int index = int(MediaProperty::ClipName); index < int(MediaProperty::Count); ++index)
+		{
+			const auto property = MediaProperty(index);
+			if (property == MediaProperty::MasterMobId)
+				continue;
+			for (auto value : source.observations(property))
+			{
+				value.eligible = value.eligible && eligible;
+				target.observe(property, std::move(value));
+			}
+		}
+	}
+	bool masterGroupMatchesAssociation(const MediaEvidence &associations, const ProjectedFile &master,
+									   const QString &masterMobId)
+	{
+		if (masterMobId.isEmpty() || !master.masterMobIds.contains(masterMobId))
+			return false;
+		for (const auto &claim : associations.observations(MediaProperty::MasterMobId))
+		{
+			if (!claim.snapshot || !claim.eligible || claim.readState != PropertyReadState::Present ||
+				claim.value.toString() != masterMobId || claim.objectIdentity.isEmpty())
+				continue;
+			for (const auto &identity : master.evidence.observations(MediaProperty::MasterMobId))
+				if (identity.snapshot == claim.snapshot && identity.eligible &&
+					identity.readState == PropertyReadState::Present && identity.value.toString() == masterMobId &&
+					identity.objectIdentity == claim.objectIdentity)
+					return true;
+		}
+		return false;
+	}
 }

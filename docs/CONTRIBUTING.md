@@ -47,6 +47,14 @@ rows must not acquire working scan/evidence owners; retain diagnostics and
 loaded-bin graphs only through their separate consumers. Make performance claims
 only when supported by measurements.
 
+Keep master-owned details grouped in temporary `Projection.masters` records until
+the associated MasterMobId is selected. A group's canonical identity identifies
+that object; it must not create a new file-to-master association. Use
+`appendMasterMetadata()` for the detail join and `selectedProjectedEvidence()` for
+standalone prepared projection results. Own-header joins require the qualified
+association context as well as matching ID. Preserve independent physical facts
+and all captured header safety checks.
+
 During beta, prioritize code improvements and simplicity over backwards
 compatibility. Saved Undo/recovery journals need no legacy aliases or migration.
 Keep current-format Undo, recovery and file safeguards correct; reject unsupported

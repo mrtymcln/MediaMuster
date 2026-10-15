@@ -267,6 +267,11 @@ namespace
 		return values.isEmpty() ? QVariant{} : values.first().value;
 	}
 
+	QVariant selectedValue(const Projection &projection, const ProjectedFile &file, MediaProperty field)
+	{
+		return selectedProjectedEvidence(file, projection).selected(field).value;
+	}
+
 	Projection project(const Graph &graph)
 	{
 		Cancellation cancellation;
@@ -365,7 +370,7 @@ private slots:
 		QCOMPARE(result.files.size(), 1);
 		QCOMPARE(result.files.first().fileMobId, canonicalMxfId(graph.fileId));
 		QCOMPARE(result.files.first().masterMobIds, QStringList{canonicalMxfId(umid('m'))});
-		QCOMPARE(value(result.files.first(), MediaProperty::ClipName).toString(), QStringLiteral("Clip m"));
+		QCOMPARE(selectedValue(result, result.files.first(), MediaProperty::ClipName).toString(), QStringLiteral("Clip m"));
 		QVERIFY(std::none_of(result.files.first().objects.cbegin(), result.files.first().objects.cend(),
 							[&](const auto &object) { return object.handle == duplicate || object.handle == orphanEcd || object.handle == orphanPackage; }));
 		QVERIFY(std::any_of(result.files.first().objects.cbegin(), result.files.first().objects.cend(),
@@ -557,7 +562,7 @@ private slots:
 		graph.refreshLinks(track);
 		const auto result = project(graph);
 		QCOMPARE(result.files.first().masterMobIds, QStringList{canonicalMxfId(umid('m'))});
-		QCOMPARE(value(result.files.first(), MediaProperty::ClipName).toString(), QStringLiteral("Clip m"));
+		QCOMPARE(selectedValue(result, result.files.first(), MediaProperty::ClipName).toString(), QStringLiteral("Clip m"));
 		// Raw arrays retain both occurrences and both recorded property copies.
 		QCOMPARE(graph.at(sequence).properties[1].decoded.toList().size(), 2);
 		QCOMPARE(graph.at(sequence).properties[2].decoded.toList().size(), 2);
@@ -616,6 +621,11 @@ private slots:
 		auto result = project(graph);
 		QCOMPARE(result.files.size(), 1);
 		QCOMPARE(result.files.first().masterMobIds.size(), 2);
+		QCOMPARE(result.masters.size(), 2);
+		QVERIFY(result.files.first().evidence.observations(MediaProperty::ClipName).isEmpty());
+		QVERIFY(!selectedValue(result, result.files.first(), MediaProperty::ClipName).isValid());
+		QCOMPARE(value(result.masters[0], MediaProperty::ClipName).toString(), QStringLiteral("Clip m"));
+		QCOMPARE(value(result.masters[1], MediaProperty::ClipName).toString(), QStringLiteral("Clip n"));
 
 		const auto ecd = graph.object("EssenceContainerData", 999);
 		graph.property(ecd, "EssenceContainerData.LinkedPackageUID", graph.fileId);
@@ -626,6 +636,94 @@ private slots:
 		result = project(graph);
 		QCOMPARE(result.files.size(), 2);
 		QVERIFY(result.files.last().masterMobIds.isEmpty());
+	}
+
+	void ambiguous_masters_keep_file_timecode_and_duration()
+	{
+		Graph graph;
+		graph.picture(QByteArray::fromHex("060e2b340401010d0401020203070100"));
+		graph.master('m');
+		graph.master('n');
+		const auto track = graph.object("Track"), timecode = graph.object("TimecodeComponent");
+		graph.property(timecode, "TimecodeComponent.DropFrame", true);
+		graph.edge(track, "GenericTrack.Sequence", timecode);
+		graph.batch(graph.file, "GenericPackage.Tracks", {track});
+		const auto result = project(graph);
+		QCOMPARE(result.files.size(), 1);
+		const auto &file = result.files.first();
+		QCOMPARE(file.masterMobIds.size(), 2);
+		QCOMPARE(value(file, MediaProperty::DropFrame).toBool(), true);
+		const auto prepared = selectedProjectedEvidence(file, result);
+		QVERIFY(!prepared.selected(MediaProperty::MasterMobId).value.isValid());
+		QVERIFY(!prepared.selected(MediaProperty::ClipName).value.isValid());
+		QCOMPARE(prepared.selected(MediaProperty::DropFrame).value.toBool(), true);
+		const auto duration = mediaDuration(prepared.selected(MediaProperty::FileDuration).value);
+		QCOMPARE(duration.units, 240);
+		QCOMPARE(duration.rate.numerator, 24);
+		QCOMPARE(duration.rate.denominator, 1);
+		QVERIFY(duration.displayRate.sameRate({24, 1}));
+	}
+
+	void master_groups_keep_qualified_partition_owners()
+	{
+		Graph graph;
+		graph.master('m');
+		const auto ecd = graph.object("EssenceContainerData", 999);
+		graph.property(ecd, "EssenceContainerData.LinkedPackageUID", graph.fileId);
+		const auto package = graph.object("SourcePackage", 999);
+		graph.property(package, "GenericPackage.PackageUID", graph.fileId);
+		const auto preface = graph.object("Preface", 999);
+		graph.storage = graph.root(999, preface, {package}, {ecd});
+		graph.file = package;
+		const auto repeatedMaster = graph.master('m');
+		graph.replace(repeatedMaster, "GenericPackage.Name", QStringLiteral("Second partition"));
+		const auto result = project(graph);
+		QCOMPARE(result.files.size(), 2);
+		QCOMPARE(result.masters.size(), 2);
+		for (const auto &file : result.files)
+		{
+			QCOMPARE(file.masterMobIds, QStringList{canonicalMxfId(umid('m'))});
+			QVERIFY(file.evidence.observations(MediaProperty::ClipName).isEmpty());
+		}
+		QCOMPARE(selectedValue(result, result.files[0], MediaProperty::ClipName).toString(), QStringLiteral("Clip m"));
+		QCOMPARE(selectedValue(result, result.files[1], MediaProperty::ClipName).toString(), QStringLiteral("Second partition"));
+	}
+
+	void master_details_stay_separate_from_physical_facts()
+	{
+		Graph graph;
+		graph.picture(QByteArray::fromHex("060e2b340401010d0401020203070100"));
+		graph.property(graph.preface, "Preface.ProjectName", QStringLiteral("Physical project"));
+		const auto master = graph.master();
+		graph.property(master, "GenericPackage.AppCode", 1);
+		const auto projectAttribute = graph.object("TaggedValue"), origin = graph.object("TaggedValue");
+		graph.property(projectAttribute, "TaggedValue.Name", QStringLiteral("_PJ"));
+		graph.property(projectAttribute, "TaggedValue.Value", QStringLiteral("Master project"));
+		graph.property(origin, "TaggedValue.Name", QStringLiteral("UNC Path"));
+		graph.property(origin, "TaggedValue.Value", QStringLiteral("/imports/master.mov"));
+		graph.batch(master, "GenericPackage.MobAttributeList", {projectAttribute, origin});
+		const auto track = graph.object("Track"), timecode = graph.object("TimecodeComponent");
+		graph.property(timecode, "TimecodeComponent.DropFrame", true);
+		graph.edge(track, "GenericTrack.Sequence", timecode);
+		graph.appendToBatch(master, "GenericPackage.Tracks", track);
+		const auto result = project(graph);
+		QCOMPARE(result.files.size(), 1);
+		QCOMPARE(result.masters.size(), 1);
+		const auto &file = result.files.first();
+		const auto &group = result.masters.first();
+		QCOMPARE(value(file, MediaProperty::Project).toString(), QStringLiteral("Physical project"));
+		QCOMPARE(mediaDuration(value(file, MediaProperty::FileDuration)).units, 240);
+		for (const auto property : {MediaProperty::ClipName, MediaProperty::Type,
+			MediaProperty::PrecomputeCategory, MediaProperty::SourcePath, MediaProperty::DropFrame})
+			QVERIFY(file.evidence.observations(property).isEmpty());
+		QCOMPARE(value(group, MediaProperty::ClipName).toString(), QStringLiteral("Clip m"));
+		QCOMPARE(value(group, MediaProperty::Project).toString(), QStringLiteral("Master project"));
+		QCOMPARE(value(group, MediaProperty::Type).toInt(), 1);
+		QCOMPARE(value(group, MediaProperty::PrecomputeCategory).toInt(), 1);
+		QCOMPARE(value(group, MediaProperty::SourcePath).toString(), QStringLiteral("/imports/master.mov"));
+		QCOMPARE(value(group, MediaProperty::DropFrame).toBool(), true);
+		QCOMPARE(selectedValue(result, file, MediaProperty::ClipName).toString(), QStringLiteral("Clip m"));
+		QCOMPARE(selectedValue(result, file, MediaProperty::SourcePath).toString(), QStringLiteral("/imports/master.mov"));
 	}
 
 	void drop_frame_comes_from_associated_timecode_only()
@@ -642,8 +740,10 @@ private slots:
 		graph.batch(unrelated, "GenericPackage.Tracks", {track});
 		QVERIFY(!value(project(graph).files.first(), MediaProperty::DropFrame).isValid());
 		graph.appendToBatch(master, "GenericPackage.Tracks", track);
-		const auto result = project(graph).files.first();
-		QCOMPARE(value(result, MediaProperty::DropFrame).toBool(), true);
+		const auto projection = project(graph);
+		const auto &result = projection.files.first();
+		QVERIFY(result.evidence.observations(MediaProperty::DropFrame).isEmpty());
+		QCOMPARE(selectedValue(projection, result, MediaProperty::DropFrame).toBool(), true);
 		const auto duration = mediaDuration(value(result, MediaProperty::FileDuration));
 		QCOMPARE(duration.units, 240);
 		QCOMPARE(duration.rate.numerator, 30000);
@@ -1038,11 +1138,13 @@ private slots:
 		Graph graph;
 		const auto master = graph.master();
 		graph.source.outcome = ParsedSource::Outcome::Incomplete;
-		QCOMPARE(value(project(graph).files.first(), MediaProperty::Type).toInt(), 0);
+		auto result = project(graph);
+		QCOMPARE(selectedValue(result, result.files.first(), MediaProperty::Type).toInt(), 0);
 		auto context = QSharedPointer<MxfSetContext>::create(*graph.at(master).mxf);
 		context->value.length += 4;
 		graph.at(master).mxf = context;
-		QVERIFY(!value(project(graph).files.first(), MediaProperty::Type).isValid());
+		result = project(graph);
+		QVERIFY(!selectedValue(result, result.files.first(), MediaProperty::Type).isValid());
 	}
 
 	void unreadable_coding_never_becomes_pcm_by_absence()
@@ -1097,12 +1199,12 @@ private slots:
 		const auto master = graph.master();
 		graph.property(master, "GenericPackage.AppCode", 1);
 		auto result = project(graph);
-		QCOMPARE(value(result.files.first(), MediaProperty::Type).toInt(), 1);
-		QCOMPARE(value(result.files.first(), MediaProperty::PrecomputeCategory).toInt(), 1);
+		QCOMPARE(selectedValue(result, result.files.first(), MediaProperty::Type).toInt(), 1);
+		QCOMPARE(selectedValue(result, result.files.first(), MediaProperty::PrecomputeCategory).toInt(), 1);
 		graph.property(master, "GenericPackage.MobAttributeList", QByteArray(16, 'z'));
 		result = project(graph);
-		QCOMPARE(value(result.files.first(), MediaProperty::Type).toInt(), 1);
-		QVERIFY(!value(result.files.first(), MediaProperty::PrecomputeCategory).isValid());
+		QCOMPARE(selectedValue(result, result.files.first(), MediaProperty::Type).toInt(), 1);
+		QVERIFY(!selectedValue(result, result.files.first(), MediaProperty::PrecomputeCategory).isValid());
 	}
 
 	void cancelled_projection_is_empty()

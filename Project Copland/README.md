@@ -2,14 +2,14 @@
 
 Status: implementation in progress; confirmed contract and technical verification.
 Started 11 October 2026; decisions updated
-14 October 2026.
+15 October 2026.
 
 Copland reviews the whole MediaMuster app and defines the smallest useful product
 contract before choosing its implementation. Existing capabilities and Canon's
 retention commitments are open for review. Implementation has begun with the
 user-selected direct CSV export, small safety-check migration, identity naming,
-bin name filling removal, ordinary scan history removal and Clip Duration removal
-below.
+bin name filling removal, ordinary scan history removal, Clip Duration removal
+and one selected MasterMobId per physical file below.
 
 This document contains the working decision ledger and proposed implementation
 order. Confirmed requirements, proposals and open questions
@@ -619,7 +619,7 @@ operations and Rebalance's scope; reviewing helpers does not reopen those decisi
 | Capability | Current behavior | Cost/qualification and decision still needed |
 | --- | --- | --- |
 | Convenience views | Video/Audio use established Kind; flagged Precomputes uses established Type. No Database includes missing PMR/unreadable database outcomes, but excludes No Reference. Non-Portable is a filename-character allowlist verdict; Quarantined records the recognized quarantine folder. | C46 retains Video, Audio, Precomputes, Non-Portable and Quarantined. C48 adds a separate No Reference view and retains No Database, driven by two table/CSV flags; C49 accepts valid references from either local database. Counts/filtering use compact row facts. Neither filename allowlist failure nor quarantine location alone diagnoses corrupt media. |
-| Select Relatives | Adds visible files sharing the scalar MasterMobId of visible selected rows, while preserving previously hidden selections. | Keep the helper under C47 using C51's one selected scan association. C50 does not add a catalogue of all clips referencing each file. The current several-ID scalar limitation was not observed in the fresh physical inventory. This helper is separate from exact sequence-used-track filtering. |
+| Select Relatives | Adds visible files sharing the scalar MasterMobId of visible selected rows, while preserving previously hidden selections. | The C51 migration now supplies one selected scan association under C47. C50 does not add a catalogue of all clips referencing each file. This helper is separate from exact sequence-used-track filtering. |
 | Select Inverse | Flips visible-row selection while preserving hidden selections. | Keep the helper under C47 and selection restoration under C52. Operations currently consume visible selections only, as already retained under C04; Rebalance uses its separately confirmed whole-root scope. |
 | Selection across filters | Retains selected physical paths during filter changes and restores selections when those rows become visible again. An ordinary manual selection change replaces the saved set; Relatives/Inverse preserve its hidden part. | Keep current behavior under C52. No metadata history is required merely to remember selected physical paths. |
 | CSV scope | Exports selected visible rows or all currently visible filtered rows, capturing rows before direct writing. With no visible selection it exports all visible rows. Hidden remembered selections do not export. | Keep both choices and the no-selection default under C53. The user selected direct saving with Console success confirmation; no background export retains an older inventory during a rescan. Peak memory is unmeasured. |
@@ -903,12 +903,13 @@ does not prove that its header records several associated masters. The user clar
 that MediaMuster lists physical files, not a reverse catalogue of clip references.
 The clip-sharing workflow therefore does not justify a several-master row feature.
 
-The current model can hold several associations, and the Relatives scalar shortcut
-would skip a several-ID set; no such row was established by this scan. C50 sets aside
-the proposed extension and keeps the focus on the scan's established physical-file
+At the inspected baseline, the model could hold several associations, and the
+Relatives scalar shortcut would skip a several-ID set; no such row was established
+by this scan. C50 sets aside the proposed extension and keeps the focus on the
+scan's established physical-file
 association. C51 confirms one selected MasterMobId per physical row, using the agreed
-source policy and existing validation checks. This does not claim every possible
-source format enforces one master.
+source policy and existing validation checks, implemented in the 15 October step
+below. This does not claim every possible source format enforces one master.
 C16's filtering-only AVBs and C26's independent per-bin resolution remain intact:
 bins can reference the same physical row without adding their master identities to it.
 The targeted publication review does not claim to cover every Avid document.
@@ -1289,6 +1290,67 @@ but hypothetical disagreements must not justify broad permanent evidence retenti
 
 ## Implementation planning
 
+### One selected MasterMobId choice — 15 October 2026
+
+The user requested the C51 migration next, with plain explanations throughout.
+They chose **Header → MDB → PMR**, **Leave ambiguous ID blank**, and **Use the
+selected master's details**. Rank only already-acquired eligible associations;
+keep database-first/header-as-needed acquisition. Missing selection remains a
+required-field fallback trigger. A unique highest-ranked value wins; conflicting
+highest-ranked values remain blank even when a lower-ranked value is available.
+Lower-ranked disagreement retains status under the normal field rules and does
+not by itself demand a header read when the selected identity remains usable.
+Report unusable/ambiguous selection through the existing Console validation.
+
+Choose the file's associated master before admitting master-owned metadata.
+Preserve the existing per-field source priorities, but allow only facts belonging
+to that selected master to supply its associated details. Keep independently
+file/package-owned project, origin and technical facts. Do not discard physical
+duration/rates or file/source timecode by excluding a whole property merely
+because a master can also provide it. Derived effects follow the final selected
+Clip Name and Type. The user then chose **Separate piles per master**: prepare
+temporary groups of master facts, choose the association first, then admit only
+the selected master's group. Reuse the existing MDB/OMF `Projection.masters`
+pattern and extend it to MXF rather than adding master-owner labels to every
+observation and coverage record. Stop eager merging of different masters' details
+into a physical file's evidence. Release the groups with the working scan before
+delivering prepared rows. Preserve wrong-owner/incomplete-graph qualification,
+source changes, physical clock/timecode facts and independent header safety claims.
+
+Ordinary row, scan-stamp and reporting/journal association catalogues become one
+selected `masterMobId`. Preserve the independently captured header-only safety
+checks and corroborate every captured header identity against the actual opened
+header, independently of ordinary scalar selection. Database-only master
+associations do not become header requirements, and skipped headers retain their
+separate database FileMobId verification. Current Undo/recovery protections remain;
+beta formats require no legacy aliases or migration. No memory or scan-time
+improvement is claimed without measurement.
+
+Implemented and verified on 15 October 2026. Ordinary rows, scan stamps,
+table/filter/CSV consumers, operation reporting and current journals retain one
+scalar `masterMobId`; the separate header safety record still retains every
+captured ID required by live checks. Journals now use schema 4 with no old-schema
+aliases or migration. Selected MasterMobId status records its principal source.
+MDB/OMF/MXF master details remain in temporary groups until association selection;
+own-header joins also require matching qualified source/object context. Existing
+MDB master-only lookup and per-field preferences remain in effect. Canonical
+master-group identities do not introduce new file-to-master claims.
+
+The pinned Qt 6.5.3 Release arm64 app and all test targets built successfully.
+All 40 registered suites passed in 103.06 seconds; `git diff --check` passed.
+Added controls cover source priority, preferred-rank ambiguity, lower-priority
+disagreement without unnecessary header reads, selected-master name/bin/type/origin
+and existing master drop-frame coherence, physical clock/project/timecode retention,
+same-ID qualified-context isolation, and database master-only detail fallback.
+A disposable genuine MXF copy verifies that a file cannot borrow another physical
+header's name merely because their MasterMobIds match. Table/CSV/sorting/Relatives,
+confirmed transfer preservation, independent header checks and schema-4 journal
+round trips are covered alongside current Undo/recovery regressions. Independent
+static review found no actionable defect. Multiple-master defensive cases are
+authored controls; this does not establish a genuine multi-master Avid workflow.
+Complete-process memory, scan-time improvement, Windows and NEXIS scale remain
+unverified. No further Copland scope is included in this checkpoint.
+
 ### Clip Duration removal choice — 14 October 2026
 
 The user chose **Remove Clip Duration first**, before the remaining migration to
@@ -1469,8 +1531,9 @@ The AVB row fallback has since been removed under C16; the other gaps remain.
 The compact safety-check migration above passes its bounded equivalence checks.
 Ordinary row history removal is now implemented, with current fields and the
 master-association union preserved at that checkpoint. Clip Duration has since
-been removed under C13; the remaining compact-row, acquisition and
-cancellation work still requires its own verification. Three
+been removed under C13, and C51 now retains one selected MasterMobId with its
+associated details under the verified 15 October checkpoint. The remaining
+compact-row, acquisition and cancellation work still requires its own verification. Three
 controlled local baseline trials cover 267 database-free
 complete media copies and demonstrated the former asynchronous export retaining
 the prior scan through one frozen CSV row. The direct-export implementation above

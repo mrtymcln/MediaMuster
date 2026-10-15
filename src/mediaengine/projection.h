@@ -51,4 +51,14 @@ namespace MediaEngine
 	MediaDuration mediaDuration(const QVariant &value);
 	void selectEffectMetadata(MediaEvidence &evidence);
 	void appendEvidence(MediaEvidence &target, const MediaEvidence &source, bool eligible = true);
+	// Master identity observations describe the lookup object, not a new
+	// physical-file association. Append its details/coverage without those claims.
+	void appendMasterMetadata(MediaEvidence &target, const MediaEvidence &source, bool eligible = true);
+	// A standalone source may repeat an ID in separately qualified object graphs.
+	// Match the file's association and the master object's source/context as well as its ID.
+	bool masterGroupMatchesAssociation(const MediaEvidence &associations, const ProjectedFile &master,
+									   const QString &masterMobId);
+	// Prepare selected values from a standalone projection for direct consumers.
+	// The coordinator performs the corresponding join across qualified sources.
+	MediaEvidence selectedProjectedEvidence(const ProjectedFile &file, const Projection &projection);
 }

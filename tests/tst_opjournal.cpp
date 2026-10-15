@@ -184,8 +184,7 @@ void TestOpJournal::scan_receipt_round_trips_with_current_names()
 	item.masterMobId = QStringLiteral("master-identity");
 	item.scanPath = item.src;
 	item.scanVolumeIdentifier = QStringLiteral("uuid:scan-volume");
-	item.masterMobIds = {QStringLiteral("header-master"), QStringLiteral("database-master")};
-	item.headerIdentity = OpHeaderIdentity{QStringLiteral("header-file"), {QStringLiteral("header-master")}, {}};
+	item.headerIdentity = OpHeaderIdentity{QStringLiteral("header-file"), {QStringLiteral("header-master-a"), QStringLiteral("header-master-b")}, {}};
 	item.databaseFileMobIdToVerify = QStringLiteral("database-file-expectation");
 	QString path, error;
 	{
@@ -200,7 +199,6 @@ void TestOpJournal::scan_receipt_round_trips_with_current_names()
 	QCOMPARE(entry.item.masterMobId, item.masterMobId);
 	QCOMPARE(entry.item.scanPath, item.scanPath);
 	QCOMPARE(entry.item.scanVolumeIdentifier, item.scanVolumeIdentifier);
-	QCOMPARE(entry.item.masterMobIds, item.masterMobIds);
 	QVERIFY(entry.item.headerIdentity);
 	QCOMPARE(entry.item.headerIdentity->fileMobId, item.headerIdentity->fileMobId);
 	QCOMPARE(entry.item.headerIdentity->masterMobIds, item.headerIdentity->masterMobIds);
@@ -209,6 +207,9 @@ void TestOpJournal::scan_receipt_round_trips_with_current_names()
 	const auto savedItem = entry.json()["item"].toObject();
 	QCOMPARE(savedItem["fileMobId"].toString(), item.fileMobId);
 	QCOMPARE(savedItem["masterMobId"].toString(), item.masterMobId);
+	QVERIFY(!savedItem.contains("masterMobIds"));
+	QCOMPARE(savedItem["headerIdentity"].toObject()["masterMobIds"].toArray(),
+		QJsonArray::fromStringList(item.headerIdentity->masterMobIds));
 	QCOMPARE(savedItem["headerIdentity"].toObject()["fileMobId"].toString(), item.headerIdentity->fileMobId);
 	QCOMPARE(savedItem["databaseFileMobIdToVerify"].toString(), item.databaseFileMobIdToVerify);
 }
@@ -221,7 +222,7 @@ void TestOpJournal::malformed_scan_receipt_is_refused()
 	entry.item.name = QStringLiteral("source.bin");
 	const auto valid = entry.json();
 	QVERIFY(OpJournal::Entry::fromJson(valid));
-	for (const auto *key : {"fileMobId", "masterMobId", "scanPath", "scanVolumeIdentifier", "masterMobIds", "headerIdentity", "databaseFileMobIdToVerify"})
+	for (const auto *key : {"fileMobId", "masterMobId", "scanPath", "scanVolumeIdentifier", "headerIdentity", "databaseFileMobIdToVerify"})
 	{
 		auto json = valid;
 		auto item = json["item"].toObject();
@@ -229,7 +230,7 @@ void TestOpJournal::malformed_scan_receipt_is_refused()
 		json["item"] = item;
 		QVERIFY2(!OpJournal::Entry::fromJson(json), key);
 	}
-	for (const auto *key : {"fileMobId", "masterMobId", "scanPath", "scanVolumeIdentifier", "masterMobIds", "databaseFileMobIdToVerify"})
+	for (const auto *key : {"fileMobId", "masterMobId", "scanPath", "scanVolumeIdentifier", "databaseFileMobIdToVerify"})
 	{
 		auto json = valid;
 		auto item = json["item"].toObject();
@@ -240,6 +241,11 @@ void TestOpJournal::malformed_scan_receipt_is_refused()
 	auto json = valid;
 	auto item = json["item"].toObject();
 	item["headerIdentity"] = QJsonObject{{"fileMobId", "known"}, {"masterMobIds", QJsonArray{123}}, {"unavailableReason", ""}};
+	json["item"] = item;
+	QVERIFY(!OpJournal::Entry::fromJson(json));
+	json = valid;
+	item = json["item"].toObject();
+	item["masterMobId"] = QJsonArray{QStringLiteral("first-master"), QStringLiteral("second-master")};
 	json["item"] = item;
 	QVERIFY(!OpJournal::Entry::fromJson(json));
 }
@@ -340,7 +346,8 @@ void TestOpJournal::unsupported_schema_is_rejected_data()
 	QTest::addColumn<int>("savedSchema");
 	QTest::newRow("beta-2") << 1;
 	QTest::newRow("previous-beta") << 2;
-	QTest::newRow("development-4") << 4;
+	QTest::newRow("previous-association-format") << 3;
+	QTest::newRow("development-5") << 5;
 }
 
 void TestOpJournal::unsupported_schema_is_rejected()
@@ -359,7 +366,7 @@ void TestOpJournal::unsupported_schema_is_rejected()
 	const auto firstLine = bytes.indexOf('\n');
 	QVERIFY(firstLine >= 0);
 	auto begin = QJsonDocument::fromJson(bytes.left(firstLine)).object();
-	QCOMPARE(begin["schema"].toInt(), 3);
+	QCOMPARE(begin["schema"].toInt(), 4);
 	begin["schema"] = savedSchema;
 	QVERIFY(writeBytes(path, QJsonDocument(begin).toJson(QJsonDocument::Compact) + bytes.mid(firstLine)));
 	QVERIFY(!OpJournal::readOne(path));
@@ -382,7 +389,7 @@ void TestOpJournal::missing_required_policy_is_rejected()
 	}
 	const auto bytes = readBytes(path);
 	auto record = QJsonDocument::fromJson(bytes.trimmed()).object();
-	QCOMPARE(record["schema"].toInt(), 3);
+	QCOMPARE(record["schema"].toInt(), 4);
 	record.remove("copyThenRemove");
 	QVERIFY(writeBytes(path, QJsonDocument(record).toJson(QJsonDocument::Compact) + '\n'));
 	QVERIFY(!OpJournal::readOne(path));

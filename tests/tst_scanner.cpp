@@ -52,11 +52,10 @@ namespace
 		return reader.read(input, {receipt, cancellation});
 	}
 
-	MediaFile projectedMetadata(const MediaEngine::ProjectedFile &projected)
+	MediaFile projectedMetadata(const MediaEngine::ProjectedFile &projected, const MediaEngine::Projection &projection = {})
 	{
 		MediaFile row;
-		auto evidence = projected.evidence;
-		MediaEngine::selectMetadata(evidence);
+		const auto evidence = MediaEngine::selectedProjectedEvidence(projected, projection);
 		applyResolvedMetadata(row, evidence);
 		row.metadataStatus = makeMediaMetadataStatus(evidence);
 		return row;
@@ -74,7 +73,7 @@ namespace
 			QTest::qFail(qPrintable(path + QStringLiteral(": expected one owned header projection")), __FILE__, __LINE__);
 			return {};
 		}
-		return projectedMetadata(projection.files.first());
+		return projectedMetadata(projection.files.first(), projection);
 	}
 
 	MediaEngine::Projection databaseProjection(const QString &path)
@@ -377,7 +376,7 @@ void TestScanner::optional_read_only_real_scan()
 				{"changedSources", int(status.changedSources.bits())}});
 		}
 		inventory.append(QJsonObject{{"path", file.mediaFilePath}, {"kelpieId", QString::number(file.kelpieId)},
-			{"fileMobId", file.fileMobId}, {"masterMobIds", QJsonArray::fromStringList(file.masterMobIds)},
+			{"fileMobId", file.fileMobId}, {"masterMobId", file.masterMobId},
 			{"codec", file.compression}, {"bitDepth", file.bitDepth}, {"sampleFormat", file.sampleFormat},
 			{"omfScan", file.omfEra}, {"headerOutcome", int(file.metadataStatus.headerOutcome)},
 			{"selectedCsv", MediaCsv::rowLine(file, {true})}, {"fieldStatuses", statuses}});
@@ -1815,7 +1814,7 @@ void TestScanner::current_render_with_missing_project_survives_failed_header_rea
 	const auto *masterFacts = fileWithId(projection.masters, MobId::format(kLadderMob));
 	QVERIFY(projectedFile);
 	QVERIFY(masterFacts);
-	const auto technical = projectedMetadata(*projectedFile);
+	const auto technical = projectedMetadata(*projectedFile, projection);
 	QCOMPARE(technical.sampleRate, 48000);
 	QCOMPARE(technical.bitDepth, QStringLiteral("24-bit"));
 	QCOMPARE(projectedMetadata(*masterFacts).type, MediaFile::Type::Precompute);
@@ -2625,7 +2624,7 @@ void TestScanner::incomplete_omf_database_recovers_file_identity_from_header()
 	const QString oldFileId = OmfUid::toIdText(TestOmf::uid(2));
 	const auto *databaseFile = fileWithId(database.files, oldFileId);
 	QVERIFY(databaseFile);
-	QVERIFY(projectedMetadata(*databaseFile).compression.isEmpty());
+	QVERIFY(projectedMetadata(*databaseFile, database).compression.isEmpty());
 	QCOMPARE(QFileInfo(path).lastModified().toSecsSinceEpoch(), qint64(kToneModified));
 	const auto header = headerMetadata(path, true);
 	QCOMPARE(header.kind, MediaFile::Kind::Audio);
@@ -3139,7 +3138,7 @@ void TestScanner::incomplete_omf_identity_clears_unrelated_stale_database_metada
 	const auto database = databaseProjection(folder + QStringLiteral("/msmMMOB.mdb"));
 	const auto *databaseFile = fileWithId(database.files, kOmfWavFileMob);
 	QVERIFY(databaseFile);
-	QCOMPARE(projectedMetadata(*databaseFile).sampleRate, 48000);
+	QCOMPARE(projectedMetadata(*databaseFile, database).sampleRate, 48000);
 	QVERIFY(fileWithId(database.masters, kOmfWavMasterMob));
 	const auto header = headerMetadata(path, true);
 	QCOMPARE(header.kind, MediaFile::Kind::Audio);

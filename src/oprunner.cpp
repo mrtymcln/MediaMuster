@@ -2,6 +2,7 @@
 #include "operationplan.h"
 #include "conventions.h"
 #include "mobid.h"
+#include "opscanreceipt.h"
 #include "mediaengine/mxfreader.h"
 #include "mediaengine/omfreader.h"
 #include "mediaengine/projection.h"
@@ -130,7 +131,10 @@ namespace
 			MediaEngine::appendEvidence(evidence, file.evidence);
 		MediaEngine::selectMetadata(evidence);
 		const QString actualFile = evidence.selected(MediaProperty::FileMobId).value.toString();
-		const QStringList masters = evidence.selected(MediaProperty::MasterMobId).value.toStringList();
+		// Ordinary metadata selects one master; safety still corroborates every
+		// captured header identity against all eligible claims in the live header.
+		const auto liveHeader = makeOpScanReceipt(evidence, {}).headerIdentity;
+		const auto &masters = liveHeader.masterMobIds;
 		const bool mastersMatch = std::all_of(expectedMasters.cbegin(), expectedMasters.cend(),
 											  [&](const QString &id)
 											  { return masters.contains(id); });

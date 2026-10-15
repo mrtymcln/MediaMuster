@@ -707,7 +707,7 @@ struct MediaScanStamp
 	QString volumeIdentifier;
 	QDateTime modified;
 	QString fileMobId;
-	QStringList masterMobIds;
+	QString masterMobId;
 };
 
 struct ScanIssue

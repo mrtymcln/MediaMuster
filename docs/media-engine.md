@@ -14,7 +14,8 @@ namespace `MediaEngine`.
 | `SourceReceipt` | Keeps a source's captured context, container, read outcome, reason and warnings. It owns no complete source image or graph. |
 | `SourceSnapshot` | Identifies the source and captured context behind an observation. |
 | `MediaEvidence` | Keeps working observations, alternatives, read states, basis, eligibility, agreement and selected results for matching and validation. Ordinary UI rows do not retain it. |
-| Metadata selection policy | One compiled preference row per supported property. Scanning selects Clip Name from header then MDB, and Original Bin from MDB then header; loaded bins do not enrich rows. |
+| Metadata selection policy | One compiled preference row per supported property. MasterMobId uses header then MDB then PMR, with preferred-rank ambiguity left blank. Clip Name uses header then MDB, and Original Bin uses MDB then header, from the selected master's admitted details; loaded bins do not enrich rows. |
+| `Projection.masters` | Temporary groups of qualified master details. Physical-file evidence keeps association claims; the coordinator admits only the selected master's details. |
 | `MediaEngine::MediaFile` | Physical location and working evidence inside the scan result. |
 | UI `MediaFile` and `KelpieId` | Selected typed values for one physical media-file location and its scan-session identity. Matching Avid IDs do not merge copies. |
 | `MediaMetadataStatus` | Fixed inline status checklist, with availability, applicability, agreement, origin and freshness tags. Contains no values, strings or source owners. |
@@ -51,11 +52,11 @@ presentation adapter prepares selected facts for the table and CSV. Table insert
 stores prepared values without reselecting or projecting metadata. Confirmed
 transfers directly update physical values, field status and destination membership
 while keeping selected media values and frozen operation checks. No histories are
-rebuilt. The master-association union remains; Source Filename,
-single-master selection, acquisition/cancellation changes and
-loaded-bin graph compaction are separate tasks. This step establishes no measured
-memory or scan-time saving. The interface owns
-presentation and selection; the file-operation engine owns mutations,
+rebuilt. Ordinary row/stamp/reporting associations retain one scalar MasterMobId.
+Independent header safety records preserve all captured live checks. Source
+Filename, acquisition/cancellation changes and loaded-bin graph compaction are
+separate tasks. This step establishes no measured memory or scan-time saving.
+The interface owns presentation and selection; the file-operation engine owns mutations,
 identity checks, recovery and Undo. See [architecture](architecture.md) for the
 full ownership map.
 
@@ -64,3 +65,11 @@ calculations, its property/policy/status slot, retained row values and the
 header-sufficiency condition for missing clip lengths. Physical-file Duration,
 exact rates, display clocks/drop-frame interpretation and master associations
 remain required.
+
+`appendMasterMetadata()` omits the group's canonical MasterMobId observation when
+joining details, because identifying a master object is not a file-to-master
+relationship. Own-header groups additionally match qualified source/object
+association context, so repeated IDs in separate partitions cannot borrow details.
+Direct standalone consumers use `selectedProjectedEvidence()` after projection.
+The raw projectors retain all valid association claims for independent safety
+capture, even when preferred-rank ambiguity leaves the ordinary selected ID blank.

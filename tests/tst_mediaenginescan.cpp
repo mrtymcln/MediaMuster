@@ -1,6 +1,7 @@
 #include "mediaengine/scancoordinator.h"
 #include "mediaengine/scanengine.h"
 #include "mediaengine/mdbreader.h"
+#include "mediaengine/mxfreader.h"
 #include "mediaengine/projection.h"
 #include "mediaengine/metadataselectionpolicy.h"
 #include "mediaengineadapter.h"
@@ -51,7 +52,7 @@ namespace
 		return bytes;
 	}
 	QByteArray audioDatabase(quint16 bitDepth = 24, const QVector<quint32> &members = {101, 301},
-		bool contradictoryFileIdentity = false)
+		bool contradictoryFileIdentity = false, const QByteArray &masterIdentity = toneMasterId)
 	{
 		using TestMediaEngineBento::number;
 		TestMediaEngineBento::TypedBento writer;
@@ -68,7 +69,7 @@ namespace
 		writer.add(201, "OMFI:WAVD:Summary", "omfi:DataValue", QByteArray("RIFF") + number<quint32>(wave.size()) + wave);
 		writer.add(201, "OMFI:MDFL:SampleRate", "omfi:Rational", number<qint32>(48000) + number<qint32>(1));
 		writer.add(201, "OMFI:MDFL:Length", "omfi:Length32", number<qint32>(96000));
-		writer.add(301, "OMFI:MOBJ:MobID", "omfi:UID", toneMasterId);
+		writer.add(301, "OMFI:MOBJ:MobID", "omfi:UID", masterIdentity);
 		writer.add(301, "OMFI:MOBJ:UsageCode", "omfi:UsageCodeType", number<quint32>(7), true);
 		writer.add(301, "OMFI:CPNT:Name", "omfi:String", QByteArray("Database clip\0", 14));
 		writer.add(301, "OMFI:TRKG:Tracks", "omfi:ObjRefArray", number<quint16>(1) + writer.reference(401, 1));
@@ -92,6 +93,17 @@ namespace
 			if (source.snapshot && source.snapshot->path == path)
 				return &source;
 		return nullptr;
+	}
+	void observeFact(MediaEngine::ProjectedFile &facts, MediaProperty property,
+		const SourceSnapshotRef &source, const QVariant &value)
+	{
+		MetadataObservation observation;
+		observation.snapshot = source;
+		observation.property = mediaPropertyName(property);
+		observation.objectIdentity = QStringLiteral("authored grouped facts");
+		observation.value = value;
+		observation.readState = PropertyReadState::Present;
+		facts.evidence.observe(property, std::move(observation));
 	}
 }
 
@@ -220,8 +232,8 @@ private slots:
 		QCOMPARE(evidence.selected(MediaProperty::Compression).value.toString(), QStringLiteral("PCM"));
 		QCOMPARE(evidence.selected(MediaProperty::FileMobId).value.toString(),
 			MediaEngine::canonicalDatabaseId(toneFileId));
-		QCOMPARE(evidence.selected(MediaProperty::MasterMobId).value.toStringList(),
-			QStringList{MediaEngine::canonicalDatabaseId(toneMasterId)});
+		QCOMPARE(evidence.selected(MediaProperty::MasterMobId).value.toString(),
+			MediaEngine::canonicalDatabaseId(toneMasterId));
 		const auto duration = MediaEngine::mediaDuration(evidence.selected(MediaProperty::FileDuration).value);
 		QCOMPARE(duration.units, qint64(96000));
 		QCOMPARE(duration.rate.numerator, 48000);
@@ -265,6 +277,109 @@ private slots:
 		const auto depth = evidence.selected(MediaProperty::BitDepth);
 		QVERIFY(depth.value.isValid());
 		QCOMPARE(evidence.observations(MediaProperty::BitDepth)[depth.selectedObservation].snapshot->source, MetadataSource::Mxf);
+	}
+	void ambiguous_database_master_reads_header_and_selects_its_association()
+	{
+		QTemporaryDir temporary;
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		QVERIFY(QDir().mkpath(folder));
+		const QString path = folder + QStringLiteral("/take.mxf");
+		QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR) + QStringLiteral("/TONE_100A01.EA7D504A.611740.mxf"), path));
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("take.mxf", toneFileId, "Project")})));
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"), audioDatabase()));
+		QByteArray otherMaster = toneMasterId;
+		otherMaster[31] = char(0x14);
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/other.mdb"), audioDatabase(24, {101, 301}, false, otherMaster)));
+		const MediaEngine::Cancellation cancellation;
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		QCOMPARE(scan.files.size(), 1);
+		const auto *header = mediaSource(scan, path);
+		QVERIFY(header);
+		QVERIFY(header->outcome != MediaEngine::ParsedSource::Outcome::NotRead);
+		QVERIFY2(header->readReason.contains(QStringLiteral("MasterMobId")), qPrintable(header->readReason));
+		const auto &file = scan.files.front();
+		const auto selected = file.evidence.selected(MediaProperty::MasterMobId);
+		QCOMPARE(selected.value.metaType().id(), QMetaType::QString);
+		QCOMPARE(selected.value.toString(), MediaEngine::canonicalDatabaseId(toneMasterId));
+		QCOMPARE(selected.agreement, PropertyAgreement::Conflicting);
+		QVERIFY(selected.selectedObservation >= 0);
+		QCOMPARE(file.evidence.observations(MediaProperty::MasterMobId)[selected.selectedObservation].snapshot->source,
+			MetadataSource::Mxf);
+		QCOMPARE(file.stamp.masterMobId, selected.value.toString());
+	}
+	void master_only_database_details_do_not_promote_the_file_association()
+	{
+		QTemporaryDir temporary;
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		const QString path = folder + QStringLiteral("/take.mxf");
+		QVERIFY(tryWriteFile(path, "Unreadable header"));
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("take.mxf", toneFileId, "Project")})));
+		// The active master is available for lookup, but this MDB has no active
+		// descriptor-owning file object that can establish a file association.
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"), audioDatabase(24, {301})));
+		const MediaEngine::Cancellation cancellation;
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		QCOMPARE(scan.files.size(), 1);
+		const auto &file = scan.files.front();
+		const auto master = file.evidence.selected(MediaProperty::MasterMobId);
+		QCOMPARE(master.value.toString(), MediaEngine::canonicalDatabaseId(toneMasterId));
+		QVERIFY(master.selectedObservation >= 0);
+		QCOMPARE(file.evidence.observations(MediaProperty::MasterMobId)[master.selectedObservation].snapshot->source,
+			MetadataSource::Pmr);
+		QCOMPARE(file.stamp.masterMobId, master.value.toString());
+		const auto name = file.evidence.selected(MediaProperty::ClipName);
+		QCOMPARE(name.value.toString(), QStringLiteral("Database clip"));
+		QVERIFY(name.selectedObservation >= 0);
+		QCOMPARE(file.evidence.observations(MediaProperty::ClipName)[name.selectedObservation].snapshot->source,
+			MetadataSource::Mdb);
+	}
+	void matching_master_id_does_not_borrow_another_physical_headers_name()
+	{
+		QFile fixture(QStringLiteral(FIXTURES_DIR) + QStringLiteral("/TONE_100A01.EA7D504A.611740.mxf"));
+		QVERIFY(fixture.open(QIODevice::ReadOnly));
+		QByteArray unnamedBytes = fixture.readAll();
+		QVERIFY(fixture.seek(0));
+		const auto receipt = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mxf, fixture.fileName(), {}, SourceReadState::Complete});
+		const MediaEngine::Cancellation cancellation;
+		const auto parsed = MediaEngine::MxfReader{}.read(fixture, {receipt, cancellation});
+		const auto projection = MediaEngine::projectMxf(parsed, cancellation);
+		QCOMPARE(projection.files.size(), 1);
+		const auto evidence = MediaEngine::selectedProjectedEvidence(projection.files.front(), projection);
+		const auto name = evidence.selected(MediaProperty::ClipName);
+		QVERIFY(name.selectedObservation >= 0);
+		QVERIFY(!name.value.toString().isEmpty());
+		const auto &nameClaim = evidence.observations(MediaProperty::ClipName)[name.selectedObservation];
+		bool cleared = false;
+		for (const auto &object : parsed.objects)
+			if (QStringLiteral("object:%1").arg(object.handle) == nameClaim.objectIdentity)
+				for (const auto &property : object.properties)
+					if (property.locator.name == nameClaim.property)
+						for (const auto &range : property.locator.ranges)
+						{
+							QVERIFY(range.offset >= 0 && range.length > 0);
+							QVERIFY(range.offset <= unnamedBytes.size() && range.length <= unnamedBytes.size() - range.offset);
+							unnamedBytes.replace(static_cast<qsizetype>(range.offset), static_cast<qsizetype>(range.length),
+								QByteArray(static_cast<qsizetype>(range.length), '\0'));
+							cleared = true;
+						}
+		QVERIFY(cleared); // Only this disposable copy's selected master-name bytes are changed.
+		QTemporaryDir temporary;
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		const QString unnamedPath = folder + QStringLiteral("/a-unnamed.mxf");
+		const QString namedPath = folder + QStringLiteral("/b-named.mxf");
+		QVERIFY(tryWriteFile(unnamedPath, unnamedBytes));
+		QVERIFY(QFile::copy(fixture.fileName(), namedPath));
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		QCOMPARE(scan.files.size(), 2);
+		const auto unnamed = std::find_if(scan.files.cbegin(), scan.files.cend(), [&](const auto &file) { return file.path == unnamedPath; });
+		const auto named = std::find_if(scan.files.cbegin(), scan.files.cend(), [&](const auto &file) { return file.path == namedPath; });
+		QVERIFY(unnamed != scan.files.cend() && named != scan.files.cend());
+		QVERIFY(!unnamed->stamp.masterMobId.isEmpty());
+		QCOMPARE(unnamed->stamp.masterMobId, named->stamp.masterMobId);
+		QCOMPARE(unnamed->stamp.fileMobId, named->stamp.fileMobId);
+		QVERIFY(!unnamed->evidence.selected(MediaProperty::ClipName).value.isValid());
+		QCOMPARE(named->evidence.selected(MediaProperty::ClipName).value.toString(), name.value.toString());
 	}
 	void a_database_match_does_not_hide_an_unlisted_sibling()
 	{
@@ -411,6 +526,136 @@ private slots:
 		QVERIFY(!evidence.selected(MediaProperty::ClipName).value.isValid());
 		QCOMPARE(evidence.observations(MediaProperty::ClipName).size(), 4);
 	}
+	void selected_master_details_exclude_other_master_origins_and_classification()
+	{
+		const auto header = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mxf, QStringLiteral("authored.mxf"), {}, SourceReadState::Complete});
+		const auto database = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mdb, QStringLiteral("authored.mdb"), {}, SourceReadState::Complete});
+		MediaEngine::ProjectedFile file;
+		observeFact(file, MediaProperty::MasterMobId, header, QStringLiteral("master-a"));
+		observeFact(file, MediaProperty::MasterMobId, database, QStringLiteral("master-b"));
+		observeFact(file, MediaProperty::SourcePath, header, QStringLiteral("physical-source.wav"));
+		observeFact(file, MediaProperty::DropFrame, header, true);
+		observeFact(file, MediaProperty::FileDuration, header,
+			MediaEngine::durationValue({48001, {48000, 1}, {25, 1}, MediaDuration::Source::Descriptor}));
+		MediaEngine::ProjectedFile chosen;
+		chosen.masterMobIds = {QStringLiteral("master-a")};
+		observeFact(chosen, MediaProperty::MasterMobId, header, QStringLiteral("master-a"));
+		observeFact(chosen, MediaProperty::ClipName, header, QStringLiteral("Selected clip"));
+		observeFact(chosen, MediaProperty::OriginalBin, header, QStringLiteral("Selected bin"));
+		MediaEngine::ProjectedFile other;
+		other.masterMobIds = {QStringLiteral("master-b")};
+		observeFact(other, MediaProperty::MasterMobId, database, QStringLiteral("master-b"));
+		observeFact(other, MediaProperty::ClipName, database, QStringLiteral("Sequence,Resize+1"));
+		observeFact(other, MediaProperty::OriginalBin, database, QStringLiteral("Wrong bin"));
+		observeFact(other, MediaProperty::Type, database, int(MediaType::Precompute));
+		observeFact(other, MediaProperty::SourcePath, database, QStringLiteral("wrong-source.mov"));
+		observeFact(other, MediaProperty::SourceContainer, database, QStringLiteral("Wrong container"));
+		observeFact(other, MediaProperty::Imported, database, true);
+		observeFact(other, MediaProperty::DropFrame, database, false);
+		MediaEngine::Projection projection;
+		projection.files.append(file);
+		projection.masters = {chosen, other};
+		const auto evidence = MediaEngine::selectedProjectedEvidence(file, projection);
+		MediaFile row;
+		applyResolvedMetadata(row, evidence);
+		QCOMPARE(row.masterMobId, QStringLiteral("master-a"));
+		QCOMPARE(row.clipName, QStringLiteral("Selected clip"));
+		QCOMPARE(evidence.observations(MediaProperty::ClipName).size(), 1);
+		QCOMPARE(row.originalBin, QStringLiteral("Selected bin")); // MDB preference cannot admit another master.
+		QCOMPARE(row.sourceFilePath, QStringLiteral("physical-source.wav"));
+		QVERIFY(row.sourceContainer.isEmpty());
+		QVERIFY(!evidence.selected(MediaProperty::Imported).value.isValid());
+		QCOMPARE(row.type, MediaFile::Type::Unknown);
+		QVERIFY(row.effect.isEmpty());
+		QVERIFY(row.dropFrame);
+		QCOMPARE(evidence.observations(MediaProperty::DropFrame).size(), 1);
+		QCOMPARE(row.duration.units, qint64(48001));
+		QCOMPARE(row.duration.rate.numerator, 48000);
+		QCOMPARE(row.duration.displayRate.numerator, 25);
+	}
+	void same_master_details_keep_per_field_fallback_and_association_claims()
+	{
+		const auto header = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mxf, QStringLiteral("authored.mxf"), {}, SourceReadState::Complete});
+		const auto database = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mdb, QStringLiteral("authored.mdb"), {}, SourceReadState::Complete});
+		MediaEngine::ProjectedFile file;
+		observeFact(file, MediaProperty::MasterMobId, header, QStringLiteral("master-a"));
+		observeFact(file, MediaProperty::MasterMobId, database, QStringLiteral("master-a"));
+		MediaEngine::ProjectedFile fromHeader;
+		fromHeader.masterMobIds = {QStringLiteral("master-a")};
+		observeFact(fromHeader, MediaProperty::MasterMobId, header, QStringLiteral("master-a"));
+		observeFact(fromHeader, MediaProperty::ClipName, header, QStringLiteral("Header clip"));
+		observeFact(fromHeader, MediaProperty::Type, header, int(MediaType::Media));
+		MediaEngine::ProjectedFile fromDatabase;
+		fromDatabase.masterMobIds = {QStringLiteral("master-a")};
+		observeFact(fromDatabase, MediaProperty::MasterMobId, database, QStringLiteral("master-a"));
+		observeFact(fromDatabase, MediaProperty::ClipName, database, QStringLiteral("Database clip"));
+		observeFact(fromDatabase, MediaProperty::OriginalBin, database, QStringLiteral("Database bin"));
+		observeFact(fromDatabase, MediaProperty::SourcePath, database, QStringLiteral("recorded-source.wav"));
+		observeFact(fromDatabase, MediaProperty::Type, database, int(MediaType::Precompute));
+		MediaEngine::Projection projection;
+		projection.files.append(file);
+		projection.masters = {fromHeader, fromDatabase};
+		const auto evidence = MediaEngine::selectedProjectedEvidence(file, projection);
+		const auto master = evidence.selected(MediaProperty::MasterMobId);
+		QCOMPARE(master.value.toString(), QStringLiteral("master-a"));
+		QCOMPARE(evidence.observations(MediaProperty::MasterMobId).size(), 2);
+		QCOMPARE(evidence.observations(MediaProperty::MasterMobId)[master.selectedObservation].snapshot->source,
+			MetadataSource::Mxf);
+		MediaFile row;
+		applyResolvedMetadata(row, evidence);
+		QCOMPARE(row.clipName, QStringLiteral("Header clip"));
+		QCOMPARE(row.originalBin, QStringLiteral("Database bin"));
+		QCOMPARE(row.sourceFilePath, QStringLiteral("recorded-source.wav"));
+		QCOMPARE(row.type, MediaFile::Type::Media);
+		QCOMPARE(evidence.observations(MediaProperty::Type).size(), 2);
+	}
+	void ambiguous_master_keeps_physical_facts_and_all_header_checks()
+	{
+		const auto header = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mxf, QStringLiteral("authored.mxf"), {}, SourceReadState::Complete});
+		MediaEngine::ProjectedFile file;
+		observeFact(file, MediaProperty::FileMobId, header, QStringLiteral("physical-file"));
+		observeFact(file, MediaProperty::MasterMobId, header, QStringLiteral("master-a"));
+		observeFact(file, MediaProperty::MasterMobId, header, QStringLiteral("master-b"));
+		observeFact(file, MediaProperty::Project, header, QStringLiteral("File project"));
+		observeFact(file, MediaProperty::DropFrame, header, true);
+		observeFact(file, MediaProperty::FileDuration, header,
+			MediaEngine::durationValue({48001, {48000, 1}, {30000, 1001}, MediaDuration::Source::Descriptor}));
+		MediaEngine::Projection projection;
+		projection.files.append(file);
+		for (const auto &identity : {QStringLiteral("master-a"), QStringLiteral("master-b")})
+		{
+			MediaEngine::ProjectedFile master;
+			master.masterMobIds = {identity};
+			observeFact(master, MediaProperty::MasterMobId, header, identity);
+			observeFact(master, MediaProperty::ClipName, header, identity + QStringLiteral(" clip"));
+			observeFact(master, MediaProperty::Type, header, int(MediaType::Media));
+			projection.masters.append(master);
+		}
+		const auto evidence = MediaEngine::selectedProjectedEvidence(file, projection);
+		QVERIFY(!evidence.selected(MediaProperty::MasterMobId).value.isValid());
+		QCOMPARE(evidence.selected(MediaProperty::MasterMobId).agreement, PropertyAgreement::Conflicting);
+		QVERIFY(!evidence.selected(MediaProperty::ClipName).value.isValid());
+		QVERIFY(!evidence.selected(MediaProperty::Type).value.isValid());
+		QCOMPARE(evidence.selected(MediaProperty::Project).value.toString(), QStringLiteral("File project"));
+		QVERIFY(evidence.selected(MediaProperty::DropFrame).value.toBool());
+		const auto duration = MediaEngine::mediaDuration(evidence.selected(MediaProperty::FileDuration).value);
+		QCOMPARE(duration.units, qint64(48001));
+		QCOMPARE(duration.rate.numerator, 48000);
+		QCOMPARE(duration.displayRate.denominator, 1001);
+		MediaScanStamp stamp;
+		stamp.path = header->path;
+		stamp.fileMobId = QStringLiteral("physical-file");
+		const auto checks = makeOpScanReceipt(evidence, stamp);
+		QCOMPARE(checks.headerIdentity.fileMobId, stamp.fileMobId);
+		QCOMPARE(checks.headerIdentity.masterMobIds,
+			(QStringList{QStringLiteral("master-a"), QStringLiteral("master-b")}));
+		QVERIFY(checks.headerIdentity.unavailableReason.isEmpty());
+	}
 	void compact_status_preserves_unavailable_and_empty_results()
 	{
 		const MediaMetadataStatus uncaptured;
@@ -531,7 +776,7 @@ private slots:
 		QVERIFY(rate.presentSources.contains(MetadataSource::Mxf));
 	}
 
-	void compact_status_does_not_invent_union_or_clock_origins()
+	void compact_status_keeps_selected_master_and_principal_clock_origins()
 	{
 		MediaEvidence evidence;
 		const auto header = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
@@ -558,7 +803,12 @@ private slots:
 		const auto captured = makeMediaMetadataStatus(evidence);
 		const auto &master = captured.field(MediaProperty::MasterMobId);
 		QVERIFY(master.hasSelectedValue);
-		QVERIFY(!master.selectedSource && !master.selectedBasis && !master.selectedFreshness);
+		QVERIFY(master.selectedSource && master.selectedBasis && master.selectedFreshness);
+		QCOMPARE(*master.selectedSource, MetadataSource::Mxf);
+		QCOMPARE(*master.selectedBasis, EvidenceBasis::Recorded);
+		QCOMPARE(*master.selectedFreshness, SourceFreshness::Unknown);
+		QCOMPARE(master.agreement, PropertyAgreement::Conflicting);
+		QCOMPARE(evidence.selected(MediaProperty::MasterMobId).value.toString(), QStringLiteral("header-master"));
 		QVERIFY(master.presentSources.contains(MetadataSource::Mxf));
 		QVERIFY(master.presentSources.contains(MetadataSource::Mdb));
 		const auto &duration = captured.field(MediaProperty::FileDuration);
@@ -873,7 +1123,7 @@ private slots:
 		QVERIFY(duration.rate.sameRate({25, 1}));
 		QVERIFY(!duration.displayRate.valid());
 	}
-	void central_policy_keeps_associations_and_duration_clocks_distinct()
+	void central_policy_selects_one_master_and_keeps_duration_clocks_distinct()
 	{
 		MediaEvidence evidence;
 		const auto add = [&](MediaProperty property, MetadataSource source, const QVariant &value, bool eligible = true)
@@ -886,7 +1136,7 @@ private slots:
 			evidence.observe(property, item);
 		};
 		add(MediaProperty::MasterMobId, MetadataSource::Pmr, QStringLiteral("master-b"));
-		add(MediaProperty::MasterMobId, MetadataSource::Mxf, QStringList{QStringLiteral("master-a"), QStringLiteral("master-b")});
+		add(MediaProperty::MasterMobId, MetadataSource::Mxf, QStringLiteral("master-a"));
 		add(MediaProperty::MasterMobId, MetadataSource::Mdb, QStringLiteral("wrong-owner"), false);
 		add(MediaProperty::FileDuration, MetadataSource::Mxf,
 			MediaEngine::durationValue({100, {25, 1}, {}, MediaDuration::Source::Descriptor}));
@@ -896,8 +1146,9 @@ private slots:
 		add(MediaProperty::FileDuration, MetadataSource::Mdb,
 			MediaEngine::durationValue({200, {25, 1}, {24, 1}, MediaDuration::Source::FileTrack}));
 		MediaEngine::selectMetadata(evidence);
-		QCOMPARE(evidence.selected(MediaProperty::MasterMobId).value.toStringList(),
-			(QStringList{QStringLiteral("master-a"), QStringLiteral("master-b")}));
+		QCOMPARE(evidence.selected(MediaProperty::MasterMobId).value.metaType().id(), QMetaType::QString);
+		QCOMPARE(evidence.selected(MediaProperty::MasterMobId).value.toString(), QStringLiteral("master-a"));
+		QCOMPARE(evidence.selected(MediaProperty::MasterMobId).agreement, PropertyAgreement::Conflicting);
 		QCOMPARE(evidence.observations(MediaProperty::MasterMobId).size(), 3);
 		const auto duration = MediaEngine::mediaDuration(evidence.selected(MediaProperty::FileDuration).value);
 		QCOMPARE(duration.units, 100);

@@ -133,19 +133,17 @@ OpItem opItemFromMediaFile(const MediaFile &mf)
 	it.omfEra = mf.omfEra; // OMF-era: travels with the item, and through the journal
 	it.bytes = mf.sizeBytes;
 	it.modifiedMs = mf.modified.isValid() ? mf.modified.toMSecsSinceEpoch() : -1;
-	// Retain all scan claims for replay and reporting. The separate header
-	// receipt below identifies which claims the opened file can corroborate.
+	// Retain the selected scan claims for replay and reporting. The separate
+	// header receipt preserves every identity the opened file must corroborate.
 	it.fileMobId = mf.fileMobId;
 	it.masterMobId = mf.masterMobId;
-	it.masterMobIds = mf.masterMobIds;
 	if (!mf.scanStamp.path.isEmpty())
 	{
 		it.scanPath = mf.scanStamp.path;
 		it.scanVolumeIdentifier = mf.scanStamp.volumeIdentifier;
 		it.modifiedMs = mf.scanStamp.modified.isValid() ? mf.scanStamp.modified.toMSecsSinceEpoch() : -1;
 		it.fileMobId = mf.scanStamp.fileMobId;
-		it.masterMobIds = mf.scanStamp.masterMobIds;
-		it.masterMobId = it.masterMobIds.size() == 1 ? it.masterMobIds.front() : QString();
+		it.masterMobId = mf.scanStamp.masterMobId;
 		if (mf.operationScanReceipt)
 		{
 			it.headerIdentity = mf.operationScanReceipt->headerIdentity;

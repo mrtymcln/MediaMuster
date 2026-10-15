@@ -259,10 +259,78 @@ private slots:
 		QVERIFY(!evidence.observations(MediaProperty::ClipName).first().eligible);
 	}
 
+	void master_identity_prefers_header_then_database_then_index()
+	{
+		const auto &policy = MediaEngine::propertyPolicy(MediaProperty::MasterMobId);
+		QCOMPARE(policy.rule, MediaEngine::SelectionRule::PreferredValue);
+		QCOMPARE(policy.sources.priority(MetadataSource::Mxf), 3);
+		QCOMPARE(policy.sources.priority(MetadataSource::Omf), 3);
+		QCOMPARE(policy.sources.priority(MetadataSource::Mdb), 2);
+		QCOMPARE(policy.sources.priority(MetadataSource::Pmr), 1);
+		QCOMPARE(policy.sources.priority(MetadataSource::Filesystem), 0);
+		QCOMPARE(policy.sources.priority(MetadataSource::Avb), 0);
+		for (const auto header : {MetadataSource::Mxf, MetadataSource::Omf})
+		{
+			MediaEvidence evidence;
+			evidence.observe(MediaProperty::MasterMobId, observation(MetadataSource::Pmr, QStringLiteral("index-master")));
+			evidence.observe(MediaProperty::MasterMobId, observation(MetadataSource::Mdb, QStringLiteral("database-master")));
+			evidence.observe(MediaProperty::MasterMobId, observation(header, QStringLiteral("header-master")));
+			evidence.observe(MediaProperty::MasterMobId, observation(MetadataSource::Avb, QStringLiteral("bin-master")));
+			const auto selected = MediaEngine::resolveProperty(evidence, policy);
+			QCOMPARE(selected.value.metaType().id(), QMetaType::QString);
+			QCOMPARE(selected.value.toString(), QStringLiteral("header-master"));
+			QCOMPARE(selected.agreement, PropertyAgreement::Conflicting);
+			evidence.excludeSource(MediaProperty::MasterMobId, header);
+			QCOMPARE(MediaEngine::resolveProperty(evidence, policy).value.toString(), QStringLiteral("database-master"));
+			evidence.excludeSource(MediaProperty::MasterMobId, MetadataSource::Mdb);
+			QCOMPARE(MediaEngine::resolveProperty(evidence, policy).value.toString(), QStringLiteral("index-master"));
+			evidence.excludeSource(MediaProperty::MasterMobId, MetadataSource::Pmr);
+			QVERIFY(!MediaEngine::resolveProperty(evidence, policy).value.isValid());
+			QCOMPARE(evidence.observations(MediaProperty::MasterMobId).size(), 4);
+		}
+	}
+
+	void unavailable_master_identity_uses_normal_fallback()
+	{
+		const auto &policy = MediaEngine::propertyPolicy(MediaProperty::MasterMobId);
+		for (const auto state : {PropertyReadState::NotRead, PropertyReadState::Absent,
+			PropertyReadState::Unreadable, PropertyReadState::Present})
+		{
+			MediaEvidence evidence;
+			auto unavailable = observation(MetadataSource::Mxf, QString{});
+			unavailable.readState = state;
+			evidence.observe(MediaProperty::MasterMobId, unavailable);
+			evidence.observe(MediaProperty::MasterMobId, observation(MetadataSource::Mdb, QStringLiteral("database-master")));
+			QCOMPARE(MediaEngine::resolveProperty(evidence, policy).value.toString(), QStringLiteral("database-master"));
+			QCOMPARE(evidence.observations(MediaProperty::MasterMobId).first().readState, state);
+		}
+	}
+
+	void ambiguous_preferred_master_identity_stays_blank()
+	{
+		const auto &policy = MediaEngine::propertyPolicy(MediaProperty::MasterMobId);
+		for (const auto preferred : {MetadataSource::Mxf, MetadataSource::Omf, MetadataSource::Mdb})
+		{
+			MediaEvidence evidence;
+			evidence.observe(MediaProperty::MasterMobId, observation(preferred, QStringLiteral("master-a")));
+			evidence.observe(MediaProperty::MasterMobId, observation(preferred, QStringLiteral("master-a")));
+			evidence.observe(MediaProperty::MasterMobId, observation(MetadataSource::Pmr, QStringLiteral("index-fallback")));
+			QCOMPARE(MediaEngine::resolveProperty(evidence, policy).value.toString(), QStringLiteral("master-a"));
+			evidence.observe(MediaProperty::MasterMobId, observation(preferred, QStringLiteral("master-b")));
+			const auto ambiguous = MediaEngine::resolveProperty(evidence, policy);
+			QVERIFY(!ambiguous.value.isValid());
+			QCOMPARE(ambiguous.selectedObservation, -1);
+			QCOMPARE(ambiguous.readState, PropertyReadState::Present);
+			QCOMPARE(ambiguous.agreement, PropertyAgreement::Conflicting);
+			QCOMPARE(ambiguous.reason.reason(), EvidenceExplanation::Reason::EqualRankConflict);
+			QCOMPARE(evidence.observations(MediaProperty::MasterMobId).size(), 4);
+		}
+	}
+
 	void named_rules_preserve_special_selection_boundaries()
 	{
 		QCOMPARE(MediaEngine::propertyPolicy(MediaProperty::MasterMobId).rule,
-			MediaEngine::SelectionRule::MasterAssociations);
+			MediaEngine::SelectionRule::PreferredValue);
 		QCOMPARE(MediaEngine::propertyPolicy(MediaProperty::FileDuration).rule,
 			MediaEngine::SelectionRule::FileDuration);
 		for (const auto field : {MediaProperty::Effect, MediaProperty::EffectCategory,

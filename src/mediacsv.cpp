@@ -69,7 +69,7 @@ namespace MediaCsv
 		out << f.createdDisplay() << ','
 			<< CsvUtil::quoted(f.fileName) << ',' << CsvUtil::quoted(f.sourceFileName) << ','
 			<< CsvUtil::quoted(f.mediaFilePath) << ',' << CsvUtil::quoted(f.dbStatusText().label) << ','
-			<< CsvUtil::quoted(f.fileMobId) << ',' << CsvUtil::quoted(f.masterMobIdDisplay()) << ',' << f.kelpieId << ','
+			<< CsvUtil::quoted(f.fileMobId) << ',' << CsvUtil::quoted(f.masterMobId) << ',' << f.kelpieId << ','
 			<< (f.omfEra ? QStringLiteral("true") : QStringLiteral("false"));
 		out << '\n';
 		return line;

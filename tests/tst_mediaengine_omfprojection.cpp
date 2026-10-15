@@ -78,6 +78,12 @@ namespace
 		return values.size() == 1 ? values.first().value : QVariant{};
 	}
 
+	QVariant selectedValue(const MediaEngine::Projection &projection, const MediaEngine::ProjectedFile &file,
+						  MediaProperty field)
+	{
+		return MediaEngine::selectedProjectedEvidence(file, projection).selected(field).value;
+	}
+
 	QByteArray chunk(const QByteArray &key, const QByteArray &value)
 	{
 		return key + number(quint32(value.size())) + value + QByteArray(value.size() & 1, '\0');
@@ -211,9 +217,9 @@ void TestMediaEngineOmfProjection::ownershipAndExactFacts()
 	const auto &file = result.files.first();
 	QCOMPARE(file.fileMobId, MediaEngine::canonicalDatabaseId(uid(11)));
 	QCOMPARE(file.masterMobIds, QStringList{MediaEngine::canonicalDatabaseId(uid(21))});
-	QCOMPARE(single(file, MediaProperty::ClipName).toString(), QStringLiteral("Recorded master"));
+	QCOMPARE(selectedValue(result, file, MediaProperty::ClipName).toString(), QStringLiteral("Recorded master"));
 	QCOMPARE(single(file, MediaProperty::Kind).toInt(), 0);
-	QCOMPARE(single(file, MediaProperty::Type).toInt(), 0);
+	QCOMPARE(selectedValue(result, file, MediaProperty::Type).toInt(), 0);
 	QCOMPARE(single(file, MediaProperty::Resolution).toString(), QStringLiteral("1920x1080"));
 	QCOMPARE(single(file, MediaProperty::BitDepth).toString(), QStringLiteral("10-bit"));
 	const auto duration = MediaEngine::mediaDuration(single(file, MediaProperty::FileDuration));
@@ -294,7 +300,7 @@ void TestMediaEngineOmfProjection::legacyRootMembershipExcludesOrphans()
 	QCOMPARE(result.masters.size(), 1);
 	const auto &file = result.files.first();
 	QCOMPARE(file.fileMobId, MediaEngine::canonicalDatabaseId(uid(11)));
-	QCOMPARE(single(file, MediaProperty::ClipName).toString(), QStringLiteral("Active master"));
+	QCOMPARE(selectedValue(result, file, MediaProperty::ClipName).toString(), QStringLiteral("Active master"));
 	QCOMPARE(file.evidence.observations(MediaProperty::Resolution).size(), 1);
 	QVERIFY(std::none_of(file.objects.cbegin(), file.objects.cend(), [](const auto &object)
 		{ return object.handle == 102 || object.handle == 202 || object.handle == 302 || object.handle == 602; }));
@@ -741,7 +747,7 @@ void TestMediaEngineOmfProjection::incompleteDependentReferences()
 		QCOMPARE(single(file, MediaProperty::Resolution).toString(), QStringLiteral("1920x1080"));
 		if (damage.startsWith(QLatin1String("attribute")))
 		{
-			QCOMPARE(single(file, MediaProperty::ClipName).toString(), QStringLiteral("Owned master"));
+			QCOMPARE(selectedValue(result, file, MediaProperty::ClipName).toString(), QStringLiteral("Owned master"));
 			QVERIFY(file.evidence.observations(MediaProperty::Project).isEmpty());
 			QVERIFY(file.evidence.observations(MediaProperty::Imported).isEmpty());
 		}
@@ -804,7 +810,7 @@ void TestMediaEngineOmfProjection::sourceClipIdentityMustBeUnique()
 		QCOMPARE(single(file, MediaProperty::Resolution).toString(), QStringLiteral("1920x1080"));
 		const bool first = file.fileMobId == MediaEngine::canonicalDatabaseId(uid(11));
 		if (first && associated)
-			QCOMPARE(single(file, MediaProperty::ClipName).toString(), QStringLiteral("Qualified master"));
+			QCOMPARE(selectedValue(result, file, MediaProperty::ClipName).toString(), QStringLiteral("Qualified master"));
 		else
 		{
 			QVERIFY(file.masterMobIds.isEmpty());
@@ -854,10 +860,18 @@ void TestMediaEngineOmfProjection::repeatedDescriptorsAndMastersRemainSeparate()
 	master(writer, 302, 402, 502, 22, 11, "Second master");
 	const auto result = project(read(writer.build()));
 	QCOMPARE(result.files.size(), 2);
+	QCOMPARE(result.masters.size(), 2);
+	QCOMPARE(single(result.masters[0], MediaProperty::ClipName).toString(), QStringLiteral("First master"));
+	QCOMPARE(single(result.masters[1], MediaProperty::ClipName).toString(), QStringLiteral("Second master"));
 	for (const auto &file : result.files)
 	{
 		QCOMPARE(file.masterMobIds.size(), 2);
-		QCOMPARE(file.evidence.observations(MediaProperty::ClipName).size(), 2);
+		QVERIFY(file.evidence.observations(MediaProperty::ClipName).isEmpty());
+		const auto prepared = MediaEngine::selectedProjectedEvidence(file, result);
+		QVERIFY(!prepared.selected(MediaProperty::MasterMobId).value.isValid());
+		QCOMPARE(prepared.selected(MediaProperty::MasterMobId).agreement, PropertyAgreement::Conflicting);
+		QVERIFY(!prepared.selected(MediaProperty::ClipName).value.isValid());
+		QCOMPARE(MediaEngine::mediaDuration(prepared.selected(MediaProperty::FileDuration).value).units, 250);
 	}
 	QVERIFY(result.files[0].objects.first().handle != result.files[1].objects.first().handle);
 }
@@ -1225,7 +1239,8 @@ void TestMediaEngineOmfProjection::inferredUtf8RetainsOriginalEvidence()
 	const auto source = read(writer.build());
 	const auto result = project(source);
 	QCOMPARE(result.files.size(), 1);
-	const auto &observations = result.files.first().evidence.observations(MediaProperty::ClipName);
+	QCOMPARE(result.masters.size(), 1);
+	const auto &observations = result.masters.first().evidence.observations(MediaProperty::ClipName);
 	QCOMPARE(observations.size(), 1);
 	const auto &value = observations.first();
 	QCOMPARE(value.value.toString(), QString::fromUtf8(bytes));
@@ -1256,7 +1271,8 @@ void TestMediaEngineOmfProjection::inferredMacRomanFallback()
 	const auto source = read(writer.build());
 	const auto result = project(source);
 	QCOMPARE(result.files.size(), 1);
-	const auto &observations = result.files.first().evidence.observations(MediaProperty::ClipName);
+	QCOMPARE(result.masters.size(), 1);
+	const auto &observations = result.masters.first().evidence.observations(MediaProperty::ClipName);
 	QCOMPARE(observations.size(), 1);
 	QCOMPARE(observations.first().textEncoding, MediaEngine::TextEncoding::MacRoman);
 	QCOMPARE(observations.first().textEncodingBasis, EvidenceBasis::Derived);
@@ -1275,14 +1291,15 @@ void TestMediaEngineOmfProjection::emptyAndUnreadableTextRemainEvidence()
 	auto source = read(writer.build());
 	auto result = project(source);
 	QCOMPARE(result.files.size(), 1);
-	const auto &empty = result.files.first().evidence.observations(MediaProperty::ClipName);
+	QCOMPARE(result.masters.size(), 1);
+	const auto &empty = result.masters.first().evidence.observations(MediaProperty::ClipName);
 	QCOMPARE(empty.size(), 1);
 	QCOMPARE(empty.first().readState, PropertyReadState::Present);
 	QCOMPARE(empty.first().value.toString(), QString{});
 	QCOMPARE(empty.first().rawValue.toByteArray(), QByteArray(1, '\0'));
-	QCOMPARE(result.files.first().evidence.readStatus(MediaProperty::ClipName, source.snapshot,
+	QCOMPARE(result.masters.first().evidence.readStatus(MediaProperty::ClipName, source.snapshot,
 		QStringLiteral("object:301")).state, PropertyReadState::Present);
-	QVERIFY(!result.files.first().evidence.resolve(MediaProperty::ClipName, [](MetadataSource)
+	QVERIFY(!result.masters.first().evidence.resolve(MediaProperty::ClipName, [](MetadataSource)
 		{ return 1; }, QStringLiteral("Test priority")).value.isValid());
 	for (auto &object : source.objects)
 		for (auto &property : object.properties)
@@ -1292,11 +1309,11 @@ void TestMediaEngineOmfProjection::emptyAndUnreadableTextRemainEvidence()
 				property.decoded.clear();
 			}
 	result = project(source);
-	const auto &damaged = result.files.first().evidence.observations(MediaProperty::ClipName);
+	const auto &damaged = result.masters.first().evidence.observations(MediaProperty::ClipName);
 	QCOMPARE(damaged.size(), 1);
 	QCOMPARE(damaged.first().readState, PropertyReadState::Unreadable);
 	QCOMPARE(damaged.first().rawValue.toByteArray(), QByteArray(1, '\0'));
-	QCOMPARE(result.files.first().evidence.readStatus(MediaProperty::ClipName, source.snapshot,
+	QCOMPARE(result.masters.first().evidence.readStatus(MediaProperty::ClipName, source.snapshot,
 		QStringLiteral("object:301")).reason, PropertyReadReason::ValueUnreadable);
 }
 
@@ -1461,7 +1478,8 @@ void TestMediaEngineOmfProjection::originalBinTextPriority()
 	const auto source = read(writer.build());
 	const auto result = project(source);
 	QCOMPARE(result.files.size(), 1);
-	const auto &evidence = result.files.first().evidence;
+	QCOMPARE(result.masters.size(), 1);
+	const auto &evidence = result.masters.first().evidence;
 	const auto &values = evidence.observations(MediaProperty::OriginalBin);
 	QCOMPARE(values.size(), modernNames.size() + 1);
 	QCOMPARE(values.first().value.toString(), QStringLiteral("café originals"));
@@ -1501,7 +1519,7 @@ void TestMediaEngineOmfProjection::physicalDurationAndAssociatedTimecode()
 	const auto &file = result.files.first();
 	QCOMPARE(single(file, MediaProperty::DropFrame).toBool(), true);
 	QCOMPARE(file.masterMobIds, QStringList{MediaEngine::canonicalDatabaseId(uid(21))});
-	QCOMPARE(single(file, MediaProperty::ClipName).toString(), QStringLiteral("Linked master"));
+	QCOMPARE(selectedValue(result, file, MediaProperty::ClipName).toString(), QStringLiteral("Linked master"));
 	// The master's longer track and different clock do not replace physical duration.
 	const auto duration = MediaEngine::mediaDuration(single(file, MediaProperty::FileDuration));
 	QCOMPARE(duration.units, 250);
@@ -2061,7 +2079,8 @@ void TestMediaEngineOmfProjection::genuineProjectWithoutPmr()
 	const auto source = MediaEngine::OmfReader{}.read(input, {{}, cancellation});
 	const auto result = project(source);
 	QCOMPARE(result.files.size(), 1);
-	const auto &observations = result.files.first().evidence.observations(MediaProperty::Project);
+	const auto evidence = MediaEngine::selectedProjectedEvidence(result.files.first(), result);
+	const auto &observations = evidence.observations(MediaProperty::Project);
 	QVERIFY(!observations.isEmpty());
 	for (const auto &value : observations)
 	{
