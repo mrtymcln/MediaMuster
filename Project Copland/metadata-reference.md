@@ -6,7 +6,9 @@ clarified 12 October 2026, against app revision
 published Avid documentation and SMPTE standards.
 
 Current implementation descriptions include the 15 October 2026 single-master
-and 16 October Source Path and database reference checkpoints; dated format
+and 16 October Source Path/database reference and 17 October cancellation/Original
+Bin checkpoints. Original Bin storage was rechecked against published specifications
+and fresh disk samples on 17 October; dated format
 findings remain evidence from the identified verification revisions.
 
 This reference explains names and relationships. Keep/remove decisions belong in
@@ -34,6 +36,7 @@ mixed-object roles, fresh AVB/MDB specimens and an exported AAF from EDIT.
 | D | [Avid PMR/MDB explanation](https://kb.avid.com/pkb/articles/en_US/Knowledge/en262645) | Database purposes. It does not publish a complete PMR record schema. |
 | B | Installed Media Composer binary and resources; receipt below | Exact private names, inspected registration/serialization behavior and version-specific implementation corroboration. A string occurrence alone does not establish semantics. |
 | C | Current MediaMuster source, linked in the tables | What the app actually acquires, selects, derives and displays. It does not turn an app label into an official format property. |
+| I | [Avid Interplay Access User Guide 2022.3](https://resources.avid.com/SupportFiles/attach/Interplay_Access_User_Guide_v2022.3.pdf#page=229), Appendix C p. 229 | Original Bin means the bin where the asset's media was originally captured. Its presence in the system metadata list does not prescribe storage inside every media file. |
 
 The supplied `pyavb-main`, `media-decomposer` and `python-PMRReader-master` are
 secondary implementation references. Their variable names are not official
@@ -51,7 +54,7 @@ These names must not be substituted for one another just because they look simil
 | --- | --- | --- | --- |
 | Clip Name | Selected associated master-clip name. Helps recognize the media; differs from its disk filename. | A: `Name` p. 274. O: `OMFI:MOBJ:Name` p. 162. M: Generic Package `Name`, B.1. | Associated master `OMFI:CPNT:Name` / `OMFI:MOBJ:Name`; MXF linked MaterialPackage `GenericPackage.Name`. Select the correct object before selecting its name. Loaded AVBs do not enrich it under C16; selection prefers header then MDB. [Code](../src/mediaengine/mxfprojection.cpp#L1179). |
 | Project | Original Avid project name. Required for display and filtering under C39; does not identify the app's currently open project or the project of a loaded AVB. | A: `Project` p. 277 describes the original capture project. No standardized project property established here. | PMR project entry, MDB/OMF `_PJ`; MXF `Preface.ProjectName`, `_PJ` / `PROJNAME` tagged values. These are private/source-specific mappings. Their presence does not prove the project still exists. [Code](../src/mediaengine/mxfprojection.cpp#L636). |
-| Bin / OriginalBin | Recorded original-bin name/reference. Required for display under C40; describes origin, not current membership in every bin or the user's loaded filter bins. | No standardized OMF/MXF equivalent established here. Avid private `_ORG_BIN` / `MCBR` relationship. | MDB/OMF `_ORG_BIN` object → `MCBR` → `OMFI:MCBR:MC:binNameUTF8` / `binName`. No current MXF OriginalBin projection. AVB enrichment has been removed under C16; selection prefers MDB then a supplied header value. [Code](../src/mediaengine/mdbprojection.cpp#L1007). |
+| Bin / OriginalBin | Recorded original-bin name/reference. Required for display under C40; describes origin, not current membership in every bin or the user's loaded filter bins. | I p. 229 defines the original capture bin. No dedicated equivalent appears in the reviewed base OMF Mob or MXF Generic Package schema; both permit extensions. The observed Avid `_ORG_BIN` / `MCBR` relationship is private. | MDB/OMF `_ORG_BIN` object → `MCBR` → `OMFI:MCBR:MC:binNameUTF8` / `binName`. Genuine OMF names are verified; no current MXF OriginalBin projection or inspected MXF name encoding is established. AVB enrichment is removed under C16; selection prefers MDB then a supplied header value. Missing applicable names trigger legacy OMF fallback; missing bin alone does not open MXF. Bin conflicts and other scan requirements retain their checks. [Code](../src/mediaengine/mdbprojection.cpp#L909). |
 | Kind | Audio / Video essence classification. Determines applicable technical properties and supports filtering. | O: `OMFI:CPNT:DataKind`, pp. 145, 224–225. M: `Data Definition`, B.8. | Correctly owned sound/picture descriptor class and properties; native WAV/AIFF headers establish audio. Distinct from Master/Source/Composition role and from Type. Unknown Kind does not prove any field inapplicable. [Code](../src/mediaengine/mxfprojection.cpp#L754). |
 | Duration | Physical file's temporal length. Retain the exact count and its unit rate; display clock/timecode formatting is separate. | O: `OMFI:MDFL:Length` / `SampleRate`, pp. 167–168. M: `Container Duration` / appropriate rate, F.2. | MXF `FileDescriptor.ContainerDuration` / `SampleRate`; MDB/OMF equivalent; native audio sample-frame count/rate. Linked file-track duration can supply the fallback when descriptor duration is absent. Avid's bin `Duration` is clip length and is not this field. Clip Duration and its separate master-track calculations have been removed under C13. [Code](../src/mediaengine/mxfprojection.cpp). |
 | Size (MB) | Entire physical file's size, displayed as decimal bytes / 1,000,000. Helps plan operations. | Filesystem fact; no metadata substitute. | `QFileInfo::size()`, with exact bytes retained. Not essence payload size or a duration estimate. [Code](../src/mediaengine/discoveryengine.cpp#L143). |
@@ -101,6 +104,34 @@ does not establish local membership. Partial PMR entries can prove a reference
 without becoming eligible metadata, and the existing complete PMR/MDB
 required-field header-skip gate is unchanged. These coverage facts are released
 with the working scan rather than becoming another row history.
+
+## Original Bin storage: specifications and disk evidence
+
+Rechecked 17 October 2026. Avid's system metadata definition (I p. 229) establishes
+the original capture bin; it does not guarantee a name embedded in each media file.
+The [OMF specification](https://www.cubase.it/wp/wp-content/uploads/2014/12/omfspec21.pdf)
+defines optional named attributes and extension classes (printed pp. 114–117,
+175–176). The exact private OMF1 property chain above is established from files,
+not inferred from a standard mandatory Original Bin field.
+
+The [MXF specification](https://pub.smpte.org/latest/st377-1/st377-1-2019.pdf)
+defines Package Name, not Bin Name, in B.1 p. 118. Section 9 permits header
+extensions; §9.2.3 allows unknown metadata to remain uninterpreted. The absence of
+a mapper or known name therefore cannot prove universal absence from MXF.
+
+Fresh read-only inspection covered 21 MXF headers (16 on EDIT, four actual startup
+media and one genuine repository specimen), two genuine OMF specimens and three
+MDBs. All parses completed; reread metadata hashes and size/mtime stayed unchanged.
+The OMF `BLACK_720x576x1_JFIF30P.omf` records `Media Slides` in linked MCBR metadata.
+On EDIT, `1001.WAVA01.D8875D202DA97BA.mxf` exactly matches its local MDB's
+`D001_SOUND` association, but the MXF's decoded tagged names and inspected raw
+metadata ranges contain neither that name nor `_ORG_BIN` in the checked encodings.
+No identifiable Original Bin appeared in the 21 sampled MXFs. These samples are
+distinct from the broader path inventory; unknown private encodings and other
+producers remain unproven. See the [source/byte receipts and scope](evidence/original-bin-storage-2026-10-17.json).
+The user subsequently chose to stop missing-bin-only MXF reads while retaining
+legacy OMF fallback. The exception changes scheduling, not the meaning of unknown
+coverage or the existing source preferences and other read triggers.
 
 ## Recorded source filename and path
 
@@ -394,6 +425,12 @@ UTF-16, dynamically assembled names and other images may carry it.
 
 - Project and Original Bin are required under C39/C40: Project supports display and
   filtering; Original Bin supports display. Missing applicable values follow C12.
+  Original Bin participates in the header-sufficiency checklist using the existing
+  discovered reader family. Missing/empty/unreadable applicable names request
+  legacy OMF fallback; those missing names alone do not open MXF. Conflicting bin
+  values and other existing requirements retain their checks. MDB-before-header
+  selection and selected-master ownership remain. Unsupported interpretation stays
+  unknown; it does not establish absence or inapplicability.
   They remain separate from the retained loaded-AVB filtering capability. Existing
   global text search also matches Original Bin and is retained under C41; no
   dedicated filter is requested.

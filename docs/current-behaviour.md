@@ -156,6 +156,15 @@ path does not force a header read just to obtain its preferred value. Current
 readers establish no Source Path inapplicability rule; missing import metadata
 therefore remains unavailable rather than being assumed inapplicable.
 
+For Original Bin, a missing, empty or unreadable database name requests fallback
+through the legacy OMF reader path. That missing name alone does not open an MXF
+header; a bin-name conflict or another existing scan requirement still can. A
+usable MDB name takes priority among the finally selected master's admitted
+details. Legacy OMF headers can supply recorded names through their linked master;
+the current MXF reader has no verified Original Bin mapping. Exhausted values
+remain blank, and unestablished coverage remains unknown rather than proving
+absence or inapplicability. No loaded-bin metadata is used to fill the cell.
+
 PMR/MDB/MXF/OMF reading storage and the working scan history are temporary.
 Databases are buffered in RAM while parsing. Observations, original bytes,
 alternatives and source receipts support matching and validation while the scanner

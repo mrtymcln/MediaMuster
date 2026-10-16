@@ -2,7 +2,7 @@
 
 Status: implementation in progress; confirmed contract and technical verification.
 Started 11 October 2026; decisions updated
-16 October 2026.
+17 October 2026.
 
 Copland reviews the whole MediaMuster app and defines the smallest useful product
 contract before choosing its implementation. Existing capabilities and Canon's
@@ -10,7 +10,8 @@ retention commitments are open for review. Implementation has begun with the
 user-selected direct CSV export, small safety-check migration, identity naming,
 bin name filling removal, ordinary scan history removal, Clip Duration removal,
 one selected MasterMobId per physical file, complete Source Path replacement,
-either-local-database reference rules and the two database flags/views below.
+either-local-database reference rules, the two database flags/views and scan
+cancellation below.
 
 This document contains the working decision ledger and proposed implementation
 order. Confirmed requirements, proposals and open questions
@@ -117,7 +118,7 @@ by this requirements review. See [implementation planning](#implementation-plann
 | C09 | Aim for application peak memory below 10 GB while keeping scans and ordinary use lean. | Workstations commonly have 64 GB. Measure scanning, rescanning, bin loading and subsequent use. C86 clarifies that this is an optimization target, not a strictly enforced runtime ceiling or an automatic-stop threshold. |
 | C10 | Scan as fast as possible. | A numerical time target and representative benchmark procedure have not been agreed. |
 | C11 | Release AVB data when a bin is removed from the loaded list. | Remove its filter contribution and sequence selections, recalculate using remaining rules, remove rules with no bins and clear bin filtering when no rules remain. Each remaining bin resolves independently under C26; established partial matches and Console notices follow C27. |
-| C12 | Read PMR, then MDB, then physical media headers as needed. | Read headers for every unindexed file, when databases are absent/unusable, and when indexed metadata is missing, incomplete or contradictory. A missing applicable table field triggers the next source; leave it blank when sources are exhausted. Established inapplicability stops fallback for that property under C35. Acquisition order is separate from the coder's per-field selection policy. |
+| C12 | Read PMR, then MDB, then physical media headers as needed. | Read headers for every unindexed file, when databases are absent/unusable, and when indexed metadata is missing, incomplete or contradictory. A missing applicable table field triggers the next source; leave it blank when sources are exhausted. On 17 October, the user exempted missing Original Bin alone from MXF header scheduling, while retaining OMF fallback under C40. Established inapplicability stops fallback for that property under C35. Acquisition order is separate from the coder's per-field selection policy. |
 | C13 | Physical-file Duration is sufficient; remove Clip Duration from the target. | Retain exact file duration/rate. Associated master-track lengths are no longer a product requirement. |
 | C14 | Keep all current precompute details behind a feature flag for now. | Includes detailed precompute categories and inferred Effect, Effect Category and Effect Sequence. The ordinary Media/Precompute Type column remains required under C45; the detail flag does not remove that simple classification. Actual AVB sequence membership remains a separate capability. |
 | C15 | Remove permanent evidence histories and use compact retained media records with small validation checks. | Confirmed after the bounded genuine-source investigation. Retain useful selected values, identities and operation checks rather than every candidate or duplicate. The investigation does not prove every possible source conflict-free. |
@@ -145,7 +146,7 @@ by this requirements review. See [implementation planning](#implementation-plann
 | C37 | Maintain a metadata reference covering names, definitions, relationships and use in MediaMuster. | Base format semantics on Avid/OMF/MXF documentation; use the inspected Media Composer binary to corroborate private names and implementation relationships. Treat supplied hobby/reverse-engineered readers as secondary references, not authorities. Mark unresolved mappings explicitly. |
 | C38 | Retain a compact database membership/readability result. | App-derived local reference checks do not certify freshness, complete metadata or sequence usage. C48 replaces the visible Database Status column with two flags; a small internal result can still derive the flags and explain missing/unreadable outcomes. |
 | C39 | Keep the original Avid Project name for display and filtering. | The required meaning is the original Avid project, not the current editing project or the project of a loaded AVB. Missing applicable Project follows C12; do not infer a project from a folder name. |
-| C40 | Keep the original Bin name for display. | This is recorded Original Bin, separate from loaded-AVB membership/filtering under C05/C16. The user has not requested a dedicated Original Bin filter. Existing text search matching that column is a separate search decision, not automatically removed. Missing applicable Bin follows C12; reader coverage must be established before absence can be claimed. |
+| C40 | Keep the original Bin name for display. | This is recorded Original Bin, separate from loaded-AVB membership/filtering under C05/C16. The user has not requested a dedicated Original Bin filter. Existing text search matching that column is a separate search decision, not automatically removed. Missing applicable Bin follows C12 for OMF; missing/empty/unreadable bin information alone does not open an MXF header under the user's 17 October refinement. Keep existing conflict-triggered and other required-field/identity/source-change reads. This is a scheduling exception, not proof of absence or inapplicability; reader coverage must be established before absence can be claimed. |
 | C41 | Keep the current general Search behavior, using Source Path in place of Source Filename under C94/C96. | Retain searching Clip Name, Project, Original Bin, Compression, volume names, current physical paths and enabled precompute details. Search the recorded Source Path, including a filename within that path. Matching remains case-insensitive substring matching with Unicode normalization and significant accents. No extra field-specific search mode is requested. |
 | C42 | Keep Compression with the current Avid name and verified older numbered name where applicable. | Retain presentation such as `Avid DNx HQX [DNxHD 185x]` and its exact supported interpretation rules. Do not manufacture a numbered alias for an unsupported operating point or DNxHR. This does not reinstate permanent storage of every alternative under C15; the separate OldDnx result has no direct table/CSV consumer in the inspected code. |
 | C43 | Keep Resolution for identifying/selecting media. | Retain established visible picture dimensions in the table/CSV, including the qualified proxy interpretation. Audio-only rows remain blank with established inapplicability under C35. No new dedicated technical filter is requested by this purpose statement. |
@@ -1360,6 +1361,101 @@ validation; restoring its normal timing fixed the regression before the full run
 skips remain; representative workload, Windows and NEXIS acceptance are still
 outstanding. No cancellation-latency or performance improvement is claimed.
 
+The user subsequently confirmed cancellation halfway through a scan on
+17 October 2026. This is an additional manual workflow check, not a representative
+scale or timing measurement.
+
+### Original Bin checkpoint after cancellation — 17 October 2026
+
+The user asked for the next step, with simple explanations and decisions brought
+back to them. Initial read-only inspection found that `requiredTableMetadata()`
+treated Original Bin as conflict-only: a missing name alone did not request a
+header read. The then-existing complete-database test explicitly left Original Bin
+blank while asserting an unread header. This was a C12/C40 gap; a missing
+applicable name should try the next source before remaining blank. Existing MDB
+and OMF readers interpret recorded original-bin references, but corresponding
+reader coverage and genuine-source checks must be established rather than
+assuming that opening every header will recover a name.
+
+The user chose **Original Bin first**, rather than combining it with all remaining
+requested-field and applicability changes. Implement the focused C12/C40
+reader/fallback checkpoint and verify its source-read decisions and selected
+values. Missing applicable database names should try the allowed media-header
+source, leaving exhausted results blank. This can open more headers; no speed
+advantage is claimed. Preserve the existing MDB-before-header field preference,
+selected-master ownership, changed-source exclusions and bounded header attempts.
+Broader property-checklist/applicability cleanup remains a separate step. Reader
+or implementation crossroads still require the user's choice before dependent
+work; this scope choice does not settle unverified format mappings.
+
+The existing genuine-source investigation establishes MDB/legacy OMF
+`_ORG_BIN` → `MCBR` → `binNameUTF8`/`binName` interpretation, while MXF Original
+Bin coverage remains unestablished. A fresh bounded read-only audit found no
+known bin-name representation in the 824 shipped MXF fixtures and identified a
+positive genuine OMF specimen, `BLACK_720x243x2_UNCOMP.omf`, recording
+`Uncompressed media slides`. These findings support the existing-reader fallback
+checkpoint; they do not establish universal absence in MXF or justify inventing
+a mapper. The implementation reuses the existing Source Path missing/applicability
+check for Original Bin, retaining the current compact statuses for unresolved
+coverage. No reader mapping, source preference, retained record or unrelated
+field rule is changed.
+
+Implemented and verified 17 October 2026 (Sydney), using pinned Qt 6.5.3 on this
+arm64 Mac. Missing, empty, unreadable or unresolved applicable database bin names
+now request the existing bounded header fallback. Complete authored databases
+used by Source Path, timing, freshness and cancellation controls explicitly
+include Original Bin so those tests retain their original targets. The genuine
+OMF regression combines its header with an authored matching PMR/MDB missing
+only Original Bin, then verifies the bin-only scheduling reason, one read per
+source, exact recovered name/property/object, selected master and compact row
+status. MXF controls verify unknown coverage remains distinct from checked absence;
+a usable Unicode MDB name still avoids the header when other requirements are met.
+
+The app and all configured Release targets build. All 39 suites passed in one
+full run (104.19 seconds), following focused scanner/OMF/MXF and new scan-control
+runs. This includes existing table/CSV, filtering, operation, Undo/recovery and
+cancellation checks. `git diff --check` passes. No reader mapping or additional
+retained data was introduced. The broader requested-field/applicability work and
+representative Windows/NEXIS/scale acceptance remain outstanding; no scan-time
+or memory saving is claimed by this scheduling correction.
+
+The user subsequently requested specifications, Avid documentation and fresh disk
+evidence for bin-name storage. The [17 October storage receipt](evidence/original-bin-storage-2026-10-17.json)
+separates the optional extension mechanisms from actual names and reader support.
+A genuine OMF explicitly records `Media Slides`; an EDIT MXF matches the local
+MDB's `D001_SOUND` association without that name appearing in the inspected MXF
+metadata. No identifiable Original Bin was found in 21 sampled MXF headers.
+This is bounded evidence, not a universal absence claim. The
+[metadata reference](metadata-reference.md#original-bin-storage-specifications-and-disk-evidence)
+records the primary specification sections, official Avid definition and source
+scope. This research changes no acquisition policy or application code; the
+existing missing-field rule and unresolved MXF coverage remain separate facts.
+
+The user then requested **Stop opening MXF headers just because Original Bin is
+missing, but keep trying OMF headers**. This supersedes the earlier missing-bin
+rule for MXF only and is recorded in C12/C40. Use the already-discovered media
+reader family when checking sufficiency: missing/empty/unreadable Original Bin
+alone should not request an MXF read; the existing conflict-triggered check
+remains, as do all other required-field, unmatched-database, identity/change and
+bounded fallback rules. The existing legacy OMF reader path keeps its missing-bin
+attempt, including its already-supported managed audio containers. Retain unknown
+coverage when a name is unavailable rather than claiming absence or inapplicability.
+No new parser, retained field, source preference or filename-suffix inference is
+needed for this refinement.
+
+Implemented and verified 17 October 2026 (Sydney), with pinned Qt 6.5.3 and Release
+arm64. The existing candidate reader hint reaches the sufficiency check, so both
+initial scheduling and the bounded changed-source retry follow the same family
+rule. The app and all configured Release targets build; all 39 suites passed in
+one full run (106.00 seconds). The scan suite then rebuilt and passed again
+(1.23 seconds) with one additional control proving that enabling OMF scanning
+does not make an MXF missing-bin case open its header. The final matrix covers
+both families with present, absent, empty, unreadable and conflicting bin values;
+MXF missing another required field still reads once, and genuine OMF name recovery
+remains verified. Unknown SourceNotRead and unestablished field coverage stay
+distinct. `git diff --check` passes. No performance saving or representative
+Windows/NEXIS acceptance is claimed by these local checks.
+
 ### Database columns and views — 16 October 2026
 
 The user requested the next C48 checkpoint: add No Database and No Reference
@@ -1779,7 +1875,7 @@ defensive tests for source changes and invalid reads, labelled as authored contr
 use genuine sources to establish format/workflow behavior.
 
 Outstanding technical validation remains necessary:
-exact used-angle/source-track AVB interpretation, required Original Bin reader
+exact used-angle/source-track AVB interpretation, broader Original Bin format
 coverage, broader compact-row equivalence and complete-process scale measurement
 must still be demonstrated. Cancellation has local phase-boundary controls in the
 17 October checkpoint; representative workload acceptance remains necessary. The inspected
@@ -1791,8 +1887,9 @@ The [12 October verification](technical-verification-2026-10-12.md) recorded
 broad AVB traversal, conflict-only AVB Original Bin fallback, loss of completed
 metadata on early cancel and incorrect completion reporting on late cancel.
 The AVB row fallback has since been removed under C16. The 17 October cancellation
-checkpoint addresses the early-retention and late-reporting gaps; Original Bin
-fallback and exact AVB traversal remain outstanding.
+checkpoint addresses the early-retention and late-reporting gaps. The following
+Original Bin checkpoint corrects missing-field fallback using existing readers;
+unestablished MXF interpretation and exact AVB traversal remain outstanding.
 The compact safety-check migration above passes its bounded equivalence checks.
 Ordinary row history removal is now implemented, with current fields and the
 master-association union preserved at that checkpoint. Clip Duration has since

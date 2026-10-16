@@ -1931,6 +1931,13 @@ void TestScanner::current_mxf_audio_database_rounds_partial_frames()
 	w.setString(sourcePath, "OMFI:ATTB:Name", "UNC Path");
 	w.setU16(sourcePath, "OMFI:ATTB:Kind", 2);
 	w.setString(sourcePath, "OMFI:ATTB:StringAttribute", "/Rushes/Partial frame duration.wav");
+	const quint32 masterAttributes = w.addObject("ATTR"), originalBin = w.addObject("ATTB"), bin = w.addObject("MCBR");
+	w.setHandle(master, "OMFI:CPNT:Attributes", masterAttributes);
+	w.setHandles(masterAttributes, "OMFI:ATTR:AttrRefs", {originalBin});
+	w.setString(originalBin, "OMFI:ATTB:Name", "_ORG_BIN");
+	w.setU16(originalBin, "OMFI:ATTB:Kind", 3);
+	w.setHandle(originalBin, "OMFI:ATTB:ObjAttribute", bin);
+	w.setString(bin, "OMFI:MCBR:MC:binName", "Duration bin");
 	w.setHandles(head, "OMFI:ObjectSpine", {master, file});
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"), w.build()));
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"),
@@ -1943,6 +1950,7 @@ void TestScanner::current_mxf_audio_database_rounds_partial_frames()
 	QVERIFY(hasDatabaseEvidence(row));
 	checkDatabaseOnlyRead(row);
 	QCOMPARE(row.sourceFilePath, QStringLiteral("/Rushes/Partial frame duration.wav"));
+	QCOMPARE(row.originalBin, QStringLiteral("Duration bin"));
 	QVERIFY(!row.omfEra);
 	QCOMPARE(row.clipNameSource, MediaFile::ClipNameSource::Mdb);
 	QCOMPARE(row.clipName, QStringLiteral("Partial frame duration"));

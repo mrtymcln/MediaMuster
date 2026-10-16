@@ -100,7 +100,14 @@ The existing header-then-MDB preference, master/file ownership and exact recorde
 spellings remain. Missing usable applicable database paths trigger the next
 allowed header source, with exhausted results blank and status retained. No
 current reader marks Source Path inapplicable; shared applicability propagation
-and other requested-field acquisition gaps remain part of the broader Stage 3 work.
+remains part of the broader Stage 3 work. Original Bin uses the missing-value
+fallback check for the existing legacy OMF reader family. The discovered MXF
+reader hint instead keeps the bin conflict check without a missing-bin-only read;
+other required fields and qualification failures can still request MXF. Both keep
+MDB-before-header selection and selected-master ownership. Existing OMF
+`_ORG_BIN`/MCBR interpretation can recover names; no verified MXF mapper is added.
+Unsupported or unresolved coverage stays unknown, whether the header was skipped
+or attempted. Other requested-field acquisition gaps remain a separate checkpoint.
 
 `appendMasterMetadata()` omits the group's canonical MasterMobId observation when
 joining details, because identifying a master object is not a file-to-master

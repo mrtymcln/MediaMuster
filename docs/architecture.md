@@ -199,6 +199,15 @@ header-read scheduling remain separate from display preference. The presentation
 refreshes nonempty MediaEngine cells as well as missing ones, so changing a policy for a
 new build applies consistently to table values, filters and CSV.
 
+The header-sufficiency checklist receives the discovered candidate's existing
+`ReaderHint`; it adds no suffix inference or retained row flag. Missing applicable
+Original Bin requests the legacy OMF reader, while MXF retains its conflict-only
+bin check. A missing bin alone therefore does not open MXF; other requirements,
+source changes and the bounded fallback pass still apply. Source Path keeps its
+existing missing-value rule. MDB-before-header preference and master ownership
+remain. MXF Original Bin coverage is still unestablished, so neither skipping nor
+completing its parse establishes absence or inapplicability.
+
 Source read outcomes, property read states, agreement and selection are different
 facts. A sparse property with no observation is not proof of absence: its owning
 source may be unreadable, incomplete or uninterpreted. Scan-time consumers inspect

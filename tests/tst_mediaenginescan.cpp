@@ -31,14 +31,15 @@ namespace
 		qToLittleEndian(number, encoded);
 		bytes.append(encoded, sizeof(T));
 	}
-	QByteArray pmrRecord(const QByteArray &filename, const QByteArray &identity, const QByteArray &project)
+	QByteArray pmrRecord(const QByteArray &filename, const QByteArray &identity, const QByteArray &project,
+		const QByteArray &masterIdentity = toneMasterId)
 	{
 		QByteArray bytes = identity;
 		appendNumber<quint16>(bytes, quint16(filename.size()));
 		bytes.append(filename);
 		appendNumber<quint16>(bytes, quint16(project.size()));
 		bytes.append(project);
-		bytes.append(toneMasterId);
+		bytes.append(masterIdentity);
 		appendNumber<quint32>(bytes, 0);
 		return bytes;
 	}
@@ -54,7 +55,9 @@ namespace
 	}
 	QByteArray audioDatabase(quint16 bitDepth = 24, const QVector<quint32> &members = {101, 301},
 		bool contradictoryFileIdentity = false, const QByteArray &masterIdentity = toneMasterId,
-		const QList<QByteArray> &sourcePaths = {QByteArray("/Rushes/Database clip.wav")})
+		const QList<QByteArray> &sourcePaths = {QByteArray("/Rushes/Database clip.wav")},
+		const QList<QByteArray> &originalBins = {QByteArray("Database bin")},
+		const QByteArray &fileIdentity = toneFileId)
 	{
 		using TestMediaEngineBento::number;
 		TestMediaEngineBento::TypedBento writer;
@@ -62,7 +65,7 @@ namespace
 		writer.referenceArray(1, "OMFI:ObjectSpine", members, 1);
 		for (const auto &object : QList<QPair<quint32, QByteArray>>{{101, "MOBJ"}, {201, "WAVD"}, {301, "MOBJ"}, {401, "TRAK"}, {501, "SCLP"}})
 			writer.add(object.first, "OMFI:ObjID", "omfi:ObjectTag", object.second, true);
-		writer.add(101, "OMFI:MOBJ:MobID", "omfi:UID", toneFileId);
+		writer.add(101, "OMFI:MOBJ:MobID", "omfi:UID", fileIdentity);
 		writer.add(101, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(201, 1));
 		writer.add(101, "OMFI:CPNT:EditRate", "omfi:Rational", number<qint32>(25) + number<qint32>(1));
 		const QByteArray format = number<quint16>(1) + number<quint16>(1) + number<quint32>(48000) +
@@ -77,7 +80,7 @@ namespace
 		writer.add(301, "OMFI:TRKG:Tracks", "omfi:ObjRefArray", number<quint16>(1) + writer.reference(401, 1));
 		writer.add(401, "OMFI:TRAK:LabelNumber", "omfi:UInt16", number<quint16>(1), true);
 		writer.add(401, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(501, 1));
-		writer.add(501, "OMFI:SCLP:SourceID", "omfi:UID", toneFileId);
+		writer.add(501, "OMFI:SCLP:SourceID", "omfi:UID", fileIdentity);
 		if (!sourcePaths.isEmpty())
 		{
 			writer.add(701, "OMFI:ObjID", "omfi:ObjectTag", "ATTR", true);
@@ -95,12 +98,32 @@ namespace
 			}
 			writer.referenceArray(701, "OMFI:ATTR:AttrRefs", attributes, 1);
 		}
+		if (!originalBins.isEmpty())
+		{
+			writer.add(801, "OMFI:ObjID", "omfi:ObjectTag", "ATTR", true);
+			writer.add(301, "OMFI:CPNT:Attributes", "omfi:ObjRef", writer.reference(801, 1));
+			QVector<quint32> attributes;
+			quint32 handle = 802;
+			for (const auto &bin : originalBins)
+			{
+				const quint32 binHandle = handle + 200;
+				attributes.append(handle);
+				writer.add(handle, "OMFI:ObjID", "omfi:ObjectTag", "ATTB", true);
+				writer.add(handle, "OMFI:ATTB:Name", "omfi:String", QByteArray("_ORG_BIN\0", 9));
+				writer.add(handle, "OMFI:ATTB:Kind", "omfi:AttrKind", number<quint16>(3));
+				writer.add(handle, "OMFI:ATTB:ObjAttribute", "omfi:ObjRef", writer.reference(binHandle, 1));
+				writer.add(binHandle, "OMFI:ObjID", "omfi:ObjectTag", "MCBR", true);
+				writer.add(binHandle, "OMFI:MCBR:MC:binNameUTF8", "omfi:String", bin + '\0');
+				++handle;
+			}
+			writer.referenceArray(801, "OMFI:ATTR:AttrRefs", attributes, 1);
+		}
 		if (contradictoryFileIdentity)
 		{
-			QByteArray alternative = toneFileId;
+			QByteArray alternative = fileIdentity;
 			alternative[31] = char(0x14);
 			writer.add(601, "OMFI:ObjID", "omfi:ObjectTag", "MOBJ", true);
-			writer.add(601, "OMFI:MOBJ:MobID", "omfi:UID", toneFileId);
+			writer.add(601, "OMFI:MOBJ:MobID", "omfi:UID", fileIdentity);
 			writer.add(601, "OMFI:MOBJ:MobID", "omfi:UID", alternative);
 			writer.add(601, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(201, 1));
 		}
@@ -548,7 +571,7 @@ private slots:
 		QCOMPARE(duration.rate.denominator, 1);
 		QCOMPARE(duration.displayRate.numerator, 25);
 		QCOMPARE(duration.displayRate.denominator, 1);
-		QVERIFY(!evidence.selected(MediaProperty::OriginalBin).value.isValid());
+		QCOMPARE(evidence.selected(MediaProperty::OriginalBin).value.toString(), QStringLiteral("Database bin"));
 		QCOMPARE(evidence.selected(MediaProperty::SourcePath).value.toString(), QStringLiteral("/Rushes/Database clip.wav"));
 		for (const auto &value : evidence.observations(MediaProperty::Compression))
 			if (value.readState == PropertyReadState::Present)
@@ -625,6 +648,198 @@ private slots:
 			QVERIFY(status.selectedSource);
 			QCOMPARE(*status.selectedSource, MetadataSource::Mdb);
 		}
+	}
+	void original_bin_controls_header_fallback_data()
+	{
+		QTest::addColumn<bool>("legacyFamily");
+		QTest::addColumn<bool>("includeOmf");
+		QTest::addColumn<QList<QByteArray>>("recordedBins");
+		QTest::addColumn<bool>("readHeader");
+		QTest::addColumn<QString>("selectedBin");
+		QTest::addColumn<bool>("completeSibling");
+		QTest::addColumn<bool>("missingSourcePath");
+		const QString unicode = QStringLiteral("資料 originals");
+		for (const bool legacy : {false, true})
+		{
+			const QByteArray prefix = legacy ? QByteArray("omf-") : QByteArray("mxf-");
+			QTest::newRow((prefix + "present-bin").constData())
+				<< legacy << legacy << QList<QByteArray>{unicode.toUtf8()} << false << unicode << false << false;
+			QTest::newRow((prefix + "absent-bin").constData())
+				<< legacy << legacy << QList<QByteArray>{} << legacy << QString{} << false << false;
+			QTest::newRow((prefix + "empty-bin").constData())
+				<< legacy << legacy << QList<QByteArray>{QByteArray{}} << legacy << QString{} << false << false;
+			QTest::newRow((prefix + "unreadable-bin").constData())
+				<< legacy << legacy << QList<QByteArray>{QByteArray::fromHex("c328")} << legacy << QString{} << true << false;
+			QTest::newRow((prefix + "conflicting-bins").constData())
+				<< legacy << legacy << QList<QByteArray>{QByteArray("First bin"), QByteArray("Second bin")}
+				<< true << QString{} << false << false;
+		}
+		QTest::newRow("mxf-absent-bin-and-source-path")
+			<< false << false << QList<QByteArray>{} << true << QString{} << false << true;
+		QTest::newRow("mxf-absent-bin-with-omf-scanning-enabled")
+			<< false << true << QList<QByteArray>{} << false << QString{} << false << false;
+	}
+	void original_bin_controls_header_fallback()
+	{
+		QFETCH(bool, legacyFamily);
+		QFETCH(bool, includeOmf);
+		QFETCH(QList<QByteArray>, recordedBins);
+		QFETCH(bool, readHeader);
+		QFETCH(QString, selectedBin);
+		QFETCH(bool, completeSibling);
+		QFETCH(bool, missingSourcePath);
+		QTemporaryDir temporary;
+		QVERIFY(temporary.isValid());
+		const QString folder = temporary.path() + (legacyFamily ? QStringLiteral("/OMFI MediaFiles")
+			: QStringLiteral("/Avid MediaFiles/MXF/1"));
+		const QByteArray filename = legacyFamily ? QByteArray("take.wav") : QByteArray("take.mxf");
+		const QString path = folder + QLatin1Char('/') + QString::fromLatin1(filename);
+		QVERIFY(QDir().mkpath(folder));
+		if (legacyFamily)
+		{
+			// A complete native WAVE is handled by the legacy reader but has no
+			// embedded OMF bin metadata. Genuine OMF recovery is checked below.
+			using TestMediaEngineBento::number;
+			const QByteArray format = number<quint16>(1) + number<quint16>(1) + number<quint32>(48000) +
+				number<quint32>(144000) + number<quint16>(3) + number<quint16>(24);
+			const QByteArray body = QByteArray("WAVEfmt ") + number<quint32>(format.size()) + format +
+				QByteArray("data") + number<quint32>(0);
+			QVERIFY(tryWriteFile(path, QByteArray("RIFF") + number<quint32>(body.size()) + body));
+		}
+		else
+			QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf"), path));
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"),
+			pmr({pmrRecord(filename, toneFileId, "Project")})));
+		const QList<QByteArray> sourcePaths = missingSourcePath ? QList<QByteArray>{}
+			: QList<QByteArray>{QByteArray("/Rushes/Database clip.wav")};
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"),
+			audioDatabase(24, {101, 301}, false, toneMasterId, sourcePaths, recordedBins)));
+		if (completeSibling)
+		{
+			// Keep a complete matching source available, so the unreadable bin
+			// exercises the field requirement rather than the whole-source gate.
+			QVERIFY(tryWriteFile(folder + QStringLiteral("/complete.mdb"),
+				audioDatabase(24, {101, 301}, false, toneMasterId, sourcePaths, {})));
+		}
+		QHash<QString, int> reads;
+		MediaEngine::ScanCallbacks callbacks;
+		callbacks.reading = [&](const MediaEngine::SourceCandidate &candidate)
+		{ ++reads[candidate.path]; };
+		const MediaEngine::Cancellation cancellation;
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, includeOmf}, cancellation, callbacks);
+		QCOMPARE(scan.files.size(), 1);
+		QVERIFY(scan.parsingComplete);
+		QVERIFY(scan.reconciliationComplete);
+		QCOMPARE(reads.value(folder + QStringLiteral("/index.pmr")), 1);
+		QCOMPARE(reads.value(folder + QStringLiteral("/metadata.mdb")), 1);
+		QCOMPARE(reads.value(folder + QStringLiteral("/complete.mdb")), completeSibling ? 1 : 0);
+		QCOMPARE(reads.value(path), readHeader ? 1 : 0);
+		QCOMPARE(reads.size(), 2 + int(completeSibling) + int(readHeader));
+		const auto *header = mediaSource(scan, path);
+		QVERIFY(header);
+		QCOMPARE(header->outcome == MediaEngine::ParsedSource::Outcome::NotRead, !readHeader);
+		if (readHeader)
+			QCOMPARE(header->readReason,
+				missingSourcePath ? QStringLiteral("Header read: required table metadata missing or conflicting: Source Path")
+					: QStringLiteral("Header read: required table metadata missing or conflicting: Original Bin"));
+		const auto &file = scan.files.front();
+		QCOMPARE(file.stamp.fileMobId, MediaEngine::canonicalDatabaseId(toneFileId));
+		QCOMPARE(file.stamp.masterMobId, MediaEngine::canonicalDatabaseId(toneMasterId));
+		QCOMPARE(file.evidence.selected(MediaProperty::OriginalBin).value.toString(), selectedBin);
+		QCOMPARE(file.evidence.selected(MediaProperty::SourcePath).value.toString(),
+			missingSourcePath ? QString{} : QStringLiteral("/Rushes/Database clip.wav"));
+		const auto row = mediaEngineMediaFile(file, ScanRowLookup(scan), temporary.path(), QStringLiteral("Volume"), false);
+		QCOMPARE(row.originalBin, selectedBin);
+		QCOMPARE(row.masterMobId, file.stamp.masterMobId);
+		const auto &status = row.metadataStatus.field(MediaProperty::OriginalBin);
+		QVERIFY(status.captured);
+		QCOMPARE(status.hasSelectedValue, !selectedBin.isEmpty());
+		if (!selectedBin.isEmpty())
+		{
+			QCOMPARE(status.readState, PropertyReadState::Present);
+			QVERIFY(status.selectedSource);
+			QCOMPARE(*status.selectedSource, MetadataSource::Mdb);
+		}
+		else
+		{
+			// Neither this MXF header nor the native WAVE carries bin metadata.
+			// An unread header and unestablished field coverage stay distinct.
+			const auto coverage = file.evidence.readStatus(MediaProperty::OriginalBin, header->snapshot);
+			QCOMPARE(coverage.state, PropertyReadState::NotRead);
+			QCOMPARE(coverage.reason, readHeader ? PropertyReadReason::CoverageNotEstablished
+				: PropertyReadReason::SourceNotRead);
+			QVERIFY(status.readState != PropertyReadState::Absent);
+			QVERIFY(!status.selectedSource);
+		}
+		if (recordedBins.size() > 1)
+		{
+			QCOMPARE(status.agreement, PropertyAgreement::Conflicting);
+			QCOMPARE(status.readState, PropertyReadState::Present);
+		}
+	}
+	void missing_database_bin_reads_genuine_omf_header()
+	{
+		QTemporaryDir temporary;
+		QVERIFY(temporary.isValid());
+		const QString folder = temporary.path() + QStringLiteral("/OMFI MediaFiles");
+		const QString path = folder + QStringLiteral("/take.omf");
+		QVERIFY(QDir().mkpath(folder));
+		QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR "/omf/avid_supporting/BLACK_720x243x2_UNCOMP.omf"), path));
+		const MediaEngine::Cancellation cancellation;
+		const auto headerOnly = MediaEngine::ScanEngine{}.scan({{temporary.path()}, true}, cancellation);
+		QCOMPARE(headerOnly.files.size(), 1);
+		const auto &baseline = headerOnly.files.front();
+		QCOMPARE(baseline.evidence.selected(MediaProperty::OriginalBin).value.toString(),
+			QStringLiteral("Uncompressed media slides"));
+		QString fileId = baseline.stamp.fileMobId;
+		QString masterId = baseline.stamp.masterMobId;
+		fileId.remove(QLatin1Char('.'));
+		masterId.remove(QLatin1Char('.'));
+		const QByteArray fileIdentity = QByteArray::fromHex(fileId.toLatin1());
+		const QByteArray masterIdentity = QByteArray::fromHex(masterId.toLatin1());
+		QCOMPARE(fileIdentity.size(), 32);
+		QCOMPARE(masterIdentity.size(), 32);
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"),
+			pmr({pmrRecord("take.omf", fileIdentity, "Project", masterIdentity)})));
+		// The authored matching database supplies the other required values;
+		// the real header must be requested specifically for the missing bin.
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"),
+			audioDatabase(24, {101, 301}, false, masterIdentity,
+				{QByteArray("/Rushes/Black720x486.PICT")}, {}, fileIdentity)));
+		QHash<QString, int> reads;
+		MediaEngine::ScanCallbacks callbacks;
+		callbacks.reading = [&](const MediaEngine::SourceCandidate &candidate)
+		{ ++reads[candidate.path]; };
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, true}, cancellation, callbacks);
+		QCOMPARE(scan.files.size(), 1);
+		QVERIFY(scan.reconciliationComplete);
+		QCOMPARE(reads.size(), 3);
+		for (const auto count : reads)
+			QCOMPARE(count, 1);
+		const auto *header = mediaSource(scan, path);
+		QVERIFY(header);
+		QCOMPARE(header->outcome, MediaEngine::ParsedSource::Outcome::Complete);
+		QCOMPARE(header->readReason,
+			QStringLiteral("Header read: required table metadata missing or conflicting: Original Bin"));
+		const auto &file = scan.files.front();
+		QCOMPARE(file.stamp.fileMobId, baseline.stamp.fileMobId);
+		QCOMPARE(file.stamp.masterMobId, baseline.stamp.masterMobId);
+		const auto bin = file.evidence.selected(MediaProperty::OriginalBin);
+		QCOMPARE(bin.value.toString(), QStringLiteral("Uncompressed media slides"));
+		QVERIFY(bin.selectedObservation >= 0);
+		const auto &claim = file.evidence.observations(MediaProperty::OriginalBin)[bin.selectedObservation];
+		QCOMPARE(claim.snapshot->source, MetadataSource::Omf);
+		QCOMPARE(claim.property, QStringLiteral("OMFI:MCBR:MC:binName"));
+		QCOMPARE(claim.objectIdentity, QStringLiteral("object:68001"));
+		const auto row = mediaEngineMediaFile(file, ScanRowLookup(scan), temporary.path(), QStringLiteral("Volume"), false);
+		QCOMPARE(row.originalBin, QStringLiteral("Uncompressed media slides"));
+		QCOMPARE(row.masterMobId, baseline.stamp.masterMobId);
+		const auto &status = row.metadataStatus.field(MediaProperty::OriginalBin);
+		QVERIFY(status.captured);
+		QVERIFY(status.hasSelectedValue);
+		QCOMPARE(status.readState, PropertyReadState::Present);
+		QVERIFY(status.selectedSource);
+		QCOMPARE(*status.selectedSource, MetadataSource::Omf);
 	}
 	void incomplete_or_conflicting_table_metadata_reads_header_data()
 	{

@@ -129,7 +129,7 @@ namespace MediaEngine
 			selectEffectMetadata(evidence);
 		}
 
-		QStringList requiredTableMetadata(const MediaEvidence &evidence)
+		QStringList requiredTableMetadata(const MediaEvidence &evidence, SourceCandidate::ReaderHint headerReader)
 		{
 			QStringList missing;
 			const auto value = [&](MediaProperty property)
@@ -158,14 +158,21 @@ namespace MediaEngine
 				require(MediaProperty::SampleRate, mediaRate(value(MediaProperty::SampleRate)).valid());
 			if (FeatureFlags::kPrecomputeFilter && type.isValid() && type.toInt() == int(MediaType::Precompute))
 				require(MediaProperty::PrecomputeCategory, value(MediaProperty::PrecomputeCategory).toInt() > 0);
-			const auto sourcePath = evidence.selected(MediaProperty::SourcePath);
-			if (sourcePath.applicability != PropertyApplicability::NotApplicable)
-				require(MediaProperty::SourcePath, sourcePath.value.isValid() && !sourcePath.value.toString().isEmpty());
-			// Bin names and effect details may legitimately be absent.
-			// A recorded disagreement is still worth a header read; absence alone
-			// is not. Internal sample representation and channels do not gate I/O.
-			for (const auto property : {MediaProperty::OriginalBin,
-										MediaProperty::Effect, MediaProperty::EffectCategory, MediaProperty::EffectSequence})
+			for (const auto property : {MediaProperty::SourcePath, MediaProperty::OriginalBin})
+			{
+				const auto selected = evidence.selected(property);
+				// MXF bin-name coverage is unestablished. Keep conflict checks,
+				// but a missing bin alone does not request this header reader.
+				if (property == MediaProperty::OriginalBin && headerReader == SourceCandidate::ReaderHint::Mxf &&
+					selected.agreement != PropertyAgreement::Conflicting)
+					continue;
+				if (selected.applicability != PropertyApplicability::NotApplicable)
+					require(property, selected.value.isValid() && !selected.value.toString().isEmpty());
+			}
+			// Effect details may legitimately be absent. A recorded disagreement
+			// still requests a header read; absence alone does not. Internal sample
+			// representation and channels do not gate I/O.
+			for (const auto property : {MediaProperty::Effect, MediaProperty::EffectCategory, MediaProperty::EffectSequence})
 			{
 				const auto selected = evidence.selected(property);
 				if (!selected.value.isValid() && selected.agreement == PropertyAgreement::Conflicting)
@@ -674,7 +681,7 @@ namespace MediaEngine
 			const bool matched = matchFile(databaseFile, false);
 			if (cancellation.cancelled())
 				return;
-			const QStringList missing = requiredTableMetadata(databaseFile.evidence);
+			const QStringList missing = requiredTableMetadata(databaseFile.evidence, result.candidates[sourceIndex].hint);
 			if (current && matched && missing.isEmpty())
 			{
 				result.sources[sourceIndex].readReason = QStringLiteral("Header not read: usable database match supplies required table metadata; database freshness remains unknown");
