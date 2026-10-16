@@ -326,6 +326,13 @@ MasterMobId records its principal source like other scalar fields. Selection kee
 database-first/header-as-needed acquisition; preferring a header does not demand
 opening every physical file.
 
+At compact-status creation, otherwise unavailable picture Resolution is marked
+not applicable only from a qualified, undisputed selected Audio result. Eligible
+audio/video disagreement keeps applicability unknown even if a source preference
+selects Audio. Unknown/unqualified Kind cannot retain an inherited not-applicable
+note. Actual Present/Unreadable Resolution facts and all selected values remain;
+this changes the saved applicability note, not temporary reader coverage or reads.
+
 MDB, OMF and MXF keep master details in temporary `Projection.masters` groups.
 Matching chooses the associated ID before admitting its group's metadata, with
 qualified source/object context required for groups in that file's own header.

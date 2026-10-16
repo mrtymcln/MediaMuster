@@ -72,9 +72,14 @@ namespace
 	{
 		add(source, 1, "ABIN");
 		edge(source, 0, 1, QStringLiteral("Header.root_index"));
+		field(source, 1, QStringLiteral("Bin.version"), quint32(14));
+		field(source, 1, QStringLiteral("Bin.item_count"), quint32(0));
 	}
 	void member(Source &source, ObjectHandle handle, int index, bool userPlaced)
 	{
+		for (auto &property : object(source, 1).properties)
+			if (property.locator.name == QStringLiteral("Bin.item_count"))
+				property.decoded = qMax(property.decoded.toUInt(), quint32(index + 1));
 		const auto prefix = QStringLiteral("Bin.items[%1]").arg(index);
 		edge(source, 1, handle, prefix + QStringLiteral(".mob"));
 		field(source, 1, prefix + QStringLiteral(".user_placed"), userPlaced);
@@ -109,9 +114,9 @@ namespace
 		add(source, handle, "MSML");
 		field(source, handle, QStringLiteral("MSMLocator.mob_id"), id);
 	}
-	AvbSelection selected(QVector<ObjectHandle> handles, qsizetype sourceIndex = 0)
+	AvbSelection selected(QVector<ObjectHandle> handles)
 	{
-		return {sourceIndex, AvbSelection::Kind::SelectedSequences, std::move(handles)};
+		return {AvbSelection::Kind::SelectedSequences, std::move(handles)};
 	}
 	QSet<QByteArray> mediaIds(const AvbReferenceResult &result)
 	{
@@ -127,7 +132,7 @@ namespace
 				return true;
 		return false;
 	}
-	bool hasEdge(const AvbReferenceResult &result, AvbObjectRef origin, AvbObjectRef target)
+	bool hasEdge(const AvbReferenceResult &result, ObjectHandle origin, ObjectHandle target)
 	{
 		for (const auto &edge : result.edges)
 			if (edge.origin == origin && edge.target == target && edge.relationshipIndex >= 0)
@@ -166,7 +171,11 @@ private slots:
 	void precomputedAndDisabledTracksRemainReachable();
 	void cyclesKeepEdgesAndTerminate();
 	void unresolvedAndNullReferences();
-	void exactIdentityAndCrossBinReferences();
+	void eachBinResolvesIndependently();
+	void wholeBinFollowsOnlyListedItems();
+	void wholeBinIncompleteMembership_data();
+	void wholeBinIncompleteMembership();
+	void emptyBinRequiresEstablishedMembership();
 	void duplicateIdentityIsAmbiguous();
 	void exactTerminalIdentities_data();
 	void exactTerminalIdentities();
@@ -184,21 +193,21 @@ private slots:
 void TestMediaEngineAvbReferences::selectionAndUnion()
 {
 	Cancellation cancel;
-	AvbReferenceIndex index({twoSequences()}, cancel);
-	const auto first = index.resolveReferences({selected({2})}, cancel);
+	AvbReferenceIndex index(twoSequences(), cancel);
+	const auto first = index.resolveReferences(selected({2}), cancel);
 	QVERIFY(first.coverageComplete);
 	QCOMPARE(mediaIds(first), QSet<QByteArray>{identity('A')});
-	const auto both = index.resolveReferences({selected({2}), selected({3})}, cancel);
+	const auto both = index.resolveReferences(selected({2, 3}), cancel);
 	QVERIFY(both.coverageComplete);
 	QCOMPARE(mediaIds(both), (QSet<QByteArray>{identity('A'), identity('B')}));
 	QCOMPARE(both.mediaReferences.size(), 2);
-	const auto repeated = index.resolveReferences({selected({2, 2}), selected({2})}, cancel);
+	const auto repeated = index.resolveReferences(selected({2, 2, 2}), cancel);
 	QVERIFY(repeated.coverageComplete);
 	QCOMPARE(repeated.mediaReferences.size(), 1);
-	const auto whole = index.resolveReferences({{0, AvbSelection::Kind::EntireBin, {}}}, cancel);
+	const auto whole = index.resolveReferences({}, cancel);
 	QVERIFY(whole.coverageComplete);
 	QCOMPARE(mediaIds(whole), mediaIds(both));
-	const auto empty = index.resolveReferences({selected({})}, cancel);
+	const auto empty = index.resolveReferences(selected({}), cancel);
 	QVERIFY(empty.coverageComplete);
 	QVERIFY(empty.roots.isEmpty() && empty.mediaReferences.isEmpty() && empty.edges.isEmpty());
 }
@@ -206,12 +215,12 @@ void TestMediaEngineAvbReferences::selectionAndUnion()
 void TestMediaEngineAvbReferences::sequenceIdentityIsNotItsNameOrPlacement()
 {
 	Cancellation cancel;
-	AvbReferenceIndex index({twoSequences()}, cancel);
+	AvbReferenceIndex index(twoSequences(), cancel);
 	QCOMPARE(index.sequences().size(), 2);
 	const auto &a = index.sequences()[0];
 	const auto &b = index.sequences()[1];
 	QCOMPARE(a.name, b.name);
-	QVERIFY(!(a.key == b.key));
+	QVERIFY(!(a.objectHandle == b.objectHandle));
 	QVERIFY(a.compositionMobId != b.compositionMobId);
 	QVERIFY(a.userPlaced != b.userPlaced);
 	QVERIFY(!a.membershipEvidence.name.isEmpty() && !b.membershipEvidence.name.isEmpty());
@@ -240,11 +249,11 @@ void TestMediaEngineAvbReferences::onlyReferencedGroupIncludesAllAngles()
 	field(s, 10, QStringLiteral("Selector.selected"), 0);
 	edge(s, 11, 12, QStringLiteral("TrackGroup.tracks[0].component"));
 	Cancellation cancel;
-	AvbReferenceIndex index({s}, cancel);
-	const auto result = index.resolveReferences({selected({2})}, cancel);
+	AvbReferenceIndex index(s, cancel);
+	const auto result = index.resolveReferences(selected({2}), cancel);
 	QVERIFY(result.coverageComplete);
 	QCOMPARE(mediaIds(result), (QSet<QByteArray>{identity('A'), identity('B')}));
-	QVERIFY(hasEdge(result, {0, 10}, {0, 5}));
+	QVERIFY(hasEdge(result, 10, 5));
 }
 
 void TestMediaEngineAvbReferences::precomputedAndDisabledTracksRemainReachable()
@@ -254,12 +263,12 @@ void TestMediaEngineAvbReferences::precomputedAndDisabledTracksRemainReachable()
 	field(s, 2, QStringLiteral("TrackGroup.tracks[0].flags"), 0);
 	field(s, 2, QStringLiteral("TrackGroup.tracks[0].enabled"), false);
 	Cancellation cancel;
-	AvbReferenceIndex index({s}, cancel);
-	const auto result = index.resolveReferences({selected({2})}, cancel);
+	AvbReferenceIndex index(s, cancel);
+	const auto result = index.resolveReferences(selected({2}), cancel);
 	QVERIFY(result.coverageComplete);
 	QCOMPARE(mediaIds(result), (QSet<QByteArray>{identity('A'), identity('B')}));
-	QVERIFY(hasEdge(result, {0, 2}, {0, 4}));
-	QVERIFY(hasEdge(result, {0, 2}, {0, 5}));
+	QVERIFY(hasEdge(result, 2, 4));
+	QVERIFY(hasEdge(result, 2, 5));
 }
 
 void TestMediaEngineAvbReferences::cyclesKeepEdgesAndTerminate()
@@ -267,11 +276,11 @@ void TestMediaEngineAvbReferences::cyclesKeepEdgesAndTerminate()
 	auto s = twoSequences();
 	edge(s, 8, 2, QStringLiteral("@authored_cycle"));
 	Cancellation cancel;
-	AvbReferenceIndex index({s}, cancel);
-	const auto result = index.resolveReferences({selected({2})}, cancel);
+	AvbReferenceIndex index(s, cancel);
+	const auto result = index.resolveReferences(selected({2}), cancel);
 	QVERIFY(result.coverageComplete);
 	QCOMPARE(result.mediaReferences.size(), 1);
-	QVERIFY(hasEdge(result, {0, 8}, {0, 2}));
+	QVERIFY(hasEdge(result, 8, 2));
 	QVERIFY(result.edges.size() < 20);
 }
 
@@ -280,18 +289,18 @@ void TestMediaEngineAvbReferences::unresolvedAndNullReferences()
 	auto s = twoSequences();
 	edge(s, 2, 0, QStringLiteral("Component.left_bob"));
 	Cancellation cancel;
-	AvbReferenceIndex nullIndex({s}, cancel);
-	QVERIFY(nullIndex.resolveReferences({selected({2})}, cancel).coverageComplete);
+	AvbReferenceIndex nullIndex(s, cancel);
+	QVERIFY(nullIndex.resolveReferences(selected({2}), cancel).coverageComplete);
 	edge(s, 2, 99, QStringLiteral("Component.precomputed"));
 	s->relationships.last().target = 0; // Reader retains the recorded invalid index.
-	AvbReferenceIndex invalidIndex({s}, cancel);
-	const auto invalid = invalidIndex.resolveReferences({selected({2})}, cancel);
+	AvbReferenceIndex invalidIndex(s, cancel);
+	const auto invalid = invalidIndex.resolveReferences(selected({2}), cancel);
 	QVERIFY(!invalid.coverageComplete);
 	QVERIFY(hasIssue(invalid, Issue::UnresolvedReference));
 	QCOMPARE(mediaIds(invalid), QSet<QByteArray>{identity('A')});
 }
 
-void TestMediaEngineAvbReferences::exactIdentityAndCrossBinReferences()
+void TestMediaEngineAvbReferences::eachBinResolvesIndependently()
 {
 	auto a = source();
 	root(a);
@@ -302,40 +311,179 @@ void TestMediaEngineAvbReferences::exactIdentityAndCrossBinReferences()
 	auto b = source();
 	root(b);
 	composition(b, 2, identity('A'));
+	member(b, 2, 0, true);
 	locator(b, 3, identity('A'));
 	edge(b, 2, 3, QStringLiteral("Composition.descriptor"));
-	// Same short material prefix, distinct complete identity: never match this.
-	composition(b, 4, identity('B'));
-	locator(b, 5, identity('B'));
-	edge(b, 4, 5, QStringLiteral("Composition.descriptor"));
 	Cancellation cancel;
-	AvbReferenceIndex missing({a}, cancel);
-	QVERIFY(hasIssue(missing.resolveReferences({selected({2})}, cancel), Issue::UnresolvedReference));
-	AvbReferenceIndex index({a, b}, cancel);
-	const auto result = index.resolveReferences({selected({2})}, cancel);
-	QVERIFY(result.coverageComplete);
-	QCOMPARE(mediaIds(result), QSet<QByteArray>{identity('A')});
-	QVERIFY(hasEdge(result, {0, 3}, {1, 2}));
-	QCOMPARE(result.mediaReferences[0].objectKey.sourceIndex, qsizetype(1));
+	AvbReferenceIndex first(a, cancel);
+	const auto before = first.resolveReferences({}, cancel);
+	QVERIFY(!before.coverageComplete);
+	QVERIFY(hasIssue(before, Issue::UnresolvedReference));
+	QVERIFY(before.mediaReferences.isEmpty());
+	AvbReferenceIndex other(b, cancel);
+	const auto independent = other.resolveReferences({}, cancel);
+	QVERIFY(independent.coverageComplete);
+	QCOMPARE(mediaIds(independent), QSet<QByteArray>{identity('A')});
+	const auto after = first.resolveReferences({}, cancel);
+	QCOMPARE(after.coverageComplete, before.coverageComplete);
+	QCOMPARE(after.roots, before.roots);
+	QCOMPARE(after.edges.size(), before.edges.size());
+	QCOMPARE(after.issues.size(), before.issues.size());
+	QVERIFY(after.mediaReferences.isEmpty());
+	QVERIFY(hasIssue(after, Issue::UnresolvedReference));
+
+	// A local object with a similar short ID is no substitute for the full ID.
+	composition(a, 4, identity('B'));
+	locator(a, 5, identity('B'));
+	edge(a, 4, 5, QStringLiteral("Composition.descriptor"));
+	const auto nearMatch = AvbReferenceIndex(a, cancel).resolveReferences({}, cancel);
+	QVERIFY(!nearMatch.coverageComplete);
+	QVERIFY(hasIssue(nearMatch, Issue::UnresolvedReference));
+	QVERIFY(nearMatch.mediaReferences.isEmpty());
+}
+
+void TestMediaEngineAvbReferences::wholeBinFollowsOnlyListedItems()
+{
+	auto s = twoSequences();
+	// The second listed item is a master clip, not a selectable sequence.
+	for (auto &property : object(s, 3).properties)
+		if (property.locator.name == QStringLiteral("Composition.mob_type"))
+			property.decoded = 2;
+	object(s, 3).role = AvidObject::Role::Master;
+	// These file-source dependencies are not listed, but are reached from the
+	// listed sequence and master. A repeated list slot does not duplicate them.
+	member(s, 2, 2, true);
+	composition(s, 10, identity('C'));
+	locator(s, 11, identity('C'));
+	edge(s, 10, 11, QStringLiteral("Composition.descriptor"));
+	composition(s, 12, identity('U'), 1);
+	clip(s, 13, identity('C'));
+	edge(s, 12, 13, QStringLiteral("TrackGroup.tracks[0].component"));
+	Cancellation cancel;
+	for (const auto &classId : {QByteArray("ABIN"), QByteArray("BINF")})
+	{
+		auto context = QSharedPointer<AvbObjectContext>::create(*object(s, 1).avb);
+		context->classId = classId;
+		object(s, 1).avb = context;
+		AvbReferenceIndex index(s, cancel);
+		QCOMPARE(index.sequences().size(), 1);
+		const auto result = index.resolveReferences({}, cancel);
+		QVERIFY(result.coverageComplete);
+		QCOMPARE(result.roots, (QVector<ObjectHandle>{2, 3}));
+		QCOMPARE(mediaIds(result), (QSet<QByteArray>{identity('A'), identity('B')}));
+		QCOMPARE(result.mediaReferences.size(), 2);
+		QVERIFY(hasEdge(result, 4, 6));
+		QVERIFY(hasEdge(result, 5, 7));
+		QVERIFY(!hasEdge(result, 12, 13));
+	}
+}
+
+void TestMediaEngineAvbReferences::wholeBinIncompleteMembership_data()
+{
+	QTest::addColumn<QString>("damage");
+	QTest::addColumn<bool>("retainsMatches");
+	QTest::newRow("missing-root") << QStringLiteral("missing-root") << false;
+	QTest::newRow("wrong-root-class") << QStringLiteral("wrong-root-class") << false;
+	QTest::newRow("missing-item-count") << QStringLiteral("missing-item-count") << true;
+	QTest::newRow("missing-list-slot") << QStringLiteral("missing-list-slot") << true;
+	QTest::newRow("missing-listed-object") << QStringLiteral("missing-listed-object") << true;
+	QTest::newRow("wrong-listed-class") << QStringLiteral("wrong-listed-class") << true;
+	QTest::newRow("repeated-list-position") << QStringLiteral("repeated-list-position") << true;
+	QTest::newRow("unsupported-list-reference") << QStringLiteral("unsupported-list-reference") << true;
+	QTest::newRow("conflicting-item-count") << QStringLiteral("conflicting-item-count") << true;
+	QTest::newRow("out-of-range-list-position") << QStringLiteral("out-of-range-list-position") << true;
+}
+
+void TestMediaEngineAvbReferences::wholeBinIncompleteMembership()
+{
+	QFETCH(QString, damage);
+	QFETCH(bool, retainsMatches);
+	auto s = twoSequences();
+	if (damage == QStringLiteral("missing-root"))
+		s->unownedProperties.clear();
+	else if (damage == QStringLiteral("wrong-root-class"))
+	{
+		auto context = QSharedPointer<AvbObjectContext>::create(*object(s, 1).avb);
+		context->classId = "SCLP";
+		object(s, 1).avb = context;
+	}
+	else if (damage == QStringLiteral("missing-item-count"))
+	{
+		auto &properties = object(s, 1).properties;
+		properties.removeIf([](const auto &property)
+							{ return property.locator.name == QStringLiteral("Bin.item_count"); });
+	}
+	else if (damage == QStringLiteral("missing-list-slot"))
+	{
+		for (auto &property : object(s, 1).properties)
+			if (property.locator.name == QStringLiteral("Bin.item_count"))
+				property.decoded = quint32(3);
+	}
+	else if (damage == QStringLiteral("missing-listed-object"))
+		member(s, 99, 2, true);
+	else if (damage == QStringLiteral("wrong-listed-class"))
+		member(s, 4, 2, true);
+	else if (damage == QStringLiteral("repeated-list-position"))
+		member(s, 2, 0, true);
+	else if (damage == QStringLiteral("conflicting-item-count"))
+		field(s, 1, QStringLiteral("Bin.item_count"), quint32(3));
+	else
+	{
+		member(s, 2, 2, true);
+		if (damage == QStringLiteral("unsupported-list-reference"))
+			s->relationships.last().referenceEncoding = QStringLiteral("AVB.UnknownReference");
+		else
+		{
+			for (auto &property : object(s, 1).properties)
+				if (property.locator.name == QStringLiteral("Bin.item_count"))
+					property.decoded = quint32(2);
+		}
+	}
+	Cancellation cancel;
+	const auto result = AvbReferenceIndex(s, cancel).resolveReferences({}, cancel);
+	QVERIFY(!result.coverageComplete);
+	QVERIFY(!result.issues.isEmpty());
+	if (retainsMatches)
+		QCOMPARE(mediaIds(result), (QSet<QByteArray>{identity('A'), identity('B')}));
+	else
+		QVERIFY(result.mediaReferences.isEmpty());
+}
+
+void TestMediaEngineAvbReferences::emptyBinRequiresEstablishedMembership()
+{
+	auto s = source();
+	root(s);
+	// A proven empty list is complete, including an explicitly recorded null slot.
+	Cancellation cancel;
+	const auto empty = AvbReferenceIndex(s, cancel).resolveReferences({}, cancel);
+	QVERIFY(empty.coverageComplete);
+	QVERIFY(empty.roots.isEmpty() && empty.mediaReferences.isEmpty());
+	member(s, 0, 0, false);
+	const auto nullSlot = AvbReferenceIndex(s, cancel).resolveReferences({}, cancel);
+	QVERIFY(nullSlot.coverageComplete);
+	QVERIFY(nullSlot.roots.isEmpty() && nullSlot.mediaReferences.isEmpty());
+	object(s, 1).properties.clear();
+	const auto unknown = AvbReferenceIndex(s, cancel).resolveReferences({}, cancel);
+	QVERIFY(!unknown.coverageComplete);
+	QVERIFY(!unknown.issues.isEmpty());
+	QVERIFY(unknown.mediaReferences.isEmpty());
 }
 
 void TestMediaEngineAvbReferences::duplicateIdentityIsAmbiguous()
 {
-	auto a = twoSequences();
-	auto b = source();
-	root(b);
-	composition(b, 2, identity('A'));
-	locator(b, 3, identity('A'));
-	edge(b, 2, 3, QStringLiteral("Composition.descriptor"));
+	auto s = twoSequences();
+	composition(s, 10, identity('A'));
+	locator(s, 11, identity('A'));
+	edge(s, 10, 11, QStringLiteral("Composition.descriptor"));
 	Cancellation cancel;
-	AvbReferenceIndex index({a, b}, cancel);
-	const auto result = index.resolveReferences({selected({2})}, cancel);
+	AvbReferenceIndex index(s, cancel);
+	const auto result = index.resolveReferences(selected({2}), cancel);
 	QVERIFY(!result.coverageComplete);
 	QVERIFY(hasIssue(result, Issue::AmbiguousReference));
 	QCOMPARE(result.mediaReferences.size(), 2);
 	QCOMPARE(mediaIds(result), QSet<QByteArray>{identity('A')});
-	QVERIFY(hasEdge(result, {0, 4}, {0, 6}));
-	QVERIFY(hasEdge(result, {0, 4}, {1, 2}));
+	QVERIFY(hasEdge(result, 4, 6));
+	QVERIFY(hasEdge(result, 4, 10));
 }
 
 void TestMediaEngineAvbReferences::exactTerminalIdentities_data()
@@ -358,14 +506,14 @@ void TestMediaEngineAvbReferences::exactTerminalIdentities()
 	clip(s, 3, id);
 	edge(s, 2, 3, QStringLiteral("TrackGroup.tracks[0].component"));
 	Cancellation cancel;
-	AvbReferenceIndex index({s}, cancel);
-	const auto result = index.resolveReferences({selected({2})}, cancel);
+	AvbReferenceIndex index(s, cancel);
+	const auto result = index.resolveReferences(selected({2}), cancel);
 	QVERIFY(result.coverageComplete);
 	QVERIFY(result.mediaReferences.isEmpty());
 	QVERIFY(!hasIssue(result, Issue::UnresolvedReference));
 	QCOMPARE(result.terminalReferences.size(), 1);
 	QCOMPARE(result.terminalReferences[0].kind, filler ? AvbTerminalReference::Kind::Filler : AvbTerminalReference::Kind::Null);
-	QCOMPARE(result.terminalReferences[0].objectKey.objectHandle, ObjectHandle(3));
+	QCOMPARE(result.terminalReferences[0].objectHandle, ObjectHandle(3));
 	QVERIFY(result.terminalReferences[0].relationshipIndex >= 0);
 
 	// A different identifier which happens to resemble a sentinel is not null.
@@ -378,8 +526,8 @@ void TestMediaEngineAvbReferences::exactTerminalIdentities()
 	for (auto &property : object(altered, 3).properties)
 		if (property.locator.name == QStringLiteral("SourceClip.mob_id"))
 			property.decoded = changed;
-	AvbReferenceIndex changedIndex({altered}, cancel);
-	const auto changedResult = changedIndex.resolveReferences({selected({2})}, cancel);
+	AvbReferenceIndex changedIndex(altered, cancel);
+	const auto changedResult = changedIndex.resolveReferences(selected({2}), cancel);
 	QVERIFY(!changedResult.coverageComplete);
 	QVERIFY(hasIssue(changedResult, Issue::UnresolvedReference));
 	QVERIFY(changedResult.terminalReferences.isEmpty());
@@ -396,8 +544,8 @@ void TestMediaEngineAvbReferences::legacyOnlyClipIsExplicitlyUnsupported()
 	field(s, 3, QStringLiteral("SourceClip.legacy_word1"), quint32(0x87654321));
 	edge(s, 2, 3, QStringLiteral("TrackGroup.tracks[0].component"));
 	Cancellation cancel;
-	AvbReferenceIndex index({s}, cancel);
-	const auto result = index.resolveReferences({selected({2})}, cancel);
+	AvbReferenceIndex index(s, cancel);
+	const auto result = index.resolveReferences(selected({2}), cancel);
 	QVERIFY(!result.coverageComplete);
 	QVERIFY(hasIssue(result, Issue::UnsupportedIdentity));
 	QVERIFY(result.mediaReferences.isEmpty());
@@ -416,19 +564,19 @@ void TestMediaEngineAvbReferences::audioSuiteDependencies()
 	reference.locator.name = QStringLiteral("AudioSuitePluginEffect.mob_id");
 	reference.locator.objectNumber = 10;
 	Cancellation cancel;
-	AvbReferenceIndex index({s}, cancel);
-	const auto result = index.resolveReferences({selected({2})}, cancel);
+	AvbReferenceIndex index(s, cancel);
+	const auto result = index.resolveReferences(selected({2}), cancel);
 	QVERIFY(result.coverageComplete);
 	QCOMPARE(mediaIds(result), (QSet<QByteArray>{identity('A'), identity('B')}));
-	QVERIFY(hasEdge(result, {0, 10}, {0, 7}));
+	QVERIFY(hasEdge(result, 10, 7));
 
 	auto legacy = Source::create(*s);
 	object(legacy, 10).properties.clear();
 	legacy->relationships.removeLast();
 	field(legacy, 10, QStringLiteral("AudioSuitePluginEffect.legacy_word0"), quint32(0x12345678));
 	field(legacy, 10, QStringLiteral("AudioSuitePluginEffect.legacy_word1"), quint32(0x87654321));
-	AvbReferenceIndex legacyIndex({legacy}, cancel);
-	const auto legacyResult = legacyIndex.resolveReferences({selected({2})}, cancel);
+	AvbReferenceIndex legacyIndex(legacy, cancel);
+	const auto legacyResult = legacyIndex.resolveReferences(selected({2}), cancel);
 	QVERIFY(!legacyResult.coverageComplete);
 	QVERIFY(hasIssue(legacyResult, Issue::UnsupportedIdentity));
 	QCOMPARE(mediaIds(legacyResult), QSet<QByteArray>{identity('A')});
@@ -441,8 +589,8 @@ void TestMediaEngineAvbReferences::terminalLocatorIsNotMedia()
 		if (property.locator.name == QStringLiteral("MSMLocator.mob_id"))
 			property.decoded = QByteArray::fromHex("060a2b340101010101010f00130000000000000000000000060e2b347f7f2a80");
 	Cancellation cancel;
-	AvbReferenceIndex index({s}, cancel);
-	const auto result = index.resolveReferences({selected({2})}, cancel);
+	AvbReferenceIndex index(s, cancel);
+	const auto result = index.resolveReferences(selected({2}), cancel);
 	QVERIFY(result.mediaReferences.isEmpty());
 }
 
@@ -457,13 +605,13 @@ void TestMediaEngineAvbReferences::incomplete_locator_cannot_assert_modern_ident
 	field(s, 8, QStringLiteral("MSMLocator.legacy_word0"), quint32(0x12345678));
 	field(s, 8, QStringLiteral("MSMLocator.legacy_word1"), quint32(0x87654321));
 	Cancellation cancel;
-	const auto partial = AvbReferenceIndex({s}, cancel).resolveReferences({selected({2})}, cancel);
+	const auto partial = AvbReferenceIndex(s, cancel).resolveReferences(selected({2}), cancel);
 	QVERIFY(!partial.coverageComplete);
 	QVERIFY(partial.mediaReferences.isEmpty());
 	QVERIFY(hasIssue(partial, Issue::UnsupportedIdentity));
 	// A typed ID that was read before a later failure is independent evidence.
 	field(s, 8, QStringLiteral("MSMLocator.mob_id"), identity('A'));
-	const auto known = AvbReferenceIndex({s}, cancel).resolveReferences({selected({2})}, cancel);
+	const auto known = AvbReferenceIndex(s, cancel).resolveReferences(selected({2}), cancel);
 	QVERIFY(!known.coverageComplete);
 	QCOMPARE(mediaIds(known), QSet<QByteArray>{identity('A')});
 }
@@ -499,8 +647,8 @@ void TestMediaEngineAvbReferences::fileDescriptorRequiresUsableMediaRoute()
 	else
 		edge(s, 10, 0, QStringLiteral("MediaDescriptor.locator"));
 	Cancellation cancel;
-	AvbReferenceIndex index({s}, cancel);
-	const auto result = index.resolveReferences({selected({2})}, cancel);
+	AvbReferenceIndex index(s, cancel);
+	const auto result = index.resolveReferences(selected({2}), cancel);
 	QVERIFY(!result.coverageComplete);
 	QVERIFY(!result.issues.isEmpty());
 	QVERIFY(result.mediaReferences.isEmpty());
@@ -510,17 +658,20 @@ void TestMediaEngineAvbReferences::invalidSelectionAndIncompleteEvidence()
 {
 	auto s = twoSequences();
 	Cancellation cancel;
-	AvbReferenceIndex index({s}, cancel);
-	for (const auto &scope : {selected({99}), selected({4}), selected({2}, 99)})
+	AvbReferenceIndex index(s, cancel);
+	const auto unavailable = AvbReferenceIndex({}, cancel).resolveReferences({}, cancel);
+	QVERIFY(!unavailable.coverageComplete);
+	QVERIFY(hasIssue(unavailable, Issue::InvalidSelection));
+	for (const auto &scope : {selected({99}), selected({4})})
 	{
-		const auto result = index.resolveReferences({scope}, cancel);
+		const auto result = index.resolveReferences(scope, cancel);
 		QVERIFY(!result.coverageComplete);
 		QVERIFY(hasIssue(result, Issue::InvalidSelection));
 	}
 	s->outcome = ParsedSource::Outcome::Incomplete;
 	s->diagnostics.append(QStringLiteral("A retained extension is unknown"));
-	AvbReferenceIndex partial({s}, cancel);
-	const auto result = partial.resolveReferences({selected({2})}, cancel);
+	AvbReferenceIndex partial(s, cancel);
+	const auto result = partial.resolveReferences(selected({2}), cancel);
 	QVERIFY(!result.coverageComplete);
 	QVERIFY(hasIssue(result, Issue::IncompleteSource));
 	QCOMPARE(mediaIds(result), QSet<QByteArray>{identity('A')});
@@ -529,14 +680,14 @@ void TestMediaEngineAvbReferences::invalidSelectionAndIncompleteEvidence()
 void TestMediaEngineAvbReferences::cancellation()
 {
 	Cancellation initial;
-	AvbReferenceIndex index({twoSequences()}, initial);
+	AvbReferenceIndex index(twoSequences(), initial);
 	Cancellation cancelled;
 	cancelled.cancel();
-	const auto result = index.resolveReferences({selected({2})}, cancelled);
+	const auto result = index.resolveReferences(selected({2}), cancelled);
 	QVERIFY(result.cancelled && !result.coverageComplete);
 	QVERIFY(hasIssue(result, Issue::Cancelled));
-	AvbReferenceIndex cancelledIndex({twoSequences()}, cancelled);
-	const auto duringIndex = cancelledIndex.resolveReferences({selected({2})}, initial);
+	AvbReferenceIndex cancelledIndex(twoSequences(), cancelled);
+	const auto duringIndex = cancelledIndex.resolveReferences(selected({2}), initial);
 	QVERIFY(!duringIndex.coverageComplete);
 }
 
@@ -555,14 +706,14 @@ void TestMediaEngineAvbReferences::authoredBinaryGraph()
 	Cancellation cancel;
 	auto parsed = Source::create(AvbReader{}.read(device, {{}, cancel}));
 	QCOMPARE(parsed->outcome, ParsedSource::Outcome::Complete);
-	AvbReferenceIndex index({parsed}, cancel);
+	AvbReferenceIndex index(parsed, cancel);
 	QCOMPARE(index.sequences().size(), 1);
 	QCOMPARE(index.sequences()[0].name, QStringLiteral("Chosen sequence"));
-	const auto result = index.resolveReferences({selected({2})}, cancel);
+	const auto result = index.resolveReferences(selected({2}), cancel);
 	QVERIFY(result.coverageComplete);
 	QCOMPARE(mediaIds(result), QSet<QByteArray>{TestAvb::Source});
-	QVERIFY(hasEdge(result, {0, 3}, {0, 4}));
-	QCOMPARE(result.mediaReferences[0].objectKey.objectHandle, ObjectHandle(5));
+	QVERIFY(hasEdge(result, 3, 4));
+	QCOMPARE(result.mediaReferences[0].objectHandle, ObjectHandle(5));
 	QVERIFY(result.mediaReferences[0].propertyIndex >= 0);
 }
 

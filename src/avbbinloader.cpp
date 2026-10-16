@@ -100,7 +100,7 @@ namespace
 		QVector<MetadataObservation> nameObservations;
 	};
 	OriginalBinMetadata originalBin(const Object &composition, const QHash<MediaEngine::ObjectHandle, const Object *> &objects,
-							QStringList &warnings, const MediaEngine::Cancellation &cancel)
+									QStringList &warnings, const MediaEngine::Cancellation &cancel)
 	{
 		const auto *attributes = field(composition, QStringLiteral("Component.attributes"), warnings);
 		const auto *table = attributes ? objects.value(attributes->decoded.toULongLong()) : nullptr;
@@ -245,11 +245,11 @@ AvbBin AvbBinLoader::load(const QString &path, const std::atomic_bool *cancelled
 		return bin;
 	}
 	bin.warnings = source->diagnostics;
-	MediaEngine::AvbReferenceIndex index({source}, cancel);
-	auto resolution = QSharedPointer<MediaEngine::AvbReferenceResult>::create(index.resolveReferences({{0, MediaEngine::AvbSelection::Kind::EntireBin, {}}}, cancel));
+	MediaEngine::AvbReferenceIndex index(source, cancel);
+	auto resolution = QSharedPointer<MediaEngine::AvbReferenceResult>::create(index.resolveReferences({MediaEngine::AvbSelection::Kind::EntireBin, {}}, cancel));
 	bin.referenceResult = resolution;
 	for (const auto &issue : resolution->issues)
-		bin.warnings.append(QStringLiteral("Object %1: %2").arg(issue.objectKey.objectHandle).arg(issue.explanation));
+		bin.warnings.append(QStringLiteral("Object %1: %2").arg(issue.objectHandle).arg(issue.explanation));
 	QHash<MediaEngine::ObjectHandle, const Object *> objects;
 	for (const auto &object : source->objects)
 		objects.insert(object.handle, &object);

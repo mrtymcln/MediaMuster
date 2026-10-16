@@ -317,8 +317,10 @@ These describe today's code, not Copland requirements:
   See [table columns](../src/mediatablemodel.cpp) and
   [CSV fields](../src/mediacsv.cpp).
 - Live AVB filtering uses recovered file identities; loaded bins no longer supply
-  inventory-row names or Original Bin values. Whole-bin resolution currently starts from every parsed object,
-  and sequence discovery runs even though the live sequence picker is disabled.
+  inventory-row names or Original Bin values. Whole Bin starts from the root bin's
+  listed clips/sequences and follows their media references within that AVB.
+  Multiple bins still combine through the existing filter chain. Sequence discovery
+  runs even though the live sequence picker is disabled.
   See [reference resolution](../src/mediaengine/avbreferences.cpp) and
   [bin loading](../src/avbbinloader.cpp).
 - AVB filtering operates on already scanned rows; even Add includes matching rows
@@ -1224,7 +1226,8 @@ then supplied its companion `03_TRNSCDS/D001_A001_TRNSCDS.avb` to the shared ind
 | Sequence's own AVB | 511 | Complete | None |
 | Own AVB plus the companion | 517 | Incomplete | 123 ambiguous-reference issues; no missing MobIDs repaired. |
 
-The current shared index follows duplicate candidates from both bins. This
+At the investigated revision, the shared index follows duplicate candidates from
+both bins. This
 comparison shows added complexity and widened results without a demonstrated
 missing-record benefit. Confirmed Copland decision under C26: scan and resolve
 each AVB independently, without borrowing records from other bins. A future
@@ -1455,6 +1458,144 @@ MXF missing another required field still reads once, and genuine OMF name recove
 remains verified. Unknown SourceNotRead and unestablished field coverage stay
 distinct. `git diff --check` passes. No performance saving or representative
 Windows/NEXIS acceptance is claimed by these local checks.
+
+### Blank-field status checkpoint — 17 October 2026
+
+After the MXF/OMF Original Bin refinement, the user asked for the next step.
+Read-only inspection identifies a remaining C35 distinction: established audio
+Kind already suppresses a picture-Resolution-only header read, but the compact
+status does not consistently preserve Resolution as not applicable. MDB/OMF
+do not currently emit that status, and an earlier generic unknown context can
+mask MXF's descriptor-specific status during aggregation. Existing checks cover
+the exact MXF descriptor and authored compact status, not the complete mixed-source
+selection/row path. No extra Resolution-only read or performance saving is claimed.
+
+A focused status-consistency checkpoint is recommended before the larger AVB
+bin/sequence filtering work. Verify known audio/video, conflicting/unread or
+ineligible contexts, compact rows, complete-database header skipping and fallback
+for other required fields. Do not turn unknown evidence into absence or blindly
+let a not-applicable claim suppress a real conflicting value. Starting AVB work
+first was the alternative work order. The user chose **Fix blank-field status
+first**, keeping this checkpoint focused on the audio Resolution distinction
+before AVB bin/sequence filtering. Preserve existing selected values, header-read
+decisions and operation checks; no speed saving is claimed. This scope choice
+does not settle implementation placement or shared status-merging rules. No
+implementation or test run follows from the initial read-only inspection alone.
+
+The read-only placement audit identifies two implementation paths. The focused
+option derives the audio-Resolution applicability note once in compact-status
+preparation, using already-qualified selected metadata and retaining the existing
+read states/reasons, values and acquisition decisions. The broader option adds
+source-level notes to each reader and changes shared coverage aggregation, so
+source-level queries also gain consistent applicability. Merely assigning a
+resolved field in selection is insufficient: `selected()` currently refreshes
+non-Present fields from aggregated source coverage and can overwrite that note.
+
+Compact-status preparation is recommended for this narrow checkpoint; reader and
+aggregation cleanup can remain separate. A disagreement policy also needs
+selection: retain unknown applicability when eligible sources dispute audio/video,
+even if the existing source preference selects Audio, or follow that selected
+Audio value for applicability. The conservative unknown result is recommended.
+Both options must preserve actual Resolution values and unreadable read facts,
+exclude changed/ineligible claims and keep unknown media distinct from proven
+audio. The user chose **the compact-note approach** and **keep disagreements as
+unknown**, after requesting the pros and cons of the placement options. Derive
+the final Resolution applicability once while preparing the fixed compact record.
+Do not modify readers, temporary evidence aggregation, field selection or scan
+scheduling. An eligible selected Audio result without audio/video disagreement
+can establish the blank Resolution as not applicable; unresolved or conflicting
+Kind must not inherit that conclusion merely from a source-level note. Actual
+Present/Unreadable Resolution read facts and all selected values remain intact.
+
+The user also supplied a GitHub Actions Windows log for revision `b69d7d8`.
+Compilation succeeded and 38 of 39 suites passed. Two CSV save-dialog cases in
+`tst_operationui` retained the default `mediamuster_export.csv` rather than the
+test's requested `export.csv`. In pinned Qt 6.5.3, `QFileDialog::selectFile()`
+deliberately avoids replacing a focused visible filename editor. The test driver
+will enter the intended filename through that editor, retaining exact destination,
+CSV contents and Console assertions; no export behavior or CI setting changes.
+The supplied log's other warnings are not the failing assertions. Local validation
+must include this UI suite, with the Windows outcome left for its next runner.
+The condition is confirmed in the
+[pinned Qt source](https://github.com/qt/qtbase/blob/v6.5.3/src/widgets/dialogs/qfiledialog.cpp#L1011-L1012).
+
+Implemented and verified 17 October 2026 (Sydney), using pinned Qt 6.5.3 in the
+Release arm64 build. `makeMediaMetadataStatus()` derives only the existing
+Resolution applicability slot from the qualified selected Kind. It requires an
+eligible Audio principal not marked Changed, preserves actual Present/Unreadable
+Resolution facts, and neutralizes inherited not-applicable notes for unresolved
+or conflicting Kind. It adds no retained fields and changes no evidence selections,
+source reads, parser mappings, table/CSV values or operation receipts.
+
+The authored matrix covers 21 audio/video, disagreement, unknown/unreadable,
+excluded/changed and real/empty/conflicting Resolution cases, and compares every
+temporary selected result before/after compact preparation. Existing scan controls
+verify PMR+MDB supplies Audio with two database reads and no header, the retained
+MXF/OMF Original Bin and Source Path scheduling, and real MXF/OMF/native audio
+results. Genuine WAV/AIFF-C specimens and real picture Resolution remain covered.
+
+The CSV test driver now types the requested filename into the nonnative save
+picker's filename editor in both success and failure flows. Exact selected path,
+CSV bytes, Console confirmations and previous-file preservation remain asserted.
+The app and all configured Release targets build; all 39 suites pass in a single
+full run (106.35 seconds), including `tst_operationui`. `git diff --check` passes.
+This verifies the fixes locally on this Mac; Windows CI has not been rerun, and
+its next runner must confirm the platform result. No speed/memory improvement,
+Windows success or representative NEXIS acceptance is claimed.
+
+### Whole Bin accuracy checkpoint — 17 October 2026
+
+After the blank-field status checkpoint, the user chose **Whole Bin accuracy
+first** rather than starting exact sequence matching immediately. This checkpoint
+implements C17's listed clips/sequences as the starting points for Whole Bin
+references and C26's independent lookup within each AVB. Unrelated internal
+records must not contribute merely because they are stored in the file. Keep
+established partial references and their Console notices under C27.
+
+The current loader already supplies one AVB to the resolver. Cross-bin borrowing
+is an engine capability and test expectation to remove, not a demonstrated live
+loader bug. Exact used source tracks/camera angles, the combined sequence picker,
+unload/recalculation and loaded-bin data compaction remain later checkpoints.
+Read-only inspection and this work-order choice do not settle a new reference
+index API or authorize changes to those later behaviors. Record any further
+implementation choice under C98 before dependent work.
+
+The user then chose **process each bin separately internally, keeping multiple
+bins and the existing filter chain**. Simplify `AvbReferenceIndex` to one AVB per
+instance, removing cross-source indices and lookup paths; combine the resulting
+file-reference sets through the existing dialog's Intersect/Add/Subtract chain.
+This does not limit the number of loaded bins or change their filter operations.
+Use direct listed-composition membership as Whole Bin roots, retaining reachable
+dependencies, source-local ambiguity, qualified partial results and cancellation.
+Update authored fixtures that previously relied on disconnected locator records,
+and preserve real OMF-bin identity controls. Exact sequence-track/angle selection
+and the remaining loaded-bin ownership/UI changes stay outside this checkpoint.
+
+Implemented and verified 17 October 2026 (Sydney), with pinned Qt 6.5.3 in the
+Release arm64 build. The helper accepts one parsed AVB and uses source-local
+object handles and exact MobId lookup; the multi-bin index, cross-source keys and
+borrowing tests are removed. Whole Bin roots are the direct listed compositions
+of the document's ABIN/BINF root. Reachable dependencies remain included; loose
+locators and unrelated compositions do not become roots. Known null slots,
+duplicate listed targets, invalid/missing list data, local identity ambiguity,
+qualified partial matches and cancellation retain their explicit outcomes.
+
+Authored engine/loader tests cover listed masters plus sequences, additional
+sequence media, non-user-placed listed items, unrelated internal records, both
+byte orders/root classes, empty and incomplete lists, and independent bins. Binary
+fixtures now connect their tested media through listed compositions and real
+descriptor/locator paths. Genuine WAVE/AIFF-C OMF bins retain their established
+FileMobIds and complete coverage. The dialog regression loads two bins and checks
+Intersect/Add/Subtract; the main-window regression preserves prepared table/CSV
+metadata and Console warnings while filtering with linked references.
+
+The app and all configured Release targets build. All 39 registered suites pass
+in one full run (102.76 seconds), and `git diff --check` passes. This establishes
+the bounded correctness checkpoint on this Mac; it does not establish exact used
+tracks/angles, completion of Stage 4, a measured time/memory saving, Windows CI
+success or representative NEXIS acceptance. The multiple-bin list and existing
+filter chain remain supported. The plan and active AVB/current-behavior documents
+now distinguish this implementation from the later sequence and ownership work.
 
 ### Database columns and views — 16 October 2026
 

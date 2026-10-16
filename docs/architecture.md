@@ -218,6 +218,14 @@ selected MasterMobId now records its principal source like other scalar fields.
 Discovery/parsing/reconciliation completion flags describe their respective
 stages, not universal format support.
 
+`makeMediaMetadataStatus()` derives applicability for otherwise unavailable
+Resolution once at the compact-record boundary. It requires a selected, eligible
+Audio principal whose own freshness is not marked Changed, with no eligible Kind
+disagreement. Conflicting or unconfirmed Kind cannot preserve an inherited
+not-applicable conclusion. Present/Unreadable Resolution facts, selected values,
+agreement, source flags and read states/reasons remain unchanged. Readers,
+temporary coverage merging and header scheduling keep their existing behavior.
+
 The model holds selected row values, `MediaMetadataStatus`, `MediaScanStamp` and
 the optional frozen `OpScanReceipt`, with no `MediaEvidence` or `mediaEngineScan`
 owner. Confirmed copies/moves directly update current physical values, their status
@@ -238,6 +246,10 @@ Applied partial steps retain their source graphs and persistent “Results may b
 incomplete” warning. The future sequence
 picker remains disabled behind `SequenceFilter`; the current dialog applies whole-bin
 scope. Other filters still apply to the resulting rows.
+Whole Bin begins at the root bin's listed clips/sequences and follows their
+references; unrelated internal records do not contribute. The reference helper
+accepts one AVB per instance and uses source-local identities. Multiple loaded
+bins still combine through the existing Intersect/Add/Subtract chain.
 Loading or removing bins changes filtering only; no bin-enrichment resolver or row
 AVB history owner remains. The loaded bins and applied filter snapshots still retain
 their current metadata and graphs. Compacting those graphs remains outstanding.

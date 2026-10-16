@@ -81,6 +81,8 @@ private slots:
 	void missing_file_has_diagnostic();
 	void media_file_ids_only_use_msml_locators_data();
 	void media_file_ids_only_use_msml_locators();
+	void whole_bin_excludes_unlisted_records_data();
+	void whole_bin_excludes_unlisted_records();
 	void null_locator_ids_do_not_enable_legacy_fallback();
 	void malformed_locator_keeps_other_proven_file_ids();
 	void binary_only_master_data();
@@ -192,9 +194,11 @@ void TestAvbParser::media_file_ids_only_use_msml_locators()
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	auto d = graph(big); // CMPO, SCLP and MCMR must not supply filter keys.
-	d.objects.append({"MSML", TestAvb::mediaLocator(big, TestAvb::Source, typed, TestAvb::Other)});
-	d.objects.append({"MSML", TestAvb::mediaLocator(big, TestAvb::Source, typed)});
-	d.objects.append({"MSML", TestAvb::mediaLocator(big, TestAvb::Source, typed)}); // duplicate
+	QVector<quint32> listed{2};
+	listed.append(TestAvb::appendFileSource(d, TestAvb::mediaLocator(big, TestAvb::Source, typed, TestAvb::Other), TestAvb::Master));
+	listed.append(TestAvb::appendFileSource(d, TestAvb::mediaLocator(big, TestAvb::Source, typed), TestAvb::Master));
+	listed.append(TestAvb::appendFileSource(d, TestAvb::mediaLocator(big, TestAvb::Source, typed), TestAvb::Master)); // duplicate
+	d.objects[0].payload = TestAvb::bin(big, listed);
 	const auto result = AvbBinLoader::load(TestAvb::write(tmp.filePath("locators.avb"), d.bytes()));
 	QVERIFY2(result.usable, qPrintable(result.error));
 	// This authored source clip has no established target in the bin.
@@ -211,11 +215,43 @@ void TestAvbParser::media_file_ids_only_use_msml_locators()
 		QCOMPARE(result.mediaFileIds.legacyKeys, QSet<QString>{QString::fromLatin1(TestAvb::Source.mid(16, 8).toHex())});
 	}
 	QVERIFY(compositionIds(result).contains(MobId::format(TestAvb::Master)));
-	QCOMPARE(result.compositions.first().name, QStringLiteral("Owned clip"));
+	QVERIFY(std::any_of(result.compositions.cbegin(), result.compositions.cend(), [](const auto &composition)
+						{ return composition.mobId == MobId::format(TestAvb::Master) && composition.name == QStringLiteral("Owned clip"); }));
 
 	const auto noLocators = AvbBinLoader::load(TestAvb::write(tmp.filePath("other-records.avb"), graph(big).bytes()));
 	QVERIFY(noLocators.usable && !noLocators.coverageComplete);
 	QVERIFY(noLocators.mediaFileIds.isEmpty());
+}
+
+void TestAvbParser::whole_bin_excludes_unlisted_records_data()
+{
+	QTest::addColumn<bool>("big");
+	QTest::newRow("little-endian") << false;
+	QTest::newRow("big-endian") << true;
+}
+
+void TestAvbParser::whole_bin_excludes_unlisted_records()
+{
+	QFETCH(bool, big);
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	TestAvb::Document document;
+	document.bigEndian = big;
+	document.objects.append(TestAvb::Document::Object{"ABIN", {}});
+	const auto listed = TestAvb::appendFileSource(document, TestAvb::mediaLocator(big, TestAvb::Source), TestAvb::Source);
+	TestAvb::appendFileSource(document, TestAvb::mediaLocator(big, TestAvb::Other), TestAvb::Other);
+	document.objects.append({"MSML", TestAvb::mediaLocator(big, TestAvb::Master)});
+	document.objects[0].payload = TestAvb::bin(big, {listed});
+	const auto result = AvbBinLoader::load(TestAvb::write(tmp.filePath("listed-only.avb"), document.bytes()));
+	QVERIFY2(result.usable, qPrintable(result.error));
+	QVERIFY2(result.coverageComplete, qPrintable(result.warnings.join(';')));
+	QCOMPARE(result.mediaFileIds.fullIds, QSet<QString>{MobId::format(TestAvb::Source)});
+	QVERIFY(result.mediaFileIds.legacyKeys.isEmpty());
+	QVERIFY(result.referenceResult);
+	QCOMPARE(result.referenceResult->roots, QVector<MediaEngine::ObjectHandle>{listed});
+	QCOMPARE(result.referenceResult->mediaReferences.size(), 1);
+	// The reader still saw both compositions; storage alone does not mean membership.
+	QCOMPARE(compositionIds(result), (QSet<QString>{MobId::format(TestAvb::Source), MobId::format(TestAvb::Other)}));
 }
 
 void TestAvbParser::null_locator_ids_do_not_enable_legacy_fallback()
@@ -226,9 +262,10 @@ void TestAvbParser::null_locator_ids_do_not_enable_legacy_fallback()
 	{
 		TestAvb::Document d;
 		d.bigEndian = big;
-		d.objects = {{"ABIN", TestAvb::bin(big)},
-					 {"MSML", TestAvb::mediaLocator(big, TestAvb::Source, true, QByteArray(32, '\0'))},
-					 {"MSML", TestAvb::mediaLocator(big, QByteArray(32, '\0'), false)}};
+		d.objects.append(TestAvb::Document::Object{"ABIN", {}});
+		const auto modern = TestAvb::appendFileSource(d, TestAvb::mediaLocator(big, TestAvb::Source, true, QByteArray(32, '\0')));
+		const auto native = TestAvb::appendFileSource(d, TestAvb::mediaLocator(big, QByteArray(32, '\0'), false));
+		d.objects[0].payload = TestAvb::bin(big, {modern, native});
 		const auto result = AvbBinLoader::load(TestAvb::write(tmp.filePath("null.avb"), d.bytes()));
 		QVERIFY2(result.usable, qPrintable(result.error));
 		QVERIFY(!result.coverageComplete); // No usable identity: keep the reason, never fall back.
@@ -244,10 +281,11 @@ void TestAvbParser::malformed_locator_keeps_other_proven_file_ids()
 	auto bad = TestAvb::mediaLocator(false);
 	bad[10] = char(0xff); // volume-name length runs beyond the object
 	bad[11] = char(0x7f);
-	d.objects = {{"ABIN", TestAvb::bin(false)},
-				 {"MSML", TestAvb::mediaLocator(false)},
-				 {"MSML", TestAvb::mediaLocator(false, TestAvb::Source, false)},
-				 {"MSML", bad}};
+	d.objects.append(TestAvb::Document::Object{"ABIN", {}});
+	const auto modern = TestAvb::appendFileSource(d, TestAvb::mediaLocator(false));
+	const auto native = TestAvb::appendFileSource(d, TestAvb::mediaLocator(false, TestAvb::Source, false));
+	const auto malformed = TestAvb::appendFileSource(d, bad);
+	d.objects[0].payload = TestAvb::bin(false, {modern, native, malformed});
 	const auto result = AvbBinLoader::load(TestAvb::write(tmp.filePath("bad.avb"), d.bytes()));
 	QVERIFY(result.usable && !result.coverageComplete);
 	QCOMPARE(result.mediaFileIds.fullIds, QSet<QString>{MobId::format(TestAvb::Source)});
@@ -676,6 +714,7 @@ void TestAvbParser::typed_mob_field_framing_is_validated_data()
 	QTest::addColumn<QByteArray>("bytes");
 	QTest::addColumn<bool>("valid");
 	QTest::addColumn<bool>("resolved");
+	QTest::addColumn<bool>("testedComposition");
 	for (const bool big : {false, true})
 	{
 		const QVector<TestAvb::Document::Object> objects = {
@@ -686,8 +725,28 @@ void TestAvbParser::typed_mob_field_framing_is_validated_data()
 			{
 				TestAvb::Document d;
 				d.bigEndian = big;
-				d.objects = {{"ABIN", TestAvb::bin(big)}, {object.type, payload}};
-				QTest::newRow(qPrintable(QString("%1-%2-%3").arg(QString::fromLatin1(object.type), big ? "BE" : "LE", label))) << d.bytes() << valid << (object.type != "SCLP" && object.type != "ASPI");
+				d.objects = {{"ABIN", {}}, {object.type, payload}};
+				quint32 listed = 2;
+				if (object.type == "MSML")
+				{
+					listed = 3;
+					d.objects.append({"CMPO", TestAvb::composition(big, TestAvb::Master, "Locator owner", 0, {}, 0, true, 4, 3)});
+					d.objects.append({"MDFL", TestAvb::fileDescriptor(big, 2)});
+				}
+				else if (object.type == "MCMR")
+				{
+					listed = 4;
+					d.objects.append({"ATTR", TestAvb::attributes(big, 0, {}, 2)});
+					d.objects.append({"CMPO", TestAvb::composition(big, TestAvb::Master, "Marker owner", 3)});
+				}
+				else if (object.type != "CMPO")
+				{
+					listed = 3;
+					d.objects.append({"CMPO", TestAvb::composition(big, TestAvb::Master, "Component owner", 0, {2})});
+				}
+				d.objects[0].payload = TestAvb::bin(big, {listed});
+				QTest::newRow(qPrintable(QString("%1-%2-%3").arg(QString::fromLatin1(object.type), big ? "BE" : "LE", label)))
+					<< d.bytes() << valid << (object.type != "SCLP" && object.type != "ASPI") << (object.type == "CMPO");
 			};
 			add("valid", object.payload, true);
 			// Each fixture ends with a 49-byte typed ID and the object terminator.
@@ -712,6 +771,7 @@ void TestAvbParser::typed_mob_field_framing_is_validated()
 	QFETCH(QByteArray, bytes);
 	QFETCH(bool, valid);
 	QFETCH(bool, resolved);
+	QFETCH(bool, testedComposition);
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const auto result = AvbBinLoader::load(TestAvb::write(tmp.filePath("typed-fields.avb"), bytes));
@@ -720,7 +780,7 @@ void TestAvbParser::typed_mob_field_framing_is_validated()
 	if (!valid)
 	{
 		QVERIFY(!result.warnings.isEmpty());
-		QVERIFY(result.compositions.isEmpty());
+		QCOMPARE(result.compositions.size(), testedComposition ? 0 : 1); // The valid owner survives a malformed dependent field.
 		QVERIFY(result.mediaFileIds.isEmpty());
 	}
 }
@@ -829,8 +889,9 @@ void TestAvbParser::omf_identity_does_not_match_a_byte_swapped_clip()
 	TestAvb::Document document;
 	document.bigEndian = big;
 	document.objects = {{"ABIN", TestAvb::bin(big, {2})},
-						{"CMPO", TestAvb::composition(big, own, "OMF master", 0, {}, 0, typed)},
-						{"MSML", TestAvb::mediaLocator(big, own, typed)}};
+						{"CMPO", TestAvb::composition(big, own, "OMF master", 0, {}, 0, typed, 4)},
+						{"MSML", TestAvb::mediaLocator(big, own, typed)},
+						{"MDFL", TestAvb::fileDescriptor(big, 3)}};
 	const auto result = AvbBinLoader::load(TestAvb::write(temp.filePath("legacy.avb"), document.bytes()));
 	QVERIFY2(result.usable, qPrintable(result.error));
 	QVERIFY2(result.coverageComplete, qPrintable(result.warnings.join(';')));

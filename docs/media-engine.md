@@ -41,6 +41,10 @@ snapshot diagnostics without keeping the complete scan result. AVB loading is
 independent: bin graphs remain retained because reference
 resolution and filtering use them. Loaded bins do not supply names or derived effect
 fields to the media inventory, and rows no longer retain separate AVB history owners.
+`AvbReferenceIndex` accepts one AVB and resolves Whole Bin from its root item list,
+following listed compositions to their dependencies and file locators. Unrelated
+stored records are excluded, and lookup cannot borrow objects from other bins.
+The dialog combines each bin's reference set through its existing filter chain.
 
 Local database membership uses an unambiguous qualified PMR filename/identity
 reference or a same-folder qualified MDB file entry matching the final usable
@@ -74,6 +78,12 @@ while keeping selected media values and frozen operation checks. No histories ar
 rebuilt. Ordinary row/stamp/reporting associations retain one scalar MasterMobId.
 Independent header safety records preserve all captured live checks. Broader
 requested-field acquisition and loaded-bin graph compaction remain separate tasks.
+Compact status preparation derives blank Resolution as not applicable for a
+qualified, undisputed selected Audio result. Kind disagreement keeps applicability
+unknown, and uncertain Kind cannot establish inapplicability. Actual
+Present/Unreadable Resolution facts remain.
+This is a final compact-note rule, with no reader, temporary aggregation or
+acquisition change and no extra retained source data.
 After Cancel the coordinator finishes indexes and final matching from completed,
 qualified preparations and captured freshness checks, with no further filesystem
 requests. Interrupted projection/ownership or unchecked physical/source work stays

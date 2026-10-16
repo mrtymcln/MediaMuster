@@ -96,6 +96,7 @@ private slots:
 	void loading_completion_auto_intersects();
 	void locator_identity_controls_file_matching_data();
 	void locator_identity_controls_file_matching();
+	void listed_media_only_with_multiple_bins_and_filter_chain();
 	void loaded_bin_batch_preserves_filtering_without_row_metadata();
 	void empty_locator_selection_leaves_filter_unchanged();
 	void partial_results_keep_warnings_and_evidence_data();
@@ -180,8 +181,9 @@ void TestBinFilterDialog::locator_identity_controls_file_matching()
 	rows[0].fileMobId = fileId;
 	h.model.setMediaFiles(TestMediaFile::seeded(rows));
 	TestAvb::Document d;
-	d.objects = {{"ABIN", TestAvb::bin(false)},
-				 {"MSML", TestAvb::mediaLocator(false, TestAvb::Source, typed, locatorId)}};
+	d.objects.append(TestAvb::Document::Object{"ABIN", {}});
+	const auto listed = TestAvb::appendFileSource(d, TestAvb::mediaLocator(false, TestAvb::Source, typed, locatorId));
+	d.objects[0].payload = TestAvb::bin(false, {listed});
 	QSignalSpy loaded(&h.dialog, &AvbFilterDialog::binLoaded);
 	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("References.avb"), d.bytes()));
 	QTRY_COMPARE(loaded.count(), 1);
@@ -189,6 +191,50 @@ void TestBinFilterDialog::locator_identity_controls_file_matching()
 	QCOMPARE(h.proxy.rowCount(), expected);
 	if (expected)
 		QCOMPARE(h.proxy.mapToSource(h.proxy.index(0, 0)).row(), 0);
+	QCOMPARE(h.errors.count(), 0);
+}
+
+void TestBinFilterDialog::listed_media_only_with_multiple_bins_and_filter_chain()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	Harness h;
+	QSignalSpy loaded(&h.dialog, &AvbFilterDialog::binLoaded);
+	TestAvb::Document document;
+	document.objects.append(TestAvb::Document::Object{"ABIN", {}});
+	const auto listed = TestAvb::appendFileSource(document, TestAvb::mediaLocator(false, TestAvb::Source));
+	TestAvb::appendFileSource(document, TestAvb::mediaLocator(false, TestAvb::Other), TestAvb::Other);
+	document.objects.append({"MSML", TestAvb::mediaLocator(false, TestAvb::Master)});
+	document.objects[0].payload = TestAvb::bin(false, {listed});
+	const auto firstPath = TestAvb::write(tmp.filePath("First.avb"), document.bytes());
+	h.dialog.addBinFromFile(firstPath);
+	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Second.avb"), TestAvb::mediaBin({TestAvb::Other})));
+	QTRY_COMPARE(loaded.count(), 2);
+	QTRY_VERIFY(h.filter.isActive());
+	QCOMPARE(h.list()->count(), 2);
+	for (const auto &attempt : loaded)
+	{
+		const auto bin = qvariant_cast<AvbBin>(attempt.first());
+		QVERIFY2(bin.coverageComplete, qPrintable(bin.warnings.join(';')));
+		if (bin.filePath == firstPath)
+			QCOMPARE(bin.mediaFileIds.fullIds, QSet<QString>{MobId::format(TestAvb::Source)});
+	}
+	h.dialog.clearFilterSteps();
+	h.selectOnly(0);
+	QVERIFY(h.invoke("onIntersectClicked"));
+	QCOMPARE(h.proxy.rowCount(), 1);
+	QCOMPARE(h.proxy.mapToSource(h.proxy.index(0, 0)).row(), 0);
+	h.selectOnly(1);
+	QVERIFY(h.invoke("onAddClicked"));
+	QCOMPARE(h.proxy.rowCount(), 2);
+	QVERIFY(h.invoke("onSubtractClicked"));
+	QCOMPARE(h.proxy.rowCount(), 1);
+	QCOMPARE(h.proxy.mapToSource(h.proxy.index(0, 0)).row(), 0);
+	h.selectOnly(0);
+	QVERIFY(h.invoke("onIntersectClicked"));
+	QCOMPARE(h.proxy.rowCount(), 1);
+	QCOMPARE(h.filter.steps.size(), 4);
+	QCOMPARE(h.names, (QStringList{QStringLiteral("First"), QStringLiteral("Second")}));
 	QCOMPARE(h.errors.count(), 0);
 }
 
@@ -261,9 +307,8 @@ void TestBinFilterDialog::partial_results_keep_warnings_and_evidence()
 	const auto previous = h.filter;
 	TestAvb::Document d;
 	d.bigEndian = bigEndian;
-	d.objects = {{"ABIN", TestAvb::bin(bigEndian, {2})},
-				 {"CMPO", TestAvb::composition(bigEndian, TestAvb::Master, "Readable clip")},
-				 {"MSML", TestAvb::mediaLocator(bigEndian, TestAvb::Other)}};
+	d.objects.append(TestAvb::Document::Object{"ABIN", {}});
+	QVector<quint32> listed{TestAvb::appendFileSource(d, TestAvb::mediaLocator(bigEndian, TestAvb::Other), TestAvb::Other)};
 	if (problem == 0)
 		d.objects.append({"ZZZZ", QByteArray::fromHex("020103")});
 	else
@@ -273,8 +318,9 @@ void TestBinFilterDialog::partial_results_keep_warnings_and_evidence()
 			payload.insert(payload.size() - 1, QByteArray::fromHex("017f"));
 		else
 			payload.chop(1); // Chunk framing is intact; its property terminator is missing.
-		d.objects.append({"MSML", payload});
+		listed.append(TestAvb::appendFileSource(d, payload));
 	}
+	d.objects[0].payload = TestAvb::bin(bigEndian, listed);
 	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Problem.avb"), d.bytes()));
 	QTRY_COMPARE(loaded.count(), 2);
 	const auto parsed = qvariant_cast<AvbBin>(loaded.last().first());

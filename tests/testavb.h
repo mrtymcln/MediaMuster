@@ -211,6 +211,24 @@ namespace TestAvb
 		return b.data;
 	}
 
+	inline QByteArray fileDescriptor(bool big, quint32 locator)
+	{
+		Bytes b(big);
+		b.tags(2, 3); // MediaDescriptor
+		b.u8(0);
+		b.u32(locator);
+		b.u8(0);
+		b.u32(0); // physical media absent
+		b.tags(2, 3); // MediaFileDescriptor
+		b.u32(25);
+		b.u16(0); // edit rate, 25 * 10^0
+		b.u32(100);
+		b.u16(0); // is_omfi
+		b.u32(0); // data offset
+		b.u8(3);
+		return b.data;
+	}
+
 	inline QByteArray attributes(bool big, quint32 originalBin = 0, const QByteArray &comment = {},
 								 quint32 mobReference = 0)
 	{
@@ -379,13 +397,26 @@ namespace TestAvb
 		return document.bytes();
 	}
 
+	inline quint32 appendFileSource(Document &document, const QByteArray &locatorPayload,
+								   const QByteArray &id = Source)
+	{
+		const auto handle = static_cast<quint32>(document.objects.size() + 1);
+		const bool big = document.bigEndian;
+		document.objects.append({"CMPO", composition(big, id, "File source", 0, {}, 0, true, handle + 1, 3)});
+		document.objects.append({"MDFL", fileDescriptor(big, handle + 2)});
+		document.objects.append({"MSML", locatorPayload});
+		return handle;
+	}
+
 	inline QByteArray mediaBin(const QVector<QByteArray> &fileIds = {Source}, bool big = false)
 	{
 		Document document;
 		document.bigEndian = big;
-		document.objects = {{"ABIN", bin(big, {2})}, {"CMPO", composition(big)}};
+		document.objects.append(TestAvb::Document::Object{"ABIN", {}});
+		QVector<quint32> listed;
 		for (const auto &id : fileIds)
-			document.objects.append({"MSML", mediaLocator(big, id)});
+			listed.append(appendFileSource(document, mediaLocator(big, id), id));
+		document.objects[0].payload = bin(big, listed);
 		return document.bytes();
 	}
 

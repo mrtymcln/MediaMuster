@@ -142,6 +142,19 @@ namespace
 		}
 		return messages;
 	}
+	bool enterSaveFile(QFileDialog &dialog, const QString &filePath)
+	{
+		dialog.setDirectory(QFileInfo(filePath).absolutePath());
+		auto *editor = dialog.findChild<QLineEdit *>(QStringLiteral("fileNameEdit"));
+		if (!editor)
+			return false;
+		// Qt's selectFile leaves a focused, visible filename editor unchanged.
+		// Enter the name as a user would, independently of platform focus timing.
+		editor->setFocus();
+		editor->selectAll();
+		QTest::keyClicks(editor, QFileInfo(filePath).fileName());
+		return true;
+	}
 	struct Sink : OpSink
 	{
 		std::atomic<bool> *cancelAfterResult = nullptr;
@@ -434,8 +447,11 @@ void TestOperationUi::csv_export_completes_before_return()
 					else
 						expectedText += MediaCsv::rowLine(changed[1], expectedOptions) +
 										MediaCsv::rowLine(changed[0], expectedOptions);
-					dialog->setDirectory(m_root);
-					dialog->selectFile(QFileInfo(exportPath).fileName());
+					if (!enterSaveFile(*dialog, exportPath))
+					{
+						dialog->reject();
+						return;
+					}
 					pickerDirectory = dialog->directory().absolutePath();
 					pickerSelection = dialog->selectedFiles();
 					if (pickerSelection != QStringList{exportPath})
@@ -522,8 +538,11 @@ void TestOperationUi::csv_export_failure_preserves_previous_file()
 				sawSaveDialog = true;
 				// Exercise the writer's failure, without an additional overwrite prompt.
 				dialog->setOption(QFileDialog::DontConfirmOverwrite);
-				dialog->setDirectory(m_root);
-				dialog->selectFile(QFileInfo(exportPath).fileName());
+				if (!enterSaveFile(*dialog, exportPath))
+				{
+					dialog->reject();
+					return;
+				}
 				pickerDirectory = dialog->directory().absolutePath();
 				pickerSelection = dialog->selectedFiles();
 				if (pickerSelection != QStringList{exportPath})
@@ -1954,11 +1973,13 @@ void TestOperationUi::bin_loading_keeps_prepared_table_and_csv_metadata()
 	{
 		TestAvb::Document d;
 		d.objects = {{"ABIN", TestAvb::bin(false, {2})},
-					 {"CMPO", TestAvb::composition(false, TestAvb::Master, name.toUtf8(), 3)},
+					 {"CMPO", TestAvb::composition(false, TestAvb::Master, name.toUtf8(), 3, {11, 12})},
 					 {"ATTR", TestAvb::attributes(false, 4)},
-						 {"MCBR", TestAvb::binReference(false, (name + " bin").toUtf8(), {})},
-						 {"MSML", TestAvb::mediaLocator(false, TestAvb::Source)},
-						 {"MSML", TestAvb::mediaLocator(false, TestAvb::Other)}};
+					 {"MCBR", TestAvb::binReference(false, (name + " bin").toUtf8(), {})}};
+		TestAvb::appendFileSource(d, TestAvb::mediaLocator(false, TestAvb::Source), TestAvb::Source);
+		TestAvb::appendFileSource(d, TestAvb::mediaLocator(false, TestAvb::Other), TestAvb::Other);
+		d.objects.append({"SCLP", TestAvb::sourceClip(false, TestAvb::Source)});
+		d.objects.append({"SCLP", TestAvb::sourceClip(false, TestAvb::Other)});
 		if (partial)
 			d.objects.append({"ZZZZ", QByteArray::fromHex("020103")});
 		return TestAvb::write(tmp.filePath(name + ".avb"), d.bytes());

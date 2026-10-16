@@ -538,6 +538,8 @@ private slots:
 		const MediaEngine::Cancellation cancellation;
 		QStringList decisions;
 		MediaEngine::ScanCallbacks callbacks;
+		QHash<QString, int> reads;
+		callbacks.reading = [&](const MediaEngine::SourceCandidate &candidate) { ++reads[candidate.path]; };
 		callbacks.progress = [&](int, int, const QString &source)
 		{ decisions.append(source); };
 		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
@@ -547,6 +549,9 @@ private slots:
 		QVERIFY(header);
 		QVERIFY2(header->outcome == MediaEngine::ParsedSource::Outcome::NotRead, qPrintable(header->readReason));
 		QCOMPARE(header->snapshot->readState, SourceReadState::NotRead);
+		QCOMPARE(reads.value(path), 0);
+		QCOMPARE(reads.value(folder + QStringLiteral("/metadata.mdb")), 1);
+		QCOMPARE(reads.size(), 2);
 		QCOMPARE(decisions.last(), path);
 		const auto &evidence = scan.files.front().evidence;
 		QCOMPARE(evidence.readStatus(MediaProperty::Compression, header->snapshot).state, PropertyReadState::NotRead);
@@ -573,6 +578,13 @@ private slots:
 		QCOMPARE(duration.displayRate.denominator, 1);
 		QCOMPARE(evidence.selected(MediaProperty::OriginalBin).value.toString(), QStringLiteral("Database bin"));
 		QCOMPARE(evidence.selected(MediaProperty::SourcePath).value.toString(), QStringLiteral("/Rushes/Database clip.wav"));
+		QCOMPARE(evidence.selected(MediaProperty::Project).value.toString(), QStringLiteral("Project"));
+		const auto row = mediaEngineMediaFile(scan.files.front(), ScanRowLookup(scan), temporary.path(), QStringLiteral("Volume"), false);
+		QCOMPARE(row.kind, MediaFile::Kind::Audio);
+		QVERIFY(row.resolution.isEmpty());
+		const auto &resolution = row.metadataStatus.field(MediaProperty::Resolution);
+		QCOMPARE(resolution.applicability, PropertyApplicability::NotApplicable);
+		QVERIFY(!resolution.hasSelectedValue);
 		for (const auto &value : evidence.observations(MediaProperty::Compression))
 			if (value.readState == PropertyReadState::Present)
 			{
@@ -635,6 +647,9 @@ private slots:
 		const auto row = mediaEngineMediaFile(file, ScanRowLookup(scan), temporary.path(), QStringLiteral("Volume"), false);
 		QCOMPARE(row.sourceFilePath, selectedPath);
 		QCOMPARE(row.mediaFilePath, path);
+		QCOMPARE(row.kind, MediaFile::Kind::Audio);
+		QVERIFY(row.resolution.isEmpty());
+		QCOMPARE(row.metadataStatus.field(MediaProperty::Resolution).applicability, PropertyApplicability::NotApplicable);
 		const auto &status = row.metadataStatus.field(MediaProperty::SourcePath);
 		if (recordedPaths.size() > 1)
 		{
@@ -751,6 +766,9 @@ private slots:
 		const auto row = mediaEngineMediaFile(file, ScanRowLookup(scan), temporary.path(), QStringLiteral("Volume"), false);
 		QCOMPARE(row.originalBin, selectedBin);
 		QCOMPARE(row.masterMobId, file.stamp.masterMobId);
+		QCOMPARE(row.kind, MediaFile::Kind::Audio);
+		QVERIFY(row.resolution.isEmpty());
+		QCOMPARE(row.metadataStatus.field(MediaProperty::Resolution).applicability, PropertyApplicability::NotApplicable);
 		const auto &status = row.metadataStatus.field(MediaProperty::OriginalBin);
 		QVERIFY(status.captured);
 		QCOMPARE(status.hasSelectedValue, !selectedBin.isEmpty());
@@ -834,12 +852,52 @@ private slots:
 		const auto row = mediaEngineMediaFile(file, ScanRowLookup(scan), temporary.path(), QStringLiteral("Volume"), false);
 		QCOMPARE(row.originalBin, QStringLiteral("Uncompressed media slides"));
 		QCOMPARE(row.masterMobId, baseline.stamp.masterMobId);
+		QCOMPARE(row.kind, MediaFile::Kind::Video);
+		QVERIFY(!row.resolution.isEmpty());
+		QCOMPARE(row.metadataStatus.field(MediaProperty::Resolution).applicability, PropertyApplicability::Applicable);
 		const auto &status = row.metadataStatus.field(MediaProperty::OriginalBin);
 		QVERIFY(status.captured);
 		QVERIFY(status.hasSelectedValue);
 		QCOMPARE(status.readState, PropertyReadState::Present);
 		QVERIFY(status.selectedSource);
 		QCOMPARE(*status.selectedSource, MetadataSource::Omf);
+	}
+	void genuine_legacy_audio_compact_resolution_data()
+	{
+		QTest::addColumn<QString>("filename");
+		QTest::newRow("avid-wave-with-omf-metadata") << QStringLiteral("TONE_100A01.6A972974.039700.wav");
+		QTest::newRow("avid-aiff-with-omf-metadata") << QStringLiteral("TONE_100A01.6A972997.0C53E0.aif");
+	}
+	void genuine_legacy_audio_compact_resolution()
+	{
+		QFETCH(QString, filename);
+		QTemporaryDir temporary;
+		QVERIFY(temporary.isValid());
+		const QString folder = temporary.path() + QStringLiteral("/OMFI MediaFiles");
+		const QString path = folder + QLatin1Char('/') + filename;
+		QVERIFY(QDir().mkpath(folder));
+		QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR "/omf/mc2026_audio/") + filename, path));
+		QHash<QString, int> reads;
+		MediaEngine::ScanCallbacks callbacks;
+		callbacks.reading = [&](const MediaEngine::SourceCandidate &candidate) { ++reads[candidate.path]; };
+		const MediaEngine::Cancellation cancellation;
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, true}, cancellation, callbacks);
+		QCOMPARE(scan.files.size(), 1);
+		QVERIFY(scan.reconciliationComplete);
+		QCOMPARE(reads.size(), 1);
+		QCOMPARE(reads.value(path), 1);
+		const auto &file = scan.files.front();
+		const auto kind = file.evidence.selected(MediaProperty::Kind);
+		QCOMPARE(kind.value.toInt(), int(MediaFile::Kind::Audio));
+		QVERIFY(kind.agreement != PropertyAgreement::Conflicting);
+		const auto row = mediaEngineMediaFile(file, ScanRowLookup(scan), temporary.path(), QStringLiteral("Volume"), false);
+		QCOMPARE(row.kind, MediaFile::Kind::Audio);
+		QVERIFY(row.resolution.isEmpty());
+		const auto &resolution = row.metadataStatus.field(MediaProperty::Resolution);
+		QCOMPARE(resolution.applicability, PropertyApplicability::NotApplicable);
+		QVERIFY(!resolution.hasSelectedValue && !resolution.selectedSource);
+		QCOMPARE(resolution.readState, file.evidence.selected(MediaProperty::Resolution).readState);
+		QCOMPARE(resolution.readReason, file.evidence.selected(MediaProperty::Resolution).readReason);
 	}
 	void incomplete_or_conflicting_table_metadata_reads_header_data()
 	{
@@ -1284,6 +1342,7 @@ private slots:
 			evidence.observe(property, std::move(observation));
 		};
 		observe(MediaProperty::ClipName, QStringLiteral(""));
+		observe(MediaProperty::Kind, int(MediaFile::Kind::Audio));
 		observe(MediaProperty::Imported, false);
 		observe(MediaProperty::Channels, 0);
 		MediaEngine::selectMetadata(evidence);
@@ -1366,6 +1425,145 @@ private slots:
 		QVERIFY(!rate.hasSelectedValue);
 		QVERIFY(!rate.selectedSource && !rate.selectedBasis && !rate.selectedFreshness);
 		QVERIFY(rate.presentSources.contains(MetadataSource::Mxf));
+	}
+
+	void compact_resolution_applicability_data()
+	{
+		QTest::addColumn<QString>("condition");
+		QTest::addColumn<int>("sourceKind");
+		QTest::addColumn<int>("expectedApplicability");
+		const auto add = [&](const char *name, PropertyApplicability applicability,
+			MetadataSource source = MetadataSource::Mxf)
+		{
+			QTest::newRow(name) << QString::fromLatin1(name) << int(source) << int(applicability);
+		};
+		add("mdb-audio", PropertyApplicability::NotApplicable, MetadataSource::Mdb);
+		add("mxf-audio", PropertyApplicability::NotApplicable);
+		add("omf-audio", PropertyApplicability::NotApplicable, MetadataSource::Omf);
+		add("audio-with-unrelated-unknown-context", PropertyApplicability::NotApplicable);
+		add("audio-with-excluded-video", PropertyApplicability::NotApplicable);
+		add("audio-with-changed-video", PropertyApplicability::NotApplicable);
+		add("audio-with-excluded-picture", PropertyApplicability::NotApplicable);
+		add("audio-with-changed-picture", PropertyApplicability::NotApplicable);
+		add("kind-missing", PropertyApplicability::Unknown);
+		add("kind-missing-with-existing-not-applicable", PropertyApplicability::Unknown);
+		add("kind-unknown", PropertyApplicability::Unknown);
+		add("kind-unreadable", PropertyApplicability::Unknown);
+		add("kind-excluded", PropertyApplicability::Unknown);
+		add("kind-changed", PropertyApplicability::Unknown);
+		add("video-missing-resolution", PropertyApplicability::Unknown);
+		add("preferred-audio-disagrees-with-video", PropertyApplicability::Unknown);
+		add("disagreement-with-existing-not-applicable", PropertyApplicability::Unknown);
+		add("audio-with-picture", PropertyApplicability::Applicable);
+		add("audio-with-empty-picture", PropertyApplicability::Applicable);
+		add("audio-with-conflicting-picture", PropertyApplicability::Applicable);
+		add("audio-with-unreadable-picture", PropertyApplicability::Applicable);
+	}
+
+	void compact_resolution_applicability()
+	{
+		QFETCH(QString, condition);
+		QFETCH(int, sourceKind);
+		QFETCH(int, expectedApplicability);
+		MediaEvidence evidence;
+		const auto source = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource(sourceKind), QStringLiteral("authored-media"), {}, SourceReadState::Complete});
+		const auto other = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+			MetadataSource::Mdb, QStringLiteral("other.mdb"), {}, SourceReadState::Complete});
+		const QString owner = QStringLiteral("physical-descriptor");
+		const auto observe = [&](MediaProperty property, const SourceSnapshotRef &snapshot,
+			const QVariant &value, PropertyReadState state = PropertyReadState::Present)
+		{
+			MetadataObservation observation;
+			observation.snapshot = snapshot;
+			observation.objectIdentity = owner;
+			observation.property = mediaPropertyName(property);
+			observation.readState = state;
+			observation.value = value;
+			evidence.observe(property, std::move(observation));
+		};
+		if (!condition.startsWith(QLatin1String("kind-missing")))
+			observe(MediaProperty::Kind, source,
+				int(condition == QLatin1String("kind-unknown") ? MediaFile::Kind::Unknown
+					: condition == QLatin1String("video-missing-resolution") ? MediaFile::Kind::Video : MediaFile::Kind::Audio),
+				condition == QLatin1String("kind-unreadable") ? PropertyReadState::Unreadable : PropertyReadState::Present);
+		if (condition == QLatin1String("kind-excluded") || condition == QLatin1String("kind-changed"))
+			evidence.qualifySource(source, false, condition == QLatin1String("kind-changed")
+				? SourceFreshness::Changed : SourceFreshness::Unknown);
+		if (condition == QLatin1String("audio-with-unrelated-unknown-context"))
+			evidence.registerSource(other, QStringLiteral("unrelated-master"));
+		if (condition.contains(QLatin1String("video")) && condition != QLatin1String("video-missing-resolution"))
+			observe(MediaProperty::Kind, other, int(MediaFile::Kind::Video));
+		if (condition == QLatin1String("disagreement-with-existing-not-applicable"))
+		{
+			observe(MediaProperty::Kind, other, int(MediaFile::Kind::Video));
+			for (const auto &snapshot : {source, other})
+				evidence.recordReadStatus(MediaProperty::Resolution, snapshot, owner,
+					{PropertyReadState::Absent, PropertyReadReason::NotPresentInObject,
+						PropertyApplicability::NotApplicable, {}});
+		}
+		if (condition == QLatin1String("kind-missing-with-existing-not-applicable"))
+			evidence.recordReadStatus(MediaProperty::Resolution, source, owner,
+				{PropertyReadState::Absent, PropertyReadReason::NotPresentInObject,
+					PropertyApplicability::NotApplicable, {}});
+		if (condition == QLatin1String("audio-with-excluded-picture") || condition == QLatin1String("audio-with-changed-picture"))
+			observe(MediaProperty::Resolution, other, QStringLiteral("1920x1080"));
+		if (condition.contains(QLatin1String("-excluded-")) || condition.contains(QLatin1String("-changed-")))
+			evidence.qualifySource(other, false, condition.contains(QLatin1String("-changed-"))
+				? SourceFreshness::Changed : SourceFreshness::Unknown);
+		if (condition == QLatin1String("audio-with-picture") || condition == QLatin1String("audio-with-conflicting-picture"))
+			observe(MediaProperty::Resolution, source, QStringLiteral("1920x1080"));
+		if (condition == QLatin1String("audio-with-empty-picture"))
+			observe(MediaProperty::Resolution, source, QStringLiteral(""));
+		if (condition == QLatin1String("audio-with-conflicting-picture"))
+			observe(MediaProperty::Resolution, source, QStringLiteral("1280x720"));
+		if (condition == QLatin1String("audio-with-unreadable-picture"))
+			evidence.recordReadStatus(MediaProperty::Resolution, source, owner,
+				{PropertyReadState::Unreadable, PropertyReadReason::ValueUnreadable, PropertyApplicability::Applicable, {}});
+		MediaEngine::selectMetadata(evidence);
+		QVector<ResolvedField> before;
+		for (int index = 0; index < int(MediaProperty::Count); ++index)
+			before.append(evidence.selected(MediaProperty(index)));
+		const auto captured = makeMediaMetadataStatus(evidence);
+		const auto &resolution = captured.field(MediaProperty::Resolution);
+		QCOMPARE(resolution.applicability, PropertyApplicability(expectedApplicability));
+		QCOMPARE(resolution.hasSelectedValue, before[int(MediaProperty::Resolution)].value.isValid());
+		QCOMPARE(resolution.readState, before[int(MediaProperty::Resolution)].readState);
+		QCOMPARE(resolution.readReason, before[int(MediaProperty::Resolution)].readReason);
+		if (resolution.applicability == PropertyApplicability::NotApplicable)
+		{
+			QVERIFY(!resolution.hasSelectedValue && !resolution.selectedSource);
+		}
+		if (condition == QLatin1String("preferred-audio-disagrees-with-video") ||
+			condition == QLatin1String("disagreement-with-existing-not-applicable"))
+		{
+			QCOMPARE(evidence.selected(MediaProperty::Kind).value.toInt(), int(MediaFile::Kind::Audio));
+			QCOMPARE(captured.field(MediaProperty::Kind).agreement, PropertyAgreement::Conflicting);
+		}
+		if (condition == QLatin1String("audio-with-empty-picture") ||
+			condition == QLatin1String("audio-with-conflicting-picture"))
+		{
+			QCOMPARE(resolution.readState, PropertyReadState::Present);
+			QVERIFY(!resolution.hasSelectedValue);
+			QVERIFY(resolution.presentSources.contains(MetadataSource(sourceKind)));
+		}
+		if (condition == QLatin1String("audio-with-unreadable-picture"))
+		{
+			QCOMPARE(resolution.readState, PropertyReadState::Unreadable);
+			QCOMPARE(resolution.readReason, PropertyReadReason::ValueUnreadable);
+		}
+		// Preparing the saved checklist must not change selected values or the
+		// temporary reader/selection results that control additional reads.
+		for (int index = 0; index < int(MediaProperty::Count); ++index)
+		{
+			const auto after = evidence.selected(MediaProperty(index));
+			QCOMPARE(after.value, before[index].value);
+			QCOMPARE(after.readState, before[index].readState);
+			QCOMPARE(after.readReason, before[index].readReason);
+			QCOMPARE(after.applicability, before[index].applicability);
+			QCOMPARE(after.agreement, before[index].agreement);
+			QCOMPARE(after.selectedObservation, before[index].selectedObservation);
+		}
 	}
 
 	void compact_status_keeps_selected_master_and_principal_clock_origins()

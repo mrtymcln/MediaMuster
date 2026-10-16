@@ -176,6 +176,14 @@ loaded AVB bins retain graphs for filtering and reference resolution. These are
 separate owners. Known recording payloads are skipped rather than loaded as
 metadata. Readers do not invent meanings for unknown properties.
 
+When preparing the compact status record, a checked Audio result without an
+audio/video disagreement marks blank picture Resolution as not applicable.
+Conflicting Kind stays unknown even when the existing preference selects Audio.
+Unknown or unqualified Kind cannot inherit a not-applicable claim. Actual Present
+or Unreadable Resolution results keep their existing facts, and only applicability
+is derived for otherwise unavailable Resolution. The cell values and source-read
+decisions are unchanged; temporary reader notes are not rewritten.
+
 PMR association prefers an exact filename. A normalized spelling is a fallback only
 when it identifies one physical location; contradictory or ambiguous identities
 exclude the candidate metadata while preserving its observations for scan-time
@@ -417,6 +425,12 @@ cannot supply an applicable filter. Applied filter steps keep their warning and
 source evidence even if the loaded-bin row is later removed. The future sequence
 picker remains disabled behind `SequenceFilter`; the live dialog uses whole-bin
 scope.
+
+Whole Bin includes media reached from the clips and sequences listed in that bin,
+including their internal dependencies. Unrelated stored compositions and loose
+file locators do not contribute. Each bin resolves using its own records; multiple
+loaded bins and the existing Intersect/Add/Subtract chain remain available.
+Exact used source-track and camera-angle traversal is a later Copland checkpoint.
 
 Loading or removing bins does not change Clip Name, Original Bin or derived effect
 details in the media table or CSV. Those values come from scanned media and folder

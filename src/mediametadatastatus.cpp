@@ -89,5 +89,24 @@ MediaMetadataStatus makeMediaMetadataStatus(const MediaEvidence &evidence, Media
 			addFreshness(status, source, observation.freshness, observation.eligible);
 		}
 	}
+	auto &resolution = result.field(MediaProperty::Resolution);
+	if (!resolution.hasSelectedValue && resolution.readState != PropertyReadState::Present &&
+		resolution.readState != PropertyReadState::Unreadable)
+	{
+		const auto &kind = result.field(MediaProperty::Kind);
+		const auto selectedKind = evidence.selected(MediaProperty::Kind);
+		constexpr int audioKind = 1; // The shared descriptor interpretation uses 0 video / 1 audio.
+		const bool confirmedAudio = kind.hasSelectedValue && kind.readState == PropertyReadState::Present &&
+									kind.selectedSource.has_value() && kind.selectedFreshness != SourceFreshness::Changed &&
+									selectedKind.value.toInt() == audioKind;
+		// Applicability follows the qualified file kind; unrelated unchecked
+		// source contexts must not hide it or turn disagreement into certainty.
+		if (kind.agreement == PropertyAgreement::Conflicting)
+			resolution.applicability = PropertyApplicability::Unknown;
+		else if (confirmedAudio)
+			resolution.applicability = PropertyApplicability::NotApplicable;
+		else if (resolution.applicability == PropertyApplicability::NotApplicable)
+			resolution.applicability = PropertyApplicability::Unknown;
+	}
 	return result;
 }
