@@ -44,7 +44,7 @@ namespace MediaCsv
 		line += QStringLiteral("Size (MB),Compression,Resolution,Frame Rate,Sample Rate,Bit Depth,Type,");
 		if (options.includePrecomputeDetails)
 			line += QStringLiteral("Precompute Category,Effect Category,Effect,Effect Sequence,");
-		line += QStringLiteral("Date Created,Filename,Source Filename,Location,Database Status,FileMobId,MasterMobId,KelpieId,OmfScan");
+		line += QStringLiteral("Date Created,Filename,Source Path,Location,Database Status,FileMobId,MasterMobId,KelpieId,OmfScan");
 		return line + QLatin1Char('\n');
 	}
 
@@ -67,7 +67,7 @@ namespace MediaCsv
 				<< CsvUtil::quoted(precompute ? f.effectSequence : QString()) << ',';
 		}
 		out << f.createdDisplay() << ','
-			<< CsvUtil::quoted(f.fileName) << ',' << CsvUtil::quoted(f.sourceFileName) << ','
+			<< CsvUtil::quoted(f.fileName) << ',' << CsvUtil::quoted(f.sourceFilePath) << ','
 			<< CsvUtil::quoted(f.mediaFilePath) << ',' << CsvUtil::quoted(f.dbStatusText().label) << ','
 			<< CsvUtil::quoted(f.fileMobId) << ',' << CsvUtil::quoted(f.masterMobId) << ',' << f.kelpieId << ','
 			<< (f.omfEra ? QStringLiteral("true") : QStringLiteral("false"));

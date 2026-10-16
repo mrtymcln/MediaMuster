@@ -58,7 +58,7 @@ private slots:
 	void approved_editorial_preferences()
 	{
 		for (const auto property : {MediaProperty::ClipName, MediaProperty::Project,
-			MediaProperty::OriginalBin})
+			MediaProperty::OriginalBin, MediaProperty::SourcePath})
 		{
 			MediaEvidence evidence;
 			evidence.observe(property, observation(MetadataSource::Mdb, QStringLiteral("database")));
@@ -148,26 +148,24 @@ private slots:
 
 	void unreadable_or_empty_preferred_text_uses_fallback()
 	{
-		for (const auto state : {PropertyReadState::NotRead, PropertyReadState::Absent,
-			PropertyReadState::Unreadable, PropertyReadState::Present})
-		{
-			MediaEvidence evidence;
-			auto unavailable = observation(MetadataSource::Mxf, QString{});
-			unavailable.readState = state;
-			evidence.observe(MediaProperty::ClipName, unavailable);
-			evidence.observe(MediaProperty::ClipName,
-				observation(MetadataSource::Mdb, QStringLiteral("database")));
-			evidence.observe(MediaProperty::ClipName,
-				observation(MetadataSource::Avb, QStringLiteral("bin")));
-			const auto &policy = MediaEngine::propertyPolicy(MediaProperty::ClipName);
-			QCOMPARE(MediaEngine::resolveProperty(evidence, policy).value.toString(),
-				QStringLiteral("database"));
-			evidence.excludeSource(MediaProperty::ClipName, MetadataSource::Mdb);
-			QVERIFY(!MediaEngine::resolveProperty(evidence, policy).value.isValid());
-			QCOMPARE(evidence.observations(MediaProperty::ClipName).first().readState, state);
-			QCOMPARE(evidence.observations(MediaProperty::ClipName).first().rawValue,
-				unavailable.rawValue);
-		}
+		for (const auto property : {MediaProperty::ClipName, MediaProperty::SourcePath})
+			for (const auto state : {PropertyReadState::NotRead, PropertyReadState::Absent,
+				PropertyReadState::Unreadable, PropertyReadState::Present})
+			{
+				MediaEvidence evidence;
+				auto unavailable = observation(MetadataSource::Mxf, QString{});
+				unavailable.readState = state;
+				evidence.observe(property, unavailable);
+				evidence.observe(property, observation(MetadataSource::Mdb, QStringLiteral("database")));
+				evidence.observe(property, observation(MetadataSource::Avb, QStringLiteral("bin")));
+				const auto &policy = MediaEngine::propertyPolicy(property);
+				QCOMPARE(MediaEngine::resolveProperty(evidence, policy).value.toString(),
+					QStringLiteral("database"));
+				evidence.excludeSource(property, MetadataSource::Mdb);
+				QVERIFY(!MediaEngine::resolveProperty(evidence, policy).value.isValid());
+				QCOMPARE(evidence.observations(property).first().readState, state);
+				QCOMPARE(evidence.observations(property).first().rawValue, unavailable.rawValue);
+			}
 	}
 
 	void false_and_zero_values_are_selectable()

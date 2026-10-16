@@ -132,7 +132,6 @@ add_library(mediamuster_mediaengine_core STATIC
     src/mediaengine/picturegeometry_p.h
     src/mediaengine/scancoordinator.cpp
     src/effectcatalogue.cpp
-    src/mediametadata.cpp
     src/mediametadatastatus.cpp
     src/diagnostics.cpp
     src/volumeidentity.cpp
@@ -177,7 +176,6 @@ set(SOURCES
     src/volumemanager.cpp
     src/mediascanner.cpp
     src/mediaengineadapter.cpp
-    src/mediametadata.cpp
     src/effectcatalogue.cpp
     src/mediacsv.cpp
     src/volumeidentity.cpp

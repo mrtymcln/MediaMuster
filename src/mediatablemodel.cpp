@@ -249,8 +249,8 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.createdDisplay();
 		case Column::FileName:
 			return f.fileName;
-		case Column::SourceFile:
-			return f.sourceFileName;
+		case Column::SourcePath:
+			return f.sourceFilePath;
 		case Column::Location:
 			return f.mediaFilePath;
 		case Column::FileMobId:
@@ -284,8 +284,8 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 		if (!lines.isEmpty())
 			return lines.join(QStringLiteral("\n\n"));
 	}
-	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::SourceFile)
-		return f.sourceFilePath; // the full path Avid recorded; the cell shows the name
+	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::SourcePath)
+		return f.sourceFilePath;
 	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::Kind &&
 		f.kind == MediaFile::Kind::Unknown)
 		return QStringLiteral("The available metadata has not identified this file as audio or video.");
@@ -317,7 +317,7 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 
 	const char *headers[] = {"Clip Name", "Project", "Bin", "Kind", "Duration", "Size (MB)",
 							 "Compression", "Resolution", "Frame Rate", "Sample Rate", "Bit Depth", "Type",
-							 "Date Created", "Filename", "Source Filename", "Location", "FileMobId", "MasterMobId", "KelpieId",
+							 "Date Created", "Filename", "Source Path", "Location", "FileMobId", "MasterMobId", "KelpieId",
 							 "Precompute Category", "Effect Category", "Effect", "Effect Sequence"};
 	static_assert(sizeof(headers) / sizeof(headers[0]) == Enum::to_underlying(Column::Count_),
 				  "Column enum and headers[] array got out of sync — "

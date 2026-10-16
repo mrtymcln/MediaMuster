@@ -156,7 +156,6 @@ enum class MediaProperty
 	EffectSequence,
 	Created,
 	Filename,
-	SourceFilename,
 	SourcePath,
 	SourceContainer,
 	Imported,
@@ -226,8 +225,6 @@ inline QString mediaPropertyName(MediaProperty property)
 		return QStringLiteral("Date Created");
 	case MediaProperty::Filename:
 		return QStringLiteral("Filename");
-	case MediaProperty::SourceFilename:
-		return QStringLiteral("Source Filename");
 	case MediaProperty::SourcePath:
 		return QStringLiteral("Source Path");
 	case MediaProperty::SourceContainer:

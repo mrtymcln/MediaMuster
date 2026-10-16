@@ -12,7 +12,6 @@
 
 #include <QHash>
 #include <QSet>
-#include <QUrl>
 #include <algorithm>
 #include <limits>
 
@@ -694,8 +693,6 @@ namespace MediaEngine
 						{
 							observe(file, MediaProperty::SourcePath, m_source, *attribute, *value, text, EvidenceBasis::Derived,
 									QStringLiteral("UNC Path is a tagged value in the linked package attribute graph."));
-							observe(file, MediaProperty::SourceFilename, m_source, *attribute, *value,
-									MediaMetadataUtil::sourceFileBaseName(text), EvidenceBasis::Derived, QStringLiteral("Basename of the recorded import path."));
 						}
 						else if (key == QLatin1String("Video"))
 							observe(file, MediaProperty::SourceContainer, m_source, *attribute, *value, text, EvidenceBasis::Derived,
@@ -727,10 +724,6 @@ namespace MediaEngine
 								remember(file, *descriptor);
 								remember(file, *locator);
 								copy(file, *locator, "NetworkLocator.URLString", MediaProperty::SourcePath);
-								if (const auto *path = unique(*locator, "NetworkLocator.URLString"))
-									observe(file, MediaProperty::SourceFilename, m_source, *locator, *path,
-											QUrl(path->decoded.toString()).fileName(QUrl::FullyDecoded), EvidenceBasis::Derived,
-											QStringLiteral("Filename of the explicitly linked import-source URL, with URI escapes decoded once. The recorded URL remains unchanged."));
 							}
 					for (const auto *track : qualifiedChildren(*origin, "GenericPackage.Tracks", "GenericTrack"))
 						for (const auto *component : componentGraph(*track))

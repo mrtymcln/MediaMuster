@@ -38,7 +38,7 @@ struct MediaFile
 
 	/// The source of the selected name; these enum values are source tags,
 	/// not preference ranks. MediaEngine's shared policy table chooses the value.
-	/// Source-package names describe imports/tapes and belong in sourceFileName.
+	/// Source-package names do not establish a master clip name or a recorded source path.
 	/// Unknown clip names stay blank rather than falling back to filenames.
 	enum class ClipNameSource
 	{
@@ -74,8 +74,7 @@ struct MediaFile
 	int timecodeBase = 0;
 	/// Drop-frame numbering (29.97/59.94). The stored frame count stays unchanged.
 	bool dropFrame = false;
-	QString sourceFilePath; ///< Path Avid recorded when the media was first imported.
-	QString sourceFileName;
+	QString sourceFilePath; ///< Selected recorded source/import path or URL; distinct from the current location.
 	QString sourceContainer; ///< "QTFF", "MXF", "MOV", etc.
 	bool isImported = false;
 

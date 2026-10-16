@@ -191,8 +191,12 @@ Loading or removing bins changes filtering only; no bin-enrichment resolver or r
 AVB history owner remains. The loaded bins and applied filter snapshots still retain
 their current metadata and graphs. Compacting those graphs remains outstanding.
 The ordinary master-association union has been replaced by one selected
-MasterMobId. Source Filename remains a separate Copland change. Clip Duration has
-been removed. Acquisition and cancellation changes are also separate. No memory
+MasterMobId. Source Filename and Clip Duration have been removed. The table, CSV,
+Search and source-column sorting use selected recorded Source Path, with no
+basename derivation or retained duplicate. The Source Path policy still prefers
+qualified header facts then MDB; a missing usable applicable database path
+triggers the existing bounded header fallback. Broader acquisition and cancellation
+changes are separate. No memory
 or scan-time saving is measured.
 [PrecomputeFilterDialog](../src/precomputefilterdialog.cpp) builds the optional
 [PrecomputeFilter](../src/precomputefilter.h).

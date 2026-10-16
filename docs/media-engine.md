@@ -53,8 +53,8 @@ stores prepared values without reselecting or projecting metadata. Confirmed
 transfers directly update physical values, field status and destination membership
 while keeping selected media values and frozen operation checks. No histories are
 rebuilt. Ordinary row/stamp/reporting associations retain one scalar MasterMobId.
-Independent header safety records preserve all captured live checks. Source
-Filename, acquisition/cancellation changes and loaded-bin graph compaction are
+Independent header safety records preserve all captured live checks. Broader
+acquisition/cancellation changes and loaded-bin graph compaction are
 separate tasks. This step establishes no measured memory or scan-time saving.
 The interface owns presentation and selection; the file-operation engine owns mutations,
 identity checks, recovery and Undo. See [architecture](architecture.md) for the
@@ -65,6 +65,15 @@ calculations, its property/policy/status slot, retained row values and the
 header-sufficiency condition for missing clip lengths. Physical-file Duration,
 exact rates, display clocks/drop-frame interpretation and master associations
 remain required.
+
+Source Filename has been removed under C94/C95/C96: no basename projection,
+property/status slot, policy, row value or helper remains. Selected recorded Source
+Path or URL now supplies the same table/CSV column position, Search and sorting.
+The existing header-then-MDB preference, master/file ownership and exact recorded
+spellings remain. Missing usable applicable database paths trigger the next
+allowed header source, with exhausted results blank and status retained. No
+current reader marks Source Path inapplicable; shared applicability propagation
+and other requested-field acquisition gaps remain part of the broader Stage 3 work.
 
 `appendMasterMetadata()` omits the group's canonical MasterMobId observation when
 joining details, because identifying a master object is not a file-to-master

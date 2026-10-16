@@ -88,6 +88,17 @@ namespace
 									  { return file.fileMobId == identity || file.masterMobIds.contains(identity); });
 		return match == files.cend() ? nullptr : &*match;
 	}
+	QString projectedDatabaseSourcePath(const QString &path, const QString &identity)
+	{
+		const auto projection = databaseProjection(path);
+		const auto *file = fileWithId(projection.files, identity);
+		if (!file)
+		{
+			QTest::qFail(qPrintable(path + QStringLiteral(": expected the matching database file")), __FILE__, __LINE__);
+			return {};
+		}
+		return MediaEngine::selectedProjectedEvidence(*file, projection).selected(MediaProperty::SourcePath).value.toString();
+	}
 
 	QJsonObject auditMemory()
 	{
@@ -124,9 +135,8 @@ namespace
 				return true;
 		return false;
 	}
-	void checkDatabaseOnlyRead(const MediaFile &file)
+	void checkQualifiedDatabaseEvidence(const MediaFile &file)
 	{
-		QCOMPARE(file.metadataStatus.headerOutcome, MediaHeaderReadOutcome::NotRead);
 		QVERIFY(hasDatabaseEvidence(file));
 		for (int field = int(MediaProperty::ClipName); field <= int(MediaProperty::ComponentDepth); ++field)
 		{
@@ -137,6 +147,23 @@ namespace
 				QVERIFY(!status.timestampConsistentSources.contains(MetadataSource::Mdb));
 				QVERIFY(!status.changedSources.contains(MetadataSource::Mdb));
 			}
+		}
+	}
+	void checkDatabaseOnlyRead(const MediaFile &file)
+	{
+		QCOMPARE(file.metadataStatus.headerOutcome, MediaHeaderReadOutcome::NotRead);
+		QVERIFY(!file.sourceFilePath.isEmpty());
+		checkQualifiedDatabaseEvidence(file);
+	}
+	void checkDatabaseSourcePathAcquisition(const MediaFile &file, bool databasePathAvailable,
+		MediaHeaderReadOutcome expectedHeaderOutcome = MediaHeaderReadOutcome::Complete)
+	{
+		if (databasePathAvailable)
+			checkDatabaseOnlyRead(file);
+		else
+		{
+			QCOMPARE(file.metadataStatus.headerOutcome, expectedHeaderOutcome);
+			checkQualifiedDatabaseEvidence(file);
 		}
 	}
 	void removeDatabaseClipNames(const QString &path)
@@ -190,9 +217,8 @@ private slots:
 
 	// An MXF SourcePackage name is NOT a rung. It names what the media came
 	// from — the imported file, or the tape — and measured across 1212 real
-	// files it was the source filename on 1191 of them. It reaches the app as
-	// sourceFileName; letting it into the Clip Name column would just put a
-	// filename back where the ruling removed one.
+	// files it was the source filename on 1191 of them. That name does not
+	// establish a recorded source path and must not fill the Clip Name column.
 	void source_package_name_is_not_a_clip_name();
 
 	// Classification follows master usage metadata, never filename/clip-name
@@ -252,8 +278,8 @@ private slots:
 	void incomplete_omf_audio_in_a_shared_folder_keeps_its_format();
 	void incomplete_omf_identity_clears_unrelated_stale_database_metadata();
 	void mxf_and_omf_staging_rules();
-	void complete_omf_database_leaves_unreadable_header_unopened_data();
-	void complete_omf_database_leaves_unreadable_header_unopened();
+	void omf_database_metadata_survives_source_path_fallback_data();
+	void omf_database_metadata_survives_source_path_fallback();
 	void ama_databases_are_read();
 
 	// What the OMF-era rework must NOT have changed for MXF-era media: a
@@ -1573,11 +1599,12 @@ void TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index()
 	// survived. The intact header/MDB still recover
 	// descriptive metadata; the MDB-only bin name proves the re-join ran.
 	QVERIFY(hasDatabaseEvidence(*tone)); // Header identity allows a typed MDB re-join even with an unreadable PMR.
-	QCOMPARE(tone->clipNameSource, listsTone
-									   ? MediaFile::ClipNameSource::Mdb
-									   : MediaFile::ClipNameSource::MaterialPackage);
+	const bool databasePathAvailable = !projectedDatabaseSourcePath(
+		folder + QStringLiteral("/msmMMOB.mdb"), tone->fileMobId).isEmpty();
+	QCOMPARE(tone->clipNameSource, listsTone && databasePathAvailable
+		? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
 	if (listsTone)
-		checkDatabaseOnlyRead(*tone);
+		checkDatabaseSourcePathAcquisition(*tone, databasePathAvailable);
 	else
 		QVERIFY(headerWasRead(*tone));
 	QCOMPARE(tone->clipName, kToneClip);
@@ -1596,15 +1623,18 @@ void TestScanner::database_described_row_survives_unreadable_header()
 	QVERIFY(QDir().mkpath(folder));
 	copyFixture(QStringLiteral("msmFMID.pmr"), folder);
 	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
-	// Invalid bytes under the indexed name: sufficient database metadata
-	// leaves this header unopened, and remains explicitly unverified.
+	// Missing recorded Source Path requires an attempt to read these invalid
+	// bytes. Other qualified database metadata must survive the failed read.
 	writeJunk(folder + QLatin1Char('/') + kToneName, 4096);
 	setModified(folder + QLatin1Char('/') + kToneName, kToneModified);
 
 	const auto results = runScan(tmp.path());
 	QCOMPARE(results.size(), 1);
 	const MediaFile &mf = results.first();
-	checkDatabaseOnlyRead(mf);
+	QVERIFY(projectedDatabaseSourcePath(folder + QStringLiteral("/msmMMOB.mdb"), mf.fileMobId).isEmpty());
+	QCOMPARE(mf.metadataStatus.headerOutcome, MediaHeaderReadOutcome::Unsupported);
+	checkQualifiedDatabaseEvidence(mf);
+	QVERIFY(mf.sourceFilePath.isEmpty());
 	QCOMPARE(mf.project, QStringLiteral("block 1729"));
 	QCOMPARE(mf.clipName, kToneClip);
 	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::Mdb);
@@ -1654,6 +1684,12 @@ void TestScanner::current_mxf_audio_database_rounds_partial_frames()
 	w.setU32(desc, "OMFI:MDFL:Length", 47040);
 	w.setU16(desc, "OMFI:MDAU:BitsPerSample", 24);
 	w.setU16(desc, "OMFI:MDAU:NumChannels", 2);
+	const quint32 attributes = w.addObject("ATTR"), sourcePath = w.addObject("ATTB");
+	w.setHandle(file, "OMFI:CPNT:Attributes", attributes);
+	w.setHandles(attributes, "OMFI:ATTR:AttrRefs", {sourcePath});
+	w.setString(sourcePath, "OMFI:ATTB:Name", "UNC Path");
+	w.setU16(sourcePath, "OMFI:ATTB:Kind", 2);
+	w.setString(sourcePath, "OMFI:ATTB:StringAttribute", "/Rushes/Partial frame duration.wav");
 	w.setHandles(head, "OMFI:ObjectSpine", {master, file});
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"), w.build()));
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"),
@@ -1665,6 +1701,7 @@ void TestScanner::current_mxf_audio_database_rounds_partial_frames()
 	QCOMPARE(row.dbStatus, MediaFile::DbStatus::Listed);
 	QVERIFY(hasDatabaseEvidence(row));
 	checkDatabaseOnlyRead(row);
+	QCOMPARE(row.sourceFilePath, QStringLiteral("/Rushes/Partial frame duration.wav"));
 	QVERIFY(!row.omfEra);
 	QCOMPARE(row.clipNameSource, MediaFile::ClipNameSource::Mdb);
 	QCOMPARE(row.clipName, QStringLiteral("Partial frame duration"));
@@ -1695,19 +1732,23 @@ void TestScanner::database_coverage_is_independent_of_unproven_pmr_time()
 
 	// The complete database supplies the file duration. Matching
 	// timestamp-looking words do not establish database freshness.
+	const bool databasePathAvailable = !projectedDatabaseSourcePath(
+		folder + QStringLiteral("/msmMMOB.mdb"), MobId::format(kToneFileId)).isEmpty();
+	const auto expectedNameSource = databasePathAvailable
+		? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage;
 	const auto normal = runScan(tmp.path());
 	QCOMPARE(normal.size(), 1);
-	QCOMPARE(normal.first().clipNameSource, MediaFile::ClipNameSource::Mdb);
-	checkDatabaseOnlyRead(normal.first());
+	QCOMPARE(normal.first().clipNameSource, expectedNameSource);
+	checkDatabaseSourcePathAcquisition(normal.first(), databasePathAvailable);
 
 	// A different filesystem timestamp before discovery cannot certify or
-	// disprove database contents, and does not alone force a header read.
+	// disprove database contents, or change the required-path fallback decision.
 	setModified(folder + QLatin1Char('/') + kToneName, kToneModified + 10);
 	const auto differentTime = runScan(tmp.path());
 	QCOMPARE(differentTime.size(), 1);
-	checkDatabaseOnlyRead(differentTime.first());
+	checkDatabaseSourcePathAcquisition(differentTime.first(), databasePathAvailable);
 	QCOMPARE(differentTime.first().clipName, kToneClip);
-	QCOMPARE(differentTime.first().clipNameSource, MediaFile::ClipNameSource::Mdb);
+	QCOMPARE(differentTime.first().clipNameSource, expectedNameSource);
 	QCOMPARE(differentTime.first().project, QStringLiteral("block 1729"));
 	QVERIFY(!differentTime.first().originalBin.isEmpty());
 	QCOMPARE(differentTime.first().kind, MediaFile::Kind::Audio);
@@ -1778,14 +1819,16 @@ void TestScanner::zero_pmr_timestamp_does_not_certify_database_freshness()
 	const auto rows = runScan(tmp.path());
 	QCOMPARE(rows.size(), 1);
 	const MediaFile &mf = rows.first();
-	checkDatabaseOnlyRead(mf);
+	QVERIFY(projectedDatabaseSourcePath(folder + QStringLiteral("/msmMMOB.mdb"), mf.fileMobId).isEmpty());
+	QCOMPARE(mf.metadataStatus.headerOutcome, MediaHeaderReadOutcome::Unsupported);
+	checkQualifiedDatabaseEvidence(mf);
 	QVERIFY(hasDatabaseEvidence(mf));
 	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 	QCOMPARE(mf.type, MediaFile::Type::Media);
 	QCOMPARE(mf.compression, QStringLiteral("PCM"));
 	QCOMPARE(mf.sampleRate, 48000);
-	QCOMPARE(mf.clipName, kToneClip); // The unread header has made no identity claim.
+	QCOMPARE(mf.clipName, kToneClip); // The unreadable header has made no identity claim.
 }
 
 void TestScanner::current_render_with_missing_project_survives_failed_header_read()
@@ -2008,9 +2051,13 @@ void TestScanner::pmr_v1_recovers_unique_master_from_mdb()
 	QCOMPARE(mf.project, QStringLiteral("WAVE project"));
 	QCOMPARE(mf.type, MediaFile::Type::Media);
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
-	checkDatabaseOnlyRead(mf);
+	// This authored graph has no recorded path, so the junk header is tried.
+	QVERIFY(projectedDatabaseSourcePath(folder + QStringLiteral("/msmMMOB.mdb"), mf.fileMobId).isEmpty());
+	QCOMPARE(mf.metadataStatus.headerOutcome, MediaHeaderReadOutcome::Unsupported);
+	checkQualifiedDatabaseEvidence(mf);
 	QVERIFY(mf.operationScanReceipt);
-	QCOMPARE(mf.operationScanReceipt->databaseFileMobIdToVerify, mf.fileMobId);
+	QVERIFY(mf.operationScanReceipt->databaseFileMobIdToVerify.isEmpty());
+	QVERIFY(mf.operationScanReceipt->headerIdentity.fileMobId.isEmpty());
 }
 
 void TestScanner::omf2_header_keeps_master_identity_with_unknown_classification()
@@ -2526,15 +2573,16 @@ void TestScanner::omf_disabled_preserves_mxf_and_its_databases()
 	QVERIFY(!mxf.omfEra);
 	QVERIFY(!mxf.isQuarantined);
 	QCOMPARE(hasDatabaseEvidence(mxf), withDatabases);
+	const bool databasePathAvailable = withDatabases && !projectedDatabaseSourcePath(
+		folder + QStringLiteral("/msmMMOB.mdb"), mxf.fileMobId).isEmpty();
 	if (withDatabases)
-		checkDatabaseOnlyRead(mxf);
+		checkDatabaseSourcePathAcquisition(mxf, databasePathAvailable);
 	else
 		QVERIFY(headerWasRead(mxf));
 	QCOMPARE(mxf.dbStatus, withDatabases ? MediaFile::DbStatus::Listed : MediaFile::DbStatus::NoDatabase);
 	QCOMPARE(mxf.clipName, kToneClip);
-	QCOMPARE(mxf.clipNameSource, withDatabases
-									 ? MediaFile::ClipNameSource::Mdb
-									 : MediaFile::ClipNameSource::MaterialPackage);
+	QCOMPARE(mxf.clipNameSource, databasePathAvailable
+		? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
 	QCOMPARE(mxf.sampleRate, 48000);
 }
 
@@ -2659,8 +2707,8 @@ void TestScanner::omf_volume_root_scans_both_folders()
 	QVERIFY(QDir().mkpath(omfRoot));
 	copyFixture(QStringLiteral("omf/mc2026_audio/msmFMID.pmr"), omfRoot);
 	copyFixture(QStringLiteral("omf/mc2026_audio/msmMMOB.mdb"), omfRoot);
-	// A real WAVE and invalid bytes under the AIFF name: database-first
-	// scheduling must retain the origin of their database-only facts.
+	// A real WAVE and invalid bytes under the AIFF name exercise both
+	// successful header fallback and qualified database fallback after failure.
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, omfRoot);
 	setModified(omfRoot + QLatin1Char('/') + kOmfWav, kOmfWavModified);
 	writeJunk(omfRoot + QLatin1Char('/') + kOmfAif, 4096);
@@ -2677,15 +2725,18 @@ void TestScanner::omf_volume_root_scans_both_folders()
 	const MediaFile *wav = rowNamed(results, kOmfWav);
 	QVERIFY(wav != nullptr);
 	checkOmfAudioRow(*wav, kOmfWavClip, kOmfWavBin, kOmfWavFileMob, kOmfWavMasterMob);
-	// Both database matches are sufficient. The real WAVE and invalid AIFF
-	// headers therefore remain unopened; neither supplies a metadata claim.
-	checkDatabaseOnlyRead(*wav);
-	QCOMPARE(wav->clipNameSource, MediaFile::ClipNameSource::Mdb);
+	const bool wavePathAvailable = !projectedDatabaseSourcePath(
+		omfRoot + QStringLiteral("/msmMMOB.mdb"), wav->fileMobId).isEmpty();
+	checkDatabaseSourcePathAcquisition(*wav, wavePathAvailable);
+	QCOMPARE(wav->clipNameSource, wavePathAvailable
+		? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
 
 	const MediaFile *aif = rowNamed(results, kOmfAif);
 	QVERIFY(aif != nullptr);
 	checkOmfAudioRow(*aif, kOmfAifClip, kOmfAifBin, kOmfAifFileMob, kOmfAifMasterMob);
-	checkDatabaseOnlyRead(*aif);
+	const bool aiffPathAvailable = !projectedDatabaseSourcePath(
+		omfRoot + QStringLiteral("/msmMMOB.mdb"), aif->fileMobId).isEmpty();
+	checkDatabaseSourcePathAcquisition(*aif, aiffPathAvailable, MediaHeaderReadOutcome::Unsupported);
 	QCOMPARE(aif->clipNameSource, MediaFile::ClipNameSource::Mdb);
 }
 
@@ -2738,7 +2789,8 @@ void TestScanner::omf_root_pointed_at_directly_never_scans_as_mxf_folders()
 	copyFixture(QStringLiteral("omf/mc2026_audio/msmMMOB.mdb"), omfRoot);
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, omfRoot);
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfAif, omfRoot);
-	// Both database records supply the required metadata, including timing.
+	// Database records supply timing and classification. Their actual Source
+	// Path coverage determines whether the corresponding header must be read.
 
 	const auto results = runManualScan(omfRoot, true);
 	QCOMPARE(results.size(), 2);
@@ -2748,15 +2800,21 @@ void TestScanner::omf_root_pointed_at_directly_never_scans_as_mxf_folders()
 	const MediaFile *wav = rowNamed(results, kOmfWav);
 	QVERIFY(wav != nullptr);
 	checkOmfAudioRow(*wav, kOmfWavClip, kOmfWavBin, kOmfWavFileMob, kOmfWavMasterMob);
-	checkDatabaseOnlyRead(*wav);
-	QCOMPARE(wav->clipNameSource, MediaFile::ClipNameSource::Mdb);
+	const bool wavePathAvailable = !projectedDatabaseSourcePath(
+		omfRoot + QStringLiteral("/msmMMOB.mdb"), wav->fileMobId).isEmpty();
+	checkDatabaseSourcePathAcquisition(*wav, wavePathAvailable);
+	QCOMPARE(wav->clipNameSource, wavePathAvailable
+		? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
 	QCOMPARE(wav->volumePath, tmp.path());
 
 	const MediaFile *aif = rowNamed(results, kOmfAif);
 	QVERIFY(aif != nullptr);
 	checkOmfAudioRow(*aif, kOmfAifClip, kOmfAifBin, kOmfAifFileMob, kOmfAifMasterMob);
-	checkDatabaseOnlyRead(*aif);
-	QCOMPARE(aif->clipNameSource, MediaFile::ClipNameSource::Mdb);
+	const bool aiffPathAvailable = !projectedDatabaseSourcePath(
+		omfRoot + QStringLiteral("/msmMMOB.mdb"), aif->fileMobId).isEmpty();
+	checkDatabaseSourcePathAcquisition(*aif, aiffPathAvailable);
+	QCOMPARE(aif->clipNameSource, aiffPathAvailable
+		? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
 }
 
 void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
@@ -2809,7 +2867,7 @@ void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
 void TestScanner::omf_video_rows_show_avid_descriptive_names()
 {
 	// Three shipped slates under their own databases exercise verified codec
-	// naming and visible-raster selection without opening headers.
+	// names and visible-raster selection, including required Source Path fallback.
 	struct Pin
 	{
 		const char *file;
@@ -2858,16 +2916,19 @@ void TestScanner::omf_video_rows_show_avid_descriptive_names()
 		QVERIFY2(!mf->project.isEmpty(), pin.file); // the v2 PMR has none; the MDB's _PJ fills it
 		QVERIFY(OmfUid::isWrappedOmfId(mf->fileMobId));
 		QVERIFY(OmfUid::isWrappedOmfId(mf->masterMobId));
-		checkDatabaseOnlyRead(*mf);
-		QCOMPARE(mf->clipNameSource, MediaFile::ClipNameSource::Mdb);
+		const bool databasePathAvailable = !projectedDatabaseSourcePath(
+			omfRoot + QStringLiteral("/msmMMOB.mdb"), mf->fileMobId).isEmpty();
+		checkDatabaseSourcePathAcquisition(*mf, databasePathAvailable);
+		QCOMPARE(mf->clipNameSource, databasePathAvailable
+			? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
 	}
 }
 
 void TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback()
 {
 	// A shared-storage workstation folder owns its own database pair.
-	// Complete matched records describe media without a header read;
-	// unlisted media recovers its metadata from its own file.
+	// Matched records retain their qualified metadata. Missing recorded Source
+	// Path and unlisted media require fallback to each physical file's own header.
 	struct Pin
 	{
 		const char *file;
@@ -2918,8 +2979,11 @@ void TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback()
 		QVERIFY(OmfUid::isWrappedOmfId(mf->masterMobId));
 		QCOMPARE(mf->type, MediaFile::Type::Media);
 		QCOMPARE(mf->bitDepth, QStringLiteral("8-bit"));
-		checkDatabaseOnlyRead(*mf);
-		QCOMPARE(mf->clipNameSource, MediaFile::ClipNameSource::Mdb);
+		const bool databasePathAvailable = !projectedDatabaseSourcePath(
+			folder + QStringLiteral("/msmMMOB.mdb"), mf->fileMobId).isEmpty();
+		checkDatabaseSourcePathAcquisition(*mf, databasePathAvailable);
+		QCOMPARE(mf->clipNameSource, databasePathAvailable
+			? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
 	}
 	const MediaFile *wav = rowNamed(results, kOmfWav);
 	QVERIFY(wav != nullptr);
@@ -3062,9 +3126,12 @@ void TestScanner::unrelated_database_cannot_reclassify_omf_audio()
 			QVERIFY(row != nullptr);
 			checkOmfAudioMetadata(*row, pin.clip, matchingMdb ? pin.bin : QString{}, pin.fileMob, pin.masterMob);
 			QCOMPARE(row->mediaFolderName, kOmfFolder);
-			QCOMPARE(row->clipNameSource, matchingPmr && matchingMdb ? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
+			const bool databasePathAvailable = matchingPmr && matchingMdb && !projectedDatabaseSourcePath(
+				folder + QStringLiteral("/msmMMOB.mdb"), row->fileMobId).isEmpty();
+			QCOMPARE(row->clipNameSource, databasePathAvailable
+				? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
 			if (matchingPmr && matchingMdb)
-				checkDatabaseOnlyRead(*row);
+				checkDatabaseSourcePathAcquisition(*row, databasePathAvailable);
 			else
 				QVERIFY(headerWasRead(*row));
 			QCOMPARE(hasDatabaseEvidence(*row), matchingMdb);
@@ -3159,7 +3226,6 @@ void TestScanner::incomplete_omf_identity_clears_unrelated_stale_database_metada
 	QVERIFY(row.project.isEmpty());
 	QVERIFY(row.originalBin.isEmpty());
 	QVERIFY(row.sourceFilePath.isEmpty());
-	QVERIFY(row.sourceFileName.isEmpty());
 	QVERIFY(row.sourceContainer.isEmpty());
 	QVERIFY(!hasDatabaseEvidence(row));
 	QCOMPARE(row.type, MediaFile::Type::Unknown);
@@ -3221,14 +3287,14 @@ void TestScanner::mxf_and_omf_staging_rules()
 	QCOMPARE(mxfFolders, (QSet<QString>{QStringLiteral("1"), QStringLiteral("Temp"), QStringLiteral("Quarantine")}));
 }
 
-void TestScanner::complete_omf_database_leaves_unreadable_header_unopened_data()
+void TestScanner::omf_database_metadata_survives_source_path_fallback_data()
 {
 	QTest::addColumn<bool>("shared");
 	QTest::newRow("flat-omfi") << false;
 	QTest::newRow("shared-workstation") << true;
 }
 
-void TestScanner::complete_omf_database_leaves_unreadable_header_unopened()
+void TestScanner::omf_database_metadata_survives_source_path_fallback()
 {
 	QFETCH(bool, shared);
 	QTemporaryDir tmp;
@@ -3238,8 +3304,9 @@ void TestScanner::complete_omf_database_leaves_unreadable_header_unopened()
 	QVERIFY(QDir().mkpath(folder));
 	copyFixture(QStringLiteral("omf/mc2026_audio/msmFMID.pmr"), folder);
 	copyFixture(QStringLiteral("omf/mc2026_audio/msmMMOB.mdb"), folder);
-	// These headers are unreadable, but sufficient database matches leave
-	// them unopened. Database freshness remains explicitly unknown.
+	// Recorded Source Path controls whether these junk headers can stay
+	// unopened. A failed fallback must retain qualified database metadata
+	// and must not turn its unknown freshness into a verified verdict.
 	writeJunk(folder + QLatin1Char('/') + kOmfWav, 4096);
 	writeJunk(folder + QLatin1Char('/') + kOmfAif, 4096);
 	setModified(folder + QLatin1Char('/') + kOmfWav, kOmfWavModified);
@@ -3256,7 +3323,9 @@ void TestScanner::complete_omf_database_leaves_unreadable_header_unopened()
 	for (const MediaFile &row : rows)
 	{
 		QVERIFY(hasDatabaseEvidence(row));
-		checkDatabaseOnlyRead(row);
+		const bool databasePathAvailable = !projectedDatabaseSourcePath(
+			folder + QStringLiteral("/msmMMOB.mdb"), row.fileMobId).isEmpty();
+		checkDatabaseSourcePathAcquisition(row, databasePathAvailable, MediaHeaderReadOutcome::Unsupported);
 		QCOMPARE(row.clipNameSource, MediaFile::ClipNameSource::Mdb);
 		QCOMPARE(row.sampleRate, 48000);
 		QCOMPARE(row.channels, 1);

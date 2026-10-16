@@ -333,7 +333,15 @@ void TestOperationUi::csv_export_completes_before_return()
 		auto scan = QSharedPointer<MediaEngine::ScanResult>::create();
 		previousScan = scan;
 		for (int index = 0; index < 3; ++index)
-			scan->files.append(authoredScanRow(path(QStringLiteral("original-%1.mxf").arg(index)), index));
+		{
+			auto file = authoredScanRow(path(QStringLiteral("original-%1.mxf").arg(index)), index);
+			auto sourcePath = file.evidence.observations(MediaProperty::ClipName).first();
+			sourcePath.property = mediaPropertyName(MediaProperty::SourcePath);
+			sourcePath.value = QStringLiteral("file:///Recorded%20Imports/source-%1.mov").arg(index);
+			file.evidence.observe(MediaProperty::SourcePath, std::move(sourcePath));
+			MediaEngine::selectMetadata(file.evidence);
+			scan->files.append(std::move(file));
+		}
 		previousSource = scan->files.first().evidence.observations(MediaProperty::ClipName).first().snapshot;
 		const ScanRowLookup lookup(*scan);
 		QVector<MediaFile> rows;
@@ -343,6 +351,7 @@ void TestOperationUi::csv_export_completes_before_return()
 		window.m_tableView->sortByColumn(
 			static_cast<int>(MediaTableModel::Column::ClipName), Qt::AscendingOrder);
 		selectedLine = MediaCsv::rowLine(window.fileAtProxyRow(0), expectedOptions);
+		QVERIFY(selectedLine.contains(QStringLiteral("\"file:///Recorded%20Imports/source-0.mov\"")));
 	}
 	QCOMPARE(window.m_model->rowCount(), 3);
 	QVERIFY(previousScan.isNull());
@@ -393,6 +402,8 @@ void TestOperationUi::csv_export_completes_before_return()
 					changed[0].clipName = QStringLiteral("Edited first");
 					changed[1].clipName = QStringLiteral("Edited second");
 					changed[2].clipName = QStringLiteral("Hidden after save");
+					changed[0].sourceFilePath = QStringLiteral("C:\\Edited Imports\\first.mov");
+					changed[1].sourceFilePath = QStringLiteral("/Edited Imports/second.mov");
 					window.m_model->setMediaFiles(changed);
 					window.m_proxy->setSearchText(QStringLiteral("Edited"));
 					window.m_tableView->sortByColumn(
@@ -1511,6 +1522,7 @@ void TestOperationUi::table_widths_change_only_on_request_and_reset_each_session
 	using Column = MediaTableModel::Column;
 	const int clipColumn = static_cast<int>(Column::ClipName);
 	const int fileColumn = static_cast<int>(Column::FileName);
+	const int sourcePathColumn = static_cast<int>(Column::SourcePath);
 	int initialFilePosition = -1;
 	{
 		MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
@@ -1519,14 +1531,18 @@ void TestOperationUi::table_widths_change_only_on_request_and_reset_each_session
 		initialFilePosition = header->visualIndex(fileColumn);
 		QCOMPARE(table->columnWidth(clipColumn), 250);
 		QCOMPARE(table->columnWidth(static_cast<int>(Column::Location)), 250);
+		QCOMPARE(table->columnWidth(sourcePathColumn), 250);
 		table->setColumnWidth(clipColumn, 333);
+		table->setColumnWidth(sourcePathColumn, 345);
 		header->moveSection(header->visualIndex(fileColumn), 1);
 
 		MediaFile file;
 		file.mediaFilePath = path("clip.mxf");
 		file.clipName = QString(100, QLatin1Char('W'));
+		file.sourceFilePath = QStringLiteral("file:///Recorded%20Imports/") + QString(120, QLatin1Char('W')) + QStringLiteral(".mov");
 		window.onScanFinished(TestMediaFile::seeded({file}));
 		QCOMPARE(table->columnWidth(clipColumn), 333);
+		QCOMPARE(table->columnWidth(sourcePathColumn), 345);
 		QCOMPARE(header->visualIndex(fileColumn), 1);
 
 		QAction *fit = nullptr;
@@ -1536,13 +1552,18 @@ void TestOperationUi::table_widths_change_only_on_request_and_reset_each_session
 		QVERIFY(fit);
 		fit->trigger();
 		const int fittedWidth = table->columnWidth(clipColumn);
+		const int fittedSourceWidth = table->columnWidth(sourcePathColumn);
 		QVERIFY(fittedWidth > 333);
+		QVERIFY(fittedSourceWidth > 345);
 		file.clipName = QStringLiteral("Short");
+		file.sourceFilePath.clear();
 		window.onScanFinished(TestMediaFile::seeded({file}));
 		QCOMPARE(table->columnWidth(clipColumn), fittedWidth);
+		QCOMPARE(table->columnWidth(sourcePathColumn), fittedSourceWidth);
 	}
 	MainWindow freshWindow(nullptr, MainWindow::StartupMode::UiOnly);
 	QCOMPARE(freshWindow.m_tableView->columnWidth(clipColumn), 250);
+	QCOMPARE(freshWindow.m_tableView->columnWidth(sourcePathColumn), 250);
 	QCOMPARE(freshWindow.m_tableView->horizontalHeader()->visualIndex(fileColumn), initialFilePosition);
 }
 
@@ -1656,6 +1677,7 @@ void TestOperationUi::optional_columns_match_csv_and_preserve_retained_sort()
 	file.mediaFilePath = path(QStringLiteral("short.mxf"));
 	file.fileName = QStringLiteral("short.mxf");
 	file.clipName = QStringLiteral("Short clip");
+	file.sourceFilePath = QStringLiteral("/a-directory/z.mov");
 	file.kind = MediaFile::Kind::Video;
 	file.duration = {19, {25, 1}, {25, 1}, MediaDuration::Source::Descriptor};
 	file.timecodeBase = 25;
@@ -1663,6 +1685,7 @@ void TestOperationUi::optional_columns_match_csv_and_preserve_retained_sort()
 	longer.mediaFilePath = path(QStringLiteral("long.mxf"));
 	longer.fileName = QStringLiteral("long.mxf");
 	longer.clipName = QStringLiteral("Long clip");
+	longer.sourceFilePath = QStringLiteral("/Z-directory/a.mov");
 	longer.duration = {250, {25, 1}, {25, 1}, MediaDuration::Source::Descriptor};
 	window.m_model->setMediaFiles(TestMediaFile::seeded({file, longer}));
 	// Exercise both gates in one window, including removing and reinserting columns.
@@ -1682,6 +1705,8 @@ void TestOperationUi::optional_columns_match_csv_and_preserve_retained_sort()
 			}
 			QCOMPARE(headings.count(QStringLiteral("FileMobId")), 1);
 			QCOMPARE(headings.count(QStringLiteral("MasterMobId")), 1);
+			QCOMPARE(headings.count(QStringLiteral("Source Path")), 1);
+			QVERIFY(!headings.contains(QStringLiteral("Source Filename")));
 			headings.removeAll(QStringLiteral("FileMobId"));
 			headings.removeAll(QStringLiteral("MasterMobId"));
 			headings.removeAll(QStringLiteral("KelpieId"));
@@ -1691,20 +1716,25 @@ void TestOperationUi::optional_columns_match_csv_and_preserve_retained_sort()
 		}
 	}
 	window.setPrecomputesEnabled(true);
-	const int duration = static_cast<int>(MediaTableModel::Column::Duration);
-	window.m_tableView->sortByColumn(duration, Qt::DescendingOrder);
-	for (const bool precomputes : {false, true, false})
+	for (const auto column : {MediaTableModel::Column::Duration, MediaTableModel::Column::SourcePath})
 	{
-		window.setPrecomputesEnabled(precomputes);
-		for (const bool omf : {false, true})
+		const int logical = static_cast<int>(column);
+		window.m_tableView->sortByColumn(logical, Qt::DescendingOrder);
+		for (const bool precomputes : {false, true, false})
 		{
-			window.setOmfScanEnabled(omf);
-			QCOMPARE(window.m_proxy->sortColumn(), duration);
-			QCOMPARE(window.m_proxy->sortOrder(), Qt::DescendingOrder);
-			QCOMPARE(window.m_proxy->rowCount(), 2);
-			QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, longer.mediaFilePath);
-			QCOMPARE(window.m_proxy->index(0, duration).data().toString(), QStringLiteral("00:00:10:00"));
-			QCOMPARE(window.m_proxy->index(1, duration).data().toString(), QStringLiteral("00:00:00:19"));
+			window.setPrecomputesEnabled(precomputes);
+			for (const bool omf : {false, true})
+			{
+				window.setOmfScanEnabled(omf);
+				QCOMPARE(window.m_proxy->sortColumn(), logical);
+				QCOMPARE(window.m_proxy->sortOrder(), Qt::DescendingOrder);
+				QCOMPARE(window.m_proxy->rowCount(), 2);
+				QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, longer.mediaFilePath);
+				QCOMPARE(window.m_proxy->index(0, logical).data().toString(),
+					column == MediaTableModel::Column::Duration ? QStringLiteral("00:00:10:00") : longer.sourceFilePath);
+				QCOMPARE(window.m_proxy->index(1, logical).data().toString(),
+					column == MediaTableModel::Column::Duration ? QStringLiteral("00:00:00:19") : file.sourceFilePath);
+			}
 		}
 	}
 }

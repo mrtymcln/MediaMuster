@@ -31,7 +31,7 @@ public:
 		Type,
 		Created,
 		FileName,
-		SourceFile,
+		SourcePath,
 		Location,
 		FileMobId,
 		MasterMobId,

@@ -150,6 +150,12 @@ database match or required table metadata is missing or conflicting. A deliberat
 unopened header keeps a `NotRead` receipt and the scheduling reason. Empty or malformed
 files remain physical inventory rows.
 
+Source Path is a requested field: a missing, empty, unreadable or unresolved
+applicable database path triggers the remaining header fallback. A usable database
+path does not force a header read just to obtain its preferred value. Current
+readers establish no Source Path inapplicability rule; missing import metadata
+therefore remains unavailable rather than being assumed inapplicable.
+
 PMR/MDB/MXF/OMF reading storage and the working scan history are temporary.
 Databases are buffered in RAM while parsing. Observations, original bytes,
 alternatives and source receipts support matching and validation while the scanner
@@ -265,7 +271,7 @@ to delete.
 
 The default column order is Clip Name, Project, Bin, Kind, Duration, Size (MB),
 Compression, Resolution, Frame Rate, Sample Rate, Bit Depth, Type, Date Created, Filename,
-Source Filename, Location, FileMobId, MasterMobId and KelpieId, followed by OmfScan
+Source Path, Location, FileMobId, MasterMobId and KelpieId, followed by OmfScan
 when its flag is enabled. MasterMobId displays the one selected association,
 or stays blank when none can be selected.
 Compression is the readable format name, such as `Avid DNx HQX [DNxHD 175x]`.
@@ -403,8 +409,11 @@ column is hidden.
 Moving table columns does not change export order. The exporter maintains its
 own explicit column list; a UI test compares its headings against the table's
 visual order with precompute details enabled and disabled. Location is the managed
-media file's full path; Source File is its recorded original import filename.
-Separate Volume, Source Path, Source Container and Imported fields are not exported.
+media file's current full path; Source Path is the selected recorded source/import
+path or URL. The table, tooltip, CSV and Search use that recorded spelling without
+extracting or separately retaining its basename. Search also matches directory
+text and filenames within it. Conflicting preferred paths remain blank under the
+normal selector. Separate Volume, Source Container and Imported fields are not exported.
 
 ## Copy, Move and Delete
 

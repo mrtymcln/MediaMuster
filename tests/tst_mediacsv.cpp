@@ -78,6 +78,8 @@ private slots:
 	void sample_rate_and_bit_depth_are_exported();
 
 	void location_is_retained_and_removed_columns_are_omitted();
+	void source_path_is_exported_with_csv_protection_data();
+	void source_path_is_exported_with_csv_protection();
 	void formula_injection_is_neutralised();
 	void write_produces_header_plus_one_line_per_row();
 	void write_failure_preserves_existing_export();
@@ -131,7 +133,7 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 	f.effectCategory = QStringLiteral("Image");
 	f.effect = QStringLiteral("Color Correction");
 	f.effectSequence = QStringLiteral("Opening_Sequence");
-	f.sourceFileName = QStringLiteral("camera-original.mov");
+	f.sourceFilePath = QStringLiteral("file:///Recorded%20Imports/camera-original.mov");
 	f.modified = QDateTime(QDate(2026, 9, 5), QTime(10, 15));
 	f.mediaFilePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/1/A11B22C33D44.mxf");
 	f.dbStatus = MediaFile::DbStatus::NoReference;
@@ -141,7 +143,7 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 	{
 		QStringList expectedHeaders = QStringLiteral(
 										  "Clip Name,Project,Bin,Kind,Duration,Size (MB),Compression,Resolution,Frame Rate,Sample Rate,Bit Depth,Type,"
-										  "Date Created,Filename,Source Filename,Location,Database Status,FileMobId,MasterMobId,KelpieId,OmfScan")
+										  "Date Created,Filename,Source Path,Location,Database Status,FileMobId,MasterMobId,KelpieId,OmfScan")
 										  .split(QLatin1Char(','));
 		QStringList expectedFields{
 			QStringLiteral("Scene 1 - Take 3"), QStringLiteral("MyFilm"), QStringLiteral("Rushes"),
@@ -149,7 +151,7 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 			QStringLiteral("Avid DNx SQ (DNxHD 145)"), QStringLiteral("1920x1080"), QStringLiteral("25"),
 			QStringLiteral("48 kHz"), QStringLiteral("10-bit"), QStringLiteral("Precompute"),
 			QStringLiteral("2026-07-20 12:30"),
-			QStringLiteral("A11B22C33D44.mxf"), QStringLiteral("camera-original.mov"),
+			QStringLiteral("A11B22C33D44.mxf"), QStringLiteral("file:///Recorded%20Imports/camera-original.mov"),
 			QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/1/A11B22C33D44.mxf"),
 			QStringLiteral("No Reference"), QStringLiteral("file-mob-id"), QStringLiteral("master-mob-id"), QStringLiteral("0"), QStringLiteral("false")};
 		if (enabled)
@@ -229,13 +231,54 @@ void TestMediaCsv::location_is_retained_and_removed_columns_are_omitted()
 		QCOMPARE(fields.size(), headers.size());
 		QCOMPARE(headers.count(QStringLiteral("Location")), 1);
 		QCOMPARE(fields.at(headers.indexOf(QStringLiteral("Location"))), f.mediaFilePath);
-		for (const auto &removed : {QStringLiteral("Volume"), QStringLiteral("Source Path"),
+		QCOMPARE(headers.count(QStringLiteral("Source Path")), 1);
+		QCOMPARE(fields.at(headers.indexOf(QStringLiteral("Source Path"))), f.sourceFilePath);
+		for (const auto &removed : {QStringLiteral("Volume"), QStringLiteral("Source Filename"),
 									QStringLiteral("Source Container"), QStringLiteral("Imported")})
 			QVERIFY(!headers.contains(removed));
 		QVERIFY(!fields.contains(f.volumeName));
-		QVERIFY(!fields.contains(f.sourceFilePath));
 		QVERIFY(!fields.contains(f.sourceContainer));
 		QVERIFY(!fields.contains(QStringLiteral("yes")));
+	}
+}
+
+void TestMediaCsv::source_path_is_exported_with_csv_protection_data()
+{
+	QTest::addColumn<QString>("sourcePath");
+	QTest::addColumn<QString>("expected");
+	QTest::newRow("posix") << QStringLiteral("/Recorded Imports/Camera A/interview.mov")
+		<< QStringLiteral("/Recorded Imports/Camera A/interview.mov");
+	QTest::newRow("windows") << QStringLiteral("C:\\Recorded Imports\\Camera A\\interview.mov")
+		<< QStringLiteral("C:\\Recorded Imports\\Camera A\\interview.mov");
+	QTest::newRow("url") << QStringLiteral("file:///Recorded%20Imports/Camera%20A/interview.mov")
+		<< QStringLiteral("file:///Recorded%20Imports/Camera%20A/interview.mov");
+	QTest::newRow("csv-characters") << QStringLiteral("/imports/Day,\"Quoted\"\nCamera/interview.mov")
+		<< QStringLiteral("/imports/Day,\"Quoted\"\nCamera/interview.mov");
+	QTest::newRow("formula-prefix") << QStringLiteral("=HYPERLINK(\"file:///imports/interview.mov\")")
+		<< QStringLiteral("'=HYPERLINK(\"file:///imports/interview.mov\")");
+	QTest::newRow("at-prefix") << QStringLiteral("@imports/interview.mov") << QStringLiteral("'@imports/interview.mov");
+	QTest::newRow("tab-prefix") << QStringLiteral("\t/imports/interview.mov") << QStringLiteral("'\t/imports/interview.mov");
+	QTest::newRow("unavailable") << QString{} << QString{};
+}
+
+void TestMediaCsv::source_path_is_exported_with_csv_protection()
+{
+	QFETCH(QString, sourcePath);
+	QFETCH(QString, expected);
+	auto file = sampleRow();
+	file.sourceFilePath = sourcePath;
+	file.mediaFilePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/1/managed.mxf");
+	for (const bool enabled : {false, true})
+	{
+		const MediaCsv::Options options{enabled};
+		const auto headers = readCsvRecord(MediaCsv::headerLine(options));
+		const auto fields = readCsvRecord(MediaCsv::rowLine(file, options));
+		QCOMPARE(fields.size(), headers.size());
+		QCOMPARE(headers.count(QStringLiteral("Source Path")), 1);
+		QVERIFY(!headers.contains(QStringLiteral("Source Filename")));
+		QCOMPARE(fields.at(headers.indexOf(QStringLiteral("Source Path"))), expected);
+		QCOMPARE(fields.at(headers.indexOf(QStringLiteral("Location"))), file.mediaFilePath);
+		QCOMPARE(fields.at(headers.indexOf(QStringLiteral("Filename"))), file.fileName);
 	}
 }
 

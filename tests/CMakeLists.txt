@@ -72,7 +72,6 @@ set(MEDIAENGINE_ISOLATED_VALUE_SOURCES
     ${CMAKE_SOURCE_DIR}/src/mediaengine/compressionnames_p.cpp
     ${CMAKE_SOURCE_DIR}/src/mediaengine/metadataselectionpolicy.cpp
     ${CMAKE_SOURCE_DIR}/src/effectcatalogue.cpp
-    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 foreach(family IN ITEMS MDB OMF)
@@ -155,12 +154,6 @@ target_compile_definitions(tst_omfuid PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
-# Recorded import-path basename handling.
-mediamuster_add_test(tst_mediametadata media
-    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
-    ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
-)
-
 # AvbBinLoader: complete structured documents in both byte orders, malformed
 # object/reference boundaries, typed identities and metadata ownership, plus
 # the two real OMF-era bins in fixtures/omf.
@@ -186,7 +179,6 @@ mediamuster_add_test(tst_scanner media
     ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
     ${CMAKE_SOURCE_DIR}/src/mediascanner.cpp
-    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
     ${CMAKE_SOURCE_DIR}/src/effectcatalogue.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
@@ -239,7 +231,6 @@ mediamuster_add_test(tst_fileoperations operations
     ${CMAKE_SOURCE_DIR}/src/opfile.cpp
     ${CMAKE_SOURCE_DIR}/src/volumeidentity.cpp
     ${CMAKE_SOURCE_DIR}/src/nativefile.cpp
-    ${CMAKE_SOURCE_DIR}/src/mediametadata.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 target_compile_definitions(tst_fileoperations PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")

@@ -468,7 +468,7 @@ void MainWindow::buildTable()
 	setW(Col::Type, 100);
 	setW(Col::Created, 150);
 	setW(Col::FileName, 250);
-	setW(Col::SourceFile, 250);
+	setW(Col::SourcePath, 250);
 	setW(Col::Location, 250);
 }
 

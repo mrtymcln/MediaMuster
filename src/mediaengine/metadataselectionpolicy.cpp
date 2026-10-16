@@ -152,10 +152,6 @@ namespace MediaEngine
 			{MediaProperty::Filename, SelectionRule::PreferredValue,
 			 prefer({Source::Filesystem})},
 
-			// Original source basename interpreted from a recorded import path or locator.
-			{MediaProperty::SourceFilename, SelectionRule::PreferredValue,
-			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb})},
-
 			// The original import/source path recorded by Avid, not this file's current path.
 			{MediaProperty::SourcePath, SelectionRule::PreferredValue,
 			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb})},

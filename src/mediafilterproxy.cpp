@@ -231,7 +231,7 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 		// stays: a Windows path ("E:/...") need not contain the label.
 		return matches(f.clipName) || matches(f.project) || matches(f.originalBin) ||
 			   matches(f.compression) || matches(f.volumeName) || matches(f.mediaFilePath) ||
-			   matches(f.sourceFileName) ||
+			   matches(f.sourceFilePath) ||
 			   (m_precomputesEnabled && f.type == MediaFile::Type::Precompute &&
 				(matches(f.precomputeCategoryDisplay()) || matches(f.effectDisplay()) ||
 				 matches(f.effectCategoryDisplay()) || matches(f.effectSequence)));
@@ -264,8 +264,8 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 		// rows group together predictably.
 		return leftFile.created < rightFile.created;
 	}
-	case Col::SourceFile:
-		return QString::compare(leftFile.sourceFileName, rightFile.sourceFileName, Qt::CaseInsensitive) < 0;
+	case Col::SourcePath:
+		return QString::compare(leftFile.sourceFilePath, rightFile.sourceFilePath, Qt::CaseInsensitive) < 0;
 
 	case Col::ClipName:
 		// The exact string the column displays; shared rule, can't drift.

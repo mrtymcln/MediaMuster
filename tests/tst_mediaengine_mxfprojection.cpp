@@ -1083,22 +1083,28 @@ private slots:
 		QCOMPARE(value(result.files.first(), MediaProperty::ReallyOldDnx).toString(), expected);
 	}
 
-	void import_url_filename_matches_native_path_data()
+	void recorded_import_paths_preserve_spelling_and_ambiguity_data()
 	{
 		QTest::addColumn<QString>("url");
 		QTest::addColumn<QString>("nativePath");
 		QTest::addColumn<QString>("expected");
 		QTest::newRow("spaces") << QStringLiteral("file:///Macintosh%20HD/Users/editor/Apple%20ProRes%20422%20Proxy.mov")
-								<< QStringLiteral("/Users/editor/Apple ProRes 422 Proxy.mov") << QStringLiteral("Apple ProRes 422 Proxy.mov");
-		QTest::newRow("literal-percent-decoded-once") << QStringLiteral("file:///source/Literal%2520Name.mov")
-													  << QStringLiteral("/source/Literal%20Name.mov") << QStringLiteral("Literal%20Name.mov");
+								<< QStringLiteral("/Users/editor/Apple ProRes 422 Proxy.mov") << QString{};
+		QTest::newRow("literal-percent-retained") << QStringLiteral("file:///source/Literal%2520Name.mov")
+													  << QStringLiteral("/source/Literal%20Name.mov") << QString{};
 		QTest::newRow("utf8") << QStringLiteral("file:///source/%E4%BD%A0%E5%A5%BD%20caf%C3%A9.mov")
-							  << QStringLiteral("/source/你好 café.mov") << QStringLiteral("你好 café.mov");
-		QTest::newRow("true-conflict") << QStringLiteral("file:///source/other.mov")
-									   << QStringLiteral("/source/recorded.mov") << QString{};
+							  << QStringLiteral("/source/你好 café.mov") << QString{};
+		QTest::newRow("different-filenames") << QStringLiteral("file:///source/other.mov")
+											   << QStringLiteral("/source/recorded.mov") << QString{};
+		QTest::newRow("same-recorded-url") << QStringLiteral("file:///source/Recorded%20Name.mov")
+			<< QStringLiteral("file:///source/Recorded%20Name.mov") << QStringLiteral("file:///source/Recorded%20Name.mov");
+		QTest::newRow("windows-native") << QStringLiteral("file:///C:/Rushes/Camera%20Original.mov")
+			<< QStringLiteral("C:\\Rushes\\Camera Original.mov") << QString{};
+		QTest::newRow("unc-native") << QStringLiteral("file://server/share/Camera%20Original.mov")
+			<< QStringLiteral("\\\\server\\share\\Camera Original.mov") << QString{};
 	}
 
-	void import_url_filename_matches_native_path()
+	void recorded_import_paths_preserve_spelling_and_ambiguity()
 	{
 		QFETCH(QString, url);
 		QFETCH(QString, nativePath);
@@ -1121,16 +1127,41 @@ private slots:
 		const auto result = project(graph);
 		QCOMPARE(result.files.size(), 1);
 		const auto &evidence = result.files.first().evidence;
-		QCOMPARE(evidence.observations(MediaProperty::SourceFilename).size(), 2);
-		const auto selected = evidence.resolve(MediaProperty::SourceFilename, [](MetadataSource)
+		QCOMPARE(evidence.observations(MediaProperty::SourcePath).size(), 2);
+		const auto selected = evidence.resolve(MediaProperty::SourcePath, [](MetadataSource)
 											   { return 1; }, QStringLiteral("Equal source rank"));
 		QCOMPARE(selected.value.toString(), expected);
 		QCOMPARE(selected.agreement, expected.isEmpty() ? PropertyAgreement::Conflicting : PropertyAgreement::Agreeing);
 		QStringList recordedPaths;
 		for (const auto &observation : evidence.observations(MediaProperty::SourcePath))
+		{
+			QCOMPARE(observation.readState, PropertyReadState::Present);
 			recordedPaths.append(observation.value.toString());
+		}
 		QVERIFY(recordedPaths.contains(url));
 		QVERIFY(recordedPaths.contains(nativePath));
+	}
+
+	void unreadable_import_locator_retains_path_status()
+	{
+		Graph graph("ImportDescriptor");
+		const auto locator = graph.object("NetworkLocator");
+		graph.batch(graph.descriptor, "GenericDescriptor.Locators", {locator});
+		graph.property(locator, "NetworkLocator.URLString", QStringLiteral("file:///source/Recorded%20Name.mov"));
+		auto &property = graph.at(locator).properties.last();
+		property.state = PropertyReadState::Unreadable;
+		property.decoded.clear();
+		const auto result = project(graph);
+		QCOMPARE(result.files.size(), 1);
+		const auto &evidence = result.files.first().evidence;
+		const auto &paths = evidence.observations(MediaProperty::SourcePath);
+		QCOMPARE(paths.size(), 1);
+		QCOMPARE(paths.first().readState, PropertyReadState::Unreadable);
+		const auto status = evidence.readStatus(MediaProperty::SourcePath, graph.source.snapshot,
+			QStringLiteral("object:%1").arg(locator));
+		QCOMPARE(status.state, PropertyReadState::Unreadable);
+		QCOMPARE(status.reason, PropertyReadReason::ValueUnreadable);
+		QVERIFY(!selectedValue(result, result.files.first(), MediaProperty::SourcePath).isValid());
 	}
 
 	void absent_usage_needs_a_complete_owning_set_not_complete_essence()

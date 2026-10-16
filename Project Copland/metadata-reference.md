@@ -5,6 +5,10 @@ clarified 12 October 2026, against app revision
 `3e7246a575f5b0247efbe007f271070cb597d306`, Media Composer 26.8.0.58987,
 published Avid documentation and SMPTE standards.
 
+Current implementation descriptions include the 15 October 2026 single-master
+and 16 October Source Path checkpoints; dated format findings remain evidence
+from the identified verification revisions.
+
 This reference explains names and relationships. Keep/remove decisions belong in
 the [Copland decision ledger](README.md). A field appearing here does not authorize
 a new column, reader or permanent evidence history. Update the corresponding row
@@ -60,7 +64,7 @@ These names must not be substituted for one another just because they look simil
 | Date Created | Physical file's filesystem creation/birth date; blank when unavailable. | Filesystem fact. | `QFileInfo::birthTime()`. Avid `CreationDate`, OMF Mob creation time and MXF Package Creation Date describe other objects/events and are not substitutes. [Code](../src/mediaengine/discoveryengine.cpp#L144). Confirmed C34. |
 | Filename | Exact current physical basename, including extension. | Filesystem fact. | Filesystem filename; a PMR filename is a matching claim, not an authority to rename the row. [Code](../src/mediaengine/discoveryengine.cpp#L152). Confirmed C36. |
 | Source Path | Selected recorded source/import path or URL. Its relationship to the managed file establishes the source meaning; an arbitrary locator is insufficient. | A: `SourcePath` p. 277; MXF Network Locator URL String is M B.4. O/M locators do not alone establish an original-import relationship. | Correctly linked import `NetworkLocator.URLString`, `_SRCFILE` locator path or `UNC Path`. C94 retains this value and compact availability status; C95/C96 require table/CSV display and Search. This is not necessarily the earliest camera original or an existing source. [Code](../src/mediaengine/mxfprojection.cpp#L729). |
-| Source Filename (removed from target) | Current app's selected basename derived while interpreting recorded source/import metadata. | A: `SourceFile` p. 277 is a separate user-facing heading. | C94 supersedes C36's earlier requirement and removes the separate basename derivation, selection/status, retained row value and table/CSV column. The current app still implements these until Copland is built. |
+| Source Filename (removed) | Former selected basename derived while interpreting recorded source/import metadata. | A: `SourceFile` p. 277 is a separate user-facing heading. | C94 supersedes C36's earlier requirement. Its complete implementation removes the separate basename derivation, selection/status, retained row value and table/CSV column. |
 | Location | Current absolute physical path, including filename. Locates the file that operations act upon. | Filesystem fact. A: closest heading `MediaFilePath`, p. 276, for media/precompute file objects. | `mediaFilePath`, updated after confirmed operations. Distinct from recorded SourcePath. [Table mapping](../src/mediatablemodel.cpp#L303). Confirmed C36. |
 | Database Status / internal result | App-derived local index membership/readability result. | App field; D explains database roles rather than this enum. | Current `Listed`, `NoReference`, `NoDatabase`, `DbUnreadable` derives from PMR matching and database outcomes. A header-recovered name does not make a file Listed. C48 replaces the visible CSV/status-column target with two boolean columns; compact internal status remains useful. Not proof of freshness, complete metadata or sequence usage. [Current code](../src/mediaengine/scancoordinator.cpp#L555). |
 | No Database | Target true/false column and view: reference membership could not be checked locally because the relevant databases are missing or unreadable. | App field, no standard OMF/MXF property. | Confirmed C48/C49, not yet implemented. A validated local PMR or same-folder MDB reference keeps this false even if another database is missing or unreadable; read failures go to Console. Missing and unreadable reasons can remain in compact internal status. |
@@ -68,7 +72,7 @@ These names must not be substituted for one another just because they look simil
 
 The ordinary-column review retains Clip Name, Kind, Size and Type under C45
 in table/CSV, alongside the already confirmed ordinary fields, identifiers and
-the C48 No Database / No Reference flags. C94 later removes Source Filename;
+the C48 No Database / No Reference flags. C94 removes Source Filename;
 C95/C96 require Source Path in table/CSV and Search. Clip Duration remains
 removed; detailed precompute information remains feature-gated.
 
@@ -95,38 +99,34 @@ The latest Copland decision C94 keeps Source Path only for this information and
 removes the separate Source Filename projection, selection/status, retained value
 and column. C95/C96 require Source Path in table/CSV and Search.
 
-The current app, which has not been changed during this review, retains two
-selected strings, `sourceFileName` and
-`sourceFilePath`. The table, search, sorting and CSV use the name; the tooltip uses
-the path. CSV does not currently export a separate Source Path column.
-See [row fields](../src/mediafile.h#L94),
-[independent assignments](../src/mediaengineadapter.cpp#L93),
-[table tooltip](../src/mediatablemodel.cpp#L334) and
-[CSV](../src/mediacsv.cpp#L74).
+The app now retains only selected `sourceFilePath` and its compact status for this
+information. Table display/tooltip, CSV, Search and sorting use that recorded
+path/URL. Source Filename's separate property, derivation, policy, status slot,
+row value and basename helper are removed. Physical Filename and Location remain
+independent filesystem values, and database matching still uses managed filenames.
+See [row fields](../src/mediafile.h), [assignment](../src/mediaengineadapter.cpp),
+[table](../src/mediatablemodel.cpp) and [CSV](../src/mediacsv.cpp).
 
-| Source | Stored representation recognized by the current reader | Current Source Filename interpretation, removed by C94 |
+| Source | Stored representation recognized by the current reader | Retained Source Path interpretation |
 | --- | --- | --- |
-| PMR | Counted managed-media filename strings in the supported legacy/Unicode record layouts, alongside file/master IDs and Project. This is the name used for local physical-file matching, not the imported source name. | No SourcePath or SourceFilename projection. The displayed physical Filename comes from filesystem discovery. No complete authoritative PMR schema has been established; this describes the supported layout, not every possible PMR version. [Reader](../src/mediaengine/pmrreader.cpp#L277), [projection](../src/mediaengine/pmrprojection.cpp#L66). |
-| MDB | OMF/Bento attribute objects linked to the file mob and associated masters: a string attribute named `UNC Path`, or `_SRCFILE` pointing to a MACL/WINL/UNXL locator. Recognized properties include `OMFI:FL:POSIXPathName`, `OMFI:FL:PathNameUTF8`, `OMFI:FL:PathName` and the respective locator `PathName`. | Each qualified path supplies a SourcePath value and a derived basename. The Avid attribute names and FL extensions are not universal standard SourceFilename properties. [Attributes](../src/mediaengine/mdbprojection.cpp#L979), [derivation](../src/mediaengine/mdbprojection.cpp#L1045). |
-| MXF | A linked import-source descriptor's `NetworkLocator.URLString`, a UTF-16 URL/URI property, or a linked package's `UNC Path` tagged value. The import relationship supplies meaning; an arbitrary locator does not establish original-source provenance. | URL filename is derived with URI escapes decoded once; native tagged paths use their final slash/backslash component. The recorded path/URL remains unchanged. M B.4 pp. 119–120 defines the standard locator/URL representation. [Import route](../src/mediaengine/mxfprojection.cpp#L714), [tagged path](../src/mediaengine/mxfprojection.cpp#L693). |
-| OMF | Avid import attributes use `UNC Path` or `_SRCFILE` locator relationships, with the same recognized path-property spellings as MDB. Standard OMF additionally permits distinct `OMFI:MACL:FileName` and `OMFI:MACL:PathName` properties (O p. 161), so the format can store both filename and path. | The current source-name projection uses qualified path strings, not MACL's separate FileName. General descriptor locators locate media data and do not alone identify the original import. [Attributes](../src/mediaengine/omfprojection.cpp#L1049), [derivation](../src/mediaengine/omfprojection.cpp#L1133). |
+| PMR | Counted managed-media filename strings in the supported legacy/Unicode record layouts, alongside file/master IDs and Project. This is the name used for local physical-file matching, not the imported source name. | No supported SourcePath projection. Physical Filename comes from discovery. No complete authoritative PMR schema has been established; this describes the supported layout, not every possible PMR version. [Reader](../src/mediaengine/pmrreader.cpp), [projection](../src/mediaengine/pmrprojection.cpp). |
+| MDB | OMF/Bento attribute objects linked to the file mob and selected associated master: a string attribute named `UNC Path`, or `_SRCFILE` pointing to a MACL/WINL/UNXL locator. Recognized properties include `OMFI:FL:POSIXPathName`, `OMFI:FL:PathNameUTF8`, `OMFI:FL:PathName` and the respective locator `PathName`. | Each qualified path supplies its recorded text, with existing text-encoding/read status. No basename is derived. The private attribute names and FL extensions are not universal standard source properties. [Projection](../src/mediaengine/mdbprojection.cpp). |
+| MXF | A linked import-source descriptor's `NetworkLocator.URLString`, a UTF-16 URL/URI property, or a linked package's `UNC Path` tagged value. The import relationship supplies meaning; an arbitrary locator does not establish original-source provenance. | Keep the recorded path/URL unchanged, including percent escapes and separators. M B.4 pp. 119–120 defines the standard locator/URL representation. Master-owned paths remain grouped until association selection; independently file/package-owned paths remain separate. [Projection](../src/mediaengine/mxfprojection.cpp). |
+| OMF | Avid import attributes use `UNC Path` or `_SRCFILE` locator relationships, with the same recognized path-property spellings as MDB. Standard OMF additionally permits distinct `OMFI:MACL:FileName` and `OMFI:MACL:PathName` properties (O p. 161), so the format can store both filename and path. | Keep qualified recorded path strings and their read status; do not consume MACL's separate FileName as a path substitute. General descriptor locators locate media data and do not alone identify the original import. [Projection](../src/mediaengine/omfprojection.cpp). |
 
-For native paths, the current [basename helper](../src/mediametadata.cpp#L3) takes
-text after the last `/` or `\\`. A filename-only value survives unchanged; classic
-Mac colon-separated paths are not converted. For MXF import URLs,
-`QUrl::fileName(QUrl::FullyDecoded)` interprets the URL and decodes once: an encoded
-`Apple%20ProRes.mov` filename becomes `Apple ProRes.mov`, while `%2520` becomes
-literal `%20`. Native path strings are not percent-decoded. Neither process opens
-the original source file or proves that it still exists.
+Source Path keeps its existing MXF/OMF-header preference, then matching MDB.
+Acquisition still reads databases first and only reads physical headers as needed.
+Search matches the recorded path under the existing Unicode/case/accent rules;
+it does not URI-decode a second search value. The retained path does not prove
+the original source still exists.
 
-In the current app, the filename is derived before selection, not from the final selected row path.
-Both properties currently prefer MXF/OMF, then MDB, but resolve independently.
+Before this migration, a separate filename was derived before selection.
 In the genuine EDIT MDB example, object 93868 records volume-qualified
 `Mojave/Users/.../FEB_79-00b01a6d.PICT` and POSIX
 `/Users/.../FEB_79-00b01a6d.PICT` spellings. They yield the same selected filename;
-the full path remains unresolved by today's exact-value selection. Deriving only
-from the final selected path would lose that established name. These spellings do
-not demonstrate incompatible import origins. See
+the full path remains unresolved under exact-value selection. The old agreeing
+basename is historical evidence, not a retained fallback. These spellings do not
+demonstrate incompatible import origins. See
 [bounded genuine-source findings](README.md#investigation-single-source-disagreement)
 and [URI correction evidence](../Project%20Canon/source-filename-uri-2026-10-07.md).
 
@@ -138,9 +138,12 @@ historical evidence, not a reason to retain the removed basename or add a separa
 filename-only fallback. Select the recorded Source Path using C07/C12 and retain
 its compact usable/unavailable result under C15. Do not invent a path from an
 unrelated filename or silently normalize different recorded path spellings.
-The acquisition checklist must follow retained SourcePath under C12/C35 rather
-than today's SourceFilename-only disagreement check. Removing the column alone
-would leave the old derived value and its acquisition dependencies in place.
+The acquisition checklist now checks retained SourcePath under C12/C35: a missing,
+empty, unreadable or unresolved applicable path triggers the next allowed source.
+Exhausted sources leave it blank. Current readers establish no SourcePath
+inapplicability rule; missing metadata is not a proof of inapplicability. Broader
+shared applicability propagation remains part of Stage 3 rather than adding a
+guessed rule in this change.
 
 ## Identities and relationships
 
@@ -384,7 +387,7 @@ UTF-16, dynamically assembled names and other images may carry it.
   global text search also matches Original Bin and is retained under C41; no
   dedicated filter is requested.
 - The ordinary-column review is settled under C45 and the preceding decisions,
-  including C94's later Source Filename removal and C95/C96's Source Path
+  including C94's Source Filename removal and C95/C96's Source Path
   table/CSV/Search requirements.
   Retained convenience views and both selection helpers are required; C52 keeps
   current selection restoration across filters and C53 keeps both CSV export scopes.
@@ -403,9 +406,10 @@ UTF-16, dynamically assembled names and other images may carry it.
   separate owners; compacting those graphs remains outstanding. Clip Duration and
   its separate master-track calculations have been removed. Ordinary row/stamp
   associations now retain one selected MasterMobId, with associated details kept
-  consistent. Source Filename, acquisition and cancellation changes are separate
-  tasks. No memory or scan-time
-  saving has been measured.
+  consistent. C94/C95/C96 now remove the separate Source Filename and use Source
+  Path for table/CSV/Search/sorting and requested-field fallback. Broader acquisition
+  and cancellation changes are separate tasks. No memory or scan-time saving has
+  been measured.
 - C54 clears the previous media table at scan start; C55 retains found physical
   rows and successfully resolved values on clean user cancellation. C87 requires
   Console to say the scan was cancelled and results are incomplete, including late
@@ -419,5 +423,5 @@ UTF-16, dynamically assembled names and other images may carry it.
   operation journal/live checks. These serve file-operation recovery and are
   separate from the media evidence histories removed under C15. C59 retains normal
   Console technical detail; message delivery and disk-log storage remain reviewable.
-- No app behavior or memory/throughput improvement has been implemented or measured
-  by this reference work.
+- This reference records implementation changes without establishing memory or
+  throughput improvement. Whole-process measurements remain outstanding.

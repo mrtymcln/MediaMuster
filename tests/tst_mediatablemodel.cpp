@@ -85,6 +85,8 @@ private slots:
 	// Fit (Cmd+T) is what makes it readable, so nothing here may quietly
 	// shorten the value.
 	void location_cell_shows_the_full_path();
+	void source_path_cell_preserves_recorded_value_data();
+	void source_path_cell_preserves_recorded_value();
 
 	// The attribution setters own the flag+label pairing; a half-set
 	// state (label without flag, or stale flags after a transition)
@@ -213,6 +215,39 @@ void TestMediaTableModel::location_cell_shows_the_full_path()
 			 QStringLiteral("Location"));
 }
 
+void TestMediaTableModel::source_path_cell_preserves_recorded_value_data()
+{
+	QTest::addColumn<QString>("sourcePath");
+	QTest::newRow("posix") << QStringLiteral("/Recorded Imports/Camera A/interview.mov");
+	QTest::newRow("windows") << QStringLiteral("C:\\Recorded Imports\\Camera A\\interview.mov");
+	QTest::newRow("url") << QStringLiteral("file:///Recorded%20Imports/Camera%20A/interview.mov");
+	QTest::newRow("unavailable") << QString{};
+}
+
+void TestMediaTableModel::source_path_cell_preserves_recorded_value()
+{
+	QFETCH(QString, sourcePath);
+	auto file = row();
+	file.fileName = QStringLiteral("managed.mxf");
+	file.sourceFilePath = sourcePath;
+	MediaTableModel model;
+	model.setMediaFiles(TestMediaFile::seeded({file}));
+	const int column = int(MediaTableModel::Column::SourcePath);
+	const QPersistentModelIndex source(model.index(0, column));
+	for (const bool precomputes : {false, true, false})
+	{
+		model.setPrecomputesEnabled(precomputes);
+		QVERIFY(source.isValid());
+		QCOMPARE(source.column(), column);
+		QCOMPARE(source.data().toString(), sourcePath);
+		QCOMPARE(source.data(Qt::ToolTipRole).toString(), sourcePath);
+		QCOMPARE(source.data(Qt::UserRole).toString(), sourcePath);
+		QCOMPARE(model.headerData(column, Qt::Horizontal, Qt::DisplayRole).toString(), QStringLiteral("Source Path"));
+		QCOMPARE(model.index(0, int(MediaTableModel::Column::FileName)).data().toString(), file.fileName);
+		QCOMPARE(model.index(0, int(MediaTableModel::Column::Location)).data().toString(), file.mediaFilePath);
+	}
+}
+
 void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies_data()
 {
 	QTest::addColumn<bool>("headerSkipped");
@@ -243,6 +278,7 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 	auto originalRow = row(original);
 	originalRow.compression = QStringLiteral("Avid DNx HQX");
 	originalRow.bitDepth = QStringLiteral("10-bit");
+	originalRow.sourceFilePath = QStringLiteral("file:///Recorded%20Imports/original.mov");
 	originalRow.fileMobId = masterId();
 	originalRow.scanStamp = {original, VolumeIdentity::capture(original).identifier(),
 		QFileInfo(original).lastModified(), originalRow.fileMobId, originalRow.masterMobId};
@@ -265,6 +301,7 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 		};
 		observe(MediaProperty::Compression, originalRow.compression, snapshot);
 		observe(MediaProperty::BitDepth, originalRow.bitDepth, snapshot);
+		observe(MediaProperty::SourcePath, originalRow.sourceFilePath, snapshot);
 		observe(MediaProperty::FileMobId, originalRow.fileMobId, snapshot);
 		observe(MediaProperty::MasterMobId, originalRow.masterMobId, snapshot);
 		auto filesystem = QSharedPointer<SourceSnapshot>::create();
@@ -314,11 +351,12 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 	{
 		QCOMPARE(file.compression, originalRow.compression);
 		QCOMPARE(file.bitDepth, originalRow.bitDepth);
+		QCOMPARE(file.sourceFilePath, originalRow.sourceFilePath);
 		QCOMPARE(file.fileMobId, originalRow.fileMobId);
 		QCOMPARE(file.masterMobId, originalRow.masterMobId);
 		QCOMPARE(file.scanStamp.masterMobId, originalRow.masterMobId);
 		for (const auto property : {MediaProperty::Compression, MediaProperty::BitDepth,
-			MediaProperty::FileMobId, MediaProperty::MasterMobId})
+			MediaProperty::FileMobId, MediaProperty::MasterMobId, MediaProperty::SourcePath})
 		{
 			const auto &status = file.metadataStatus.field(property);
 			const auto &before = originalRow.metadataStatus.field(property);
@@ -501,7 +539,7 @@ void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 		QStringLiteral("Kind"), QStringLiteral("Duration"), QStringLiteral("Size (MB)"),
 		QStringLiteral("Compression"), QStringLiteral("Resolution"), QStringLiteral("Frame Rate"),
 		QStringLiteral("Sample Rate"), QStringLiteral("Bit Depth"), QStringLiteral("Type"),
-		QStringLiteral("Date Created"), QStringLiteral("Filename"), QStringLiteral("Source Filename"),
+		QStringLiteral("Date Created"), QStringLiteral("Filename"), QStringLiteral("Source Path"),
 		QStringLiteral("Location")};
 	const QPersistentModelIndex row(model.index(1, int(MediaTableModel::Column::Location)));
 	const QString path = row.data().toString();

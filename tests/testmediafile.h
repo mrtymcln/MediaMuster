@@ -68,7 +68,6 @@ namespace TestMediaFile
 			if (file.duration.known())
 				add(MediaProperty::FileDuration, MediaEngine::durationValue(file.duration), header);
 			add(MediaProperty::SourcePath, file.sourceFilePath, header);
-			add(MediaProperty::SourceFilename, file.sourceFileName, header);
 			add(MediaProperty::SourceContainer, file.sourceContainer, header);
 			add(MediaProperty::Imported, file.isImported, header);
 			add(MediaProperty::DatabaseStatus, int(file.dbStatus), filesystem);

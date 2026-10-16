@@ -140,10 +140,13 @@ namespace MediaEngine
 				require(MediaProperty::SampleRate, mediaRate(value(MediaProperty::SampleRate)).valid());
 			if (FeatureFlags::kPrecomputeFilter && type.isValid() && type.toInt() == int(MediaType::Precompute))
 				require(MediaProperty::PrecomputeCategory, value(MediaProperty::PrecomputeCategory).toInt() > 0);
-			// Bin/source names and effect details may legitimately be absent.
+			const auto sourcePath = evidence.selected(MediaProperty::SourcePath);
+			if (sourcePath.applicability != PropertyApplicability::NotApplicable)
+				require(MediaProperty::SourcePath, sourcePath.value.isValid() && !sourcePath.value.toString().isEmpty());
+			// Bin names and effect details may legitimately be absent.
 			// A recorded disagreement is still worth a header read; absence alone
 			// is not. Internal sample representation and channels do not gate I/O.
-			for (const auto property : {MediaProperty::OriginalBin, MediaProperty::SourceFilename,
+			for (const auto property : {MediaProperty::OriginalBin,
 										MediaProperty::Effect, MediaProperty::EffectCategory, MediaProperty::EffectSequence})
 			{
 				const auto selected = evidence.selected(property);

@@ -52,7 +52,8 @@ namespace
 		return bytes;
 	}
 	QByteArray audioDatabase(quint16 bitDepth = 24, const QVector<quint32> &members = {101, 301},
-		bool contradictoryFileIdentity = false, const QByteArray &masterIdentity = toneMasterId)
+		bool contradictoryFileIdentity = false, const QByteArray &masterIdentity = toneMasterId,
+		const QList<QByteArray> &sourcePaths = {QByteArray("/Rushes/Database clip.wav")})
 	{
 		using TestMediaEngineBento::number;
 		TestMediaEngineBento::TypedBento writer;
@@ -76,6 +77,23 @@ namespace
 		writer.add(401, "OMFI:TRAK:LabelNumber", "omfi:UInt16", number<quint16>(1), true);
 		writer.add(401, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(501, 1));
 		writer.add(501, "OMFI:SCLP:SourceID", "omfi:UID", toneFileId);
+		if (!sourcePaths.isEmpty())
+		{
+			writer.add(701, "OMFI:ObjID", "omfi:ObjectTag", "ATTR", true);
+			writer.add(101, "OMFI:CPNT:Attributes", "omfi:ObjRef", writer.reference(701, 1));
+			QVector<quint32> attributes;
+			quint32 handle = 702;
+			for (const auto &path : sourcePaths)
+			{
+				attributes.append(handle);
+				writer.add(handle, "OMFI:ObjID", "omfi:ObjectTag", "ATTB", true);
+				writer.add(handle, "OMFI:ATTB:Name", "omfi:String", QByteArray("UNC Path\0", 9));
+				writer.add(handle, "OMFI:ATTB:Kind", "omfi:AttrKind", number<quint16>(2));
+				writer.add(handle, "OMFI:ATTB:StringAttribute", "omfi:String", path + '\0');
+				++handle;
+			}
+			writer.referenceArray(701, "OMFI:ATTR:AttrRefs", attributes, 1);
+		}
 		if (contradictoryFileIdentity)
 		{
 			QByteArray alternative = toneFileId;
@@ -241,13 +259,82 @@ private slots:
 		QCOMPARE(duration.displayRate.numerator, 25);
 		QCOMPARE(duration.displayRate.denominator, 1);
 		QVERIFY(!evidence.selected(MediaProperty::OriginalBin).value.isValid());
-		QVERIFY(!evidence.selected(MediaProperty::SourceFilename).value.isValid());
+		QCOMPARE(evidence.selected(MediaProperty::SourcePath).value.toString(), QStringLiteral("/Rushes/Database clip.wav"));
 		for (const auto &value : evidence.observations(MediaProperty::Compression))
 			if (value.readState == PropertyReadState::Present)
 			{
 				QCOMPARE(value.snapshot->source, MetadataSource::Mdb);
 				QCOMPARE(value.freshness, SourceFreshness::Unknown);
 			}
+	}
+
+	void source_path_controls_header_fallback_data()
+	{
+		QTest::addColumn<QList<QByteArray>>("recordedPaths");
+		QTest::addColumn<bool>("readHeader");
+		QTest::addColumn<QString>("selectedPath");
+		const QByteArray native("C:\\Rushes\\Interview.mov");
+		const QByteArray url("file:///Rushes/Interview%2520take.mov");
+		QTest::newRow("native-path") << QList<QByteArray>{native} << false << QString::fromUtf8(native);
+		QTest::newRow("recorded-url") << QList<QByteArray>{url} << false << QString::fromUtf8(url);
+		QTest::newRow("absent-path") << QList<QByteArray>{} << true << QString{};
+		QTest::newRow("empty-path") << QList<QByteArray>{QByteArray{}} << true << QString{};
+		QTest::newRow("conflicting-paths-with-same-basename")
+			<< QList<QByteArray>{QByteArray("/Rushes/Interview.mov"), QByteArray("/Archive/Interview.mov")}
+			<< true << QString{};
+	}
+
+	void source_path_controls_header_fallback()
+	{
+		QFETCH(QList<QByteArray>, recordedPaths);
+		QFETCH(bool, readHeader);
+		QFETCH(QString, selectedPath);
+		QTemporaryDir temporary;
+		QVERIFY(temporary.isValid());
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		const QString path = folder + QStringLiteral("/take.mxf");
+		QVERIFY(QDir().mkpath(folder));
+		QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf"), path));
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"),
+			pmr({pmrRecord("take.mxf", toneFileId, "Project")})));
+		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"),
+			audioDatabase(24, {101, 301}, false, toneMasterId, recordedPaths)));
+		int headerReads = 0;
+		MediaEngine::ScanCallbacks callbacks;
+		callbacks.reading = [&](const MediaEngine::SourceCandidate &candidate)
+		{
+			if (candidate.path == path)
+				++headerReads;
+		};
+		const MediaEngine::Cancellation cancellation;
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		QCOMPARE(scan.files.size(), 1);
+		QVERIFY(scan.reconciliationComplete);
+		const auto *header = mediaSource(scan, path);
+		QVERIFY(header);
+		QCOMPARE(headerReads, readHeader ? 1 : 0);
+		QCOMPARE(header->outcome == MediaEngine::ParsedSource::Outcome::NotRead, !readHeader);
+		if (readHeader)
+			QCOMPARE(header->readReason,
+				QStringLiteral("Header read: required table metadata missing or conflicting: Source Path"));
+		const auto &file = scan.files.front();
+		QCOMPARE(file.evidence.selected(MediaProperty::SourcePath).value.toString(), selectedPath);
+		const auto row = mediaEngineMediaFile(file, ScanRowLookup(scan), temporary.path(), QStringLiteral("Volume"), false);
+		QCOMPARE(row.sourceFilePath, selectedPath);
+		QCOMPARE(row.mediaFilePath, path);
+		const auto &status = row.metadataStatus.field(MediaProperty::SourcePath);
+		if (recordedPaths.size() > 1)
+		{
+			QCOMPARE(status.agreement, PropertyAgreement::Conflicting);
+			QCOMPARE(status.readState, PropertyReadState::Present);
+			QVERIFY(!status.hasSelectedValue);
+		}
+		if (!selectedPath.isEmpty())
+		{
+			QCOMPARE(status.readState, PropertyReadState::Present);
+			QVERIFY(status.selectedSource);
+			QCOMPARE(*status.selectedSource, MetadataSource::Mdb);
+		}
 	}
 	void incomplete_or_conflicting_table_metadata_reads_header_data()
 	{

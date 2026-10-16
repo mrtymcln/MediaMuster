@@ -69,7 +69,6 @@ bool applyResolvedMetadata(MediaFile &row, const MediaEvidence &evidence)
 	assign(row.dropFrame, value(MediaProperty::DropFrame).toBool());
 	assign(row.timecodeBase, qRound(row.duration.displayRate.value()));
 	assign(row.sourceFilePath, value(MediaProperty::SourcePath).toString());
-	assign(row.sourceFileName, value(MediaProperty::SourceFilename).toString());
 	assign(row.sourceContainer, value(MediaProperty::SourceContainer).toString());
 	assign(row.isImported, value(MediaProperty::Imported).toBool());
 	assign(row.kind, value(MediaProperty::Kind).isValid() ? MediaFile::Kind(value(MediaProperty::Kind).toInt()) : MediaFile::Kind::Unknown);

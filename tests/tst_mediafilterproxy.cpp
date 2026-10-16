@@ -75,12 +75,15 @@ private slots:
 	void bit_depth_column_sorts_numbers_before_labels();
 	void duration_column_sorts_displayed_timecode();
 	void master_column_sorts_selected_identity();
+	void source_path_column_sorts_recorded_path();
 
 	// Search covers the path (2026-08-18). The Location column shows the
 	// full path, so the search box has to match it — and because the
 	// filename and the Avid folder are both substrings of the path, they
 	// keep matching without a pass of their own.
 	void search_matches_the_path_shown_in_the_location_column();
+	void source_path_search_uses_recorded_text_data();
+	void source_path_search_uses_recorded_text();
 	void unknown_classification_does_not_match_known_filters();
 	void quarantined_filter_uses_scanner_flag();
 	void three_state_classification_sort_is_consistent();
@@ -182,6 +185,73 @@ void TestMediaFilterProxy::search_matches_the_path_shown_in_the_location_column(
 	// ("E:/...") need not contain the label the user knows it by.
 	proxy.setSearchText(QStringLiteral("BACKUP"));
 	QCOMPARE(proxy.rowCount(), 1);
+}
+
+void TestMediaFilterProxy::source_path_search_uses_recorded_text_data()
+{
+	QTest::addColumn<QString>("sourcePath");
+	QTest::addColumn<QString>("search");
+	QTest::addColumn<bool>("matched");
+	const QString url = QStringLiteral("file:///Recorded%20Imports/Camera%20A/interview.mov");
+	QTest::newRow("directory-only") << url << QStringLiteral("Recorded%20Imports/Camera%20A") << true;
+	QTest::newRow("filename-case-insensitive") << url << QStringLiteral("INTERVIEW.MOV") << true;
+	QTest::newRow("url-escapes-stay-recorded") << url << QStringLiteral("Recorded Imports") << false;
+	QTest::newRow("windows-directory") << QStringLiteral("C:\\Originals\\Camera A\\interview.mov")
+		<< QStringLiteral("originals\\camera a") << true;
+	QTest::newRow("nfc-search-finds-nfd-path") << QStringLiteral("/Originals/") + kCafeNfd + QStringLiteral("/interview.mov")
+		<< kCafeNfc << true;
+	QTest::newRow("nfd-search-finds-nfc-path") << QStringLiteral("/Originals/") + kCafeNfc + QStringLiteral("/interview.mov")
+		<< kCafeNfd << true;
+	QTest::newRow("nfc-accents-remain-significant") << QStringLiteral("/Originals/") + kCafeNfc + QStringLiteral("/interview.mov")
+		<< QStringLiteral("cafe") << false;
+	QTest::newRow("nfd-accents-remain-significant") << QStringLiteral("/Originals/") + kCafeNfd + QStringLiteral("/interview.mov")
+		<< QStringLiteral("cafe") << false;
+	QTest::newRow("unavailable") << QString{} << QStringLiteral("interview.mov") << false;
+}
+
+void TestMediaFilterProxy::source_path_search_uses_recorded_text()
+{
+	QFETCH(QString, sourcePath);
+	QFETCH(QString, search);
+	QFETCH(bool, matched);
+	auto file = rowNamed(QStringLiteral("Managed media"));
+	file.sourceFilePath = sourcePath;
+	MediaTableModel model;
+	model.setMediaFiles(TestMediaFile::seeded({file}));
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	proxy.setSearchText(search);
+	QCOMPARE(proxy.rowCount(), matched ? 1 : 0);
+	QCOMPARE(model.fileAt(0).sourceFilePath, sourcePath);
+}
+
+void TestMediaFilterProxy::source_path_column_sorts_recorded_path()
+{
+	auto later = rowNamed(QStringLiteral("Same clip name"));
+	later.sourceFilePath = QStringLiteral("/Z-directory/A.mov");
+	later.mediaFilePath = QStringLiteral("/vol/later.mxf");
+	auto earlier = later;
+	earlier.sourceFilePath = QStringLiteral("/a-directory/z.mov");
+	earlier.mediaFilePath = QStringLiteral("/vol/earlier.mxf");
+	auto unknown = later;
+	unknown.sourceFilePath.clear();
+	unknown.mediaFilePath = QStringLiteral("/vol/unknown.mxf");
+	MediaTableModel model;
+	model.setMediaFiles(TestMediaFile::seeded({later, earlier, unknown}));
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	const int column = int(MediaTableModel::Column::SourcePath);
+	proxy.sort(column, Qt::AscendingOrder);
+	QCOMPARE(proxy.index(0, column).data().toString(), QString{});
+	QCOMPARE(proxy.index(1, column).data().toString(), earlier.sourceFilePath);
+	QCOMPARE(proxy.index(2, column).data().toString(), later.sourceFilePath);
+	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 2);
+	QCOMPARE(proxy.mapToSource(proxy.index(1, 0)).row(), 1);
+	QCOMPARE(proxy.mapToSource(proxy.index(2, 0)).row(), 0);
+	proxy.sort(column, Qt::DescendingOrder);
+	QCOMPARE(proxy.index(0, column).data().toString(), later.sourceFilePath);
+	QCOMPARE(proxy.index(1, column).data().toString(), earlier.sourceFilePath);
+	QCOMPARE(proxy.index(2, column).data().toString(), QString{});
 }
 
 void TestMediaFilterProxy::master_column_sorts_selected_identity()

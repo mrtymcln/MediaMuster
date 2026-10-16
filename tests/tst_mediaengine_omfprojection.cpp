@@ -171,7 +171,9 @@ private slots:
 	void inferredUtf8RetainsOriginalEvidence();
 	void inferredMacRomanFallback();
 	void emptyAndUnreadableTextRemainEvidence();
-	void unreadableImportPathQualifiesDerivedFilename();
+	void recordedImportPathsRemainExact_data();
+	void recordedImportPathsRemainExact();
+	void unreadableImportPathRetainsStatus();
 	void checkedAbsenceRequiresCompleteNamedObject();
 	void failedTechnicalInputsRemainUnreadable();
 	void nativeAudioReadCoverage();
@@ -1317,7 +1319,62 @@ void TestMediaEngineOmfProjection::emptyAndUnreadableTextRemainEvidence()
 		QStringLiteral("object:301")).reason, PropertyReadReason::ValueUnreadable);
 }
 
-void TestMediaEngineOmfProjection::unreadableImportPathQualifiesDerivedFilename()
+void TestMediaEngineOmfProjection::recordedImportPathsRemainExact_data()
+{
+	QTest::addColumn<QString>("path");
+	QTest::addColumn<bool>("database");
+	QTest::addColumn<bool>("inferredUtf8");
+	const QVector<QPair<const char *, QString>> paths{
+		{"posix", QStringLiteral("/source/Camera Original.mov")},
+		{"windows", QStringLiteral("C:\\Rushes\\Camera Original.mov")},
+		{"unc", QStringLiteral("\\\\server\\share\\Camera Original.mov")},
+		{"url", QStringLiteral("file:///source/Camera%20Original.mov")},
+		{"literal-percent", QStringLiteral("file:///source/Literal%2520Name.mov")},
+		{"utf8", QStringLiteral("/source/你好 café.mov")}};
+	for (const auto &path : paths)
+		for (const bool database : {true, false})
+			QTest::newRow(qPrintable(QStringLiteral("%1-%2").arg(database ? "mdb" : "omf", path.first)))
+				<< path.second << database << (QString::fromLatin1(path.first) == QStringLiteral("utf8"));
+}
+
+void TestMediaEngineOmfProjection::recordedImportPathsRemainExact()
+{
+	QFETCH(QString, path);
+	QFETCH(bool, database);
+	QFETCH(bool, inferredUtf8);
+	TypedBento writer;
+	writer.head(1);
+	writer.referenceArray(1, "OMFI:ObjectSpine", {101, 601}, 1);
+	fileMob(writer, 101, 201, 11);
+	object(writer, 601, "JPEG");
+	writer.add(601, "OMFI:MDAT:MobID", "omfi:UID", uid(11));
+	object(writer, 701, "ATTR");
+	object(writer, 702, "ATTB");
+	writer.add(101, "OMFI:CPNT:Attributes", "omfi:ObjRef", writer.reference(701, 1));
+	writer.add(701, "OMFI:ATTR:AttrRefs", "omfi:ObjRefArray", number<quint16>(1) + writer.reference(702, 1));
+	writer.add(702, "OMFI:ATTB:Name", "omfi:String", QByteArray("UNC Path\0", 9));
+	writer.add(702, "OMFI:ATTB:Kind", "omfi:AttrKind", number<qint16>(2));
+	const auto bytes = path.toUtf8() + '\0';
+	writer.add(702, "OMFI:ATTB:StringAttribute", "omfi:String", bytes);
+	const auto source = read(writer.build(), database);
+	const auto result = project(source);
+	QCOMPARE(result.files.size(), 1);
+	const auto &file = result.files.first();
+	const auto &observations = file.evidence.observations(MediaProperty::SourcePath);
+	QCOMPARE(observations.size(), 1);
+	const auto &observation = observations.first();
+	QCOMPARE(observation.value.toString(), path);
+	QCOMPARE(observation.rawValue.toByteArray(), bytes);
+	QCOMPARE(observation.readState, PropertyReadState::Present);
+	QVERIFY(observation.textEncoding && observation.textEncodingBasis);
+	QCOMPARE(*observation.textEncoding,
+		inferredUtf8 ? MediaEngine::TextEncoding::Utf8 : MediaEngine::TextEncoding::Ascii);
+	QCOMPARE(*observation.textEncodingBasis, EvidenceBasis::Derived);
+	QCOMPARE(observation.snapshot->source, database ? MetadataSource::Mdb : MetadataSource::Omf);
+	QCOMPARE(selectedValue(result, file, MediaProperty::SourcePath).toString(), path);
+}
+
+void TestMediaEngineOmfProjection::unreadableImportPathRetainsStatus()
 {
 	TypedBento writer;
 	writer.head(1);
@@ -1343,10 +1400,10 @@ void TestMediaEngineOmfProjection::unreadableImportPathQualifiesDerivedFilename(
 	const auto &evidence = result.files.first().evidence;
 	QCOMPARE(evidence.observations(MediaProperty::SourcePath).size(), 1);
 	QCOMPARE(evidence.observations(MediaProperty::SourcePath).first().readState, PropertyReadState::Unreadable);
-	QVERIFY(evidence.observations(MediaProperty::SourceFilename).isEmpty());
-	QCOMPARE(evidence.readStatus(MediaProperty::SourceFilename, source.snapshot,
+	QCOMPARE(evidence.observations(MediaProperty::SourcePath).first().rawValue.toByteArray(), QByteArray("/source/clip.mov\0", 17));
+	QCOMPARE(evidence.readStatus(MediaProperty::SourcePath, source.snapshot,
 		QStringLiteral("object:602")).state, PropertyReadState::Unreadable);
-	QCOMPARE(evidence.readStatus(MediaProperty::SourceFilename, source.snapshot,
+	QCOMPARE(evidence.readStatus(MediaProperty::SourcePath, source.snapshot,
 		QStringLiteral("object:602")).reason, PropertyReadReason::ValueUnreadable);
 }
 

@@ -8,8 +8,9 @@ Copland reviews the whole MediaMuster app and defines the smallest useful produc
 contract before choosing its implementation. Existing capabilities and Canon's
 retention commitments are open for review. Implementation has begun with the
 user-selected direct CSV export, small safety-check migration, identity naming,
-bin name filling removal, ordinary scan history removal, Clip Duration removal
-and one selected MasterMobId per physical file below.
+bin name filling removal, ordinary scan history removal, Clip Duration removal,
+one selected MasterMobId per physical file and complete Source Path replacement
+below.
 
 This document contains the working decision ledger and proposed implementation
 order. Confirmed requirements, proposals and open questions
@@ -303,11 +304,12 @@ These describe today's code, not Copland requirements:
   name-filter feature. See [row filtering](../src/mediafilterproxy.cpp).
 - The ordinary descriptive table/CSV fields are Clip Name, Project, Bin, Kind,
   physical Duration, Size, Compression, Resolution, Frame Rate, Sample Rate,
-  Bit Depth, Type, Date Created, Filename, Source Filename and Location.
+  Bit Depth, Type, Date Created, Filename, Source Path and Location.
   FileMobId, MasterMobId and KelpieId are also exposed; OmfScan is feature-gated in
   the table and always included in CSV. CSV additionally exposes Database Status.
   Date Created currently means filesystem birth time, left blank when unavailable.
-  Source Filename's tooltip currently shows the full recorded source path.
+  Source Path's cell and tooltip show the recorded source/import path or URL;
+  CSV, Search and sorting consume that same selected value under C94/C95/C96.
   Choosing visible columns does not settle which identities are needed internally
   for filtering and operations. C33–C45/C48 settle the target presentation.
   See [table columns](../src/mediatablemodel.cpp) and
@@ -960,20 +962,17 @@ exhaustive certification of every parser or identity variant.
 | --- | --- | --- |
 | Filename | Current basename of the physical managed file on disk. | `V01.123.mxf` |
 | Source Path | Selected recorded source/import path or URL. Retained under C94, shown in table/CSV under C95 and searched under C96. | `/Rushes/Interview.mov` |
-| Source Filename (removed from target) | Current app's derived source/import basename; C94 removes this separate value and column. | `Interview.mov` |
+| Source Filename (removed) | Former derived source/import basename; C94 removes this separate value and column. | `Interview.mov` |
 | Location | Current absolute path of that physical managed file, including its filename. | `/Volumes/EDIT/Avid MediaFiles/MXF/1/V01.123.mxf` |
 
-The example is illustrative, not a reported file. The Source Filename tooltip
-shows the recorded source path. That path may be old or unavailable; it is not the
-managed file's current location and does not prove the source still exists. These
-meanings come from the app's
-[table mapping](/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp:297),
-[tooltip](/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp:334) and
-[import metadata extraction](/Users/martymclean/Developer/MediaMuster/src/mediaengine/mxfprojection.cpp:693).
+The example is illustrative, not a reported file. Source Path's cell and tooltip
+show the recorded path or URL. It may be old or unavailable, and does not prove
+the source still exists. See the [table mapping](../src/mediatablemodel.cpp) and
+[import metadata extraction](../src/mediaengine/mxfprojection.cpp).
 
-Clarified 12 October: current MediaMuster rows retain source filename and source
-path separately. The supported MDB/OMF/MXF mappings derive the filename while
-interpreting a recorded import path or URL, then select each field independently.
+Clarified at the 12 October baseline: MediaMuster rows retained source filename
+and source path separately. The supported MDB/OMF/MXF mappings derived the filename
+while interpreting a recorded import path or URL, then selected each independently.
 PMR's supported filename is a managed-file matching claim. Standard OMF can also
 store distinct locator FileName/PathName properties, although the current source
 mapping does not consume MACL FileName. See the
@@ -983,11 +982,10 @@ revised the requirement under C94: retain Source Path only and remove the separa
 Source Filename value/column. C95/C96 confirm Source Path's table/CSV presentation
 and Search use; C92/C93 settle the precompute controls.
 
-The implementation must also update source-acquisition checks: today's
-[header-completeness gate](../src/mediaengine/scancoordinator.cpp#L159) checks
-conflicting SourceFilename, but not SourcePath. C94 moves the requested property
-to SourcePath under C12/C35. Remove basename observations/coverage, policy,
-adapter assignment and presentation consumers consistently. A recorded path can
+The 15 October Source Path change updates the [header-completeness gate](../src/mediaengine/scancoordinator.cpp)
+from the former SourceFilename-only disagreement check to SourcePath usability
+under C12/C35. Basename observations/coverage, policy, adapter assignment and
+presentation consumers are removed together. A recorded path can
 remain unavailable where its former derived basename agreed; preserve that
 compact status rather than inventing path normalization or retaining a hidden
 filename. No operations or bin identities depend on the recorded import basename.
@@ -1290,6 +1288,66 @@ but hypothetical disagreements must not justify broad permanent evidence retenti
 
 ## Implementation planning
 
+### Complete Source Path change — 15 October 2026
+
+The user chose **One complete Source Path change**, rather than a presentation
+checkpoint followed by separate removal of the stored basename. Implement
+C94/C95/C96 together: retain the selected recorded Source Path or URL, replace
+Source Filename in the table/CSV/Search/sorting, and remove its separate basename
+derivation, property, status, policy, row storage and consumers. Keep the same
+logical column position and existing column-layout behavior. Physical Filename,
+Location and PMR/database matching filenames remain separate and unchanged.
+
+Keep the existing Source Path preference (eligible MXF/OMF header, then matching
+MDB) and qualified master/file ownership. Preserve recorded path spellings and
+URLs; do not normalize differing alternatives or fabricate a path from a basename.
+Update requested-field acquisition to Source Path under C12/C35: a missing or
+unusable applicable path requires the next allowed source, while established
+inapplicability stops fallback for that field. Unread, absent in one source,
+unreadable and unresolved values do not establish inapplicability. Exhausted
+sources leave a blank value with compact status. Preserve existing bounded header
+reads, changed-source exclusion, physical timing, operation safeguards and CSV
+security/scopes. Validate the intended path behavior and remove obsolete basename
+tests/comments alongside this change. No speed or memory saving is claimed.
+
+No current reader establishes Source Path inapplicability. This bounded change
+adds no guessed import/generated-media exemption. The gate respects an established
+selected inapplicability result; broader shared applicability propagation remains
+part of Stage 3, alongside the other outstanding requested-field checks.
+
+Implemented and verified on 16 October 2026. `sourceFilePath` and its compact
+status now supply the same logical Source Path column, tooltip, CSV, Search and
+sorting. Removed SourceFilename observations/coverage, selection policy, status
+slot, adapter assignment, row value, basename helper and its obsolete test target.
+Physical Filename, Location and database matching filenames remain intact.
+Source Path keeps the existing header-then-MDB preference and raw spelling/URL
+selection. Missing usable applicable database paths now trigger the bounded
+header fallback; exhausted sources remain blank with status. A failed attempted
+header keeps the existing unknown-identity rules, and is not reported as skipped.
+Existing operation identity checks and their receipt formats are unchanged.
+
+The pinned Qt 6.5.3 Release arm64 app and all remaining test targets built.
+The full 39-suite run passed 38 suites in 102.36 seconds; only new ASCII encoding
+expectations needed a test-only correction against the unchanged decoder. The
+rebuilt OMF/MDB projection suite then passed in 0.70 seconds. All 39 current suites
+are verified, including operations, Undo/recovery and UI. The former 40th suite
+tested only the removed basename helper; new path controls live in the existing
+reader, selection-policy, scan, table, CSV, Search and UI suites.
+
+Controls cover exact POSIX/Windows/UNC/URL/Unicode/percent text, read status and
+encoding, agreeing and ambiguous path spellings, native/URL database paths that
+avoid reads, missing/empty/conflicting paths that cause exactly one header read,
+and unavailable results after sources are exhausted. CSV checks preserve quoting,
+formula protection, scopes and capture timing. Search checks include directory
+and filename text with existing normalization/accent rules. Table checks preserve
+column indexes/layout, sorting and path values/status after transfers. Scanner
+fixtures retain independent database freshness, physical identity, exact clocks,
+changed-source and cancellation checks; genuine source expectations follow their
+actual path coverage without inventing recorded paths. Independent static review
+found no actionable production defect. `git diff --check` and the active-source
+removal search passed. No memory/time improvement, Windows result or NEXIS scale
+acceptance is claimed. Other Copland acquisition/presentation work remains separate.
+
 ### One selected MasterMobId choice — 15 October 2026
 
 The user requested the C51 migration next, with plain explanations throughout.
@@ -1490,7 +1548,7 @@ adding a new mechanism to fix them.
 | --- | --- | --- |
 | 1. Establish baseline | Use this Mac initially under C97. Record the build, actual workload/hardware/storage, cache conditions, source-read counts, time through a usable table and whole-process peak memory. Include rescan, CSV export, loaded bins and normal interactions. Separate genuine complete media from generated or truncated specimens. | Repeatable baseline and field/behavior comparison receipts. Existing engine-only timings remain supporting evidence, not a 300,000-file NEXIS acceptance result. Q13 is set aside; no numerical scan-time target is required. |
 | 2. Compact records and receipts | Introduce selected row values, exact clocks, one selected MasterMobId, compact availability/freshness/membership status and the operation receipts required by existing live checks. Adapt operation consumers before removing their evidence dependencies. Keep the user-selected direct CSV writer; release its local captured rows when saving returns, without adding a background text snapshot. Release prior row/session ownership when a new scan starts. | Retained table/CSV values and eligible operation behavior agree with the contract. Copy/Move/Delete/Rebalance, latest-job Undo and startup recovery preserve their existing protections. Completed export and compact operation consumers do not keep the old complete inventory/evidence graph alive during rescan. |
-| 3. Acquisition and cancellation | Apply PMR → MDB → header acquisition to the retained requested fields, using reliable inapplicability to stop unnecessary fallback. Clip Duration removal is complete under C13; remove SourceFilename observations, coverage, policies and consumers and use SourcePath instead. Implement either-database membership and both flags. Resolve completed values into compact rows as work finishes, and release unused parsing data. Retain changed-source exclusion and the existing bounded header fallback. | Database-free, partial-index and missing-applicable-field cases resolve correctly; unavailable values remain blank. Cancellation during discovery, database/header reading, final selection, formatting and publication preserves found rows/completed values and consistently reports incomplete. No runtime memory-abort policy is introduced. |
+| 3. Acquisition and cancellation | Apply PMR → MDB → header acquisition to the retained requested fields, using reliable inapplicability to stop unnecessary fallback. Clip Duration removal is complete under C13. C94/C95/C96 replace SourceFilename storage/consumers with SourcePath and its requested-field fallback. Implement either-database membership and both flags. Resolve completed values into compact rows as work finishes, and release unused parsing data. Retain changed-source exclusion and the existing bounded header fallback. | Database-free, partial-index and missing-applicable-field cases resolve correctly; unavailable values remain blank. Cancellation during discovery, database/header reading, final selection, formatting and publication preserves found rows/completed values and consistently reports incomplete. No runtime memory-abort policy is introduced. |
 | 4. AVB references and filtering | Retain only the names, identities, reference relationships/sets and compact coverage needed for loaded-bin/sequence lists and filtering. Table enrichment is removed; drop cross-bin borrowing. Implement independent checked-sequence state and the combined dialog, unload/recalculation, union/AND rules and empty/incomplete outcomes. Avoid keeping unrelated metadata or duplicating full graphs per sequence. | Genuine Avid edits establish exact used tracks/angles and original/render membership. Muted placed media stays included. Failed loads preserve old filters; checked unresolved-zero sequences stay active; valid unmatched bin references apply normally. Unloading releases data; rescan resets filters while keeping bins loaded. |
 | 5. Presentation and support | Show/search/export Source Path; replace Database Status with both boolean columns/views. Keep precompute category/effect/Volume filtering and remaining conveniences. Apply always-visible enabled tabs, Search-only Escape, narrowed folder inputs, startup/manual drive discovery, FDA/Monospace removal and automatic 30-day diagnostic/crash cleanup. Preserve technical Console content while reviewing delivery/flush overhead. | Behavior checks follow C48/C49/C60–C96. Enabled empty tabs remain visible; dialog Escape retains its proper dismissal/cancellation priority. Cleanup preserves recent history and protected operation journals. Removed controls and source-basename storage have no active consumer left. |
 | 6. Full workload verification | Exercise the retained product after the new ownership/acquisition paths are in place. Compare usable-table time, source reads and whole-process memory against stage 1, including subsequent sorting/filtering/bin loading, operations, export and rescan. Validate the 300,000-file database-free workload on its representative NEXIS setup. | Correct physical inventory and selected metadata, clean cancellation, retained operation safety and measured scale behavior. Explain any remaining memory/time costs and limitations. The below-10-GB aim is measured, never enforced by aborting the scan. |
@@ -1532,8 +1590,10 @@ The compact safety-check migration above passes its bounded equivalence checks.
 Ordinary row history removal is now implemented, with current fields and the
 master-association union preserved at that checkpoint. Clip Duration has since
 been removed under C13, and C51 now retains one selected MasterMobId with its
-associated details under the verified 15 October checkpoint. The remaining
-compact-row, acquisition and cancellation work still requires its own verification. Three
+associated details under the verified 15 October checkpoint. The complete Source
+Path replacement and its requested-field fallback are verified on 16 October.
+The remaining compact-row, acquisition and cancellation work still requires its
+own verification. Three
 controlled local baseline trials cover 267 database-free
 complete media copies and demonstrated the former asynchronous export retaining
 the prior scan through one frozen CSV row. The direct-export implementation above

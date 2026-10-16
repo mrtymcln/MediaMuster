@@ -7,7 +7,6 @@
 #include "compressionnames_p.h"
 #include "picturegeometry_p.h"
 #include "precompute.h"
-#include "mediametadata.h"
 
 #include <QHash>
 #include <QSet>
@@ -979,15 +978,6 @@ namespace MediaEngine
 			{
 				const auto interpreted = withInferredText(property, 0, true);
 				text(file, MediaProperty::SourcePath, object, interpreted);
-				recordPropertyCoverage(file, MediaProperty::SourceFilename, m_source, object,
-									   {"OMFI:ATTB:StringAttribute", "OMFI:FL:POSIXPathName", "OMFI:FL:PathNameUTF8",
-										"OMFI:FL:PathName", "OMFI:UNXL:PathName", "OMFI:WINL:PathName", "OMFI:MACL:PathName"},
-									   false);
-				if (interpreted.decoded.metaType().id() != QMetaType::QString || interpreted.decoded.toString().isEmpty())
-					return;
-				observe(file, MediaProperty::SourceFilename, m_source, object, interpreted,
-						MediaMetadataUtil::sourceFileBaseName(interpreted.decoded.toString()), EvidenceBasis::Derived,
-						QStringLiteral("Basename of this recorded import path, using either operating system's separators."));
 			}
 
 			void classification(ProjectedFile &file, const AvidObject &master)
