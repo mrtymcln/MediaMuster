@@ -30,6 +30,7 @@ MediaMuster now follows more of the database and media-reading rules found in th
 | Shared storage | MXF scans include numbered, workstation-numbered and named ingest folders directly below `Avid MediaFiles/MXF`. Legacy OMF workstation folders remain supported when OMF is enabled. Scans use readable folder databases and check headers where necessary. Overlapping selected roots enumerate the same canonical folder once. |
 | Debug menu | The obsolete **Force header scan** control has been removed. Header reads follow the database-match and required-metadata checks above. |
 | Closing the app | Workers cancel cooperatively and are joined before their owners are destroyed. A blocked operating-system read can delay closing; the app no longer force-kills a worker while other work may still refer to its data. |
+| Cancelling a scan | Further source reads/checks stop. All discovered rows and completed qualified metadata survive memory-only settlement; unfinished checks stay unavailable. Cancel remains effective through formatting/queued delivery until the owning thread accepts results for the table. Console explicitly reports cancelled/incomplete, and issue scopes remain incomplete. |
 
 Database status describes references in either local database. A header identity
 alone, a recovered name/project, master-only facts or cross-folder MDB metadata

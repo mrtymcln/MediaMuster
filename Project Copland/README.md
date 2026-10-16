@@ -655,7 +655,7 @@ Cancellation and peak-memory outcomes have not been benchmarked in this review.
 | Action | Current behavior | Decision/cost |
 | --- | --- | --- |
 | Start another scan | Immediately clears old rows and saved selections, then resets filters. A failed new scan leaves the table empty. | Keep immediate table clearing under C54; release the previous media session. Other consumers must not accidentally keep complete scan evidence alive. |
-| Cancel a media scan | Returns discovered physical rows through the normal completion path. Before final matching, completed database/header projections are temporary and are discarded; during final matching, only rows already enriched keep those fields. After engine return, formatting currently uses the already-captured cancellation status. | C55/C87 require found rows/completed values to survive consistently and Console to say cancelled/results incomplete, including cancellation during formatting/publication. Stop further source requests and settle in-flight work safely. Retaining completed values does not require permanent raw graphs. |
+| Cancel a media scan | The 17 October checkpoint retains discovered rows and finishes memory-only selection from completed, qualified preparations with captured freshness checks. Unfinished work remains unavailable. The owning thread accepts results for the table before committing terminal Console reporting. | C55/C87 require found rows/completed values to survive and Console to say cancelled/results incomplete, including cancellation during formatting/queued handoff. Stop further source requests and settle in-flight work safely. Retaining completed values does not require permanent raw graphs. |
 | Rescan with bins loaded | Keeps the loaded-bin list, but clears the bin-operation chain and other table filters. Sequence filtering is still unfinished. | C56 retains loaded bins while clearing bin/sequence restrictions. Loaded-bin ownership is distinct from keeping the previous media scan. |
 | Source changes during a scan | Detected changes make observations ineligible. The coordinator checks existence/discovery modification time; database acquisition also checks size. One bounded fallback pass can read headers previously skipped using changed databases. | C15 retains necessary validation. These stamps do not establish content coherence when size/timestamps stay unchanged. No automatic retry expansion is proposed by this review. |
 | Cancel/remove a loading bin | Commits no partial bin identities and removes the unusable loading entry; other successfully loaded bins remain. Destruction cancels and joins pending loads. | Retain this load lifecycle. C89 requires an unreadable failed load to preserve existing filters and report failure. C90/C91 separately allow established selections with empty match sets. User removal of a successfully loaded bin follows C11. |
@@ -668,10 +668,12 @@ See [new scan](../src/mainwindow.cpp#L1447),
 [cancelled bin loading](../src/avbbinloader.cpp#L306).
 
 Cancellation acceptance must cover discovery, database/header reading, final
-selection, row formatting and publication. The current scanner adapts all returned
-rows without rechecking the job's cancellation flag, then reports completion from
-the engine result's captured flag. A late cancel during formatting can therefore
-be reported as complete; C87 requires that inconsistency to be fixed. Cancellation
+selection, row formatting and publication. The 17 October checkpoint observes the
+live stop flag during conversion and keeps cancellation open until the owning
+thread accepts the prepared completion for the table. Terminal reporting then uses
+that committed outcome, and late cancellation clears issue scope completeness.
+After acceptance, cancellation is rejected and does not log a new stop request.
+Cancellation
 is cooperative: an in-flight operating-system call must return before its worker
 can stop. This does not authorize hiding a running worker or discarding metadata
 already resolved. See [formatting/reporting](../src/mediascanner.cpp#L280) and
@@ -1297,6 +1299,67 @@ but hypothetical disagreements must not justify broad permanent evidence retenti
 
 ## Implementation planning
 
+### Scan cancellation next — 17 October 2026
+
+The user chose **Fix scan cancellation first**, ahead of the remaining
+requested-field/fallback checks. C55/C87 require keeping found physical files and
+successfully resolved metadata, stopping further source reads, and reporting
+cancelled/incomplete results in Console. A read-only inspection confirms two
+remaining gaps: early cancellation can return before temporary read results are
+matched into rows, and cancellation after the engine returns is not rechecked
+through row formatting and result publication. Existing phase-boundary tests do
+not establish preservation of completed metadata or cancellation during the late
+publication stages. No implementation or test run is claimed by this inspection.
+
+The user then chose **Fix both together**, rather than a reporting-only checkpoint
+followed by metadata preservation. The checkpoint must address early retention and
+late cancellation/reporting together. The remaining choices are how to prepare
+already-read results after stopping acquisition and where result completion is
+committed; do not infer those choices from the work-order selection.
+
+The user chose **Finish results from already-read information** after Cancel:
+stop further acquisition, then settle the available qualified facts into table
+results, rather than introducing progressive per-file publication in this change.
+This may require some finishing work after the stop request; no measured speed
+advantage is claimed. They chose **Until results are ready for the table** as
+the completion boundary. Cancellation stays effective through formatting and
+queued result delivery, until the scanner's owning thread accepts the prepared
+result for publication. Both choices retain the existing source qualification,
+changed-source exclusions, ambiguity rules and operation checks. Unfinished or
+unchecked work must not become proof of a valid value or of absence. Preserve
+found physical rows and completed values, and explicitly report cancelled and
+incomplete results in Console.
+
+Implemented 17 October 2026. Cancel stops further source acquisition and freshness
+checks, then finishes matching and preparing rows from completed, qualified work.
+Temporary qualification flags distinguish a completed check from unfinished or
+unvisited work; unchecked sources cannot supply metadata, identity or database
+reference proof. Discovered physical files remain visible. Existing changed-source,
+ownership, ambiguity and selected-master rules still apply. Normal final folder
+checks retain their previous timing; cancellation reuses captured folder receipts
+or marks the receipt incomplete instead of starting another check.
+
+The scanner accepts cancellation through row formatting and queued result delivery.
+Its owning thread commits the completion state when accepting prepared results
+for publication. Console then reports either complete or cancelled results, with
+`Scan cancelled by user; results are incomplete` for cancellation. Cancelled issue
+scopes remain incomplete. A request after the publication boundary is declined,
+without logging a misleading new request. Restart and publication failure paths
+release the completion state; temporary scan working data is released before the
+prepared rows cross the queued handoff.
+
+Verified 17 October 2026 (Sydney), using pinned Qt 6.5.3 on this arm64 Mac. The
+app and all configured Release targets build. All 39 suites passed in one full
+run (105.63 seconds), including retained header/database metadata, unvisited and
+changed-source exclusions, exact read bounds, late cancellation at formatting
+and publication checkpoints, cancelled issue scopes, rejection after completion,
+restart after complete/cancelled scans and recovery after publication failure.
+An existing folder-freshness test caught a changed check order during focused
+validation; restoring its normal timing fixed the regression before the full run.
+`git diff --check` passes. Existing opt-in real-drive/case-sensitive-filesystem
+skips remain; representative workload, Windows and NEXIS acceptance are still
+outstanding. No cancellation-latency or performance improvement is claimed.
+
 ### Database columns and views — 16 October 2026
 
 The user requested the next C48 checkpoint: add No Database and No Reference
@@ -1717,8 +1780,9 @@ use genuine sources to establish format/workflow behavior.
 
 Outstanding technical validation remains necessary:
 exact used-angle/source-track AVB interpretation, required Original Bin reader
-coverage, broader compact-row equivalence, cancellation at all publication
-stages, and complete-process scale measurement must be demonstrated. The inspected
+coverage, broader compact-row equivalence and complete-process scale measurement
+must still be demonstrated. Cancellation has local phase-boundary controls in the
+17 October checkpoint; representative workload acceptance remains necessary. The inspected
 local corpus and authored defensive tests cannot certify every format or real
 workflow. Borrowing other bins, AVB metadata enrichment, mid-scan source switching,
 Clip Duration and permanent inspection histories remain outside the agreed target.
@@ -1726,15 +1790,17 @@ Clip Duration and permanent inspection histories remain outside the agreed targe
 The [12 October verification](technical-verification-2026-10-12.md) recorded
 broad AVB traversal, conflict-only AVB Original Bin fallback, loss of completed
 metadata on early cancel and incorrect completion reporting on late cancel.
-The AVB row fallback has since been removed under C16; the other gaps remain.
+The AVB row fallback has since been removed under C16. The 17 October cancellation
+checkpoint addresses the early-retention and late-reporting gaps; Original Bin
+fallback and exact AVB traversal remain outstanding.
 The compact safety-check migration above passes its bounded equivalence checks.
 Ordinary row history removal is now implemented, with current fields and the
 master-association union preserved at that checkpoint. Clip Duration has since
 been removed under C13, and C51 now retains one selected MasterMobId with its
 associated details under the verified 15 October checkpoint. The complete Source
 Path replacement and its requested-field fallback are verified on 16 October.
-The remaining compact-row, acquisition and cancellation work still requires its
-own verification. Three
+The remaining compact-row and requested-field acquisition work still requires its
+own verification, along with representative cancellation/scale acceptance. Three
 controlled local baseline trials cover 267 database-free
 complete media copies and demonstrated the former asynchronous export retaining
 the prior scan through one frozen CSV row. The direct-export implementation above

@@ -227,28 +227,19 @@ namespace MediaEngine
 									 const ScanCallbacks &callbacks) const
 	{
 		ScanResult result = DiscoveryEngine{}.discover(request, cancellation, callbacks.discovering);
-		// Keep discovered rows and any source evidence already obtained. Once
-		// Cancel is observed, do not start another filesystem request to finish
-		// indexing or rechecking the unfinished scan.
-		const auto stopRequested = [&]
-		{
-			result.cancelled = cancellation.cancelled();
-			return result.cancelled;
-		};
-		if (stopRequested())
-			return result;
-		// Folder locations belong to this scan's discovered scope. Resolve each
-		// spelling once; individual file/database change checks stay fresh below.
+		const bool discoveryCancelled = result.cancelled;
+		// Finish the CPU-only inventory and matching even after Cancel. Only
+		// acquisition and freshness checks may request more filesystem work.
+		// Resolve folder spellings before acquisition, so final matching never
+		// needs to canonicalize a path after cancellation.
 		QHash<QString, QString> folderKeys;
 		const auto cachedFolderKey = [&](const QString &path)
 		{
 			if (const auto found = folderKeys.constFind(path); found != folderKeys.cend())
 				return found.value();
-			if (cancellation.cancelled())
-				return QString{};
-			const auto key = folderKey(path);
-			folderKeys.insert(path, key);
-			return key;
+			// This can only be uncaptured when acquisition never began. Keep
+			// distinct discovered folders separate without accessing the disk.
+			return QDir::cleanPath(path);
 		};
 		QVector<Projection> projections;
 		QHash<KelpieId, qsizetype> headers;
@@ -257,11 +248,13 @@ namespace MediaEngine
 		QHash<QString, QVector<QPair<qsizetype, qsizetype>>> mdbById;
 		QHash<QString, QVector<QPair<qsizetype, qsizetype>>> mastersById;
 		QVector<bool> unchanged;
+		// Unknown checks are distinct from a proven unchanged source. A
+		// preparation is qualified only after projection and its post-read check.
+		QVector<bool> freshnessChecked(result.candidates.size(), false);
+		QVector<bool> qualified(result.candidates.size(), false);
 		for (const auto &issue : result.discoveryIssues)
 			if (callbacks.warning)
 				callbacks.warning(QStringLiteral("%1: %2").arg(issue.path, issue.explanation));
-		if (stopRequested())
-			return result;
 		// Candidate and source positions stay aligned, including media headers
 		// deliberately left unopened by the database-first scheduler.
 		projections.resize(result.candidates.size());
@@ -269,9 +262,10 @@ namespace MediaEngine
 		QVector<bool> scheduled(result.candidates.size(), false);
 		for (qsizetype index = 0; index < result.candidates.size(); ++index)
 		{
-			if (stopRequested())
-				return result;
 			const auto &candidate = result.candidates[index];
+			const QString folder = QFileInfo(candidate.path).absolutePath();
+			if (!folderKeys.contains(folder) && !cancellation.cancelled())
+				folderKeys.insert(folder, folderKey(folder));
 			SourceReceipt source;
 			source.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
 				sourceKind(candidate.hint), candidate.path, candidate.modified, SourceReadState::NotRead});
@@ -279,15 +273,17 @@ namespace MediaEngine
 			if (candidate.kelpieId)
 				headers.insert(candidate.kelpieId, index);
 			else
-				databases[cachedFolderKey(QFileInfo(candidate.path).absolutePath())].append(index);
+				databases[cachedFolderKey(folder)].append(index);
 		}
 		const auto checkUnchanged = [&](qsizetype index)
 		{
-			if (!unchanged[index])
+			if (!unchanged[index] || cancellation.cancelled())
 				return false;
 			const auto &candidate = result.candidates[index];
 			const QFileInfo current(candidate.path);
-			if (current.exists() && current.lastModified() == candidate.modified)
+			const bool currentUnchanged = current.exists() && current.lastModified() == candidate.modified;
+			freshnessChecked[index] = true;
+			if (currentUnchanged)
 				return true;
 			unchanged[index] = false;
 			ScanIssue issue;
@@ -300,6 +296,10 @@ namespace MediaEngine
 				for (auto &facts : *subjects)
 					facts.evidence.qualifyAll(false, SourceFreshness::Changed);
 			return false;
+		};
+		const auto sourceUsable = [&](qsizetype index)
+		{
+			return qualified[index] && unchanged[index];
 		};
 		const auto readCandidate = [&](qsizetype index, const QString &reason)
 		{
@@ -327,9 +327,24 @@ namespace MediaEngine
 			projections[index] = std::move(prepared.projection);
 			result.sources[index] = std::move(prepared.source);
 			if (cancellation.cancelled())
+			{
+				// A cut-short projection can precede its final ownership checks.
+				// Its source receipt survives, but it supplies no qualified facts.
+				projections[index].files.clear();
+				projections[index].masters.clear();
+				projections[index].fileReferencesComplete = false;
 				return;
+			}
 			const auto &source = result.sources[index];
-			if (!checkUnchanged(index))
+			qualified[index] = checkUnchanged(index);
+			if (!qualified[index] && unchanged[index])
+			{
+				// Cancel may have arrived before the post-read change check.
+				projections[index].files.clear();
+				projections[index].masters.clear();
+				projections[index].fileReferencesComplete = false;
+			}
+			else if (!unchanged[index])
 				for (auto *subjects : {&projections[index].files, &projections[index].masters})
 					for (auto &facts : *subjects)
 						facts.evidence.qualifyAll(false, SourceFreshness::Changed);
@@ -355,15 +370,11 @@ namespace MediaEngine
 			if (cancellation.cancelled())
 				break;
 			readCandidate(sourceIndex, QStringLiteral("Read database before deciding which media headers are needed"));
-			if (cancellation.cancelled())
-				break;
 			if (candidate.hint == SourceCandidate::ReaderHint::Pmr)
 			{
 				auto &names = pmrByName[sourceIndex];
 				for (qsizetype record = 0; record < projections[sourceIndex].files.size(); ++record)
 				{
-					if (cancellation.cancelled())
-						break;
 					for (const auto &filename : projections[sourceIndex].files[record].filenames)
 						if (safeName(filename))
 							names[PmrKey::primary(filename)].append(record);
@@ -372,8 +383,6 @@ namespace MediaEngine
 			if (candidate.hint == SourceCandidate::ReaderHint::Mdb)
 				for (qsizetype record = 0; record < projections[sourceIndex].files.size(); ++record)
 				{
-					if (cancellation.cancelled())
-						break;
 					for (const auto &id : fileIdentityClaims(projections[sourceIndex].files[record]))
 						if (!MobId::isAllZero(id))
 							mdbById[id].append({sourceIndex, record});
@@ -381,8 +390,6 @@ namespace MediaEngine
 			if (candidate.hint == SourceCandidate::ReaderHint::Mdb)
 				for (qsizetype record = 0; record < projections[sourceIndex].masters.size(); ++record)
 				{
-					if (cancellation.cancelled())
-						break;
 					for (const auto &id : projections[sourceIndex].masters[record].masterMobIds)
 						if (!id.isEmpty() && !MobId::isAllZero(id))
 							mastersById[id].append({sourceIndex, record});
@@ -391,8 +398,8 @@ namespace MediaEngine
 		for (const auto &indices : databases)
 			for (const auto index : indices)
 			{
-				if (stopRequested())
-					return result;
+				if (cancellation.cancelled())
+					break;
 				checkUnchanged(index);
 			}
 		QHash<QString, QStringList> pathsById;
@@ -400,39 +407,49 @@ namespace MediaEngine
 		QHash<QString, QHash<QString, QStringList>> namesByFolder;
 		for (const auto &file : result.files)
 		{
-			if (stopRequested())
-				return result;
 			const QFileInfo info(file.path);
 			namesByFolder[cachedFolderKey(info.absolutePath())][PmrKey::primary(info.fileName())].append(info.fileName());
 		}
-		// Share the folder observation within a matching pass. Clear it before
-		// another pass so its first visit obtains a new timestamp. This receipt
-		// describes folder membership, not the freshness of individual contents.
+		// Refresh the shared folder observation before a matching pass. Matching
+		// itself only borrows captured receipts; cancellation never starts a stat.
+		// A folder without a captured receipt remains explicitly incomplete.
 		QHash<QString, SourceSnapshotRef> folderReceipts;
+		QSet<QString> refreshedFolders;
+		const auto refreshFolderReceipt = [&](const QString &folder)
+		{
+			if (refreshedFolders.contains(folder) || cancellation.cancelled())
+				return;
+			const SourceSnapshotRef snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
+				MetadataSource::Filesystem, folder, QFileInfo(folder).lastModified(), SourceReadState::Complete});
+			folderReceipts.insert(folder, snapshot);
+			refreshedFolders.insert(folder);
+		};
 		const auto folderReceipt = [&](const QString &folder) -> SourceSnapshotRef
 		{
 			if (const auto found = folderReceipts.constFind(folder); found != folderReceipts.cend())
 				return found.value();
-			if (cancellation.cancelled())
-				return {};
 			const SourceSnapshotRef snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
-				MetadataSource::Filesystem, folder, QFileInfo(folder).lastModified(), SourceReadState::Complete});
+				MetadataSource::Filesystem, folder, {}, SourceReadState::Incomplete});
 			folderReceipts.insert(folder, snapshot);
 			return snapshot;
 		};
 		const auto matchFile = [&](MediaFile &file, bool reportIssues)
 		{
-			if (cancellation.cancelled())
-				return false;
-			const QString folder = cachedFolderKey(QFileInfo(file.path).absolutePath());
+			const QString physicalFolder = QFileInfo(file.path).absolutePath();
+			const QString folder = cachedFolderKey(physicalFolder);
 			const QString filename = QFileInfo(file.path).fileName();
 			const QString name = PmrKey::primary(filename);
 			const bool physicalChanged = headers.contains(file.kelpieId) && !unchanged[headers.value(file.kelpieId)];
+			const auto headerIndex = headers.value(file.kelpieId);
+			// A skipped header needs the completed physical check; an attempted
+			// header also needs its preparation's post-read check to have finished.
+			const bool physicalUsable = headers.contains(file.kelpieId) && freshnessChecked[headerIndex] &&
+				unchanged[headerIndex] && (result.sources[headerIndex].outcome == ParsedSource::Outcome::NotRead || qualified[headerIndex]);
 			if (headers.contains(file.kelpieId))
 			{
 				file.evidence.registerSource(result.sources[headers.value(file.kelpieId)].snapshot);
 				for (const auto &facts : projections[headers.value(file.kelpieId)].files)
-					attach(file, facts, unchanged[headers.value(file.kelpieId)]);
+					attach(file, facts, sourceUsable(headers.value(file.kelpieId)));
 				if (physicalChanged)
 					file.evidence.qualifySource(result.sources[headers.value(file.kelpieId)].snapshot,
 												false, SourceFreshness::Changed);
@@ -455,16 +472,14 @@ namespace MediaEngine
 			bool listed = false, usablePmrMatch = false, hasExact = false;
 			for (const auto sourceIndex : databases.value(folder))
 			{
-				if (cancellation.cancelled())
-					return false;
 				const auto &source = result.sources[sourceIndex];
-				const bool complete = source.outcome == ParsedSource::Outcome::Complete && unchanged[sourceIndex];
+				const bool complete = source.outcome == ParsedSource::Outcome::Complete && sourceUsable(sourceIndex);
 				databaseReceipts.append(QVariantMap{{QStringLiteral("Path"), source.snapshot->path},
 													{QStringLiteral("Outcome"), int(source.outcome)},
-													{QStringLiteral("UnchangedDuringRead"), unchanged[sourceIndex]}});
+													{QStringLiteral("UnchangedDuringRead"), sourceUsable(sourceIndex)}});
 				if (source.snapshot->source != MetadataSource::Pmr)
 					continue;
-				if (complete && !physicalChanged)
+				if (complete && physicalUsable)
 					completedPmrMisses.insert(sourceIndex);
 				for (const auto record : pmrByName.value(sourceIndex).value(name))
 				{
@@ -481,32 +496,28 @@ namespace MediaEngine
 			QSet<QString> compatibleReferenceIds;
 			for (const auto &match : pmrMatches)
 			{
-				if (cancellation.cancelled())
-					return false;
 				const auto &facts = projections[match.source].files[match.record];
 				if (match.complete && (!hasExact || match.exact) && !facts.fileMobId.isEmpty() &&
 					(headerId.isEmpty() || headerId == facts.fileMobId))
 					compatibleIds.insert(facts.fileMobId);
-				if (unchanged[match.source] && match.referenceValid && (!hasExact || match.exact) &&
+				if (sourceUsable(match.source) && match.referenceValid && (!hasExact || match.exact) &&
 					(headerId.isEmpty() || headerId == facts.fileMobId))
 					compatibleReferenceIds.insert(facts.fileMobId);
 			}
 			const bool ambiguousIdentity = compatibleIds.size() > 1;
 			for (const auto &match : pmrMatches)
 			{
-				if (cancellation.cancelled())
-					return false;
 				const auto &facts = projections[match.source].files[match.record];
 				const bool chosenName = !hasExact || match.exact;
 				const bool sameIdentity = !conflictingHeader && (headerId.isEmpty() || headerId == facts.fileMobId);
 				const bool eligible = match.complete && chosenName && sameIdentity &&
-									  !ambiguousName && !ambiguousIdentity && !physicalChanged;
+									  !ambiguousName && !ambiguousIdentity && physicalUsable;
 				attach(file, facts, eligible);
 				usablePmrMatch |= eligible;
 				// A partial source can prove these two fields without supplying
 				// usable metadata or permitting a skipped media-header read.
-				listed |= unchanged[match.source] && match.referenceValid && chosenName && sameIdentity &&
-					!ambiguousName && compatibleReferenceIds.size() == 1 && !physicalChanged;
+				listed |= sourceUsable(match.source) && match.referenceValid && chosenName && sameIdentity &&
+					!ambiguousName && compatibleReferenceIds.size() == 1 && physicalUsable;
 				// A possible match that cannot be qualified is not proof of absence.
 				// A known different header identity does establish that this entry
 				// belongs to another file, even when its filename matches.
@@ -537,13 +548,11 @@ namespace MediaEngine
 			for (const auto &candidateId : candidateIds)
 				for (const auto &entry : mdbById.value(candidateId))
 				{
-					if (cancellation.cancelled())
-						return false;
 					if (attachedMdbFacts.contains(entry))
 						continue;
 					attachedMdbFacts.insert(entry);
 					const auto &facts = projections[entry.first].files[entry.second];
-					const bool eligible = unchanged[entry.first] && !physicalChanged &&
+					const bool eligible = sourceUsable(entry.first) && physicalUsable &&
 										  fileIdentityClaims(facts).contains(identity);
 					attach(file, facts, eligible);
 					completeMdbMatch |= eligible && result.sources[entry.first].outcome == ParsedSource::Outcome::Complete;
@@ -557,18 +566,14 @@ namespace MediaEngine
 					const auto sourceIndex = headers.value(file.kelpieId);
 					for (const auto &master : projections[sourceIndex].masters)
 					{
-						if (cancellation.cancelled())
-							return false;
 						if (masterGroupMatchesAssociation(file.evidence, master, selectedMaster))
-							attachMasterDetails(file, master, unchanged[sourceIndex] && !physicalChanged);
+							attachMasterDetails(file, master, sourceUsable(sourceIndex) && physicalUsable);
 					}
 				}
 				for (const auto &entry : mastersById.value(selectedMaster))
 				{
-					if (cancellation.cancelled())
-						return false;
 					attachMasterDetails(file, projections[entry.first].masters[entry.second],
-						unchanged[entry.first] && !physicalChanged);
+										sourceUsable(entry.first) && physicalUsable);
 				}
 			}
 			selectMetadata(file.evidence);
@@ -576,14 +581,12 @@ namespace MediaEngine
 			file.stamp.masterMobId = file.evidence.selected(MediaProperty::MasterMobId).value.toString();
 			const bool knownIdentity = !file.stamp.fileMobId.isEmpty() && !MobId::isAllZero(file.stamp.fileMobId);
 			QSet<qsizetype> listedMdbSources;
-			if (knownIdentity && !physicalChanged)
+			if (knownIdentity && physicalUsable)
 				for (const auto &entry : attachedMdbFacts)
 				{
-					if (cancellation.cancelled())
-						return false;
 					const auto &source = result.sources[entry.first];
 					const auto &facts = projections[entry.first].files[entry.second];
-					if (unchanged[entry.first] && facts.fileMobId == file.stamp.fileMobId &&
+					if (sourceUsable(entry.first) && facts.fileMobId == file.stamp.fileMobId &&
 						cachedFolderKey(QFileInfo(source.snapshot->path).absolutePath()) == folder)
 						listedMdbSources.insert(entry.first);
 				}
@@ -591,22 +594,17 @@ namespace MediaEngine
 			bool completedMiss = !completedPmrMisses.isEmpty();
 			for (const auto sourceIndex : databases.value(folder))
 			{
-				if (cancellation.cancelled())
-					return false;
 				const auto &projection = projections[sourceIndex];
 				if (result.sources[sourceIndex].snapshot->source == MetadataSource::Mdb &&
-					unchanged[sourceIndex] && !physicalChanged && projection.fileReferencesComplete &&
+					sourceUsable(sourceIndex) && physicalUsable && projection.fileReferencesComplete &&
 					(knownIdentity || projection.files.isEmpty()) && !listedMdbSources.contains(sourceIndex))
 					completedMiss = true;
 			}
 			// DatabaseStatus uses the UI's stable values: Listed/NoReference/NoDatabase/DbUnreadable.
-			if (cancellation.cancelled())
-				return false;
-			const int status = listed ? 0 : completedMiss ? 1 : databases.value(folder).isEmpty() ? 2 : 3;
+			const int status = listed ? 0 : completedMiss ? 1
+				: databases.value(folder).isEmpty() && !discoveryCancelled && folderKeys.contains(physicalFolder) ? 2 : 3;
 			MetadataObservation dbStatus;
 			dbStatus.snapshot = folderReceipt(folder);
-			if (cancellation.cancelled())
-				return false;
 			dbStatus.property = QStringLiteral("Local PMR/MDB physical-file reference checks");
 			dbStatus.value = status;
 			dbStatus.rawValue = databaseReceipts;
@@ -634,7 +632,7 @@ namespace MediaEngine
 				if (reportIssues)
 					result.reconciliationIssues.append(issue);
 			}
-			return usablePmrMatch && completeMdbMatch && !physicalChanged;
+			return usablePmrMatch && completeMdbMatch && physicalUsable;
 		};
 
 		const auto decideHeader = [&](const MediaFile &file)
@@ -672,6 +670,7 @@ namespace MediaEngine
 				return;
 			}
 			MediaFile databaseFile = file;
+			refreshFolderReceipt(folder);
 			const bool matched = matchFile(databaseFile, false);
 			if (cancellation.cancelled())
 				return;
@@ -712,7 +711,7 @@ namespace MediaEngine
 		// and excluded, rather than making the scan chase a moving database.
 		if (unchanged.contains(false))
 		{
-			folderReceipts.clear();
+			refreshedFolders.clear();
 			for (const auto &file : result.files)
 			{
 				if (cancellation.cancelled())
@@ -728,18 +727,22 @@ namespace MediaEngine
 				checkUnchanged(index);
 			}
 		}
-		if (stopRequested())
-			return result;
 		result.parsingComplete = !cancellation.cancelled() &&
 								 std::all_of(scheduled.cbegin(), scheduled.cend(), [](bool complete)
 											 { return complete; });
-		if (callbacks.finalising)
+		// Observe final folder changes after the phase callback on a normal run.
+		// Cancel instead reuses earlier receipts or an explicitly incomplete one.
+		if (!cancellation.cancelled() && callbacks.finalising)
 			callbacks.finalising();
-		folderReceipts.clear();
-		for (auto &file : result.files)
+		refreshedFolders.clear();
+		for (const auto &file : result.files)
 		{
 			if (cancellation.cancelled())
 				break;
+			refreshFolderReceipt(cachedFolderKey(QFileInfo(file.path).absolutePath()));
+		}
+		for (auto &file : result.files)
+		{
 			matchFile(file, true);
 			if (!file.stamp.fileMobId.isEmpty())
 			{
@@ -749,8 +752,6 @@ namespace MediaEngine
 		}
 		for (qsizetype index = 0; index < result.sources.size(); ++index)
 		{
-			if (cancellation.cancelled())
-				break;
 			const auto &source = result.sources[index];
 			if (source.snapshot->source != MetadataSource::Pmr && source.snapshot->source != MetadataSource::Mdb)
 				continue;
@@ -758,8 +759,6 @@ namespace MediaEngine
 			QSet<QString> reported;
 			for (const auto &facts : projections[index].files)
 			{
-				if (cancellation.cancelled())
-					break;
 				QStringList missing;
 				for (const auto &name : facts.filenames)
 				{
@@ -768,8 +767,6 @@ namespace MediaEngine
 						missing.append(QDir(folder).filePath(name));
 				}
 				const bool localIdentity = identitiesByFolder.value(folder).contains(facts.fileMobId);
-				if (cancellation.cancelled())
-					break;
 				if (source.snapshot->source == MetadataSource::Mdb && !facts.fileMobId.isEmpty() && !localIdentity)
 					missing.append(QString{});
 				for (const auto &path : missing)

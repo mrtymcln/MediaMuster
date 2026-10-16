@@ -1655,8 +1655,14 @@ private slots:
 		QVERIFY(tryWriteFile(database, pmr({pmrRecord("take.mxf", toneFileId, "Project")})));
 		MediaEngine::Cancellation cancellation;
 		QStringList discovered;
+		QHash<QString, int> reads;
 		MediaEngine::ScanCallbacks callbacks;
 		callbacks.discovering = [&](const QString &folder) { discovered.append(folder); };
+		callbacks.reading = [&](const MediaEngine::SourceCandidate &candidate)
+		{
+			QVERIFY(!cancellation.cancelled());
+			++reads[candidate.path];
+		};
 		callbacks.progress = [&](int, int, const QString &current)
 		{
 			QVERIFY(!discovered.isEmpty());
@@ -1674,6 +1680,316 @@ private slots:
 		QVERIFY(!parsed->readReason.isEmpty());
 		QCOMPARE(mediaSource(scan, path)->outcome, MediaEngine::ParsedSource::Outcome::NotRead);
 		QVERIFY(scan.reconciliationIssues.isEmpty());
+		QCOMPARE(reads.size(), 1);
+		QCOMPARE(reads.value(database), 1);
+		const auto &file = scan.files.front();
+		QVERIFY(file.stamp.fileMobId.isEmpty());
+		QVERIFY(!file.evidence.selected(MediaProperty::Project).value.isValid());
+		const auto row = mediaEngineMediaFile(file, ScanRowLookup(scan), temporary.path(), QStringLiteral("Test volume"), true);
+		QCOMPARE(row.dbStatus, MediaFile::DbStatus::DbUnreadable);
+		QVERIFY(row.operationScanReceipt);
+		QVERIFY(row.operationScanReceipt->headerIdentity.fileMobId.isEmpty());
+		QVERIFY(row.operationScanReceipt->databaseFileMobIdToVerify.isEmpty());
+	}
+	void cancellation_at_finalising_preserves_completed_header_values()
+	{
+		QTemporaryDir temporary;
+		QVERIFY(temporary.isValid());
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		QVERIFY(QDir().mkpath(folder));
+		for (const auto &name : {QStringLiteral("a.mxf"), QStringLiteral("b.mxf")})
+			QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf"), folder + '/' + name));
+		const MediaEngine::Cancellation completeCancellation;
+		const auto complete = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, completeCancellation);
+		QVERIFY(complete.reconciliationComplete);
+		QCOMPARE(complete.files.size(), 2);
+		MediaEngine::Cancellation cancellation;
+		QHash<QString, int> reads;
+		bool finalising = false;
+		MediaEngine::ScanCallbacks callbacks;
+		callbacks.reading = [&](const MediaEngine::SourceCandidate &candidate)
+		{
+			QVERIFY(!cancellation.cancelled());
+			++reads[candidate.path];
+		};
+		callbacks.finalising = [&]
+		{
+			finalising = true;
+			cancellation.cancel();
+		};
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		QVERIFY(finalising);
+		QVERIFY(scan.cancelled);
+		QVERIFY(scan.discoveryComplete);
+		QVERIFY(!scan.reconciliationComplete);
+		QCOMPARE(scan.files.size(), complete.files.size());
+		QCOMPARE(reads.size(), 2);
+		const ScanRowLookup lookup(scan);
+		for (qsizetype index = 0; index < scan.files.size(); ++index)
+		{
+			const auto &file = scan.files[index];
+			const auto &expected = complete.files[index];
+			QCOMPARE(file.path, expected.path);
+			QCOMPARE(file.kelpieId, expected.kelpieId);
+			QCOMPARE(reads.value(file.path), 1);
+			QVERIFY(file.sizeBytes > 0);
+			QCOMPARE(mediaSource(scan, file.path)->outcome, MediaEngine::ParsedSource::Outcome::Complete);
+			// Compare usable results, not the temporary observation histories.
+			for (const auto &policy : MediaEngine::propertyPolicies())
+			{
+				if (policy.property == MediaProperty::DatabaseStatus)
+					continue;
+				const auto selected = file.evidence.selected(policy.property);
+				const auto retained = expected.evidence.selected(policy.property);
+				QCOMPARE(selected.value, retained.value);
+				QCOMPARE(selected.readState, retained.readState);
+				QCOMPARE(selected.agreement, retained.agreement);
+			}
+			QCOMPARE(file.stamp.fileMobId, MediaEngine::canonicalDatabaseId(toneFileId));
+			QCOMPARE(file.stamp.masterMobId, MediaEngine::canonicalDatabaseId(toneMasterId));
+			const auto row = mediaEngineMediaFile(file, lookup, temporary.path(), QStringLiteral("Test volume"), true);
+			QCOMPARE(row.metadataStatus.headerOutcome, MediaHeaderReadOutcome::Complete);
+			QVERIFY(row.metadataStatus.field(MediaProperty::FileDuration).hasSelectedValue);
+			QVERIFY(row.operationScanReceipt);
+			QCOMPARE(row.operationScanReceipt->headerIdentity.fileMobId, file.stamp.fileMobId);
+			QCOMPARE(row.operationScanReceipt->headerIdentity.masterMobIds, QStringList{file.stamp.masterMobId});
+			QVERIFY(row.operationScanReceipt->headerIdentity.unavailableReason.isEmpty());
+			QVERIFY(row.operationScanReceipt->databaseFileMobIdToVerify.isEmpty());
+		}
+	}
+	void cancellation_before_second_media_decision_preserves_only_qualified_rows_data()
+	{
+		QTest::addColumn<bool>("withDatabases");
+		QTest::newRow("completed-genuine-header") << false;
+		QTest::newRow("completed-database-match") << true;
+	}
+	void cancellation_before_second_media_decision_preserves_only_qualified_rows()
+	{
+		QFETCH(bool, withDatabases);
+		QTemporaryDir temporary;
+		QVERIFY(temporary.isValid());
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		QVERIFY(QDir().mkpath(folder));
+		const QString first = folder + QStringLiteral("/a.mxf"), second = folder + QStringLiteral("/b.mxf");
+		for (const auto &path : {first, second})
+			QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf"), path));
+		const QString pmrPath = folder + QStringLiteral("/index.pmr");
+		const QString mdbPath = folder + QStringLiteral("/metadata.mdb");
+		if (withDatabases)
+		{
+			QVERIFY(tryWriteFile(pmrPath, pmr({pmrRecord("a.mxf", toneFileId, "Project"), pmrRecord("b.mxf", toneFileId, "Project")})));
+			QVERIFY(tryWriteFile(mdbPath, audioDatabase()));
+		}
+		MediaEngine::Cancellation cancellation;
+		QHash<QString, int> reads;
+		bool finalising = false;
+		MediaEngine::ScanCallbacks callbacks;
+		callbacks.progress = [&](int, int, const QString &path)
+		{
+			if (path == second)
+				cancellation.cancel();
+		};
+		callbacks.reading = [&](const MediaEngine::SourceCandidate &candidate)
+		{
+			QVERIFY(!cancellation.cancelled());
+			++reads[candidate.path];
+		};
+		callbacks.finalising = [&] { finalising = true; };
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		QVERIFY(scan.cancelled);
+		QVERIFY(scan.discoveryComplete);
+		QVERIFY(!scan.parsingComplete);
+		QVERIFY(!scan.reconciliationComplete);
+		QVERIFY(!finalising);
+		QCOMPARE(scan.files.size(), 2);
+		QCOMPARE(scan.files[0].path, first);
+		QCOMPARE(scan.files[1].path, second);
+		QVERIFY(scan.files[0].kelpieId != scan.files[1].kelpieId);
+		QCOMPARE(reads.value(first), withDatabases ? 0 : 1);
+		QCOMPARE(reads.value(second), 0);
+		QCOMPARE(reads.size(), withDatabases ? 2 : 1);
+		if (withDatabases)
+		{
+			QCOMPARE(reads.value(pmrPath), 1);
+			QCOMPARE(reads.value(mdbPath), 1);
+		}
+		const auto &qualified = scan.files[0];
+		QCOMPARE(qualified.stamp.fileMobId, MediaEngine::canonicalDatabaseId(toneFileId));
+		QCOMPARE(qualified.evidence.selected(MediaProperty::Compression).value.toString(), QStringLiteral("PCM"));
+		QVERIFY(qualified.evidence.selected(MediaProperty::FileDuration).value.isValid());
+		if (withDatabases)
+		{
+			QCOMPARE(qualified.evidence.selected(MediaProperty::ClipName).value.toString(), QStringLiteral("Database clip"));
+			QCOMPARE(qualified.evidence.selected(MediaProperty::SourcePath).value.toString(), QStringLiteral("/Rushes/Database clip.wav"));
+			QCOMPARE(qualified.evidence.selected(MediaProperty::DatabaseStatus).value.toInt(), int(MediaFile::DbStatus::Listed));
+		}
+		const ScanRowLookup lookup(scan);
+		const auto retained = mediaEngineMediaFile(qualified, lookup, temporary.path(), QStringLiteral("Test volume"), true);
+		QVERIFY(retained.operationScanReceipt);
+		QCOMPARE(retained.metadataStatus.headerOutcome,
+			withDatabases ? MediaHeaderReadOutcome::NotRead : MediaHeaderReadOutcome::Complete);
+		QCOMPARE(retained.operationScanReceipt->databaseFileMobIdToVerify,
+			withDatabases ? qualified.stamp.fileMobId : QString{});
+		QCOMPARE(retained.operationScanReceipt->headerIdentity.fileMobId,
+			withDatabases ? QString{} : qualified.stamp.fileMobId);
+		const auto &unfinished = scan.files[1];
+		QVERIFY(unfinished.sizeBytes > 0);
+		QVERIFY(unfinished.stamp.fileMobId.isEmpty());
+		QVERIFY(unfinished.stamp.masterMobId.isEmpty());
+		// Discovery and a readable database do not verify this unvisited physical row.
+		for (const auto property : {MediaProperty::FileMobId, MediaProperty::MasterMobId,
+				 MediaProperty::ClipName, MediaProperty::Project, MediaProperty::FileDuration,
+				 MediaProperty::Compression, MediaProperty::SourcePath})
+			QVERIFY2(!unfinished.evidence.selected(property).value.isValid(), qPrintable(mediaPropertyName(property)));
+		const auto untouched = mediaEngineMediaFile(unfinished, lookup, temporary.path(), QStringLiteral("Test volume"), true);
+		QCOMPARE(untouched.metadataStatus.headerOutcome, MediaHeaderReadOutcome::NotRead);
+		if (withDatabases)
+			QCOMPARE(untouched.dbStatus, MediaFile::DbStatus::DbUnreadable);
+		else
+		{
+			QVERIFY(untouched.dbStatus != MediaFile::DbStatus::Listed);
+			QVERIFY(untouched.dbStatus != MediaFile::DbStatus::NoReference);
+		}
+		QCOMPARE(untouched.metadataStatus.field(MediaProperty::FileMobId).readState, PropertyReadState::NotRead);
+		QVERIFY(untouched.operationScanReceipt);
+		QVERIFY(untouched.operationScanReceipt->headerIdentity.fileMobId.isEmpty());
+		QVERIFY(untouched.operationScanReceipt->headerIdentity.masterMobIds.isEmpty());
+		QVERIFY(untouched.operationScanReceipt->databaseFileMobIdToVerify.isEmpty());
+		for (const auto &issue : scan.reconciliationIssues)
+			QVERIFY(!issue.scopeComplete);
+	}
+	void cancellation_at_finalising_preserves_completed_database_match()
+	{
+		QTemporaryDir temporary;
+		QVERIFY(temporary.isValid());
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		const QString path = folder + QStringLiteral("/take.mxf");
+		const QString pmrPath = folder + QStringLiteral("/index.pmr");
+		const QString mdbPath = folder + QStringLiteral("/metadata.mdb");
+		QVERIFY(tryWriteFile(path, "A qualified database match leaves this header unopened"));
+		QVERIFY(tryWriteFile(pmrPath, pmr({pmrRecord("take.mxf", toneFileId, "Project")})));
+		QVERIFY(tryWriteFile(mdbPath, audioDatabase()));
+		MediaEngine::Cancellation cancellation;
+		QHash<QString, int> reads;
+		MediaEngine::ScanCallbacks callbacks;
+		callbacks.reading = [&](const MediaEngine::SourceCandidate &candidate)
+		{
+			QVERIFY(!cancellation.cancelled());
+			++reads[candidate.path];
+		};
+		callbacks.finalising = [&] { cancellation.cancel(); };
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		QVERIFY(scan.cancelled);
+		QVERIFY(scan.discoveryComplete);
+		QVERIFY(!scan.reconciliationComplete);
+		QCOMPARE(scan.files.size(), 1);
+		QCOMPARE(reads.size(), 2);
+		QCOMPARE(reads.value(pmrPath), 1);
+		QCOMPARE(reads.value(mdbPath), 1);
+		QCOMPARE(reads.value(path), 0);
+		QCOMPARE(mediaSource(scan, path)->outcome, MediaEngine::ParsedSource::Outcome::NotRead);
+		const auto &file = scan.files.front();
+		QCOMPARE(file.stamp.fileMobId, MediaEngine::canonicalDatabaseId(toneFileId));
+		QCOMPARE(file.stamp.masterMobId, MediaEngine::canonicalDatabaseId(toneMasterId));
+		QCOMPARE(file.evidence.selected(MediaProperty::ClipName).value.toString(), QStringLiteral("Database clip"));
+		QCOMPARE(file.evidence.selected(MediaProperty::Project).value.toString(), QStringLiteral("Project"));
+		QCOMPARE(file.evidence.selected(MediaProperty::Compression).value.toString(), QStringLiteral("PCM"));
+		QCOMPARE(file.evidence.selected(MediaProperty::SourcePath).value.toString(), QStringLiteral("/Rushes/Database clip.wav"));
+		QCOMPARE(file.evidence.selected(MediaProperty::DatabaseStatus).value.toInt(), int(MediaFile::DbStatus::Listed));
+		const auto duration = MediaEngine::mediaDuration(file.evidence.selected(MediaProperty::FileDuration).value);
+		QCOMPARE(duration.units, qint64(96000));
+		QVERIFY(duration.rate.sameRate({48000, 1}));
+		QVERIFY(duration.displayRate.sameRate({25, 1}));
+		const auto row = mediaEngineMediaFile(file, ScanRowLookup(scan), temporary.path(), QStringLiteral("Test volume"), true);
+		QCOMPARE(row.metadataStatus.headerOutcome, MediaHeaderReadOutcome::NotRead);
+		QCOMPARE(row.dbStatus, MediaFile::DbStatus::Listed);
+		QVERIFY(row.operationScanReceipt);
+		QVERIFY(row.operationScanReceipt->headerIdentity.fileMobId.isEmpty());
+		QVERIFY(row.operationScanReceipt->headerIdentity.masterMobIds.isEmpty());
+		QCOMPARE(row.operationScanReceipt->databaseFileMobIdToVerify, file.stamp.fileMobId);
+	}
+	void cancellation_keeps_known_changed_sources_excluded_data()
+	{
+		QTest::addColumn<bool>("changeDatabase");
+		QTest::newRow("physical-file-changed") << false;
+		QTest::newRow("mdb-changed") << true;
+	}
+	void cancellation_keeps_known_changed_sources_excluded()
+	{
+		QFETCH(bool, changeDatabase);
+		QTemporaryDir temporary;
+		QVERIFY(temporary.isValid());
+		const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+		QVERIFY(QDir().mkpath(folder));
+		const QString first = folder + QStringLiteral("/a.mxf"), second = folder + QStringLiteral("/b.mxf");
+		for (const auto &path : {first, second})
+			QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf"), path));
+		const QString pmrPath = folder + QStringLiteral("/index.pmr");
+		const QString mdbPath = folder + QStringLiteral("/metadata.mdb");
+		QVERIFY(tryWriteFile(pmrPath, pmr({pmrRecord("a.mxf", toneFileId, "Project"), pmrRecord("b.mxf", toneFileId, "Project")})));
+		QVERIFY(tryWriteFile(mdbPath, audioDatabase()));
+		const QString changedPath = changeDatabase ? mdbPath : first;
+		const QDateTime originalModified = QFileInfo(changedPath).lastModified();
+		bool changed = false;
+		MediaEngine::Cancellation cancellation;
+		QHash<QString, int> reads;
+		MediaEngine::ScanCallbacks callbacks;
+		callbacks.progress = [&](int, int, const QString &path)
+		{
+			if (path == second)
+			{
+				QFile file(changedPath);
+				changed = file.open(QIODevice::ReadWrite) &&
+					file.setFileTime(originalModified.addSecs(10), QFileDevice::FileModificationTime);
+			}
+		};
+		callbacks.reading = [&](const MediaEngine::SourceCandidate &candidate)
+		{
+			QVERIFY(!cancellation.cancelled());
+			++reads[candidate.path];
+		};
+		callbacks.finalising = [&] { cancellation.cancel(); };
+		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		QVERIFY(changed);
+		QVERIFY(scan.cancelled);
+		QVERIFY(!scan.reconciliationComplete);
+		QCOMPARE(scan.files.size(), 2);
+		QCOMPARE(reads.value(pmrPath), 1);
+		QCOMPARE(reads.value(mdbPath), 1);
+		QCOMPARE(reads.value(first), 1);
+		QCOMPARE(reads.value(second), changeDatabase ? 1 : 0);
+		QCOMPARE(reads.size(), changeDatabase ? 4 : 3);
+		QVERIFY(std::any_of(scan.reconciliationIssues.cbegin(), scan.reconciliationIssues.cend(), [&](const ScanIssue &issue)
+		{
+			return issue.kind == ScanIssue::Kind::SourceChanged && issue.expectedPath == changedPath;
+		}));
+		const ScanRowLookup lookup(scan);
+		for (const auto &file : scan.files)
+		{
+			if (!changeDatabase && file.path == first)
+			{
+				QVERIFY(file.stamp.fileMobId.isEmpty());
+				QVERIFY(!file.evidence.selected(MediaProperty::Compression).value.isValid());
+				const auto row = mediaEngineMediaFile(file, lookup, temporary.path(), QStringLiteral("Test volume"), true);
+				QVERIFY(row.operationScanReceipt);
+				QVERIFY(!row.operationScanReceipt->headerIdentity.unavailableReason.isEmpty());
+				QVERIFY(row.operationScanReceipt->databaseFileMobIdToVerify.isEmpty());
+				continue;
+			}
+			QCOMPARE(file.stamp.fileMobId, MediaEngine::canonicalDatabaseId(toneFileId));
+			QCOMPARE(file.evidence.selected(MediaProperty::Compression).value.toString(), QStringLiteral("PCM"));
+			if (changeDatabase)
+			{
+				QVERIFY(file.evidence.selected(MediaProperty::ClipName).value.toString() != QStringLiteral("Database clip"));
+				QVERIFY(file.evidence.selected(MediaProperty::SourcePath).value.toString() != QStringLiteral("/Rushes/Database clip.wav"));
+				for (int index = 0; index < int(MediaProperty::Count); ++index)
+					for (const auto &observation : file.evidence.observations(MediaProperty(index)))
+						if (observation.snapshot && observation.snapshot->path == mdbPath)
+							QVERIFY(!observation.eligible);
+			}
+		}
+		for (const auto &issue : scan.reconciliationIssues)
+			QVERIFY(!issue.scopeComplete);
 	}
 	void row_conversion_reuses_known_volume_and_does_not_probe_after_cancel()
 	{

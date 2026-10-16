@@ -73,8 +73,16 @@ transfers directly update physical values, field status and destination membersh
 while keeping selected media values and frozen operation checks. No histories are
 rebuilt. Ordinary row/stamp/reporting associations retain one scalar MasterMobId.
 Independent header safety records preserve all captured live checks. Broader
-acquisition/cancellation changes and loaded-bin graph compaction are
-separate tasks. This step establishes no measured memory or scan-time saving.
+requested-field acquisition and loaded-bin graph compaction remain separate tasks.
+After Cancel the coordinator finishes indexes and final matching from completed,
+qualified preparations and captured freshness checks, with no further filesystem
+requests. Interrupted projection/ownership or unchecked physical/source work stays
+unavailable. Every discovered physical row is retained. The presentation adapter
+continues formatting these rows and observes the live stop flag to avoid optional
+volume probes. The scanner's owning thread accepts the prepared result for the
+table, then commits cancelled/incomplete reporting and issue scope before delivery.
+The queued handoff retains compact rows, not the working scan.
+This step establishes no measured memory or scan-time saving.
 The interface owns presentation and selection; the file-operation engine owns mutations,
 identity checks, recovery and Undo. See [architecture](architecture.md) for the
 full ownership map.

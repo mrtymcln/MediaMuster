@@ -34,6 +34,9 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <algorithm>
+#include <atomic>
+#include <stdexcept>
+#include <utility>
 
 #ifdef Q_OS_MACOS
 #include <mach/mach.h>
@@ -201,8 +204,13 @@ private slots:
 	void appledouble_sibling_is_never_media();
 	void non_avid_files_are_invisible();
 	void cancelled_scan_does_not_leak_databases_into_the_next();
-	void completed_scan_can_restart_from_its_queued_receiver();
+	void scan_can_restart_from_its_queued_receiver_data();
+	void scan_can_restart_from_its_queued_receiver();
 	void cancellation_during_finalising_reports_cancelled();
+	void cancellation_before_publication_keeps_prepared_results_data();
+	void cancellation_before_publication_keeps_prepared_results();
+	void completed_scan_rejects_cancellation_after_publication();
+	void publication_failure_allows_a_later_scan();
 	void discovery_progress_precedes_source_progress();
 	void cancellation_during_root_preparation_stops_scan();
 
@@ -1234,14 +1242,22 @@ void TestScanner::cancellation_during_finalising_reports_cancelled()
 	options.volumePaths = {tmp.path()};
 	scanner.startScan(options);
 	QVERIFY(finished.wait(5000));
-	QVERIFY(messages.contains(QStringLiteral("Scan cancelled by user")));
+	QTRY_VERIFY(messages.contains(QStringLiteral("Scan cancelled by user; results are incomplete")));
 	for (const auto &message : messages)
 		QVERIFY(!message.startsWith(QStringLiteral("Scan complete:")));
 	QCOMPARE(finished.first().first().value<QVector<MediaFile>>().size(), 1);
 }
 
-void TestScanner::completed_scan_can_restart_from_its_queued_receiver()
+void TestScanner::scan_can_restart_from_its_queued_receiver_data()
 {
+	QTest::addColumn<bool>("cancelFirst");
+	QTest::newRow("completed-first-scan") << false;
+	QTest::newRow("cancelled-first-scan") << true;
+}
+
+void TestScanner::scan_can_restart_from_its_queued_receiver()
+{
+	QFETCH(bool, cancelFirst);
 	QTemporaryDir temporary;
 	QVERIFY(temporary.isValid());
 	const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
@@ -1254,6 +1270,21 @@ void TestScanner::completed_scan_can_restart_from_its_queued_receiver()
 	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
 	QSignalSpy issues(&scanner, &MediaScanner::scanIssuesFinished);
 	QSignalSpy failed(&scanner, &MediaScanner::scanFailed);
+	QStringList terminalMessages;
+	connect(&scanner, &MediaScanner::scanLogBatch, &scanner, [&](const QVector<LogMessage> &batch)
+	{
+		for (const auto &message : batch)
+			if (message.message.startsWith(QStringLiteral("Scan complete:")) ||
+				message.message == QStringLiteral("Scan cancelled by user; results are incomplete"))
+				terminalMessages.append(message.message);
+	});
+	int publicationCount = 0;
+	bool cancellationAccepted = false;
+	scanner.m_testCheckpoint = [&](MediaScanner::Checkpoint phase, qsizetype)
+	{
+		if (phase == MediaScanner::Checkpoint::BeforePublication && ++publicationCount == 1 && cancelFirst)
+			cancellationAccepted = scanner.cancelScan();
+	};
 	MediaScanner::Options options;
 	options.volumePaths = {temporary.path()};
 	int received = 0;
@@ -1279,6 +1310,12 @@ void TestScanner::completed_scan_can_restart_from_its_queued_receiver()
 	QCOMPARE(first.front().metadataStatus.headerOutcome, second.front().metadataStatus.headerOutcome);
 	QVERIFY(first.front().operationScanReceipt);
 	QVERIFY(second.front().operationScanReceipt);
+	QCOMPARE(cancellationAccepted, cancelFirst);
+	QCOMPARE(publicationCount, 2);
+	QCOMPARE(terminalMessages.size(), 2);
+	QCOMPARE(terminalMessages.first().startsWith(QStringLiteral("Scan complete:")), !cancelFirst);
+	QVERIFY(terminalMessages.last().startsWith(QStringLiteral("Scan complete:")));
+	QVERIFY(!scanner.cancelScan());
 }
 
 void TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()
@@ -1511,6 +1548,212 @@ namespace
 		return finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
 	}
 } // namespace
+
+void TestScanner::cancellation_before_publication_keeps_prepared_results_data()
+{
+	QTest::addColumn<int>("phase");
+	QTest::newRow("during-row-formatting") << int(MediaScanner::Checkpoint::FormattingRow);
+	QTest::newRow("worker-results-prepared") << int(MediaScanner::Checkpoint::Prepared);
+	QTest::newRow("owner-before-publication") << int(MediaScanner::Checkpoint::BeforePublication);
+}
+
+void TestScanner::cancellation_before_publication_keeps_prepared_results()
+{
+	QFETCH(int, phase);
+	QTemporaryDir temporary;
+	QVERIFY(temporary.isValid());
+	const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	const QString referenceFolder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/2");
+	QVERIFY(QDir().mkpath(folder));
+	QVERIFY(QDir().mkpath(referenceFolder));
+	copyFixture(QStringLiteral("msmFMID.pmr"), folder);
+	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
+	copyFixture(kToneName, folder);
+	QVERIFY(QFile::copy(folder + '/' + kToneName, folder + QStringLiteral("/PhysicalCopy.mxf")));
+	// This exact local filename is absent, although its recorded FileMobId is
+	// present elsewhere. A late Cancel must retain the issue but revoke the
+	// claim that the scan's search scope was completely checked.
+	const QString missingName = QStringLiteral("ExpectedButAbsent.mxf");
+	QVERIFY(tryWriteFile(referenceFolder + QStringLiteral("/msmFMID.pmr"),
+		singlePmr(missingName.toUtf8(), kToneFileId, QByteArray(32, '\x02'), "Cancellation test", 0)));
+	MediaScanner::Options options;
+	options.volumePaths = {temporary.path()};
+	MediaScanner baseline;
+	QSignalSpy baselineFinished(&baseline, &MediaScanner::scanFinished);
+	QSignalSpy baselineIssues(&baseline, &MediaScanner::scanIssuesFinished);
+	baseline.startScan(options);
+	QTRY_COMPARE_WITH_TIMEOUT(baselineFinished.count(), 1, 5000);
+	QTRY_COMPARE(baselineIssues.count(), 1);
+	auto expected = qvariant_cast<QVector<MediaFile>>(baselineFinished.first().first());
+	QCOMPARE(expected.size(), 2);
+	const auto expectedIssues = qvariant_cast<QVector<ScanIssue>>(baselineIssues.first().first());
+	const auto missingReference = std::find_if(expectedIssues.cbegin(), expectedIssues.cend(), [&](const auto &issue)
+	{
+		return issue.kind == ScanIssue::Kind::MissingLocalReference &&
+			issue.expectedPath == referenceFolder + '/' + missingName;
+	});
+	QVERIFY(missingReference != expectedIssues.cend());
+	QVERIFY(missingReference->scopeComplete);
+	QCOMPARE(missingReference->matchingPaths.size(), 2);
+
+	MediaScanner scanner;
+	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
+	QSignalSpy issues(&scanner, &MediaScanner::scanIssuesFinished);
+	QSignalSpy failed(&scanner, &MediaScanner::scanFailed);
+	QStringList messages;
+	connect(&scanner, &MediaScanner::scanLogBatch, &scanner, [&](const QVector<LogMessage> &batch)
+	{
+		for (const auto &message : batch)
+			messages.append(message.message);
+	});
+	const auto target = MediaScanner::Checkpoint(phase);
+	std::atomic_bool checkpointReached{false};
+	std::atomic_bool cancellationAccepted{false};
+	scanner.m_testCheckpoint = [&](MediaScanner::Checkpoint checkpoint, qsizetype row)
+	{
+		if (checkpoint == target && (checkpoint != MediaScanner::Checkpoint::FormattingRow || row == 1))
+		{
+			checkpointReached.store(true);
+			cancellationAccepted.store(scanner.cancelScan());
+		}
+	};
+	scanner.startScan(options);
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 5000);
+	QTRY_COMPARE(issues.count(), 1);
+	QVERIFY(checkpointReached.load());
+	QVERIFY(cancellationAccepted.load());
+	QVERIFY(failed.isEmpty());
+	QTRY_VERIFY(messages.contains(QStringLiteral("Scan cancelled by user; results are incomplete")));
+	for (const auto &message : std::as_const(messages))
+		QVERIFY(!message.startsWith(QStringLiteral("Scan complete:")));
+	QVERIFY(!scanner.cancelScan());
+	auto actual = qvariant_cast<QVector<MediaFile>>(finished.first().first());
+	QCOMPARE(actual.size(), expected.size());
+	const auto byPath = [](const MediaFile &left, const MediaFile &right)
+	{
+		return left.mediaFilePath < right.mediaFilePath;
+	};
+	std::sort(expected.begin(), expected.end(), byPath);
+	std::sort(actual.begin(), actual.end(), byPath);
+	for (qsizetype index = 0; index < expected.size(); ++index)
+	{
+		const auto &before = expected[index];
+		const auto &after = actual[index];
+		QVERIFY(!before.fileMobId.isEmpty());
+		QVERIFY(!before.clipName.isEmpty());
+		QVERIFY(hasDatabaseEvidence(before));
+		QCOMPARE(MediaCsv::rowLine(after, {true}), MediaCsv::rowLine(before, {true}));
+		QCOMPARE(after.metadataStatus.headerOutcome, before.metadataStatus.headerOutcome);
+		QCOMPARE(after.scanStamp.path, before.scanStamp.path);
+		QCOMPARE(after.scanStamp.fileMobId, before.scanStamp.fileMobId);
+		QVERIFY(before.operationScanReceipt);
+		QVERIFY(after.operationScanReceipt);
+		QCOMPARE(after.operationScanReceipt->headerIdentity.fileMobId, before.operationScanReceipt->headerIdentity.fileMobId);
+		QCOMPARE(after.operationScanReceipt->headerIdentity.masterMobIds, before.operationScanReceipt->headerIdentity.masterMobIds);
+		QCOMPARE(after.operationScanReceipt->headerIdentity.unavailableReason, before.operationScanReceipt->headerIdentity.unavailableReason);
+		QCOMPARE(after.operationScanReceipt->databaseFileMobIdToVerify, before.operationScanReceipt->databaseFileMobIdToVerify);
+		for (int field = 0; field < int(MediaProperty::Count); ++field)
+		{
+			const auto &oldStatus = before.metadataStatus.field(MediaProperty(field));
+			const auto &newStatus = after.metadataStatus.field(MediaProperty(field));
+			QCOMPARE(newStatus.readState, oldStatus.readState);
+			QCOMPARE(newStatus.readReason, oldStatus.readReason);
+			QCOMPARE(newStatus.agreement, oldStatus.agreement);
+			QCOMPARE(newStatus.applicability, oldStatus.applicability);
+			QCOMPARE(newStatus.hasSelectedValue, oldStatus.hasSelectedValue);
+			QCOMPARE(newStatus.captured, oldStatus.captured);
+			QVERIFY(newStatus.selectedSource == oldStatus.selectedSource);
+			QVERIFY(newStatus.selectedBasis == oldStatus.selectedBasis);
+			QVERIFY(newStatus.selectedFreshness == oldStatus.selectedFreshness);
+			QCOMPARE(newStatus.presentSources.bits(), oldStatus.presentSources.bits());
+			QCOMPARE(newStatus.unknownFreshnessSources.bits(), oldStatus.unknownFreshnessSources.bits());
+			QCOMPARE(newStatus.timestampConsistentSources.bits(), oldStatus.timestampConsistentSources.bits());
+			QCOMPARE(newStatus.changedSources.bits(), oldStatus.changedSources.bits());
+		}
+	}
+	const auto retainedIssues = qvariant_cast<QVector<ScanIssue>>(issues.first().first());
+	QCOMPARE(retainedIssues.size(), expectedIssues.size());
+	for (qsizetype index = 0; index < expectedIssues.size(); ++index)
+	{
+		const auto &before = expectedIssues[index];
+		const auto &after = retainedIssues[index];
+		QCOMPARE(after.kind, before.kind);
+		QCOMPARE(after.expectedPath, before.expectedPath);
+		QCOMPARE(after.fileMobId, before.fileMobId);
+		QCOMPARE(after.matchingPaths, before.matchingPaths);
+		QVERIFY(!after.scopeComplete);
+	}
+}
+
+void TestScanner::completed_scan_rejects_cancellation_after_publication()
+{
+	QTemporaryDir temporary;
+	QVERIFY(temporary.isValid());
+	const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(kToneName, folder);
+	MediaScanner scanner;
+	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
+	QStringList messages;
+	bool completedMessageReceived = false;
+	bool cancellationAccepted = true;
+	connect(&scanner, &MediaScanner::scanLogBatch, &scanner, [&](const QVector<LogMessage> &batch)
+	{
+		for (const auto &message : batch)
+		{
+			messages.append(message.message);
+			if (message.message.startsWith(QStringLiteral("Scan complete:")))
+			{
+				completedMessageReceived = true;
+				cancellationAccepted = scanner.cancelScan();
+			}
+		}
+	});
+	MediaScanner::Options options;
+	options.volumePaths = {temporary.path()};
+	scanner.startScan(options);
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 5000);
+	QVERIFY(completedMessageReceived);
+	QVERIFY(!cancellationAccepted);
+	QVERIFY(!scanner.cancelScan());
+	for (const auto &message : std::as_const(messages))
+		QVERIFY(!message.startsWith(QStringLiteral("Scan cancelled")));
+	const auto rows = qvariant_cast<QVector<MediaFile>>(finished.first().first());
+	QCOMPARE(rows.size(), 1);
+	QVERIFY(!rows.first().fileMobId.isEmpty());
+	QVERIFY(rows.first().operationScanReceipt);
+}
+
+void TestScanner::publication_failure_allows_a_later_scan()
+{
+	QTemporaryDir temporary;
+	QVERIFY(temporary.isValid());
+	const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(kToneName, folder);
+	MediaScanner scanner;
+	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
+	QSignalSpy failed(&scanner, &MediaScanner::scanFailed);
+	scanner.m_testCheckpoint = [](MediaScanner::Checkpoint phase, qsizetype)
+	{
+		if (phase == MediaScanner::Checkpoint::BeforePublication)
+			throw std::runtime_error("Test publication failure");
+	};
+	MediaScanner::Options options;
+	options.volumePaths = {temporary.path()};
+	scanner.startScan(options);
+	QTRY_COMPARE_WITH_TIMEOUT(failed.count(), 1, 5000);
+	QVERIFY(finished.isEmpty());
+	QVERIFY(failed.first().first().toString().contains(QStringLiteral("Test publication failure")));
+	QVERIFY(!scanner.cancelScan());
+	// The failed publication has returned to the owner. The next worker
+	// joins its predecessor before starting and must not inherit its state.
+	scanner.m_testCheckpoint = {};
+	scanner.startScan(options);
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 5000);
+	QCOMPARE(failed.count(), 1);
+	QCOMPARE(qvariant_cast<QVector<MediaFile>>(finished.first().first()).size(), 1);
+}
 
 void TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index_data()
 {

@@ -236,13 +236,23 @@ filenames and current paths.
 
 Scanning reads media and databases; it does not rewrite them. A scan replaces the
 previous inventory and clears active filters and selections. Cancelling a scan
-still displays the files gathered so far, with potentially incomplete metadata.
+keeps all files gathered so far and metadata from completed, qualified checks.
+Unfinished or unchecked work remains unavailable.
 While discovering folders, the progress dialog shows **Finding media files…**
 and the location being checked. Once source files are known, it reports the
 database or media file being processed. After observing Cancel, the worker stops
-starting new reads, freshness checks and matching work. The gathered working
-results supply prepared rows before their histories are released. An
-operating-system request already in progress may delay stopping.
+starting new reads and freshness checks. It finishes in-memory matching from
+captured, checked results, without opening or checking more sources. An
+operating-system request already in progress may delay stopping, and preparing
+the retained table results may require finishing work after Cancel.
+
+Cancel remains effective during row formatting and while prepared results are
+queued for delivery. The scanner's owning thread accepts the results for the
+table, freezes the outcome and reports it before publishing rows. Console says
+**Scan cancelled by user; results are incomplete** for a cancelled scan; retained
+issues cannot claim complete scope. A request after acceptance is too late and
+does not produce a misleading Cancel requested message. The temporary scan and
+its histories are released before the compact-row handoff.
 The Console records root lookup, discovery/source preparation and total worker
 times separately so shared-storage delays can be located.
 Loaded bins remain available after a rescan; they do not fill missing row metadata.

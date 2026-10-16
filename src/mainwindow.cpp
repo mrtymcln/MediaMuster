@@ -2076,8 +2076,8 @@ ProgressDialog *MainWindow::progressDialog()
 		connect(m_progressDialog, &ProgressDialog::cancelRequested, this,
 				[this]()
 				{
-					m_scanner->cancelScan();
-					addLog(QtWarningMsg, QStringLiteral("scanner"), "Cancel requested");
+					if (m_scanner->cancelScan())
+						addLog(QtWarningMsg, QStringLiteral("scanner"), "Cancel requested");
 				});
 	}
 	return m_progressDialog;

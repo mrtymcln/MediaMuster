@@ -9,7 +9,6 @@
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFileInfo>
-#include <QScopeGuard>
 #include <exception>
 #include <new>
 #include <utility>
@@ -100,45 +99,111 @@ bool MediaScanner::canScanPath(const QString &path)
 
 void MediaScanner::startScan(const Options &options)
 {
-	bool expected = false;
-	if (!m_running.compare_exchange_strong(expected, true))
-		return;
+	{
+		const std::lock_guard<std::mutex> lock(m_stateMutex);
+		if (m_state != ScanState::Idle)
+			return;
+		m_state = ScanState::Active;
+	}
 	m_options = options;
 	m_job.start([this]
 				{
-		std::optional<ScanCompletion> completion;
 		QString failure;
+		// start() resets the worker flag after joining the previous job. Keep
+		// a stop requested during that startup window effective for this run.
 		{
-			const auto running = qScopeGuard([this] { m_running.store(false); });
-			// Unwind the failed scan's graphs before reporting. Exceptions must
-			// not escape Qt's worker-thread entry point.
-			try
-			{
-				completion = doScan();
-			}
-			catch (const std::bad_alloc &)
-			{
-				failure = QStringLiteral("The scan stopped because memory could not be allocated. Please try scanning fewer locations at once.");
-			}
-			catch (const std::exception &error)
-			{
-				failure = QStringLiteral("The scan stopped: %1").arg(QString::fromUtf8(error.what()));
-			}
-			catch (...)
-			{
-				failure = QStringLiteral("The scan stopped because of an unexpected error.");
-			}
+			const std::lock_guard<std::mutex> lock(m_stateMutex);
+			if (m_state == ScanState::CancelRequested)
+				m_job.cancel();
 		}
-		// Clear running before queuing completion: its receiver may immediately
-		// start another scan. BackgroundJob still joins this worker on restart.
-		if (completion)
+		try
 		{
-			emit scanFinished(completion->rows);
-			emit scanIssuesFinished(completion->issues);
+			auto completion = doScan();
+			checkpoint(Checkpoint::Prepared, completion.rows.size());
+			QMetaObject::invokeMethod(this, [this, completion = std::move(completion)]() mutable
+				{
+					try
+					{
+						publishCompletion(std::move(completion));
+					}
+					catch (const std::bad_alloc &)
+					{
+						publishFailure(QStringLiteral("The scan stopped because memory could not be allocated. Please try scanning fewer locations at once."));
+					}
+					catch (const std::exception &error)
+					{
+						publishFailure(QStringLiteral("The scan stopped: %1").arg(QString::fromUtf8(error.what())));
+					}
+					catch (...)
+					{
+						publishFailure(QStringLiteral("The scan stopped because of an unexpected error."));
+					}
+				}, Qt::QueuedConnection);
+			return;
 		}
-		else
-			reportFailure(failure);
+		catch (const std::bad_alloc &)
+		{
+			failure = QStringLiteral("The scan stopped because memory could not be allocated. Please try scanning fewer locations at once.");
+		}
+		catch (const std::exception &error)
+		{
+			failure = QStringLiteral("The scan stopped: %1").arg(QString::fromUtf8(error.what()));
+		}
+		catch (...)
+		{
+			failure = QStringLiteral("The scan stopped because of an unexpected error.");
+		}
+		// Unwind the failed scan's temporary owners before publishing failure.
+		QMetaObject::invokeMethod(this, [this, failure] { publishFailure(failure); }, Qt::QueuedConnection);
 	});
+}
+
+void MediaScanner::checkpoint(Checkpoint phase, qsizetype row)
+{
+	if (m_testCheckpoint)
+		m_testCheckpoint(phase, row);
+}
+
+void MediaScanner::publishCompletion(ScanCompletion completion)
+{
+	checkpoint(Checkpoint::BeforePublication, completion.rows.size());
+	{
+		// This is the completion boundary. Cancel and acceptance cannot race
+		// between deciding the outcome and reporting it to Console/the table.
+		const std::lock_guard<std::mutex> lock(m_stateMutex);
+		completion.cancelled |= m_state == ScanState::CancelRequested;
+		m_state = ScanState::Publishing;
+	}
+	if (completion.cancelled)
+		for (auto &issue : completion.issues)
+			issue.scopeComplete = false;
+	const QString module = QStringLiteral("scanner");
+	QVector<LogMessage> logs{
+		{QtInfoMsg, module, QStringLiteral("Scan %1: %2 files found")
+			.arg(completion.cancelled ? QStringLiteral("cancelled") : QStringLiteral("complete")).arg(completion.rows.size())},
+		{QtInfoMsg, module, QStringLiteral("Scan total including row formatting: %1 ms").arg(completion.elapsedMs)}};
+	if (completion.cancelled)
+		logs.append({QtInfoMsg, module, QStringLiteral("Scan cancelled by user; results are incomplete")});
+	for (const auto &message : std::as_const(logs))
+		Diagnostics::appendConsoleLine(message.level, message.module, message.message);
+	emit scanLogBatch(logs);
+	{
+		// A queued result receiver may immediately start another scan. Its
+		// BackgroundJob joins the old worker before resetting cancellation.
+		const std::lock_guard<std::mutex> lock(m_stateMutex);
+		m_state = ScanState::Idle;
+	}
+	emit scanFinished(completion.rows);
+	emit scanIssuesFinished(completion.issues);
+}
+
+void MediaScanner::publishFailure(const QString &message)
+{
+	{
+		const std::lock_guard<std::mutex> lock(m_stateMutex);
+		m_state = ScanState::Idle;
+	}
+	reportFailure(message);
 }
 
 void MediaScanner::reportFailure(const QString &message)
@@ -149,9 +214,14 @@ void MediaScanner::reportFailure(const QString &message)
 	emit scanFailed(message);
 }
 
-void MediaScanner::cancelScan()
+bool MediaScanner::cancelScan()
 {
+	const std::lock_guard<std::mutex> lock(m_stateMutex);
+	if (m_state != ScanState::Active && m_state != ScanState::CancelRequested)
+		return false;
+	m_state = ScanState::CancelRequested;
 	m_job.cancel();
+	return true;
 }
 
 MediaScanner::ScanCompletion MediaScanner::doScan()
@@ -288,6 +358,7 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 		const ScanRowLookup rowChecks(*session);
 		for (const auto &file : session->files)
 		{
+			checkpoint(Checkpoint::FormattingRow, rows.size());
 			QString volumePath;
 			QString volumeName;
 			for (const auto &context : contexts)
@@ -297,7 +368,8 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 					volumeName = labels.value(context.path);
 					break;
 				}
-			rows.append(mediaEngineMediaFile(file, rowChecks, volumePath, volumeName, session->cancelled));
+			rows.append(mediaEngineMediaFile(file, rowChecks, volumePath, volumeName,
+				session->cancelled || cancellation.cancelled()));
 		}
 	}
 	for (const auto &issue : session->reconciliationIssues)
@@ -309,14 +381,8 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 	for (auto it = folderCounts.cbegin(); it != folderCounts.cend(); ++it)
 		if (it.value() > Conventions::kFolderWarn)
 			callbacks.warning(QStringLiteral("%1 contains %2 media files (folder warning threshold %3)").arg(it.key()).arg(it.value()).arg(Conventions::kFolderWarn));
-	logs.append({QtInfoMsg, QStringLiteral("scanner"),
-				 QStringLiteral("Scan %1: %2 files found").arg(session->cancelled ? QStringLiteral("cancelled") : QStringLiteral("complete")).arg(rows.size())});
-	logs.append({QtInfoMsg, QStringLiteral("scanner"),
-				 QStringLiteral("Scan total including row formatting: %1 ms").arg(timer.elapsed())});
-	if (session->cancelled)
-		logs.append({QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("Scan cancelled by user")});
 	flush();
 	// The UI replaces rows on scanFinished, which clears the previous issues.
 	// Queue this scan's issues after that replacement.
-	return {std::move(rows), session->reconciliationIssues};
+	return {std::move(rows), session->reconciliationIssues, session->cancelled, timer.elapsed()};
 }

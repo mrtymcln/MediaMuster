@@ -83,8 +83,9 @@ Applicability, agreement, eligibility and freshness remain separate facts; see t
 | [MediaEngine presentation adapter](../src/mediaengineadapter.cpp) | Borrows completed scan evidence to prepare typed table/filter/CSV values, inline status and frozen operation checks without retaining the evidence or scan. |
 | [AvidEffects](../src/effectcatalogue.cpp) | Maps the selected name of an established precompute to derived effect details; it does not classify the file. |
 
-`MediaScanner::doScan()` owns the background/UI boundary, cancellation, progress,
-logs and result delivery. MediaEngine owns per-scan source storage and reconciliation;
+`MediaScanner` owns the background/UI boundary, cancellation, progress,
+logs and result delivery. Its `doScan()` prepares compact rows in the worker;
+the owning thread accepts and publishes the prepared completion. MediaEngine owns per-scan source storage and reconciliation;
 the adapter prepares selected facts for existing consumers. One scoped
 `ScanRowLookup` captures header outcomes and change/skipped flags by path, with no
 source or scan owners. The full working `ScanResult` is discarded before row
@@ -94,13 +95,26 @@ live source loop currently reads candidates sequentially. Checked stateless
 codec/path utilities and media value types remain shared with the application.
 
 Discovery reports the location before root and folder access, while the file
-total is still unknown. Cancellation checks stop subsequent source reads,
-freshness checks and matching once the request is observed; discovered rows and
-obtained working evidence can supply partial prepared rows. The scanner passes
+total is still unknown. Cancellation stops subsequent source reads and freshness
+checks. Complete in-memory indexes and final selection retain all discovered
+rows and facts from finished ownership checks with captured post-read freshness.
+Unchecked/cut-short preparations cannot bypass qualification, including OMF's
+final physical-ownership checks. Canonical folder identities and folder receipts
+are captured before final settlement; settlement cannot start filesystem work.
+Unvisited physical checks cannot establish database metadata or reference proof.
+The scanner passes
 its existing display-volume path and label to the presentation adapter, avoiding
 a storage query for each row with that context. Native volume identity remains
 separate discovery evidence. A filesystem call already in progress can still
-delay cancellation. Windows/NEXIS performance needs a real-world retest; these
+delay cancellation; memory-only settlement may also require finishing time.
+Cancel stays effective through row formatting and queued handoff. A mutex protects
+acceptance versus cancellation; the owning thread freezes the outcome before
+terminal Console reporting, marks cancelled issue scopes incomplete and publishes
+rows/issues. Terminal reporting is on that thread. It becomes idle before result
+signals, permitting the existing queued-receiver restart; BackgroundJob joins the
+old worker before resetting its flag. A startup-window stop is reasserted after
+that reset. Publication exceptions report scan failure and release the busy state.
+Windows/NEXIS performance needs a real-world retest; these
 changes do not establish a measured improvement there.
 
 A `MediaEngine::ParsedSource` temporarily contains source-local objects, raw properties
@@ -223,8 +237,9 @@ MasterMobId. Source Filename and Clip Duration have been removed. The table, CSV
 Search and source-column sorting use selected recorded Source Path, with no
 basename derivation or retained duplicate. The Source Path policy still prefers
 qualified header facts then MDB; a missing usable applicable database path
-triggers the existing bounded header fallback. Broader acquisition and cancellation
-changes are separate. No memory
+triggers the existing bounded header fallback. Cancellation now settles completed
+qualified results and commits reporting at owning-thread acceptance; broader
+requested-field acquisition remains separate. No memory
 or scan-time saving is measured.
 [PrecomputeFilterDialog](../src/precomputefilterdialog.cpp) builds the optional
 [PrecomputeFilter](../src/precomputefilter.h).

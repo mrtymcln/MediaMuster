@@ -1,11 +1,12 @@
 #pragma once
 
-// Background/UI boundary for the MediaEngine scan engine. A fresh session is owned
-// by its returned rows, so later scans cannot borrow stale parser caches.
+// Background/UI boundary for the MediaEngine scan engine. Only prepared compact
+// rows cross the result handoff; temporary scan owners stay in the worker.
 #include "backgroundjob.h"
 #include "mediafile.h"
 #include <QObject>
-#include <atomic>
+#include <functional>
+#include <mutex>
 
 struct LogMessage
 {
@@ -28,7 +29,8 @@ public:
 	~MediaScanner() override { m_job.shutdown(); }
 	static bool canScanPath(const QString &path);
 	void startScan(const Options &options);
-	void cancelScan();
+	/// False once the owning thread has accepted the result for publication.
+	bool cancelScan();
 signals:
 	void scanDiscovering(const QString &path);
 	void scanProgress(int current, int total, const QString &currentPath);
@@ -39,14 +41,36 @@ signals:
 	void scanIssuesFinished(const QVector<ScanIssue> &issues);
 
 private:
+	friend class TestScanner;
+	enum class ScanState
+	{
+		Idle,
+		Active,
+		CancelRequested,
+		Publishing
+	};
+	enum class Checkpoint
+	{
+		FormattingRow,
+		Prepared,
+		BeforePublication
+	};
 	struct ScanCompletion
 	{
 		QVector<MediaFile> rows;
 		QVector<ScanIssue> issues;
+		bool cancelled = false;
+		qint64 elapsedMs = 0;
 	};
 	ScanCompletion doScan();
+	void publishCompletion(ScanCompletion completion);
+	void publishFailure(const QString &message);
 	void reportFailure(const QString &message);
+	void checkpoint(Checkpoint phase, qsizetype row = 0);
 	BackgroundJob m_job;
-	std::atomic_bool m_running{false};
+	std::mutex m_stateMutex;
+	ScanState m_state = ScanState::Idle;
+	// Assigned before starting by deterministic boundary tests; empty in the app.
+	std::function<void(Checkpoint, qsizetype)> m_testCheckpoint;
 	Options m_options;
 };
