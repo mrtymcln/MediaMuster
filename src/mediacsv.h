@@ -8,7 +8,8 @@
 // MARK: - MediaCsv
 /// One header line and one line per physical MediaFile. Optional columns carry
 /// precompute details. The explicit export schema follows
-/// the established export order, ending with database status, MOB IDs, KelpieId
+/// the established export order, ending with the No Database and No Reference
+/// booleans, MOB IDs, KelpieId
 /// and the OmfScan family boolean;
 /// dragging table columns does not change export order. The caller captures
 /// the enabled column groups from the table model. Tests compare headings with

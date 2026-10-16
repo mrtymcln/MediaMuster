@@ -2,15 +2,15 @@
 
 Status: implementation in progress; confirmed contract and technical verification.
 Started 11 October 2026; decisions updated
-15 October 2026.
+16 October 2026.
 
 Copland reviews the whole MediaMuster app and defines the smallest useful product
 contract before choosing its implementation. Existing capabilities and Canon's
 retention commitments are open for review. Implementation has begun with the
 user-selected direct CSV export, small safety-check migration, identity naming,
 bin name filling removal, ordinary scan history removal, Clip Duration removal,
-one selected MasterMobId per physical file and complete Source Path replacement
-below.
+one selected MasterMobId per physical file, complete Source Path replacement,
+either-local-database reference rules and the two database flags/views below.
 
 This document contains the working decision ledger and proposed implementation
 order. Confirmed requirements, proposals and open questions
@@ -154,7 +154,7 @@ by this requirements review. See [implementation planning](#implementation-plann
 | C46 | Keep the Video, Audio, Precomputes, Non-Portable and Quarantined convenience views. | Preserve their established meanings; Precomputes follows the feature flag. C48 settles the separate database views. Non-Portable is the filename allowlist verdict and Quarantined is a discovered location, not a corruption diagnosis. |
 | C47 | Keep Select Relatives and Select Inverse. | Both helpers operate on visible rows. Relatives groups by the associated master established from scan sources; C50 clarifies that the row need not catalogue every clip referencing the file. C52 retains selection restoration across filters. Existing file-operation and Rebalance scopes remain under C04/C32. |
 | C48 | Replace Database Status in the table and CSV with No Database and No Reference true/false columns, with a view for each. | No Database covers missing/unreadable local reference checks; No Reference covers physical files absent from readable local databases. Established membership excludes the file from both views even if another database is unreadable; report that problem in Console. C49 permits either local database to establish a valid reference. A small internal status is sufficient; permanent database evidence histories are not required. |
-| C49 | Either local database can establish a valid physical-file reference. | A validated same-folder MDB match to the physical file's FileMobId counts even when PMR is missing or does not list it. Both flags are false. This changes the target membership rule from the current PMR-only implementation; it does not imply every metadata field is complete. |
+| C49 | Either local database can establish a valid physical-file reference. | A validated same-folder MDB match to the physical file's FileMobId counts even when PMR is missing or does not list it. Both flags are false. The 16 October rules checkpoint implements either-database membership; its following presentation checkpoint adds the two boolean columns/views. Reference presence does not imply every metadata field is complete. |
 | C50 | Keep the physical-file perspective when interpreting master identities. | One row represents one physical media file. Several clips referencing that file does not establish several MasterMobIds recorded by its header. The Duplicate workflow alone does not justify collecting all incoming clip references or expanding row metadata from AVBs. Bin/sequence references still resolve to physical rows for filtering under C16/C26; no multiple-master row was demonstrated by the fresh scan. |
 | C51 | Keep one associated MasterMobId per physical media file using the agreed source policy and existing validation checks. | PMR/MDB/header acquisition and per-field preferred/fallback selection follow C07/C12. Retain the selected master identity, not a permanent association set or all incoming AVB clip references. Missing values follow normal fallback and remain blank when exhausted. This does not add a new warning system; existing validation handles unusable or ambiguous associations. Loaded bins remain filtering-only under C16. |
 | C52 | Keep the current selection behavior across filters. | Remember selected physical paths when filtering hides them and restore selection when they reappear. An ordinary manual selection change replaces the saved set and forgets hidden choices; Select Relatives and Select Inverse preserve hidden choices. File operations still consume visible selected rows only under C04. Starting a new scan clears the old table under C54. |
@@ -306,7 +306,8 @@ These describe today's code, not Copland requirements:
   physical Duration, Size, Compression, Resolution, Frame Rate, Sample Rate,
   Bit Depth, Type, Date Created, Filename, Source Path and Location.
   FileMobId, MasterMobId and KelpieId are also exposed; OmfScan is feature-gated in
-  the table and always included in CSV. CSV additionally exposes Database Status.
+  the table and always included in CSV. No Database and No Reference appear in
+  both, after Location and before the IDs; they replace CSV's former Database Status.
   Date Created currently means filesystem birth time, left blank when unavailable.
   Source Path's cell and tooltip show the recorded source/import path or URL;
   CSV, Search and sorting consume that same selected value under C94/C95/C96.
@@ -743,7 +744,7 @@ saving has been established for removing these controls.
 | Volume discovery | Checks mounted drives and known Avid locations every five seconds, off-thread while idle; pauses during scans/operations and catches up when they finish. Display-affecting changes update the sidebar; unchanged polls do not rebuild it. Explicit Refresh is available. | C60 removes both timer and post-busy catch-up polling/updates from the target, retaining startup discovery and manual Refresh. Probes mounts/storage and directory presence, not media headers. C69 retains clearing sidebar selections when refreshing, including manually added entries. |
 | Folder entry / scan controls | Add Folder and directory drag/drop currently accept recognized roots, eligible leaves and direct containing parents, selecting them without starting a scan. Scan Selected uses sidebar selections; Scan All uses detected locations plus manually added entries. | C68 keeps both scan buttons; C71–C73 retain adding without scanning, session-only entries without removal/saved preferences, and both entry controls. C76 narrows their accepted inputs to managed folders themselves or drives with managed folders at their root. C30/C31 still define admitted contents and whole-root scan scope. |
 | Table conveniences | Header sorting, manual widths, drag reordering and explicit Resize Columns to Fit. Scans preserve widths; widths/order reset on app restart. | Keep all four under C62–C65 with current session behavior. Uses retained row values; Qt samples displayed content for fitting. No ordinary-column visibility chooser or saved layout/preferences was found. Saved width/order preferences are not required. |
-| Tabs / totals | Empty convenience tabs currently hide automatically; Show All Filter Tabs overrides that. Tab/project totals describe the whole inventory; status totals describe visible rows and visible selections. | C66/C67 replace hiding/override with always-visible enabled tabs. C74 retains whole-inventory tab counts, C75 retains visible/selected counts and sizes, and C77 retains Project hover count/size totals. Removing the visibility controls alone does not remove tally calculations. |
+| Tabs / totals | At review time empty convenience tabs hid automatically, with a Show All Filter Tabs override. The 16 October presentation checkpoint keeps enabled tabs visible and removes that override. Tab/project totals describe the whole inventory; status totals describe visible rows and visible selections. | C66/C67 require always-visible enabled tabs. C74 retains whole-inventory tab counts, C75 retains visible/selected counts and sizes, and C77 retains Project hover count/size totals. Removing the visibility controls does not remove tally calculations. |
 | Reveal / clipboard | Reveal and double-click open the first visible selected file in Finder/Explorer. Copy Cell copies the clicked display value; Copy Path copies all visible selected paths, separated by newlines. | Keep all four under C61. Uses existing row values without metadata rereading. Copy Path temporarily collects selected rows and path text. Multi-file Reveal is not being proposed. |
 | Filter shortcuts | Chips clear their associated restriction; any bin chip clears the whole bin chain while keeping bins loaded. Escape currently clears Search, Project selections and the type tab, leaving bin/precompute-detail filters. | C78 changes main-window Escape to Search-only. C79 retains Bin-tag whole-chain clearing, leaving bins loaded and checked sequences active. Future sequence controls must respect C18/C21/C56. |
 
@@ -920,17 +921,19 @@ The targeted publication review does not claim to cover every Avid document.
 
 The confirmed C48 split distinguishes two different facts:
 
-- **No Database:** a folder's index could not be checked because it is absent or unreadable.
-- **No Reference:** a readable index was checked and did not list this physical file.
+- **No Database:** local reference checks could not be completed because databases are absent, unreadable or unresolved.
+- **No Reference:** a completed local reference check found no match, with no validated reference from either database.
 
-Copland will replace Database Status in the table and CSV with two true/false
-columns and provide a view for each. The current checkout exports Database Status;
-it does not yet have these two columns or a separate No Reference tab.
+The 16 October presentation checkpoint adds No Database and No Reference as
+`true`/`false` table columns and replaces CSV's Database Status with the same
+two flags. Both appear after Location, before the IDs, with a view for each.
+Every enabled view remains visible at zero under C66/C67; the former Show All
+Filter Tabs override is removed. Counts still describe the whole inventory.
 
 | Established condition | No Database | No Reference |
 | --- | --- | --- |
-| Readable local index lists the physical file | false | false |
-| Readable local index does not list the physical file | false | true |
+| A validated local PMR or MDB entry lists the physical file | false | false |
+| No validated entry; a completed local reference check finds no match | false | true |
 | Local reference membership cannot be checked | true | false |
 
 For a couldn't-check row, No Reference false means absence was not established,
@@ -941,9 +944,15 @@ outcomes can remain distinct in Console/internal status while sharing No Databas
 Either database can establish a valid reference under C49. A validated same-folder
 MDB match to the physical FileMobId keeps both flags false when PMR is missing or does
 not list the file. Established membership also takes precedence over an unreadable
-other database; report that problem in Console. This establishes reference presence,
-not complete metadata. The current code uses PMR membership only and can let a
-database failure override a PMR miss. This review has not changed that implementation.
+other database; report that problem in Console. A completed local miss likewise
+takes precedence over another database's failed or unresolved check, under the
+16 October decision. A validated entry may count even when unrelated metadata
+cannot be read. This establishes reference presence, not complete metadata.
+The 16 October rules checkpoint implements these results through the existing
+small Database Status note. The following presentation checkpoint derives both
+boolean columns/views from it without retaining extra row flags. An uninterpreted MDB list is
+not an empty list: its temporary coverage note must establish a complete reference
+check before it can prove absence.
 
 ## Field meanings and identifier verification
 
@@ -1287,6 +1296,138 @@ values, provenance and limits. Lack of a specimen is not proof of impossibility,
 but hypothetical disagreements must not justify broad permanent evidence retention.
 
 ## Implementation planning
+
+### Database columns and views — 16 October 2026
+
+The user requested the next C48 checkpoint: add No Database and No Reference
+columns and views, with plain explanations and questions at implementation
+crossroads. Both columns derive from the existing compact status; no separately
+stored row flags or new scan rules are needed. Literal `true`/`false` follows C48
+and the existing OmfScan presentation. A completed reference miss and an
+unavailable check remain distinct, under the verified rules below.
+
+The user chose **After Location, before IDs** for both columns in the table and
+CSV, in the order No Database, No Reference. They chose **Include the agreed tab
+cleanup now**: apply C66/C67 alongside the new views, keeping every enabled tab
+visible at zero and removing Show All Filter Tabs. Feature-disabled Precomputes
+remains unavailable. The existing Project tooltip remains available; adding the
+new views uses the same row predicates as the corresponding flags and
+whole-inventory counts under C74.
+
+Implemented 16 October 2026. The two ordinary table columns use lowercase
+`true`/`false` display values and boolean sort values. CSV replaces its former
+Database Status field with the same two unquoted booleans in the agreed position.
+Both derive from the existing compact status without another stored row flag,
+source history or database/header read. Row tooltips explain missing, unresolved
+and completed-reference results; an unresolved row's false No Reference explicitly
+does not certify listing. Existing Project tooltips remain available.
+
+The new No Reference tab sits beside No Database and shares its flag's predicate
+with filtering and inventory counts. Every enabled tab remains visible at zero;
+feature-disabled Precomputes stays hidden. Show All Filter Tabs and its temporary
+override state are removed. Optional detail/OmfScan gates preserve the ordinary
+flag columns and their sort. Copy/Move refresh the flags through the existing
+destination-status update, and view changes retain the existing hidden-selection
+and visible-operation/CSV scope rules. Table base/detail counts are 21/25, plus
+the enabled OmfScan column; CSV counts are 22/26 because it always includes OmfScan.
+
+Verified 17 October 2026 (Sydney), using pinned Qt 6.5.3 on this arm64 Mac. The
+app and all configured Release targets build. The complete 39-suite run passed
+38 suites in 101.27 seconds; the remaining table suite exposed an incomplete
+authored transfer-test setup, which had not supplied the starting Listed status.
+That fixture now explicitly records the intended status before checking how
+Copy/Move refresh the flags. After rebuilding, the complete table suite passed
+in 0.34 seconds. All 39 current suites are verified across the full run and
+focused rerun; no production change was needed for that test correction.
+
+New checks cover all four compact statuses, flag/view agreement, boolean sorting,
+optional-column gates, frozen CSV schema/value alignment, whole-inventory counts
+under Search/Project/bin filters, enabled empty tabs, removed menu state,
+hidden-selection restoration and actual visible/selected CSV exports through the
+No Reference view. `git diff --check` passes. The pre-existing 28 missing-field
+initializer warnings in proxy tests remain; this change adds none. Existing
+opt-in real-drive/case-sensitive-filesystem skips and unperformed Windows/NEXIS
+acceptance remain outside this local verification.
+
+### Database rules before columns/views — 16 October 2026
+
+The user chose **Database rules first, then columns/views**, rather than combining
+the database membership correction with its new presentation. Implement and
+verify the C49 either-local-database reference rule and C48 result precedence
+first, retaining the current table/CSV/view surfaces for this checkpoint. A valid
+same-folder MDB reference to the physical file's FileMobId counts alongside a
+valid local PMR match. Established membership wins over another database's read
+failure, which still belongs in Console. A readable reference check that finds
+no match must remain distinct from an unavailable/unresolved check. Preserve
+physical discovery, field selection/ownership, changed-source exclusion, bounded
+header fallback and existing operation checks. Add the two boolean columns and
+their views in the following checkpoint. Record any further unresolved case or
+implementation crossroad here before proceeding with its dependent work.
+
+The user then chose **No Reference; report the other failure in Console** when
+one completed local check finds no match while another database cannot be read.
+They noted that they have not encountered unreadable/corrupt databases in their
+own work; authored failure controls do not establish how common such failures
+are. They chose **Count the validated entry** when an otherwise partial source
+still establishes a qualified reference to this exact physical file, and **Reuse
+the existing status note** rather than introducing separately stored flags.
+Reference presence is distinct from complete metadata. Keep current reader
+qualification: changed/disputed/unowned claims do not become validated matches.
+Result precedence is therefore validated local reference, then an established
+completed local miss, then couldn't-check/no-database outcomes. Failed or
+unresolved checks alone cannot establish absence. Keep read/qualification problems
+in the existing Console diagnostics, even when a known reference or completed
+miss determines the row's status.
+
+The user chose **Capture the note while preparing MDB results**. Extend the
+temporary projection result with explicit file-reference coverage established by
+the existing MDB qualification step, rather than a second pass over raw objects.
+An empty or unmatched metadata projection alone cannot establish absence: it may
+mean missing schema/root interpretation, an unreadable/disputed identity or
+unsupported owner/descriptor interpretation. Only an established complete
+reference check may establish a miss. Keep this coverage separate from overall
+metadata read success and from qualified positive entries. It is temporary
+working data, not another retained row history or cache; no additional database
+or media read is authorized by this choice.
+
+Implemented 16 October 2026. MDB preparation now captures temporary
+`Projection.fileReferencesComplete` during the existing ownership checks. Known
+root/schema, source-file identities and supported descriptor ownership must be
+established before a miss can count. Unrelated editorial/technical failures do
+not erase proven file-reference coverage. Cancellation does not publish complete
+coverage. A qualified positive can count without complete coverage; raw disputed
+identity claims and master-only groups cannot establish file membership.
+
+The coordinator now uses either local PMR or MDB for reference status. Individual
+PMR filename/identity fields may prove presence in an otherwise partial source,
+while that source's metadata remains excluded. MDB positives require a canonical
+file entry matching the selected usable physical FileMobId in the same folder.
+A covered empty MDB catalogue can prove absence without a physical ID; a nonempty
+catalogue needs that ID for comparison. Changed databases and changed physical
+files cannot prove either result. Existing exact-name/identity safeguards,
+cross-folder metadata enrichment, complete-metadata header-skip conditions,
+bounded fallback and operation receipts remain intact. The current compact
+status, tooltip, CSV field and No Database view consumed the corrected result at
+this rules-only checkpoint. The two boolean columns and separate No Reference
+view followed in the presentation checkpoint above.
+
+Verified 16 October 2026 against pinned Qt 6.5.3 on this arm64 Mac. The app and
+all configured Release targets build. The complete 39-suite run passed 38 suites;
+the remaining scanner failure was a newly incorrect test expectation for the
+genuine supporting OMF MDB. That fixture parses successfully and has a qualified
+slate reference, but does not establish complete file-reference coverage. The
+test now explicitly checks that distinction: the slate is Listed, while the
+unmatched known WAVE remains unresolved. After rebuilding the scanner test, its
+full suite passed (7.61 seconds). All 39 current suites are therefore verified
+across the full run and this focused rerun; `git diff --check` passes.
+
+Coverage includes local MDB-only references, PMR misses with MDB hits, partial
+positive entries, master-only and cross-folder exclusions, completed misses with
+failed siblings, unknown schema/ownership/IDs, verified empty catalogues,
+exact-name precedence, changed sources and physical files, header-read bounds,
+metadata ownership and operation receipts. Existing opt-in real-drive and
+case-sensitive-filesystem controls remain skipped where unavailable. This is not
+a new real-drive, Windows or NEXIS acceptance run, or a measured performance claim.
 
 ### Complete Source Path change — 15 October 2026
 

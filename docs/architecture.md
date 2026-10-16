@@ -129,6 +129,34 @@ and [bounded specimen evidence](../Project%20Canon/root-membership-specimens-202
 Matching prefers exact local PMR filenames, with normalized fallback only for an
 unambiguous physical location and compatible identity. MDB file facts join by full
 canonical file identities; master-only facts require an established association.
+Local reference status is separate from this metadata join. A qualified local
+PMR filename/identity reference or a qualified same-folder MDB entry matching the
+final usable physical FileMobId establishes `Listed`, including an individually
+validated entry in an otherwise partial source. Changed sources or physical files
+cannot supply that proof. Raw identity-conflict carriers and master-only groups
+are not qualified MDB file entries. Cross-folder MDB metadata fallback remains
+available without establishing local membership.
+
+MDB projection records temporary `Projection.fileReferencesComplete` coverage
+while interpreting the required root lists, source-file identities and descriptor
+ownership. Parser `Complete` and an empty/unmatched metadata projection do not
+establish that coverage. A completed MDB miss requires coverage plus a usable
+physical FileMobId, or a verified empty file catalogue. Unknown schema, disputed
+identity, unresolved ownership and unsupported file-descriptor interpretation
+leave the check unresolved. PMR absence similarly requires a complete,
+unambiguous local reference check. The compact `DbStatus` precedence is validated
+local reference, completed local miss, then unavailable/unresolved checks;
+read/qualification problems still reach Console when another result determines
+the row's status. Coverage is released with the working scan.
+
+This membership correction does not make partial PMR metadata eligible or relax
+the existing header-skip gate: a complete usable local PMR match, complete MDB
+metadata and usable required fields are still needed. The table and CSV derive
+No Database and No Reference booleans from the compact status, after Location and
+before the IDs. Separate views use the same predicates as their flags and inventory
+counts. Every feature-enabled tab stays visible at zero; the former visibility
+override is removed. No stored row flags or additional scan reads are needed.
+
 MDB/OMF/MXF keep master facts in temporary `Projection.masters` groups rather than
 merging every master's details into a physical file. Association claims remain in
 the file evidence. MasterMobId uses Header → MDB → PMR preference among acquired

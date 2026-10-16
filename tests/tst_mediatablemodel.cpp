@@ -93,6 +93,8 @@ private slots:
 	// must be impossible. Labels asserted as raw literals on purpose —
 	// the rename tripwire.
 	void status_words_come_from_one_table();
+	void database_columns_show_the_compact_result_data();
+	void database_columns_show_the_compact_result();
 	void unknown_classification_displays_without_guessing();
 	void precomputes_gate_preserves_rows_and_existing_indexes();
 	void effect_columns_only_display_precompute_details();
@@ -308,6 +310,7 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 		filesystem->source = MetadataSource::Filesystem;
 		filesystem->path = original;
 		observe(MediaProperty::Location, original, filesystem);
+		observe(MediaProperty::DatabaseStatus, int(MediaFile::DbStatus::Listed), filesystem);
 		MediaEngine::selectMetadata(evidence);
 		auto scan = QSharedPointer<MediaEngine::ScanResult>::create();
 		oldScan = scan;
@@ -333,6 +336,10 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 	model.setMediaFiles({originalRow});
 	const KelpieId originalId = model.allFiles().first().kelpieId;
 	QVERIFY(originalId != 0);
+	const QPersistentModelIndex noDatabase(model.index(0, int(MediaTableModel::Column::NoDatabase)));
+	const QPersistentModelIndex noReference(model.index(0, int(MediaTableModel::Column::NoReference)));
+	QCOMPARE(noDatabase.data().toString(), QStringLiteral("false"));
+	QCOMPARE(noReference.data().toString(), QStringLiteral("false"));
 	model.applyTransfer(original, copy, true);
 	QCOMPARE(model.rowCount(), 2);
 	QCOMPARE(model.allFiles()[0].kelpieId, originalId);
@@ -340,9 +347,15 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 	QCOMPARE(model.allFiles()[0].masterMobId, model.allFiles()[1].masterMobId);
 	QCOMPARE(model.allFiles()[0].mediaFilePath, original);
 	QCOMPARE(model.allFiles()[1].dbStatus, MediaFile::DbStatus::NoDatabase);
+	QCOMPARE(model.index(1, int(MediaTableModel::Column::NoDatabase)).data().toString(), QStringLiteral("true"));
+	QCOMPARE(model.index(1, int(MediaTableModel::Column::NoReference)).data().toString(), QStringLiteral("false"));
 	QVERIFY(!put("future.pmr").isEmpty()); // Presence cannot prove membership without parsing this database.
 	model.applyTransfer(original, moved, false);
 	QCOMPARE(model.allFiles()[0].dbStatus, MediaFile::DbStatus::DbUnreadable);
+	QVERIFY(noDatabase.isValid());
+	QVERIFY(noReference.isValid());
+	QCOMPARE(noDatabase.data().toString(), QStringLiteral("true"));
+	QCOMPARE(noReference.data().toString(), QStringLiteral("false"));
 	QCOMPARE(model.rowCount(), 2);
 	QCOMPARE(model.allFiles()[0].kelpieId, originalId);
 	QCOMPARE(model.allFiles()[0].scanStamp.path, moved);
@@ -414,7 +427,7 @@ void TestMediaTableModel::omf_gate_preserves_optional_column_indexes()
 		for (bool precompute : {true, false, true})
 		{
 			model.setPrecomputesEnabled(precompute);
-			QCOMPARE(model.columnCount(), 19 + int(omf) + 4 * int(precompute));
+			QCOMPARE(model.columnCount(), 21 + int(omf) + 4 * int(precompute));
 			QVERIFY(duration.isValid());
 			QCOMPARE(duration.column(), int(MediaTableModel::Column::Duration));
 			QCOMPARE(duration.data().toString(), QStringLiteral("00:00:00:19"));
@@ -453,7 +466,7 @@ void TestMediaTableModel::unknown_created_date_displays_blank()
 }
 
 // The database status is one enum value and its words live in one table; the
-// Project cell, its tooltip, the tab and the CSV all read that table. This
+// Project tooltip and filter tabs share those explanations. This
 // pins the table: every status has a label, the two couldn't-check states
 // share the one "No Database" label but explain themselves differently, and
 // "No project" is a separate fact (an empty project) with its own sentence.
@@ -463,7 +476,7 @@ void TestMediaTableModel::status_words_come_from_one_table()
 	for (DbStatus s : {DbStatus::Listed, DbStatus::NoReference, DbStatus::NoDatabase, DbStatus::DbUnreadable})
 	{
 		const auto text = MediaFile::dbStatusText(s);
-		QVERIFY2(!text.label.isEmpty(), "every status has a label (it is the CSV value)");
+		QVERIFY2(!text.label.isEmpty(), "every status has a label for its explanation");
 		QCOMPARE(text.why.isEmpty(), s == DbStatus::Listed); // only Listed needs no explanation
 	}
 	QCOMPARE(MediaFile::dbStatusText(DbStatus::NoDatabase).label,
@@ -498,6 +511,65 @@ void TestMediaTableModel::status_words_come_from_one_table()
 	const QString tip = m.index(0, col).data(Qt::ToolTipRole).toString();
 	QVERIFY(tip.contains(MediaFile::noProjectWhy()));
 	QVERIFY(tip.contains(MediaFile::dbStatusText(DbStatus::NoReference).why));
+}
+
+void TestMediaTableModel::database_columns_show_the_compact_result_data()
+{
+	QTest::addColumn<MediaFile::DbStatus>("status");
+	QTest::addColumn<bool>("noDatabase");
+	QTest::addColumn<bool>("noReference");
+	QTest::newRow("listed") << MediaFile::DbStatus::Listed << false << false;
+	QTest::newRow("checked-missing-reference") << MediaFile::DbStatus::NoReference << false << true;
+	QTest::newRow("no-local-databases") << MediaFile::DbStatus::NoDatabase << true << false;
+	QTest::newRow("unresolved-local-checks") << MediaFile::DbStatus::DbUnreadable << true << false;
+}
+
+void TestMediaTableModel::database_columns_show_the_compact_result()
+{
+	QFETCH(MediaFile::DbStatus, status);
+	QFETCH(bool, noDatabase);
+	QFETCH(bool, noReference);
+	MediaFile file = row();
+	file.dbStatus = status;
+	MediaTableModel model;
+	QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
+	model.setMediaFiles({file});
+	const int databaseColumn = int(MediaTableModel::Column::NoDatabase);
+	const int referenceColumn = int(MediaTableModel::Column::NoReference);
+	QCOMPARE(databaseColumn, int(MediaTableModel::Column::Location) + 1);
+	QCOMPARE(referenceColumn, databaseColumn + 1);
+	QCOMPARE(int(MediaTableModel::Column::FileMobId), referenceColumn + 1);
+	const QPersistentModelIndex database(model.index(0, databaseColumn));
+	const QPersistentModelIndex reference(model.index(0, referenceColumn));
+	for (const bool precomputes : {false, true, false})
+	{
+		model.setPrecomputesEnabled(precomputes);
+		for (const bool omf : {false, true, false})
+		{
+			model.setOmfScanEnabled(omf);
+			QVERIFY(database.isValid());
+			QVERIFY(reference.isValid());
+			QCOMPARE(database.data().toString(), noDatabase ? QStringLiteral("true") : QStringLiteral("false"));
+			QCOMPARE(reference.data().toString(), noReference ? QStringLiteral("true") : QStringLiteral("false"));
+			QCOMPARE(database.data(Qt::UserRole).metaType().id(), int(QMetaType::Bool));
+			QCOMPARE(reference.data(Qt::UserRole).metaType().id(), int(QMetaType::Bool));
+			QCOMPARE(database.data(Qt::UserRole).toBool(), noDatabase);
+			QCOMPARE(reference.data(Qt::UserRole).toBool(), noReference);
+			QCOMPARE(model.headerData(databaseColumn, Qt::Horizontal, Qt::DisplayRole).toString(), QStringLiteral("No Database"));
+			QCOMPARE(model.headerData(referenceColumn, Qt::Horizontal, Qt::DisplayRole).toString(), QStringLiteral("No Reference"));
+			const QString databaseTip = database.data(Qt::ToolTipRole).toString();
+			const QString referenceTip = reference.data(Qt::ToolTipRole).toString();
+			QVERIFY(!databaseTip.isEmpty());
+			QVERIFY(!referenceTip.isEmpty());
+			if (status != MediaFile::DbStatus::Listed)
+			{
+				QVERIFY(databaseTip.contains(file.dbStatusText().why));
+				QVERIFY(referenceTip.contains(file.dbStatusText().why));
+			}
+			if (noDatabase)
+				QVERIFY(referenceTip.contains(QStringLiteral("absence was not established")));
+		}
+	}
 }
 
 void TestMediaTableModel::unknown_classification_displays_without_guessing()
@@ -540,25 +612,26 @@ void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 		QStringLiteral("Compression"), QStringLiteral("Resolution"), QStringLiteral("Frame Rate"),
 		QStringLiteral("Sample Rate"), QStringLiteral("Bit Depth"), QStringLiteral("Type"),
 		QStringLiteral("Date Created"), QStringLiteral("Filename"), QStringLiteral("Source Path"),
-		QStringLiteral("Location")};
+		QStringLiteral("Location"), QStringLiteral("No Database"), QStringLiteral("No Reference"),
+		QStringLiteral("FileMobId"), QStringLiteral("MasterMobId"), QStringLiteral("KelpieId")};
 	const QPersistentModelIndex row(model.index(1, int(MediaTableModel::Column::Location)));
 	const QString path = row.data().toString();
 	QSignalSpy reset(&model, &QAbstractItemModel::modelReset);
 	QSignalSpy inserted(&model, &QAbstractItemModel::columnsInserted);
 	QSignalSpy removed(&model, &QAbstractItemModel::columnsRemoved);
 	QVERIFY(!model.precomputesEnabled());
-	QCOMPARE(model.columnCount(), 19);
+	QCOMPARE(model.columnCount(), 21);
 	for (int column = 0; column < baseHeaders.size(); ++column)
 		QCOMPARE(model.headerData(column, Qt::Horizontal, Qt::DisplayRole).toString(), baseHeaders[column]);
 	QVERIFY(!model.index(0, int(MediaTableModel::Column::Effect)).isValid());
 	QVERIFY(!model.headerData(int(MediaTableModel::Column::Effect), Qt::Horizontal, Qt::DisplayRole).isValid());
 	model.setPrecomputesEnabled(true);
-	QCOMPARE(model.columnCount(), 23);
+	QCOMPARE(model.columnCount(), 25);
 	for (int column = 0; column < baseHeaders.size(); ++column)
 		QCOMPARE(model.headerData(column, Qt::Horizontal, Qt::DisplayRole).toString(), baseHeaders[column]);
 	QCOMPARE(inserted.size(), 1);
-	QCOMPARE(inserted.first().at(1).toInt(), 19);
-	QCOMPARE(inserted.first().at(2).toInt(), 22);
+	QCOMPARE(inserted.first().at(1).toInt(), 21);
+	QCOMPARE(inserted.first().at(2).toInt(), 24);
 	QVERIFY(row.isValid());
 	QCOMPARE(row.data().toString(), path);
 	const QPersistentModelIndex effect(model.index(1, int(MediaTableModel::Column::Effect)));
@@ -566,7 +639,7 @@ void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 	QCOMPARE(inserted.size(), 1);
 	model.setPrecomputesEnabled(false);
 	model.setPrecomputesEnabled(false);
-	QCOMPARE(model.columnCount(), 19);
+	QCOMPARE(model.columnCount(), 21);
 	QCOMPARE(removed.size(), 1);
 	QCOMPARE(reset.size(), 0);
 	QCOMPARE(model.rowCount(), 2);

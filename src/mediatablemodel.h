@@ -33,6 +33,8 @@ public:
 		FileName,
 		SourcePath,
 		Location,
+		NoDatabase,
+		NoReference,
 		FileMobId,
 		MasterMobId,
 		KelpieId,

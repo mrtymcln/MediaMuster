@@ -129,15 +129,15 @@ struct MediaFile
 	using Type = MediaType;
 	Type type = Type::Unknown;
 
-	/// Local PMR membership and database readability, independent of project
-	/// metadata and sequence usage. Recovering a name from MDB or a header
-	/// does not make an unlisted file Listed.
+	/// Local physical-file references, independent of metadata completeness,
+	/// database freshness and sequence usage. A recovered name or project alone
+	/// does not establish membership in a local PMR or MDB.
 	enum class DbStatus : int
 	{
-		Listed,		 ///< The parsed PMR names this file.
-		NoReference, ///< PMR misses the file; no database check failed.
-		NoDatabase,	 ///< No PMR index is available to check.
-		DbUnreadable ///< A present database could not be read reliably.
+		Listed,		 ///< A validated local PMR or MDB entry references this physical file.
+		NoReference, ///< A complete local check found no match; no valid reference was established.
+		NoDatabase,	 ///< No local PMR or MDB is available to check.
+		DbUnreadable ///< Local reference checks are unresolved or have not yet been performed.
 	};
 	DbStatus dbStatus = DbStatus::Listed;
 
@@ -146,6 +146,10 @@ struct MediaFile
 	bool isNoDatabase() const
 	{
 		return dbStatus == DbStatus::NoDatabase || dbStatus == DbStatus::DbUnreadable;
+	}
+	bool isNoReference() const
+	{
+		return dbStatus == DbStatus::NoReference;
 	}
 	/// No project name was recovered; this says nothing about database
 	/// membership or whether a sequence uses the file.
@@ -159,8 +163,8 @@ struct MediaFile
 
 	// MARK: Status words
 
-	/// Shared database-status labels and explanations. Missing and unreadable
-	/// databases use the same visible label but retain different explanations.
+	/// Shared database-status labels and explanations. Missing databases and
+	/// unresolved checks share a visible label but retain different explanations.
 	struct DbStatusText
 	{
 		QString label;
@@ -174,20 +178,18 @@ struct MediaFile
 			return {QStringLiteral("Listed"), {}};
 		case DbStatus::NoReference:
 			return {QStringLiteral("No Reference"),
-					QStringLiteral("No reference to this file in the folder's Avid databases "
-								   "(msmFMID.pmr / msmMMOB.mdb) — copied in or created since Avid "
-								   "last indexed the folder, or its records were removed. Media "
-								   "Composer re-indexes it at next launch.")};
+					QStringLiteral("A complete check of a local PMR or MDB database found no reference "
+								   "to this physical file. Other database problems are reported in Console. "
+								   "This does not establish database freshness or sequence usage.")};
 		case DbStatus::NoDatabase:
 			return {QStringLiteral("No Database"),
-					QStringLiteral("This folder has no Avid file index (msmFMID.pmr), so references "
-								   "could not be checked. Normal for other seats' folders on shared "
-								   "storage, for Interplay / MediaCentral, and for Quarantined Files.")};
+					QStringLiteral("No local PMR or MDB database is available in this folder, "
+								   "so physical-file references could not be checked.")};
 		case DbStatus::DbUnreadable:
 			return {QStringLiteral("No Database"),
-					QStringLiteral("A database in this folder exists but could not be read "
-								   "(corrupt, truncated, or an unsupported older version). Media "
-								   "Composer rebuilds it at relaunch.")};
+					QStringLiteral("The local PMR or MDB reference checks could not be completed reliably, "
+								   "or have not yet been performed. Database presence alone does not "
+								   "establish whether this physical file is referenced.")};
 		}
 		return {};
 	}

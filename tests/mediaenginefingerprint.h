@@ -324,6 +324,7 @@ public:
 	}
 	void projection(const MediaEngine::Projection &value)
 	{
+		stream << value.fileReferencesComplete;
 		projectedFiles(value.files, &value);
 		projectedFiles(value.masters);
 		texts(value.diagnostics);

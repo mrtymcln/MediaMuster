@@ -79,7 +79,7 @@ between them. Cut, Copy, Paste and Select All are available through the controls
 built-in keyboard shortcuts and, for text controls, their context menus; they have
 no menu-bar commands. The media table
 retains its cell-copy and Copy Path context commands. View retains the checked
-**Show Console** and **Show All Filter Tabs** options.
+**Show Console** option. Every enabled filter tab remains visible, including at zero.
 
 **Help > Reveal Diagnostics** reveals the diagnostic log in the system's file browser.
 **Help > Send feedback…** opens the default email client with a message addressed
@@ -254,13 +254,31 @@ have no database reference.
 
 | Label | What it means in this app |
 | --- | --- |
-| Listed | A complete, unchanged local PMR has an unambiguous compatible filename/identity association with this row. It does not certify database freshness. |
-| No Reference | A local PMR was read, but no eligible unambiguous reference was established for this file; conflicts are reported separately. This is not a test of whether a sequence uses the file. |
-| No Database | There is no PMR index to check, or a database could not be read. The internal states are separate even though they share this filter label. |
+| Listed | An unchanged local PMR establishes an unambiguous compatible filename/identity reference, or an unchanged same-folder MDB has a qualified entry matching the physical FileMobId. An individually validated reference can count even when unrelated parts of that database are incomplete. |
+| No Reference | A completed local PMR or MDB reference check found no match, and no valid local reference was established. This result takes precedence over a failed sibling database; that problem still goes to Console. This is not a test of whether a sequence uses the file. |
+| No Database | No local PMR or MDB is available, or the local reference checks remain unresolved. Missing databases and unresolved checks retain distinct internal states while sharing this label and filter. |
 | No project | No project name was recovered for the file. This does not mean that the file is unused. |
 | Non-Portable | The filename contains a character outside MediaMuster's allowed character set. The app does not rename it automatically. |
 | Quarantined | The scanner found the file in the recognised MXF quarantine location. The app does not perform a new corruption diagnosis to assign this flag. |
 | Precompute | Supported usage metadata identifies rendered media. The clip name alone does not decide this classification. |
+
+MDB reference coverage is checked separately from parser success. Unknown schema,
+unresolved ownership, disputed identities or unsupported descriptors cannot prove
+that a file is absent. A nonempty MDB catalogue requires a usable physical
+FileMobId for this check; a verified empty file catalogue can establish absence
+without one. A recovered name, project or matching metadata from another folder
+does not establish a local reference. These results do not certify freshness or
+complete metadata, and detected source or physical-file changes exclude proof.
+
+Reference status does not change metadata eligibility or header scheduling. In
+particular, a validated entry in a partial PMR does not supply its metadata or
+permit a header skip. The existing complete PMR/MDB match and required-field
+checks still control that decision. No Database and No Reference appear as
+`true`/`false` columns after Location, before the IDs, in both the table and CSV.
+Each has its own view, showing exactly the rows whose flag is true. Both flags
+derive from the compact internal status; the CSV no longer has Database Status.
+False No Reference on an unresolved row does not establish that the file is listed.
+Project and flag tooltips explain the row's result.
 
 The Project field is recorded metadata, not a search through every Avid project.
 Original Bin is recorded origin information, not proof of which bins currently
@@ -344,10 +362,12 @@ Duration sorts by the displayed hours, minutes, seconds and frame number,
 including across different frame rates. Colons and semicolons do not affect
 the order. Blank durations come first when sorting upwards and last downwards.
 
-The filter tabs are All, Video, Audio, No Database, Non-Portable and Quarantined.
+The filter tabs are All, Video, Audio, No Database, No Reference, Non-Portable and Quarantined.
 Enabling precompute features also adds Precomputes. Project selection, including
 **No project**, is available in the sidebar. Database membership remains visible
-in Project tooltips. The row retains the selected identifiers and invalid-ID flag;
+in the two flag columns and their tooltips, as well as Project tooltips. All enabled
+tabs remain visible at zero; feature-disabled Precomputes stays hidden. There is
+no Show All Filter Tabs override. The row retains the selected identifiers and invalid-ID flag;
 invalid observations are examined during scanning rather than stored in the table.
 
 The table's filters work on the current inventory. They do not modify disk files.
@@ -401,9 +421,10 @@ waits until saving finishes; Console confirms the row count and destination afte
 a successful file commit, or reports failure. No background CSV export remains
 running when the user can start another scan.
 
-CSV retains its explicit established export order, ending with Database Status,
-FileMobId, MasterMobId, KelpieId and OmfScan. Optional precompute details follow
-the table's setting: 21 columns without them and 25 with them. Disabled optional columns are absent,
+CSV retains its explicit export order, with Location followed by No Database,
+No Reference, FileMobId, MasterMobId, KelpieId and OmfScan. Both database flags use
+unquoted lowercase `true`/`false`. Optional precompute details follow
+the table's setting: 22 columns without them and 26 with them. Disabled optional columns are absent,
 not exported as blank fields. CSV always includes OmfScan, even when its table
 column is hidden.
 Moving table columns does not change export order. The exporter maintains its

@@ -16,6 +16,7 @@ namespace `MediaEngine`.
 | `MediaEvidence` | Keeps working observations, alternatives, read states, basis, eligibility, agreement and selected results for matching and validation. Ordinary UI rows do not retain it. |
 | Metadata selection policy | One compiled preference row per supported property. MasterMobId uses header then MDB then PMR, with preferred-rank ambiguity left blank. Clip Name uses header then MDB, and Original Bin uses MDB then header, from the selected master's admitted details; loaded bins do not enrich rows. |
 | `Projection.masters` | Temporary groups of qualified master details. Physical-file evidence keeps association claims; the coordinator admits only the selected master's details. |
+| `Projection.fileReferencesComplete` | Temporary MDB file-reference coverage, established during projection independently of overall metadata read success. Required for absence proof; qualified individual references can establish presence without it. |
 | `MediaEngine::MediaFile` | Physical location and working evidence inside the scan result. |
 | UI `MediaFile` and `KelpieId` | Selected typed values for one physical media-file location and its scan-session identity. Matching Avid IDs do not merge copies. |
 | `MediaMetadataStatus` | Fixed inline status checklist, with availability, applicability, agreement, origin and freshness tags. Contains no values, strings or source owners. |
@@ -40,6 +41,24 @@ snapshot diagnostics without keeping the complete scan result. AVB loading is
 independent: bin graphs remain retained because reference
 resolution and filtering use them. Loaded bins do not supply names or derived effect
 fields to the media inventory, and rows no longer retain separate AVB history owners.
+
+Local database membership uses an unambiguous qualified PMR filename/identity
+reference or a same-folder qualified MDB file entry matching the final usable
+physical FileMobId. A validated individual entry can count in a partial source;
+changed sources, changed physical files and raw identity-conflict carriers cannot.
+A completed local miss takes precedence over an unreadable sibling, while any
+validated local positive takes precedence over both. Read and qualification
+problems still go to Console. The existing `DbStatus` stores the result.
+
+MDB parser success alone cannot prove absence: required root membership and every
+applicable source-file identity/owner must have been interpreted. An unmatched
+covered catalogue requires a usable physical ID; a verified empty file catalogue
+can prove absence without one. This temporary coverage is released after matching.
+Cross-folder MDB metadata joins, partial-PMR metadata exclusion and the complete
+PMR/MDB required-field header-skip gate remain unchanged. C48's two boolean
+columns and corresponding views derive from this same compact status. CSV uses
+the two flags in place of Database Status, after Location and before the IDs.
+All enabled views remain visible at zero; their counts still describe the whole inventory.
 
 The read-only scan probe uses this same engine. It can inspect working evidence,
 source receipts, read decisions, callbacks, input stamps and prepared CSV, and measures

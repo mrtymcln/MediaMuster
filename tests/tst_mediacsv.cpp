@@ -71,6 +71,8 @@ private slots:
 	void header_and_row_have_the_same_field_count();
 	void selected_master_and_physical_row_identity_are_exported();
 	void header_order_and_values_follow_the_export_schema();
+	void database_flags_replace_the_status_label_data();
+	void database_flags_replace_the_status_label();
 	void created_date_carries_time_of_day();
 	void unknown_created_date_is_blank();
 	void size_column_matches_the_table();
@@ -113,14 +115,14 @@ void TestMediaCsv::header_and_row_have_the_same_field_count()
 	// The alignment guard: this fails the moment someone adds a field to
 	// one list and forgets the other.
 	const auto headerFields = readCsvRecord(MediaCsv::headerLine()).size();
-	QCOMPARE(headerFields, 21);
+	QCOMPARE(headerFields, 22);
 	QCOMPARE(readCsvRecord(MediaCsv::rowLine(sampleRow())).size(), headerFields);
 	// An all-defaults row must line up too — no field may collapse when empty.
 	QCOMPARE(readCsvRecord(MediaCsv::rowLine(MediaFile{})).size(), headerFields);
 	const MediaCsv::Options enabled{true};
-	QCOMPARE(readCsvRecord(MediaCsv::headerLine(enabled)).size(), 25);
-	QCOMPARE(readCsvRecord(MediaCsv::rowLine(sampleRow(), enabled)).size(), 25);
-	QCOMPARE(readCsvRecord(MediaCsv::rowLine(MediaFile{}, enabled)).size(), 25);
+	QCOMPARE(readCsvRecord(MediaCsv::headerLine(enabled)).size(), 26);
+	QCOMPARE(readCsvRecord(MediaCsv::rowLine(sampleRow(), enabled)).size(), 26);
+	QCOMPARE(readCsvRecord(MediaCsv::rowLine(MediaFile{}, enabled)).size(), 26);
 }
 
 void TestMediaCsv::header_order_and_values_follow_the_export_schema()
@@ -143,7 +145,7 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 	{
 		QStringList expectedHeaders = QStringLiteral(
 										  "Clip Name,Project,Bin,Kind,Duration,Size (MB),Compression,Resolution,Frame Rate,Sample Rate,Bit Depth,Type,"
-										  "Date Created,Filename,Source Path,Location,Database Status,FileMobId,MasterMobId,KelpieId,OmfScan")
+										  "Date Created,Filename,Source Path,Location,No Database,No Reference,FileMobId,MasterMobId,KelpieId,OmfScan")
 										  .split(QLatin1Char(','));
 		QStringList expectedFields{
 			QStringLiteral("Scene 1 - Take 3"), QStringLiteral("MyFilm"), QStringLiteral("Rushes"),
@@ -153,7 +155,7 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 			QStringLiteral("2026-07-20 12:30"),
 			QStringLiteral("A11B22C33D44.mxf"), QStringLiteral("file:///Recorded%20Imports/camera-original.mov"),
 			QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/1/A11B22C33D44.mxf"),
-			QStringLiteral("No Reference"), QStringLiteral("file-mob-id"), QStringLiteral("master-mob-id"), QStringLiteral("0"), QStringLiteral("false")};
+			QStringLiteral("false"), QStringLiteral("true"), QStringLiteral("file-mob-id"), QStringLiteral("master-mob-id"), QStringLiteral("0"), QStringLiteral("false")};
 		if (enabled)
 		{
 			const QStringList detailHeaders{QStringLiteral("Precompute Category"), QStringLiteral("Effect Category"),
@@ -169,6 +171,48 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 		const MediaCsv::Options options{enabled};
 		QCOMPARE(readCsvRecord(MediaCsv::headerLine(options)), expectedHeaders);
 		QCOMPARE(readCsvRecord(MediaCsv::rowLine(f, options)), expectedFields);
+	}
+}
+
+void TestMediaCsv::database_flags_replace_the_status_label_data()
+{
+	QTest::addColumn<MediaFile::DbStatus>("status");
+	QTest::addColumn<QString>("noDatabase");
+	QTest::addColumn<QString>("noReference");
+	QTest::newRow("listed") << MediaFile::DbStatus::Listed << QStringLiteral("false") << QStringLiteral("false");
+	QTest::newRow("checked-missing-reference") << MediaFile::DbStatus::NoReference << QStringLiteral("false") << QStringLiteral("true");
+	QTest::newRow("no-local-databases") << MediaFile::DbStatus::NoDatabase << QStringLiteral("true") << QStringLiteral("false");
+	QTest::newRow("unresolved-local-checks") << MediaFile::DbStatus::DbUnreadable << QStringLiteral("true") << QStringLiteral("false");
+}
+
+void TestMediaCsv::database_flags_replace_the_status_label()
+{
+	QFETCH(MediaFile::DbStatus, status);
+	QFETCH(QString, noDatabase);
+	QFETCH(QString, noReference);
+	MediaFile file = sampleRow();
+	file.dbStatus = status;
+	for (const bool precomputes : {false, true})
+	{
+		const MediaCsv::Options options{precomputes};
+		const auto headers = readCsvRecord(MediaCsv::headerLine(options));
+		const QString line = MediaCsv::rowLine(file, options);
+		const auto values = readCsvRecord(line);
+		QVERIFY(!headers.contains(QStringLiteral("Database Status")));
+		QCOMPARE(headers.count(QStringLiteral("No Database")), 1);
+		QCOMPARE(headers.count(QStringLiteral("No Reference")), 1);
+		const int databaseColumn = headers.indexOf(QStringLiteral("No Database"));
+		const int referenceColumn = headers.indexOf(QStringLiteral("No Reference"));
+		QCOMPARE(databaseColumn, headers.indexOf(QStringLiteral("Location")) + 1);
+		QCOMPARE(referenceColumn, databaseColumn + 1);
+		QCOMPARE(headers.indexOf(QStringLiteral("FileMobId")), referenceColumn + 1);
+		QCOMPARE(values.at(databaseColumn), noDatabase);
+		QCOMPARE(values.at(referenceColumn), noReference);
+		// This row has no embedded commas: inspect raw cells to retain the
+		// unquoted lowercase boolean format used by OmfScan.
+		const auto rawValues = line.split(QLatin1Char(','));
+		QCOMPARE(rawValues.at(databaseColumn), noDatabase);
+		QCOMPARE(rawValues.at(referenceColumn), noReference);
 	}
 }
 

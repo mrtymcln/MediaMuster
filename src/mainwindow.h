@@ -230,7 +230,6 @@ private:
 	// MARK: - Scan state
 
 	QElapsedTimer m_scanTimer;
-	bool m_showAllFilterTabs = false;
 	bool m_omfScanEnabled = false;
 	bool m_precomputesEnabled = false;
 	class QAction *m_precomputeFilterAction = nullptr;

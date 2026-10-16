@@ -180,6 +180,8 @@ bool MediaFilterProxy::matchesMode(FilterMode mode, const MediaFile &f)
 		return f.kind == MediaFile::Kind::Audio;
 	case FilterMode::NoDatabase:
 		return f.isNoDatabase(); // both couldn't-check states; the tooltip says which
+	case FilterMode::NoReference:
+		return f.isNoReference();
 	case FilterMode::NonPortable:
 		return f.isNonPortable;
 	case FilterMode::Quarantined:
@@ -327,6 +329,10 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 	}
 	case Col::Location:
 		return QString::compare(leftFile.mediaFilePath, rightFile.mediaFilePath, Qt::CaseInsensitive) < 0;
+	case Col::NoDatabase:
+		return leftFile.isNoDatabase() < rightFile.isNoDatabase();
+	case Col::NoReference:
+		return leftFile.isNoReference() < rightFile.isNoReference();
 	case Col::KelpieId:
 		return leftFile.kelpieId < rightFile.kelpieId;
 	case Col::FileMobId:

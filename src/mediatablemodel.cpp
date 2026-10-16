@@ -253,6 +253,10 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.sourceFilePath;
 		case Column::Location:
 			return f.mediaFilePath;
+		case Column::NoDatabase:
+			return f.isNoDatabase() ? QStringLiteral("true") : QStringLiteral("false");
+		case Column::NoReference:
+			return f.isNoReference() ? QStringLiteral("true") : QStringLiteral("false");
 		case Column::FileMobId:
 			return f.fileMobId;
 		case Column::MasterMobId:
@@ -271,11 +275,24 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			break;
 		}
 	}
+	if (role == Qt::ToolTipRole &&
+		(static_cast<Column>(index.column()) == Column::NoDatabase ||
+		 static_cast<Column>(index.column()) == Column::NoReference))
+	{
+		QString explanation = f.dbStatusText().why;
+		if (f.dbStatus == MediaFile::DbStatus::Listed)
+			explanation = QStringLiteral("A validated local PMR or MDB entry references this physical file. "
+										 "This does not establish database freshness or sequence usage.");
+		if (static_cast<Column>(index.column()) == Column::NoReference && f.isNoDatabase())
+			explanation += QStringLiteral(" No Reference is false because absence was not established; "
+										  "this does not confirm that the file is listed.");
+		return explanation;
+	}
 	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::Project)
 	{
 		// Explain the row where the user is looking: why there is no project
 		// name, and/or why the folder's databases couldn't vouch for the file.
-		// The sentences live on MediaFile so the tabs and CSV say the same.
+		// The sentences live on MediaFile so the tabs share these explanations.
 		QStringList lines;
 		if (f.hasNoProject())
 			lines << MediaFile::noProjectWhy();
@@ -302,6 +319,10 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.sampleRateHz() > 0 ? QVariant(f.sampleRateHz()) : QVariant();
 		if (static_cast<Column>(index.column()) == Column::Created)
 			return f.created;
+		if (static_cast<Column>(index.column()) == Column::NoDatabase)
+			return f.isNoDatabase();
+		if (static_cast<Column>(index.column()) == Column::NoReference)
+			return f.isNoReference();
 		return data(index, Qt::DisplayRole);
 	}
 	return {};
@@ -317,7 +338,7 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 
 	const char *headers[] = {"Clip Name", "Project", "Bin", "Kind", "Duration", "Size (MB)",
 							 "Compression", "Resolution", "Frame Rate", "Sample Rate", "Bit Depth", "Type",
-							 "Date Created", "Filename", "Source Path", "Location", "FileMobId", "MasterMobId", "KelpieId",
+							 "Date Created", "Filename", "Source Path", "Location", "No Database", "No Reference", "FileMobId", "MasterMobId", "KelpieId",
 							 "Precompute Category", "Effect Category", "Effect", "Effect Sequence"};
 	static_assert(sizeof(headers) / sizeof(headers[0]) == Enum::to_underlying(Column::Count_),
 				  "Column enum and headers[] array got out of sync — "

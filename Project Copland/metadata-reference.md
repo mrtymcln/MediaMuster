@@ -6,8 +6,8 @@ clarified 12 October 2026, against app revision
 published Avid documentation and SMPTE standards.
 
 Current implementation descriptions include the 15 October 2026 single-master
-and 16 October Source Path checkpoints; dated format findings remain evidence
-from the identified verification revisions.
+and 16 October Source Path and database reference checkpoints; dated format
+findings remain evidence from the identified verification revisions.
 
 This reference explains names and relationships. Keep/remove decisions belong in
 the [Copland decision ledger](README.md). A field appearing here does not authorize
@@ -66,9 +66,9 @@ These names must not be substituted for one another just because they look simil
 | Source Path | Selected recorded source/import path or URL. Its relationship to the managed file establishes the source meaning; an arbitrary locator is insufficient. | A: `SourcePath` p. 277; MXF Network Locator URL String is M B.4. O/M locators do not alone establish an original-import relationship. | Correctly linked import `NetworkLocator.URLString`, `_SRCFILE` locator path or `UNC Path`. C94 retains this value and compact availability status; C95/C96 require table/CSV display and Search. This is not necessarily the earliest camera original or an existing source. [Code](../src/mediaengine/mxfprojection.cpp#L729). |
 | Source Filename (removed) | Former selected basename derived while interpreting recorded source/import metadata. | A: `SourceFile` p. 277 is a separate user-facing heading. | C94 supersedes C36's earlier requirement. Its complete implementation removes the separate basename derivation, selection/status, retained row value and table/CSV column. |
 | Location | Current absolute physical path, including filename. Locates the file that operations act upon. | Filesystem fact. A: closest heading `MediaFilePath`, p. 276, for media/precompute file objects. | `mediaFilePath`, updated after confirmed operations. Distinct from recorded SourcePath. [Table mapping](../src/mediatablemodel.cpp#L303). Confirmed C36. |
-| Database Status / internal result | App-derived local index membership/readability result. | App field; D explains database roles rather than this enum. | Current `Listed`, `NoReference`, `NoDatabase`, `DbUnreadable` derives from PMR matching and database outcomes. A header-recovered name does not make a file Listed. C48 replaces the visible CSV/status-column target with two boolean columns; compact internal status remains useful. Not proof of freshness, complete metadata or sequence usage. [Current code](../src/mediaengine/scancoordinator.cpp#L555). |
-| No Database | Target true/false column and view: reference membership could not be checked locally because the relevant databases are missing or unreadable. | App field, no standard OMF/MXF property. | Confirmed C48/C49, not yet implemented. A validated local PMR or same-folder MDB reference keeps this false even if another database is missing or unreadable; read failures go to Console. Missing and unreadable reasons can remain in compact internal status. |
-| No Reference | Target true/false column and view: readable local database checks did not establish a reference to this physical file. | App field, no standard OMF/MXF property. | Confirmed C48/C49, not yet implemented. A validated same-folder MDB match to the physical FileMobId counts even when PMR misses the file or is absent. False on a couldn't-check row means absence was not established; it does not certify listing. |
+| Database Status / internal result | App-derived local physical-file reference result. | App field; D explains database roles rather than this enum. | `Listed` follows a qualified local PMR filename/identity reference or same-folder MDB entry matching the physical FileMobId, including a validated individual entry in a partial source. A completed local miss establishes `NoReference` ahead of unresolved sibling checks; source problems still go to Console. No local database gives `NoDatabase`; unresolved checks give `DbUnreadable`. Not proof of freshness, complete metadata or sequence usage. [Current code](../src/mediaengine/scancoordinator.cpp). |
+| No Database | True/false table/CSV column and view: local reference membership could not be checked. | App field, no standard OMF/MXF property. | Implemented C48/C49. Missing and unresolved compact states give true; a validated positive or completed local miss gives false even if another database fails. Problems still go to Console. Appears after Location, before No Reference and the IDs. |
+| No Reference | True/false table/CSV column and view: a completed local database reference check found no match, without another validated local reference. | App field, no standard OMF/MXF property. | Implemented C48/C49. A qualified same-folder MDB match counts when PMR misses or is absent. False on a couldn't-check row means absence was not established; it does not certify listing. Appears after No Database, before the IDs. |
 
 The ordinary-column review retains Clip Name, Kind, Size and Type under C45
 in table/CSV, alongside the already confirmed ordinary fields, identifiers and
@@ -86,10 +86,21 @@ set of technical filter controls.
 The current UI displays some unavailable values as `No project`, an em dash or
 `unknown`. Copland's exhausted-source blank requirement does not describe every
 current display path. The value, its availability and the presentation must stay
-separate. Database Status currently gives missing and unreadable databases the
-same visible label, despite distinct internal states. C48/C49 settle its target
-replacement with No Database / No Reference flags and views; the checkout has not
-implemented that replacement yet.
+separate. The compact Database Status distinguishes missing and unresolved
+checks internally. The table and CSV expose No Database / No Reference flags,
+each with a corresponding view. Both display literal `true`/`false`; neither
+requires a separately stored row boolean. CSV's former Database Status field is
+removed. Enabled tabs remain visible at zero and keep whole-inventory counts.
+
+MDB projection captures temporary `fileReferencesComplete` coverage separately
+from parser success and qualified positive entries. Unknown schema, disputed
+identities and unsupported or unresolved file ownership cannot establish a miss.
+A covered nonempty file catalogue requires a usable physical FileMobId; a verified
+empty catalogue can establish absence without one. Cross-folder metadata fallback
+does not establish local membership. Partial PMR entries can prove a reference
+without becoming eligible metadata, and the existing complete PMR/MDB
+required-field header-skip gate is unchanged. These coverage facts are released
+with the working scan rather than becoming another row history.
 
 ## Recorded source filename and path
 
@@ -391,9 +402,10 @@ UTF-16, dynamically assembled names and other images may carry it.
   table/CSV/Search requirements.
   Retained convenience views and both selection helpers are required; C52 keeps
   current selection restoration across filters and C53 keeps both CSV export scopes.
-  C48/C49 replace
-  visible Database Status with No Database / No Reference flags and views, accepting
-  valid references from either local database. C51 requires one selected MasterMobId.
+  C49's either-local-database rules use the compact status; C48's two boolean
+  columns and corresponding views expose that result. C66/C67 keep enabled tabs
+  visible at zero and remove the visibility override.
+  C51 requires one selected MasterMobId.
 - No current MXF OriginalBin projection or fully published PMR field schema has
   been established. Investigate technical mappings rather than assigning authority
   to a hobby-reader label or treating an unsupported read as checked absence.

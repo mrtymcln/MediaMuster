@@ -101,6 +101,24 @@ namespace MediaEngine
 				}
 			return claims;
 		}
+		bool hasPresentFact(const ProjectedFile &facts, MediaProperty property, const QString &value)
+		{
+			for (const auto &item : facts.evidence.observations(property))
+				if (item.eligible && item.readState == PropertyReadState::Present && item.value.toString() == value)
+					return true;
+			return false;
+		}
+		bool hasPmrReference(const ProjectedFile &facts, const QString &filename, bool exact)
+		{
+			if (facts.fileMobId.isEmpty() || MobId::isAllZero(facts.fileMobId) ||
+				!hasPresentFact(facts, MediaProperty::FileMobId, facts.fileMobId))
+				return false;
+			for (const auto &recorded : facts.filenames)
+				if ((exact ? recorded == filename : PmrKey::primary(recorded) == PmrKey::primary(filename)) &&
+					hasPresentFact(facts, MediaProperty::Filename, recorded))
+					return true;
+			return false;
+		}
 
 		void selectMatchingEffects(MediaEvidence &evidence)
 		{
@@ -429,35 +447,38 @@ namespace MediaEngine
 				qsizetype record;
 				bool exact;
 				bool complete;
+				bool referenceValid;
 			};
 			QVector<PmrMatch> pmrMatches;
 			QVariantList databaseReceipts;
-			bool hasPmr = false, failedDatabase = false, listed = false, hasExact = false;
+			QSet<qsizetype> completedPmrMisses;
+			bool listed = false, usablePmrMatch = false, hasExact = false;
 			for (const auto sourceIndex : databases.value(folder))
 			{
 				if (cancellation.cancelled())
 					return false;
 				const auto &source = result.sources[sourceIndex];
 				const bool complete = source.outcome == ParsedSource::Outcome::Complete && unchanged[sourceIndex];
-				failedDatabase |= !complete;
 				databaseReceipts.append(QVariantMap{{QStringLiteral("Path"), source.snapshot->path},
 													{QStringLiteral("Outcome"), int(source.outcome)},
 													{QStringLiteral("UnchangedDuringRead"), unchanged[sourceIndex]}});
 				if (source.snapshot->source != MetadataSource::Pmr)
 					continue;
-				hasPmr = true;
+				if (complete && !physicalChanged)
+					completedPmrMisses.insert(sourceIndex);
 				for (const auto record : pmrByName.value(sourceIndex).value(name))
 				{
 					const auto &facts = projections[sourceIndex].files[record];
 					const bool exact = facts.filenames.contains(filename);
 					hasExact |= exact;
-					pmrMatches.append({sourceIndex, record, exact, complete});
+					pmrMatches.append({sourceIndex, record, exact, complete, hasPmrReference(facts, filename, exact)});
 				}
 			}
 			// A normalized spelling is only a fallback. It cannot assign one PMR
 			// entry to two case-distinct physical files, or bypass an exact name.
 			const bool ambiguousName = !hasExact && namesByFolder.value(folder).value(name).size() != 1;
 			QSet<QString> compatibleIds;
+			QSet<QString> compatibleReferenceIds;
 			for (const auto &match : pmrMatches)
 			{
 				if (cancellation.cancelled())
@@ -466,6 +487,9 @@ namespace MediaEngine
 				if (match.complete && (!hasExact || match.exact) && !facts.fileMobId.isEmpty() &&
 					(headerId.isEmpty() || headerId == facts.fileMobId))
 					compatibleIds.insert(facts.fileMobId);
+				if (unchanged[match.source] && match.referenceValid && (!hasExact || match.exact) &&
+					(headerId.isEmpty() || headerId == facts.fileMobId))
+					compatibleReferenceIds.insert(facts.fileMobId);
 			}
 			const bool ambiguousIdentity = compatibleIds.size() > 1;
 			for (const auto &match : pmrMatches)
@@ -478,7 +502,16 @@ namespace MediaEngine
 				const bool eligible = match.complete && chosenName && sameIdentity &&
 									  !ambiguousName && !ambiguousIdentity && !physicalChanged;
 				attach(file, facts, eligible);
-				listed |= eligible;
+				usablePmrMatch |= eligible;
+				// A partial source can prove these two fields without supplying
+				// usable metadata or permitting a skipped media-header read.
+				listed |= unchanged[match.source] && match.referenceValid && chosenName && sameIdentity &&
+					!ambiguousName && compatibleReferenceIds.size() == 1 && !physicalChanged;
+				// A possible match that cannot be qualified is not proof of absence.
+				// A known different header identity does establish that this entry
+				// belongs to another file, even when its filename matches.
+				if (chosenName && !(match.referenceValid && !headerId.isEmpty() && headerId != facts.fileMobId))
+					completedPmrMisses.remove(match.source);
 				if (match.complete && chosenName && (!sameIdentity || ambiguousName || ambiguousIdentity))
 				{
 					ScanIssue issue;
@@ -541,22 +574,45 @@ namespace MediaEngine
 			selectMetadata(file.evidence);
 			file.stamp.fileMobId = file.evidence.selected(MediaProperty::FileMobId).value.toString();
 			file.stamp.masterMobId = file.evidence.selected(MediaProperty::MasterMobId).value.toString();
+			const bool knownIdentity = !file.stamp.fileMobId.isEmpty() && !MobId::isAllZero(file.stamp.fileMobId);
+			QSet<qsizetype> listedMdbSources;
+			if (knownIdentity && !physicalChanged)
+				for (const auto &entry : attachedMdbFacts)
+				{
+					if (cancellation.cancelled())
+						return false;
+					const auto &source = result.sources[entry.first];
+					const auto &facts = projections[entry.first].files[entry.second];
+					if (unchanged[entry.first] && facts.fileMobId == file.stamp.fileMobId &&
+						cachedFolderKey(QFileInfo(source.snapshot->path).absolutePath()) == folder)
+						listedMdbSources.insert(entry.first);
+				}
+			listed |= !listedMdbSources.isEmpty();
+			bool completedMiss = !completedPmrMisses.isEmpty();
+			for (const auto sourceIndex : databases.value(folder))
+			{
+				if (cancellation.cancelled())
+					return false;
+				const auto &projection = projections[sourceIndex];
+				if (result.sources[sourceIndex].snapshot->source == MetadataSource::Mdb &&
+					unchanged[sourceIndex] && !physicalChanged && projection.fileReferencesComplete &&
+					(knownIdentity || projection.files.isEmpty()) && !listedMdbSources.contains(sourceIndex))
+					completedMiss = true;
+			}
 			// DatabaseStatus uses the UI's stable values: Listed/NoReference/NoDatabase/DbUnreadable.
 			if (cancellation.cancelled())
 				return false;
-			const int status = listed ? 0 : failedDatabase ? 3
-										: hasPmr		   ? 1
-														   : 2;
+			const int status = listed ? 0 : completedMiss ? 1 : databases.value(folder).isEmpty() ? 2 : 3;
 			MetadataObservation dbStatus;
 			dbStatus.snapshot = folderReceipt(folder);
 			if (cancellation.cancelled())
 				return false;
-			dbStatus.property = QStringLiteral("Local PMR membership and database source outcomes");
+			dbStatus.property = QStringLiteral("Local PMR/MDB physical-file reference checks");
 			dbStatus.value = status;
 			dbStatus.rawValue = databaseReceipts;
 			dbStatus.readState = PropertyReadState::Present;
 			dbStatus.basis = EvidenceBasis::Derived;
-			dbStatus.explanation = QStringLiteral("Derived from local database enumeration, read outcomes and unambiguous filename/identity matching; not proof of database freshness.");
+			dbStatus.explanation = QStringLiteral("A validated local PMR or MDB reference wins, then a completed local reference check with no match, then an unresolved check or absent databases; source problems remain in Console. This is not proof of database freshness.");
 			file.evidence.observe(MediaProperty::DatabaseStatus, std::move(dbStatus));
 			// This filesystem membership observation changes only its own field.
 			file.evidence.select(MediaProperty::DatabaseStatus,
@@ -578,7 +634,7 @@ namespace MediaEngine
 				if (reportIssues)
 					result.reconciliationIssues.append(issue);
 			}
-			return listed && completeMdbMatch && !physicalChanged;
+			return usablePmrMatch && completeMdbMatch && !physicalChanged;
 		};
 
 		const auto decideHeader = [&](const MediaFile &file)

@@ -85,6 +85,11 @@ private slots:
 	void source_path_search_uses_recorded_text_data();
 	void source_path_search_uses_recorded_text();
 	void unknown_classification_does_not_match_known_filters();
+	void database_filters_use_the_four_membership_results();
+	void database_filters_intersect_existing_filters_data();
+	void database_filters_intersect_existing_filters();
+	void database_flags_sort_across_optional_column_gates_data();
+	void database_flags_sort_across_optional_column_gates();
 	void quarantined_filter_uses_scanner_flag();
 	void three_state_classification_sort_is_consistent();
 	void type_sorting_survives_precompute_gate_changes();
@@ -400,6 +405,155 @@ void TestMediaFilterProxy::unknown_classification_does_not_match_known_filters()
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::All);
 	proxy.setSearchText(QStringLiteral("unread"));
 	QCOMPARE(proxy.rowCount(), 1); // unresolved files remain accessible
+}
+
+void TestMediaFilterProxy::database_filters_use_the_four_membership_results()
+{
+	using DbStatus = MediaFile::DbStatus;
+	using Mode = MediaFilterProxy::FilterMode;
+	const std::array statuses{DbStatus::Listed, DbStatus::NoReference, DbStatus::NoDatabase, DbStatus::DbUnreadable};
+	QVector<MediaFile> files;
+	for (const auto status : statuses)
+	{
+		MediaFile file = rowNamed(QString::number(static_cast<int>(status)));
+		file.dbStatus = status;
+		files.append(file);
+	}
+	MediaTableModel model;
+	model.setMediaFiles(TestMediaFile::seeded(files));
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	const int name = Enum::to_underlying(MediaTableModel::Column::ClipName);
+	for (const auto mode : {Mode::NoDatabase, Mode::NoReference})
+	{
+		QStringList expected;
+		for (const auto &file : model.allFiles())
+		{
+			const bool noDatabase = file.dbStatus == DbStatus::NoDatabase || file.dbStatus == DbStatus::DbUnreadable;
+			const bool noReference = file.dbStatus == DbStatus::NoReference;
+			QVERIFY(!(noDatabase && noReference));
+			QCOMPARE(MediaFilterProxy::matchesMode(Mode::NoDatabase, file), noDatabase);
+			QCOMPARE(MediaFilterProxy::matchesMode(Mode::NoReference, file), noReference);
+			if (mode == Mode::NoDatabase ? noDatabase : noReference)
+				expected.append(file.clipName);
+		}
+		proxy.setFilterMode(mode);
+		QStringList actual;
+		for (int row = 0; row < proxy.rowCount(); ++row)
+			actual.append(proxy.index(row, name).data().toString());
+		QCOMPARE(actual, expected);
+		QCOMPARE(actual.size(), mode == Mode::NoDatabase ? 2 : 1);
+	}
+	proxy.setFilterMode(Mode::All);
+	QCOMPARE(proxy.rowCount(), 4);
+}
+
+void TestMediaFilterProxy::database_filters_intersect_existing_filters_data()
+{
+	QTest::addColumn<bool>("noDatabase");
+	QTest::newRow("no-database") << true;
+	QTest::newRow("no-reference") << false;
+}
+
+void TestMediaFilterProxy::database_filters_intersect_existing_filters()
+{
+	QFETCH(bool, noDatabase);
+	using DbStatus = MediaFile::DbStatus;
+	using Mode = MediaFilterProxy::FilterMode;
+	const auto mode = noDatabase ? Mode::NoDatabase : Mode::NoReference;
+	MediaFile matching = rowNamed(QStringLiteral("wanted match"));
+	matching.dbStatus = noDatabase ? DbStatus::DbUnreadable : DbStatus::NoReference;
+	matching.project = QStringLiteral("Project A");
+	matching.fileMobId = MobId::format(TestAvb::Source);
+	MediaFile otherProject = matching;
+	otherProject.mediaFilePath = QStringLiteral("/vol/other-project.mxf");
+	otherProject.project = QStringLiteral("Project B");
+	MediaFile otherSearch = matching;
+	otherSearch.mediaFilePath = QStringLiteral("/vol/other-search.mxf");
+	otherSearch.clipName = QStringLiteral("unrelated");
+	MediaFile otherBin = matching;
+	otherBin.mediaFilePath = QStringLiteral("/vol/other-bin.mxf");
+	otherBin.fileMobId = MobId::format(TestAvb::Other);
+	MediaFile listed = matching;
+	listed.mediaFilePath = QStringLiteral("/vol/listed.mxf");
+	listed.dbStatus = DbStatus::Listed;
+	MediaFile otherView = matching;
+	otherView.mediaFilePath = QStringLiteral("/vol/other-view.mxf");
+	otherView.dbStatus = noDatabase ? DbStatus::NoReference : DbStatus::NoDatabase;
+	MediaTableModel model;
+	model.setMediaFiles(TestMediaFile::seeded({matching, otherProject, otherSearch, otherBin, listed, otherView}));
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	proxy.setFilterMode(mode);
+	QCOMPARE(proxy.rowCount(), 4);
+	proxy.setProjectFilter({matching.project});
+	QCOMPARE(proxy.rowCount(), 3);
+	proxy.setSearchText(QStringLiteral("wanted"));
+	QCOMPARE(proxy.rowCount(), 2);
+	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({matching.fileMobId}), {}, {}, {}}}});
+	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.index(0, Enum::to_underlying(MediaTableModel::Column::Location)).data().toString(), matching.mediaFilePath);
+
+	// Whole-inventory tab counts use the shared predicate, independent of these restrictions.
+	const auto inventoryCount = std::count_if(model.allFiles().cbegin(), model.allFiles().cend(), [mode](const MediaFile &file)
+											   { return MediaFilterProxy::matchesMode(mode, file); });
+	QCOMPARE(inventoryCount, 4);
+	proxy.setFilterMode(Mode::All);
+	QCOMPARE(proxy.rowCount(), 3);
+}
+
+void TestMediaFilterProxy::database_flags_sort_across_optional_column_gates_data()
+{
+	QTest::addColumn<bool>("noDatabase");
+	QTest::newRow("no-database") << true;
+	QTest::newRow("no-reference") << false;
+}
+
+void TestMediaFilterProxy::database_flags_sort_across_optional_column_gates()
+{
+	QFETCH(bool, noDatabase);
+	using DbStatus = MediaFile::DbStatus;
+	using Column = MediaTableModel::Column;
+	QVector<MediaFile> files;
+	for (const auto status : {DbStatus::NoDatabase, DbStatus::Listed, DbStatus::DbUnreadable, DbStatus::NoReference})
+	{
+		MediaFile file = rowNamed(QString::number(static_cast<int>(status)));
+		file.dbStatus = status;
+		files.append(file);
+	}
+	MediaTableModel model;
+	model.setMediaFiles(TestMediaFile::seeded(files));
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	proxy.setSortRole(Qt::UserRole);
+	const int column = Enum::to_underlying(noDatabase ? Column::NoDatabase : Column::NoReference);
+	for (const auto direction : {Qt::AscendingOrder, Qt::DescendingOrder})
+	{
+		proxy.sort(column, direction);
+		for (const bool precomputes : {true, false, true})
+		{
+			model.setPrecomputesEnabled(precomputes);
+			proxy.setPrecomputesEnabled(precomputes);
+			for (const bool omf : {true, false, true})
+			{
+				model.setOmfScanEnabled(omf);
+				QCOMPARE(proxy.sortColumn(), column);
+				QCOMPARE(proxy.sortOrder(), direction);
+				QCOMPARE(proxy.rowCount(), 4);
+				QList<bool> expected{false, false, noDatabase, true};
+				if (direction == Qt::DescendingOrder)
+					std::reverse(expected.begin(), expected.end());
+				for (int row = 0; row < proxy.rowCount(); ++row)
+				{
+					const auto index = proxy.index(row, column);
+					QVERIFY(index.isValid());
+					QCOMPARE(index.data(Qt::UserRole).metaType(), QMetaType::fromType<bool>());
+					QCOMPARE(index.data(Qt::UserRole).toBool(), expected[row]);
+					QCOMPARE(index.data().toString(), expected[row] ? QStringLiteral("true") : QStringLiteral("false"));
+				}
+			}
+		}
+	}
 }
 
 void TestMediaFilterProxy::quarantined_filter_uses_scanner_flag()
@@ -757,7 +911,7 @@ void TestMediaFilterProxy::effect_columns_sort_displayed_values()
 	}
 	model.setPrecomputesEnabled(false);
 	proxy.setPrecomputesEnabled(false);
-	QCOMPARE(proxy.columnCount(), 19);
+	QCOMPARE(proxy.columnCount(), 21);
 	QCOMPARE(proxy.rowCount(), 3);
 }
 

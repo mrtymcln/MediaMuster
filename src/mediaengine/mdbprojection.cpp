@@ -292,6 +292,13 @@ namespace MediaEngine
 				result.diagnostics = m_contentsDiagnostics;
 				if (!m_contentsComplete)
 					return result;
+				const auto *head = m_objects.value(1);
+				const bool fileReferenceRootUnderstood = m_source.container == ParsedSource::Container::Bento &&
+					m_source.omfRevision && (*m_source.omfRevision == OmfRevision::V1 || *m_source.omfRevision == OmfRevision::V2) &&
+					head && objectClass(*head) == QLatin1String("HEAD");
+				bool fileReferencesComplete = fileReferenceRootUnderstood && m_fileReferenceClassesUnderstood &&
+					m_source.outcome != ParsedSource::Outcome::Cancelled;
+				bool unexplainedFileReferenceFailure = !fileReferenceRootUnderstood;
 				QHash<ObjectHandle, QVector<qsizetype>> fileSubjects;
 				for (const auto &object : m_source.objects)
 				{
@@ -299,6 +306,15 @@ namespace MediaEngine
 						return result;
 					if (!m_activeMobs.contains(object.handle))
 						continue;
+					const auto cls = objectClass(object);
+					const bool hasPhysicalOwner = !properties(object, {"OMFI:MOBJ:PhysicalMedia", "OMFI:SMOB:MediaDescription"}).isEmpty();
+					const bool editorialOnly = !hasPhysicalOwner &&
+						(cls == QLatin1String("MMOB") || cls == QLatin1String("CMOB") || isMaster(object));
+					if (!editorialOnly && (!named(cls, {"MOBJ", "SMOB"}) || !hasPhysicalOwner))
+					{
+						fileReferencesComplete = false;
+						unexplainedFileReferenceFailure = true;
+					}
 					QSet<QString> recordedIds;
 					for (const auto *property : properties(object, {"OMFI:MOBJ:MobID"}))
 						if (const auto id = identity(property); !id.isEmpty())
@@ -306,9 +322,9 @@ namespace MediaEngine
 					const bool disputedIdentity = std::any_of(recordedIds.cbegin(), recordedIds.cend(),
 															  [&](const auto &id)
 															  { return m_conflictingMobIds.contains(id); });
-					if (disputedIdentity &&
-						!properties(object, {"OMFI:MOBJ:PhysicalMedia", "OMFI:SMOB:MediaDescription"}).isEmpty())
+					if (disputedIdentity && hasPhysicalOwner)
 					{
+						fileReferencesComplete = false;
 						ProjectedFile carrier;
 						link(carrier, m_source, object);
 						for (const auto *property : properties(object, {"OMFI:MOBJ:MobID"}))
@@ -320,15 +336,37 @@ namespace MediaEngine
 						continue;
 					}
 					if (m_disputedMobs.contains(object.handle))
+					{
+						if (!editorialOnly)
+							fileReferencesComplete = false;
 						continue;
+					}
 					const auto *mobIdProperty = unique(object, {"OMFI:MOBJ:MobID"});
 					const QString id = identity(mobIdProperty);
 					if (id.isEmpty())
+					{
+						if (!editorialOnly)
+						{
+							fileReferencesComplete = false;
+							unexplainedFileReferenceFailure = true;
+						}
 						continue;
-					for (const auto *descriptor : targets(object.handle, {"OMFI:MOBJ:PhysicalMedia", "OMFI:SMOB:MediaDescription"}))
+					}
+					const auto previousReferenceDiagnostics = m_referenceDiagnostics.size();
+					const auto descriptors = targets(object.handle, {"OMFI:MOBJ:PhysicalMedia", "OMFI:SMOB:MediaDescription"});
+					if (!editorialOnly && descriptors.isEmpty())
+					{
+						fileReferencesComplete = false;
+						unexplainedFileReferenceFailure |= previousReferenceDiagnostics == m_referenceDiagnostics.size();
+					}
+					for (const auto *descriptor : descriptors)
 					{
 						if (!mediaClass(objectClass(*descriptor)))
+						{
+							fileReferencesComplete = false;
+							unexplainedFileReferenceFailure = true;
 							continue;
+						}
 						ProjectedFile file;
 						file.fileMobId = id;
 						link(file, m_source, object);
@@ -388,6 +426,9 @@ namespace MediaEngine
 				for (auto &file : result.files)
 					file.masterMobIds.sort();
 				result.diagnostics += m_referenceDiagnostics;
+				if (unexplainedFileReferenceFailure)
+					result.diagnostics.append(QStringLiteral("MDB file-reference coverage is incomplete: a required root, source-file role, identity or media-descriptor interpretation is not established; absence cannot be determined."));
+				result.fileReferencesComplete = fileReferencesComplete && !m_cancellation.cancelled();
 				return result;
 			}
 
@@ -525,6 +566,7 @@ namespace MediaEngine
 							m_activeMedia.insert(handle);
 							if (!mediaDataClass(cls))
 							{
+								m_fileReferenceClassesUnderstood = false;
 								m_contentsDiagnostics.append(QStringLiteral("ObjectSpine media-data class %1 has no established identity interpretation; physical ownership remains unknown.").arg(cls));
 							}
 						}
@@ -978,6 +1020,7 @@ namespace MediaEngine
 			QStringList m_contentsDiagnostics;
 			mutable QStringList m_referenceDiagnostics;
 			bool m_contentsComplete = false;
+			bool m_fileReferenceClassesUnderstood = true;
 		};
 
 		struct AudioFacts

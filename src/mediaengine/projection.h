@@ -24,6 +24,9 @@ namespace MediaEngine
 		QVector<ProjectedFile> files;
 		QVector<ProjectedFile> masters; // Editorial facts; never a substitute for a file descriptor.
 		QStringList diagnostics;
+		/// MDB's required reference lists and every source-file owner were interpreted.
+		/// Separate from qualified positive entries and unrelated metadata read failures.
+		bool fileReferencesComplete = false;
 	};
 
 	Projection projectPmr(const ParsedSource &source, const Cancellation &cancellation);

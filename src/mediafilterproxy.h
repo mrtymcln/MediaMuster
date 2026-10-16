@@ -22,6 +22,7 @@ public:
 		Video,
 		Audio,
 		NoDatabase,
+		NoReference,
 		NonPortable,
 		Quarantined,
 		Precompute

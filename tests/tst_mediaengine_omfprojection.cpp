@@ -129,6 +129,8 @@ class TestMediaEngineOmfProjection final : public QObject
 {
 	Q_OBJECT
 private slots:
+	void mdbFileReferenceCoverage_data();
+	void mdbFileReferenceCoverage();
 	void ownershipAndExactFacts();
 	void masterOnlyAndIncompleteFileFacts();
 	void omf2MasterIdentity();
@@ -204,6 +206,149 @@ private slots:
 	void genuineFiles_data();
 	void genuineFiles();
 };
+
+void TestMediaEngineOmfProjection::mdbFileReferenceCoverage_data()
+{
+	QTest::addColumn<QString>("variation");
+	QTest::addColumn<bool>("complete");
+	QTest::addColumn<int>("qualifiedFiles");
+	const auto row = [](const char *name, bool complete, int qualifiedFiles)
+	{
+		QTest::newRow(name) << QString::fromLatin1(name) << complete << qualifiedFiles;
+	};
+	row("valid-v1", true, 1);
+	row("valid-v2", true, 1);
+	row("empty-v1", true, 0);
+	row("empty-v2", true, 0);
+	row("unknown-schema", false, 0);
+	row("unknown-container", false, 1);
+	row("invalid-head", false, 1);
+	row("missing-root", false, 0);
+	row("unresolved-root", false, 0);
+	row("unknown-owner", false, 0);
+	row("unknown-role", false, 0);
+	row("missing-owner", false, 0);
+	row("unknown-descriptor", false, 0);
+	row("missing-descriptor", false, 0);
+	row("partial-descriptor-references", false, 0);
+	row("unreadable-file-id", false, 0);
+	row("conflicting-file-id", false, 0);
+	row("disputed-file-id", false, 0);
+	row("qualified-positive-and-unreadable-sibling", false, 1);
+	row("editorial-id-unreadable", true, 1);
+	row("editorial-index-disputed", true, 1);
+	row("editorial-index-disputed-incomplete", true, 1);
+	row("editorial-tracks-incomplete", true, 1);
+	row("technical-value-unreadable", true, 1);
+	row("unrelated-metadata-incomplete", true, 1);
+	row("cancelled", false, 0);
+	row("cancelled-source", false, 1);
+}
+
+void TestMediaEngineOmfProjection::mdbFileReferenceCoverage()
+{
+	QFETCH(QString, variation);
+	QFETCH(bool, complete);
+	QFETCH(int, qualifiedFiles);
+	const int revision = variation.endsWith(QLatin1String("-v2")) ? 2 : 1;
+	const bool empty = variation.startsWith(QLatin1String("empty-"));
+	TypedBento writer;
+	writer.head(revision);
+	const auto replace = [&](quint32 owner, const QByteArray &name, const QByteArray &bytes)
+	{
+		const auto property = writer.properties.value(name);
+		for (auto &entry : writer.entries)
+			if (entry.object == owner && entry.property == property)
+				entry.bytes = bytes;
+	};
+	if (!empty)
+	{
+		fileMob(writer, 101, 201, 11, revision);
+		if (revision == 1)
+			master(writer, 301, 401, 501, 21, 11, "Editorial master");
+	}
+	QVector<quint32> members = empty ? QVector<quint32>{} : revision == 1 ? QVector<quint32>{101, 301} : QVector<quint32>{101};
+	if (variation == QLatin1String("qualified-positive-and-unreadable-sibling"))
+	{
+		fileMob(writer, 102, 202, 12);
+		replace(102, "OMFI:MOBJ:MobID", QByteArray::fromHex("2a0000"));
+		members.append(102);
+	}
+	if (revision == 1)
+	{
+		if (variation != QLatin1String("missing-root"))
+			writer.referenceArray(1, "OMFI:ObjectSpine", variation == QLatin1String("unresolved-root") ? QVector<quint32>{101, 999} : members, 1);
+	}
+	else
+	{
+		writer.referenceArray(1, "OMFI:HEAD:Mobs", members, 2);
+		writer.referenceArray(1, "OMFI:HEAD:MediaData", {}, 2);
+	}
+	if (variation == QLatin1String("unknown-owner"))
+		replace(101, "OMFI:ObjID", QByteArrayLiteral("PRIV"));
+	else if (variation == QLatin1String("unknown-role") || variation == QLatin1String("missing-owner"))
+	{
+		const auto property = writer.properties.value("OMFI:MOBJ:PhysicalMedia");
+		writer.entries.removeIf([&](const auto &entry) { return entry.object == 101 && entry.property == property; });
+		if (variation == QLatin1String("unknown-role"))
+			writer.add(101, "OMFI:MOBJ:UsageCode", "omfi:UsageCodeType", number<qint32>(0));
+	}
+	else if (variation == QLatin1String("unknown-descriptor"))
+		replace(201, "OMFI:ObjID", QByteArrayLiteral("PRIV"));
+	else if (variation == QLatin1String("missing-descriptor"))
+		replace(101, "OMFI:MOBJ:PhysicalMedia", writer.reference(999, 1));
+	else if (variation == QLatin1String("partial-descriptor-references"))
+		writer.add(101, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(999, 1));
+	else if (variation == QLatin1String("unreadable-file-id"))
+		replace(101, "OMFI:MOBJ:MobID", QByteArray::fromHex("2a0000"));
+	else if (variation == QLatin1String("conflicting-file-id"))
+		writer.add(101, "OMFI:MOBJ:MobID", "omfi:UID", uid(12));
+	else if (variation == QLatin1String("disputed-file-id"))
+		writer.mobIndex(1, "OMFI:SourceMobs", {{101, uid(12)}});
+	else if (variation == QLatin1String("editorial-id-unreadable"))
+		replace(301, "OMFI:MOBJ:MobID", QByteArray::fromHex("2a0000"));
+	else if (variation.startsWith(QLatin1String("editorial-index-disputed")))
+		writer.mobIndex(1, "OMFI:CompositionMobs", {{301, uid(22)}});
+	else if (variation == QLatin1String("editorial-tracks-incomplete"))
+		replace(301, "OMFI:TRKG:Tracks", number<quint16>(1) + writer.reference(999, 1));
+	else if (variation == QLatin1String("technical-value-unreadable") || variation == QLatin1String("unrelated-metadata-incomplete"))
+		replace(201, "OMFI:MDFL:Length", QByteArray::fromHex("010203"));
+	auto source = read(writer.build());
+	if (variation == QLatin1String("unknown-schema"))
+		source.omfRevision.reset();
+	else if (variation == QLatin1String("unknown-container"))
+		source.container = MediaEngine::ParsedSource::Container::Unknown;
+	else if (variation == QLatin1String("invalid-head"))
+		for (auto &object : source.objects)
+			if (object.handle == 1)
+				for (auto &property : object.properties)
+					if (property.locator.name == QLatin1String("OMFI:ObjID"))
+						property.decoded = QStringLiteral("PRIV");
+	if (variation == QLatin1String("unknown-schema") || variation == QLatin1String("invalid-head") ||
+		variation == QLatin1String("missing-root") || variation == QLatin1String("unresolved-root"))
+		QCOMPARE(source.outcome, MediaEngine::ParsedSource::Outcome::Complete);
+	if (variation == QLatin1String("unrelated-metadata-incomplete") || variation == QLatin1String("editorial-index-disputed-incomplete"))
+		source.outcome = MediaEngine::ParsedSource::Outcome::Incomplete;
+	else if (variation == QLatin1String("cancelled-source"))
+		source.outcome = MediaEngine::ParsedSource::Outcome::Cancelled;
+	MediaEngine::Cancellation cancellation;
+	if (variation == QLatin1String("cancelled"))
+		cancellation.cancel();
+	const auto result = MediaEngine::projectMdb(source, cancellation);
+	QCOMPARE(result.fileReferencesComplete, complete);
+	if (!complete && !variation.startsWith(QLatin1String("cancelled")))
+		QVERIFY(!result.diagnostics.isEmpty());
+	if (variation.startsWith(QLatin1String("editorial-index-disputed")) || variation == QLatin1String("editorial-tracks-incomplete"))
+		QVERIFY(!result.diagnostics.isEmpty());
+	int qualified = 0;
+	for (const auto &file : result.files)
+		if (!file.fileMobId.isEmpty())
+		{
+			++qualified;
+			QCOMPARE(file.fileMobId, MediaEngine::canonicalDatabaseId(uid(11)));
+		}
+	QCOMPARE(qualified, qualifiedFiles);
+}
 
 void TestMediaEngineOmfProjection::ownershipAndExactFacts()
 {

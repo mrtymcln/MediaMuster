@@ -153,7 +153,7 @@ namespace
 		const char *tooltip = nullptr; ///< Optional hover explanation for loaded terms.
 	};
 
-	constexpr std::array<FilterDef, 7> kFilterDefs{{
+	constexpr std::array<FilterDef, 8> kFilterDefs{{
 		// Technical Avid/domain vocabulary — invariant, never translated.
 		{MediaFilterProxy::FilterMode::All, "All"},
 		{MediaFilterProxy::FilterMode::Video, "Video"},
@@ -163,6 +163,7 @@ namespace
 		 "titles and matte keys, or a precompute with an unknown category."},
 		// MainWindow supplies tab text; MediaFile supplies row-status explanations.
 		{MediaFilterProxy::FilterMode::NoDatabase, "No Database"},
+		{MediaFilterProxy::FilterMode::NoReference, "No Reference"},
 		{MediaFilterProxy::FilterMode::NonPortable, "Non-Portable"},
 		{MediaFilterProxy::FilterMode::Quarantined, "Quarantined"},
 	}};
@@ -337,11 +338,13 @@ QWidget *MainWindow::buildToolbar()
 		const int idx = m_filterTabs->addTab(QString::fromLatin1(fd.label));
 		if (fd.mode == MediaFilterProxy::FilterMode::NoDatabase)
 		{
-			// Share database explanations with the table tooltip and CSV.
+			// Share database explanations with the row tooltips.
 			using DbStatus = MediaFile::DbStatus;
 			m_filterTabs->setTabToolTip(idx, MediaFile::dbStatusText(DbStatus::NoDatabase).why +
 												 QStringLiteral("\n\n") + MediaFile::dbStatusText(DbStatus::DbUnreadable).why);
 		}
+		else if (fd.mode == MediaFilterProxy::FilterMode::NoReference)
+			m_filterTabs->setTabToolTip(idx, MediaFile::dbStatusText(MediaFile::DbStatus::NoReference).why);
 		else if (fd.tooltip)
 			m_filterTabs->setTabToolTip(idx, QString::fromLatin1(fd.tooltip));
 	}
@@ -470,6 +473,8 @@ void MainWindow::buildTable()
 	setW(Col::FileName, 250);
 	setW(Col::SourcePath, 250);
 	setW(Col::Location, 250);
+	setW(Col::NoDatabase, 130);
+	setW(Col::NoReference, 130);
 }
 
 void MainWindow::setMonospaceTableEnabled(bool enabled)
@@ -627,18 +632,6 @@ void MainWindow::buildViewMenu()
 	consoleAction->setChecked(true);
 	connect(consoleAction, &QAction::triggered, this, [this](bool c)
 			{ m_console->setVisible(c); });
-
-	// Off by default; empty tabs hide themselves so the bar isn't
-	// cluttered with (0) placeholders.
-	auto *showAllTabsAction = viewMenu->addAction(tr("Show &All Filter Tabs"));
-	showAllTabsAction->setCheckable(true);
-	showAllTabsAction->setChecked(false);
-	connect(showAllTabsAction, &QAction::triggered, this,
-			[this](bool on)
-			{
-				m_showAllFilterTabs = on;
-				updateFilterCounts();
-			});
 
 	viewMenu->addSeparator();
 
@@ -2134,11 +2127,9 @@ void MainWindow::updateFilterCounts()
 		m_filterTabs->setTabText(
 			tabIndex, QStringLiteral("%1 (%2)").arg(QString::fromLatin1(kFilterDefs[i].label)).arg(counts[i]));
 
-		// "All" stays visible no matter what; the others auto-hide when empty.
-		const bool isAll = (kFilterDefs[i].mode == MediaFilterProxy::FilterMode::All);
+		// Every enabled view stays available, including an empty result.
 		const bool available = m_precomputesEnabled || kFilterDefs[i].mode != MediaFilterProxy::FilterMode::Precompute;
-		const bool visible = available && (isAll || m_showAllFilterTabs || counts[i] > 0);
-		m_filterTabs->setTabVisible(tabIndex, visible);
+		m_filterTabs->setTabVisible(tabIndex, available);
 	}
 	// Hidden tabs can leave a cached width; refresh the layout's size hint.
 	m_filterTabs->updateGeometry();

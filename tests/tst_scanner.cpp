@@ -195,7 +195,7 @@ private slots:
 	void header_master_lookup_uses_canonical_identity();
 	void mxf_without_any_database_is_no_database();
 	void unlisted_media_with_readable_databases_is_no_reference();
-	void corrupt_pmr_flags_no_database_and_mdb_still_recovers();
+	void failed_pmr_does_not_hide_validated_mdb_reference();
 	void structurally_incomplete_pmr_is_not_a_trusted_index_data();
 	void structurally_incomplete_pmr_is_not_a_trusted_index();
 	void appledouble_sibling_is_never_media();
@@ -303,7 +303,7 @@ private slots:
 	void numbered_alias_cannot_hide_quarantined_status();
 	void ordinary_wave_outside_omfi_is_excluded_data();
 	void ordinary_wave_outside_omfi_is_excluded();
-	void unreadable_database_extension_marks_unverified_misses();
+	void completed_reference_check_survives_unreadable_siblings();
 
 private:
 	static QString fixturesDir() { return QStringLiteral(FIXTURES_DIR); }
@@ -555,12 +555,8 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 	QVERIFY2(mf.frameRate.isEmpty(), qPrintable(mf.frameRate));
 }
 
-// An unattributed MXF — no PMR entry — whose UMID is present in the folder's
-// MDB is rescued by Stage 3 (recoverUnreferencedFromMdb), which re-joins it via
-// its UMID. This is the Interplay case, where management lives in Interplay's
-// engine rather than the local PMR. Withholding msmFMID.pmr leaves the file
-// unattributed after Stage 1, so the MDB alone must flip it back — and the
-// lookup runs through the memoised folder-key path.
+// Without a PMR, the header establishes this file's identity and the local MDB
+// supplies its recorded bin and a validated physical-file reference.
 void TestScanner::unreferenced_mxf_recovered_via_mdb()
 {
 	QTemporaryDir tmp;
@@ -569,8 +565,7 @@ void TestScanner::unreferenced_mxf_recovered_via_mdb()
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
 
-	// MDB + MXF, but deliberately NO msmFMID.pmr, so the file is unattributed
-	// after Stage 1 and only Stage 3 can recover it.
+	// MDB + MXF, but deliberately no PMR filename entry.
 	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
 	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
 
@@ -590,11 +585,10 @@ void TestScanner::unreferenced_mxf_recovered_via_mdb()
 	// it from the MXF MaterialPackage, so it is set with or without the MDB
 	// (the no-mdb partner test confirms that). The recovery signal is the
 	// original bin, which this MXF header does not store. The project
-	// comes from the file's own header (the same `_PJ` Avid reads when it
-	// rebuilds a PMR), and the status stays honest: there is no PMR here, so
-	// the folder has no index to list the file in.
+	// comes from the file's own header. The MDB's validated local file identity
+	// establishes membership even without a PMR filename entry.
 	QVERIFY(!mf.isInvalidUmid); // a good UMID is what the lookup keys on
-	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoDatabase);
+	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
 	QCOMPARE(mf.project, QStringLiteral("block 1729"));
 	const QString adoptedMob =
 		QStringLiteral("060a2b3401010105.01010f1013000000.d2467dea74110690.91901e6a605d3613");
@@ -630,12 +624,22 @@ void TestScanner::stage3_mdb_name_must_not_clobber_material_name()
 		  QByteArray::fromHex("060a2b340101010501010f1013000000d2467dea7411069091901e6a605d3613"));
 	w.setString(master, "OMFI:CPNT:Name", "Wrong Neighbour Clip");
 	w.setU32(master, "OMFI:MOBJ:UsageCode", 7);
+	w.setHandles(1, "OMFI:ObjectSpine", {master});
 	const QByteArray mdb = w.build();
 
 	QFile mdbFile(folder + QStringLiteral("/msmMMOB.mdb"));
 	QVERIFY(mdbFile.open(QIODevice::WriteOnly));
 	QCOMPARE(mdbFile.write(mdb), qint64(mdb.size()));
 	mdbFile.close();
+	const MediaEngine::Cancellation cancellation;
+	const auto projected = MediaEngine::projectMdb(
+		readSource(MediaEngine::MdbReader{}, mdbFile.fileName(), MetadataSource::Mdb), cancellation);
+	QVERIFY(projected.fileReferencesComplete);
+	QVERIFY(projected.files.isEmpty());
+	QCOMPARE(projected.masters.size(), 1);
+	const auto &names = projected.masters.first().evidence.observations(MediaProperty::ClipName);
+	QCOMPARE(names.size(), 1);
+	QCOMPARE(names.first().value.toString(), QStringLiteral("Wrong Neighbour Clip"));
 
 	MediaScanner scanner;
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
@@ -649,17 +653,16 @@ void TestScanner::stage3_mdb_name_must_not_clobber_material_name()
 	QCOMPARE(results.size(), 1);
 	const MediaFile &mf = results.first();
 
-	// The re-join did run — the MDB's master MOB was adopted (no PMR here,
-	// so the status honestly says the folder has no index)...
-	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoDatabase);
+	// This qualified catalogue contains only an editorial master. Its metadata
+	// does not establish a physical-file reference; the header supplies identity.
+	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoReference);
 	QCOMPARE(mf.project, QStringLiteral("block 1729")); // from the file's own header
 	QCOMPARE(mf.masterMobId, QStringLiteral("060a2b3401010105.01010f1013000000."
 											"d2467dea74110690.91901e6a605d3613"));
 
-	// ...but the clip name stayed with the media file's own MaterialPackage
-	// name. Before the fix this read "Wrong Neighbour Clip". Still true under
-	// the 2026-08-14 ladder for a different reason: the MDB name is applied
-	// now, but it ranks below a MaterialPackage name and this file has one.
+	// The qualified MDB name is considered, while the header's MaterialPackage
+	// remains authoritative for the selected clip name.
+	QVERIFY(mf.metadataStatus.field(MediaProperty::ClipName).presentSources.contains(MetadataSource::Mdb));
 	QCOMPARE(mf.clipName, QStringLiteral("TONE: 1000 Hz @ -14.0 dB.1"));
 	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
 }
@@ -733,11 +736,9 @@ void TestScanner::unlisted_media_with_readable_databases_is_no_reference()
 	QCOMPARE(mf.projectDisplay(), QStringLiteral("No project"));
 }
 
-// The live corrupt-PMR case (seen in the field as a PMR whose first record
-// lacked the Avid MOB prefix): unmatched files in that folder must surface as
-// "No database", not as a verified "No reference" — but a readable MDB can
-// still vouch for files it contains, so Stage 3 recovery keeps working.
-void TestScanner::corrupt_pmr_flags_no_database_and_mdb_still_recovers()
+// A failed PMR does not invalidate an independently qualified MDB reference.
+// An unidentified stray still cannot be compared with the nonempty MDB catalogue.
+void TestScanner::failed_pmr_does_not_hide_validated_mdb_reference()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
@@ -777,11 +778,10 @@ void TestScanner::corrupt_pmr_flags_no_database_and_mdb_still_recovers()
 	};
 
 	// The MXF's UMID is in the readable MDB: identity recovered despite the
-	// dead PMR, the project read from the file's own header — and the status
-	// keeps the fact that this folder's index could not be read.
+	// failed PMR, and the project is read from the file's own header.
 	const MediaFile *mxf = findByName(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"));
 	QVERIFY(mxf != nullptr);
-	QCOMPARE(mxf->dbStatus, MediaFile::DbStatus::DbUnreadable);
+	QCOMPARE(mxf->dbStatus, MediaFile::DbStatus::Listed);
 	QCOMPARE(mxf->project, QStringLiteral("block 1729"));
 	QVERIFY(!mxf->masterMobId.isEmpty()); // the re-join found the clip
 
@@ -1580,18 +1580,16 @@ void TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index()
 	QVERIFY(tone != nullptr);
 	QVERIFY(stray != nullptr);
 
-	// A partial entry must not make the MXF Listed, and a partial/empty
-	// result must not make the stray file a verified No Reference match.
-	// Only a complete index, including the genuinely empty control, can
-	// certify that miss.
+	// The intact local MDB establishes the tone's reference independently of
+	// PMR framing. An incomplete PMR cannot establish a miss for the unidentified
+	// stray; the complete readable and empty controls can check its filename.
 	const auto unlistedStatus = readable ? MediaFile::DbStatus::NoReference : MediaFile::DbStatus::DbUnreadable;
-	QCOMPARE(tone->dbStatus, listsTone ? MediaFile::DbStatus::Listed : unlistedStatus);
+	QCOMPARE(tone->dbStatus, MediaFile::DbStatus::Listed);
 	QCOMPARE(stray->dbStatus, unlistedStatus);
-	QCOMPARE(tone->isNoDatabase(), !readable);
+	QVERIFY(!tone->isNoDatabase());
 	QCOMPARE(stray->isNoDatabase(), !readable);
 	if (!readable)
 	{
-		QCOMPARE(tone->dbStatusText().label, QStringLiteral("No Database"));
 		QCOMPARE(stray->dbStatusText().label, QStringLiteral("No Database"));
 	}
 
@@ -2819,10 +2817,9 @@ void TestScanner::omf_root_pointed_at_directly_never_scans_as_mxf_folders()
 
 void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
 {
-	// No index, so nothing lists the file: the tail supplies the clip name,
-	// project and both mob IDs; the re-join through the MDB by the
-	// master's id recovers the bin — the OMF twin of
-	// unreferenced_mxf_recovered_via_mdb.
+	// Without a PMR, the tail supplies the clip name, project and identities.
+	// The local MDB's file identity establishes membership and its master
+	// details supply the recorded bin.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString omfRoot = Conventions::omfRootUnder(tmp.path());
@@ -2834,7 +2831,7 @@ void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
 		const auto results = runScan(tmp.path(), true);
 		QCOMPARE(results.size(), 1);
 		const MediaFile &mf = results.first();
-		QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoDatabase);
+		QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
 		QCOMPARE(mf.mediaFolderName, kOmfFolder);
 		QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 		QCOMPARE(mf.compression, QStringLiteral("PCM")); // Compression and container are distinct facts.
@@ -2998,9 +2995,9 @@ void TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback()
 
 void TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers()
 {
-	// The same folder with only the clip database. No PMR means no index
-	// to be listed in and no way to establish database freshness. Both files
-	// are read from their own tails, and the slate's MDB record joins by identity.
+	// With only the clip database, both files still obtain identity from their
+	// tails. Its qualified slate entry proves presence, but incomplete catalogue
+	// coverage cannot establish that the unmatched WAVE is unreferenced.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString folder = Conventions::omfRootUnder(tmp.path()) + QStringLiteral("/EditorOne");
@@ -3008,24 +3005,34 @@ void TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers()
 	copyFixture(QStringLiteral("omf/avid_supporting/msmMMOB.mdb"), folder);
 	copyFixture(QStringLiteral("omf/avid_supporting/BLACK_720x243x2_JFIF35.omf"), folder);
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, folder);
+	const auto source = readSource(MediaEngine::MdbReader{}, folder + QStringLiteral("/msmMMOB.mdb"), MetadataSource::Mdb);
+	QCOMPARE(source.outcome, MediaEngine::ParsedSource::Outcome::Complete);
+	const MediaEngine::Cancellation cancellation;
+	const auto projection = MediaEngine::projectMdb(source, cancellation);
+	QVERIFY2(!projection.fileReferencesComplete, qPrintable(projection.diagnostics.join('\n')));
+	QVERIFY(!projection.files.isEmpty());
 
 	const auto results = runManualScan(folder, true);
 	QCOMPARE(results.size(), 2);
 	for (const MediaFile &mf : results)
 	{
 		QVERIFY2(mf.omfEra, qPrintable(mf.fileName));
-		QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoDatabase);
 		QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
 		QVERIFY(OmfUid::isWrappedOmfId(mf.fileMobId));
 	}
 	const MediaFile *slate = rowNamed(results, QStringLiteral("BLACK_720x243x2_JFIF35.omf"));
 	QVERIFY(slate != nullptr);
+	QCOMPARE(slate->dbStatus, MediaFile::DbStatus::Listed);
 	QCOMPARE(slate->compression, QStringLiteral("JFIF 20:1"));
 	QCOMPARE(slate->originalBin, QStringLiteral("NTSC slides")); // the MDB's record, joined by identity
 	const MediaFile *wav = rowNamed(results, kOmfWav);
 	QVERIFY(wav != nullptr);
+	QCOMPARE(wav->fileMobId, kOmfWavFileMob);
+	QVERIFY(std::none_of(projection.files.cbegin(), projection.files.cend(),
+		[&](const MediaEngine::ProjectedFile &file) { return file.fileMobId == wav->fileMobId; }));
+	QCOMPARE(wav->dbStatus, MediaFile::DbStatus::DbUnreadable);
 	QCOMPARE(wav->compression, QStringLiteral("PCM"));
-	QVERIFY(wav->originalBin.isEmpty()); // this folder's MDB has never heard of it
+	QVERIFY(wav->originalBin.isEmpty()); // No MDB bin was established for this WAVE.
 }
 
 void TestScanner::shared_omf_folder_without_any_database_is_scanned()
@@ -3135,7 +3142,7 @@ void TestScanner::unrelated_database_cannot_reclassify_omf_audio()
 			else
 				QVERIFY(headerWasRead(*row));
 			QCOMPARE(hasDatabaseEvidence(*row), matchingMdb);
-			const auto expectedStatus = matchingPmr							? MediaFile::DbStatus::Listed
+			const auto expectedStatus = (matchingPmr || matchingMdb)			? MediaFile::DbStatus::Listed
 										: (withUnrelatedIndex || unrelated) ? MediaFile::DbStatus::NoReference
 																			: MediaFile::DbStatus::NoDatabase;
 			QCOMPARE(row->dbStatus, expectedStatus);
@@ -3789,10 +3796,10 @@ void TestScanner::ordinary_wave_outside_omfi_is_excluded()
 	QVERIFY(runManualScan(folder, true).isEmpty());
 }
 
-void TestScanner::unreadable_database_extension_marks_unverified_misses()
+void TestScanner::completed_reference_check_survives_unreadable_siblings()
 {
 	// Every admitted database extension is considered. A readable source
-	// can describe a listed row, but junk siblings prevent confident misses.
+	// can establish a reference or a completed miss despite unreadable siblings.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString folder1 = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
@@ -3822,7 +3829,7 @@ void TestScanner::unreadable_database_extension_marks_unverified_misses()
 			QCOMPARE(mf.compression, QString::fromLatin1(kPcmAudioName));
 		}
 		else if (mf.mediaFolderName == QStringLiteral("1"))
-			QCOMPARE(mf.dbStatus, MediaFile::DbStatus::DbUnreadable);
+			QCOMPARE(mf.dbStatus, MediaFile::DbStatus::NoReference);
 		else
 			QCOMPARE(mf.dbStatus, MediaFile::DbStatus::DbUnreadable);
 	}

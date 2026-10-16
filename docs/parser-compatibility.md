@@ -1,6 +1,6 @@
 # Media Composer compatibility: implemented changes
 
-Updated 11 October 2026. The live scanner uses the MediaEngine PMR, MDB, MXF and legacy-media readers and their evidence-based projections. See the [live connection report](../Project%20Canon/live-connection-2026-10-04.md), [database-first scheduling contract](../Project%20Canon/database-first-scheduling-2026-10-07.md) and [root membership corrections](../Project%20Canon/root-membership-corrections-2026-10-08.md) for the current integration.
+Current implementation updated 16 October 2026; dated format findings below retain their original evidence. The live scanner uses the MediaEngine PMR, MDB, MXF and legacy-media readers and their evidence-based projections. See the [live connection report](../Project%20Canon/live-connection-2026-10-04.md), [database-first scheduling contract](../Project%20Canon/database-first-scheduling-2026-10-07.md) and [root membership corrections](../Project%20Canon/root-membership-corrections-2026-10-08.md) for the current integration.
 
 MediaMuster now follows more of the database and media-reading rules found in the installed Media Composer. This is a substantial compatibility improvement, not proof that the two applications are identical. Tests distinguish real Avid files, external OMF specimens, and independently constructed cases for formats for which no real specimen was available.
 
@@ -22,6 +22,8 @@ MediaMuster now follows more of the database and media-reading rules found in th
 | Transparency masks | Avid's uncompressed alpha essence is identified from positive RGBA/layout and container/compression evidence. Its descriptive codec label is **Uncompressed alpha**, with **8-bit** depth for the observed files. |
 | Effect names | Render counters such as `,4.new.01` are separated from the effect token, so a name ending `,Title,4.new.01` resolves to **Title**. Catalogue matching remains exact; unmatched names are retained. |
 | Database fallback | No usable database match, missing or unresolved required table metadata, or a detected source change triggers a header read. A contradictory header identity excludes the PMR match. The raw PMR modification word has no selected epoch/timezone and does not establish freshness. |
+| Local database references | A validated local PMR filename/identity reference or qualified same-folder MDB entry matching the physical FileMobId establishes Listed, even in an otherwise partial source. A completed local miss wins over an unreadable sibling; problems still reach Console. Changed or disputed claims cannot establish a reference. |
+| MDB reference coverage | Projection separately establishes whether required root membership and source-file identity/ownership interpretation are complete. Parser success or no projected match alone cannot prove absence. A covered nonempty catalogue needs a usable physical FileMobId; a verified empty file catalogue does not. |
 | Recorded source path | Table, CSV, Search and sorting use the selected recorded Source Path/URL. Separate Source Filename derivation/storage is removed. A missing usable applicable database path triggers header fallback. Raw spellings and URL escapes remain; differing preferred paths stay unresolved rather than being normalized. |
 | Failed reads | A failed header read preserves an already established classification. Otherwise Kind and Type show an em dash for unknown, including in filters, sorting and export. |
 | DNx names | When the tier is known but a legacy bitrate name cannot be established, the display uses the tier alone, for example **Avid DNx SQ**. Supported legacy rate/size combinations use the whitepaper tables. |
@@ -29,7 +31,16 @@ MediaMuster now follows more of the database and media-reading rules found in th
 | Debug menu | The obsolete **Force header scan** control has been removed. Header reads follow the database-match and required-metadata checks above. |
 | Closing the app | Workers cancel cooperatively and are joined before their owners are destroyed. A blocked operating-system read can delay closing; the app no longer force-kills a worker while other work may still refer to its data. |
 
-Database status still means membership in the local PMR. Recovering an identity from a media header does not turn an unlisted file into a listed one. Scanning opens media and databases for reading; it does not rebuild databases, claim a shared-storage workstation's ownership, or ask another editing seat to rescan. Volume searches retain the existing top-level locations. Manual additions accept correctly structured Avid media trees anywhere, their media folders or their immediate containing directory. Loose database folders, standalone MXF trees and arbitrary recursive archive searches are excluded. See [release-feature-gates.md](release-feature-gates.md) for the current scope contract.
+Database status describes references in either local database. A header identity
+alone, a recovered name/project, master-only facts or cross-folder MDB metadata
+cannot establish a local reference. Partial-PMR metadata remains ineligible, and
+header skipping still requires the existing complete usable PMR/MDB match and
+required-field checks. The table and CSV expose No Database and No Reference
+`true`/`false` flags after Location, before the IDs; CSV's Database Status is
+removed. Each flag has a corresponding view. Enabled views remain visible at zero,
+and their counts continue to describe the whole inventory.
+
+Scanning opens media and databases for reading; it does not rebuild databases, claim a shared-storage workstation's ownership, or ask another editing seat to rescan. Volume searches retain the existing top-level locations. Manual additions accept correctly structured Avid media trees anywhere, their media folders or their immediate containing directory. Loose database folders, standalone MXF trees and arbitrary recursive archive searches are excluded. See [release-feature-gates.md](release-feature-gates.md) for the current scope contract.
 
 Named Interplay and MediaCentral MXF folders use the same file and database readers.
 This support does not include a connection to the MediaCentral server or its catalogue.
