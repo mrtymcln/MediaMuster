@@ -204,7 +204,7 @@ by this requirements review. See [implementation planning](#implementation-plann
 | C85 | Keep the current About presentation and animated credits. | Retain app name/icon/version and the current credits animation while About is open. No background animation or additional presentation features are requested. |
 | C86 | Never strictly enforce a memory ceiling. | Do not abort, mark a scan failed/cancelled or require user intervention merely because memory reaches the 10 GB optimization target. Continue simplifying and measuring memory use under C09. The 300,000-file completion workload remains required under C08; memory measurement is not a runtime stop policy. |
 | C87 | A user-cancelled media scan must be identified as cancelled/incomplete in Console throughout its lifecycle. | Retain found rows and completed metadata under C55. A cancel received during formatting/publication must not be reported as a complete scan. This is separate from memory-target exceedance under C86 and from unusable/cancelled bin loads. |
-| C88 | Keep diagnostic logs and collected crash reports for 30 days, with automatic cleanup. | Applies to both retained support histories under C80/C81. The user specified age and automatic cleanup, with no disk-size limit. Do not adopt the earlier size-cap proposal as an agreed requirement. Keep recent history across restarts rather than erasing all recent entries merely because one log container is old. Undo/recovery journals retain their separate protections under C04/C57/C58. |
+| C88 | Keep diagnostic logs and collected crash reports for 30 days, with automatic cleanup. | Applies to both retained support histories under C80/C81. The user specified age and automatic cleanup, with no disk-size limit. Do not adopt the earlier size-cap proposal as an agreed requirement. Keep recent history across restarts rather than erasing all recent entries merely because one log container is old. The 17 October choices keep one continuous log, timestamp message lines with plain startup dividers, and clean once at app startup without a timer or day-rollover checks. No earlier-format conversion or reset is required under C99. Only one running app instance is in scope. Undo/recovery journals retain their separate protections under C04/C57/C58. |
 | C89 | If a newly loaded bin cannot be read, discard that failed load, keep existing filters untouched and report the failure in Console. | Do not auto-intersect with an unreadable bin or replace established loaded-bin/filter state. An unsuccessful load is distinct from a readable bin whose references yield no matches. |
 | C90 | Allow a recognized sequence with no established media references to be checked and contribute an empty match set. | Report unresolved/incomplete references in Console under C27. This is not proof of a fully understood empty sequence under C28, although both display zero rows when checked alone. Other checked sequences still contribute their established matches under C25; unchecking every sequence clears the restriction. No such unresolved-zero sequence was found in the inspected corpus. |
 | C91 | Apply a readable bin whose valid references match no scanned rows, with a Console notice. | Keep its valid resolved identities and apply the requested rule normally. Intersect shows zero rows. Add/Subtract contribute no changes to an existing chain; a leading Add starts empty, while a leading Subtract keeps all otherwise eligible rows. The notice describes this scan's lack of matches, not proof that media was deleted or is absent from all storage. |
@@ -730,14 +730,14 @@ but the text-block cap does not bound queued delivery messages. Disk logging
 currently takes a mutex, writes and flushes synchronously for each message.
 Preserving message content does not require keeping that delivery implementation.
 
-The current disk log has no byte cap. At startup, it is removed only when a valid
-filesystem birth time says it is at least 30 days old; this is not continuous
-rolling retention. On macOS, startup copies recent app crash reports into the app's
-log directory without pruning those copies. Help can reveal these local files;
-there is no automatic transmission. C88 now requires automatic 30-day cleanup of
-logs and collected reports; the current whole-container age deletion and unpruned
-report copies need to be brought into line with that outcome. Delivery overhead
-still needs measurement.
+The disk log has no byte cap. C88 trims entries older than 30 days once at app
+startup, preserving recent entries in one continuous file. Every saved message
+line has its own timestamp. There is no old-format conversion or reset. Copied
+crash reports are pruned by their original modification dates in the same maintenance
+step; system originals and operation journals are outside diagnostic cleanup.
+Help still reveals these local files, with no automatic transmission. Diagnostics
+assume one running app instance under the user's explicit V1 scope. Delivery
+overhead still needs measurement.
 
 The user initially did not accept the combined age/storage-cap proposal, then
 specified 30 days and automatic cleanup. C88 records the final policy without
@@ -857,7 +857,7 @@ clearing Search. See
 | Capability | Current behavior | Qualification |
 | --- | --- | --- |
 | Reveal Diagnostics / disk log | Reveals the local technical log; disk logging persists across sessions independently of Console visibility. | C59 retains message detail, C80 retains history across restarts/Reveal Diagnostics and C88 sets automatic 30-day cleanup without a specified size cap. Synchronous per-message flushing is a current implementation cost, not a requirement merely of retaining technical messages. |
-| Crash support | On macOS startup, copies recent MediaMuster crash reports into local diagnostics and notices newly collected reports. | Keep under C81, with no automatic transmission. C88 requires automatic 30-day cleanup; current copies have no pruning. This is separate from C58's retained unfinished-operation recovery. |
+| Crash support | On macOS startup, copies recent MediaMuster crash reports into local diagnostics and notices newly collected reports. | Keep under C81, with no automatic transmission. C88 prunes expired copies at startup, preserving their original modification dates. This is separate from C58's retained unfinished-operation recovery. |
 | Debug display controls | Fusion style changes the app style for the session. The table and its headers inherit normal Qt fonts; the Console retains its separate monospace font. | C82 is implemented: the Monospace table control, helper and flag are removed. No measured scan-memory saving is claimed. |
 | Full Disk Access feature | Removed: no startup permission probe/warning, Help command, explanatory dialog or Settings shortcut. | C83 is implemented. Ordinary discovery, file-read reporting and operation safeguards remain independent retained behavior. |
 | Send feedback | Opens an addressed email draft in the default mail app, without a body or diagnostic attachment. | Keep under C84. Nothing is sent automatically. If the mail app cannot open, a dialog shows the address. |
@@ -868,6 +868,57 @@ See [Help menu](../src/mainwindow.cpp),
 [Debug controls](../src/mainwindow.cpp),
 [About dialog](../src/aboutdialog.cpp#L118) and
 [About animation](../src/aboutdialog.cpp#L49).
+
+### Diagnostic history cleanup — 17 October 2026
+
+The latest user instruction defines the complete logger scope: keep the current
+startup block, save Console and Qt messages, and delete lines older than 30 days
+**once at app startup**. Earlier log formats, layouts and migration/reset paths
+are not requirements. This replaces the earlier day-rollover maintenance and
+format-preservation proposals. Keep one continuous `mediamuster.log`.
+
+The user then asked to shorten unnecessary checks and asked, separately, whether
+a file-size bound would be simpler. Keep the 30-day policy for this change.
+Use Qt's existing UTF-8 and safe-save defaults instead of setting them again;
+after flushing the text stream, let `QSaveFile::commit()` report write/save
+failure. Keep the input read-error check so an incomplete read cannot replace
+the original. A size-based reset is only an alternative under discussion; no
+size threshold or replacement retention policy has been chosen.
+
+The startup block uses plain, literal 60-character `=` dividers and five dated
+`info app:` lines containing only the app/version/Qt, full OS/architecture, host,
+locale and actual log path values. Ordinary Console and Qt message output stays
+unchanged. During startup cleanup, old plain divider lines are discarded; the
+fresh block then prints the current layout. Retain dated lines at or after the
+30-day cutoff, including the exact boundary. Text with no readable date is kept
+without special interpretation.
+
+Use Qt UTF-8 text streams and safe file replacement. Remove manual BOM handling,
+version detection, old-heading conversion, whole-log resets, day-rollover state,
+per-message cleanup and inferred divider ages. Keep the existing mutex for the
+app's own logging threads and assume one running app instance, as explicitly
+requested. No process locks or extra background scheduling are required.
+
+Keep the existing crash-report collection, new-copy notice and startup expiry of
+MediaMuster's local copies by original report age. System crash originals and
+file-operation journals remain outside diagnostic cleanup. Reveal Diagnostics
+continues to reveal the same local file.
+
+Replace the diagnostics test matrix with four focused current-behaviour checks:
+message formatting, startup pruning, the current block plus Console/Qt delivery,
+and the existing crash-report workflow. There is no retained test matrix for
+old formats, historical styling, day rollover or unsupported app instances.
+
+Implemented and verified 17 October 2026. `diagnostics.cpp` shrank from 326 to
+259 lines, and its tests from 664 to 185 lines. All configured targets, including
+the app, rebuild with Qt 6.5.3/C++17. The four focused tests pass (Qt reports six
+passes including its setup/teardown), with no failures or skips. Exact startup
+output, saved Console/Qt messages, startup expiry/boundary behaviour and the
+crash-report workflow are covered using temporary files. `git diff --check`
+passes. This check reran the diagnostics suite; no Windows execution or
+performance improvement is claimed. The requested removal of redundant Qt-default
+settings and the duplicate write-error check also rebuilds and passes the same
+four focused tests.
 
 ### Shared media: documentation and current disk evidence
 
@@ -1396,12 +1447,10 @@ boundaries. This does not claim exact edit-used media, Windows/NEXIS acceptance
 or a performance improvement. Loaded-bin graph ownership compaction remains a
 separate simplification, as do the previously agreed small removals below.
 
-The following previously agreed simplifications are still outstanding in the
-current code. This is a status review, not a newly approved work order.
-
-| Cleanup | Remaining work |
-| --- | --- |
-| C88: Diagnostics retention | Replace whole-log age deletion with the agreed 30-day history retention, and prune old collected crash reports while protecting operation journals. |
+The previously agreed support and folder-input simplifications are now
+implemented, including C88's 30-day diagnostic history retention. Verification
+and the selected single-log/single-instance scope are recorded in the
+[diagnostic cleanup checkpoint](#diagnostic-history-cleanup--17-october-2026).
 
 Loaded-bin/filter ownership compaction also remains: current filters retain
 parsed AVB graphs. Review only the data needed for existing Whole Bin behavior;

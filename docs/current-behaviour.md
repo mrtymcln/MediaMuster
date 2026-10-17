@@ -22,11 +22,34 @@ the user to **Help > Reveal Diagnostics** to share them with the developer.
 The application log, `mediamuster.log`, and collected crash reports live in the
 application-data folder. On macOS this is
 `~/Library/Application Support/Martin McLean/MediaMuster/`.
-Startup clears the log if it was created at least 30 days ago.
+One continuous log retains the last 30 days. Each saved message line has its own
+local timestamp, severity and applicable category/source location. App startup
+removes expired lines and collected crash copies. There is no timer or cleanup
+during logging. Recent entries survive restarts. Cleanup streams through the
+log and safely replaces it; a failed rewrite preserves the original. Text with
+an unreadable date is retained rather than assigned a guessed age.
+
+There is no visible file title or empty startup spacer message. Each session
+begins with plain 60-character `=` dividers around five dated app details:
+app/version/Qt, system/version with architecture, host, locale and the log path.
+These five lines contain only their values, without `system`, `host`, `locale`
+or `log` labels after the ordinary dated `info app:` prefix.
+Cleanup discards old plain divider lines, and the fresh startup block prints
+the current dividers. Ordinary output, including the Console's initialisation
+and volume messages, is unchanged.
+The system line uses the full macOS version, including its patch number.
+The file uses ordinary UTF-8 text. There is no log-version detection,
+old-heading conversion or whole-log format reset.
+
+Collected reports retain their original modification dates; collection does not
+restart their retention period. Only MediaMuster crash copies in the diagnostics folder
+are expired. System crash originals and file-operation journals are outside this
+cleanup. Diagnostics assume one running app instance under the agreed V1 scope.
+
 The Console receives live activity messages from the app and also writes them
 to the log. The file additionally receives detailed diagnostic messages;
 the Console does not read back the file. Collected crash reports are kept
-separately and existing copies are left untouched.
+separately; existing recent copies are not overwritten or reported as newly saved.
 
 The Console and diagnostic log use the same bare category labels:
 
