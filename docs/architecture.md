@@ -241,6 +241,9 @@ reproject metadata. Ordinary table insertion accepts values already prepared by
 the scanner. The new inventory is delivered before its reconciliation issues so model reset cannot
 discard the arriving issues.
 
+Sample format, channel count, source container and imported status remain
+temporary interpretation facts; their unused copies are not stored in UI rows.
+
 For supported locations and formats, see [release scope](release-feature-gates.md)
 and [parser compatibility](parser-compatibility.md).
 
@@ -279,8 +282,9 @@ This scope concerns bin membership, not physical-file rate/timecode metadata.
 See [AVB coverage](avb-parser.md).
 
 Loading or removing bins changes filtering only; no bin-enrichment resolver or row
-AVB history owner remains. The loaded bins and applied filter snapshots still retain
-their current metadata and graphs. Compacting those graphs remains outstanding.
+AVB history owner remains. Loaded bins and applied filter snapshots retain compact
+file references and warnings; parsed graphs and unused metadata are released after
+loading. Removing a loaded bin leaves its applied snapshots in the chain for now.
 The ordinary master-association union has been replaced by one selected
 MasterMobId. Source Filename and Clip Duration have been removed. The table, CSV,
 Search and source-column sorting use selected recorded Source Path, with no
@@ -479,8 +483,9 @@ sample precision or overflowing intermediate products on supported platforms.
 
 `frameRateRatio` and `sampleRateRatio` preserve original per-file rates independently
 of a duration count or rounded display label. MXF audio sampling and descriptor
-edit-unit clocks remain distinct. AIFF header fallback also retains its 80-bit
-sample-rate encoding and only sets a duration fraction when it fits exactly.
+edit-unit clocks remain distinct. AIFF header fallback retains its 80-bit
+sample-rate encoding in temporary observations and only sets a duration fraction
+when it fits exactly. UI rows keep the selected exact rate, without a raw-encoding copy.
 
 File-duration selection compares equivalent recorded units/rates and resolves its
 optional display clock separately. Copland C13 removes clip-track duration

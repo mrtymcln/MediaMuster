@@ -265,8 +265,6 @@ void TestMediaCsv::location_is_retained_and_removed_columns_are_omitted()
 	f.mediaFolderName = QStringLiteral("8646");
 	f.mediaFilePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/8646/A11B22C33D44.mxf");
 	f.sourceFilePath = QStringLiteral("/imports/source.mov");
-	f.sourceContainer = QStringLiteral("QTFF");
-	f.isImported = true;
 	for (bool enabled : {false, true})
 	{
 		const MediaCsv::Options options{enabled};
@@ -281,8 +279,6 @@ void TestMediaCsv::location_is_retained_and_removed_columns_are_omitted()
 									QStringLiteral("Source Container"), QStringLiteral("Imported")})
 			QVERIFY(!headers.contains(removed));
 		QVERIFY(!fields.contains(f.volumeName));
-		QVERIFY(!fields.contains(f.sourceContainer));
-		QVERIFY(!fields.contains(QStringLiteral("yes")));
 	}
 }
 

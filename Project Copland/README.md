@@ -90,8 +90,9 @@ sorting, column layout, helper, count, precompute-filter and diagnostic workflow
 The decision table below is authoritative for their exact behavior.
 
 Keep the existing bin workflow and initial Auto Intersect. Resolve each AVB
-independently. Removing a bin releases its data and recalculates its contributions;
-rescanning keeps bins loaded but resets their filters. Failed loads and valid
+independently. Removing a bin releases its loaded record; existing applied filter
+snapshots may stay in the chain under the user's 17 October deferral of recalculation.
+Rescanning keeps bins loaded but resets their filters. Failed loads and valid
 unmatched bins follow C89/C91; incomplete results go to Console. The combined
 Bin/Sequence dialog, checked-sequence union/AND rules and exact used-track/angle
 acceptance belong to the deferred sequence work under C100.
@@ -127,7 +128,7 @@ by this requirements review. See [implementation planning](#implementation-plann
 | C08 | Handle 300,000 media-file headers on NEXIS without PMR/MDB databases. | Database-free Interplay storage is a primary acceptance workload. |
 | C09 | Aim for application peak memory below 10 GB while keeping scans and ordinary use lean. | Workstations commonly have 64 GB. Measure scanning, rescanning, bin loading and subsequent use. C86 clarifies that this is an optimization target, not a strictly enforced runtime ceiling or an automatic-stop threshold. |
 | C10 | Scan as fast as possible. | A numerical time target and representative benchmark procedure have not been agreed. |
-| C11 | Release AVB data when a bin is removed from the loaded list. | Remove its filter contribution and sequence selections, recalculate using remaining rules, remove rules with no bins and clear bin filtering when no rules remain. Each remaining bin resolves independently under C26; established partial matches and Console notices follow C27. |
+| C11 | Release a bin's loaded record when it is removed from the list; keep existing applied filter snapshots for now. | On 17 October the user accepted a removed bin staying in the filter. Automatic removal of its contribution and chain recalculation are deferred, rather than the next V1 checkpoint. Compact file-reference/warning snapshots remain until their steps are removed or the chain is cleared/reset; no parsed graph is retained. Independent bin resolution under C26 and partial-result notices under C27 remain. |
 | C12 | Read PMR, then MDB, then physical media headers as needed. | Read headers for every unindexed file, when databases are absent/unusable, and when indexed metadata is missing, incomplete or contradictory. A missing applicable table field triggers the next source; leave it blank when sources are exhausted. On 17 October, the user exempted missing Original Bin alone from MXF header scheduling, while retaining OMF fallback under C40. Established inapplicability stops fallback for that property under C35. Acquisition order is separate from the coder's per-field selection policy. |
 | C13 | Physical-file Duration is sufficient; remove Clip Duration from the target. | Retain exact file duration/rate. Associated master-track lengths are no longer a product requirement. |
 | C14 | Keep all current precompute details behind a feature flag for now. | Includes detailed precompute categories and inferred Effect, Effect Category and Effect Sequence. The ordinary Media/Precompute Type column remains required under C45; the detail flag does not remove that simple classification. Actual AVB sequence membership remains a separate capability. |
@@ -341,9 +342,10 @@ These describe today's code, not Copland requirements:
   path-only or unresolved reference can produce an incomplete-result warning, but
   that alone does not establish AMA linkage. C19 defines the target external-media
   scope and Console notices. See [filtering](../src/mediafilterproxy.cpp).
-- Loaded bins and applied filter steps keep shared AVB graphs alive. Inventory
-  rows no longer attach bin graphs for name enrichment. Removing a bin keeps
-  existing filter snapshots; broader compact-bin ownership remains outstanding. See
+- Loaded bins keep resolved file references, name/path, status and warnings;
+  applied filter steps keep reference/warning snapshots. Parsed AVB graphs and
+  unused clip metadata are released after loading. Removing a bin keeps existing
+  filter snapshots, accepted for now under C11. See
   [bin loading](../src/avbfilterdialog.cpp) and
   [filter steps](../src/avbfilter.h).
 - Loading bins currently creates a first whole-bin Intersect automatically when
@@ -355,7 +357,8 @@ These describe today's code, not Copland requirements:
   process peak in a Debug x86_64 probe under Rosetta, including reader/index and
   reporting work. This is a measured reason to review retained AVB detail, not an
   app benchmark or a predicted Copland saving. C16's table-enrichment consumer
-  has been removed; filtering still retains decoded clip/reference structure. See
+  has been removed; loaded-bin compaction now releases decoded structure after
+  reference resolution. Temporary parsing peaks still need measurement. See
   [the bounded corpus measurement](../Project%20Canon/avb-corpus-check-2026-10-04.md#timing-and-memory-observations).
 - Discovery currently scans recognised managed-media layouts rather than every
   folder on a drive. Adding `Avid MediaFiles/MXF/1` resolves to the MXF root and
@@ -1187,8 +1190,9 @@ Confirmed: read and resolve each AVB independently using its own clip informatio
 under C26. Independently resolved references match the common physical inventory;
 the resulting file lists combine for bin operations or any checked sequence.
 Borrowing internal clip records from another AVB is outside Copland's scope.
-Removing a bin releases its data, bin-rule contributions and sequence selections
-under C11, then recomputes the remaining filters.
+The original removal/recalculation design is deferred: under the user's revised
+C11 decision, removing a loaded bin keeps its existing applied filter snapshots
+for now. Sequence-specific removal behavior remains future work under C100.
 
 Partly resolved selections apply established matches with a Console notice under
 C27. A recognized sequence with no established references may also be checked
@@ -1201,8 +1205,8 @@ A readable bin whose valid references match no scanned rows retains those
 identities and applies the requested rule, with a Console notice under C91.
 Intersect yields zero rows. Add/Subtract with no matches do not change an existing
 chain; a leading Add shows zero rows, while a leading Subtract leaves all otherwise
-eligible rows. C11 drops a bin rule when no bins remain, not merely because its
-references match no rows. The current whole-bin dialog already accepts nonempty
+eligible rows. Applied bin rules are snapshots and survive bin removal under the
+revised C11 decision. The current whole-bin dialog already accepts nonempty
 reference sets that match no scanned rows; it skips zero-identity operands.
 C90's sequence groundwork must preserve an active checked-empty restriction.
 See [operand application](../src/avbfilterdialog.cpp#L730) and
@@ -1463,8 +1467,9 @@ are temporary loading data; applied filter steps need their file references and
 warnings rather than ownership of that working data. Unused clip metadata has
 no remaining table/filter consumer under C16.
 
-C11's removal/recalculation behavior is a separate next checkpoint: this change
-does not alter the current frozen filter operands when a bin is removed. Exact
+C11's removal/recalculation behavior was proposed as a separate checkpoint. After
+compaction, the user accepted a removed bin staying in the filter **for now**;
+keep the current frozen operands and defer that change. Exact
 sequence filtering remains deferred under C100. The existing scan/operation
 protections and representative workload validation remain required. No measured
 memory or speed improvement has been established.
@@ -1488,8 +1493,34 @@ The app and all configured targets build. The six relevant suites pass
 They retain Whole Bin/source-track, malformed/partial/cancelled-load, multi-bin
 chain, prepared table/CSV and rescan checks. `git diff --check` passes. This is a
 code/ownership simplification, not a measured performance result. C11 bin
-removal/recalculation is next; no full-suite, Windows or NEXIS result is claimed
+removal/recalculation is deferred; no full-suite, Windows or NEXIS result is claimed
 for this checkpoint.
+
+### Unused per-file values — 17 October 2026
+
+The user chose **Remove unused per-file values**, before a full app-workflow
+check. Remove the unused UI-row copies of sample format, channel count, source
+container and imported status, plus the never-populated sample-rate encoding
+member. Production code only assigns those four values; no table, CSV, filtering,
+operation, Undo/recovery or Rebalance consumer reads them.
+
+Keep temporary reader/projection facts and their decoding tests, the existing
+property catalogue/compact status checklist, exact frame/sample rates, physical
+duration, Source Path and operation records. Sample format still helps interpret
+the displayed Compression label during projection. This checkpoint changes only
+retained row data and its adapter/test copies, with no intended visible behavior
+or acquisition-policy change. No measured memory or speed improvement is claimed.
+
+Implemented: removed five `MediaFile` members and four adapter assignments.
+Removed obsolete row fixture/assertion copies; the selected-master test checks
+temporary source-container evidence directly. Reader/projection facts, property
+policies, statuses, rates and operation records are unchanged.
+
+The app and all configured targets build with pinned Qt 6.5.3, C++17 and Release
+arm64. All eight relevant suites pass in 44.16 seconds: scan engine, compression
+names, scanner, file operations, CSV, table model, filter proxy and operation UI.
+`git diff --check` passes. These are automated regression checks; a full app
+workload/memory comparison and NEXIS acceptance remain separate.
 
 ### Automatic drive checking removal — 17 October 2026
 
@@ -2676,7 +2707,7 @@ adding a new mechanism to fix them.
 | 1. Establish baseline | Use this Mac initially under C97. Record the build, actual workload/hardware/storage, cache conditions, source-read counts, time through a usable table and whole-process peak memory. Include rescan, CSV export, loaded bins and normal interactions. Separate genuine complete media from generated or truncated specimens. | Repeatable baseline and field/behavior comparison receipts. Existing engine-only timings remain supporting evidence, not a 300,000-file NEXIS acceptance result. Q13 is set aside; no numerical scan-time target is required. |
 | 2. Compact records and receipts | Introduce selected row values, exact clocks, one selected MasterMobId, compact availability/freshness/membership status and the operation receipts required by existing live checks. Adapt operation consumers before removing their evidence dependencies. Keep the user-selected direct CSV writer; release its local captured rows when saving returns, without adding a background text snapshot. Release prior row/session ownership when a new scan starts. | Retained table/CSV values and eligible operation behavior agree with the contract. Copy/Move/Delete/Rebalance, latest-job Undo and startup recovery preserve their existing protections. Completed export and compact operation consumers do not keep the old complete inventory/evidence graph alive during rescan. |
 | 3. Acquisition and cancellation | Apply PMR → MDB → header acquisition to the retained requested fields, using reliable inapplicability to stop unnecessary fallback. Clip Duration removal is complete under C13. C94/C95/C96 replace SourceFilename storage/consumers with SourcePath and its requested-field fallback. Implement either-database membership and both flags. Resolve completed values into compact rows as work finishes, and release unused parsing data. Retain changed-source exclusion and the existing bounded header fallback. | Database-free, partial-index and missing-applicable-field cases resolve correctly; unavailable values remain blank. Cancellation during discovery, database/header reading, final selection, formatting and publication preserves found rows/completed values and consistently reports incomplete. No runtime memory-abort policy is introduced. |
-| 4. Compact existing bin filtering | Preserve Whole Bin and the existing multi-bin chain. Remove unused retained parsing data and release unloaded-bin/filter ownership under C11/C15/C16/C26. The approved K/R cleanup removes exact timeline and dormant sequence-selection machinery while retaining source-track safeguards. Exact sequence filtering, its combined dialog and additional track/camera/speed/link interpretation are deferred under C100. | Existing Whole Bin results and filter-chain behavior are checked, failed loads preserve old filters and valid unmatched references apply normally. Unloading releases data; rescan resets filters while keeping bins loaded. Exact chosen-sequence used-set acceptance is not a V1 gate. |
+| 4. Compact existing bin filtering | Preserve Whole Bin and the existing multi-bin chain. Unused retained graphs, detailed resolution records and clip metadata are removed under C15/C16/C26. C11 now accepts existing filter snapshots surviving bin removal for now; automatic contribution removal/recalculation is deferred. The approved K/R cleanup removes exact timeline and dormant sequence-selection machinery while retaining source-track safeguards. Exact sequence filtering and its additional UI/interpretation remain deferred under C100. | Existing Whole Bin results and filter-chain behavior are checked, failed loads preserve old filters and valid unmatched references apply normally. Unloading releases the loaded record; compact applied snapshots remain. Rescan resets filters while keeping bins loaded. Exact chosen-sequence used-set acceptance is not a V1 gate. |
 | 5. Presentation and support | Show/search/export Source Path; replace Database Status with both boolean columns/views. Keep precompute category/effect/Volume filtering and remaining conveniences. Apply always-visible enabled tabs, Search-only Escape, narrowed folder inputs, startup/manual drive discovery, FDA/Monospace removal and automatic 30-day diagnostic/crash cleanup. Preserve technical Console content while reviewing delivery/flush overhead. | Behavior checks follow C48/C49/C60–C96. Enabled empty tabs remain visible; dialog Escape retains its proper dismissal/cancellation priority. Cleanup preserves recent history and protected operation journals. Removed controls and source-basename storage have no active consumer left. |
 | 6. Full workload verification | Exercise the retained product after the new ownership/acquisition paths are in place. Compare usable-table time, source reads and whole-process memory against stage 1, including subsequent sorting/filtering/bin loading, operations, export and rescan. Validate the 300,000-file database-free workload on its representative NEXIS setup. | Correct physical inventory and selected metadata, clean cancellation, retained operation safety and measured scale behavior. Explain any remaining memory/time costs and limitations. The below-10-GB aim is measured, never enforced by aborting the scan. |
 

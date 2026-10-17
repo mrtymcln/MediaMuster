@@ -58,8 +58,6 @@ bool applyResolvedMetadata(MediaFile &row, const MediaEvidence &evidence)
 	if (value(MediaProperty::BitDepth).metaType().id() != QMetaType::QString && value(MediaProperty::BitDepth).toInt() > 0)
 		bitDepth = QStringLiteral("%1-bit").arg(value(MediaProperty::BitDepth).toInt());
 	assign(row.bitDepth, bitDepth);
-	assign(row.sampleFormat, value(MediaProperty::SampleFormat).toString());
-	assign(row.channels, value(MediaProperty::Channels).toInt());
 	const auto duration = MediaEngine::mediaDuration(value(MediaProperty::FileDuration));
 	if (durationValues(row.duration) != durationValues(duration))
 	{
@@ -69,8 +67,6 @@ bool applyResolvedMetadata(MediaFile &row, const MediaEvidence &evidence)
 	assign(row.dropFrame, value(MediaProperty::DropFrame).toBool());
 	assign(row.timecodeBase, qRound(row.duration.displayRate.value()));
 	assign(row.sourceFilePath, value(MediaProperty::SourcePath).toString());
-	assign(row.sourceContainer, value(MediaProperty::SourceContainer).toString());
-	assign(row.isImported, value(MediaProperty::Imported).toBool());
 	assign(row.kind, value(MediaProperty::Kind).isValid() ? MediaFile::Kind(value(MediaProperty::Kind).toInt()) : MediaFile::Kind::Unknown);
 	assign(row.type, value(MediaProperty::Type).isValid() ? MediaFile::Type(value(MediaProperty::Type).toInt()) : MediaFile::Type::Unknown);
 	assign(row.precomputeCategory, value(MediaProperty::PrecomputeCategory).isValid() ? MediaFile::PrecomputeCategory(value(MediaProperty::PrecomputeCategory).toInt()) : MediaFile::PrecomputeCategory::Unknown);

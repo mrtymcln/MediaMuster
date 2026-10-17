@@ -380,8 +380,9 @@ or exported.
 
 The table and CSV include **Sample Rate** (for example, `48 kHz`) and
 **Bit Depth** (for example, `24-bit`) beside Frame Rate. Sample Rate describes audio;
-Bit Depth also shows established video depths. Sample Format is a separate internal
-RAM property with no table or CSV column. Unknown values, including Kind, stay blank.
+Bit Depth also shows established video depths. Sample Format is a temporary
+interpretation input for Compression, with no separate copy on each table row or
+table/CSV column. Unknown values, including Kind, stay blank.
 
 **Resolution** shows the visible picture raster, using valid descriptor crops and
 format-correct field handling. Recorded display geometry can remove storage padding
@@ -470,8 +471,9 @@ The whole-bin filter now uses the MediaEngine AVB reader and reference engine. R
 partial results remain usable with a persistent **Results may be incomplete**
 warning and Console details. A completely unreadable bin or cancelled operation
 cannot supply an applicable filter. Applied filter steps keep their file references
-and warnings even if the loaded-bin row is later removed. Removing that bin's
-contribution remains a separate Copland checkpoint. The live dialog uses
+and warnings even if the loaded-bin row is later removed. This snapshot behavior
+is accepted for now; automatic contribution removal/recalculation is deferred.
+The live dialog uses
 Whole Bin scope. There is no individual sequence picker, sequence list API or
 sequence feature flag.
 
@@ -532,7 +534,8 @@ media file's current full path; Source Path is the selected recorded source/impo
 path or URL. The table, tooltip, CSV and Search use that recorded spelling without
 extracting or separately retaining its basename. Search also matches directory
 text and filenames within it. Conflicting preferred paths remain blank under the
-normal selector. Separate Volume, Source Container and Imported fields are not exported.
+normal selector. Volume is not exported separately. Source Container and Imported
+are temporary engine facts, with no separate retained row values or CSV columns.
 
 ## Copy, Move and Delete
 

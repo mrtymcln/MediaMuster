@@ -52,8 +52,8 @@ Loaded bins retain resolved file identities, their name/path and load status,
 errors and warnings. Parsed object graphs and detailed resolution results are
 temporary loading data and are released before delivery to the dialog. Each
 applied step retains file references and warnings, without keeping those graphs
-alive. Currently, those snapshots survive removal of their loaded-bin row;
-Copland's unload/recalculation checkpoint is still outstanding. No usable
+alive. Those snapshots survive removal of their loaded-bin row, as accepted for
+now under Copland; automatic contribution removal/recalculation is deferred. No usable
 references means no new operand, rather than a fabricated complete selection.
 
 The loader does not prepare Clip Name or Original Bin values or check conflicts

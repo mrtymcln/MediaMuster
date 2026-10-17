@@ -60,11 +60,8 @@ struct MediaFile
 	QString frameRate;			   ///< Display label: "23.976", "25". Video only; audio rows stay blank.
 	MediaRate frameRateRatio;	   ///< Original video fraction; never recovered from the display label.
 	QString bitDepth;			   ///< "10-bit", "24-bit".
-	QString sampleFormat;		   ///< Internal numeric representation; not a table/CSV column.
 	int sampleRate = 0;			   ///< Whole-Hz compatibility value; prefer sampleRateRatio when available.
 	MediaRate sampleRateRatio;	   ///< Original audio sampling fraction, separate from duration's unit rate.
-	QByteArray sampleRateEncoding; ///< Original AIFF 80-bit rate, retained even when no exact fraction fits.
-	int channels = 0;			   ///< Audio only.
 	/// File duration with exact source units/rate and provenance. Master and
 	/// sibling lengths may differ; association never depends on equal duration.
 	MediaDuration duration;
@@ -75,8 +72,6 @@ struct MediaFile
 	/// Drop-frame numbering (29.97/59.94). The stored frame count stays unchanged.
 	bool dropFrame = false;
 	QString sourceFilePath; ///< Selected recorded source/import path or URL; distinct from the current location.
-	QString sourceContainer; ///< "QTFF", "MXF", "MOV", etc.
-	bool isImported = false;
 
 	// MARK: Precompute detail (table, CSV and filtering when enabled)
 

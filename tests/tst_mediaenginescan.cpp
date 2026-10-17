@@ -1237,7 +1237,7 @@ private slots:
 		QCOMPARE(evidence.observations(MediaProperty::ClipName).size(), 1);
 		QCOMPARE(row.originalBin, QStringLiteral("Selected bin")); // MDB preference cannot admit another master.
 		QCOMPARE(row.sourceFilePath, QStringLiteral("physical-source.wav"));
-		QVERIFY(row.sourceContainer.isEmpty());
+		QVERIFY(!evidence.selected(MediaProperty::SourceContainer).value.isValid());
 		QVERIFY(!evidence.selected(MediaProperty::Imported).value.isValid());
 		QCOMPARE(row.type, MediaFile::Type::Unknown);
 		QVERIFY(row.effect.isEmpty());

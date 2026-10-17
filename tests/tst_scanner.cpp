@@ -422,7 +422,7 @@ void TestScanner::optional_read_only_real_scan()
 		}
 		inventory.append(QJsonObject{{"path", file.mediaFilePath}, {"kelpieId", QString::number(file.kelpieId)},
 			{"fileMobId", file.fileMobId}, {"masterMobId", file.masterMobId},
-			{"codec", file.compression}, {"bitDepth", file.bitDepth}, {"sampleFormat", file.sampleFormat},
+			{"codec", file.compression}, {"bitDepth", file.bitDepth},
 			{"omfScan", file.omfEra}, {"headerOutcome", int(file.metadataStatus.headerOutcome)},
 			{"selectedCsv", MediaCsv::rowLine(file, {true})}, {"fieldStatuses", statuses}});
 	}
@@ -565,7 +565,6 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 	QVERIFY(!mf.compression.isEmpty());
 	QVERIFY(mf.sampleRate > 0);
-	QVERIFY(mf.channels > 0);
 
 	// Audio rows leave Resolution and Frame Rate blank — those columns are video
 	// facts. (An early prototype filled them with an em-dash and the sample
@@ -1894,7 +1893,6 @@ void TestScanner::database_described_row_survives_unreadable_header()
 	QCOMPARE(mf.type, MediaFile::Type::Media);
 	QCOMPARE(mf.compression, QString::fromLatin1(kPcmAudioName));
 	QCOMPARE(mf.sampleRate, 48000);
-	QVERIFY(mf.channels > 0);
 	QVERIFY(mf.duration.displayFrames() > 0);
 	QVERIFY(mf.timecodeBase > 0);
 	QVERIFY(!mf.bitDepth.isEmpty());
@@ -2014,7 +2012,6 @@ void TestScanner::database_coverage_is_independent_of_unproven_pmr_time()
 	QCOMPARE(differentTime.first().kind, MediaFile::Kind::Audio);
 	QCOMPARE(normal.first().compression, differentTime.first().compression);
 	QCOMPARE(normal.first().sampleRate, differentTime.first().sampleRate);
-	QCOMPARE(normal.first().channels, differentTime.first().channels);
 	QCOMPARE(normal.first().bitDepth, differentTime.first().bitDepth);
 	QCOMPARE(normal.first().duration.displayFrames(), differentTime.first().duration.displayFrames());
 	QCOMPARE(normal.first().timecodeBase, differentTime.first().timecodeBase);
@@ -2218,8 +2215,6 @@ void TestScanner::reused_filename_clears_old_editorial_details()
 	QCOMPARE(mf.project, header.project);
 	QVERIFY(mf.originalBin.isEmpty()); // the obsolete tone's MDB bin must not survive
 	QCOMPARE(mf.sourceFilePath, header.sourceFilePath);
-	QCOMPARE(mf.sourceContainer, header.sourceContainer);
-	QCOMPARE(mf.isImported, header.isImported);
 	QCOMPARE(mf.kind, MediaFile::Kind::Video);
 	QCOMPARE(mf.type, MediaFile::Type::Precompute);
 	QCOMPARE(mf.precomputeCategory, header.precomputeCategory);
@@ -2693,7 +2688,7 @@ namespace
 		QVERIFY(mf.omfEra);
 		QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 		QCOMPARE(mf.type, MediaFile::Type::Media);
-		// Compression describes the recorded essence. The OMF/RIFF/AIFF container stays separate.
+		// Compression describes the recorded essence.
 		QCOMPARE(mf.compression, QStringLiteral("PCM"));
 		QCOMPARE(mf.clipName, clip);
 		QCOMPARE(mf.project, kOmfProject);
@@ -2705,7 +2700,6 @@ namespace
 		QVERIFY(!mf.isInvalidUmid);
 		QVERIFY(!mf.hasNoProject());
 		QCOMPARE(mf.sampleRate, 48000);
-		QCOMPARE(mf.channels, 1);
 		QCOMPARE(mf.bitDepth, QStringLiteral("24-bit"));
 		QCOMPARE(mf.duration.displayFrames(), qint64(1500));
 		QCOMPARE(mf.timecodeBase, 25);
@@ -3492,14 +3486,12 @@ void TestScanner::incomplete_omf_identity_clears_unrelated_stale_database_metada
 	QVERIFY(row.project.isEmpty());
 	QVERIFY(row.originalBin.isEmpty());
 	QVERIFY(row.sourceFilePath.isEmpty());
-	QVERIFY(row.sourceContainer.isEmpty());
 	QVERIFY(!hasDatabaseEvidence(row));
 	QCOMPARE(row.type, MediaFile::Type::Unknown);
 	QCOMPARE(row.kind, MediaFile::Kind::Audio); // The explicitly linked WAVD class establishes audio, independently of missing technical fields.
 	QVERIFY(row.compression.isEmpty());
 	QVERIFY(row.bitDepth.isEmpty());
 	QCOMPARE(row.sampleRate, 0);
-	QCOMPARE(row.channels, 0);
 	QCOMPARE(row.duration.displayFrames(), qint64(0));
 	QCOMPARE(row.timecodeBase, 0);
 }
@@ -3596,7 +3588,6 @@ void TestScanner::omf_database_metadata_survives_source_path_fallback()
 		checkDatabaseSourcePathAcquisition(row, databasePathAvailable, MediaHeaderReadOutcome::Unsupported);
 		QCOMPARE(row.clipNameSource, MediaFile::ClipNameSource::Mdb);
 		QCOMPARE(row.sampleRate, 48000);
-		QCOMPARE(row.channels, 1);
 		QVERIFY(row.omfEra);
 	}
 }

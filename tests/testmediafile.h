@@ -62,14 +62,10 @@ namespace TestMediaFile
 			if (sampleRate.valid())
 				add(MediaProperty::SampleRate, MediaEngine::rateValue(sampleRate), header);
 			add(MediaProperty::BitDepth, file.bitDepth, header);
-			add(MediaProperty::SampleFormat, file.sampleFormat, header);
-			add(MediaProperty::Channels, file.channels, header);
 			add(MediaProperty::DropFrame, file.dropFrame, header);
 			if (file.duration.known())
 				add(MediaProperty::FileDuration, MediaEngine::durationValue(file.duration), header);
 			add(MediaProperty::SourcePath, file.sourceFilePath, header);
-			add(MediaProperty::SourceContainer, file.sourceContainer, header);
-			add(MediaProperty::Imported, file.isImported, header);
 			add(MediaProperty::DatabaseStatus, int(file.dbStatus), filesystem);
 			MediaEngine::selectMetadata(evidence);
 			applyResolvedMetadata(file, evidence);
