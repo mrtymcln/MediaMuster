@@ -1,0 +1,2894 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUtc": "2026-10-17T21:55:41.008500+00:00",
+  "purpose": "Repeat the exact-content pre-Copland local app workflow with original and current code; separately validate native matching-bin export/rescan. No product implementation changes.",
+  "build": {
+    "baselineCommit": "3e7246a575f5b0247efbe007f271070cb597d306",
+    "currentCommit": "b60453f50eb9271cc47b89d484a7f25db336d22e",
+    "configuration": "Release arm64; C++17; Qt6.5.3; macOS deployment11.0",
+    "compiler": "Apple clang version 17.0.0 (clang-1700.0.13.5)\nTarget: arm64-apple-darwin24.6.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n",
+    "currentBuildCommand": [
+      "cmake",
+      "--build",
+      "build-mediaengine-release",
+      "--parallel",
+      "4"
+    ],
+    "currentBuildExitCode": 0,
+    "baselineBuild": {
+      "status": "built; not launched",
+      "revision": "3e7246a575f5b0247efbe007f271070cb597d306",
+      "baselineExecutable": "/private/tmp/copland-local-comparison-20261018/baseline-probe",
+      "buildExitCode": 0,
+      "probeCompileExitCode": 0,
+      "probeSourceMatchesEmbeddedReceipt": true,
+      "appTargetObjectCountExcludingMain": 38,
+      "compiler": "Apple clang version 17.0.0 (clang-1700.0.13.5)\nTarget: arm64-apple-darwin24.6.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n",
+      "artifacts": [
+        {
+          "path": "/private/tmp/copland-local-comparison-20261018/original-probe.cpp",
+          "bytes": 7689,
+          "sha256": "8feab694f6c431937b06f381ff91e231a34f4f2cf79d3cf13f3436ee6b8d01c3"
+        },
+        {
+          "path": "/private/tmp/copland-local-comparison-20261018/baseline-probe",
+          "bytes": 4916768,
+          "sha256": "d5363292b2e4def585f3755562ad9337e1ca213c35f591f1bbe1f93c81d16f19"
+        },
+        {
+          "path": "/private/tmp/copland-local-comparison-20261018/baseline-source.tar",
+          "bytes": 5089280,
+          "sha256": "1291e8425494eb4ea8ef424f07765e4378c21670e30b432e71d8a6066d80d094"
+        },
+        {
+          "path": "/private/tmp/copland-local-comparison-20261018/baseline-commands.json",
+          "bytes": 1617,
+          "sha256": "ea7a0af8aa7a1fafab03f3f69490e004c7360896260b90378325c1cdc1842ee6"
+        },
+        {
+          "path": "/private/tmp/copland-local-comparison-20261018/baseline-target-link-command.txt",
+          "bytes": 2871,
+          "sha256": "e69d8a9cdad8232c9bf896e991eb4b098ae77b48843ef4fe4c5e1281f59d0f34"
+        },
+        {
+          "path": "/private/tmp/copland-local-comparison-20261018/baseline-probe-compile-command.json",
+          "bytes": 6166,
+          "sha256": "e220716766a62c47a196d49888e436939675c3f74d1e1678376034c184de0205"
+        },
+        {
+          "path": "/private/tmp/copland-local-comparison-20261018/baseline-configure.log",
+          "bytes": 288,
+          "sha256": "094d7a613aee83d88c6e409e10a1a548e3c831292888f8288f0676843f7fd8e4"
+        },
+        {
+          "path": "/private/tmp/copland-local-comparison-20261018/baseline-build.log",
+          "bytes": 7117,
+          "sha256": "339fdacbb060195044b28bb7b879e5a3412d953d2bd9bb02601c245134eedee8"
+        },
+        {
+          "path": "/private/tmp/copland-local-comparison-20261018/baseline-probe-compile.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "limitations": [
+        "Original source rebuilt on the current Mac/compiler/OS; it is not the missing original binary.",
+        "No tests or measurements launched by this preparation task.",
+        "Scratch app is intentionally unsigned; probe uses the same saved framework/link configuration.",
+        "Old harness protocol retains a frozen row and one zero-match group bin; native UI, disk logging, save dialogs and representative scale are outside its scope.",
+        "Initial configure attempts failed for omitted Qt prefix then sandboxed ARM feature detection; both logs are preserved."
+      ]
+    },
+    "baselineBuildCommands": {
+      "revision": "3e7246a575f5b0247efbe007f271070cb597d306",
+      "archive": [
+        "git",
+        "archive",
+        "--format=tar",
+        "3e7246a575f5b0247efbe007f271070cb597d306",
+        "CMakeLists.txt",
+        "src",
+        "res"
+      ],
+      "configure": [
+        "cmake",
+        "-S",
+        "/private/tmp/copland-local-comparison-20261018/baseline-source",
+        "-B",
+        "/private/tmp/copland-local-comparison-20261018/baseline-build",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_OSX_ARCHITECTURES=arm64",
+        "-DMEDIAMUSTER_BUILD_TESTS=OFF",
+        "-DQt6_DIR=/Users/martymclean/Qt/6.5.3/macos/lib/cmake/Qt6",
+        "-DMEDIAMUSTER_CODESIGN_IDENTITY=Copland comparison unsigned scratch",
+        "-DCMAKE_PREFIX_PATH=/Users/martymclean/Qt/6.5.3/macos"
+      ],
+      "build": [
+        "cmake",
+        "--build",
+        "/private/tmp/copland-local-comparison-20261018/baseline-build",
+        "--target",
+        "MediaMuster",
+        "--parallel",
+        "4"
+      ],
+      "originalProbeSha256": "8feab694f6c431937b06f381ff91e231a34f4f2cf79d3cf13f3436ee6b8d01c3",
+      "embeddedProbeSha256": "8feab694f6c431937b06f381ff91e231a34f4f2cf79d3cf13f3436ee6b8d01c3",
+      "configureAttempts": [
+        [
+          "cmake",
+          "-S",
+          "/private/tmp/copland-local-comparison-20261018/baseline-source",
+          "-B",
+          "/private/tmp/copland-local-comparison-20261018/baseline-build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DCMAKE_OSX_ARCHITECTURES=arm64",
+          "-DMEDIAMUSTER_BUILD_TESTS=OFF",
+          "-DQt6_DIR=/Users/martymclean/Qt/6.5.3/macos/lib/cmake/Qt6",
+          "-DMEDIAMUSTER_CODESIGN_IDENTITY=Copland comparison unsigned scratch"
+        ]
+      ]
+    },
+    "currentProbeCompileCommand": [
+      "/usr/bin/clang++",
+      "-O3",
+      "-DNDEBUG",
+      "-std=c++17",
+      "-arch",
+      "arm64",
+      "-mmacosx-version-min=11.0",
+      "-I/Users/martymclean/Developer/MediaMuster/src",
+      "-I/Users/martymclean/Developer/MediaMuster/build-mediaengine-release",
+      "-F/Users/martymclean/Qt/6.5.3/macos/lib",
+      "-isystem",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers",
+      "-isystem",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtGui.framework/Headers",
+      "-isystem",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtWidgets.framework/Headers",
+      "-isystem",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtConcurrent.framework/Headers",
+      "/private/tmp/copland-local-comparison-20261018/current-probe.cpp",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/MediaMuster_autogen/mocs_compilation.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/mainwindow.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/fileoperationcontroller.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/unfinishedbusinessdialog.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/aboutdialog.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/diagnostics.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/mediafilterproxy.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/mediatablemodel.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/revealinfinder.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/volumelistwidget.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/volumemanager.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/mediascanner.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/mediaengineadapter.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/effectcatalogue.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/mediacsv.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/volumeidentity.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/nativefile.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/opfile.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/optrash.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/opjournal.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/opcopier.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/oprunner.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/operationplan.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/opscanreceipt.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/opmanager.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/operationrecovery.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/avbbinloader.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/avbfilterdialog.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/precomputefilterdialog.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/managemediadialog.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/progressdialog.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/rebalancer.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/rebalanceplanner.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/rebalancedialog.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/optrash_mac.mm.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/MediaMuster_autogen/UVLADIE3JM/qrc_resources.cpp.o",
+      "-Wl,-rpath,@executable_path/../Frameworks",
+      "-Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/libmediamuster_mediaengine.a",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtWidgets.framework/Versions/A/QtWidgets",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtGui.framework/Versions/A/QtGui",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtConcurrent.framework/Versions/A/QtConcurrent",
+      "-framework",
+      "Foundation",
+      "-framework",
+      "AppKit",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/libmediamuster_mediaengine_core.a",
+      "-framework",
+      "OpenGL",
+      "-framework",
+      "ImageIO",
+      "-framework",
+      "Metal",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Versions/A/QtCore",
+      "-framework",
+      "IOKit",
+      "-framework",
+      "DiskArbitration",
+      "-o",
+      "/private/tmp/copland-local-comparison-20261018/current-probe"
+    ],
+    "baselineProbeCompileCommand": [
+      "/usr/bin/clang++",
+      "-O3",
+      "-DNDEBUG",
+      "-std=c++17",
+      "-arch",
+      "arm64",
+      "-mmacosx-version-min=11.0",
+      "-I/private/tmp/copland-local-comparison-20261018/baseline-source/src",
+      "-I/private/tmp/copland-local-comparison-20261018/baseline-build",
+      "-F/Users/martymclean/Qt/6.5.3/macos/lib",
+      "-isystem",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers",
+      "-isystem",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtGui.framework/Headers",
+      "-isystem",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtWidgets.framework/Headers",
+      "-isystem",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtConcurrent.framework/Headers",
+      "/private/tmp/copland-local-comparison-20261018/original-probe.cpp",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/MediaMuster_autogen/mocs_compilation.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/mainwindow.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/fileoperationcontroller.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/unfinishedbusinessdialog.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/aboutdialog.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/diagnostics.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/mediafilterproxy.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/mediatablemodel.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/avbmetadataresolver.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/revealinfinder.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/volumelistwidget.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/volumemanager.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/mediascanner.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/mediaengineadapter.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/mediametadata.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/effectcatalogue.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/mediacsv.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/volumeidentity.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/nativefile.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/opfile.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/optrash.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/opjournal.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/opcopier.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/oprunner.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/operationplan.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/opscanreceipt.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/opmanager.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/operationrecovery.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/avbbinloader.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/avbfilterdialog.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/precomputefilterdialog.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/managemediadialog.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/progressdialog.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/rebalancer.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/rebalanceplanner.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/rebalancedialog.cpp.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/src/optrash_mac.mm.o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/CMakeFiles/MediaMuster.dir/MediaMuster_autogen/UVLADIE3JM/qrc_resources.cpp.o",
+      "-Wl,-rpath,@executable_path/../Frameworks",
+      "-Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/libmediamuster_mediaengine.a",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtWidgets.framework/Versions/A/QtWidgets",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtGui.framework/Versions/A/QtGui",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtConcurrent.framework/Versions/A/QtConcurrent",
+      "-framework",
+      "Foundation",
+      "-framework",
+      "AppKit",
+      "/private/tmp/copland-local-comparison-20261018/baseline-build/libmediamuster_mediaengine_core.a",
+      "-framework",
+      "OpenGL",
+      "-framework",
+      "ImageIO",
+      "-framework",
+      "Metal",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Versions/A/QtCore",
+      "-framework",
+      "IOKit",
+      "-framework",
+      "DiskArbitration",
+      "-o",
+      "/private/tmp/copland-local-comparison-20261018/baseline-probe"
+    ],
+    "nativeProbeCompileCommand": [
+      "/usr/bin/clang++",
+      "-O3",
+      "-DNDEBUG",
+      "-std=c++17",
+      "-arch",
+      "arm64",
+      "-mmacosx-version-min=11.0",
+      "-I/Users/martymclean/Developer/MediaMuster/src",
+      "-I/Users/martymclean/Developer/MediaMuster/build-mediaengine-release",
+      "-F/Users/martymclean/Qt/6.5.3/macos/lib",
+      "-isystem",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers",
+      "-isystem",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtGui.framework/Headers",
+      "-isystem",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtWidgets.framework/Headers",
+      "-isystem",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtConcurrent.framework/Headers",
+      "/private/tmp/copland-local-comparison-20261018/native-workflow-probe.cpp",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/MediaMuster_autogen/mocs_compilation.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/mainwindow.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/fileoperationcontroller.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/unfinishedbusinessdialog.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/aboutdialog.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/diagnostics.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/mediafilterproxy.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/mediatablemodel.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/revealinfinder.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/volumelistwidget.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/volumemanager.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/mediascanner.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/mediaengineadapter.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/effectcatalogue.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/mediacsv.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/volumeidentity.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/nativefile.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/opfile.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/optrash.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/opjournal.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/opcopier.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/oprunner.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/operationplan.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/opscanreceipt.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/opmanager.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/operationrecovery.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/avbbinloader.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/avbfilterdialog.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/precomputefilterdialog.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/managemediadialog.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/progressdialog.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/rebalancer.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/rebalanceplanner.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/rebalancedialog.cpp.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/src/optrash_mac.mm.o",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/CMakeFiles/MediaMuster.dir/MediaMuster_autogen/UVLADIE3JM/qrc_resources.cpp.o",
+      "-Wl,-rpath,@executable_path/../Frameworks",
+      "-Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/libmediamuster_mediaengine.a",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtWidgets.framework/Versions/A/QtWidgets",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtGui.framework/Versions/A/QtGui",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtConcurrent.framework/Versions/A/QtConcurrent",
+      "-framework",
+      "Foundation",
+      "-framework",
+      "AppKit",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/libmediamuster_mediaengine_core.a",
+      "-framework",
+      "OpenGL",
+      "-framework",
+      "ImageIO",
+      "-framework",
+      "Metal",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Versions/A/QtCore",
+      "-framework",
+      "IOKit",
+      "-framework",
+      "DiskArbitration",
+      "-o",
+      "/private/tmp/copland-local-comparison-20261018/native-workflow-probe"
+    ]
+  },
+  "hardware": {
+    "cpu": "Apple M1 Max",
+    "model": "MacBookPro18,4",
+    "ramBytes": 68719476736,
+    "os": "macOS 15.8.2",
+    "priorOs": "macOS 15.8.1",
+    "storage": "Local copied complete media on this Mac, not NEXIS",
+    "background": "Normal desktop services; Avid Search Java services running; Media Composer editor and separate MediaMuster app absent before measurement."
+  },
+  "workload": {
+    "schemaVersion": 1,
+    "purpose": "Exact-content reconstruction of 12 October 267-file local workload; no original source modified",
+    "mediaCount": 267,
+    "mediaBytes": 1573370667,
+    "databaseFiles": [],
+    "orderedContentManifestSha256": "51e72766cac1d3997e3a4343c53a9b0e95ea46b8d40f6fd41452fe2158f3bf49",
+    "contentManifestMethod": "Sorted UTF-8 compact JSON lines [relative path from Avid MediaFiles, byte size, content SHA256], newline terminated",
+    "baselineBin": {
+      "sourcePath": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/8645 v1.avb",
+      "destinationPath": "/private/tmp/copland-local-comparison-20261018/workload/8645 v1.avb",
+      "sizeBytes": 6913702,
+      "sourceMtimeNs": 1778748844000000000,
+      "destinationMtimeNs": 1778748844000000000,
+      "sha256": "45ec3861e9f471f7e1a67757bd7605befd782192a7cb8a5da493e3d6a86a62c8"
+    }
+  },
+  "postRunInputChecks": {
+    "changedCopiedMedia": [],
+    "contentManifestSha256": "51e72766cac1d3997e3a4343c53a9b0e95ea46b8d40f6fd41452fe2158f3bf49",
+    "matchesHistorical": true,
+    "originalSourceStampsChanged": [],
+    "copiedStampsChangedAfterNativeWorkflow": []
+  },
+  "method": {
+    "freshProcessPairs": 3,
+    "order": [
+      [
+        "baseline",
+        "current"
+      ],
+      [
+        "current",
+        "baseline"
+      ],
+      [
+        "baseline",
+        "current"
+      ]
+    ],
+    "environment": {
+      "QT_QPA_PLATFORM": "offscreen",
+      "QT_HASH_SEED": "0"
+    },
+    "scope": "Original MainWindow UiOnly app-module lifecycle with real production scan/model/proxy/counts and synchronous offscreen paint; original CSV-before-bin order retained. Native bin-before-export workflow separate.",
+    "cache": "Warm/uncontrolled OS caches. No concurrent builds/tests/specimen hashing during timed trials.",
+    "memoryCounters": {
+      "physical": "proc_pid_rusage self/RUSAGE_INFO_V4 ri_phys_footprint and ri_lifetime_max_phys_footprint",
+      "resident": "ri_resident_size and getrusage self ru_maxrss; macOS byte units",
+      "peak": "Lifetime counters are cumulative across the process. Whole-lifecycle peak includes bin loading/export/rescan. Physical footprint and resident bytes are distinct counters."
+    },
+    "historicalBaselineReceipt": "Project Copland/evidence/local-app-verification-2026-10-12.json",
+    "originalProbeSourceMatchesHistorical": true,
+    "commands": [
+      {
+        "pair": 1,
+        "generation": "baseline",
+        "command": [
+          "/private/tmp/copland-local-comparison-20261018/baseline-probe",
+          "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles",
+          "/private/tmp/copland-local-comparison-20261018/workload/8645 v1.avb",
+          "/private/tmp/copland-local-comparison-20261018/baseline-run-1.json"
+        ],
+        "exitCode": 0,
+        "wallSeconds": 10.460068209002202,
+        "output": "/private/tmp/copland-local-comparison-20261018/baseline-run-1.json"
+      },
+      {
+        "pair": 1,
+        "generation": "current",
+        "command": [
+          "/private/tmp/copland-local-comparison-20261018/current-probe",
+          "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles",
+          "/private/tmp/copland-local-comparison-20261018/workload/8645 v1.avb",
+          "/private/tmp/copland-local-comparison-20261018/current-run-1.json"
+        ],
+        "exitCode": 0,
+        "wallSeconds": 10.660021625000809,
+        "output": "/private/tmp/copland-local-comparison-20261018/current-run-1.json"
+      },
+      {
+        "pair": 2,
+        "generation": "current",
+        "command": [
+          "/private/tmp/copland-local-comparison-20261018/current-probe",
+          "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles",
+          "/private/tmp/copland-local-comparison-20261018/workload/8645 v1.avb",
+          "/private/tmp/copland-local-comparison-20261018/current-run-2.json"
+        ],
+        "exitCode": 0,
+        "wallSeconds": 10.363944749995426,
+        "output": "/private/tmp/copland-local-comparison-20261018/current-run-2.json"
+      },
+      {
+        "pair": 2,
+        "generation": "baseline",
+        "command": [
+          "/private/tmp/copland-local-comparison-20261018/baseline-probe",
+          "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles",
+          "/private/tmp/copland-local-comparison-20261018/workload/8645 v1.avb",
+          "/private/tmp/copland-local-comparison-20261018/baseline-run-2.json"
+        ],
+        "exitCode": 0,
+        "wallSeconds": 10.413313083001412,
+        "output": "/private/tmp/copland-local-comparison-20261018/baseline-run-2.json"
+      },
+      {
+        "pair": 3,
+        "generation": "baseline",
+        "command": [
+          "/private/tmp/copland-local-comparison-20261018/baseline-probe",
+          "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles",
+          "/private/tmp/copland-local-comparison-20261018/workload/8645 v1.avb",
+          "/private/tmp/copland-local-comparison-20261018/baseline-run-3.json"
+        ],
+        "exitCode": 0,
+        "wallSeconds": 10.426396291004494,
+        "output": "/private/tmp/copland-local-comparison-20261018/baseline-run-3.json"
+      },
+      {
+        "pair": 3,
+        "generation": "current",
+        "command": [
+          "/private/tmp/copland-local-comparison-20261018/current-probe",
+          "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles",
+          "/private/tmp/copland-local-comparison-20261018/workload/8645 v1.avb",
+          "/private/tmp/copland-local-comparison-20261018/current-run-3.json"
+        ],
+        "exitCode": 0,
+        "wallSeconds": 10.299077708994446,
+        "output": "/private/tmp/copland-local-comparison-20261018/current-run-3.json"
+      }
+    ],
+    "binTimingBoundary": "Current loader destroys temporary graph before return; old loader retains it until later untimed clear/release. Bin-ready delay is comparable user-visible wait, not whole-bin-lifecycle speed.",
+    "sandbox": "An initial sandbox launch failed Qt ARM neon detection. No result from that attempt enters the accepted measurements; accepted runs use unsandboxed local access."
+  },
+  "metrics": [
+    {
+      "measurement": "First scan through offscreen paint",
+      "stage": "scan-1-through-offscreen-paint",
+      "counter": "elapsedMs",
+      "historicalMedian": 4791,
+      "oldCodeRerunMedian": 4731,
+      "currentMedian": 4692,
+      "changePercentVsOldCodeRerun": -0.8243500317057673
+    },
+    {
+      "measurement": "Rescan through offscreen paint",
+      "stage": "rescan-through-offscreen-paint",
+      "counter": "elapsedMs",
+      "historicalMedian": 4883,
+      "oldCodeRerunMedian": 4830,
+      "currentMedian": 4767,
+      "changePercentVsOldCodeRerun": -1.30434782608696
+    },
+    {
+      "measurement": "Large bin ready",
+      "stage": "bin-load-model-apply-filter-paint",
+      "counter": "elapsedMs",
+      "historicalMedian": 448,
+      "oldCodeRerunMedian": 448,
+      "currentMedian": 615,
+      "changePercentVsOldCodeRerun": 37.27678571428572
+    },
+    {
+      "measurement": "Peak through first table",
+      "stage": "scan-1-through-offscreen-paint",
+      "counter": "lifetimePeakPhysicalFootprintBytes",
+      "historicalMedian": 53905664,
+      "oldCodeRerunMedian": 51529728,
+      "currentMedian": 51316800,
+      "changePercentVsOldCodeRerun": -0.4132139024681014
+    },
+    {
+      "measurement": "Memory with bin loaded",
+      "stage": "bin-load-model-apply-filter-paint",
+      "counter": "physicalFootprintBytes",
+      "historicalMedian": 682151104,
+      "oldCodeRerunMedian": 678317120,
+      "currentMedian": 104073856,
+      "changePercentVsOldCodeRerun": -84.65705008300543
+    },
+    {
+      "measurement": "Peak complete lifecycle",
+      "stage": "table-cleared",
+      "counter": "lifetimePeakPhysicalFootprintBytes",
+      "historicalMedian": 682151104,
+      "oldCodeRerunMedian": 678317120,
+      "currentMedian": 670665728,
+      "changePercentVsOldCodeRerun": -1.1279962976608937
+    }
+  ],
+  "metricsByStage": {
+    "baseline": {
+      "stages": {
+        "process-start": {
+          "elapsedMs": {
+            "values": [
+              0,
+              0,
+              0
+            ],
+            "median": 0
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              3949632,
+              3916736,
+              3900544
+            ],
+            "median": 3916736
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              4064320,
+              4031424,
+              3998848
+            ],
+            "median": 4031424
+          },
+          "residentBytes": {
+            "values": [
+              12058624,
+              12058624,
+              11993088
+            ],
+            "median": 12058624
+          },
+          "peakResidentBytes": {
+            "values": [
+              12058624,
+              12058624,
+              11993088
+            ],
+            "median": 12058624
+          }
+        },
+        "window-initialised": {
+          "elapsedMs": {
+            "values": [
+              0,
+              0,
+              0
+            ],
+            "median": 0
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              16074624,
+              16123648,
+              16500544
+            ],
+            "median": 16123648
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              19679104,
+              19728128,
+              20105024
+            ],
+            "median": 19728128
+          },
+          "residentBytes": {
+            "values": [
+              45875200,
+              45957120,
+              46317568
+            ],
+            "median": 45957120
+          },
+          "peakResidentBytes": {
+            "values": [
+              45875200,
+              45957120,
+              46317568
+            ],
+            "median": 45957120
+          }
+        },
+        "scan-1-through-offscreen-paint": {
+          "elapsedMs": {
+            "values": [
+              4727,
+              4731,
+              4742
+            ],
+            "median": 4731
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              50841664,
+              52348864,
+              51529728
+            ],
+            "median": 51529728
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              50841664,
+              52348864,
+              51529728
+            ],
+            "median": 51529728
+          },
+          "residentBytes": {
+            "values": [
+              88539136,
+              92258304,
+              91734016
+            ],
+            "median": 91734016
+          },
+          "peakResidentBytes": {
+            "values": [
+              88539136,
+              92258304,
+              91734016
+            ],
+            "median": 91734016
+          }
+        },
+        "sort-size": {
+          "elapsedMs": {
+            "values": [
+              10,
+              11,
+              11
+            ],
+            "median": 11
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              47269952,
+              48777152,
+              46991360
+            ],
+            "median": 47269952
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              50874432,
+              52381632,
+              51529728
+            ],
+            "median": 51529728
+          },
+          "residentBytes": {
+            "values": [
+              92225536,
+              95944704,
+              95387648
+            ],
+            "median": 95387648
+          },
+          "peakResidentBytes": {
+            "values": [
+              92225536,
+              95944704,
+              95387648
+            ],
+            "median": 95387648
+          }
+        },
+        "search-audio": {
+          "elapsedMs": {
+            "values": [
+              4,
+              4,
+              4
+            ],
+            "median": 4
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              47286336,
+              48777152,
+              46991360
+            ],
+            "median": 47286336
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              50890816,
+              52381632,
+              51529728
+            ],
+            "median": 51529728
+          },
+          "residentBytes": {
+            "values": [
+              95846400,
+              99549184,
+              98992128
+            ],
+            "median": 98992128
+          },
+          "peakResidentBytes": {
+            "values": [
+              95846400,
+              99549184,
+              98992128
+            ],
+            "median": 98992128
+          }
+        },
+        "csv-visible-frozen-rows": {
+          "elapsedMs": {
+            "values": [
+              3,
+              2,
+              2
+            ],
+            "median": 2
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              47302720,
+              48777152,
+              46991360
+            ],
+            "median": 47302720
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              50890816,
+              52381632,
+              51529728
+            ],
+            "median": 51529728
+          },
+          "residentBytes": {
+            "values": [
+              95879168,
+              99565568,
+              99008512
+            ],
+            "median": 99008512
+          },
+          "peakResidentBytes": {
+            "values": [
+              95879168,
+              99565568,
+              99008512
+            ],
+            "median": 99008512
+          }
+        },
+        "bin-load-model-apply-filter-paint": {
+          "elapsedMs": {
+            "values": [
+              448,
+              451,
+              448
+            ],
+            "median": 448
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              678317120,
+              677104768,
+              679349312
+            ],
+            "median": 678317120
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              678317120,
+              677104768,
+              679349312
+            ],
+            "median": 678317120
+          },
+          "residentBytes": {
+            "values": [
+              759496704,
+              763035648,
+              761102336
+            ],
+            "median": 761102336
+          },
+          "peakResidentBytes": {
+            "values": [
+              759496704,
+              763035648,
+              761102336
+            ],
+            "median": 761102336
+          }
+        },
+        "bin-references-released": {
+          "elapsedMs": {
+            "values": [
+              0,
+              0,
+              0
+            ],
+            "median": 0
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              121801152,
+              112446080,
+              111971008
+            ],
+            "median": 112446080
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              678317120,
+              677104768,
+              679349312
+            ],
+            "median": 678317120
+          },
+          "residentBytes": {
+            "values": [
+              288423936,
+              310935552,
+              305233920
+            ],
+            "median": 305233920
+          },
+          "peakResidentBytes": {
+            "values": [
+              759513088,
+              763052032,
+              761118720
+            ],
+            "median": 761118720
+          }
+        },
+        "rescan-through-offscreen-paint": {
+          "elapsedMs": {
+            "values": [
+              4882,
+              4828,
+              4830
+            ],
+            "median": 4830
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              120048064,
+              113642048,
+              109447680
+            ],
+            "median": 113642048
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              678317120,
+              677104768,
+              679349312
+            ],
+            "median": 678317120
+          },
+          "residentBytes": {
+            "values": [
+              282066944,
+              289112064,
+              270860288
+            ],
+            "median": 282066944
+          },
+          "peakResidentBytes": {
+            "values": [
+              759513088,
+              763052032,
+              761118720
+            ],
+            "median": 761118720
+          }
+        },
+        "snapshot-released": {
+          "elapsedMs": {
+            "values": [
+              0,
+              0,
+              0
+            ],
+            "median": 0
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              113838528,
+              107612736,
+              102730240
+            ],
+            "median": 107612736
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              678317120,
+              677104768,
+              679349312
+            ],
+            "median": 678317120
+          },
+          "residentBytes": {
+            "values": [
+              282066944,
+              289112064,
+              270860288
+            ],
+            "median": 282066944
+          },
+          "peakResidentBytes": {
+            "values": [
+              759513088,
+              763052032,
+              761118720
+            ],
+            "median": 761118720
+          }
+        },
+        "table-cleared": {
+          "elapsedMs": {
+            "values": [
+              0,
+              0,
+              0
+            ],
+            "median": 0
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              111561152,
+              104368704,
+              101239296
+            ],
+            "median": 104368704
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              678317120,
+              677104768,
+              679349312
+            ],
+            "median": 678317120
+          },
+          "residentBytes": {
+            "values": [
+              278921216,
+              283869184,
+              269811712
+            ],
+            "median": 278921216
+          },
+          "peakResidentBytes": {
+            "values": [
+              759513088,
+              763052032,
+              761118720
+            ],
+            "median": 761118720
+          }
+        }
+      }
+    },
+    "current": {
+      "stages": {
+        "process-start": {
+          "elapsedMs": {
+            "values": [
+              0,
+              0,
+              0
+            ],
+            "median": 0
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              3982336,
+              3835008,
+              3867584
+            ],
+            "median": 3867584
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              4097024,
+              3949696,
+              3982272
+            ],
+            "median": 3982272
+          },
+          "residentBytes": {
+            "values": [
+              12091392,
+              11911168,
+              11993088
+            ],
+            "median": 11993088
+          },
+          "peakResidentBytes": {
+            "values": [
+              12091392,
+              11911168,
+              11993088
+            ],
+            "median": 11993088
+          }
+        },
+        "window-initialised": {
+          "elapsedMs": {
+            "values": [
+              0,
+              0,
+              0
+            ],
+            "median": 0
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              16811968,
+              15746880,
+              16320320
+            ],
+            "median": 16320320
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              20416448,
+              19351360,
+              19924800
+            ],
+            "median": 19924800
+          },
+          "residentBytes": {
+            "values": [
+              46579712,
+              45547520,
+              46120960
+            ],
+            "median": 46120960
+          },
+          "peakResidentBytes": {
+            "values": [
+              46579712,
+              45547520,
+              46120960
+            ],
+            "median": 46120960
+          }
+        },
+        "scan-1-through-offscreen-paint": {
+          "elapsedMs": {
+            "values": [
+              4686,
+              4715,
+              4692
+            ],
+            "median": 4692
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              45877312,
+              51611904,
+              51316800
+            ],
+            "median": 51316800
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              45877312,
+              51611904,
+              51316800
+            ],
+            "median": 51316800
+          },
+          "residentBytes": {
+            "values": [
+              85049344,
+              90767360,
+              91701248
+            ],
+            "median": 90767360
+          },
+          "peakResidentBytes": {
+            "values": [
+              85049344,
+              90767360,
+              91701248
+            ],
+            "median": 90767360
+          }
+        },
+        "sort-size": {
+          "elapsedMs": {
+            "values": [
+              12,
+              12,
+              12
+            ],
+            "median": 12
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              42289216,
+              48007424,
+              47712320
+            ],
+            "median": 47712320
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              45893696,
+              51611904,
+              51316800
+            ],
+            "median": 51316800
+          },
+          "residentBytes": {
+            "values": [
+              88702976,
+              90832896,
+              95338496
+            ],
+            "median": 90832896
+          },
+          "peakResidentBytes": {
+            "values": [
+              88702976,
+              90832896,
+              95338496
+            ],
+            "median": 90832896
+          }
+        },
+        "search-audio": {
+          "elapsedMs": {
+            "values": [
+              3,
+              4,
+              3
+            ],
+            "median": 3
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              42289216,
+              48007424,
+              47712320
+            ],
+            "median": 47712320
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              45893696,
+              51611904,
+              51316800
+            ],
+            "median": 51316800
+          },
+          "residentBytes": {
+            "values": [
+              88702976,
+              94437376,
+              95338496
+            ],
+            "median": 94437376
+          },
+          "peakResidentBytes": {
+            "values": [
+              88702976,
+              94437376,
+              95338496
+            ],
+            "median": 94437376
+          }
+        },
+        "csv-visible-frozen-rows": {
+          "elapsedMs": {
+            "values": [
+              2,
+              2,
+              2
+            ],
+            "median": 2
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              42190912,
+              48122112,
+              46876736
+            ],
+            "median": 46876736
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              45893696,
+              51611904,
+              51316800
+            ],
+            "median": 51316800
+          },
+          "residentBytes": {
+            "values": [
+              88719360,
+              94568448,
+              95354880
+            ],
+            "median": 94568448
+          },
+          "peakResidentBytes": {
+            "values": [
+              88719360,
+              94568448,
+              95354880
+            ],
+            "median": 94568448
+          }
+        },
+        "bin-load-model-apply-filter-paint": {
+          "elapsedMs": {
+            "values": [
+              614,
+              625,
+              615
+            ],
+            "median": 615
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              99764736,
+              104073856,
+              105662976
+            ],
+            "median": 104073856
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              663719040,
+              671370432,
+              670665728
+            ],
+            "median": 670665728
+          },
+          "residentBytes": {
+            "values": [
+              254214144,
+              269533184,
+              256442368
+            ],
+            "median": 256442368
+          },
+          "peakResidentBytes": {
+            "values": [
+              736083968,
+              742637568,
+              740229120
+            ],
+            "median": 740229120
+          }
+        },
+        "bin-references-released": {
+          "elapsedMs": {
+            "values": [
+              0,
+              0,
+              0
+            ],
+            "median": 0
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              99060224,
+              103271040,
+              104434176
+            ],
+            "median": 103271040
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              663719040,
+              671370432,
+              670665728
+            ],
+            "median": 670665728
+          },
+          "residentBytes": {
+            "values": [
+              254214144,
+              268746752,
+              255787008
+            ],
+            "median": 255787008
+          },
+          "peakResidentBytes": {
+            "values": [
+              736083968,
+              742637568,
+              740229120
+            ],
+            "median": 740229120
+          }
+        },
+        "rescan-through-offscreen-paint": {
+          "elapsedMs": {
+            "values": [
+              4767,
+              4797,
+              4763
+            ],
+            "median": 4767
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              103271040,
+              105007808,
+              105925184
+            ],
+            "median": 105007808
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              663719040,
+              671370432,
+              670665728
+            ],
+            "median": 670665728
+          },
+          "residentBytes": {
+            "values": [
+              264798208,
+              273072128,
+              259211264
+            ],
+            "median": 264798208
+          },
+          "peakResidentBytes": {
+            "values": [
+              736083968,
+              742637568,
+              740229120
+            ],
+            "median": 740229120
+          }
+        },
+        "snapshot-released": {
+          "elapsedMs": {
+            "values": [
+              0,
+              0,
+              0
+            ],
+            "median": 0
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              103271040,
+              105007808,
+              105925184
+            ],
+            "median": 105007808
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              663719040,
+              671370432,
+              670665728
+            ],
+            "median": 670665728
+          },
+          "residentBytes": {
+            "values": [
+              264798208,
+              273072128,
+              259211264
+            ],
+            "median": 264798208
+          },
+          "peakResidentBytes": {
+            "values": [
+              736083968,
+              742637568,
+              740229120
+            ],
+            "median": 740229120
+          }
+        },
+        "table-cleared": {
+          "elapsedMs": {
+            "values": [
+              0,
+              0,
+              0
+            ],
+            "median": 0
+          },
+          "physicalFootprintBytes": {
+            "values": [
+              102795904,
+              104467072,
+              105433664
+            ],
+            "median": 104467072
+          },
+          "lifetimePeakPhysicalFootprintBytes": {
+            "values": [
+              663719040,
+              671370432,
+              670665728
+            ],
+            "median": 670665728
+          },
+          "residentBytes": {
+            "values": [
+              261652480,
+              269926400,
+              257114112
+            ],
+            "median": 261652480
+          },
+          "peakResidentBytes": {
+            "values": [
+              736083968,
+              742637568,
+              740229120
+            ],
+            "median": 740229120
+          }
+        }
+      }
+    }
+  },
+  "runs": {
+    "baseline": [
+      {
+        "actualScanRoots": [
+          "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles/MXF"
+        ],
+        "binCompositionCount": 2031,
+        "binPath": "/private/tmp/copland-local-comparison-20261018/workload/8645 v1.avb",
+        "binUsable": true,
+        "csvWritten": true,
+        "oneFrozenRowPinsPriorSession": true,
+        "platform": "offscreen",
+        "priorSessionPhysicalRowsWhilePinned": 267,
+        "priorSessionReleasedAfterSnapshotClear": true,
+        "qtVersion": "6.5.3",
+        "root": "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles",
+        "sameRowCountAfterRescan": true,
+        "scanComplete": true,
+        "sourceKindOutcomeCounts": {
+          "3:1": 267
+        },
+        "stages": [
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 4064320,
+            "peakResidentBytes": 12058624,
+            "physicalFootprintBytes": 3949632,
+            "residentBytes": 12058624,
+            "rusageV4Ok": true,
+            "stage": "process-start"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 19679104,
+            "peakResidentBytes": 45875200,
+            "physicalFootprintBytes": 16074624,
+            "residentBytes": 45875200,
+            "rusageV4Ok": true,
+            "stage": "window-initialised"
+          },
+          {
+            "elapsedMs": 4727,
+            "lifetimePeakPhysicalFootprintBytes": 50841664,
+            "peakResidentBytes": 88539136,
+            "physicalFootprintBytes": 50841664,
+            "residentBytes": 88539136,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "scan-1-through-offscreen-paint"
+          },
+          {
+            "elapsedMs": 10,
+            "lifetimePeakPhysicalFootprintBytes": 50874432,
+            "peakResidentBytes": 92225536,
+            "physicalFootprintBytes": 47269952,
+            "residentBytes": 92225536,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "sort-size"
+          },
+          {
+            "elapsedMs": 4,
+            "lifetimePeakPhysicalFootprintBytes": 50890816,
+            "peakResidentBytes": 95846400,
+            "physicalFootprintBytes": 47286336,
+            "residentBytes": 95846400,
+            "rows": 0,
+            "rusageV4Ok": true,
+            "stage": "search-audio"
+          },
+          {
+            "elapsedMs": 3,
+            "lifetimePeakPhysicalFootprintBytes": 50890816,
+            "peakResidentBytes": 95879168,
+            "physicalFootprintBytes": 47302720,
+            "residentBytes": 95879168,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "csv-visible-frozen-rows"
+          },
+          {
+            "elapsedMs": 448,
+            "lifetimePeakPhysicalFootprintBytes": 678317120,
+            "peakResidentBytes": 759496704,
+            "physicalFootprintBytes": 678317120,
+            "residentBytes": 759496704,
+            "rows": 0,
+            "rusageV4Ok": true,
+            "stage": "bin-load-model-apply-filter-paint"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 678317120,
+            "peakResidentBytes": 759513088,
+            "physicalFootprintBytes": 121801152,
+            "residentBytes": 288423936,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "bin-references-released"
+          },
+          {
+            "elapsedMs": 4882,
+            "lifetimePeakPhysicalFootprintBytes": 678317120,
+            "peakResidentBytes": 759513088,
+            "physicalFootprintBytes": 120048064,
+            "residentBytes": 282066944,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "rescan-through-offscreen-paint"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 678317120,
+            "peakResidentBytes": 759513088,
+            "physicalFootprintBytes": 113838528,
+            "residentBytes": 282066944,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "snapshot-released"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 678317120,
+            "peakResidentBytes": 759513088,
+            "physicalFootprintBytes": 111561152,
+            "residentBytes": 278921216,
+            "rusageV4Ok": true,
+            "stage": "table-cleared"
+          }
+        ],
+        "totalPhysicalBytes": 1573370667
+      },
+      {
+        "actualScanRoots": [
+          "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles/MXF"
+        ],
+        "binCompositionCount": 2031,
+        "binPath": "/private/tmp/copland-local-comparison-20261018/workload/8645 v1.avb",
+        "binUsable": true,
+        "csvWritten": true,
+        "oneFrozenRowPinsPriorSession": true,
+        "platform": "offscreen",
+        "priorSessionPhysicalRowsWhilePinned": 267,
+        "priorSessionReleasedAfterSnapshotClear": true,
+        "qtVersion": "6.5.3",
+        "root": "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles",
+        "sameRowCountAfterRescan": true,
+        "scanComplete": true,
+        "sourceKindOutcomeCounts": {
+          "3:1": 267
+        },
+        "stages": [
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 4031424,
+            "peakResidentBytes": 12058624,
+            "physicalFootprintBytes": 3916736,
+            "residentBytes": 12058624,
+            "rusageV4Ok": true,
+            "stage": "process-start"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 19728128,
+            "peakResidentBytes": 45957120,
+            "physicalFootprintBytes": 16123648,
+            "residentBytes": 45957120,
+            "rusageV4Ok": true,
+            "stage": "window-initialised"
+          },
+          {
+            "elapsedMs": 4731,
+            "lifetimePeakPhysicalFootprintBytes": 52348864,
+            "peakResidentBytes": 92258304,
+            "physicalFootprintBytes": 52348864,
+            "residentBytes": 92258304,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "scan-1-through-offscreen-paint"
+          },
+          {
+            "elapsedMs": 11,
+            "lifetimePeakPhysicalFootprintBytes": 52381632,
+            "peakResidentBytes": 95944704,
+            "physicalFootprintBytes": 48777152,
+            "residentBytes": 95944704,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "sort-size"
+          },
+          {
+            "elapsedMs": 4,
+            "lifetimePeakPhysicalFootprintBytes": 52381632,
+            "peakResidentBytes": 99549184,
+            "physicalFootprintBytes": 48777152,
+            "residentBytes": 99549184,
+            "rows": 0,
+            "rusageV4Ok": true,
+            "stage": "search-audio"
+          },
+          {
+            "elapsedMs": 2,
+            "lifetimePeakPhysicalFootprintBytes": 52381632,
+            "peakResidentBytes": 99565568,
+            "physicalFootprintBytes": 48777152,
+            "residentBytes": 99565568,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "csv-visible-frozen-rows"
+          },
+          {
+            "elapsedMs": 451,
+            "lifetimePeakPhysicalFootprintBytes": 677104768,
+            "peakResidentBytes": 763035648,
+            "physicalFootprintBytes": 677104768,
+            "residentBytes": 763035648,
+            "rows": 0,
+            "rusageV4Ok": true,
+            "stage": "bin-load-model-apply-filter-paint"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 677104768,
+            "peakResidentBytes": 763052032,
+            "physicalFootprintBytes": 112446080,
+            "residentBytes": 310935552,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "bin-references-released"
+          },
+          {
+            "elapsedMs": 4828,
+            "lifetimePeakPhysicalFootprintBytes": 677104768,
+            "peakResidentBytes": 763052032,
+            "physicalFootprintBytes": 113642048,
+            "residentBytes": 289112064,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "rescan-through-offscreen-paint"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 677104768,
+            "peakResidentBytes": 763052032,
+            "physicalFootprintBytes": 107612736,
+            "residentBytes": 289112064,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "snapshot-released"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 677104768,
+            "peakResidentBytes": 763052032,
+            "physicalFootprintBytes": 104368704,
+            "residentBytes": 283869184,
+            "rusageV4Ok": true,
+            "stage": "table-cleared"
+          }
+        ],
+        "totalPhysicalBytes": 1573370667
+      },
+      {
+        "actualScanRoots": [
+          "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles/MXF"
+        ],
+        "binCompositionCount": 2031,
+        "binPath": "/private/tmp/copland-local-comparison-20261018/workload/8645 v1.avb",
+        "binUsable": true,
+        "csvWritten": true,
+        "oneFrozenRowPinsPriorSession": true,
+        "platform": "offscreen",
+        "priorSessionPhysicalRowsWhilePinned": 267,
+        "priorSessionReleasedAfterSnapshotClear": true,
+        "qtVersion": "6.5.3",
+        "root": "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles",
+        "sameRowCountAfterRescan": true,
+        "scanComplete": true,
+        "sourceKindOutcomeCounts": {
+          "3:1": 267
+        },
+        "stages": [
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 3998848,
+            "peakResidentBytes": 11993088,
+            "physicalFootprintBytes": 3900544,
+            "residentBytes": 11993088,
+            "rusageV4Ok": true,
+            "stage": "process-start"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 20105024,
+            "peakResidentBytes": 46317568,
+            "physicalFootprintBytes": 16500544,
+            "residentBytes": 46317568,
+            "rusageV4Ok": true,
+            "stage": "window-initialised"
+          },
+          {
+            "elapsedMs": 4742,
+            "lifetimePeakPhysicalFootprintBytes": 51529728,
+            "peakResidentBytes": 91734016,
+            "physicalFootprintBytes": 51529728,
+            "residentBytes": 91734016,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "scan-1-through-offscreen-paint"
+          },
+          {
+            "elapsedMs": 11,
+            "lifetimePeakPhysicalFootprintBytes": 51529728,
+            "peakResidentBytes": 95387648,
+            "physicalFootprintBytes": 46991360,
+            "residentBytes": 95387648,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "sort-size"
+          },
+          {
+            "elapsedMs": 4,
+            "lifetimePeakPhysicalFootprintBytes": 51529728,
+            "peakResidentBytes": 98992128,
+            "physicalFootprintBytes": 46991360,
+            "residentBytes": 98992128,
+            "rows": 0,
+            "rusageV4Ok": true,
+            "stage": "search-audio"
+          },
+          {
+            "elapsedMs": 2,
+            "lifetimePeakPhysicalFootprintBytes": 51529728,
+            "peakResidentBytes": 99008512,
+            "physicalFootprintBytes": 46991360,
+            "residentBytes": 99008512,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "csv-visible-frozen-rows"
+          },
+          {
+            "elapsedMs": 448,
+            "lifetimePeakPhysicalFootprintBytes": 679349312,
+            "peakResidentBytes": 761102336,
+            "physicalFootprintBytes": 679349312,
+            "residentBytes": 761102336,
+            "rows": 0,
+            "rusageV4Ok": true,
+            "stage": "bin-load-model-apply-filter-paint"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 679349312,
+            "peakResidentBytes": 761118720,
+            "physicalFootprintBytes": 111971008,
+            "residentBytes": 305233920,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "bin-references-released"
+          },
+          {
+            "elapsedMs": 4830,
+            "lifetimePeakPhysicalFootprintBytes": 679349312,
+            "peakResidentBytes": 761118720,
+            "physicalFootprintBytes": 109447680,
+            "residentBytes": 270860288,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "rescan-through-offscreen-paint"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 679349312,
+            "peakResidentBytes": 761118720,
+            "physicalFootprintBytes": 102730240,
+            "residentBytes": 270860288,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "snapshot-released"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 679349312,
+            "peakResidentBytes": 761118720,
+            "physicalFootprintBytes": 101239296,
+            "residentBytes": 269811712,
+            "rusageV4Ok": true,
+            "stage": "table-cleared"
+          }
+        ],
+        "totalPhysicalBytes": 1573370667
+      }
+    ],
+    "current": [
+      {
+        "binCoverageComplete": true,
+        "binFullFileIds": 774,
+        "binPath": "/private/tmp/copland-local-comparison-20261018/workload/8645 v1.avb",
+        "binUsable": true,
+        "binWarnings": [],
+        "csvWritten": true,
+        "frozenRowStillUsable": true,
+        "headerOutcomeCounts": {
+          "2": 267
+        },
+        "platform": "offscreen",
+        "qtVersion": "6.5.3",
+        "root": "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles",
+        "rowsWithOperationReceipt": 267,
+        "sameRowCountAfterRescan": true,
+        "scanOwnershipCheck": "No scan/session owner in compact rows; weak-pointer comparison is inapplicable.",
+        "stages": [
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 4097024,
+            "peakResidentBytes": 12091392,
+            "physicalFootprintBytes": 3982336,
+            "residentBytes": 12091392,
+            "rusageV4Ok": true,
+            "stage": "process-start"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 20416448,
+            "peakResidentBytes": 46579712,
+            "physicalFootprintBytes": 16811968,
+            "residentBytes": 46579712,
+            "rusageV4Ok": true,
+            "stage": "window-initialised"
+          },
+          {
+            "elapsedMs": 4686,
+            "lifetimePeakPhysicalFootprintBytes": 45877312,
+            "peakResidentBytes": 85049344,
+            "physicalFootprintBytes": 45877312,
+            "residentBytes": 85049344,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "scan-1-through-offscreen-paint"
+          },
+          {
+            "elapsedMs": 12,
+            "lifetimePeakPhysicalFootprintBytes": 45893696,
+            "peakResidentBytes": 88702976,
+            "physicalFootprintBytes": 42289216,
+            "residentBytes": 88702976,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "sort-size"
+          },
+          {
+            "elapsedMs": 3,
+            "lifetimePeakPhysicalFootprintBytes": 45893696,
+            "peakResidentBytes": 88702976,
+            "physicalFootprintBytes": 42289216,
+            "residentBytes": 88702976,
+            "rows": 0,
+            "rusageV4Ok": true,
+            "stage": "search-audio"
+          },
+          {
+            "elapsedMs": 2,
+            "lifetimePeakPhysicalFootprintBytes": 45893696,
+            "peakResidentBytes": 88719360,
+            "physicalFootprintBytes": 42190912,
+            "residentBytes": 88719360,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "csv-visible-frozen-rows"
+          },
+          {
+            "elapsedMs": 614,
+            "lifetimePeakPhysicalFootprintBytes": 663719040,
+            "peakResidentBytes": 736083968,
+            "physicalFootprintBytes": 99764736,
+            "residentBytes": 254214144,
+            "rows": 0,
+            "rusageV4Ok": true,
+            "stage": "bin-load-model-apply-filter-paint"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 663719040,
+            "peakResidentBytes": 736083968,
+            "physicalFootprintBytes": 99060224,
+            "residentBytes": 254214144,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "bin-references-released"
+          },
+          {
+            "elapsedMs": 4767,
+            "lifetimePeakPhysicalFootprintBytes": 663719040,
+            "peakResidentBytes": 736083968,
+            "physicalFootprintBytes": 103271040,
+            "residentBytes": 264798208,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "rescan-through-offscreen-paint"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 663719040,
+            "peakResidentBytes": 736083968,
+            "physicalFootprintBytes": 103271040,
+            "residentBytes": 264798208,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "snapshot-released"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 663719040,
+            "peakResidentBytes": 736083968,
+            "physicalFootprintBytes": 102795904,
+            "residentBytes": 261652480,
+            "rusageV4Ok": true,
+            "stage": "table-cleared"
+          }
+        ],
+        "totalPhysicalBytes": 1573370667
+      },
+      {
+        "binCoverageComplete": true,
+        "binFullFileIds": 774,
+        "binPath": "/private/tmp/copland-local-comparison-20261018/workload/8645 v1.avb",
+        "binUsable": true,
+        "binWarnings": [],
+        "csvWritten": true,
+        "frozenRowStillUsable": true,
+        "headerOutcomeCounts": {
+          "2": 267
+        },
+        "platform": "offscreen",
+        "qtVersion": "6.5.3",
+        "root": "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles",
+        "rowsWithOperationReceipt": 267,
+        "sameRowCountAfterRescan": true,
+        "scanOwnershipCheck": "No scan/session owner in compact rows; weak-pointer comparison is inapplicable.",
+        "stages": [
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 3949696,
+            "peakResidentBytes": 11911168,
+            "physicalFootprintBytes": 3835008,
+            "residentBytes": 11911168,
+            "rusageV4Ok": true,
+            "stage": "process-start"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 19351360,
+            "peakResidentBytes": 45547520,
+            "physicalFootprintBytes": 15746880,
+            "residentBytes": 45547520,
+            "rusageV4Ok": true,
+            "stage": "window-initialised"
+          },
+          {
+            "elapsedMs": 4715,
+            "lifetimePeakPhysicalFootprintBytes": 51611904,
+            "peakResidentBytes": 90767360,
+            "physicalFootprintBytes": 51611904,
+            "residentBytes": 90767360,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "scan-1-through-offscreen-paint"
+          },
+          {
+            "elapsedMs": 12,
+            "lifetimePeakPhysicalFootprintBytes": 51611904,
+            "peakResidentBytes": 90832896,
+            "physicalFootprintBytes": 48007424,
+            "residentBytes": 90832896,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "sort-size"
+          },
+          {
+            "elapsedMs": 4,
+            "lifetimePeakPhysicalFootprintBytes": 51611904,
+            "peakResidentBytes": 94437376,
+            "physicalFootprintBytes": 48007424,
+            "residentBytes": 94437376,
+            "rows": 0,
+            "rusageV4Ok": true,
+            "stage": "search-audio"
+          },
+          {
+            "elapsedMs": 2,
+            "lifetimePeakPhysicalFootprintBytes": 51611904,
+            "peakResidentBytes": 94568448,
+            "physicalFootprintBytes": 48122112,
+            "residentBytes": 94568448,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "csv-visible-frozen-rows"
+          },
+          {
+            "elapsedMs": 625,
+            "lifetimePeakPhysicalFootprintBytes": 671370432,
+            "peakResidentBytes": 742637568,
+            "physicalFootprintBytes": 104073856,
+            "residentBytes": 269533184,
+            "rows": 0,
+            "rusageV4Ok": true,
+            "stage": "bin-load-model-apply-filter-paint"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 671370432,
+            "peakResidentBytes": 742637568,
+            "physicalFootprintBytes": 103271040,
+            "residentBytes": 268746752,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "bin-references-released"
+          },
+          {
+            "elapsedMs": 4797,
+            "lifetimePeakPhysicalFootprintBytes": 671370432,
+            "peakResidentBytes": 742637568,
+            "physicalFootprintBytes": 105007808,
+            "residentBytes": 273072128,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "rescan-through-offscreen-paint"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 671370432,
+            "peakResidentBytes": 742637568,
+            "physicalFootprintBytes": 105007808,
+            "residentBytes": 273072128,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "snapshot-released"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 671370432,
+            "peakResidentBytes": 742637568,
+            "physicalFootprintBytes": 104467072,
+            "residentBytes": 269926400,
+            "rusageV4Ok": true,
+            "stage": "table-cleared"
+          }
+        ],
+        "totalPhysicalBytes": 1573370667
+      },
+      {
+        "binCoverageComplete": true,
+        "binFullFileIds": 774,
+        "binPath": "/private/tmp/copland-local-comparison-20261018/workload/8645 v1.avb",
+        "binUsable": true,
+        "binWarnings": [],
+        "csvWritten": true,
+        "frozenRowStillUsable": true,
+        "headerOutcomeCounts": {
+          "2": 267
+        },
+        "platform": "offscreen",
+        "qtVersion": "6.5.3",
+        "root": "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles",
+        "rowsWithOperationReceipt": 267,
+        "sameRowCountAfterRescan": true,
+        "scanOwnershipCheck": "No scan/session owner in compact rows; weak-pointer comparison is inapplicable.",
+        "stages": [
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 3982272,
+            "peakResidentBytes": 11993088,
+            "physicalFootprintBytes": 3867584,
+            "residentBytes": 11993088,
+            "rusageV4Ok": true,
+            "stage": "process-start"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 19924800,
+            "peakResidentBytes": 46120960,
+            "physicalFootprintBytes": 16320320,
+            "residentBytes": 46120960,
+            "rusageV4Ok": true,
+            "stage": "window-initialised"
+          },
+          {
+            "elapsedMs": 4692,
+            "lifetimePeakPhysicalFootprintBytes": 51316800,
+            "peakResidentBytes": 91701248,
+            "physicalFootprintBytes": 51316800,
+            "residentBytes": 91701248,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "scan-1-through-offscreen-paint"
+          },
+          {
+            "elapsedMs": 12,
+            "lifetimePeakPhysicalFootprintBytes": 51316800,
+            "peakResidentBytes": 95338496,
+            "physicalFootprintBytes": 47712320,
+            "residentBytes": 95338496,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "sort-size"
+          },
+          {
+            "elapsedMs": 3,
+            "lifetimePeakPhysicalFootprintBytes": 51316800,
+            "peakResidentBytes": 95338496,
+            "physicalFootprintBytes": 47712320,
+            "residentBytes": 95338496,
+            "rows": 0,
+            "rusageV4Ok": true,
+            "stage": "search-audio"
+          },
+          {
+            "elapsedMs": 2,
+            "lifetimePeakPhysicalFootprintBytes": 51316800,
+            "peakResidentBytes": 95354880,
+            "physicalFootprintBytes": 46876736,
+            "residentBytes": 95354880,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "csv-visible-frozen-rows"
+          },
+          {
+            "elapsedMs": 615,
+            "lifetimePeakPhysicalFootprintBytes": 670665728,
+            "peakResidentBytes": 740229120,
+            "physicalFootprintBytes": 105662976,
+            "residentBytes": 256442368,
+            "rows": 0,
+            "rusageV4Ok": true,
+            "stage": "bin-load-model-apply-filter-paint"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 670665728,
+            "peakResidentBytes": 740229120,
+            "physicalFootprintBytes": 104434176,
+            "residentBytes": 255787008,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "bin-references-released"
+          },
+          {
+            "elapsedMs": 4763,
+            "lifetimePeakPhysicalFootprintBytes": 670665728,
+            "peakResidentBytes": 740229120,
+            "physicalFootprintBytes": 105925184,
+            "residentBytes": 259211264,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "rescan-through-offscreen-paint"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 670665728,
+            "peakResidentBytes": 740229120,
+            "physicalFootprintBytes": 105925184,
+            "residentBytes": 259211264,
+            "rows": 267,
+            "rusageV4Ok": true,
+            "stage": "snapshot-released"
+          },
+          {
+            "elapsedMs": 0,
+            "lifetimePeakPhysicalFootprintBytes": 670665728,
+            "peakResidentBytes": 740229120,
+            "physicalFootprintBytes": 105433664,
+            "residentBytes": 257114112,
+            "rusageV4Ok": true,
+            "stage": "table-cleared"
+          }
+        ],
+        "totalPhysicalBytes": 1573370667
+      }
+    ]
+  },
+  "csvComparison": {
+    "samePhysicalPaths": true,
+    "sharedFieldDifferences": {},
+    "examples": {},
+    "renamedFileMobIdAllEqual": true,
+    "newNoDatabaseTrueRows": 267,
+    "newNoReferenceTrueRows": 0,
+    "oldDatabaseStatusCounts": {
+      "No Database": 267
+    },
+    "sourcePathNonemptyRows": 0,
+    "oldSourceFilenameNonemptyRows": 262,
+    "sharedColumnsCompared": [
+      "Bin",
+      "Bit Depth",
+      "Clip Name",
+      "Compression",
+      "Date Created",
+      "Duration",
+      "Effect",
+      "Effect Category",
+      "Effect Sequence",
+      "Filename",
+      "Frame Rate",
+      "KelpieId",
+      "Kind",
+      "Location",
+      "MasterMobId",
+      "OmfScan",
+      "Precompute Category",
+      "Project",
+      "Resolution",
+      "Sample Rate",
+      "Size (MB)",
+      "Type"
+    ],
+    "sharedColumnCount": 22,
+    "oldHeadings": [
+      "Clip Name",
+      "Project",
+      "Bin",
+      "Kind",
+      "Duration",
+      "Clip Duration",
+      "Size (MB)",
+      "Compression",
+      "Resolution",
+      "Frame Rate",
+      "Sample Rate",
+      "Bit Depth",
+      "Type",
+      "Precompute Category",
+      "Effect Category",
+      "Effect",
+      "Effect Sequence",
+      "Date Created",
+      "Filename",
+      "Source Filename",
+      "Location",
+      "Database Status",
+      "MobId",
+      "MasterMobId",
+      "KelpieId",
+      "OmfScan"
+    ],
+    "currentHeadings": [
+      "Clip Name",
+      "Project",
+      "Bin",
+      "Kind",
+      "Duration",
+      "Size (MB)",
+      "Compression",
+      "Resolution",
+      "Frame Rate",
+      "Sample Rate",
+      "Bit Depth",
+      "Type",
+      "Precompute Category",
+      "Effect Category",
+      "Effect",
+      "Effect Sequence",
+      "Date Created",
+      "Filename",
+      "Source Path",
+      "Location",
+      "No Database",
+      "No Reference",
+      "FileMobId",
+      "MasterMobId",
+      "KelpieId",
+      "OmfScan"
+    ],
+    "schemaDifferencesAreApproved": true
+  },
+  "csvReceipts": [
+    {
+      "generation": "baseline",
+      "run": 1,
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-run-1.json.csv",
+      "rows": 267,
+      "bytes": 133070,
+      "sha256": "b06365df94e46004ee5de44991c01a53557b9627f4cc86a276fd8f1d5fce1bfb"
+    },
+    {
+      "generation": "baseline",
+      "run": 2,
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-run-2.json.csv",
+      "rows": 267,
+      "bytes": 133070,
+      "sha256": "b06365df94e46004ee5de44991c01a53557b9627f4cc86a276fd8f1d5fce1bfb"
+    },
+    {
+      "generation": "baseline",
+      "run": 3,
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-run-3.json.csv",
+      "rows": 267,
+      "bytes": 133070,
+      "sha256": "b06365df94e46004ee5de44991c01a53557b9627f4cc86a276fd8f1d5fce1bfb"
+    },
+    {
+      "generation": "current",
+      "run": 1,
+      "path": "/private/tmp/copland-local-comparison-20261018/current-run-1.json.csv",
+      "rows": 267,
+      "bytes": 120391,
+      "sha256": "8ced21e6aee3fb63bccb822f75e2e02407f3befc636626d425eb28310c490b8e"
+    },
+    {
+      "generation": "current",
+      "run": 2,
+      "path": "/private/tmp/copland-local-comparison-20261018/current-run-2.json.csv",
+      "rows": 267,
+      "bytes": 120391,
+      "sha256": "8ced21e6aee3fb63bccb822f75e2e02407f3befc636626d425eb28310c490b8e"
+    },
+    {
+      "generation": "current",
+      "run": 3,
+      "path": "/private/tmp/copland-local-comparison-20261018/current-run-3.json.csv",
+      "rows": 267,
+      "bytes": 120391,
+      "sha256": "8ced21e6aee3fb63bccb822f75e2e02407f3befc636626d425eb28310c490b8e"
+    }
+  ],
+  "sourcePathControl": {
+    "baselineControlRows": 267,
+    "baselineSourceFilenameNonempty": 262,
+    "baselineStoredSourcePathNonempty": 0,
+    "filenameAgreeingAndPathConflictingRows": 262,
+    "pathNoComparisonRows": 5,
+    "example": {
+      "mediaFilePath": "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf",
+      "nameAgreement": 2,
+      "nameObservations": [
+        {
+          "eligible": true,
+          "objectIdentity": "object:736",
+          "property": "NetworkLocator.URLString",
+          "readState": 1,
+          "source": 3,
+          "value": "Avid DNx SQ.mov"
+        },
+        {
+          "eligible": true,
+          "objectIdentity": "object:715",
+          "property": "TaggedValue.Value",
+          "readState": 1,
+          "source": 3,
+          "value": "Avid DNx SQ.mov"
+        }
+      ],
+      "nameReadState": 1,
+      "nameSelectedValue": "Avid DNx SQ.mov",
+      "pathAgreement": 3,
+      "pathObservations": [
+        {
+          "eligible": true,
+          "objectIdentity": "object:736",
+          "property": "NetworkLocator.URLString",
+          "readState": 1,
+          "source": 3,
+          "value": "file:///Macintosh%20HD/Users/martymclean/Desktop/Test%20media%20files/Avid%20DNx%20SQ.mov"
+        },
+        {
+          "eligible": true,
+          "objectIdentity": "object:715",
+          "property": "TaggedValue.Value",
+          "readState": 1,
+          "source": 3,
+          "value": "/Users/martymclean/Desktop/Test media files/Avid DNx SQ.mov"
+        }
+      ],
+      "pathReadState": 1,
+      "pathSelectedValue": null,
+      "sourceFileName": "Avid DNx SQ.mov",
+      "sourceFilePath": ""
+    },
+    "interpretation": "The old source filename was a derived basename; its agreeing value did not imply an agreed full Source Path. Current Source Path blank output matches the original stored Source Path on all 267 rows. No path interpretation or selection policy was changed for this control.",
+    "metricMedianChecks": 110,
+    "allReportedMetricValuesAndMediansMatchRawRuns": true
+  },
+  "nativeWorkflow": {
+    "binCoverageComplete": true,
+    "binPath": "/private/tmp/copland-local-comparison-20261018/workload/matching.avb",
+    "binSha256": "330a9a135f0682a561d91bff10316aceefade6f0474c059ad856f8024ac7a8aa",
+    "binWarnings": [],
+    "checks": {
+      "actualBinDialogOpened": true,
+      "actualBinFilterApplied": true,
+      "actualExportBytesMatchVisibleRow": true,
+      "actualExportSaveDialogAccepted": true,
+      "binLoadingPreservesAllPreparedDisplayValues": true,
+      "cocoaPlatform": true,
+      "complete267RowInventory": true,
+      "consoleConfirmsSavedPathAndRowCount": true,
+      "diskLogConfirmsExport": true,
+      "expectedToneInInventory": true,
+      "expectedToneIsVisible": true,
+      "freshOutputPaths": true,
+      "genuineBinReferencesExpectedFile": true,
+      "genuineMatchingBinHash": true,
+      "oneMatchingPhysicalRow": true,
+      "passed": true,
+      "productionWidgetsPresent": true,
+      "publicClearFilterRestoresInventory": true,
+      "rescanKeepsBinLoadedAndFiltersClear": true,
+      "rescanPreservesInventoryAndDisplayValues": true,
+      "rescanThroughNativeWindowPaintCompleted": true,
+      "rescanThroughNativeWindowPaintReadyForTable": true,
+      "scanThroughNativeWindowPaintCompleted": true,
+      "scanThroughNativeWindowPaintReadyForTable": true,
+      "uniqueExpectedPhysicalFile": true
+    },
+    "comparisonExcludes": "Session-local KelpieId only; all other table display columns and CSV values checked",
+    "consoleConfirmation": "CSV export complete: 1 visible rows to /private/tmp/copland-local-comparison-20261018/native-workflow.json.csv.",
+    "csvPath": "/private/tmp/copland-local-comparison-20261018/native-workflow.json.csv",
+    "csvSha256": "5b2259388d6a0577e0cb1c0f449814b85061cf82b26ff97ec0aec355aed64712",
+    "diagnosticLog": "/private/tmp/copland-local-comparison-20261018/native-diagnostics/mediamuster.log",
+    "expectedFileMobId": "060a2b3401010105.01010f1013000000.20e8af1d55120690.95b546fc807fda72",
+    "expectedPhysicalPath": "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles/MXF/1/TONE_100A01.1DAFE820.612550.mxf",
+    "filteredScreenshotSaved": true,
+    "platform": "cocoa",
+    "qtVersion": "6.5.3",
+    "root": "/private/tmp/copland-local-comparison-20261018/workload/Avid MediaFiles",
+    "scope": "Supplemental native-window workflow; no historical native timing comparison",
+    "stages": [
+      {
+        "elapsedMs": 5358,
+        "rows": 267,
+        "stage": "scanThroughNativeWindowPaint"
+      },
+      {
+        "elapsedMs": 80,
+        "rows": 1,
+        "stage": "actualBinLoadAndFilter"
+      },
+      {
+        "elapsedMs": 358,
+        "rows": 1,
+        "stage": "actualExportDialogAndWrite"
+      },
+      {
+        "elapsedMs": 5649,
+        "rows": 267,
+        "stage": "rescanThroughNativeWindowPaint"
+      }
+    ],
+    "retainedDisplayValuesSha256": "d571fb4a8205b944a005ef69536ad240f0cd583b5b5e5bfa7b787fac3b1b0b0a",
+    "retainedDisplayValueRowCount": 267
+  },
+  "nativeMatchingBinCopy": {
+    "original": "/Users/martymclean/Documents/Avid Projects/zTeßt_1080p_23.976/zTeßt_1080p_23.976 Bin.avb",
+    "copy": "/private/tmp/copland-local-comparison-20261018/workload/matching.avb",
+    "bytes": 60608,
+    "sha256": "330a9a135f0682a561d91bff10316aceefade6f0474c059ad856f8024ac7a8aa",
+    "originalStampUnchanged": true
+  },
+  "tests": {
+    "command": [
+      "ctest",
+      "--test-dir",
+      "build-mediaengine-release",
+      "--output-on-failure"
+    ],
+    "registeredSuites": 39,
+    "suitesPassed": 39,
+    "suitesFailed": 0,
+    "elapsedSeconds": 105.09,
+    "individualSkippedCases": [
+      "SKIP   : TestMediaEngineDiscovery::optional_real_discovery() Opt-in read-only discovery; provide exact Avid MediaFiles/MXF or OMFI MediaFiles roots",
+      "SKIP   : TestMediaEnginePmr::realDrivePmrs() Opt-in read-only PMR audit; provide exact Avid MediaFiles/MXF or OMFI MediaFiles roots.",
+      "SKIP   : TestMediaEnginePmrRobustness::benchmark() Opt-in parsing benchmark; excludes discovery and filesystem I/O.",
+      "SKIP   : TestMediaEngineAvb::suppliedBins() Set MEDIAMUSTER_MEDIAENGINE_REAL_AVB_FILES to inspect the supplied bins read-only.",
+      "SKIP   : TestMediaEngineScan::normalized_name_does_not_assign_one_record_to_two_files() Temporary filesystem does not preserve case-distinct file locations",
+      "SKIP   : TestScanner::optional_read_only_real_scan() Opt-in real-drive audit; set MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_ROOTS to semicolon-separated managed roots",
+      "SKIP   : TestScanner::case_distinct_shared_folders_remain_distinct() Temporary filesystem is case-insensitive; case-distinct directories cannot be created here"
+    ],
+    "logPath": "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/Testing/Temporary/LastTest.log",
+    "logSha256": "cb54dd71673c8bbbd64beb81945a7f9018c4639bd9293169ae49455d3dca379f"
+  },
+  "probeSources": {
+    "baselineReference": "probeSource in Project Copland/evidence/local-app-verification-2026-10-12.json",
+    "currentSource": "#include \"mainwindow.h\"\n#include \"mediascanner.h\"\n#include \"mediatablemodel.h\"\n#include \"mediafilterproxy.h\"\n#include \"fileoperationcontroller.h\"\n#include \"avbbinloader.h\"\n#include \"mediacsv.h\"\n#include \"mediaengine/scanmodel.h\"\n#include <QApplication>\n#include <QElapsedTimer>\n#include <QEventLoop>\n#include <QFile>\n#include <QJsonArray>\n#include <QJsonDocument>\n#include <QJsonObject>\n#include <QTableView>\n#include <QTimer>\n#include <libproc.h>\n#include <sys/resource.h>\n#include <unistd.h>\n\nQJsonObject memory()\n{\n    rusage_info_v4 usage{};\n    rusage rss{};\n    const bool ok = proc_pid_rusage(getpid(), RUSAGE_INFO_V4,\n        reinterpret_cast<rusage_info_t *>(&usage)) == 0;\n    getrusage(RUSAGE_SELF, &rss);\n    return {{\"rusageV4Ok\",ok}, {\"residentBytes\",double(usage.ri_resident_size)},\n        {\"physicalFootprintBytes\",double(usage.ri_phys_footprint)},\n        {\"lifetimePeakPhysicalFootprintBytes\",double(usage.ri_lifetime_max_phys_footprint)},\n        {\"peakResidentBytes\",double(rss.ru_maxrss)}};\n}\nint main(int argc,char **argv)\n{\n    QApplication app(argc,argv);\n    app.setOrganizationName(\"CoplandVerification\");\n    app.setApplicationName(\"CoplandUiBaseline20261012\");\n    app.setQuitOnLastWindowClosed(false);\n    if (argc < 4) return 2;\n    const QString root=QString::fromLocal8Bit(argv[1]);\n    const QString binPath=QString::fromLocal8Bit(argv[2]);\n    const QString output=QString::fromLocal8Bit(argv[3]);\n    QJsonObject report{{\"root\",root},{\"binPath\",binPath},{\"qtVersion\",qVersion()},\n        {\"platform\",QGuiApplication::platformName()}};\n    QJsonArray stages;\n    auto record=[&](const QString &name,qint64 elapsed=0,int count=-1) {\n        QJsonObject r=memory();r[\"stage\"]=name;r[\"elapsedMs\"]=double(elapsed);\n        if(count>=0)r[\"rows\"]=count;\n        stages.append(r);\n    };\n    record(\"process-start\");\n    MainWindow window(nullptr,MainWindow::StartupMode::UiOnly);\n    window.show();\n    QApplication::processEvents();\n    window.grab();\n    auto *model=window.findChild<MediaTableModel *>();\n    auto *proxy=window.findChild<MediaFilterProxy *>();\n    auto *scanner=window.findChild<MediaScanner *>();\n    auto *ops=window.findChild<FileOperationController *>();\n    auto *table=window.findChild<QTableView *>();\n    if(!model||!proxy||!scanner||!ops||!table)return 3;\n    record(\"window-initialised\");\n    const QStringList roots{root};\n    if(!QMetaObject::invokeMethod(&window,\"onPathsDropped\",Qt::DirectConnection,Q_ARG(QStringList,roots)))return 4;\n    auto scan=[&](const QString &name) {\n        QEventLoop loop;\n        bool done=false,failed=false;\n        QMetaObject::invokeMethod(&window,\"onPathsDropped\",Qt::DirectConnection,Q_ARG(QStringList,roots));\n        QElapsedTimer timer; timer.start();\n        auto conn=QObject::connect(scanner,&MediaScanner::scanFinished,&window,\n            [&](const QVector<MediaFile> &) {done=true;loop.quit();},Qt::QueuedConnection);\n        auto fail=QObject::connect(scanner,&MediaScanner::scanFailed,&window,\n            [&](const QString &e){report[\"error\"]=e;failed=true;loop.quit();},Qt::QueuedConnection);\n        QTimer timeout; timeout.setSingleShot(true);\n        QObject::connect(&timeout,&QTimer::timeout,&loop,[&]{failed=true;scanner->cancelScan();loop.quit();});\n        timeout.start(60000);\n        QMetaObject::invokeMethod(&window,\"scanSelected\",Qt::DirectConnection);\n        if(ops->isIdle())return false;\n        loop.exec();\n        QObject::disconnect(conn);QObject::disconnect(fail);\n        if(!done||failed)return false;\n        QApplication::processEvents();\n        const auto pixmap=window.grab();\n        if(pixmap.isNull()||!ops->isIdle()||model->rowCount()!=proxy->rowCount())return false;\n        record(name,timer.elapsed(),model->rowCount());\n        return true;\n    };\n    if(!scan(\"scan-1-through-offscreen-paint\"))return 5;\n    const int firstCount=model->rowCount();\n    QJsonObject outcomes;\n    int captured=0;\n    for(const auto &row:model->allFiles()) {\n        const auto key=QString::number(int(row.metadataStatus.headerOutcome));\n        outcomes[key]=outcomes[key].toInt()+1;\n        captured+=row.operationScanReceipt.has_value();\n    }\n    report[\"headerOutcomeCounts\"]=outcomes;\n    report[\"rowsWithOperationReceipt\"]=captured;\n    qint64 totalBytes=0;for(const auto &row:model->allFiles())totalBytes+=row.sizeBytes;\n    report[\"totalPhysicalBytes\"]=double(totalBytes);\n    QElapsedTimer timer;timer.start();\n    proxy->sort(int(MediaTableModel::Column::SizeMB),Qt::DescendingOrder);\n    QApplication::processEvents();window.grab();\n    record(\"sort-size\",timer.elapsed(),proxy->rowCount());\n    timer.restart();\n    QMetaObject::invokeMethod(&window,\"onSearchChanged\",Qt::DirectConnection,Q_ARG(QString,QString(\"Audio\")));\n    QApplication::processEvents();window.grab();\n    record(\"search-audio\",timer.elapsed(),proxy->rowCount());\n    QMetaObject::invokeMethod(&window,\"onSearchChanged\",Qt::DirectConnection,Q_ARG(QString,QString()));\n    QVector<MediaFile> snapshot;\n    snapshot.reserve(proxy->rowCount());\n    for(int i=0;i<proxy->rowCount();++i)snapshot.append(model->fileAt(proxy->mapToSource(proxy->index(i,0)).row()));\n    timer.restart();\n    const bool csvOk=MediaCsv::write(output+\".csv\",snapshot,{model->precomputesEnabled()});\n    report[\"csvWritten\"]=csvOk;\n    record(\"csv-visible-frozen-rows\",timer.elapsed(),snapshot.size());\n    // Keep only one frozen export row; test ownership independently of allocator release.\n    snapshot=snapshot.isEmpty()?QVector<MediaFile>{}:QVector<MediaFile>{snapshot.first()};\n    timer.restart();\n    QVector<AvbBin> bins{AvbBinLoader::load(binPath)};\n    report[\"binUsable\"]=bins.first().isUsable();\n    report[\"binFullFileIds\"]=bins.first().mediaFileIds.fullIds.size();\n    report[\"binCoverageComplete\"]=bins.first().coverageComplete;\n    report[\"binWarnings\"]=QJsonArray::fromStringList(bins.first().warnings);\n    AvbFilter filter;AvbFilter::Step step;\n    step.fileReferences=bins.first().mediaFileIds;\n    step.binDisplayNames.append(bins.first().displayName);\n    filter.steps.append(step);proxy->setBinFilter(filter);\n    QApplication::processEvents();window.grab();\n    record(\"bin-load-model-apply-filter-paint\",timer.elapsed(),proxy->rowCount());\n    proxy->setBinFilter({});bins.clear();filter={};step={};\n    QApplication::processEvents();record(\"bin-references-released\",0,proxy->rowCount());\n    if(!scan(\"rescan-through-offscreen-paint\"))return 6;\n    report[\"sameRowCountAfterRescan\"]=model->rowCount()==firstCount;\n    report[\"frozenRowStillUsable\"]=snapshot.isEmpty() || !MediaCsv::rowLine(snapshot.first()).isEmpty();\n    report[\"scanOwnershipCheck\"]=\"No scan/session owner in compact rows; weak-pointer comparison is inapplicable.\";\n    snapshot.clear();QApplication::processEvents();\n    record(\"snapshot-released\",0,model->rowCount());\n    model->setMediaFiles({});QApplication::processEvents();record(\"table-cleared\");\n    report[\"stages\"]=stages;\n    QFile file(output); if(!file.open(QIODevice::WriteOnly))return 7;\n    file.write(QJsonDocument(report).toJson());\n    return csvOk?0:8;\n}\n",
+    "nativeWorkflowSource": "#include \"mainwindow.h\"\n#include \"mediascanner.h\"\n#include \"mediatablemodel.h\"\n#include \"mediafilterproxy.h\"\n#include \"fileoperationcontroller.h\"\n#include \"avbfilterdialog.h\"\n#include \"diagnostics.h\"\n#include \"mediacsv.h\"\n\n#include <QApplication>\n#include <QCryptographicHash>\n#include <QDialog>\n#include <QDir>\n#include <QElapsedTimer>\n#include <QEventLoop>\n#include <QFile>\n#include <QFileDialog>\n#include <QFileInfo>\n#include <QJsonArray>\n#include <QJsonDocument>\n#include <QJsonObject>\n#include <QLineEdit>\n#include <QListWidget>\n#include <QMap>\n#include <QMessageBox>\n#include <QPlainTextEdit>\n#include <QTableView>\n#include <QTimer>\n#include <functional>\n#include <stdexcept>\n\nnamespace\n{\n\tQByteArray readBytes(const QString &path)\n\t{\n\t\tQFile file(path);\n\t\treturn file.open(QIODevice::ReadOnly) ? file.readAll() : QByteArray{};\n\t}\n\n\tbool waitUntil(const std::function<bool()> &ready, int timeoutMs = 15000)\n\t{\n\t\tif (ready())\n\t\t\treturn true;\n\t\tQEventLoop loop;\n\t\tQTimer poll, timeout;\n\t\tpoll.setInterval(10);\n\t\ttimeout.setSingleShot(true);\n\t\tQObject::connect(&poll, &QTimer::timeout, &loop, [&]\n\t\t\t{ if (ready()) loop.quit(); });\n\t\tQObject::connect(&timeout, &QTimer::timeout, &loop, &QEventLoop::quit);\n\t\tpoll.start();\n\t\ttimeout.start(timeoutMs);\n\t\tloop.exec();\n\t\treturn ready();\n\t}\n\n\tusing Values = QMap<QString, QStringList>;\n\tValues retainedValues(MediaTableModel &model)\n\t{\n\t\tValues result;\n\t\tfor (int row = 0; row < model.rowCount(); ++row)\n\t\t{\n\t\t\tQStringList values;\n\t\t\tfor (int column = 0; column < model.columnCount(); ++column)\n\t\t\t\tif (column != int(MediaTableModel::Column::KelpieId))\n\t\t\t\t\tvalues.append(model.index(row, column).data(Qt::DisplayRole).toString());\n\t\t\tauto file = model.fileAt(row);\n\t\t\tfile.kelpieId = 0; // Session identity is deliberately excluded from rescan equality.\n\t\t\tvalues.append(MediaCsv::rowLine(file, {model.precomputesEnabled()}));\n\t\t\tresult.insert(file.mediaFilePath, values);\n\t\t}\n\t\treturn result;\n\t}\n\n\tQJsonObject jsonValues(const Values &values)\n\t{\n\t\tQJsonObject result;\n\t\tfor (auto it = values.cbegin(); it != values.cend(); ++it)\n\t\t\tresult.insert(it.key(), QJsonArray::fromStringList(it.value()));\n\t\treturn result;\n\t}\n}\n\nint main(int argc, char **argv)\n{\n\tQApplication::setAttribute(Qt::AA_DontUseNativeDialogs);\n\tQApplication app(argc, argv);\n\tapp.setOrganizationName(QStringLiteral(\"CoplandVerification\"));\n\tapp.setApplicationName(QStringLiteral(\"CoplandNativeWorkflow20261018\"));\n\tapp.setApplicationVersion(QStringLiteral(\"0.0.2\"));\n\tapp.setQuitOnLastWindowClosed(false);\n\tif (argc != 4)\n\t\treturn 2; // root, copied matching bin, fresh output JSON path.\n\tconst QString root = QString::fromLocal8Bit(argv[1]);\n\tconst QString binPath = QString::fromLocal8Bit(argv[2]);\n\tconst QString output = QString::fromLocal8Bit(argv[3]);\n\tconst QString csvPath = output + QStringLiteral(\".csv\");\n\tif (QFile::exists(output)) return 4;\n\tQJsonObject report{{\"root\", root}, {\"binPath\", binPath}, {\"platform\", QGuiApplication::platformName()},\n\t\t{\"qtVersion\", qVersion()}, {\"scope\", \"Supplemental native-window workflow; no historical native timing comparison\"}};\n\tQJsonObject checks;\n\tQJsonArray stages;\n\tint exitCode = 0;\n\ttry\n\t{\n\t\tconst auto require = [&](bool condition, const QString &name)\n\t\t{\n\t\t\tchecks.insert(name, condition);\n\t\t\tif (!condition)\n\t\t\t\tthrow std::runtime_error(name.toStdString());\n\t\t};\n\t\trequire(QGuiApplication::platformName() == QStringLiteral(\"cocoa\"), QStringLiteral(\"cocoaPlatform\"));\n\t\trequire(!QFile::exists(output) && !QFile::exists(csvPath), QStringLiteral(\"freshOutputPaths\"));\n\t\tconst QByteArray binHash = QCryptographicHash::hash(readBytes(binPath), QCryptographicHash::Sha256).toHex();\n\t\treport.insert(\"binSha256\", QString::fromLatin1(binHash));\n\t\trequire(binHash == \"330a9a135f0682a561d91bff10316aceefade6f0474c059ad856f8024ac7a8aa\", QStringLiteral(\"genuineMatchingBinHash\"));\n\t\tDiagnostics::install(QFileInfo(output).absolutePath() + QStringLiteral(\"/native-diagnostics\"));\n\t\treport.insert(\"diagnosticLog\", Diagnostics::logPath());\n\t\tMainWindow window(nullptr, MainWindow::StartupMode::UiOnly);\n\t\twindow.show();\n\t\tQApplication::processEvents();\n\t\tauto *model = window.findChild<MediaTableModel *>();\n\t\tauto *proxy = window.findChild<MediaFilterProxy *>();\n\t\tauto *scanner = window.findChild<MediaScanner *>();\n\t\tauto *ops = window.findChild<FileOperationController *>();\n\t\tauto *table = window.findChild<QTableView *>();\n\t\tauto *console = window.findChild<QPlainTextEdit *>();\n\t\trequire(model && proxy && scanner && ops && table && console, QStringLiteral(\"productionWidgetsPresent\"));\n\t\tconst auto scan = [&](const QString &stage)\n\t\t{\n\t\t\tconst QStringList paths{root};\n\t\t\tQMetaObject::invokeMethod(&window, \"onPathsDropped\", Qt::DirectConnection, Q_ARG(QStringList, paths));\n\t\t\tbool done = false;\n\t\t\tQString failure;\n\t\t\tconst auto completed = QObject::connect(scanner, &MediaScanner::scanFinished, &window,\n\t\t\t\t[&](const QVector<MediaFile> &) { done = true; }, Qt::QueuedConnection);\n\t\t\tconst auto failed = QObject::connect(scanner, &MediaScanner::scanFailed, &window,\n\t\t\t\t[&](const QString &message)\n\t\t\t\t{\n\t\t\t\t\tfailure = message;\n\t\t\t\t\tif (auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget()))\n\t\t\t\t\t\tdialog->reject();\n\t\t\t\t}, Qt::QueuedConnection);\n\t\t\tQElapsedTimer timer;\n\t\t\ttimer.start();\n\t\t\tconst bool invoked = QMetaObject::invokeMethod(&window, \"scanSelected\", Qt::DirectConnection);\n\t\t\tconst bool settled = invoked && waitUntil([&] { return done || !failure.isEmpty(); }, 60000);\n\t\t\tQObject::disconnect(completed);\n\t\t\tQObject::disconnect(failed);\n\t\t\tif (!settled)\n\t\t\t\tscanner->cancelScan();\n\t\t\trequire(settled && done && failure.isEmpty(), stage + QStringLiteral(\"Completed\"));\n\t\t\tQApplication::processEvents();\n\t\t\trequire(!window.grab().isNull() && ops->isIdle() && model->rowCount() == proxy->rowCount(), stage + QStringLiteral(\"ReadyForTable\"));\n\t\t\tstages.append(QJsonObject{{\"stage\", stage}, {\"elapsedMs\", timer.elapsed()}, {\"rows\", model->rowCount()}});\n\t\t};\n\t\tscan(QStringLiteral(\"scanThroughNativeWindowPaint\"));\n\t\tconst auto before = retainedValues(*model);\n\t\trequire(model->rowCount() == 267 && before.size() == 267, QStringLiteral(\"complete267RowInventory\"));\n\t\tQString expectedPath, expectedFileMobId;\n\t\tfor (const auto &file : model->allFiles())\n\t\t\tif (file.fileName == QStringLiteral(\"TONE_100A01.1DAFE820.612550.mxf\"))\n\t\t\t{\n\t\t\t\trequire(expectedPath.isEmpty(), QStringLiteral(\"uniqueExpectedPhysicalFile\"));\n\t\t\t\texpectedPath = file.mediaFilePath;\n\t\t\t\texpectedFileMobId = file.fileMobId;\n\t\t\t}\n\t\trequire(!expectedPath.isEmpty() && !expectedFileMobId.isEmpty(), QStringLiteral(\"expectedToneInInventory\"));\n\t\treport.insert(\"expectedPhysicalPath\", expectedPath);\n\t\treport.insert(\"expectedFileMobId\", expectedFileMobId);\n\t\tQMetaObject::invokeMethod(&window, \"onFilterByBins\", Qt::DirectConnection);\n\t\tauto *dialog = window.findChild<AvbFilterDialog *>();\n\t\trequire(dialog, QStringLiteral(\"actualBinDialogOpened\"));\n\t\tbool loaded = false, applied = false;\n\t\tAvbBin bin;\n\t\tQObject::connect(dialog, &AvbFilterDialog::binLoaded, &window, [&](const AvbBin &value) { bin = value; loaded = true; });\n\t\tQObject::connect(dialog, &AvbFilterDialog::filterChainChanged, &window,\n\t\t\t[&](const AvbFilter &filter, const QStringList &) { applied = filter.isActive(); });\n\t\tQElapsedTimer binTimer;\n\t\tbinTimer.start();\n\t\tdialog->addBinFromFile(binPath);\n\t\trequire(waitUntil([&] { return loaded && applied && proxy->rowCount() > 0; }), QStringLiteral(\"actualBinFilterApplied\"));\n\t\trequire(bin.isUsable() && bin.mediaFileIds.matches(AvbFileId::fromMobId(expectedFileMobId)), QStringLiteral(\"genuineBinReferencesExpectedFile\"));\n\t\trequire(proxy->rowCount() == 1, QStringLiteral(\"oneMatchingPhysicalRow\"));\n\t\tconst auto &visible = model->fileAt(proxy->mapToSource(proxy->index(0, 0)).row());\n\t\trequire(visible.mediaFilePath == expectedPath && visible.fileMobId == expectedFileMobId, QStringLiteral(\"expectedToneIsVisible\"));\n\t\trequire(retainedValues(*model) == before, QStringLiteral(\"binLoadingPreservesAllPreparedDisplayValues\"));\n\t\treport.insert(\"binCoverageComplete\", bin.coverageComplete);\n\t\treport.insert(\"binWarnings\", QJsonArray::fromStringList(bin.warnings));\n\t\tstages.append(QJsonObject{{\"stage\", \"actualBinLoadAndFilter\"}, {\"elapsedMs\", binTimer.elapsed()}, {\"rows\", proxy->rowCount()}});\n\t\tdialog->hide();\n\t\twindow.raise();\n\t\twindow.activateWindow();\n\t\tQApplication::processEvents();\n\t\treport.insert(\"filteredScreenshotSaved\", window.grab().save(output + QStringLiteral(\".png\")));\n\t\ttable->clearSelection();\n\t\tconst MediaCsv::Options options{model->precomputesEnabled()};\n\t\tconst QByteArray expectedCsv = QByteArray::fromHex(\"efbbbf\") + MediaCsv::headerLine(options).toUtf8() + MediaCsv::rowLine(visible, options).toUtf8();\n\t\tbool sawSave = false, pickerAccepted = false, pickerTimedOut = false;\n\t\tQElapsedTimer exportTimer;\n\t\texportTimer.start();\n\t\tQTimer picker;\n\t\tpicker.setInterval(20);\n\t\tQObject::connect(&picker, &QTimer::timeout, &window, [&]\n\t\t{\n\t\t\tauto *modal = QApplication::activeModalWidget();\n\t\t\tif (exportTimer.elapsed() > 15000)\n\t\t\t{\n\t\t\t\tpickerTimedOut = true;\n\t\t\t\tif (auto *active = qobject_cast<QDialog *>(modal)) active->reject();\n\t\t\t\treturn;\n\t\t\t}\n\t\t\tif (auto *save = qobject_cast<QFileDialog *>(modal); save && !sawSave)\n\t\t\t{\n\t\t\t\tsawSave = true;\n\t\t\t\tsave->setDirectory(QFileInfo(csvPath).absolutePath());\n\t\t\t\tauto *editor = save->findChild<QLineEdit *>(QStringLiteral(\"fileNameEdit\"));\n\t\t\t\tif (!editor) { save->reject(); return; }\n\t\t\t\teditor->setFocus();\n\t\t\t\teditor->setText(QFileInfo(csvPath).fileName());\n\t\t\t\tpickerAccepted = save->selectedFiles() == QStringList{csvPath};\n\t\t\t\tif (pickerAccepted) QMetaObject::invokeMethod(save, \"accept\", Qt::DirectConnection);\n\t\t\t\telse save->reject();\n\t\t\t}\n\t\t\telse if (auto *message = qobject_cast<QMessageBox *>(modal)) message->reject();\n\t\t});\n\t\tpicker.start();\n\t\tconst bool exported = QMetaObject::invokeMethod(&window, \"onExportCsv\", Qt::DirectConnection);\n\t\tpicker.stop();\n\t\trequire(exported && sawSave && pickerAccepted && !pickerTimedOut, QStringLiteral(\"actualExportSaveDialogAccepted\"));\n\t\trequire(readBytes(csvPath) == expectedCsv, QStringLiteral(\"actualExportBytesMatchVisibleRow\"));\n\t\tconst QString confirmation = QStringLiteral(\"CSV export complete: 1 visible rows to %1.\").arg(csvPath);\n\t\trequire(console->toPlainText().count(confirmation) == 1, QStringLiteral(\"consoleConfirmsSavedPathAndRowCount\"));\n\t\trequire(QString::fromUtf8(readBytes(Diagnostics::logPath())).contains(confirmation), QStringLiteral(\"diskLogConfirmsExport\"));\n\t\treport.insert(\"csvPath\", csvPath);\n\t\treport.insert(\"csvSha256\", QString::fromLatin1(QCryptographicHash::hash(expectedCsv, QCryptographicHash::Sha256).toHex()));\n\t\treport.insert(\"consoleConfirmation\", confirmation);\n\t\tstages.append(QJsonObject{{\"stage\", \"actualExportDialogAndWrite\"}, {\"elapsedMs\", exportTimer.elapsed()}, {\"rows\", 1}});\n\t\tdialog->clearFilterSteps();\n\t\trequire(waitUntil([&] { return !applied && proxy->rowCount() == 267; }), QStringLiteral(\"publicClearFilterRestoresInventory\"));\n\t\tscan(QStringLiteral(\"rescanThroughNativeWindowPaint\"));\n\t\trequire(retainedValues(*model) == before, QStringLiteral(\"rescanPreservesInventoryAndDisplayValues\"));\n\t\tauto *bins = dialog->findChild<QListWidget *>(QStringLiteral(\"BinList\"));\n\t\trequire(bins && bins->count() == 1 && proxy->rowCount() == 267, QStringLiteral(\"rescanKeepsBinLoadedAndFiltersClear\"));\n\t\treport.insert(\"retainedDisplayValues\", jsonValues(before));\n\t\treport.insert(\"comparisonExcludes\", \"Session-local KelpieId only; all other table display columns and CSV values checked\");\n\t}\n\tcatch (const std::exception &error)\n\t{\n\t\texitCode = 1;\n\t\treport.insert(\"error\", QString::fromUtf8(error.what()));\n\t}\n\tchecks.insert(\"passed\", exitCode == 0);\n\treport.insert(\"checks\", checks);\n\treport.insert(\"stages\", stages);\n\tQFile result(output);\n\tif (!result.open(QIODevice::WriteOnly)) return 3;\n\tresult.write(QJsonDocument(report).toJson());\n\treturn exitCode;\n}\n",
+    "sourcePathControlPatch": "--- original-probe.cpp\n+++ sourcepath-control.cpp\n@@ -88,6 +88,40 @@\n     };\n     if(!scan(\"scan-1-through-offscreen-paint\"))return 5;\n     const int firstCount=model->rowCount();\n+    {\n+        QJsonArray sourceRows;\n+        int nonemptyFilename = 0, nonemptyPath = 0;\n+        for (const auto &row : model->allFiles()) {\n+            const auto selectedPath = row.evidence.selected(MediaProperty::SourcePath);\n+            const auto selectedName = row.evidence.selected(MediaProperty::SourceFilename);\n+            QJsonArray pathObservations, nameObservations;\n+            const auto collect = [](const QVector<MetadataObservation> &observations, QJsonArray &out) {\n+                for (const auto &item : observations)\n+                    out.append(QJsonObject{{\"value\",QJsonValue::fromVariant(item.value)},\n+                        {\"property\",item.property},{\"objectIdentity\",item.objectIdentity},\n+                        {\"eligible\",item.eligible},{\"readState\",int(item.readState)},\n+                        {\"source\",item.snapshot?int(item.snapshot->source):-1}});\n+            };\n+            collect(row.evidence.observations(MediaProperty::SourcePath), pathObservations);\n+            collect(row.evidence.observations(MediaProperty::SourceFilename), nameObservations);\n+            sourceRows.append(QJsonObject{{\"mediaFilePath\",row.mediaFilePath},\n+                {\"sourceFileName\",row.sourceFileName},{\"sourceFilePath\",row.sourceFilePath},\n+                {\"pathAgreement\",int(selectedPath.agreement)},{\"pathReadState\",int(selectedPath.readState)},\n+                {\"pathSelectedValue\",QJsonValue::fromVariant(selectedPath.value)},\n+                {\"nameAgreement\",int(selectedName.agreement)},{\"nameReadState\",int(selectedName.readState)},\n+                {\"nameSelectedValue\",QJsonValue::fromVariant(selectedName.value)},\n+                {\"pathObservations\",pathObservations},{\"nameObservations\",nameObservations}});\n+            nonemptyFilename += !row.sourceFileName.isEmpty();\n+            nonemptyPath += !row.sourceFilePath.isEmpty();\n+        }\n+        report[\"rows\"] = sourceRows;\n+        report[\"nonemptySourceFilenameRows\"] = nonemptyFilename;\n+        report[\"nonemptySourcePathRows\"] = nonemptyPath;\n+        report[\"stages\"] = stages;\n+        QFile controlFile(output);\n+        if (!controlFile.open(QIODevice::WriteOnly)) return 7;\n+        return controlFile.write(QJsonDocument(report).toJson()) >= 0 ? 0 : 8;\n+    }\n     if(firstCount && model->fileAt(0).mediaEngineScan) {\n         const auto &session=*model->fileAt(0).mediaEngineScan;\n         report[\"actualScanRoots\"]=QJsonArray::fromStringList(session.request.roots);\n",
+    "runComparisonScript": "import os,json,pathlib,subprocess,time\nw=pathlib.Path(__file__).resolve().parent\nenv=os.environ.copy();env.update(QT_QPA_PLATFORM=\"offscreen\",QT_HASH_SEED=\"0\")\nresults=[]\nfor pair,order in enumerate([[\"baseline\",\"current\"],[\"current\",\"baseline\"],[\"baseline\",\"current\"]],1):\n for generation in order:\n  out=w/f\"{generation}-run-{pair}.json\"\n  args=[str(w/f\"{generation}-probe\"),str(w/\"workload/Avid MediaFiles\"),str(w/\"workload/8645 v1.avb\"),str(out)]\n  start=time.monotonic()\n  p=subprocess.run(args,env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,timeout=90)\n  (w/f\"{generation}-run-{pair}.log\").write_text(p.stdout)\n  item={\"pair\":pair,\"generation\":generation,\"command\":args,\"exitCode\":p.returncode,\"wallSeconds\":time.monotonic()-start,\"output\":str(out)}\n  results.append(item);(w/\"run-commands.json\").write_text(json.dumps(results,indent=2)+\"\\n\")\n  if p.returncode:\n   print(json.dumps(item),flush=True);print(p.stdout[-3000:],flush=True);raise SystemExit(p.returncode)\n  r=json.loads(out.read_text())\n  print(json.dumps({\"pair\":pair,\"generation\":generation,\"stages\":[{k:s[k] for k in [\"stage\",\"elapsedMs\",\"rows\",\"lifetimePeakPhysicalFootprintBytes\"] if k in s} for s in r[\"stages\"]],\"totalPhysicalBytes\":r.get(\"totalPhysicalBytes\"),\"headerOutcomes\":r.get(\"headerOutcomeCounts\")}),flush=True)\n"
+  },
+  "artifactReceipts": [
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-build.log",
+      "bytes": 7117,
+      "sha256": "339fdacbb060195044b28bb7b879e5a3412d953d2bd9bb02601c245134eedee8"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-commands.json",
+      "bytes": 1617,
+      "sha256": "ea7a0af8aa7a1fafab03f3f69490e004c7360896260b90378325c1cdc1842ee6"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-configure-first.log",
+      "bytes": 4539,
+      "sha256": "eb7491a74d96e2fa71403bee0c7ef088b4fc5a881584d141cc7162a15f0f40a4"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-configure-sandbox.log",
+      "bytes": 779,
+      "sha256": "e6d2e3ec385ad92530cfeada9e10a93676831843d531077f1d19fe67c80b670f"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-configure.log",
+      "bytes": 288,
+      "sha256": "094d7a613aee83d88c6e409e10a1a548e3c831292888f8288f0676843f7fd8e4"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-probe",
+      "bytes": 4916768,
+      "sha256": "d5363292b2e4def585f3755562ad9337e1ca213c35f591f1bbe1f93c81d16f19"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-probe-compile-command.json",
+      "bytes": 6166,
+      "sha256": "e220716766a62c47a196d49888e436939675c3f74d1e1678376034c184de0205"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-probe-compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-probe-objects.json",
+      "bytes": 4548,
+      "sha256": "0f694ecb67c90fb6cb79e1f1dc33f5729b890e489967baf69ea75905b3a958ca"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-ready.json",
+      "bytes": 2956,
+      "sha256": "6e5645c0d7d77aff3f642f6fe8a8969421cabe3e204860a8dd95d2c33d2f7048"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-run-1.json",
+      "bytes": 4442,
+      "sha256": "fc08a728ddd818bc6f61f373f68e2d85371c72d2249f59c836a4d625e7e3cc84"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-run-1.json.csv",
+      "bytes": 133070,
+      "sha256": "b06365df94e46004ee5de44991c01a53557b9627f4cc86a276fd8f1d5fce1bfb"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-run-1.log",
+      "bytes": 481,
+      "sha256": "104b017b94583c9f42973a40f9c801bf890bcfeb7a6c3072e6c39fdd50b8fe78"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-run-2.json",
+      "bytes": 4442,
+      "sha256": "bfb4deed8b78cc1c8505fdb366898cd7d57b79ce209d03256bdef56b783c4833"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-run-2.json.csv",
+      "bytes": 133070,
+      "sha256": "b06365df94e46004ee5de44991c01a53557b9627f4cc86a276fd8f1d5fce1bfb"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-run-2.log",
+      "bytes": 481,
+      "sha256": "5693fbe509d3ced57e98e9abd348f302668b5c4ba9de71eb3f0c8d06a5a959c3"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-run-3.json",
+      "bytes": 4442,
+      "sha256": "7a4cf775c414faba7c4f57e322aa4d93ec6c4b5b460a4159fa3b698d46a5f825"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-run-3.json.csv",
+      "bytes": 133070,
+      "sha256": "b06365df94e46004ee5de44991c01a53557b9627f4cc86a276fd8f1d5fce1bfb"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-run-3.log",
+      "bytes": 481,
+      "sha256": "104b017b94583c9f42973a40f9c801bf890bcfeb7a6c3072e6c39fdd50b8fe78"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/baseline-target-link-command.txt",
+      "bytes": 2871,
+      "sha256": "e69d8a9cdad8232c9bf896e991eb4b098ae77b48843ef4fe4c5e1281f59d0f34"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/comparison-analysis.json",
+      "bytes": 20134,
+      "sha256": "b8f9d0ceb661814ef67ff9d726f31e9668a84ede35a3a5eed21bac227db1174c"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/current-compile-command.json",
+      "bytes": 6095,
+      "sha256": "e4ae50302474a6efdf051c6a96ae2b05fb014f767ef0a02d5a5f2e32374a28cc"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/current-compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/current-probe",
+      "bytes": 4686352,
+      "sha256": "85ea45f45d633bdebcc2239bd021ae5daf6716438589d27a54379807cc23b465"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/current-probe.cpp",
+      "bytes": 7109,
+      "sha256": "039a78e2c1e6bbd59367039794ad1bf678c7eb912753c8c833726deba090af6a"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/current-run-1.json",
+      "bytes": 4383,
+      "sha256": "dbefbfa9615e29518b0b813b95d6751a7114ca05360c48e5907418144f691a02"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/current-run-1.json.csv",
+      "bytes": 120391,
+      "sha256": "8ced21e6aee3fb63bccb822f75e2e02407f3befc636626d425eb28310c490b8e"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/current-run-1.log",
+      "bytes": 372,
+      "sha256": "e4e2a36bf71c30cfe642bf8855cd1bc16a6bc0ef778d75a80b85807b1ade72e5"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/current-run-2.json",
+      "bytes": 4385,
+      "sha256": "a58a069f2a94f7c994a4f3322371023b0cc13f8c072a3295e593f8e83d0b3836"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/current-run-2.json.csv",
+      "bytes": 120391,
+      "sha256": "8ced21e6aee3fb63bccb822f75e2e02407f3befc636626d425eb28310c490b8e"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/current-run-2.log",
+      "bytes": 372,
+      "sha256": "27b208bfa66a0511b5f753f0765855cd11ce7c7c74a64b1244ec925f35180532"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/current-run-3.json",
+      "bytes": 4385,
+      "sha256": "ed0245b9f154758ccfe0960bedb1162d174ee747d09ace863c1846fd8f015f94"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/current-run-3.json.csv",
+      "bytes": 120391,
+      "sha256": "8ced21e6aee3fb63bccb822f75e2e02407f3befc636626d425eb28310c490b8e"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/current-run-3.log",
+      "bytes": 372,
+      "sha256": "485950726602f244fbdce1ccd0e2887e7e6898c57123916e2640dd236cd02edc"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/native-matching-bin-copy.json",
+      "bytes": 333,
+      "sha256": "3ee9f3c929f5167bd7a209521a57993a476263e2b058445ed9479b1dda3921c0"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/native-workflow-compile-command.json",
+      "bytes": 6111,
+      "sha256": "4f20201cb969f3d0360507aff50e09453afa5eef3139ee5c2cff5025b2c2dab0"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/native-workflow-compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/native-workflow-probe",
+      "bytes": 4716824,
+      "sha256": "ff503ef4a7a61c1427c7ffc6a335316f908c3795505d9ee684b48837b8a05b77"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/native-workflow-probe.cpp",
+      "bytes": 11915,
+      "sha256": "3219ad4b25c0eec2dbb83bdd82cb2fb0c5fa0b8a45748dbfe28204faf8e8a666"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/native-workflow-run.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/native-workflow.json",
+      "bytes": 382030,
+      "sha256": "5efd295ba55614da4c5ce84fe667469393c99fc33a5d7a24f05ebf492e80129c"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/native-workflow.json.csv",
+      "bytes": 733,
+      "sha256": "5b2259388d6a0577e0cb1c0f449814b85061cf82b26ff97ec0aec355aed64712"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/native-workflow.json.png",
+      "bytes": 185488,
+      "sha256": "f7011ded1195553274ec44b949859002421e8d24e0c713e22ff3dab2042374bb"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/original-probe.cpp",
+      "bytes": 7689,
+      "sha256": "8feab694f6c431937b06f381ff91e231a34f4f2cf79d3cf13f3436ee6b8d01c3"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/run-commands.json",
+      "bytes": 3129,
+      "sha256": "68f41121b51320ab378e2b5442da4a6e47a0da6b624b7f47f9409fca575c302a"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/run-comparison.py",
+      "bytes": 1314,
+      "sha256": "9f9cd3cde623b274070a55b3ac521fdd91538e23dc80fe50dc8622601f2c254b"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/sandbox-run-attempt.json",
+      "bytes": 527,
+      "sha256": "b43ac53bec6307d4aa3e637b30dc4e73eef25847a86b1f6e78212d9084d4e1d4"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/sourcepath-control",
+      "bytes": 4905424,
+      "sha256": "a340ab8a36112578ccd1ac095f0ae5aa97d8d62e346888567163b34456ef4f39"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/sourcepath-control-compile-command.json",
+      "bytes": 6174,
+      "sha256": "5268451ec236304ea9d98f3be7b0bf874747718aa7be83c19973c4fcbd441b47"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/sourcepath-control-compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/sourcepath-control-result.json",
+      "bytes": 506611,
+      "sha256": "5b7ea1225cc0f423997464a8f7229360c123bf537a01568f689170b36885a189"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/sourcepath-control-run.log",
+      "bytes": 444,
+      "sha256": "1a733a475783c6752b8053402034512180b02a0ceab0b8d28635af1f9a6046f6"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/sourcepath-control-summary.json",
+      "bytes": 1977,
+      "sha256": "2e6b77d11ae25632815dace299671415d4981b357c2940cb005a298cd0e5ffc4"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/sourcepath-control.cpp",
+      "bytes": 9942,
+      "sha256": "73d595b82be86aa555ae38383c39953818d1d4f359f5242c4fb8fbe92eb36cef"
+    },
+    {
+      "path": "/private/tmp/copland-local-comparison-20261018/workload-manifest.json",
+      "bytes": 141603,
+      "sha256": "566e183eb569c5360180ab28b3e568c98de2dfbe709b173f31a809d370db62cc"
+    }
+  ],
+  "limits": [
+    "267 complete local media files and one large bin for timing; no 300,000-file Windows/NEXIS acceptance.",
+    "Three fresh-process warm/uncontrolled-cache repeats establish bounded local observations, not a general performance guarantee.",
+    "Offscreen/UiOnly comparable phases exclude normal startup recovery/discovery, production disk-log installation and native input latency.",
+    "Native check uses Cocoa rendering, UiOnly startup, actual bin/export actions, isolated diagnostic log and Qt widget save picker; no Apple native save panel or manual input-latency measurement.",
+    "Historical workload names/content exactly reproduced; copy creation times/path and OS differ from 12 October. Same-day old-code rerun controls these conditions.",
+    "Large timed bin matches zero inventory rows; separate genuine small-bin native check validates one positive match/export.",
+    "CSV schema intentionally changed; retained shared fields plus renamed FileMobId compared by physical path. No inferred Source Path normalization was added.",
+    "Loaded-bin current memory is a post-load sample, not peak; full temporary bin parse still dominates cumulative lifetime peak.",
+    "New rows have no scan-session owner; old weak-pointer lifetime test is inapplicable to them. Compact ownership regression suites pass.",
+    "No exact-sequence/camera/timing work or new media-format support undertaken."
+  ]
+}

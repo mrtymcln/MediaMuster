@@ -236,6 +236,9 @@ private slots:
 	void optional_columns_match_csv_and_preserve_retained_sort();
 	void bin_loading_keeps_prepared_table_and_csv_metadata();
 	void bin_source_track_gap_keeps_proven_matches_and_console_warning();
+	void unmatched_bin_reports_once_when_loaded();
+	void bin_match_notice_checks_the_unfiltered_inventory();
+	void bin_match_notice_ignores_empty_inventory_and_unusable_references();
 	void omf_gate_controls_scans_and_removes_legacy_rows();
 	void added_locations_require_managed_media_structure();
 	void dropped_locations_keep_only_allowed_trees_without_scanning();
@@ -262,6 +265,7 @@ private slots:
 	void restore_originals_respects_busy_gate();
 	void observed_removals_prune_rows_even_when_job_needs_attention();
 	void completed_results_preserve_details_and_refresh_signals();
+	void copy_move_jobs_report_one_console_summary();
 	void rebalance_live_counts_follow_confirmed_results();
 	void rebalance_finished_recounts_uncertain_moves_and_absent_folders();
 	void rebalance_finished_marks_unavailable_root();
@@ -2478,6 +2482,112 @@ void TestOperationUi::bin_source_track_gap_keeps_proven_matches_and_console_warn
 	}
 }
 
+void TestOperationUi::unmatched_bin_reports_once_when_loaded()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile file;
+	file.mediaFilePath = tmp.filePath("scanned.mxf");
+	file.fileMobId = MobId::format(TestAvb::Source);
+	file.masterMobId = MobId::format(TestAvb::Master);
+	const auto prepared = TestMediaFile::seeded({file});
+	window.onScanFinished(prepared);
+	window.onFilterByBins();
+	auto *dialog = window.m_binFilterDialog;
+	QVERIFY(dialog);
+	QSignalSpy loaded(dialog, &AvbFilterDialog::binLoaded);
+	const auto binPath = TestAvb::write(tmp.filePath("Unmatched.avb"), TestAvb::mediaBin({TestAvb::Master}));
+	QVERIFY(!binPath.isEmpty());
+	const auto notice = QStringLiteral("Bin has no matching files in the current scan: ") + QFileInfo(binPath).canonicalFilePath();
+	window.m_console->clear();
+	dialog->addBinFromFile(binPath);
+	QTRY_COMPARE(loaded.count(), 1);
+	const auto bin = qvariant_cast<AvbBin>(loaded.first().first());
+	QVERIFY(bin.isUsable() && bin.coverageComplete);
+	QCOMPARE(bin.mediaFileIds.fullIds, QSet<QString>{file.masterMobId});
+	QTRY_VERIFY(window.m_binFilterActive);
+	QCOMPARE(window.m_proxy->rowCount(), 0); // A shared MasterMobId is not a FileMobId match.
+	QCOMPARE(window.m_console->toPlainText().count(notice), 1);
+	for (const auto *operation : {"onAddClicked", "onSubtractClicked", "onIntersectClicked"})
+	{
+		QVERIFY(QMetaObject::invokeMethod(dialog, operation, Qt::DirectConnection));
+		QCOMPARE(window.m_proxy->rowCount(), 0);
+	}
+	window.onScanFinished(prepared);
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+	dialog->addBinFromFile(binPath); // An already loaded bin is not loaded again.
+	QCOMPARE(loaded.count(), 1);
+	QCOMPARE(window.m_console->toPlainText().count(notice), 1);
+}
+
+void TestOperationUi::bin_match_notice_checks_the_unfiltered_inventory()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile hidden;
+	hidden.mediaFilePath = tmp.filePath("hidden.mxf");
+	hidden.fileMobId = MobId::format(TestAvb::Source);
+	hidden.project = QStringLiteral("Hidden project");
+	MediaFile other = hidden;
+	other.mediaFilePath = tmp.filePath("other.mxf");
+	other.fileMobId = MobId::format(TestAvb::Other);
+	other.project = QStringLiteral("Other project");
+	window.onScanFinished(TestMediaFile::seeded({hidden, other}));
+	window.onFilterByBins();
+	auto *dialog = window.m_binFilterDialog;
+	QVERIFY(dialog);
+	QSignalSpy loaded(dialog, &AvbFilterDialog::binLoaded);
+	dialog->addBinFromFile(TestAvb::write(tmp.filePath("Other.avb"), TestAvb::mediaBin({TestAvb::Other})));
+	QTRY_COMPARE(loaded.count(), 1);
+	QTRY_VERIFY(window.m_binFilterActive);
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+	QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, other.mediaFilePath);
+	const auto projects = window.m_projectList->findItems(other.project, Qt::MatchExactly);
+	QCOMPARE(projects.size(), 1);
+	projects.first()->setSelected(true);
+	window.m_searchField->setText(QStringLiteral("no visible match"));
+	QTRY_COMPARE(window.m_proxy->rowCount(), 0);
+	window.m_console->clear();
+	dialog->addBinFromFile(TestAvb::write(tmp.filePath("Hidden.avb"), TestAvb::mediaBin({TestAvb::Source})));
+	QTRY_COMPARE(loaded.count(), 2);
+	QVERIFY(qvariant_cast<AvbBin>(loaded.last().first()).coverageComplete);
+	QCOMPARE(window.m_model->rowCount(), 2);
+	QCOMPARE(window.m_proxy->rowCount(), 0);
+	QVERIFY(!window.m_console->toPlainText().contains(QStringLiteral("Bin has no matching files in the current scan:")));
+}
+
+void TestOperationUi::bin_match_notice_ignores_empty_inventory_and_unusable_references()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.onFilterByBins();
+	auto *dialog = window.m_binFilterDialog;
+	QVERIFY(dialog);
+	QSignalSpy loaded(dialog, &AvbFilterDialog::binLoaded);
+	QSignalSpy errors(dialog, &AvbFilterDialog::loadError);
+	window.m_console->clear();
+	dialog->addBinFromFile(TestAvb::write(tmp.filePath("BeforeScan.avb"), TestAvb::mediaBin()));
+	QTRY_COMPARE(loaded.count(), 1);
+	QVERIFY(!qvariant_cast<AvbBin>(loaded.last().first()).mediaFileIds.isEmpty());
+	QTRY_VERIFY(window.m_binFilterActive);
+	MediaFile file;
+	file.mediaFilePath = tmp.filePath("scanned.mxf");
+	file.fileMobId = MobId::format(TestAvb::Other);
+	window.onScanFinished(TestMediaFile::seeded({file}));
+	dialog->addBinFromFile(TestAvb::write(tmp.filePath("NoReferences.avb"), TestAvb::mediaBin({})));
+	QTRY_COMPARE(loaded.count(), 2);
+	const auto empty = qvariant_cast<AvbBin>(loaded.last().first());
+	QVERIFY(empty.isUsable() && empty.mediaFileIds.isEmpty());
+	dialog->addBinFromFile(TestAvb::write(tmp.filePath("Unreadable.avb"), QByteArray("not an Avid bin")));
+	QTRY_COMPARE(loaded.count(), 3);
+	QCOMPARE(errors.count(), 1);
+	QVERIFY(!qvariant_cast<AvbBin>(loaded.last().first()).isUsable());
+	QVERIFY(!window.m_console->toPlainText().contains(QStringLiteral("Bin has no matching files in the current scan:")));
+}
+
 void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 {
 	const QString root = path("scan");
@@ -3186,6 +3296,38 @@ void TestOperationUi::completed_results_preserve_details_and_refresh_signals()
 	QCOMPARE(restored.first().first().value<QSet<QString>>(), QSet<QString>{returned.restoredOriginalPath});
 	QCOMPARE(messages.count(), 1);
 	QCOMPARE(messages.first().at(2).toString(), detailed.name + QStringLiteral(": ") + detailed.message);
+}
+
+void TestOperationUi::copy_move_jobs_report_one_console_summary()
+{
+	for (const auto kind : {OpKind::Copy, OpKind::Move})
+	{
+		const bool copy = kind == OpKind::Copy;
+		auto job = request(copy ? QStringLiteral("copy-summary") : QStringLiteral("move-summary"), 2);
+		job.kind = kind;
+		MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+		auto *operations = window.m_operations;
+		QSignalSpy finished(operations->manager(), &OpManager::operationFinished);
+		QSignalSpy messages(operations, &FileOperationController::logMessage);
+		QVERIFY(operations->dispatchRequest(job));
+		QTRY_COMPARE(finished.count(), 1);
+		QTRY_VERIFY(operations->isIdle());
+		QCOMPARE(finished.first().at(0).toInt(), 2);
+		QCOMPARE(finished.first().at(1).toInt(), 0);
+		const QString summary = QStringLiteral("%1 complete: 2 files %2 to %3.")
+			.arg(copy ? QStringLiteral("Copy") : QStringLiteral("Move"),
+				 copy ? QStringLiteral("copied") : QStringLiteral("moved"), job.destRoot);
+		QCOMPARE(window.m_console->toPlainText().count(QStringLiteral("operations: ") + summary), 1);
+		int confirmations = 0;
+		for (const auto &message : messages)
+			if (message.at(2).toString() == summary)
+			{
+				QCOMPARE(message.at(0).value<QtMsgType>(), QtInfoMsg);
+				QCOMPARE(message.at(1).toString(), QStringLiteral("operations"));
+				++confirmations;
+			}
+		QCOMPARE(confirmations, 1);
+	}
 }
 
 void TestOperationUi::rebalance_live_counts_follow_confirmed_results()

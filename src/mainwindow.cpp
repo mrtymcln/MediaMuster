@@ -962,6 +962,19 @@ void MainWindow::onFilterByBins()
 	if (!m_binFilterDialog)
 	{
 		m_binFilterDialog = new AvbFilterDialog(this);
+		connect(m_binFilterDialog, &AvbFilterDialog::binLoaded, this,
+				[this](const AvbBin &bin)
+				{
+					if (!bin.isUsable() || bin.mediaFileIds.isEmpty() || m_model->rowCount() == 0)
+						return;
+					// A matching inventory row still counts when other filters hide it.
+					const auto &files = m_model->allFiles();
+					const bool matched = std::any_of(files.cbegin(), files.cend(), [&bin](const MediaFile &file)
+														 { return bin.mediaFileIds.matches(AvbFileId::fromMobId(file.fileMobId)); });
+					if (!matched)
+						addLog(QtInfoMsg, QStringLiteral("filters"),
+							   tr("Bin has no matching files in the current scan: %1").arg(bin.filePath));
+				});
 		connect(m_binFilterDialog, &AvbFilterDialog::loadWarning, this,
 				[this](const QString &path, const QString &reason)
 				{

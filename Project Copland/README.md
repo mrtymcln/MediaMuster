@@ -33,6 +33,18 @@ records genuine-source findings, reproduced cancellation gaps, operation safegua
 and a controlled local app baseline. It supports this plan; the first implementation
 steps are recorded below and final Copland acceptance remains outstanding.
 
+The [18 October local workflow comparison](local-workflow-comparison-2026-10-18.md)
+repeats the exact-content baseline with old and current code on this Mac, then
+checks a genuine matching-bin export and rescan in a visible native window.
+Loaded-bin memory falls substantially; temporary peak memory and scan timing
+remain broadly similar. The full 39-suite test run passes. Representative
+Windows/NEXIS scale acceptance remains outstanding.
+
+The [18 October disposable file-operation check](file-operation-acceptance-2026-10-18.md)
+records genuine scan-to-operation workflows, fresh-process Undo and deliberately
+interrupted jobs on this Mac. Its local scope and detailed receipts are separate
+from representative Windows/NEXIS acceptance.
+
 ## Mandatory rule for every implementing AI
 
 **The implementing AI MUST ALWAYS ask the user at every decision or crossroad.
@@ -208,7 +220,7 @@ by this requirements review. See [implementation planning](#implementation-plann
 | C88 | Keep diagnostic logs and collected crash reports for 30 days, with automatic cleanup. | Applies to both retained support histories under C80/C81. The user specified age and automatic cleanup, with no disk-size limit. Do not adopt the earlier size-cap proposal as an agreed requirement. Keep recent history across restarts rather than erasing all recent entries merely because one log container is old. The 17 October choices keep one continuous log, timestamp message lines with plain startup dividers, and clean once at app startup without a timer or day-rollover checks. No earlier-format conversion or reset is required under C99. Only one running app instance is in scope. Undo/recovery journals retain their separate protections under C04/C57/C58. |
 | C89 | If a newly loaded bin cannot be read, discard that failed load, keep existing filters untouched and report the failure in Console. | Do not auto-intersect with an unreadable bin or replace established loaded-bin/filter state. An unsuccessful load is distinct from a readable bin whose references yield no matches. |
 | C90 | Allow a recognized sequence with no established media references to be checked and contribute an empty match set. | Report unresolved/incomplete references in Console under C27. This is not proof of a fully understood empty sequence under C28, although both display zero rows when checked alone. Other checked sequences still contribute their established matches under C25; unchecking every sequence clears the restriction. No such unresolved-zero sequence was found in the inspected corpus. |
-| C91 | Apply a readable bin whose valid references match no scanned rows, with a Console notice. | Keep its valid resolved identities and apply the requested rule normally. Intersect shows zero rows. Add/Subtract contribute no changes to an existing chain; a leading Add starts empty, while a leading Subtract keeps all otherwise eligible rows. The notice describes this scan's lack of matches, not proof that media was deleted or is absent from all storage. |
+| C91 | Apply a readable bin whose valid references match no scanned rows, with a Console notice. | Keep its valid resolved identities and apply the requested rule normally. Intersect shows zero rows. Add/Subtract contribute no changes to an existing chain; a leading Add starts empty, while a leading Subtract keeps all otherwise eligible rows. On 18 October, the user chose one notice when each bin finishes loading and silence for an empty inventory. Compare the whole inventory, including hidden rows; reapplying rules or rescanning does not repeat it. The notice describes this scan's lack of matches, not proof that media was deleted or is absent from all storage. |
 | C92 | Keep category and named-effect filtering when detailed precompute features are enabled. | Retain the current Filter Precomputes workflow and combination with other table restrictions. It uses retained row values, not AVB sequence membership or a permanent effect graph. C14's inferred details remain behind their feature flag. |
 | C93 | Keep the Volume control in Filter Precomputes. | Retain its restriction to chosen scanned volumes and combination with other active filters. No extra media reads or source histories are required merely to apply it. |
 | C94 | For recorded source/import information, scan and parse Source Path only; remove Source Filename. | Supersedes C36's source-basename requirement. Remove the separate basename derivation, SourceFilename selection/status, retained row value and table/CSV column. Retain a selected recorded SourcePath and compact availability status under C07/C12/C15. Align requested-property and fallback checks with SourcePath rather than a hidden basename requirement. Physical Filename and database filename matching remain separate requirements. C95/C96 settle Source Path's table/CSV presentation and Search use. |
@@ -218,6 +230,7 @@ by this requirements review. See [implementation planning](#implementation-plann
 | C98 | Every implementing AI must always ask the user at every decision or crossroad; never assume or choose for them. | Follow the [mandatory decision rule](#mandatory-rule-for-every-implementing-ai): explain a few realistic options in plain language, with pros/cons and a recommendation; wait for the user's explicit choice and record it before dependent work. Applies to delegated AIs and technical choices as well as product decisions. |
 | C99 | During beta, never sacrifice code improvements or simplicity to preserve backwards compatibility. | The user explicitly removes compatibility with saved Undo/recovery journals as a constraint. Current jobs still require correct operation safeguards, Undo and recovery; older beta formats need no aliases or migration. Exact Avid file-format names remain required for reading existing media and are a separate concern. |
 | C100 | Prioritize simplification of existing features for V1; defer exact sequence filtering until after V1. | Chosen 17 October 2026. Keep Whole Bin filtering and its existing multi-bin chain. Stop camera/speed/proxy/relative-link feature expansion. C06, C18, C20, C21, C23–C25, C28 and C90 are future sequence requirements, not V1 acceptance gates. Sequence-specific parts of other requirements are likewise deferred; their existing-bin, inventory and operation obligations remain. This changes release scope, not permission to silently delete or roll back tested shared code. |
+| C101 | Report one final Console summary for each Copy or Move job, including partial results. | Chosen 18 October 2026. Include the actual transferred count and destination, with separate skipped, already-at-destination and not-completed counts where nonzero. Label cancelled or incomplete jobs accordingly. Preserve existing detailed outcomes; do not add ordinary per-file success messages. Resumed jobs describe the whole saved job. |
 
 ## Capabilities identified as unnecessary
 
@@ -1203,6 +1216,11 @@ it does not establish empty membership.
 
 A readable bin whose valid references match no scanned rows retains those
 identities and applies the requested rule, with a Console notice under C91.
+The 18 October choice reports once when each bin finishes loading and stays
+quiet when the media inventory is empty. Compare its resolved file references
+with the whole inventory, including rows hidden by other filters. Rule changes
+and rescans of an already-loaded bin do not repeat the notice. Failed loads and
+bins without resolved file references retain their existing reporting.
 Intersect yields zero rows. Add/Subtract with no matches do not change an existing
 chain; a leading Add shows zero rows, while a leading Subtract leaves all otherwise
 eligible rows. Applied bin rules are snapshots and survive bin removal under the
@@ -1496,6 +1514,32 @@ code/ownership simplification, not a measured performance result. C11 bin
 removal/recalculation is deferred; no full-suite, Windows or NEXIS result is claimed
 for this checkpoint.
 
+### Unmatched-bin Console notice — 18 October 2026
+
+The user authorized completing C91, then chose **Once when each bin loads** and
+**Stay quiet for an empty table**. A readable bin with nonempty resolved
+references gets one informational Console message if none match the current
+physical inventory. Use the existing full/legacy FileMobId matcher against
+prepared rows; shared MasterMobId or rows hidden by Search, Project or other
+filters must not affect this check. Do not reread media, add an identity cache,
+or change the bin chain.
+
+Implemented using the existing bin-load completion signal in MainWindow, where the current
+inventory is available. Failed loads and zero-reference bins keep existing
+messages. Reapplying a rule, clearing filters or rescanning with the bin already
+loaded does not produce another notice. This describes the current scan only;
+it does not establish deletion or absence elsewhere.
+
+The app and all configured targets build with pinned Qt 6.5.3, C++17 and Release
+arm64. Three relevant suites pass (`tst_operationui`, `tst_binfilterdialog`,
+`tst_mediafilterproxy`; 11.78 seconds). Three focused MainWindow tests exercise
+the actual asynchronous bin-load/Console boundary: one unmatched notice despite
+a shared MasterMobId; no repetition on rule changes, rescan or duplicate load;
+no false notice for a match hidden by Search, Project and another bin filter;
+and quiet empty-inventory, zero-reference and failed-load cases. Existing filter
+tests retain the full/legacy identity and chain rules. `git diff --check` passes.
+No scanner/parser change or performance improvement is claimed.
+
 ### Unused per-file values — 17 October 2026
 
 The user chose **Remove unused per-file values**, before a full app-workflow
@@ -1549,6 +1593,71 @@ file operations, CSV, table model, filter proxy, bin dialog and operation UI.
 `git diff --check` passes. Actual ID validation, operation receipts and source
 policy code are unchanged. Full workload/memory and NEXIS acceptance remain
 separate; no performance gain is claimed.
+
+### Copy and Move Console summaries — 18 October 2026
+
+After the disposable file-operation check, the user requested Copy and Move
+success confirmation and chose **One summary per job**, then **Summarise every
+job, including partial results**. C101 keeps one final line, rather than a
+success message for every file. The line names the operation, actual transferred
+count and destination, with nonzero skipped, already-at-destination and
+not-completed counts. Cancelled or incomplete jobs must not claim clean success.
+Existing detailed outcomes remain.
+
+Use the resolved job's current saved entries to count the whole job, including
+work completed before a Resume. Existing per-invocation success totals omit
+that earlier work. This presentation change must not add a retained history,
+another journal read or change transfer, Undo, recovery or Rebalance rules.
+
+Implemented in the operation engine's final reporting through the existing
+Console/disk-log route. The in-memory journal supplies the authoritative job kind,
+destination and final media-entry states, including when a resumed job cannot
+finish opening its journal. Done/SourceRemoved entries count as transferred;
+Skipped/NoEffect remain separate; retained, restored or unfinished originals do
+not count as moved. An unavailable resume record reports unavailable results
+instead of guessing a count or operation. No new signal or persistent counters
+are added.
+
+The Release arm64 app and all configured targets build with Qt 6.5.3/C++17.
+File-operation and UI suites pass after the final change (33.77 seconds); the
+diagnostic suite also passes. Existing operation tests gain summary assertions
+for clean Copy/Move, forced copy/remove, mixed-format cancellation/resume,
+skipped/unchanged files, retained/restored originals, failures and excluded job
+kinds. A small MainWindow test runs real two-file Copy and Move jobs and confirms
+one informational summary reaches the Console through the existing controller.
+`git diff --check` passes. Transfer rules and journal schema are unchanged; no
+performance or Windows/NEXIS claim is made.
+
+### Disposable file-operation verification — 18 October 2026
+
+The user chose to verify the retained file operations with disposable media next,
+including latest-job Undo after restarting and interrupted-job recovery. This is
+a validation checkpoint for the existing implementation, with no new application
+code or permanent tests.
+
+The current Release arm64 app/targets are built. Five relevant suites pass with
+no failures or skips (`tst_fileoperations`, `tst_opjournal`, `tst_opcleanup`,
+`tst_rebalanceplanner`, `tst_operationui`; 39.07 seconds).
+
+Fourteen standalone scenarios also pass using genuine MXF copies in temporary
+managed-media layouts and isolated journals. Six completed routes cover Copy,
+same-filesystem Move, forced copy/remove Move, real macOS Trash Delete, locally
+forced MediaMuster Trash Delete and planner-generated Rebalance. Each passes
+Undo in a separate process. Eight hard-exit scenarios recover through Resume,
+completed-copy reconciliation or Restore Originals, then pass fresh-process Undo.
+Source/restored content hashes, physical locations, unrelated sentinels and final
+journal states are checked. Temporary scan data is released before operating.
+
+Native Cocoa checks pass actual Manage Media Copy/Move/Delete and fresh-process
+Undo through their real dialogs, with correct file contents and table rows. An
+additional hard-exit Copy passes the real startup recovery prompt's Resume, then
+Undo. The existing lack of a per-file success Console line for ordinary Copy/Move
+is recorded as observed behavior; no operation fix or message change is made.
+Detailed scope is recorded in the
+[checkpoint report](file-operation-acceptance-2026-10-18.md), alongside the
+[evidence receipt](evidence/file-operation-acceptance-2026-10-18.json).
+Local forced branches do not establish physical cross-volume, Windows, SMB/NEXIS
+or power-loss behavior. No speed or memory improvement is claimed here.
 
 ### Job-history reading — 18 October 2026
 
@@ -2822,6 +2931,10 @@ controlled local baseline trials cover 267 database-free
 complete media copies and demonstrated the former asynchronous export retaining
 the prior scan through one frozen CSV row. The direct-export implementation above
 has replaced that workflow.
-Media Composer ground truth, native UI/disk-log costs and NEXIS scale remain
-unverified. These findings refine the checks for the stages above without adding
-new product features or a competing implementation plan.
+The 18 October local comparison now verifies the retained scan → bin filter →
+export → rescan workflow on the exact-content sample, including a separate
+native-window check with Console/disk-log export confirmation. It measures local
+whole-process memory and timing; production startup costs, human input latency,
+Media Composer ground truth and NEXIS scale remain unverified. These findings
+refine the checks for the stages above without adding new product features or a
+competing implementation plan.

@@ -458,6 +458,12 @@ the whole inventory, regardless of active table filters. The sidebar includes a
 
 Loading `.avb` bins lets the app match FileMobIds against qualified file references
 recovered from those bins. A shared MasterMobId alone does not establish a match.
+When a readable bin finishes loading, its resolved references are checked against
+the full current inventory, including rows hidden by other filters. If none match,
+Console reports `Bin has no matching files in the current scan: <bin path>` once
+for that load. Empty inventories, failed loads and bins with no resolved references
+do not produce this notice. Changing rules or rescanning with the bin still loaded
+does not repeat it. The message does not establish absence outside the current scan.
 The bin dialog supports an ordered chain:
 
 - **Intersect:** keep matches from the current bin-filter result.
@@ -565,8 +571,23 @@ For a Move that copies, a failed required copy prevents original removal. Explic
 skipped files remain untouched. A completed copy can also retain its source when
 the app cannot confirm the storage's persistence or metadata requirements. The
 Console reports retained sources, unchanged destinations, restored originals and
-problems, along with any additional details from completed work. Plain per-file
-success messages and final operation totals are not logged.
+problems, along with any additional details from completed work. Copy and Move
+also report one final summary with the transferred count and chosen destination.
+Nonzero skipped, already-at-destination and not-completed counts follow it:
+
+```text
+Copy complete: 2 files copied to /destination; 1 skipped.
+Move incomplete: 0 files moved to /destination; 2 not completed.
+```
+
+Cancelled jobs use `cancelled` instead of `complete` or `incomplete`. Counts come
+from the saved job's final entries, including earlier completed work after
+Resume; skipped or unchanged files are never counted as copied/moved. A Move
+that retained or restored an original is not counted as moved. If a resumed
+job's saved results cannot be read, the ending reports that those results are
+unavailable rather than inventing a transferred count. Summaries use the existing
+Console/disk-log route. Ordinary per-file success messages are not added; Undo,
+Restore Originals, Delete and Rebalance keep their existing reporting.
 
 Copying uses the native operating-system APIs, with checks for reported errors,
 file identity, size, metadata and storage persistence. The app does not read and

@@ -184,6 +184,63 @@ namespace
 		return (request.kind == OpKind::Move || e.undoAction == "restoreMove") &&
 			   e.mechanism == "copy";
 	}
+
+	void logTransferSummary(OpSink &sink, const OpRequest &request,
+							const OpJournal &journal, const OpRunner::Totals &totals)
+	{
+		const auto &record = journal.record();
+		const auto &job = record.path.isEmpty() ? request : record.request;
+		if (job.kind != OpKind::Copy && job.kind != OpKind::Move)
+			return;
+		if (!request.resumeJournalPath.isEmpty() && record.path.isEmpty())
+		{
+			sink.log(QtWarningMsg, QStringLiteral("File operation incomplete: saved results are unavailable."));
+			return;
+		}
+		qsizetype transferred = 0, skipped = 0, unchanged = 0, unfinished = 0;
+		// Final entries include work completed before Resume; run totals do not.
+		for (const auto &entry : record.entries)
+		{
+			if (entry.item.maintenance)
+				continue;
+			switch (entry.step)
+			{
+			case Step::Done:
+			case Step::SourceRemoved:
+				++transferred;
+				break;
+			case Step::Skipped:
+				++skipped;
+				break;
+			case Step::NoEffect:
+				++unchanged;
+				break;
+			default:
+				++unfinished;
+				break;
+			}
+		}
+		if (record.entries.isEmpty())
+			unfinished = std::count_if(job.items.cbegin(), job.items.cend(),
+									   [](const OpItem &item) { return !item.maintenance; });
+		const bool incomplete = unfinished || totals.failed || totals.needsAttention || totals.retained ||
+								!journal.healthy() || !record.stopped;
+		const auto status = totals.cancelled ? QStringLiteral("cancelled")
+							: incomplete ? QStringLiteral("incomplete") : QStringLiteral("complete");
+		const bool copy = job.kind == OpKind::Copy;
+		QString message = QStringLiteral("%1 %2: %3 %4 %5 to %6")
+			.arg(copy ? QStringLiteral("Copy") : QStringLiteral("Move"), status)
+			.arg(transferred)
+			.arg(transferred == 1 ? QStringLiteral("file") : QStringLiteral("files"),
+				 copy ? QStringLiteral("copied") : QStringLiteral("moved"), job.destRoot);
+		if (skipped)
+			message += QStringLiteral("; %1 skipped").arg(skipped);
+		if (unchanged)
+			message += QStringLiteral("; %1 already at destination").arg(unchanged);
+		if (unfinished)
+			message += QStringLiteral("; %1 not completed").arg(unfinished);
+		sink.log(incomplete && !totals.cancelled ? QtWarningMsg : QtInfoMsg, message + QLatin1Char('.'));
+	}
 }
 
 // MARK: - Per-run state
@@ -239,6 +296,7 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 	{
 		m_sink.log(QtCriticalMsg, state.error);
 		state.totals.failed = 1;
+		logTransferSummary(m_sink, input, OpJournal{}, state.totals);
 		return state.totals;
 	}
 	OpRequest request = input;
@@ -265,6 +323,7 @@ OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 	state.totals.cancelled = state.totals.cancelled || m_cancel.load();
 	for (auto it = state.trashCounts.cbegin(); it != state.trashCounts.cend(); ++it)
 		m_sink.trashUsed(it.key(), it.value());
+	logTransferSummary(m_sink, request, journal, state.totals);
 	return state.totals;
 }
 

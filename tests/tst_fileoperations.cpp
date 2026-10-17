@@ -14,6 +14,7 @@
 #include "mediaengine/scancoordinator.h"
 #include <QTest>
 #include <QSignalSpy>
+#include <QRegularExpression>
 #include <memory>
 #include <utility>
 #include <QTemporaryDir>
@@ -118,6 +119,10 @@ namespace
 			results.append(r);
 		}
 	};
+	QStringList copyMoveSummaries(const Sink &sink)
+	{
+		return sink.messages.filter(QRegularExpression(QStringLiteral("^(Copy|Move) (complete|cancelled|incomplete):")));
+	}
 	struct Fixture
 	{
 		QTemporaryDir dir;
@@ -326,6 +331,8 @@ void TestFileOperations::copy_publishes_and_preserves_source()
 	QCOMPARE(records[0].entries[0].step, OpJournal::Step::Done);
 	QVERIFY(records[0].entries[0].landed.valid());
 	QCOMPARE(records[0].entries[0].originalSource, f.src);
+	QCOMPARE(copyMoveSummaries(sink),
+			 QStringList{QStringLiteral("Copy complete: 1 file copied to %1.").arg(f.dest)});
 }
 void TestFileOperations::advisory_copy_move_assessment_data()
 {
@@ -474,6 +481,9 @@ void TestFileOperations::mixed_omf_mxf_transfer_preserves_layout()
 	{
 		QVERIFY(totals.cancelled);
 		QVERIFY(!OperationRecovery::readSummary(f.journals).resumable.isEmpty());
+		QCOMPARE(copyMoveSummaries(sink),
+				 QStringList{move ? QStringLiteral("Move cancelled: 0 files moved to %1; 4 not completed.").arg(f.dest)
+							  : QStringLiteral("Copy cancelled: 1 file copied to %1; 3 not completed.").arg(f.dest)});
 		cancel.store(false);
 		runner.hooks = {};
 		runner.hooks.forceCopy = true;
@@ -499,6 +509,10 @@ void TestFileOperations::mixed_omf_mxf_transfer_preserves_layout()
 		QCOMPARE(finished->entries[i].dst, destinations[i]);
 	}
 	QVERIFY(OperationRecovery::readSummary(f.journals).resumable.isEmpty());
+	QCOMPARE(copyMoveSummaries(sink).size(), resume ? 2 : 1);
+	QCOMPARE(copyMoveSummaries(sink).last(),
+			 move ? QStringLiteral("Move complete: 4 files moved to %1.").arg(f.dest)
+				  : QStringLiteral("Copy complete: 4 files copied to %1.").arg(f.dest));
 }
 
 void TestFileOperations::advisory_space_estimate_saturates()
@@ -602,6 +616,9 @@ void TestFileOperations::already_at_destination_move()
 	QCOMPARE(forward->entries[0].step, OpJournal::Step::NoEffect);
 	QCOMPARE(forward->entries[1].step, OpJournal::Step::SourceRemoved);
 	QVERIFY(OperationRecovery::readSummary(f.journals).resumable.isEmpty());
+	QCOMPARE(copyMoveSummaries(sink).size(), resume ? 2 : 1);
+	QCOMPARE(copyMoveSummaries(sink).last(),
+			 QStringLiteral("Move complete: 1 file moved to %1; 1 already at destination.").arg(f.dest));
 	OpRequest undo;
 	undo.kind = OpKind::Undo;
 	undo.undoEnabled = true;
@@ -612,6 +629,7 @@ void TestFileOperations::already_at_destination_move()
 	QCOMPARE(get(f.src), f.bytes);
 	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
 	QVERIFY(existingStamp.unchanged(OpFile::inspect(existing)));
+	QCOMPARE(copyMoveSummaries(sink).size(), resume ? 2 : 1);
 }
 void TestFileOperations::already_at_destination_copy_is_not_undone()
 {
@@ -688,6 +706,9 @@ void TestFileOperations::already_at_destination_only_job()
 		QVERIFY(!OpJournal::latestUndoable(f.journals));
 		QVERIFY(OperationRecovery::readSummary(f.journals).resumable.isEmpty());
 		QCOMPARE(get(f.src), f.bytes);
+		QCOMPARE(copyMoveSummaries(sink), QStringList{
+			kind == OpKind::Copy ? QStringLiteral("Copy complete: 0 files copied to %1; 1 already at destination.").arg(request.destRoot)
+								: QStringLiteral("Move complete: 0 files moved to %1; 1 already at destination.").arg(request.destRoot)});
 	}
 }
 void TestFileOperations::undo_already_restored_object_finishes_without_changes()
@@ -769,6 +790,8 @@ void TestFileOperations::skip_never_overwrites()
 	OpRunner runner(sink, cancel);
 	QCOMPARE(runner.run(f.request(OpKind::Copy, "skip"), f.journals).skipped, 1);
 	QCOMPARE(get(f.dest + "/clip.bin"), QByteArray("original"));
+	QCOMPARE(copyMoveSummaries(sink),
+			 QStringList{QStringLiteral("Copy complete: 0 files copied to %1; 1 skipped.").arg(f.dest)});
 }
 void TestFileOperations::replace_is_rejected()
 {
@@ -832,6 +855,8 @@ void TestFileOperations::cancellation_preserves_replacement()
 	QVERIFY(t.cancelled);
 	QCOMPARE(get(f.dest + "/clip.bin"), QByteArray("other writer"));
 	QCOMPARE(get(f.src), f.bytes);
+	QCOMPARE(copyMoveSummaries(sink),
+			 QStringList{QStringLiteral("Copy cancelled: 0 files copied to %1; 1 not completed.").arg(f.dest)});
 }
 void TestFileOperations::failed_cleanup_remains_journalled()
 {
@@ -895,6 +920,8 @@ void TestFileOperations::cancel_during_retirement_restores_original()
 	QCOMPARE(sink.results.last().state, OpResult::State::OriginalRestored);
 	QVERIFY(!sink.results.last().sourceRemoved);
 	QVERIFY(OperationRecovery::readSummary(f.journals).restorable.isEmpty());
+	QCOMPARE(copyMoveSummaries(sink),
+			 QStringList{QStringLiteral("Move cancelled: 0 files moved to %1; 1 not completed.").arg(f.dest)});
 	cancel = false;
 	runner.hooks = {};
 	OpRequest resume;
@@ -902,6 +929,8 @@ void TestFileOperations::cancel_during_retirement_restores_original()
 	QCOMPARE(runner.run(resume, f.journals).needsAttention, 0);
 	QCOMPARE(get(f.src), f.bytes); // Resume must not retire this original again.
 	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
+	QCOMPARE(copyMoveSummaries(sink).last(),
+			 QStringLiteral("Move incomplete: 0 files moved to %1; 1 not completed.").arg(f.dest));
 }
 
 void TestFileOperations::blocked_restore_survives_dismissal_and_later_job_data()
@@ -947,6 +976,7 @@ void TestFileOperations::blocked_restore_survives_dismissal_and_later_job()
 		put(f.dest + "/clip.bin", "changed destination");
 	OpRequest restore;
 	restore.restoreJournalPath = record.path;
+	sink.messages.clear();
 	const auto restored = runner.run(restore, f.journals);
 	QVERIFY2(restored.needsAttention == 0, qPrintable(sink.messages.join('\n')));
 	QCOMPARE(restored.succeeded, 1);
@@ -958,6 +988,7 @@ void TestFileOperations::blocked_restore_survives_dismissal_and_later_job()
 	QVERIFY(OperationRecovery::readSummary(f.journals).restorable.isEmpty());
 	QCOMPARE(runner.run(restore, f.journals).needsAttention, 0);
 	QCOMPARE(get(f.src), f.bytes);
+	QVERIFY(copyMoveSummaries(sink).isEmpty());
 }
 
 void TestFileOperations::restoration_crash_boundaries_are_idempotent_data()
@@ -1197,6 +1228,8 @@ void TestFileOperations::journal_failure_stops_publication()
 	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
 	QVERIFY(QFile::exists(f.src));
 	QCOMPARE(OpJournal::scan(f.journals).size(), 1);
+	QCOMPARE(copyMoveSummaries(sink),
+			 QStringList{QStringLiteral("Copy incomplete: 0 files copied to %1; 1 not completed.").arg(f.dest)});
 }
 void TestFileOperations::missing_journal_prevents_relocation()
 {
@@ -1209,6 +1242,8 @@ void TestFileOperations::missing_journal_prevents_relocation()
 	QCOMPARE(t.succeeded, 0);
 	QVERIFY(QFile::exists(f.src));
 	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
+	QCOMPARE(copyMoveSummaries(sink),
+			 QStringList{QStringLiteral("Move incomplete: 0 files moved to %1; 1 not completed.").arg(f.dest)});
 }
 void TestFileOperations::crash_before_publication_is_not_complete()
 {
@@ -1289,6 +1324,8 @@ void TestFileOperations::same_volume_move_preserves_identity()
 	QVERIFY(original.sameObject(OpFile::inspect(f.dest + "/clip.bin")));
 	QVERIFY(!QFile::exists(f.src));
 	QVERIFY(sink.results.last().sourceRemoved);
+	QCOMPARE(copyMoveSummaries(sink),
+			 QStringList{QStringLiteral("Move complete: 1 file moved to %1.").arg(f.dest)});
 }
 void TestFileOperations::rename_group_conflict_skips_every_member()
 {
@@ -1828,6 +1865,15 @@ void TestFileOperations::compact_scan_receipt_operations_and_recovery()
 	QCOMPARE(get(landedPath), original);
 	QCOMPARE(QFile::exists(sourcePath), OpKind(kind) == OpKind::Copy);
 	QVERIFY(OperationRecovery::readSummary(f.journals).resumable.isEmpty());
+	if (OpKind(kind) == OpKind::Copy || OpKind(kind) == OpKind::Move)
+	{
+		QCOMPARE(copyMoveSummaries(sink).size(), resume ? 2 : 1);
+		QCOMPARE(copyMoveSummaries(sink).last(),
+				 OpKind(kind) == OpKind::Copy ? QStringLiteral("Copy complete: 1 file copied to %1.").arg(f.dest)
+											  : QStringLiteral("Move complete: 1 file moved to %1.").arg(f.dest));
+	}
+	else
+		QVERIFY(copyMoveSummaries(sink).isEmpty());
 	OpRequest undo;
 	undo.kind = OpKind::Undo;
 	undo.undoEnabled = true;
@@ -1835,6 +1881,7 @@ void TestFileOperations::compact_scan_receipt_operations_and_recovery()
 	undo.diagnosticTrashRoot = f.root + QStringLiteral("/_MediaMuster_Trash");
 	runner.hooks = {};
 	runner.hooks.forceNetworkTrash = true;
+	sink.messages.clear();
 	const auto undone = runner.run(undo, f.journals);
 	QVERIFY2(undone.succeeded == 1, qPrintable(sink.messages.join('\n')));
 	QCOMPARE(undone.failed, 0);
@@ -1842,6 +1889,7 @@ void TestFileOperations::compact_scan_receipt_operations_and_recovery()
 	QVERIFY(!QFile::exists(landedPath));
 	if (OpKind(kind) == OpKind::Rename)
 		QCOMPARE(get(homePath), original);
+	QVERIFY(copyMoveSummaries(sink).isEmpty());
 }
 
 void TestFileOperations::skipped_header_checks_database_file_identity_data()
@@ -2876,6 +2924,8 @@ void TestFileOperations::move_copies_every_file_before_removal()
 	QCOMPARE(get(f.dest + "/audio.bin"), secondBytes);
 	QCOMPARE(sink.results.size(), 2);
 	QVERIFY(OpJournal::scan(f.journals)[0].copiesComplete);
+	QCOMPARE(copyMoveSummaries(sink),
+			 QStringList{QStringLiteral("Move complete: 2 files moved to %1.").arg(f.dest)});
 }
 void TestFileOperations::failed_copy_continues_and_blocks_all_original_removal()
 {
@@ -2898,6 +2948,8 @@ void TestFileOperations::failed_copy_continues_and_blocks_all_original_removal()
 	QCOMPARE(get(second.src), f.bytes);
 	QCOMPARE(get(f.dest + "/audio.bin"), f.bytes);
 	QVERIFY(!OpJournal::scan(f.journals)[0].copiesComplete);
+	QCOMPARE(copyMoveSummaries(sink),
+			 QStringList{QStringLiteral("Move incomplete: 0 files moved to %1; 2 not completed.").arg(f.dest)});
 }
 void TestFileOperations::explicit_skip_survives_disappearing_conflict()
 {
@@ -2919,6 +2971,8 @@ void TestFileOperations::explicit_skip_survives_disappearing_conflict()
 	QCOMPARE(get(f.src), f.bytes);
 	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
 	QVERIFY(!QFile::exists(second.src));
+	QCOMPARE(copyMoveSummaries(sink),
+			 QStringList{QStringLiteral("Move complete: 1 file moved to %1; 1 skipped.").arg(f.dest)});
 }
 void TestFileOperations::removal_crash_boundaries_resume()
 {
