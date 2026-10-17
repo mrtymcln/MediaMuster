@@ -36,13 +36,6 @@ public:
 	/// Volumes call this on the UI thread.
 	QVector<VolumeInfo> detectVolumes() const;
 
-	// MARK: - Full Disk Access
-
-	/// Read the user's protected TCC database. Any failure returns false.
-	static bool hasFullDiskAccess();
-
-	static void openFullDiskAccessSettings();
-
 private:
 	static bool hasAvidMediaFolder(const QString &path);
 	static QStringList knownAvidLocations();

@@ -29,7 +29,7 @@ Parser-added locator labels are not automatically literal Avid format strings;
 see the [identity reference](../Project%20Copland/metadata-reference.md#stored-names-parser-labels-and-object-roles).
 
 Feature flag constants use `k` plus the feature name, without an `Enabled` suffix:
-`FeatureFlags::kOmfScan`, `FeatureFlags::kMonospaceTable`, `FeatureFlags::kPrecomputeFilter`.
+`FeatureFlags::kOmfScan`, `FeatureFlags::kPrecomputeFilter`, `FeatureFlags::kUndo`.
 
 Use structs for related data and classes for resource ownership or enforced rules.
 Structs may have useful methods. Give helpers a focused home; avoid a general dumping

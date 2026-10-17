@@ -1,10 +1,7 @@
 #include "volumemanager.h"
 #include "conventions.h"
 #include <QDir>
-#include <QFile>
 #include <QFileInfo>
-#include <QOperatingSystemVersion>
-#include <QProcess>
 #include <QSet>
 #include <QStorageInfo>
 
@@ -160,33 +157,6 @@ QVector<VolumeInfo> VolumeManager::detectVolumes() const
 			  });
 
 	return volumes;
-}
-
-// MARK: - Full Disk Access
-
-bool VolumeManager::hasFullDiskAccess()
-{
-#ifdef Q_OS_MAC
-	QFile probe(QDir::homePath() + QStringLiteral("/Library/Application Support/com.apple.TCC/TCC.db"));
-	return probe.open(QIODevice::ReadOnly);
-#else
-	return true;
-#endif
-}
-
-void VolumeManager::openFullDiskAccessSettings()
-{
-#ifdef Q_OS_MAC
-	const auto current = QOperatingSystemVersion::current();
-	const auto ventura = QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 13, 0);
-	const QString url =
-		(current >= ventura)
-			? QStringLiteral("x-apple.systempreferences:com.apple.settings.PrivacySecurity."
-							 "extension?Privacy_AllFiles")
-			: QStringLiteral(
-				  "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles");
-	QProcess::startDetached("open", {url});
-#endif
 }
 
 // MARK: - Volume type heuristics

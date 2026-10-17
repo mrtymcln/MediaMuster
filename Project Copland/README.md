@@ -857,16 +857,14 @@ This is source analysis, not a runtime reproduction. See
 | --- | --- | --- |
 | Reveal Diagnostics / disk log | Reveals the local technical log; disk logging persists across sessions independently of Console visibility. | C59 retains message detail, C80 retains history across restarts/Reveal Diagnostics and C88 sets automatic 30-day cleanup without a specified size cap. Synchronous per-message flushing is a current implementation cost, not a requirement merely of retaining technical messages. |
 | Crash support | On macOS startup, copies recent MediaMuster crash reports into local diagnostics and notices newly collected reports. | Keep under C81, with no automatic transmission. C88 requires automatic 30-day cleanup; current copies have no pruning. This is separate from C58's retained unfinished-operation recovery. |
-| Debug display controls | Monospace table changes the table font; Fusion style changes the app style for the session. | C82 retains Fusion style only and removes the Monospace control. No media graph retention or measured material scan-memory saving. |
-| Full Disk Access guidance | macOS Help checks a TCC.db access probe and offers explanatory text/settings navigation; startup can log a warning. | Remove this support feature completely under C83. The probe does not certify access to every media path; ordinary scan failures remain independent observations. |
+| Debug display controls | Fusion style changes the app style for the session. The table and its headers inherit normal Qt fonts; the Console retains its separate monospace font. | C82 is implemented: the Monospace table control, helper and flag are removed. No measured scan-memory saving is claimed. |
+| Full Disk Access feature | Removed: no startup permission probe/warning, Help command, explanatory dialog or Settings shortcut. | C83 is implemented. Ordinary discovery, file-read reporting and operation safeguards remain independent retained behavior. |
 | Send feedback | Opens an addressed email draft in the default mail app, without a body or diagnostic attachment. | Keep under C84. Nothing is sent automatically. If the mail app cannot open, a dialog shows the address. |
 | About | Shows app/version information and animated credits. | Keep current presentation under C85. Its animation runs only while the modal dialog is open; it is not background scan work. |
 
-See [Help menu](../src/mainwindow.cpp#L710),
-[crash notice](../src/mainwindow.cpp#L245),
-[Debug controls](../src/mainwindow.cpp#L681),
-[access probe](../src/volumemanager.cpp#L262),
-[access guidance](../src/mainwindow.cpp#L905),
+See [Help menu](../src/mainwindow.cpp),
+[crash notice](../src/mainwindow.cpp),
+[Debug controls](../src/mainwindow.cpp),
 [About dialog](../src/aboutdialog.cpp#L118) and
 [About animation](../src/aboutdialog.cpp#L49).
 
@@ -1402,8 +1400,6 @@ current code. This is a status review, not a newly approved work order.
 
 | Cleanup | Remaining work |
 | --- | --- |
-| C82: Monospace table control | Remove the table action, toggle/helper and feature flag. Keep Fusion and the Console's separate font use. |
-| C83: Full Disk Access | Remove the startup probe/warning, Help action and Settings helpers. Retain ordinary read-error reporting. |
 | C78: Main-window Escape | Clear Search without resetting Project or view. Preserve dialog dismissal and progress cancellation. |
 | C76: Manual folder inputs | Remove broad parent/MXF/leaf input acceptance; keep managed roots or drives with managed folders at their root. Preserve scan discovery within an admitted root. |
 | C88: Diagnostics retention | Replace whole-log age deletion with the agreed 30-day history retention, and prune old collected crash reports while protecting operation journals. |
@@ -1455,6 +1451,37 @@ prepared table/CSV/operation UI controls also pass in those suites.
 `git diff --check` passes. Call-site review confirms that detection is requested
 only by Refresh, which startup also invokes; neither scan command triggers it.
 No Windows/NEXIS acceptance or measured speed/memory improvement is claimed.
+
+### Full Disk Access and Monospace table removal — 17 October 2026
+
+After C60, the recommended next checkpoint is the already agreed C82/C83
+removals together. Remove the Full Disk Access startup probe/warning, macOS Help
+action, dialog and Settings shortcut/helpers. Remove the Monospace table action,
+feature flag and table/header font override. The table currently defaults to
+normal Qt styling, so retain that inheritance; keep the separate Console font,
+Fusion toggle, remaining Help items and ordinary file-access error reporting.
+
+Read-only review found no other consumers of those helpers. Remove includes that
+become unused with them; MainWindow's platform-version reporting still needs its
+existing OS-version include. No new permission probe or replacement font control
+is proposed. The user chose **Remove both together**, authorizing this combined
+checkpoint rather than Full Disk Access first. No new font or permission policy
+is being selected. No measured performance improvement is claimed.
+
+Implemented and verified 17 October 2026. Removed both features and their unused
+declarations/includes; the source and tests contain no remaining permission-probe,
+Settings-route or Monospace-table symbols/strings. The Console's font helper is
+retained and documented as Console-only. Fusion and the remaining Help commands
+are unchanged. Active behavior, build-flag and contributor documentation now
+match the code; dated review notes remain historical records.
+
+The app and all configured targets build with pinned Qt 6.5.3, C++17 and Release
+arm64. The existing operation-UI suite passes (8.82 seconds), and
+`git diff --check` passes. A scoped read-only review found no broken consumers
+or changes to retained font/style, drive discovery or ordinary access reporting.
+No new test harness, permission probe, compatibility alias or replacement
+display/permission feature was introduced. No measured performance improvement
+or Windows/NEXIS verification is claimed.
 
 ### Scan cancellation next — 17 October 2026
 

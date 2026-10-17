@@ -28,7 +28,6 @@
 #include <QFileIconProvider>
 #include <QFileInfo>
 #include <QFont>
-#include <QFontDatabase>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QHash>
@@ -70,7 +69,7 @@
 
 namespace
 {
-	/// Monospaced font for the table and console.
+	/// Monospaced font for the Console.
 	QFont monoFont()
 	{
 #ifdef Q_OS_MAC
@@ -211,14 +210,6 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	addLog(QtInfoMsg, QStringLiteral("app"), QStringLiteral("%1 %2 initialised on %3").arg(APP_NAME, APP_VERSION, platform));
 
 	refreshVolumes();
-
-#ifdef Q_OS_MAC
-	if (!VolumeManager::hasFullDiskAccess())
-	{
-		addLog(QtWarningMsg, QStringLiteral("app"),
-			   "Full Disk Access not granted. Go to System Preferences > Privacy & Security.");
-	}
-#endif // Q_OS_MAC
 
 	// Show the window before recovery. Finish any crash-report notice first
 	// so it cannot overlap the recovery prompts.
@@ -450,7 +441,6 @@ void MainWindow::buildTable()
 	m_tableView->horizontalHeader()->setSectionsMovable(true);
 	m_tableView->horizontalHeader()->setHighlightSections(false);
 	m_tableView->setContextMenuPolicy(Qt::CustomContextMenu);
-	setMonospaceTableEnabled(FeatureFlags::kMonospaceTable);
 
 	// Every session starts here. Scans leave widths alone; the View menu
 	// provides Qt's native content fitting when requested.
@@ -475,17 +465,6 @@ void MainWindow::buildTable()
 	setW(Col::Location, 250);
 	setW(Col::NoDatabase, 130);
 	setW(Col::NoReference, 130);
-}
-
-void MainWindow::setMonospaceTableEnabled(bool enabled)
-{
-	// An unresolved font restores Qt's native styling.
-	QFont font = enabled ? QFontDatabase::systemFont(QFontDatabase::FixedFont) : QFont();
-	if (enabled)
-		font.setPointSize(12);
-	m_tableView->setFont(font);
-	m_tableView->horizontalHeader()->setFont(font);
-	m_tableView->verticalHeader()->setFont(font);
 }
 
 // MARK: - Console
@@ -675,12 +654,6 @@ void MainWindow::buildDebugMenu()
 
 	auto *debugMenu = menuBar()->addMenu(tr("&Debug"));
 	debugMenu->setObjectName(QStringLiteral("debugMenu"));
-	auto *monospaceTableAction = debugMenu->addAction(QStringLiteral("Monospace table"));
-	monospaceTableAction->setObjectName(QStringLiteral("monospaceTableDebugAction"));
-	monospaceTableAction->setCheckable(true);
-	monospaceTableAction->setChecked(FeatureFlags::kMonospaceTable);
-	connect(monospaceTableAction, &QAction::toggled, this, &MainWindow::setMonospaceTableEnabled);
-
 	// Save the startup style before the debug toggle changes it.
 	const QString nativeStyleName = QApplication::style()->name();
 	auto *fusionStyleAction = debugMenu->addAction(tr("Fusion style"));
@@ -704,11 +677,6 @@ void MainWindow::buildHelpMenu()
 	connect(aboutAction, &QAction::triggered, this, &MainWindow::onAbout);
 
 	helpMenu->addSeparator();
-
-#ifdef Q_OS_MAC
-	auto *permissionsAction = helpMenu->addAction(tr("Full Disk Access"));
-	connect(permissionsAction, &QAction::triggered, this, &MainWindow::onCheckPermissions);
-#endif
 
 	// The diagnostic log always runs; this just surfaces it so the user can
 	// send it in, even though it lives in hidden ~/Library.
@@ -880,37 +848,6 @@ void MainWindow::setupConnections()
 					  m_projectList->clearSelection();
 					  m_filterTabs->setCurrentIndex(0);
 				  });
-}
-
-// MARK: - Full Disk Access prompt
-
-void MainWindow::onCheckPermissions()
-{
-#ifdef Q_OS_MAC
-	bool hasFDA = VolumeManager::hasFullDiskAccess();
-	if (hasFDA)
-	{
-		QMessageBox::information(this, QString(),
-								 tr("Full Disk Access is <b>granted</b>.<br><br>"
-									"I can muster all volumes and folders on this Mac!"));
-	}
-	else
-	{
-		QMessageBox box(this);
-		box.setIcon(QMessageBox::Warning);
-		box.setText(tr("Full Disk Access is <b>not granted</b>.<br><br>"
-					   "I may not be able to muster all your media.<br><br>"
-					   "<i>After granting access, quit and relaunch MediaMuster.</i>"));
-		auto *openBtn = box.addButton(tr("Open System Preferences"), QMessageBox::AcceptRole);
-		box.addButton(QMessageBox::Cancel);
-		box.setDefaultButton(openBtn);
-		box.exec();
-		if (box.clickedButton() == openBtn)
-		{
-			VolumeManager::openFullDiskAccessSettings();
-		}
-	}
-#endif // Q_OS_MAC
 }
 
 // MARK: - Feature configuration

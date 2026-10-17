@@ -16,13 +16,6 @@ The app opens its main window, finds storage locations and checks for unfinished
 file operations. Use Refresh Volumes to update the drive list after startup.
 You start a media scan with the scan controls.
 
-On macOS, startup and **Help > Full Disk Access** probe Full Disk Access by
-opening the current user's protected TCC database read-only. The probe does not
-read or change its contents. Startup logs a warning only if the probe fails; a
-successful probe is silent. The menu command shows the result in a dialog without
-a window title. This is a heuristic, and scanning remains available regardless of
-its result. The permission dialog can open the FDA settings pane.
-
 When startup collects crash reports, a dialog with an empty window title directs
 the user to **Help > Reveal Diagnostics** to share them with the developer.
 
@@ -39,7 +32,7 @@ The Console and diagnostic log use the same bare category labels:
 
 | Shared category | Messages |
 | --- | --- |
-| `app` | Startup, permissions, crashes, selection, CSV export, revealing files and background-task problems |
+| `app` | Startup, crashes, selection, CSV export, revealing files and background-task problems |
 | `volumes` | Finding, adding and refreshing storage locations |
 | `scanner` | Scanning, cancellation and completion notices |
 | `mediaengine` | Fresh-reader diagnostics, retained metadata conflicts and scoped reconciliation notices |
@@ -61,7 +54,9 @@ appear in the Debug menu. Rendered media remains in ordinary scan results when
 precompute details and filtering are disabled.
 
 The Debug menu contains **Fusion style** (off at launch). The menu has its own
-independent build flag. See [release feature gates](release-feature-gates.md).
+independent build flag. The media table and headers inherit normal Qt font
+styling; the Console retains its monospaced font. See
+[release feature gates](release-feature-gates.md).
 
 ## Menus
 

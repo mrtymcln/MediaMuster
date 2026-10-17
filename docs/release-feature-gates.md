@@ -92,14 +92,15 @@ switches and their current values. Rebuild after changing a value.
 | --- | --- | --- |
 | kOmfScan | Scans discover and parse managed OMF essence. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. |
 | kPrecomputeFilter | Adds precompute detail columns and CSV fields, the Precomputes tab, toolbar filter and Special > Filter Precomputes. | Hides precompute details and filtering; rendered media remains in ordinary scan results. |
-| kSequenceFilter | Reserved for the deferred v2 sequence picker; currently false. The reference engine supports sequence scopes, but the live dialog applies whole-bin references. | Keeps the sequence picker unavailable; whole-bin filtering remains available. |
 | kUndo | Makes file-operation Undo available in Edit, with its shortcut, for eligible recorded jobs. | Hides file-operation Undo, removes its shortcut and rejects new Undo requests. Normal text-editing Undo still works. |
-| kDebugMenu | Shows feature toggles and Fusion style in the Debug menu. | Omits the Debug menu. |
-| kMonospaceTable | Uses the system monospaced font for table rows and headers. | Uses normal Qt table font styling. |
+| kDebugMenu | Shows the session-only Fusion style toggle in the Debug menu. | Omits the Debug menu. |
 
 OMF, Precomputes and Undo have no Debug menu controls. Their availability is
 independent of whether the Debug menu is included. Fusion style starts off on
-each launch.
+each launch. The table and headers inherit normal Qt font styling; the Console
+keeps its monospaced font. Neither has a font feature flag or table-font control.
+Exact sequence filtering is deferred after V1; there is no dormant sequence flag
+or picker in the current build.
 
 Interrupted operations, including an Undo already started in another build,
 remain recoverable through Unfinished Business even when Undo is disabled.

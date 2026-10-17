@@ -71,7 +71,6 @@ private slots:
 	void autoFitColumns();
 	void onTableDoubleClicked(const QModelIndex &index);
 	void onPathsDropped(const QStringList &paths);
-	void onCheckPermissions();
 	void onFilterByBins();
 	void onFilterPrecomputes();
 	void onRebalance();
@@ -86,7 +85,6 @@ private:
 	void buildSidePanel();
 	QWidget *buildToolbar();
 	void buildTable();
-	void setMonospaceTableEnabled(bool enabled);
 	void buildConsole();
 	void buildStatusBar();
 
