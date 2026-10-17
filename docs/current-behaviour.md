@@ -213,9 +213,9 @@ alternatives and source receipts support matching and validation while the scann
 works. Before rows reach the table, the app keeps the selected values, a fixed
 checklist of metadata status and the facts needed for operation checks, then
 discards the working scan result. Ordinary rows keep no observation history or
-scan owner. Reconciliation notices can retain their own source diagnostics, and
-loaded AVB bins retain graphs for filtering and reference resolution. These are
-separate owners. Known recording payloads are skipped rather than loaded as
+scan owner. Reconciliation notices can retain their own source diagnostics.
+Loaded AVB bins retain resolved file identities and load warnings; their parsed
+graphs are temporary. Known recording payloads are skipped rather than loaded as
 metadata. Readers do not invent meanings for unknown properties.
 
 When preparing the compact status record, a checked Audio result without an
@@ -469,8 +469,9 @@ or every bin on disk.
 The whole-bin filter now uses the MediaEngine AVB reader and reference engine. Readable
 partial results remain usable with a persistent **Results may be incomplete**
 warning and Console details. A completely unreadable bin or cancelled operation
-cannot supply an applicable filter. Applied filter steps keep their warning and
-source evidence even if the loaded-bin row is later removed. The live dialog uses
+cannot supply an applicable filter. Applied filter steps keep their file references
+and warnings even if the loaded-bin row is later removed. Removing that bin's
+contribution remains a separate Copland checkpoint. The live dialog uses
 Whole Bin scope. There is no individual sequence picker, sequence list API or
 sequence feature flag.
 
@@ -499,8 +500,8 @@ values. [AVB coverage](avb-parser.md) records the active rules and limits.
 Loading or removing bins does not change Clip Name, Original Bin or derived effect
 details in the media table or CSV. Those values come from scanned media and folder
 databases. Missing applicable values remain blank when those sources cannot supply
-them. Loaded bins and applied filter steps still retain source graphs and bin
-metadata for filtering; compacting those graphs remains outstanding.
+them. Loaded bins and applied filter steps keep the resolved references needed for
+filtering, without retaining parsed graphs or detailed resolution records.
 
 Selections are remembered across filter changes, but **file operations use only
 currently visible selected rows**. Hidden selections can reappear when the filter

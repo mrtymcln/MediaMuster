@@ -9,6 +9,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QSet>
 #include <QTest>
 #include <cstring>
 
@@ -126,6 +127,8 @@ class TestMediaEngineAvb final : public QObject
 private slots:
 	void nativeGraph_data();
 	void nativeGraph();
+	void nativeCompositionWords_data();
+	void nativeCompositionWords();
 	void referencesRetainSourceIndices_data();
 	void referencesRetainSourceIndices();
 	void bothTextRepresentationsRemainSeparate_data();
@@ -182,6 +185,24 @@ void TestMediaEngineAvb::nativeGraph()
 	QVERIFY(identity);
 	QCOMPARE(identity->decoded.toByteArray(), TestAvb::Master);
 	QVERIFY(!textValues(*composition, QStringLiteral("Owned clip")).isEmpty());
+}
+
+void TestMediaEngineAvb::nativeCompositionWords_data() { endianRows(); }
+void TestMediaEngineAvb::nativeCompositionWords()
+{
+	QFETCH(bool, big);
+	auto document = graph(big);
+	document.objects[1].payload = TestAvb::composition(big, TestAvb::Master, "Native words", 4, {3}, 0, false);
+	const auto result = parse(document.bytes());
+	QCOMPARE(result.outcome, Outcome::Complete);
+	const auto *composition = object(result, 2);
+	QVERIFY(composition);
+	const auto *first = objectProperty(*composition, QStringLiteral("Composition.legacy_word0"));
+	const auto *second = objectProperty(*composition, QStringLiteral("Composition.legacy_word1"));
+	QVERIFY(first && second);
+	QCOMPARE(first->decoded.toUInt(), quint32(0x11223344));
+	QCOMPARE(second->decoded.toUInt(), quint32(0x77885566));
+	QVERIFY(composition->recordedIdentity.isEmpty()); // No full MobId was recorded.
 }
 
 void TestMediaEngineAvb::referencesRetainSourceIndices_data() { endianRows(); }
@@ -517,12 +538,24 @@ void TestMediaEngineAvb::sourceChangeQualifiesCompletion()
 void TestMediaEngineAvb::realRepoBins_data()
 {
 	QTest::addColumn<QString>("name");
-	QTest::newRow("Avid-WAVE-OMF-bin") << QStringLiteral("WAVE(OMF).avb");
-	QTest::newRow("Avid-AIFF-C-OMF-bin") << QStringLiteral("AIFF-C(OMF).avb");
+	QTest::addColumn<QByteArray>("fileMobId");
+	QTest::addColumn<QByteArray>("masterMobId");
+	QTest::addColumn<QByteArray>("physicalMobId");
+	QTest::newRow("Avid-WAVE-OMF-bin") << QStringLiteral("WAVE(OMF).avb")
+									   << QByteArray::fromHex("060a2b340101010101010f00130000007429976a70397047060e2b347f7f2a80")
+									   << QByteArray::fromHex("060a2b340101010101010f00130000007429976a4e397047060e2b347f7f2a80")
+									   << QByteArray::fromHex("060a2b340101010501010f10130000000de37d9a8412069034364a963681a3eb");
+	QTest::newRow("Avid-AIFF-C-OMF-bin") << QStringLiteral("AIFF-C(OMF).avb")
+										 << QByteArray::fromHex("060a2b340101010101010f00130000009729976a3ec57047060e2b347f7f2a80")
+										 << QByteArray::fromHex("060a2b340101010101010f00130000009729976a3dc57047060e2b347f7f2a80")
+										 << QByteArray::fromHex("060a2b340101010501010f10130000008209999a841206905bd14a963681a3eb");
 }
 void TestMediaEngineAvb::realRepoBins()
 {
 	QFETCH(QString, name);
+	QFETCH(QByteArray, fileMobId);
+	QFETCH(QByteArray, masterMobId);
+	QFETCH(QByteArray, physicalMobId);
 	QFile source(QStringLiteral(FIXTURES_DIR) + QStringLiteral("/omf/mc2026_audio/bins/") + name);
 	QVERIFY2(source.open(QIODevice::ReadOnly), qPrintable(source.errorString()));
 	MediaEngine::Cancellation cancellation;
@@ -530,11 +563,13 @@ void TestMediaEngineAvb::realRepoBins()
 	QCOMPARE(result.container, Container::Avb);
 	QVERIFY(result.outcome == Outcome::Complete || result.outcome == Outcome::Incomplete || result.outcome == Outcome::Unsupported);
 	QVERIFY(!result.objects.isEmpty());
-	bool composition = false, locator = false;
+	QSet<QByteArray> compositionIds;
+	bool locator = false;
 	for (const auto &parsed : result.objects)
 	{
 		QVERIFY(parsed.avb);
-		composition |= parsed.avb->classId == "CMPO";
+		if (parsed.avb->classId == "CMPO")
+			compositionIds.insert(parsed.recordedIdentity);
 		locator |= parsed.avb->classId == "MSML";
 		for (const auto &field : parsed.properties)
 		{
@@ -550,7 +585,8 @@ void TestMediaEngineAvb::realRepoBins()
 			QCOMPARE(exact, field.encoding);
 		}
 	}
-	QVERIFY(composition && locator);
+	QCOMPARE(compositionIds, (QSet<QByteArray>{fileMobId, masterMobId, physicalMobId}));
+	QVERIFY(locator);
 	if (result.outcome != Outcome::Complete)
 		QVERIFY(!result.diagnostics.isEmpty());
 }

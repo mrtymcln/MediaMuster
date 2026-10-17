@@ -5,14 +5,7 @@
 #include <QMetaType>
 #include <QString>
 #include <QVector>
-#include <QSharedPointer>
 #include <QStringList>
-
-namespace MediaEngine
-{
-	struct ParsedSource;
-	struct AvbReferenceResult;
-}
 
 /// Ordered operations on files identified by the selected bins' MSML locators.
 /// A shared MasterMobId does not establish bin-filter membership.
@@ -31,8 +24,6 @@ struct AvbFilter
 		QVector<QString> binDisplayNames;
 		AvbFileReferences fileReferences;
 		QStringList warnings;
-		QVector<QSharedPointer<const MediaEngine::ParsedSource>> sourceGraphs;
-		QVector<QSharedPointer<const MediaEngine::AvbReferenceResult>> referenceResults;
 	};
 
 	QVector<Step> steps;

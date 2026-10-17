@@ -48,10 +48,17 @@ is treated as a track mapping.
 `coverageComplete` separately describes reference coverage. Readable partial results remain
 usable with a persistent **Results may be incomplete** warning and Console details.
 A completely unreadable bin or cancelled load cannot supply an applicable filter.
-Currently, each applied step retains its warning and source evidence after its
-loaded-bin row is removed; Copland's unload/recalculation checkpoint is still
-outstanding. No usable references means no new operand, rather than a fabricated
-complete selection.
+Loaded bins retain resolved file identities, their name/path and load status,
+errors and warnings. Parsed object graphs and detailed resolution results are
+temporary loading data and are released before delivery to the dialog. Each
+applied step retains file references and warnings, without keeping those graphs
+alive. Currently, those snapshots survive removal of their loaded-bin row;
+Copland's unload/recalculation checkpoint is still outstanding. No usable
+references means no new operand, rather than a fabricated complete selection.
+
+The loader does not prepare Clip Name or Original Bin values or check conflicts
+between those unused names. Low-level decoding and structural/reference warnings
+remain; scanned table metadata is unchanged.
 
 The + picker accepts `.avb` files and sends them to the background reader. Drag and
 drop additionally checks the extension and short Avid header signature. Passing

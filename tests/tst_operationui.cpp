@@ -66,7 +66,7 @@ namespace
 		return file.open(QIODevice::WriteOnly) && file.write(data) == data.size();
 	}
 	MediaEngine::MediaFile authoredScanRow(const QString &path, int index,
-		MediaFile::DbStatus databaseStatus = MediaFile::DbStatus::NoDatabase)
+										   MediaFile::DbStatus databaseStatus = MediaFile::DbStatus::NoDatabase)
 	{
 		MediaEngine::MediaFile file;
 		file.kelpieId = index + 1;
@@ -88,7 +88,7 @@ namespace
 		add(MediaProperty::Kind, int(MediaFile::Kind::Video));
 		add(MediaProperty::Type, int(MediaFile::Type::Media));
 		add(MediaProperty::FileDuration, MediaEngine::durationValue(
-			MediaDuration{250, {25, 1}, {25, 1}, MediaDuration::Source::Descriptor}));
+											 MediaDuration{250, {25, 1}, {25, 1}, MediaDuration::Source::Descriptor}));
 		MetadataObservation membership;
 		membership.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
 			MetadataSource::Filesystem, path, {}, SourceReadState::Complete});
@@ -367,8 +367,8 @@ void TestOperationUi::csv_export_completes_before_return()
 		for (int index = 0; index < 3; ++index)
 		{
 			const auto databaseStatus = databaseView
-				? (index < 2 ? MediaFile::DbStatus::NoReference : MediaFile::DbStatus::Listed)
-				: MediaFile::DbStatus::NoDatabase;
+											? (index < 2 ? MediaFile::DbStatus::NoReference : MediaFile::DbStatus::Listed)
+											: MediaFile::DbStatus::NoDatabase;
 			auto file = authoredScanRow(path(QStringLiteral("original-%1.mxf").arg(index)), index, databaseStatus);
 			auto sourcePath = file.evidence.observations(MediaProperty::ClipName).first();
 			sourcePath.property = mediaPropertyName(MediaProperty::SourcePath);
@@ -1579,7 +1579,7 @@ void TestOperationUi::select_relatives_use_selected_master_and_disable_ambiguous
 	window.m_console->clear();
 	command->trigger();
 	QCOMPARE(appMessages(window.m_console), QStringList{
-		QStringLiteral("Selected 2 files across 1 master clip.")});
+												QStringLiteral("Selected 2 files across 1 master clip.")});
 	QSet<QString> selectedPaths;
 	for (const auto &file : window.selectedFiles())
 		selectedPaths.insert(file.mediaFilePath);
@@ -1593,7 +1593,7 @@ void TestOperationUi::select_relatives_use_selected_master_and_disable_ambiguous
 	window.m_console->clear();
 	window.onSelectRelatives();
 	QCOMPARE(appMessages(window.m_console), QStringList{
-		QStringLiteral("No MasterMobId found in the selected files. Relatives can't be matched.")});
+												QStringLiteral("No MasterMobId found in the selected files. Relatives can't be matched.")});
 	QCOMPARE(window.selectedFiles().size(), 1);
 	QCOMPARE(window.selectedFiles().first().mediaFilePath, rows[3].mediaFilePath);
 }
@@ -1763,7 +1763,7 @@ void TestOperationUi::main_escape_clears_search_and_keeps_other_filters()
 	window.m_filterTabs->setCurrentIndex(precomputeTab);
 	AvbFileReferences references;
 	references.add(AvbFileId::fromMobId(files[0].fileMobId));
-	window.m_proxy->setBinFilter({{{AvbFilter::Operation::Intersect, {}, references, {}, {}, {}}}});
+	window.m_proxy->setBinFilter({{{AvbFilter::Operation::Intersect, {}, references, {}}}});
 	const PrecomputeFilter precomputes{
 		true, {{files[0].precomputeCategoryDisplay(), files[0].effectCategory, files[0].clipName}}};
 	window.m_proxy->setPrecomputeTreeFilter(precomputes);
@@ -1775,7 +1775,7 @@ void TestOperationUi::main_escape_clears_search_and_keeps_other_filters()
 	window.show();
 	window.activateWindow();
 	QWidget *focused = tableFocus ? static_cast<QWidget *>(window.m_tableView)
-								: static_cast<QWidget *>(window.m_searchField);
+								  : static_cast<QWidget *>(window.m_searchField);
 	focused->setFocus();
 	QTRY_COMPARE(QApplication::focusWidget(), focused);
 	QTest::keyClick(focused, Qt::Key_Escape);
@@ -2113,7 +2113,7 @@ void TestOperationUi::filter_tabs_keep_whole_inventory_counts_and_empty_views()
 	verifyWholeInventoryCounts();
 	AvbFileReferences references;
 	references.add(AvbFileId::fromMobId(reference.fileMobId));
-	window.m_proxy->setBinFilter({{{AvbFilter::Operation::Intersect, {}, references, {}, {}, {}}}});
+	window.m_proxy->setBinFilter({{{AvbFilter::Operation::Intersect, {}, references, {}}}});
 	QCOMPARE(window.m_proxy->rowCount(), 1);
 	verifyWholeInventoryCounts();
 	window.m_filterTabs->setCurrentIndex(4);
@@ -2240,7 +2240,6 @@ void TestOperationUi::bin_loading_keeps_prepared_table_and_csv_metadata()
 	QVERIFY(list);
 	QSignalSpy loaded(dialog, &AvbFilterDialog::binLoaded);
 	QSignalSpy warnings(dialog, &AvbFilterDialog::loadWarning);
-	QVector<QWeakPointer<const MediaEngine::ParsedSource>> sourceOwners;
 	const auto makeBin = [&](const QString &name, bool partial = false)
 	{
 		TestAvb::Document d;
@@ -2309,7 +2308,7 @@ void TestOperationUi::bin_loading_keeps_prepared_table_and_csv_metadata()
 			for (const auto &file : rows)
 			{
 				const auto original = std::find_if(expected.cbegin(), expected.cend(), [&](const MediaFile &candidate)
-					{ return candidate.mediaFilePath == file.mediaFilePath; });
+												   { return candidate.mediaFilePath == file.mediaFilePath; });
 				QVERIFY(original != expected.cend());
 				expectedBytes += MediaCsv::rowLine(*original, options).toUtf8();
 				int proxyRow = 0;
@@ -2325,16 +2324,17 @@ void TestOperationUi::bin_loading_keeps_prepared_table_and_csv_metadata()
 			QCOMPARE(csv.readAll(), expectedBytes);
 		}
 	};
-	const auto retainWeakSource = [&]
+	const auto checkLoadedBin = [&]
 	{
 		const auto bin = qvariant_cast<AvbBin>(loaded.last().first());
-		QVERIFY(bin.isUsable() && bin.sourceGraph);
-		sourceOwners.append(QWeakPointer<const MediaEngine::ParsedSource>{bin.sourceGraph});
+		QVERIFY(bin.isUsable());
+		QVERIFY(bin.mediaFileIds.matches(AvbFileId::fromMobId(missing.fileMobId)));
+		QVERIFY(bin.mediaFileIds.matches(AvbFileId::fromMobId(known.fileMobId)));
 		loaded.clear();
 	};
 	dialog->addBinFromFile(makeBin(QStringLiteral("Resize")));
 	QTRY_COMPARE(loaded.count(), 1);
-	retainWeakSource();
+	checkLoadedBin();
 	QTRY_VERIFY(window.m_binFilterActive);
 	QTRY_COMPARE(window.m_proxy->rowCount(), 2);
 	check(prepared);
@@ -2374,7 +2374,7 @@ void TestOperationUi::bin_loading_keeps_prepared_table_and_csv_metadata()
 	const QString secondPath = makeBin(QStringLiteral("3D Warp"), true);
 	dialog->addBinFromFile(secondPath);
 	QTRY_COMPARE(loaded.count(), 1);
-	retainWeakSource();
+	checkLoadedBin();
 	QCOMPARE(warnings.count(), 1);
 	QVERIFY(window.m_console->toPlainText().contains(QStringLiteral("Bin loaded with incomplete results: ") + secondPath));
 	check(prepared);
@@ -2385,6 +2385,8 @@ void TestOperationUi::bin_loading_keeps_prepared_table_and_csv_metadata()
 	QVERIFY(QMetaObject::invokeMethod(dialog, "onRemoveSelectedBinsClicked", Qt::DirectConnection));
 	check(prepared);
 	window.onScanFinished(prepared);
+	QCOMPARE(list->count(), 1);
+	QVERIFY(!window.m_binFilterActive);
 	check(prepared);
 	MediaFile refreshed = missing;
 	refreshed.clipName = QStringLiteral("Color Correction");
@@ -2399,10 +2401,6 @@ void TestOperationUi::bin_loading_keeps_prepared_table_and_csv_metadata()
 	QVERIFY(QMetaObject::invokeMethod(dialog, "onRemoveSelectedBinsClicked", Qt::DirectConnection));
 	check(fresh);
 	dialog->clearFilterSteps();
-	QCOMPARE(sourceOwners.size(), 2);
-	QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
-	for (const auto &source : sourceOwners)
-		QTRY_VERIFY(source.isNull()); // Populated table rows cannot pin an unloaded bin graph.
 	window.onScanFinished(prepared);
 	check(prepared);
 }

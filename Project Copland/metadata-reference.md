@@ -247,8 +247,9 @@ The installed binary's `AComposition` class stores one MobID with a Mob type and
 can create composition, master or source AAF objects. Genuine AVBs contain the
 same three roles under `CMPO`. In the inspected exported AAF, one composition,
 128 masters and 256 sources all use the inherited 32-byte `MobID` property.
-Consequently, `AvbComposition.mobId` and mixed-object lookups keep the general
-name alongside the object type.
+Consequently, mixed-object identity lookups keep the general MobId name alongside
+the object type. The unused app-facing `AvbComposition` record was removed during
+loaded-bin compaction; the reader still decodes those objects for reference resolution.
 
 For a sequence-only identity, the user chose `compositionMobId` /
 **CompositionMobId**. The dormant sequence-list record and selection API have

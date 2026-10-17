@@ -542,10 +542,10 @@ or saved-journal migration remain.
 ### Composition identity choice — 13 October 2026
 
 The user chose **CompositionMobId** for the record containing editing sequences
-only, after reviewing SequenceMobId and CompositionMobId. Rename
-`AvbSequenceEntry.mobId` to `compositionMobId`. Keep `AvbComposition.mobId` and
-mixed-object identity lookups general: despite its class name, the former holds
-composition, master and source objects, distinguished by `mobType`. Do not infer
+only, after reviewing SequenceMobId and CompositionMobId. This checkpoint renamed
+`AvbSequenceEntry.mobId` to `compositionMobId` and kept mixed-object identity
+lookups general. The unused app-facing `AvbComposition` record was subsequently
+removed during loaded-bin compaction. Do not infer
 a file/source role from an arbitrary SourceClip reference; it can target a master
 or another composition.
 
@@ -1452,11 +1452,44 @@ implemented, including C88's 30-day diagnostic history retention. Verification
 and the selected single-log/single-instance scope are recorded in the
 [diagnostic cleanup checkpoint](#diagnostic-history-cleanup--17-october-2026).
 
-Loaded-bin/filter ownership compaction also remains: current filters retain
-parsed AVB graphs. Review only the data needed for existing Whole Bin behavior;
-deferred sequence features must not become prerequisites for that simplification.
-The existing scan/operation protections and representative workload validation
-remain required. None of this review demonstrates a performance improvement.
+### Loaded-bin data compaction — 17 October 2026
+
+The user chose **Discard unused data first, then fix removal**. The first
+checkpoint keeps Whole Bin results and the existing multi-bin
+Intersect/Subtract/Add chain while removing unused retained parsing data.
+Keep each bin's path/name, resolved file identities, usability, reference
+coverage, warnings and error. Parsed AVB graphs and detailed resolution results
+are temporary loading data; applied filter steps need their file references and
+warnings rather than ownership of that working data. Unused clip metadata has
+no remaining table/filter consumer under C16.
+
+C11's removal/recalculation behavior is a separate next checkpoint: this change
+does not alter the current frozen filter operands when a bin is removed. Exact
+sequence filtering remains deferred under C100. The existing scan/operation
+protections and representative workload validation remain required. No measured
+memory or speed improvement has been established.
+
+The user also chose **Remove unused name checks too**: delete the old Clip Name
+and Original Bin selection/conflict checks and their metadata-only warnings.
+Keep reader and reference-resolution safeguards, their diagnostics and the
+existing relationship-class checks. This removes unused metadata processing
+without changing the media references used for filtering.
+
+Implemented and verified on this Mac with pinned Qt 6.5.3, C++17 and Release
+arm64. `AvbBin` and filter steps no longer own parsed graphs or detailed
+resolution results; the unused `AvbComposition` output and metadata preparation
+are removed. The loader is 138 lines, down from 324. Reader/resolver logic is
+unchanged. Obsolete retention/name-selection tests are removed; lower-level
+native ID decoding and genuine OMF identity checks remain in reader tests.
+
+The app and all configured targets build. The six relevant suites pass
+(`tst_mediaengineavb`, `tst_mediaengineavbreferences`, `tst_avbparser`,
+`tst_mediafilterproxy`, `tst_binfilterdialog`, `tst_operationui`; 20.54 seconds).
+They retain Whole Bin/source-track, malformed/partial/cancelled-load, multi-bin
+chain, prepared table/CSV and rescan checks. `git diff --check` passes. This is a
+code/ownership simplification, not a measured performance result. C11 bin
+removal/recalculation is next; no full-suite, Windows or NEXIS result is claimed
+for this checkpoint.
 
 ### Automatic drive checking removal — 17 October 2026
 

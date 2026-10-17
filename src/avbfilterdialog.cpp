@@ -387,8 +387,8 @@ void AvbFilterDialog::dragEnterEvent(QDragEnterEvent *event)
 			continue;
 		inspectedPaths.insert(path);
 		const AvbHeaderResult header = path.endsWith(QStringLiteral(".avb"), Qt::CaseInsensitive)
-										  ? AvbBinLoader::inspectHeader(path)
-										  : AvbHeaderResult{false, tr("Choose an Avid bin file with an .avb extension.")};
+										   ? AvbBinLoader::inspectHeader(path)
+										   : AvbHeaderResult{false, tr("Choose an Avid bin file with an .avb extension.")};
 		if (header.recognized)
 			m_dragAcceptedPaths.insert(path);
 		else
@@ -699,10 +699,6 @@ void AvbFilterDialog::applyOperation(Operation op)
 	{
 		step.binDisplayNames.append(bin->displayName);
 		step.fileReferences.unite(bin->mediaFileIds);
-		if (bin->sourceGraph)
-			step.sourceGraphs.append(bin->sourceGraph);
-		if (bin->referenceResult)
-			step.referenceResults.append(bin->referenceResult);
 		if (!bin->coverageComplete)
 		{
 			step.warnings.append(tr("%1: Results may be incomplete").arg(bin->displayName));

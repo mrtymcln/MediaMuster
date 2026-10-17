@@ -86,7 +86,7 @@ Applicability, agreement, eligibility and freshness remain separate facts; see t
 | [MediaEngine selection policy](../src/mediaengine/metadataselectionpolicy.cpp) | One compiled row per semantic property, using source preferences 3 > 2 > 1 > 0 and explicit duration, association and effect rules. |
 | [MediaEvidence](../src/mediaevidence.h) | Stores scan-time observations separately from selected values, with read state, agreement, eligibility, source, basis and explanation. Ordinary UI rows do not own it. |
 | [MediaMetadataStatus](../src/mediametadatastatus.h) | Fixed inline checklist of field conclusions and header outcome. Contains flags and enum tags, with no selected values, strings or source owners. |
-| [AvbBinLoader](../src/avbbinloader.cpp) | Loads bin files through AvbReader and prepares bin/clip metadata and media references for AvbFilterDialog. These do not enrich media inventory rows. |
+| [AvbBinLoader](../src/avbbinloader.cpp) | Loads bins through AvbReader, resolves file identities and prepares compact filter results and warnings. Releases parsed graphs and does not enrich media inventory rows. |
 | [MediaEngine presentation adapter](../src/mediaengineadapter.cpp) | Borrows completed scan evidence to prepare typed table/filter/CSV values, inline status and frozen operation checks without retaining the evidence or scan. |
 | [AvidEffects](../src/effectcatalogue.cpp) | Maps the selected name of an established precompute to derived effect details; it does not classify the file. |
 
@@ -249,7 +249,9 @@ and [parser compatibility](parser-compatibility.md).
 [AvbFilterDialog](../src/avbfilterdialog.cpp) controls loaded bins and builds an ordered
 [AvbFilter](../src/avbfilter.h) expression. The proxy evaluates each step against a
 row's FileMobId. A shared MasterMobId alone does not establish membership.
-Applied partial steps retain their source graphs and persistent “Results may be
+Loaded bins retain file-reference sets and load status/warnings. Their parsed
+graphs and detailed resolution records are released when loading finishes.
+Applied partial steps retain their file references and persistent “Results may be
 incomplete” warning. The dialog applies Whole Bin scope; no individual sequence
 picker, sequence list API or sequence feature flag remains. Other filters still
 apply to the resulting rows.

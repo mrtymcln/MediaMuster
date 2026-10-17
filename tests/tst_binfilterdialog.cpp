@@ -2,7 +2,6 @@
 // table proxy. Fixtures are complete structured AVBs from testavb.h.
 
 #include "avbfilterdialog.h"
-#include "mediaengine/avbreferences.h"
 #include "mediafilterproxy.h"
 #include "mediatablemodel.h"
 #include "testmediafile.h"
@@ -99,8 +98,8 @@ private slots:
 	void listed_media_only_with_multiple_bins_and_filter_chain();
 	void loaded_bin_batch_preserves_filtering_without_row_metadata();
 	void empty_locator_selection_leaves_filter_unchanged();
-	void partial_results_keep_warnings_and_evidence_data();
-	void partial_results_keep_warnings_and_evidence();
+	void partial_results_keep_warnings_and_references_data();
+	void partial_results_keep_warnings_and_references();
 	void readable_bin_without_matching_files_filters_to_zero();
 	void intersection_and_subtraction_use_row_membership_data();
 	void intersection_and_subtraction_use_row_membership();
@@ -259,7 +258,7 @@ void TestBinFilterDialog::empty_locator_selection_leaves_filter_unchanged()
 	QVERIFY(!h.errorDialog());
 }
 
-void TestBinFilterDialog::partial_results_keep_warnings_and_evidence_data()
+void TestBinFilterDialog::partial_results_keep_warnings_and_references_data()
 {
 	QTest::addColumn<bool>("bigEndian");
 	QTest::addColumn<int>("problem");
@@ -268,7 +267,7 @@ void TestBinFilterDialog::partial_results_keep_warnings_and_evidence_data()
 			QTest::newRow(qPrintable(QStringLiteral("%1-%2").arg(big ? "BE" : "LE").arg(problem))) << big << problem;
 }
 
-void TestBinFilterDialog::partial_results_keep_warnings_and_evidence()
+void TestBinFilterDialog::partial_results_keep_warnings_and_references()
 {
 	QFETCH(bool, bigEndian);
 	QFETCH(int, problem);
@@ -301,7 +300,7 @@ void TestBinFilterDialog::partial_results_keep_warnings_and_evidence()
 			}
 		}
 	};
-	// Keep the existing operand while a second bin brings qualified evidence.
+	// Loading another bin must not replace the existing operand.
 	h.dialog.addBinFromFile(TestAvb::write(tmp.filePath("Good.avb"), TestAvb::mediaBin()));
 	QTRY_VERIFY(h.filter.isActive());
 	const auto previous = h.filter;
@@ -327,7 +326,6 @@ void TestBinFilterDialog::partial_results_keep_warnings_and_evidence()
 
 	QCOMPARE(warnings.count(), 1);
 	QVERIFY(parsed.isUsable() && !parsed.coverageComplete);
-	QVERIFY(parsed.sourceGraph && parsed.referenceResult);
 	QVERIFY(!parsed.mediaFileIds.isEmpty() && !parsed.warnings.isEmpty());
 	unchangedRows();
 	QCOMPARE(h.errors.count(), 0);
@@ -340,16 +338,16 @@ void TestBinFilterDialog::partial_results_keep_warnings_and_evidence()
 	QCOMPARE(h.filter.steps.size(), 1);
 	QVERIFY(h.filter.resultsMayBeIncomplete());
 	unchangedRows();
-	QCOMPARE(h.filter.steps[0].sourceGraphs.size(), 1);
-	QCOMPARE(h.filter.steps[0].sourceGraphs[0], parsed.sourceGraph);
-	QCOMPARE(h.filter.steps[0].referenceResults[0], parsed.referenceResult);
+	QCOMPARE(h.filter.steps[0].fileReferences.fullIds, parsed.mediaFileIds.fullIds);
+	QCOMPARE(h.filter.steps[0].fileReferences.legacyKeys, parsed.mediaFileIds.legacyKeys);
 	const auto warningSnapshot = h.filter.steps[0].warnings;
 	QVERIFY(!warningSnapshot.isEmpty());
 	h.list()->clearSelection();
 	h.list()->item(1)->setSelected(true);
 	QVERIFY(h.invoke("onRemoveSelectedBinsClicked"));
 	QCOMPARE(h.filter.steps[0].warnings, warningSnapshot);
-	QCOMPARE(h.filter.steps[0].sourceGraphs[0], parsed.sourceGraph);
+	QCOMPARE(h.filter.steps[0].fileReferences.fullIds, parsed.mediaFileIds.fullIds);
+	QCOMPARE(h.filter.steps[0].fileReferences.legacyKeys, parsed.mediaFileIds.legacyKeys);
 	QVERIFY(h.filter.resultsMayBeIncomplete());
 	unchangedRows();
 	QVERIFY(h.dialog.findChild<QLabel *>(QStringLiteral("BinChainSummary"))->text().contains(QStringLiteral("Results may be incomplete")));

@@ -43,8 +43,8 @@ them, through `const` inputs where no mutation is required. Keep enum/strong-typ
 distinctions for identities, units and status, and check lossy conversions; avoid
 untyped flag or string protocols where a domain type fits. Stay within C++17, Qt
 and the repository's established naming and formatting conventions. Ordinary UI
-rows must not acquire working scan/evidence owners; retain diagnostics and
-loaded-bin graphs only through their separate consumers. Make performance claims
+rows must not acquire working scan/evidence owners. Loaded bins keep resolved
+file references and warnings; parsed graphs stay local to loading. Make performance claims
 only when supported by measurements.
 
 Keep master-owned details grouped in temporary `Projection.masters` records until

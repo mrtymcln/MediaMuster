@@ -93,7 +93,7 @@ mediamuster_add_test(tst_mediaenginemxf media)
 target_link_libraries(tst_mediaenginemxf PRIVATE mediamuster_mediaengine_core)
 target_compile_definitions(tst_mediaenginemxf PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
-# Bin object graphs, source evidence and selected-sequence reference resolution.
+# Bin object decoding and Whole Bin reference resolution.
 mediamuster_add_test(tst_mediaengineavb media)
 target_link_libraries(tst_mediaengineavb PRIVATE mediamuster_mediaengine_core)
 target_compile_definitions(tst_mediaengineavb PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
@@ -155,7 +155,7 @@ target_compile_definitions(tst_omfuid PRIVATE
 )
 
 # AvbBinLoader: complete structured documents in both byte orders, malformed
-# object/reference boundaries, typed identities and metadata ownership, plus
+# object/reference boundaries and final file identities, plus
 # the two real OMF-era bins in fixtures/omf.
 mediamuster_add_test(tst_avbparser media
     ${CMAKE_SOURCE_DIR}/src/avbbinloader.cpp

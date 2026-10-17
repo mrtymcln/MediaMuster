@@ -202,15 +202,15 @@ void TestMediaFilterProxy::source_path_search_uses_recorded_text_data()
 	QTest::newRow("filename-case-insensitive") << url << QStringLiteral("INTERVIEW.MOV") << true;
 	QTest::newRow("url-escapes-stay-recorded") << url << QStringLiteral("Recorded Imports") << false;
 	QTest::newRow("windows-directory") << QStringLiteral("C:\\Originals\\Camera A\\interview.mov")
-		<< QStringLiteral("originals\\camera a") << true;
+									   << QStringLiteral("originals\\camera a") << true;
 	QTest::newRow("nfc-search-finds-nfd-path") << QStringLiteral("/Originals/") + kCafeNfd + QStringLiteral("/interview.mov")
-		<< kCafeNfc << true;
+											   << kCafeNfc << true;
 	QTest::newRow("nfd-search-finds-nfc-path") << QStringLiteral("/Originals/") + kCafeNfc + QStringLiteral("/interview.mov")
-		<< kCafeNfd << true;
+											   << kCafeNfd << true;
 	QTest::newRow("nfc-accents-remain-significant") << QStringLiteral("/Originals/") + kCafeNfc + QStringLiteral("/interview.mov")
-		<< QStringLiteral("cafe") << false;
+													<< QStringLiteral("cafe") << false;
 	QTest::newRow("nfd-accents-remain-significant") << QStringLiteral("/Originals/") + kCafeNfd + QStringLiteral("/interview.mov")
-		<< QStringLiteral("cafe") << false;
+													<< QStringLiteral("cafe") << false;
 	QTest::newRow("unavailable") << QString{} << QStringLiteral("interview.mov") << false;
 }
 
@@ -302,9 +302,9 @@ void TestMediaFilterProxy::size_column_sorts_on_exact_bytes()
 	// string cannot tell them apart, the sort must.
 	MediaTableModel model;
 	model.setMediaFiles(TestMediaFile::seeded({sized(QStringLiteral("big"), 1'100'000'000),
-						 sized(QStringLiteral("mid_hi"), 850'000'400),
-						 sized(QStringLiteral("mid_lo"), 850'000'000),
-						 sized(QStringLiteral("empty"), 0)}));
+											   sized(QStringLiteral("mid_hi"), 850'000'400),
+											   sized(QStringLiteral("mid_lo"), 850'000'000),
+											   sized(QStringLiteral("empty"), 0)}));
 
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
@@ -490,13 +490,13 @@ void TestMediaFilterProxy::database_filters_intersect_existing_filters()
 	QCOMPARE(proxy.rowCount(), 3);
 	proxy.setSearchText(QStringLiteral("wanted"));
 	QCOMPARE(proxy.rowCount(), 2);
-	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({matching.fileMobId}), {}, {}, {}}}});
+	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({matching.fileMobId}), {}}}});
 	QCOMPARE(proxy.rowCount(), 1);
 	QCOMPARE(proxy.index(0, Enum::to_underlying(MediaTableModel::Column::Location)).data().toString(), matching.mediaFilePath);
 
 	// Whole-inventory tab counts use the shared predicate, independent of these restrictions.
 	const auto inventoryCount = std::count_if(model.allFiles().cbegin(), model.allFiles().cend(), [mode](const MediaFile &file)
-											   { return MediaFilterProxy::matchesMode(mode, file); });
+											  { return MediaFilterProxy::matchesMode(mode, file); });
 	QCOMPARE(inventoryCount, 4);
 	proxy.setFilterMode(Mode::All);
 	QCOMPARE(proxy.rowCount(), 3);
@@ -1450,9 +1450,9 @@ void TestMediaFilterProxy::active_filters_survive_source_reset_and_data_change()
 
 	const auto first = row(QStringLiteral("first"), MediaFile::Kind::Video, project);
 	model.setMediaFiles(TestMediaFile::seeded({first,
-		row(QStringLiteral("match reset"), MediaFile::Kind::Video, project),
-		row(QStringLiteral("match audio"), MediaFile::Kind::Audio, project),
-		row(QStringLiteral("match other project"), MediaFile::Kind::Video, QStringLiteral("Project B"))}));
+											   row(QStringLiteral("match reset"), MediaFile::Kind::Video, project),
+											   row(QStringLiteral("match audio"), MediaFile::Kind::Audio, project),
+											   row(QStringLiteral("match other project"), MediaFile::Kind::Video, QStringLiteral("Project B"))}));
 	QCOMPARE(proxy.rowCount(), 1);
 	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
 	QVERIFY(proxy.rowChecks > 0);

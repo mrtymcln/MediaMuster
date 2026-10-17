@@ -92,7 +92,9 @@ transfers directly update physical values, field status and destination membersh
 while keeping selected media values and frozen operation checks. No histories are
 rebuilt. Ordinary row/stamp/reporting associations retain one scalar MasterMobId.
 Independent header safety records preserve all captured live checks. Broader
-requested-field acquisition and loaded-bin graph compaction remain separate tasks.
+requested-field acquisition checks remain separate tasks. Loaded-bin graphs and
+detailed resolution records are temporary; the dialog receives resolved file
+references, load status and warnings.
 Compact status preparation derives blank Resolution as not applicable for a
 qualified, undisputed selected Audio result. Kind disagreement keeps applicability
 unknown, and uncertain Kind cannot establish inapplicability. Actual

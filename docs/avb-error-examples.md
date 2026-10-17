@@ -7,7 +7,7 @@ Rejected inputs do not remain as red error rows or open an error message box.
 | Input or result | Behavior |
 | --- | --- |
 | Wrong extension or a non-Avid header during drag/drop | Reject the input and explain the reason. |
-| Missing/unreadable file, unusable framing, or a cancelled background load | No applicable filter or metadata from that load. |
+| Missing/unreadable file, unusable framing, or a cancelled background load | No applicable filter from that load. |
 | Readable bin with unsupported, ambiguous or unresolved references | Retain usable partial results with **Results may be incomplete** and detailed Console warnings. |
 | Readable bin with no usable media references | Keep the readable bin; do not invent a new filter operand. |
 | Readable references with no matches in the scanned inventory | Intersect can produce zero visible rows; this is different from a load failure. |
@@ -22,6 +22,7 @@ external-media evidence and ambiguous references where the reader can establish
 those facts. An external-media observation does not prove that all unresolved
 references are external. Removing a loading row cancels its work without
 reporting it as a failed load; late results cannot restore the removed row.
-Applied partial filters keep their warning and source evidence independently of
-the loaded-bin list. See [reader coverage](../Project%20Canon/avb-reader.md) and
+Applied partial filters keep their file references and warning text independently
+of the loaded-bin list. Parsed object graphs and detailed reference-resolution
+records are released after loading. See [reader coverage](../Project%20Canon/avb-reader.md) and
 [sequence policies](../Project%20Canon/avb-sequence-selection.md).
