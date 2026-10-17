@@ -473,7 +473,7 @@ void TestFileOperations::mixed_omf_mxf_transfer_preserves_layout()
 	if (resume)
 	{
 		QVERIFY(totals.cancelled);
-		QVERIFY(!OperationRecovery::pending(f.journals).isEmpty());
+		QVERIFY(!OperationRecovery::readSummary(f.journals).resumable.isEmpty());
 		cancel.store(false);
 		runner.hooks = {};
 		runner.hooks.forceCopy = true;
@@ -498,7 +498,7 @@ void TestFileOperations::mixed_omf_mxf_transfer_preserves_layout()
 		QVERIFY(finished->entries[i].complete());
 		QCOMPARE(finished->entries[i].dst, destinations[i]);
 	}
-	QVERIFY(OperationRecovery::pending(f.journals).isEmpty());
+	QVERIFY(OperationRecovery::readSummary(f.journals).resumable.isEmpty());
 }
 
 void TestFileOperations::advisory_space_estimate_saturates()
@@ -601,7 +601,7 @@ void TestFileOperations::already_at_destination_move()
 	QVERIFY(forward->copiesComplete);
 	QCOMPARE(forward->entries[0].step, OpJournal::Step::NoEffect);
 	QCOMPARE(forward->entries[1].step, OpJournal::Step::SourceRemoved);
-	QVERIFY(OperationRecovery::pending(f.journals).isEmpty());
+	QVERIFY(OperationRecovery::readSummary(f.journals).resumable.isEmpty());
 	OpRequest undo;
 	undo.kind = OpKind::Undo;
 	undo.undoEnabled = true;
@@ -686,7 +686,7 @@ void TestFileOperations::already_at_destination_only_job()
 		QCOMPARE(totals.skipped, 0);
 		QCOMPARE(totals.failed, 0);
 		QVERIFY(!OpJournal::latestUndoable(f.journals));
-		QVERIFY(OperationRecovery::pending(f.journals).isEmpty());
+		QVERIFY(OperationRecovery::readSummary(f.journals).resumable.isEmpty());
 		QCOMPARE(get(f.src), f.bytes);
 	}
 }
@@ -729,7 +729,7 @@ void TestFileOperations::undo_already_restored_object_finishes_without_changes()
 	QCOMPARE(totals.unchanged, 1);
 	QCOMPARE(totals.needsAttention, 0);
 	QCOMPARE(totals.failed, 0);
-	QVERIFY(OperationRecovery::pending(f.journals).isEmpty());
+	QVERIFY(OperationRecovery::readSummary(f.journals).resumable.isEmpty());
 	QVERIFY(!OpJournal::latestUndoable(f.journals));
 	QCOMPARE(get(f.src), f.bytes);
 	QCOMPARE(get(copied), f.bytes);
@@ -894,7 +894,7 @@ void TestFileOperations::cancel_during_retirement_restores_original()
 	QVERIFY(privateDirectories(f.root).isEmpty());
 	QCOMPARE(sink.results.last().state, OpResult::State::OriginalRestored);
 	QVERIFY(!sink.results.last().sourceRemoved);
-	QVERIFY(OperationRecovery::restorable(f.journals).isEmpty());
+	QVERIFY(OperationRecovery::readSummary(f.journals).restorable.isEmpty());
 	cancel = false;
 	runner.hooks = {};
 	OpRequest resume;
@@ -940,7 +940,7 @@ void TestFileOperations::blocked_restore_survives_dismissal_and_later_job()
 	later.items[0].name = "later.bin";
 	put(later.items[0].src, f.bytes);
 	QCOMPARE(runner.run(later, f.journals).succeeded, 1);
-	QCOMPARE(OperationRecovery::restorable(f.journals).size(), 1);
+	QCOMPARE(OperationRecovery::readSummary(f.journals).restorable.size(), 1);
 	QVERIFY(QFile::remove(f.src)); // Remove only the disposable replacement fixture.
 	QVERIFY(QFile::remove(f.dest + "/clip.bin"));
 	if (!removeDestination)
@@ -955,7 +955,7 @@ void TestFileOperations::blocked_restore_survives_dismissal_and_later_job()
 	QCOMPARE(get(f.dest + "/clip.bin"), removeDestination ? QByteArray() : QByteArray("changed destination"));
 	QCOMPARE(get(f.dest + "/later.bin"), f.bytes);
 	QVERIFY(OpJournal::readOne(record.path)->dismissed);
-	QVERIFY(OperationRecovery::restorable(f.journals).isEmpty());
+	QVERIFY(OperationRecovery::readSummary(f.journals).restorable.isEmpty());
 	QCOMPARE(runner.run(restore, f.journals).needsAttention, 0);
 	QCOMPARE(get(f.src), f.bytes);
 }
@@ -999,7 +999,7 @@ void TestFileOperations::restoration_crash_boundaries_are_idempotent()
 	QCOMPARE(get(f.src), f.bytes);
 	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
 	QCOMPARE(OpJournal::readOne(record.path)->entries[0].step, OpJournal::Step::SourceRestored);
-	QVERIFY(OperationRecovery::restorable(f.journals).isEmpty());
+	QVERIFY(OperationRecovery::readSummary(f.journals).restorable.isEmpty());
 	QVERIFY(privateDirectories(f.root).isEmpty());
 	OpRequest resume;
 	resume.resumeJournalPath = record.path;
@@ -1176,7 +1176,7 @@ void TestFileOperations::undo_settles_interrupted_retirement_cleanup()
 	QVERIFY(privateDirectories(f.root).isEmpty());
 	QVERIFY(OpJournal::readOne(forward.path)->entries[0].cleanup.isEmpty());
 	QVERIFY(!OpJournal::readOne(forward.path)->undoPath.isEmpty());
-	QVERIFY(OperationRecovery::restorable(f.journals).isEmpty());
+	QVERIFY(OperationRecovery::readSummary(f.journals).restorable.isEmpty());
 }
 void TestFileOperations::journal_failure_stops_publication()
 {
@@ -1624,7 +1624,7 @@ void TestFileOperations::header_checks_remain_independent_of_selected_master()
 	QCOMPARE(item.masterMobId, selectedMasterMobId);
 	QVERIFY(item.headerIdentity);
 	QCOMPARE(item.headerIdentity->masterMobIds,
-		(QStringList{QStringLiteral("header-a"), QStringLiteral("header-b")}));
+			 (QStringList{QStringLiteral("header-a"), QStringLiteral("header-b")}));
 	QVERIFY(item.headerIdentity->unavailableReason.isEmpty());
 }
 
@@ -1636,7 +1636,7 @@ void TestFileOperations::operation_scan_receipt_is_required_data()
 		for (const bool stamped : {false, true})
 		{
 			const QString name = opKindName(kind) +
-				(stamped ? QStringLiteral("-stamped") : QStringLiteral("-unstamped"));
+								 (stamped ? QStringLiteral("-stamped") : QStringLiteral("-unstamped"));
 			QTest::newRow(qPrintable(name)) << int(kind) << stamped;
 		}
 }
@@ -1705,7 +1705,7 @@ void TestFileOperations::compact_scan_receipt_operations_and_recovery_data()
 		for (const bool resume : {false, true})
 		{
 			const QString name = opKindName(kind) +
-				(resume ? QStringLiteral("-resume") : QStringLiteral("-complete"));
+								 (resume ? QStringLiteral("-resume") : QStringLiteral("-complete"));
 			QTest::newRow(qPrintable(name)) << int(kind) << resume;
 		}
 }
@@ -1749,7 +1749,7 @@ void TestFileOperations::compact_scan_receipt_operations_and_recovery()
 			row.fileMobId = evidence.selected(MediaProperty::FileMobId).value.toString();
 			row.masterMobId = evidence.selected(MediaProperty::MasterMobId).value.toString();
 			row.scanStamp = {path, VolumeIdentity::capture(path).identifier(), QFileInfo(path).lastModified(),
-				row.fileMobId, row.masterMobId};
+							 row.fileMobId, row.masterMobId};
 			scan->sources.append(MediaEngine::SourceReceipt::fromParsed(std::move(parsed)));
 			return ScannedRow{std::move(row), std::move(evidence)};
 		};
@@ -1794,7 +1794,8 @@ void TestFileOperations::compact_scan_receipt_operations_and_recovery()
 	runner.hooks.forceNetworkTrash = true;
 	if (resume)
 		runner.hooks.checkpoint = interruptAt(OpKind(kind) == OpKind::Copy || OpKind(kind) == OpKind::Move
-			? QStringLiteral("copy-ready") : QStringLiteral("relocating"));
+												  ? QStringLiteral("copy-ready")
+												  : QStringLiteral("relocating"));
 	auto totals = runner.run(request, f.journals);
 	auto records = OpJournal::scan(f.journals);
 	QCOMPARE(records.size(), 1);
@@ -1826,7 +1827,7 @@ void TestFileOperations::compact_scan_receipt_operations_and_recovery()
 	const QString landedPath = completed->entries.front().dst;
 	QCOMPARE(get(landedPath), original);
 	QCOMPARE(QFile::exists(sourcePath), OpKind(kind) == OpKind::Copy);
-	QVERIFY(OperationRecovery::pending(f.journals).isEmpty());
+	QVERIFY(OperationRecovery::readSummary(f.journals).resumable.isEmpty());
 	OpRequest undo;
 	undo.kind = OpKind::Undo;
 	undo.undoEnabled = true;
@@ -2096,7 +2097,7 @@ void TestFileOperations::real_legacy_header_identity_is_checked()
 		file.sizeBytes = item.bytes;
 		file.omfEra = true;
 		file.scanStamp = {sample, VolumeIdentity::capture(sample).identifier(), QFileInfo(sample).lastModified(),
-			item.headerIdentity->fileMobId, evidence.selected(MediaProperty::MasterMobId).value.toString()};
+						  item.headerIdentity->fileMobId, evidence.selected(MediaProperty::MasterMobId).value.toString()};
 		file.operationScanReceipt = makeOpScanReceipt(evidence, file.scanStamp, ScanRowLookup{});
 		QVERIFY(file.operationScanReceipt);
 		evidence = {};

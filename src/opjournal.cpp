@@ -730,8 +730,11 @@ QVector<OpJournal::Record> OpJournal::scan(const QString &directory)
 }
 QVector<OpJournal::Record> OpJournal::interrupted(const QString &directory)
 {
+	return interrupted(scan(directory));
+}
+QVector<OpJournal::Record> OpJournal::interrupted(const QVector<Record> &records)
+{
 	QVector<Record> out;
-	const auto records = scan(directory);
 	QSet<QString> claimed;
 	for (const auto &record : records)
 		if (!record.corrupt && record.request.kind == OpKind::Undo)

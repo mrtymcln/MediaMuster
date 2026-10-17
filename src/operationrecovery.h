@@ -40,8 +40,8 @@ public:
 	};
 	// Prune and recover under one journal lock, sharing the loaded history.
 	static Summary run(const QString &directory = {}, const QVector<VolumeIdentity> &mounted = {});
-	static QVector<Resumable> pending(const QString &directory = {});
-	static QVector<Restorable> restorable(const QString &directory = {});
+	// Read journal history once without recovery, pruning or media access.
+	static Summary readSummary(const QString &directory = {});
 	static std::optional<Resumable> resumableFrom(const OpJournal::Record &record);
 
 private:

@@ -710,10 +710,10 @@ Stop preserves completed effects and any necessary retained-original restoration
 records. These operation records support the retained workflows under C04, rather
 than the removable media evidence histories under C15.
 
-Current refresh/gating helpers obtain pending, restorable and Undo history through
-three separate journal scans. Startup recovery already shares one loaded history.
-Review repeated parsing and compact live-job ownership before considering any
-workflow change. Normal pruning can remove eligible completed history older than
+Ordinary refresh/gating checks read journals once through
+`OperationRecovery::readSummary()`, then derive pending, restorable and Undo
+results from those same temporary records. Startup recovery separately shares one
+loaded history while pruning and reconciling. Normal pruning can remove eligible completed history older than
 30 days, but preserves unresolved work, restoration records, artifacts, linked
 records and the latest Undo candidate/stopping point. No timing or peak-memory
 impact has been measured here.
@@ -1549,6 +1549,40 @@ file operations, CSV, table model, filter proxy, bin dialog and operation UI.
 `git diff --check` passes. Actual ID validation, operation receipts and source
 policy code are unchanged. Full workload/memory and NEXIS acceptance remain
 separate; no performance gain is claimed.
+
+### Job-history reading — 18 October 2026
+
+The user chose **Simplify job-history reading**, before a full app-workflow
+check. Each ordinary refresh or pre-operation history check should load saved
+journals once, then derive resumable jobs, restorable originals and the latest
+Undo candidate from those same temporary records. Add a read-only summary entry
+point and reuse the existing selectors, including a loaded-record interrupted-job
+query. Remove the separate recovery-query entry points after migrating their
+consumers; no compatibility aliases or persistent cache are required.
+
+Keep the rules distinct: resumable jobs exclude dismissed or Undo-claimed forward
+work; restoration can include dismissed jobs with retained originals; Undo keeps
+chronological ordering and its completed-Undo stopping point. Startup `run()`
+still locks, prunes and reconciles, and may reread after journal updates. Do not
+use that mutating path for ordinary history reads. Controller generation checks,
+activity gates, worker live checks and the journal format remain unchanged.
+No new media probes, locking policy or measured performance claim is introduced.
+
+Implemented: `readSummary()` performs one journal scan and feeds its temporary
+records into the existing resumable/restoration/Undo selectors. The controller's
+three-scan helper and separate recovery-query APIs are removed. The runner's
+directory-based interrupted-job query remains, delegating to the same loaded-record
+selector. Startup recovery, predicates, controller gates and journal formats are
+unchanged.
+
+The app and all configured targets build with pinned Qt 6.5.3, C++17 and Release
+arm64. All three targeted suites pass (`tst_opjournal`, `tst_fileoperations`,
+`tst_operationui`; 34.39 seconds). Existing cases retain dismissed-original
+restoration, interrupted work, Undo claims/stopping points and startup recovery.
+Bounded additions prove that ordinary history inspection preserves journal bytes
+and loaded-record selection does not reread a moved journal directory.
+`git diff --check` passes. This establishes fewer repeated reads by construction,
+not a measured elapsed-time or memory improvement.
 
 ### Automatic drive checking removal — 17 October 2026
 

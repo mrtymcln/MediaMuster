@@ -15,19 +15,6 @@
 #include <QtConcurrent>
 #include <algorithm>
 
-namespace
-{
-	OperationRecovery::Summary operationHistory()
-	{
-		OperationRecovery::Summary result;
-		result.resumable = OperationRecovery::pending();
-		result.restorable = OperationRecovery::restorable();
-		result.undoCandidate = OpJournal::latestUndoable();
-		return result;
-	}
-
-} // namespace
-
 FileOperationController::FileOperationController(QWidget *window)
 	: QObject(window), m_window(window), m_operationManager(new OpManager(this)),
 	  m_recoveryAction(new QAction(tr("Unfinished Business…"), this)),
@@ -368,7 +355,7 @@ bool FileOperationController::dispatchRequest(OpRequest request)
 void FileOperationController::updateRecoveryAction()
 {
 	m_recoveryAction->setEnabled(!m_historyLoading && isIdle() &&
-							  (!m_resumable.isEmpty() || !m_restorable.isEmpty()));
+								 (!m_resumable.isEmpty() || !m_restorable.isEmpty()));
 	updateUndoAction();
 }
 
@@ -427,7 +414,7 @@ void FileOperationController::refreshHistory()
 				m_historyLoading = false;
 				applyOperationHistory(history);
 			});
-	watcher->setFuture(QtConcurrent::run(operationHistory));
+	watcher->setFuture(QtConcurrent::run(&OperationRecovery::readSummary, QString{}));
 }
 
 void FileOperationController::readOperationHistoryForGate()
@@ -440,7 +427,7 @@ void FileOperationController::readOperationHistoryForGate()
 	QEventLoop loop;
 	connect(&watcher, &QFutureWatcher<OperationRecovery::Summary>::finished, &loop,
 			&QEventLoop::quit);
-	watcher.setFuture(QtConcurrent::run(operationHistory));
+	watcher.setFuture(QtConcurrent::run(&OperationRecovery::readSummary, QString{}));
 	if (!watcher.isFinished())
 		loop.exec(QEventLoop::ExcludeUserInputEvents);
 	m_historyLoading = false;

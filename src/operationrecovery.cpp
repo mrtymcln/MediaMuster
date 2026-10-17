@@ -3,6 +3,7 @@
 #include <QDir>
 #include <QHash>
 #include <QSet>
+#include <utility>
 
 namespace
 {
@@ -79,19 +80,18 @@ std::optional<OperationRecovery::Resumable> OperationRecovery::resumableFrom(con
 	}
 	return out.remaining.isEmpty() ? std::nullopt : std::optional<Resumable>(out);
 }
-QVector<OperationRecovery::Resumable> OperationRecovery::pending(const QString &directory)
+OperationRecovery::Summary OperationRecovery::readSummary(const QString &directory)
 {
-	QVector<Resumable> out;
-	for (const auto &rec : OpJournal::interrupted(directory))
+	const auto records = OpJournal::scan(directory);
+	Summary out;
+	for (const auto &rec : OpJournal::interrupted(records))
 	{
 		if (auto r = resumableFrom(rec))
-			out.append(*r);
+			out.resumable.append(std::move(*r));
 	}
+	out.restorable = restorableFrom(records);
+	out.undoCandidate = OpJournal::latestUndoable(records);
 	return out;
-}
-QVector<OperationRecovery::Restorable> OperationRecovery::restorable(const QString &directory)
-{
-	return restorableFrom(OpJournal::scan(directory));
 }
 QVector<OperationRecovery::Restorable> OperationRecovery::restorableFrom(const QVector<OpJournal::Record> &records)
 {

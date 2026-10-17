@@ -209,7 +209,7 @@ void TestOpJournal::scan_receipt_round_trips_with_current_names()
 	QCOMPARE(savedItem["masterMobId"].toString(), item.masterMobId);
 	QVERIFY(!savedItem.contains("masterMobIds"));
 	QCOMPARE(savedItem["headerIdentity"].toObject()["masterMobIds"].toArray(),
-		QJsonArray::fromStringList(item.headerIdentity->masterMobIds));
+			 QJsonArray::fromStringList(item.headerIdentity->masterMobIds));
 	QCOMPARE(savedItem["headerIdentity"].toObject()["fileMobId"].toString(), item.headerIdentity->fileMobId);
 	QCOMPARE(savedItem["databaseFileMobIdToVerify"].toString(), item.databaseFileMobIdToVerify);
 }
@@ -711,6 +711,15 @@ void TestOpJournal::disconnected_storage_does_not_hide_interrupted_job()
 	const auto pending = OpJournal::interrupted(directory);
 	QCOMPARE(pending.size(), 1);
 	QCOMPARE(pending[0].entries[0].item.src, request.items[0].src);
+	const auto records = OpJournal::scan(directory);
+	const auto movedDirectory = temp.path() + "/moved-journals";
+	QVERIFY(QDir().rename(directory, movedDirectory));
+	QVERIFY(OpJournal::interrupted(directory).isEmpty());
+	const auto loadedPending = OpJournal::interrupted(records);
+	QCOMPARE(loadedPending.size(), 1);
+	QCOMPARE(loadedPending[0].path, pending[0].path);
+	QCOMPARE(loadedPending[0].entries[0].item.src, request.items[0].src);
+	QVERIFY(QDir().rename(movedDirectory, directory));
 	QVERIFY(OpJournal::dismiss(pending[0].path, error));
 	QVERIFY(OpJournal::interrupted(directory).isEmpty());
 }

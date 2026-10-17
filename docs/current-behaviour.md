@@ -621,6 +621,10 @@ Cancel requests a stop; it does not reverse all completed work. Work already
 finished remains recorded. An operating-system call already in progress may delay
 the stop.
 
+Ordinary Undo/Unfinished Business updates and pre-operation checks read the saved
+job history once per check, then determine resumable work, restorable originals
+and Undo from that same read. These checks do not repair or prune saved jobs.
+
 At startup the app checks recorded operations against the disk and cleans up
 eligible recorded temporary artifacts. Journal cleanup and the recovery, Undo
 and restoration checks share one loaded history under the operation lock. The

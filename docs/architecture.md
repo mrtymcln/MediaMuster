@@ -331,6 +331,11 @@ checks activity, prior unfinished work and journal availability, then dispatches
 the manager. The runner owns changes on disk. The interface preview does not
 authorize using stale paths, identities or free-space assumptions.
 
+Ordinary history checks call `OperationRecovery::readSummary()` on a worker. One
+fresh journal read supplies resumable jobs, restorable originals and the latest
+Undo candidate, using their separate existing rules. Parsed records are temporary;
+startup `run()` separately owns pruning/reconciliation and any required reread.
+
 After scanning, the scoped `ScanRowLookup` records header outcomes, deliberately
 skipped headers and changed sources. The presentation adapter uses it to capture
 each row's `OpScanReceipt`: header-established identities, any header refusal reason and the

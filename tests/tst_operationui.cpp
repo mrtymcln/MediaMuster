@@ -31,6 +31,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFrame>
+#include <QHash>
 #include <QHeaderView>
 #include <QLabel>
 #include <QLayout>
@@ -894,7 +895,7 @@ QString TestOperationUi::makeInterrupted(OpRequest request, bool completeFirst)
 		const auto totals = runner.run(request, path("journals"));
 		if (totals.succeeded != 1)
 			qFatal("Cannot prepare interrupted UI fixture");
-		const auto pending = OperationRecovery::pending(path("journals"));
+		const auto pending = OperationRecovery::readSummary(path("journals")).resumable;
 		if (pending.size() != 1)
 			qFatal("Interrupted UI fixture was not resumable");
 		return pending.first().journalPath;
@@ -2630,6 +2631,13 @@ void TestOperationUi::unfinished_business_merges_jobs_and_updates_choices()
 	const auto restorePath = makeRetainedOriginal("restore");
 	QString error;
 	QVERIFY(OpJournal::dismiss(restorePath, error));
+	QHash<QString, QByteArray> journalBytes;
+	for (const auto &journalPath : {bothPath, resumePath, restorePath})
+	{
+		QFile journal(journalPath);
+		QVERIFY(journal.open(QIODevice::ReadOnly));
+		journalBytes.insert(journalPath, journal.readAll());
+	}
 	QWidget window;
 	FileOperationController operations(&window);
 	operations.refreshHistory();
@@ -2697,8 +2705,16 @@ void TestOperationUi::unfinished_business_merges_jobs_and_updates_choices()
 	operations.recoveryAction()->trigger();
 	QVERIFY(inspected);
 	QCOMPARE(finished.count(), 0);
-	QCOMPARE(OperationRecovery::pending().size(), 2);
-	QCOMPARE(OperationRecovery::restorable().size(), 2);
+	const auto history = OperationRecovery::readSummary();
+	QCOMPARE(history.resumable.size(), 2);
+	QCOMPARE(history.restorable.size(), 2);
+	// Refreshing and inspecting history must not reconcile or rewrite jobs.
+	for (auto journal = journalBytes.cbegin(); journal != journalBytes.cend(); ++journal)
+	{
+		QFile file(journal.key());
+		QVERIFY(file.open(QIODevice::ReadOnly));
+		QCOMPARE(file.readAll(), journal.value());
+	}
 }
 
 void TestOperationUi::unfinished_business_gate_restore_does_not_start_waiting_job()
@@ -2824,7 +2840,7 @@ void TestOperationUi::interrupted_dialog_stop_keeps_completed_effects()
 	QVERIFY(QFileInfo::exists(path("old/destination/clip-0.bin")));
 	QVERIFY(QFileInfo::exists(old.items[1].src));
 	QVERIFY(!QFileInfo::exists(path("old/destination/clip-1.bin")));
-	QVERIFY(OperationRecovery::pending().isEmpty());
+	QVERIFY(OperationRecovery::readSummary().resumable.isEmpty());
 	QVERIFY(OpJournal::latestUndoable());
 	QCOMPARE(OpJournal::latestUndoable()->path, journalPath);
 }
@@ -2861,7 +2877,7 @@ void TestOperationUi::interrupted_undo_resumes_with_debug_flag_off()
 	sink.cancelAfterResult = &cancel;
 	OpRunner undo(sink, cancel);
 	QCOMPARE(undo.run(inverse, path("journals")).succeeded, 1);
-	const auto pending = OperationRecovery::pending();
+	const auto pending = OperationRecovery::readSummary().resumable;
 	QCOMPARE(pending.size(), 1);
 	QCOMPARE(pending.first().kind, OpKind::Undo);
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
@@ -2879,7 +2895,7 @@ void TestOperationUi::interrupted_undo_resumes_with_debug_flag_off()
 	clickInterrupted("resumeInterruptedJobButton");
 	QVERIFY(!window.m_operations->dispatchRequest(request("attempted")));
 	QTRY_COMPARE_WITH_TIMEOUT(finished.size(), 1, 15000);
-	QVERIFY(OperationRecovery::pending().isEmpty());
+	QVERIFY(OperationRecovery::readSummary().resumable.isEmpty());
 	QVERIFY(!QFileInfo::exists(path("original/destination/clip-0.bin")));
 	QVERIFY(!QFileInfo::exists(path("original/destination/clip-1.bin")));
 	QVERIFY(QFileInfo::exists(original.items[0].src));
@@ -3076,8 +3092,7 @@ void TestOperationUi::startup_offers_retained_originals()
 	QVERIFY(OpJournal::dismiss(oldPath, error));
 	QWidget window;
 	FileOperationController operations(&window);
-	OperationRecovery::Summary summary;
-	summary.restorable = OperationRecovery::restorable();
+	const auto summary = OperationRecovery::readSummary();
 	QCOMPARE(summary.restorable.size(), 1);
 	clickRestoreOriginals("close", summary.restorable.first());
 	operations.onRecoveryDone(summary);

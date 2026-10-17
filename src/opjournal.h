@@ -127,6 +127,7 @@ public:
 	static QVector<Record> scan(const QString &directory = {});
 	// Journal-only discovery: disconnected storage must not hide an unfinished job.
 	static QVector<Record> interrupted(const QString &directory = {});
+	static QVector<Record> interrupted(const QVector<Record> &records);
 	static std::optional<Record> latestUndoable(const QString &directory = {});
 	// Loaded records retain the chronological order supplied by scan().
 	static std::optional<Record> latestUndoable(const QVector<Record> &records);
