@@ -250,9 +250,10 @@ same three roles under `CMPO`. In the inspected exported AAF, one composition,
 Consequently, `AvbComposition.mobId` and mixed-object lookups keep the general
 name alongside the object type.
 
-The sequence-only `AvbSequenceEntry` admits composition objects with Mob type 1
-and usage code 0. Its field uses the user-selected `compositionMobId` /
-**CompositionMobId** spelling. Avid also uses Sequence Mob ID in its
+For a sequence-only identity, the user chose `compositionMobId` /
+**CompositionMobId**. The dormant sequence-list record and selection API have
+been removed from V1; this naming decision remains relevant to deferred sequence
+work. Avid also uses Sequence Mob ID in its
 [Transfer guide](https://resources.avid.com/SupportFiles/attach/MediaCentral_Production/MCPM_2024_10_0_Transfer_Guide.pdf#page=72)
 and sequence-specific integration metadata in the
 [Shared Library reference](https://resources.avid.com/SupportFiles/attach/MediaCentral_SharedLibrary/MCSL_2024_10_ProcessesReference.pdf#page=35).
@@ -271,9 +272,9 @@ addresses, source/probe hashes and source links.
 | --- | --- | --- |
 | FileMobId column | OMF File Source Mob `MobID`; MXF File Source Package `Package UID` | App-specific choice of the file/essence-owning media object identity. MXF ownership follows EssenceContainerData `Linked Package UID` to its SourcePackage. Not a unique physical occurrence on disk. [Ownership](../src/mediaengine/mxfprojection.cpp#L246), O Chapter 4; M A.5/B.1/E; P. |
 | MasterMobId column | OMF Master Mob `MobID`; MXF associated MaterialPackage `Package UID` | C51 keeps one selected association, preferring already-read eligible header facts, then matching MDB, then PMR. Conflicting preferred-rank IDs leave it blank. Master-owned details come only from the selected master's temporary group; physical/package facts remain independent. Same general ID type, different object role. The fresh user-media scan established one ID per physical header. Independent duplicate clips can share media (A p. 260; S p. 128), but this does not justify collecting every incoming clip reference under C50. Loaded AVBs remain filtering-only. [Current association](../src/mediaengine/mxfprojection.cpp), O pp. 94–95; P; F §6.8. |
-| CompositionMobId / sequence | Composition Mob's inherited `MobID`; Avid also says Sequence Mob ID | Describes an edit through track/component references. The sequence-only record uses `compositionMobId`; mixed-role records keep `mobId` with their type. AVB sequence filtering resolves these references independently per bin under C26. O Chapter 4. |
+| CompositionMobId / sequence | Composition Mob's inherited `MobID`; Avid also says Sequence Mob ID | Describes an edit through track/component references. `compositionMobId` is the chosen name for future sequence-only values; current mixed-role records keep `mobId` with their type. Whole Bin follows listed composition references independently per bin under C26; exact sequence selection is deferred after V1. O Chapter 4. |
 | Physical Source Mob / package | Lower-level source/package role | Describes upstream physical/source material. Do not confuse it with the top-level file package that owns this file's essence. P pp. 4–9. |
-| Source reference | Source ID/package ID, source track/slot ID and start position | Connects the correct source and track/time. Mob identity alone is insufficient for C06/C23's exact used-track/angle filtering. [Current traversal](../src/mediaengine/avbreferences.cpp), O SourceClip pp. 197–199; M B.10. |
+| Source reference | Source ID/package ID, source track/slot ID and start position | Connects a source with a track and recorded position. Whole Bin qualifies SourceClip links by source identity, track number and audio/video kind, without evaluating used time. Exact used-track/angle selection is deferred under C100. [Current traversal](../src/mediaengine/avbreferences.cpp), O SourceClip pp. 197–199; M B.10. |
 | KelpieId | MediaMuster scan/session row token; no Avid equivalent | Identifies the physical inventory row. Confirmed moves retain it; separate copies get new tokens; rescans allocate fresh identities. Not a persistent Avid identifier. [Allocator](../src/mediaevidence.h#L32). |
 | OmfScan | MediaMuster managed-folder-family flag; no Avid equivalent | True for rows admitted through the OMFI family, including its eligible WAV/AIFF files. Does not prove the actual container is OMF or parsing succeeded. [Discovery](../src/mediaengine/discoveryengine.cpp#L118). |
 
@@ -281,6 +282,33 @@ C33 retains FileMobId, MasterMobId, KelpieId and OmfScan in the table, CSV and i
 records. A bit-for-bit filesystem copy shares embedded IDs but has a separate
 physical row. Avid-created new representations/assets can receive new IDs. Neither
 FileMobId nor MasterMobId proves byte equality or replaces operation-time file checks.
+
+The [17 October source-track audit](evidence/source-track-semantics-2026-10-17.json)
+corroborates number-plus-kind labels in native `GetSrcTrack()` and
+`FindTrackByLabel()`, including audio/video kind values 2/1. AVB SourceClip filtering
+uses those already-read fields to select a unique composition track. An unread or
+ambiguous number/kind remains unresolved; track zero is not assumed to be a
+wildcard. Different requests into one composition remain separate temporary
+visits. A failed track match cannot include a file by bypassing the restriction
+through that composition's descriptor; fully established descriptor-only file
+sources retain their physical identity. Listed clip/master roots still contribute
+all their tracks, with explicit original/render and placed muted/disabled routes.
+
+Whole Bin follows the linked contents of a requested track broadly. Spare camera
+branches and unused portions of nested edits can contribute files. Exact sequence
+selection, camera choice, used-time/transition/speed calculations and further
+proxy/relative-track interpretation are deferred after V1 under C100. The
+supported AVB reader still decodes track, component, start, length, rate and effect
+fields; the presence of those fields does not mean the active reference resolver
+evaluates their timeline use. Physical-file duration, rates and timecode remain
+retained scan metadata, with their own format-qualified interpretation.
+
+The removed timeline implementation and its bounded angle/time/speed/link research
+receipts are preserved in the
+[deferred sequence archive](archive/deferred-sequence-2026-10-17/README.txt).
+Those receipts describe the earlier investigation, not active V1 behavior or a
+verified genuine-edit used-file set. No performance improvement follows merely
+from removing that implementation.
 
 Modern Basic UMIDs contain 32 bytes: label, length, instance and material number
 (U). Historical OMF `omfi:UID` is 96 bits / three 32-bit words (O Appendix B p. 222).
@@ -296,7 +324,7 @@ order conversion; it need not equal a raw MXF byte dump or pyavb's URN.
 | Precompute Category | App-derived classification corresponding to Avid Media Tool's Rendered Effects / Titles and Matte Keys choices (A p. 346) | Confirm precompute master first; current version-specific predicate checks direct `_IMPORTSETTING` object presence and direct picture-track count. OMF2 equivalent is not established. Not a standard property named PrecomputeCategory. [Rules](../docs/effect-details-preview.md#what-establishes-the-precompute-category). |
 | Effect | App-inferred name from the editable precompute Clip Name, resolved through the verified effect-name catalogue | No recorded effect ID is used by this derivation. Renaming can mislead recognition. [Derivation](../src/mediaengine/projection.cpp#L157). |
 | Effect Category | Catalogue category for that inferred effect token/name | Name matching can yield several categories or remain unknown. Catalogue recognition does not establish installed/licensed plug-ins. [Catalogue](../docs/avid-effects-catalogue.md). |
-| Effect Sequence | Sequence-name text inferred from the precompute name parser | Not a proven sequence-object relationship, nor evidence that a loaded sequence uses this file. Actual selected-sequence filtering remains separate. [Parser](../src/effectcatalogue.cpp#L975). |
+| Effect Sequence | Sequence-name text inferred from the precompute name parser | Not a proven sequence-object relationship, nor evidence that a loaded sequence uses this file. Exact sequence filtering is deferred after V1 under C100. [Parser](../src/effectcatalogue.cpp#L975). |
 | Genuine effect identity/references | OMF `OMFI:EFFE:EffectKind` → EDEF `EffectID` / `EffectName`; render/input relationships | These published properties are separate from the current name inference. They do not retrospectively validate an inferred Effect or Effect Sequence. O pp. 143, 145–146. No new effect-graph feature is authorized. |
 | Sample Format | App interpretation of numeric representation: integer, float or defined fixed point | Helps interpret Bit Depth correctly. No single universal format property; descriptor family/encoding supplies the facts. Existing internal concept, not a new table/CSV column. [Depth interpretation](../src/mediaengine/mxfprojection.cpp#L163). |
 | Alpha | Presence of alpha samples, distinct from alpha-only role and precision | CDCI descriptor `Alpha Sample Depth` (M F.4.2; local alias `AlphaSampleDepth`) or interpreted RGBA layout can establish it. A related alpha file is not evidence that this physical file contains alpha. No separate Alpha column/feature is requested. Apply C15: retain only a selected/derived input with an established consumer in required interpretation; discard unused evidence/history. |
@@ -453,8 +481,9 @@ UTF-16, dynamically assembled names and other images may carry it.
 - No current MXF OriginalBin projection or fully published PMR field schema has
   been established. Investigate technical mappings rather than assigning authority
   to a hobby-reader label or treating an unsupported read as checked absence.
-- Keep exact used-track/group-angle validation on genuine AVBs outstanding as
-  recorded in the ledger. A package/Mob ID match alone does not prove that outcome.
+- Exact used-track/group-angle validation on genuine AVBs belongs to deferred
+  sequence work under C100, rather than a V1 acceptance gate. A package/Mob ID
+  match alone does not prove that outcome.
 - Bin-based row name/effect enrichment and ordinary row/scan history owners have
   been removed. Table insertion receives prepared values and the fixed status
   checklist. Core reader/engine evidence remains working storage for matching and
@@ -470,7 +499,8 @@ UTF-16, dynamically assembled names and other images may carry it.
   rows and successfully resolved values on clean user cancellation. C87 requires
   Console to say the scan was cancelled and results are incomplete, including late
   cancellation during formatting. Unread fields are not proven absent. C56 keeps
-  loaded bins while resetting their bin/sequence filters after rescan.
+  loaded bins while resetting bin filters after rescan; individual sequence
+  filtering is deferred under C100.
 - C09's 10 GB aim is a memory optimization target; C86 rejects a strictly enforced
   runtime ceiling or automatic scan termination for reaching that target.
   C97 sets initial comparisons on this Mac and later NEXIS validation; the local

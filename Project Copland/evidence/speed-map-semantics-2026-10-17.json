@@ -1,0 +1,6634 @@
+{
+  "schemaVersion": 1,
+  "recordedDateLocal": "2026-10-17",
+  "timezone": "Australia/Sydney",
+  "scope": "Bounded firstpass primary native static audit of speed/offset curve IDs, presence/graph gates, numericinterpolation, prepared-offset fallback andrange rounding. Noapp launch, sourcewrite, productioncode/testedit orfullcurveimplementation.",
+  "nativeBinary": {
+    "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+    "bytes": 73527536,
+    "mtimeNs": "1787793516000000000",
+    "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+    "sizeAndMtimeUnchanged": true
+  },
+  "architecture": "arm64",
+  "universalSliceOffset": 37027840,
+  "nativeAnchors": [
+    {
+      "symbol": "AParamItem::ParamIDToUniqueIdentifier",
+      "address": "0x167300",
+      "endAddressExclusive": "0x167370",
+      "fileOffset": 38499072,
+      "bytesHex": "000040f96100c0d2abd2ff9780000034007c00f0000035913e000014800240f98100c0d2a4d2ff9780000034007c00f00040359137000014800240f9a100c0d29dd2ff9780000034007c00f00080359130000014800240f9c100c0d296d2ff9780000034007c00f000c0359129000014",
+      "finding": "InternalUID3/4/5/6 select GUIDconstants0x10ead40/50/60/70."
+    },
+    {
+      "symbol": "AMotionCtl::GetEnabledParamClipUID",
+      "address": "0x1c7ad8",
+      "endAddressExclusive": "0x1c7aec",
+      "fileOffset": 38894296,
+      "bytesHex": "1f0400716800c0d2a900c0d22001889afd7bc1a8",
+      "finding": "Graphmode1 selectsUID5, othermodesUID3."
+    },
+    {
+      "symbol": "AMotionCtl::GetOffsetMapping",
+      "address": "0x1c7988",
+      "endAddressExclusive": "0x1c79bc",
+      "fileOffset": 38893960,
+      "bytesHex": "680240f9083945f9e00313aa00013fd61f0400716800c0d2c900c0d23501889a880240f908f540f9e00314aae10315aa00013fd6",
+      "finding": "Graphmode1 selectsUID6, othermodesUID3, then GetControlTrack."
+    },
+    {
+      "symbol": "AMotionCtl::HasOffsetMapping",
+      "address": "0x1cb41c",
+      "endAddressExclusive": "0x1cb45c",
+      "fileOffset": 38908956,
+      "bytesHex": "080040f9083941f900013fd6c00100b4f30300aa880240f9084145f9e00314aa00013fd6e10300aa680240f908e540f9e00313aa00013fd66000003420008052",
+      "finding": "CallsGetEnabledParamClipUID thenAParamList::HasParam: presencegate, notParameterItem.enable."
+    },
+    {
+      "symbol": "AParamList::HasParam",
+      "address": "0x15e68c",
+      "endAddressExclusive": "0x15e6bc",
+      "fileOffset": 38463116,
+      "bytesHex": "ff8300d1fd7b01a9fd430091080040f908a140f9e223009100013fd61f0000f1e0079f1afd7b41a9ff830091c0035fd6",
+      "finding": "Findsitem andreturnstruewhenpointerexists; doesnotqueryenable."
+    },
+    {
+      "symbol": "AParamList::GetControlTrack",
+      "address": "0x15fd5c",
+      "endAddressExclusive": "0x15fd8c",
+      "fileOffset": 38468956,
+      "bytesHex": "ff8300d1fd7b01a9fd430091080040f908a140f9e223009100013fd6400000b4c10f0094fd7b41a9ff830091c0035fd6",
+      "finding": "Findsitem thenreturnsitscontroltrackwithoutenablegate."
+    },
+    {
+      "symbol": "AMotionCtl::GetOffsetMappingAdjustment",
+      "address": "0x1cb3ac",
+      "endAddressExclusive": "0x1cb3cc",
+      "fileOffset": 38908844,
+      "bytesHex": "080040f9083945f900013fd600e4002f1f0400714000005460a240fdfd7b41a9",
+      "finding": "Graphmode1 returns0; othersreturnstored offset_adjust."
+    },
+    {
+      "symbol": "AMotionCtl::MapOffsetDown",
+      "address": "0x1c6948",
+      "endAddressExclusive": "0x1c6978",
+      "fileOffset": 38889800,
+      "bytesHex": "880240f908ed45f9e00314aa00013fd6600100b4a002621e080040f908ed43f9e123009100013fd6e00740fd1500781e",
+      "finding": "Fallback toGetOffsetMapping/GetDoubleValueAt using localoutputtime unchanged; no addedphase."
+    },
+    {
+      "symbol": "AMotionCtl::GetOffsetMinMax",
+      "address": "0x1cb9f8",
+      "endAddressExclusive": "0x1cba48",
+      "fileOffset": 38910456,
+      "bytesHex": "a80240f908ed45f9e00315aa00013fd6800200b4f50300aae0830091e1b300918b1e3394e0630091e1a30091881e3394a80240f908f143f9e1830091e2630091e00315aae30314aae40313aa00013fd6",
+      "finding": "Fallback toGetOffsetMapping thenGetDoubleMinMax with Rationalstart andlength, unchangedlocalcoordinates."
+    },
+    {
+      "symbol": "AParamClip::GetValueAt",
+      "address": "0x1b4f28",
+      "endAddressExclusive": "0x1b4f7c",
+      "fileOffset": 38817576,
+      "bytesHex": "ba7a40b9bbeac079bceec079e00315aa5349fe970540601ef40300f90041601ee00313aa6141601ee10318aa8241601e4341601e2441601ee20316aae30317aae40319aae5031aaae6031baae7031caa0c000094",
+      "finding": "PassesstoredinterpKind fromobject0x74 intoGetValueAtStatic argumentw6."
+    },
+    {
+      "symbol": "AParamClip::GetValueAtStatic",
+      "address": "0x1b51e0",
+      "endAddressExclusive": "0x1b5258",
+      "fileOffset": 38818272,
+      "bytesHex": "df0a0071a0f8ff54df06007100f2ff54bf08007101030054c8160051083d00121f05007188020054df1a007101070054e9ab076de00315aa497e02940e40601ee03b00fde00314aa457e02940c40601ee03700fdd91400b4ed2300fde00319aa3f7e0294e01f00fdf5030191f4e30091a1000014bf100071",
+      "finding": "Interp2 constant,1 none/reset; numeric5/6 take specialcurvebranches. Interp3 reaches ordinarynumericlinearformula."
+    },
+    {
+      "symbol": "AParamClip::GetValueAtStatic",
+      "address": "0x1b5324",
+      "endAddressExclusive": "0x1b534c",
+      "fileOffset": 38818596,
+      "bytesHex": "e00315aa057e02940b40601ee00314aa027e029400386b1e01396a1e22396a1e2118621e002c411f",
+      "finding": "Doublelinearinterpolation vL+(vR-vL)*(t-tL)/(tR-tL)."
+    },
+    {
+      "symbol": "AParamClip::GetValueAt",
+      "address": "0x1b4c0c",
+      "endAddressExclusive": "0x1b4c5c",
+      "fileOffset": 38816780,
+      "bytesHex": "1a040034d80a00111f03176baa030054a80240f908c143f9e2230191e00315aae10318aa030080d2040080d2050080d200013fd6a80240f908dd42f9e00315aae10318aa00013fd6e08702a93c008052",
+      "finding": "Interp6 gathersneighborcontrolpoints, unlike interp3."
+    },
+    {
+      "symbol": "AParamClip::GetValueAtStatic",
+      "address": "0x1b54fc",
+      "endAddressExclusive": "0x1b5588",
+      "fileOffset": 38819068,
+      "bytesHex": "f7430079e8230191e9430191e92301a9e8630191e9830191e0030291e1e30191e92300a9e2c30191e3a30191e40315aae60314aa82010094eabb086de03340fd00286a1ee12b40fdc129611ee087096de02f40fd0028691ee12740fd8129611ee0870a6de9b30b6de02302910041601e010080d2f4010094e04300fde1030291e00313aa9f7d029405ffff17",
+      "finding": "Interp6 path computes tangentcontroldata, then evaluatesBezierFindY; arbitraryovershoot cannot beexcluded bycheckingstoredspeedvaluesonly."
+    },
+    {
+      "symbol": "AParamClip::GetDoubleMinMax",
+      "address": "0x1b4314",
+      "endAddressExclusive": "0x1b438c",
+      "fileOffset": 38814484,
+      "bytesHex": "e00316aae3edff97a80240f908ed43f9e1230191e00315aa00013fd6e82740fde8330091e00316aae10317aa1c833394e0630091e13300914a7c3394e0330091457c3394e0630091d2edff97a80240f908ed43f9e1030191e00315aa00013fd6e103446d0020611e004c611ee02700fd0021611e08cd611e",
+      "finding": "Evaluatesrequestedstart andstart+length endpoints."
+    },
+    {
+      "symbol": "AParamClip::GetDoubleMinMax",
+      "address": "0x1b43dc",
+      "endAddressExclusive": "0x1b4458",
+      "fileOffset": 38814684,
+      "bytesHex": "ff02166bca030054a80240f908bd43f9e2830091e35f0091e00315aae10317aa040080d2050080d200013fd6e0830091e1630091af82339420020037a80240f908dd42f9e00315aae10317aa00013fd6e08702a9e0a30091c2810294e12740fd2020601e214c601ee007046d0021601e08cd601ef7060011e2ffff17",
+      "finding": "Scansstoredkeyvalues insideintervalforrangebounds; no derivativeextrema solvedinthisboundedfallbackmethod."
+    },
+    {
+      "symbol": "AMotionCtl::MapRangeDown",
+      "address": "0x1c6b88",
+      "endAddressExclusive": "0x1c6c04",
+      "fileOffset": 38890376,
+      "bytesHex": "e0030034a80240f99707003408f545f9e3230091e4030091e00315aae10316aae20317aa2500805200013fd66a322c9420070034a80240f9089546f9e00315aa00013fd680060034a80240f9088d46f9e00315aa00013fd6e0050034e00740fd01106e1e0228611ee00340fd01107e1e0028611ee00b006d27000014",
+      "finding": "Active-map path callsGetOffsetMinMax; optionaladaptive-deinterlace expandsmin/max byone."
+    },
+    {
+      "symbol": "AMotionCtl::MapRangeDown",
+      "address": "0x1c6c9c",
+      "endAddressExclusive": "0x1c6d3c",
+      "fileOffset": 38890652,
+      "bytesHex": "a80240f9089543f9e00315aa0100805200013fd6080040f908fd40f900013fd60000621ee10740fd02107e1e0228621e2020621e214c621e2820601ee8b79f1a297900d029010691225968fc2128621e2820601e02e4002f419c611e2800781e540000b4880200b9d30100b4e10340fd2168621e02106e1e2128621e2020601e00cc611e0101621e0038611e287900b001fd46fd0028611e0800681e680200b9",
+      "finding": "Curvebounds clampagainstinputlength, applysign-dependent1e-6minimumadjustment, integertruncateandceil-derivedspanwith-1e-6 tolerance."
+    },
+    {
+      "symbol": "AMotionCtl::HasNewSourceCalculation",
+      "address": "0x1cd03c",
+      "endAddressExclusive": "0x1cd044",
+      "fileOffset": 38916156,
+      "bytesHex": "00704539c0035fd6",
+      "finding": "Returnsstoredflag; listedfallbackmethods do notqueryit. FullRecalculateSource/effectcallback gatesnotauditedhere."
+    }
+  ],
+  "parameterGuidMap": [
+    {
+      "internalUid": "0x300000000",
+      "address": "0x10ead40",
+      "bytesHex": "7a82568d7e84d511935a50f857c10000",
+      "uuid": "8d56827a-847e-11d5-935a-50f857c10000"
+    },
+    {
+      "internalUid": "0x400000000",
+      "address": "0x10ead50",
+      "bytesHex": "7b82568d7e84d511935a50f857c10000",
+      "uuid": "8d56827b-847e-11d5-935a-50f857c10000"
+    },
+    {
+      "internalUid": "0x500000000",
+      "address": "0x10ead60",
+      "bytesHex": "7c82568d7e84d511935a50f857c10000",
+      "uuid": "8d56827c-847e-11d5-935a-50f857c10000"
+    },
+    {
+      "internalUid": "0x600000000",
+      "address": "0x10ead70",
+      "bytesHex": "7d82568d7e84d511935a50f857c10000",
+      "uuid": "8d56827d-847e-11d5-935a-50f857c10000"
+    },
+    {
+      "internalUid": "0x700000000",
+      "address": "0x10ead90",
+      "bytesHex": "8382568d7e84d511935a50f857c10000",
+      "uuid": "8d568283-847e-11d5-935a-50f857c10000"
+    }
+  ],
+  "roundingConstants": [
+    {
+      "address": "0x10ec170",
+      "bytesHex": "8dedb5a0f7c6b03e",
+      "double": 1e-06
+    },
+    {
+      "address": "0x10ec178",
+      "bytesHex": "8dedb5a0f7c6b0be",
+      "double": -1e-06
+    },
+    {
+      "address": "0x10ec180",
+      "bytesHex": "8dedb5a0f7c6b0be",
+      "double": -1e-06
+    },
+    {
+      "address": "0x10ec188",
+      "bytesHex": "8dedb5a0f7c6b03e",
+      "double": 1e-06
+    },
+    {
+      "address": "0x10ebdf8",
+      "bytesHex": "8dedb5a0f7c6b0be",
+      "double": -1e-06
+    }
+  ],
+  "genuineSource": {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/8645 v1.avb",
+    "bytes": 6913702,
+    "mtimeNs": "1778748844000000000",
+    "sha256": "45ec3861e9f471f7e1a67757bd7605befd782192a7cb8a5da493e3d6a86a62c8",
+    "sizeAndMtimeUnchanged": true
+  },
+  "genuineReadStampStable": true,
+  "genuineReader": "Suppliedpyavb use_ext=False. Secondarystructuralcorroborationonly; primarysemanticscome fromnativeanchors.",
+  "genuineMotionObjects": [
+    {
+      "object": 471,
+      "length": 53,
+      "editRate": 25.0,
+      "phase": 0,
+      "speedRatio": [
+        53,
+        39
+      ],
+      "offsetAdjust": 0.0,
+      "newSourceCalculation": true,
+      "graphEnabled": "absent/default1",
+      "inputs": [
+        {
+          "object": 164,
+          "classId": "SEQU",
+          "length": 39
+        }
+      ],
+      "curves": [
+        {
+          "itemObject": 84,
+          "uuid": "8d56827c-847e-11d5-935a-50f857c10000",
+          "itemEnabled": true,
+          "controlObject": 32,
+          "classId": "PRCL",
+          "valueType": 2,
+          "interpolation": 6,
+          "extrapolation": 1,
+          "fields": 1,
+          "length": 53,
+          "editRate": 25.0,
+          "pointCount": 3,
+          "points": [
+            {
+              "offset": [
+                0,
+                1
+              ],
+              "timescale": 1,
+              "value": 1.0,
+              "properties": [
+                {
+                  "code": 14,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 5,
+                  "type": 2,
+                  "value": -9.200000000000001
+                },
+                {
+                  "code": 6,
+                  "type": 2,
+                  "value": -0.0
+                },
+                {
+                  "code": 7,
+                  "type": 2,
+                  "value": 9.200000000000001
+                },
+                {
+                  "code": 8,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 9,
+                  "type": 1,
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "offset": [
+                23,
+                1
+              ],
+              "timescale": 1,
+              "value": 1.0,
+              "properties": [
+                {
+                  "code": 5,
+                  "type": 2,
+                  "value": -9.200000000000001
+                },
+                {
+                  "code": 6,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 7,
+                  "type": 2,
+                  "value": 0.4
+                },
+                {
+                  "code": 8,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 9,
+                  "type": 1,
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "offset": [
+                24,
+                1
+              ],
+              "timescale": 1,
+              "value": 0.5,
+              "properties": [
+                {
+                  "code": 5,
+                  "type": 2,
+                  "value": -0.4
+                },
+                {
+                  "code": 6,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 7,
+                  "type": 2,
+                  "value": 0.4
+                },
+                {
+                  "code": 8,
+                  "type": 2,
+                  "value": -0.0
+                },
+                {
+                  "code": 9,
+                  "type": 1,
+                  "value": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "itemObject": 83,
+          "uuid": "8d56827d-847e-11d5-935a-50f857c10000",
+          "itemEnabled": true,
+          "controlObject": 31,
+          "classId": "PRCL",
+          "valueType": 2,
+          "interpolation": 3,
+          "extrapolation": 1,
+          "fields": 1,
+          "length": 53,
+          "editRate": 25.0,
+          "pointCount": 107,
+          "points": [
+            {
+              "offset": [
+                0,
+                1
+              ],
+              "timescale": 1,
+              "value": 0.0,
+              "properties": []
+            },
+            {
+              "offset": [
+                1,
+                2
+              ],
+              "timescale": 1,
+              "value": 0.5,
+              "properties": []
+            },
+            {
+              "offset": [
+                1,
+                1
+              ],
+              "timescale": 1,
+              "value": 0.9999999999999999,
+              "properties": []
+            },
+            {
+              "offset": [
+                3,
+                2
+              ],
+              "timescale": 1,
+              "value": 1.5,
+              "properties": []
+            },
+            {
+              "offset": [
+                2,
+                1
+              ],
+              "timescale": 1,
+              "value": 2.0000000000000004,
+              "properties": []
+            },
+            {
+              "offset": [
+                5,
+                2
+              ],
+              "timescale": 1,
+              "value": 2.500000000000001,
+              "properties": []
+            },
+            {
+              "offset": [
+                3,
+                1
+              ],
+              "timescale": 1,
+              "value": 3.0000000000000013,
+              "properties": []
+            },
+            {
+              "offset": [
+                7,
+                2
+              ],
+              "timescale": 1,
+              "value": 3.5000000000000018,
+              "properties": []
+            },
+            {
+              "offset": [
+                4,
+                1
+              ],
+              "timescale": 1,
+              "value": 4.000000000000002,
+              "properties": []
+            },
+            {
+              "offset": [
+                9,
+                2
+              ],
+              "timescale": 1,
+              "value": 4.5,
+              "properties": []
+            },
+            {
+              "offset": [
+                5,
+                1
+              ],
+              "timescale": 1,
+              "value": 4.999999999999998,
+              "properties": []
+            },
+            {
+              "offset": [
+                11,
+                2
+              ],
+              "timescale": 1,
+              "value": 5.4999999999999964,
+              "properties": []
+            },
+            {
+              "offset": [
+                6,
+                1
+              ],
+              "timescale": 1,
+              "value": 5.999999999999995,
+              "properties": []
+            },
+            {
+              "offset": [
+                13,
+                2
+              ],
+              "timescale": 1,
+              "value": 6.499999999999993,
+              "properties": []
+            },
+            {
+              "offset": [
+                7,
+                1
+              ],
+              "timescale": 1,
+              "value": 6.999999999999991,
+              "properties": []
+            },
+            {
+              "offset": [
+                15,
+                2
+              ],
+              "timescale": 1,
+              "value": 7.499999999999989,
+              "properties": []
+            },
+            {
+              "offset": [
+                8,
+                1
+              ],
+              "timescale": 1,
+              "value": 7.999999999999988,
+              "properties": []
+            },
+            {
+              "offset": [
+                17,
+                2
+              ],
+              "timescale": 1,
+              "value": 8.499999999999986,
+              "properties": []
+            },
+            {
+              "offset": [
+                9,
+                1
+              ],
+              "timescale": 1,
+              "value": 8.999999999999984,
+              "properties": []
+            },
+            {
+              "offset": [
+                19,
+                2
+              ],
+              "timescale": 1,
+              "value": 9.499999999999982,
+              "properties": []
+            },
+            {
+              "offset": [
+                10,
+                1
+              ],
+              "timescale": 1,
+              "value": 9.99999999999998,
+              "properties": []
+            },
+            {
+              "offset": [
+                21,
+                2
+              ],
+              "timescale": 1,
+              "value": 10.499999999999979,
+              "properties": []
+            },
+            {
+              "offset": [
+                11,
+                1
+              ],
+              "timescale": 1,
+              "value": 10.999999999999977,
+              "properties": []
+            },
+            {
+              "offset": [
+                23,
+                2
+              ],
+              "timescale": 1,
+              "value": 11.499999999999975,
+              "properties": []
+            },
+            {
+              "offset": [
+                12,
+                1
+              ],
+              "timescale": 1,
+              "value": 11.999999999999973,
+              "properties": []
+            },
+            {
+              "offset": [
+                25,
+                2
+              ],
+              "timescale": 1,
+              "value": 12.499999999999972,
+              "properties": []
+            },
+            {
+              "offset": [
+                13,
+                1
+              ],
+              "timescale": 1,
+              "value": 12.99999999999997,
+              "properties": []
+            },
+            {
+              "offset": [
+                27,
+                2
+              ],
+              "timescale": 1,
+              "value": 13.499999999999968,
+              "properties": []
+            },
+            {
+              "offset": [
+                14,
+                1
+              ],
+              "timescale": 1,
+              "value": 13.999999999999966,
+              "properties": []
+            },
+            {
+              "offset": [
+                29,
+                2
+              ],
+              "timescale": 1,
+              "value": 14.499999999999964,
+              "properties": []
+            },
+            {
+              "offset": [
+                15,
+                1
+              ],
+              "timescale": 1,
+              "value": 14.999999999999963,
+              "properties": []
+            },
+            {
+              "offset": [
+                31,
+                2
+              ],
+              "timescale": 1,
+              "value": 15.499999999999961,
+              "properties": []
+            },
+            {
+              "offset": [
+                16,
+                1
+              ],
+              "timescale": 1,
+              "value": 15.99999999999996,
+              "properties": []
+            },
+            {
+              "offset": [
+                33,
+                2
+              ],
+              "timescale": 1,
+              "value": 16.499999999999964,
+              "properties": []
+            },
+            {
+              "offset": [
+                17,
+                1
+              ],
+              "timescale": 1,
+              "value": 16.99999999999997,
+              "properties": []
+            },
+            {
+              "offset": [
+                35,
+                2
+              ],
+              "timescale": 1,
+              "value": 17.49999999999998,
+              "properties": []
+            },
+            {
+              "offset": [
+                18,
+                1
+              ],
+              "timescale": 1,
+              "value": 17.999999999999986,
+              "properties": []
+            },
+            {
+              "offset": [
+                37,
+                2
+              ],
+              "timescale": 1,
+              "value": 18.499999999999993,
+              "properties": []
+            },
+            {
+              "offset": [
+                19,
+                1
+              ],
+              "timescale": 1,
+              "value": 19.0,
+              "properties": []
+            },
+            {
+              "offset": [
+                39,
+                2
+              ],
+              "timescale": 1,
+              "value": 19.500000000000007,
+              "properties": []
+            },
+            {
+              "offset": [
+                20,
+                1
+              ],
+              "timescale": 1,
+              "value": 20.000000000000014,
+              "properties": []
+            },
+            {
+              "offset": [
+                41,
+                2
+              ],
+              "timescale": 1,
+              "value": 20.50000000000002,
+              "properties": []
+            },
+            {
+              "offset": [
+                21,
+                1
+              ],
+              "timescale": 1,
+              "value": 21.00000000000003,
+              "properties": []
+            },
+            {
+              "offset": [
+                43,
+                2
+              ],
+              "timescale": 1,
+              "value": 21.500000000000036,
+              "properties": []
+            },
+            {
+              "offset": [
+                22,
+                1
+              ],
+              "timescale": 1,
+              "value": 22.000000000000043,
+              "properties": []
+            },
+            {
+              "offset": [
+                45,
+                2
+              ],
+              "timescale": 1,
+              "value": 22.50000000000005,
+              "properties": []
+            },
+            {
+              "offset": [
+                23,
+                1
+              ],
+              "timescale": 1,
+              "value": 23.000000000000057,
+              "properties": []
+            },
+            {
+              "offset": [
+                47,
+                2
+              ],
+              "timescale": 1,
+              "value": 23.476477085170032,
+              "properties": []
+            },
+            {
+              "offset": [
+                24,
+                1
+              ],
+              "timescale": 1,
+              "value": 23.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                49,
+                2
+              ],
+              "timescale": 1,
+              "value": 24.049466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                25,
+                1
+              ],
+              "timescale": 1,
+              "value": 24.299466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                51,
+                2
+              ],
+              "timescale": 1,
+              "value": 24.549466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                26,
+                1
+              ],
+              "timescale": 1,
+              "value": 24.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                53,
+                2
+              ],
+              "timescale": 1,
+              "value": 25.049466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                27,
+                1
+              ],
+              "timescale": 1,
+              "value": 25.299466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                55,
+                2
+              ],
+              "timescale": 1,
+              "value": 25.549466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                28,
+                1
+              ],
+              "timescale": 1,
+              "value": 25.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                57,
+                2
+              ],
+              "timescale": 1,
+              "value": 26.049466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                29,
+                1
+              ],
+              "timescale": 1,
+              "value": 26.299466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                59,
+                2
+              ],
+              "timescale": 1,
+              "value": 26.549466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                30,
+                1
+              ],
+              "timescale": 1,
+              "value": 26.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                61,
+                2
+              ],
+              "timescale": 1,
+              "value": 27.049466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                31,
+                1
+              ],
+              "timescale": 1,
+              "value": 27.299466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                63,
+                2
+              ],
+              "timescale": 1,
+              "value": 27.549466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                32,
+                1
+              ],
+              "timescale": 1,
+              "value": 27.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                65,
+                2
+              ],
+              "timescale": 1,
+              "value": 28.049466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                33,
+                1
+              ],
+              "timescale": 1,
+              "value": 28.299466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                67,
+                2
+              ],
+              "timescale": 1,
+              "value": 28.549466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                34,
+                1
+              ],
+              "timescale": 1,
+              "value": 28.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                69,
+                2
+              ],
+              "timescale": 1,
+              "value": 29.049466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                35,
+                1
+              ],
+              "timescale": 1,
+              "value": 29.299466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                71,
+                2
+              ],
+              "timescale": 1,
+              "value": 29.549466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                36,
+                1
+              ],
+              "timescale": 1,
+              "value": 29.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                73,
+                2
+              ],
+              "timescale": 1,
+              "value": 30.049466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                37,
+                1
+              ],
+              "timescale": 1,
+              "value": 30.299466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                75,
+                2
+              ],
+              "timescale": 1,
+              "value": 30.549466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                38,
+                1
+              ],
+              "timescale": 1,
+              "value": 30.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                77,
+                2
+              ],
+              "timescale": 1,
+              "value": 31.049466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                39,
+                1
+              ],
+              "timescale": 1,
+              "value": 31.299466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                79,
+                2
+              ],
+              "timescale": 1,
+              "value": 31.549466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                40,
+                1
+              ],
+              "timescale": 1,
+              "value": 31.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                81,
+                2
+              ],
+              "timescale": 1,
+              "value": 32.049466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                41,
+                1
+              ],
+              "timescale": 1,
+              "value": 32.299466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                83,
+                2
+              ],
+              "timescale": 1,
+              "value": 32.549466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                42,
+                1
+              ],
+              "timescale": 1,
+              "value": 32.799466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                85,
+                2
+              ],
+              "timescale": 1,
+              "value": 33.049466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                43,
+                1
+              ],
+              "timescale": 1,
+              "value": 33.299466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                87,
+                2
+              ],
+              "timescale": 1,
+              "value": 33.549466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                44,
+                1
+              ],
+              "timescale": 1,
+              "value": 33.799466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                89,
+                2
+              ],
+              "timescale": 1,
+              "value": 34.049466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                45,
+                1
+              ],
+              "timescale": 1,
+              "value": 34.299466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                91,
+                2
+              ],
+              "timescale": 1,
+              "value": 34.549466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                46,
+                1
+              ],
+              "timescale": 1,
+              "value": 34.799466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                93,
+                2
+              ],
+              "timescale": 1,
+              "value": 35.049466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                47,
+                1
+              ],
+              "timescale": 1,
+              "value": 35.299466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                95,
+                2
+              ],
+              "timescale": 1,
+              "value": 35.549466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                48,
+                1
+              ],
+              "timescale": 1,
+              "value": 35.799466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                97,
+                2
+              ],
+              "timescale": 1,
+              "value": 36.049466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                49,
+                1
+              ],
+              "timescale": 1,
+              "value": 36.299466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                99,
+                2
+              ],
+              "timescale": 1,
+              "value": 36.549466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                50,
+                1
+              ],
+              "timescale": 1,
+              "value": 36.799466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                101,
+                2
+              ],
+              "timescale": 1,
+              "value": 37.049466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                51,
+                1
+              ],
+              "timescale": 1,
+              "value": 37.299466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                103,
+                2
+              ],
+              "timescale": 1,
+              "value": 37.549466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                52,
+                1
+              ],
+              "timescale": 1,
+              "value": 37.799466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                105,
+                2
+              ],
+              "timescale": 1,
+              "value": 38.049466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                53,
+                1
+              ],
+              "timescale": 1,
+              "value": 38.299466565188894,
+              "properties": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "object": 901,
+      "length": 53,
+      "editRate": 25.0,
+      "phase": 0,
+      "speedRatio": [
+        53,
+        39
+      ],
+      "offsetAdjust": 0.0,
+      "newSourceCalculation": true,
+      "graphEnabled": "absent/default1",
+      "inputs": [
+        {
+          "object": 354,
+          "classId": "SEQU",
+          "length": 39
+        }
+      ],
+      "curves": [
+        {
+          "itemObject": 114,
+          "uuid": "8d56827c-847e-11d5-935a-50f857c10000",
+          "itemEnabled": true,
+          "controlObject": 52,
+          "classId": "PRCL",
+          "valueType": 2,
+          "interpolation": 6,
+          "extrapolation": 1,
+          "fields": 1,
+          "length": 53,
+          "editRate": 25.0,
+          "pointCount": 3,
+          "points": [
+            {
+              "offset": [
+                0,
+                1
+              ],
+              "timescale": 1,
+              "value": 1.0,
+              "properties": [
+                {
+                  "code": 14,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 5,
+                  "type": 2,
+                  "value": -9.200000000000001
+                },
+                {
+                  "code": 6,
+                  "type": 2,
+                  "value": -0.0
+                },
+                {
+                  "code": 7,
+                  "type": 2,
+                  "value": 9.200000000000001
+                },
+                {
+                  "code": 8,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 9,
+                  "type": 1,
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "offset": [
+                23,
+                1
+              ],
+              "timescale": 1,
+              "value": 1.0,
+              "properties": [
+                {
+                  "code": 5,
+                  "type": 2,
+                  "value": -9.200000000000001
+                },
+                {
+                  "code": 6,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 7,
+                  "type": 2,
+                  "value": 0.4
+                },
+                {
+                  "code": 8,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 9,
+                  "type": 1,
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "offset": [
+                24,
+                1
+              ],
+              "timescale": 1,
+              "value": 0.5,
+              "properties": [
+                {
+                  "code": 5,
+                  "type": 2,
+                  "value": -0.4
+                },
+                {
+                  "code": 6,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 7,
+                  "type": 2,
+                  "value": 0.4
+                },
+                {
+                  "code": 8,
+                  "type": 2,
+                  "value": -0.0
+                },
+                {
+                  "code": 9,
+                  "type": 1,
+                  "value": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "itemObject": 113,
+          "uuid": "8d56827d-847e-11d5-935a-50f857c10000",
+          "itemEnabled": true,
+          "controlObject": 51,
+          "classId": "PRCL",
+          "valueType": 2,
+          "interpolation": 3,
+          "extrapolation": 1,
+          "fields": 1,
+          "length": 53,
+          "editRate": 25.0,
+          "pointCount": 107,
+          "points": [
+            {
+              "offset": [
+                0,
+                1
+              ],
+              "timescale": 1,
+              "value": 0.0,
+              "properties": []
+            },
+            {
+              "offset": [
+                1,
+                2
+              ],
+              "timescale": 1,
+              "value": 0.5,
+              "properties": []
+            },
+            {
+              "offset": [
+                1,
+                1
+              ],
+              "timescale": 1,
+              "value": 0.9999999999999999,
+              "properties": []
+            },
+            {
+              "offset": [
+                3,
+                2
+              ],
+              "timescale": 1,
+              "value": 1.5,
+              "properties": []
+            },
+            {
+              "offset": [
+                2,
+                1
+              ],
+              "timescale": 1,
+              "value": 2.0000000000000004,
+              "properties": []
+            },
+            {
+              "offset": [
+                5,
+                2
+              ],
+              "timescale": 1,
+              "value": 2.500000000000001,
+              "properties": []
+            },
+            {
+              "offset": [
+                3,
+                1
+              ],
+              "timescale": 1,
+              "value": 3.0000000000000013,
+              "properties": []
+            },
+            {
+              "offset": [
+                7,
+                2
+              ],
+              "timescale": 1,
+              "value": 3.5000000000000018,
+              "properties": []
+            },
+            {
+              "offset": [
+                4,
+                1
+              ],
+              "timescale": 1,
+              "value": 4.000000000000002,
+              "properties": []
+            },
+            {
+              "offset": [
+                9,
+                2
+              ],
+              "timescale": 1,
+              "value": 4.5,
+              "properties": []
+            },
+            {
+              "offset": [
+                5,
+                1
+              ],
+              "timescale": 1,
+              "value": 4.999999999999998,
+              "properties": []
+            },
+            {
+              "offset": [
+                11,
+                2
+              ],
+              "timescale": 1,
+              "value": 5.4999999999999964,
+              "properties": []
+            },
+            {
+              "offset": [
+                6,
+                1
+              ],
+              "timescale": 1,
+              "value": 5.999999999999995,
+              "properties": []
+            },
+            {
+              "offset": [
+                13,
+                2
+              ],
+              "timescale": 1,
+              "value": 6.499999999999993,
+              "properties": []
+            },
+            {
+              "offset": [
+                7,
+                1
+              ],
+              "timescale": 1,
+              "value": 6.999999999999991,
+              "properties": []
+            },
+            {
+              "offset": [
+                15,
+                2
+              ],
+              "timescale": 1,
+              "value": 7.499999999999989,
+              "properties": []
+            },
+            {
+              "offset": [
+                8,
+                1
+              ],
+              "timescale": 1,
+              "value": 7.999999999999988,
+              "properties": []
+            },
+            {
+              "offset": [
+                17,
+                2
+              ],
+              "timescale": 1,
+              "value": 8.499999999999986,
+              "properties": []
+            },
+            {
+              "offset": [
+                9,
+                1
+              ],
+              "timescale": 1,
+              "value": 8.999999999999984,
+              "properties": []
+            },
+            {
+              "offset": [
+                19,
+                2
+              ],
+              "timescale": 1,
+              "value": 9.499999999999982,
+              "properties": []
+            },
+            {
+              "offset": [
+                10,
+                1
+              ],
+              "timescale": 1,
+              "value": 9.99999999999998,
+              "properties": []
+            },
+            {
+              "offset": [
+                21,
+                2
+              ],
+              "timescale": 1,
+              "value": 10.499999999999979,
+              "properties": []
+            },
+            {
+              "offset": [
+                11,
+                1
+              ],
+              "timescale": 1,
+              "value": 10.999999999999977,
+              "properties": []
+            },
+            {
+              "offset": [
+                23,
+                2
+              ],
+              "timescale": 1,
+              "value": 11.499999999999975,
+              "properties": []
+            },
+            {
+              "offset": [
+                12,
+                1
+              ],
+              "timescale": 1,
+              "value": 11.999999999999973,
+              "properties": []
+            },
+            {
+              "offset": [
+                25,
+                2
+              ],
+              "timescale": 1,
+              "value": 12.499999999999972,
+              "properties": []
+            },
+            {
+              "offset": [
+                13,
+                1
+              ],
+              "timescale": 1,
+              "value": 12.99999999999997,
+              "properties": []
+            },
+            {
+              "offset": [
+                27,
+                2
+              ],
+              "timescale": 1,
+              "value": 13.499999999999968,
+              "properties": []
+            },
+            {
+              "offset": [
+                14,
+                1
+              ],
+              "timescale": 1,
+              "value": 13.999999999999966,
+              "properties": []
+            },
+            {
+              "offset": [
+                29,
+                2
+              ],
+              "timescale": 1,
+              "value": 14.499999999999964,
+              "properties": []
+            },
+            {
+              "offset": [
+                15,
+                1
+              ],
+              "timescale": 1,
+              "value": 14.999999999999963,
+              "properties": []
+            },
+            {
+              "offset": [
+                31,
+                2
+              ],
+              "timescale": 1,
+              "value": 15.499999999999961,
+              "properties": []
+            },
+            {
+              "offset": [
+                16,
+                1
+              ],
+              "timescale": 1,
+              "value": 15.99999999999996,
+              "properties": []
+            },
+            {
+              "offset": [
+                33,
+                2
+              ],
+              "timescale": 1,
+              "value": 16.499999999999964,
+              "properties": []
+            },
+            {
+              "offset": [
+                17,
+                1
+              ],
+              "timescale": 1,
+              "value": 16.99999999999997,
+              "properties": []
+            },
+            {
+              "offset": [
+                35,
+                2
+              ],
+              "timescale": 1,
+              "value": 17.49999999999998,
+              "properties": []
+            },
+            {
+              "offset": [
+                18,
+                1
+              ],
+              "timescale": 1,
+              "value": 17.999999999999986,
+              "properties": []
+            },
+            {
+              "offset": [
+                37,
+                2
+              ],
+              "timescale": 1,
+              "value": 18.499999999999993,
+              "properties": []
+            },
+            {
+              "offset": [
+                19,
+                1
+              ],
+              "timescale": 1,
+              "value": 19.0,
+              "properties": []
+            },
+            {
+              "offset": [
+                39,
+                2
+              ],
+              "timescale": 1,
+              "value": 19.500000000000007,
+              "properties": []
+            },
+            {
+              "offset": [
+                20,
+                1
+              ],
+              "timescale": 1,
+              "value": 20.000000000000014,
+              "properties": []
+            },
+            {
+              "offset": [
+                41,
+                2
+              ],
+              "timescale": 1,
+              "value": 20.50000000000002,
+              "properties": []
+            },
+            {
+              "offset": [
+                21,
+                1
+              ],
+              "timescale": 1,
+              "value": 21.00000000000003,
+              "properties": []
+            },
+            {
+              "offset": [
+                43,
+                2
+              ],
+              "timescale": 1,
+              "value": 21.500000000000036,
+              "properties": []
+            },
+            {
+              "offset": [
+                22,
+                1
+              ],
+              "timescale": 1,
+              "value": 22.000000000000043,
+              "properties": []
+            },
+            {
+              "offset": [
+                45,
+                2
+              ],
+              "timescale": 1,
+              "value": 22.50000000000005,
+              "properties": []
+            },
+            {
+              "offset": [
+                23,
+                1
+              ],
+              "timescale": 1,
+              "value": 23.000000000000057,
+              "properties": []
+            },
+            {
+              "offset": [
+                47,
+                2
+              ],
+              "timescale": 1,
+              "value": 23.476477085170032,
+              "properties": []
+            },
+            {
+              "offset": [
+                24,
+                1
+              ],
+              "timescale": 1,
+              "value": 23.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                49,
+                2
+              ],
+              "timescale": 1,
+              "value": 24.049466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                25,
+                1
+              ],
+              "timescale": 1,
+              "value": 24.299466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                51,
+                2
+              ],
+              "timescale": 1,
+              "value": 24.549466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                26,
+                1
+              ],
+              "timescale": 1,
+              "value": 24.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                53,
+                2
+              ],
+              "timescale": 1,
+              "value": 25.049466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                27,
+                1
+              ],
+              "timescale": 1,
+              "value": 25.299466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                55,
+                2
+              ],
+              "timescale": 1,
+              "value": 25.549466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                28,
+                1
+              ],
+              "timescale": 1,
+              "value": 25.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                57,
+                2
+              ],
+              "timescale": 1,
+              "value": 26.049466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                29,
+                1
+              ],
+              "timescale": 1,
+              "value": 26.299466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                59,
+                2
+              ],
+              "timescale": 1,
+              "value": 26.549466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                30,
+                1
+              ],
+              "timescale": 1,
+              "value": 26.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                61,
+                2
+              ],
+              "timescale": 1,
+              "value": 27.049466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                31,
+                1
+              ],
+              "timescale": 1,
+              "value": 27.299466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                63,
+                2
+              ],
+              "timescale": 1,
+              "value": 27.549466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                32,
+                1
+              ],
+              "timescale": 1,
+              "value": 27.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                65,
+                2
+              ],
+              "timescale": 1,
+              "value": 28.049466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                33,
+                1
+              ],
+              "timescale": 1,
+              "value": 28.299466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                67,
+                2
+              ],
+              "timescale": 1,
+              "value": 28.549466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                34,
+                1
+              ],
+              "timescale": 1,
+              "value": 28.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                69,
+                2
+              ],
+              "timescale": 1,
+              "value": 29.049466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                35,
+                1
+              ],
+              "timescale": 1,
+              "value": 29.299466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                71,
+                2
+              ],
+              "timescale": 1,
+              "value": 29.549466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                36,
+                1
+              ],
+              "timescale": 1,
+              "value": 29.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                73,
+                2
+              ],
+              "timescale": 1,
+              "value": 30.049466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                37,
+                1
+              ],
+              "timescale": 1,
+              "value": 30.299466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                75,
+                2
+              ],
+              "timescale": 1,
+              "value": 30.549466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                38,
+                1
+              ],
+              "timescale": 1,
+              "value": 30.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                77,
+                2
+              ],
+              "timescale": 1,
+              "value": 31.049466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                39,
+                1
+              ],
+              "timescale": 1,
+              "value": 31.299466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                79,
+                2
+              ],
+              "timescale": 1,
+              "value": 31.549466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                40,
+                1
+              ],
+              "timescale": 1,
+              "value": 31.799466565188897,
+              "properties": []
+            },
+            {
+              "offset": [
+                81,
+                2
+              ],
+              "timescale": 1,
+              "value": 32.049466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                41,
+                1
+              ],
+              "timescale": 1,
+              "value": 32.299466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                83,
+                2
+              ],
+              "timescale": 1,
+              "value": 32.549466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                42,
+                1
+              ],
+              "timescale": 1,
+              "value": 32.799466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                85,
+                2
+              ],
+              "timescale": 1,
+              "value": 33.049466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                43,
+                1
+              ],
+              "timescale": 1,
+              "value": 33.299466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                87,
+                2
+              ],
+              "timescale": 1,
+              "value": 33.549466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                44,
+                1
+              ],
+              "timescale": 1,
+              "value": 33.799466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                89,
+                2
+              ],
+              "timescale": 1,
+              "value": 34.049466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                45,
+                1
+              ],
+              "timescale": 1,
+              "value": 34.299466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                91,
+                2
+              ],
+              "timescale": 1,
+              "value": 34.549466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                46,
+                1
+              ],
+              "timescale": 1,
+              "value": 34.799466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                93,
+                2
+              ],
+              "timescale": 1,
+              "value": 35.049466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                47,
+                1
+              ],
+              "timescale": 1,
+              "value": 35.299466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                95,
+                2
+              ],
+              "timescale": 1,
+              "value": 35.549466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                48,
+                1
+              ],
+              "timescale": 1,
+              "value": 35.799466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                97,
+                2
+              ],
+              "timescale": 1,
+              "value": 36.049466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                49,
+                1
+              ],
+              "timescale": 1,
+              "value": 36.299466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                99,
+                2
+              ],
+              "timescale": 1,
+              "value": 36.549466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                50,
+                1
+              ],
+              "timescale": 1,
+              "value": 36.799466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                101,
+                2
+              ],
+              "timescale": 1,
+              "value": 37.049466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                51,
+                1
+              ],
+              "timescale": 1,
+              "value": 37.299466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                103,
+                2
+              ],
+              "timescale": 1,
+              "value": 37.549466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                52,
+                1
+              ],
+              "timescale": 1,
+              "value": 37.799466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                105,
+                2
+              ],
+              "timescale": 1,
+              "value": 38.049466565188894,
+              "properties": []
+            },
+            {
+              "offset": [
+                53,
+                1
+              ],
+              "timescale": 1,
+              "value": 38.299466565188894,
+              "properties": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "object": 1095,
+      "length": 96,
+      "editRate": 25.0,
+      "phase": 33,
+      "speedRatio": [
+        16,
+        11
+      ],
+      "offsetAdjust": 0.0,
+      "newSourceCalculation": true,
+      "graphEnabled": "absent/default1",
+      "inputs": [
+        {
+          "object": 382,
+          "classId": "SEQU",
+          "length": 66
+        }
+      ],
+      "curves": [
+        {
+          "itemObject": 137,
+          "uuid": "8d56827c-847e-11d5-935a-50f857c10000",
+          "itemEnabled": true,
+          "controlObject": 62,
+          "classId": "PRCL",
+          "valueType": 2,
+          "interpolation": 6,
+          "extrapolation": 1,
+          "fields": 1,
+          "length": 96,
+          "editRate": 25.0,
+          "pointCount": 3,
+          "points": [
+            {
+              "offset": [
+                33,
+                1
+              ],
+              "timescale": 1,
+              "value": 1.0,
+              "properties": [
+                {
+                  "code": 5,
+                  "type": 2,
+                  "value": -0.4
+                },
+                {
+                  "code": 6,
+                  "type": 2,
+                  "value": -0.0
+                },
+                {
+                  "code": 7,
+                  "type": 2,
+                  "value": 0.4
+                },
+                {
+                  "code": 8,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 9,
+                  "type": 1,
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "offset": [
+                34,
+                1
+              ],
+              "timescale": 1,
+              "value": 0.5,
+              "properties": [
+                {
+                  "code": 14,
+                  "type": 2,
+                  "value": 34.0
+                },
+                {
+                  "code": 5,
+                  "type": 2,
+                  "value": -0.4
+                },
+                {
+                  "code": 6,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 7,
+                  "type": 2,
+                  "value": 24.400000000000002
+                },
+                {
+                  "code": 8,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 9,
+                  "type": 1,
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "offset": [
+                95,
+                1
+              ],
+              "timescale": 1,
+              "value": 0.5,
+              "properties": [
+                {
+                  "code": 5,
+                  "type": 2,
+                  "value": -24.400000000000002
+                },
+                {
+                  "code": 6,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 7,
+                  "type": 2,
+                  "value": 24.400000000000002
+                },
+                {
+                  "code": 8,
+                  "type": 2,
+                  "value": -0.0
+                },
+                {
+                  "code": 9,
+                  "type": 1,
+                  "value": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "itemObject": 136,
+          "uuid": "8d56827d-847e-11d5-935a-50f857c10000",
+          "itemEnabled": true,
+          "controlObject": 61,
+          "classId": "PRCL",
+          "valueType": 2,
+          "interpolation": 3,
+          "extrapolation": 1,
+          "fields": 1,
+          "length": 96,
+          "editRate": 25.0,
+          "pointCount": 193,
+          "points": [
+            {
+              "offset": [
+                0,
+                1
+              ],
+              "timescale": 1,
+              "value": 0.20053343481112051,
+              "properties": []
+            },
+            {
+              "offset": [
+                1,
+                2
+              ],
+              "timescale": 1,
+              "value": 0.7005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                1,
+                1
+              ],
+              "timescale": 1,
+              "value": 1.2005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                3,
+                2
+              ],
+              "timescale": 1,
+              "value": 1.7005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                2,
+                1
+              ],
+              "timescale": 1,
+              "value": 2.2005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                5,
+                2
+              ],
+              "timescale": 1,
+              "value": 2.7005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                3,
+                1
+              ],
+              "timescale": 1,
+              "value": 3.2005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                7,
+                2
+              ],
+              "timescale": 1,
+              "value": 3.7005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                4,
+                1
+              ],
+              "timescale": 1,
+              "value": 4.2005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                9,
+                2
+              ],
+              "timescale": 1,
+              "value": 4.7005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                5,
+                1
+              ],
+              "timescale": 1,
+              "value": 5.2005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                11,
+                2
+              ],
+              "timescale": 1,
+              "value": 5.7005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                6,
+                1
+              ],
+              "timescale": 1,
+              "value": 6.2005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                13,
+                2
+              ],
+              "timescale": 1,
+              "value": 6.7005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                7,
+                1
+              ],
+              "timescale": 1,
+              "value": 7.2005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                15,
+                2
+              ],
+              "timescale": 1,
+              "value": 7.7005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                8,
+                1
+              ],
+              "timescale": 1,
+              "value": 8.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                17,
+                2
+              ],
+              "timescale": 1,
+              "value": 8.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                9,
+                1
+              ],
+              "timescale": 1,
+              "value": 9.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                19,
+                2
+              ],
+              "timescale": 1,
+              "value": 9.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                10,
+                1
+              ],
+              "timescale": 1,
+              "value": 10.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                21,
+                2
+              ],
+              "timescale": 1,
+              "value": 10.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                11,
+                1
+              ],
+              "timescale": 1,
+              "value": 11.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                23,
+                2
+              ],
+              "timescale": 1,
+              "value": 11.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                12,
+                1
+              ],
+              "timescale": 1,
+              "value": 12.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                25,
+                2
+              ],
+              "timescale": 1,
+              "value": 12.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                13,
+                1
+              ],
+              "timescale": 1,
+              "value": 13.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                27,
+                2
+              ],
+              "timescale": 1,
+              "value": 13.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                14,
+                1
+              ],
+              "timescale": 1,
+              "value": 14.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                29,
+                2
+              ],
+              "timescale": 1,
+              "value": 14.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                15,
+                1
+              ],
+              "timescale": 1,
+              "value": 15.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                31,
+                2
+              ],
+              "timescale": 1,
+              "value": 15.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                16,
+                1
+              ],
+              "timescale": 1,
+              "value": 16.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                33,
+                2
+              ],
+              "timescale": 1,
+              "value": 16.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                17,
+                1
+              ],
+              "timescale": 1,
+              "value": 17.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                35,
+                2
+              ],
+              "timescale": 1,
+              "value": 17.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                18,
+                1
+              ],
+              "timescale": 1,
+              "value": 18.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                37,
+                2
+              ],
+              "timescale": 1,
+              "value": 18.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                19,
+                1
+              ],
+              "timescale": 1,
+              "value": 19.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                39,
+                2
+              ],
+              "timescale": 1,
+              "value": 19.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                20,
+                1
+              ],
+              "timescale": 1,
+              "value": 20.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                41,
+                2
+              ],
+              "timescale": 1,
+              "value": 20.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                21,
+                1
+              ],
+              "timescale": 1,
+              "value": 21.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                43,
+                2
+              ],
+              "timescale": 1,
+              "value": 21.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                22,
+                1
+              ],
+              "timescale": 1,
+              "value": 22.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                45,
+                2
+              ],
+              "timescale": 1,
+              "value": 22.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                23,
+                1
+              ],
+              "timescale": 1,
+              "value": 23.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                47,
+                2
+              ],
+              "timescale": 1,
+              "value": 23.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                24,
+                1
+              ],
+              "timescale": 1,
+              "value": 24.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                49,
+                2
+              ],
+              "timescale": 1,
+              "value": 24.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                25,
+                1
+              ],
+              "timescale": 1,
+              "value": 25.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                51,
+                2
+              ],
+              "timescale": 1,
+              "value": 25.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                26,
+                1
+              ],
+              "timescale": 1,
+              "value": 26.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                53,
+                2
+              ],
+              "timescale": 1,
+              "value": 26.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                27,
+                1
+              ],
+              "timescale": 1,
+              "value": 27.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                55,
+                2
+              ],
+              "timescale": 1,
+              "value": 27.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                28,
+                1
+              ],
+              "timescale": 1,
+              "value": 28.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                57,
+                2
+              ],
+              "timescale": 1,
+              "value": 28.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                29,
+                1
+              ],
+              "timescale": 1,
+              "value": 29.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                59,
+                2
+              ],
+              "timescale": 1,
+              "value": 29.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                30,
+                1
+              ],
+              "timescale": 1,
+              "value": 30.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                61,
+                2
+              ],
+              "timescale": 1,
+              "value": 30.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                31,
+                1
+              ],
+              "timescale": 1,
+              "value": 31.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                63,
+                2
+              ],
+              "timescale": 1,
+              "value": 31.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                32,
+                1
+              ],
+              "timescale": 1,
+              "value": 32.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                65,
+                2
+              ],
+              "timescale": 1,
+              "value": 32.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                33,
+                1
+              ],
+              "timescale": 1,
+              "value": 33.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                67,
+                2
+              ],
+              "timescale": 1,
+              "value": 33.677010519981096,
+              "properties": []
+            },
+            {
+              "offset": [
+                34,
+                1
+              ],
+              "timescale": 1,
+              "value": 33.99999999999999,
+              "properties": []
+            },
+            {
+              "offset": [
+                69,
+                2
+              ],
+              "timescale": 1,
+              "value": 34.2505334348111,
+              "properties": []
+            },
+            {
+              "offset": [
+                35,
+                1
+              ],
+              "timescale": 1,
+              "value": 34.50053343481109,
+              "properties": []
+            },
+            {
+              "offset": [
+                71,
+                2
+              ],
+              "timescale": 1,
+              "value": 34.750533434811075,
+              "properties": []
+            },
+            {
+              "offset": [
+                36,
+                1
+              ],
+              "timescale": 1,
+              "value": 35.00053343481106,
+              "properties": []
+            },
+            {
+              "offset": [
+                73,
+                2
+              ],
+              "timescale": 1,
+              "value": 35.25053343481105,
+              "properties": []
+            },
+            {
+              "offset": [
+                37,
+                1
+              ],
+              "timescale": 1,
+              "value": 35.50053343481103,
+              "properties": []
+            },
+            {
+              "offset": [
+                75,
+                2
+              ],
+              "timescale": 1,
+              "value": 35.75053343481102,
+              "properties": []
+            },
+            {
+              "offset": [
+                38,
+                1
+              ],
+              "timescale": 1,
+              "value": 36.000533434811004,
+              "properties": []
+            },
+            {
+              "offset": [
+                77,
+                2
+              ],
+              "timescale": 1,
+              "value": 36.25053343481099,
+              "properties": []
+            },
+            {
+              "offset": [
+                39,
+                1
+              ],
+              "timescale": 1,
+              "value": 36.500533434810976,
+              "properties": []
+            },
+            {
+              "offset": [
+                79,
+                2
+              ],
+              "timescale": 1,
+              "value": 36.75053343481096,
+              "properties": []
+            },
+            {
+              "offset": [
+                40,
+                1
+              ],
+              "timescale": 1,
+              "value": 37.00053343481095,
+              "properties": []
+            },
+            {
+              "offset": [
+                81,
+                2
+              ],
+              "timescale": 1,
+              "value": 37.25053343481093,
+              "properties": []
+            },
+            {
+              "offset": [
+                41,
+                1
+              ],
+              "timescale": 1,
+              "value": 37.50053343481092,
+              "properties": []
+            },
+            {
+              "offset": [
+                83,
+                2
+              ],
+              "timescale": 1,
+              "value": 37.750533434810905,
+              "properties": []
+            },
+            {
+              "offset": [
+                42,
+                1
+              ],
+              "timescale": 1,
+              "value": 38.00053343481089,
+              "properties": []
+            },
+            {
+              "offset": [
+                85,
+                2
+              ],
+              "timescale": 1,
+              "value": 38.250533434810876,
+              "properties": []
+            },
+            {
+              "offset": [
+                43,
+                1
+              ],
+              "timescale": 1,
+              "value": 38.50053343481086,
+              "properties": []
+            },
+            {
+              "offset": [
+                87,
+                2
+              ],
+              "timescale": 1,
+              "value": 38.75053343481085,
+              "properties": []
+            },
+            {
+              "offset": [
+                44,
+                1
+              ],
+              "timescale": 1,
+              "value": 39.00053343481083,
+              "properties": []
+            },
+            {
+              "offset": [
+                89,
+                2
+              ],
+              "timescale": 1,
+              "value": 39.25053343481082,
+              "properties": []
+            },
+            {
+              "offset": [
+                45,
+                1
+              ],
+              "timescale": 1,
+              "value": 39.500533434810805,
+              "properties": []
+            },
+            {
+              "offset": [
+                91,
+                2
+              ],
+              "timescale": 1,
+              "value": 39.75053343481079,
+              "properties": []
+            },
+            {
+              "offset": [
+                46,
+                1
+              ],
+              "timescale": 1,
+              "value": 40.00053343481078,
+              "properties": []
+            },
+            {
+              "offset": [
+                93,
+                2
+              ],
+              "timescale": 1,
+              "value": 40.25053343481076,
+              "properties": []
+            },
+            {
+              "offset": [
+                47,
+                1
+              ],
+              "timescale": 1,
+              "value": 40.50053343481075,
+              "properties": []
+            },
+            {
+              "offset": [
+                95,
+                2
+              ],
+              "timescale": 1,
+              "value": 40.750533434810734,
+              "properties": []
+            },
+            {
+              "offset": [
+                48,
+                1
+              ],
+              "timescale": 1,
+              "value": 41.00053343481072,
+              "properties": []
+            },
+            {
+              "offset": [
+                97,
+                2
+              ],
+              "timescale": 1,
+              "value": 41.250533434810706,
+              "properties": []
+            },
+            {
+              "offset": [
+                49,
+                1
+              ],
+              "timescale": 1,
+              "value": 41.50053343481069,
+              "properties": []
+            },
+            {
+              "offset": [
+                99,
+                2
+              ],
+              "timescale": 1,
+              "value": 41.75053343481068,
+              "properties": []
+            },
+            {
+              "offset": [
+                50,
+                1
+              ],
+              "timescale": 1,
+              "value": 42.00053343481066,
+              "properties": []
+            },
+            {
+              "offset": [
+                101,
+                2
+              ],
+              "timescale": 1,
+              "value": 42.25053343481065,
+              "properties": []
+            },
+            {
+              "offset": [
+                51,
+                1
+              ],
+              "timescale": 1,
+              "value": 42.500533434810635,
+              "properties": []
+            },
+            {
+              "offset": [
+                103,
+                2
+              ],
+              "timescale": 1,
+              "value": 42.75053343481062,
+              "properties": []
+            },
+            {
+              "offset": [
+                52,
+                1
+              ],
+              "timescale": 1,
+              "value": 43.000533434810606,
+              "properties": []
+            },
+            {
+              "offset": [
+                105,
+                2
+              ],
+              "timescale": 1,
+              "value": 43.25053343481059,
+              "properties": []
+            },
+            {
+              "offset": [
+                53,
+                1
+              ],
+              "timescale": 1,
+              "value": 43.50053343481058,
+              "properties": []
+            },
+            {
+              "offset": [
+                107,
+                2
+              ],
+              "timescale": 1,
+              "value": 43.75053343481056,
+              "properties": []
+            },
+            {
+              "offset": [
+                54,
+                1
+              ],
+              "timescale": 1,
+              "value": 44.00053343481055,
+              "properties": []
+            },
+            {
+              "offset": [
+                109,
+                2
+              ],
+              "timescale": 1,
+              "value": 44.250533434810535,
+              "properties": []
+            },
+            {
+              "offset": [
+                55,
+                1
+              ],
+              "timescale": 1,
+              "value": 44.50053343481052,
+              "properties": []
+            },
+            {
+              "offset": [
+                111,
+                2
+              ],
+              "timescale": 1,
+              "value": 44.75053343481051,
+              "properties": []
+            },
+            {
+              "offset": [
+                56,
+                1
+              ],
+              "timescale": 1,
+              "value": 45.00053343481049,
+              "properties": []
+            },
+            {
+              "offset": [
+                113,
+                2
+              ],
+              "timescale": 1,
+              "value": 45.25053343481048,
+              "properties": []
+            },
+            {
+              "offset": [
+                57,
+                1
+              ],
+              "timescale": 1,
+              "value": 45.500533434810464,
+              "properties": []
+            },
+            {
+              "offset": [
+                115,
+                2
+              ],
+              "timescale": 1,
+              "value": 45.75053343481045,
+              "properties": []
+            },
+            {
+              "offset": [
+                58,
+                1
+              ],
+              "timescale": 1,
+              "value": 46.000533434810436,
+              "properties": []
+            },
+            {
+              "offset": [
+                117,
+                2
+              ],
+              "timescale": 1,
+              "value": 46.25053343481042,
+              "properties": []
+            },
+            {
+              "offset": [
+                59,
+                1
+              ],
+              "timescale": 1,
+              "value": 46.50053343481041,
+              "properties": []
+            },
+            {
+              "offset": [
+                119,
+                2
+              ],
+              "timescale": 1,
+              "value": 46.75053343481039,
+              "properties": []
+            },
+            {
+              "offset": [
+                60,
+                1
+              ],
+              "timescale": 1,
+              "value": 47.00053343481038,
+              "properties": []
+            },
+            {
+              "offset": [
+                121,
+                2
+              ],
+              "timescale": 1,
+              "value": 47.250533434810364,
+              "properties": []
+            },
+            {
+              "offset": [
+                61,
+                1
+              ],
+              "timescale": 1,
+              "value": 47.50053343481035,
+              "properties": []
+            },
+            {
+              "offset": [
+                123,
+                2
+              ],
+              "timescale": 1,
+              "value": 47.750533434810336,
+              "properties": []
+            },
+            {
+              "offset": [
+                62,
+                1
+              ],
+              "timescale": 1,
+              "value": 48.00053343481032,
+              "properties": []
+            },
+            {
+              "offset": [
+                125,
+                2
+              ],
+              "timescale": 1,
+              "value": 48.25053343481031,
+              "properties": []
+            },
+            {
+              "offset": [
+                63,
+                1
+              ],
+              "timescale": 1,
+              "value": 48.50053343481029,
+              "properties": []
+            },
+            {
+              "offset": [
+                127,
+                2
+              ],
+              "timescale": 1,
+              "value": 48.75053343481028,
+              "properties": []
+            },
+            {
+              "offset": [
+                64,
+                1
+              ],
+              "timescale": 1,
+              "value": 49.000533434810265,
+              "properties": []
+            },
+            {
+              "offset": [
+                129,
+                2
+              ],
+              "timescale": 1,
+              "value": 49.25053343481025,
+              "properties": []
+            },
+            {
+              "offset": [
+                65,
+                1
+              ],
+              "timescale": 1,
+              "value": 49.50053343481024,
+              "properties": []
+            },
+            {
+              "offset": [
+                131,
+                2
+              ],
+              "timescale": 1,
+              "value": 49.75053343481022,
+              "properties": []
+            },
+            {
+              "offset": [
+                66,
+                1
+              ],
+              "timescale": 1,
+              "value": 50.00053343481021,
+              "properties": []
+            },
+            {
+              "offset": [
+                133,
+                2
+              ],
+              "timescale": 1,
+              "value": 50.250533434810194,
+              "properties": []
+            },
+            {
+              "offset": [
+                67,
+                1
+              ],
+              "timescale": 1,
+              "value": 50.50053343481018,
+              "properties": []
+            },
+            {
+              "offset": [
+                135,
+                2
+              ],
+              "timescale": 1,
+              "value": 50.750533434810166,
+              "properties": []
+            },
+            {
+              "offset": [
+                68,
+                1
+              ],
+              "timescale": 1,
+              "value": 51.00053343481015,
+              "properties": []
+            },
+            {
+              "offset": [
+                137,
+                2
+              ],
+              "timescale": 1,
+              "value": 51.25053343481014,
+              "properties": []
+            },
+            {
+              "offset": [
+                69,
+                1
+              ],
+              "timescale": 1,
+              "value": 51.50053343481012,
+              "properties": []
+            },
+            {
+              "offset": [
+                139,
+                2
+              ],
+              "timescale": 1,
+              "value": 51.75053343481011,
+              "properties": []
+            },
+            {
+              "offset": [
+                70,
+                1
+              ],
+              "timescale": 1,
+              "value": 52.000533434810094,
+              "properties": []
+            },
+            {
+              "offset": [
+                141,
+                2
+              ],
+              "timescale": 1,
+              "value": 52.25053343481008,
+              "properties": []
+            },
+            {
+              "offset": [
+                71,
+                1
+              ],
+              "timescale": 1,
+              "value": 52.500533434810066,
+              "properties": []
+            },
+            {
+              "offset": [
+                143,
+                2
+              ],
+              "timescale": 1,
+              "value": 52.75053343481005,
+              "properties": []
+            },
+            {
+              "offset": [
+                72,
+                1
+              ],
+              "timescale": 1,
+              "value": 53.00053343481004,
+              "properties": []
+            },
+            {
+              "offset": [
+                145,
+                2
+              ],
+              "timescale": 1,
+              "value": 53.25053343481002,
+              "properties": []
+            },
+            {
+              "offset": [
+                73,
+                1
+              ],
+              "timescale": 1,
+              "value": 53.50053343481001,
+              "properties": []
+            },
+            {
+              "offset": [
+                147,
+                2
+              ],
+              "timescale": 1,
+              "value": 53.750533434809995,
+              "properties": []
+            },
+            {
+              "offset": [
+                74,
+                1
+              ],
+              "timescale": 1,
+              "value": 54.00053343480998,
+              "properties": []
+            },
+            {
+              "offset": [
+                149,
+                2
+              ],
+              "timescale": 1,
+              "value": 54.25053343480997,
+              "properties": []
+            },
+            {
+              "offset": [
+                75,
+                1
+              ],
+              "timescale": 1,
+              "value": 54.50053343480995,
+              "properties": []
+            },
+            {
+              "offset": [
+                151,
+                2
+              ],
+              "timescale": 1,
+              "value": 54.75053343480994,
+              "properties": []
+            },
+            {
+              "offset": [
+                76,
+                1
+              ],
+              "timescale": 1,
+              "value": 55.000533434809924,
+              "properties": []
+            },
+            {
+              "offset": [
+                153,
+                2
+              ],
+              "timescale": 1,
+              "value": 55.25053343480991,
+              "properties": []
+            },
+            {
+              "offset": [
+                77,
+                1
+              ],
+              "timescale": 1,
+              "value": 55.500533434809896,
+              "properties": []
+            },
+            {
+              "offset": [
+                155,
+                2
+              ],
+              "timescale": 1,
+              "value": 55.75053343480988,
+              "properties": []
+            },
+            {
+              "offset": [
+                78,
+                1
+              ],
+              "timescale": 1,
+              "value": 56.00053343480987,
+              "properties": []
+            },
+            {
+              "offset": [
+                157,
+                2
+              ],
+              "timescale": 1,
+              "value": 56.25053343480985,
+              "properties": []
+            },
+            {
+              "offset": [
+                79,
+                1
+              ],
+              "timescale": 1,
+              "value": 56.50053343480984,
+              "properties": []
+            },
+            {
+              "offset": [
+                159,
+                2
+              ],
+              "timescale": 1,
+              "value": 56.750533434809824,
+              "properties": []
+            },
+            {
+              "offset": [
+                80,
+                1
+              ],
+              "timescale": 1,
+              "value": 57.00053343480981,
+              "properties": []
+            },
+            {
+              "offset": [
+                161,
+                2
+              ],
+              "timescale": 1,
+              "value": 57.250533434809796,
+              "properties": []
+            },
+            {
+              "offset": [
+                81,
+                1
+              ],
+              "timescale": 1,
+              "value": 57.50053343480978,
+              "properties": []
+            },
+            {
+              "offset": [
+                163,
+                2
+              ],
+              "timescale": 1,
+              "value": 57.75053343480977,
+              "properties": []
+            },
+            {
+              "offset": [
+                82,
+                1
+              ],
+              "timescale": 1,
+              "value": 58.00053343480975,
+              "properties": []
+            },
+            {
+              "offset": [
+                165,
+                2
+              ],
+              "timescale": 1,
+              "value": 58.25053343480974,
+              "properties": []
+            },
+            {
+              "offset": [
+                83,
+                1
+              ],
+              "timescale": 1,
+              "value": 58.500533434809725,
+              "properties": []
+            },
+            {
+              "offset": [
+                167,
+                2
+              ],
+              "timescale": 1,
+              "value": 58.75053343480971,
+              "properties": []
+            },
+            {
+              "offset": [
+                84,
+                1
+              ],
+              "timescale": 1,
+              "value": 59.0005334348097,
+              "properties": []
+            },
+            {
+              "offset": [
+                169,
+                2
+              ],
+              "timescale": 1,
+              "value": 59.25053343480968,
+              "properties": []
+            },
+            {
+              "offset": [
+                85,
+                1
+              ],
+              "timescale": 1,
+              "value": 59.50053343480967,
+              "properties": []
+            },
+            {
+              "offset": [
+                171,
+                2
+              ],
+              "timescale": 1,
+              "value": 59.750533434809654,
+              "properties": []
+            },
+            {
+              "offset": [
+                86,
+                1
+              ],
+              "timescale": 1,
+              "value": 60.00053343480964,
+              "properties": []
+            },
+            {
+              "offset": [
+                173,
+                2
+              ],
+              "timescale": 1,
+              "value": 60.250533434809626,
+              "properties": []
+            },
+            {
+              "offset": [
+                87,
+                1
+              ],
+              "timescale": 1,
+              "value": 60.50053343480961,
+              "properties": []
+            },
+            {
+              "offset": [
+                175,
+                2
+              ],
+              "timescale": 1,
+              "value": 60.7505334348096,
+              "properties": []
+            },
+            {
+              "offset": [
+                88,
+                1
+              ],
+              "timescale": 1,
+              "value": 61.00053343480958,
+              "properties": []
+            },
+            {
+              "offset": [
+                177,
+                2
+              ],
+              "timescale": 1,
+              "value": 61.25053343480957,
+              "properties": []
+            },
+            {
+              "offset": [
+                89,
+                1
+              ],
+              "timescale": 1,
+              "value": 61.500533434809554,
+              "properties": []
+            },
+            {
+              "offset": [
+                179,
+                2
+              ],
+              "timescale": 1,
+              "value": 61.75053343480954,
+              "properties": []
+            },
+            {
+              "offset": [
+                90,
+                1
+              ],
+              "timescale": 1,
+              "value": 62.000533434809526,
+              "properties": []
+            },
+            {
+              "offset": [
+                181,
+                2
+              ],
+              "timescale": 1,
+              "value": 62.25053343480951,
+              "properties": []
+            },
+            {
+              "offset": [
+                91,
+                1
+              ],
+              "timescale": 1,
+              "value": 62.5005334348095,
+              "properties": []
+            },
+            {
+              "offset": [
+                183,
+                2
+              ],
+              "timescale": 1,
+              "value": 62.75053343480948,
+              "properties": []
+            },
+            {
+              "offset": [
+                92,
+                1
+              ],
+              "timescale": 1,
+              "value": 63.00053343480947,
+              "properties": []
+            },
+            {
+              "offset": [
+                185,
+                2
+              ],
+              "timescale": 1,
+              "value": 63.250533434809455,
+              "properties": []
+            },
+            {
+              "offset": [
+                93,
+                1
+              ],
+              "timescale": 1,
+              "value": 63.50053343480944,
+              "properties": []
+            },
+            {
+              "offset": [
+                187,
+                2
+              ],
+              "timescale": 1,
+              "value": 63.75053343480943,
+              "properties": []
+            },
+            {
+              "offset": [
+                94,
+                1
+              ],
+              "timescale": 1,
+              "value": 64.00053343480941,
+              "properties": []
+            },
+            {
+              "offset": [
+                189,
+                2
+              ],
+              "timescale": 1,
+              "value": 64.2505334348094,
+              "properties": []
+            },
+            {
+              "offset": [
+                95,
+                1
+              ],
+              "timescale": 1,
+              "value": 64.50053343481005,
+              "properties": []
+            },
+            {
+              "offset": [
+                191,
+                2
+              ],
+              "timescale": 1,
+              "value": 64.75053343481005,
+              "properties": []
+            },
+            {
+              "offset": [
+                96,
+                1
+              ],
+              "timescale": 1,
+              "value": 65.00053343481005,
+              "properties": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "object": 4169,
+      "length": 96,
+      "editRate": 25.0,
+      "phase": 33,
+      "speedRatio": [
+        16,
+        11
+      ],
+      "offsetAdjust": 0.0,
+      "newSourceCalculation": true,
+      "graphEnabled": "absent/default1",
+      "inputs": [
+        {
+          "object": 1723,
+          "classId": "SEQU",
+          "length": 66
+        }
+      ],
+      "curves": [
+        {
+          "itemObject": 486,
+          "uuid": "8d56827c-847e-11d5-935a-50f857c10000",
+          "itemEnabled": true,
+          "controlObject": 173,
+          "classId": "PRCL",
+          "valueType": 2,
+          "interpolation": 6,
+          "extrapolation": 1,
+          "fields": 1,
+          "length": 96,
+          "editRate": 25.0,
+          "pointCount": 3,
+          "points": [
+            {
+              "offset": [
+                33,
+                1
+              ],
+              "timescale": 1,
+              "value": 1.0,
+              "properties": [
+                {
+                  "code": 5,
+                  "type": 2,
+                  "value": -0.4
+                },
+                {
+                  "code": 6,
+                  "type": 2,
+                  "value": -0.0
+                },
+                {
+                  "code": 7,
+                  "type": 2,
+                  "value": 0.4
+                },
+                {
+                  "code": 8,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 9,
+                  "type": 1,
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "offset": [
+                34,
+                1
+              ],
+              "timescale": 1,
+              "value": 0.5,
+              "properties": [
+                {
+                  "code": 14,
+                  "type": 2,
+                  "value": 34.0
+                },
+                {
+                  "code": 5,
+                  "type": 2,
+                  "value": -0.4
+                },
+                {
+                  "code": 6,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 7,
+                  "type": 2,
+                  "value": 24.400000000000002
+                },
+                {
+                  "code": 8,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 9,
+                  "type": 1,
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "offset": [
+                95,
+                1
+              ],
+              "timescale": 1,
+              "value": 0.5,
+              "properties": [
+                {
+                  "code": 5,
+                  "type": 2,
+                  "value": -24.400000000000002
+                },
+                {
+                  "code": 6,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 7,
+                  "type": 2,
+                  "value": 24.400000000000002
+                },
+                {
+                  "code": 8,
+                  "type": 2,
+                  "value": -0.0
+                },
+                {
+                  "code": 9,
+                  "type": 1,
+                  "value": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "itemObject": 485,
+          "uuid": "8d56827d-847e-11d5-935a-50f857c10000",
+          "itemEnabled": true,
+          "controlObject": 172,
+          "classId": "PRCL",
+          "valueType": 2,
+          "interpolation": 3,
+          "extrapolation": 1,
+          "fields": 1,
+          "length": 96,
+          "editRate": 25.0,
+          "pointCount": 193,
+          "points": [
+            {
+              "offset": [
+                0,
+                1
+              ],
+              "timescale": 1,
+              "value": 0.20053343481112051,
+              "properties": []
+            },
+            {
+              "offset": [
+                1,
+                2
+              ],
+              "timescale": 1,
+              "value": 0.7005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                1,
+                1
+              ],
+              "timescale": 1,
+              "value": 1.2005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                3,
+                2
+              ],
+              "timescale": 1,
+              "value": 1.7005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                2,
+                1
+              ],
+              "timescale": 1,
+              "value": 2.2005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                5,
+                2
+              ],
+              "timescale": 1,
+              "value": 2.7005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                3,
+                1
+              ],
+              "timescale": 1,
+              "value": 3.2005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                7,
+                2
+              ],
+              "timescale": 1,
+              "value": 3.7005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                4,
+                1
+              ],
+              "timescale": 1,
+              "value": 4.2005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                9,
+                2
+              ],
+              "timescale": 1,
+              "value": 4.7005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                5,
+                1
+              ],
+              "timescale": 1,
+              "value": 5.2005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                11,
+                2
+              ],
+              "timescale": 1,
+              "value": 5.7005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                6,
+                1
+              ],
+              "timescale": 1,
+              "value": 6.2005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                13,
+                2
+              ],
+              "timescale": 1,
+              "value": 6.7005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                7,
+                1
+              ],
+              "timescale": 1,
+              "value": 7.2005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                15,
+                2
+              ],
+              "timescale": 1,
+              "value": 7.7005334348111205,
+              "properties": []
+            },
+            {
+              "offset": [
+                8,
+                1
+              ],
+              "timescale": 1,
+              "value": 8.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                17,
+                2
+              ],
+              "timescale": 1,
+              "value": 8.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                9,
+                1
+              ],
+              "timescale": 1,
+              "value": 9.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                19,
+                2
+              ],
+              "timescale": 1,
+              "value": 9.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                10,
+                1
+              ],
+              "timescale": 1,
+              "value": 10.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                21,
+                2
+              ],
+              "timescale": 1,
+              "value": 10.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                11,
+                1
+              ],
+              "timescale": 1,
+              "value": 11.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                23,
+                2
+              ],
+              "timescale": 1,
+              "value": 11.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                12,
+                1
+              ],
+              "timescale": 1,
+              "value": 12.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                25,
+                2
+              ],
+              "timescale": 1,
+              "value": 12.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                13,
+                1
+              ],
+              "timescale": 1,
+              "value": 13.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                27,
+                2
+              ],
+              "timescale": 1,
+              "value": 13.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                14,
+                1
+              ],
+              "timescale": 1,
+              "value": 14.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                29,
+                2
+              ],
+              "timescale": 1,
+              "value": 14.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                15,
+                1
+              ],
+              "timescale": 1,
+              "value": 15.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                31,
+                2
+              ],
+              "timescale": 1,
+              "value": 15.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                16,
+                1
+              ],
+              "timescale": 1,
+              "value": 16.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                33,
+                2
+              ],
+              "timescale": 1,
+              "value": 16.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                17,
+                1
+              ],
+              "timescale": 1,
+              "value": 17.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                35,
+                2
+              ],
+              "timescale": 1,
+              "value": 17.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                18,
+                1
+              ],
+              "timescale": 1,
+              "value": 18.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                37,
+                2
+              ],
+              "timescale": 1,
+              "value": 18.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                19,
+                1
+              ],
+              "timescale": 1,
+              "value": 19.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                39,
+                2
+              ],
+              "timescale": 1,
+              "value": 19.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                20,
+                1
+              ],
+              "timescale": 1,
+              "value": 20.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                41,
+                2
+              ],
+              "timescale": 1,
+              "value": 20.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                21,
+                1
+              ],
+              "timescale": 1,
+              "value": 21.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                43,
+                2
+              ],
+              "timescale": 1,
+              "value": 21.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                22,
+                1
+              ],
+              "timescale": 1,
+              "value": 22.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                45,
+                2
+              ],
+              "timescale": 1,
+              "value": 22.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                23,
+                1
+              ],
+              "timescale": 1,
+              "value": 23.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                47,
+                2
+              ],
+              "timescale": 1,
+              "value": 23.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                24,
+                1
+              ],
+              "timescale": 1,
+              "value": 24.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                49,
+                2
+              ],
+              "timescale": 1,
+              "value": 24.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                25,
+                1
+              ],
+              "timescale": 1,
+              "value": 25.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                51,
+                2
+              ],
+              "timescale": 1,
+              "value": 25.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                26,
+                1
+              ],
+              "timescale": 1,
+              "value": 26.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                53,
+                2
+              ],
+              "timescale": 1,
+              "value": 26.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                27,
+                1
+              ],
+              "timescale": 1,
+              "value": 27.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                55,
+                2
+              ],
+              "timescale": 1,
+              "value": 27.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                28,
+                1
+              ],
+              "timescale": 1,
+              "value": 28.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                57,
+                2
+              ],
+              "timescale": 1,
+              "value": 28.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                29,
+                1
+              ],
+              "timescale": 1,
+              "value": 29.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                59,
+                2
+              ],
+              "timescale": 1,
+              "value": 29.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                30,
+                1
+              ],
+              "timescale": 1,
+              "value": 30.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                61,
+                2
+              ],
+              "timescale": 1,
+              "value": 30.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                31,
+                1
+              ],
+              "timescale": 1,
+              "value": 31.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                63,
+                2
+              ],
+              "timescale": 1,
+              "value": 31.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                32,
+                1
+              ],
+              "timescale": 1,
+              "value": 32.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                65,
+                2
+              ],
+              "timescale": 1,
+              "value": 32.70053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                33,
+                1
+              ],
+              "timescale": 1,
+              "value": 33.20053343481112,
+              "properties": []
+            },
+            {
+              "offset": [
+                67,
+                2
+              ],
+              "timescale": 1,
+              "value": 33.677010519981096,
+              "properties": []
+            },
+            {
+              "offset": [
+                34,
+                1
+              ],
+              "timescale": 1,
+              "value": 33.99999999999999,
+              "properties": []
+            },
+            {
+              "offset": [
+                69,
+                2
+              ],
+              "timescale": 1,
+              "value": 34.2505334348111,
+              "properties": []
+            },
+            {
+              "offset": [
+                35,
+                1
+              ],
+              "timescale": 1,
+              "value": 34.50053343481109,
+              "properties": []
+            },
+            {
+              "offset": [
+                71,
+                2
+              ],
+              "timescale": 1,
+              "value": 34.750533434811075,
+              "properties": []
+            },
+            {
+              "offset": [
+                36,
+                1
+              ],
+              "timescale": 1,
+              "value": 35.00053343481106,
+              "properties": []
+            },
+            {
+              "offset": [
+                73,
+                2
+              ],
+              "timescale": 1,
+              "value": 35.25053343481105,
+              "properties": []
+            },
+            {
+              "offset": [
+                37,
+                1
+              ],
+              "timescale": 1,
+              "value": 35.50053343481103,
+              "properties": []
+            },
+            {
+              "offset": [
+                75,
+                2
+              ],
+              "timescale": 1,
+              "value": 35.75053343481102,
+              "properties": []
+            },
+            {
+              "offset": [
+                38,
+                1
+              ],
+              "timescale": 1,
+              "value": 36.000533434811004,
+              "properties": []
+            },
+            {
+              "offset": [
+                77,
+                2
+              ],
+              "timescale": 1,
+              "value": 36.25053343481099,
+              "properties": []
+            },
+            {
+              "offset": [
+                39,
+                1
+              ],
+              "timescale": 1,
+              "value": 36.500533434810976,
+              "properties": []
+            },
+            {
+              "offset": [
+                79,
+                2
+              ],
+              "timescale": 1,
+              "value": 36.75053343481096,
+              "properties": []
+            },
+            {
+              "offset": [
+                40,
+                1
+              ],
+              "timescale": 1,
+              "value": 37.00053343481095,
+              "properties": []
+            },
+            {
+              "offset": [
+                81,
+                2
+              ],
+              "timescale": 1,
+              "value": 37.25053343481093,
+              "properties": []
+            },
+            {
+              "offset": [
+                41,
+                1
+              ],
+              "timescale": 1,
+              "value": 37.50053343481092,
+              "properties": []
+            },
+            {
+              "offset": [
+                83,
+                2
+              ],
+              "timescale": 1,
+              "value": 37.750533434810905,
+              "properties": []
+            },
+            {
+              "offset": [
+                42,
+                1
+              ],
+              "timescale": 1,
+              "value": 38.00053343481089,
+              "properties": []
+            },
+            {
+              "offset": [
+                85,
+                2
+              ],
+              "timescale": 1,
+              "value": 38.250533434810876,
+              "properties": []
+            },
+            {
+              "offset": [
+                43,
+                1
+              ],
+              "timescale": 1,
+              "value": 38.50053343481086,
+              "properties": []
+            },
+            {
+              "offset": [
+                87,
+                2
+              ],
+              "timescale": 1,
+              "value": 38.75053343481085,
+              "properties": []
+            },
+            {
+              "offset": [
+                44,
+                1
+              ],
+              "timescale": 1,
+              "value": 39.00053343481083,
+              "properties": []
+            },
+            {
+              "offset": [
+                89,
+                2
+              ],
+              "timescale": 1,
+              "value": 39.25053343481082,
+              "properties": []
+            },
+            {
+              "offset": [
+                45,
+                1
+              ],
+              "timescale": 1,
+              "value": 39.500533434810805,
+              "properties": []
+            },
+            {
+              "offset": [
+                91,
+                2
+              ],
+              "timescale": 1,
+              "value": 39.75053343481079,
+              "properties": []
+            },
+            {
+              "offset": [
+                46,
+                1
+              ],
+              "timescale": 1,
+              "value": 40.00053343481078,
+              "properties": []
+            },
+            {
+              "offset": [
+                93,
+                2
+              ],
+              "timescale": 1,
+              "value": 40.25053343481076,
+              "properties": []
+            },
+            {
+              "offset": [
+                47,
+                1
+              ],
+              "timescale": 1,
+              "value": 40.50053343481075,
+              "properties": []
+            },
+            {
+              "offset": [
+                95,
+                2
+              ],
+              "timescale": 1,
+              "value": 40.750533434810734,
+              "properties": []
+            },
+            {
+              "offset": [
+                48,
+                1
+              ],
+              "timescale": 1,
+              "value": 41.00053343481072,
+              "properties": []
+            },
+            {
+              "offset": [
+                97,
+                2
+              ],
+              "timescale": 1,
+              "value": 41.250533434810706,
+              "properties": []
+            },
+            {
+              "offset": [
+                49,
+                1
+              ],
+              "timescale": 1,
+              "value": 41.50053343481069,
+              "properties": []
+            },
+            {
+              "offset": [
+                99,
+                2
+              ],
+              "timescale": 1,
+              "value": 41.75053343481068,
+              "properties": []
+            },
+            {
+              "offset": [
+                50,
+                1
+              ],
+              "timescale": 1,
+              "value": 42.00053343481066,
+              "properties": []
+            },
+            {
+              "offset": [
+                101,
+                2
+              ],
+              "timescale": 1,
+              "value": 42.25053343481065,
+              "properties": []
+            },
+            {
+              "offset": [
+                51,
+                1
+              ],
+              "timescale": 1,
+              "value": 42.500533434810635,
+              "properties": []
+            },
+            {
+              "offset": [
+                103,
+                2
+              ],
+              "timescale": 1,
+              "value": 42.75053343481062,
+              "properties": []
+            },
+            {
+              "offset": [
+                52,
+                1
+              ],
+              "timescale": 1,
+              "value": 43.000533434810606,
+              "properties": []
+            },
+            {
+              "offset": [
+                105,
+                2
+              ],
+              "timescale": 1,
+              "value": 43.25053343481059,
+              "properties": []
+            },
+            {
+              "offset": [
+                53,
+                1
+              ],
+              "timescale": 1,
+              "value": 43.50053343481058,
+              "properties": []
+            },
+            {
+              "offset": [
+                107,
+                2
+              ],
+              "timescale": 1,
+              "value": 43.75053343481056,
+              "properties": []
+            },
+            {
+              "offset": [
+                54,
+                1
+              ],
+              "timescale": 1,
+              "value": 44.00053343481055,
+              "properties": []
+            },
+            {
+              "offset": [
+                109,
+                2
+              ],
+              "timescale": 1,
+              "value": 44.250533434810535,
+              "properties": []
+            },
+            {
+              "offset": [
+                55,
+                1
+              ],
+              "timescale": 1,
+              "value": 44.50053343481052,
+              "properties": []
+            },
+            {
+              "offset": [
+                111,
+                2
+              ],
+              "timescale": 1,
+              "value": 44.75053343481051,
+              "properties": []
+            },
+            {
+              "offset": [
+                56,
+                1
+              ],
+              "timescale": 1,
+              "value": 45.00053343481049,
+              "properties": []
+            },
+            {
+              "offset": [
+                113,
+                2
+              ],
+              "timescale": 1,
+              "value": 45.25053343481048,
+              "properties": []
+            },
+            {
+              "offset": [
+                57,
+                1
+              ],
+              "timescale": 1,
+              "value": 45.500533434810464,
+              "properties": []
+            },
+            {
+              "offset": [
+                115,
+                2
+              ],
+              "timescale": 1,
+              "value": 45.75053343481045,
+              "properties": []
+            },
+            {
+              "offset": [
+                58,
+                1
+              ],
+              "timescale": 1,
+              "value": 46.000533434810436,
+              "properties": []
+            },
+            {
+              "offset": [
+                117,
+                2
+              ],
+              "timescale": 1,
+              "value": 46.25053343481042,
+              "properties": []
+            },
+            {
+              "offset": [
+                59,
+                1
+              ],
+              "timescale": 1,
+              "value": 46.50053343481041,
+              "properties": []
+            },
+            {
+              "offset": [
+                119,
+                2
+              ],
+              "timescale": 1,
+              "value": 46.75053343481039,
+              "properties": []
+            },
+            {
+              "offset": [
+                60,
+                1
+              ],
+              "timescale": 1,
+              "value": 47.00053343481038,
+              "properties": []
+            },
+            {
+              "offset": [
+                121,
+                2
+              ],
+              "timescale": 1,
+              "value": 47.250533434810364,
+              "properties": []
+            },
+            {
+              "offset": [
+                61,
+                1
+              ],
+              "timescale": 1,
+              "value": 47.50053343481035,
+              "properties": []
+            },
+            {
+              "offset": [
+                123,
+                2
+              ],
+              "timescale": 1,
+              "value": 47.750533434810336,
+              "properties": []
+            },
+            {
+              "offset": [
+                62,
+                1
+              ],
+              "timescale": 1,
+              "value": 48.00053343481032,
+              "properties": []
+            },
+            {
+              "offset": [
+                125,
+                2
+              ],
+              "timescale": 1,
+              "value": 48.25053343481031,
+              "properties": []
+            },
+            {
+              "offset": [
+                63,
+                1
+              ],
+              "timescale": 1,
+              "value": 48.50053343481029,
+              "properties": []
+            },
+            {
+              "offset": [
+                127,
+                2
+              ],
+              "timescale": 1,
+              "value": 48.75053343481028,
+              "properties": []
+            },
+            {
+              "offset": [
+                64,
+                1
+              ],
+              "timescale": 1,
+              "value": 49.000533434810265,
+              "properties": []
+            },
+            {
+              "offset": [
+                129,
+                2
+              ],
+              "timescale": 1,
+              "value": 49.25053343481025,
+              "properties": []
+            },
+            {
+              "offset": [
+                65,
+                1
+              ],
+              "timescale": 1,
+              "value": 49.50053343481024,
+              "properties": []
+            },
+            {
+              "offset": [
+                131,
+                2
+              ],
+              "timescale": 1,
+              "value": 49.75053343481022,
+              "properties": []
+            },
+            {
+              "offset": [
+                66,
+                1
+              ],
+              "timescale": 1,
+              "value": 50.00053343481021,
+              "properties": []
+            },
+            {
+              "offset": [
+                133,
+                2
+              ],
+              "timescale": 1,
+              "value": 50.250533434810194,
+              "properties": []
+            },
+            {
+              "offset": [
+                67,
+                1
+              ],
+              "timescale": 1,
+              "value": 50.50053343481018,
+              "properties": []
+            },
+            {
+              "offset": [
+                135,
+                2
+              ],
+              "timescale": 1,
+              "value": 50.750533434810166,
+              "properties": []
+            },
+            {
+              "offset": [
+                68,
+                1
+              ],
+              "timescale": 1,
+              "value": 51.00053343481015,
+              "properties": []
+            },
+            {
+              "offset": [
+                137,
+                2
+              ],
+              "timescale": 1,
+              "value": 51.25053343481014,
+              "properties": []
+            },
+            {
+              "offset": [
+                69,
+                1
+              ],
+              "timescale": 1,
+              "value": 51.50053343481012,
+              "properties": []
+            },
+            {
+              "offset": [
+                139,
+                2
+              ],
+              "timescale": 1,
+              "value": 51.75053343481011,
+              "properties": []
+            },
+            {
+              "offset": [
+                70,
+                1
+              ],
+              "timescale": 1,
+              "value": 52.000533434810094,
+              "properties": []
+            },
+            {
+              "offset": [
+                141,
+                2
+              ],
+              "timescale": 1,
+              "value": 52.25053343481008,
+              "properties": []
+            },
+            {
+              "offset": [
+                71,
+                1
+              ],
+              "timescale": 1,
+              "value": 52.500533434810066,
+              "properties": []
+            },
+            {
+              "offset": [
+                143,
+                2
+              ],
+              "timescale": 1,
+              "value": 52.75053343481005,
+              "properties": []
+            },
+            {
+              "offset": [
+                72,
+                1
+              ],
+              "timescale": 1,
+              "value": 53.00053343481004,
+              "properties": []
+            },
+            {
+              "offset": [
+                145,
+                2
+              ],
+              "timescale": 1,
+              "value": 53.25053343481002,
+              "properties": []
+            },
+            {
+              "offset": [
+                73,
+                1
+              ],
+              "timescale": 1,
+              "value": 53.50053343481001,
+              "properties": []
+            },
+            {
+              "offset": [
+                147,
+                2
+              ],
+              "timescale": 1,
+              "value": 53.750533434809995,
+              "properties": []
+            },
+            {
+              "offset": [
+                74,
+                1
+              ],
+              "timescale": 1,
+              "value": 54.00053343480998,
+              "properties": []
+            },
+            {
+              "offset": [
+                149,
+                2
+              ],
+              "timescale": 1,
+              "value": 54.25053343480997,
+              "properties": []
+            },
+            {
+              "offset": [
+                75,
+                1
+              ],
+              "timescale": 1,
+              "value": 54.50053343480995,
+              "properties": []
+            },
+            {
+              "offset": [
+                151,
+                2
+              ],
+              "timescale": 1,
+              "value": 54.75053343480994,
+              "properties": []
+            },
+            {
+              "offset": [
+                76,
+                1
+              ],
+              "timescale": 1,
+              "value": 55.000533434809924,
+              "properties": []
+            },
+            {
+              "offset": [
+                153,
+                2
+              ],
+              "timescale": 1,
+              "value": 55.25053343480991,
+              "properties": []
+            },
+            {
+              "offset": [
+                77,
+                1
+              ],
+              "timescale": 1,
+              "value": 55.500533434809896,
+              "properties": []
+            },
+            {
+              "offset": [
+                155,
+                2
+              ],
+              "timescale": 1,
+              "value": 55.75053343480988,
+              "properties": []
+            },
+            {
+              "offset": [
+                78,
+                1
+              ],
+              "timescale": 1,
+              "value": 56.00053343480987,
+              "properties": []
+            },
+            {
+              "offset": [
+                157,
+                2
+              ],
+              "timescale": 1,
+              "value": 56.25053343480985,
+              "properties": []
+            },
+            {
+              "offset": [
+                79,
+                1
+              ],
+              "timescale": 1,
+              "value": 56.50053343480984,
+              "properties": []
+            },
+            {
+              "offset": [
+                159,
+                2
+              ],
+              "timescale": 1,
+              "value": 56.750533434809824,
+              "properties": []
+            },
+            {
+              "offset": [
+                80,
+                1
+              ],
+              "timescale": 1,
+              "value": 57.00053343480981,
+              "properties": []
+            },
+            {
+              "offset": [
+                161,
+                2
+              ],
+              "timescale": 1,
+              "value": 57.250533434809796,
+              "properties": []
+            },
+            {
+              "offset": [
+                81,
+                1
+              ],
+              "timescale": 1,
+              "value": 57.50053343480978,
+              "properties": []
+            },
+            {
+              "offset": [
+                163,
+                2
+              ],
+              "timescale": 1,
+              "value": 57.75053343480977,
+              "properties": []
+            },
+            {
+              "offset": [
+                82,
+                1
+              ],
+              "timescale": 1,
+              "value": 58.00053343480975,
+              "properties": []
+            },
+            {
+              "offset": [
+                165,
+                2
+              ],
+              "timescale": 1,
+              "value": 58.25053343480974,
+              "properties": []
+            },
+            {
+              "offset": [
+                83,
+                1
+              ],
+              "timescale": 1,
+              "value": 58.500533434809725,
+              "properties": []
+            },
+            {
+              "offset": [
+                167,
+                2
+              ],
+              "timescale": 1,
+              "value": 58.75053343480971,
+              "properties": []
+            },
+            {
+              "offset": [
+                84,
+                1
+              ],
+              "timescale": 1,
+              "value": 59.0005334348097,
+              "properties": []
+            },
+            {
+              "offset": [
+                169,
+                2
+              ],
+              "timescale": 1,
+              "value": 59.25053343480968,
+              "properties": []
+            },
+            {
+              "offset": [
+                85,
+                1
+              ],
+              "timescale": 1,
+              "value": 59.50053343480967,
+              "properties": []
+            },
+            {
+              "offset": [
+                171,
+                2
+              ],
+              "timescale": 1,
+              "value": 59.750533434809654,
+              "properties": []
+            },
+            {
+              "offset": [
+                86,
+                1
+              ],
+              "timescale": 1,
+              "value": 60.00053343480964,
+              "properties": []
+            },
+            {
+              "offset": [
+                173,
+                2
+              ],
+              "timescale": 1,
+              "value": 60.250533434809626,
+              "properties": []
+            },
+            {
+              "offset": [
+                87,
+                1
+              ],
+              "timescale": 1,
+              "value": 60.50053343480961,
+              "properties": []
+            },
+            {
+              "offset": [
+                175,
+                2
+              ],
+              "timescale": 1,
+              "value": 60.7505334348096,
+              "properties": []
+            },
+            {
+              "offset": [
+                88,
+                1
+              ],
+              "timescale": 1,
+              "value": 61.00053343480958,
+              "properties": []
+            },
+            {
+              "offset": [
+                177,
+                2
+              ],
+              "timescale": 1,
+              "value": 61.25053343480957,
+              "properties": []
+            },
+            {
+              "offset": [
+                89,
+                1
+              ],
+              "timescale": 1,
+              "value": 61.500533434809554,
+              "properties": []
+            },
+            {
+              "offset": [
+                179,
+                2
+              ],
+              "timescale": 1,
+              "value": 61.75053343480954,
+              "properties": []
+            },
+            {
+              "offset": [
+                90,
+                1
+              ],
+              "timescale": 1,
+              "value": 62.000533434809526,
+              "properties": []
+            },
+            {
+              "offset": [
+                181,
+                2
+              ],
+              "timescale": 1,
+              "value": 62.25053343480951,
+              "properties": []
+            },
+            {
+              "offset": [
+                91,
+                1
+              ],
+              "timescale": 1,
+              "value": 62.5005334348095,
+              "properties": []
+            },
+            {
+              "offset": [
+                183,
+                2
+              ],
+              "timescale": 1,
+              "value": 62.75053343480948,
+              "properties": []
+            },
+            {
+              "offset": [
+                92,
+                1
+              ],
+              "timescale": 1,
+              "value": 63.00053343480947,
+              "properties": []
+            },
+            {
+              "offset": [
+                185,
+                2
+              ],
+              "timescale": 1,
+              "value": 63.250533434809455,
+              "properties": []
+            },
+            {
+              "offset": [
+                93,
+                1
+              ],
+              "timescale": 1,
+              "value": 63.50053343480944,
+              "properties": []
+            },
+            {
+              "offset": [
+                187,
+                2
+              ],
+              "timescale": 1,
+              "value": 63.75053343480943,
+              "properties": []
+            },
+            {
+              "offset": [
+                94,
+                1
+              ],
+              "timescale": 1,
+              "value": 64.00053343480941,
+              "properties": []
+            },
+            {
+              "offset": [
+                189,
+                2
+              ],
+              "timescale": 1,
+              "value": 64.2505334348094,
+              "properties": []
+            },
+            {
+              "offset": [
+                95,
+                1
+              ],
+              "timescale": 1,
+              "value": 64.50053343481005,
+              "properties": []
+            },
+            {
+              "offset": [
+                191,
+                2
+              ],
+              "timescale": 1,
+              "value": 64.75053343481005,
+              "properties": []
+            },
+            {
+              "offset": [
+                96,
+                1
+              ],
+              "timescale": 1,
+              "value": 65.00053343481005,
+              "properties": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "object": 4943,
+      "length": 101,
+      "editRate": 25.0,
+      "phase": 75,
+      "speedRatio": [
+        101,
+        201
+      ],
+      "offsetAdjust": 0.0,
+      "newSourceCalculation": true,
+      "graphEnabled": "absent/default1",
+      "inputs": [
+        {
+          "object": 2012,
+          "classId": "SEQU",
+          "length": 201
+        }
+      ],
+      "curves": [
+        {
+          "itemObject": 523,
+          "uuid": "8d56827c-847e-11d5-935a-50f857c10000",
+          "itemEnabled": true,
+          "controlObject": 188,
+          "classId": "PRCL",
+          "valueType": 2,
+          "interpolation": 6,
+          "extrapolation": 1,
+          "fields": 1,
+          "length": 101,
+          "editRate": 25.0,
+          "pointCount": 1,
+          "points": [
+            {
+              "offset": [
+                -430,
+                1
+              ],
+              "timescale": 1,
+              "value": 2.0,
+              "properties": [
+                {
+                  "code": 14,
+                  "type": 2,
+                  "value": -860.0
+                },
+                {
+                  "code": 5,
+                  "type": 2,
+                  "value": -10.100000000000001
+                },
+                {
+                  "code": 6,
+                  "type": 2,
+                  "value": -0.0
+                },
+                {
+                  "code": 7,
+                  "type": 2,
+                  "value": 10.100000000000001
+                },
+                {
+                  "code": 8,
+                  "type": 2,
+                  "value": 0.0
+                },
+                {
+                  "code": 9,
+                  "type": 1,
+                  "value": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "itemObject": 522,
+          "uuid": "8d56827d-847e-11d5-935a-50f857c10000",
+          "itemEnabled": true,
+          "controlObject": 187,
+          "classId": "PRCL",
+          "valueType": 2,
+          "interpolation": 3,
+          "extrapolation": 1,
+          "fields": 1,
+          "length": 101,
+          "editRate": 25.0,
+          "pointCount": 2,
+          "points": [
+            {
+              "offset": [
+                0,
+                1
+              ],
+              "timescale": 1,
+              "value": 0.0,
+              "properties": []
+            },
+            {
+              "offset": [
+                101,
+                1
+              ],
+              "timescale": 1,
+              "value": 202.0,
+              "properties": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "findings": [
+    "InternalUID5 is speed-map UUID8d56827c,UID6 offset-map8d56827d. LegacyUID3/4 map8d56827a/7b. Thislinkisnowprimary-proven.",
+    "NativeHasOffsetMapping testsentrypresence throughHasParam,notParameterItem.enable. Disableditemalone doesnotprove absenceofmapping.",
+    "All5genuineSPED retain complete linearinterp3 preparedoffsetcurves. Speedcontrols useinterp6 neighbor/tangent curveevaluation.",
+    "Preparedoffsetcurve fallback useslocaloutputcoordinatesdirectly; phaseisnot addedagain. Genuine1095 speedpointsbegin33 butoffsetmapbegins0, corroboratingdistinctcoordinates.",
+    "Numericinterp3 usesstraightlineformula. Nativefallbackminmax evaluatesendpointsandinsidekeyvalues, sufficientforthelinearmap subset; noarbitrarycubicextremaproof.",
+    "NativecurveMapRangeDown hasinputbounds/epsilonrounding andpossibleadaptive-deinterlace extension; arbitraryeffectcallback canhaveotherfootprintsemantics."
+  ],
+  "meaningfulImplementationChoices": [
+    {
+      "option": "Readcomplete recordedsource-position/offset mapsfirst",
+      "advantage": "Avoidsreconstructing speedinstructions; everygenuineSPED inspectedhasone.",
+      "cost": "Narrowercoverage whenmapabsent/nonlinear/stale orcallbacksemanticsunestablished; stillrequiresqualifiedrounding/rate/input checks."
+    },
+    {
+      "option": "Reconstructspeedcurvesaswellnow",
+      "advantage": "Canaddresssourceswithoutapreparedmap.",
+      "cost": "Addsinterpolation/integration/extremaresearch, phase/basepoint/source-recalculationandvalidation; broaderchange."
+    }
+  ],
+  "limits": [
+    "NoMediaComposerplayback/export/exactphysicalused-setoracle.",
+    "MainAEffect/AVX2 callback mappingnotfullyaudited; proofisexplicitlyboundedtointernalprepared-offsetfallback.",
+    "Noacceptanceofallcubic/Bezier/spline/extrapolatedmapsoverarbitrarydomains; neighboringhandlesandinteriorextremacanmatter.",
+    "Noqualifiedmethod toestablishpreparedmapfreshness/consistencyagainstspeed/sourceparams acrossallformats.",
+    "HasNewSourceCalculationstoredflagproven; fullsource-recalculationgatesandnonzerooffsetadjusteffectsnotresolvedbyfirstpass.",
+    "Allgenuinesamples25fps, sourceinputsSEQU, newSourceCalculationtrue, offsetAdjust0. No generalizedmixed-rate ornegativecurve/differentgraphmodeacceptance.",
+    "Existingproven-only/separateexcerpts/clip-localcounts/recalculatelengths policiesremainsettled."
+  ],
+  "commands": [
+    "xcrun llvm-nm --arch=arm64 --defined-only --demangle <binary> (boundednamed-symbolfilter)",
+    "xcrun llvm-objdump --macho --arch=arm64 --disassemble <binary> | boundedinstruction-addressfilter",
+    "ReadnativeGUIDconstants anddoubleepsilonvalues atrecordedimageaddresses+universalSliceOffset",
+    "ResolveAParamList/AParamClip vtableentrytargetsagainstdefinedsymbols",
+    "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=<suppliedpyavb>/src python3 read-only genuineSPED/PRIT/PRCLstructuralcapture"
+  ],
+  "callbackFollowup": {
+    "recordedDateLocal": "2026-10-17",
+    "scope": "Exactly four additional native method bodies, listed below; vtable data resolved against defined symbols. No further callback/plugin body, graph regeneration, playback or app-state inspection. No production/source/test/app edits.",
+    "nativeSizeAndMtimeStillMatch": true,
+    "methodAnchors": [
+      {
+        "symbol": "AEffect::MapOffsetDown(EffectInterface*, int, int, videoField_t)",
+        "address": "0x75c6b4",
+        "endAddressExclusive": "0x75c6cc",
+        "fileOffset": 44746420,
+        "bytesHex": "6000621e01106c1e0128611e9f040071200c601ec0035fd6",
+        "sha256": "1db3a27bd5206d800f9af4d5ee2d0648f3446463d1cf564c6b6d2ea6780b3fab"
+      },
+      {
+        "symbol": "AEffect::GetOffsetMinMax(EffectInterface*, int, int, int*, int*, int, unsigned char, unsigned char, RemapInputSampleCallback*)",
+        "address": "0x75c6cc",
+        "endAddressExclusive": "0x75c810",
+        "fileOffset": 44746444,
+        "bytesHex": "fc6fbaa9fa6701a9f85f02a9f65703a9f44f04a9fd7b05a9fd430191f60306aaf30305aaf40304aaf90303aaf50302aaf70301aaf80300aa080040f9081941f9e10306aa00013fd6e0050034080340f9081d41f9e00318aae10317aae20316aae30315aa0400805200013fd61a00781e3f0700712b0600543b03150bf9031aaa080340f9081d41f9e00318aae10317aae20316aae30315aa0400805200013fd61c00781e080340f9081d41f9e00318aae10317aae20316aae30315aa2400805200013fd60800781e1f011c6b09b19c1a3f03096b39b3891a9f03086b88c3881a1f011a6b1ac19a1ab5060011bf021b6b8bfcff54540000b4990200b9f30000b507000014540000b4950200b9930000b42803150b1a0500517a0200b9fd7b45a9f44f44a9f65743a9f85f42a9fa6741a9fc6fc6a8c0035fd6f9031aaaf4fdffb5efffff17",
+        "sha256": "c73be2f9a7ab81771c74bcb80f8f66ff7c7269f0c8288ec2b0e3de8b4065fc26"
+      },
+      {
+        "symbol": "AVX2Effect::MapOffsetDown(EffectInterface*, int, int, videoField_t)",
+        "address": "0x9e1ecc",
+        "endAddressExclusive": "0x9e1fcc",
+        "fileOffset": 47390412,
+        "bytesHex": "ffc301d1e923026df85f03a9f65704a9f44f05a9fd7b06a9fd83019100106c1e6100621e2028601e9f040071080c611e08dc41f9680500b4f40304aaf50303aaf30302aaf60300aa080040f908f542f900013fd6600400b4f70300aae1530091e00314aa2438fd97f40300aaf5d70129d5de41f9e11a40f9010100b5003500d000c43291013500d0217c2691023681529fb41294e11a40f9a80240f9081140f9e2330091e5630091e00315aae30313aae40314aa00013fd64001f8379f060071c1000054e81f40b90001621e01106c1e0828611e03000014e81b40b90801621e0041601efd7b46a9f44f45a9f65744a9f85f43a9e923426dffc30191c0035fd6",
+        "sha256": "d92176882aa60f84cd2ede9d8ba2651bd15e2a4e1f8be771611ae9a45aa68441"
+      },
+      {
+        "symbol": "AVX2Effect::GetOffsetMinMax(EffectInterface*, int, int, int*, int*, int, unsigned char, unsigned char, RemapInputSampleCallback*)",
+        "address": "0x9e1fcc",
+        "endAddressExclusive": "0x9e2144",
+        "fileOffset": 47390668,
+        "bytesHex": "ff0302d1fc6f02a9fa6703a9f85f04a9f65705a9f44f06a9fd7b07a9fdc30191f30305aaf40304aafc0303aaf50302aa08dc41f9680800b4f60307aaf90306aaf80301aaf70300aa080040f908f542f900013fd6600700b4fb0300aa9c0cda97083840b9690080521f050071fa03891a080340f9080140f9e00318aa00013fd6e0d70129a8021c0b180500519f03007108c3951ae81700b9fcde41f9611b40f9010100b5003500b000c43291013500b0217c26910236815255b41294611b40f9880340f9081140f9e2430091e5630091e0031caae30319aae4031aaa00013fd64003f837f5634329e80240f9084542f9e00317aa00013fd660010035e80240f908d142f9e00317aa00013fd6c0000035e82742291f01156b15b1951a3f01186b38c1981a36010034b57eb50ae80f40b9080500511f01186b18b1981a03000014a8021c0b18050051540000b4950200b9530000b4780200b9fd7b47a9f44f46a9f65745a9f85f44a9fa6743a9fc6f42a9ff030291c0035fd6",
+        "sha256": "281814e9dd1c379a031e8ca64e7c96306bd0c4b8f24f849142140809cce6a454"
+      }
+    ],
+    "vtableAnchors": [
+      {
+        "class": "AEffect",
+        "slot": "0x230",
+        "entryAddress": "0x137edf8",
+        "bytesHex": "acf9020000001000",
+        "rawPointer": "0x1000000002f9ac",
+        "low32Target": "0x2f9ac",
+        "definedSymbol": "AEffect::DoesTimeWarp(int)"
+      },
+      {
+        "class": "AEffect",
+        "slot": "0x238",
+        "entryAddress": "0x137ee00",
+        "bytesHex": "b4c6750000001000",
+        "rawPointer": "0x1000000075c6b4",
+        "low32Target": "0x75c6b4",
+        "definedSymbol": "AEffect::MapOffsetDown"
+      },
+      {
+        "class": "AEffect",
+        "slot": "0x240",
+        "entryAddress": "0x137ee08",
+        "bytesHex": "ccc6750000001000",
+        "rawPointer": "0x1000000075c6cc",
+        "low32Target": "0x75c6cc",
+        "definedSymbol": "AEffect::GetOffsetMinMax"
+      },
+      {
+        "class": "AVX2Effect",
+        "slot": "0x230",
+        "entryAddress": "0x13cc790",
+        "bytesHex": "1c229e0000001000",
+        "rawPointer": "0x100000009e221c",
+        "low32Target": "0x9e221c",
+        "definedSymbol": "AVX2Effect::DoesTimeWarp(int)"
+      },
+      {
+        "class": "AVX2Effect",
+        "slot": "0x238",
+        "entryAddress": "0x13cc798",
+        "bytesHex": "cc1e9e0000001000",
+        "rawPointer": "0x100000009e1ecc",
+        "low32Target": "0x9e1ecc",
+        "definedSymbol": "AVX2Effect::MapOffsetDown"
+      },
+      {
+        "class": "AVX2Effect",
+        "slot": "0x240",
+        "entryAddress": "0x13cc7a0",
+        "bytesHex": "cc1f9e0000001000",
+        "rawPointer": "0x100000009e1fcc",
+        "low32Target": "0x9e1fcc",
+        "definedSymbol": "AVX2Effect::GetOffsetMinMax"
+      },
+      {
+        "class": "AVX2Effect",
+        "slot": "0x488",
+        "entryAddress": "0x13cc9e8",
+        "bytesHex": "10c59e0000001000",
+        "rawPointer": "0x100000009ec510",
+        "low32Target": "0x9ec510",
+        "definedSymbol": "AVX2Effect::IsVDMEffect()"
+      },
+      {
+        "class": "AVX2Effect",
+        "slot": "0x5a0",
+        "entryAddress": "0x13ccb00",
+        "bytesHex": "58c59e0000001000",
+        "rawPointer": "0x100000009ec558",
+        "low32Target": "0x9ec558",
+        "definedSymbol": "AVX2Effect::IsAcplEffect()"
+      },
+      {
+        "class": "AVX2Effect",
+        "slot": "0x5e8",
+        "entryAddress": "0x13ccb48",
+        "bytesHex": "488e9d0000001000",
+        "rawPointer": "0x100000009d8e48",
+        "low32Target": "0x9d8e48",
+        "definedSymbol": "AVX2Effect::GetAVX2Instance(EffectInterface*)"
+      }
+    ],
+    "disassembly": {
+      "path": "/private/tmp/copland-speed-curves-callback-methods-2026-10-17.txt",
+      "bytes": 10065,
+      "sha256": "6317d07977dc2cf979ff64248a8eced4b387872ade1ebc39639ef0baf74b84fb"
+    },
+    "graphChoiceEstablishedByEarlierAnchors": [
+      "GetParamClipEnabled looks up _MFX_GRAPH_ENABLED and defaults to 1 when absent. This chooses a graph mode; it is not ParameterItem.enable.",
+      "Mode == 1: HasOffsetMapping checks UID5 presence; GetOffsetMapping retrieves UID6, with a virtual regeneration attempt if absent. Mode != 1: those paths check/retrieve UID3 directly.",
+      "UID5 UUID 8d56827c-847e-11d5-935a-50f857c10000 is the speed graph; UID6 UUID 8d56827d-847e-11d5-935a-50f857c10000 is its prepared output-to-source offset graph. UID3 UUID 8d56827a-847e-11d5-935a-50f857c10000 serves directly as the alternate graph offset mapping. Its formal UI label was not independently proved by these four bodies.",
+      "GetOffsetMappingAdjustment returns 0 for mode 1 and the stored offset_adjust for the other graph mode. Prepared UID6 fallback does not separately add constant-SPED phase. Do not apply inactive UI graph or phase twice.",
+      "The existence of a populated UID6 is not by itself a freshness certificate or proof that the live effect callback uses that exact fallback."
+    ],
+    "callbackFindings": [
+      {
+        "anchor": "0x75c704-0x75c714",
+        "finding": "Base AEffect::GetOffsetMinMax calls virtual slot 0x230, proven vtable symbol DoesTimeWarp(int), using the requested input-track argument. If false, outputs inclusive start and start+length-1."
+      },
+      {
+        "anchor": "0x75c718-0x75c7bc",
+        "finding": "When DoesTimeWarp is true, base AEffect computes a min/max envelope by calling virtual MapOffsetDown for every integer output position t in [start,start+length), for both videoField values 0 and 1. Floating results are truncated toward zero; min/max outputs are inclusive. It computes the first field once to initialize. This is an envelope, not a list of all individual samples."
+      },
+      {
+        "anchor": "0x75c6b4-0x75c6c8",
+        "finding": "Base AEffect::MapOffsetDown returns t for field 0 and t+0.5 when the field argument equals 1."
+      },
+      {
+        "anchor": "0x9e1efc-0x9e1fac",
+        "finding": "AVX2Effect::MapOffsetDown attempts an external remapping interface callback only when object+0x3b8 is non-null AND GetAVX2Instance(EffectInterface*) returns non-null. It uses the instance effect context at +0x30 and interface slot +0x20. A negative callback status falls back to t or t+0.5. Success takes one of the two returned field offsets. Field-conversion helper implementation was not inspected."
+      },
+      {
+        "anchor": "0x9e1ffc-0x9e20ac",
+        "finding": "AVX2Effect::GetOffsetMinMax uses the same two pointer gates. It constructs callback endpoints [start,start+length-1] for positive length; for non-positive length the callback end is start. The callback is external; its sample support, graph freshness and reconstruction rules are not established by these call sites."
+      },
+      {
+        "anchor": "0x9e20ac-0x9e2108",
+        "finding": "After successful AVX2 range remapping, if neither IsVDMEffect() nor IsAcplEffect() is true, returned min/max are widened to include the original requested start and inclusive end. If the clamp argument is set, low is clamped to >=0 and high to <=EffectInterface length-1."
+      },
+      {
+        "anchor": "0x9e210c-0x9e2120",
+        "finding": "Absent remapping interface or absent AVX2 instance: AVX2 range fallback outputs start and start+length-1. Callback failure skips success widening/clamping and leaves the initialized request envelope. This method does not inspect serialized SPED effect_id, source_param_list or new_source_calculation directly."
+      }
+    ],
+    "savedMapFallbackFormula": {
+      "provenance": "Re-expression of already-recorded AMotionCtl::MapRangeDown and AParamClip::GetDoubleMinMax anchors, not an additional newly inspected method.",
+      "domain": "Nonempty requested [a,a+n), finite min/max, positive finite representable child length L, no adaptive-deinterlace expansion. Unsupported/invalid numeric cases are not certified.",
+      "extrema": "The no-effect prepared-map fallback evaluates map(a) AND map(a+n), plus stored key values inside that interval. The upper evaluation is inclusive in this fallback, even though a+n is the exclusive output endpoint.",
+      "formula": "v = min(mapMinimum, L-1); signedEpsilon = (v < 0 ? -1e-6 : +1e-6); lower = truncTowardZero(max(0, v + signedEpsilon)); upperCandidate = min(L, max(mapMaximum,0)+1); count = ceil(upperCandidate-lower-1e-6); returned half-open source range = [lower, lower+count).",
+      "adaptiveDeinterlace": "Earlier native anchors optionally subtract one from minimum and add one to maximum before the formula, subject to supported rate and adaptive-deinterlace gates.",
+      "endpointCaveat": "The main effect callback can return an inclusive discrete last source sample, whereas the no-effect numeric-curve fallback includes the value at output a+n before adding one. These routes cannot be assumed equivalent at a nested cut boundary."
+    },
+    "actualUseAndActionableLimits": [
+      "Native range methods return one min/max envelope. They do not encode holes between sampled source positions. Neither a fast linear mapping nor a discontinuity may be assumed to consume every intervening nested clip just because it lies inside that envelope.",
+      "A continuous linear curve alone does not settle the discrete support of an active effect: field processing, interpolation and plugin callback decisions can affect support. This bounded audit therefore does not certify exact nested-edit membership for general saved maps, including speed 2x or jumps.",
+      "Safe current implementation boundary remains: independently proved terminal physical originals/renders may be kept, while uncertain nested time branches remain explicit gaps. Do not silently widen to the whole source sequence or use inactive graphs.",
+      "If implementing prepared-map range envelopes as a distinct policy, name them as native range envelopes and obtain the required actual-use decision/validation; do not claim an exact per-frame or per-camera used set from min/max alone.",
+      "No callback applicability test based only on serialized effect_id, source_param_list or new_source_calculation was established. The inspected AVX2 call sites gate on runtime pointers/instances. Proving how serialized SPED creates those instances needs additional scope and was intentionally not attempted.",
+      "UID3 formal UI name and graph regeneration/freshness remain unproved by this bounded follow-up. Official Effects Guide graph-selection statement was supplied by the parent; direct web open of the 36,139,166-byte PDF failed the web tool size limit."
+    ],
+    "officialReference": {
+      "url": "https://resources.avid.com/SupportFiles/attach/Media_Composer_Effects_and_CC_Guide_2020.x.pdf",
+      "pageReportedByParent": 164,
+      "accessThisFollowup": "web open/find returned PDF file-size limit; no independent page-content claim"
+    },
+    "commands": [
+      "xcrun llvm-nm --arch=arm64 --defined-only --demangle <binary>, named symbol filters only",
+      "xcrun llvm-objdump --macho --arch=arm64 --disassemble <binary> | filter exactly four method address ranges; save filtered instructions to temp receipt companion",
+      "Read four method byte ranges and recorded vtable entries using imageAddress+37027840; resolve low32 chained-pointer target against defined symbols",
+      "Stat binary after audit; no app launches, playback, source writes or further methods inspected"
+    ]
+  }
+}

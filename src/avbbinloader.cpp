@@ -246,7 +246,7 @@ AvbBin AvbBinLoader::load(const QString &path, const std::atomic_bool *cancelled
 	}
 	bin.warnings = source->diagnostics;
 	MediaEngine::AvbReferenceIndex index(source, cancel);
-	auto resolution = QSharedPointer<MediaEngine::AvbReferenceResult>::create(index.resolveReferences({MediaEngine::AvbSelection::Kind::EntireBin, {}}, cancel));
+	auto resolution = QSharedPointer<MediaEngine::AvbReferenceResult>::create(index.resolveReferences(cancel));
 	bin.referenceResult = resolution;
 	for (const auto &issue : resolution->issues)
 		bin.warnings.append(QStringLiteral("Object %1: %2").arg(issue.objectHandle).arg(issue.explanation));

@@ -1,17 +1,62 @@
 // Whole Bin starts at its listed clips/sequences and follows their recorded links.
-// Sequence filtering still follows recorded edges, including all selector tracks and
-// precomputes. It keeps a compact reachable graph instead of copying every
-// possible path, which can multiply exponentially or contain cycles.
+// SourceClip links select a recorded source track by number and audio/video kind.
+// All linked camera alternatives and nested portions remain in Whole Bin.
+// Keep reachable edges instead of copying every possible path through a cycle.
 
 #include "avbreferences.h"
 #include <QSet>
 #include <QtEndian>
 #include <algorithm>
+#include <limits>
 
 namespace MediaEngine
 {
 	namespace
 	{
+		constexpr qint64 pictureKind = 1;
+		constexpr qint64 audioKind = 2;
+		constexpr qint64 trackHasIndex = 0x0001;
+		constexpr qint64 trackHasComponent = 0x0004;
+		constexpr qint64 supportedTrackFlags = 0x03ff;
+
+		struct TrackRequest
+		{
+			enum class Scope
+			{
+				All,
+				One,
+				Unresolved
+			};
+			Scope scope = Scope::All;
+			qint64 number = 0;
+			qint64 kind = 0;
+			bool operator==(const TrackRequest &other) const
+			{
+				return scope == other.scope && number == other.number && kind == other.kind;
+			}
+		};
+
+		struct Visit
+		{
+			ObjectHandle objectHandle = 0;
+			TrackRequest track;
+			bool operator==(const Visit &other) const
+			{
+				return objectHandle == other.objectHandle && track == other.track;
+			}
+		};
+
+		struct TrackMatch
+		{
+			std::optional<quint64> slot;
+			bool descriptorAllowed = false;
+		};
+
+		size_t qHash(const Visit &visit, size_t seed = 0) noexcept
+		{
+			return qHashMulti(seed, visit.objectHandle, static_cast<int>(visit.track.scope), visit.track.number, visit.track.kind);
+		}
+
 		const RawProperty *property(const QVector<RawProperty> &properties, const QString &name)
 		{
 			const RawProperty *found = nullptr;
@@ -26,11 +71,39 @@ namespace MediaEngine
 			return found;
 		}
 
-		bool numberIs(const AvidObject &object, const QString &name, qint64 value)
+		std::optional<qint64> integer(const AvidObject &object, const QString &name)
 		{
 			const auto *field = property(object.properties, name);
 			bool ok = false;
-			return field && field->decoded.toLongLong(&ok) == value && ok;
+			const auto value = field ? field->decoded.toLongLong(&ok) : 0;
+			return ok ? std::optional<qint64>{value} : std::nullopt;
+		}
+
+		bool audioVideoKind(qint64 kind)
+		{
+			return kind == pictureKind || kind == audioKind;
+		}
+
+		TrackRequest sourceTrack(const AvidObject &object)
+		{
+			const auto number = integer(object, QStringLiteral("SourceClip.track_id"));
+			const auto kind = integer(object, QStringLiteral("Component.media_kind_id"));
+			if (!number || *number <= 0 || *number > std::numeric_limits<qint16>::max() || !kind || !audioVideoKind(*kind))
+				return {TrackRequest::Scope::Unresolved, 0, 0};
+			return {TrackRequest::Scope::One, *number, *kind};
+		}
+
+		std::optional<quint64> trackSlot(const QString &name)
+		{
+			const QLatin1String prefix("TrackGroup.tracks[");
+			if (!name.startsWith(prefix))
+				return {};
+			const auto end = name.indexOf(QLatin1String("]."), prefix.size());
+			if (end < 0)
+				return {};
+			bool ok = false;
+			const auto slot = name.mid(prefix.size(), end - prefix.size()).toULongLong(&ok);
+			return ok ? std::optional<quint64>{slot} : std::nullopt;
 		}
 
 		bool nonzero(const QByteArray &value)
@@ -158,12 +231,6 @@ namespace MediaEngine
 				continue;
 			listed.insert(edge.target);
 			m_listedCompositions.append(edge.target);
-			if (!numberIs(object, QStringLiteral("Composition.mob_type"), 1) ||
-				!numberIs(object, QStringLiteral("Composition.usage_code"), 0))
-				continue;
-			const auto *sequenceName = property(object.properties, QStringLiteral("Component.name"));
-			const auto *placed = property(bin.properties, name.chopped(3) + QStringLiteral("user_placed"));
-			m_sequences.append({object.handle, sequenceName ? sequenceName->decoded.toString() : QString{}, object.recordedIdentity, placed && placed->decoded.toBool(), edge.locator});
 		}
 		if (countKnown && quint64(itemIndices.size()) != itemCount)
 			issue(m_membershipIssues, AvbResolutionIssue::Kind::IncompleteSource, root,
@@ -171,7 +238,7 @@ namespace MediaEngine
 		m_indexComplete = true;
 	}
 
-	AvbReferenceResult AvbReferenceIndex::resolveReferences(const AvbSelection &selection, const Cancellation &cancellation) const
+	AvbReferenceResult AvbReferenceIndex::resolveReferences(const Cancellation &cancellation) const
 	{
 		AvbReferenceResult result;
 		if (!m_indexComplete || cancellation.cancelled())
@@ -182,47 +249,114 @@ namespace MediaEngine
 		}
 		if (!m_source || m_source->container != ParsedSource::Container::Avb)
 		{
-			issue(result.issues, AvbResolutionIssue::Kind::InvalidSelection, 0, QStringLiteral("The selected bin is not available in this reference index."));
+			issue(result.issues, AvbResolutionIssue::Kind::InvalidSource, 0, QStringLiteral("The bin is not available in this reference index."));
 			return result;
 		}
 		result.issues = m_membershipIssues;
 		if (m_source->outcome != ParsedSource::Outcome::Complete)
 			issue(result.issues, AvbResolutionIssue::Kind::IncompleteSource, 0,
 				  QStringLiteral("The bin was not completely read. Its reference coverage is not established."));
-		QVector<ObjectHandle> pending;
-		QSet<ObjectHandle> visited;
-		QSet<ObjectHandle> roots;
-		const auto addRoot = [&](ObjectHandle handle)
+		QVector<Visit> pending;
+		QSet<Visit> visited;
+		QSet<ObjectHandle> reportedIncompleteObjects;
+		QSet<QPair<qsizetype, ObjectHandle>> emittedEdges;
+		QSet<ObjectHandle> emittedMedia;
+		QSet<qsizetype> emittedTerminals;
+		for (const auto handle : m_listedCompositions)
 		{
-			if (!roots.contains(handle))
+			if (cancellation.cancelled())
+				break;
+			result.roots.append(handle);
+			pending.append(Visit{handle, {}});
+		}
+
+		const auto matchTrack = [&](const AvidObject &object, const TrackRequest &request) -> TrackMatch
+		{
+			const auto count = integer(object, QStringLiteral("TrackGroup.track_count"));
+			const auto descriptor = integer(object, QStringLiteral("Composition.descriptor"));
+			const auto outgoing = m_outgoing.value(object.handle);
+			// A fully read descriptor-only file source establishes its physical file
+			// independently of editorial track components.
+			if (count && *count == 0 && descriptor && *descriptor > 0 &&
+				std::none_of(object.properties.cbegin(), object.properties.cend(), [](const auto &field)
+							 { return field.locator.name.startsWith(QLatin1String("TrackGroup.tracks[")); }) &&
+				std::none_of(outgoing.cbegin(), outgoing.cend(), [&](const auto r)
+							 { return m_source->relationships[r].locator.name.startsWith(QLatin1String("TrackGroup.tracks[")); }))
+				return {{}, true};
+			if (request.scope == TrackRequest::Scope::Unresolved)
+				return {}; // The requesting SourceClip already carries the uncertainty notice.
+			bool uncertain = !count || *count < 0;
+			QSet<quint64> seenSlots;
+			std::optional<quint64> matchingSlot;
+			qsizetype matches = 0;
+			for (const auto &field : object.properties)
 			{
-				roots.insert(handle);
-				result.roots.append(handle);
-				pending.append(handle);
+				if (cancellation.cancelled())
+					return {};
+				if (!field.locator.name.endsWith(QLatin1String(".flags")))
+					continue;
+				const auto slot = trackSlot(field.locator.name);
+				if (!slot)
+					continue;
+				if (seenSlots.contains(*slot) || (count && *count >= 0 && *slot >= quint64(*count)))
+				{
+					uncertain = true;
+					continue;
+				}
+				seenSlots.insert(*slot);
+				const auto flags = integer(object, field.locator.name);
+				if (!flags || *flags < 0 || (*flags & ~supportedTrackFlags))
+				{
+					uncertain = true;
+					continue;
+				}
+				if (!(*flags & trackHasComponent))
+					continue; // This fully read slot has no component reference.
+				const auto prefix = field.locator.name.chopped(QStringLiteral(".flags").size());
+				const auto number = (*flags & trackHasIndex) ? integer(object, prefix + QStringLiteral(".index")) : std::nullopt;
+				if (number && *number != request.number)
+					continue;
+				const auto componentName = prefix + QStringLiteral(".component");
+				const auto component = integer(object, componentName);
+				if (component && *component == 0)
+					continue; // An explicit native null cannot contribute media.
+				const auto child = component && *component > 0 ? m_objectIndices.constFind(ObjectHandle(*component)) : m_objectIndices.cend();
+				const auto kind = child != m_objectIndices.cend() ? integer(m_source->objects[*child], QStringLiteral("Component.media_kind_id")) : std::nullopt;
+				// A different recorded kind (for example timecode) cannot match Audio/Video.
+				if (kind && *kind != request.kind)
+					continue;
+				if (!number || !kind || !audioVideoKind(*kind))
+				{
+					uncertain = true;
+					continue;
+				}
+				qsizetype establishedEdges = 0;
+				for (const auto r : outgoing)
+				{
+					if (cancellation.cancelled())
+						return {};
+					const auto &edge = m_source->relationships[r];
+					if (edge.locator.name == componentName && edge.referenceEncoding == QLatin1String("AVB.ObjectIndex") &&
+						edge.target == ObjectHandle(*component) && edge.recordedReference.toULongLong() == edge.target)
+						++establishedEdges;
+				}
+				if (establishedEdges != 1)
+				{
+					uncertain = true;
+					continue;
+				}
+				matchingSlot = *slot;
+				++matches;
 			}
+			if (!count || *count < 0 || quint64(seenSlots.size()) != quint64(*count))
+				uncertain = true;
+			if (!uncertain && matches == 1)
+				return {matchingSlot, true};
+			issue(result.issues, matches > 1 ? AvbResolutionIssue::Kind::AmbiguousReference : AvbResolutionIssue::Kind::UnresolvedReference,
+				  object.handle, QStringLiteral("Source track %1 (media kind %2) cannot be uniquely matched; its track branches were not included.")
+								 .arg(request.number).arg(request.kind));
+			return {};
 		};
-		if (selection.kind == AvbSelection::Kind::EntireBin)
-		{
-			for (const auto handle : m_listedCompositions)
-			{
-				if (cancellation.cancelled())
-					break;
-				addRoot(handle);
-			}
-		}
-		else
-		{
-			for (const auto handle : selection.selectedSequences)
-			{
-				if (cancellation.cancelled())
-					break;
-				if (std::any_of(m_sequences.cbegin(), m_sequences.cend(), [&](const auto &sequence)
-								{ return sequence.objectHandle == handle; }))
-					addRoot(handle);
-				else
-					issue(result.issues, AvbResolutionIssue::Kind::InvalidSelection, handle, QStringLiteral("The object is not a listed sequence in this bin."));
-			}
-		}
 
 		while (!pending.isEmpty())
 		{
@@ -232,10 +366,11 @@ namespace MediaEngine
 				issue(result.issues, AvbResolutionIssue::Kind::Cancelled, {}, QStringLiteral("AVB reference resolution was cancelled."));
 				break;
 			}
-			const auto key = pending.takeLast();
-			if (visited.contains(key))
+			const auto visit = pending.takeLast();
+			if (visited.contains(visit))
 				continue;
-			visited.insert(key);
+			visited.insert(visit);
+			const auto key = visit.objectHandle;
 			const auto &source = *m_source;
 			const auto found = m_objectIndices.constFind(key);
 			if (found == m_objectIndices.cend())
@@ -244,8 +379,13 @@ namespace MediaEngine
 				continue;
 			}
 			const auto &object = source.objects[*found];
-			if (!object.avb || !object.avb->interpretationComplete)
+			if ((!object.avb || !object.avb->interpretationComplete) && !reportedIncompleteObjects.contains(key))
+			{
+				reportedIncompleteObjects.insert(key);
 				issue(result.issues, AvbResolutionIssue::Kind::IncompleteSource, key, QStringLiteral("The referenced object's full layout is not established."));
+			}
+			const bool restrictTracks = object.avb && object.avb->classId == "CMPO" && visit.track.scope != TrackRequest::Scope::All;
+			const auto trackMatch = restrictTracks ? matchTrack(object, visit.track) : TrackMatch{};
 			if (object.avb && object.avb->classId != "MULD" &&
 				property(object.properties, QStringLiteral("MediaFileDescriptor.length")))
 			{
@@ -264,7 +404,13 @@ namespace MediaEngine
 				// MSML locators identify media by FileMobId; other graph MobIds keep their roles.
 				const auto *full = property(object.properties, QStringLiteral("MSMLocator.mob_id"));
 				if (full && full->decoded.toByteArray().size() == 32 && !terminal(full->decoded.toByteArray()))
-					result.mediaReferences.append({key, full - object.properties.constData(), full->decoded.toByteArray(), {}});
+				{
+					if (!emittedMedia.contains(key))
+					{
+						emittedMedia.insert(key);
+						result.mediaReferences.append({key, full - object.properties.constData(), full->decoded.toByteArray(), {}});
+					}
+				}
 				else if (std::any_of(object.properties.cbegin(), object.properties.cend(), [](const auto &field)
 									 { return field.locator.name == QLatin1String("MSMLocator.mob_id"); }))
 					issue(result.issues, AvbResolutionIssue::Kind::UnsupportedIdentity, key, QStringLiteral("MSML full identity is not usable or conflicts; its legacy words do not override it."));
@@ -280,7 +426,13 @@ namespace MediaEngine
 						qToLittleEndian(quint32(word0->decoded.toULongLong()), legacy.data());
 						qToLittleEndian(quint32(word1->decoded.toULongLong()), legacy.data() + 4);
 						if (nonzero(legacy))
-							result.mediaReferences.append({key, word0 - object.properties.constData(), {}, legacy});
+						{
+							if (!emittedMedia.contains(key))
+							{
+								emittedMedia.insert(key);
+								result.mediaReferences.append({key, word0 - object.properties.constData(), {}, legacy});
+							}
+						}
 						else
 							issue(result.issues, AvbResolutionIssue::Kind::UnsupportedIdentity, key, QStringLiteral("MSML records no usable file identity."), word0->locator);
 					}
@@ -307,6 +459,24 @@ namespace MediaEngine
 				if (cancellation.cancelled())
 					break;
 				const auto &edge = source.relationships[r];
+				if (restrictTracks && edge.locator.name.startsWith(QLatin1String("TrackGroup.tracks[")) &&
+					(!trackMatch.slot || trackSlot(edge.locator.name) != trackMatch.slot))
+					continue;
+				if (restrictTracks && edge.locator.name == QLatin1String("Composition.descriptor") && !trackMatch.descriptorAllowed)
+					continue;
+				const bool sourceJump = object.avb && object.avb->classId == "SCLP" && edge.locator.name == QLatin1String("SourceClip.mob_id");
+				if (sourceJump)
+				{
+					const auto *identity = property(object.properties, QStringLiteral("SourceClip.mob_id"));
+					if (!identity || identity->decoded.toByteArray().size() != 32 || identity->decoded != edge.recordedReference ||
+						edge.referenceEncoding != QLatin1String("AVB.MobId.MaterialLE"))
+					{
+						issue(result.issues, AvbResolutionIssue::Kind::UnsupportedIdentity, key,
+							  QStringLiteral("The SourceClip identity is not established; its source-track link was not included."), edge.locator);
+						continue;
+					}
+				}
+				TrackRequest requestedTrack;
 				QVector<ObjectHandle> targets;
 				if (edge.referenceEncoding == QLatin1String("AVB.ObjectIndex"))
 				{
@@ -321,13 +491,29 @@ namespace MediaEngine
 					const auto id = edge.recordedReference.toByteArray();
 					if (const auto end = terminal(id))
 					{
-						result.terminalReferences.append({key, r, *end});
+						if (!emittedTerminals.contains(r))
+						{
+							emittedTerminals.insert(r);
+							result.terminalReferences.append({key, r, *end});
+						}
 						continue;
 					}
 					targets = m_objectsByMobId.value(id);
 					if (targets.size() > 1)
+					{
 						issue(result.issues, AvbResolutionIssue::Kind::AmbiguousReference, key,
-							  QStringLiteral("Multiple recorded objects have this MobID. All candidate edges remain available; no first-wins selection."), edge.locator);
+							  sourceJump ? QStringLiteral("Multiple recorded objects have this MobID; the ambiguous source-track link was not included.")
+										 : QStringLiteral("Multiple recorded objects have this MobID. All candidate edges remain available; no first-wins selection."), edge.locator);
+						if (sourceJump)
+							continue;
+					}
+					if (sourceJump && !targets.isEmpty())
+					{
+						requestedTrack = sourceTrack(object);
+						if (requestedTrack.scope == TrackRequest::Scope::Unresolved)
+							issue(result.issues, AvbResolutionIssue::Kind::UnresolvedReference, key,
+								  QStringLiteral("The requested source-track number or audio/video kind is unavailable, conflicting or unsupported; unproven track branches were not included."), edge.locator);
+					}
 				}
 				else
 				{
@@ -341,8 +527,13 @@ namespace MediaEngine
 				{
 					if (cancellation.cancelled())
 						break;
-					result.edges.append({key, target, r});
-					pending.append(target);
+					const auto occurrence = qMakePair(r, target);
+					if (!emittedEdges.contains(occurrence))
+					{
+						emittedEdges.insert(occurrence);
+						result.edges.append({key, target, r});
+					}
+					pending.append(Visit{target, requestedTrack});
 				}
 			}
 		}

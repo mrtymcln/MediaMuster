@@ -1,6 +1,5 @@
 #include "volumemanager.h"
 #include "conventions.h"
-#include "diagnostics.h"
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -8,7 +7,6 @@
 #include <QProcess>
 #include <QSet>
 #include <QStorageInfo>
-#include <QtConcurrent>
 
 #include <algorithm>
 
@@ -16,87 +14,11 @@
 #include <windows.h>
 #endif
 
-// MARK: - Construction/destruction
+// MARK: - Construction
 
 VolumeManager::VolumeManager(QObject *parent)
 	: QObject(parent)
 {
-	connect(&m_timer, &QTimer::timeout, this, &VolumeManager::pollVolumes);
-	connect(&m_pollWatcher, &QFutureWatcher<QVector<VolumeInfo>>::finished, this,
-			&VolumeManager::onPollFinished);
-}
-
-VolumeManager::~VolumeManager()
-{
-	// Wait for the pool-thread lambda; it still holds `this`,
-	// so racing destruction would be a use-after-free.
-	if (m_pollWatcher.isRunning())
-		m_pollWatcher.waitForFinished();
-}
-
-// MARK: - Monitoring
-
-void VolumeManager::startMonitoring(int intervalMs)
-{
-	qCDebug(lcVolumes) << "monitoring volumes, polling every" << intervalMs << "ms";
-	m_timer.start(intervalMs);
-}
-
-void VolumeManager::setBusy(bool busy)
-{
-	const bool wasBusy = m_busy;
-	m_busy = busy;
-
-	// Immediate catch-up poll so changes during busy surface fast.
-	if (wasBusy && !busy)
-		pollVolumes();
-}
-
-void VolumeManager::pollVolumes()
-{
-	// Don't compete with a running scan/op for slow-network I/O.
-	if (m_busy)
-		return;
-
-	// Skip if a previous walk is still in flight. Next tick retries.
-	if (m_pollWatcher.isRunning())
-		return;
-
-	// Off-thread so the UI doesn't hang on a flaky mount.
-	// QFutureWatcher delivers the result to onPollFinished.
-	m_pollWatcher.setFuture(QtConcurrent::run([this]
-											  { return detectVolumes(); }));
-}
-
-void VolumeManager::onPollFinished()
-{
-	// Stay silent unless something the volume list actually shows changed: name,
-	// path, the Avid badge/bold/sort-first key, or the type label. Free space is
-	// deliberately excluded — it churns by the byte and would rebuild the list on
-	// every poll for no visible gain (it's a hover-only tooltip figure).
-	const auto current = m_pollWatcher.result();
-	const bool sameForDisplay =
-		current.size() == m_lastVolumes.size() &&
-		std::equal(current.cbegin(), current.cend(), m_lastVolumes.cbegin(),
-				   [](const VolumeInfo &a, const VolumeInfo &b)
-				   {
-					   return a.name == b.name && a.path == b.path &&
-							  a.hasAvidMedia == b.hasAvidMedia && a.volumeType == b.volumeType;
-				   });
-	if (sameForDisplay)
-		return;
-
-	// A mount, unmount, or display-affecting change happened. Log this event.
-	QStringList summary;
-	for (const VolumeInfo &v : current)
-		summary << QStringLiteral("%1[%2%3]")
-					   .arg(v.name, v.volumeType,
-							v.hasAvidMedia ? QStringLiteral(",avid") : QString());
-	qCInfo(lcVolumes).noquote() << "volumes changed:" << current.size() << "mounted —"
-								<< summary.join(QStringLiteral("  "));
-
-	m_lastVolumes = current;
-	emit volumesChanged(current);
 }
 
 // MARK: - Known Avid locations
@@ -240,23 +162,6 @@ QVector<VolumeInfo> VolumeManager::detectVolumes() const
 	return volumes;
 }
 
-QStringList VolumeManager::allScannablePaths() const
-{
-	// Reuse the most recent detection rather than re-walking every mount.
-	// detectVolumes() stat-walks QStorageInfo, the /Volumes tree, and the
-	// known Avid locations — seconds on a slow Nexis/SMB share — and the 5 s
-	// poller (plus the startup seed) already keeps m_lastVolumes current, so
-	// "Scan All" stays instant and matches the volume list on screen. Fall
-	// back to a fresh walk only when nothing has been detected yet.
-	const QVector<VolumeInfo> volumes = m_lastVolumes.isEmpty() ? detectVolumes() : m_lastVolumes;
-
-	QStringList paths;
-	paths.reserve(volumes.size());
-	for (const VolumeInfo &d : volumes)
-		paths.append(d.path);
-	return paths;
-}
-
 // MARK: - Full Disk Access
 
 bool VolumeManager::hasFullDiskAccess()
@@ -290,8 +195,8 @@ QString VolumeManager::detectVolumeType(const QString &name, const QString &path
 										const QStorageInfo &storage)
 {
 	const QString upper = name.toUpper();
-	// Reuse the caller's QStorageInfo instead of a second statfs on `path`; on a
-	// dead SMB/Nexis mount that stat can block for seconds, every 5 s poll.
+	// Reuse the caller's QStorageInfo instead of a second statfs on `path`.
+	// An unresponsive SMB/Nexis mount can make that extra stat block discovery.
 	const QString fsType = QString::fromLatin1(storage.fileSystemType()).toLower();
 
 	// Recognise Avid filesystem types or a volume name containing "NEXIS".

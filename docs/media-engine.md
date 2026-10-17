@@ -45,6 +45,21 @@ fields to the media inventory, and rows no longer retain separate AVB history ow
 following listed compositions to their dependencies and file locators. Unrelated
 stored records are excluded, and lookup cannot borrow objects from other bins.
 The dialog combines each bin's reference set through its existing filter chain.
+SourceClip traversal narrows composition tracks by recorded track number and
+audio/video kind, retaining separate temporary visits per request and excluding
+uncertain track branches. Lists are checked as needed, with no upfront track index.
+Descriptor-only physical sources and explicit original/render routes remain.
+Listed clip/master roots retain every track. Referenced track content is followed
+broadly, so linked spare camera branches and unused portions of nested edits can
+contribute files; placed muted/disabled material remains eligible. The reference
+resolver no longer calculates used portions, camera choices, transition overlaps,
+clock conversions or speed mappings. Individual sequence selection, its list API
+and feature flag have been removed. Exact sequence filtering and further proxy/
+relative-track interpretation are deferred after V1, with prior work and research
+saved in the
+[deferred sequence archive](../Project%20Copland/archive/deferred-sequence-2026-10-17/README.txt).
+Supported low-level AVB field decoding and physical-file timing metadata remain
+separate from this removal. See [AVB coverage](avb-parser.md).
 
 Local database membership uses an unambiguous qualified PMR filename/identity
 reference or a same-folder qualified MDB file entry matching the final usable

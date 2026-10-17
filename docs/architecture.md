@@ -6,10 +6,17 @@ For what the user sees, start with [How MediaMuster works](current-behaviour.md)
 
 ## From storage to table
 
-1. [VolumeManager](../src/volumemanager.cpp) discovers storage locations and monitors
-   changes to the drive list. It does not maintain a live media inventory.
+1. [VolumeManager](../src/volumemanager.cpp) discovers storage locations at startup
+   and on explicit Refresh Volumes. There is no periodic or post-operation drive
+   checking. The helper keeps no detection cache or live media inventory.
 2. [MainWindow](../src/mainwindow.cpp) passes the selected detected and manually
-   added paths to [MediaScanner](../src/mediascanner.cpp).
+   added paths to [MediaScanner](../src/mediascanner.cpp). It retains only the
+   detected paths from the last startup/Refresh result, including a valid empty
+   result, and uses them for Scan All and detected/manual root classification.
+   Scan commands do not rediscover drives. Scan All also includes session manual
+   paths, including unavailable entries no longer displayed after Refresh, so the
+   scanner can report their current admission/access result. Refresh clears
+   sidebar selection and restores still-scannable manual entries.
 3. The worker calls [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp), which
    supplies the read/project/match pipeline to [ScanCoordinator](../src/mediaengine/scancoordinator.cpp).
    The coordinator uses [DiscoveryEngine](../src/mediaengine/discoveryengine.cpp), reads
@@ -72,7 +79,7 @@ Applicability, agreement, eligibility and freshness remain separate facts; see t
 | [MediaEngine::MdbReader](../src/mediaengine/mdbreader.cpp) | Decodes source-local Bento objects, typed properties, dictionaries, qualified relationships and the HEAD-established `OmfRevision`, independently of the Bento container version. |
 | [MediaEngine::MxfReader](../src/mediaengine/mxfreader.cpp) | Decodes MXF partitions, Primer mappings, raw/typed metadata and source-local references for projection; skips recording payloads. |
 | [MediaEngine::OmfReader](../src/mediaengine/omfreader.cpp) | Reads OMF and native WAV/AIFF metadata for projection; embedded OMF graphs have separate source contexts. |
-| [MediaEngine::AvbReader](../src/mediaengine/avbreader.cpp) and [reference engine](../src/mediaengine/avbreferences.cpp) | Retain bin objects and resolve whole-bin or selected-sequence references with explicit completeness warnings. |
+| [MediaEngine::AvbReader](../src/mediaengine/avbreader.cpp) and [reference engine](../src/mediaengine/avbreferences.cpp) | Retain bin objects and resolve Whole Bin references with explicit completeness warnings. |
 | [MediaEngine source projections](../src/mediaengine/projection.h) | Interpret recorded properties as file-owned or master-owned observations, preserving supported observation bytes and competing evidence independently of temporary reading storage. |
 | [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp) | Public entry point for database-first scanning. Its working result keeps evidence and `SourceReceipt`s after parser storage is released; the scanner discards that result after preparing UI rows and diagnostics. |
 | [MediaEngine::ScanCoordinator](../src/mediaengine/scancoordinator.cpp) | Coordinates discovery, database-first reads, exact-name/identity matching, field selection and scoped unmatched-reference issues. |
@@ -243,13 +250,32 @@ and [parser compatibility](parser-compatibility.md).
 [AvbFilter](../src/avbfilter.h) expression. The proxy evaluates each step against a
 row's FileMobId. A shared MasterMobId alone does not establish membership.
 Applied partial steps retain their source graphs and persistent “Results may be
-incomplete” warning. The future sequence
-picker remains disabled behind `SequenceFilter`; the current dialog applies whole-bin
-scope. Other filters still apply to the resulting rows.
+incomplete” warning. The dialog applies Whole Bin scope; no individual sequence
+picker, sequence list API or sequence feature flag remains. Other filters still
+apply to the resulting rows.
+
 Whole Bin begins at the root bin's listed clips/sequences and follows their
 references; unrelated internal records do not contribute. The reference helper
 accepts one AVB per instance and uses source-local identities. Multiple loaded
 bins still combine through the existing Intersect/Add/Subtract chain.
+SourceClip traversal carries temporary requests for a recorded track number and
+audio/video kind. It checks track lists as needed; distinct requests into one
+composition remain separate, while published edges and file references are
+deduplicated and cycles terminate. Unclear links retain proven independent
+matches and incomplete-coverage notices, without choosing a first candidate or
+bypassing a failed track match through its descriptor. Established descriptor-only
+file sources and explicit original/render routes remain available. Listed
+clip/master roots retain every track, including placed muted/disabled material.
+
+Whole Bin follows the linked content of those tracks broadly: spare camera
+branches and unused portions of nested edits can contribute files. The resolver
+does not calculate used time ranges, transition overlap or speed mappings.
+Exact sequence filtering and further proxy/relative-track interpretation are
+deferred after V1; their saved work and research are in the
+[deferred sequence archive](../Project%20Copland/archive/deferred-sequence-2026-10-17/README.txt).
+This scope concerns bin membership, not physical-file rate/timecode metadata.
+See [AVB coverage](avb-parser.md).
+
 Loading or removing bins changes filtering only; no bin-enrichment resolver or row
 AVB history owner remains. The loaded bins and applied filter snapshots still retain
 their current metadata and graphs. Compacting those graphs remains outstanding.

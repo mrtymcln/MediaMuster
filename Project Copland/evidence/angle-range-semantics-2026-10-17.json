@@ -1,0 +1,1454 @@
+{
+  "schemaVersion": 1,
+  "recordedDateLocal": "2026-10-17",
+  "timezone": "Australia/Sydney",
+  "purpose": "Read-only bounded native Avid selector, disabled clip, ordinary source offset and constant SPED mapping audit.",
+  "applicationChanges": "The read-only native audit changed no application or source media. Its temporary receipt was copied into Project Copland/evidence to support the separately recorded implementation.",
+  "nativeBinary": {
+    "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+    "bytes": 73527536,
+    "mtimeNs": "1787793516000000000",
+    "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+    "sizeAndMtimeUnchanged": true
+  },
+  "architecture": "arm64",
+  "universalSliceOffset": 37027840,
+  "nativeAnchors": [
+    {
+      "symbol": "ASelector::GetSelected()",
+      "address": "0x20e2e8",
+      "fileOffset": 39183080,
+      "bytesHex": "0040c279c0035fd6",
+      "finding": "Signed 16-bit read of selected state at object+0x120."
+    },
+    {
+      "symbol": "ASelector::VisitCompsSubrange()",
+      "address": "0x20d4ac",
+      "fileOffset": 39179436,
+      "bytesHex": "e80240f908d944f9e00317aa00013fd61f04003120020054e10300aae80240f9089543f9e00317aa00013fd6080040f9056142f9e10316aae20315aae30314aae40313aafd7b43a9f44f42a9f65741a9f85fc4a8a0001fd6",
+      "finding": "Selected-only branch gets selected, tests NONE_SELECTED=-1, obtains selected child, passes original range to child VisitCompsSubrange."
+    },
+    {
+      "symbol": "ASelector::IsDisabled()",
+      "address": "0x20f9e8",
+      "fileOffset": 39188968,
+      "bytesHex": "016e00d021c42e91a20700d100013fd6a8f35f381f050071e0179f1a",
+      "finding": "Checks _DISABLE_CLIP_FLAG attribute value equals1."
+    },
+    {
+      "symbol": "ASelector::GetDisabledTrackNum()",
+      "address": "0x20fabc",
+      "fileOffset": 39189180,
+      "bytesHex": "fd7bbfa9fd030091080040f908e144f900013fd61f000071080080120005885afd7bc1a8c0035fd6",
+      "finding": "Returns1 when IsDisabled, otherwise -1."
+    },
+    {
+      "symbol": "ASelector::GetSelectedClip()",
+      "address": "0x20fa6c",
+      "fileOffset": 39189100,
+      "bytesHex": "f44fbea9fd7b01a9fd430091f30300aa080040f908d944f900013fd61f04003100010054e10300aa680240f9029543f9e00313aafd7b41a9f44fc2a840001fd6000080d2",
+      "finding": "Gets selection, rejects -1, obtains selected child."
+    },
+    {
+      "symbol": "ASelector::NewDisabledSelector()",
+      "address": "0x20f8d8",
+      "fileOffset": 39188696,
+      "bytesHex": "080040f908b540f9016e00d021c42e91220080522300805200013fd6e00315aae10316aae20317aa",
+      "finding": "Writes _DISABLE_CLIP_FLAG=1 and begins filler construction."
+    },
+    {
+      "symbol": "ASelector::NewDisabledSelector()",
+      "address": "0x20f964",
+      "fileOffset": 39188836,
+      "bytesHex": "880240f908d544f9e00314aa0100805200013fd6680240f9080540f9e00313aa00013fd6e10300aa880240f9080544f9e00314aa020080d200013fd6",
+      "finding": "Selects index0 then appends duplicated original clip."
+    },
+    {
+      "symbol": "ASelector::ISelector()",
+      "address": "0x20d1e4",
+      "fileOffset": 39178724,
+      "bytesHex": "938a0439e8ff9f5288420279",
+      "finding": "Initializes selected field to0xffff: native NONE_SELECTED."
+    },
+    {
+      "symbol": "ASelector::Get()/Put()",
+      "address": "0x20d2f8",
+      "fileOffset": 39179000,
+      "bytesHex": "01e141f9a242c279",
+      "finding": "Put reads signed16 selected state for serialization."
+    },
+    {
+      "symbol": "ASourceClip::GetTValue()",
+      "address": "0x1de8ac",
+      "fileOffset": 38987948,
+      "bytesHex": "00130079e82a417908170079e89a40b90801160b080f00b9",
+      "finding": "Output trackkind/tracknumber and sourceposition+localoffset."
+    },
+    {
+      "symbol": "ASourceClip::GetTValue()",
+      "address": "0x1de8d8",
+      "fileOffset": 38987992,
+      "bytesHex": "930000b43f03146b28b3941a680200b9",
+      "finding": "Caps returned span by clipremaining and requested amount."
+    },
+    {
+      "symbol": "AMotionCtl::Get",
+      "address": "0x1c4694",
+      "fileOffset": 38880916,
+      "bytesHex": "0800174a087d1f5388e20439e002271e001c0c4e00b8a00e809a00fd",
+      "finding": "Stores sign-XOR reverse flag and absolute numerator/denominator at0x130/0x134."
+    },
+    {
+      "symbol": "AMotionCtl::MapOffsetDown",
+      "address": "0x1c68bc",
+      "fileOffset": 38889660,
+      "bytesHex": "973681b9880240f908f544f9e00314aa00013fd6187c4093e07e209b813281b9eb243394f60300aa08c3358b007d179b813281b9e6243394f70300aa",
+      "finding": "Pure ratio branch uses floor division D*p/N and D*(p+t)/N."
+    },
+    {
+      "symbol": "AMotionCtl::MapOffsetDown",
+      "address": "0x1c6914",
+      "fileOffset": 38889748,
+      "bytesHex": "f502164b88e2443968030034880240f9089543f9e00314aa0100805200013fd6080040f908fd40f900013fd61500154b11000014",
+      "finding": "Subtracts base and reverses with child length when reverse flag set."
+    },
+    {
+      "symbol": "AMotionCtl::MapOffsetDown",
+      "address": "0x1c6848",
+      "fileOffset": 38889544,
+      "bytesHex": "880240f908dd45f9e00314aa00013fd620030034",
+      "finding": "HasOffsetMapping gate chooses curve/effect branch instead of pure ratio branch."
+    },
+    {
+      "symbol": "AMotionCtl::MapRangeDown",
+      "address": "0x1c6c04",
+      "fileOffset": 38890500,
+      "bytesHex": "a8e244391f010071e01a407af8169f1aa80240f908e144f9e00315aae10316aa020080d200013fd6f70300aaa80240f908e144f90103160be2230091e00315aa00013fd6a8e24439e90b40b93f010071e9079f1a0a04801a0900094b1f0100714801971ae902891a540000b4890200b9530600b40801094b2f000014",
+      "finding": "Pure ratio range maps start and end, expands fractional end according to phase; reverse swaps endpoints."
+    },
+    {
+      "symbol": "AMotionCtl::GetPhaseAtOffset",
+      "address": "0x1c6a88",
+      "fileOffset": 38890120,
+      "bytesHex": "080040f908f544f900013fd6f50300aa880240f9084545f9e00314aa00013fd6e10300aaa002130bfd7b42a9f44f41a9f657c3a8dd233314",
+      "finding": "Returns mod(phase+t,GetNumerator())."
+    },
+    {
+      "symbol": "ATimeWarp::GetPhase",
+      "address": "0x206154",
+      "fileOffset": 39149908,
+      "bytesHex": "002041b9c0035fd6",
+      "finding": "Reads signed32 phase from0x120."
+    },
+    {
+      "symbol": "AMotionCtl::GetNumerator",
+      "address": "0x1c6f0c",
+      "fileOffset": 38891276,
+      "bytesHex": "603241b9fd7b41a9f44fc2a8c0035fd6",
+      "finding": "Without offset map returns storedabsN."
+    },
+    {
+      "symbol": "AMotionCtl::GetDenominator",
+      "address": "0x1c6f88",
+      "fileOffset": 38891400,
+      "bytesHex": "603641b9fd7b41a9f44fc2a8c0035fd6",
+      "finding": "Without offset map returns storedabsD."
+    },
+    {
+      "symbol": "AMotionCtl::HasNewSourceCalculation",
+      "address": "0x1cd03c",
+      "fileOffset": 38916156,
+      "bytesHex": "00704539c0035fd6",
+      "finding": "Reads bool at0x15c; pure ratio MapOffsetDown/MapRangeDown do not query it."
+    },
+    {
+      "symbol": "AMotionCtl::GetParamClipEnabled",
+      "address": "0x1c7858",
+      "fileOffset": 38893656,
+      "bytesHex": "617000b021e01391a20700d100013fd6a8f35f381f01007100149f1a0200001420008052",
+      "finding": "Queries _MFX_GRAPH_ENABLED with default1."
+    },
+    {
+      "symbol": "AMotionCtl::GetEnabledParamClipUID",
+      "address": "0x1c7ad8",
+      "fileOffset": 38894296,
+      "bytesHex": "1f0400716800c0d2a900c0d22001889afd7bc1a8",
+      "finding": "Graphenabled==1 selects internalUID0x500000000,otherwise0x300000000."
+    },
+    {
+      "symbol": "AMotionCtl::HasOffsetMapping",
+      "address": "0x1cb41c",
+      "fileOffset": 38908956,
+      "bytesHex": "080040f9083941f900013fd6c00100b4f30300aa880240f9084145f9e00314aa00013fd6e10300aa680240f908e540f9e00313aa00013fd660000034200080520200001400008052",
+      "finding": "Checks existing paramlist for enabled-param UID."
+    },
+    {
+      "symbol": "AMotionCtl::GetOffsetMappingAdjustment",
+      "address": "0x1cb3ac",
+      "fileOffset": 38908844,
+      "bytesHex": "080040f9083945f900013fd600e4002f1f0400714000005460a240fdfd7b41a9",
+      "finding": "Returns0 when graphenabled==1, otherwise offset_adjust field at0x140; pure ratio branch never calls this."
+    },
+    {
+      "symbol": "AMotionCtl::MapOffsetDown",
+      "address": "0x1c685c",
+      "fileOffset": 38889564,
+      "bytesHex": "760700b4c80240f9081d41f981c20191e00316aa02008052e30315aa0400805200013fd60820601ef7a79f1ac80240f9081d41f981c20191e00316aa02008052e30315aa0400805200013fd6287900d008c10591015977fc0028611e2f000014",
+      "finding": "Enabled map path uses effect callback and signed epsilon rounding; separate fallback GetOffsetMapping path."
+    },
+    {
+      "symbol": "AMotionCtl::MapRangeDown",
+      "address": "0x1c6b88",
+      "fileOffset": 38890376,
+      "bytesHex": "e0030034a80240f99707003408f545f9e3230091e4030091e00315aae10316aae20317aa2500805200013fd66a322c9420070034a80240f9089546f9e00315aa00013fd680060034a80240f9088d46f9e00315aa00013fd6e0050034e00740fd01106e1e0228611ee00340fd01107e1e0028611ee00b006d27000014",
+      "finding": "Enabled map range calls GetOffsetMinMax, with possible adaptive-deinterlace extension; not constant ratio."
+    },
+    {
+      "symbol": "ATrackGroup::MapRangeDown(int,int,int*,int*)",
+      "address": "0x210934",
+      "fileOffset": 39192884,
+      "bytesHex": "430000b4610000b9440000b4820000b9c0035fd6",
+      "finding": "Identity range: copies input start and length to output pointers."
+    },
+    {
+      "symbol": "ATrackGroup::MapRangeUp(int,int,int*,int*)",
+      "address": "0x210948",
+      "fileOffset": 39192904,
+      "bytesHex": "430000b4610000b9440000b4820000b9c0035fd6",
+      "finding": "Identity range reverse direction: copies input start and length to output pointers."
+    },
+    {
+      "symbol": "ARepSet::GetTValue",
+      "address": "0x206e84",
+      "fileOffset": 39153284,
+      "bytesHex": "080040f9088543f900013fd61f0400718b030054c80240f908d144f9e00316aa00013fd6c80240f91f04003100040054e10300aa089543f9e00316aa00013fd6080040f9084942f9e10314aae20317aae30315aae4031aaae50318aae60313aae70319aafd7b49a9f44f48a9f65747a9f85f46a9fa6745a9ff83029100011fd6",
+      "finding": "Checks NumTracks then ChooseOne; if choice!=-1, follows exactly that child GetTValue. Does not establish all alternatives as used."
+    },
+    {
+      "symbol": "ARepSet::ChooseOne",
+      "address": "0x207138",
+      "fileOffset": 39153976,
+      "bytesHex": "fd7bbfa9fd030091080040f9088543f900013fd61f040071e0039f5afd7bc1a8c0035fd6",
+      "finding": "Calls NumTracks; returns0 only when count==1, otherwise-1."
+    },
+    {
+      "symbol": "ARepSet::GetPrecomputeRange",
+      "address": "0x206dc8",
+      "fileOffset": 39153096,
+      "bytesHex": "c80240f9088543f9e00316aa00013fd61f040071cb020054c80240f908d144f9e00316aa00013fd61f04003100020054e10300aac80240f9089543f9e00316aa00013fd6080040f9",
+      "finding": "Similarly follows ChooseOne child when available, not every track."
+    },
+    {
+      "symbol": "TrackInfo_t::TrackInfo_t()",
+      "address": "0x20fafc",
+      "fileOffset": 39189244,
+      "bytesHex": "1fe002f800e4006f008000ad0000803dc0035fd6",
+      "finding": "Zero-initializes recorded TrackInfo storage, including position member."
+    },
+    {
+      "symbol": "ATrackGroup::GetAndReturnReadVersion",
+      "address": "0x1d8fb4",
+      "fileOffset": 38965172,
+      "bytesHex": "ff17033900e4006fe08304ade02f803dff830179",
+      "finding": "For each read track, zeroes TrackInfo storage atsp0x90..0xbf before flags; start-position wordsp0xb8 is included."
+    },
+    {
+      "symbol": "ATrackGroup::GetAndReturnReadVersion",
+      "address": "0x1d920c",
+      "fileOffset": 38965772,
+      "bytesHex": "9f1b0071e302005476013836680a40b91f1500716803979a080140f9017542f9880240f9081d41f9e00314aa00013fd6e0bb00b9",
+      "finding": "For layoutversion>=6, flagbit7 controls reading signed32 track start into sp0xb8. With flagabsent, branchskipswrite and priorzero remains."
+    }
+  ],
+  "genuineCorroboration": {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/8645 v1.avb",
+    "bytes": 6913702,
+    "mtimeNs": "1778748844000000000",
+    "sha256": "45ec3861e9f471f7e1a67757bd7605befd782192a7cb8a5da493e3d6a86a62c8",
+    "sizeAndMtimeUnchanged": true
+  },
+  "freshStructuralFindings": {
+    "reader": "Supplied pyavb use_ext=False; secondary structural corroboration, not Avid semantic authority.",
+    "selectors": 261,
+    "allGanged": true,
+    "selectedCounts": {
+      "0": 223,
+      "1": 30,
+      "2": 8
+    },
+    "motionEffects": 5,
+    "transitions": 120,
+    "essenceGroups": 24,
+    "disabledSelectors": 0,
+    "nonzeroCompositionTrackStarts": 0,
+    "rates": {
+      "SCLP": {
+        "25": 6031
+      },
+      "SEQU": {
+        "25": 2934
+      },
+      "SLCT": {
+        "25": 261
+      },
+      "CMPO": {
+        "25": 2031
+      },
+      "TKFX": {
+        "25": 439
+      },
+      "SPED": {
+        "25": 5
+      },
+      "TNFX": {
+        "25": 120
+      }
+    },
+    "motionRatios": [
+      [
+        53,
+        39
+      ],
+      [
+        53,
+        39
+      ],
+      [
+        16,
+        11
+      ],
+      [
+        16,
+        11
+      ],
+      [
+        101,
+        201
+      ]
+    ],
+    "transitionExamples": "First sampled TNFX objects contain two tracks without component references; length12, cutpoint0 or12. Parent sequence adjacency/overlap semantics must not be replaced by child-only traversal."
+  },
+  "priorEvidence": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Copland/evidence/bin-technical-verification-2026-10-12.json",
+    "distinction": "These sample routes/positions are prior receipt findings, not freshly recomputed here.",
+    "selector33511": "V1 frame1723 at25fps, length27, selectedIndex2 ->07-199-01C.new.02, distinctA/B alternatives.",
+    "source32143": "A3 sourceStart829 length279.",
+    "effect33197": "Recorded original-input and Component.precomputed render routes."
+  },
+  "commands": [
+    "xcrun llvm-nm --arch=arm64 --defined-only --demangle <binary> | rg ASelector/ASourceClip/AMotionCtl/ATimeWarp symbols",
+    "xcrun llvm-objdump --macho --arch=arm64 --disassemble <binary> | Python instruction-address range filter",
+    "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/Users/martymclean/Downloads/pyavb-main/src python3 read-only avb.open(source,use_ext=False), iter_class_ids, aggregate properties",
+    "Read AMotionCtl vtable pointerwords fromimageaddress0x1232f08+slot; low32-bitmethodtargets matchedllvm-nm symbols.",
+    "Read exact instruction byteanchors atarm64sliceoffset37027840+imageaddress.",
+    "Fresh pyavb readall5SPED parameter UUIDs/controltrackcounts/phase/offset/new_source flags; detailed temporarydata /private/tmp/copland-angle-range-genuine-speed-2026-10-17.json."
+  ],
+  "primaryDocumentation": [
+    {
+      "url": "https://resources.avid.com/SupportFiles/attach/Media_Composer_Editing_Guide_2021.x.pdf",
+      "page": 1171,
+      "finding": "Camera angle can be switched for the segment under the position indicator; documentation does not establish private AVB serialization."
+    }
+  ],
+  "limits": [
+    "Native static audit establishes the bounded listed methods, not all Media Composer behavior.",
+    "GetTValue sourceposition+offset is ordinary local mapping; cross-rate rounding not established by these anchors.",
+    "No source media edits, app launches, playback, timeline inspection or exact full physical-media acceptance set.",
+    "No genuine disabled selector/nonzero trackstart/mixed-rate path in this sampled bin.",
+    "NONE_SELECTED native existence does not establish whether every serialized occurrence is valid; current reader rejects out-of-range unsigned indices.",
+    "Prior structural703-to682 pruning result is diagnostic, not the accepted exact-used media set."
+  ],
+  "speedMapping": {
+    "status": "Bounded constant ratio mapping established statically; enabled curve mappings remain unestablished.",
+    "gate": "Use this ratio branch only when absence of native enabled offset mapping is established. Missing, unreadable or unsupported parameter mapping must not fall back to ratio.",
+    "definitions": {
+      "N": "abs(serialized MotionEffect.speed_ratio.numerator)",
+      "D": "abs(serialized MotionEffect.speed_ratio.denominator)",
+      "p": "TimeWarp.phase_offset",
+      "L": "input child length",
+      "reverse": "serialized numerator and denominator have different signs; native stores sign XOR"
+    },
+    "mapOffset": "m(t)=floor(D*(p+t)/N)-floor(D*p/N); forwardMap(t)=m(t); reverseMap(t)=L-m(t).",
+    "phaseAt": "mod(p+t,N)",
+    "forwardNonemptyRange": "[a,b) -> [m(a),m(b)+(phaseAt(b)!=0)]",
+    "reverseNonemptyRange": "[a,b) -> [L-m(b)-(phaseAt(b)!=0),L-m(a)]",
+    "ratioMeaning": "Mapping multiplier is D/N, not N/D. This is native constant mapping; enabled curve may override it.",
+    "fields": {
+      "offsetAdjust": "Stored atobject+0x140. The pure-ratio mapping does not read it. GetOffsetMappingAdjustment uses it for non-graph-enabled mapping; not enough to invent curve semantics.",
+      "newSourceCalculation": "Stored booleanat0x15c, returnedby HasNewSourceCalculation. Pure-ratio MapOffsetDown/MapRangeDown do not query it. Other source recalculation paths are not audited.",
+      "graphEnabled": "_MFX_GRAPH_ENABLED attribute; native GetParamClipEnabled returns default1 ifabsent.",
+      "sourceParamList": "Separate MotionEffect.source_param_list; nonempty/relevant vector-edit source relationship not audited."
+    },
+    "unsupportedCases": [
+      "Enabled offset/speed map effect interpolation and extrema, including reverse or nonmonotonic curves.",
+      "Nonempty or unreadable parameter/source-param list whose active mapping cannot be classified.",
+      "Arbitrary effect behavior, unknown render/deinterlace mapping, nonlinear or unsupported parameter controls.",
+      "Mixed-rate conversion outside this local mapping, malformedzero ratio, overflow/invalidbounds.",
+      "No universal N/D fallback for genuine SPED because all5sampledSPED have enabled curve records."
+    ],
+    "freshGenuineObjects": [
+      {
+        "object": 471,
+        "ratio": [
+          53,
+          39
+        ],
+        "length": 53,
+        "phase": 0,
+        "offsetAdjust": 0.0,
+        "newSourceCalculation": true,
+        "graphEnabled": "absent-default1",
+        "params": [
+          {
+            "object": 84,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "8d56827c-847e-11d5-935a-50f857c10000",
+              "value_type": "2",
+              "value": "0.0",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            },
+            "controlTrack": {
+              "object": 32,
+              "class": "PRCL",
+              "pointCount": 3,
+              "interpolation": 6
+            }
+          },
+          {
+            "object": 83,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "8d56827d-847e-11d5-935a-50f857c10000",
+              "value_type": "2",
+              "value": "0.0",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            },
+            "controlTrack": {
+              "object": 31,
+              "class": "PRCL",
+              "pointCount": 107,
+              "interpolation": 3
+            }
+          },
+          {
+            "object": 82,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "8d568283-847e-11d5-935a-50f857c10000",
+              "value_type": "1",
+              "value": "0",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            },
+            "controlTrack": {
+              "object": 30,
+              "class": "PRCL",
+              "pointCount": 1,
+              "interpolation": 2
+            }
+          },
+          {
+            "object": 81,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "72559a80-24d7-11d3-8a50-0050040ef7d2",
+              "value_type": "2",
+              "value": "1.358974358974359",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            }
+          }
+        ],
+        "sourceParams": []
+      },
+      {
+        "object": 901,
+        "ratio": [
+          53,
+          39
+        ],
+        "length": 53,
+        "phase": 0,
+        "offsetAdjust": 0.0,
+        "newSourceCalculation": true,
+        "graphEnabled": "absent-default1",
+        "params": [
+          {
+            "object": 114,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "8d56827c-847e-11d5-935a-50f857c10000",
+              "value_type": "2",
+              "value": "0.0",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            },
+            "controlTrack": {
+              "object": 52,
+              "class": "PRCL",
+              "pointCount": 3,
+              "interpolation": 6
+            }
+          },
+          {
+            "object": 113,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "8d56827d-847e-11d5-935a-50f857c10000",
+              "value_type": "2",
+              "value": "0.0",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            },
+            "controlTrack": {
+              "object": 51,
+              "class": "PRCL",
+              "pointCount": 107,
+              "interpolation": 3
+            }
+          },
+          {
+            "object": 112,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "8d568283-847e-11d5-935a-50f857c10000",
+              "value_type": "1",
+              "value": "0",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            },
+            "controlTrack": {
+              "object": 50,
+              "class": "PRCL",
+              "pointCount": 1,
+              "interpolation": 2
+            }
+          },
+          {
+            "object": 111,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "72559a80-24d7-11d3-8a50-0050040ef7d2",
+              "value_type": "2",
+              "value": "1.358974358974359",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            }
+          }
+        ],
+        "sourceParams": []
+      },
+      {
+        "object": 1095,
+        "ratio": [
+          16,
+          11
+        ],
+        "length": 96,
+        "phase": 33,
+        "offsetAdjust": 0.0,
+        "newSourceCalculation": true,
+        "graphEnabled": "absent-default1",
+        "params": [
+          {
+            "object": 137,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "8d56827c-847e-11d5-935a-50f857c10000",
+              "value_type": "2",
+              "value": "0.0",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            },
+            "controlTrack": {
+              "object": 62,
+              "class": "PRCL",
+              "pointCount": 3,
+              "interpolation": 6
+            }
+          },
+          {
+            "object": 136,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "8d56827d-847e-11d5-935a-50f857c10000",
+              "value_type": "2",
+              "value": "0.0",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            },
+            "controlTrack": {
+              "object": 61,
+              "class": "PRCL",
+              "pointCount": 193,
+              "interpolation": 3
+            }
+          },
+          {
+            "object": 135,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "8d568283-847e-11d5-935a-50f857c10000",
+              "value_type": "1",
+              "value": "0",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            },
+            "controlTrack": {
+              "object": 60,
+              "class": "PRCL",
+              "pointCount": 1,
+              "interpolation": 2
+            }
+          },
+          {
+            "object": 134,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "72559a80-24d7-11d3-8a50-0050040ef7d2",
+              "value_type": "2",
+              "value": "1.4545454545454546",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            }
+          }
+        ],
+        "sourceParams": []
+      },
+      {
+        "object": 4169,
+        "ratio": [
+          16,
+          11
+        ],
+        "length": 96,
+        "phase": 33,
+        "offsetAdjust": 0.0,
+        "newSourceCalculation": true,
+        "graphEnabled": "absent-default1",
+        "params": [
+          {
+            "object": 486,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "8d56827c-847e-11d5-935a-50f857c10000",
+              "value_type": "2",
+              "value": "0.0",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            },
+            "controlTrack": {
+              "object": 173,
+              "class": "PRCL",
+              "pointCount": 3,
+              "interpolation": 6
+            }
+          },
+          {
+            "object": 485,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "8d56827d-847e-11d5-935a-50f857c10000",
+              "value_type": "2",
+              "value": "0.0",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            },
+            "controlTrack": {
+              "object": 172,
+              "class": "PRCL",
+              "pointCount": 193,
+              "interpolation": 3
+            }
+          },
+          {
+            "object": 484,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "8d568283-847e-11d5-935a-50f857c10000",
+              "value_type": "1",
+              "value": "0",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            },
+            "controlTrack": {
+              "object": 171,
+              "class": "PRCL",
+              "pointCount": 1,
+              "interpolation": 2
+            }
+          },
+          {
+            "object": 483,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "72559a80-24d7-11d3-8a50-0050040ef7d2",
+              "value_type": "2",
+              "value": "1.4545454545454546",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            }
+          }
+        ],
+        "sourceParams": []
+      },
+      {
+        "object": 4943,
+        "ratio": [
+          101,
+          201
+        ],
+        "length": 101,
+        "phase": 75,
+        "offsetAdjust": 0.0,
+        "newSourceCalculation": true,
+        "graphEnabled": "absent-default1",
+        "params": [
+          {
+            "object": 523,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "8d56827c-847e-11d5-935a-50f857c10000",
+              "value_type": "2",
+              "value": "0.0",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            },
+            "controlTrack": {
+              "object": 188,
+              "class": "PRCL",
+              "pointCount": 1,
+              "interpolation": 6
+            }
+          },
+          {
+            "object": 522,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "8d56827d-847e-11d5-935a-50f857c10000",
+              "value_type": "2",
+              "value": "0.0",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            },
+            "controlTrack": {
+              "object": 187,
+              "class": "PRCL",
+              "pointCount": 2,
+              "interpolation": 3
+            }
+          },
+          {
+            "object": 521,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "8d568283-847e-11d5-935a-50f857c10000",
+              "value_type": "1",
+              "value": "0",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            },
+            "controlTrack": {
+              "object": 186,
+              "class": "PRCL",
+              "pointCount": 1,
+              "interpolation": 2
+            }
+          },
+          {
+            "object": 520,
+            "class": "PRIT",
+            "properties": {
+              "uuid": "72559a80-24d7-11d3-8a50-0050040ef7d2",
+              "value_type": "2",
+              "value": "0.5024875621890548",
+              "name": "",
+              "enable": "True",
+              "contribs_to_sig": "True"
+            }
+          }
+        ],
+        "sourceParams": []
+      }
+    ],
+    "genuineQualification": "All5 genuine SPED samples have speed/offset ParamItems with enabled controls and new_source_calculation=true. They are not pureconstant-ratio acceptance samples even when their speed_ratio looks simple. Phase0/33/75; alloffsetadjust0; graphenabledattributeabsent defaults1.",
+    "curveIdentifiers": {
+      "secondaryInterpretation": "Suppliedpyavb/recordedgenuinePRIT UUIDs; thisauditdidnotindependentlydecode native internalUIDtoUUIDtable.",
+      "speedMapUuid": "8d56827c-847e-11d5-935a-50f857c10000",
+      "offsetMapUuid": "8d56827d-847e-11d5-935a-50f857c10000",
+      "speedRatioUuid": "72559a80-24d7-11d3-8a50-0050040ef7d2",
+      "relatedUnknownUuid": "8d568283-847e-11d5-935a-50f857c10000"
+    }
+  },
+  "motionVtable": {
+    "symbol": "vtable for AMotionCtl",
+    "symbolAddress": "0x1232ef8",
+    "addressPoint": "0x1232f08",
+    "entries": [
+      {
+        "slot": "0x9c0",
+        "address": "0x12338c8",
+        "bytesHex": "10681c0000001000",
+        "chainedPointerRaw": "0x100000001c6810",
+        "imageTarget": "0x1c6810",
+        "symbol": "MapOffsetDown"
+      },
+      {
+        "slot": "0x9c8",
+        "address": "0x12338d0",
+        "bytesHex": "a4691c0000001000",
+        "chainedPointerRaw": "0x100000001c69a4",
+        "imageTarget": "0x1c69a4",
+        "symbol": "MapOffsetUp"
+      },
+      {
+        "slot": "0x9e8",
+        "address": "0x12338f0",
+        "bytesHex": "5461200000001000",
+        "chainedPointerRaw": "0x10000000206154",
+        "imageTarget": "0x206154",
+        "symbol": "GetPhase"
+      },
+      {
+        "slot": "0x9f0",
+        "address": "0x12338f8",
+        "bytesHex": "706a1c0000001000",
+        "chainedPointerRaw": "0x100000001c6a70",
+        "imageTarget": "0x1c6a70",
+        "symbol": "GetPhaseAtOffset"
+      },
+      {
+        "slot": "0xa70",
+        "address": "0x1233978",
+        "bytesHex": "30781c0000001000",
+        "chainedPointerRaw": "0x100000001c7830",
+        "imageTarget": "0x1c7830",
+        "symbol": "GetParamClipEnabled"
+      },
+      {
+        "slot": "0xa80",
+        "address": "0x1233988",
+        "bytesHex": "c47a1c0000001000",
+        "chainedPointerRaw": "0x100000001c7ac4",
+        "imageTarget": "0x1c7ac4",
+        "symbol": "GetEnabledParamClipUID"
+      },
+      {
+        "slot": "0xa88",
+        "address": "0x1233990",
+        "bytesHex": "d46e1c0000001000",
+        "chainedPointerRaw": "0x100000001c6ed4",
+        "imageTarget": "0x1c6ed4",
+        "symbol": "GetNumerator"
+      },
+      {
+        "slot": "0xa90",
+        "address": "0x1233998",
+        "bytesHex": "1c6f1c0000001000",
+        "chainedPointerRaw": "0x100000001c6f1c",
+        "imageTarget": "0x1c6f1c",
+        "symbol": "GetDenominator"
+      },
+      {
+        "slot": "0xbb8",
+        "address": "0x1233ac0",
+        "bytesHex": "0cb41c0000001000",
+        "chainedPointerRaw": "0x100000001cb40c",
+        "imageTarget": "0x1cb40c",
+        "symbol": "HasOffsetMapping"
+      },
+      {
+        "slot": "0xbd8",
+        "address": "0x1233ae0",
+        "bytesHex": "20791c0000001000",
+        "chainedPointerRaw": "0x100000001c7920",
+        "imageTarget": "0x1c7920",
+        "symbol": "GetOffsetMapping"
+      },
+      {
+        "slot": "0xbe8",
+        "address": "0x1233af0",
+        "bytesHex": "00b91c0000001000",
+        "chainedPointerRaw": "0x100000001cb900",
+        "imageTarget": "0x1cb900",
+        "symbol": "GetOffsetMinMax"
+      }
+    ],
+    "limit": "Low32-bit targets match listed defined image method symbols; this is a bounded decoding of these inspected chained pointers, not a general fixup decoder."
+  },
+  "subclassRangeVtables": [
+    {
+      "fourcc": "ASPI",
+      "nativeClass": "AudioSuitePlugInEffect",
+      "vtableAddress": "0x13aa1c0",
+      "entries": [
+        {
+          "slot": "0x490",
+          "address": "0x13aa660",
+          "bytesHex": "70cb140000001000",
+          "raw": "0x1000000014cb70",
+          "target": "0x14cb70",
+          "method": "AComponent::GetTValue(int, int, int*, ATValue*, MobDesc_t*, CompDesc_t*, unsigned short)"
+        },
+        {
+          "slot": "0x4c0",
+          "address": "0x13aa690",
+          "bytesHex": "0459210000001000",
+          "raw": "0x10000000215904",
+          "target": "0x215904",
+          "method": "ATrackGroup::VisitCompsSubrange(ComponentVisitor&, int, int, unsigned char)"
+        },
+        {
+          "slot": "0x8a8",
+          "address": "0x13aaa78",
+          "bytesHex": "3409210000001000",
+          "raw": "0x10000000210934",
+          "target": "0x210934",
+          "method": "ATrackGroup::MapRangeDown(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x8b0",
+          "address": "0x13aaa80",
+          "bytesHex": "4809210000001000",
+          "raw": "0x10000000210948",
+          "target": "0x210948",
+          "method": "ATrackGroup::MapRangeUp(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x9c0",
+          "address": "0x13aab90",
+          "bytesHex": "a06f7b0000001000",
+          "raw": "0x100000007b6fa0",
+          "target": "0x7b6fa0",
+          "method": "AudioSuitePlugInEffect::AddFillerTrackRef(short, short, int)"
+        },
+        {
+          "slot": "0x9c8",
+          "address": "0x13aab98",
+          "bytesHex": "b0e31e0000001000",
+          "raw": "0x100000001ee3b0",
+          "target": "0x1ee3b0",
+          "method": "ATrackEffect::AddEffectTrack(AComponent*, int)"
+        }
+      ]
+    },
+    {
+      "fourcc": "PVOL",
+      "nativeClass": "APanVolEffect",
+      "vtableAddress": "0x13832d0",
+      "entries": [
+        {
+          "slot": "0x490",
+          "address": "0x1383770",
+          "bytesHex": "70cb140000001000",
+          "raw": "0x1000000014cb70",
+          "target": "0x14cb70",
+          "method": "AComponent::GetTValue(int, int, int*, ATValue*, MobDesc_t*, CompDesc_t*, unsigned short)"
+        },
+        {
+          "slot": "0x4c0",
+          "address": "0x13837a0",
+          "bytesHex": "0459210000001000",
+          "raw": "0x10000000215904",
+          "target": "0x215904",
+          "method": "ATrackGroup::VisitCompsSubrange(ComponentVisitor&, int, int, unsigned char)"
+        },
+        {
+          "slot": "0x8a8",
+          "address": "0x1383b88",
+          "bytesHex": "3409210000001000",
+          "raw": "0x10000000210934",
+          "target": "0x210934",
+          "method": "ATrackGroup::MapRangeDown(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x8b0",
+          "address": "0x1383b90",
+          "bytesHex": "4809210000001000",
+          "raw": "0x10000000210948",
+          "target": "0x210948",
+          "method": "ATrackGroup::MapRangeUp(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x9c0",
+          "address": "0x1383ca0",
+          "bytesHex": "f061780000001000",
+          "raw": "0x100000007861f0",
+          "target": "0x7861f0",
+          "method": "APanVolEffect::AddFillerTrackRef(short, short, int)"
+        },
+        {
+          "slot": "0x9c8",
+          "address": "0x1383ca8",
+          "bytesHex": "b0e31e0000001000",
+          "raw": "0x100000001ee3b0",
+          "target": "0x1ee3b0",
+          "method": "ATrackEffect::AddEffectTrack(AComponent*, int)"
+        }
+      ]
+    },
+    {
+      "fourcc": "EQMB",
+      "nativeClass": "AMultiBandEQEffect",
+      "vtableAddress": "0x137fa48",
+      "entries": [
+        {
+          "slot": "0x490",
+          "address": "0x137fee8",
+          "bytesHex": "70cb140000001000",
+          "raw": "0x1000000014cb70",
+          "target": "0x14cb70",
+          "method": "AComponent::GetTValue(int, int, int*, ATValue*, MobDesc_t*, CompDesc_t*, unsigned short)"
+        },
+        {
+          "slot": "0x4c0",
+          "address": "0x137ff18",
+          "bytesHex": "0459210000001000",
+          "raw": "0x10000000215904",
+          "target": "0x215904",
+          "method": "ATrackGroup::VisitCompsSubrange(ComponentVisitor&, int, int, unsigned char)"
+        },
+        {
+          "slot": "0x8a8",
+          "address": "0x1380300",
+          "bytesHex": "3409210000001000",
+          "raw": "0x10000000210934",
+          "target": "0x210934",
+          "method": "ATrackGroup::MapRangeDown(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x8b0",
+          "address": "0x1380308",
+          "bytesHex": "4809210000001000",
+          "raw": "0x10000000210948",
+          "target": "0x210948",
+          "method": "ATrackGroup::MapRangeUp(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x9c0",
+          "address": "0x1380418",
+          "bytesHex": "889c770000001000",
+          "raw": "0x10000000779c88",
+          "target": "0x779c88",
+          "method": "AMultiBandEQEffect::AddFillerTrackRef(short, short, int)"
+        },
+        {
+          "slot": "0x9c8",
+          "address": "0x1380420",
+          "bytesHex": "b0e31e0000001000",
+          "raw": "0x100000001ee3b0",
+          "target": "0x1ee3b0",
+          "method": "ATrackEffect::AddEffectTrack(AComponent*, int)"
+        }
+      ]
+    },
+    {
+      "fourcc": "RSET",
+      "nativeClass": "ARepSet",
+      "vtableAddress": "0x1237fd8",
+      "entries": [
+        {
+          "slot": "0x490",
+          "address": "0x1238478",
+          "bytesHex": "486e200000001000",
+          "raw": "0x10000000206e48",
+          "target": "0x206e48",
+          "method": "ARepSet::GetTValue(int, int, int*, ATValue*, MobDesc_t*, CompDesc_t*, unsigned short)"
+        },
+        {
+          "slot": "0x4c0",
+          "address": "0x12384a8",
+          "bytesHex": "0459210000001000",
+          "raw": "0x10000000215904",
+          "target": "0x215904",
+          "method": "ATrackGroup::VisitCompsSubrange(ComponentVisitor&, int, int, unsigned char)"
+        },
+        {
+          "slot": "0x8a8",
+          "address": "0x1238890",
+          "bytesHex": "3409210000001000",
+          "raw": "0x10000000210934",
+          "target": "0x210934",
+          "method": "ATrackGroup::MapRangeDown(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x8b0",
+          "address": "0x1238898",
+          "bytesHex": "4809210000001000",
+          "raw": "0x10000000210948",
+          "target": "0x210948",
+          "method": "ATrackGroup::MapRangeUp(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x9c0",
+          "address": "0x12389a8",
+          "bytesHex": "5c71200000001000",
+          "raw": "0x1000000020715c",
+          "target": "0x20715c",
+          "method": "ARepSet::RepGetTValue(int, int, int, int*, MobDesc_t*, CompDesc_t*) const"
+        },
+        {
+          "slot": "0x9c8",
+          "address": "0x12389b0",
+          "bytesHex": "cc71200000001000",
+          "raw": "0x100000002071cc",
+          "target": "0x2071cc",
+          "method": "ARepSet::GetNumChoices() const"
+        }
+      ]
+    },
+    {
+      "fourcc": "TRKG",
+      "nativeClass": "ATrackGroup",
+      "vtableAddress": "0x123e250",
+      "entries": [
+        {
+          "slot": "0x490",
+          "address": "0x123e6f0",
+          "bytesHex": "70cb140000001000",
+          "raw": "0x1000000014cb70",
+          "target": "0x14cb70",
+          "method": "AComponent::GetTValue(int, int, int*, ATValue*, MobDesc_t*, CompDesc_t*, unsigned short)"
+        },
+        {
+          "slot": "0x4c0",
+          "address": "0x123e720",
+          "bytesHex": "0459210000001000",
+          "raw": "0x10000000215904",
+          "target": "0x215904",
+          "method": "ATrackGroup::VisitCompsSubrange(ComponentVisitor&, int, int, unsigned char)"
+        },
+        {
+          "slot": "0x8a8",
+          "address": "0x123eb08",
+          "bytesHex": "3409210000001000",
+          "raw": "0x10000000210934",
+          "target": "0x210934",
+          "method": "ATrackGroup::MapRangeDown(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x8b0",
+          "address": "0x123eb10",
+          "bytesHex": "4809210000001000",
+          "raw": "0x10000000210948",
+          "target": "0x210948",
+          "method": "ATrackGroup::MapRangeUp(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x9c0",
+          "address": "0x123ec20",
+          "bytesHex": "68b91e0000001000",
+          "raw": "0x100000001eb968",
+          "target": "0x1eb968",
+          "method": "non-virtual thunk to ATrackGroup::GetEditRate()"
+        },
+        {
+          "slot": "0x9c8",
+          "address": "0x123ec28",
+          "bytesHex": "74b91e0000001000",
+          "raw": "0x100000001eb974",
+          "target": "0x1eb974",
+          "method": "non-virtual thunk to ATrackGroup::GetEffectID(char*, int)"
+        }
+      ]
+    },
+    {
+      "fourcc": "WARP",
+      "nativeClass": "ATimeWarp",
+      "vtableAddress": "0x1237470",
+      "entries": [
+        {
+          "slot": "0x490",
+          "address": "0x1237910",
+          "bytesHex": "70cb140000001000",
+          "raw": "0x1000000014cb70",
+          "target": "0x14cb70",
+          "method": "AComponent::GetTValue(int, int, int*, ATValue*, MobDesc_t*, CompDesc_t*, unsigned short)"
+        },
+        {
+          "slot": "0x4c0",
+          "address": "0x1237940",
+          "bytesHex": "0459210000001000",
+          "raw": "0x10000000215904",
+          "target": "0x215904",
+          "method": "ATrackGroup::VisitCompsSubrange(ComponentVisitor&, int, int, unsigned char)"
+        },
+        {
+          "slot": "0x8a8",
+          "address": "0x1237d28",
+          "bytesHex": "3409210000001000",
+          "raw": "0x10000000210934",
+          "target": "0x210934",
+          "method": "ATrackGroup::MapRangeDown(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x8b0",
+          "address": "0x1237d30",
+          "bytesHex": "4809210000001000",
+          "raw": "0x10000000210948",
+          "target": "0x210948",
+          "method": "ATrackGroup::MapRangeUp(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x9c0",
+          "address": "0x1237e40",
+          "bytesHex": "fc60200000001000",
+          "raw": "0x100000002060fc",
+          "target": "0x2060fc",
+          "method": "ATimeWarp::MapOffsetDown(int, int*)"
+        },
+        {
+          "slot": "0x9c8",
+          "address": "0x1237e48",
+          "bytesHex": "0c61200000001000",
+          "raw": "0x1000000020610c",
+          "target": "0x20610c",
+          "method": "ATimeWarp::MapOffsetUp(int, int*)"
+        }
+      ]
+    },
+    {
+      "fourcc": "MASK",
+      "nativeClass": "ACaptureMask",
+      "vtableAddress": "0x12304d0",
+      "entries": [
+        {
+          "slot": "0x490",
+          "address": "0x1230970",
+          "bytesHex": "70cb140000001000",
+          "raw": "0x1000000014cb70",
+          "target": "0x14cb70",
+          "method": "AComponent::GetTValue(int, int, int*, ATValue*, MobDesc_t*, CompDesc_t*, unsigned short)"
+        },
+        {
+          "slot": "0x4c0",
+          "address": "0x12309a0",
+          "bytesHex": "0459210000001000",
+          "raw": "0x10000000215904",
+          "target": "0x215904",
+          "method": "ATrackGroup::VisitCompsSubrange(ComponentVisitor&, int, int, unsigned char)"
+        },
+        {
+          "slot": "0x8a8",
+          "address": "0x1230d88",
+          "bytesHex": "2c311a0000001000",
+          "raw": "0x100000001a312c",
+          "target": "0x1a312c",
+          "method": "ACaptureMask::MapRangeDown(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x8b0",
+          "address": "0x1230d90",
+          "bytesHex": "cc311a0000001000",
+          "raw": "0x100000001a31cc",
+          "target": "0x1a31cc",
+          "method": "ACaptureMask::MapRangeUp(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x9c0",
+          "address": "0x1230ea0",
+          "bytesHex": "68301a0000001000",
+          "raw": "0x100000001a3068",
+          "target": "0x1a3068",
+          "method": "ACaptureMask::MapOffsetDown(int, int*)"
+        },
+        {
+          "slot": "0x9c8",
+          "address": "0x1230ea8",
+          "bytesHex": "00311a0000001000",
+          "raw": "0x100000001a3100",
+          "target": "0x1a3100",
+          "method": "ACaptureMask::MapOffsetUp(int, int*)"
+        }
+      ]
+    },
+    {
+      "fourcc": "STRB",
+      "nativeClass": "AStrobeEffect",
+      "vtableAddress": "0x1233d90",
+      "entries": [
+        {
+          "slot": "0x490",
+          "address": "0x1234230",
+          "bytesHex": "70cb140000001000",
+          "raw": "0x1000000014cb70",
+          "target": "0x14cb70",
+          "method": "AComponent::GetTValue(int, int, int*, ATValue*, MobDesc_t*, CompDesc_t*, unsigned short)"
+        },
+        {
+          "slot": "0x4c0",
+          "address": "0x1234260",
+          "bytesHex": "0459210000001000",
+          "raw": "0x10000000215904",
+          "target": "0x215904",
+          "method": "ATrackGroup::VisitCompsSubrange(ComponentVisitor&, int, int, unsigned char)"
+        },
+        {
+          "slot": "0x8a8",
+          "address": "0x1234648",
+          "bytesHex": "4ca51d0000001000",
+          "raw": "0x100000001da54c",
+          "target": "0x1da54c",
+          "method": "AStrobeEffect::MapRangeDown(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x8b0",
+          "address": "0x1234650",
+          "bytesHex": "e0a51d0000001000",
+          "raw": "0x100000001da5e0",
+          "target": "0x1da5e0",
+          "method": "AStrobeEffect::MapRangeUp(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x9c0",
+          "address": "0x1234760",
+          "bytesHex": "5ca41d0000001000",
+          "raw": "0x100000001da45c",
+          "target": "0x1da45c",
+          "method": "AStrobeEffect::MapOffsetDown(int, int*)"
+        },
+        {
+          "slot": "0x9c8",
+          "address": "0x1234768",
+          "bytesHex": "d0a41d0000001000",
+          "raw": "0x100000001da4d0",
+          "target": "0x1da4d0",
+          "method": "AStrobeEffect::MapOffsetUp(int, int*)"
+        }
+      ]
+    },
+    {
+      "fourcc": "REPT",
+      "nativeClass": "ARepeatCtl",
+      "vtableAddress": "0x1240138",
+      "entries": [
+        {
+          "slot": "0x490",
+          "address": "0x12405d8",
+          "bytesHex": "70cb140000001000",
+          "raw": "0x1000000014cb70",
+          "target": "0x14cb70",
+          "method": "AComponent::GetTValue(int, int, int*, ATValue*, MobDesc_t*, CompDesc_t*, unsigned short)"
+        },
+        {
+          "slot": "0x4c0",
+          "address": "0x1240608",
+          "bytesHex": "0459210000001000",
+          "raw": "0x10000000215904",
+          "target": "0x215904",
+          "method": "ATrackGroup::VisitCompsSubrange(ComponentVisitor&, int, int, unsigned char)"
+        },
+        {
+          "slot": "0x8a8",
+          "address": "0x12409f0",
+          "bytesHex": "508f220000001000",
+          "raw": "0x10000000228f50",
+          "target": "0x228f50",
+          "method": "ARepeatCtl::MapRangeDown(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x8b0",
+          "address": "0x12409f8",
+          "bytesHex": "e88f220000001000",
+          "raw": "0x10000000228fe8",
+          "target": "0x228fe8",
+          "method": "ARepeatCtl::MapRangeUp(int, int, int*, int*)"
+        },
+        {
+          "slot": "0x9c0",
+          "address": "0x1240b08",
+          "bytesHex": "9c8e220000001000",
+          "raw": "0x10000000228e9c",
+          "target": "0x228e9c",
+          "method": "ARepeatCtl::MapOffsetDown(int, int*)"
+        },
+        {
+          "slot": "0x9c8",
+          "address": "0x1240b10",
+          "bytesHex": "cc8e220000001000",
+          "raw": "0x10000000228ecc",
+          "target": "0x228ecc",
+          "method": "ARepeatCtl::MapOffsetUp(int, int*)"
+        }
+      ]
+    }
+  ],
+  "representationSetFinding": {
+    "virtualDispatch": [
+      {
+        "slot": "0x708",
+        "address": "0x12386f0",
+        "bytesHex": "10bca10000001000",
+        "target": "0xa1bc10",
+        "expectedMethod": "ATrackGroup::NumTracks",
+        "method": "ATrackGroupSegment::NumTracks()"
+      },
+      {
+        "slot": "0x9a0",
+        "address": "0x1238988",
+        "bytesHex": "3871200000001000",
+        "target": "0x207138",
+        "expectedMethod": "ARepSet::ChooseOne",
+        "method": "ARepSet::ChooseOne()"
+      }
+    ],
+    "established": "RSET range conversion itself is identity, but native GetTValue and GetPrecomputeRange select one representation. Default ChooseOne returns0 only for exactlyone track, otherwise-1. RSET inherits broad VisitCompsSubrange, so inherited visitation must not be treated as proof all representations are used.",
+    "safeBoundedPolicy": "A single fully established RSET child can use identity timing. Multiple choices need an established choice; absent that, mark branch incomplete rather than emit all alternative representations.",
+    "limits": "No runtimeMediaComposer choice or externallycached representation preference was established; no claim every RSET type behavesidentically throughallcallers."
+  },
+  "subclassMappingConclusion": {
+    "identityRangeClasses": [
+      "ASPI",
+      "PVOL",
+      "EQMB",
+      "TRKG",
+      "WARP"
+    ],
+    "identityButSelectionRequired": [
+      "RSET"
+    ],
+    "overriddenUnestablishedRangeClasses": [
+      "MASK",
+      "STRB",
+      "REPT"
+    ],
+    "scope": "These specificnativevtableentries establish inherited range math; arbitraryotherclasses mustnot acquire identitymapping bydefault.",
+    "trackStartDefault": "Native serialized absentflag0x80 default0 nowestablished in separatetrackStartDefault entry; nonzerostart mapping remainsunestablished."
+  },
+  "trackStartDefault": {
+    "status": "Established for inspected native serialized TrackGroup path.",
+    "finding": "Absentflag0x80 leaves TrackInfo start-position word0. Reader zeroes TrackInfo for each track, conditionally overwrites start-position word only when flagbit7 present (layoutversion>=6). Earlierlayoutskipsread and likewise keepszero.",
+    "methodsInspected": [
+      "TrackInfo_t::TrackInfo_t()",
+      "ATrackGroup::GetAndReturnReadVersion(AStream*,AIODesc*,char*)"
+    ],
+    "anchors": [
+      "0x20fafc",
+      "0x1d8fb4",
+      "0x1d920c"
+    ],
+    "limits": "This establishes missingflag default0, not semantics of a nonzero stored start_pos. No newcorpuspass performed."
+  }
+}

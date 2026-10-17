@@ -85,15 +85,15 @@ namespace TestAvb
 	};
 
 	inline QByteArray component(bool big, const QByteArray &name = {}, quint32 attributes = 0,
-								quint32 precomputed = 0)
+								quint32 precomputed = 0, qint16 mediaKind = 1)
 	{
 		Bytes b(big);
 		b.tags(2, 3);
 		b.u32(0);
 		b.u32(0); // left/right BOB
-		b.u16(1);
+		b.u16(quint16(mediaKind));
 		b.u32(25);
-		b.u16(0); // picture, 25 * 10^0
+		b.u16(0); // 25 * 10^0
 		b.string(name);
 		b.u16(0xffff); // effect ID absent
 		b.u32(attributes);
@@ -105,8 +105,10 @@ namespace TestAvb
 	inline QByteArray composition(bool big, const QByteArray &id = Master,
 								  const QByteArray &name = "Binary master", quint32 attributes = 0,
 								  const QVector<quint32> &tracks = {}, int usage = 0, bool typed = true,
-								  quint32 descriptor = 0, int mobType = 2)
+								  quint32 descriptor = 0, int mobType = 2,
+								  const QVector<qint16> &trackNumbers = {})
 	{
+		Q_ASSERT(trackNumbers.isEmpty() || trackNumbers.size() == tracks.size());
 		Bytes b(big);
 		b.data = component(big, name, attributes);
 		b.tags(2, 8);
@@ -114,11 +116,11 @@ namespace TestAvb
 		b.u32(100);
 		b.u32(0);
 		b.u32(quint32(tracks.size()));
-		for (quint32 reference : tracks)
+		for (qsizetype i = 0; i < tracks.size(); ++i)
 		{
 			b.u16(5);
-			b.u16(1);
-			b.u32(reference);
+			b.u16(quint16(trackNumbers.isEmpty() ? 1 : trackNumbers[i]));
+			b.u32(tracks[i]);
 		}
 		b.tags(2, 2);
 		b.legacyWords(id);
@@ -135,15 +137,16 @@ namespace TestAvb
 		return b.data;
 	}
 
-	inline QByteArray sourceClip(bool big, const QByteArray &id = Source, bool typed = true)
+	inline QByteArray sourceClip(bool big, const QByteArray &id = Source, bool typed = true,
+								qint16 trackNumber = 1, qint16 mediaKind = 1)
 	{
 		Bytes b(big);
-		b.data = component(big);
+		b.data = component(big, {}, 0, 0, mediaKind);
 		b.tags(2, 1);
 		b.u32(100);
 		b.tags(2, 3);
 		b.legacyWords(id);
-		b.u16(1);
+		b.u16(quint16(trackNumber));
 		b.u32(25);
 		if (typed)
 		{

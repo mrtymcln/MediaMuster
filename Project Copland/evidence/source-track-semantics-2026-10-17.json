@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "recordedDateLocal": "2026-10-17",
+  "timezone": "Australia/Sydney",
+  "purpose": "Bounded read-only source-track semantics audit before the Copland source-track-links implementation.",
+  "nativeBinary": {
+    "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+    "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+    "bytes": 73527536,
+    "beforeAndAfterMtimeNs": "1787793516000000000",
+    "sizeAndMtimeUnchanged": true,
+    "architecture": "arm64",
+    "universalSliceOffset": 37027840,
+    "anchors": [
+      {
+        "symbol": "ASourceClip::GetSrcTrack()",
+        "address": "0x1dd5bc",
+        "finding": "Reads component kind and signed source-track number, then calls NewTrackLabel(short, short).",
+        "fileOffset": 38983100,
+        "bytesHex": "f44fbea9fd7b01a9fd430091f30300aab0a7fd97612ac179fd7b41a9f44fc2a801e00114"
+      },
+      {
+        "symbol": "AComponent::GetType()",
+        "address": "0x14748c",
+        "finding": "Loads the signed 16-bit component kind at object offset 0x60.",
+        "fileOffset": 38368396,
+        "bytesHex": "00c0c079c0035fd6"
+      },
+      {
+        "symbol": "NewTrackLabel(short, short)",
+        "address": "0x2555e0",
+        "finding": "Packs kind in the low 16 bits and track number in the high 16 bits.",
+        "fileOffset": 39474656,
+        "bytesHex": "203c1033c0035fd6"
+      },
+      {
+        "symbol": "ATrackGroup::FindTrackByLabel()",
+        "address": "0x214530",
+        "finding": "Compares the recorded track number and the child component's kind before returning a component.",
+        "comparisonFileOffset": 39208320,
+        "comparisonBytesHex": "085840791f01186be1000054f60300aa000040f9becbfc97083c00121f21336be0000054"
+      },
+      {
+        "symbol": "NumVideoTracks()",
+        "address": "0x2197f0",
+        "finding": "Compares component kind with 1.",
+        "comparisonFileOffset": 39229492,
+        "comparisonBytesHex": "16b7fc971f040071"
+      },
+      {
+        "symbol": "NumAudioTracks()",
+        "address": "0x21987c",
+        "finding": "Compares component kind with 2.",
+        "comparisonFileOffset": 39229632,
+        "comparisonBytesHex": "f3b6fc971f080071"
+      }
+    ],
+    "commands": [
+      "xcrun llvm-nm --arch=arm64 --defined-only --demangle \"$binary\"",
+      "xcrun llvm-objdump --macho --arch=arm64 --disassemble \"$binary\" | python3 -c 'import sys,re; ranges=[(0x1dd5bc,0x1dd5e0),(0x214530,0x2145d4),(0x2555e0,0x2555e8)]; [print(line,end=\"\") for line in sys.stdin if (m:=re.match(r\"\\s*([0-9a-f]+):\",line)) and any(a<=int(m[1],16)<b for a,b in ranges)]'"
+    ],
+    "limits": [
+      "Static instruction inspection supports track-number plus media-kind matching, not array-position matching.",
+      "FindTrackByLabel compares exactly; SearchForLabel has a number-zero wildcard. A universal SourceClip track-zero rule was not established.",
+      "Raw-short equality does not establish supported semantics for every arbitrary numeric media kind.",
+      "No Media Composer playback, timeline inspection or exact-media-set acceptance was performed."
+    ]
+  },
+  "genuineCorroboration": {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/8645 v1.avb",
+    "sha256": "45ec3861e9f471f7e1a67757bd7605befd782192a7cb8a5da493e3d6a86a62c8",
+    "bytes": 6913702,
+    "beforeAndAfterMtimeNs": "1778748844000000000",
+    "sizeAndMtimeUnchanged": true,
+    "reader": "Supplied pyavb, use_ext=False; secondary structural corroboration.",
+    "sourceClipObject": 32143,
+    "requestedTrackNumber": 3,
+    "requestedMediaKind": 2,
+    "targetObject": 48412,
+    "targetName": "10-X3-01C.new.02",
+    "targetTracks": [
+      {
+        "number": 1,
+        "kind": 1,
+        "component": 42955
+      },
+      {
+        "number": 1,
+        "kind": 2,
+        "component": 42952
+      },
+      {
+        "number": 2,
+        "kind": 2,
+        "component": 42950
+      },
+      {
+        "number": 3,
+        "kind": 2,
+        "component": 42948
+      }
+    ],
+    "matchingComponent": 42948,
+    "limit": "This is one recorded route, not proof of the complete physical media set used by the edit."
+  },
+  "applicationChanges": "None from this audit. Work-order choice is recorded; uncertain-link policy and lookup preparation remain pending user decisions.",
+  "originalsHandling": "Sources were inspected read-only; no native app launch or source-drive modification."
+}

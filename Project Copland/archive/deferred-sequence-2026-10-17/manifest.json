@@ -1,0 +1,77 @@
+{
+  "baseCommit": "f8f8c2bec39870928680a07ac4b229e6f4502bc5",
+  "patch": "before-removal.patch",
+  "patchSha256": "d00735c04ec2fb12627911e8fca710d3c6c58842fe34676f78da13f8b12d4068",
+  "scope": "Complete pre-removal tracked working diff plus untracked evidence. This also preserves earlier bin/source-track work; do not apply wholesale onto the cleaned working tree.",
+  "files": [
+    {
+      "path": "Project Copland/README.md",
+      "sha256": "b886b3c3c04a523accedfd1896f414b6f4dcde47f358796803a97935389a3d62"
+    },
+    {
+      "path": "Project Copland/metadata-reference.md",
+      "sha256": "0cc6da8dd8a6f4d6a238647d79a0d6296c3028dc21bd3c18f863b51550115e31"
+    },
+    {
+      "path": "docs/architecture.md",
+      "sha256": "27ebf156a1e23b1d4987daf87273ca05b83ac3447025d4692d7d76b6fe60e785"
+    },
+    {
+      "path": "docs/avb-parser.md",
+      "sha256": "41da1d960e6c4b4e67a7a43005b1d01f54c64637d6831208ca76b3d289eacff1"
+    },
+    {
+      "path": "docs/current-behaviour.md",
+      "sha256": "5b27ee5b7f7555f58a66c7fbc4e75db12fc26eb6a6822acae64d7dcb042f8b49"
+    },
+    {
+      "path": "docs/media-engine.md",
+      "sha256": "8b481282411cd746a0652f1a1df472a453e89c8fa5127e54d6959d2e13c745a8"
+    },
+    {
+      "path": "src/mediaengine/avbreferences.cpp",
+      "sha256": "f02c7bfb9a8c969ecf66450ba386e1213c8aa603ff12516e83a6be4290637bc5"
+    },
+    {
+      "path": "tests/testavb.h",
+      "sha256": "defa09037db659738c9683bd270ac97f609608fd45ad2caed011bcee9d808827"
+    },
+    {
+      "path": "tests/tst_avbparser.cpp",
+      "sha256": "3518b802ce7323cffd995e01073ee24c03e687891b063ef19e417c134059f808"
+    },
+    {
+      "path": "tests/tst_mediaengineavbreferences.cpp",
+      "sha256": "b108292b6b9db810c0ed02cae1145021048630cb3d1f82ab9ab2236709b1e4e8"
+    },
+    {
+      "path": "tests/tst_operationui.cpp",
+      "sha256": "92c44a419a163c98bdfca2a7c734c726952d2378839bdce851b98f671a3785e3"
+    },
+    {
+      "path": "Project Copland/evidence/angle-range-production-probe-2026-10-17.json",
+      "sha256": "41730c4712b2956cb529776339d572bd4cd1b488ae7dee41601568f2b6897fdd"
+    },
+    {
+      "path": "Project Copland/evidence/angle-range-semantics-2026-10-17.json",
+      "sha256": "3b4a4fb31e4ad6f7b9820a15191ce8a3284d12951b31aa798a8019fd3ea6b297"
+    },
+    {
+      "path": "Project Copland/evidence/relative-track-semantics-2026-10-17.json",
+      "sha256": "792513c6f19d8a9407450c91c445db5fe9920e8887d9758971a3178e5f99f3a1"
+    },
+    {
+      "path": "Project Copland/evidence/source-track-semantics-2026-10-17.json",
+      "sha256": "c9cd9df01d8a87a97ac2c65ca558b829dd1661ae565c7f92100685132b7ab076"
+    },
+    {
+      "path": "Project Copland/evidence/speed-map-semantics-2026-10-17.json",
+      "sha256": "0f0cc5dd855df28bc1970444492ad6f3aed2e92caa7c7c31fbcf3f81231f88cc"
+    },
+    {
+      "path": "Project Copland/evidence/transition-time-semantics-2026-10-17.json",
+      "sha256": "49d9d93b1da4ad79d86d4f91d4566354942a1a1e59c87200f5d30ee9761e491d"
+    }
+  ],
+  "verifiedAgainstBaseIndex": true
+}

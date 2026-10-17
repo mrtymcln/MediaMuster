@@ -66,6 +66,7 @@
 #include <array>
 #include <cmath>
 #include <functional>
+#include <utility>
 
 namespace
 {
@@ -210,7 +211,6 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	addLog(QtInfoMsg, QStringLiteral("app"), QStringLiteral("%1 %2 initialised on %3").arg(APP_NAME, APP_VERSION, platform));
 
 	refreshVolumes();
-	m_volumeManager->startMonitoring();
 
 #ifdef Q_OS_MAC
 	if (!VolumeManager::hasFullDiskAccess())
@@ -741,14 +741,6 @@ void MainWindow::onAbout()
 
 void MainWindow::setupConnections()
 {
-	connect(
-		m_volumeManager, &VolumeManager::volumesChanged, this,
-		[this](const QVector<VolumeInfo> &volumes)
-		{
-			rebuildVolumeList(volumes);
-		},
-		Qt::QueuedConnection);
-
 	connect(m_scanner, &MediaScanner::scanDiscovering, this, &MainWindow::onScanDiscovering,
 			Qt::QueuedConnection);
 	connect(m_scanner, &MediaScanner::scanProgress, this, &MainWindow::onScanProgress,
@@ -1313,14 +1305,16 @@ void MainWindow::addVolumePath(const QString &requestedPath)
 
 void MainWindow::refreshVolumes()
 {
-	// Give the next background poll the same baseline as the displayed list.
-	auto drives = m_volumeManager->detectVolumes();
-	m_volumeManager->seedLastVolumes(drives);
-	rebuildVolumeList(std::move(drives));
+	rebuildVolumeList(m_volumeManager->detectVolumes());
 }
 
 void MainWindow::rebuildVolumeList(const QVector<VolumeInfo> &volumes)
 {
+	m_detectedVolumePaths.clear();
+	m_detectedVolumePaths.reserve(volumes.size());
+	for (const VolumeInfo &volume : volumes)
+		m_detectedVolumePaths.append(volume.path);
+
 	QVector<VolumeInfo> listedVolumes = volumes;
 	QSet<QString> manualPathsToRestore = m_manualVolumes;
 	for (const VolumeInfo &volume : volumes)
@@ -1382,7 +1376,7 @@ void MainWindow::scanEverything()
 	if (!m_operations->isIdle() || m_volumeList->count() == 0)
 		return;
 	// The modal progress dialog handles cancellation and blocks new scan commands.
-	QStringList paths = m_volumeManager->allScannablePaths();
+	QStringList paths = m_detectedVolumePaths;
 	for (const QString &mp : m_manualVolumes)
 	{
 		if (!paths.contains(mp))
@@ -1398,12 +1392,11 @@ void MainWindow::startScanWithPaths(const QStringList &paths)
 		return;
 	// Detected volumes scan from their roots; manual paths resolve managed folders.
 	// Rebalance can supply a derived media root, so other paths use folder rules too.
-	const QStringList detected = m_volumeManager->allScannablePaths();
 	MediaScanner::Options opts;
 	opts.includeOmf = m_omfScanEnabled;
 	for (const QString &path : paths)
 	{
-		if (detected.contains(path) && !m_manualVolumes.contains(path))
+		if (m_detectedVolumePaths.contains(path) && !m_manualVolumes.contains(path))
 			opts.volumePaths.append(path);
 		else
 			opts.manualPaths.append(path);
@@ -2039,9 +2032,6 @@ void MainWindow::updateActivityUi()
 
 	if (!busy && m_progressDialog)
 		m_progressDialog->finish();
-
-	// Skip the 5 second polling tick when a scan or op is running.
-	m_volumeManager->setBusy(busy);
 }
 
 void MainWindow::updateSelectionActions()

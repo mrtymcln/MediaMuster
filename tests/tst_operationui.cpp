@@ -228,9 +228,13 @@ private slots:
 	void filter_tabs_keep_whole_inventory_counts_and_empty_views();
 	void optional_columns_match_csv_and_preserve_retained_sort();
 	void bin_loading_keeps_prepared_table_and_csv_metadata();
+	void bin_source_track_gap_keeps_proven_matches_and_console_warning();
 	void omf_gate_controls_scans_and_removes_legacy_rows();
 	void added_locations_require_managed_media_structure();
 	void volume_refresh_clears_selection_and_retains_unique_manual_paths();
+	void scan_commands_use_detected_and_manual_locations_data();
+	void scan_commands_use_detected_and_manual_locations();
+	void empty_detected_snapshot_keeps_only_manual_locations();
 	void startup_prunes_expired_journals_with_undo_disabled();
 	void unfinished_business_is_the_single_file_recovery_command();
 	void unfinished_business_merges_jobs_and_updates_choices();
@@ -1031,6 +1035,125 @@ void TestOperationUi::volume_refresh_clears_selection_and_retains_unique_manual_
 	window.m_volumeList->item(0)->setSelected(true);
 	window.rebuildVolumeList({volume});
 	QVERIFY(window.m_volumeList->selectedItems().isEmpty());
+}
+
+void TestOperationUi::scan_commands_use_detected_and_manual_locations_data()
+{
+	QTest::addColumn<bool>("scanAll");
+	QTest::newRow("all-locations") << true;
+	QTest::newRow("selected-locations") << false;
+}
+
+void TestOperationUi::scan_commands_use_detected_and_manual_locations()
+{
+	QFETCH(bool, scanAll);
+	const QString shared = path("locations/detected-and-manual");
+	const QString detected = path("locations/detected-only");
+	const QString manual = path("locations/manual/Avid MediaFiles");
+	const QString sharedFile = shared + "/Avid MediaFiles/MXF/1/shared.mxf";
+	const QString detectedFile = detected + "/Avid MediaFiles/MXF/1/detected.mxf";
+	const QString manualFile = manual + "/MXF/1/manual.mxf";
+	for (const auto &file : {sharedFile, detectedFile, manualFile})
+		QVERIFY(put(file, QByteArray(4096, '\0')));
+
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	window.setOmfScanEnabled(false);
+	window.m_operations->setUndoEnabled(false);
+	window.rebuildVolumeList({});
+	window.addVolumePath(shared);
+	window.addVolumePath(manual);
+	VolumeInfo sharedVolume;
+	sharedVolume.name = QStringLiteral("Detected and added");
+	sharedVolume.path = shared;
+	sharedVolume.hasAvidMedia = true;
+	VolumeInfo detectedVolume;
+	detectedVolume.name = QStringLiteral("Detected only");
+	detectedVolume.path = detected;
+	detectedVolume.hasAvidMedia = true;
+	window.rebuildVolumeList({sharedVolume, detectedVolume});
+	QCOMPARE(window.m_volumeList->count(), 3);
+	QVERIFY(window.m_manualVolumes.contains(shared));
+	QVERIFY(window.m_volumeList->selectedItems().isEmpty());
+	if (!scanAll)
+		for (int row = 0; row < window.m_volumeList->count(); ++row)
+		{
+			auto *item = window.m_volumeList->item(row);
+			const QString location = item->data(Qt::UserRole).toString();
+			item->setSelected(location == detected || location == manual);
+		}
+
+	QSignalSpy discovering(window.m_scanner, &MediaScanner::scanDiscovering);
+	QSignalSpy finished(window.m_scanner, &MediaScanner::scanFinished);
+	if (scanAll)
+		window.scanEverything();
+	else
+		window.scanSelected();
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
+	QTRY_VERIFY(window.m_operations->isIdle());
+	QSet<QString> scanned;
+	for (const auto &file : window.m_model->allFiles())
+		scanned.insert(file.mediaFilePath);
+	QSet<QString> expected{detectedFile, manualFile};
+	if (scanAll)
+		expected.insert(sharedFile);
+	QCOMPARE(window.m_model->rowCount(), expected.size());
+	QCOMPARE(scanned, expected);
+	// The manual Avid MediaFiles folder must use folder rules, not drive-root rules.
+	// Count the requested locations separately from later discovery of their subfolders.
+	QStringList requested;
+	for (const auto &arguments : discovering)
+		requested.append(arguments.first().toString());
+	QCOMPARE(requested.count(detected), 1);
+	QCOMPARE(requested.count(manual), 1);
+	QCOMPARE(requested.count(shared), scanAll ? 1 : 0);
+}
+
+void TestOperationUi::empty_detected_snapshot_keeps_only_manual_locations()
+{
+	const QString detected = path("locations/detected");
+	const QString manual = path("locations/manual/Avid MediaFiles");
+	const QString detectedFile = detected + "/Avid MediaFiles/MXF/1/detected.mxf";
+	const QString manualFile = manual + "/MXF/1/manual.mxf";
+	QVERIFY(put(detectedFile, QByteArray(4096, '\0')));
+	QVERIFY(put(manualFile, QByteArray(4096, '\0')));
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	window.setOmfScanEnabled(false);
+	window.m_operations->setUndoEnabled(false);
+	VolumeInfo volume;
+	volume.name = QStringLiteral("Detected media");
+	volume.path = detected;
+	volume.hasAvidMedia = true;
+	window.rebuildVolumeList({volume});
+	window.addVolumePath(manual);
+	QSignalSpy discovering(window.m_scanner, &MediaScanner::scanDiscovering);
+	QSignalSpy finished(window.m_scanner, &MediaScanner::scanFinished);
+	window.scanEverything();
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
+	QTRY_VERIFY(window.m_operations->isIdle());
+	QSet<QString> scanned;
+	for (const auto &file : window.m_model->allFiles())
+		scanned.insert(file.mediaFilePath);
+	QCOMPARE(window.m_model->rowCount(), 2);
+	QCOMPARE(scanned, QSet<QString>({detectedFile, manualFile}));
+
+	// A completed Refresh with no detected drives replaces the previous snapshot.
+	window.rebuildVolumeList({});
+	QCOMPARE(window.m_volumeList->count(), 1);
+	QCOMPARE(window.m_volumeList->item(0)->data(Qt::UserRole).toString(), manual);
+	QVERIFY(window.m_volumeList->selectedItems().isEmpty());
+	discovering.clear();
+	window.scanEverything();
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 2, 15000);
+	QTRY_VERIFY(window.m_operations->isIdle());
+	QCOMPARE(window.m_model->rowCount(), 1);
+	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, manualFile);
+	QStringList requested;
+	for (const auto &arguments : discovering)
+		requested.append(arguments.first().toString());
+	QCOMPARE(requested.count(manual), 1);
+	QCOMPARE(requested.count(detected), 0);
 }
 
 void TestOperationUi::added_locations_require_managed_media_structure()
@@ -2104,6 +2227,79 @@ void TestOperationUi::bin_loading_keeps_prepared_table_and_csv_metadata()
 		QTRY_VERIFY(source.isNull()); // Populated table rows cannot pin an unloaded bin graph.
 	window.onScanFinished(prepared);
 	check(prepared);
+}
+
+void TestOperationUi::bin_source_track_gap_keeps_proven_matches_and_console_warning()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile uncertain;
+	uncertain.mediaFilePath = tmp.filePath("uncertain.mxf");
+	uncertain.fileMobId = MobId::format(TestAvb::Source);
+	uncertain.masterMobId = MobId::format(TestAvb::Master);
+	uncertain.clipName = QStringLiteral("Prepared uncertain clip");
+	uncertain.originalBin = QStringLiteral("Prepared original bin");
+	MediaFile proven = uncertain;
+	proven.mediaFilePath = tmp.filePath("proven.mxf");
+	proven.fileMobId = MobId::format(TestAvb::Other);
+	proven.clipName = QStringLiteral("Prepared proven clip");
+	window.onScanFinished(TestMediaFile::seeded({uncertain, proven}));
+	const auto prepared = window.m_model->allFiles();
+	window.onFilterByBins();
+	auto *dialog = window.m_binFilterDialog;
+	QVERIFY(dialog);
+	QSignalSpy loaded(dialog, &AvbFilterDialog::binLoaded);
+	QSignalSpy warnings(dialog, &AvbFilterDialog::loadWarning);
+	QSignalSpy errors(dialog, &AvbFilterDialog::loadError);
+	auto sequenceId = TestAvb::Master;
+	sequenceId[31] = char(quint8(sequenceId[31]) ^ 1);
+	TestAvb::Document document;
+	document.objects = {
+		{"ABIN", TestAvb::bin(false, {2})},
+		{"CMPO", TestAvb::composition(false, sequenceId, "Edit with an unclear track", 0, {4, 5}, 0, true, 0, 1, {1, 2})},
+		{"CMPO", TestAvb::composition(false, TestAvb::Master, "Referenced master", 0, {6})},
+		{"SCLP", TestAvb::sourceClip(false, TestAvb::Master, true, 0)}, // Track zero has no established meaning here.
+		{"SCLP", TestAvb::sourceClip(false, TestAvb::Other)},
+		{"SCLP", TestAvb::sourceClip(false, TestAvb::Source)}};
+	TestAvb::appendFileSource(document, TestAvb::mediaLocator(false, TestAvb::Source), TestAvb::Source);
+	TestAvb::appendFileSource(document, TestAvb::mediaLocator(false, TestAvb::Other), TestAvb::Other);
+	const auto binPath = TestAvb::write(tmp.filePath("unclear-track.avb"), document.bytes());
+	QVERIFY(!binPath.isEmpty());
+	window.m_console->clear();
+	dialog->addBinFromFile(binPath);
+	QTRY_COMPARE(loaded.count(), 1);
+	QCOMPARE(errors.count(), 0);
+	QCOMPARE(warnings.count(), 1);
+	QCOMPARE(warnings.first().first().toString(), binPath);
+	QVERIFY(warnings.first().at(1).toString().contains(QStringLiteral("source-track")));
+	const auto bin = qvariant_cast<AvbBin>(loaded.first().first());
+	QVERIFY(bin.isUsable());
+	QVERIFY(!bin.coverageComplete);
+	QCOMPARE(bin.mediaFileIds.fullIds, QSet<QString>{proven.fileMobId});
+	QTRY_VERIFY(window.m_binFilterActive);
+	QTRY_COMPARE(window.m_proxy->rowCount(), 1);
+	QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, proven.mediaFilePath);
+	const auto console = window.m_console->toPlainText();
+	QVERIFY(console.contains(QStringLiteral("Bin loaded with incomplete results: ") + binPath));
+	QVERIFY(console.contains(QStringLiteral("source-track")));
+	QCOMPARE(window.m_model->rowCount(), prepared.size());
+	const MediaCsv::Options options{true};
+	for (int row = 0; row < prepared.size(); ++row)
+	{
+		const auto &actual = window.m_model->fileAt(row);
+		QCOMPARE(actual.kelpieId, prepared[row].kelpieId);
+		QCOMPARE(MediaCsv::rowLine(actual, options), MediaCsv::rowLine(prepared[row], options));
+		for (int field = 0; field < int(MediaProperty::Count); ++field)
+		{
+			const auto &status = actual.metadataStatus.field(MediaProperty(field));
+			const auto &before = prepared[row].metadataStatus.field(MediaProperty(field));
+			QCOMPARE(status.readState, before.readState);
+			QCOMPARE(status.agreement, before.agreement);
+			QCOMPARE(status.hasSelectedValue, before.hasSelectedValue);
+			QVERIFY(status.selectedSource == before.selectedSource);
+		}
+	}
 }
 
 void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()

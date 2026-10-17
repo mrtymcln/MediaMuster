@@ -13,6 +13,15 @@ one selected MasterMobId per physical file, complete Source Path replacement,
 either-local-database reference rules, the two database flags/views and scan
 cancellation below.
 
+**V1 scope, confirmed 17 October 2026:** simplify existing features and defer
+exact sequence filtering until after V1 (C100). Keep Whole Bin filtering and its
+existing Intersect/Subtract/Add chain. Stop the camera, speed-curve and
+proxy/relative-link expansion. Earlier sequence requirements below remain future
+design decisions, not V1 release blockers. The user approved all K/R keep/remove
+items below. The recovery patch is saved, and the exact-cut/camera engine and
+dormant sequence-picker scaffolding have been removed while retaining the
+earlier bin and source-track improvements. Verification is recorded below.
+
 This document contains the working decision ledger and proposed implementation
 order. Confirmed requirements, proposals and open questions
 must remain distinguishable. An unanswered question is not permission to invent a
@@ -60,8 +69,9 @@ stages below do not authorize the AI to resolve new decisions autonomously.
 
 ## Product contract at a glance
 
-The three required jobs are a physical-media metadata inventory, existing file
-operations, and bin/sequence filtering. Every admitted physical file gets one row,
+The three required V1 jobs are a physical-media metadata inventory, existing file
+operations, and Whole Bin filtering. Exact chosen-sequence filtering is deferred
+under C100. Every admitted physical file gets one row,
 including files absent from databases or with damaged/empty headers. Inventory
 comes from disk discovery; metadata comes from PMR, MDB and headers under the
 compiled preferred/fallback policy. Loaded AVBs supply filtering references only.
@@ -79,12 +89,12 @@ with their existing operation safeguards. Preserve the agreed selection, CSV,
 sorting, column layout, helper, count, precompute-filter and diagnostic workflows.
 The decision table below is authoritative for their exact behavior.
 
-Use one combined Bin/Sequence dialog. Keep initial Auto Intersect, union checked
-sequences, and require both bin and sequence restrictions to pass. Resolve each AVB
-independently; collect used tracks/angles, placed muted media, and referenced
-originals plus renders. Removing a bin releases its data and recalculates its
-contributions. Rescanning keeps bins loaded but resets their filters. Active empty
-results and failed loads follow C89–C91; incomplete results go to Console.
+Keep the existing bin workflow and initial Auto Intersect. Resolve each AVB
+independently. Removing a bin releases its data and recalculates its contributions;
+rescanning keeps bins loaded but resets their filters. Failed loads and valid
+unmatched bins follow C89/C91; incomplete results go to Console. The combined
+Bin/Sequence dialog, checked-sequence union/AND rules and exact used-track/angle
+acceptance belong to the deferred sequence work under C100.
 
 The principal simplification is retaining selected compact values, necessary
 identities and validation/operation receipts rather than complete evidence graphs,
@@ -112,7 +122,7 @@ by this requirements review. See [implementation planning](#implementation-plann
 | C03 | Every physical media file within the agreed discovery boundaries belongs in the inventory. | Database membership cannot decide whether a physical file gets a row. C30/C31 retain the current filesystem discovery scope; damaged or empty admitted media still receives a row. |
 | C04 | Keep Copy, Move, Delete and Rebalance. | The user likes the current implementation. Changes to operation behavior require separate decisions. |
 | C05 | Keep bin filtering with Intersect, Subtract and Add. | A bin containing two master clips backed by six physical files must select those six files from the inventory. |
-| C06 | Support choosing a sequence from a loaded bin and filtering by its actual physical media references. | If V01 and A01 are used but A02 is not, select V01/A01 only. Other tracks belonging to that master must not be included merely through a shared master identity. C23/C24 settle group angles and input/render inclusion; C26/C29 settle independent bin resolution and muted/disabled tracks. Genuine-file validation remains necessary. |
+| C06 | After V1, support choosing a sequence from a loaded bin and filtering by its actual physical media references. | Deferred under C100. If V01 and A01 are used but A02 is not, select V01/A01 only. Other tracks belonging to that master must not be included merely through a shared master identity. C23/C24 settle group angles and input/render inclusion; C26/C29 settle independent bin resolution and muted/disabled tracks. Genuine-file validation remains necessary for that future feature. |
 | C07 | Let the coder configure preferred and fallback sources for each table field for the next app build/scan. | Keep the current or similar selection policy. Any implementing AI's policy choice or change requires the user's decision under C98; build-time control does not authorize autonomous selection. Existing results do not need source switching without rereading. Retain small validation checks without permanent evidence histories. |
 | C08 | Handle 300,000 media-file headers on NEXIS without PMR/MDB databases. | Database-free Interplay storage is a primary acceptance workload. |
 | C09 | Aim for application peak memory below 10 GB while keeping scans and ordinary use lean. | Workstations commonly have 64 GB. Measure scanning, rescanning, bin loading and subsequent use. C86 clarifies that this is an optimization target, not a strictly enforced runtime ceiling or an automatic-stop threshold. |
@@ -206,6 +216,7 @@ by this requirements review. See [implementation planning](#implementation-plann
 | C97 | Use this Mac for initial comparisons, then validate the large workload on NEXIS later. | Record the actual Mac/build/storage/workload and whole-process measurements. Local comparisons do not replace the 300,000-file database-free NEXIS acceptance workload under C08. The representative NEXIS deployment details can be established at that later validation stage; no scan-time target has been answered by this choice. |
 | C98 | Every implementing AI must always ask the user at every decision or crossroad; never assume or choose for them. | Follow the [mandatory decision rule](#mandatory-rule-for-every-implementing-ai): explain a few realistic options in plain language, with pros/cons and a recommendation; wait for the user's explicit choice and record it before dependent work. Applies to delegated AIs and technical choices as well as product decisions. |
 | C99 | During beta, never sacrifice code improvements or simplicity to preserve backwards compatibility. | The user explicitly removes compatibility with saved Undo/recovery journals as a constraint. Current jobs still require correct operation safeguards, Undo and recovery; older beta formats need no aliases or migration. Exact Avid file-format names remain required for reading existing media and are a separate concern. |
+| C100 | Prioritize simplification of existing features for V1; defer exact sequence filtering until after V1. | Chosen 17 October 2026. Keep Whole Bin filtering and its existing multi-bin chain. Stop camera/speed/proxy/relative-link feature expansion. C06, C18, C20, C21, C23–C25, C28 and C90 are future sequence requirements, not V1 acceptance gates. Sequence-specific parts of other requirements are likewise deferred; their existing-bin, inventory and operation obligations remain. This changes release scope, not permission to silently delete or roll back tested shared code. |
 
 ## Capabilities identified as unnecessary
 
@@ -319,8 +330,10 @@ These describe today's code, not Copland requirements:
 - Live AVB filtering uses recovered file identities; loaded bins no longer supply
   inventory-row names or Original Bin values. Whole Bin starts from the root bin's
   listed clips/sequences and follows their media references within that AVB.
-  Multiple bins still combine through the existing filter chain. Sequence discovery
-  runs even though the live sequence picker is disabled.
+  Multiple bins still combine through the existing filter chain. SourceClip links
+  match track number and audio/video kind; linked camera alternatives and nested
+  portions remain broad Whole Bin references. Exact timing and chosen-sequence
+  discovery/selection machinery have been removed under the approved K/R scope.
   See [reference resolution](../src/mediaengine/avbreferences.cpp) and
   [bin loading](../src/avbbinloader.cpp).
 - AVB filtering operates on already scanned rows; even Add includes matching rows
@@ -334,15 +347,15 @@ These describe today's code, not Copland requirements:
   [bin loading](../src/avbfilterdialog.cpp) and
   [filter steps](../src/avbfilter.h).
 - Loading bins currently creates a first whole-bin Intersect automatically when
-  no chain exists. C22 retains this behavior, while C18 allows loaded bins to supply
-  sequences after steps are cleared or removed. See
+  no chain exists. C22 retains this behavior. C18's independent sequence controls
+  are deferred under C100. See
   [bin dialog](../src/avbfilterdialog.cpp).
 - The earlier nine-bin probe retained 132,165 objects and 2,988,319 individual
   properties from 14.5 MB of AVBs. Its 9.1 MB sequence bin reached about 1.1 GB
   process peak in a Debug x86_64 probe under Rosetta, including reader/index and
   reporting work. This is a measured reason to review retained AVB detail, not an
   app benchmark or a predicted Copland saving. C16's table-enrichment consumer
-  has been removed; filtering still needs sequence/reference structure. See
+  has been removed; filtering still retains decoded clip/reference structure. See
   [the bounded corpus measurement](../Project%20Canon/avb-corpus-check-2026-10-04.md#timing-and-memory-observations).
 - Discovery currently scans recognised managed-media layouts rather than every
   folder on a drive. Adding `Avid MediaFiles/MXF/1` resolves to the MXF root and
@@ -746,14 +759,14 @@ saving has been established for removing these controls.
 
 | Capability | Current behavior | Cost / qualification |
 | --- | --- | --- |
-| Volume discovery | Checks mounted drives and known Avid locations every five seconds, off-thread while idle; pauses during scans/operations and catches up when they finish. Display-affecting changes update the sidebar; unchanged polls do not rebuild it. Explicit Refresh is available. | C60 removes both timer and post-busy catch-up polling/updates from the target, retaining startup discovery and manual Refresh. Probes mounts/storage and directory presence, not media headers. C69 retains clearing sidebar selections when refreshing, including manually added entries. |
+| Volume discovery | Checks mounted drives and known Avid locations at startup and on explicit Refresh Volumes. MainWindow retains only the detected paths; Scan All combines them with session manual paths. There is no timer, background worker, post-busy catch-up or empty-cache rediscovery during scanning. | C60 removes automatic checking. Discovery probes mounts/storage and directory presence, not media headers; scan-time admission and file validation remain separate. C69 retains clearing sidebar selections on Refresh, including manually added entries. |
 | Folder entry / scan controls | Add Folder and directory drag/drop currently accept recognized roots, eligible leaves and direct containing parents, selecting them without starting a scan. Scan Selected uses sidebar selections; Scan All uses detected locations plus manually added entries. | C68 keeps both scan buttons; C71–C73 retain adding without scanning, session-only entries without removal/saved preferences, and both entry controls. C76 narrows their accepted inputs to managed folders themselves or drives with managed folders at their root. C30/C31 still define admitted contents and whole-root scan scope. |
 | Table conveniences | Header sorting, manual widths, drag reordering and explicit Resize Columns to Fit. Scans preserve widths; widths/order reset on app restart. | Keep all four under C62–C65 with current session behavior. Uses retained row values; Qt samples displayed content for fitting. No ordinary-column visibility chooser or saved layout/preferences was found. Saved width/order preferences are not required. |
 | Tabs / totals | At review time empty convenience tabs hid automatically, with a Show All Filter Tabs override. The 16 October presentation checkpoint keeps enabled tabs visible and removes that override. Tab/project totals describe the whole inventory; status totals describe visible rows and visible selections. | C66/C67 require always-visible enabled tabs. C74 retains whole-inventory tab counts, C75 retains visible/selected counts and sizes, and C77 retains Project hover count/size totals. Removing the visibility controls does not remove tally calculations. |
 | Reveal / clipboard | Reveal and double-click open the first visible selected file in Finder/Explorer. Copy Cell copies the clicked display value; Copy Path copies all visible selected paths, separated by newlines. | Keep all four under C61. Uses existing row values without metadata rereading. Copy Path temporarily collects selected rows and path text. Multi-file Reveal is not being proposed. |
 | Filter shortcuts | Chips clear their associated restriction; any bin chip clears the whole bin chain while keeping bins loaded. Escape currently clears Search, Project selections and the type tab, leaving bin/precompute-detail filters. | C78 changes main-window Escape to Search-only. C79 retains Bin-tag whole-chain clearing, leaving bins loaded and checked sequences active. Future sequence controls must respect C18/C21/C56. |
 
-See [volume polling](../src/volumemanager.cpp#L55),
+See [explicit volume discovery](../src/volumemanager.cpp),
 [sidebar rebuild](../src/mainwindow.cpp#L1348),
 [folder entry](../src/mainwindow.cpp#L1305),
 [table setup](../src/mainwindow.cpp#L433),
@@ -765,15 +778,14 @@ See [volume polling](../src/volumemanager.cpp#L55),
 [Escape](../src/mainwindow.cpp#L894) and
 [filter chips](../src/mainwindow.cpp#L2254).
 
-Removing periodic monitoring must also remove its automatic `setBusy(false)`
-catch-up; disabling the timer alone would leave post-scan/operation polling.
-Startup and explicit Refresh detect locations and seed the displayed cache. Scan
-All and scan-path classification reuse cached detected paths, with a fresh-detection
-fallback only when that cache is empty. This is separate from checking current
-files/admission within a chosen scan location. See
-[post-busy polling](../src/volumemanager.cpp#L45),
-[activity wiring](../src/mainwindow.cpp#L2087) and
-[scan path cache](../src/volumemanager.cpp#L243).
+C60 removes both periodic monitoring and post-scan/operation catch-up checking.
+Startup and explicit Refresh detect locations, replace the main window's detected
+path list (including a valid empty result), and rebuild the sidebar. Scan All and
+scan-path classification reuse those paths without rediscovering mounts. Scan All
+also retains the existing session manual-path set, including retries of paths
+hidden after a Refresh. This is separate from current file/admission validation
+inside a chosen scan location. See [volume discovery](../src/volumemanager.cpp)
+and [Refresh/scan consumers](../src/mainwindow.cpp).
 
 Manual folder entry fills a concrete discovery gap: automatic system-drive
 discovery probes known Avid bases rather than recursively searching user/archive
@@ -791,7 +803,7 @@ longer pass `canScanPath`. Their paths remain in the manual set, so Scan All can
 retry a manual path no longer displayed and report an unavailable/unsupported
 scope. C72 retains the current session list without a removal control or saved
 preferences. No new unavailable-entry lifetime policy has been requested. See
-[known bases](../src/volumemanager.cpp#L105),
+[known bases](../src/volumemanager.cpp),
 [manual root resolution](../src/mediascanner.cpp#L56),
 [directory drop](../src/volumelistwidget.cpp#L75),
 [duplicate entry](../src/mainwindow.cpp#L1315),
@@ -1098,6 +1110,10 @@ Blank presentation alone does not decide whether more reading is needed.
 
 ## Bin/sequence interface
 
+**Release scope:** the sequence UI and sequence-specific behavior in this section
+are deferred until after V1 under C100. Existing Whole Bin behavior, independent
+bins and bin-rule lifetime requirements remain in the V1 simplification review.
+
 Confirmed: one dialog with separate Loaded Bins and Loaded Sequences lists. Loading
 populates both lists and retains the current initial Auto Intersect. Bin operations
 form their ordered chain; sequence checkboxes independently restrict the inventory.
@@ -1157,10 +1173,13 @@ C29. Rescanning keeps bins loaded and resets bin/sequence restrictions under C56
 
 ## Group/sequence groundwork
 
-The current reader stores `Selector.selected` and checks its index. The reference
-resolver follows every outgoing branch rather than using that selection or the
-requested source track to restrict traversal. An authored selector test sets
-angle 0 as selected but expects both angles' media. See
+This is groundwork for the feature deferred under C100. The current reader stores
+`Selector.selected` and checks its index, but Whole Bin follows all linked camera
+alternatives and the whole requested source track. SourceClip links still match
+recorded track number and media kind. The later camera/range checkpoint below is
+historical: its exact timing engine and dormant sequence API were removed after
+the user approved all K/R items. The saved patch retains that work outside the
+active V1 app. See
 [component reading](../src/mediaengine/avbcomponents_p.cpp),
 [reference traversal](../src/mediaengine/avbreferences.cpp) and
 [reference tests](../tests/tst_mediaengineavbreferences.cpp).
@@ -1177,8 +1196,8 @@ objects and 34 usage-4 compositions. Selected indices are 0 for 223 selectors,
 1 for 30 and 2 for eight; 195 selectors have two tracks and 66 have three.
 This supplies real structures for validation, replacing the earlier absence of
 selector specimens. It does not establish which exact physical files the edit
-uses: current traversal still follows every branch. Compare edited angles and
-source tracks against Avid's actual edit before claiming C06/C23 correct.
+uses. Compare edited angles and source tracks against Avid's actual edit before
+claiming the deferred C06/C23 feature correct.
 No runtime or memory saving is claimed from this inspection.
 
 ## Investigation: self-contained AVB references
@@ -1302,6 +1321,140 @@ values, provenance and limits. Lack of a specimen is not proof of impossibility,
 but hypothetical disagreements must not justify broad permanent evidence retention.
 
 ## Implementation planning
+
+### V1 simplification scope reset — 17 October 2026
+
+The user chose **Simplification for V1; defer sequences** under C100. Resume
+cleanup of existing inventory, operations and Whole Bin filtering. Do not resume
+camera/speed/proxy/relative-link development or Media Composer used-set research
+merely because earlier checkpoints list it as outstanding.
+
+The pre-removal code review found that Whole Bin used the exact timeline
+machinery for its listed editing sequences: `AvbBinLoader::load()` requests
+`EntireBin`, and the resolver enables timeline processing for those roots.
+`kSequenceFilter` did not guard that path. Deferring the picker alone therefore
+would not remove the newly added complexity. The user answered: **"Rip it out, but
+keep the better bin filtering code we did. Propose each thing to undo/keep so I
+can be sure"**. This approves the removal direction, with item boundaries to be
+reviewed before code edits. Preserve the earlier listed-root, independent-bin
+and source-track work; do not restore the whole mixed working diff.
+
+The user **approved all K/R items**, asked to save the patch first, and authorized
+removal while keeping the bin-filtering improvements. The following boundary is
+approved; implementation and verification are recorded below.
+
+| Item | Proposed action | Behavior / code boundary |
+| --- | --- | --- |
+| K1 | Keep listed-item Whole Bin roots. | Start with the clips/sequences actually listed in the ABIN/BINF document. Loose locators and unrelated internal compositions do not become roots. |
+| K2 | Keep independent bins and the existing multi-bin chain. | One AVB per resolver, no cross-bin borrowing, with Intersect/Subtract/Add combining results as today. |
+| K3 | Keep source-track number and audio/video-kind matching. | A requested A2 follows recorded A2; V1 and A1 are distinct. Match as needed, with no extra prepared track index. |
+| K4 | Keep separate track requests, duplicate prevention and simple cycle termination. | One A1 visit must not suppress A2 through the same master. Listed masters start unrestricted and retain all their tracks. Keep object-plus-track visit keys and output deduplication; remove only the later excerpt/active-exit machinery. |
+| K5 | Keep reference safeguards and ordinary dependencies. | Preserve identity and descriptor checks, ambiguous/missing-track refusal, independently established matches with Console notices, explicit original/render routes, placed muted/disabled media, cancellation and failed/changed-load protections. This does not claim the unfinished C11 unload/recalculation work is complete. |
+| K6 | Keep the binary reader and research records. | Existing SLCT/TNFX/SPED/TRKR field decoding is pre-existing format support, not the new timeline selector. Keep physical Duration/Frame Rate and the agreed ID terminology. Evidence JSON files are documentation, not runtime caches. |
+| R1 | Remove selected-camera pruning. | Whole Bin follows linked group alternatives rather than interpreting `Selector.selected` to exclude unused cameras. It may include spare angles. |
+| R2 | Remove used-excerpt filtering. | Drop `Visit::Span`, excerpt requests, clip-length calculations, sequence-position intersections and empty-span exclusions. Follow the whole referenced source track, including nested portions outside the used excerpt. |
+| R3 | Remove transition timing mathematics. | Drop overlap/cutpoint calculations used to narrow excerpts. Continue following explicitly linked inputs and rendered output without determining which frames play. |
+| R4 | Remove speed and cross-clock mapping. | Drop constant forward/reverse speed, phase, source-start/track-origin range shifts, edit-rate conversion and rounding for bin traversal. This does not remove physical-media rate/duration metadata. No saved-curve/proxy implementation landed in the abandoned next checkpoint. |
+| R5 | Remove timing-only gap rules and their exceptions. | Drop playback-use side-reference checks, representation-choice exclusions, scalar-control exceptions and timing-gap suppression state. Keep ordinary missing/unreadable/ambiguous reference notices under K5. Broader linkage coverage must not be described as exact playback coverage. |
+| R6 | Remove exact-timeline tests and unused helpers; update active documentation. | Remove or replace camera/excerpt/transition/speed/clock expectations with broad Whole Bin expectations. Preserve listed-item, independent-bin, source-track, cycle, identity, descriptor, original/render, cancellation, loader and UI controls. Preserve prior scan/table/CSV/operation checks. |
+| R7 | Additionally remove dormant chosen-sequence scaffolding. | The user explicitly approved this cleanup of older code: remove `AvbSequenceEntry`, `AvbSelection`, `sequences()`, the unused feature flag and sequence-only tests; expose Whole Bin resolution directly. Keep listed sequences as Whole Bin starting items and retain their decoded Avid object identities. |
+
+Before targeted removal, the current implementation/tests and untracked research
+evidence were saved in [the recovery archive](archive/deferred-sequence-2026-10-17/README.txt).
+`before-removal.patch` was checked against a temporary index at base commit
+`f8f8c2bec39870928680a07ac4b229e6f4502bc5`; the manifest records original file
+hashes and patch SHA-256 `d00735c04ec2fb12627911e8fca710d3c6c58842fe34676f78da13f8b12d4068`.
+The separate unimplemented proxy-test patch is also preserved there. This is a
+recovery artifact, not compiled code. Do not retain an alternate timeline engine or
+a new switch in the V1 app. The normal reader still reads AVBs; the resolver no
+longer calculates exact edit usage. Verify the retained source-track and Whole
+Bin behavior after removal. Existing completed scan/CSV/compact-record/identity
+work stays outside this removal.
+
+Implemented and verified 17 October 2026. All approved K1–K6/R1–R7 items are
+complete. The resolver now has one Whole Bin entry point and retains only the
+object plus source-track request for traversal. The exact timing/camera helper,
+excerpt/clock state, timing-only gates and dormant sequence list/selection API
+and flag are removed. The resolver is 548 lines, down from 1,124 before this
+removal; this is a code-size observation, not a measured memory/time saving.
+Existing low-level AVB readers, physical timing metadata and operation behavior
+were retained. The recovery patch and its recorded SHA-256 remain unchanged.
+
+Retained controls cover listed-item roots, independent bins, source-track number
+and kind, separate A1/A2 requests, ambiguity and descriptor safeguards, loops and
+deduplication, original/render and placed-disabled links, partial notices and
+cancellation. New Whole Bin controls establish that linked camera alternatives
+and later nested sections remain included while disconnected internal records
+remain excluded. The retained ten LE/BE source-track parser rows exercise the
+reader/loader boundary. Existing multi-bin dialog and prepared table/CSV/operation
+checks remain in the full suite.
+
+With pinned Qt 6.5.3, C++17 and Release arm64 on this Mac, the app and all configured
+targets build. All **39/39 registered suites pass** in the final full run
+(100.43 seconds); `git diff --check` passes. A read-only review found no remaining
+timeline/selection machinery in the resolver and confirmed the retained K-item
+boundaries. This does not claim exact edit-used media, Windows/NEXIS acceptance
+or a performance improvement. Loaded-bin graph ownership compaction remains a
+separate simplification, as do the previously agreed small removals below.
+
+The following previously agreed simplifications are still outstanding in the
+current code. This is a status review, not a newly approved work order.
+
+| Cleanup | Remaining work |
+| --- | --- |
+| C82: Monospace table control | Remove the table action, toggle/helper and feature flag. Keep Fusion and the Console's separate font use. |
+| C83: Full Disk Access | Remove the startup probe/warning, Help action and Settings helpers. Retain ordinary read-error reporting. |
+| C78: Main-window Escape | Clear Search without resetting Project or view. Preserve dialog dismissal and progress cancellation. |
+| C76: Manual folder inputs | Remove broad parent/MXF/leaf input acceptance; keep managed roots or drives with managed folders at their root. Preserve scan discovery within an admitted root. |
+| C88: Diagnostics retention | Replace whole-log age deletion with the agreed 30-day history retention, and prune old collected crash reports while protecting operation journals. |
+
+Loaded-bin/filter ownership compaction also remains: current filters retain
+parsed AVB graphs. Review only the data needed for existing Whole Bin behavior;
+deferred sequence features must not become prerequisites for that simplification.
+The existing scan/operation protections and representative workload validation
+remain required. None of this review demonstrates a performance improvement.
+
+### Automatic drive checking removal — 17 October 2026
+
+After the approved sequence removal, the user asked for the next simplification.
+The recommended checkpoint is C60: remove five-second idle volume checks,
+background watcher/timer, post-busy catch-up and automatic sidebar rebuilding.
+Keep detection at startup and explicit Refresh Volumes. Newly connected or
+disconnected drives appear after Refresh; media discovery and scan-time source
+validation remain separate. The alternative offered is the smaller C82/C83
+Monospace-table and Full Disk Access removals first. The user selected automatic
+drive checking removal, then chose **Keep drive paths with the window**.
+
+Read-only review found monitoring consumers only in MainWindow and no direct
+polling tests. Existing UI controls cover refresh selection clearing, manual-path
+preservation and manual admission. The user chose **Remove automatic drive
+checking**, ahead of the two menu-control removals. The shared timer/watcher,
+catch-up and signal wiring are removed. The user chose to retain only detected
+paths in MainWindow, replacing the old VolumeManager cache and
+`allScannablePaths()` empty-cache rediscovery. Startup/Refresh replaces that path
+list, including a valid empty result. Scan All and scan-path classification use
+those paths with the existing session manual-folder set. The separate full
+VolumeManager snapshot alternative was not chosen. No time/memory saving is
+claimed by this change.
+
+Implemented and verified 17 October 2026 with pinned Qt 6.5.3, C++17 and Release
+arm64 on this Mac. VolumeManager no longer owns a timer, watcher, busy state,
+post-busy callback, change signal, detection cache or empty-cache rediscovery
+helper. The window's detected-path list is replaced when the sidebar is rebuilt
+from startup/Refresh results. Scan All combines it with the existing manual set;
+Scan Selected and Rebalance retain their existing path-classification rules.
+Adding folders, manual retry lifetime, Refresh selection clearing and scan-time
+file/source validation remain unchanged. There is no new background mechanism.
+
+The app and all configured targets build. The scanner and operation-UI suites
+both pass (16.63 seconds combined), including new real-scan controls for Scan
+All's detected/manual union without duplicate requests, Scan Selected's folder
+rules, and an empty detection result replacing previously detected paths while
+retaining manual locations. Existing Refresh, busy/cancellation, bin-filter and
+prepared table/CSV/operation UI controls also pass in those suites.
+`git diff --check` passes. Call-site review confirms that detection is requested
+only by Refresh, which startup also invokes; neither scan command triggers it.
+No Windows/NEXIS acceptance or measured speed/memory improvement is claimed.
 
 ### Scan cancellation next — 17 October 2026
 
@@ -1596,6 +1749,240 @@ tracks/angles, completion of Stage 4, a measured time/memory saving, Windows CI
 success or representative NEXIS acceptance. The multiple-bin list and existing
 filter chain remain supported. The plan and active AVB/current-behavior documents
 now distinguish this implementation from the later sequence and ownership work.
+
+### Source-track links checkpoint — 17 October 2026
+
+After Whole Bin accuracy, the user chose **Source-track links first** rather than
+combining tracks, camera angles and used time ranges in one larger change. Follow
+each SourceClip's recorded source-track ID and media kind into the referenced
+composition, retaining separate visits when the same composition is requested
+through different tracks. Listed Whole Bin master/clip roots remain unrestricted;
+their full referenced media remains part of Whole Bin membership.
+
+Preserve C24's referenced original/render routes, C29's placed muted/disabled
+tracks, independent per-bin lookup, cancellation and qualified partial results.
+Camera-angle selection, used portions of nested edits, the combined picker and
+genuine Media Composer acceptance remain later work. This work-order choice does
+not yet settle how unknown or ambiguous track links should behave, or the internal
+traversal representation; present those implementation crossroads under C98
+before dependent changes. No source-track implementation or validation is claimed
+by this choice record alone.
+
+The bounded read-only [source-track semantics audit](evidence/source-track-semantics-2026-10-17.json)
+corroborates the required track number plus media kind in the installed Avid
+binary. `GetSrcTrack()` constructs that label, and `FindTrackByLabel()` compares
+both parts. Native audio/video counters establish kind 2/1 respectively. Fresh
+secondary parsing of the genuine bin reproduces the recorded A3 request and
+matching component; it is not Media Composer playback or exact-set validation.
+No universal track-zero wildcard or arbitrary unknown-kind interpretation is
+established. The bin and native library retain their size/modification stamps.
+
+Two implementation choices are pending: keep proven matches while excluding an
+uncertain track branch versus including possible tracks with incomplete coverage;
+and match already-read track lists as references are followed versus preparing a
+temporary track lookup first. The recommended path is proven matches only and
+as-needed matching, without a claimed measured performance advantage. No resolver
+change depends on these choices until the user answers under C98.
+
+The user chose **Include proven matches only** and **Match tracks as needed**.
+Use each SourceClip's known track number and audio/video kind to identify the
+requested composition track while following the already-read list. Keep separate
+temporary visits for different requests into the same object; do not prepare a
+second track index. Missing, unsupported or ambiguous track information must not
+fall back to every source track or a first match. Keep established media routes
+from other understood links, retain incomplete coverage and report the gap in
+Console. Keep recorded physical descriptor and original/render routes, without
+inventing a track mapping from descriptor order. Camera-angle/time-range work and
+the sequence picker remain outside this checkpoint.
+
+Implemented and verified 17 October 2026 (Sydney), with pinned Qt 6.5.3 in the
+Release arm64 build. SourceClip jumps carry a temporary positive track number and
+known audio/video kind; composition tracks are checked as needed using their
+recorded flags, index, component and kind. Distinct requests into one object remain
+separate visits, while output edge occurrences and file/terminal references remain
+deduplicated. No reader mapping, public selection API or upfront track index is
+added. Listed Whole Bin roots still begin unrestricted.
+
+Missing/conflicting/unreadable labels or lists, possible hidden matching slots,
+duplicate matching tracks and ambiguous SourceClip target identities cannot
+choose a first candidate or expand to all tracks. Other established routes remain
+usable with incomplete coverage and Console details. A failed track match cannot
+leak a file through the same composition's descriptor; uniquely matched tracks
+and fully established descriptor-only zero-track sources retain that route.
+Explicit original/render dependencies remain, without inferring a child-descriptor
+track mapping. Native Null/Filler references terminate before requiring a track
+label. A different recorded kind, including a timecode track sharing number 1,
+cannot match an audio/video request; the genuine OMF controls verify this case.
+
+The authored engine controls cover number versus list position, audio/video with
+the same number, repeated requests and cycles, Whole Bin breadth, 28 uncertainty/
+partial-evidence cases, descriptor leakage and conflicting identity fields. Ten
+LE/BE binary cases exercise the actual reader, loader and selected-sequence
+resolver. Genuine WAVE/AIFF-C OMF bins retain their exact file identities and
+complete coverage. A MainWindow regression verifies that an unclear track branch
+leaves an independent proven file in the filter, reports the gap in Console, and
+preserves prepared table/CSV values and compact status.
+
+The app and all configured Release targets build. All 39 registered suites pass
+in one full run (99.82 seconds); `git diff --check` passes. The plan and active
+architecture/behavior/AVB/metadata references are updated. Camera-angle selection,
+used time ranges, complete genuine-edit acceptance, the sequence picker and bin
+ownership compaction remain outstanding. No measured speed/memory improvement,
+Windows CI success or representative NEXIS acceptance is claimed.
+
+### Camera angles and used time ranges — 17 October 2026
+
+Historical checkpoint: its exact timing/camera implementation and tests were
+subsequently removed under the approved V1 K/R scope above. The saved patch and
+research receipts preserve the investigation; this section does not describe
+the active V1 resolver or a remaining V1 requirement.
+
+The user requested the next Stage 4 checkpoint, with plain explanations and
+questions at implementation decisions. They chose **Include transitions and
+speed changes now**, alongside selected cameras and used portions of nested
+edits, rather than completing ordinary cuts first. They chose **Proven media
+only; report the gap**: an uncertain time mapping must not expand to a whole
+source track. Keep independently established matches and explain incomplete
+coverage in Console under C27.
+
+At the start of this checkpoint the resolver remembered source-track requests but
+not requested time spans, and followed every Selector branch. A selected angle alone is insufficient:
+an excerpt of a nested edit must not include cameras used only outside that
+excerpt. Preserve the agreed Whole Bin breadth of listed masters/clips, all
+placed muted/disabled material under C29, independent bins, and explicitly
+referenced original/render routes under C24. No sequence picker is enabled by
+this investigation.
+
+The user chose **Separate temporary excerpt requests**: carry the requested
+track and portion with each temporary visit, keeping distinct excerpts into the
+same nested edit separate. Overlapping requests may repeat work; do not add range
+merging without a further decision. Neither alternative has a measured
+performance advantage. Native format/timing investigation establishes the bounded
+implemented mappings below. Genuine Media Composer edit comparison
+remains required before exact-set acceptance.
+
+The user chose **Clip-local frame/sample counts** over a shared exact-time scale:
+keep each excerpt in its own clip's units and convert at links using established
+Avid rules. This follows the native position/range interface without generalized
+fraction endpoints. Do not use rounded table rates or invent a rounding rule
+where native/source evidence is insufficient.
+
+The user chose **Recalculate lengths each time** over retaining a temporary
+per-object length lookup. Re-evaluate lengths as needed during traversal; retain
+only the active length-calculation guard needed to stop recursive cycles. No
+measured app-level performance advantage is claimed for either option.
+
+Implemented 17 October 2026. Temporary visits carry their own half-open portion
+and distinguish repeated excerpts, used editing timelines and listed clip/master
+breadth. The resolver follows each selected camera and the native disabled
+selector's placed original, intersects cuts and transition overlaps, and retains
+reached originals/renders. Source references convert directly to the selected
+child track's clock before adding its origin; ordinary composition descent uses
+floor/ceil endpoints. Offset-changing cycles terminate without inventing media.
+
+Constant SPED uses the verified native D/N, phase, reverse and fractional-upper
+mapping only when the required facts and absence of an active parameter mapping
+are established. Active/unreadable curves, unsupported MASK/STRB/REPT mapping,
+unestablished multiple RSET representation choices, relative TRKR references and
+fractional source-reference rounding retain incomplete coverage and Console
+details. They cannot expand uncertain nested edits to every source file. A
+directly established nonempty physical original/render can remain independently
+of an unavailable trim mapping. Empty or unproven-length SourceClips cannot use
+that route. Known numeric parameter controls with all object links null do not
+create false media gaps; arbitrary side pointers cannot establish edit use.
+
+The [native angle/range evidence](evidence/angle-range-semantics-2026-10-17.json)
+and [transition/time evidence](evidence/transition-time-semantics-2026-10-17.json)
+record exact binary anchors, genuine structural corroboration and limits. All
+five motion objects in the audited genuine bin have enabled mapping controls;
+they do not establish the constant-ratio branch. Full genuine edit acceptance,
+curve interpretation and the sequence picker remain outstanding. No measured
+speed/memory improvement or Windows/NEXIS acceptance is claimed.
+
+The final [read-only production probe](evidence/angle-range-production-probe-2026-10-17.json)
+reads the genuine 49,159-object bin completely and resolves its listed sequence
+without cancellation. Selector 33511 reaches selected child 11236 and excludes
+alternatives 11237/11238. The 663 unique FileMobIds are an incomplete reference
+set, not a physical-file count or acceptance target. Its 1,344 notices mainly
+concern unestablished filler-proxy/relative-track routes; they are not counts of
+missing media. Scalar numeric controls with null object links no longer produce
+false gaps. The source's SHA-256, size and modification time remain unchanged.
+
+Verified with pinned Qt 6.5.3, C++17 and Release arm64 on this Mac. The app and
+all configured targets build. All 39 registered suites pass in one full run
+(100.26 seconds), including operation/Undo/recovery, scan, table/CSV and bin UI
+coverage; `git diff --check` passes. Authored tests cover selected cameras,
+nested/disjoint excerpts, boundaries and empty clips, disabled originals,
+transition overlaps and invalid timing, constant forward/reverse speed with
+phase, unknown curves, mixed clocks/origins, cycles, metadata side-route
+rejection and scalar controls. Twenty new LE/BE binary cases exercise the actual
+reader/loader/resolver connection. These controls do not replace the outstanding
+genuine Media Composer used-set comparison.
+
+### Saved speed maps and relative-track links — 17 October 2026
+
+Historical/deferred investigation under C100. No saved-curve/proxy implementation
+landed; the preceding exact timing engine and unused sequence flag/API have since
+been removed under the approved K/R scope. Earlier choices below do not authorize
+renewed feature development for V1.
+
+The user requested the remaining speed curves and proxy/relative-track paths,
+with simple explanations and questions at decisions. The earlier choices remain
+in force: independently proven matches with Console gaps, separate temporary
+excerpts, clip-local frame/sample counts, and recalculated lengths without a
+per-object length cache. Keep listed-master Whole Bin breadth, independent bins,
+placed muted/disabled media and the disabled sequence-picker feature flag.
+
+Read-only native investigation distinguishes direct track components from
+`filler_proxy` bookkeeping. The resolving visitor skips a group's direct proxy
+edge, but a reached FILL can activate that track's proxy. A TRKR stores signed
+relative scope and track-slot offsets, not a FileMobId or an ordinary object
+pointer. Its meaning depends on the current enclosing path, media kind, clock
+and accumulated position. Walking every proxy or ignoring every proxy cannot
+establish actual media use.
+
+Native parameter GUID mapping now identifies saved source-position maps. All
+five audited genuine motion objects contain linear prepared position maps;
+their speed graphs use a different interpolation. Native parameter entry
+presence, rather than `ParameterItem.enable` alone, determines whether mapping
+exists. An inactive-looking item must not silently select the constant-ratio
+fallback. Active-graph choice, coordinates and rounding require their native
+rules; a saved graph alone does not establish that it drives the effect.
+
+The user chose **Saved position maps first**, leaving reconstruction of speed
+graphs without an established usable map for a later checkpoint. The user also
+chose **Route with each request**: each temporary excerpt carries its own
+enclosing ownership frames, rather than relying on one shared walking route.
+This can repeat route information; no performance advantage is claimed. These
+choices preserve proven-only results and explicit Console gaps where a map or
+relative link cannot be established.
+
+The [relative-track receipt](evidence/relative-track-semantics-2026-10-17.json)
+records native scope/slot/offset rules and unchanged genuine-file provenance.
+Scope zero is the nearest enclosing scope; sequences are not scopes. Mob
+references restart ownership inside the target Mob rather than treating the
+calling SourceClip as its parent. Resolution requires the recorded media kind
+and exact edit rate to agree. These rules do not prune placed disabled media.
+
+The [speed-map receipt](evidence/speed-map-semantics-2026-10-17.json) establishes
+native parameter identifiers and linear-map evaluation, but does **not** establish
+a serialized-only condition proving equivalence to Avid's active effect callback.
+The callback and saved-map fallback use different final endpoints; a min/max
+envelope also loses skipped positions. Consequently none of the five inspected
+nested-sequence effects is certified for exact used-media selection by this
+investigation. A readable saved map is not sufficient applicability evidence.
+Before choosing the next speed-validation step, the user raised a scope concern:
+Copland was understood as simplifying the codebase before V1, while exact sequence
+interpretation has grown into substantial feature development. Unfinished
+proxy/TRKR implementation and further speed investigation are stopped pending
+the user's release-scope decision. No production link/map changes landed in this
+checkpoint. Newly prepared proxy tests were removed from the working tree and
+preserved at `/private/tmp/copland-deferred-proxy-tests-2026-10-17.patch` until
+their implementation is authorized again. Existing verified code/tests remain.
+The user subsequently chose **Simplification for V1; defer sequences**. C100 now
+makes that release boundary explicit. Whole Bin remains in V1; exact sequence
+filtering and its further Avid interpretation/validation are deferred until after
+V1. Already-written shared code has not been silently deleted or rolled back.
 
 ### Database columns and views — 16 October 2026
 
@@ -1990,7 +2377,7 @@ adding a new mechanism to fix them.
 | 1. Establish baseline | Use this Mac initially under C97. Record the build, actual workload/hardware/storage, cache conditions, source-read counts, time through a usable table and whole-process peak memory. Include rescan, CSV export, loaded bins and normal interactions. Separate genuine complete media from generated or truncated specimens. | Repeatable baseline and field/behavior comparison receipts. Existing engine-only timings remain supporting evidence, not a 300,000-file NEXIS acceptance result. Q13 is set aside; no numerical scan-time target is required. |
 | 2. Compact records and receipts | Introduce selected row values, exact clocks, one selected MasterMobId, compact availability/freshness/membership status and the operation receipts required by existing live checks. Adapt operation consumers before removing their evidence dependencies. Keep the user-selected direct CSV writer; release its local captured rows when saving returns, without adding a background text snapshot. Release prior row/session ownership when a new scan starts. | Retained table/CSV values and eligible operation behavior agree with the contract. Copy/Move/Delete/Rebalance, latest-job Undo and startup recovery preserve their existing protections. Completed export and compact operation consumers do not keep the old complete inventory/evidence graph alive during rescan. |
 | 3. Acquisition and cancellation | Apply PMR → MDB → header acquisition to the retained requested fields, using reliable inapplicability to stop unnecessary fallback. Clip Duration removal is complete under C13. C94/C95/C96 replace SourceFilename storage/consumers with SourcePath and its requested-field fallback. Implement either-database membership and both flags. Resolve completed values into compact rows as work finishes, and release unused parsing data. Retain changed-source exclusion and the existing bounded header fallback. | Database-free, partial-index and missing-applicable-field cases resolve correctly; unavailable values remain blank. Cancellation during discovery, database/header reading, final selection, formatting and publication preserves found rows/completed values and consistently reports incomplete. No runtime memory-abort policy is introduced. |
-| 4. AVB references and filtering | Retain only the names, identities, reference relationships/sets and compact coverage needed for loaded-bin/sequence lists and filtering. Table enrichment is removed; drop cross-bin borrowing. Implement independent checked-sequence state and the combined dialog, unload/recalculation, union/AND rules and empty/incomplete outcomes. Avoid keeping unrelated metadata or duplicating full graphs per sequence. | Genuine Avid edits establish exact used tracks/angles and original/render membership. Muted placed media stays included. Failed loads preserve old filters; checked unresolved-zero sequences stay active; valid unmatched bin references apply normally. Unloading releases data; rescan resets filters while keeping bins loaded. |
+| 4. Compact existing bin filtering | Preserve Whole Bin and the existing multi-bin chain. Remove unused retained parsing data and release unloaded-bin/filter ownership under C11/C15/C16/C26. The approved K/R cleanup removes exact timeline and dormant sequence-selection machinery while retaining source-track safeguards. Exact sequence filtering, its combined dialog and additional track/camera/speed/link interpretation are deferred under C100. | Existing Whole Bin results and filter-chain behavior are checked, failed loads preserve old filters and valid unmatched references apply normally. Unloading releases data; rescan resets filters while keeping bins loaded. Exact chosen-sequence used-set acceptance is not a V1 gate. |
 | 5. Presentation and support | Show/search/export Source Path; replace Database Status with both boolean columns/views. Keep precompute category/effect/Volume filtering and remaining conveniences. Apply always-visible enabled tabs, Search-only Escape, narrowed folder inputs, startup/manual drive discovery, FDA/Monospace removal and automatic 30-day diagnostic/crash cleanup. Preserve technical Console content while reviewing delivery/flush overhead. | Behavior checks follow C48/C49/C60–C96. Enabled empty tabs remain visible; dialog Escape retains its proper dismissal/cancellation priority. Cleanup preserves recent history and protected operation journals. Removed controls and source-basename storage have no active consumer left. |
 | 6. Full workload verification | Exercise the retained product after the new ownership/acquisition paths are in place. Compare usable-table time, source reads and whole-process memory against stage 1, including subsequent sorting/filtering/bin loading, operations, export and rescan. Validate the 300,000-file database-free workload on its representative NEXIS setup. | Correct physical inventory and selected metadata, clean cancellation, retained operation safety and measured scale behavior. Explain any remaining memory/time costs and limitations. The below-10-GB aim is measured, never enforced by aborting the scan. |
 
@@ -2004,8 +2391,8 @@ metadata before the compact result can be established.
 
 Retained source values can differ from today's output where the target deliberately
 changes it: Source Path replaces Source Filename; Clip Duration disappears; either
-database can establish membership; sequence filtering must follow actual used
-tracks/angles. Other changes need a concrete explanation against the contract,
+database can establish membership. After V1, exact sequence filtering must follow
+actual used tracks/angles under C100. Other changes need a concrete explanation against the contract,
 rather than an unexplained blanket fingerprint change.
 
 Define regression comparison around retained selected values, read decisions,
@@ -2015,10 +2402,10 @@ Copland to preserve the histories explicitly removed under C15. Retain focused
 defensive tests for source changes and invalid reads, labelled as authored controls;
 use genuine sources to establish format/workflow behavior.
 
-Outstanding technical validation remains necessary:
-exact used-angle/source-track AVB interpretation, broader Original Bin format
-coverage, broader compact-row equivalence and complete-process scale measurement
-must still be demonstrated. Cancellation has local phase-boundary controls in the
+Outstanding V1 validation includes retained Whole Bin behavior, broader Original
+Bin format coverage, broader compact-row equivalence and complete-process scale
+measurement. Exact chosen-sequence used-angle/source-track interpretation is
+deferred under C100. Cancellation has local phase-boundary controls in the
 17 October checkpoint; representative workload acceptance remains necessary. The inspected
 local corpus and authored defensive tests cannot certify every format or real
 workflow. Borrowing other bins, AVB metadata enrichment, mid-scan source switching,

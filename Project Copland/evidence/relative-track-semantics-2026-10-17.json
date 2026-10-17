@@ -1,0 +1,847 @@
+{
+  "schemaVersion": 1,
+  "recordedDateLocal": "2026-10-17",
+  "purpose": "Bounded primary native audit of filler proxies and contextual relative tracks before implementation decisions. No application launch or native/media writes.",
+  "nativeBinary": {
+    "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+    "bytes": 73527536,
+    "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+    "architecture": "arm64",
+    "universalSliceOffset": 37027840,
+    "mtimeNs": "1787793516000000000",
+    "sizeAndMtimeUnchangedAcrossHashRead": true
+  },
+  "anchors": [
+    {
+      "symbol": "ATrackGroup::GetFillerProxy(short)",
+      "address": "0x212f8c",
+      "endAddressExclusive": "0x212fa4",
+      "fileOffset": 39202700,
+      "bytesHex": "e823009183f4ff97e01340f9fd7b44a9ff430191c0035fd6",
+      "finding": "Calls FindTrackInfo then returns TrackInfo+0x18. This confirms the secondary pointer used by the group visitor is filler_proxy.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "ATrackGroup::Put(AStream*,AIODesc*)",
+      "address": "0x1d8738",
+      "endAddressExclusive": "0x1d8748",
+      "fileOffset": 38963000,
+      "bytesHex": "09011d32eb2b45a95f0100f10801891a",
+      "finding": "Presence of TrackInfo+0x18 selects serialized flag0x0008, matching the reader filler_proxy slot.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "ATrackGroup::VisitCompsSubrange(ComponentVisitor&,int,int,unsigned char)",
+      "address": "0x215b88",
+      "endAddressExclusive": "0x215c0c",
+      "fileOffset": 39213960,
+      "bytesHex": "480340f9086142f9e0031aaae10f40f9e2031caae30319aae41740b900013fd6fa0300aa1f000071640b40fa00010054fa0f40f9480340f9083940f9e0031aaa00013fd6000100341a0080521a02003588060011143d00139f02186b2bf6ff540b000014680340f9086142f9e0031baae1031aaae2031caae30319aae41740b900013fd6",
+      "finding": "Visits actual track component first. Only if its traversal did not stop and filler_proxy is nonnull, checks visitor.GetResolveRefs(); traverses direct filler_proxy only when GetResolveRefs()==false. In reference-resolving mode this edge is not an unconditional media dependency.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "AFillerClip::VisitCompsSubrange(ComponentVisitor&,int,int,unsigned char)",
+      "address": "0x1aa7d8",
+      "endAddressExclusive": "0x1aa828",
+      "fileOffset": 38774744,
+      "bytesHex": "880240f9083940f9e00314aa00013fd6c0feff34e80240f908c942f9e1330091e00317aa2200805200013fd6e0fdffb4e80f40b9090040f9296142f90201160b0301150be10314aae40313aa20013fd6",
+      "finding": "If visitor.GetResolveRefs() is true, calls FindFillerProxy(offset,true). If proxy is found, adds accumulated offset to both requested endpoints and traverses the proxy. Used FILL intervals can therefore activate a proxy that a direct group walk skips.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "AFillerClip::FindFillerProxy(int*,bool)",
+      "address": "0x1aa884",
+      "endAddressExclusive": "0x1aa89c",
+      "fileOffset": 38774916,
+      "bytesHex": "080040f908d941f9e333009101008052e20313aa00013fd6",
+      "finding": "FindScope(0) locates nearest enclosing scope and accumulates filler-to-scope offset plus containing slot.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "AFillerClip::FindFillerProxy(int*,bool)",
+      "address": "0x1aa8e4",
+      "endAddressExclusive": "0x1aa930",
+      "fileOffset": 38775012,
+      "bytesHex": "e11bc079a80240f908f943f9e00315aa00013fd6f60300aa200500b4c80240f908c942f9e1230091e00316aa00013fd6600400b4080040f908d941f9e333009101008052e20313aa00013fd6",
+      "finding": "Retrieves scope.GetFillerProxy(containingSlot), resolves proxy, and obtains the resolved component enclosing scope/slot.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "AFillerClip::FindFillerProxy(int*,bool)",
+      "address": "0x1aa934",
+      "endAddressExclusive": "0x1aa998",
+      "fileOffset": 38775092,
+      "bytesHex": "e11bc079080040f908b543f900013fd6f4020036e803002aa97e6092350108aae00317aae10315aa1b94039400020034b30000b4e80b40b9690240b92801080b680200b9e11bc079e80240f908f943f9e00317aa00013fd6f60300aa3400805260fbffb5",
+      "finding": "With boolean argument true, can skip onward through another enclosing-track proxy when the candidate target track is disabled; adds its resolved offset before continuing. This is lookup choice, not authorization to discard all placed disabled components.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "ATrackRef::Resolve(int*)",
+      "address": "0x208fd8",
+      "endAddressExclusive": "0x208ff8",
+      "fileOffset": 39161816,
+      "bytesHex": "61eac079680240f908d941f9e3330091e00313aae20314aa00013fd6000a00b4",
+      "finding": "Calls FindScope(recorded signed relative_scope), returning an accumulated offset and containing track slot.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "ATrackRef::Resolve(int*)",
+      "address": "0x209044",
+      "endAddressExclusive": "0x2090d4",
+      "fileOffset": 39161924,
+      "bytesHex": "a80240f908e943f9e00315aa00013fd6e0060035e81b407969ee40792801080b193d001368ea4079680000343901f8360e000014d905f837a80240f9088543f9e00315aa00013fd63f03006b0a050054a80240f9088543f9e00315aa00013fd63f03006b6b010054a80240f908d941f9e3330091e00315aa01008052e20314aa00013fd6f50300aa40faffb519000014",
+      "finding": "Rejects isolated scope; adds signed relative_track to containing track SLOT. Scope0 refuses out-of-range candidates; nonzero relative_scope may seek another outer scope and repeat relative-slot calculation.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "ATrackRef::Resolve(int*)",
+      "address": "0x2090d4",
+      "endAddressExclusive": "0x20912c",
+      "fileOffset": 39162068,
+      "bytesHex": "a80240f9089543f9e00315aae10319aa00013fd6f40300aae8f8fc97f50300aae00313aae5f8fc97bf02006b81010054e00313aaddf8fc97f30300aae00314aadaf8fc97e10300aae00313aa053a01941f000071e003949a",
+      "finding": "Selects scope.FindTrack(candidateSlot), requires exactly equal media kind and ExactEditRate to TrackRef, returns target or null. There is no MobId lookup or A1/V1 track-label matching here.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "ATrackRef::VisitCompsSubrange(ComponentVisitor&,int,int,unsigned char)",
+      "address": "0x208e3c",
+      "endAddressExclusive": "0x208e88",
+      "fileOffset": 39161404,
+      "bytesHex": "880240f9083940f9e00314aa00013fd6c0feff34e80240f908c942f9e1330091e00317aa00013fd600feffb4e80f40b9090040f9296142f90201160b0301150be10314aae40313aa20013fd6",
+      "finding": "Only resolves when visitor.GetResolveRefs() is true; then adds resolved scope offset to both endpoints and visits resolved component without rate conversion.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "AComponent::FindScope(short,int*,int*)",
+      "address": "0x14bb30",
+      "endAddressExclusive": "0x14bb60",
+      "fileOffset": 38386480,
+      "bytesHex": "740000b4e83240b9880200b9350100b4e13240b9680240f908ad40f9e00313aa00013fd6a80240b90801000ba80200b9",
+      "finding": "Updates containing childSubId and accumulates parent.FindSubCompOffset(childSubId).",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "AComponent::FindScope(short,int*,int*)",
+      "address": "0x14bb60",
+      "endAddressExclusive": "0x14bba8",
+      "fileOffset": 38386528,
+      "bytesHex": "680240f908dd41f9e00313aa00013fd660000034d6060071ab010054680240f904d941f9c13e0013e00313aae20315aae30314aafd7b43a9f44f42a9f65741a9f85fc4a880001fd6",
+      "finding": "Tests parent.IsScope; decrements requested count only for scopes, returning that parent once the counter goes below0. Therefore scope0 is nearest enclosing scope, scope1 next outer scope. Raw precompute-parent guard can make parent unavailable.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "ATrackGroup::FindScope(short,int*,int*)",
+      "address": "0x2118e4",
+      "endAddressExclusive": "0x211924",
+      "fileOffset": 39196900,
+      "bytesHex": "080040f908e943f900013fd6c0000034000080d2fd7b42a9f44f41a9f657c3a8c0035fd6e00316aae10315aae20314aae30313aafd7b42a9f44f41a9f657c3a8",
+      "finding": "GetIsolation()==true blocks upward scope search; otherwise delegates to AComponent::FindScope.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "ATrackGroup::IsScope()",
+      "address": "0x2118bc",
+      "endAddressExclusive": "0x2118c4",
+      "fileOffset": 39196860,
+      "bytesHex": "20008052c0035fd6",
+      "finding": "Returns true.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "AComponent::IsScope()",
+      "address": "0x14bae4",
+      "endAddressExclusive": "0x14baec",
+      "fileOffset": 38386404,
+      "bytesHex": "00008052c0035fd6",
+      "finding": "Returns false; plain clips and Sequence do not add a scope level.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "ATimeWarp::IsScope()",
+      "address": "0x205a98",
+      "endAddressExclusive": "0x205aa0",
+      "fileOffset": 39148184,
+      "bytesHex": "00008052c0035fd6",
+      "finding": "Returns false; time-warp class needs explicit scope treatment rather than treating every track group as a scope.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "APanVolEffect::IsScope()",
+      "address": "0x785808",
+      "endAddressExclusive": "0x785810",
+      "fileOffset": 44914696,
+      "bytesHex": "00008052c0035fd6",
+      "finding": "Returns false.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "AMultiBandEQEffect::IsScope()",
+      "address": "0x778c7c",
+      "endAddressExclusive": "0x778c84",
+      "fileOffset": 44862588,
+      "bytesHex": "20008052c0035fd6",
+      "finding": "Returns true.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "AudioSuitePlugInEffect::IsScope()",
+      "address": "0x7b5f28",
+      "endAddressExclusive": "0x7b5f30",
+      "fileOffset": 45113128,
+      "bytesHex": "20008052c0035fd6",
+      "finding": "Returns true.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "ATrackGroup::FindSubCompOffset(int)",
+      "address": "0x2118a4",
+      "endAddressExclusive": "0x2118ac",
+      "fileOffset": 39196836,
+      "bytesHex": "00008052c0035fd6",
+      "finding": "Returns0; ordinary group frames do not add a sequence-position displacement.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "ASequence::FindSubCompOffset(int)",
+      "address": "0x1fc990",
+      "endAddressExclusive": "0x1fc9ac",
+      "fileOffset": 39111056,
+      "bytesHex": "080040f9080143f9e233009100013fd6e01b40b9fd7b42a9ffc30091",
+      "finding": "Uses GetSubCompInfo and returns its full component start; Sequence frames contribute the component position, including established transition overlap layout. See prior transition-time receipt for full interval corroboration.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "ATrackGroupSegment::ATrackGroupSegment()",
+      "address": "0xa1b870",
+      "endAddressExclusive": "0xa1b878",
+      "fileOffset": 47626352,
+      "bytesHex": "7f2a04397f120279",
+      "finding": "Zeros bytes0x108 and0x109. GetIsolation reads0x109, so a freshly constructed group segment starts non-isolated.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "ATrackGroupSegment::GetIsolation()",
+      "address": "0xa1c20c",
+      "endAddressExclusive": "0xa1c214",
+      "fileOffset": 47628812,
+      "bytesHex": "00244439c0035fd6",
+      "finding": "Reads runtime byte0x109; not an established literal AVB property.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "AComposition::ICompositionWithID(_aafMCMobID_t,char,ExactEditRate_t,bool)",
+      "address": "0x180738",
+      "endAddressExclusive": "0x18076c",
+      "fileOffset": 38602552,
+      "bytesHex": "01008052e20303aa2d3e029468b20491c00640ad000500adb84b3494080040f9081540f900013fd6600215a9758205397f6601b9",
+      "finding": "Initializes TrackGroup then composition identity/timestamps/type/usage; does not set the runtime isolation byte in the bounded initializer.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "AComponent::VisitComps(ComponentVisitor&,int,int)",
+      "address": "0x14cdc8",
+      "endAddressExclusive": "0x14cdf0",
+      "fileOffset": 38391240,
+      "bytesHex": "a80240f9056142f9e00315aae10314aae20313aa04008052fd7b42a9f44f41a9f657c3a8a0001fd6",
+      "finding": "Delegates to VisitCompsSubrange with traversalflag0; no parent or isolation mutation observed.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "ASourceClip::VisitCompsSubrange(ComponentVisitor&,int,int,unsigned char)",
+      "address": "0x1dec54",
+      "endAddressExclusive": "0x1dec84",
+      "fileOffset": 38988884,
+      "bytesHex": "e80240f9054140f9e00317aae10316aae20315aae30314aae40313aafd7b43a9f44f42a9f65741a9f85fc4a8a0001fd6",
+      "finding": "Delegates source handling to visitor.VisitSourceClip; does not assign source target a structural parent.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "SourceMobSpans::SpanVisitor::VisitSourceClip(ASourceClip*,int,int,unsigned char)",
+      "address": "0x25f168",
+      "endAddressExclusive": "0x25f194",
+      "fileOffset": 39514472,
+      "bytesHex": "e00316aac6a0fb97e103182a2203150be4430091e5330091e6230091e00314aae30317aa37080094e80b40f9",
+      "finding": "Uses stored source position plus local begin and end-begin to ResolveMobRef; obtains existing child of target composition. SourceClip is a reference jump, not a new structural parent of the target.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    },
+    {
+      "symbol": "SourceMobSpans::SpanVisitor::VisitSourceClip(ASourceClip*,int,int,unsigned char)",
+      "address": "0x25f350",
+      "endAddressExclusive": "0x25f36c",
+      "fileOffset": 39514960,
+      "bytesHex": "e00b40f9080040f9085d42f9e10313aae20315aae30316aa00013fd6",
+      "finding": "Traverses the resolved target child through VisitComps with resolved endpoints; no parent/isolation mutation here. Target retains its own Mob ownership context.",
+      "basis": "Primary installed Avid arm64 static instruction inspection; interpretation is bounded, not playback acceptance."
+    }
+  ],
+  "genuineStructuralCorroboration": {
+    "reader": "Supplied pyavb use_ext=False; secondary structural corroboration only",
+    "inputPath": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/8645 v1.avb",
+    "sha256": "45ec3861e9f471f7e1a67757bd7605befd782192a7cb8a5da493e3d6a86a62c8",
+    "trackRefCount": 1643,
+    "fillerCount": 5987,
+    "proxyTrackCount": 1620,
+    "relativeScopeCounts": {
+      "1": 416,
+      "0": 1227
+    },
+    "trackRefKindCounts": {
+      "1": 1640,
+      "2": 3
+    },
+    "trackRefActualComponentOwnershipCount": 23,
+    "trackRefProxyOwnershipCount": 1620,
+    "actualTrackRefExamples": [
+      {
+        "object": 2652,
+        "relativeScope": 1,
+        "relativeTrack": -1,
+        "mediaKind": 1,
+        "editRate": 25.0,
+        "length": 96,
+        "ownership": [
+          {
+            "owner": 6466,
+            "ownerClass": "SEQU",
+            "field": "Sequence.components[1]",
+            "position": 0
+          }
+        ]
+      },
+      {
+        "object": 2655,
+        "relativeScope": 1,
+        "relativeTrack": -1,
+        "mediaKind": 1,
+        "editRate": 25.0,
+        "length": 96,
+        "ownership": [
+          {
+            "owner": 6467,
+            "ownerClass": "SEQU",
+            "field": "Sequence.components[1]",
+            "position": 0
+          }
+        ]
+      },
+      {
+        "object": 5778,
+        "relativeScope": 1,
+        "relativeTrack": -1,
+        "mediaKind": 1,
+        "editRate": 25.0,
+        "length": 87,
+        "ownership": [
+          {
+            "owner": 11428,
+            "ownerClass": "SEQU",
+            "field": "Sequence.components[1]",
+            "position": 0
+          }
+        ]
+      },
+      {
+        "object": 5781,
+        "relativeScope": 1,
+        "relativeTrack": -2,
+        "mediaKind": 1,
+        "editRate": 25.0,
+        "length": 87,
+        "ownership": [
+          {
+            "owner": 11429,
+            "ownerClass": "SEQU",
+            "field": "Sequence.components[1]",
+            "position": 0
+          }
+        ]
+      },
+      {
+        "object": 5913,
+        "relativeScope": 1,
+        "relativeTrack": -1,
+        "mediaKind": 1,
+        "editRate": 25.0,
+        "length": 762,
+        "ownership": [
+          {
+            "owner": 12008,
+            "ownerClass": "SEQU",
+            "field": "Sequence.components[1]",
+            "position": 0
+          }
+        ]
+      },
+      {
+        "object": 6029,
+        "relativeScope": 0,
+        "relativeTrack": -1,
+        "mediaKind": 1,
+        "editRate": 25.0,
+        "length": 12,
+        "ownership": [
+          {
+            "owner": 12493,
+            "ownerClass": "SEQU",
+            "field": "Sequence.components[1]",
+            "position": 0
+          }
+        ]
+      },
+      {
+        "object": 6062,
+        "relativeScope": 1,
+        "relativeTrack": -1,
+        "mediaKind": 1,
+        "editRate": 25.0,
+        "length": 762,
+        "ownership": [
+          {
+            "owner": 12626,
+            "ownerClass": "SEQU",
+            "field": "Sequence.components[1]",
+            "position": 0
+          }
+        ]
+      },
+      {
+        "object": 6139,
+        "relativeScope": 1,
+        "relativeTrack": -1,
+        "mediaKind": 1,
+        "editRate": 25.0,
+        "length": 13,
+        "ownership": [
+          {
+            "owner": 12914,
+            "ownerClass": "SEQU",
+            "field": "Sequence.components[1]",
+            "position": 0
+          }
+        ]
+      },
+      {
+        "object": 6142,
+        "relativeScope": 1,
+        "relativeTrack": -2,
+        "mediaKind": 1,
+        "editRate": 25.0,
+        "length": 13,
+        "ownership": [
+          {
+            "owner": 12915,
+            "ownerClass": "SEQU",
+            "field": "Sequence.components[1]",
+            "position": 0
+          }
+        ]
+      },
+      {
+        "object": 6251,
+        "relativeScope": 1,
+        "relativeTrack": -1,
+        "mediaKind": 1,
+        "editRate": 25.0,
+        "length": 53,
+        "ownership": [
+          {
+            "owner": 12956,
+            "ownerClass": "SEQU",
+            "field": "Sequence.components[1]",
+            "position": 0
+          }
+        ]
+      }
+    ],
+    "proxyTrackExamples": [
+      {
+        "owner": 3892,
+        "ownerClass": "TKFX",
+        "slot": 0,
+        "recordedTrackLabel": 1,
+        "component": 1516,
+        "proxy": 1515,
+        "componentClass": "SEQU",
+        "proxyData": {
+          "object": 1515,
+          "relativeScope": 1,
+          "relativeTrack": -1,
+          "mediaKind": 1,
+          "editRate": 25.0,
+          "length": 2147483647
+        },
+        "componentSequenceChildren": [
+          {
+            "object": 452,
+            "class": "FILL",
+            "position": 0,
+            "length": 0
+          },
+          {
+            "object": 451,
+            "class": "SCLP",
+            "position": 0,
+            "length": 87
+          },
+          {
+            "object": 450,
+            "class": "FILL",
+            "position": 87,
+            "length": 0
+          }
+        ]
+      },
+      {
+        "owner": 3915,
+        "ownerClass": "TKFX",
+        "slot": 0,
+        "recordedTrackLabel": 1,
+        "component": 1521,
+        "proxy": 1520,
+        "componentClass": "SEQU",
+        "proxyData": {
+          "object": 1520,
+          "relativeScope": 1,
+          "relativeTrack": -1,
+          "mediaKind": 1,
+          "editRate": 25.0,
+          "length": 2147483647
+        },
+        "componentSequenceChildren": [
+          {
+            "object": 457,
+            "class": "FILL",
+            "position": 0,
+            "length": 0
+          },
+          {
+            "object": 456,
+            "class": "SCLP",
+            "position": 0,
+            "length": 75
+          },
+          {
+            "object": 455,
+            "class": "FILL",
+            "position": 75,
+            "length": 0
+          }
+        ]
+      },
+      {
+        "owner": 4015,
+        "ownerClass": "TKFX",
+        "slot": 0,
+        "recordedTrackLabel": 1,
+        "component": 1615,
+        "proxy": 1614,
+        "componentClass": "SEQU",
+        "proxyData": {
+          "object": 1614,
+          "relativeScope": 1,
+          "relativeTrack": -1,
+          "mediaKind": 1,
+          "editRate": 25.0,
+          "length": 2147483647
+        },
+        "componentSequenceChildren": [
+          {
+            "object": 462,
+            "class": "FILL",
+            "position": 0,
+            "length": 0
+          },
+          {
+            "object": 461,
+            "class": "SCLP",
+            "position": 0,
+            "length": 22
+          },
+          {
+            "object": 460,
+            "class": "FILL",
+            "position": 22,
+            "length": 0
+          }
+        ]
+      },
+      {
+        "owner": 4028,
+        "ownerClass": "TKFX",
+        "slot": 0,
+        "recordedTrackLabel": 1,
+        "component": 1620,
+        "proxy": 1619,
+        "componentClass": "SEQU",
+        "proxyData": {
+          "object": 1619,
+          "relativeScope": 1,
+          "relativeTrack": -1,
+          "mediaKind": 1,
+          "editRate": 25.0,
+          "length": 2147483647
+        },
+        "componentSequenceChildren": [
+          {
+            "object": 467,
+            "class": "FILL",
+            "position": 0,
+            "length": 0
+          },
+          {
+            "object": 466,
+            "class": "SCLP",
+            "position": 0,
+            "length": 13
+          },
+          {
+            "object": 465,
+            "class": "FILL",
+            "position": 13,
+            "length": 0
+          }
+        ]
+      },
+      {
+        "owner": 4128,
+        "ownerClass": "TKFX",
+        "slot": 0,
+        "recordedTrackLabel": 1,
+        "component": 1714,
+        "proxy": 1713,
+        "componentClass": "SEQU",
+        "proxyData": {
+          "object": 1713,
+          "relativeScope": 1,
+          "relativeTrack": -1,
+          "mediaKind": 1,
+          "editRate": 25.0,
+          "length": 2147483647
+        },
+        "componentSequenceChildren": [
+          {
+            "object": 472,
+            "class": "FILL",
+            "position": 0,
+            "length": 0
+          },
+          {
+            "object": 471,
+            "class": "SPED",
+            "position": 0,
+            "length": 53
+          },
+          {
+            "object": 470,
+            "class": "FILL",
+            "position": 53,
+            "length": 0
+          }
+        ]
+      },
+      {
+        "owner": 31772,
+        "ownerClass": "TKFX",
+        "slot": 0,
+        "recordedTrackLabel": 1,
+        "component": 7392,
+        "proxy": 7391,
+        "componentClass": "SEQU",
+        "proxyData": {
+          "object": 7391,
+          "relativeScope": 1,
+          "relativeTrack": -1,
+          "mediaKind": 2,
+          "editRate": 25.0,
+          "length": 2147483647
+        },
+        "componentSequenceChildren": [
+          {
+            "object": 2947,
+            "class": "FILL",
+            "position": 0,
+            "length": 38798
+          }
+        ]
+      },
+      {
+        "owner": 31775,
+        "ownerClass": "TKFX",
+        "slot": 0,
+        "recordedTrackLabel": 1,
+        "component": 7401,
+        "proxy": 7400,
+        "componentClass": "SEQU",
+        "proxyData": {
+          "object": 7400,
+          "relativeScope": 1,
+          "relativeTrack": -1,
+          "mediaKind": 2,
+          "editRate": 25.0,
+          "length": 2147483647
+        },
+        "componentSequenceChildren": [
+          {
+            "object": 2951,
+            "class": "FILL",
+            "position": 0,
+            "length": 38798
+          }
+        ]
+      },
+      {
+        "owner": 49157,
+        "ownerClass": "CMPO",
+        "slot": 8,
+        "recordedTrackLabel": 1,
+        "component": 47105,
+        "proxy": 47104,
+        "componentClass": "SEQU",
+        "proxyData": {
+          "object": 47104,
+          "relativeScope": 0,
+          "relativeTrack": -1,
+          "mediaKind": 1,
+          "editRate": 25.0,
+          "length": 2147483647
+        },
+        "componentSequenceChildren": [
+          {
+            "object": 33541,
+            "class": "FILL",
+            "position": 0,
+            "length": 0
+          },
+          {
+            "object": 33540,
+            "class": "TKFX",
+            "position": 0,
+            "length": 125
+          },
+          {
+            "object": 33539,
+            "class": "FILL",
+            "position": 125,
+            "length": 125
+          },
+          {
+            "object": 33538,
+            "class": "SCLP",
+            "position": 250,
+            "length": 200
+          },
+          {
+            "object": 33537,
+            "class": "TKFX",
+            "position": 450,
+            "length": 51
+          }
+        ]
+      },
+      {
+        "owner": 49157,
+        "ownerClass": "CMPO",
+        "slot": 9,
+        "recordedTrackLabel": 2,
+        "component": 47102,
+        "proxy": 47101,
+        "componentClass": "SEQU",
+        "proxyData": {
+          "object": 47101,
+          "relativeScope": 0,
+          "relativeTrack": -1,
+          "mediaKind": 1,
+          "editRate": 25.0,
+          "length": 2147483647
+        },
+        "componentSequenceChildren": [
+          {
+            "object": 33190,
+            "class": "FILL",
+            "position": 0,
+            "length": 8055
+          },
+          {
+            "object": 33189,
+            "class": "TKFX",
+            "position": 8055,
+            "length": 175
+          },
+          {
+            "object": 33188,
+            "class": "FILL",
+            "position": 8230,
+            "length": 4325
+          },
+          {
+            "object": 33187,
+            "class": "TKFX",
+            "position": 12555,
+            "length": 92
+          },
+          {
+            "object": 33186,
+            "class": "FILL",
+            "position": 12647,
+            "length": 621
+          }
+        ]
+      }
+    ],
+    "readErrors": [],
+    "sizeAndMtimeUnchanged": true,
+    "sha256After": "45ec3861e9f471f7e1a67757bd7605befd782192a7cb8a5da493e3d6a86a62c8"
+  },
+  "supportedRules": [
+    "Only actual used FILL intervals activate their containing track proxy; do not unconditionally traverse every stored filler_proxy or discard every proxy.",
+    "Relative tracks use contextual structural ownership, not a global guessed parent and not MobId or A1/V1 labels. Carry each ownership occurrence independently.",
+    "scope0 means nearest enclosing scope, scope1 the next. Scope membership follows native IsScope overrides; ordinary group true, Sequence false, TimeWarp false, PanVolume false, inspected EQ/AudioSuite true.",
+    "TrackRef adds relative_track to the containing track array slot, checks bounds and may walk farther out for nonzero relative_scope, then requires matching kind and exact edit rate.",
+    "Scope traversal sums established Sequence full-segment starts and0 for ordinary TrackGroup frames; the resolved offset shifts both endpoints.",
+    "A source-Mob jump follows target composition ownership from its own root; it does not make the caller SourceClip a parent.",
+    "GetIsolation is runtime state defaulting to0 in inspected constructors; no encoded AVB property was established. Do not equate mc_mode or mob_type with isolation without additional evidence.",
+    "Maintain existing cancellation/cycle guards; native parent/Resolve loops inspected here have no explicit malformed-graph cycle limit."
+  ],
+  "implementationOptions": [
+    {
+      "option": "Carry ownership frames during each excerpt traversal",
+      "recommended": true,
+      "pros": "Matches native contextual parent/slot/offset semantics and preserves separate uses/shared nodes; allows FILL activation exactly where used.",
+      "cons": "Requires contextual visit/cycle state and careful reset on Mob reference jumps; more code and authored tests."
+    },
+    {
+      "option": "Prepare a temporary qualified parent lookup and resolve uniquely owned routes first",
+      "recommended": false,
+      "pros": "Can support a smaller initial subset and reuse existing object lookup.",
+      "cons": "Shared/multiple ownership remains unresolved unless lookup stores contextual paths; risks reintroducing more machinery later. Must not choose an arbitrary parent or traverse all candidates."
+    }
+  ],
+  "policyNotes": [
+    "Existing C29 inclusion of placed muted/disabled components remains independent of native proxy lookup choosing another proxy when target track is disabled; do not prune those placed original branches.",
+    "Ambiguous/unsupported scope, ownership, timing, kinds, rates or cycles follow already selected proven-only behavior with Console gaps.",
+    "Independent bins, separate excerpts, clip-local counts and length recalculation are already decided and are not reopened here."
+  ],
+  "limits": [
+    "Static installed Avid evidence and structural genuine-file corroboration only, not a playback timeline or exact physical-media oracle.",
+    "ATraversalData was not found by name in the installed libameLibrary symbol inventory; no general claim is made about every visitor/runtime isolation mutation outside inspected methods.",
+    "Native GetTValue traversal flags can bypass proxy/reference resolution; the observed visitor route with GetResolveRefs=true is the relevant bounded reference-walk route.",
+    "No complete implementation, rounding policy beyond established same-rate TrackRef requirements, malformed-parent cycle behavior, or complete disabled-proxy chain acceptance is claimed.",
+    "Genuine numeric counts describe stored graph structure rather than media correctness, missing media, memory savings or performance."
+  ],
+  "inspectionFiles": [
+    "/private/tmp/copland-relative-native-methods-2026-10-17.txt",
+    "/private/tmp/copland-relative-native-proxy-scope-2026-10-17.txt",
+    "/private/tmp/copland-relative-native-filler-isolation-2026-10-17.txt",
+    "/private/tmp/copland-relative-native-filler-resolution-2026-10-17.txt",
+    "/private/tmp/copland-relative-native-source-boundary-2026-10-17.txt",
+    "/private/tmp/copland-relative-native-composition-init-2026-10-17.txt",
+    "/private/tmp/copland-time-native-group-visit-2026-10-17.txt",
+    "/private/tmp/copland-time-native-group-visit-tail-2026-10-17.txt"
+  ],
+  "commands": [
+    "xcrun llvm-nm --arch=arm64 --defined-only --demangle <nativebinary>",
+    "xcrun llvm-objdump --macho --arch=arm64 --disassemble <nativebinary> | bounded address filter",
+    "Read-only Python Mach-O segment mapping, exact native byte anchors and SHA256",
+    "Read-only supplied pyavb use_ext=False structural ownership/relative-field inventory of one genuine AVB"
+  ]
+}

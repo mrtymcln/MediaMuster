@@ -39,7 +39,7 @@ class MainWindow : public QMainWindow
 
 public:
 	/// UiOnly supports interface tests/previews without volume discovery,
-	/// monitoring, crash collection or journal recovery against the host.
+	/// crash collection or journal recovery against the host.
 	enum class StartupMode
 	{
 		Normal,
@@ -233,6 +233,8 @@ private:
 	bool m_omfScanEnabled = false;
 	bool m_precomputesEnabled = false;
 	class QAction *m_precomputeFilterAction = nullptr;
+	/// Paths found by the last startup/Refresh detection; empty is a valid result.
+	QStringList m_detectedVolumePaths;
 	QSet<QString> m_manualVolumes;
 
 	// MARK: - Selection persistence

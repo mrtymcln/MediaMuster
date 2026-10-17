@@ -1,0 +1,269 @@
+{
+  "schemaVersion": 1,
+  "recordedDateLocal": "2026-10-17",
+  "purpose": "Bounded native primary static audit for SEQU timing, transition overlaps and source-coordinate/rate boundaries; no app launch or edits to native binaries/media.",
+  "nativeBinary": {
+    "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+    "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+    "bytes": 73527536,
+    "architecture": "arm64",
+    "universalSliceOffset": 37027840,
+    "mtimeNs": "1787793516000000000",
+    "sizeAndMtimeUnchangedAcrossHashRead": true
+  },
+  "anchors": [
+    {
+      "symbol": "ATransition::GetCutPoint()",
+      "address": "0x1dcbc0",
+      "endAddressExclusive": "0x1dcbc8",
+      "fileOffset": 38980544,
+      "bytesHex": "008440b9c0035fd6",
+      "finding": "Returns stored 32-bit cut point at object offset0x84.",
+      "basis": "direct static instruction observation"
+    },
+    {
+      "symbol": "ATransition::GetPartLength(unsigned char)",
+      "address": "0x1dcc10",
+      "endAddressExclusive": "0x1dcc38",
+      "fileOffset": 38980624,
+      "bytesHex": "3f04007161000054608640b907000014680240f908fd40f9e00313aa00013fd6688640b90000084b",
+      "finding": "Argument1 returns cut point; other value returns GetLength()-cutPoint. No assertion which UI label corresponds to the argument is needed.",
+      "basis": "direct static instruction observation"
+    },
+    {
+      "symbol": "ASequence::Get(AStream*, AIODesc*)",
+      "address": "0x1fb834",
+      "endAddressExclusive": "0x1fb85c",
+      "fileOffset": 39106612,
+      "bytesHex": "280340f908fd40f9e00319aa00013fd6fa0300aa280340f9082142f9e00319aa00013fd6e1031aaa",
+      "finding": "Reads previous component full length via GetLength, then IsTransition.",
+      "basis": "direct static instruction observation"
+    },
+    {
+      "symbol": "ASequence::Get(AStream*, AIODesc*)",
+      "address": "0x1fb860",
+      "endAddressExclusive": "0x1fb8a8",
+      "fileOffset": 39106656,
+      "bytesHex": "b60100b4c80240f9082142f9e00316aa00013fd600010034c80240f908fd40f9e00316aa00013fd68803000b4103084b0200001441031c4b603a40f9080040f9082541f9e20319aa",
+      "finding": "For a segment preceding a transition, inserts tree contribution fullLength-(previousTransitionLength+nextTransitionLength); otherwise fullLength-previousTransitionLength. Transition contribution is its fullLength. Fields correspond to serialized component list read by the AVB path.",
+      "basis": "direct static instruction observation"
+    },
+    {
+      "symbol": "ASequence::VisitCompsSubrange(ComponentVisitor&, int, int, unsigned char)",
+      "address": "0x1fcec4",
+      "endAddressExclusive": "0x1fcf14",
+      "fileOffset": 39112388,
+      "bytesHex": "fa1740b9e81f40b95f03146b04b9407a20050054080340f908fd40f9e00318aa00013fd6e81740b99902084b1f00196bca000054080340f908fd40f9e00318aa00013fd6f90300aaa8021a4b1b7da80a",
+      "finding": "Compares full component start against requested end (start>=end stops); clips child end to min(fullLength,requestEnd-componentStart), child start to max(0,requestStart-componentStart). Supports half-open intervals.",
+      "basis": "direct static instruction observation"
+    },
+    {
+      "symbol": "ASourceClip::GetSrcPosition()",
+      "address": "0x1dd5a4",
+      "endAddressExclusive": "0x1dd5ac",
+      "fileOffset": 38983076,
+      "bytesHex": "009840b9c0035fd6",
+      "finding": "Returns signed recorded source position from offset0x98.",
+      "basis": "direct static instruction observation"
+    },
+    {
+      "symbol": "ASourceClip::GetTValue(int,int,int*,ATValue*,MobDesc_t*,CompDesc_t*,unsigned short)",
+      "address": "0x1de8b8",
+      "endAddressExclusive": "0x1de8c4",
+      "fileOffset": 38987960,
+      "bytesHex": "e89a40b90801160b080f00b9",
+      "finding": "Writes source MobDesc.position = storedSourcePosition + requestedLocalOffset; these are source-clip edit units before resolving the Mob reference.",
+      "basis": "direct static instruction observation"
+    },
+    {
+      "symbol": "ResolveMobRef(AComposition*,_TrackLabel_t,int,int,double,AComponent**,int*,int*)",
+      "address": "0x2612f4",
+      "endAddressExclusive": "0x261330",
+      "fileOffset": 39523060,
+      "bytesHex": "e0031aaa6398fb970140601ee00315aa0041601e1fdaff97f80300aa160100b4e80240f9088945f9e00317aae10319aae20318aa00013fd6c00200b9",
+      "finding": "Converts source position to selected child edit rate via ConvertEUs, then invokes composition virtual slot0xb10 (CvtPositionToOffset) with selected track.",
+      "basis": "direct static instruction observation"
+    },
+    {
+      "symbol": "ResolveMobRef(AComposition*,_TrackLabel_t,int,int,double,AComponent**,int*,int*)",
+      "address": "0x261334",
+      "endAddressExclusive": "0x261354",
+      "fileOffset": 39523124,
+      "bytesHex": "e0031aaa5398fb970140601e8002150b0041601e0fdaff970800184b680200b9",
+      "finding": "Separately converts position+length and subtracts converted position to obtain resolved length. This is endpoint conversion, not separately rounded duration.",
+      "basis": "direct static instruction observation"
+    },
+    {
+      "symbol": "ConvertEUs(int,double,double)",
+      "address": "0x257b84",
+      "endAddressExclusive": "0x257bb0",
+      "fileOffset": 39484292,
+      "bytesHex": "0200621e4108611e2018601e1f000071a87400d001d540fd02106c1e21bc621e2028601e0000781ec0035fd6",
+      "finding": "Computes coordinate*destinationRate/sourceRate, adds sign-dependent bias, then truncates toward zero. Positive path uses+0.5; negative bias literal not independently decoded in this bounded audit, so no complete signed rounding implementation is prescribed.",
+      "basis": "direct static instruction observation"
+    },
+    {
+      "symbol": "ATrackGroup::FindTrackAndOffsetByLabel(_TrackLabel_t,int,int*)",
+      "address": "0x214608",
+      "endAddressExclusive": "0x214634",
+      "fileOffset": 39208456,
+      "bytesHex": "e00316aa9ccbfc97f60300aae00315aa99cbfc97e20300aae33f0091e00314aae10316aa7f0d0194600200b9",
+      "finding": "Reads group/child ExactEditRate and calls ConvertEUsFloor for a requested offset.",
+      "basis": "direct static instruction observation"
+    },
+    {
+      "symbol": "ATrackGroup::VisitCompsSubrange(ComponentVisitor&,int,int,unsigned char)",
+      "address": "0x215b40",
+      "endAddressExclusive": "0x215ba8",
+      "fileOffset": 39213888,
+      "bytesHex": "b9c35ab8e0031aaa4dc6fc97e20300aae00319aaf90740f9e10319aa030080d232080194fc0300aae0031aaa44c6fc97e20300aae00313aae10319aa030080d211090194f90300aa480340f9086142f9e0031aaae10f40f9e2031caae30319aae41740b900013fd6",
+      "finding": "On the IsComposition branch: maps start with ConvertEUsFloor and exclusive end with ConvertEUsCeil from group edit rate to child rate, then passes mapped start/end to child visitor.",
+      "basis": "direct static instruction observation"
+    },
+    {
+      "symbol": "ATrackGroup::VisitCompsSubrange(ComponentVisitor&,int,int,unsigned char)",
+      "address": "0x2159e8",
+      "endAddressExclusive": "0x215a08",
+      "fileOffset": 39213544,
+      "bytesHex": "e202164ba80240f9085544f9a35301d1e4630191e00315aae10316aa00013fd6",
+      "finding": "Other groups consult virtual slot0x8a8 (MapRangeDown) for source range before walking children; do not assume universal identity mapping through arbitrary effects.",
+      "basis": "direct static instruction observation"
+    },
+    {
+      "symbol": "AComposition::GetStart(short)",
+      "address": "0x180950",
+      "endAddressExclusive": "0x180968",
+      "fileOffset": 38603088,
+      "bytesHex": "fd7bbfa9fd030091ea3d0294002840b9fd7bc1a8c0035fd6",
+      "finding": "Obtains TrackInfo through RefTrackInfo and reads start_pos at offset0x28.",
+      "basis": "direct static instruction observation"
+    },
+    {
+      "symbol": "AComposition::CvtPositionToOffset(short,int)",
+      "address": "0x1839b8",
+      "endAddressExclusive": "0x1839d8",
+      "fileOffset": 38615480,
+      "bytesHex": "f30302aa080040f9088145f900013fd60000130bfd7b41a9f44fc2a8c0035fd6",
+      "finding": "Calls GetStart through virtual slot0xb00, then returns coordinate+start_pos.",
+      "basis": "direct static instruction observation"
+    },
+    {
+      "symbol": "AComposition::CvtOffsetToPosition(short,int)",
+      "address": "0x1839e4",
+      "endAddressExclusive": "0x183a04",
+      "fileOffset": 38615524,
+      "bytesHex": "f30302aa080040f9088145f900013fd66002004bfd7b41a9f44fc2a8c0035fd6",
+      "finding": "Calls GetStart then returns coordinate-start_pos.",
+      "basis": "direct static instruction observation"
+    }
+  ],
+  "vtableCorroboration": [
+    {
+      "vtable": "AComposition",
+      "vtableAddress": "0x122e530",
+      "slot": "0xb00",
+      "entryVirtualAddress": "0x122f040",
+      "fileOffset": 56094784,
+      "encodedPointerHex": "0x10000000180950",
+      "low32Target": "0x180950",
+      "expectedTarget": "0x180950",
+      "matches": true,
+      "limit": "Chained pointer raw encoding is retained. Targets here are corroborated by symbols; no general pointer decoder is claimed."
+    },
+    {
+      "vtable": "AComposition",
+      "vtableAddress": "0x122e530",
+      "slot": "0xb10",
+      "entryVirtualAddress": "0x122f050",
+      "fileOffset": 56094800,
+      "encodedPointerHex": "0x100000001839ac",
+      "low32Target": "0x1839ac",
+      "expectedTarget": "0x1839ac",
+      "matches": true,
+      "limit": "Chained pointer raw encoding is retained. Targets here are corroborated by symbols; no general pointer decoder is claimed."
+    }
+  ],
+  "supportedImplementationConclusions": [
+    "For normal serialized SEQU with established component order and lengths: total timeline length equals sum(nontransition full lengths)-sum(transition lengths). Each transition overlaps adjacent full segments. This is algebraic inference from native AVB reader tree contribution, not runtime playback acceptance.",
+    "Equivalent serialized layout: advance cursor by a segment full length; when encountering a transition, subtract its length before assigning its interval; leave that cursor as next segment full start. This makes both neighboring full source windows overlap over transition duration.",
+    "Transition cut point divides the transition length into cutPoint and length-cutPoint, but is not a second duration to subtract from the whole sequence.",
+    "Normal interval clipping can use half-open [start,end).",
+    "A source clip local offset first adds SourceClip.start_time, before converting to target child edit rate. ResolveMobRef uses endpoint conversion and applies target composition track start_pos by addition after conversion.",
+    "Safe initial normal-source subset: known positive equal edit rates and exact integer intervals; absent/conflicting rates/origins or fractional mapping can retain other proven media while reporting a Console mapping gap.",
+    "The native composition visitor separately supports floor-start/ceil-end conversion when descending composition tracks. This is distinct from ResolveMobRef conversion; do not silently use one rounding rule everywhere.",
+    "Arbitrary transition effect input topology and arbitrary track-group/effect source ranges still require established semantic mapping; generic identity mapping has not been proven."
+  ],
+  "limits": [
+    "Static disassembly only: no Media Composer playback/timeline/export comparison or exact-media oracle.",
+    "No general transition-input topology, transition effect-specific handle consumption, signed generic conversion rounding, cross-rate source reference acceptance, or every kind of nested effect was established.",
+    "Physical file association and original/render links remain separate from interval pruning policy.",
+    "Selectors/disabled tracks/speed effects were assigned to another audit agent.",
+    "Other class-specific overrides, effect extensions and generic source-reference rounding remain outside this default-method follow-up."
+  ],
+  "inspectionFiles": [
+    "/private/tmp/copland-time-native-symbols-2026-10-17.txt",
+    "/private/tmp/copland-time-native-disassembly-2026-10-17.txt",
+    "/private/tmp/copland-time-native-sequence-io-2026-10-17.txt",
+    "/private/tmp/copland-time-native-track-offsets-2026-10-17.txt",
+    "/private/tmp/copland-time-native-findsource-2026-10-17.txt",
+    "/private/tmp/copland-time-native-resolvemobref-2026-10-17.txt",
+    "/private/tmp/copland-time-native-group-visit-2026-10-17.txt",
+    "/private/tmp/copland-time-native-group-visit-tail-2026-10-17.txt"
+  ],
+  "commands": [
+    "xcrun llvm-nm --arch=arm64 --defined-only --demangle <binary>",
+    "xcrun llvm-objdump --macho --arch=arm64 --disassemble <binary> | bounded address filter",
+    "Read-only Python Mach-O segment mapping + SHA256 + native byte anchors"
+  ],
+  "vtableRangeMapping": [
+    {
+      "class": "ATrackGroup",
+      "slot": "0x8a8",
+      "vtableAddress": "0x123e250",
+      "fileOffset": 56158984,
+      "encodedPointerHex": "0x10000000210934",
+      "low32Target": "0x210934",
+      "symbol": "ATrackGroup::MapRangeDown(int, int, int*, int*)",
+      "limit": "Pointer inheritance only; body not disassembled in this bounded audit."
+    },
+    {
+      "class": "ATrackEffect",
+      "slot": "0x8a8",
+      "vtableAddress": "0x1235e38",
+      "fileOffset": 56125168,
+      "encodedPointerHex": "0x10000000210934",
+      "low32Target": "0x210934",
+      "symbol": "ATrackGroup::MapRangeDown(int, int, int*, int*)",
+      "limit": "Pointer inheritance only; body not disassembled in this bounded audit."
+    },
+    {
+      "class": "ASelector",
+      "slot": "0x8a8",
+      "vtableAddress": "0x123d708",
+      "fileOffset": 56156096,
+      "encodedPointerHex": "0x10000000210934",
+      "low32Target": "0x210934",
+      "symbol": "ATrackGroup::MapRangeDown(int, int, int*, int*)",
+      "limit": "Pointer inheritance only; body not disassembled in this bounded audit."
+    },
+    {
+      "class": "AMotionCtl",
+      "slot": "0x8a8",
+      "vtableAddress": "0x1232ef8",
+      "fileOffset": 56113072,
+      "encodedPointerHex": "0x100000001c6b50",
+      "low32Target": "0x1c6b50",
+      "symbol": "AMotionCtl::MapRangeDown(int, int, int*, int*)",
+      "limit": "Pointer inheritance only; body not disassembled in this bounded audit."
+    }
+  ],
+  "rootFollowup": {
+    "method": "ATrackGroup::MapRangeDown",
+    "address": "0x210934",
+    "bytes": "430000b4610000b9440000b4820000b9c0035fd6",
+    "methodEndExclusive": "0x210948",
+    "finding": "Copies start w1 to optional *x3 and end w2 to optional *x4 unchanged; default range mapping is identity. Combined with captured vtables, this establishes the default TKFX/SLCT mapping in the bounded audited binary.",
+    "command": "xcrun llvm-objdump --macho --arch=arm64 --disassemble <binary> | Python hexadecimal-colon address filter [0x210920,0x2109a0)"
+  },
+  "relatedEvidence": "angle-range-semantics-2026-10-17.json establishes native absent start_pos flag default zero; nonzero origin caller is established by ResolveMobRef in this receipt."
+}

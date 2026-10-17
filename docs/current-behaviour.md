@@ -13,8 +13,8 @@ For the names and responsibilities of the code components, see the
 ## Starting the app
 
 The app opens its main window, finds storage locations and checks for unfinished
-file operations. It monitors changes to the drive list; this does not continuously
-rescan the media on those drives. You start a media scan with the scan controls.
+file operations. Use Refresh Volumes to update the drive list after startup.
+You start a media scan with the scan controls.
 
 On macOS, startup and **Help > Full Disk Access** probe Full Disk Access by
 opening the current user's protected TCC database read-only. The probe does not
@@ -67,7 +67,17 @@ independent build flag. See [release feature gates](release-feature-gates.md).
 
 File groups source locations, scanning, Unfinished Business, and reveal/export
 commands. **Refresh Volumes** refreshes the sidebar without rescanning media.
-**Scan Selected** scans selected locations; **Scan All** scans all available locations.
+**Scan Selected** scans selected locations; **Scan All** uses the last detected
+locations plus session-only manually added paths. The window remembers those
+detected paths, including an empty discovery result; starting a scan does not
+search for newly connected drives. Drive discovery runs at startup and when
+**Refresh Volumes** is requested. There are no background or post-scan/operation
+drive checks; use Refresh after connecting or disconnecting a drive.
+Refresh clears sidebar selections while preserving still-scannable manual entries.
+Manual paths that are no longer scannable stay in the session list even when
+Refresh hides their sidebar rows. Scan All can still retry those paths and report
+their current access/admission failure. The scan's ordinary folder and source
+validation remains in place.
 Special contains **Manage Media…**, **Filter by Bin…**, **Filter Precomputes…**,
 and **Rebalance…**, in that order. Filter Precomputes is hidden unless its build
 flag is enabled, then remains disabled without scanned media or while busy. Its toolbar
@@ -406,8 +416,9 @@ Hovering over a project in the sidebar shows its file count and total size acros
 the whole inventory, regardless of active table filters. The sidebar includes a
 **No project** entry when files have no recorded project.
 
-Loading `.avb` bins lets the app match file or master identifiers against references
-recovered from those bins. The bin dialog supports an ordered chain:
+Loading `.avb` bins lets the app match FileMobIds against qualified file references
+recovered from those bins. A shared MasterMobId alone does not establish a match.
+The bin dialog supports an ordered chain:
 
 - **Intersect:** keep matches from the current bin-filter result.
 - **Subtract:** remove matches from that result.
@@ -422,15 +433,31 @@ The whole-bin filter now uses the MediaEngine AVB reader and reference engine. R
 partial results remain usable with a persistent **Results may be incomplete**
 warning and Console details. A completely unreadable bin or cancelled operation
 cannot supply an applicable filter. Applied filter steps keep their warning and
-source evidence even if the loaded-bin row is later removed. The future sequence
-picker remains disabled behind `SequenceFilter`; the live dialog uses whole-bin
-scope.
+source evidence even if the loaded-bin row is later removed. The live dialog uses
+Whole Bin scope. There is no individual sequence picker, sequence list API or
+sequence feature flag.
 
 Whole Bin includes media reached from the clips and sequences listed in that bin,
 including their internal dependencies. Unrelated stored compositions and loose
 file locators do not contribute. Each bin resolves using its own records; multiple
 loaded bins and the existing Intersect/Add/Subtract chain remain available.
-Exact used source-track and camera-angle traversal is a later Copland checkpoint.
+SourceClip links now follow a uniquely established source track by its recorded
+number and audio/video kind. Unclear track branches are omitted with incomplete
+coverage and Console details; other proven media remains available. Listed clip
+and master roots still include all their tracks. Each requested track contributes
+its linked content broadly, including reachable spare camera branches and unused
+portions of nested edits. Placed muted/disabled tracks and explicitly referenced
+originals/renders remain eligible. Unclear track matches cannot bypass their
+restriction through a file descriptor; established descriptor-only file sources
+still contribute their identity.
+
+Exact sequence filtering is deferred until after V1. The active resolver does not
+choose camera angles or calculate used excerpts, transition overlaps or speed
+changes. Earlier implementation and research are saved in the
+[deferred sequence archive](../Project%20Copland/archive/deferred-sequence-2026-10-17/README.txt).
+Whole Bin results do not promise the exact set used by an edit. Physical-file
+duration, frame/sample rates and timecode metadata remain separate retained scan
+values. [AVB coverage](avb-parser.md) records the active rules and limits.
 
 Loading or removing bins does not change Clip Name, Original Bin or derived effect
 details in the media table or CSV. Those values come from scanned media and folder

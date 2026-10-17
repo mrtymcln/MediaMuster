@@ -1,0 +1,348 @@
+{
+  "schemaVersion": 1,
+  "recordedDateLocal": "2026-10-17",
+  "scope": "One genuine AVB production reader/resolver structural check; no Media Composer launch or source writes.",
+  "input": {
+    "path": "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/8645 v1.avb",
+    "bytesBefore": 6913702,
+    "bytesAfter": 6913702,
+    "mtimeNsBefore": "1778748844000000000",
+    "mtimeNsAfter": "1778748844000000000",
+    "sha256Before": "45ec3861e9f471f7e1a67757bd7605befd782192a7cb8a5da493e3d6a86a62c8",
+    "sha256After": "45ec3861e9f471f7e1a67757bd7605befd782192a7cb8a5da493e3d6a86a62c8",
+    "unchanged": true
+  },
+  "build": {
+    "compileCommand": [
+      "/usr/bin/c++",
+      "-std=c++17",
+      "-O2",
+      "-DNDEBUG",
+      "-arch",
+      "arm64",
+      "-mmacosx-version-min=11.0",
+      "-I/Users/martymclean/Developer/MediaMuster/src",
+      "-isystem",
+      "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers",
+      "-iframework",
+      "/Users/martymclean/Qt/6.5.3/macos/lib",
+      "-isystem",
+      "/Users/martymclean/Qt/6.5.3/macos/mkspecs/macx-clang",
+      "-isystem",
+      "/Users/martymclean/Qt/6.5.3/macos/include",
+      "/private/tmp/copland-angle-range-production-probe-2026-10-17.cpp",
+      "/Users/martymclean/Developer/MediaMuster/build-mediaengine-release/libmediamuster_mediaengine_core.a",
+      "-F/Users/martymclean/Qt/6.5.3/macos/lib",
+      "-Wl,-rpath,/Users/martymclean/Qt/6.5.3/macos/lib",
+      "-framework",
+      "QtCore",
+      "-framework",
+      "Security",
+      "-framework",
+      "AppKit",
+      "-framework",
+      "ApplicationServices",
+      "-framework",
+      "Foundation",
+      "-framework",
+      "IOKit",
+      "-framework",
+      "DiskArbitration",
+      "-o",
+      "/private/tmp/copland-angle-range-production-probe-2026-10-17"
+    ],
+    "compileExitCode": 0,
+    "compileOutput": "",
+    "probeSourceSha256": "e3372658518bd0005c9b3617d95ed2cf3de9b8f5cab2b72d5d4e576c733dcc92",
+    "librarySha256": "d26226ca6b83f9b07fb42f002c8d90b566bbf37f255c49152b81a67310b2fac4",
+    "resolverSourceSha256": "f02c7bfb9a8c969ecf66450ba386e1213c8aa603ff12516e83a6be4290637bc5"
+  },
+  "result": {
+    "cancelled": false,
+    "coverageComplete": false,
+    "fullIdSetSha256": "d45662a39a54008cd96d2ba6d9eb25733f1b5c5d362e230360028a77d69ebfad",
+    "issueCount": 1344,
+    "issueExamples": [
+      {
+        "explanation": "A recorded side reference has no established timeline-use mapping; that branch was not included.",
+        "field": "",
+        "kind": "UnresolvedReference",
+        "object": 49157,
+        "objectClass": "CMPO"
+      },
+      {
+        "explanation": "A recorded side reference has no established timeline-use mapping; that branch was not included.",
+        "field": "",
+        "kind": "UnresolvedReference",
+        "object": 31772,
+        "objectClass": "TKFX"
+      },
+      {
+        "explanation": "A recorded side reference has no established timeline-use mapping; that branch was not included.",
+        "field": "",
+        "kind": "UnresolvedReference",
+        "object": 31775,
+        "objectClass": "TKFX"
+      },
+      {
+        "explanation": "A recorded side reference has no established timeline-use mapping; that branch was not included.",
+        "field": "",
+        "kind": "UnresolvedReference",
+        "object": 31778,
+        "objectClass": "TKFX"
+      },
+      {
+        "explanation": "A recorded side reference has no established timeline-use mapping; that branch was not included.",
+        "field": "",
+        "kind": "UnresolvedReference",
+        "object": 33183,
+        "objectClass": "TKFX"
+      },
+      {
+        "explanation": "A recorded side reference has no established timeline-use mapping; that branch was not included.",
+        "field": "",
+        "kind": "UnresolvedReference",
+        "object": 47841,
+        "objectClass": "CMPO"
+      },
+      {
+        "explanation": "A recorded side reference has no established timeline-use mapping; that branch was not included.",
+        "field": "",
+        "kind": "UnresolvedReference",
+        "object": 47950,
+        "objectClass": "CMPO"
+      },
+      {
+        "explanation": "A recorded side reference has no established timeline-use mapping; that branch was not included.",
+        "field": "",
+        "kind": "UnresolvedReference",
+        "object": 47588,
+        "objectClass": "CMPO"
+      },
+      {
+        "explanation": "The relative track reference has no established used-media mapping.",
+        "field": "",
+        "kind": "UnresolvedReference",
+        "object": 2652,
+        "objectClass": "TRKR"
+      },
+      {
+        "explanation": "The relative track reference has no established used-media mapping.",
+        "field": "",
+        "kind": "UnresolvedReference",
+        "object": 2655,
+        "objectClass": "TRKR"
+      },
+      {
+        "explanation": "The used portion, rate conversion or effect timing is not established; only independently proven media routes remain available.",
+        "field": "",
+        "kind": "UnresolvedReference",
+        "object": 1095,
+        "objectClass": "SPED"
+      },
+      {
+        "explanation": "The sequence's component positions or requested portion are not established; uncertain timeline branches were not included.",
+        "field": "",
+        "kind": "UnresolvedReference",
+        "object": 382,
+        "objectClass": "SEQU"
+      }
+    ],
+    "issueExplanationCounts": {
+      "A recorded side reference has no established timeline-use mapping; that branch was not included.": 1295,
+      "The relative track reference has no established used-media mapping.": 23,
+      "The sequence's component positions or requested portion are not established; uncertain timeline branches were not included.": 5,
+      "The used portion, rate conversion or effect timing is not established; only independently proven media routes remain available.": 9,
+      "The used representation is not established; alternative representation branches were not included.": 12
+    },
+    "issueKinds": {
+      "UnresolvedReference": 1344
+    },
+    "issueObjectClassCounts": {
+      "CMPO": 947,
+      "MASK": 4,
+      "RSET": 12,
+      "SEQU": 5,
+      "SPED": 5,
+      "TKFX": 348,
+      "TRKR": 23
+    },
+    "matchingSequences": [
+      {
+        "name": "HAA_1729_8645_SUBMASTER.Exported.01",
+        "object": 49157
+      }
+    ],
+    "mediaReferenceOccurrences": 663,
+    "parseMilliseconds": 336,
+    "parsedObjects": 49159,
+    "parsedRelationships": 181711,
+    "readerComplete": true,
+    "readerDiagnostics": [],
+    "readerOutcome": 1,
+    "resolveDeadlineSeconds": 30,
+    "resolveMilliseconds": 101,
+    "resolvedEdges": 32189,
+    "sampleFullIds": [
+      "060a2b340101010501010f1013000000009200d627100696695830138b72a179",
+      "060a2b340101010501010f101300000000a5eed7271006967bb630138b72a179",
+      "060a2b340101010501010f1013000000016639d8271006968b1e30138b72a179",
+      "060a2b340101010501010f10130000000188eed827100696687a30138b72a179"
+    ],
+    "selectorCheck": {
+      "object": 33511,
+      "reachedByResolvedEdge": true,
+      "selectedEdge33511To11236": true,
+      "selectedEdgeCheckApplies": true,
+      "selectedEdgeObservedAndAlternativesAbsent": true,
+      "unselectedEdge33511To11237": false,
+      "unselectedEdge33511To11238": false
+    },
+    "sideLinkCandidateCounts": {
+      "CMPO:TrackGroup.tracks[0].filler_proxy->TRKR": 766,
+      "CMPO:TrackGroup.tracks[1].filler_proxy->TRKR": 186,
+      "CMPO:TrackGroup.tracks[2].filler_proxy->TRKR": 10,
+      "CMPO:TrackGroup.tracks[8].filler_proxy->TRKR": 1,
+      "CMPO:TrackGroup.tracks[9].filler_proxy->TRKR": 1,
+      "TKFX:TrackGroup.tracks[0].filler_proxy->TRKR": 348,
+      "TKFX:TrackGroup.tracks[1].filler_proxy->TRKR": 15,
+      "TKFX:TrackGroup.tracks[2].filler_proxy->TRKR": 14
+    },
+    "sideLinkExamples": [
+      {
+        "field": "TrackGroup.tracks[0].filler_proxy",
+        "object": 3892,
+        "objectClass": "TKFX",
+        "target": 1515,
+        "targetClass": "TRKR",
+        "targetNonNullOutgoing": 0,
+        "targetOutgoingFields": []
+      },
+      {
+        "field": "TrackGroup.tracks[0].filler_proxy",
+        "object": 3915,
+        "objectClass": "TKFX",
+        "target": 1520,
+        "targetClass": "TRKR",
+        "targetNonNullOutgoing": 0,
+        "targetOutgoingFields": []
+      },
+      {
+        "field": "TrackGroup.tracks[0].filler_proxy",
+        "object": 4015,
+        "objectClass": "TKFX",
+        "target": 1614,
+        "targetClass": "TRKR",
+        "targetNonNullOutgoing": 0,
+        "targetOutgoingFields": []
+      },
+      {
+        "field": "TrackGroup.tracks[0].filler_proxy",
+        "object": 4028,
+        "objectClass": "TKFX",
+        "target": 1619,
+        "targetClass": "TRKR",
+        "targetNonNullOutgoing": 0,
+        "targetOutgoingFields": []
+      },
+      {
+        "field": "TrackGroup.tracks[0].filler_proxy",
+        "object": 4128,
+        "objectClass": "TKFX",
+        "target": 1713,
+        "targetClass": "TRKR",
+        "targetNonNullOutgoing": 0,
+        "targetOutgoingFields": []
+      },
+      {
+        "field": "TrackGroup.tracks[0].filler_proxy",
+        "object": 4146,
+        "objectClass": "TKFX",
+        "target": 1718,
+        "targetClass": "TRKR",
+        "targetNonNullOutgoing": 0,
+        "targetOutgoingFields": []
+      },
+      {
+        "field": "TrackGroup.tracks[0].filler_proxy",
+        "object": 4289,
+        "objectClass": "TKFX",
+        "target": 1773,
+        "targetClass": "TRKR",
+        "targetNonNullOutgoing": 0,
+        "targetOutgoingFields": []
+      },
+      {
+        "field": "TrackGroup.tracks[0].filler_proxy",
+        "object": 4299,
+        "objectClass": "TKFX",
+        "target": 1777,
+        "targetClass": "TRKR",
+        "targetNonNullOutgoing": 0,
+        "targetOutgoingFields": []
+      },
+      {
+        "field": "TrackGroup.tracks[0].filler_proxy",
+        "object": 5262,
+        "objectClass": "TKFX",
+        "target": 2126,
+        "targetClass": "TRKR",
+        "targetNonNullOutgoing": 0,
+        "targetOutgoingFields": []
+      },
+      {
+        "field": "TrackGroup.tracks[0].filler_proxy",
+        "object": 5288,
+        "objectClass": "TKFX",
+        "target": 2136,
+        "targetClass": "TRKR",
+        "targetNonNullOutgoing": 0,
+        "targetOutgoingFields": []
+      }
+    ],
+    "uniqueFullFileMobIds": 663,
+    "uniqueLegacyIds": 0
+  },
+  "limits": [
+    "Structural recorded-route check only; no playback/timeline or Avid-exported exact used-media comparison.",
+    "No expected total media count or performance saving is asserted.",
+    "The selector edge check applies only if that node is reached by this requested sequence portion.",
+    "Coverage gaps and cancellation are reported rather than treated as an exact complete media set.",
+    "Issue and side-link counts describe recorded resolver notices, not a count of missing or uncertain physical files."
+  ],
+  "executionAttempts": [
+    {
+      "command": [
+        "/private/tmp/copland-angle-range-production-probe-2026-10-17",
+        "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/8645 v1.avb"
+      ],
+      "exitCode": -6,
+      "wallSeconds": 0.355,
+      "stderr": "Incompatible processor. This Qt build requires the following features:\n    neon\n",
+      "sandbox": "default"
+    },
+    {
+      "command": [
+        "/private/tmp/copland-angle-range-production-probe-2026-10-17",
+        "/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/8645 v1.avb"
+      ],
+      "exitCode": 0,
+      "sandbox": "require_escalated, read-only Qt probe due NEON detection block",
+      "resolveDeadlineSeconds": 30,
+      "stderr": "",
+      "note": "Relinked after BUILD READY2 with selected-child clock, scalar-control leaf handling and transition overlap guards; completed without cancellation."
+    }
+  ],
+  "probeSourcePath": "/private/tmp/copland-angle-range-production-probe-2026-10-17.cpp",
+  "probeSourceSha256": "e3372658518bd0005c9b3617d95ed2cf3de9b8f5cab2b72d5d4e576c733dcc92",
+  "probeBinarySha256": "749627dc2a162ea905e408050c9c4947e691a9a3ae04941f5c294b8091c09e87",
+  "rawOutputPath": "/private/tmp/copland-angle-range-production-probe-2026-10-17-output.json",
+  "diagnosticInterpretation": {
+    "countsAreMissingMediaCounts": false,
+    "sideReferenceCandidates": "The inspected candidates point from TrackGroup filler_proxy fields to TRKR relative-track objects. Ten displayed targets have no explicit nonnull outgoing graph edges, but TRKR can have context-relative meaning; absence of explicit edges is not proof of absent implicit media usage.",
+    "scalarControls": "The final probe has no PRCL warning objects; its remaining issues have the object-class/explanation distribution recorded in result.",
+    "candidateCountsLimit": "Side-link candidate counts can exceed warning-object counts because one object can carry more than one such link."
+  },
+  "embeddedProbeSource": "#include \"mediaengine/avbreader.h\"\n#include \"mediaengine/avbreferences.h\"\n#include \"mediaengine/avbobjects_p.h\"\n#include <QCoreApplication>\n#include <QCryptographicHash>\n#include <QElapsedTimer>\n#include <QFile>\n#include <QJsonArray>\n#include <QJsonDocument>\n#include <QJsonObject>\n#include <QSet>\n#include <QTextStream>\n#include <algorithm>\n#include <chrono>\n#include <condition_variable>\n#include <mutex>\n#include <thread>\n\nusing namespace MediaEngine;\n\nQString issueKind(AvbResolutionIssue::Kind kind)\n{\n\tswitch (kind)\n\t{\n\tcase AvbResolutionIssue::Kind::InvalidSelection: return QStringLiteral(\"InvalidSelection\");\n\tcase AvbResolutionIssue::Kind::IncompleteSource: return QStringLiteral(\"IncompleteSource\");\n\tcase AvbResolutionIssue::Kind::UnresolvedReference: return QStringLiteral(\"UnresolvedReference\");\n\tcase AvbResolutionIssue::Kind::AmbiguousReference: return QStringLiteral(\"AmbiguousReference\");\n\tcase AvbResolutionIssue::Kind::UnsupportedIdentity: return QStringLiteral(\"UnsupportedIdentity\");\n\tcase AvbResolutionIssue::Kind::Cancelled: return QStringLiteral(\"Cancelled\");\n\t}\n\treturn QStringLiteral(\"Unknown\");\n}\n\nint main(int argc, char **argv)\n{\n\tQCoreApplication app(argc, argv);\n\tif (argc != 2)\n\t\treturn 2;\n\tQFile file(QString::fromLocal8Bit(argv[1]));\n\tif (!file.open(QIODevice::ReadOnly))\n\t\treturn 3;\n\tCancellation parseCancellation;\n\tQElapsedTimer timer;\n\ttimer.start();\n\tauto source = QSharedPointer<ParsedSource>::create(AvbReader{}.read(file, {{}, parseCancellation}));\n\tconst auto parseMilliseconds = timer.elapsed();\n\tCancellation cancellation;\n\tAvbReferenceIndex index(source, cancellation);\n\tQVector<ObjectHandle> chosen;\n\tQJsonArray matchingSequences;\n\tfor (const auto &entry : index.sequences())\n\t\tif (entry.name == QLatin1String(\"HAA_1729_8645_SUBMASTER.Exported.01\"))\n\t\t{\n\t\t\tchosen.append(entry.objectHandle);\n\t\t\tmatchingSequences.append(QJsonObject{{\"object\", qint64(entry.objectHandle)}, {\"name\", entry.name}});\n\t\t}\n\tif (chosen.size() != 1)\n\t{\n\t\tQTextStream(stdout) << QJsonDocument(QJsonObject{{\"error\", \"Expected exactly one listed matching sequence\"},\n\t\t\t{\"matchingSequences\", matchingSequences}, {\"readerOutcome\", int(source->outcome)}}).toJson(QJsonDocument::Compact);\n\t\treturn 4;\n\t}\n\tstd::mutex mutex;\n\tstd::condition_variable finished;\n\tbool complete = false;\n\tstd::thread watchdog([&]\n\t{\n\t\tstd::unique_lock<std::mutex> lock(mutex);\n\t\tif (!finished.wait_for(lock, std::chrono::seconds(30), [&] { return complete; }))\n\t\t\tcancellation.cancel();\n\t});\n\ttimer.restart();\n\tconst auto result = index.resolveReferences({AvbSelection::Kind::SelectedSequences, chosen}, cancellation);\n\tconst auto resolveMilliseconds = timer.elapsed();\n\t{\n\t\tstd::lock_guard<std::mutex> lock(mutex);\n\t\tcomplete = true;\n\t}\n\tfinished.notify_one();\n\twatchdog.join();\n\tQSet<QByteArray> uniqueIds;\n\tQSet<QByteArray> legacyIds;\n\tfor (const auto &reference : result.mediaReferences)\n\t{\n\t\tif (!reference.fileMobId.isEmpty()) uniqueIds.insert(reference.fileMobId);\n\t\tif (!reference.legacyId.isEmpty()) legacyIds.insert(reference.legacyId);\n\t}\n\tQList<QByteArray> sortedIds = uniqueIds.values();\n\tstd::sort(sortedIds.begin(), sortedIds.end());\n\tQCryptographicHash idHash(QCryptographicHash::Sha256);\n\tQJsonArray samples;\n\tfor (const auto &id : sortedIds)\n\t{\n\t\tidHash.addData(id);\n\t\tif (samples.size() < 4) samples.append(QString::fromLatin1(id.toHex()));\n\t}\n\tQJsonObject counts;\n\tQJsonObject classCounts;\n\tQJsonObject explanationCounts;\n\tQHash<ObjectHandle, const AvidObject *> objects;\n\tQHash<ObjectHandle, QVector<const Relationship *>> outgoing;\n\tfor (const auto &object : source->objects) objects.insert(object.handle, &object);\n\tfor (const auto &edge : source->relationships) outgoing[edge.origin].append(&edge);\n\tQJsonArray examples;\n\tQSet<ObjectHandle> sideIssueObjects;\n\tfor (const auto &issue : result.issues)\n\t{\n\t\tconst auto name = issueKind(issue.kind);\n\t\tcounts[name] = counts.value(name).toInt() + 1;\n\t\tconst auto *object = objects.value(issue.objectHandle);\n\t\tconst auto className = object && object->avb ? QString::fromLatin1(object->avb->classId) : QStringLiteral(\"Unavailable\");\n\t\tclassCounts[className] = classCounts.value(className).toInt() + 1;\n\t\texplanationCounts[issue.explanation] = explanationCounts.value(issue.explanation).toInt() + 1;\n\t\tif (issue.explanation.startsWith(QLatin1String(\"A recorded side reference\"))) sideIssueObjects.insert(issue.objectHandle);\n\t\tif (examples.size() < 12)\n\t\t\texamples.append(QJsonObject{{\"kind\", name}, {\"object\", qint64(issue.objectHandle)},\n\t\t\t\t{\"objectClass\", className}, {\"field\", issue.propertyLocator.name}, {\"explanation\", issue.explanation}});\n\t}\n\tQJsonObject sideLinkCounts;\n\tQJsonArray sideLinkExamples;\n\tauto sortedSideIssueObjects = sideIssueObjects.values();\n\tstd::sort(sortedSideIssueObjects.begin(), sortedSideIssueObjects.end());\n\tfor (const auto handle : sortedSideIssueObjects)\n\t\tfor (const auto *edge : outgoing.value(handle))\n\t\t{\n\t\t\tconst auto *child = objects.value(edge->target);\n\t\t\tif (!child || !child->avb || !Detail::supportsAvbComponent(child->avb->classId)) continue;\n\t\t\tconst auto &field = edge->locator.name;\n\t\t\tif (field.startsWith(QLatin1String(\"Sequence.components[\")) ||\n\t\t\t\t(field.startsWith(QLatin1String(\"TrackGroup.tracks[\")) && field.endsWith(QLatin1String(\".component\"))) ||\n\t\t\t\tfield == QLatin1String(\"Component.precomputed\") || field == QLatin1String(\"SourceClip.mob_id\") ||\n\t\t\t\tfield == QLatin1String(\"AudioSuitePluginEffect.mob_id\")) continue;\n\t\t\tconst auto *origin = objects.value(handle);\n\t\t\tconst auto originClass = origin && origin->avb ? QString::fromLatin1(origin->avb->classId) : QStringLiteral(\"Unavailable\");\n\t\t\tconst auto childClass = QString::fromLatin1(child->avb->classId);\n\t\t\tconst auto key = originClass + QLatin1Char(':') + field + QStringLiteral(\"->\") + childClass;\n\t\t\tsideLinkCounts[key] = sideLinkCounts.value(key).toInt() + 1;\n\t\t\tif (sideLinkExamples.size() < 10)\n\t\t\t{\n\t\t\t\tqsizetype nonNullOutgoing = 0;\n\t\t\t\tQJsonArray outgoingFields;\n\t\t\t\tfor (const auto *next : outgoing.value(child->handle))\n\t\t\t\t\tif (next->target || (next->referenceEncoding == QLatin1String(\"AVB.MobId.MaterialLE\") && !next->recordedReference.toByteArray().isEmpty()))\n\t\t\t\t\t{\n\t\t\t\t\t\t++nonNullOutgoing;\n\t\t\t\t\t\tif (outgoingFields.size() < 8) outgoingFields.append(next->locator.name);\n\t\t\t\t\t}\n\t\t\t\tsideLinkExamples.append(QJsonObject{{\"object\", qint64(handle)}, {\"objectClass\", originClass}, {\"field\", field},\n\t\t\t\t\t{\"target\", qint64(child->handle)}, {\"targetClass\", childClass}, {\"targetNonNullOutgoing\", nonNullOutgoing},\n\t\t\t\t\t{\"targetOutgoingFields\", outgoingFields}});\n\t\t\t}\n\t\t}\n\tbool reached = false;\n\tbool selected = false;\n\tbool unusedA = false;\n\tbool unusedB = false;\n\tfor (const auto &edge : result.edges)\n\t{\n\t\treached |= edge.origin == 33511 || edge.target == 33511;\n\t\tselected |= edge.origin == 33511 && edge.target == 11236;\n\t\tunusedA |= edge.origin == 33511 && edge.target == 11237;\n\t\tunusedB |= edge.origin == 33511 && edge.target == 11238;\n\t}\n\tQJsonArray diagnostics;\n\tfor (const auto &diagnostic : source->diagnostics.mid(0, 6)) diagnostics.append(diagnostic);\n\tconst QJsonObject output{{\"matchingSequences\", matchingSequences}, {\"readerOutcome\", int(source->outcome)},\n\t\t{\"readerComplete\", source->outcome == ParsedSource::Outcome::Complete}, {\"readerDiagnostics\", diagnostics},\n\t\t{\"parsedObjects\", source->objects.size()}, {\"parsedRelationships\", source->relationships.size()},\n\t\t{\"parseMilliseconds\", parseMilliseconds}, {\"resolveMilliseconds\", resolveMilliseconds},\n\t\t{\"resolveDeadlineSeconds\", 30}, {\"coverageComplete\", result.coverageComplete}, {\"cancelled\", result.cancelled},\n\t\t{\"resolvedEdges\", result.edges.size()}, {\"mediaReferenceOccurrences\", result.mediaReferences.size()},\n\t\t{\"uniqueFullFileMobIds\", uniqueIds.size()}, {\"uniqueLegacyIds\", legacyIds.size()},\n\t\t{\"fullIdSetSha256\", QString::fromLatin1(idHash.result().toHex())}, {\"sampleFullIds\", samples},\n\t\t{\"issueCount\", result.issues.size()}, {\"issueKinds\", counts}, {\"issueExamples\", examples},\n\t\t{\"issueObjectClassCounts\", classCounts}, {\"issueExplanationCounts\", explanationCounts},\n\t\t{\"sideLinkCandidateCounts\", sideLinkCounts}, {\"sideLinkExamples\", sideLinkExamples},\n\t\t{\"selectorCheck\", QJsonObject{{\"object\", 33511}, {\"reachedByResolvedEdge\", reached},\n\t\t\t{\"selectedEdge33511To11236\", selected}, {\"unselectedEdge33511To11237\", unusedA},\n\t\t\t{\"unselectedEdge33511To11238\", unusedB},\n\t\t\t{\"selectedEdgeCheckApplies\", reached}, {\"selectedEdgeObservedAndAlternativesAbsent\", reached && selected && !unusedA && !unusedB}}}};\n\tQTextStream(stdout) << QJsonDocument(output).toJson(QJsonDocument::Compact);\n\treturn 0;\n}\n",
+  "repositoryCopyNote": "Copied after the final read-only probe; embedded source preserves reproduction without relying on the temporary source path."
+}

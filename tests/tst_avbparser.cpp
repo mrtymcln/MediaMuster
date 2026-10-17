@@ -83,6 +83,8 @@ private slots:
 	void media_file_ids_only_use_msml_locators();
 	void whole_bin_excludes_unlisted_records_data();
 	void whole_bin_excludes_unlisted_records();
+	void source_track_links_select_number_and_kind_data();
+	void source_track_links_select_number_and_kind();
 	void null_locator_ids_do_not_enable_legacy_fallback();
 	void malformed_locator_keeps_other_proven_file_ids();
 	void binary_only_master_data();
@@ -252,6 +254,95 @@ void TestAvbParser::whole_bin_excludes_unlisted_records()
 	QCOMPARE(result.referenceResult->mediaReferences.size(), 1);
 	// The reader still saw both compositions; storage alone does not mean membership.
 	QCOMPARE(compositionIds(result), (QSet<QString>{MobId::format(TestAvb::Source), MobId::format(TestAvb::Other)}));
+}
+
+void TestAvbParser::source_track_links_select_number_and_kind_data()
+{
+	QTest::addColumn<bool>("big");
+	QTest::addColumn<int>("requestedTrack");
+	QTest::addColumn<int>("requestedKind");
+	QTest::addColumn<bool>("includeSecondAudioTrack");
+	QTest::addColumn<bool>("listMaster");
+	for (const bool big : {false, true})
+	{
+		const auto order = big ? "BE" : "LE";
+		QTest::newRow(qPrintable(QStringLiteral("%1-V1").arg(order))) << big << 1 << 1 << false << false;
+		QTest::newRow(qPrintable(QStringLiteral("%1-A1").arg(order))) << big << 1 << 2 << false << false;
+		QTest::newRow(qPrintable(QStringLiteral("%1-A2").arg(order))) << big << 2 << 2 << false << false;
+		QTest::newRow(qPrintable(QStringLiteral("%1-A1-and-A2").arg(order))) << big << 1 << 2 << true << false;
+		QTest::newRow(qPrintable(QStringLiteral("%1-listed-master").arg(order))) << big << 1 << 2 << false << true;
+	}
+}
+
+void TestAvbParser::source_track_links_select_number_and_kind()
+{
+	QFETCH(bool, big);
+	QFETCH(int, requestedTrack);
+	QFETCH(int, requestedKind);
+	QFETCH(bool, includeSecondAudioTrack);
+	QFETCH(bool, listMaster);
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	auto audio2Id = TestAvb::Other;
+	audio2Id[31] = char(quint8(audio2Id[31]) ^ 1);
+	auto sequenceId = TestAvb::Master;
+	sequenceId[31] = char(quint8(sequenceId[31]) ^ 1);
+	TestAvb::Document document;
+	document.bigEndian = big;
+	document.objects = {
+		{"ABIN", {}},
+		{"CMPO", {}}, // Listed sequence, prepared after its source clips are appended.
+		{"CMPO", TestAvb::composition(big, TestAvb::Master, "V1 A1 A2 master", 0, {4, 5, 6}, 0, true, 0, 2, {1, 1, 2})},
+		{"SCLP", TestAvb::sourceClip(big, TestAvb::Source, true, 1, 1)},
+		{"SCLP", TestAvb::sourceClip(big, TestAvb::Other, true, 1, 2)},
+		{"SCLP", TestAvb::sourceClip(big, audio2Id, true, 1, 2)}};
+	TestAvb::appendFileSource(document, TestAvb::mediaLocator(big, TestAvb::Source), TestAvb::Source);
+	TestAvb::appendFileSource(document, TestAvb::mediaLocator(big, TestAvb::Other), TestAvb::Other);
+	TestAvb::appendFileSource(document, TestAvb::mediaLocator(big, audio2Id), audio2Id);
+	const auto requestedClip = quint32(document.objects.size() + 1);
+	document.objects.append({"SCLP", TestAvb::sourceClip(big, TestAvb::Master, true, qint16(requestedTrack), qint16(requestedKind))});
+	QVector<quint32> sequenceTracks{requestedClip};
+	QVector<qint16> sequenceTrackNumbers{1};
+	if (includeSecondAudioTrack)
+	{
+		sequenceTracks.append(quint32(document.objects.size() + 1));
+		sequenceTrackNumbers.append(2);
+		document.objects.append({"SCLP", TestAvb::sourceClip(big, TestAvb::Master, true, 2, 2)});
+	}
+	document.objects[1].payload = TestAvb::composition(big, sequenceId, "Listed edit", 0, sequenceTracks, 0, true, 0, 1, sequenceTrackNumbers);
+	QVector<quint32> listed{2};
+	if (listMaster)
+		listed.append(3);
+	document.objects[0].payload = TestAvb::bin(big, listed);
+	const auto result = AvbBinLoader::load(TestAvb::write(tmp.filePath("source-tracks.avb"), document.bytes()));
+	QVERIFY2(result.usable, qPrintable(result.error));
+	QVERIFY2(result.coverageComplete, qPrintable(result.warnings.join(';')));
+	QVERIFY(result.sourceGraph && result.referenceResult);
+	const auto &source = *result.sourceGraph;
+	const auto decoded = [&](MediaEngine::ObjectHandle handle, const QString &name)
+	{
+		for (const auto &object : source.objects)
+			if (object.handle == handle)
+				for (const auto &field : object.properties)
+					if (field.locator.name == name)
+						return field.decoded;
+		return QVariant{};
+	};
+	QCOMPARE(decoded(requestedClip, QStringLiteral("SourceClip.track_id")).toInt(), requestedTrack);
+	QCOMPARE(decoded(requestedClip, QStringLiteral("Component.media_kind_id")).toInt(), requestedKind);
+	QCOMPARE(decoded(3, QStringLiteral("TrackGroup.tracks[0].index")).toInt(), 1);
+	QCOMPARE(decoded(3, QStringLiteral("TrackGroup.tracks[1].index")).toInt(), 1);
+	QCOMPARE(decoded(3, QStringLiteral("TrackGroup.tracks[2].index")).toInt(), 2);
+	const auto expectedId = requestedKind == 1 ? TestAvb::Source : requestedTrack == 1 ? TestAvb::Other : audio2Id;
+	QSet<QString> expected{MobId::format(expectedId)};
+	if (includeSecondAudioTrack)
+		expected.insert(MobId::format(audio2Id));
+	if (listMaster)
+		expected = {MobId::format(TestAvb::Source), MobId::format(TestAvb::Other), MobId::format(audio2Id)};
+	QCOMPARE(result.mediaFileIds.fullIds, expected);
+	QVERIFY(result.mediaFileIds.legacyKeys.isEmpty());
+	QCOMPARE(result.referenceResult->mediaReferences.size(), expected.size());
+	QCOMPARE(result.referenceResult->roots, (listMaster ? QVector<MediaEngine::ObjectHandle>{2, 3} : QVector<MediaEngine::ObjectHandle>{2}));
 }
 
 void TestAvbParser::null_locator_ids_do_not_enable_legacy_fallback()

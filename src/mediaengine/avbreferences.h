@@ -1,34 +1,14 @@
 #pragma once
 
-// Builds a reference graph from one already-read bin. Choosing sequences walks
-// that graph; it does not reread files, merge physical copies or choose metadata
-// for display. The result keeps the edges needed to explain each inclusion.
+// Resolves Whole Bin references from one already-read bin. It does not reread
+// files, merge physical copies or choose metadata for display. The result keeps
+// the edges needed to explain each inclusion.
 
 #include "scanmodel.h"
 #include <QHash>
 
 namespace MediaEngine
 {
-	struct AvbSequenceEntry
-	{
-		ObjectHandle objectHandle = 0;
-		QString name;
-		QByteArray compositionMobId;
-		bool userPlaced = false;
-		PropertyLocator membershipEvidence;
-	};
-
-	struct AvbSelection
-	{
-		enum class Kind
-		{
-			EntireBin,
-			SelectedSequences
-		};
-		Kind kind = Kind::EntireBin;
-		QVector<ObjectHandle> selectedSequences; ///< Explicitly empty means no sequences; never whole-bin fallback.
-	};
-
 	struct AvbResolvedEdge
 	{
 		ObjectHandle origin = 0;
@@ -48,7 +28,7 @@ namespace MediaEngine
 	{
 		enum class Kind
 		{
-			InvalidSelection,
+			InvalidSource,
 			IncompleteSource,
 			UnresolvedReference,
 			AmbiguousReference,
@@ -90,8 +70,7 @@ namespace MediaEngine
 		explicit AvbReferenceIndex(QSharedPointer<const ParsedSource> source,
 								   const Cancellation &cancellation);
 		const QSharedPointer<const ParsedSource> &source() const { return m_source; }
-		const QVector<AvbSequenceEntry> &sequences() const { return m_sequences; }
-		AvbReferenceResult resolveReferences(const AvbSelection &selection, const Cancellation &cancellation) const;
+		AvbReferenceResult resolveReferences(const Cancellation &cancellation) const;
 
 	private:
 		QSharedPointer<const ParsedSource> m_source;
@@ -100,7 +79,6 @@ namespace MediaEngine
 		QHash<QByteArray, QVector<ObjectHandle>> m_objectsByMobId;
 		QVector<ObjectHandle> m_listedCompositions;
 		QVector<AvbResolutionIssue> m_membershipIssues;
-		QVector<AvbSequenceEntry> m_sequences;
 		bool m_indexComplete = false;
 	};
 }
