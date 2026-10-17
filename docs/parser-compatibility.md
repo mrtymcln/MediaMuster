@@ -42,7 +42,7 @@ required-field checks. The table and CSV expose No Database and No Reference
 removed. Each flag has a corresponding view. Enabled views remain visible at zero,
 and their counts continue to describe the whole inventory.
 
-Scanning opens media and databases for reading; it does not rebuild databases, claim a shared-storage workstation's ownership, or ask another editing seat to rescan. Volume searches retain the existing top-level locations. Manual additions accept correctly structured Avid media trees anywhere, their media folders or their immediate containing directory. Loose database folders, standalone MXF trees and arbitrary recursive archive searches are excluded. See [release-feature-gates.md](release-feature-gates.md) for the current scope contract.
+Scanning opens media and databases for reading; it does not rebuild databases, claim a shared-storage workstation's ownership, or ask another editing seat to rescan. Volume searches retain the existing top-level locations. Manual additions accept an `Avid MediaFiles` or `OMFI MediaFiles` tree anywhere, or an actual drive/share root containing those trees directly. Choosing their media subfolders or an arbitrary containing parent is no longer supported; eligible media inside an admitted tree is still scanned. The background scanner prepares exact MXF/OMFI roots for the engine. Loose database folders, standalone MXF trees and arbitrary recursive archive searches are excluded. See [release-feature-gates.md](release-feature-gates.md) for the current scope contract.
 
 Named Interplay and MediaCentral MXF folders use the same file and database readers.
 This support does not include a connection to the MediaCentral server or its catalogue.

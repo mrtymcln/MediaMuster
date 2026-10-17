@@ -68,10 +68,10 @@ detected paths, including an empty discovery result; starting a scan does not
 search for newly connected drives. Drive discovery runs at startup and when
 **Refresh Volumes** is requested. There are no background or post-scan/operation
 drive checks; use Refresh after connecting or disconnecting a drive.
-Refresh clears sidebar selections while preserving still-scannable manual entries.
-Manual paths that are no longer scannable stay in the session list even when
+Refresh clears sidebar selections while preserving still-admissible manual entries.
+Manual paths that are no longer available stay in the session list even when
 Refresh hides their sidebar rows. Scan All can still retry those paths and report
-their current access/admission failure. The scan's ordinary folder and source
+their current access/folder failure. The scan's ordinary folder and source
 validation remains in place.
 Special contains **Manage Media…**, **Filter by Bin…**, **Filter Precomputes…**,
 and **Rebalance…**, in that order. Filter Precomputes is hidden unless its build
@@ -112,11 +112,24 @@ drive or system media location. They do not search every folder on the drive.
 The system locations are `/Users/Shared/AvidMediaComposer` on macOS, and
 `C:/Users/Public/Documents/Avid Media Composer` plus `C:/` on Windows.
 
-You can add a copied media tree elsewhere, including inside a backup. Select its
-media root, an eligible media subfolder, `Avid MediaFiles`, or the directory
-directly containing the media tree. Selecting a distant ancestor does not start
-a recursive archive search. Adding an eligible media subfolder resolves to its
-containing media root, so eligible sibling folders are scanned too.
+Add Folder or Volume and sidebar drops accept an `Avid MediaFiles` folder with
+its `MXF` tree, an `OMFI MediaFiles` folder, or an actual drive/share root with
+one of those media trees directly underneath it. A copied tree inside a backup
+can be added by selecting its `Avid MediaFiles` or `OMFI MediaFiles` folder.
+The arbitrary parent of that copied tree is not an accepted drive root.
+
+Selecting `MXF`, a numbered/workstation/ingest folder, a quarantine folder or an
+OMFI workstation child is rejected. Select the containing managed tree instead;
+its eligible media folders are still discovered during scanning. Readable files
+are ignored by sidebar drops. Adding or dropping a location does not start a scan.
+Resolved aliases of an accepted tree share one sidebar entry. Adding an OMF tree
+does not enable OMF reading when that build setting is off.
+
+The scan worker prepares each supplied location into exact MXF or OMFI roots
+once, keeps their location context for the resulting rows, and passes those exact
+roots to discovery. Discovery does not search arbitrary parent folders for more
+trees. Internal rescans after operations retain their known scope, including a
+Rebalance MXF root; they do not go through the Add Folder/drop admission gate.
 
 | Media family | Recognised layout and files |
 | --- | --- |
@@ -124,7 +137,8 @@ containing media root, so eligible sibling folders are scanned too.
 | Quarantined MXF | `.mxf` files directly inside `Avid MediaFiles/MXF/Quarantined Files`. Subfolders are not scanned. These files receive the Quarantined flag. |
 | OMF/OMFI, when enabled | `.omf`, `.aif` and `.wav` files directly in `OMFI MediaFiles` or one workstation-folder level below it. |
 
-`Avid MediaFiles/UME` is excluded. Loose media files, a bare `MXF` folder without
+`Avid MediaFiles/UME` and the separate `Avid MediaFiles/Proxy` family are outside
+current discovery. Loose media files, a bare `MXF` folder without
 its `Avid MediaFiles` parent, and an arbitrary folder containing Avid databases
 do not qualify. MXF scans do not descend into nested folders; hidden folders and
 `Creating` are excluded. Media file symlinks and dot-hidden files are excluded. The full

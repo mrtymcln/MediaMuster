@@ -17,6 +17,8 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QDialog>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QComboBox>
 #include <QRadioButton>
 #include <QSemaphore>
@@ -34,6 +36,7 @@
 #include <QLayout>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QMimeData>
 #include <QMenu>
 #include <QMenuBar>
 #include <QPlainTextEdit>
@@ -48,6 +51,7 @@
 #include <QThreadPool>
 #include <QTimer>
 #include <QUuid>
+#include <QUrl>
 #include <algorithm>
 #include <atomic>
 #include <memory>
@@ -233,6 +237,7 @@ private slots:
 	void bin_source_track_gap_keeps_proven_matches_and_console_warning();
 	void omf_gate_controls_scans_and_removes_legacy_rows();
 	void added_locations_require_managed_media_structure();
+	void dropped_locations_keep_only_allowed_trees_without_scanning();
 	void volume_refresh_clears_selection_and_retains_unique_manual_paths();
 	void scan_commands_use_detected_and_manual_locations_data();
 	void scan_commands_use_detected_and_manual_locations();
@@ -297,7 +302,7 @@ void TestOperationUi::scan_results_keep_reconciliation_issues()
 	QVERIFY(QFile::copy(QFINDTESTDATA("fixtures/msmFMID.pmr"), folder + QStringLiteral("/index.pmr")));
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	QSignalSpy issues(window.m_scanner, &MediaScanner::scanIssuesFinished);
-	window.startScanWithPaths({temporary.path()});
+	window.rescanPaths({temporary.path()});
 	QVERIFY(issues.wait(10000));
 	QTRY_COMPARE(window.m_model->rowCount(), 1);
 	QVERIFY(!qvariant_cast<QVector<ScanIssue>>(issues.first().first()).isEmpty());
@@ -323,7 +328,7 @@ void TestOperationUi::scan_start_clears_prepared_rows_after_source_release()
 	QVERIFY(previousScan.isNull());
 	QVERIFY(previousSource.isNull());
 	QSignalSpy finished(window.m_scanner, &MediaScanner::scanFinished);
-	window.startScanWithPaths({m_root});
+	window.rescanPaths({m_root});
 	QCOMPARE(window.m_model->rowCount(), 0);
 	QVERIFY(previousScan.isNull());
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 10000);
@@ -493,7 +498,7 @@ void TestOperationUi::csv_export_completes_before_return()
 		QCOMPARE(window.m_model->rowCount(), 3);
 		QVERIFY(previousScan.isNull());
 		QVERIFY(previousSource.isNull());
-		window.startScanWithPaths({m_root});
+		window.rescanPaths({m_root});
 		QCOMPARE(window.m_model->rowCount(), 0);
 		QVERIFY(previousScan.isNull());
 	}
@@ -774,7 +779,7 @@ void TestOperationUi::undo_restores_inventory()
 	QSignalSpy scanned(window.m_scanner, &MediaScanner::scanFinished);
 	QSignalSpy finished(operations->manager(), &OpManager::operationFinished);
 	QSignalSpy restored(operations, &FileOperationController::originalsRestored);
-	window.startScanWithPaths(roots);
+	window.rescanPaths(roots);
 	QTRY_COMPARE_WITH_TIMEOUT(scanned.count(), 1, 15000);
 	QTRY_VERIFY(operations->isIdle());
 	QCOMPARE(window.m_model->rowCount(), keepOtherLocation ? 2 : 1);
@@ -1024,8 +1029,18 @@ void TestOperationUi::volume_refresh_clears_selection_and_retains_unique_manual_
 	window.addVolumePath(folder + "/.");
 	QCOMPARE(window.m_volumeList->count(), 1);
 	QCOMPARE(window.m_manualVolumes.size(), 1);
+	QCOMPARE(window.m_manualVolumes.value(folder), MediaScanner::Location::Kind::MediaTree);
+#ifndef Q_OS_WIN
+	const QString alias = path("manual/tree-alias");
+	QVERIFY(QFile::link(folder, alias));
+	window.addVolumePath(alias);
+	QCOMPARE(window.m_volumeList->count(), 1);
+	QCOMPARE(window.m_manualVolumes.size(), 1);
+#endif
 	window.rebuildVolumeList({});
 	QCOMPARE(window.m_volumeList->count(), 1);
+	QCOMPARE(window.m_volumeList->item(0)->data(Qt::UserRole).toString(), folder);
+	QCOMPARE(window.m_manualVolumes.value(folder), MediaScanner::Location::Kind::MediaTree);
 	QVERIFY(window.m_volumeList->selectedItems().isEmpty());
 	VolumeInfo volume;
 	volume.name = QStringLiteral("Detected media");
@@ -1049,10 +1064,10 @@ void TestOperationUi::scan_commands_use_detected_and_manual_locations_data()
 void TestOperationUi::scan_commands_use_detected_and_manual_locations()
 {
 	QFETCH(bool, scanAll);
-	const QString shared = path("locations/detected-and-manual");
+	const QString shared = path("locations/detected-and-manual/Avid MediaFiles");
 	const QString detected = path("locations/detected-only");
 	const QString manual = path("locations/manual/Avid MediaFiles");
-	const QString sharedFile = shared + "/Avid MediaFiles/MXF/1/shared.mxf";
+	const QString sharedFile = shared + "/MXF/1/shared.mxf";
 	const QString detectedFile = detected + "/Avid MediaFiles/MXF/1/detected.mxf";
 	const QString manualFile = manual + "/MXF/1/manual.mxf";
 	for (const auto &file : {sharedFile, detectedFile, manualFile})
@@ -1161,16 +1176,26 @@ void TestOperationUi::empty_detected_snapshot_keeps_only_manual_locations()
 void TestOperationUi::added_locations_require_managed_media_structure()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setOmfScanEnabled(false);
 	const QString copiedRoot = path("Desktop/Backup/Avid MediaFiles");
 	const QString legacyRoot = path("Desktop/Legacy/OMFI MediaFiles");
 	QVERIFY(QDir().mkpath(copiedRoot + "/MXF/1"));
-	QVERIFY(QDir().mkpath(legacyRoot));
+	QVERIFY(QDir().mkpath(copiedRoot + "/MXF/Edit01.1"));
+	QVERIFY(QDir().mkpath(copiedRoot + "/MXF/Monday"));
+	QVERIFY(QDir().mkpath(copiedRoot + "/MXF/Quarantined Files"));
+	QVERIFY(QDir().mkpath(legacyRoot + "/Workstation"));
 	QVERIFY(put(path("loose/msmFMID.pmr"), "not an admission rule"));
+	const QString mediaFile = copiedRoot + "/MXF/1/readable.mxf";
+	QVERIFY(put(mediaFile, "a readable file is not a folder input"));
 	QVERIFY(QDir().mkpath(path("standalone/MXF/1")));
 	QVERIFY(QDir().mkpath(path("ume/Avid MediaFiles/UME/1")));
 	const int originalCount = window.m_volumeList->count();
-	for (const QString &rejected : {path("loose"), path("standalone/MXF"),
-									path("ume/Avid MediaFiles/UME/1"), path("Desktop")})
+	QSignalSpy discovering(window.m_scanner, &MediaScanner::scanDiscovering);
+	for (const QString &rejected : {path("loose"), path("standalone/MXF"), path("Desktop"),
+									path("Desktop/Backup"), copiedRoot + "/MXF", copiedRoot + "/MXF/1",
+									copiedRoot + "/MXF/Edit01.1", copiedRoot + "/MXF/Monday",
+									copiedRoot + "/MXF/Quarantined Files", legacyRoot + "/Workstation",
+									path("ume/Avid MediaFiles/UME/1"), mediaFile})
 	{
 		window.addVolumePath(rejected);
 		QCOMPARE(window.m_volumeList->count(), originalCount);
@@ -1181,9 +1206,62 @@ void TestOperationUi::added_locations_require_managed_media_structure()
 	QCOMPARE(window.m_volumeList->count(), originalCount + 2);
 	QVERIFY(window.m_manualVolumes.contains(copiedRoot));
 	QVERIFY(window.m_manualVolumes.contains(legacyRoot));
-	QCOMPARE(window.m_omfScanEnabled, FeatureFlags::kOmfScan); // Adding a location preserves the build setting.
+	QCOMPARE(window.m_manualVolumes.value(copiedRoot), MediaScanner::Location::Kind::MediaTree);
+	QCOMPARE(window.m_manualVolumes.value(legacyRoot), MediaScanner::Location::Kind::MediaTree);
+	QVERIFY(!window.m_omfScanEnabled); // Adding an OMF tree does not enable its reader.
 	window.addVolumePath(copiedRoot);
 	QCOMPARE(window.m_volumeList->count(), originalCount + 2);
+	QVERIFY(window.m_operations->isIdle());
+	QCOMPARE(discovering.count(), 0);
+}
+
+void TestOperationUi::dropped_locations_keep_only_allowed_trees_without_scanning()
+{
+	const QString tree = path("drop/Avid MediaFiles");
+	const QString mediaFile = tree + "/MXF/1/readable.mxf";
+	QVERIFY(put(mediaFile, QByteArray(4096, '\0')));
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile retained;
+	retained.mediaFilePath = path("retained.mxf");
+	window.onScanFinished(TestMediaFile::seeded({retained}));
+	window.show();
+	QSignalSpy dropped(window.m_volumeList, &VolumeListWidget::pathsDropped);
+	QSignalSpy discovering(window.m_scanner, &MediaScanner::scanDiscovering);
+	QSignalSpy finished(window.m_scanner, &MediaScanner::scanFinished);
+	QMimeData fileOnly;
+	fileOnly.setUrls({QUrl::fromLocalFile(mediaFile)});
+	QDragEnterEvent fileEnter(QPoint{}, Qt::CopyAction, &fileOnly, Qt::LeftButton, Qt::NoModifier);
+	QApplication::sendEvent(window.m_volumeList->viewport(), &fileEnter);
+	QVERIFY(!fileEnter.isAccepted());
+	QCOMPARE(dropped.count(), 0);
+	QCOMPARE(window.m_volumeList->count(), 0);
+
+	QMimeData mixed;
+	mixed.setUrls({QUrl::fromLocalFile(tree), QUrl::fromLocalFile(tree + "/."),
+				   QUrl::fromLocalFile(path("drop")), QUrl::fromLocalFile(tree + "/MXF/1"),
+				   QUrl::fromLocalFile(mediaFile)});
+	QDragEnterEvent enter(QPoint{}, Qt::CopyAction, &mixed, Qt::LeftButton, Qt::NoModifier);
+	QApplication::sendEvent(window.m_volumeList->viewport(), &enter);
+	QVERIFY(enter.isAccepted());
+	QDropEvent drop(QPointF{}, Qt::CopyAction, &mixed, Qt::LeftButton, Qt::NoModifier);
+	QApplication::sendEvent(window.m_volumeList->viewport(), &drop);
+	QVERIFY(drop.isAccepted());
+	QCOMPARE(dropped.count(), 1);
+	QVERIFY(!dropped.first().first().toStringList().contains(mediaFile));
+	QCOMPARE(window.m_volumeList->count(), 1);
+	QCOMPARE(window.m_volumeList->item(0)->data(Qt::UserRole).toString(), tree);
+	QCOMPARE(window.m_manualVolumes.size(), 1);
+	QVERIFY(window.m_manualVolumes.contains(tree));
+	QCOMPARE(window.m_manualVolumes.value(tree), MediaScanner::Location::Kind::MediaTree);
+	QVERIFY(window.m_operations->isIdle());
+	QCOMPARE(discovering.count(), 0);
+	QCOMPARE(finished.count(), 0);
+	QCOMPARE(window.m_model->rowCount(), 1);
+	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, retained.mediaFilePath);
+	window.rebuildVolumeList({});
+	QCOMPARE(window.m_volumeList->count(), 1);
+	QCOMPARE(window.m_volumeList->item(0)->data(Qt::UserRole).toString(), tree);
+	QVERIFY(window.m_volumeList->selectedItems().isEmpty());
 }
 
 void TestOperationUi::feature_flags_configure_startup_and_text_undo_works()
@@ -2414,14 +2492,14 @@ void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 	window.setOmfScanEnabled(false);
 	window.m_operations->setUndoEnabled(false);
 	QSignalSpy finished(window.m_scanner, &MediaScanner::scanFinished);
-	window.startScanWithPaths({root});
+	window.rescanPaths({root});
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
 	QTRY_VERIFY(window.m_operations->isIdle());
 	QCOMPARE(window.m_model->rowCount(), 1);
 	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
 	QVERIFY(!window.m_model->fileAt(0).omfEra);
 	window.setOmfScanEnabled(true);
-	window.startScanWithPaths({root});
+	window.rescanPaths({root});
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 2, 15000);
 	QTRY_VERIFY(window.m_operations->isIdle());
 	QCOMPARE(window.m_model->rowCount(), 2);
@@ -2433,7 +2511,7 @@ void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
 	QCOMPARE(window.m_model->rowCount(), 1);
 	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
 	QVERIFY(QFileInfo::exists(omfPath));
-	window.startScanWithPaths({root});
+	window.rescanPaths({root});
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 3, 15000);
 	QTRY_VERIFY(window.m_operations->isIdle());
 	QCOMPARE(window.m_model->rowCount(), 1);

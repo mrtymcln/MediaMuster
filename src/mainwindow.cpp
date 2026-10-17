@@ -742,7 +742,7 @@ void MainWindow::setupConnections()
 			{
 				const auto roots = restorationScanPaths(m_model->allFiles(), paths);
 				if (!roots.isEmpty())
-					startScanWithPaths(roots);
+					rescanPaths(roots);
 			});
 	connect(m_operations, &FileOperationController::sourcesRemoved, this,
 			[this](const QSet<QString> &paths)
@@ -842,11 +842,8 @@ void MainWindow::setupConnections()
 	// destructive action shouldn't hang off a stray keypress. Delete stays
 	// available via the right-click menu and Manage Media.
 	// Separate dialogs must keep their own Escape dismissal/cancellation path.
-	new QShortcut(QKeySequence(Qt::Key_Escape), this,
-				  [this]()
-				  {
-					  m_searchField->clear();
-				  }, Qt::WidgetWithChildrenShortcut);
+	new QShortcut(QKeySequence(Qt::Key_Escape), this, [this]()
+				  { m_searchField->clear(); }, Qt::WidgetWithChildrenShortcut);
 }
 
 // MARK: - Feature configuration
@@ -1126,7 +1123,7 @@ void MainWindow::onRebalance()
 		return;
 	}
 	addLog(QtInfoMsg, QStringLiteral("rebalance"), QStringLiteral("Re-scanning '%1' after rebalance").arg(volumePath));
-	startScanWithPaths(QStringList() << volumePath);
+	rescanPaths({volumePath});
 }
 
 // MARK: - Volume list management
@@ -1198,14 +1195,15 @@ void MainWindow::onPathsDropped(const QStringList &paths)
 
 void MainWindow::addVolumePath(const QString &requestedPath)
 {
-	const QString path = resolvedVolumePath(requestedPath);
-	if (!MediaScanner::canScanPath(path))
+	const auto location = MediaScanner::addedLocation(requestedPath);
+	if (!location)
 	{
-		const QString message = tr("Please add a recognised Avid folder, or its parent.");
+		const QString message = tr("Please add an Avid MediaFiles or OMFI MediaFiles folder, or a drive containing them at its root.");
 		addLog(QtWarningMsg, QStringLiteral("volumes"), message);
 		statusBar()->showMessage(message, 10000);
 		return;
 	}
+	const QString path = location->path;
 	for (int i = 0; i < m_volumeList->count(); ++i)
 	{
 		if (resolvedVolumePath(m_volumeList->item(i)->data(Qt::UserRole).toString()) == path)
@@ -1235,7 +1233,7 @@ void MainWindow::addVolumePath(const QString &requestedPath)
 	auto *item = makeVolumeItem(info, displayName);
 	m_volumeList->addItem(item);
 	item->setSelected(true);
-	m_manualVolumes.insert(path);
+	m_manualVolumes.insert(path, location->kind);
 	addLog(QtInfoMsg, QStringLiteral("volumes"), QStringLiteral("Added: %1").arg(path));
 }
 
@@ -1252,17 +1250,18 @@ void MainWindow::rebuildVolumeList(const QVector<VolumeInfo> &volumes)
 		m_detectedVolumePaths.append(volume.path);
 
 	QVector<VolumeInfo> listedVolumes = volumes;
-	QSet<QString> manualPathsToRestore = m_manualVolumes;
+	QStringList manualPaths = m_manualVolumes.keys();
 	for (const VolumeInfo &volume : volumes)
-		manualPathsToRestore.remove(resolvedVolumePath(volume.path));
+		manualPaths.removeAll(resolvedVolumePath(volume.path));
 
 	// Restore manual entries directly; refreshing is not a new folder addition.
-	QStringList manualPaths = manualPathsToRestore.values();
 	manualPaths.sort();
 	for (const QString &path : manualPaths)
 	{
-		if (!MediaScanner::canScanPath(path))
+		const auto location = MediaScanner::addedLocation(path);
+		if (!location)
 			continue;
+		m_manualVolumes.insert(path, location->kind);
 		QString name = QFileInfo(path).fileName();
 		if (name.isEmpty())
 			name = path;
@@ -1304,7 +1303,7 @@ void MainWindow::scanSelected()
 
 	if (paths.isEmpty())
 		return;
-	startScanWithPaths(paths);
+	scanListedPaths(paths);
 }
 
 void MainWindow::scanEverything()
@@ -1313,30 +1312,46 @@ void MainWindow::scanEverything()
 		return;
 	// The modal progress dialog handles cancellation and blocks new scan commands.
 	QStringList paths = m_detectedVolumePaths;
-	for (const QString &mp : m_manualVolumes)
+	for (auto it = m_manualVolumes.cbegin(); it != m_manualVolumes.cend(); ++it)
 	{
-		if (!paths.contains(mp))
-			paths.append(mp);
+		if (!paths.contains(it.key()))
+			paths.append(it.key());
 	}
 
-	startScanWithPaths(paths);
+	scanListedPaths(paths);
 }
 
-void MainWindow::startScanWithPaths(const QStringList &paths)
+void MainWindow::scanListedPaths(const QStringList &paths)
 {
-	if (!m_operations->isIdle() || paths.isEmpty())
+	QVector<MediaScanner::Location> locations;
+	for (const auto &path : paths)
+		locations.append({m_manualVolumes.value(path, MediaScanner::Location::Kind::MediaBase), path});
+	startScan(locations);
+}
+
+void MainWindow::rescanPaths(const QStringList &paths)
+{
+	QVector<MediaScanner::Location> locations;
+	for (const auto &path : paths)
+	{
+		const auto manual = m_manualVolumes.constFind(path);
+		if (manual != m_manualVolumes.cend())
+			locations.append({manual.value(), path});
+		else if (m_detectedVolumePaths.contains(path))
+			locations.append({MediaScanner::Location::Kind::MediaBase, path});
+		else
+			locations.append(MediaScanner::rescanLocation(path));
+	}
+	startScan(locations);
+}
+
+void MainWindow::startScan(const QVector<MediaScanner::Location> &locations)
+{
+	if (!m_operations->isIdle() || locations.isEmpty())
 		return;
-	// Detected volumes scan from their roots; manual paths resolve managed folders.
-	// Rebalance can supply a derived media root, so other paths use folder rules too.
 	MediaScanner::Options opts;
 	opts.includeOmf = m_omfScanEnabled;
-	for (const QString &path : paths)
-	{
-		if (m_detectedVolumePaths.contains(path) && !m_manualVolumes.contains(path))
-			opts.volumePaths.append(path);
-		else
-			opts.manualPaths.append(path);
-	}
+	opts.locations = locations;
 
 	m_operations->setActivity(FileOperationController::Activity::Scanning);
 	// A new scan replaces the session, including its archived source details.

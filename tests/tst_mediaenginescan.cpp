@@ -237,7 +237,8 @@ private slots:
 		MediaEngine::ScanCallbacks callbacks;
 		callbacks.reading = [&](const MediaEngine::SourceCandidate &candidate) { ++reads[candidate.path]; };
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(scan.reconciliationComplete);
 		const auto *source = mediaSource(scan, database);
@@ -301,7 +302,8 @@ private slots:
 				++headerReads;
 		};
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QCOMPARE(scan.files.size(), 1);
 		QCOMPARE(headerReads, 1);
 		QVERIFY(std::any_of(warnings.cbegin(), warnings.cend(), [&](const QString &message) { return message.contains(bad); }));
@@ -322,7 +324,8 @@ private slots:
 		QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf"), path));
 		QVERIFY(tryWriteFile(database, audioDatabase()));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		const auto &file = scan.files.front();
 		QCOMPARE(file.evidence.selected(MediaProperty::SourcePath).value.toString(), QStringLiteral("/Rushes/Database clip.wav"));
@@ -371,7 +374,8 @@ private slots:
 				++headerReads;
 		};
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QCOMPARE(scan.files.size(), 1);
 		const auto *source = mediaSource(scan, database);
 		QVERIFY(source);
@@ -427,7 +431,8 @@ private slots:
 				file.setFileTime(originalTime.addSecs(10), QFileDevice::FileModificationTime);
 		};
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QVERIFY(changed);
 		QCOMPARE(scan.files.size(), 1);
 		QCOMPARE(reads.value(path), 1);
@@ -453,7 +458,8 @@ private slots:
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"),
 			audioDatabase(24, {101, 301, 601}, true)));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(mediaSource(scan, path)->outcome != MediaEngine::ParsedSource::Outcome::NotRead);
 		const auto &evidence = scan.files.front().evidence;
@@ -482,7 +488,8 @@ private slots:
 		QStringList warnings;
 		MediaEngine::ScanCallbacks callbacks;
 		callbacks.warning = [&](const QString &message) { warnings.append(message); };
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(scan.files.front().kelpieId != 0);
 		QVERIFY(mediaSource(scan, path)->outcome != MediaEngine::ParsedSource::Outcome::NotRead);
@@ -516,7 +523,8 @@ private slots:
 		// The master is readable in the database, but its contents list omits it.
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"), audioDatabase(24, {101})));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(scan.files.front().kelpieId != 0);
 		QVERIFY(mediaSource(scan, path)->outcome != MediaEngine::ParsedSource::Outcome::NotRead);
@@ -542,7 +550,8 @@ private slots:
 		callbacks.reading = [&](const MediaEngine::SourceCandidate &candidate) { ++reads[candidate.path]; };
 		callbacks.progress = [&](int, int, const QString &source)
 		{ decisions.append(source); };
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(scan.reconciliationComplete);
 		const auto *header = mediaSource(scan, path);
@@ -632,7 +641,8 @@ private slots:
 				++headerReads;
 		};
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(scan.reconciliationComplete);
 		const auto *header = mediaSource(scan, path);
@@ -741,7 +751,8 @@ private slots:
 		callbacks.reading = [&](const MediaEngine::SourceCandidate &candidate)
 		{ ++reads[candidate.path]; };
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, includeOmf}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{legacyFamily ? folder : QFileInfo(folder).absolutePath()}, includeOmf}, cancellation, callbacks);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(scan.parsingComplete);
 		QVERIFY(scan.reconciliationComplete);
@@ -804,7 +815,8 @@ private slots:
 		QVERIFY(QDir().mkpath(folder));
 		QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR "/omf/avid_supporting/BLACK_720x243x2_UNCOMP.omf"), path));
 		const MediaEngine::Cancellation cancellation;
-		const auto headerOnly = MediaEngine::ScanEngine{}.scan({{temporary.path()}, true}, cancellation);
+		const auto headerOnly = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/OMFI MediaFiles")}, true}, cancellation);
 		QCOMPARE(headerOnly.files.size(), 1);
 		const auto &baseline = headerOnly.files.front();
 		QCOMPARE(baseline.evidence.selected(MediaProperty::OriginalBin).value.toString(),
@@ -828,7 +840,8 @@ private slots:
 		MediaEngine::ScanCallbacks callbacks;
 		callbacks.reading = [&](const MediaEngine::SourceCandidate &candidate)
 		{ ++reads[candidate.path]; };
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, true}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/OMFI MediaFiles")}, true}, cancellation, callbacks);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(scan.reconciliationComplete);
 		QCOMPARE(reads.size(), 3);
@@ -881,7 +894,8 @@ private slots:
 		MediaEngine::ScanCallbacks callbacks;
 		callbacks.reading = [&](const MediaEngine::SourceCandidate &candidate) { ++reads[candidate.path]; };
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, true}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/OMFI MediaFiles")}, true}, cancellation, callbacks);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(scan.reconciliationComplete);
 		QCOMPARE(reads.size(), 1);
@@ -918,7 +932,8 @@ private slots:
 		if (conflicting)
 			QVERIFY(tryWriteFile(folder + QStringLiteral("/other.mdb"), audioDatabase(16)));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation);
 		const auto *header = mediaSource(scan, path);
 		QVERIFY(header);
 		QVERIFY(header->outcome != MediaEngine::ParsedSource::Outcome::NotRead);
@@ -941,7 +956,8 @@ private slots:
 		otherMaster[31] = char(0x14);
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/other.mdb"), audioDatabase(24, {101, 301}, false, otherMaster)));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		const auto *header = mediaSource(scan, path);
 		QVERIFY(header);
@@ -968,7 +984,8 @@ private slots:
 		// descriptor-owning file object that can establish a file association.
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"), audioDatabase(24, {301})));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		const auto &file = scan.files.front();
 		const auto master = file.evidence.selected(MediaProperty::MasterMobId);
@@ -1020,7 +1037,8 @@ private slots:
 		const QString namedPath = folder + QStringLiteral("/b-named.mxf");
 		QVERIFY(tryWriteFile(unnamedPath, unnamedBytes));
 		QVERIFY(QFile::copy(fixture.fileName(), namedPath));
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 2);
 		const auto unnamed = std::find_if(scan.files.cbegin(), scan.files.cend(), [&](const auto &file) { return file.path == unnamedPath; });
 		const auto named = std::find_if(scan.files.cbegin(), scan.files.cend(), [&](const auto &file) { return file.path == namedPath; });
@@ -1040,7 +1058,8 @@ private slots:
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("listed.mxf", toneFileId, "Project")})));
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/metadata.mdb"), audioDatabase()));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 2);
 		QVERIFY(scan.files[0].kelpieId != scan.files[1].kelpieId);
 		QCOMPARE(mediaSource(scan, folder + QStringLiteral("/listed.mxf"))->outcome, MediaEngine::ParsedSource::Outcome::NotRead);
@@ -1068,7 +1087,8 @@ private slots:
 			changed = file.open(QIODevice::ReadWrite) && file.setFileTime(modified.addSecs(10), QFileDevice::FileModificationTime);
 		};
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QVERIFY(changed);
 		QCOMPARE(scan.files.size(), 2);
 		QVERIFY(!scan.files[0].evidence.selected(MediaProperty::Compression).value.isValid());
@@ -1098,7 +1118,8 @@ private slots:
 			expected = QFileInfo(folder).lastModified();
 		};
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QVERIFY(!error);
 		QVERIFY(expected.isValid() && expected != original);
 		QVERIFY(scan.reconciliationComplete);
@@ -1136,7 +1157,8 @@ private slots:
 			changed = file.open(QIODevice::ReadWrite) && file.setFileTime(modified.addSecs(10), QFileDevice::FileModificationTime);
 		};
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QVERIFY(changed);
 		QVERIFY(mediaSource(scan, first)->outcome != MediaEngine::ParsedSource::Outcome::NotRead);
 		const auto &evidence = scan.files.front().evidence;
@@ -1657,7 +1679,8 @@ private slots:
 		}
 		const MediaEngine::Cancellation cancellation;
 		auto scan = QSharedPointer<MediaEngine::ScanResult>::create(
-			MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation));
+			MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation));
 		QCOMPARE(scan->files.size(), 1);
 		QVERIFY(scan->reconciliationComplete);
 		const auto *header = mediaSource(*scan, path);
@@ -1714,7 +1737,8 @@ private slots:
 			QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR) + '/' + name, path + '/' + name));
 		}
 		const MediaEngine::Cancellation cancellation;
-		auto scan = QSharedPointer<MediaEngine::ScanResult>::create(MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation));
+		auto scan = QSharedPointer<MediaEngine::ScanResult>::create(MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation));
 		QCOMPARE(scan->files.size(), 2);
 		QVERIFY(scan->reconciliationComplete);
 		QVERIFY(scan->files[0].kelpieId != scan->files[1].kelpieId);
@@ -1756,7 +1780,8 @@ private slots:
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/take.mxf"), "not an MXF header"));
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("TAKE.MXF", otherId, "wrong case"), pmrRecord("take.mxf", toneFileId, "exact name")})));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		const auto &evidence = scan.files.front().evidence;
 		QCOMPARE(evidence.selected(MediaProperty::Project).value.toString(), QStringLiteral("exact name"));
@@ -1791,7 +1816,8 @@ private slots:
 				++headerReads;
 		};
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QCOMPARE(scan.files.size(), 1);
 		QVERIFY(scan.reconciliationComplete);
 		QCOMPARE(headerReads, 1);
@@ -1811,7 +1837,8 @@ private slots:
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/take.mxf"), "not an MXF header"));
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("TAKE.MXF", toneFileId, "normalized match")})));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		QCOMPARE(scan.files.front().evidence.selected(MediaProperty::Project).value.toString(), QStringLiteral("normalized match"));
 	}
@@ -1824,7 +1851,8 @@ private slots:
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/take.mxf"), "not an MXF header"));
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("take.mxf", toneFileId, "same project"), pmrRecord("take.mxf", otherId, "same project")})));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 1);
 		const auto &evidence = scan.files.front().evidence;
 		QVERIFY(!evidence.selected(MediaProperty::FileMobId).value.isValid());
@@ -1847,7 +1875,8 @@ private slots:
 			QSKIP("Temporary filesystem does not preserve case-distinct file locations");
 		QVERIFY(tryWriteFile(folder + QStringLiteral("/index.pmr"), pmr({pmrRecord("Take.mxf", toneFileId, "ambiguous location")})));
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation);
 		QCOMPARE(scan.files.size(), 2);
 		for (const auto &file : scan.files)
 		{
@@ -1878,7 +1907,8 @@ private slots:
 			changed = file.open(QIODevice::ReadWrite) && file.setFileTime(modified.addSecs(10), QFileDevice::FileModificationTime);
 		};
 		const MediaEngine::Cancellation cancellation;
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QVERIFY(changed);
 		QCOMPARE(scan.files.size(), 1);
 		const auto &evidence = scan.files.front().evidence;
@@ -2039,7 +2069,8 @@ private slots:
 			cancellation.cancel();
 		};
 		callbacks.finalising = [&] { finalising = true; };
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QCOMPARE(progressCalls, 1);
 		QCOMPARE(readingCalls, atReading ? 1 : 0);
 		QVERIFY(!finalising);
@@ -2082,7 +2113,8 @@ private slots:
 			if (current == path)
 				cancellation.cancel();
 		};
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QVERIFY(scan.cancelled);
 		QVERIFY(!scan.reconciliationComplete);
 		QCOMPARE(scan.files.size(), 1);
@@ -2113,7 +2145,8 @@ private slots:
 		for (const auto &name : {QStringLiteral("a.mxf"), QStringLiteral("b.mxf")})
 			QVERIFY(QFile::copy(QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf"), folder + '/' + name));
 		const MediaEngine::Cancellation completeCancellation;
-		const auto complete = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, completeCancellation);
+		const auto complete = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, completeCancellation);
 		QVERIFY(complete.reconciliationComplete);
 		QCOMPARE(complete.files.size(), 2);
 		MediaEngine::Cancellation cancellation;
@@ -2130,7 +2163,8 @@ private slots:
 			finalising = true;
 			cancellation.cancel();
 		};
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QVERIFY(finalising);
 		QVERIFY(scan.cancelled);
 		QVERIFY(scan.discoveryComplete);
@@ -2208,7 +2242,8 @@ private slots:
 			++reads[candidate.path];
 		};
 		callbacks.finalising = [&] { finalising = true; };
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QVERIFY(scan.cancelled);
 		QVERIFY(scan.discoveryComplete);
 		QVERIFY(!scan.parsingComplete);
@@ -2291,7 +2326,8 @@ private slots:
 			++reads[candidate.path];
 		};
 		callbacks.finalising = [&] { cancellation.cancel(); };
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QVERIFY(scan.cancelled);
 		QVERIFY(scan.discoveryComplete);
 		QVERIFY(!scan.reconciliationComplete);
@@ -2362,7 +2398,8 @@ private slots:
 			++reads[candidate.path];
 		};
 		callbacks.finalising = [&] { cancellation.cancel(); };
-		const auto scan = MediaEngine::ScanEngine{}.scan({{temporary.path()}, false}, cancellation, callbacks);
+		const auto scan = MediaEngine::ScanEngine{}.scan(
+			{{temporary.path() + QStringLiteral("/Avid MediaFiles/MXF")}, false}, cancellation, callbacks);
 		QVERIFY(changed);
 		QVERIFY(scan.cancelled);
 		QVERIFY(!scan.reconciliationComplete);

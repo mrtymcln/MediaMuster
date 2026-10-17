@@ -760,7 +760,7 @@ saving has been established for removing these controls.
 | Capability | Current behavior | Cost / qualification |
 | --- | --- | --- |
 | Volume discovery | Checks mounted drives and known Avid locations at startup and on explicit Refresh Volumes. MainWindow retains only the detected paths; Scan All combines them with session manual paths. There is no timer, background worker, post-busy catch-up or empty-cache rediscovery during scanning. | C60 removes automatic checking. Discovery probes mounts/storage and directory presence, not media headers; scan-time admission and file validation remain separate. C69 retains clearing sidebar selections on Refresh, including manually added entries. |
-| Folder entry / scan controls | Add Folder and directory drag/drop currently accept recognized roots, eligible leaves and direct containing parents, selecting them without starting a scan. Scan Selected uses sidebar selections; Scan All uses detected locations plus manually added entries. | C68 keeps both scan buttons; C71–C73 retain adding without scanning, session-only entries without removal/saved preferences, and both entry controls. C76 narrows their accepted inputs to managed folders themselves or drives with managed folders at their root. C30/C31 still define admitted contents and whole-root scan scope. |
+| Folder entry / scan controls | Add Folder and directory drag/drop accept Avid MediaFiles/OMFI MediaFiles themselves, or an actual drive/share root with those trees directly below it. Entries are selected without starting a scan. Scan Selected uses sidebar selections; Scan All uses detected locations plus session manual entries. | C76 removes user parent/MXF/leaf inputs. C68 and C71–C73 retain both scan buttons, adding without scanning, session-only entries and both entry controls. C30/C31 retain admitted contents and whole-root scope. The background scanner prepares exact engine roots; internal operation rescans have a separate entry path. |
 | Table conveniences | Header sorting, manual widths, drag reordering and explicit Resize Columns to Fit. Scans preserve widths; widths/order reset on app restart. | Keep all four under C62–C65 with current session behavior. Uses retained row values; Qt samples displayed content for fitting. No ordinary-column visibility chooser or saved layout/preferences was found. Saved width/order preferences are not required. |
 | Tabs / totals | At review time empty convenience tabs hid automatically, with a Show All Filter Tabs override. The 16 October presentation checkpoint keeps enabled tabs visible and removes that override. Tab/project totals describe the whole inventory; status totals describe visible rows and visible selections. | C66/C67 require always-visible enabled tabs. C74 retains whole-inventory tab counts, C75 retains visible/selected counts and sizes, and C77 retains Project hover count/size totals. Removing the visibility controls does not remove tally calculations. |
 | Reveal / clipboard | Reveal and double-click open the first visible selected file in Finder/Explorer. Copy Cell copies the clicked display value; Copy Path copies all visible selected paths, separated by newlines. | Keep all four under C61. Uses existing row values without metadata rereading. Copy Path temporarily collects selected rows and path text. Multi-file Reveal is not being proposed. |
@@ -789,26 +789,26 @@ and [Refresh/scan consumers](../src/mainwindow.cpp).
 
 Manual folder entry fills a concrete discovery gap: automatic system-drive
 discovery probes known Avid bases rather than recursively searching user/archive
-folders. Add Folder validates a recognized media location or direct containing
-base; directory drop accepts existing readable local directories and then uses the
-same validation. Files are ignored. Canonical path duplicates select the existing
-sidebar entry instead of adding another. This describes current broader code
-admission. C76 narrows the target to Avid MediaFiles/OMFI MediaFiles themselves or
-a drive with those folders at its root. C71/C73 retain adding without scanning and
-both entry controls; scanning admitted contents still follows C30/C31. An arbitrary
-parent with a managed folder directly below it is no longer an accepted input.
+folders. Under C76, Add Folder validates Avid MediaFiles/OMFI MediaFiles themselves
+or an actual drive/share root with those trees directly below it. Directory drop
+passes readable local directories through the same admission check; files are
+ignored. Canonical aliases select the existing entry rather than adding another.
+C71/C73 retain adding without scanning and both entry controls; scanning admitted
+contents still follows C30/C31. Selecting MXF, a media leaf or an arbitrary copied
+project parent is no longer supported. Select the named managed tree instead.
 
 Current refresh restores still-scannable manual entries but hides entries that no
-longer pass `canScanPath`. Their paths remain in the manual set, so Scan All can
-retry a manual path no longer displayed and report an unavailable/unsupported
+longer pass `addedLocation`. Their paths and admitted request kind remain in the
+session manual map, so Scan All can retry a manual path no longer displayed
+and report an unavailable/unsupported
 scope. C72 retains the current session list without a removal control or saved
 preferences. No new unavailable-entry lifetime policy has been requested. See
 [known bases](../src/volumemanager.cpp),
-[manual root resolution](../src/mediascanner.cpp#L56),
+[manual entry admission](../src/mediascanner.cpp#L88),
 [directory drop](../src/volumelistwidget.cpp#L75),
-[duplicate entry](../src/mainwindow.cpp#L1315),
-[manual refresh restoration](../src/mainwindow.cpp#L1356) and
-[unavailable manual scope](../src/mediascanner.cpp#L202).
+[duplicate entry](../src/mainwindow.cpp#L1210),
+[manual refresh restoration](../src/mainwindow.cpp#L1248) and
+[prepared scan scopes](../src/mediascanner.cpp#L259).
 
 Counts and size totals operate on retained selected fields, without media rereads.
 Status file count uses proxy/model row counts; visible size traverses visible rows,
@@ -1401,7 +1401,6 @@ current code. This is a status review, not a newly approved work order.
 
 | Cleanup | Remaining work |
 | --- | --- |
-| C76: Manual folder inputs | Remove broad parent/MXF/leaf input acceptance; keep managed roots or drives with managed folders at their root. Preserve scan discovery within an admitted root. |
 | C88: Diagnostics retention | Replace whole-log age deletion with the agreed 30-day history retention, and prune old collected crash reports while protecting operation journals. |
 
 Loaded-bin/filter ownership compaction also remains: current filters retain
@@ -1511,6 +1510,168 @@ The app and all configured targets build with pinned Qt 6.5.3, C++17 and Release
 arm64 on this Mac. The operation-UI suite passes (10.66 seconds), and
 `git diff --check` passes. Active behavior documentation now matches the code.
 No measured performance improvement or Windows/NEXIS verification is claimed.
+
+### Manual folder inputs — 17 October 2026
+
+After C78, the next work-order alternatives were C76's narrowed folder inputs
+and C88's 30-day diagnostics retention. The user chose **Simplify folder inputs
+next**. Add Folder and directory drag/drop must accept the managed folder itself
+(`Avid MediaFiles` or `OMFI MediaFiles`) or an actual drive containing those
+folders at its root. Eligible scan contents remain governed by C30/C31.
+
+Read-only review found that the current root helper also serves actual scans,
+including internal Undo/recovery/Rebalance rescans. The alternatives were a
+narrower manual-entry boundary at Add Folder/drop and manual-entry restoration,
+or also reorganizing the shared scanner entry paths so internal requests have a
+separate route. The user chose **Reorganize scanner entry paths too**. This
+authorizes the broader cleanup while retaining those internal rescans and
+automatic known-base discovery. Detecting an actual drive root must not treat
+automatic known system-drive bases as proof of a drive root. Further unresolved
+implementation choices must be presented before dependent changes. No performance
+saving is claimed.
+
+The input audit found duplicate root inference in MediaScanner and
+DiscoveryEngine. The proposed simplification uses one value-request list with
+two meanings: a media base to expand, or a named Avid/OMFI media tree. The worker
+resolves each tree to exact managed MXF/OMFI roots. Preserve
+the existing display-volume context, canonical root deduplication and bounded
+whole-root scanning. Remove the untyped volume/manual lists and broad leaf
+inference, with no compatibility route for the old API under C99.
+
+The ownership alternatives were preparing exact roots in the existing background
+scanner and make DiscoveryEngine walk only those roots, or move normalization
+into DiscoveryEngine and add resolved-root/context reporting for the row adapter.
+The user chose **Prepare in background scanner**. Directory lookup therefore
+stays in that worker, and DiscoveryEngine receives exact roots only. Preserve
+preparation failures as small discovery issues so readable families can still
+scan while incomplete scope remains visible to matching and Console reporting.
+Internal rescan planning uses known tree/base paths rather than accepting user
+leaves, and retains its existing scope and volume labels.
+
+Implementation review retained the existing empty-base distinction explicitly:
+automatic bases may be empty without a warning, while admitted manual drives
+and trusted internal bases still report missing managed trees. The value request
+therefore distinguishes an ordinary base, a required-media base and a named
+media tree. This preserves existing outcomes; disabled OMFI trees remain
+recognized without reading their contents. No second path list or legacy input
+fallback is retained.
+
+Implemented and verified 17 October 2026. Add Folder, directory drops and manual
+entry restoration use strict admission. The chosen path must resolve to a named
+Avid MediaFiles/OMFI MediaFiles tree, or match the containing storage's actual
+root and contain a supported tree directly. Directory aliases retain canonical
+deduplication. Adding OMF does not enable its reader or start scanning.
+
+The session manual map retains each path's admitted request kind. Scan Selected
+and Scan All use those explicit meanings; Undo/recovery and Rebalance use a
+separate internal rescan route. MediaScanner expands the requested bases/trees
+in its worker, deduplicates exact physical roots, and keeps the existing display
+context, including an automatically detected alias's original path/name.
+DiscoveryEngine walks exact MXF/OMFI roots only. Both old broad inference helpers,
+the untyped volume/manual input lists and their obsolete API are removed.
+Lookup failures remain discovery issues before metadata matching, so readable
+families survive while incomplete scope and Console reporting stay accurate.
+
+The app and all configured targets build with pinned Qt 6.5.3, C++17 and Release
+arm64 on this Mac. All **39/39 registered suites pass** (105.61 seconds), including
+158 passing scanner checks, the new strict Add/drop, alias/display-context,
+missing-tree, disabled-OMF and partial-access controls, and the existing metadata,
+cancellation, file-operation, Undo/recovery, Rebalance and filter tests. Scanner
+opt-in real-drive/case-sensitive-filesystem checks retain their existing skip
+conditions; temporary test parents are explicitly rejected as actual drives.
+`git diff --check` passes. Current behavior, parser-scope, release-gate and engine
+comparison-tool help now match the new entry contract. No measured scan-time or
+memory improvement, Windows/NEXIS acceptance or new media-format support is
+claimed. C88 and loaded-bin ownership compaction remain separate work.
+
+#### Folder-preparation readability tidy — 17 October 2026
+
+The user asked whether the approved folder implementation could be expressed
+more clearly. The proposed small tidy extracts the existing folder-preparation
+block from the main scan function into one private function, returning the scan
+request, its preparation issues and the existing volume context together. The
+alternative was leaving the tested implementation as it stood. The user approved
+**the small tidy-up, keeping behaviour the same**.
+
+Keep the private result definition in the implementation file. Preserve the
+existing folder checks, root ordering/deduplication, display paths/labels,
+warnings, cancellation checks and progress delivery. This is a readability
+change with no demonstrated speed or memory benefit. After rejecting the first
+name suggestions, the user proposed **buildFolderList**. Use `buildFolderList()`;
+its name follows the existing `rebuildVolumeList()` style while describing the
+worker's preparation of scan folders from the requested locations. The volume
+list remains the visible location list, and the returned folder list remains
+temporary working data for one scan.
+
+Implemented and verified 17 October 2026. `buildFolderList()` returns its
+privately defined `FolderList` by value; the main scan keeps the result const
+and uses the same cancellation token for preparation and scanning. Comparison
+with the saved pre-extraction source confirms that the moved preparation logic,
+scan-start sequence and remaining scan logic are unchanged apart from accessing
+the returned bundle. Independent review found no correctness issues.
+
+The app and all configured targets build with pinned Qt 6.5.3, C++17 and Release
+arm64. The existing scanner and operation-UI suites both pass (18.97 seconds):
+158 scanner checks pass with the same two opt-in skips, and 90 operation-UI
+checks pass. No new tests or replacement folder-handling machinery were needed.
+`git diff --check` passes.
+
+#### Avid managed-folder verification — 17 October 2026
+
+The user requested a fresh comparison with the installed Media Composer binary,
+Avid documentation and knowledge base. The standard MXF/OMFI hierarchy matches
+the current V1 scope; C76's choice of which folder the user may select is a
+MediaMuster interface policy, not an Avid requirement imposed on third-party
+utilities. Numbered/workstation folders remain valid scan contents. Inspecting
+an intact archived tree elsewhere does not establish that Media Composer will
+automatically index that copy at its archived location.
+
+Fresh read-only inspection of Media Composer **26.8.0.58987** used
+`/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib`.
+Its whole-file SHA-256 is
+`659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22`;
+the arm64 slice at file offset 37,027,840 hashes to
+`70b6f2810f53dc044a9b6b2d3f9d3e3c50df40c91fcc263e21a2678752566f9e`.
+Actual getters construct Avid MediaFiles/OMFI MediaFiles at `0x46375c`/`0x4637f4`;
+domain selection at `0x447ff8` and subdirectory selection at `0x423140`
+corroborate MXF versus OMFI routing. Mac alternate path getters at
+`0x46388c`/`0x4639b0` and Windows path-construction anchors at
+`0x463b20`/`0x463bb8` corroborate system-base paths.
+`GetNumberedFolderPath` at `0x422f7c` formats numeric and prefixed-numeric folders.
+These are bounded implementation checks, not proof of every indexing workflow.
+
+Relevant official sources checked:
+
+- [Avid dailies KB](https://kb.avid.com/pkb/articles/en_US/Knowledge/import-dailies-into-MC):
+  normal OP-Atom media uses Avid MediaFiles/MXF/numbered folders at a media-drive root.
+- [Shared-storage copying KB](https://kb.avid.com/pkb/articles/en_US/troubleshooting/Media-Offline-after-copying-media-to-a-shared-storage-workspace):
+  workstation-numbered folders such as EditSuiteA.1 live directly below MXF;
+  ownership/reindexing rules are separate from MediaMuster's read-only inventory.
+- [System-drive locations KB](https://kb.avid.com/pkb/articles/en_US/Knowledge/Where-is-the-Avid-MediaFiles-folder-stored-on-the-C-drive)
+  and [2020.4 guide, p. 7](https://resources.avid.com/SupportFiles/attach/WhatsNew_MediaComposer_v20.4.pdf#page=7):
+  macOS Users/Shared/AvidMediaComposer and Windows Public Documents are intentional
+  system-drive exceptions. The existing automatic known bases cover these.
+- [OMFI/AAF import KB](https://kb.avid.com/pkb/articles/en_US/Knowledge/import-AAF-with-media-from-Pro-Tools):
+  confirms legacy OMFI placement and corresponding system-drive exceptions.
+- [2019.6 guide, p. 24](https://resources.avid.com/SupportFiles/attach/WhatsNew_MediaComposer_v19.6.pdf#page=24)
+  and [remote NEXIS workflow KB](https://kb.avid.com/pkb/articles/en_US/Knowledge/Configuring-a-remote-post-production-workflow-with-Media-Composer-and-Nexis):
+  Avid also uses UME for managed OP1a and Proxy for PMXF media. The binary has
+  corresponding constructors at `0x463d20`/`0x463e50`. Neither family is covered
+  by current MediaMuster discovery. UME is already excluded by C31; this audit
+  records Proxy's current unsupported state without approving a new feature.
+
+Installed Help's Backing Up Media Files, Using Copy Media, Media Creation Settings
+and related storage topics were also checked. They distinguish archive/folder
+copies, linked/indexed workflows and supported media wrappers; they do not turn
+C76 into a universal Avid storage restriction. Named ingest/quarantine inventory
+does not certify normal Media Composer indexing of every such folder.
+
+No application binary or media was changed, Media Composer was not launched,
+and no additional drive scan was performed. This was a broad relevant-source
+audit, not an exhaustive reading of every historical Avid document or a runtime
+equivalence test. The large 2025 Editing Guide could not be fetched by the web
+reader; corresponding current installed Help and smaller official guides/KBs
+were used. Documentation is clarified; application scope/code is unchanged.
 
 ### Scan cancellation next — 17 October 2026
 

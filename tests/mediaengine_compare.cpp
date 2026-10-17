@@ -191,7 +191,7 @@ int main(int argc, char **argv)
 	const QCommandLineOption expectedRowsOption(QStringLiteral("expected-rows"), QStringLiteral("Require this physical row count"), QStringLiteral("count"));
 	const QCommandLineOption noOmfOption(QStringLiteral("no-omf"), QStringLiteral("Disable OMF-family discovery"));
 	parser.addOptions({outputOption, csvOption, expectedRowsOption, noOmfOption});
-	parser.addPositionalArgument(QStringLiteral("roots"), QStringLiteral("One or more managed roots or direct containing bases"), QStringLiteral("roots..."));
+	parser.addPositionalArgument(QStringLiteral("roots"), QStringLiteral("One or more exact Avid MediaFiles/MXF or OMFI MediaFiles roots"), QStringLiteral("roots..."));
 	parser.process(app);
 	if (parser.positionalArguments().isEmpty())
 		parser.showHelp(1);

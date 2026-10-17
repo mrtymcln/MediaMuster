@@ -266,9 +266,11 @@ namespace MediaEngine
 
 	struct ScanRequest
 	{
-		/// Managed roots/leaves or their direct containing bases; no recursive search.
+		/// Exact Avid MediaFiles/MXF or OMFI MediaFiles roots prepared by the caller.
 		QStringList roots;
 		bool omfScan = true;
+		/// Folder preparation failures remain part of discovery's qualified outcome.
+		QVector<DiscoveryIssue> preparationIssues{};
 	};
 
 	struct ScanResult

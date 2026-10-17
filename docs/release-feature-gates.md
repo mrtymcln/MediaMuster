@@ -16,6 +16,13 @@ every `.mxf` encountered outside UME has been structurally certified as OP-Atom.
 Adding UME/OP1a later will require its own discovery, metadata and destination
 handling rather than treating UME as another MXF OP-Atom folder.
 
+Avid also stores managed proxy media under `Avid MediaFiles/Proxy`, including
+`.pmxf` files. That family is outside MediaMuster's current discovery/readers too.
+Accepting an `Avid MediaFiles` folder does not imply support for every Avid media
+family it can contain. The top-level Add Folder/drop restriction is MediaMuster's
+C76 interface policy; it is not a claim that Avid forbids other selection or
+configured-storage workflows.
+
 For managed OMF audio, the observed AIFF-C filename suffix is `.aif`, and WAVE
 uses `.wav`. A missing `.aiff` alias is not a v1 requirement for that workflow.
 `.omf` is not restricted to video: the reader also handles supported OMF audio
@@ -30,8 +37,13 @@ Composer code does not define MediaMuster's supported scope.
 Automatic volume scans look for immediate `Avid MediaFiles/MXF` and enabled
 `OMFI MediaFiles` roots. The documented system-drive bases remain supported.
 Manually added copies may live anywhere, provided their internal Avid structure
-is intact. Add the media root, an eligible media subfolder, or the directory
-directly containing the roots; the scanner does not search arbitrary descendants.
+is intact. Add Folder and directory drops accept `Avid MediaFiles` with its MXF
+tree, `OMFI MediaFiles`, or an actual drive/share root containing those trees
+directly. Select the named media tree inside a copied project, rather than its
+arbitrary parent, `MXF` folder or media subfolder. Adding a location does not
+start a scan. The background scanner prepares exact MXF/OMFI roots once;
+the engine scans those roots without another parent/leaf lookup. Automatic
+known-base discovery and trusted operation rescans retain their own entry paths.
 A bare `MXF` tree or an arbitrary folder containing PMR/MDB files is not enough.
 
 `AvidMediaLayout` supplies folder and filename rules to scanning and Rebalance.

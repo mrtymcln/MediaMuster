@@ -12,6 +12,7 @@ namespace MediaEngine
 	class DiscoveryEngine
 	{
 	public:
+		// Accept exact managed roots; caller preparation owns base/tree expansion.
 		// Folder discovery has no known total. Report the path before accessing it.
 		ScanResult discover(const ScanRequest &request, const Cancellation &cancellation,
 							const std::function<void(const QString &)> &discovering = {}) const;

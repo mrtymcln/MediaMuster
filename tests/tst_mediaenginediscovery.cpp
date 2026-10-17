@@ -111,7 +111,7 @@ private slots:
 	{
 		const QString roots = qEnvironmentVariable("MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_ROOTS");
 		if (roots.isEmpty())
-			QSKIP("Opt-in read-only discovery of real managed roots");
+			QSKIP("Opt-in read-only discovery; provide exact Avid MediaFiles/MXF or OMFI MediaFiles roots");
 		MediaEngine::Cancellation cancellation;
 		const auto result = MediaEngine::DiscoveryEngine{}.discover({roots.split(';', Qt::SkipEmptyParts), true}, cancellation);
 		QVERIFY(result.discoveryComplete);
@@ -152,7 +152,8 @@ private slots:
 			QStringLiteral("OMFI MediaFiles/2/Nested/ignored.omf")})
 			QVERIFY(put(base + '/' + name));
 		MediaEngine::Cancellation cancellation;
-		const auto result = MediaEngine::DiscoveryEngine{}.discover({{base}, true}, cancellation);
+		const QStringList roots{base + "/Avid MediaFiles/MXF", base + "/OMFI MediaFiles"};
+		const auto result = MediaEngine::DiscoveryEngine{}.discover({roots, true}, cancellation);
 		QVERIFY(result.discoveryComplete);
 		QVERIFY(!result.parsingComplete && !result.reconciliationComplete);
 		QCOMPARE(result.files.size(), 6);
@@ -172,20 +173,20 @@ private slots:
 		}
 		QCOMPARE(legacy, 3);
 		QCOMPARE(quarantined, 1);
-		const auto mxfOnly = MediaEngine::DiscoveryEngine{}.discover({{base}, false}, cancellation);
+		const auto mxfOnly = MediaEngine::DiscoveryEngine{}.discover({roots, false}, cancellation);
 		QCOMPARE(mxfOnly.files.size(), 3);
 		QCOMPARE(mxfOnly.candidates.size(), 5);
 		QVERIFY(mxfOnly.discoveryComplete);
 	}
 
-	void overlapping_requests_do_not_merge_different_locations()
+	void repeated_roots_do_not_merge_different_locations()
 	{
 		QTemporaryDir temp;
 		const QString mxf = temp.path() + "/Avid MediaFiles/MXF";
 		QVERIFY(put(mxf + "/1/same.mxf"));
 		QVERIFY(put(mxf + "/2/same.mxf"));
 		MediaEngine::Cancellation cancellation;
-		const auto result = MediaEngine::DiscoveryEngine{}.discover({{temp.path(), mxf, mxf + "/1"}, true}, cancellation);
+		const auto result = MediaEngine::DiscoveryEngine{}.discover({{mxf, mxf + "/.", mxf}, true}, cancellation);
 		QVERIFY(result.discoveryComplete);
 		QCOMPARE(result.files.size(), 2);
 		QVERIFY(result.files[0].path != result.files[1].path);
@@ -207,6 +208,54 @@ private slots:
 		QCOMPARE(result.discoveryIssues[1].kind, MediaEngine::DiscoveryIssue::Kind::UnavailableRoot);
 	}
 
+	void bases_containers_and_leaves_are_not_exact_roots()
+	{
+		QTemporaryDir temp;
+		QVERIFY(temp.isValid());
+		const QString mxf = temp.path() + "/Avid MediaFiles/MXF";
+		const QString omf = temp.path() + "/OMFI MediaFiles";
+		QVERIFY(put(mxf + "/1/video.mxf"));
+		QVERIFY(put(omf + "/Editor/audio.wav"));
+		MediaEngine::Cancellation cancellation;
+		const auto result = MediaEngine::DiscoveryEngine{}.discover(
+			{{temp.path(), temp.path() + "/Avid MediaFiles", mxf + "/1", omf + "/Editor"}, true}, cancellation);
+		QVERIFY(!result.discoveryComplete);
+		QVERIFY(result.files.isEmpty());
+		QVERIFY(result.candidates.isEmpty());
+		QCOMPARE(result.discoveryIssues.size(), 4);
+		for (const auto &issue : result.discoveryIssues)
+			QCOMPARE(issue.kind, MediaEngine::DiscoveryIssue::Kind::UnmanagedRoot);
+	}
+
+	void preparation_issues_preserve_readable_roots_and_cancellation()
+	{
+		QTemporaryDir temp;
+		QVERIFY(temp.isValid());
+		const QString root = temp.path() + "/OMFI MediaFiles";
+		const QString readableFile = root + "/readable.wav";
+		QVERIFY(put(readableFile));
+		const MediaEngine::DiscoveryIssue preparedIssue{MediaEngine::DiscoveryIssue::Kind::UnreadableFolder,
+			temp.path() + "/Avid MediaFiles", QStringLiteral("Cannot enumerate the requested media container")};
+		const MediaEngine::ScanRequest request{{root}, true, {preparedIssue}};
+		MediaEngine::Cancellation cancellation;
+		const auto result = MediaEngine::DiscoveryEngine{}.discover(request, cancellation);
+		QVERIFY(!result.discoveryComplete);
+		QVERIFY(!result.cancelled);
+		QCOMPARE(result.files.size(), 1);
+		QCOMPARE(result.files.first().path, readableFile);
+		QCOMPARE(result.discoveryIssues.size(), 1);
+		QCOMPARE(result.discoveryIssues.first().kind, preparedIssue.kind);
+		QCOMPARE(result.discoveryIssues.first().path, preparedIssue.path);
+		QCOMPARE(result.discoveryIssues.first().explanation, preparedIssue.explanation);
+		cancellation.cancel();
+		const auto cancelled = MediaEngine::DiscoveryEngine{}.discover(request, cancellation);
+		QVERIFY(cancelled.cancelled);
+		QVERIFY(!cancelled.discoveryComplete);
+		QVERIFY(cancelled.files.isEmpty());
+		QCOMPARE(cancelled.discoveryIssues.size(), 1);
+		QCOMPARE(cancelled.discoveryIssues.first().path, preparedIssue.path);
+	}
+
 	void empty_managed_folders_are_complete()
 	{
 		QTemporaryDir temp;
@@ -214,7 +263,8 @@ private slots:
 		QVERIFY(QDir().mkpath(temp.path() + "/Avid MediaFiles/MXF/1"));
 		QVERIFY(QDir().mkpath(temp.path() + "/OMFI MediaFiles/Editor"));
 		MediaEngine::Cancellation cancellation;
-		const auto result = MediaEngine::DiscoveryEngine{}.discover({{temp.path()}, true}, cancellation);
+		const auto result = MediaEngine::DiscoveryEngine{}.discover(
+			{{temp.path() + "/Avid MediaFiles/MXF", temp.path() + "/OMFI MediaFiles"}, true}, cancellation);
 		QVERIFY(result.discoveryComplete);
 		QVERIFY(!result.cancelled);
 		QVERIFY(result.files.isEmpty());
@@ -252,33 +302,6 @@ private slots:
 #endif
 	}
 
-	void unreadable_avid_container_preserves_other_family()
-	{
-#ifdef Q_OS_UNIX
-		QTemporaryDir temp;
-		QVERIFY(temp.isValid());
-		const QString restricted = temp.path() + "/Avid MediaFiles";
-		const QString readableFile = temp.path() + "/OMFI MediaFiles/readable.omf";
-		QVERIFY(put(restricted + "/MXF/1/unreachable.mxf"));
-		QVERIFY(put(readableFile));
-		DirectoryPermissions permissions(restricted);
-		QVERIFY(permissions.set(0000));
-		if (::access(QFile::encodeName(restricted).constData(), R_OK | X_OK) == 0)
-			QSKIP("Host bypasses restrictive directory permissions");
-		QCOMPARE(errno, EACCES);
-		MediaEngine::Cancellation cancellation;
-		const auto result = MediaEngine::DiscoveryEngine{}.discover({{temp.path()}, true}, cancellation);
-		QVERIFY(!result.discoveryComplete);
-		QCOMPARE(result.files.size(), 1);
-		QCOMPARE(result.files.first().path, readableFile);
-		QVERIFY(result.files.first().omfScan);
-		QCOMPARE(result.candidates.size(), 1);
-		QVERIFY(hasUnreadableIssue(result, restricted));
-#else
-		QSKIP("POSIX directory permission regression");
-#endif
-	}
-
 	void unreadable_mxf_root_preserves_other_request()
 	{
 #ifdef Q_OS_UNIX
@@ -295,12 +318,15 @@ private slots:
 			QSKIP("Host bypasses restrictive directory permissions");
 		QCOMPARE(errno, EACCES);
 		MediaEngine::Cancellation cancellation;
-		const auto result = MediaEngine::DiscoveryEngine{}.discover({{temp.path() + "/Avid MediaFiles", omf}, true}, cancellation);
+		const auto result = MediaEngine::DiscoveryEngine{}.discover({{restricted, omf}, true}, cancellation);
 		QVERIFY(!result.discoveryComplete);
 		QCOMPARE(result.files.size(), 1);
 		QCOMPARE(result.files.first().path, readableFile);
 		QCOMPARE(result.candidates.size(), 1);
-		QVERIFY(hasUnreadableIssue(result, restricted));
+		QCOMPARE(result.discoveryIssues.size(), 1);
+		QCOMPARE(result.discoveryIssues.first().kind, MediaEngine::DiscoveryIssue::Kind::UnavailableRoot);
+		QCOMPARE(result.discoveryIssues.first().path, restricted);
+		QVERIFY(!result.discoveryIssues.first().explanation.isEmpty());
 #else
 		QSKIP("POSIX directory permission regression");
 #endif

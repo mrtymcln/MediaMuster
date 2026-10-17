@@ -7,6 +7,12 @@
 #include <QObject>
 #include <functional>
 #include <mutex>
+#include <optional>
+
+namespace MediaEngine
+{
+	class Cancellation;
+}
 
 struct LogMessage
 {
@@ -19,15 +25,31 @@ class MediaScanner : public QObject
 {
 	Q_OBJECT
 public:
+	struct Location
+	{
+		enum class Kind
+		{
+			/// Automatically listed drive/known base; no media is a valid empty result.
+			MediaBase,
+			/// Admitted drive or internal scope; report missing managed media trees.
+			RequiredMediaBase,
+			/// Named Avid MediaFiles or OMFI MediaFiles folder; not a media leaf.
+			MediaTree
+		};
+		Kind kind;
+		QString path;
+	};
 	struct Options
 	{
-		QStringList volumePaths;
-		QStringList manualPaths;
+		QVector<Location> locations;
 		bool includeOmf = false;
 	};
 	explicit MediaScanner(QObject *parent = nullptr);
 	~MediaScanner() override { m_job.shutdown(); }
-	static bool canScanPath(const QString &path);
+	/// Strict Add Folder/drop admission; independent of the OMF build setting.
+	static std::optional<Location> addedLocation(const QString &path);
+	/// Trusted operation scope; normalizes known tree roots without filesystem I/O.
+	static Location rescanLocation(const QString &path);
 	void startScan(const Options &options);
 	/// False once the owning thread has accepted the result for publication.
 	bool cancelScan();
@@ -62,6 +84,8 @@ private:
 		bool cancelled = false;
 		qint64 elapsedMs = 0;
 	};
+	struct FolderList;
+	FolderList buildFolderList(const MediaEngine::Cancellation &cancellation);
 	ScanCompletion doScan();
 	void publishCompletion(ScanCompletion completion);
 	void publishFailure(const QString &message);

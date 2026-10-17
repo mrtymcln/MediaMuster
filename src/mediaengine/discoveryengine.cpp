@@ -65,27 +65,6 @@ namespace MediaEngine
 					  { return a.fileName().compare(b.fileName(), Qt::CaseInsensitive) < 0; });
 			return result;
 		}
-
-		template <typename ListDirectories>
-		QStringList managedRoots(const QString &path, const ListDirectories &listDirectories)
-		{
-			if (AvidMediaLayout::isMxfRoot(path) || AvidMediaLayout::isOmfRoot(path))
-				return {path};
-			if (const auto location = AvidMediaLayout::locateMediaFolder(path))
-				return {location->rootPath};
-			QStringList roots;
-			// Only the direct Avid MediaFiles container or a direct media base.
-			for (const auto &entry : listDirectories(path))
-			{
-				if (AvidMediaLayout::isMxfRoot(entry.absoluteFilePath()) || AvidMediaLayout::isOmfRoot(entry.absoluteFilePath()))
-					roots.append(entry.absoluteFilePath());
-				else if (entry.fileName().compare(Conventions::kAvidMediaFilesDir, Qt::CaseInsensitive) == 0)
-					for (const auto &child : listDirectories(entry.absoluteFilePath()))
-						if (AvidMediaLayout::isMxfRoot(child.absoluteFilePath()))
-							roots.append(child.absoluteFilePath());
-			}
-			return roots;
-		}
 	}
 
 	ScanResult DiscoveryEngine::discover(const ScanRequest &request, const Cancellation &cancellation,
@@ -93,6 +72,8 @@ namespace MediaEngine
 	{
 		ScanResult result;
 		result.request = request;
+		result.discoveryIssues = request.preparationIssues;
+		result.discoveryComplete = result.discoveryIssues.isEmpty();
 		KelpieIdAllocator ids;
 		QSet<QString> visitedRoots;
 		QHash<QString, QString> volumeIdentifiers;
@@ -179,41 +160,32 @@ namespace MediaEngine
 				issue(DiscoveryIssue::Kind::UnavailableRoot, requested, QStringLiteral("Requested directory is unavailable, unreadable or a symlink"));
 				continue;
 			}
-			const auto issuesBeforeListing = result.discoveryIssues.size();
-			const auto roots = managedRoots(info.absoluteFilePath(), [&](const QString &path)
-											{ return list(path, QDir::Dirs); });
-			if (roots.isEmpty())
+			const QString root = info.absoluteFilePath();
+			const bool legacy = AvidMediaLayout::isOmfRoot(root);
+			if (!legacy && !AvidMediaLayout::isMxfRoot(root))
 			{
-				if (!cancellation.cancelled() && result.discoveryIssues.size() == issuesBeforeListing)
-					issue(DiscoveryIssue::Kind::UnmanagedRoot, requested, QStringLiteral("No managed media root at the requested location or its immediate base"));
+				issue(DiscoveryIssue::Kind::UnmanagedRoot, requested, QStringLiteral("Requested directory is not an exact MXF or OMFI media root"));
 				continue;
 			}
-			for (const auto &root : roots)
+			if (legacy && !request.omfScan)
+				continue;
+			if (cancellation.cancelled())
+				break;
+			const QString canonicalRoot = info.canonicalFilePath();
+			if (cancellation.cancelled())
+				break;
+			const QString physicalRoot = canonicalRoot.isEmpty() ? root : canonicalRoot;
+			if (visitedRoots.contains(physicalRoot))
+				continue;
+			visitedRoots.insert(physicalRoot);
+			if (legacy)
+				scanFolder(root);
+			for (const auto &child : list(root, QDir::Dirs))
 			{
 				if (cancellation.cancelled())
 					break;
-				const bool legacy = AvidMediaLayout::isOmfRoot(root);
-				if (legacy && !request.omfScan)
-					continue;
-				if (discovering)
-					discovering(root);
-				if (cancellation.cancelled())
-					break;
-				const QFileInfo rootInfo(root);
-				const QString canonicalRoot = rootInfo.canonicalFilePath();
-				const QString physicalRoot = canonicalRoot.isEmpty() ? rootInfo.absoluteFilePath() : canonicalRoot;
-				if (visitedRoots.contains(physicalRoot))
-					continue;
-				visitedRoots.insert(physicalRoot);
-				if (legacy)
-					scanFolder(root);
-				for (const auto &child : list(root, QDir::Dirs))
-				{
-					if (cancellation.cancelled())
-						break;
-					if (AvidMediaLayout::locateMediaFolder(child.absoluteFilePath()))
-						scanFolder(child.absoluteFilePath());
-				}
+				if (AvidMediaLayout::locateMediaFolder(child.absoluteFilePath()))
+					scanFolder(child.absoluteFilePath());
 			}
 		}
 		result.cancelled = cancellation.cancelled();

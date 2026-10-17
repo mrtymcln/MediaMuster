@@ -1,4 +1,4 @@
-// Owns the background scan and forwards progress/results to the existing UI.
+// Prepares exact media roots, owns the background scan and forwards results.
 // MediaEngine owns source reading, matching and temporary working scan evidence.
 #include "mediascanner.h"
 #include "mediaengine/scanengine.h"
@@ -9,7 +9,10 @@
 #include <QDir>
 #include <QElapsedTimer>
 #include <QFileInfo>
+#include <QSet>
+#include <QStorageInfo>
 #include <exception>
+#include <filesystem>
 #include <new>
 #include <utility>
 
@@ -25,8 +28,15 @@ namespace
 	}
 
 	QString childDirectory(const QString &parent, QLatin1String name,
-						   const MediaEngine::Cancellation *cancellation = nullptr)
+						   const MediaEngine::Cancellation *cancellation = nullptr,
+						   QVector<MediaEngine::DiscoveryIssue> *issues = nullptr)
 	{
+		const auto reportError = [&](const QString &path, const std::error_code &error)
+		{
+			if (issues)
+				issues->append({MediaEngine::DiscoveryIssue::Kind::UnreadableFolder, path,
+								QStringLiteral("Cannot inspect media folders: %1").arg(QString::fromLocal8Bit(error.message().c_str()))});
+		};
 		if (cancellation && cancellation->cancelled())
 			return {};
 		const QDir dir(parent);
@@ -35,66 +45,93 @@ namespace
 			return expected;
 		if (cancellation && cancellation->cancelled())
 			return {};
-		for (const QFileInfo &child : dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot))
+		std::error_code error;
+		std::filesystem::directory_iterator current(dir.filesystemPath(), error), end;
+		while (!error && current != end)
 		{
 			if (cancellation && cancellation->cancelled())
 				return {};
+			const QFileInfo child(current->path());
 			if (child.fileName().compare(name, Qt::CaseInsensitive) == 0)
-				return child.absoluteFilePath();
+			{
+				std::error_code statusError;
+				if (current->is_directory(statusError))
+					return child.absoluteFilePath();
+				if (statusError)
+					reportError(child.absoluteFilePath(), statusError);
+			}
+			current.increment(error);
 		}
+		if (error)
+			reportError(parent, error);
 		return {};
 	}
 
-	struct MediaRoot
+	bool isAvidTree(const QString &path)
 	{
-		AvidMediaLayout::Family family;
-		QString path;
-		QString volumePath;
-	};
-
-	QVector<MediaRoot> rootsForAddedPath(const QString &requestedPath, bool includeOmf = true,
-									   const MediaEngine::Cancellation *cancellation = nullptr)
-	{
-		if (cancellation && cancellation->cancelled())
-			return {};
-		if (!QFileInfo(requestedPath).isDir())
-			return {};
-		if (cancellation && cancellation->cancelled())
-			return {};
-		const QString path = scannerFolderKey(requestedPath);
-		if (cancellation && cancellation->cancelled())
-			return {};
-		if (AvidMediaLayout::isInsideUmeRoot(requestedPath) || AvidMediaLayout::isInsideUmeRoot(path))
-			return {};
-		if (const auto location = AvidMediaLayout::locateMediaFolder(path))
-			return {{location->family, location->rootPath, QFileInfo(location->rootPath).absolutePath()}};
-		if (AvidMediaLayout::isMxfRoot(path))
-			return {{AvidMediaLayout::Family::Mxf, path, QFileInfo(path).absolutePath()}};
-		QVector<MediaRoot> roots;
-		const bool isAvidRoot = QFileInfo(path).fileName().compare(Conventions::kAvidMediaFilesDir, Qt::CaseInsensitive) == 0;
-		const QString avidRoot = isAvidRoot ? path : childDirectory(path, Conventions::kAvidMediaFilesDir, cancellation);
-		const QString mxfRootPath = avidRoot.isEmpty() ? QString{} : childDirectory(avidRoot, Conventions::kMxfDir, cancellation);
-		if (cancellation && cancellation->cancelled())
-			return {};
-		if (!mxfRootPath.isEmpty() && AvidMediaLayout::isMxfRoot(scannerFolderKey(mxfRootPath)))
-			roots.append({AvidMediaLayout::Family::Mxf, mxfRootPath, path});
-		const QString omfRoot = includeOmf ? childDirectory(path, Conventions::kOmfMediaFilesDir, cancellation) : QString{};
-		if (cancellation && cancellation->cancelled())
-			return roots;
-		if (!omfRoot.isEmpty() && AvidMediaLayout::isOmfRoot(scannerFolderKey(omfRoot)))
-			roots.append({AvidMediaLayout::Family::Omf, omfRoot, path});
-		return roots;
+		return QFileInfo(path).fileName().compare(Conventions::kAvidMediaFilesDir, Qt::CaseInsensitive) == 0;
 	}
 }
+
+struct MediaScanner::FolderList
+{
+	struct MediaRoot
+	{
+		QString path;
+		QString volumePath;
+		QString volumeName;
+	};
+	MediaEngine::ScanRequest request;
+	QVector<MediaRoot> contexts;
+};
 
 MediaScanner::MediaScanner(QObject *parent)
 	: QObject(parent)
 {
 }
 
-bool MediaScanner::canScanPath(const QString &path)
+std::optional<MediaScanner::Location> MediaScanner::addedLocation(const QString &requestedPath)
 {
-	return !rootsForAddedPath(path).isEmpty();
+	if (requestedPath.isEmpty())
+		return std::nullopt;
+	const QFileInfo requested(requestedPath);
+	if (!requested.isDir() || !requested.isReadable())
+		return std::nullopt;
+	const QString path = scannerFolderKey(requestedPath);
+	if (AvidMediaLayout::isInsideUmeRoot(requestedPath) || AvidMediaLayout::isInsideUmeRoot(path))
+		return std::nullopt;
+	const auto hasMxfTree = [](const QString &tree)
+	{
+		const QString root = childDirectory(tree, Conventions::kMxfDir);
+		return !root.isEmpty() && AvidMediaLayout::isMxfRoot(scannerFolderKey(root));
+	};
+	if ((isAvidTree(path) && hasMxfTree(path)) || AvidMediaLayout::isOmfRoot(path))
+		return Location{Location::Kind::MediaTree, path};
+	const QStorageInfo storage(path);
+	if (!storage.isValid() || !storage.isReady() || storage.rootPath().isEmpty())
+		return std::nullopt;
+	const QString volumeRoot = scannerFolderKey(storage.rootPath());
+#ifdef Q_OS_WIN
+	if (volumeRoot.compare(path, Qt::CaseInsensitive) != 0)
+#else
+	if (volumeRoot != path)
+#endif
+		return std::nullopt;
+	const QString avid = childDirectory(path, Conventions::kAvidMediaFilesDir);
+	const QString omf = childDirectory(path, Conventions::kOmfMediaFilesDir);
+	if ((!avid.isEmpty() && hasMxfTree(avid)) ||
+		(!omf.isEmpty() && AvidMediaLayout::isOmfRoot(scannerFolderKey(omf))))
+		return Location{Location::Kind::RequiredMediaBase, path};
+	return std::nullopt;
+}
+
+MediaScanner::Location MediaScanner::rescanLocation(const QString &requestedPath)
+{
+	QString path = requestedPath.isEmpty() ? QString{} : QDir::cleanPath(QDir::fromNativeSeparators(requestedPath));
+	if (AvidMediaLayout::isMxfRoot(path))
+		path = QFileInfo(path).absolutePath();
+	const bool tree = isAvidTree(path) || AvidMediaLayout::isOmfRoot(path);
+	return {tree ? Location::Kind::MediaTree : Location::Kind::RequiredMediaBase, path};
 }
 
 void MediaScanner::startScan(const Options &options)
@@ -154,8 +191,7 @@ void MediaScanner::startScan(const Options &options)
 			failure = QStringLiteral("The scan stopped because of an unexpected error.");
 		}
 		// Unwind the failed scan's temporary owners before publishing failure.
-		QMetaObject::invokeMethod(this, [this, failure] { publishFailure(failure); }, Qt::QueuedConnection);
-	});
+		QMetaObject::invokeMethod(this, [this, failure] { publishFailure(failure); }, Qt::QueuedConnection); });
 }
 
 void MediaScanner::checkpoint(Checkpoint phase, qsizetype row)
@@ -179,8 +215,7 @@ void MediaScanner::publishCompletion(ScanCompletion completion)
 			issue.scopeComplete = false;
 	const QString module = QStringLiteral("scanner");
 	QVector<LogMessage> logs{
-		{QtInfoMsg, module, QStringLiteral("Scan %1: %2 files found")
-			.arg(completion.cancelled ? QStringLiteral("cancelled") : QStringLiteral("complete")).arg(completion.rows.size())},
+		{QtInfoMsg, module, QStringLiteral("Scan %1: %2 files found").arg(completion.cancelled ? QStringLiteral("cancelled") : QStringLiteral("complete")).arg(completion.rows.size())},
 		{QtInfoMsg, module, QStringLiteral("Scan total including row formatting: %1 ms").arg(completion.elapsedMs)}};
 	if (completion.cancelled)
 		logs.append({QtInfoMsg, module, QStringLiteral("Scan cancelled by user; results are incomplete")});
@@ -224,66 +259,119 @@ bool MediaScanner::cancelScan()
 	return true;
 }
 
+MediaScanner::FolderList MediaScanner::buildFolderList(const MediaEngine::Cancellation &cancellation)
+{
+	MediaEngine::ScanRequest request;
+	QVector<FolderList::MediaRoot> contexts;
+	QSet<QString> preparedRoots;
+	const auto addRoot = [&](const QString &root, const QString &volumePath, const QString &label)
+	{
+		if (cancellation.cancelled())
+			return false;
+		const QString physical = scannerFolderKey(root);
+		if (cancellation.cancelled())
+			return false;
+		if (AvidMediaLayout::isInsideUmeRoot(root) || AvidMediaLayout::isInsideUmeRoot(physical) ||
+			(!AvidMediaLayout::isMxfRoot(physical) && !AvidMediaLayout::isOmfRoot(physical)))
+		{
+			request.preparationIssues.append({MediaEngine::DiscoveryIssue::Kind::UnmanagedRoot, root,
+											  QStringLiteral("Requested location is not a supported MXF or OMFI media root")});
+			return false;
+		}
+		if (!preparedRoots.contains(physical))
+		{
+			preparedRoots.insert(physical);
+			contexts.append({physical, volumePath, label});
+			request.roots.append(physical);
+		}
+		return true;
+	};
+	for (const auto &location : m_options.locations)
+	{
+		if (cancellation.cancelled())
+			break;
+		if (location.path.isEmpty())
+		{
+			request.preparationIssues.append({MediaEngine::DiscoveryIssue::Kind::UnavailableRoot, {}, QStringLiteral("No directory was supplied for this scan location")});
+			continue;
+		}
+		emit scanDiscovering(location.path);
+		if (cancellation.cancelled())
+			break;
+		const QString path = scannerFolderKey(location.path);
+		if (cancellation.cancelled())
+			break;
+		if (AvidMediaLayout::isInsideUmeRoot(location.path) || AvidMediaLayout::isInsideUmeRoot(path))
+		{
+			request.preparationIssues.append({MediaEngine::DiscoveryIssue::Kind::UnmanagedRoot, location.path,
+											  QStringLiteral("UME media is outside the supported scan scope")});
+			continue;
+		}
+		if (location.kind == Location::Kind::MediaTree && AvidMediaLayout::isOmfRoot(path) && !m_options.includeOmf)
+			continue;
+		const QFileInfo info(path);
+		if (!info.isDir() || !info.isReadable())
+		{
+			request.preparationIssues.append({MediaEngine::DiscoveryIssue::Kind::UnavailableRoot, location.path,
+											  QStringLiteral("Requested directory is unavailable or unreadable")});
+			continue;
+		}
+		if (cancellation.cancelled())
+			break;
+		const QString label = QDir(location.path).dirName();
+		if (location.kind != Location::Kind::MediaTree)
+		{
+			const bool required = location.kind == Location::Kind::RequiredMediaBase;
+			const QString volumePath = required ? path : location.path;
+			const auto issuesBefore = request.preparationIssues.size();
+			bool found = false;
+			const QString avid = childDirectory(path, Conventions::kAvidMediaFilesDir, &cancellation, &request.preparationIssues);
+			const QString mxf = avid.isEmpty() ? QString{} : childDirectory(avid, Conventions::kMxfDir, &cancellation, &request.preparationIssues);
+			if (!mxf.isEmpty())
+				found = addRoot(mxf, volumePath, label);
+			const QString omf = m_options.includeOmf || required
+									? childDirectory(path, Conventions::kOmfMediaFilesDir, &cancellation, &request.preparationIssues)
+									: QString{};
+			if (!omf.isEmpty())
+			{
+				// A disabled OMF tree is recognized without reading its contents.
+				const bool legacyFound = !cancellation.cancelled() && (m_options.includeOmf
+																		   ? addRoot(omf, volumePath, label)
+																		   : AvidMediaLayout::isOmfRoot(scannerFolderKey(omf)));
+				found = found || legacyFound;
+			}
+			if (required && !found && !cancellation.cancelled() && request.preparationIssues.size() == issuesBefore)
+				request.preparationIssues.append({MediaEngine::DiscoveryIssue::Kind::UnmanagedRoot, location.path,
+												  QStringLiteral("No managed media trees are present at the requested location")});
+		}
+		else if (isAvidTree(path))
+		{
+			const auto issuesBefore = request.preparationIssues.size();
+			const QString mxf = childDirectory(path, Conventions::kMxfDir, &cancellation, &request.preparationIssues);
+			if (!mxf.isEmpty())
+				addRoot(mxf, path, label);
+			else if (!cancellation.cancelled() && request.preparationIssues.size() == issuesBefore)
+				request.preparationIssues.append({MediaEngine::DiscoveryIssue::Kind::UnmanagedRoot, location.path,
+												  QStringLiteral("No MXF media root is present in the selected Avid MediaFiles folder")});
+		}
+		else if (AvidMediaLayout::isOmfRoot(path))
+			addRoot(path, info.absolutePath(), label);
+		else
+			request.preparationIssues.append({MediaEngine::DiscoveryIssue::Kind::UnmanagedRoot, location.path,
+											  QStringLiteral("Select an Avid MediaFiles or OMFI MediaFiles tree")});
+	}
+	request.omfScan = m_options.includeOmf;
+	return {std::move(request), std::move(contexts)};
+}
+
 MediaScanner::ScanCompletion MediaScanner::doScan()
 {
 	QElapsedTimer timer;
 	timer.start();
 	Diagnostics::appendConsoleLine(QtInfoMsg, QStringLiteral("scanner"),
-								   QStringLiteral("Scan starting: %1 volume(s), %2 added location(s)").arg(m_options.volumePaths.size()).arg(m_options.manualPaths.size()));
+								   QStringLiteral("Scan starting: %1 location(s)").arg(m_options.locations.size()));
 	const MediaEngine::Cancellation cancellation(&m_job.cancelFlag());
-	MediaEngine::ScanRequest request;
-	QVector<MediaRoot> contexts;
-	QHash<QString, QString> labels;
-	const auto addRoot = [&](MediaRoot root, const QString &label)
-	{
-		if (cancellation.cancelled())
-			return;
-		const QString physical = scannerFolderKey(root.path);
-		if (cancellation.cancelled())
-			return;
-		if (!labels.contains(physical))
-		{
-			root.path = physical;
-			contexts.append(root);
-			labels.insert(physical, label);
-			request.roots.append(physical);
-		}
-	};
-	for (const auto &base : m_options.volumePaths)
-	{
-		if (cancellation.cancelled())
-			break;
-		emit scanDiscovering(base);
-		if (cancellation.cancelled())
-			break;
-		if (!QFileInfo(base).isDir() || !QFileInfo(base).isReadable())
-		{
-			request.roots.append(base); // Preserve an unavailable requested scope as a discovery issue.
-			continue;
-		}
-		const QString avid = childDirectory(base, Conventions::kAvidMediaFilesDir, &cancellation);
-		const QString mxf = avid.isEmpty() ? QString{} : childDirectory(avid, Conventions::kMxfDir, &cancellation);
-		const QString omf = m_options.includeOmf ? childDirectory(base, Conventions::kOmfMediaFilesDir, &cancellation) : QString{};
-		if (!mxf.isEmpty())
-			addRoot({AvidMediaLayout::Family::Mxf, mxf, base}, QDir(base).dirName());
-		if (!omf.isEmpty())
-			addRoot({AvidMediaLayout::Family::Omf, omf, base}, QDir(base).dirName());
-	}
-	for (const auto &path : m_options.manualPaths)
-	{
-		if (cancellation.cancelled())
-			break;
-		emit scanDiscovering(path);
-		if (cancellation.cancelled())
-			break;
-		const auto roots = rootsForAddedPath(path, m_options.includeOmf, &cancellation);
-		if (roots.isEmpty())
-			request.roots.append(path); // Let discovery retain the inaccessible/unsupported scope diagnostic.
-		for (const auto &root : roots)
-			addRoot(root, QDir(path).dirName());
-	}
-	request.roots.removeDuplicates();
-	request.omfScan = m_options.includeOmf;
+	const auto folders = buildFolderList(cancellation);
 	const qint64 rootLookupMs = timer.elapsed();
 	QVector<LogMessage> logs;
 	const auto flush = [&]
@@ -296,7 +384,7 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 		emit scanLogBatch(logs);
 		logs.clear();
 	};
-	logs.append({QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("Scanning %1 location(s) with MediaEngine...").arg(request.roots.size())});
+	logs.append({QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("Scanning %1 location(s) with MediaEngine...").arg(folders.request.roots.size())});
 	logs.append({QtInfoMsg, QStringLiteral("scanner"), QStringLiteral("Root lookup: %1 ms").arg(rootLookupMs)});
 	flush();
 	bool preparationReported = false;
@@ -347,7 +435,7 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 		flush();
 		emit scanFinalising();
 	};
-	auto session = QSharedPointer<MediaEngine::ScanResult>::create(MediaEngine::ScanEngine{}.scan(request, cancellation, callbacks));
+	auto session = QSharedPointer<MediaEngine::ScanResult>::create(MediaEngine::ScanEngine{}.scan(folders.request, cancellation, callbacks));
 	reportPreparation(); // Empty or cancelled scans may never reach source progress.
 	logs.append({QtInfoMsg, QStringLiteral("scanner"),
 				 QStringLiteral("Scan evidence: %1 source receipts plus extracted metadata and observations").arg(session->sources.size())});
@@ -361,15 +449,15 @@ MediaScanner::ScanCompletion MediaScanner::doScan()
 			checkpoint(Checkpoint::FormattingRow, rows.size());
 			QString volumePath;
 			QString volumeName;
-			for (const auto &context : contexts)
+			for (const auto &context : folders.contexts)
 				if (file.path.startsWith(context.path + QLatin1Char('/')))
 				{
 					volumePath = context.volumePath;
-					volumeName = labels.value(context.path);
+					volumeName = context.volumeName;
 					break;
 				}
 			rows.append(mediaEngineMediaFile(file, rowChecks, volumePath, volumeName,
-				session->cancelled || cancellation.cancelled()));
+											 session->cancelled || cancellation.cancelled()));
 		}
 	}
 	for (const auto &issue : session->reconciliationIssues)

@@ -347,7 +347,7 @@ void TestMediaEnginePmr::shortReadsIoAndCancellation()
 void TestMediaEnginePmr::realDrivePmrs()
 {
 	const QString roots = qEnvironmentVariable("MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_ROOTS");
-	if (roots.isEmpty()) QSKIP("Opt-in read-only local/EDIT PMR audit.");
+	if (roots.isEmpty()) QSKIP("Opt-in read-only PMR audit; provide exact Avid MediaFiles/MXF or OMFI MediaFiles roots.");
 	MediaEngine::Cancellation cancellation;
 	const auto discovery = MediaEngine::DiscoveryEngine{}.discover({roots.split(';', Qt::SkipEmptyParts), true}, cancellation);
 	QVERIFY(discovery.discoveryComplete);

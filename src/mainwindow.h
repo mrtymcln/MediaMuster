@@ -97,7 +97,9 @@ private:
 	void buildHelpMenu();
 
 	void setupConnections();
-	void startScanWithPaths(const QStringList &paths);
+	void scanListedPaths(const QStringList &paths);
+	void rescanPaths(const QStringList &paths);
+	void startScan(const QVector<MediaScanner::Location> &locations);
 	void addLog(QtMsgType level, const QString &module, const QString &message);
 
 	/// Adapt the selected media rows to the controller's request format.
@@ -233,7 +235,8 @@ private:
 	class QAction *m_precomputeFilterAction = nullptr;
 	/// Paths found by the last startup/Refresh detection; empty is a valid result.
 	QStringList m_detectedVolumePaths;
-	QSet<QString> m_manualVolumes;
+	/// Session-only manual paths and their admitted tree/base meaning.
+	QHash<QString, MediaScanner::Location::Kind> m_manualVolumes;
 
 	// MARK: - Selection persistence
 

@@ -33,10 +33,18 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QScopeGuard>
+#include <QStorageInfo>
 #include <algorithm>
 #include <atomic>
 #include <stdexcept>
 #include <utility>
+
+#ifdef Q_OS_UNIX
+#include <cerrno>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 
 #ifdef Q_OS_MACOS
 #include <mach/mach.h>
@@ -274,7 +282,7 @@ private slots:
 	void incomplete_omf_database_recovers_file_identity_from_header_data();
 	void incomplete_omf_database_recovers_file_identity_from_header();
 	void omf_volume_root_scans_both_folders();
-	void copied_media_tree_requires_its_direct_base_or_managed_root();
+	void copied_media_tree_requires_a_managed_root();
 	void omf_root_pointed_at_directly_never_scans_as_mxf_folders();
 	void omf_root_without_a_pmr_gets_identity_from_its_header();
 	void omf_video_rows_show_avid_descriptive_names();
@@ -290,11 +298,10 @@ private slots:
 	void omf_database_metadata_survives_source_path_fallback();
 	void ama_databases_are_read();
 
-	// What the OMF-era rework must NOT have changed for MXF-era media: a
-	// hand-added path of any shape still resolves to its MXF root (and a
-	// derived ".../Avid MediaFiles" is a folder, never a drive);
-	// an unreadable ama* twin beside a readable msm* pair does not fail the folder.
-	void manual_path_inside_avid_mediafiles_resolves_to_its_mxf_root();
+	// User additions select whole managed trees; internal rescans keep their
+	// explicit scope without broadening manual folder admission.
+	void manual_media_tree_scans_eligible_siblings_without_nested_archives();
+	void detected_base_alias_keeps_its_display_context();
 	void ume_paths_are_ignored_data();
 	void ume_paths_are_ignored();
 	void ume_exclusion_preserves_supported_siblings();
@@ -312,6 +319,9 @@ private slots:
 	void ordinary_wave_outside_omfi_is_excluded_data();
 	void ordinary_wave_outside_omfi_is_excluded();
 	void completed_reference_check_survives_unreadable_siblings();
+	void unreadable_avid_container_preserves_other_family_and_incomplete_scope();
+	void missing_media_base_reports_only_required_scope_data();
+	void missing_media_base_reports_only_required_scope();
 
 private:
 	static QString fixturesDir() { return QStringLiteral(FIXTURES_DIR); }
@@ -360,7 +370,8 @@ void TestScanner::optional_read_only_real_scan()
 	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
 	QSignalSpy issues(&scanner, &MediaScanner::scanIssuesFinished);
 	MediaScanner::Options options;
-	options.manualPaths = roots.split(';', Qt::SkipEmptyParts);
+	for (const QString &root : roots.split(';', Qt::SkipEmptyParts))
+		options.locations.append(MediaScanner::rescanLocation(root));
 	options.includeOmf = true;
 	const QJsonObject memoryBefore = auditMemory();
 	QElapsedTimer timer;
@@ -423,7 +434,7 @@ void TestScanner::optional_read_only_real_scan()
 	{
 		QFile report(output);
 		QVERIFY(report.open(QIODevice::WriteOnly));
-		const QJsonDocument document(QJsonObject{{"roots", QJsonArray::fromStringList(options.manualPaths)},
+		const QJsonDocument document(QJsonObject{{"roots", QJsonArray::fromStringList(roots.split(';', Qt::SkipEmptyParts))},
 												 {"memoryBefore", memoryBefore},
 												 {"memoryRetained", memoryRetained},
 												 {"scope", QStringLiteral("Prepared rows and compact metadata status")},
@@ -461,7 +472,7 @@ void TestScanner::mediaengine_extension_discovery_keeps_copies_and_local_referen
 	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
 	QSignalSpy issueSpy(&scanner, &MediaScanner::scanIssuesFinished);
 	MediaScanner::Options options;
-	options.volumePaths = {temp.path()};
+	options.locations = {{MediaScanner::Location::Kind::MediaBase, temp.path()}};
 	scanner.startScan(options);
 	QVERIFY(finished.wait(10000));
 	QTRY_COMPARE(issueSpy.count(), 1);
@@ -509,7 +520,7 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
 
 	MediaScanner::Options opts;
-	opts.volumePaths = QStringList{tmp.path()};
+	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 
 	// This genuine tone fixture contains the complete MXF file.
@@ -581,7 +592,7 @@ void TestScanner::unreferenced_mxf_recovered_via_mdb()
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
 
 	MediaScanner::Options opts;
-	opts.volumePaths = QStringList{tmp.path()};
+	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 
 	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
@@ -653,7 +664,7 @@ void TestScanner::stage3_mdb_name_must_not_clobber_material_name()
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
 
 	MediaScanner::Options opts;
-	opts.volumePaths = QStringList{tmp.path()};
+	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 
 	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
@@ -695,7 +706,7 @@ void TestScanner::mxf_without_any_database_is_no_database()
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
 
 	MediaScanner::Options opts;
-	opts.volumePaths = QStringList{tmp.path()};
+	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 
 	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
@@ -731,7 +742,7 @@ void TestScanner::unlisted_media_with_readable_databases_is_no_reference()
 
 	MediaScanner::Options opts;
 	opts.includeOmf = true;
-	opts.volumePaths = QStringList{tmp.path()};
+	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 
 	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
@@ -770,7 +781,7 @@ void TestScanner::failed_pmr_does_not_hide_validated_mdb_reference()
 
 	MediaScanner::Options opts;
 	opts.includeOmf = true;
-	opts.volumePaths = QStringList{tmp.path()};
+	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 
 	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
@@ -819,7 +830,7 @@ void TestScanner::effect_render_names_classify_as_precompute()
 	MediaScanner scanner;
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
 	MediaScanner::Options opts;
-	opts.volumePaths = QStringList{tmp.path()};
+	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
 
@@ -958,7 +969,7 @@ void TestScanner::mdb_name_fills_in_when_the_mxf_has_none()
 	MediaScanner scanner;
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
 	MediaScanner::Options opts;
-	opts.volumePaths = QStringList{tmp.path()};
+	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
 
@@ -994,7 +1005,7 @@ void TestScanner::unknown_clip_name_is_blank_not_the_filename()
 	MediaScanner scanner;
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
 	MediaScanner::Options opts;
-	opts.volumePaths = QStringList{tmp.path()};
+	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
 
@@ -1036,7 +1047,7 @@ void TestScanner::source_package_name_is_not_a_clip_name()
 	MediaScanner scanner;
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
 	MediaScanner::Options opts;
-	opts.volumePaths = QStringList{tmp.path()};
+	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
 
@@ -1067,7 +1078,7 @@ void TestScanner::mixdown_is_media_not_precompute()
 	MediaScanner scanner;
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
 	MediaScanner::Options opts;
-	opts.volumePaths = QStringList{tmp.path()};
+	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
 
@@ -1094,7 +1105,7 @@ void TestScanner::unreadable_header_stays_unknown()
 	MediaScanner scanner;
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
 	MediaScanner::Options opts;
-	opts.volumePaths = QStringList{tmp.path()};
+	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
 
@@ -1128,7 +1139,7 @@ void TestScanner::appledouble_sibling_is_never_media()
 	MediaScanner scanner;
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
 	MediaScanner::Options opts;
-	opts.volumePaths = QStringList{tmp.path()};
+	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
 
@@ -1159,7 +1170,7 @@ void TestScanner::non_avid_files_are_invisible()
 	MediaScanner scanner;
 	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
 	MediaScanner::Options opts;
-	opts.volumePaths = QStringList{tmp.path()};
+	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
 
@@ -1183,7 +1194,7 @@ void TestScanner::discovery_progress_precedes_source_progress()
 		{ events.append(QStringLiteral("Read: ") + path); }, Qt::DirectConnection);
 	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
 	MediaScanner::Options options;
-	options.volumePaths = {temp.path()};
+	options.locations = {{MediaScanner::Location::Kind::MediaBase, temp.path()}};
 	scanner.startScan(options);
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 5000);
 	QVERIFY(!events.isEmpty());
@@ -1213,7 +1224,7 @@ void TestScanner::cancellation_during_root_preparation_stops_scan()
 	QSignalSpy progress(&scanner, &MediaScanner::scanProgress);
 	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
 	MediaScanner::Options options;
-	options.volumePaths = {first.path(), second.path()};
+	options.locations = {{MediaScanner::Location::Kind::MediaBase, first.path()}, {MediaScanner::Location::Kind::MediaBase, second.path()}};
 	scanner.startScan(options);
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 5000);
 	QCOMPARE(reported, QStringList{first.path()});
@@ -1239,7 +1250,7 @@ void TestScanner::cancellation_during_finalising_reports_cancelled()
 			{ scanner.cancelScan(); }, Qt::DirectConnection);
 	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
 	MediaScanner::Options options;
-	options.volumePaths = {tmp.path()};
+	options.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(options);
 	QVERIFY(finished.wait(5000));
 	QTRY_VERIFY(messages.contains(QStringLiteral("Scan cancelled by user; results are incomplete")));
@@ -1286,7 +1297,7 @@ void TestScanner::scan_can_restart_from_its_queued_receiver()
 			cancellationAccepted = scanner.cancelScan();
 	};
 	MediaScanner::Options options;
-	options.volumePaths = {temporary.path()};
+	options.locations = {{MediaScanner::Location::Kind::MediaBase, temporary.path()}};
 	int received = 0;
 	// A UI receiver can request the next scan as soon as completion arrives.
 	// Its restart must join the old worker without being rejected as running.
@@ -1342,7 +1353,7 @@ void TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()
 
 	MediaScanner scanner;
 	MediaScanner::Options opts;
-	opts.volumePaths = QStringList{tmp.path()};
+	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 
 	{
 		TestPause::setEnabled(true);
@@ -1540,7 +1551,7 @@ namespace
 		MediaScanner scanner;
 		QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
 		MediaScanner::Options opts;
-		opts.volumePaths = QStringList{root};
+		opts.locations = {{MediaScanner::Location::Kind::MediaBase, root}};
 		opts.includeOmf = includeOmf;
 		scanner.startScan(opts);
 		if (!finishedSpy.wait(5000))
@@ -1577,7 +1588,7 @@ void TestScanner::cancellation_before_publication_keeps_prepared_results()
 	QVERIFY(tryWriteFile(referenceFolder + QStringLiteral("/msmFMID.pmr"),
 		singlePmr(missingName.toUtf8(), kToneFileId, QByteArray(32, '\x02'), "Cancellation test", 0)));
 	MediaScanner::Options options;
-	options.volumePaths = {temporary.path()};
+	options.locations = {{MediaScanner::Location::Kind::MediaBase, temporary.path()}};
 	MediaScanner baseline;
 	QSignalSpy baselineFinished(&baseline, &MediaScanner::scanFinished);
 	QSignalSpy baselineIssues(&baseline, &MediaScanner::scanIssuesFinished);
@@ -1710,7 +1721,7 @@ void TestScanner::completed_scan_rejects_cancellation_after_publication()
 		}
 	});
 	MediaScanner::Options options;
-	options.volumePaths = {temporary.path()};
+	options.locations = {{MediaScanner::Location::Kind::MediaBase, temporary.path()}};
 	scanner.startScan(options);
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 5000);
 	QVERIFY(completedMessageReceived);
@@ -1740,7 +1751,7 @@ void TestScanner::publication_failure_allows_a_later_scan()
 			throw std::runtime_error("Test publication failure");
 	};
 	MediaScanner::Options options;
-	options.volumePaths = {temporary.path()};
+	options.locations = {{MediaScanner::Location::Kind::MediaBase, temporary.path()}};
 	scanner.startScan(options);
 	QTRY_COMPARE_WITH_TIMEOUT(failed.count(), 1, 5000);
 	QVERIFY(finished.isEmpty());
@@ -2650,9 +2661,20 @@ namespace
 	QVector<MediaFile> runManualScan(const QString &folder, bool includeOmf = false)
 	{
 		MediaScanner::Options opts;
-		opts.manualPaths = QStringList{folder};
+		const auto location = MediaScanner::addedLocation(folder);
+		if (!location)
+			return {};
+		opts.locations = {*location};
 		opts.includeOmf = includeOmf;
 		return runScanWith(opts);
+	}
+
+	QVector<MediaFile> runRescan(const QString &path, bool includeOmf = false)
+	{
+		MediaScanner::Options options;
+		options.locations = {MediaScanner::rescanLocation(path)};
+		options.includeOmf = includeOmf;
+		return runScanWith(options);
 	}
 
 	const MediaFile *rowNamed(const QVector<MediaFile> &rows, const QString &name)
@@ -2702,53 +2724,40 @@ namespace
 
 void TestScanner::omf_is_disabled_for_all_path_shapes_data()
 {
-	QTest::addColumn<QString>("shape");
-	QTest::addColumn<bool>("manual");
-	QTest::newRow("volume-root") << QStringLiteral("root") << false;
-	QTest::newRow("manual-root") << QStringLiteral("root") << true;
-	QTest::newRow("manual-nested") << QStringLiteral("nested") << true;
-	QTest::newRow("manual-direct") << QStringLiteral("direct") << true;
-	QTest::newRow("manual-descendant") << QStringLiteral("descendant") << true;
-	QTest::newRow("volume-descendant") << QStringLiteral("descendant") << false;
-	QTest::newRow("manual-renamed") << QStringLiteral("renamed") << true;
+	QTest::addColumn<QString>("requestKind");
+	QTest::newRow("detected-media-base") << QStringLiteral("base");
+	QTest::newRow("added-omfi-tree") << QStringLiteral("manual");
+	QTest::newRow("internal-omfi-rescan") << QStringLiteral("rescan");
 }
 
 void TestScanner::omf_is_disabled_for_all_path_shapes()
 {
-	QFETCH(QString, shape);
-	QFETCH(bool, manual);
+	QFETCH(QString, requestKind);
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	QString legacyFolder = Conventions::omfRootUnder(tmp.path());
-	if (shape == QStringLiteral("nested"))
-		legacyFolder = Conventions::omfRootUnder(tmp.path() + QStringLiteral("/Archive/Project"));
-	else if (shape == QStringLiteral("renamed"))
-		legacyFolder = tmp.path() + QStringLiteral("/Legacy archive");
+	const QString legacyFolder = Conventions::omfRootUnder(tmp.path());
 	QVERIFY(QDir().mkpath(legacyFolder));
 	copyFixture(QStringLiteral("omf/mc2026_audio/msmFMID.pmr"), legacyFolder);
 	copyFixture(QStringLiteral("omf/mc2026_audio/msmMMOB.mdb"), legacyFolder);
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, legacyFolder);
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfAif, legacyFolder);
 	QVERIFY(tryWriteFile(legacyFolder + QStringLiteral("/sample.OMF"), waveOmf(false)));
-
-	// Even an MXF tree moved inside OMFI must not make a manually added
-	// OMFI path or descendant scan as an ordinary media root while disabled.
-	const QString descendant = legacyFolder + QStringLiteral("/Archive");
-	const QString nestedMxf = Conventions::mxfRootUnder(descendant) + QStringLiteral("/1");
+	// An MXF tree inside the disabled OMFI tree must not become an alternative scope.
+	const QString nestedMxf = Conventions::mxfRootUnder(legacyFolder + QStringLiteral("/Archive")) + QStringLiteral("/1");
 	QVERIFY(QDir().mkpath(nestedMxf));
 	copyFixture(kToneName, nestedMxf);
-	QString path = tmp.path();
-	if (shape == QStringLiteral("direct") || shape == QStringLiteral("renamed"))
-		path = legacyFolder;
-	else if (shape == QStringLiteral("descendant"))
-		path = descendant;
-
 	MediaScanner::Options options;
 	QVERIFY(!options.includeOmf);
-	if (manual)
-		options.manualPaths = QStringList{path};
+	if (requestKind == QStringLiteral("base"))
+		options.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	else if (requestKind == QStringLiteral("manual"))
+	{
+		const auto location = MediaScanner::addedLocation(legacyFolder);
+		QVERIFY(location); // Admission remains independent of the OMF scan setting.
+		options.locations = {*location};
+	}
 	else
-		options.volumePaths = QStringList{path};
+		options.locations = {MediaScanner::rescanLocation(legacyFolder)};
 	QVERIFY(runScanWith(options).isEmpty());
 }
 
@@ -2758,16 +2767,14 @@ void TestScanner::omf_disabled_preserves_mxf_and_its_databases_data()
 	QTest::addColumn<QString>("mediaFolderName");
 	QTest::addColumn<bool>("withDatabases");
 	QTest::newRow("volume-root") << QStringLiteral("volume") << QStringLiteral("1") << true;
-	QTest::newRow("manual-root") << QStringLiteral("manual") << QStringLiteral("1") << true;
-	QTest::newRow("manual-nested") << QStringLiteral("nested") << QStringLiteral("1") << true;
-	QTest::newRow("manual-numbered-folder") << QStringLiteral("direct") << QStringLiteral("1") << true;
-	QTest::newRow("manual-shared-folder") << QStringLiteral("direct") << QStringLiteral("Editor.3") << true;
+	QTest::newRow("manual-managed-tree") << QStringLiteral("tree") << QStringLiteral("1") << true;
+	QTest::newRow("copied-managed-tree") << QStringLiteral("nested") << QStringLiteral("1") << true;
 	for (const QString &name : {QStringLiteral("Interview"), QStringLiteral("EditSuite2"), QStringLiteral("8243"),
 								QStringLiteral("Ingest1.32"), QStringLiteral("EditSuite2.1"), QStringLiteral("Archive"),
 								QStringLiteral("OMFI MediaFiles")})
-		for (const QString &shape : {QStringLiteral("volume"), QStringLiteral("mxf-root"), QStringLiteral("direct")})
+		for (const QString &shape : {QStringLiteral("volume"), QStringLiteral("tree")})
 			QTest::newRow(qPrintable(shape + QLatin1Char('-') + name)) << shape << name << true;
-	for (const QString &shape : {QStringLiteral("volume"), QStringLiteral("direct")})
+	for (const QString &shape : {QStringLiteral("volume"), QStringLiteral("tree")})
 		QTest::newRow(qPrintable(shape + QStringLiteral("-named-without-databases")))
 			<< shape << QStringLiteral("Interview") << false;
 }
@@ -2784,7 +2791,7 @@ void TestScanner::omf_disabled_preserves_mxf_and_its_databases()
 								: tmp.path();
 	const QString folder = Conventions::mxfRootUnder(project) + QLatin1Char('/') + mediaFolderName;
 	QVERIFY(QDir().mkpath(folder));
-	QVERIFY(MediaScanner::canScanPath(folder));
+	QVERIFY(!MediaScanner::addedLocation(folder));
 	if (withDatabases)
 	{
 		copyFixture(QStringLiteral("msmFMID.pmr"), folder);
@@ -2802,15 +2809,12 @@ void TestScanner::omf_disabled_preserves_mxf_and_its_databases()
 	MediaScanner::Options options;
 	QVERIFY(!options.includeOmf);
 	if (shape == QStringLiteral("volume"))
-		options.volumePaths = QStringList{tmp.path()};
+		options.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 	else
 	{
-		QString selected = project;
-		if (shape == QStringLiteral("direct"))
-			selected = folder;
-		else if (shape == QStringLiteral("mxf-root"))
-			selected = Conventions::mxfRootUnder(project);
-		options.manualPaths = QStringList{selected};
+		const auto location = MediaScanner::addedLocation(project + QStringLiteral("/Avid MediaFiles"));
+		QVERIFY(location);
+		options.locations = {*location};
 	}
 	const auto results = runScanWith(options);
 	QCOMPARE(results.size(), 1);
@@ -2989,7 +2993,7 @@ void TestScanner::omf_volume_root_scans_both_folders()
 	QCOMPARE(aif->clipNameSource, MediaFile::ClipNameSource::Mdb);
 }
 
-void TestScanner::copied_media_tree_requires_its_direct_base_or_managed_root()
+void TestScanner::copied_media_tree_requires_a_managed_root()
 {
 	// A copied project retains managed media trees, but selecting an
 	// unrelated ancestor must not search down to discover them.
@@ -3008,7 +3012,9 @@ void TestScanner::copied_media_tree_requires_its_direct_base_or_managed_root()
 	QVERIFY(runScan(tmp.path(), true).isEmpty());
 	QVERIFY(runManualScan(tmp.path(), true).isEmpty());
 
-	const auto manual = runManualScan(project, true);
+	QVERIFY(!MediaScanner::addedLocation(project));
+	QVERIFY(runManualScan(project, true).isEmpty());
+	const auto manual = runRescan(project, true);
 	QCOMPARE(manual.size(), 2);
 	QVERIFY(rowNamed(manual, kToneName) != nullptr);
 	const MediaFile *wav = rowNamed(manual, kOmfWav);
@@ -3017,8 +3023,11 @@ void TestScanner::copied_media_tree_requires_its_direct_base_or_managed_root()
 	QCOMPARE(wav->volumePath, project);
 
 	QCOMPARE(runManualScan(omfRoot, true).size(), 1);
-	QCOMPARE(runManualScan(Conventions::mxfRootUnder(project)).size(), 1);
-	QCOMPARE(runManualScan(mediaFolderName).size(), 1);
+	QCOMPARE(runManualScan(project + QStringLiteral("/Avid MediaFiles")).size(), 1);
+	QVERIFY(runManualScan(Conventions::mxfRootUnder(project)).isEmpty());
+	QVERIFY(runManualScan(mediaFolderName).isEmpty());
+	// An internal post-operation MXF root is normalized to its managed tree.
+	QCOMPARE(runRescan(Conventions::mxfRootUnder(project)).size(), 1);
 }
 
 void TestScanner::omf_root_pointed_at_directly_never_scans_as_mxf_folders()
@@ -3207,7 +3216,7 @@ void TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback()
 	// OMF and names the clip independently of every other file in the folder.
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, folder);
 
-	const auto results = runManualScan(folder, true);
+	const auto results = runManualScan(Conventions::omfRootUnder(tmp.path()), true);
 	QCOMPARE(results.size(), 4);
 	for (const Pin &pin : kPins)
 	{
@@ -3263,7 +3272,7 @@ void TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers()
 	QVERIFY2(!projection.fileReferencesComplete, qPrintable(projection.diagnostics.join('\n')));
 	QVERIFY(!projection.files.isEmpty());
 
-	const auto results = runManualScan(folder, true);
+	const auto results = runManualScan(Conventions::omfRootUnder(tmp.path()), true);
 	QCOMPARE(results.size(), 2);
 	for (const MediaFile &mf : results)
 	{
@@ -3297,25 +3306,24 @@ void TestScanner::shared_omf_folder_without_any_database_is_scanned()
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, folder);
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfAif, folder);
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, folder + QStringLiteral("/Old"));
-	for (const QString &selected : {base, root, folder})
+	const auto rows = runManualScan(root, true);
+	QCOMPARE(rows.size(), 2);
+	const MediaFile *wav = rowNamed(rows, kOmfWav);
+	const MediaFile *aif = rowNamed(rows, kOmfAif);
+	QVERIFY(wav != nullptr);
+	QVERIFY(aif != nullptr);
+	checkOmfAudioMetadata(*wav, kOmfWavClip, {}, kOmfWavFileMob, kOmfWavMasterMob);
+	checkOmfAudioMetadata(*aif, kOmfAifClip, {}, kOmfAifFileMob, kOmfAifMasterMob);
+	for (const MediaFile &row : rows)
 	{
-		const auto rows = runManualScan(selected, true);
-		QCOMPARE(rows.size(), 2);
-		const MediaFile *wav = rowNamed(rows, kOmfWav);
-		const MediaFile *aif = rowNamed(rows, kOmfAif);
-		QVERIFY(wav != nullptr);
-		QVERIFY(aif != nullptr);
-		checkOmfAudioMetadata(*wav, kOmfWavClip, {}, kOmfWavFileMob, kOmfWavMasterMob);
-		checkOmfAudioMetadata(*aif, kOmfAifClip, {}, kOmfAifFileMob, kOmfAifMasterMob);
-		for (const MediaFile &row : rows)
-		{
-			QCOMPARE(row.dbStatus, MediaFile::DbStatus::NoDatabase);
-			QCOMPARE(row.mediaFolderName, QStringLiteral("EditorOne"));
-			QCOMPARE(QFileInfo(row.mediaFilePath).absolutePath(), folder);
-			QCOMPARE(row.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
-		}
-		QVERIFY(runManualScan(selected).isEmpty());
+		QCOMPARE(row.dbStatus, MediaFile::DbStatus::NoDatabase);
+		QCOMPARE(row.mediaFolderName, QStringLiteral("EditorOne"));
+		QCOMPARE(QFileInfo(row.mediaFilePath).absolutePath(), folder);
+		QCOMPARE(row.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
 	}
+	QVERIFY(runManualScan(root).isEmpty());
+	QVERIFY(!MediaScanner::addedLocation(base));
+	QVERIFY(!MediaScanner::addedLocation(folder));
 	QVERIFY(runManualScan(folder + QStringLiteral("/Old"), true).isEmpty());
 }
 
@@ -3376,7 +3384,7 @@ void TestScanner::unrelated_database_cannot_reclassify_omf_audio()
 		if (withUnrelatedIndex)
 			QVERIFY(QFile::copy(fixturesDir() + QStringLiteral("/msmFMID.pmr"),
 								folder + QStringLiteral("/amaFMID.pmr")));
-		const auto rows = runManualScan(base, true);
+		const auto rows = runRescan(base, true);
 		QCOMPARE(rows.size(), 3);
 		for (const AudioPin &pin : pins)
 		{
@@ -3406,7 +3414,7 @@ void TestScanner::unrelated_database_cannot_reclassify_omf_audio()
 	}
 
 	// Disabling OMF remains a hard admission gate, even in a mixed archive.
-	const auto publicRows = runManualScan(base);
+	const auto publicRows = runRescan(base);
 	QCOMPARE(publicRows.size(), 1);
 	QCOMPARE(publicRows.first().fileName, kToneName);
 	QVERIFY(!publicRows.first().omfEra);
@@ -3430,7 +3438,7 @@ void TestScanner::incomplete_omf_audio_in_a_shared_folder_keeps_its_format()
 
 	// The selected WAVE descriptor establishes OMF even though no master
 	// exists to name the clip or classify it as media versus precompute.
-	const auto rows = runManualScan(folder, true);
+	const auto rows = runManualScan(Conventions::omfRootUnder(tmp.path()), true);
 	QCOMPARE(rows.size(), 1);
 	const MediaFile &row = rows.first();
 	QVERIFY(row.omfEra);
@@ -3441,7 +3449,7 @@ void TestScanner::incomplete_omf_audio_in_a_shared_folder_keeps_its_format()
 	QCOMPARE(row.kind, MediaFile::Kind::Audio);
 	QCOMPARE(row.compression, QStringLiteral("PCM"));
 	QCOMPARE(row.sampleRate, 48000);
-	QVERIFY(runManualScan(folder).isEmpty());
+	QVERIFY(runManualScan(Conventions::omfRootUnder(tmp.path())).isEmpty());
 }
 
 void TestScanner::incomplete_omf_identity_clears_unrelated_stale_database_metadata()
@@ -3473,7 +3481,7 @@ void TestScanner::incomplete_omf_identity_clears_unrelated_stale_database_metada
 	QCOMPARE(header.fileMobId, OmfUid::toIdText(TestOmf::uid(replacementUid)));
 	QVERIFY(header.fileMobId != kOmfWavFileMob);
 
-	const auto rows = runManualScan(folder, true);
+	const auto rows = runManualScan(Conventions::omfRootUnder(tmp.path()), true);
 	QCOMPARE(rows.size(), 1);
 	const MediaFile &row = rows.first();
 	QVERIFY(row.omfEra);
@@ -3526,7 +3534,7 @@ void TestScanner::mxf_and_omf_staging_rules()
 		const QString workstation = omfRoot + QLatin1Char('/') + name;
 		QVERIFY(QDir().mkpath(workstation));
 		copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, workstation);
-		QVERIFY(MediaScanner::canScanPath(workstation));
+		QVERIFY(!MediaScanner::addedLocation(workstation));
 	}
 
 	const auto results = runScan(tmp.path(), true);
@@ -3572,7 +3580,9 @@ void TestScanner::omf_database_metadata_survives_source_path_fallback()
 	MediaScanner scanner;
 	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
 	MediaScanner::Options options;
-	options.manualPaths = {root};
+	const auto location = MediaScanner::addedLocation(root);
+	QVERIFY(location);
+	options.locations = {*location};
 	options.includeOmf = true;
 	scanner.startScan(options);
 	QVERIFY(finished.wait(60000));
@@ -3632,47 +3642,81 @@ void TestScanner::ama_databases_are_read()
 
 // MARK: - MXF-era behaviour pinned across the OMF-era rework
 
-void TestScanner::manual_path_inside_avid_mediafiles_resolves_to_its_mxf_root()
+void TestScanner::manual_media_tree_scans_eligible_siblings_without_nested_archives()
 {
-	// One MXF root at the top, and a second one nested a level down that
-	// the top-level short-circuit (Case 1, as before) must NOT pick up.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
+	const QString tree = tmp.path() + QStringLiteral("/Avid MediaFiles");
+	const QString root = tree + QStringLiteral("/MXF");
+	const QString folder = root + QStringLiteral("/1");
+	const QString sibling = root + QStringLiteral("/Editor.2");
 	QVERIFY(QDir().mkpath(folder));
+	QVERIFY(QDir().mkpath(sibling));
 	copyFixture(QStringLiteral("msmFMID.pmr"), folder);
 	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
 	copyFixture(kToneName, folder);
+	copyFixture(kToneName, sibling);
 	const QString nested = tmp.path() + QStringLiteral("/Deeper/Avid MediaFiles/MXF/2");
 	QVERIFY(QDir().mkpath(nested));
 	copyFixture(kToneName, nested);
-
-	// Every shape a user drags in — the drive root, "Avid MediaFiles", its
-	// "MXF" folder, a numbered folder — scans the same one root: exactly
-	// the row set the ticked volume yields.
-	const QStringList shapes = {
-		tmp.path(),
-		tmp.path() + QStringLiteral("/Avid MediaFiles"),
-		tmp.path() + QStringLiteral("/Avid MediaFiles/MXF"),
-		folder,
-	};
+	QStringList shapes{tree, tree + QStringLiteral("/.")};
+#ifdef Q_OS_UNIX
+	const QString alias = tmp.path() + QStringLiteral("/Tree alias");
+	QVERIFY(QFile::link(tree, alias));
+	shapes.append(alias);
+#endif
 	for (const QString &shape : shapes)
 	{
+		const auto location = MediaScanner::addedLocation(shape);
+		QVERIFY(location);
+		QCOMPARE(location->kind, MediaScanner::Location::Kind::MediaTree);
+		QCOMPARE(location->path, QFileInfo(tree).canonicalFilePath());
 		const auto rows = runManualScan(shape);
-		QVERIFY2(rows.size() == 1, qPrintable(shape + QStringLiteral(": ") + QString::number(rows.size())));
-		QCOMPARE(rows.first().fileName, kToneName);
-		QCOMPARE(rows.first().mediaFolderName, QStringLiteral("1"));
-		QCOMPARE(rows.first().clipName, kToneClip);
+		QCOMPARE(rows.size(), 2);
+		QSet<QString> paths;
+		for (const auto &row : rows)
+		{
+			paths.insert(row.mediaFilePath);
+			QCOMPARE(row.fileName, kToneName);
+			QCOMPARE(row.clipName, kToneClip);
+		}
+		QCOMPARE(paths, QSet<QString>({folder + QLatin1Char('/') + kToneName,
+			sibling + QLatin1Char('/') + kToneName}));
 	}
-	QCOMPARE(runScan(tmp.path()).size(), 1);
+	QCOMPARE(runScan(tmp.path()).size(), 2);
+	QCOMPARE(runRescan(root).size(), 2);
+	QCOMPARE(runRescan(tree).size(), 2);
+	QVERIFY(runRescan(folder).isEmpty());
+	QVERIFY(QFileInfo(QStorageInfo(tmp.path()).rootPath()).canonicalFilePath() !=
+		QFileInfo(tmp.path()).canonicalFilePath());
+	QVERIFY(!MediaScanner::addedLocation(tmp.path()));
+	QVERIFY(!MediaScanner::addedLocation(root));
+	QVERIFY(!MediaScanner::addedLocation(folder));
+	// A tree supplied as a base must not trigger a second interpretation.
+	MediaScanner::Options asBase;
+	asBase.locations = {{MediaScanner::Location::Kind::MediaBase, tree}};
+	QVERIFY(runScanWith(asBase).isEmpty());
+}
 
-	// The derived root of a hand-added numbered folder is ".../Avid
-	// MediaFiles" — a folder shape, not a drive. As a VOLUME path it is
-	// probed for "<path>/Avid MediaFiles/MXF" and misses; the post-rebalance
-	// rescan therefore has to hand it over as a manual path (pinned above).
-	MediaScanner::Options asVolume;
-	asVolume.volumePaths = QStringList{tmp.path() + QStringLiteral("/Avid MediaFiles")};
-	QVERIFY(runScanWith(asVolume).isEmpty());
+void TestScanner::detected_base_alias_keeps_its_display_context()
+{
+#ifdef Q_OS_UNIX
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString base = tmp.path() + QStringLiteral("/Actual base");
+	const QString folder = Conventions::mxfRootUnder(base) + QStringLiteral("/1");
+	QVERIFY(QDir().mkpath(folder));
+	copyFixture(kToneName, folder);
+	const QString alias = tmp.path() + QStringLiteral("/Detected alias");
+	QVERIFY(QFile::link(base, alias));
+	const auto rows = runScan(alias);
+	QCOMPARE(rows.size(), 1);
+	QCOMPARE(rows.first().mediaFilePath, QFileInfo(folder + QLatin1Char('/') + kToneName).canonicalFilePath());
+	QCOMPARE(rows.first().volumePath, alias);
+	QCOMPARE(rows.first().volumeName, QDir(alias).dirName());
+#else
+	QSKIP("QFile::link does not create directory symlinks on this platform");
+#endif
 }
 
 void TestScanner::ume_paths_are_ignored_data()
@@ -3723,6 +3767,7 @@ void TestScanner::ume_paths_are_ignored()
 	// to its supported MXF sibling.
 	QVERIFY(runManualScan(path).isEmpty());
 	QVERIFY(runManualScan(path, true).isEmpty());
+	QVERIFY(runRescan(path, true).isEmpty());
 }
 
 void TestScanner::ume_exclusion_preserves_supported_siblings()
@@ -3747,9 +3792,14 @@ void TestScanner::ume_exclusion_preserves_supported_siblings()
 		MediaScanner::Options options;
 		options.includeOmf = true;
 		if (manual)
-			options.manualPaths = QStringList{tmp.path()};
+		{
+			const auto avidLocation = MediaScanner::addedLocation(tmp.path() + QStringLiteral("/Avid MediaFiles"));
+			const auto omfLocation = MediaScanner::addedLocation(omf);
+			QVERIFY(avidLocation && omfLocation);
+			options.locations = {*avidLocation, *omfLocation};
+		}
 		else
-			options.volumePaths = QStringList{tmp.path()};
+			options.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
 		const auto rows = runScanWith(options);
 		QCOMPARE(rows.size(), 2);
 		const MediaFile *mxfRow = rowNamed(rows, kToneName);
@@ -3770,8 +3820,12 @@ void TestScanner::overlapping_volume_and_manual_roots_scan_each_folder_once()
 	QVERIFY(QDir().mkpath(folder));
 	copyFixture(kToneName, folder);
 	MediaScanner::Options opts;
-	opts.volumePaths = {tmp.path(), tmp.path() + QLatin1Char('/')};
-	opts.manualPaths = {tmp.path(), folder, folder + QLatin1Char('/')};
+	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}, {MediaScanner::Location::Kind::MediaBase, tmp.path() + QLatin1Char('/')}};
+	const auto tree = MediaScanner::addedLocation(tmp.path() + QStringLiteral("/Avid MediaFiles"));
+	const auto normalizedTree = MediaScanner::addedLocation(tmp.path() + QStringLiteral("/Avid MediaFiles/."));
+	QVERIFY(tree && normalizedTree);
+	opts.locations.append(*tree);
+	opts.locations.append(*normalizedTree);
 	const auto rows = runScanWith(opts);
 	QCOMPARE(rows.size(), 1);
 	QCOMPARE(rows.first().mediaFilePath, folder + QLatin1Char('/') + kToneName);
@@ -3843,6 +3897,12 @@ void TestScanner::unsupported_manual_locations_are_rejected_data()
 	QTest::newRow("loose-media-with-databases") << QStringLiteral("Loose media") << true << false;
 	QTest::newRow("standalone-mxf-root") << QStringLiteral("MXF/1") << true << true;
 	QTest::newRow("standalone-mxf-leaf") << QStringLiteral("MXF/1") << true << false;
+	QTest::newRow("managed-mxf-root") << QStringLiteral("Avid MediaFiles/MXF/1") << true << true;
+	QTest::newRow("managed-numbered-leaf") << QStringLiteral("Avid MediaFiles/MXF/1") << true << false;
+	QTest::newRow("managed-workstation-leaf") << QStringLiteral("Avid MediaFiles/MXF/Editor.3") << true << false;
+	QTest::newRow("managed-ingest-leaf") << QStringLiteral("Avid MediaFiles/MXF/Interview") << true << false;
+	QTest::newRow("managed-quarantine-leaf") << QStringLiteral("Avid MediaFiles/MXF/Quarantined Files") << true << false;
+	QTest::newRow("omfi-workstation-leaf") << QStringLiteral("OMFI MediaFiles/Editor") << true << false;
 	QTest::newRow("partial-avid-path-component") << QStringLiteral("Avid MediaFiles backup/MXF/1") << true << false;
 	QTest::newRow("partial-omfi-path-component") << QStringLiteral("OMFI MediaFiles backup") << true << false;
 	QTest::newRow("mxf-staging-folder") << QStringLiteral("Avid MediaFiles/MXF/cReAtInG") << true << false;
@@ -3870,6 +3930,7 @@ void TestScanner::unsupported_manual_locations_are_rejected()
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, folder);
 	copyFixture(QStringLiteral("omf/avid_supporting/BLACK_720x243x2_JFIF35.omf"), folder);
 	const QString selected = selectParent ? QFileInfo(folder).absolutePath() : folder;
+	QVERIFY(!MediaScanner::addedLocation(selected));
 	QVERIFY(runManualScan(selected).isEmpty());
 	QVERIFY(runManualScan(selected, true).isEmpty());
 }
@@ -3878,7 +3939,7 @@ void TestScanner::mxf_quarantined_files_remain_diagnostic_data()
 {
 	QTest::addColumn<bool>("manual");
 	QTest::newRow("volume") << false;
-	QTest::newRow("manual-quarantine-folder") << true;
+	QTest::newRow("manual-managed-tree") << true;
 }
 
 void TestScanner::mxf_quarantined_files_remain_diagnostic()
@@ -3895,10 +3956,10 @@ void TestScanner::mxf_quarantined_files_remain_diagnostic()
 	copyFixture(kToneName, folder);
 	copyFixture(kToneName, quarantined);
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, folder);
-	QVERIFY(MediaScanner::canScanPath(quarantined));
-	QVERIFY(!MediaScanner::canScanPath(folder));
+	QVERIFY(!MediaScanner::addedLocation(quarantined));
+	QVERIFY(!MediaScanner::addedLocation(folder));
 	// Only direct quarantine contents qualify; nested files remain outside the inventory.
-	const auto rows = manual ? runManualScan(quarantined, true) : runScan(tmp.path(), true);
+	const auto rows = manual ? runManualScan(tmp.path() + QStringLiteral("/Avid MediaFiles"), true) : runScan(tmp.path(), true);
 	QCOMPARE(rows.size(), 2);
 	int quarantineCount = 0;
 	for (const auto &row : rows)
@@ -3950,7 +4011,7 @@ void TestScanner::media_file_symlinks_are_excluded()
 	const QString sibling = omf ? kOmfAif : QStringLiteral("actual.mxf");
 	const QString siblingFixture = omf ? QStringLiteral("omf/mc2026_audio/") + kOmfAif : kToneName;
 	QVERIFY(QFile::copy(fixturesDir() + QLatin1Char('/') + siblingFixture, folder + QLatin1Char('/') + sibling));
-	const auto rows = runManualScan(folder, true);
+	const auto rows = runManualScan(omf ? folder : tmp.path() + QStringLiteral("/Avid MediaFiles"), true);
 	QCOMPARE(rows.size(), 1);
 	QCOMPARE(rows.first().fileName, sibling);
 	QVERIFY(!rows.first().clipName.isEmpty());
@@ -3978,9 +4039,10 @@ void TestScanner::quarantine_alias_cannot_expand_a_normal_media_folder()
 	// Its actual target is in another managed tree, ensuring de-duplication
 	// cannot accidentally hide the alias's incorrect quarantine classification.
 	QVERIFY(runScan(selectedBase, true).isEmpty());
-	// Selecting the directory alias may resolve to its legitimate managed
-	// target, but its label must never change that target's quarantine status.
-	const auto aliasRows = runManualScan(alias, true);
+	QVERIFY(!MediaScanner::addedLocation(alias));
+	QVERIFY(runManualScan(alias, true).isEmpty());
+	// The actual admitted tree retains ordinary classification.
+	const auto aliasRows = runManualScan(tmp.path() + QStringLiteral("/Actual/Avid MediaFiles"), true);
 	QCOMPARE(aliasRows.size(), 1);
 	QCOMPARE(aliasRows.first().mediaFilePath, folder + QLatin1Char('/') + kToneName);
 	QVERIFY(!aliasRows.first().isQuarantined);
@@ -4005,8 +4067,10 @@ void TestScanner::numbered_alias_cannot_hide_quarantined_status()
 	const QString alias = root + QStringLiteral("/1");
 	QVERIFY(QFile::link(quarantined, alias));
 	QVERIFY(runScan(selectedBase, true).isEmpty());
-	// A manual alias resolves to its known location and retains the flag.
-	const auto rows = runManualScan(alias, true);
+	QVERIFY(!MediaScanner::addedLocation(alias));
+	QVERIFY(runManualScan(alias, true).isEmpty());
+	// Admitting the actual tree cannot lose its quarantine classification.
+	const auto rows = runManualScan(tmp.path() + QStringLiteral("/Actual/Avid MediaFiles"), true);
 	QCOMPARE(rows.size(), 1);
 	QCOMPARE(rows.first().mediaFilePath, quarantined + QLatin1Char('/') + kToneName);
 	QVERIFY(rows.first().isQuarantined);
@@ -4044,7 +4108,7 @@ void TestScanner::ordinary_wave_outside_omfi_is_excluded()
 		"646174610400000000000000");
 	QVERIFY(tryWriteFile(folder + QLatin1Char('/') + kOmfWav, ordinaryWave));
 	setModified(folder + QLatin1Char('/') + kOmfWav, kOmfWavModified);
-	QVERIFY(runManualScan(folder, true).isEmpty());
+	QVERIFY(runManualScan(managedMxf ? tmp.path() + QStringLiteral("/Avid MediaFiles") : folder, true).isEmpty());
 }
 
 void TestScanner::completed_reference_check_survives_unreadable_siblings()
@@ -4084,6 +4148,108 @@ void TestScanner::completed_reference_check_survives_unreadable_siblings()
 		else
 			QCOMPARE(mf.dbStatus, MediaFile::DbStatus::DbUnreadable);
 	}
+}
+
+void TestScanner::missing_media_base_reports_only_required_scope_data()
+{
+	QTest::addColumn<bool>("required");
+	QTest::addColumn<QString>("treeState");
+	QTest::addColumn<bool>("expectWarning");
+	QTest::newRow("empty-detected-base") << false << QStringLiteral("empty") << false;
+	QTest::newRow("empty-required-base") << true << QStringLiteral("empty") << true;
+	QTest::newRow("required-base-loses-managed-tree") << true << QStringLiteral("removed") << true;
+	QTest::newRow("required-base-with-disabled-omfi") << true << QStringLiteral("omfi") << false;
+}
+
+void TestScanner::missing_media_base_reports_only_required_scope()
+{
+	QFETCH(bool, required);
+	QFETCH(QString, treeState);
+	QFETCH(bool, expectWarning);
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString avid = tmp.path() + QStringLiteral("/Avid MediaFiles");
+	if (treeState == QStringLiteral("removed"))
+		QVERIFY(QDir().mkpath(avid + QStringLiteral("/MXF/1")));
+	else if (treeState == QStringLiteral("omfi"))
+		QVERIFY(tryWriteFile(Conventions::omfRootUnder(tmp.path()) + QStringLiteral("/unread.omf"), "opaque bytes"));
+	MediaScanner::Options options;
+	options.locations = {required ? MediaScanner::rescanLocation(tmp.path())
+		: MediaScanner::Location{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	QVERIFY(!options.includeOmf);
+	if (treeState == QStringLiteral("removed"))
+	{
+		QVERIFY(MediaScanner::addedLocation(avid));
+		QVERIFY(QDir(avid).removeRecursively());
+	}
+	MediaScanner scanner;
+	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
+	QStringList warnings;
+	connect(&scanner, &MediaScanner::scanLogBatch, this, [&](const QVector<LogMessage> &batch)
+		{
+			for (const auto &message : batch)
+				if (message.level == QtWarningMsg)
+					warnings.append(message.message);
+		});
+	scanner.startScan(options);
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 10000);
+	QVERIFY(qvariant_cast<QVector<MediaFile>>(finished.first().first()).isEmpty());
+	QCOMPARE(!warnings.isEmpty(), expectWarning);
+	if (expectWarning)
+		QVERIFY(warnings.join('\n').contains(tmp.path()));
+}
+
+void TestScanner::unreadable_avid_container_preserves_other_family_and_incomplete_scope()
+{
+#ifdef Q_OS_UNIX
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	const QString restricted = tmp.path() + QStringLiteral("/Avid MediaFiles");
+	QVERIFY(tryWriteFile(restricted + QStringLiteral("/MXF/1/unreachable.mxf"), "opaque bytes"));
+	const QString omf = Conventions::omfRootUnder(tmp.path());
+	QVERIFY(QDir().mkpath(omf));
+	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, omf);
+	// The readable index also references absent files. Its reconciliation
+	// findings must retain the incomplete discovery scope of the other tree.
+	copyFixture(QStringLiteral("omf/mc2026_audio/msmFMID.pmr"), omf);
+	const QByteArray restrictedPath = QFile::encodeName(restricted);
+	struct stat original{};
+	QVERIFY(::stat(restrictedPath.constData(), &original) == 0);
+	const auto restorePermissions = qScopeGuard([&]
+		{ ::chmod(restrictedPath.constData(), original.st_mode & 07777); });
+	QVERIFY(::chmod(restrictedPath.constData(), 0000) == 0);
+	if (::access(restrictedPath.constData(), R_OK | X_OK) == 0)
+		QSKIP("Host bypasses restrictive directory permissions");
+	QCOMPARE(errno, EACCES);
+	MediaScanner scanner;
+	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
+	QSignalSpy issueSpy(&scanner, &MediaScanner::scanIssuesFinished);
+	QStringList warnings;
+	connect(&scanner, &MediaScanner::scanLogBatch, this, [&](const QVector<LogMessage> &batch)
+		{
+			for (const auto &message : batch)
+				if (message.level == QtWarningMsg)
+					warnings.append(message.message);
+		});
+	MediaScanner::Options options;
+	options.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	options.includeOmf = true;
+	scanner.startScan(options);
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 10000);
+	QTRY_COMPARE(issueSpy.count(), 1);
+	const auto rows = qvariant_cast<QVector<MediaFile>>(finished.first().first());
+	QCOMPARE(rows.size(), 1);
+	QCOMPARE(rows.first().mediaFilePath, omf + QLatin1Char('/') + kOmfWav);
+	QVERIFY(rows.first().omfEra);
+	QVERIFY(std::any_of(warnings.cbegin(), warnings.cend(), [&](const QString &warning)
+		{ return warning.startsWith(restricted + QLatin1Char(':')) && warning.contains(QStringLiteral("Cannot inspect media folders:")); }));
+	const auto issues = qvariant_cast<QVector<ScanIssue>>(issueSpy.first().first());
+	QVERIFY(!issues.isEmpty());
+	for (const auto &issue : issues)
+		QVERIFY(!issue.scopeComplete);
+#else
+	QSKIP("POSIX directory permission regression");
+#endif
 }
 
 QTEST_GUILESS_MAIN(TestScanner)

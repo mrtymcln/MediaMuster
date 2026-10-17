@@ -249,6 +249,7 @@ void TestMediaEnginePmrRobustness::realSources()
 	const QString roots = qEnvironmentVariable("MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_ROOTS");
 	if (!roots.isEmpty())
 	{
+		// Opt-in roots are exact Avid MediaFiles/MXF or OMFI MediaFiles paths.
 		MediaEngine::Cancellation cancellation;
 		const auto scan = MediaEngine::DiscoveryEngine{}.discover({roots.split(';', Qt::SkipEmptyParts), true}, cancellation);
 		QVERIFY(scan.discoveryComplete);
