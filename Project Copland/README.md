@@ -764,7 +764,7 @@ saving has been established for removing these controls.
 | Table conveniences | Header sorting, manual widths, drag reordering and explicit Resize Columns to Fit. Scans preserve widths; widths/order reset on app restart. | Keep all four under C62–C65 with current session behavior. Uses retained row values; Qt samples displayed content for fitting. No ordinary-column visibility chooser or saved layout/preferences was found. Saved width/order preferences are not required. |
 | Tabs / totals | At review time empty convenience tabs hid automatically, with a Show All Filter Tabs override. The 16 October presentation checkpoint keeps enabled tabs visible and removes that override. Tab/project totals describe the whole inventory; status totals describe visible rows and visible selections. | C66/C67 require always-visible enabled tabs. C74 retains whole-inventory tab counts, C75 retains visible/selected counts and sizes, and C77 retains Project hover count/size totals. Removing the visibility controls does not remove tally calculations. |
 | Reveal / clipboard | Reveal and double-click open the first visible selected file in Finder/Explorer. Copy Cell copies the clicked display value; Copy Path copies all visible selected paths, separated by newlines. | Keep all four under C61. Uses existing row values without metadata rereading. Copy Path temporarily collects selected rows and path text. Multi-file Reveal is not being proposed. |
-| Filter shortcuts | Chips clear their associated restriction; any bin chip clears the whole bin chain while keeping bins loaded. Escape currently clears Search, Project selections and the type tab, leaving bin/precompute-detail filters. | C78 changes main-window Escape to Search-only. C79 retains Bin-tag whole-chain clearing, leaving bins loaded and checked sequences active. Future sequence controls must respect C18/C21/C56. |
+| Filter shortcuts | Chips clear their associated restriction; any bin chip clears the whole bin chain while keeping bins loaded. Main-window Escape clears Search only, preserving Project, view, bin and precompute restrictions. Separate dialogs keep their own dismissal/cancellation behavior. | C78 uses Qt's child-widget shortcut scope. C79 retains Bin-tag whole-chain clearing, leaving bins loaded. Sequence controls remain deferred under C100. |
 
 See [explicit volume discovery](../src/volumemanager.cpp),
 [sidebar rebuild](../src/mainwindow.cpp#L1348),
@@ -775,7 +775,7 @@ See [explicit volume discovery](../src/volumemanager.cpp),
 [status totals](../src/mainwindow.cpp#L2138),
 [Reveal](../src/mainwindow.cpp#L1830),
 [clipboard helpers](../src/mainwindow.cpp#L1939),
-[Escape](../src/mainwindow.cpp#L894) and
+[Escape](../src/mainwindow.cpp#L845) and
 [filter chips](../src/mainwindow.cpp#L2254).
 
 C60 removes both periodic monitoring and post-scan/operation catch-up checking.
@@ -824,14 +824,15 @@ C98 before choosing an approach. See
 [project aggregates](../src/mainwindow.cpp#L1537) and
 [tab counts](../src/mainwindow.cpp#L2154).
 
-Main-window Escape must be limited to Search under C78. Ordinary Qt dialogs route
+Main-window Escape is limited to Search under C78, using
+`Qt::WidgetWithChildrenShortcut` so the shortcut belongs to the main window and
+its controls. Ordinary Qt dialogs route
 Escape through their rejection/dismissal path, as documented in
 [Qt's QDialog Escape behavior](https://doc.qt.io/qt-6.5/qdialog.html#escape-key).
 MediaMuster's ProgressDialog overrides that path to request cancellation and stay
 visible until the worker finishes; Rebalance does the same while running and
-otherwise dismisses. Retain these existing safeguards. The main-window shortcut
-must not intercept an active dialog's Escape handling or reset other table filters.
-See [current main-window shortcut](../src/mainwindow.cpp#L894),
+otherwise dismisses. These existing safeguards are retained.
+See [current main-window shortcut](../src/mainwindow.cpp#L845),
 [scan/operation progress cancellation](../src/progressdialog.cpp#L166) and
 [Rebalance cancellation](../src/rebalancedialog.cpp#L659).
 
@@ -843,11 +844,11 @@ This fits C11's removal-based bin lifetime. See
 [Done action](../src/avbfilterdialog.cpp#L318) and
 [loading-row removal](../src/avbfilterdialog.cpp#L538).
 
-Pinned Qt v6.5.3 source keeps parent window shortcuts eligible while a parented
-tool window is active. The current main-window Escape shortcut has no explicit
-dialog guard. C78 therefore requires a concrete acceptance check that Escape in
-the bin tool dismisses it rather than invoking the main-window Search shortcut.
-This is source analysis, not a runtime reproduction. See
+Pinned Qt v6.5.3 source keeps parent `WindowShortcut` shortcuts eligible while a
+parented tool window is active. C78 therefore replaces that default scope with
+the user-selected child-widget scope. Key-event regressions cover Search/table
+focus, bin-tool dismissal with retained state, and progress cancellation without
+clearing Search. See
 [Qt v6.5.3 tool shortcut context](https://github.com/qt/qtbase/blob/v6.5.3/src/widgets/kernel/qshortcut_widgets.cpp#L136-L141) and
 [dialog Escape implementation](https://github.com/qt/qtbase/blob/v6.5.3/src/widgets/dialogs/qdialog.cpp#L632-L640).
 
@@ -1400,7 +1401,6 @@ current code. This is a status review, not a newly approved work order.
 
 | Cleanup | Remaining work |
 | --- | --- |
-| C78: Main-window Escape | Clear Search without resetting Project or view. Preserve dialog dismissal and progress cancellation. |
 | C76: Manual folder inputs | Remove broad parent/MXF/leaf input acceptance; keep managed roots or drives with managed folders at their root. Preserve scan discovery within an admitted root. |
 | C88: Diagnostics retention | Replace whole-log age deletion with the agreed 30-day history retention, and prune old collected crash reports while protecting operation journals. |
 
@@ -1482,6 +1482,35 @@ or changes to retained font/style, drive discovery or ordinary access reporting.
 No new test harness, permission probe, compatibility alias or replacement
 display/permission feature was introduced. No measured performance improvement
 or Windows/NEXIS verification is claimed.
+
+### Search-only Escape — 17 October 2026
+
+After C82/C83, the recommended next small checkpoint was C78. Main-window Escape
+previously cleared Search, Project selection and the active view. The proposed
+change removed the last two effects while preserving bin/precompute restrictions
+and existing dialog dismissal/cooperative cancellation. The alternative work
+order presented was C76's narrowed Add Folder inputs first. The user chose
+**Simplify Escape next**.
+
+Read-only inspection confirms that the existing default WindowShortcut can also
+be eligible while a parented Qt::Tool is active. A callback guard alone would
+consume the key without dismissing the dialog. Restricting the shortcut through
+Qt's child-widget context and focus-driven enable/disable wiring were presented
+as the implementation alternatives. The user chose **Use Qt's built-in scope**
+rather than manually enabling/disabling the shortcut as active windows change.
+
+Implemented and verified 17 October 2026. The callback only clears Search and
+uses `Qt::WidgetWithChildrenShortcut`; no custom window-tracking machinery was
+added. Real key-event controls cover Search and table focus, independently
+preserved Project/view/bin/precompute restrictions, dismissal/reopening of the
+loaded bin tool without losing state, and exactly-once progress cancellation
+without clearing the main window's Search. Existing operation protections pass
+in the same suite. No new test hooks were needed.
+
+The app and all configured targets build with pinned Qt 6.5.3, C++17 and Release
+arm64 on this Mac. The operation-UI suite passes (10.66 seconds), and
+`git diff --check` passes. Active behavior documentation now matches the code.
+No measured performance improvement or Windows/NEXIS verification is claimed.
 
 ### Scan cancellation next — 17 October 2026
 

@@ -841,13 +841,12 @@ void MainWindow::setupConnections()
 	// (⌦), which isn't the macOS "delete selected item" key (that's ⌘⌫), and a
 	// destructive action shouldn't hang off a stray keypress. Delete stays
 	// available via the right-click menu and Manage Media.
+	// Separate dialogs must keep their own Escape dismissal/cancellation path.
 	new QShortcut(QKeySequence(Qt::Key_Escape), this,
 				  [this]()
 				  {
 					  m_searchField->clear();
-					  m_projectList->clearSelection();
-					  m_filterTabs->setCurrentIndex(0);
-				  });
+				  }, Qt::WidgetWithChildrenShortcut);
 }
 
 // MARK: - Feature configuration

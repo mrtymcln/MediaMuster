@@ -221,6 +221,8 @@ private slots:
 	void invert_selection_preserves_hidden_selections_data();
 	void invert_selection_preserves_hidden_selections();
 	void text_editing_shortcuts_remain_native();
+	void main_escape_clears_search_and_keeps_other_filters_data();
+	void main_escape_clears_search_and_keeps_other_filters();
 	void search_chips_follow_text_and_clear_the_debounced_filter();
 	void table_widths_change_only_on_request_and_reset_each_session();
 	void precompute_gate_hides_controls_and_clears_filters();
@@ -1642,6 +1644,75 @@ void TestOperationUi::text_editing_shortcuts_remain_native()
 	QCOMPARE(window.m_searchField->text(), QStringLiteral("native text"));
 }
 
+void TestOperationUi::main_escape_clears_search_and_keeps_other_filters_data()
+{
+	QTest::addColumn<bool>("tableFocus");
+	QTest::newRow("search-focus") << false;
+	QTest::newRow("table-focus") << true;
+}
+
+void TestOperationUi::main_escape_clears_search_and_keeps_other_filters()
+{
+	QFETCH(bool, tableFocus);
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(true);
+	QVector<MediaFile> files(7);
+	for (int row = 0; row < files.size(); ++row)
+	{
+		auto &file = files[row];
+		file.fileName = QStringLiteral("file-%1.mxf").arg(row);
+		file.mediaFilePath = path(file.fileName);
+		file.fileMobId = MobId::format(TestAvb::Source);
+		file.project = QStringLiteral("Selected project");
+		file.type = MediaFile::Type::Precompute;
+		file.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
+		file.effectCategory = QStringLiteral("Image");
+		file.clipName = QStringLiteral("Resize");
+		file.volumePath = path("selected-volume");
+	}
+	files[0].fileName = QStringLiteral("needle.mxf");
+	files[0].mediaFilePath = path(files[0].fileName);
+	files[2].project = QStringLiteral("Other project");
+	files[3].type = MediaFile::Type::Media;
+	files[4].fileMobId = MobId::format(TestAvb::Other);
+	files[5].clipName = QStringLiteral("Color Correction");
+	files[6].volumePath = path("other-volume");
+	window.onScanFinished(TestMediaFile::seeded(files));
+	const auto projects = window.m_projectList->findItems(files[0].project, Qt::MatchExactly);
+	QCOMPARE(projects.size(), 1);
+	projects.first()->setSelected(true);
+	const int precomputeTab = 3;
+	window.m_filterTabs->setCurrentIndex(precomputeTab);
+	AvbFileReferences references;
+	references.add(AvbFileId::fromMobId(files[0].fileMobId));
+	window.m_proxy->setBinFilter({{{AvbFilter::Operation::Intersect, {}, references, {}, {}, {}}}});
+	const PrecomputeFilter precomputes{
+		true, {{files[0].precomputeCategoryDisplay(), files[0].effectCategory, files[0].clipName}}};
+	window.m_proxy->setPrecomputeTreeFilter(precomputes);
+	window.m_proxy->setPrecomputeVolumeFilter(files[0].volumePath);
+	QCOMPARE(window.m_proxy->rowCount(), 2);
+	window.m_searchField->setText(QStringLiteral("needle"));
+	QTRY_COMPARE(window.m_proxy->rowCount(), 1);
+	QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, files[0].mediaFilePath);
+	window.show();
+	window.activateWindow();
+	QWidget *focused = tableFocus ? static_cast<QWidget *>(window.m_tableView)
+								: static_cast<QWidget *>(window.m_searchField);
+	focused->setFocus();
+	QTRY_COMPARE(QApplication::focusWidget(), focused);
+	QTest::keyClick(focused, Qt::Key_Escape);
+	QVERIFY(window.m_searchField->text().isEmpty());
+	QTRY_COMPARE(window.m_proxy->rowCount(), 2);
+	QCOMPARE(window.m_projectList->selectedItems(), QList<QListWidgetItem *>({projects.first()}));
+	QCOMPARE(window.m_filterTabs->currentIndex(), precomputeTab);
+	QVERIFY(window.m_proxy->precomputeTreeFilter() == precomputes);
+	QCOMPARE(window.m_proxy->precomputeVolumeFilter(), files[0].volumePath);
+	QSet<QString> visible;
+	for (int row = 0; row < window.m_proxy->rowCount(); ++row)
+		visible.insert(window.fileAtProxyRow(row).mediaFilePath);
+	QCOMPARE(visible, QSet<QString>({files[0].mediaFilePath, files[1].mediaFilePath}));
+}
+
 void TestOperationUi::search_chips_follow_text_and_clear_the_debounced_filter()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
@@ -2189,6 +2260,35 @@ void TestOperationUi::bin_loading_keeps_prepared_table_and_csv_metadata()
 	QTRY_VERIFY(window.m_binFilterActive);
 	QTRY_COMPARE(window.m_proxy->rowCount(), 2);
 	check(prepared);
+	window.show();
+	window.m_searchField->setText(QStringLiteral("missing"));
+	QTRY_COMPARE(window.m_proxy->rowCount(), 1);
+	window.onFilterByBins();
+	list->setFocus();
+	QTRY_COMPARE(QApplication::activeWindow(), dialog);
+	QTRY_COMPARE(QApplication::focusWidget(), list);
+	{
+		const QStringList retainedBinNames = window.m_binFilterBinNames;
+		const auto retainedCheckState = list->item(0)->checkState();
+		QSignalSpy filterChanges(dialog, &AvbFilterDialog::filterChainChanged);
+		QTest::keyClick(list, Qt::Key_Escape);
+		QTRY_VERIFY(!dialog->isVisible());
+		QCOMPARE(window.m_searchField->text(), QStringLiteral("missing"));
+		QCOMPARE(window.m_proxy->rowCount(), 1);
+		QVERIFY(window.m_binFilterActive);
+		QCOMPARE(window.m_binFilterBinNames, retainedBinNames);
+		QCOMPARE(filterChanges.count(), 0);
+		window.onFilterByBins();
+		QVERIFY(dialog->isVisible());
+		QCOMPARE(window.m_binFilterDialog, dialog);
+		QCOMPARE(list->count(), 1);
+		QCOMPARE(list->item(0)->checkState(), retainedCheckState);
+		QCOMPARE(loaded.count(), 0);
+		QCOMPARE(window.m_searchField->text(), QStringLiteral("missing"));
+		QCOMPARE(filterChanges.count(), 0);
+	}
+	window.m_searchField->clear();
+	QTRY_COMPARE(window.m_proxy->rowCount(), 2);
 	QVERIFY(QMetaObject::invokeMethod(dialog, "onSubtractClicked", Qt::DirectConnection));
 	check(prepared, 0);
 	QVERIFY(QMetaObject::invokeMethod(dialog, "onAddClicked", Qt::DirectConnection));
@@ -3331,9 +3431,14 @@ void TestOperationUi::preview_policy_changes_refresh_space_and_same_file_is_no_e
 
 void TestOperationUi::progress_cancel_is_acknowledged_once()
 {
-	ProgressDialog dialog;
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.show();
+	window.m_searchField->setText(QStringLiteral("Keep this search"));
+	ProgressDialog dialog(&window);
 	QSignalSpy cancelled(&dialog, &ProgressDialog::cancelRequested);
 	dialog.begin();
+	dialog.activateWindow();
+	QTRY_COMPARE(QApplication::activeWindow(), &dialog);
 	dialog.setItemProgress(1, 1, 100);
 	auto *bar = dialog.findChild<QProgressBar *>();
 	QVERIFY(bar && bar->value() < bar->maximum());
@@ -3348,9 +3453,14 @@ void TestOperationUi::progress_cancel_is_acknowledged_once()
 	QTest::keyClick(&dialog, Qt::Key_Escape);
 	QCOMPARE(cancelled.size(), 1);
 	QVERIFY(dialog.isVisible());
+	QCOMPARE(window.m_searchField->text(), QStringLiteral("Keep this search"));
 	auto *button = dialog.findChild<QPushButton *>();
 	QVERIFY(button && !button->isEnabled());
 	QCOMPARE(button->text(), QStringLiteral("Cancelling..."));
+	QTest::keyClick(&dialog, Qt::Key_Escape);
+	QCOMPARE(cancelled.size(), 1);
+	QVERIFY(dialog.isVisible());
+	QCOMPARE(window.m_searchField->text(), QStringLiteral("Keep this search"));
 	dialog.close();
 	QCOMPARE(cancelled.size(), 1);
 	dialog.finish();

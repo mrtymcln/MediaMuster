@@ -407,6 +407,11 @@ Project, tab, search, bin and enabled precompute filters combine: a row must pas
 each active restriction to appear. Choosing several projects includes any of
 those selected projects. Search ignores letter case but keeps accents significant.
 
+Escape in the main window clears Search only. Project selections, the active
+view, bin rules and precompute restrictions stay in place. Separate dialogs keep
+their own Escape dismissal or cancellation behavior; running progress dialogs
+request cooperative cancellation and remain visible until work stops.
+
 Hovering over a project in the sidebar shows its file count and total size across
 the whole inventory, regardless of active table filters. The sidebar includes a
 **No project** entry when files have no recorded project.
