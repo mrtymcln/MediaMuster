@@ -8,11 +8,12 @@
 #include "mediaengineadapter.h"
 #include "mediaengine/projection.h"
 #include "mediaengine/scancoordinator.h"
+#include <optional>
 #include <utility>
 
 namespace TestMediaFile
 {
-	inline QVector<MediaFile> seeded(QVector<MediaFile> files)
+	inline QVector<MediaFile> seeded(QVector<MediaFile> files, std::optional<MetadataSource> nameSource = {})
 	{
 		for (auto &file : files)
 		{
@@ -40,9 +41,9 @@ namespace TestMediaFile
 				observation.readState = PropertyReadState::Present;
 				evidence.observe(property, std::move(observation));
 			};
-			const auto nameSource = file.clipNameSource == MediaFile::ClipNameSource::Mdb ? source(MetadataSource::Mdb) : header;
-			add(MediaProperty::ClipName, file.clipName, nameSource);
-			add(MediaProperty::OriginalBin, file.originalBin, nameSource);
+			const auto names = nameSource ? source(*nameSource) : header;
+			add(MediaProperty::ClipName, file.clipName, names);
+			add(MediaProperty::OriginalBin, file.originalBin, names);
 			add(MediaProperty::FileMobId, file.fileMobId, header);
 			add(MediaProperty::MasterMobId, file.masterMobId, header);
 			add(MediaProperty::Project, file.project, header);

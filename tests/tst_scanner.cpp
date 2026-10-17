@@ -547,7 +547,7 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 	QCOMPARE(mf.masterMobId, QStringLiteral("060a2b3401010105.01010f1013000000."
 											"d2467dea74110690.91901e6a605d3613"));
 
-	// From the MXF MaterialPackage (it outranks the MDB's name on the ladder)
+	// From the MXF MaterialPackage, ahead of the MDB name under the source policy.
 	QCOMPARE(mf.clipName, QStringLiteral("TONE: 1000 Hz @ -14.0 dB.1"));
 
 	// Multi-script bin name; exercises the MDB reader's UTF-8 inference.
@@ -558,7 +558,6 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 
 	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
 	QVERIFY(!mf.hasNoProject());
-	QVERIFY(!mf.isInvalidUmid);
 	QVERIFY(!mf.isNonPortable);
 
 	// From MXF (Stage 2)
@@ -605,7 +604,6 @@ void TestScanner::unreferenced_mxf_recovered_via_mdb()
 	// original bin, which this MXF header does not store. The project
 	// comes from the file's own header. The MDB's validated local file identity
 	// establishes membership even without a PMR filename entry.
-	QVERIFY(!mf.isInvalidUmid); // a good UMID is what the lookup keys on
 	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
 	QCOMPARE(mf.project, QStringLiteral("block 1729"));
 	const QString adoptedMob =
@@ -615,13 +613,9 @@ void TestScanner::unreferenced_mxf_recovered_via_mdb()
 	QVERIFY(!mf.originalBin.isEmpty());
 }
 
-// The clip-name ladder (MediaFile::ClipNameSource), enforced on the Stage 3
-// path. The MXF MaterialPackage name outranks the MDB's name. Stage 1's
-// ordering already guarantees the material name wins for PMR-attributed
-// files, but Stage 3 (UMID rescue) merges the MDB AFTER Stage 2 has set the
-// material name — so under last-writer-wins the MDB name used to clobber
-// the authoritative one. This synthetic MDB holds a deliberately wrong name
-// for the tone's MOB; the row must keep the name embedded in the media file.
+// The shared clip-name policy keeps an MXF MaterialPackage name ahead of
+// a matching MDB name. This synthetic MDB deliberately names the same master
+// incorrectly; the row must retain the name recorded inside the media file.
 void TestScanner::stage3_mdb_name_must_not_clobber_material_name()
 {
 	QTemporaryDir tmp;
@@ -682,7 +676,7 @@ void TestScanner::stage3_mdb_name_must_not_clobber_material_name()
 	// remains authoritative for the selected clip name.
 	QVERIFY(mf.metadataStatus.field(MediaProperty::ClipName).presentSources.contains(MetadataSource::Mdb));
 	QCOMPARE(mf.clipName, QStringLiteral("TONE: 1000 Hz @ -14.0 dB.1"));
-	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
+	QVERIFY(mf.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mxf);
 }
 
 // Partner to unreferenced_mxf_recovered_via_mdb, with NO databases in the
@@ -981,7 +975,7 @@ void TestScanner::mdb_name_fills_in_when_the_mxf_has_none()
 	// ...and the database supplied the name. This read "garbage" — the
 	// filename base — until 2026-08-14.
 	QCOMPARE(mf.clipName, QStringLiteral("Interview Take 3"));
-	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::Mdb);
+	QVERIFY(mf.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mdb);
 }
 
 void TestScanner::unknown_clip_name_is_blank_not_the_filename()
@@ -1016,7 +1010,7 @@ void TestScanner::unknown_clip_name_is_blank_not_the_filename()
 	// Nothing knew the name, so the cell stays blank. The filename is a fact
 	// about the disk, not a name Avid gave the clip.
 	QVERIFY2(mf.clipName.isEmpty(), qPrintable("clip name invented: " + mf.clipName));
-	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::None);
+	QVERIFY(!mf.metadataStatus.field(MediaProperty::ClipName).selectedSource);
 	// And the display string agrees — no fallback hiding behind the column.
 	QVERIFY(mf.clipNameDisplay().isEmpty());
 }
@@ -1057,7 +1051,7 @@ void TestScanner::source_package_name_is_not_a_clip_name()
 	QVERIFY2(mf.clipName != QStringLiteral("7302108SL"),
 			 "a SourcePackage (tape) name was adopted as the clip name");
 	QVERIFY2(mf.clipName.isEmpty(), qPrintable("clip name invented: " + mf.clipName));
-	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::None);
+	QVERIFY(!mf.metadataStatus.field(MediaProperty::ClipName).selectedSource);
 }
 
 void TestScanner::mixdown_is_media_not_precompute()
@@ -1852,8 +1846,8 @@ void TestScanner::structurally_incomplete_pmr_is_not_a_trusted_index()
 	QVERIFY(hasDatabaseEvidence(*tone)); // Header identity allows a typed MDB re-join even with an unreadable PMR.
 	const bool databasePathAvailable = !projectedDatabaseSourcePath(
 		folder + QStringLiteral("/msmMMOB.mdb"), tone->fileMobId).isEmpty();
-	QCOMPARE(tone->clipNameSource, listsTone && databasePathAvailable
-		? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
+	QVERIFY(tone->metadataStatus.field(MediaProperty::ClipName).selectedSource == (listsTone && databasePathAvailable
+		? MetadataSource::Mdb : MetadataSource::Mxf));
 	if (listsTone)
 		checkDatabaseSourcePathAcquisition(*tone, databasePathAvailable);
 	else
@@ -1888,7 +1882,7 @@ void TestScanner::database_described_row_survives_unreadable_header()
 	QVERIFY(mf.sourceFilePath.isEmpty());
 	QCOMPARE(mf.project, QStringLiteral("block 1729"));
 	QCOMPARE(mf.clipName, kToneClip);
-	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::Mdb);
+	QVERIFY(mf.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mdb);
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 	QCOMPARE(mf.type, MediaFile::Type::Media);
 	QCOMPARE(mf.compression, QString::fromLatin1(kPcmAudioName));
@@ -1897,7 +1891,8 @@ void TestScanner::database_described_row_survives_unreadable_header()
 	QVERIFY(mf.timecodeBase > 0);
 	QVERIFY(!mf.bitDepth.isEmpty());
 	QVERIFY(mf.resolution.isEmpty());
-	QVERIFY(!mf.isInvalidUmid);
+	QCOMPARE(mf.fileMobId, MobId::format(kToneFileId));
+	QCOMPARE(mf.masterMobId, QStringLiteral("060a2b3401010105.01010f1013000000.d2467dea74110690.91901e6a605d3613"));
 	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
 	QVERIFY(!mf.hasNoProject());
 }
@@ -1961,7 +1956,7 @@ void TestScanner::current_mxf_audio_database_rounds_partial_frames()
 	QCOMPARE(row.sourceFilePath, QStringLiteral("/Rushes/Partial frame duration.wav"));
 	QCOMPARE(row.originalBin, QStringLiteral("Duration bin"));
 	QVERIFY(!row.omfEra);
-	QCOMPARE(row.clipNameSource, MediaFile::ClipNameSource::Mdb);
+	QVERIFY(row.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mdb);
 	QCOMPARE(row.clipName, QStringLiteral("Partial frame duration"));
 	QCOMPARE(row.kind, MediaFile::Kind::Audio);
 	QCOMPARE(row.sampleRate, 48000);
@@ -1992,11 +1987,10 @@ void TestScanner::database_coverage_is_independent_of_unproven_pmr_time()
 	// timestamp-looking words do not establish database freshness.
 	const bool databasePathAvailable = !projectedDatabaseSourcePath(
 		folder + QStringLiteral("/msmMMOB.mdb"), MobId::format(kToneFileId)).isEmpty();
-	const auto expectedNameSource = databasePathAvailable
-		? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage;
+	const auto expectedNameSource = databasePathAvailable ? MetadataSource::Mdb : MetadataSource::Mxf;
 	const auto normal = runScan(tmp.path());
 	QCOMPARE(normal.size(), 1);
-	QCOMPARE(normal.first().clipNameSource, expectedNameSource);
+	QVERIFY(normal.first().metadataStatus.field(MediaProperty::ClipName).selectedSource == expectedNameSource);
 	checkDatabaseSourcePathAcquisition(normal.first(), databasePathAvailable);
 
 	// A different filesystem timestamp before discovery cannot certify or
@@ -2006,7 +2000,7 @@ void TestScanner::database_coverage_is_independent_of_unproven_pmr_time()
 	QCOMPARE(differentTime.size(), 1);
 	checkDatabaseSourcePathAcquisition(differentTime.first(), databasePathAvailable);
 	QCOMPARE(differentTime.first().clipName, kToneClip);
-	QCOMPARE(differentTime.first().clipNameSource, expectedNameSource);
+	QVERIFY(differentTime.first().metadataStatus.field(MediaProperty::ClipName).selectedSource == expectedNameSource);
 	QCOMPARE(differentTime.first().project, QStringLiteral("block 1729"));
 	QVERIFY(!differentTime.first().originalBin.isEmpty());
 	QCOMPARE(differentTime.first().kind, MediaFile::Kind::Audio);
@@ -2057,7 +2051,7 @@ void TestScanner::unreadable_header_keeps_qualified_database_fallback()
 	QVERIFY(!codecStatus.changedSources.contains(MetadataSource::Mdb));
 	QVERIFY(codecStatus.selectedFreshness == SourceFreshness::Unknown);
 	QCOMPARE(mf.clipName, kToneClip);
-	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::Mdb);
+	QVERIFY(mf.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mdb);
 	QCOMPARE(mf.project, QStringLiteral("block 1729"));
 }
 
@@ -2493,7 +2487,7 @@ void TestScanner::folder_without_databases_reads_every_header()
 	const MediaFile &mf = results.first();
 	QVERIFY(mf.isNoDatabase());
 	QCOMPARE(mf.clipName, kToneClip);
-	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
+	QVERIFY(mf.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mxf);
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 	QVERIFY(!mf.compression.isEmpty());
 	QVERIFY(mf.sampleRate > 0);
@@ -2556,7 +2550,7 @@ void TestScanner::mpeg_audio_falls_back_to_its_header()
 	const MediaFile &mf = results.first();
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 	QVERIFY2(mf.compression.contains(QStringLiteral("MP2")), qPrintable(mf.compression));
-	QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
+	QVERIFY(mf.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mxf);
 	QVERIFY(!mf.originalBin.isEmpty()); // identity still from the MDB
 }
 
@@ -2697,7 +2691,6 @@ namespace
 		QCOMPARE(mf.masterMobId, masterMob);
 		QVERIFY(OmfUid::isWrappedOmfId(mf.fileMobId));
 		QVERIFY(OmfUid::isWrappedOmfId(mf.masterMobId));
-		QVERIFY(!mf.isInvalidUmid);
 		QVERIFY(!mf.hasNoProject());
 		QCOMPARE(mf.sampleRate, 48000);
 		QCOMPARE(mf.bitDepth, QStringLiteral("24-bit"));
@@ -2828,8 +2821,8 @@ void TestScanner::omf_disabled_preserves_mxf_and_its_databases()
 		QVERIFY(headerWasRead(mxf));
 	QCOMPARE(mxf.dbStatus, withDatabases ? MediaFile::DbStatus::Listed : MediaFile::DbStatus::NoDatabase);
 	QCOMPARE(mxf.clipName, kToneClip);
-	QCOMPARE(mxf.clipNameSource, databasePathAvailable
-		? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
+	QVERIFY(mxf.metadataStatus.field(MediaProperty::ClipName).selectedSource == (databasePathAvailable
+		? MetadataSource::Mdb : MetadataSource::Mxf));
 	QCOMPARE(mxf.sampleRate, 48000);
 }
 
@@ -2975,8 +2968,8 @@ void TestScanner::omf_volume_root_scans_both_folders()
 	const bool wavePathAvailable = !projectedDatabaseSourcePath(
 		omfRoot + QStringLiteral("/msmMMOB.mdb"), wav->fileMobId).isEmpty();
 	checkDatabaseSourcePathAcquisition(*wav, wavePathAvailable);
-	QCOMPARE(wav->clipNameSource, wavePathAvailable
-		? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
+	QVERIFY(wav->metadataStatus.field(MediaProperty::ClipName).selectedSource == (wavePathAvailable
+		? MetadataSource::Mdb : MetadataSource::Omf));
 
 	const MediaFile *aif = rowNamed(results, kOmfAif);
 	QVERIFY(aif != nullptr);
@@ -2984,7 +2977,7 @@ void TestScanner::omf_volume_root_scans_both_folders()
 	const bool aiffPathAvailable = !projectedDatabaseSourcePath(
 		omfRoot + QStringLiteral("/msmMMOB.mdb"), aif->fileMobId).isEmpty();
 	checkDatabaseSourcePathAcquisition(*aif, aiffPathAvailable, MediaHeaderReadOutcome::Unsupported);
-	QCOMPARE(aif->clipNameSource, MediaFile::ClipNameSource::Mdb);
+	QVERIFY(aif->metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mdb);
 }
 
 void TestScanner::copied_media_tree_requires_a_managed_root()
@@ -3055,8 +3048,8 @@ void TestScanner::omf_root_pointed_at_directly_never_scans_as_mxf_folders()
 	const bool wavePathAvailable = !projectedDatabaseSourcePath(
 		omfRoot + QStringLiteral("/msmMMOB.mdb"), wav->fileMobId).isEmpty();
 	checkDatabaseSourcePathAcquisition(*wav, wavePathAvailable);
-	QCOMPARE(wav->clipNameSource, wavePathAvailable
-		? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
+	QVERIFY(wav->metadataStatus.field(MediaProperty::ClipName).selectedSource == (wavePathAvailable
+		? MetadataSource::Mdb : MetadataSource::Omf));
 	QCOMPARE(wav->volumePath, tmp.path());
 
 	const MediaFile *aif = rowNamed(results, kOmfAif);
@@ -3065,8 +3058,8 @@ void TestScanner::omf_root_pointed_at_directly_never_scans_as_mxf_folders()
 	const bool aiffPathAvailable = !projectedDatabaseSourcePath(
 		omfRoot + QStringLiteral("/msmMMOB.mdb"), aif->fileMobId).isEmpty();
 	checkDatabaseSourcePathAcquisition(*aif, aiffPathAvailable);
-	QCOMPARE(aif->clipNameSource, aiffPathAvailable
-		? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
+	QVERIFY(aif->metadataStatus.field(MediaProperty::ClipName).selectedSource == (aiffPathAvailable
+		? MetadataSource::Mdb : MetadataSource::Omf));
 }
 
 void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
@@ -3090,12 +3083,11 @@ void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
 		QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 		QCOMPARE(mf.compression, QStringLiteral("PCM")); // Compression and container are distinct facts.
 		QCOMPARE(mf.clipName, kOmfWavClip);
-		QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
+		QVERIFY(mf.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Omf);
 		QCOMPARE(mf.project, kOmfProject);
 		QCOMPARE(mf.fileMobId, kOmfWavFileMob);		// the file's own identity
 		QCOMPARE(mf.masterMobId, kOmfWavMasterMob); // verified by the file's graph
 		QCOMPARE(mf.originalBin, kOmfWavBin);		// which is the only place a bin lives
-		QVERIFY(!mf.isInvalidUmid);
 	}
 
 	// With no database at all the tail still names the clip, the project and
@@ -3170,8 +3162,8 @@ void TestScanner::omf_video_rows_show_avid_descriptive_names()
 		const bool databasePathAvailable = !projectedDatabaseSourcePath(
 			omfRoot + QStringLiteral("/msmMMOB.mdb"), mf->fileMobId).isEmpty();
 		checkDatabaseSourcePathAcquisition(*mf, databasePathAvailable);
-		QCOMPARE(mf->clipNameSource, databasePathAvailable
-			? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
+		QVERIFY(mf->metadataStatus.field(MediaProperty::ClipName).selectedSource == (databasePathAvailable
+			? MetadataSource::Mdb : MetadataSource::Omf));
 	}
 }
 
@@ -3233,8 +3225,8 @@ void TestScanner::shared_omf_folder_uses_current_databases_and_header_fallback()
 		const bool databasePathAvailable = !projectedDatabaseSourcePath(
 			folder + QStringLiteral("/msmMMOB.mdb"), mf->fileMobId).isEmpty();
 		checkDatabaseSourcePathAcquisition(*mf, databasePathAvailable);
-		QCOMPARE(mf->clipNameSource, databasePathAvailable
-			? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
+		QVERIFY(mf->metadataStatus.field(MediaProperty::ClipName).selectedSource == (databasePathAvailable
+			? MetadataSource::Mdb : MetadataSource::Omf));
 	}
 	const MediaFile *wav = rowNamed(results, kOmfWav);
 	QVERIFY(wav != nullptr);
@@ -3271,7 +3263,7 @@ void TestScanner::shared_omf_folder_without_pmr_uses_its_media_headers()
 	for (const MediaFile &mf : results)
 	{
 		QVERIFY2(mf.omfEra, qPrintable(mf.fileName));
-		QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
+		QVERIFY(mf.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Omf);
 		QVERIFY(OmfUid::isWrappedOmfId(mf.fileMobId));
 	}
 	const MediaFile *slate = rowNamed(results, QStringLiteral("BLACK_720x243x2_JFIF35.omf"));
@@ -3313,7 +3305,7 @@ void TestScanner::shared_omf_folder_without_any_database_is_scanned()
 		QCOMPARE(row.dbStatus, MediaFile::DbStatus::NoDatabase);
 		QCOMPARE(row.mediaFolderName, QStringLiteral("EditorOne"));
 		QCOMPARE(QFileInfo(row.mediaFilePath).absolutePath(), folder);
-		QCOMPARE(row.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
+		QVERIFY(row.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Omf);
 	}
 	QVERIFY(runManualScan(root).isEmpty());
 	QVERIFY(!MediaScanner::addedLocation(base));
@@ -3388,8 +3380,8 @@ void TestScanner::unrelated_database_cannot_reclassify_omf_audio()
 			QCOMPARE(row->mediaFolderName, kOmfFolder);
 			const bool databasePathAvailable = matchingPmr && matchingMdb && !projectedDatabaseSourcePath(
 				folder + QStringLiteral("/msmMMOB.mdb"), row->fileMobId).isEmpty();
-			QCOMPARE(row->clipNameSource, databasePathAvailable
-				? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage);
+			QVERIFY(row->metadataStatus.field(MediaProperty::ClipName).selectedSource == (databasePathAvailable
+				? MetadataSource::Mdb : MetadataSource::Omf));
 			if (matchingPmr && matchingMdb)
 				checkDatabaseSourcePathAcquisition(*row, databasePathAvailable);
 			else
@@ -3482,7 +3474,7 @@ void TestScanner::incomplete_omf_identity_clears_unrelated_stale_database_metada
 	QCOMPARE(row.fileMobId, header.fileMobId);
 	QVERIFY(row.masterMobId.isEmpty());
 	QVERIFY(row.clipName.isEmpty());
-	QCOMPARE(row.clipNameSource, MediaFile::ClipNameSource::None);
+	QVERIFY(!row.metadataStatus.field(MediaProperty::ClipName).selectedSource);
 	QVERIFY(row.project.isEmpty());
 	QVERIFY(row.originalBin.isEmpty());
 	QVERIFY(row.sourceFilePath.isEmpty());
@@ -3586,7 +3578,7 @@ void TestScanner::omf_database_metadata_survives_source_path_fallback()
 		const bool databasePathAvailable = !projectedDatabaseSourcePath(
 			folder + QStringLiteral("/msmMMOB.mdb"), row.fileMobId).isEmpty();
 		checkDatabaseSourcePathAcquisition(row, databasePathAvailable, MediaHeaderReadOutcome::Unsupported);
-		QCOMPARE(row.clipNameSource, MediaFile::ClipNameSource::Mdb);
+		QVERIFY(row.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mdb);
 		QCOMPARE(row.sampleRate, 48000);
 		QVERIFY(row.omfEra);
 	}
@@ -3624,7 +3616,7 @@ void TestScanner::ama_databases_are_read()
 		QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
 		QCOMPARE(mf.project, QStringLiteral("block 1729"));
 		QCOMPARE(mf.clipName, kToneClip);
-		QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::Mdb);
+		QVERIFY(mf.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mdb);
 		QCOMPARE(mf.compression, QString::fromLatin1(kPcmAudioName));
 		QCOMPARE(mf.sampleRate, 48000);
 		QVERIFY(!mf.originalBin.isEmpty());
@@ -4131,7 +4123,7 @@ void TestScanner::completed_reference_check_survives_unreadable_siblings()
 		{
 			QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
 			QCOMPARE(mf.clipName, kToneClip);
-			QCOMPARE(mf.clipNameSource, MediaFile::ClipNameSource::Mdb);
+			QVERIFY(mf.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mdb);
 			QCOMPARE(mf.compression, QString::fromLatin1(kPcmAudioName));
 		}
 		else if (mf.mediaFolderName == QStringLiteral("1"))

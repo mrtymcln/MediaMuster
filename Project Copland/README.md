@@ -2,7 +2,7 @@
 
 Status: implementation in progress; confirmed contract and technical verification.
 Started 11 October 2026; decisions updated
-17 October 2026.
+18 October 2026.
 
 Copland reviews the whole MediaMuster app and defines the smallest useful product
 contract before choosing its implementation. Existing capabilities and Canon's
@@ -1521,6 +1521,34 @@ arm64. All eight relevant suites pass in 44.16 seconds: scan engine, compression
 names, scanner, file operations, CSV, table model, filter proxy and operation UI.
 `git diff --check` passes. These are automated regression checks; a full app
 workload/memory comparison and NEXIS acceptance remain separate.
+
+### Unused per-file tags — 18 October 2026
+
+The user chose **Remove the two unused tags**, before a full app-workflow check.
+Remove `MediaFile::ClipNameSource`/`clipNameSource` and `isInvalidUmid`, plus their
+adapter bookkeeping. The Clip Name's selected source already lives in its compact
+status note. The zero-ID flag has no production consumer; actual identity values
+and the independent operation safety receipts/checks remain required.
+
+Keep source-selection policy, recorded IDs, metadata status, exact clocks and
+operation behavior. Source-provenance tests should use the existing compact
+selected-source note instead of the removed enum, and fixture preparation should
+preserve its authored sources. Remove obsolete flag checks without weakening
+actual ID and operation controls. No backward alias, replacement row flag or
+measured performance claim is part of this cleanup.
+
+Implemented: the two row members, legacy source enum, adapter bookkeeping and
+unused include are removed. Existing scanner checks now assert the compact note's
+exact MDB/MXF/OMF source or no selected source. UI fixtures author MDB names before
+selection through the existing preparation helper; table/CSV provenance checks
+remain. Obsolete zero-ID flag assertions are removed or replaced with exact IDs.
+
+The app and all configured targets build with pinned Qt 6.5.3, C++17 and Release
+arm64. All eight relevant suites pass in 42.62 seconds: scan engine, scanner,
+file operations, CSV, table model, filter proxy, bin dialog and operation UI.
+`git diff --check` passes. Actual ID validation, operation receipts and source
+policy code are unchanged. Full workload/memory and NEXIS acceptance remain
+separate; no performance gain is claimed.
 
 ### Automatic drive checking removal — 17 October 2026
 

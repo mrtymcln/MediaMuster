@@ -703,7 +703,6 @@ void TestMediaTableModel::prepared_metadata_reaches_table_cells()
 	file.type = MediaFile::Type::Media;
 	file.dbStatus = MediaFile::DbStatus::NoDatabase;
 	file.clipName = QStringLiteral("Stale clip");
-	file.clipNameSource = MediaFile::ClipNameSource::MaterialPackage;
 	file.originalBin = QStringLiteral("Stale bin");
 	file.effect = QStringLiteral("Stale effect");
 	file.effectCategory = QStringLiteral("Stale category");
@@ -719,7 +718,6 @@ void TestMediaTableModel::prepared_metadata_reaches_table_cells()
 	QCOMPARE(current.dbStatus, MediaFile::DbStatus::NoReference);
 	QCOMPARE(current.clipName, QStringLiteral("Sequence,3D_Warp+1"));
 	QCOMPARE(current.originalBin, QStringLiteral("MDB bin"));
-	QCOMPARE(current.clipNameSource, MediaFile::ClipNameSource::MaterialPackage);
 	QCOMPARE(current.effect, QStringLiteral("3D Warp"));
 	QCOMPARE(current.effectCategory, QStringLiteral("Blend"));
 	QCOMPARE(current.effectSequence, QStringLiteral("Sequence"));
@@ -800,7 +798,6 @@ void TestMediaTableModel::prepared_scan_load_releases_history_and_preserves_resu
 	const auto &current = model.fileAt(0);
 	QCOMPARE(current.kelpieId, KelpieId(91));
 	QCOMPARE(MediaCsv::rowLine(current), expectedCsv);
-	QCOMPARE(current.clipNameSource, file.clipNameSource);
 	QCOMPARE(model.index(0, int(MediaTableModel::Column::ClipName)).data().toString(), QStringLiteral("Prepared clip label"));
 	QCOMPARE(current.originalBin, QStringLiteral("MDB bin"));
 	for (const auto property : {MediaProperty::ClipName, MediaProperty::OriginalBin})

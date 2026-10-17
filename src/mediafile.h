@@ -34,19 +34,10 @@ struct MediaFile
 
 	// MARK: MDB and PMR metadata
 
-	QString clipName;
-
-	/// The source of the selected name; these enum values are source tags,
-	/// not preference ranks. MediaEngine's shared policy table chooses the value.
+	/// MediaEngine's shared policy chooses the name and captures its source in metadataStatus.
 	/// Source-package names do not establish a master clip name or a recorded source path.
 	/// Unknown clip names stay blank rather than falling back to filenames.
-	enum class ClipNameSource
-	{
-		None = 0,
-		Mdb = 2,
-		MaterialPackage = 3,
-	};
-	ClipNameSource clipNameSource = ClipNameSource::None;
+	QString clipName;
 
 	/// Selected project name under MediaEngine's shared policy. Empty means unknown,
 	/// independently of whether the folder's PMR currently lists this file.
@@ -150,9 +141,6 @@ struct MediaFile
 	/// membership or whether a sequence uses the file.
 	bool hasNoProject() const { return project.isEmpty(); }
 
-	/// A recovered FileMobId or MasterMobId is all zeros. Missing IDs alone do
-	/// not set this flag; it is not a general identifier-validity check.
-	bool isInvalidUmid = false;
 	bool isNonPortable = false; ///< Filename falls outside the scanner's character allowlist.
 	bool isQuarantined = false; ///< Scanner-confirmed MXF quarantine location.
 

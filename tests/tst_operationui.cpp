@@ -2226,13 +2226,13 @@ void TestOperationUi::bin_loading_keeps_prepared_table_and_csv_metadata()
 	known.mediaFilePath = tmp.filePath("known.mxf");
 	known.fileMobId = MobId::format(TestAvb::Other);
 	known.clipName = QStringLiteral("Resize");
-	known.clipNameSource = MediaFile::ClipNameSource::Mdb;
 	known.originalBin = QStringLiteral("Database bin");
-	window.onScanFinished(TestMediaFile::seeded({missing, known}));
+	window.onScanFinished(TestMediaFile::seeded({missing, known}, MetadataSource::Mdb));
 	const auto prepared = window.m_model->allFiles();
 	QVERIFY(prepared[0].clipName.isEmpty() && prepared[0].originalBin.isEmpty());
 	QVERIFY(prepared[0].effect.isEmpty());
 	QCOMPARE(prepared[1].effectDisplay(), QStringLiteral("Resize"));
+	QVERIFY(prepared[1].metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mdb);
 	window.onFilterByBins();
 	auto *dialog = window.m_binFilterDialog;
 	QVERIFY(dialog);
@@ -2264,7 +2264,6 @@ void TestOperationUi::bin_loading_keeps_prepared_table_and_csv_metadata()
 			const auto &actual = window.m_model->fileAt(row);
 			QCOMPARE(actual.clipName, expected[row].clipName);
 			QCOMPARE(actual.originalBin, expected[row].originalBin);
-			QCOMPARE(actual.clipNameSource, expected[row].clipNameSource);
 			QCOMPARE(actual.effect, expected[row].effect);
 			QCOMPARE(actual.effectCategory, expected[row].effectCategory);
 			QCOMPARE(actual.effectSequence, expected[row].effectSequence);
@@ -2390,9 +2389,9 @@ void TestOperationUi::bin_loading_keeps_prepared_table_and_csv_metadata()
 	check(prepared);
 	MediaFile refreshed = missing;
 	refreshed.clipName = QStringLiteral("Color Correction");
-	refreshed.clipNameSource = MediaFile::ClipNameSource::Mdb;
 	refreshed.originalBin = QStringLiteral("Fresh database bin");
-	auto fresh = TestMediaFile::seeded({refreshed, known});
+	auto fresh = TestMediaFile::seeded({refreshed, known}, MetadataSource::Mdb);
+	QVERIFY(fresh[0].metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mdb);
 	for (int row = 0; row < fresh.size(); ++row)
 		fresh[row].kelpieId = prepared[row].kelpieId;
 	window.onScanFinished(fresh);

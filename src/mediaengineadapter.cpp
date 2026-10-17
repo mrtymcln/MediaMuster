@@ -1,6 +1,5 @@
 #include "mediaengineadapter.h"
 #include "mediaengine/projection.h"
-#include "mobid.h"
 #include <QFileInfo>
 #include <QStorageInfo>
 #include <QDir>
@@ -33,15 +32,6 @@ bool applyResolvedMetadata(MediaFile &row, const MediaEvidence &evidence)
 	assign(row.fileMobId, value(MediaProperty::FileMobId).toString());
 	assign(row.masterMobId, value(MediaProperty::MasterMobId).toString());
 	assign(row.clipName, value(MediaProperty::ClipName).toString());
-	auto nameSource = MediaFile::ClipNameSource::None;
-	const auto clip = evidence.selected(MediaProperty::ClipName);
-	const auto &names = evidence.observations(MediaProperty::ClipName);
-	if (clip.selectedObservation >= 0 && clip.selectedObservation < names.size() && names[clip.selectedObservation].snapshot)
-	{
-		const auto source = names[clip.selectedObservation].snapshot->source;
-		nameSource = source == MetadataSource::Mdb ? MediaFile::ClipNameSource::Mdb : MediaFile::ClipNameSource::MaterialPackage;
-	}
-	assign(row.clipNameSource, nameSource);
 	assign(row.project, value(MediaProperty::Project).toString());
 	assign(row.originalBin, value(MediaProperty::OriginalBin).toString());
 	assign(row.compression, value(MediaProperty::Compression).toString());
@@ -71,7 +61,6 @@ bool applyResolvedMetadata(MediaFile &row, const MediaEvidence &evidence)
 	assign(row.type, value(MediaProperty::Type).isValid() ? MediaFile::Type(value(MediaProperty::Type).toInt()) : MediaFile::Type::Unknown);
 	assign(row.precomputeCategory, value(MediaProperty::PrecomputeCategory).isValid() ? MediaFile::PrecomputeCategory(value(MediaProperty::PrecomputeCategory).toInt()) : MediaFile::PrecomputeCategory::Unknown);
 	assign(row.dbStatus, value(MediaProperty::DatabaseStatus).isValid() ? MediaFile::DbStatus(value(MediaProperty::DatabaseStatus).toInt()) : MediaFile::DbStatus::DbUnreadable);
-	assign(row.isInvalidUmid, MobId::isAllZero(row.fileMobId) || MobId::isAllZero(row.masterMobId));
 	assign(row.effect, value(MediaProperty::Effect).toString());
 	assign(row.effectCategory, value(MediaProperty::EffectCategory).toString());
 	assign(row.effectSequence, value(MediaProperty::EffectSequence).toString());

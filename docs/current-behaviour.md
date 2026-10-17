@@ -437,8 +437,10 @@ Enabling precompute features also adds Precomputes. Project selection, including
 **No project**, is available in the sidebar. Database membership remains visible
 in the two flag columns and their tooltips, as well as Project tooltips. All enabled
 tabs remain visible at zero; feature-disabled Precomputes stays hidden. There is
-no Show All Filter Tabs override. The row retains the selected identifiers and invalid-ID flag;
-invalid observations are examined during scanning rather than stored in the table.
+no Show All Filter Tabs override. The row retains selected identifiers and compact
+status notes, including the selected source of Clip Name. Invalid identities are
+examined during scanning and by operation safety checks; no unused invalid-ID flag
+or duplicate clip-name source tag is stored in the row.
 
 The table's filters work on the current inventory. They do not modify disk files.
 Project, tab, search, bin and enabled precompute filters combine: a row must pass
