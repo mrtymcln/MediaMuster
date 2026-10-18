@@ -1,17 +1,14 @@
 # Project Copland
 
-Status: implementation in progress; confirmed contract and technical verification.
+Status: agreed V1 simplification implemented; local workflow and support checks
+complete; representative workload acceptance outstanding.
 Started 11 October 2026; decisions updated
 18 October 2026.
 
 Copland reviews the whole MediaMuster app and defines the smallest useful product
-contract before choosing its implementation. Existing capabilities and Canon's
-retention commitments are open for review. Implementation has begun with the
-user-selected direct CSV export, small safety-check migration, identity naming,
-bin name filling removal, ordinary scan history removal, Clip Duration removal,
-one selected MasterMobId per physical file, complete Source Path replacement,
-either-local-database reference rules, the two database flags/views and scan
-cancellation below.
+contract before choosing its implementation. The agreed inventory, compact-row,
+Whole Bin and support simplifications are implemented. The dated checkpoints
+below record the decisions, changes and verification boundaries.
 
 **V1 scope, confirmed 17 October 2026:** simplify existing features and defer
 exact sequence filtering until after V1 (C100). Keep Whole Bin filtering and its
@@ -44,6 +41,26 @@ The [18 October disposable file-operation check](file-operation-acceptance-2026-
 records genuine scan-to-operation workflows, fresh-process Undo and deliberately
 interrupted jobs on this Mac. Its local scope and detailed receipts are separate
 from representative Windows/NEXIS acceptance.
+
+### V1 closeout — 18 October 2026
+
+The agreed simplification pass is finished. Local checks cover scan → bin filter
+→ CSV → rescan, disposable file operations/Undo/interrupted recovery, and
+[normal startup and support](startup-support-acceptance-2026-10-18.md).
+No further implementation change is established by this status review.
+
+Remaining acceptance is broader real-media coverage of retained metadata,
+database/header fallback and Whole Bin results, plus representative Windows/NEXIS
+use and the 300,000-file database-free NEXIS workload. Measure peak and retained
+memory through scanning and subsequent use against the below-10-GB aim; the small
+Mac comparison does not establish that scale result. Confirm current Windows
+build/test results as part of platform acceptance. Fixes depend on concrete
+findings and the user's decisions.
+
+Exact sequence filtering, automatic removal of a removed bin's applied filter
+contribution and logging-overhead investigation remain deferred. They are not
+additional V1 cleanup gates. Ordinary release packaging is separate from this
+Copland acceptance status.
 
 ## Mandatory rule for every implementing AI
 
@@ -371,11 +388,15 @@ These describe today's code, not Copland requirements:
   reporting work. This is a measured reason to review retained AVB detail, not an
   app benchmark or a predicted Copland saving. C16's table-enrichment consumer
   has been removed; loaded-bin compaction now releases decoded structure after
-  reference resolution. Temporary parsing peaks still need measurement. See
+  reference resolution. The 18 October local comparison measures the temporary
+  peak on one bin; representative scale remains unverified. See
   [the bounded corpus measurement](../Project%20Canon/avb-corpus-check-2026-10-04.md#timing-and-memory-observations).
 - Discovery currently scans recognised managed-media layouts rather than every
-  folder on a drive. Adding `Avid MediaFiles/MXF/1` resolves to the MXF root and
-  also scans eligible sibling folders. Named ingest and quarantine folders are
+  folder on a drive. Manual inputs admit the named `Avid MediaFiles` or
+  `OMFI MediaFiles` tree, or an actual drive containing one directly; an MXF leaf
+  such as `Avid MediaFiles/MXF/1` is not a manual input. The background scanner's
+  `buildFolderList()` expands accepted inputs to the managed scan folders.
+  Named ingest and quarantine folders are
   admitted; loose/deeper-nested media, UME, hidden entries, symlinks and `Creating`
   are excluded. Admitted empty or malformed media keeps a physical row. C03
   preserves the row requirement; C30/C31 retain these location boundaries. See
@@ -753,7 +774,9 @@ crash reports are pruned by their original modification dates in the same mainte
 step; system originals and operation journals are outside diagnostic cleanup.
 Help still reveals these local files, with no automatic transmission. Diagnostics
 assume one running app instance under the user's explicit V1 scope. Delivery
-overhead still needs measurement.
+overhead remains unmeasured. On 18 October, the user chose to finish the
+non-scanner/parser cleanup and check startup/support with the current logger.
+Logging-overhead investigation is deferred rather than another V1 cleanup gate.
 
 The user initially did not accept the combined age/storage-cap proposal, then
 specified 30 days and automatic cleanup. C88 records the final policy without
@@ -1593,6 +1616,25 @@ file operations, CSV, table model, filter proxy, bin dialog and operation UI.
 `git diff --check` passes. Actual ID validation, operation receipts and source
 policy code are unchanged. Full workload/memory and NEXIS acceptance remain
 separate; no performance gain is claimed.
+
+### Startup/support acceptance — 18 October 2026
+
+The user chose **Finish cleanup; check startup/support** rather than measuring
+Console/log-writing overhead. The non-scanner/parser simplification pass is
+finished; keep the current logger for this checkpoint. Check normal startup,
+recent diagnostic history, Reveal Diagnostics and the crash-notice/recovery
+sequence. Keep disposable scenario checks separate from observations of the
+normal app, and record any limits. No logger rewrite or performance gain is
+implied by this choice.
+
+The [local startup/support check](startup-support-acceptance-2026-10-18.md)
+passed on the current Mac build. Native startup and Reveal Diagnostics worked;
+331 eligible existing log lines survived and all 17 original journals were
+unchanged. A separate disposable native scenario verified crash-notice-before-
+recovery ordering, no duplicate notice after restart, retained pending work and
+age-based diagnostic cleanup. The diagnostics and operation UI suites passed
+with no skips. No application code changed; this is local functional verification,
+not logging-performance or representative Windows/NEXIS acceptance.
 
 ### Current documentation cleanup — 18 October 2026
 
@@ -2875,8 +2917,9 @@ snapshots are also cleared, while table rows remain populated. The
 without table reprojection and retain Copy/Move identity, destination-membership
 and frozen-safety checks. Existing genuine-source/parser and operation recovery/
 Undo suites pass. These tests do not establish exact used-angle/track handling,
-whole-process memory savings or NEXIS scale performance. Ordinary scan histories
-and the remaining loaded-bin/filter graph compaction are still outstanding.
+whole-process memory savings or NEXIS scale performance. Ordinary scan history
+removal and loaded-bin/filter graph compaction were outstanding at this checkpoint;
+both cleanups were subsequently completed in the checkpoints above.
 
 All stages must follow the [mandatory decision rule](#mandatory-rule-for-every-implementing-ai)
 under C98. At every decision or crossroad, present options and wait for the user
@@ -2896,7 +2939,7 @@ adding a new mechanism to fix them.
 | 2. Compact records and receipts | Introduce selected row values, exact clocks, one selected MasterMobId, compact availability/freshness/membership status and the operation receipts required by existing live checks. Adapt operation consumers before removing their evidence dependencies. Keep the user-selected direct CSV writer; release its local captured rows when saving returns, without adding a background text snapshot. Release prior row/session ownership when a new scan starts. | Retained table/CSV values and eligible operation behavior agree with the contract. Copy/Move/Delete/Rebalance, latest-job Undo and startup recovery preserve their existing protections. Completed export and compact operation consumers do not keep the old complete inventory/evidence graph alive during rescan. |
 | 3. Acquisition and cancellation | Apply PMR → MDB → header acquisition to the retained requested fields, using reliable inapplicability to stop unnecessary fallback. Clip Duration removal is complete under C13. C94/C95/C96 replace SourceFilename storage/consumers with SourcePath and its requested-field fallback. Implement either-database membership and both flags. Resolve completed values into compact rows as work finishes, and release unused parsing data. Retain changed-source exclusion and the existing bounded header fallback. | Database-free, partial-index and missing-applicable-field cases resolve correctly; unavailable values remain blank. Cancellation during discovery, database/header reading, final selection, formatting and publication preserves found rows/completed values and consistently reports incomplete. No runtime memory-abort policy is introduced. |
 | 4. Compact existing bin filtering | Preserve Whole Bin and the existing multi-bin chain. Unused retained graphs, detailed resolution records and clip metadata are removed under C15/C16/C26. C11 now accepts existing filter snapshots surviving bin removal for now; automatic contribution removal/recalculation is deferred. The approved K/R cleanup removes exact timeline and dormant sequence-selection machinery while retaining source-track safeguards. Exact sequence filtering and its additional UI/interpretation remain deferred under C100. | Existing Whole Bin results and filter-chain behavior are checked, failed loads preserve old filters and valid unmatched references apply normally. Unloading releases the loaded record; compact applied snapshots remain. Rescan resets filters while keeping bins loaded. Exact chosen-sequence used-set acceptance is not a V1 gate. |
-| 5. Presentation and support | Show/search/export Source Path; replace Database Status with both boolean columns/views. Keep precompute category/effect/Volume filtering and remaining conveniences. Apply always-visible enabled tabs, Search-only Escape, narrowed folder inputs, startup/manual drive discovery, FDA/Monospace removal and automatic 30-day diagnostic/crash cleanup. Preserve technical Console content while reviewing delivery/flush overhead. | Behavior checks follow C48/C49/C60–C96. Enabled empty tabs remain visible; dialog Escape retains its proper dismissal/cancellation priority. Cleanup preserves recent history and protected operation journals. Removed controls and source-basename storage have no active consumer left. |
+| 5. Presentation and support | Show/search/export Source Path; replace Database Status with both boolean columns/views. Keep precompute category/effect/Volume filtering and remaining conveniences. Apply always-visible enabled tabs, Search-only Escape, narrowed folder inputs, startup/manual drive discovery, FDA/Monospace removal and automatic 30-day diagnostic/crash cleanup. Preserve technical Console content and current log delivery; overhead investigation is deferred by the 18 October choice. | Behavior checks follow C48/C49/C60–C96. Enabled empty tabs remain visible; dialog Escape retains its proper dismissal/cancellation priority. Cleanup preserves recent history and protected operation journals. Removed controls and source-basename storage have no active consumer left. |
 | 6. Full workload verification | Exercise the retained product after the new ownership/acquisition paths are in place. Compare usable-table time, source reads and whole-process memory against stage 1, including subsequent sorting/filtering/bin loading, operations, export and rescan. Validate the 300,000-file database-free workload on its representative NEXIS setup. | Correct physical inventory and selected metadata, clean cancellation, retained operation safety and measured scale behavior. Explain any remaining memory/time costs and limitations. The below-10-GB aim is measured, never enforced by aborting the scan. |
 
 Parser strategy, queue/concurrency bounds, shared-string/index layouts and reference
@@ -2920,30 +2963,33 @@ Copland to preserve the histories explicitly removed under C15. Retain focused
 defensive tests for source changes and invalid reads, labelled as authored controls;
 use genuine sources to establish format/workflow behavior.
 
-Outstanding V1 validation includes retained Whole Bin behavior, broader Original
-Bin format coverage, broader compact-row equivalence and complete-process scale
-measurement. Exact chosen-sequence used-angle/source-track interpretation is
-deferred under C100. Cancellation has local phase-boundary controls in the
-17 October checkpoint; representative workload acceptance remains necessary. The inspected
-local corpus and authored defensive tests cannot certify every format or real
-workflow. Borrowing other bins, AVB metadata enrichment, mid-scan source switching,
+The 18 October comparison checks retained Whole Bin behavior and compact rows on
+its bounded sample. Remaining V1 acceptance extends those checks to broader real
+media, including Original Bin and database/header fallback, and measures the
+complete process at representative scale. Exact chosen-sequence interpretation
+is deferred under C100. Cancellation has local phase-boundary controls in the
+17 October checkpoint; representative workload acceptance remains necessary.
+Borrowing other bins, AVB metadata enrichment, mid-scan source switching,
 Clip Duration and permanent inspection histories remain outside the agreed target.
 
 The [12 October verification](technical-verification-2026-10-12.md) recorded
 broad AVB traversal, conflict-only AVB Original Bin fallback, loss of completed
 metadata on early cancel and incorrect completion reporting on late cancel.
 The AVB row fallback has since been removed under C16. The 17 October cancellation
-checkpoint addresses the early-retention and late-reporting gaps. The following
-Original Bin checkpoint corrects missing-field fallback using existing readers;
-unestablished MXF interpretation and exact AVB traversal remain outstanding.
+checkpoint addresses the early-retention and late-reporting gaps. The Original
+Bin checkpoint corrects missing-field OMF fallback using existing readers. The
+user subsequently exempted missing Original Bin alone from MXF header scheduling;
+no unestablished MXF mapper is a V1 requirement. Exact sequence traversal remains
+deferred under C100.
 The compact safety-check migration above passes its bounded equivalence checks.
 Ordinary row history removal is now implemented, with current fields and the
 master-association union preserved at that checkpoint. Clip Duration has since
 been removed under C13, and C51 now retains one selected MasterMobId with its
 associated details under the verified 15 October checkpoint. The complete Source
 Path replacement and its requested-field fallback are verified on 16 October.
-The remaining compact-row and requested-field acquisition work still requires its
-own verification, along with representative cancellation/scale acceptance. Three
+The compact-row and requested-field acquisition changes have focused regression
+coverage; broader real-media and representative cancellation/scale acceptance
+remain. Three
 controlled local baseline trials cover 267 database-free
 complete media copies and demonstrated the former asynchronous export retaining
 the prior scan through one frozen CSV row. The direct-export implementation above
@@ -2951,7 +2997,9 @@ has replaced that workflow.
 The 18 October local comparison now verifies the retained scan → bin filter →
 export → rescan workflow on the exact-content sample, including a separate
 native-window check with Console/disk-log export confirmation. It measures local
-whole-process memory and timing; production startup costs, human input latency,
-Media Composer ground truth and NEXIS scale remain unverified. These findings
-refine the checks for the stages above without adding new product features or a
-competing implementation plan.
+whole-process memory and timing. The subsequent startup/support check verifies
+normal local startup functionality, not startup cost or human input latency.
+Representative Windows/NEXIS acceptance remains outstanding. Media Composer
+exact used-set comparison belongs to the deferred sequence feature. These
+findings refine the checks for the stages above without adding new product
+features or a competing implementation plan.

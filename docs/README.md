@@ -18,6 +18,8 @@ requirements. Use the behaviour guide and implementation to check what is built.
 
 ## Technical references and validation
 
+- [18 October startup/support check](../Project%20Copland/startup-support-acceptance-2026-10-18.md):
+  native startup, diagnostic retention, Reveal Diagnostics and disposable crash/recovery ordering.
 - [18 October local workflow comparison](../Project%20Copland/local-workflow-comparison-2026-10-18.md):
   scan, bin filtering, export and rescan, with measured timing/memory limits.
 - [18 October disposable file-operation check](../Project%20Copland/file-operation-acceptance-2026-10-18.md):
