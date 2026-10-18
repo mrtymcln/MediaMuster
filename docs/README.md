@@ -2,6 +2,9 @@
 
 ## Start here
 
+- [Project Bella](../Project%20Bella/README.md): fresh scanner and parser effort;
+  requirements and implementation choices are being agreed. The current app still
+  uses MediaEngine.
 - [Project Copland](../Project%20Copland/README.md): active V1 scope, confirmed
   decisions and remaining work. Proposals and open questions are not approval.
 - [How MediaMuster works](current-behaviour.md): current behaviour in plain English,
@@ -30,6 +33,10 @@ requirements. Use the behaviour guide and implementation to check what is built.
 - [AVB parser](avb-parser.md) and [AVB error examples](avb-error-examples.md).
 - [Usage-code identification](usage-code-identification.md): provenance for Avid classification rules.
 - [PMR reader evidence](../Project%20Canon/fresh-pmr-reader-2026-10-03.md): framing, text and index coverage.
+- [Bella PMR research](reviews/2026-10-18-bella-pmr/REVIEW.md): native reader/writer,
+  six live databases and the hypothetical MDVx scanner with four concurrent jobs.
+- [PMR Project display](reviews/2026-10-18-bella-pmr/project-display.md): the actual
+  Project cache, chooser, encoding conversion and Qt drawing path.
 - [Precompute details](effect-details-preview.md): classification, display and filter design.
 
 Validation records describe the source revision, platform and scenarios actually

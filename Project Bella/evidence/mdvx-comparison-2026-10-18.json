@@ -1,0 +1,87 @@
+{
+  "date": "2026-10-18",
+  "architecture": "arm64",
+  "binary": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+  "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+  "method": "Hopper pseudo-C cross-checked against nm, Objective-C metadata, and otool disassembly",
+  "decompiledFunctionCount": 34,
+  "rawDisassembly": "/private/tmp/mdvx-2026-10-18-ops/arm64-annotated.txt",
+  "confirmed": [
+    {
+      "finding": "Scan queue permits six concurrent PMR operations",
+      "evidence": [
+        "+[MDVxStatusViewController MDVxMAXThreads]",
+        "-[AppDelegate applicationDidFinishLaunching:]"
+      ]
+    },
+    {
+      "finding": "Main scan dispatcher enqueues PMR work only; the PMR operation requires nonzero declared item count before folder listing",
+      "evidence": [
+        "-[MDVxCore AddFile_TypeSelector:]",
+        "-[MDVxPMRScannerOperation main]"
+      ]
+    },
+    {
+      "finding": "Database readers use NSData buffers and direct offset/property access; item records retain selected fields and copied PMR slices",
+      "evidence": [
+        "-[PMRFile dataWithContentsOfURL:]",
+        "-[MDVxOMFI openFile:withIndicator:]",
+        "-[MDVxOMFI pDataFor:]",
+        "-[MDVxDatabaseItem setupWithPmrBytes:length:PMRVersion:usebyteswap:]"
+      ]
+    },
+    {
+      "finding": "Ordinary PMR enrichment uses the MDB reader object when present; without it, existing unnamed files can enter an optional ScanMXF-gated fallback",
+      "evidence": [
+        "-[MDVxPMRScannerOperation main]",
+        "-[MDVxDatabaseItem addinfoToItemFromCorrespondingFile]"
+      ]
+    },
+    {
+      "finding": "MDB matching uses an eight-byte UID key extracted at identity offset 16",
+      "evidence": [
+        "-[UIDtoBentoObj initWithUID:]",
+        "-[MDVxOMFI addInfoToItem:]"
+      ]
+    },
+    {
+      "finding": "Ordinary AVB filtering uses raw marker scanning with eight-byte media identifiers",
+      "evidence": [
+        "-[AVBFile getUIDS]",
+        "-[MDVxCore AVBArray_IntersectWith:]"
+      ]
+    },
+    {
+      "finding": "Action queue is serial; Delete tries system Trash and has an optional permanent-delete fallback",
+      "evidence": [
+        "-[MDVxActionManager init]",
+        "-[MDVxActionOperation deleteAction]"
+      ]
+    }
+  ],
+  "currentMediaMuster": [
+    "PMR/MDB input is already buffered in RAM; old claims of repeated database-file seeks are obsolete.",
+    "Ordinary table rows already discard full scan/evidence ownership after preparation.",
+    "Database and media candidate acquisition loops remain sequential.",
+    "Physical discovery is independent of database membership.",
+    "Header scheduling requires more complete qualified fields and can open headers for missing Source Path.",
+    "Temporary typed property/object/projection/evidence work remains before compact row delivery.",
+    "Whole Bin filtering follows actual root-listed object relationships.",
+    "Scan progress emits an event per source/file; disk diagnostics flush each write."
+  ],
+  "limits": [
+    "No MDVx workload was executed and no comparative runtime benchmark was run.",
+    "Decompiler output is approximate pseudo-C; variable types and register expressions can be wrong.",
+    "Inspected paths do not establish exhaustive correctness, malformed-input safety, or coverage of all workflows.",
+    "Six is a configured scan-operation maximum, not a guarantee of six active threads or a sixfold speedup.",
+    "No app-specific MDVx persisted operation recovery, latest-job Undo or Rebalance equivalent was identified; absence is not formally proven.",
+    "The method named OMFiTOCReader02 reports unsupported based on a Bento-container version branch; this does not independently prove all OMF revision-2 schema support is absent."
+  ],
+  "evidenceStorage": "Raw Hopper pseudo-C and disassembly were captured in temporary local directories during the 18 October inspection. These paths may expire; retained records identify the binary, methods and verified conclusions.",
+  "mdvxIdentityFollowup": {
+    "date": "2026-10-18",
+    "evidence": "mdvx-identities-2026-10-18.json",
+    "report": "docs/reviews/2026-10-18-bella-pmr/REVIEW.md#mdvx-handling-of-filemobid-and-mastermobid",
+    "conclusion": "MDVx stores full modern IDs but compares an eight-byte excerpt for MDB and ordinary bin matching. Ordinary duplicate-row equality also requires the same path."
+  }
+}

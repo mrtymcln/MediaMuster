@@ -12,6 +12,9 @@ not certify later builds. Current ownership and behavior are in the
 | [Operational review](2026-09-22-current-code/operations.md) | File-operation/recovery findings. |
 | [Console wording](2026-09-24-console/console-review.md) | Accepted wording decisions. |
 | [Dialog/progress review](2026-10-08-dialog-wording/REVIEW.md) | Pending wording proposals for scans, operations, bins and Rebalance. |
+| [Bella PMR research](2026-10-18-bella-pmr/REVIEW.md) | Native PMR reader/writer, genuine records and hypothetical MDVx scanning with four concurrent jobs. |
+| [PMR Project display](2026-10-18-bella-pmr/project-display.md) | Actual PMR cache-to-chooser-to-Qt path, system-codec selection and distinct bin Project column. |
+| [PMR modification value](2026-10-18-bella-pmr/modification-value.md) | Native change checks, Unix/historical clock conventions, Bella's decision to ignore DTM and FileMobId/MasterMobId terminology. |
 
 Direct source evidence under the September/October research folders includes
 Avid disassembly, genuine-file observations, Media Tool output and format

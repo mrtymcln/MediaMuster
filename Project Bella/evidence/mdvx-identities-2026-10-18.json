@@ -1,0 +1,395 @@
+{
+  "date": "2026-10-18",
+  "purpose": "Verify how installed MDVx reads, stores and uses PMR FileMobId/MasterMobId, separately from proposed Bella behavior.",
+  "binary": {
+    "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+    "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+    "version": "0.2",
+    "build": "4073",
+    "architecture": "arm64"
+  },
+  "method": "Existing Hopper pseudo-C re-read and cross-checked with bounded native instructions, Objective-C methods and actual Mach-O comparator-block bindings. No runtime scan.",
+  "readingAndStorage": {
+    "date": "2026-10-18",
+    "scope": "Read-only arm64 static instruction/Objective-C metadata verification against earlier Hopper exports. No MDVx scan/private API execution or repository/media changes.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "shortVersion": "0.2",
+      "bundleVersion": "4073"
+    },
+    "parser": {
+      "function": "-[MDVxDatabaseItem setupWithPmrBytes:length:PMRVersion:usebyteswap:]",
+      "address": "0x100030450",
+      "acceptedVersions": [
+        2,
+        8,
+        16
+      ],
+      "retainedRecord": "Makes NSMutableData copy of complete passed PMR record slice at0x1000304b0; stores retained buffer at item+0x70.",
+      "widthFlag": "Internal DB_SizeofUID is2 forv2 and8 forv8/v16 (32-bit word count, not byte count)."
+    },
+    "identityStorage": {
+      "metadata": "Objective-C MDVxUUID union has UMIDx[32C]; filePackageUID atitem+0x8, materialPackageUID atitem+0x28; each32bytes.",
+      "modernFileCopy": "0x100030538 loads32bytes (ldp q0,q1);0x100030540 stores atfilePackageUID.",
+      "modernMasterCopy": "0x1000306d8 loads32bytes;0x1000306e0 stores atmaterialPackageUID.",
+      "legacyFileCopy": "v2 copies8bytes at0x10003051c..520 intoitem+0x18 (offset16 withinfilePackageUID).",
+      "legacyMasterCopy": "v2 copies8bytes at0x1000306bc..6c0 intoitem+0x38 (offset16 withinmaterialPackageUID).",
+      "legacyWrapper": "The inspected init/parser do not construct Avid prefix/suffix around the legacy core; init sets pointer fields to the two preallocated32byte slots.",
+      "byteOrder": "Copies ID bytes unchanged in this PMR routine. usebyteswap swaps16bit filename/project length words at0x100030558..568 and0x1000305e8..5f8; no ID field swapping occurs here. checkUUID only checks/logs prefix for modernIDs."
+    },
+    "formatting": {
+      "function": "-[MDVxDatabaseItem getStringForUID:]",
+      "address": "0x1000310b0",
+      "modern": "Formats all32bytes ashex at0x100031128..17c, inserting hyphens every4bytes.",
+      "legacy": "Formats8corebytes fromIDoffset16 at0x1000311a8..1f0.",
+      "storedVsDisplay": "Item storage is binary; getFileUIDString/getMaterialUIDString request readable string formatting."
+    },
+    "comparisons": {
+      "hash": "0x100030140: XOR two32bitwords atitem+0x18/+0x1c, which areFileIDbytes16..23.",
+      "isEqualByUUID": "0x1000302e0: hashcheck then compare two32bitwords atFileIDoffset16/20 (0x100030338..364). Doesnotcomparefull32byteFileID orMasterID.",
+      "isEqual": "0x1000301b0: callsisEqualByUUID thenrequires nonnull identicalDB_itemPath.path at0x100030288. Thus inspectedordinaryitemequality includespath, notonlythe8bytekey.",
+      "isLessByUUID": "0x100030390: sorts onthetwo32bitFileIDcorewords."
+    },
+    "mdbLookup": {
+      "method": "-[MDVxOMFI addInfoToItem:]",
+      "address": "0x100064794",
+      "master": "DB_materialPackageUID+0x10 at0x100064804..4810 feedsUIDtoBentoObj initWithUID, then mastertree lookup0x100064820.",
+      "file": "DB_filePackageUID+0x10 at0x100064864..4870 feedsUIDtoBentoObj, thenfiletree lookup0x100064888.",
+      "keyCtor": "-[UIDtoBentoObj initWithUID:]0x10006163c copiesone64bitword at0x100061670..674.",
+      "matchingScope": "Both MDB lookups use8bytes atoffset16 ofID; they do not comparefull32bytes."
+    },
+    "qualifications": [
+      "Fullmodern IDs are retained and displayed; describingMDVxasstoringonly8byteswouldbeincorrect. Itslookup/equalitykeysare8bytes.",
+      "This doesnot proveallmatchingpathsare8bytebased; AVB/referencesareauditedseparately.",
+      "No realcollision between distinct32byteIDs wasdemonstrated. Theinspectedcomparisoncannot distinguishIDsdifferingonlyoutsideits8bytecore.",
+      "No independent endian-format runtime test or workload benchmark wasexecuted."
+    ],
+    "artifacts": [
+      {
+        "method": "-[MDVxDatabaseItem init]",
+        "path": "/private/tmp/bella-mdvx-ids-20261018-parse/MDVxDatabaseItem_init.txt",
+        "bytes": 944,
+        "sha256": "48b45d98fcefc1a40e3914b71ec60c221b0445939045d08846500e3c9652d8fd"
+      },
+      {
+        "method": "-[MDVxDatabaseItem setupWithPmrBytes:length:PMRVersion:usebyteswap:]",
+        "path": "/private/tmp/bella-mdvx-ids-20261018-parse/MDVxDatabaseItem_setupWithPmrBytes_length_PMRVersion_usebyteswap.txt",
+        "bytes": 6842,
+        "sha256": "bcdd8d53960af6b75d2274a533964da006518c03672d414118c07ad1e4714c35"
+      },
+      {
+        "method": "-[MDVxDatabaseItem checkUUID]",
+        "path": "/private/tmp/bella-mdvx-ids-20261018-parse/MDVxDatabaseItem_checkUUID.txt",
+        "bytes": 2295,
+        "sha256": "44d369d4cbe1ac3cff3ba58d81c148f2dfd13a1d262b3724da5c6174419adafc"
+      },
+      {
+        "method": "-[MDVxDatabaseItem hash]",
+        "path": "/private/tmp/bella-mdvx-ids-20261018-parse/MDVxDatabaseItem_hash.txt",
+        "bytes": 120,
+        "sha256": "bb00b7deac99df29fb5099f7fe1919f8c635839cd163d6b58b67ad1eb7cbb3be"
+      },
+      {
+        "method": "-[MDVxDatabaseItem isEqual:]",
+        "path": "/private/tmp/bella-mdvx-ids-20261018-parse/MDVxDatabaseItem_isEqual.txt",
+        "bytes": 3240,
+        "sha256": "82014c48ed8f0fa821cbe67732d816f5441c7662b5b576fcdbc102ef2f63550a"
+      },
+      {
+        "method": "-[MDVxDatabaseItem isEqualByUUID:]",
+        "path": "/private/tmp/bella-mdvx-ids-20261018-parse/MDVxDatabaseItem_isEqualByUUID.txt",
+        "bytes": 1662,
+        "sha256": "4786f11fd88782e03e8f5234d2795f9c0170d6d59486a3809a53f9a6d202d176"
+      },
+      {
+        "method": "-[MDVxDatabaseItem isLessByUUID:]",
+        "path": "/private/tmp/bella-mdvx-ids-20261018-parse/MDVxDatabaseItem_isLessByUUID.txt",
+        "bytes": 1832,
+        "sha256": "0fa41a30f2aa13db6156176743d423c8926d8adb10dbb44df94a63197475140a"
+      },
+      {
+        "method": "-[MDVxDatabaseItem getStringForUID:]",
+        "path": "/private/tmp/bella-mdvx-ids-20261018-parse/MDVxDatabaseItem_getStringForUID.txt",
+        "bytes": 4116,
+        "sha256": "970dc4cc4988357b41d7da9c6295d65f952b6662db8b153588a9a5fd208879d7"
+      },
+      {
+        "method": "-[UIDtoBentoObj initWithUID:]",
+        "path": "/private/tmp/bella-mdvx-ids-20261018-parse/UIDtoBentoObj_initWithUID.txt",
+        "bytes": 760,
+        "sha256": "4462894da9a48a23ba3f5686ef16771a6bd87c803b96c6e6c11be8f00de16fed"
+      },
+      {
+        "method": "-[MDVxOMFI addInfoToItem:]",
+        "path": "/private/tmp/bella-mdvx-ids-20261018-parse/MDVxOMFI_addInfoToItem.txt",
+        "bytes": 9424,
+        "sha256": "c1097f5a0d8ab935e22379d9737a89b4a7e0f0676ed2959d827684f241978b3a"
+      }
+    ]
+  },
+  "useAndComparisons": {
+    "date": "2026-10-18",
+    "scope": "Read-only installed MDVx 0.2 build4073 arm64 ID use; native instructions cross-checked with existing Hopper pseudo-C; no runtime scan.",
+    "binary": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+    "binarySha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+    "conclusions": [
+      "MDVx uses the ID roles similarly to the proposed Bella flow: file identity locates file metadata; material/master identity locates master-owned name/classification metadata.",
+      "The inspected MDB and ordinary AVB matching uses only an eight-byte excerpt at offset16 of the 32-byte IDs, not full32byte comparisons.",
+      "Ordinary item duplicate equality requires equal eight-byte file-ID excerpt and equal file path; different-path copies are not equal under this comparator.",
+      "Ordinary AVB filtering extracts eight-byte identities by scanning bytes for fixed markers; this method does not traverse the actual bin source/track graph.",
+      "Bin filtering compares file identity excerpt and iterates all equal-key inventory entries, so matching copies at different paths can all pass.",
+      "No measured speed benefit or exhaustive correctness/coverage is established."
+    ],
+    "MDBLookup": {
+      "function": "-[MDVxOMFI addInfoToItem:]",
+      "address": "0x100064794",
+      "masterExcerpt": "DB_materialPackageUID then +0x10 at0x100064800..0x100064810, lookup0x100064820",
+      "fileExcerpt": "DB_filePackageUID then +0x10 at0x100064860..0x100064870, lookup0x100064888",
+      "keyConstructor": "UIDtoBentoObj initWithUID0x10006163c reads oneuint64 and stores it atobject+8",
+      "keyEquality": "UID_to_bentotree_EQ_block_block_invoke0x1000616c8 compares keyuint64s",
+      "masterOutputs": [
+        "setDB_NameInBin at0x1000648ec",
+        "setDB_usageCode branchfollowing masterlookup"
+      ],
+      "fileOutputs": [
+        "getProjectNameForObjAt for fileobject",
+        "compression/sample-rate/bit-depth details from fileobject"
+      ],
+      "enabledBy": "MDVxPMRScannerOperation reads ScanMDB preference and opens sibling msmMMOB.mdb or fallback amaMMOB.mdb; calls addInfoToItem for PMRrows"
+    },
+    "filenameAssociation": {
+      "function": "-[MDVxPMRScannerOperation main]",
+      "address": "0x10003a1c0",
+      "meaning": "Constructs item path from PMR containing directory plus parsed managed-media filename (property DB_ClipName in this implementation), stores DB_itemPath and validatePath; does not locate filesystem copies by FileMobID alone."
+    },
+    "equality": {
+      "hash": "0x100030140 XORs file-ID core32bitwords atself+0x18/0x1c",
+      "idOnly": "isEqualByUUID0x1000302e0 checks hash then compares fileUID+0x10 and+0x14 at0x100030338..0x100030364; other24bytes andMasterID are not compared",
+      "fullItem": "isEqual0x1000301b0 first callsisEqualByUUID then compares DB_itemPath.path strings at0x100030288",
+      "sort": "isLessByUUID0x100030390 sorts same two32bitfileUIDwords; database_LT block adds paths as tie-breaker"
+    },
+    "makeUnique": {
+      "address": "0x10004b9c8",
+      "entryInsertion": "0x10004ba4c TreeInsertNode for eachitem",
+      "output": "0x10004ba8c Tree_v2_GetNonEqDataArray replaces inventoryarray",
+      "blocks": [
+        {
+          "kind": "dedupEQ",
+          "literalPool": "0x1000fe8b0",
+          "pointer": "0x1000e9300",
+          "blockInvoke": "0x10004a69c"
+        },
+        {
+          "kind": "dedupLT",
+          "literalPool": "0x1000fe8b8",
+          "pointer": "0x1000e9320",
+          "blockInvoke": "0x10004a6a4"
+        }
+      ],
+      "limit": "Exact retained winner among equivalent duplicate entries not established here."
+    },
+    "ordinaryAVB": {
+      "getUIDS": "0x1000368c4",
+      "markerCheck": "0x100036924..0x100036940 scans for markerword0x4d534d4c and 16bit0x0202",
+      "copy": "0x100036960..0x100036970 copies eightbytes after marker into DatabaseItem fileUID+0x10",
+      "handoff": "AVBArray_IntersectWith0x10004b138 collects getUIDS arrays and callsapplyFilter at0x10004b27c",
+      "applyFilter": "0x10004c5d8 builds a tree of inventoryitems using ID-only equality/ordering",
+      "search": "0x10004c7a0 searches for bin-extracted ID;0x10004c800 TreefindNextEQ iterates allmatchingentries",
+      "blocks": [
+        {
+          "kind": "binEQ",
+          "literalPool": "0x1000fe8c0",
+          "pointer": "0x1000e9340",
+          "blockInvoke": "0x10004a7bc"
+        },
+        {
+          "kind": "binLT",
+          "literalPool": "0x1000fe8c8",
+          "pointer": "0x1000e9360",
+          "blockInvoke": "0x10004a7c4"
+        }
+      ],
+      "limit": "AMA bin paths exist separately; this describes ordinary getUIDS path, not exhaustive AVB workflows."
+    },
+    "artifacts": [
+      {
+        "symbol": "-[MDVxDatabaseItem hash]:",
+        "path": "/private/tmp/mdvx-id-use-20261018/MDVxDatabaseItem_hash.txt",
+        "bytes": 120,
+        "sha256": "bb00b7deac99df29fb5099f7fe1919f8c635839cd163d6b58b67ad1eb7cbb3be"
+      },
+      {
+        "symbol": "-[MDVxDatabaseItem isEqual:]:",
+        "path": "/private/tmp/mdvx-id-use-20261018/MDVxDatabaseItem_isEqual.txt",
+        "bytes": 3240,
+        "sha256": "82014c48ed8f0fa821cbe67732d816f5441c7662b5b576fcdbc102ef2f63550a"
+      },
+      {
+        "symbol": "-[MDVxDatabaseItem isEqualByUUID:]:",
+        "path": "/private/tmp/mdvx-id-use-20261018/MDVxDatabaseItem_isEqualByUUID.txt",
+        "bytes": 1662,
+        "sha256": "4786f11fd88782e03e8f5234d2795f9c0170d6d59486a3809a53f9a6d202d176"
+      },
+      {
+        "symbol": "-[MDVxDatabaseItem isLessByUUID:]:",
+        "path": "/private/tmp/mdvx-id-use-20261018/MDVxDatabaseItem_isLessByUUID.txt",
+        "bytes": 1832,
+        "sha256": "0fa41a30f2aa13db6156176743d423c8926d8adb10dbb44df94a63197475140a"
+      },
+      {
+        "symbol": "-[MDVxCore makeUnique]:",
+        "path": "/private/tmp/mdvx-id-use-20261018/MDVxCore_makeUnique.txt",
+        "bytes": 3838,
+        "sha256": "d2a8d8b47f54f921bfa446df16ec30adc6b1d147acc72a58e402ac808922dbee"
+      },
+      {
+        "symbol": "-[MDVxCore applyFilter:]:",
+        "path": "/private/tmp/mdvx-id-use-20261018/MDVxCore_applyFilter.txt",
+        "bytes": 6956,
+        "sha256": "b765705de72bceb1e9709b75f885e295689965c679cdb996c3281e5b0f9fa7e9"
+      },
+      {
+        "symbol": "-[MDVxCore AVBArray_IntersectWith:]:",
+        "path": "/private/tmp/mdvx-id-use-20261018/MDVxCore_AVBArray_IntersectWith.txt",
+        "bytes": 3962,
+        "sha256": "0f7e6f7e030b510a627ea69b57b11720b647b409c9e7260b98eaadf52680183a"
+      },
+      {
+        "symbol": "-[AVBFile getUIDS]:",
+        "path": "/private/tmp/mdvx-id-use-20261018/AVBFile_getUIDS.txt",
+        "bytes": 2958,
+        "sha256": "6c8f3d428b006053a84374bbdc3bb4f617e15136370884f569cb37832df8a14e"
+      },
+      {
+        "symbol": "-[UIDtoBentoObj initWithUID:]:",
+        "path": "/private/tmp/mdvx-id-use-20261018/UIDtoBentoObj_initWithUID.txt",
+        "bytes": 760,
+        "sha256": "4462894da9a48a23ba3f5686ef16771a6bd87c803b96c6e6c11be8f00de16fed"
+      },
+      {
+        "symbol": "_UID_to_bentotree_EQ_block_block_invoke:",
+        "path": "/private/tmp/mdvx-id-use-20261018/UID_to_bentotree_EQ_block_block_invoke.txt",
+        "bytes": 1583,
+        "sha256": "7764802677d92610241468e39a2e5a6c15046781e478d67a5d9dfb28bc8e97dd"
+      },
+      {
+        "symbol": "-[MDVxOMFI addInfoToItem:]:",
+        "path": "/private/tmp/mdvx-id-use-20261018/MDVxOMFI_addInfoToItem.txt",
+        "bytes": 9424,
+        "sha256": "c1097f5a0d8ab935e22379d9737a89b4a7e0f0676ed2959d827684f241978b3a"
+      },
+      {
+        "symbol": "_database_EQ_block_block_invoke:",
+        "path": "/private/tmp/mdvx-id-use-20261018/database_EQ_block_block_invoke.txt",
+        "bytes": 105,
+        "sha256": "ee81f2f8f5a4b085fe0e1342b40d573df599977d6ac61ce527e83e06f917f3f4"
+      },
+      {
+        "symbol": "_database_LT_block_block_invoke_2:",
+        "path": "/private/tmp/mdvx-id-use-20261018/database_LT_block_block_invoke_2.txt",
+        "bytes": 3003,
+        "sha256": "e0c7d489e1d8c0c77ba0ff8654ef953f4c19f8ea09ae2c373c103e42a09fc3aa"
+      },
+      {
+        "symbol": "_databaseUIDD_EQ_block_block_invoke_3:",
+        "path": "/private/tmp/mdvx-id-use-20261018/databaseUIDD_EQ_block_block_invoke_3.txt",
+        "bytes": 117,
+        "sha256": "12f04e7821026a370f8c6f3444438c91702dcc45d8b9372b370aae5111e03686"
+      },
+      {
+        "symbol": "_databaseUIDD_LT_block_block_invoke_4:",
+        "path": "/private/tmp/mdvx-id-use-20261018/databaseUIDD_LT_block_block_invoke_4.txt",
+        "bytes": 116,
+        "sha256": "8bd57406ca454f0a1c3149f0c3fca8b90e94e3fbdfef6e207ef38a74ee0fb5ad"
+      }
+    ],
+    "limits": [
+      "Static inspected paths only; no new decompilation, timed scan, workload benchmark or live MDVx action.",
+      "ID parsing/byte normalization is assigned to another agent; this receipt focuses use/comparisons.",
+      "Eight-byte key equality can equate fullIDs differing outside that excerpt; no claim that such collision occurred in user media.",
+      "No conclusion that MasterID is never used elsewhere; here it supplies master metadata but not ordinary AVB membership comparator."
+    ]
+  },
+  "genuineSampleKeyCheck": {
+    "date": "2026-10-18",
+    "scope": "Eight-byte lookup-excerpt comparison in previously inspected version-16 records, with file and master namespaces kept separate. This is not a proof for arbitrary Avid IDs.",
+    "findings": {
+      "file_id": {
+        "distinctFullIds": 2412,
+        "distinctEightByteKeys": 2412,
+        "keysWithMoreThanOneFullId": 0,
+        "collisionDetails": {}
+      },
+      "master_id": {
+        "distinctFullIds": 1340,
+        "distinctEightByteKeys": 1340,
+        "keysWithMoreThanOneFullId": 0,
+        "collisionDetails": {}
+      }
+    }
+  },
+  "comparisonWithBellaProposal": {
+    "similarity": "Binary ID reading; folder+filename physical association; FileMobId for file metadata and MasterMobId for associated-master metadata.",
+    "difference": "The inspected MDVx MDB and ordinary bin matching compare only the eight-byte ID excerpt; Bella retains complete identities for the approved scanner/parser work. The existing Bin Filter system remains unchanged and outside Bella.",
+    "status": "The user approved complete ID reading and the path-plus-FileMobId duplicate rule for the scanner/parser. Internal storage details remain open; no Bin Filter changes are required."
+  },
+  "limits": [
+    "No timed scan or performance advantage measured.",
+    "No claim that excerpt collisions occurred in the inspected media; none found in the file-ID or master-ID sample namespace.",
+    "Different full IDs outside the compared excerpt cannot be distinguished by the inspected short-key comparators.",
+    "Exact winner among equivalent duplicate items remains unestablished.",
+    "Ordinary AVB marker scanning and ID filtering were traced; separate AMA paths are not exhaustively covered.",
+    "The byte-swap observation is scoped to the PMR item parser, not every MDVx identity-reading path."
+  ],
+  "approvedBellaIdentityRules": {
+    "date": "2026-10-18",
+    "status": "User-approved requirements; not implemented",
+    "authority": "Project Bella/README.md#agreed-identity-and-duplicate-rules",
+    "fullIds": "Read complete FileMobId and MasterMobId, not only an eight-byte excerpt of modern IDs. Respect complete legacy representations when falling back.",
+    "kelpieId": "Retain current internal MediaMuster scan-session row identifier, independent of Avid IDs.",
+    "samePathAndSameFileMobId": "Ignore duplicate inventory entry; keep existing row and KelpieId.",
+    "differentPathAndSameFileMobId": "Keep each row with its own unique KelpieId.",
+    "scope": "Inventory row duplication; eligible metadata may still enrich the kept row. No new cross-scan persistence specified.",
+    "unresolved": [
+      "Unknown/unreadable IDs in duplicate comparisons",
+      "Path aliases and case ambiguities",
+      "Detailed internal ID-storage representation"
+    ],
+    "samePathConflictingFileMobIds": "For release one, the user explicitly assumes this cannot happen. Do not add conflict-handling machinery."
+  },
+  "binFilterScopeClarification": {
+    "date": "2026-10-18",
+    "status": "User scope clarification; existing Bin Filter system remains unchanged",
+    "authority": "Project Bella/README.md#agreed-identity-and-duplicate-rules",
+    "userInstruction": "This scope is for the Scanner/parser system. We are leaving the Bin Filter system alone, just confirmed that MDVX also uses FileMobId to filter Bins.",
+    "scope": "Bella replaces the scanner/parser system only. The Bin Filter system is outside Bella and remains unchanged; no new bin algorithm, matching or per-row behavior is required.",
+    "comparisonConfirmed": "The inspected MDVx bin filtering uses FileMobId identity; that comparison does not approve changes to MediaMuster Bin Filter behavior."
+  },
+  "approvedBellaSetFallback": {
+    "date": "2026-10-18",
+    "status": "User-approved release-one policy; not implemented",
+    "authority": "Project Bella/README.md#agreed-pmr-reading-rules",
+    "userInstruction": "For now, the first release of the app: lets keep it basic and straight forward. If an entry is damaged, abandon the set and fall back to another set. How should we determine this?",
+    "damagedRecord": "Any damaged record makes its entire set unusable; do not salvage individual records or combine metadata from the two sets.",
+    "setSelection": "Prefer a usable version-16 set. If it is missing or unusable, use the older set only if that whole set is usable.",
+    "neitherUsable": "Use no PMR metadata when neither set is usable. Keep the physical media-file inventory independently.",
+    "validationStatus": "User-approved release-one damage and usability checks on 18 October 2026; not implemented.",
+    "validationApproval": "OK, let's lock those checks in for Bella.",
+    "approvedChecks": {
+      "completeEntry": "Every declared record must contain all bytes required by its supported version: complete IDs, length words and counted text payloads, and the four bounded skipped modification bytes. A short record makes its whole set unusable.",
+      "lengthsAndCounts": "Stored text lengths and record counts must fit the available data; an overrun or impossible count makes the whole set unusable.",
+      "version16Filename": "Require the verified v16 filename framing and strict UTF-8. Its two reserved prefix bytes must be present and the first zero; the native PMR helper does not constrain the second. Invalid framing or UTF-8 makes the whole set unusable.",
+      "emptyFilename": "An empty or null Filename makes the whole set unusable because it cannot associate that entry with a physical file. This is a Bella usability rule, not proof of structural corruption.",
+      "emptySet": "A set with no entries supplies no usable PMR metadata; fall back to the other usable set."
+    },
+    "notDamage": [
+      "Blank Project",
+      "Fields legitimately absent in older versions, including v1 Project and MasterMobId",
+      "Different entry counts between the older and version-16 sets",
+      "A database reference to a physical file that has since disappeared"
+    ],
+    "safeVersion16Location": "The older set physically precedes v16. Follow its lengths and counts safely to locate v16; if damaged framing makes that boundary unknowable, ignore PMR metadata rather than search for a plausible version word. Keep physical inventory.",
+    "validationLimit": "These checks cannot detect every incorrect value with a valid representation. MacRoman accepts every byte, so successful decoding does not prove a Project character is correct. Ignored modification values are not inspected for semantic validity."
+  }
+}

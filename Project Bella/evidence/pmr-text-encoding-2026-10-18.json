@@ -1,0 +1,857 @@
+{
+  "date": "2026-10-18",
+  "purpose": "PMR legacy text encoding follow-up; no production decoding policy implemented",
+  "userConfirmation": {
+    "statement": "ß was the character I typed into that project name, on a Mac-based Avid.",
+    "basis": "Direct user message in this chat on 18 October 2026",
+    "scope": "Intended character and Mac origin of the observed project text, not a declaration of every PMR writer"
+  },
+  "native": {
+    "date": "2026-10-18",
+    "scope": "Read-only arm64 static analysis; no private API execution, no source or media edits.",
+    "identities": {
+      "mediaComposer": {
+        "app": "/Applications/Avid Media Composer/AvidMediaComposer.app",
+        "library": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "version": "26.8.0.58987",
+        "build": "26.8.0",
+        "size": 73527536,
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+        "uuid": "UUID: 9CC3CF45-9F28-380C-949C-C7B321D0858A (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib\nUUID: D55FFCED-FD76-3667-99B8-C9A84180173E (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "uuid_error": "",
+        "file": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib: Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit dynamically linked shared library x86_64] [arm64]\n/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib (for architecture x86_64):\tMach-O 64-bit dynamically linked shared library x86_64\n/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib (for architecture arm64):\tMach-O 64-bit dynamically linked shared library arm64",
+        "file_error": ""
+      },
+      "avidCore": {
+        "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+        "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+        "uuid": "UUID: F10B2E1F-07ED-31AC-8DDD-C2122C7B4405 (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore\nUUID: EDC22A12-1101-3C73-A57C-4256A82633F9 (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+        "segments": [
+          [
+            "__TEXT",
+            0,
+            3735552,
+            0,
+            3735552
+          ],
+          [
+            "__DATA_CONST",
+            3735552,
+            147456,
+            3735552,
+            147456
+          ],
+          [
+            "__DATA",
+            3883008,
+            196608,
+            3883008,
+            147456
+          ],
+          [
+            "__LINKEDIT",
+            4079616,
+            3014656,
+            4030464,
+            3002480
+          ]
+        ],
+        "vtable_slots": [
+          {
+            "class": "CoreMacFileLocator",
+            "vtable": "0x39d110",
+            "method_offset": "0x310",
+            "raw_pointer": "0x100000000e329c"
+          },
+          {
+            "class": "CoreMacFileLocator",
+            "vtable": "0x39d110",
+            "method_offset": "0x318",
+            "raw_pointer": "0x100000000e33f4"
+          },
+          {
+            "class": "CoreMacFileLocator",
+            "vtable": "0x39d110",
+            "method_offset": "0x320",
+            "raw_pointer": "0x100000000e33fc"
+          },
+          {
+            "class": "CoreMacFileLocator",
+            "vtable": "0x39d110",
+            "method_offset": "0x328",
+            "raw_pointer": "0x100000000e3418"
+          },
+          {
+            "class": "CoreMacFileLocator",
+            "vtable": "0x39d110",
+            "method_offset": "0x330",
+            "raw_pointer": "0x100000000e3434"
+          },
+          {
+            "class": "AFileLocator",
+            "vtable": "0x39e360",
+            "method_offset": "0x310",
+            "raw_pointer": "0x80100000000004ff"
+          },
+          {
+            "class": "AFileLocator",
+            "vtable": "0x39e360",
+            "method_offset": "0x318",
+            "raw_pointer": "0x80100000000004ff"
+          },
+          {
+            "class": "AFileLocator",
+            "vtable": "0x39e360",
+            "method_offset": "0x320",
+            "raw_pointer": "0x80100000000004ff"
+          },
+          {
+            "class": "AFileLocator",
+            "vtable": "0x39e360",
+            "method_offset": "0x328",
+            "raw_pointer": "0x80100000000004ff"
+          },
+          {
+            "class": "AFileLocator",
+            "vtable": "0x39e360",
+            "method_offset": "0x330",
+            "raw_pointer": "0x80100000000004ff"
+          }
+        ]
+      }
+    },
+    "conclusions": [
+      "User confirmation proves the observed Mac-created project A7 byte represents U+00DF sharp-s, consistent with MacRoman for that specimen.",
+      "The current native Mac PMR filename converter is not hardcoded to MacRoman. It passes selector5 into shared conversion helpers, which call CFStringGetSystemEncoding.",
+      "The same library has an explicit fixedMacRoman selector1; PMR current-Mac wrappers use selector5 instead.",
+      "Native PMR Project is a counted legacy byte string in both sets; ReadString/WriteString do not encode/transcode it or attach a codepage tag.",
+      "One traced Project producer path obtains _PJ/PROJNAME through CoreAttrList::FindString. UTF8 attribute kind4 is converted to current Mac system encoding; legacy string kind2 is copied without transcoding. Those bytes are cached and written unchanged to PMR."
+    ],
+    "filenameReadChain": [
+      {
+        "binary": "libameLibrary",
+        "address": "0x4475f0",
+        "operation": "ReadPmrRec legacy filename calls CurrentMacMBCSEncodingToUnicodeString"
+      },
+      {
+        "binary": "AvidCore",
+        "address": "0x12cc2c,0x12cc64",
+        "operation": "CurrentMacMBCSEncodingToUnicodeString passes ScriptEncoding selector5 to EncodedToUTF16"
+      },
+      {
+        "binary": "AvidCore",
+        "address": "0x12bb64..0x12bb88",
+        "operation": "EncodedToUTF16 uses fixed table only for selectors1..3, otherwise calls CFStringGetSystemEncoding"
+      },
+      {
+        "binary": "AvidCore",
+        "address": "0x12bba0",
+        "operation": "CFStringCreateWithBytes consumes bytes under returned encoding"
+      }
+    ],
+    "filenameWriteChain": [
+      {
+        "binary": "libameLibrary",
+        "address": "0x451278",
+        "operation": "WritePmrRec legacy filename calls UTF16ToCurrentMacMBCSEncoding"
+      },
+      {
+        "binary": "AvidCore",
+        "address": "0x12c5d0",
+        "operation": "UTF16ToCurrentMacMBCSEncoding supplies selector5"
+      },
+      {
+        "binary": "AvidCore",
+        "address": "0x12bae8",
+        "operation": "UTF16ToEncoded selector5 calls CFStringGetSystemEncoding"
+      },
+      {
+        "binary": "AvidCore",
+        "address": "0x12baf4..0x12bb00",
+        "operation": "Pass returned encoding to CFStringRefToEncoded; output uses CFStringGetBytes"
+      }
+    ],
+    "fixedSelectors": {
+      "fixedEncodingTableAddress": "0x2f16e8",
+      "selector1": "0x0",
+      "selector2": "0x500",
+      "selector3": "0x8000100",
+      "encodedBytes": "000000000005000000010008",
+      "symbolNamesFromSDK": [
+        "kCFStringEncodingMacRoman",
+        "kCFStringEncodingWindowsLatin1",
+        "kCFStringEncodingUTF8"
+      ]
+    },
+    "projectChain": [
+      {
+        "binary": "libameLibrary",
+        "address": "0x44e9dc",
+        "operation": "ScanMXFFileToCache calls CMGetProjectName"
+      },
+      {
+        "binary": "libameLibrary",
+        "address": "0x282bd4..0x282bf0",
+        "operation": "CMGetProjectName queries _PJ via AAttrList FindString; PROJNAME fallback at0x282bfc..0x282c1c"
+      },
+      {
+        "binary": "libameLibrary",
+        "address": "0x1775e0",
+        "operation": "AAttrList FindString delegates to CoreAttrList FindString"
+      },
+      {
+        "binary": "AvidCore",
+        "address": "0x6dd64..0x6dddc",
+        "operation": "CoreAttrList FindString branches on attribute kind2/4. Kind2 calls FindStringOnly; kind4 reads UTF8 then calls UTF8ToCurrentMacMBCSEncoding"
+      },
+      {
+        "binary": "AvidCore",
+        "address": "0x6de74..0x6de88",
+        "operation": "FindStringOnly copies legacy kind2 bytes via strncpy and terminates"
+      },
+      {
+        "binary": "AvidCore",
+        "address": "0x12c870",
+        "operation": "UTF8ToCurrentMacMBCSEncoding passes selector5 to UTF8ToEncoded"
+      },
+      {
+        "binary": "AvidCore",
+        "address": "0x12ba00",
+        "operation": "UTF8ToEncoded selector5 calls CFStringGetSystemEncoding"
+      },
+      {
+        "binary": "libameLibrary",
+        "address": "0x44e9fc,0x44ec24..0x44ec34",
+        "operation": "Copy project to buffer and pass buffer x5 through cache operation virtual+0x328"
+      },
+      {
+        "binary": "libameLibrary",
+        "address": "0x452f88,0x453040..0x4530e0",
+        "operation": "AddCacheEntry copies/interns project bytes; empty project can use current project name"
+      },
+      {
+        "binary": "libameLibrary",
+        "address": "0x451194..0x4511b8",
+        "operation": "INFO2REC retrieves interned project and strcpy to record+0x240"
+      },
+      {
+        "binary": "libameLibrary",
+        "address": "0x451378,0x4513e4",
+        "operation": "WritePmrRec writes project via WriteString in v16 and legacy branches"
+      },
+      {
+        "binary": "AvidCore",
+        "address": "0x25ed0..0x25f20",
+        "operation": "WriteString writes uint16 strlen then bytes, with no encoding conversion or tag"
+      }
+    ],
+    "projectVirtualDispatch": [
+      {
+        "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "vtable": "0x122dcc8",
+        "vtableAddressPointOffset": 16,
+        "slot": "0x1e8",
+        "raw": "0x100000001775e0",
+        "targetLow48": "0x1775e0"
+      },
+      {
+        "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+        "vtable": "0x397180",
+        "vtableAddressPointOffset": 16,
+        "slot": "0x230",
+        "raw": "0x1000000006dd10",
+        "targetLow48": "0x6dd10"
+      },
+      {
+        "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "vtable": "0x12bdf90",
+        "vtableAddressPointOffset": 16,
+        "slot": "0x328",
+        "raw": "0x10000000452f60",
+        "targetLow48": "0x452f60"
+      },
+      {
+        "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+        "vtable": "0x397180",
+        "vtableAddressPointOffset": 16,
+        "slot": "0x150",
+        "raw": "0x1000000006de28",
+        "targetLow48": "0x6de28"
+      }
+    ],
+    "sdk": {
+      "header": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreFoundation.framework/Headers/CFString.h",
+      "encodingConstants": {
+        "MacRoman": "0x0",
+        "WindowsLatin1": "0x500",
+        "UTF8": "0x08000100"
+      },
+      "CFStringGetSystemEncodingComment": "The default encoding for the system; untagged 8-bit characters are usually in this encoding",
+      "lines": [
+        103,
+        107,
+        108,
+        113,
+        352
+      ]
+    },
+    "otherEncodingPathsNotToConfuse": [
+      "DefaultCodePage0x34170 calls GetApplicationTextEncoding then GetTextEncodingBase and caches it. This was not the conversion path invoked by the traced PMR currentMac helpers.",
+      "StringEncodingConversions initializer0x12dde8 calls GetApplicationTextEncoding and stores result at0x3e030c, but traced selector5 helpers directly call CFStringGetSystemEncoding rather than reading that global."
+    ],
+    "limits": [
+      "Only installed Mac arm64 Media Composer26.8.0.58987 examined here; no Windows binary or historical release inspected.",
+      "No codepage tag identified in PMR framing or fields. CF system encoding can require external runtime/system knowledge.",
+      "Project kind2 pass-through can preserve bytes from an earlier producer; current writer does not normalize every existing legacy value.",
+      "The current machine CF encoding and official Apple function semantics are being independently researched by parent; not inferred only from function names.",
+      "No claim that every historical PMR is MacRoman follows from these native paths."
+    ],
+    "temporaryDisassemblyManifest": [
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/AStream-ReadString-arm64.txt",
+        "size": 4310,
+        "sha256": "d841325913e6e1306ea9c61349c56750cbf02f4c3f151cf69cbe7f78b2f01408"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/ReadPmrRec-arm64.txt",
+        "size": 25942,
+        "sha256": "3c738d22696640dd3b165a48dc7147c48fb39a882abd1930dd715f1052f99801"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/ScanMXFFileToCache-arm64.txt",
+        "size": 38103,
+        "sha256": "6e199b66036fd866424a5bd53e06376d2467a8d63c8d5069acfb260c35af6c3e"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/WritePmrRec-arm64.txt",
+        "size": 8112,
+        "sha256": "8f2e7a5b29d95cdd6e1661971106d7eebef013035a2d1fbd37a345a9196c0c90"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__GLOBAL__sub_I_StringEncodingConversions.cpp.txt",
+        "size": 515,
+        "sha256": "0c88c98500bcb0af6814d79e3211cc745dc78321ea9b1c9a8f5bf59c2cf22b91"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__Z13UTF8ToEncodedPKcm14ScriptEncodingPcmPb.txt",
+        "size": 2617,
+        "sha256": "f5e616c1938b1ec0cbc3dd7a838531488330def57a0b59f2c27713738f166f41"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__Z14EncodedToUTF16PKcm14ScriptEncodingPDsm.txt",
+        "size": 2656,
+        "sha256": "0454679188b882e308eff00c0506870aadfe54ca6f63e9ae3dffea23e2602c71"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__Z14UTF16ToEncodedPKDsm14ScriptEncodingPcmPb.txt",
+        "size": 2507,
+        "sha256": "eebabdc28c1d2bb46433c4d211bf85091e6ed322281453599b3a7f8c13234722"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__Z15DefaultCodePagev.txt",
+        "size": 784,
+        "sha256": "8d2f857cd511adc9d69dff09cf9e61bfdbe4e7fef5c88097b272ea7fd8bf9b89"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__Z15FindProjectNameP12ACompositioniPcm.txt",
+        "size": 4071,
+        "sha256": "b6adcaf3b8cde7be19558c086a4118165554a14841b8ff4cb3b026ad70b1c2a0"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__Z16CMGetProjectNameP12ACompositionPcm.txt",
+        "size": 1847,
+        "sha256": "58c38f8ab168ebb1c996a5e56652315eeabf9acbbc72e3c56e93d87f118e77f2"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__Z16CMSetProjectNameP12ACompositionPc.txt",
+        "size": 1331,
+        "sha256": "40313027da7a35423c8582a63543c08abe061d5e9066b6bd5241e03415a402f0"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__Z19EncodeToUTF16StringPKc14ScriptEncoding.txt",
+        "size": 3568,
+        "sha256": "23aeefeaea61ec5b441f0da69377bbdd7fac5e35de04525c7c8c79d8f3ef0db0"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__Z24MultiByteCodePageIsInUsev.txt",
+        "size": 554,
+        "sha256": "606503435532b3568b423befd24c842fbb2375120026b800d5417e8e35c2dde7"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__Z28UTF8ToCurrentMacMBCSEncodingPKhPcmPb.txt",
+        "size": 1048,
+        "sha256": "eb6147604e78800b0ced0e1b4977ddc85a04a222d6ae66ddce6b27bac373a610"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__Z29UTF16ToCurrentMacMBCSEncodingPKDsPcmPb.txt",
+        "size": 1063,
+        "sha256": "7005131b8102feb97dda6497fca3bcdf3105e15574582529fb337ab47cab409d"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__Z37CurrentMacMBCSEncodingToUnicodeStringPKc.txt",
+        "size": 3055,
+        "sha256": "bf4790e2622c0fcc2df662f18768b31e036a561f5225db531a58a824a5e0cf57"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__Z37UnicodeStringToCurrentMacMBCSEncodingRKN11icu_72_Avid13UnicodeStringEPcmPb.txt",
+        "size": 1060,
+        "sha256": "158ee24ba7b4dfeed07f5312ddfc8361ce6a2c7058a37f27fd2f4b53f5779972"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__Z8INFO2RECRK8fileInfoR11icsPMRrec_t.txt",
+        "size": 3338,
+        "sha256": "1dbbea7e203ae10ccd749257c7883c295fe0d5e6f486a9f3c4167ef4f18e8d5b"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__ZN12CoreAttrList10FindStringEPKcPcmPh.txt",
+        "size": 2965,
+        "sha256": "d4d0a713df04486d6157e52be2ef1b63a9919f83a9f66014d619ba6f4555f680"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__ZN12CoreAttrList14FindStringOnlyEPKcPcmPh.txt",
+        "size": 1358,
+        "sha256": "e4212e2532cd6b5cf2a7b4f371dac86cbaff11bc101720328e75fb4504b7ae5d"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__ZN12CoreAttrList20AddMBCSStringAsUTF16EPKcPKDs.txt",
+        "size": 3325,
+        "sha256": "5397ecb97c08ba227b6701b4017430e1955c6dfba810ff409687e97d0fff6664"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__ZN12CoreAttrList9AddStringEPKcS1_.txt",
+        "size": 1545,
+        "sha256": "45e3f97cd05df786d0acd65b6ab3c3df7fb5a44bf642980230902c0e19139f6f"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__ZN12_GLOBAL__N_120CFStringRefToEncodedEPK10__CFStringjPcmPb.txt",
+        "size": 3968,
+        "sha256": "3473f02ddafebbdf44ae53e86489bc828967466071ee97c6798a69d39870a42e"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__ZN19MSMDBMediaStreamMgr13AddCacheEntryEP17MSMMediaDirRecord13_aafMCMobID_tS2_PDsPKclhxxhh.txt",
+        "size": 11632,
+        "sha256": "3d7fd60ba5dc2842aae9fd0b9cf24d69e74532464f9e0dd5e4aeea7c21b910b8"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__ZN19MSMDBMediaStreamMgr17GetCurProjectNameEPci.txt",
+        "size": 469,
+        "sha256": "3ed874f654cf42efdd2bd7c64301e0b415e39aff9fdcffe036bccb5035ea36ed"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__ZN19MSMDBMediaStreamMgr17SetCurProjectNameEPc.txt",
+        "size": 827,
+        "sha256": "c84c3d86a52fd956af5cbbedbdd6473709057a171f310acccb5e146838724c56"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__ZN7AStream11WriteStringEPKcS1_.txt",
+        "size": 3461,
+        "sha256": "9e05764971ec247068988207e2d2079a7df41197276c5ca2c8b95e9dd533366c"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__ZN9AAttrList10FindStringEPKcPcmPh.txt",
+        "size": 301,
+        "sha256": "cac47a0ebf6479f9e9452d137b0cb8edd799f8b73cf4d29a6a109350c68dff40"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-encoding-20261018-binary/__ZN9AAttrList9AddStringEPKcS1_b.txt",
+        "size": 980,
+        "sha256": "07fd29c1c4b8d655bbd53e141b0529c12d504a1e22408772d6c190a416bc9e23"
+      }
+    ]
+  },
+  "decompilation": [
+    {
+      "name": "CurrentMacMBCSEncodingToUnicodeString",
+      "slug": "CurrentMacMBCSEncodingToUnicodeString",
+      "address": 1231868,
+      "blocks": 7,
+      "hopper_name": "__Z37CurrentMacMBCSEncodingToUnicodeStringPKc",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/CurrentMacMBCSEncodingToUnicodeString.c",
+      "characters": 1256,
+      "addressHex": "0x12cbfc",
+      "temporaryOutputSha256": "64a583333c2122d3dd97fd6ac137b767231017fcf9fa66e4583fcd2978191c32"
+    },
+    {
+      "name": "UTF16ToCurrentMacMBCSEncoding",
+      "slug": "UTF16ToCurrentMacMBCSEncoding",
+      "address": 1230240,
+      "blocks": 3,
+      "hopper_name": "__Z29UTF16ToCurrentMacMBCSEncodingPKDsPcmPb",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/UTF16ToCurrentMacMBCSEncoding.c",
+      "characters": 323,
+      "addressHex": "0x12c5a0",
+      "temporaryOutputSha256": "0198a542136aab8c1b878b86dbf96491b667826be4a751b1c48916f2a9db33cc"
+    },
+    {
+      "name": "EncodedToUTF16",
+      "slug": "EncodedToUTF16",
+      "address": 1227580,
+      "blocks": 13,
+      "hopper_name": "__Z14EncodedToUTF16PKcm14ScriptEncodingPDsm",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/EncodedToUTF16.c",
+      "characters": 1611,
+      "addressHex": "0x12bb3c",
+      "temporaryOutputSha256": "38a2fc1ce389f57be0e0448ec49b89459d1a5c7b2caf62a79e8dae22aae6c39b"
+    },
+    {
+      "name": "UTF16ToEncoded",
+      "slug": "UTF16ToEncoded",
+      "address": 1227356,
+      "blocks": 13,
+      "hopper_name": "__Z14UTF16ToEncodedPKDsm14ScriptEncodingPcmPb",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/UTF16ToEncoded.c",
+      "characters": 1247,
+      "addressHex": "0x12ba5c",
+      "temporaryOutputSha256": "efb1f865aeaace4e335e69f7814ae9e6771fad95f5f50822a2cbcee34c575f78"
+    },
+    {
+      "name": "EncodeToUTF16String",
+      "slug": "EncodeToUTF16String",
+      "address": 1229168,
+      "blocks": 13,
+      "hopper_name": "__Z19EncodeToUTF16StringPKc14ScriptEncoding",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/EncodeToUTF16String.c",
+      "characters": 2479,
+      "addressHex": "0x12c170",
+      "temporaryOutputSha256": "377893462c28816500a0e3fb0c8269fdbde65ec5d684005a135a4709e7ab8bd9"
+    },
+    {
+      "name": "UnicodeStringToCurrentMacMBCSEncoding",
+      "slug": "UnicodeStringToCurrentMacMBCSEncoding",
+      "address": 1232276,
+      "blocks": 6,
+      "hopper_name": "__Z37UnicodeStringToCurrentMacMBCSEncodingRKN11icu_72_Avid13UnicodeStringEPcmPb",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/UnicodeStringToCurrentMacMBCSEncoding.c",
+      "characters": 434,
+      "addressHex": "0x12cd94",
+      "temporaryOutputSha256": "928dc3ffe72fc50075d9b901be27b2793b018d00db26807a1272bfe19ee20306"
+    },
+    {
+      "name": "StringEncodingConversionsInit",
+      "slug": "StringEncodingConversionsInit",
+      "address": 1236456,
+      "blocks": 1,
+      "hopper_name": "__GLOBAL__sub_I_StringEncodingConversions.cpp",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/StringEncodingConversionsInit.c",
+      "characters": 63,
+      "addressHex": "0x12dde8",
+      "temporaryOutputSha256": "6595b6f995d5055597dafc6fe86907447a0a994fe61042ae624f35a032263657"
+    },
+    {
+      "name": "CoreAttrListFindString",
+      "slug": "CoreAttrListFindString",
+      "address": 449808,
+      "blocks": 8,
+      "hopper_name": "__ZN12CoreAttrList10FindStringEPKcPcmPh",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/CoreAttrListFindString.c",
+      "characters": 1950,
+      "addressHex": "0x6dd10",
+      "temporaryOutputSha256": "9be6df5db2dd49c9168d68313bfbcac1a2be85dec7d57251ee0ecae4a882789d"
+    },
+    {
+      "name": "UTF8ToCurrentMacMBCSEncoding",
+      "slug": "UTF8ToCurrentMacMBCSEncoding",
+      "address": 1230912,
+      "blocks": 3,
+      "hopper_name": "__Z28UTF8ToCurrentMacMBCSEncodingPKhPcmPb",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/UTF8ToCurrentMacMBCSEncoding.c",
+      "characters": 167,
+      "addressHex": "0x12c840",
+      "temporaryOutputSha256": "227bb3835543bc74327843c6f042648b29513abf5e0746b92cc5840f561ba4fe"
+    },
+    {
+      "name": "UTF8ToEncoded",
+      "slug": "UTF8ToEncoded",
+      "address": 1227124,
+      "blocks": 12,
+      "hopper_name": "__Z13UTF8ToEncodedPKcm14ScriptEncodingPcmPb",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/UTF8ToEncoded.c",
+      "characters": 1306,
+      "addressHex": "0x12b974",
+      "temporaryOutputSha256": "bf69230ed1d75bc52045e92db558ad5862902deba04f49a008647eb7c37467e9"
+    }
+  ],
+  "publicCoreFoundationProbe": {
+    "systemEncoding": 0,
+    "encodingName": "Western (Mac OS Roman)",
+    "macRomanConstant": 0,
+    "byteA7Unicode": 223,
+    "unicodeHex": "U+00DF",
+    "decodedCharacter": "ß",
+    "timestampUtc": "2026-10-18T04:01:31.798517+00:00",
+    "macOsVersion": "15.8.2",
+    "architecture": "arm64",
+    "sourceSha256": "de8f85339f01c574a6e0a92d18ba55ffd0ec892a925525cbc0261260b20826e9",
+    "scope": "Read-only public CoreFoundation API probe in a standalone process; no Media Composer private APIs executed and no language settings changed."
+  },
+  "observedMacRomanProjectDecodings": [
+    {
+      "rawHex": "7a5465a7745f31303830695f35392e3934",
+      "macRoman": "zTeßt_1080i_59.94",
+      "logicalRecords": 84
+    },
+    {
+      "rawHex": "7a5465a7745f373230705f32332e393736",
+      "macRoman": "zTeßt_720p_23.976",
+      "logicalRecords": 52
+    },
+    {
+      "rawHex": "7a5465a7745f31303830705f32332e393736",
+      "macRoman": "zTeßt_1080p_23.976",
+      "logicalRecords": 88
+    },
+    {
+      "rawHex": "7a5465a7745f4e5453435f333069",
+      "macRoman": "zTeßt_NTSC_30i",
+      "logicalRecords": 28
+    },
+    {
+      "rawHex": "7a5465a7745f31303830705f32392e3937",
+      "macRoman": "zTeßt_1080p_29.97",
+      "logicalRecords": 88
+    },
+    {
+      "rawHex": "7a5465a7745f50414c5f323570",
+      "macRoman": "zTeßt_PAL_25p",
+      "logicalRecords": 21
+    }
+  ],
+  "officialDocumentation": {
+    "date": "2026-10-18",
+    "scope": "Primary-source web investigation of PMR legacy encoding, MacRoman, Avid international character support, code pages and public PMR schema; no repository changes.",
+    "searchCoverage": {
+      "queriesIssued": 36,
+      "topics": [
+        "PMR/msmFMID MacRoman encoding",
+        "PMR MBCS/UTF-8/Unicode/character sets",
+        "Avid knowledge base MacRoman/ANSI/CleanEncode",
+        "Avid developer PMR encoding",
+        "International Character Support locale and language kits",
+        "modern Media Composer MacRoman documentation",
+        "public PMR format and code research"
+      ],
+      "qualification": "Searches are broad but cannot certify the entire internet or private support/developer knowledge bases. No public PMR wire-schema declaring one universal legacy code page was located."
+    },
+    "sources": [
+      {
+        "title": "Media Composer and Film Composer Version 11.7 Release Notes",
+        "url": "https://resources.avid.com/SupportFiles/attach/MC11_7RN.pdf",
+        "documentYear": 2003,
+        "printedPages": [
+          35,
+          36
+        ],
+        "retrieval": "Full PDF opened; relevant text inspected.",
+        "claim": "Official historical confirmation of MacRoman convention for Macintosh Avid element names. Subsequent page describes English plus one locale and double-byte operating systems.",
+        "limit": "Not a PMR byte-level schema and not an unconditional definition for every locale or future version."
+      },
+      {
+        "title": "Avid Unity MediaNetwork File Manager Setup Guide",
+        "url": "https://resources.avid.com/SupportFiles/attach/File_Manager_SUG.pdf",
+        "documentDate": "June 2005",
+        "printedPages": [
+          81,
+          83,
+          84,
+          86
+        ],
+        "retrieval": "Full PDF opened; international character support pages inspected.",
+        "claim": "For MediaNetwork3.1 and earlier, European-language filenames created by Avid Composer Products on both Macintosh and Windows used MacRoman. Asian-language Avid clients after installing a language kit used Windows-native language encoding, such as ANSI Japanese. Later MediaNetwork stores Unicode and clients transcode according to platform.",
+        "limit": "File Manager filename behavior and history, not a declaration of the exact PMR Project field. It is direct evidence that Avid legacy text is not universally Roman across all locales."
+      },
+      {
+        "title": "Avid Unity MediaManager Release3.7 Release Notes",
+        "url": "https://resources.avid.com/SupportFiles/attach/MM_RNv3_7web.pdf",
+        "documentDate": "May 2003",
+        "printedPages": [
+          15,
+          16,
+          17
+        ],
+        "retrieval": "Full PDF opened; relevant text inspected.",
+        "claim": "CleanEncode changes filename encoding between MacRoman and ANSI. The notes distinguish Windows Latin1, MacOS9 MacRoman and MacOSX UTF8 filenames, and instruct rebuilding PMR/MDB after converted filenames.",
+        "limit": "This concerns filename and migration behavior. It does not establish that modern PMR Project bytes are UTF8; native Project paths are separate."
+      },
+      {
+        "title": "International Character Support",
+        "url": "https://community.avid.com/cfs-filesystemfile.ashx/__key/CommunityServer.Components.PostAttachments/00.00.31.48.97/ICS.pdf",
+        "documentDate": "October2006",
+        "printedPages": [
+          3,
+          6,
+          7,
+          8
+        ],
+        "retrieval": "Avid-authored PDF on Avid community server, full PDF opened.",
+        "claim": "Documents English plus one locale, MacOSX locale selection, Big5 input on Macintosh, and cross-platform MacRoman/ANSI character restrictions. Mentions computer names in PMR files, without specifying the PMR field encodings.",
+        "limit": "Broad ICS guide, not PMR wire format."
+      },
+      {
+        "title": "MacRoman Latin-1 Character Differences",
+        "url": "https://kb.avid.com/pkb/articles/en_US/Knowledge/en234857",
+        "lastUpdated": "2012-10-25",
+        "retrieval": "Search index body retrieved; direct simplified URL returned web-tool internal error. Attachment was independently opened.",
+        "claim": "Official Avid KB warns about characters that differ between MacRoman and Latin1 when moving Macintosh projects to Windows."
+      },
+      {
+        "title": "MacRoman Characters not in Latin-1 ANSI Encoding",
+        "url": "https://resources.avid.com/SupportFiles/attach/69906_MacRoman_Latin-1_chardiffs.htm",
+        "retrieval": "Full HTML attachment opened.",
+        "claim": "Published Avid list of MacRoman characters not representable in Latin1."
+      },
+      {
+        "title": "Apple Mac OS Roman to Unicode mapping",
+        "url": "https://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/ROMAN.TXT",
+        "retrieval": "Full plain text opened; header and A7 row inspected.",
+        "claim": "Apple original mapping defines A7 as U+00DF LATIN SMALL LETTER SHARP S. MacRoman applies to US/British/German/French/Italian/Spanish and other western localizations; other Mac encoding variants exist.",
+        "exactMapping": {
+          "encodedHex": "a7",
+          "unicodeHex": "00df",
+          "character": "ß"
+        },
+        "limit": "Defines MacRoman exactly; does not establish which arbitrary PMR chose it."
+      },
+      {
+        "title": "Avid Media Database files msFMID.pmr and msmMMOB.mdb",
+        "url": "https://kb.avid.com/pkb/articles/en_US/Knowledge/en262645",
+        "lastUpdated": "2022-12-02",
+        "retrieval": "Search index body retrieved; direct simplified URL returned web-tool internal error.",
+        "claim": "Avid describes PMR as quick index for file MOB/media online status and describes its cache/update role.",
+        "limit": "No text-code-page schema in the article."
+      }
+    ],
+    "otherLeads": [
+      {
+        "title": "Media Composer Editing Guide2020.6",
+        "url": "https://resources.avid.com/SupportFiles/attach/Media_Composer_Editing_Guide_2020.6.pdf",
+        "retrieval": "Search-index relevant passage only; full open returned internal error.",
+        "claim": "Repeats MacRoman/Latin1 cross-platform naming restrictions and Big5 instructions. Do not cite as a full-byte-schema source."
+      },
+      {
+        "title": "Media Composer Editing Guide8.9",
+        "url": "https://resources.avid.com/SupportFiles/attach/Media_Composer_Editing_Guide_8.9.pdf",
+        "retrieval": "Search-index relevant passage only.",
+        "claim": "Repeats cross-platform MacRoman/Latin1 restrictions and PMR computer-name caution."
+      }
+    ],
+    "conclusion": {
+      "established": "User-confirmed Mac-created ß stored as A7 plus Apple mapping establishes MacRoman interpretation for this specimen. Avid official documentation independently supports the historical Western/Roman convention.",
+      "notEstablished": "The legacy set label does not establish a single universal code page for every region, platform and historical writer. No public PMR schema stating that universal rule was found.",
+      "recommendedWording": "MacRoman is established for the supplied Western Mac specimen and documented Avid Roman naming convention; native binary tracing should determine exact codec selection and supported locale exceptions."
+    }
+  },
+  "independentPublicResearch": {
+    "date": "2026-10-18",
+    "scope": "Read-only public source, Apple primary documentation and mapping-table search. No public PMR wire-format encoding specification found in the sources inspected; not a claim of exhaustive internet coverage.",
+    "pythonPmrReader": {
+      "repository": "https://github.com/DJFio/python-PMRReader",
+      "commit": "05eed91f7815141c6add437d4e86cdd17a583964",
+      "sourceUrl": "https://github.com/DJFio/python-PMRReader/blob/05eed91f7815141c6add437d4e86cdd17a583964/PMR.py",
+      "pmrPyHistory": [
+        {
+          "sha": "fc95c812b085f0328eac1aa71fd87e8864722cad",
+          "date": "2017-06-26T20:33:22Z",
+          "message": "Add files via upload"
+        }
+      ],
+      "localEqualsPinnedSource": true,
+      "sha256": "f02e8f743c65bd70eb552ee0a484b6a5d773800aa3d1a63b924a1ddecbff628b",
+      "findings": [
+        "Line22 sets __module_encodind__ to iso8859_5.",
+        "Lines255-256 apply that codec when exporting filename/project to XML. Record reads return raw Python2 byte strings.",
+        "Lines81-84 detect version16 marker and explicitly stop as unsupported.",
+        "No MacRoman declaration or proof of PMR universal encoding."
+      ]
+    },
+    "publicCppMdv": {
+      "repository": "https://github.com/DJFio/MDV",
+      "commit": "749bc41336cd5c46f2867e87234aa82ddef1cf16",
+      "sourceUrl": "https://github.com/DJFio/MDV/blob/749bc41336cd5c46f2867e87234aa82ddef1cf16/snippets/pmrtool.cpp",
+      "findings": [
+        "Lines103 and118 copy raw filename/project bytes into char arrays.",
+        "No text codec declaration or decoding performed by this snippet.",
+        "This public snippet is not the installed Objective-C MDVx implementation."
+      ]
+    },
+    "appleMapping": {
+      "url": "https://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/ROMAN.TXT",
+      "author": "Apple Computer, Inc.",
+      "findings": [
+        "A7 maps to Unicode00DF LATIN SMALL LETTER SHARP S at line280.",
+        "MacRoman is a legacy Mac encoding, transcoded to/from Unicode for many modern uses.",
+        "Used for US, British, German and many Western European localizations; separate mapping tables exist for other Mac encodings and variants."
+      ],
+      "limit": "Defines the codec, not PMR format usage."
+    },
+    "appleSystemEncoding": {
+      "url": "https://developer.apple.com/documentation/CoreFoundation/CFStringGetSystemEncoding%28%29",
+      "findings": [
+        "Returns OS default text encoding; documentation says determined by preferred language.",
+        "Documentation distinguishes application encoding and refers to GetApplicationTextEncoding; legacy application strings can use MacRoman or MacJapanese."
+      ],
+      "limit": "Only establishes meaning of the OS API. Must trace actual Avid call and selection logic before applying to PMR."
+    },
+    "appleApplicationEncoding": {
+      "header": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Headers/MacApplication.h",
+      "lines": "732-746",
+      "findings": [
+        "GetApplicationTextEncoding returns application primary encoding.",
+        "Selection order: bundle chosen lproj, bundle development region, vers-resource region, OS current localization.",
+        "Typical examples are MacRoman or MacJapanese."
+      ]
+    },
+    "avidHistoricalDocumentationLead": {
+      "url": "https://resources.avid.com/SupportFiles/attach/MM_RNv3_7web.pdf",
+      "pagesPrinted": "15-18",
+      "findings": [
+        "CleanEncode converts filenames between MacRoman and ANSI; documentation distinguishes Windows Latin1, OS9 MacRoman, and OSX UTF8 for filenames.",
+        "Documentation says to rebuild PMR/MDB after conversion to recognize changed names.",
+        "English-plus-one-locale and double-byte localization requirements are documented.",
+        "PMR machine-name restriction and MacRoman/ANSI interchange guidance appear together."
+      ],
+      "limit": "Historical workflow guidance, not a field-by-field PMR schema and not proof that every PMR legacy Project is fixed MacRoman."
+    },
+    "searchLeads": [
+      "https://resources.avid.com/SupportFiles/attach/MCFC_RNv11_8Mac.pdf",
+      "https://resources.avid.com/SupportFiles/attach/Media_Composer_Editing_Guide_v5.5.pdf",
+      "https://resources.avid.com/SupportFiles/attach/XpressSupplement_v5_0.pdf",
+      "https://community.avid.com/cfs-filesystemfile.ashx/__key/CommunityServer.Components.PostAttachments/00.00.31.48.97/ICS.pdf"
+    ],
+    "otherPotentialFutureReference": {
+      "url": "https://github.com/lawson-tanner/pymdb",
+      "pypi": "https://pypi.org/project/python-mdb/",
+      "limit": "MDB-only project, not audited and not a PMR encoding authority."
+    },
+    "conclusion": "The user-confirmed Mac A7/ß specimen supports MacRoman for that writer/source. Public evidence does not make PMR legacy a universally fixed MacRoman format. Binary selection and locale mappings remain the decisive pending proof."
+  },
+  "currentMediaMuster": {
+    "legacyText": "ASCII decoded directly, otherwise valid UTF8 inferred at projection; no MacRoman fallback enabled for PMR",
+    "sourcePaths": [
+      "src/mediaengine/pmrreader.cpp:120",
+      "src/mediaengine/pmrprojection.cpp:62",
+      "src/mediaengine/projection.h:40"
+    ],
+    "consequence": "The observed standalone A7 is not decoded from PMR even though the intended MacRoman sharp-s is now established. A displayed Project may still come from another source."
+  },
+  "conclusions": [
+    "MacRoman is the established decoding for the observed Mac-created project pattern and documented Roman Avid naming convention.",
+    "Current native Mac PMR conversion asks CFStringGetSystemEncoding; it does not select the library fixedMacRoman selector.",
+    "The standalone public API probe on this machine returned encoding0 Western (Mac OS Roman) and decoded A7 as U+00DF.",
+    "Project Unicode-to-legacy conversion follows the system codec, while already-legacy attributes can pass through unchanged. Both PMR sets store the same Project bytes.",
+    "A universal all-platform/all-locale MacRoman PMR schema is not established; official Avid sources describe locale-specific exceptions.",
+    "No production source or media was changed; web source text was not executed."
+  ],
+  "officialAppleApiRetrieval": {
+    "publicPage": "https://developer.apple.com/documentation/corefoundation/cfstringgetsystemencoding()",
+    "officialDocumentationDataUrl": "https://developer.apple.com/tutorials/data/documentation/corefoundation/cfstringgetsystemencoding().json",
+    "bytes": 30384,
+    "sha256": "c9fef1321ae62536256629d87a4bec3e0ad5434b321d0a488fb352a736af0742",
+    "verifiedDiscussion": "The OS default encoding is determined by the preferred language setting. The discussion distinguishes application encoding and gives MacRoman and MacJapanese examples.",
+    "retrieval": "Fetched complete official Apple documentation JSON and inspected abstract/discussion."
+  },
+  "projectDisplayFollowup": {
+    "evidence": "pmr-project-display-2026-10-18.json",
+    "report": "docs/reviews/2026-10-18-bella-pmr/project-display.md",
+    "conclusion": "Actual chooser and distinct bin Project column now traced to current Mac codec selection and Unicode Qt handoff. No Bella policy implemented."
+  }
+}

@@ -1,0 +1,588 @@
+{
+  "date": "2026-10-18",
+  "purpose": "Establish PMR modification-number reading, native use, genuine clock conventions and FileMobId/MasterMobId terminology before choosing Bella DTM behavior.",
+  "scope": "Read-only native arm64 instruction analysis, Avid primary documentation and filesystem/PMR-hash recheck. No production code or media changes.",
+  "native": {
+    "date": "2026-10-18",
+    "scope": "Read-only static arm64 instructions from installed Media Composer 26.8.0.58987. No private API execution, media rescans or repository edits.",
+    "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+    "binarySha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+    "coreSha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+    "conclusions": [
+      "DTM is a cached per-media-file modification value used for freshness/change detection. It is not a media identity, project name, Date Created or recording date.",
+      "Current Mac ScanMXFFileToCache gets low 32 bits of stat st_mtimespec.tv_sec through GetModDateUTC. Thus this producer writes Unix modification seconds, truncated to 32 bits.",
+      "ReadPmrRec reads an unsigned 32-bit scalar with byte-order handling and caches it unchanged; it does not turn it into a calendar date or repair a historical epoch.",
+      "ScanDirectoryToCache compares cached DTM with a modification word already present in its directory-entry vector. Equal or absolute difference exactly 3600 can retain the cache entry; other differences remove stale entries and trigger scanning the file again.",
+      "CompareDirectoryToCache separately calls live GetModDateUTC and reports filenames with different values, also accepting an exact one-hour difference.",
+      "The comparison is not a checksum: equality does not prove byte-for-byte equality. Avid accepts an exact one-hour difference; its purpose may relate to clock conventions but no intent is asserted from instructions alone.",
+      "Retaining four raw bytes is distinct from enabling a filesystem comparison and using mismatch to trigger a header read. Whether Bella needs the latter is a product decision."
+    ],
+    "producer": [
+      {
+        "binary": "libame",
+        "address": "0x44e304..0x44e328",
+        "function": "ScanMXFFileToCache",
+        "operation": "File-locator virtual +0x320 called with true; preserves returned modification value."
+      },
+      {
+        "binary": "AvidCore",
+        "address": "0xe33fc",
+        "function": "CoreMacFileLocator::GetModDateUTC(bool)",
+        "operation": "Calls AMacFileSystemObject::GetModDateUTC and zero-extends low 32 bits at 0xe340c."
+      },
+      {
+        "binary": "AvidCore",
+        "address": "0xaa4f0..0xaa504",
+        "function": "AMacFileSystemObject::GetModDateUTC(bool)",
+        "operation": "stat(); on success ldr w19 from stat buffer+0x30 (st_mtimespec.tv_sec low32). true-on-error path supplies 0xffffffff."
+      },
+      {
+        "binary": "libame",
+        "address": "0x453178",
+        "function": "AddCacheEntry",
+        "operation": "Timestamp argument x6 saved as w24, stores low32 in fileInfo+0x10."
+      },
+      {
+        "binary": "libame",
+        "address": "0x4511d4..0x4511d8",
+        "function": "INFO2REC",
+        "operation": "Copies fileInfo+0x10 to PMR in-memory record+0x280."
+      },
+      {
+        "binary": "libame",
+        "address": "0x45142c..0x451444",
+        "function": "WritePmrRec",
+        "operation": "Loads record+0x280 and writes through AStream virtual+0x178, verified WriteUInt32 0x258d0."
+      }
+    ],
+    "reader": [
+      {
+        "binary": "libame",
+        "address": "0x447854..0x44786c",
+        "function": "ReadPmrRec",
+        "operation": "AStream virtual+0x250, diagnostic label DTM; actual AStream::ReadUInt32 0x27054. Stores w0 in record+0x280."
+      },
+      {
+        "binary": "AvidCore",
+        "address": "0x27088..0x270ac",
+        "function": "AStream::ReadUInt32",
+        "operation": "Reads exactly four bytes, loads w0, reverses byte order if stream swap flag+0x1b6 is set."
+      },
+      {
+        "binary": "libame",
+        "address": "0x445318..0x445348",
+        "function": "LoadPMR",
+        "operation": "Loads record+0x280 into w6, passes to AddCacheEntry via manager virtual+0x328. No epoch/timezone conversion."
+      }
+    ],
+    "streamDispatch": {
+      "vtable": "AvidCore 0x394250",
+      "primaryAddressPoint": "0x394260",
+      "readSlot": {
+        "offset": "0x250",
+        "entry": "0x3944b0",
+        "raw": "0x10000000027054",
+        "target": "0x27054",
+        "symbol": "AStream::ReadUInt32"
+      },
+      "writeSlot": {
+        "offset": "0x178",
+        "entry": "0x3943d8",
+        "raw": "0x100000000258d0",
+        "target": "0x258d0",
+        "symbol": "AStream::WriteUInt32"
+      }
+    },
+    "activeScanConsumer": {
+      "function": "MSMDBMediaStreamMgr::ScanDirectoryToCache",
+      "address": "0x44c33c",
+      "conditions": [
+        "Iterates supplied dirEntry_t vector, filtering known nonmedia names and entry kind; file cache looked up by filename.",
+        "Only existing matching cache candidates reach timestamp compare. First comparison candidate flag w21 initialized true at 0x44c704; mismatch clears it while further stale duplicate entries are removed.",
+        "No special zero-DTM validity test occurs in this comparison. Zero is compared as a number. No epoch or timezone conversion occurs between loading the two words and comparing."
+      ],
+      "instructions": [
+        {
+          "address": "0x44c730",
+          "operation": "ldr w8,[sp,#0xb0]: cached fileInfo+0x10 timestamp, because temporary fileInfo begins at sp+0xa0."
+        },
+        {
+          "address": "0x44c734",
+          "operation": "ldur w9,[x28,#-4]: current directory entry+0x20c, because x28 points one 0x210-byte record past current entry."
+        },
+        {
+          "address": "0x44c738..0x44c74c",
+          "operation": "Subtract 32-bit words; equality or absolute 32-bit difference 0xe10 (3600) takes retained-entry path."
+        },
+        {
+          "address": "0x44c750..0x44c76c",
+          "operation": "Sets cached present marker at fileInfo+0x54 and replaces hash-table value, without invoking ScanFileToCache for that retained entry."
+        },
+        {
+          "address": "0x44c77c..0x44c7bc",
+          "operation": "Removes stale filename hash-table entry and calls manager virtual+0x330 DeleteCacheEntry."
+        },
+        {
+          "address": "0x44c7dc..0x44c7fc",
+          "operation": "New or stale flag invokes manager virtual+0x2c8 ScanFileToCache."
+        }
+      ],
+      "managerDispatch": {
+        "vtable": "0x12bdf90",
+        "addressPoint": "0x12bdfa0",
+        "deleteSlot": "0x330 -> 0x453358 DeleteCacheEntry",
+        "scanSlot": "0x2c8 -> 0x44cea0 ScanFileToCache"
+      }
+    },
+    "secondaryConsumer": {
+      "function": "MSMDBMediaStreamMgr::CompareDirectoryToCache",
+      "address": "0x453604",
+      "caller": "LocalMDB::ScanDirectoryToMDB 0x416770 gets MSMDB at0x416ccc, calls actual manager+0x210 at0x416d0c; target verified 0x453604.",
+      "instructions": [
+        {
+          "address": "0x453780..0x453794",
+          "operation": "Calls file locator GetModDateUTC(false), saves live value in x27."
+        },
+        {
+          "address": "0x4537a0",
+          "operation": "If changed-output AArray is null, no change report is produced."
+        },
+        {
+          "address": "0x4537a4..0x4537c0",
+          "operation": "Loads cached fileInfo+0x10 as unsigned32, subtracts from live value, accepts equality or exact absolute difference3600."
+        },
+        {
+          "address": "0x4537c4..0x4537dc",
+          "operation": "Appends filename to changed-output array when values differ otherwise."
+        }
+      ]
+    },
+    "directoryEntryQualification": {
+      "function": "CoreMacDirLocator::ReadDir",
+      "address": "AvidCore0x181a4",
+      "operations": [
+        "Non-Unity branch uses FSGetCatalogInfoBulk at0x1837c, calls UTCToLocalTime at0x184ac, stores output into entry+0x20c at0x184b0.",
+        "Unity branch uses stat at0x18754, calls UTCToLocalTime at0x187f8, stores output into entry+0x20c at0x187fc.",
+        "UTCToLocalTime0x4e0f0 calls UCConvertSecondsToCFAbsoluteTime, CFTimeZoneCopySystem, CFTimeZoneGetSecondsFromGMT and UCConvertCFAbsoluteTimeToSeconds, then adds zone offset."
+      ],
+      "limit": "Do not describe every directory-entry consumer as a normalized Unix UTC comparison. The precise source clock convention of the supplied directory-entry vector is separate from the raw comparison. Existing current ScanMXF producer is independently stat Unix seconds."
+    },
+    "historicalSamples": {
+      "logicalRecords": 2412,
+      "unixMtimeEqual": 2023,
+      "otherRecords": 389,
+      "differencesFromFilesystemUnixSeconds": {
+        "2082880800": 76,
+        "2082884400": 313
+      },
+      "interpretation": "These values numerically equal the 1904-to-1970 epoch difference plus10h/11h. Producer/timezone history was not directly established. Never use one unconditional epoch conversion for all observed PMRs."
+    },
+    "limitations": [
+      "Static instructions only; no runtime call trace or timed scans.",
+      "No checksum or universal date conversion was identified on the inspected load/compare paths.",
+      "Bella policy is not implemented or approved by this native audit."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-pmr-dtm-20261018-native/ReadChanges.txt",
+        "bytes": 47040,
+        "sha256": "571bc5e28e1cab7e32c33dc96ce7a118d78202a0f810d063e6c451af6e1d6e74"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-dtm-20261018-native/CompareDirectoryToCache.txt",
+        "bytes": 17168,
+        "sha256": "3eec8065de99df02d72ffa0ce1c823bb57986a8a49f4b80000fc861e145984fa"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-dtm-20261018-native/ValidateDir.txt",
+        "bytes": 8797,
+        "sha256": "53af83702b0808ac8fa0f0d1aff97701378e0485bf044b897b4e55e8d15f9f01"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-dtm-20261018-native/AStreamReadUInt32.txt",
+        "bytes": 1998,
+        "sha256": "3f01969c67c1d7e07c2edb85fe9ccb1b4248f46e82b7142f511e0262d68889ce"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-dtm-20261018-native/HasChanges.txt",
+        "bytes": 85836,
+        "sha256": "652861b2e0db197929cac360834df6f9fbcfd491f039175136bec2abefb3578a"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-dtm-20261018-native/UTCToLocalTime.txt",
+        "bytes": 1214,
+        "sha256": "2cf7af46383e3061e116f061fa931330a56bc40f8efbd9b31f8577029bd325dd"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-dtm-20261018-native/fileExists.txt",
+        "bytes": 36020,
+        "sha256": "0b67cfed89894caeaa34858f9183b4f163d1c799a3ed81bdc9e39643fe668dd6"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-dtm-20261018-native/AStreamWriteUInt32.txt",
+        "bytes": 2087,
+        "sha256": "5f449c0eff30c576064f26f8c54e91f9b3ca1366ee48c67e5e3c2341755c72d1"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-dtm-20261018-native/CoreMacDirLocatorReadDir.txt",
+        "bytes": 29993,
+        "sha256": "dfd9276bcdee02075b4f6935f8aea681e8356f296a245a8a906fc4d7c8f0fb1a"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-dtm-20261018-native/LocalMDBScanDirectoryToMDB.txt",
+        "bytes": 186687,
+        "sha256": "af01681845938a4ff3af211f1f32ffe0f0f89ddd7928e98fe19555cbe0dd5438"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-dtm-20261018-native/ScanDirectoryToCache.txt",
+        "bytes": 32136,
+        "sha256": "c04291eedffb7741a5a32f467ba1f512937b49766dd15122c64a2df54dced747"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-20261018-mc/AMacFileSystemObject-GetModDateUTC-arm64.txt",
+        "bytes": 4577,
+        "sha256": "ffa0f690543f0d542c130e83ec8bcf30748f3f369a2c51cc8249669c7d160450"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-20261018-mc/CoreMacFileLocator-GetModDateUTC-arm64.txt",
+        "bytes": 485,
+        "sha256": "ca431dc0b71a98b9a2cb9654d6fe108279d09edebe7ad2ed8675d030d9326031"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-20261018-mc/AddCacheEntry-arm64.txt",
+        "bytes": 11632,
+        "sha256": "3d7fd60ba5dc2842aae9fd0b9cf24d69e74532464f9e0dd5e4aeea7c21b910b8"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-20261018-mc/INFO2REC-arm64.txt",
+        "bytes": 3338,
+        "sha256": "1dbbea7e203ae10ccd749257c7883c295fe0d5e6f486a9f3c4167ef4f18e8d5b"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-20261018-mc/LoadPMR-arm64.txt",
+        "bytes": 147610,
+        "sha256": "6cdd9f32c6856f878a44d27cf390387f3632fbc101b3688229f8a6b5b6704927"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-20261018-mc/ReadPmrRec-arm64.txt",
+        "bytes": 25942,
+        "sha256": "3c738d22696640dd3b165a48dc7147c48fb39a882abd1930dd715f1052f99801"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-20261018-mc/ScanMXFFileToCache-arm64.txt",
+        "bytes": 38103,
+        "sha256": "6e199b66036fd866424a5bd53e06376d2467a8d63c8d5069acfb260c35af6c3e"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-20261018-mc/WritePmrRec-arm64.txt",
+        "bytes": 8112,
+        "sha256": "8f2e7a5b29d95cdd6e1661971106d7eebef013035a2d1fbd37a345a9196c0c90"
+      }
+    ]
+  },
+  "primarySources": {
+    "date": "2026-10-18",
+    "scope": "Primary Avid terminology and PMR-purpose sources; no production or media changes.",
+    "conclusions": [
+      "Yes: the PMR File ID and Master ID labels correspond to FileMobId and MasterMobId roles. Existing native plus 17 genuine MXF identity checks establish the positional PMR mapping.",
+      "Avid uses FilemobID, original FilemobID and MasterMobID in Media Indexer documentation. Do not conflate Original FileMobID with the FileMobID field inspected in PMR.",
+      "FileMobID identifies Avid's media-file object. MasterMobID links it to its associated master/clip object; several media files can share a master.",
+      "For the 17 inspected MXFs, FileMobID matched the essence-owning SourcePackage and MasterMobID matched a MaterialPackage whose source graph reached that file. This local mapping should not be generalized to all MXF/AAF object arrangements.",
+      "The two IDs are binary identifiers, not UTF-8 text. Current v8/v16 representations are 32-byte AAF MobIDs; older base layouts store 8-byte OMF IDs.",
+      "The public Avid PMR KB's timestamp comparison is media-directory timestamp versus an internal directory cache entry. It does not establish the purpose of the per-record DTM field. Native tracing must settle that separately."
+    ],
+    "primarySources": [
+      {
+        "title": "Avid Interplay What's New for Version 2.6",
+        "url": "https://resources.avid.com/SupportFiles/attach/Whats_New_Interplay_V2_6.pdf",
+        "retrieval": "Full PDF opened and relevant lines inspected",
+        "printedPages": [
+          49,
+          57
+        ],
+        "quote": "FilemobID, original FilemobID, and MasterMobID",
+        "findings": [
+          "Printed page49 lists the three identification values shown for media files in Storage Browser.",
+          "Printed page57 describes file mobs as media file information objects that can be associated with a master clip or rendered effect.",
+          "Printed page57 describes lost master mobs as assets such as sequences, master clips and subclips; this is Interplay terminology and not a declaration that every PMR second ID represents all those classes."
+        ]
+      },
+      {
+        "title": "Avid CTMS Resource pa:asset-medias",
+        "url": "https://developer.avid.com/ctms/api/pa/resources/asset-medias.html",
+        "retrieval": "Full HTML opened",
+        "quote": "For Avid assets, this is usually the file MOB ID.",
+        "findings": [
+          "Provides media-file information for an asset.",
+          "Example has one masterclip asset with three filemob entries: V1, A1 and A2. Supports explaining separate file IDs under a shared master."
+        ]
+      },
+      {
+        "title": "Avid MediaCentral Asset Management Transfer to Production Mgmt Guide 2023.7",
+        "url": "https://resources.avid.com/SupportFiles/attach/AssetManagement/Kits/MCAM_2023_7_TransferToProduction_Guide.pdf",
+        "retrieval": "Full PDF opened; printed47 inspected",
+        "printedPages": [
+          47
+        ],
+        "quote": "The master mob ID of the master clip or temporary mixdown in case a sequence is archived.",
+        "finding": "Defines PAM_MASTERCLIP_MOBID as identification of master clip/temp mixdown."
+      },
+      {
+        "title": "Avid CTMS Error handling",
+        "url": "https://developer.avid.com/ctms/quickstart/errorhandling.html",
+        "retrieval": "Full HTML opened",
+        "quote": "Not a valid mob id (UMID): abcd",
+        "finding": "Modern Avid API refers to Mob IDs as UMIDs. Does not prove legacy 8-byte OMF IDs already have the same wire representation."
+      },
+      {
+        "title": "Avid Media Database files (msFMID.pmr and msmMMOB.mdb)",
+        "url": "https://kb.avid.com/pkb/articles/en_US/Knowledge/en262645",
+        "retrieval": "Canonical direct open returned internal error; indexed full article body retrieved through search.",
+        "lastUpdated": "2022-12-02",
+        "findings": [
+          "Describes PMR as a quickly loaded index of file MOBs and associated media files, used to determine online status.",
+          "Describes media-directory timestamp checks against internal PMR-cache directory timestamps, followed by reloading that directory's PMR when needed.",
+          "This directory-cache timestamp is separate from each record's DTM."
+        ]
+      }
+    ],
+    "localNativeAndGenuineEvidence": {
+      "report": "docs/reviews/2026-10-18-bella-pmr/REVIEW.md",
+      "evidence": "Project Bella/evidence/pmr-research-2026-10-18.json",
+      "filesChecked": 17,
+      "fileRoleMatches": 17,
+      "masterRoleAndGraphMatches": 17,
+      "essenceRead": false
+    }
+  },
+  "liveRecheck": {
+    "date": "2026-10-18",
+    "scope": "Read-only PMR content-hash and physical file mtime recheck against original inspected snapshot. Each file counted once using its version-16 set.",
+    "databases": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544",
+        "sameAsOriginal": true,
+        "checkedFiles": 389,
+        "mtimeSameAsOriginal": 389,
+        "missingFiles": 0,
+        "statErrors": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79",
+        "sameAsOriginal": true,
+        "checkedFiles": 686,
+        "mtimeSameAsOriginal": 686,
+        "missingFiles": 0,
+        "statErrors": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7",
+        "sameAsOriginal": true,
+        "checkedFiles": 513,
+        "mtimeSameAsOriginal": 513,
+        "missingFiles": 0,
+        "statErrors": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524",
+        "sameAsOriginal": true,
+        "checkedFiles": 463,
+        "mtimeSameAsOriginal": 463,
+        "missingFiles": 0,
+        "statErrors": []
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a",
+        "sameAsOriginal": true,
+        "checkedFiles": 359,
+        "mtimeSameAsOriginal": 359,
+        "missingFiles": 0,
+        "statErrors": []
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+        "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928",
+        "sameAsOriginal": true,
+        "checkedFiles": 2,
+        "mtimeSameAsOriginal": 2,
+        "missingFiles": 0,
+        "statErrors": []
+      }
+    ],
+    "mtimeDeltaCounts": {
+      "0": 2023,
+      "2082880800": 76,
+      "2082884400": 313
+    },
+    "examples": [
+      {
+        "mediaPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_78D9V02.22180610.586550.mxf",
+        "pmrRawValue": 3643975810,
+        "filesystemMtimeSeconds": 1561095010,
+        "filesystemMtimeUtc": "2019-06-21T05:30:10+00:00",
+        "differenceSeconds": 2082880800,
+        "rawInterpretedAsUnixUtc": "2085-06-21T15:30:10+00:00"
+      },
+      {
+        "mediaPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1025.WAVA01.D8875D20312A78A.mxf",
+        "pmrRawValue": 3632750026,
+        "filesystemMtimeSeconds": 1549865626,
+        "filesystemMtimeUtc": "2019-02-11T06:13:46+00:00",
+        "differenceSeconds": 2082884400,
+        "rawInterpretedAsUnixUtc": "2085-02-11T17:13:46+00:00"
+      },
+      {
+        "mediaPath": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A0415E4_1557715577CF1V.mxf",
+        "pmrRawValue": 1778652605,
+        "filesystemMtimeSeconds": 1778652605,
+        "filesystemMtimeUtc": "2026-05-13T06:10:05+00:00",
+        "differenceSeconds": 0,
+        "rawInterpretedAsUnixUtc": "2026-05-13T06:10:05+00:00"
+      }
+    ]
+  },
+  "currentMediaMuster": {
+    "pmrRawRead": "src/mediaengine/pmrreader.cpp:305 reads ModificationWord as quint32; no epoch/timezone selected.",
+    "projection": "src/mediaengine/pmrprojection.cpp:40-59 records read status and unsupported interpretation; does not supply a timestamp or retain raw DTM in normal final rows.",
+    "physicalDateSource": "src/mediaengine/discoveryengine.cpp:116-137; src/mediaengine/metadataselectionpolicy.cpp:164-166 prefers filesystem modification time.",
+    "duringScanChecks": "src/mediaengine/scancoordinator.cpp:282-302 compares live filesystem lastModified with discovery snapshot; src/mediaengine/scancoordinator.cpp:684 distinguishes scan stability from database freshness.",
+    "operationChecks": "src/opscanreceipt.cpp:135,144; src/oprunner.cpp:765-770; src/opfile.cpp:145-151 check actual identity, size and filesystem modification time. No PMR DTM dependency found."
+  },
+  "sourceCodeReceipts": [
+    {
+      "path": "src/mediaengine/pmrreader.cpp",
+      "bytes": 13891,
+      "sha256": "0742ee6e1fb6ad3cac4830b55f153cc31b58a7778ccc043cecb8cd7e61ba820b"
+    },
+    {
+      "path": "src/mediaengine/pmrprojection.cpp",
+      "bytes": 4372,
+      "sha256": "f49dbf19829150ac46bcb783a3f044c35c4bfe1cf203eedaa398f6810f33c1a8"
+    },
+    {
+      "path": "src/mediaengine/discoveryengine.cpp",
+      "bytes": 8421,
+      "sha256": "e7a67b18dbdcf7b1f9bbb3830ed18ed1eb2cb2e77e145475f48b0e12c858df18"
+    },
+    {
+      "path": "src/mediaengine/metadataselectionpolicy.cpp",
+      "bytes": 10816,
+      "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6"
+    },
+    {
+      "path": "src/mediaengine/scancoordinator.cpp",
+      "bytes": 36110,
+      "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e"
+    },
+    {
+      "path": "src/opscanreceipt.cpp",
+      "bytes": 6767,
+      "sha256": "e4edc1afbe4ddd9be86ea64bb67cd410d11ebcd47654e6969e42992708ad6da9"
+    },
+    {
+      "path": "src/oprunner.cpp",
+      "bytes": 78011,
+      "sha256": "b2cbfe8c50336e38c5099f9100f0f81fd248249c4f6dc4592eeda9a72c8e3aea"
+    },
+    {
+      "path": "src/opfile.cpp",
+      "bytes": 27091,
+      "sha256": "950518ae71c6b1c70b5ddad0f7204497578b41823472728e6ee6193963c8d4f6"
+    }
+  ],
+  "binaryIdentityReference": "pmr-project-display-2026-10-18.json",
+  "genuineIdentityReference": "pmr-research-2026-10-18.json: independentMxfIdentityChecks (17 MXFs)",
+  "limitations": [
+    "The native timestamp comparisons are not all fed by a normalized Unix UTC value; the directory-entry producer has local-time conversion paths.",
+    "The historical 1904-plus-timezone interpretation is numerical evidence, not recovered historical source history.",
+    "No runtime private APIs, controlled media changes, timed scans or Windows producer tracing were used."
+  ],
+  "bellaDecision": {
+    "date": "2026-10-18",
+    "status": "User-approved requirements; not implemented",
+    "authority": "Project Bella/README.md#agreed-pmr-reading-rules",
+    "userInstruction": "No need for the modification value/date at all. The new Bella scanner and related parsers should ignore it.",
+    "parsing": "Skip the four-byte PMR DTM field with normal bounds checks to keep the next record aligned.",
+    "excluded": [
+      "Retaining DTM in Bella records/results",
+      "Date interpretation of PMR DTM",
+      "Comparing PMR DTM with filesystem time",
+      "Triggering further scanning from PMR DTM"
+    ],
+    "scope": "PMR per-media-record DTM. Filesystem dates and operation stamps are separate physical-file facts."
+  },
+  "bellaIdProposal": {
+    "status": "Complete-ID reading and duplicate/KelpieId rules subsequently approved; storage details, source precedence and header-read policy are not chosen here.",
+    "read": "Complete binary FileMobId and MasterMobId from selected PMR set; 32-byte v8/v16, 8-byte earlier-base IDs; v1 stores no master ID.",
+    "normalize": "Normalize actual source layout and numeric byte order into a consistent full-ID form; use established Avid legacy wrapper; never text-decode or truncate IDs.",
+    "physicalAssociation": "Recorded filename within the PMR media directory associates an entry with a discovered physical file. IDs then connect eligible metadata sources.",
+    "fileMobIdUse": "File-owned metadata joins within the scanner/parser. The existing Bin Filter system remains unchanged and outside Bella.",
+    "masterMobIdUse": "Associated master-owned metadata, subject to existing selected-master/source policy; no Bin Filter behavior is changed by Bella.",
+    "inventory": "Keep every supported physical media file independently of missing IDs; retain copies and related tracks as separate physical rows even when IDs repeat.",
+    "storageProposal": "Compact binary ID storage with readable formatting at display/export boundaries; not implemented or approved.",
+    "implementationCheck": "Current canonicalDatabaseId helper passes 32-byte bytes unchanged, while native AAF reader parses numeric material fields through endian-aware scalar reads. Verify big-endian 32-byte PMR normalization when implementing; genuine inspected files are little-endian.",
+    "references": [
+      "src/mediaengine/projection.cpp:59",
+      "src/mobid.h",
+      "src/omfuid.h",
+      "docs/current-behaviour.md:278",
+      "docs/current-behaviour.md:462",
+      "Project Copland/metadata-reference.md:274"
+    ]
+  },
+  "approvedBellaIdentityRules": {
+    "date": "2026-10-18",
+    "status": "User-approved requirements; not implemented",
+    "authority": "Project Bella/README.md#agreed-identity-and-duplicate-rules",
+    "fullIds": "Read complete FileMobId and MasterMobId, not only an eight-byte excerpt of modern IDs. Respect complete legacy representations when falling back.",
+    "kelpieId": "Retain current internal MediaMuster scan-session row identifier, independent of Avid IDs.",
+    "samePathAndSameFileMobId": "Ignore duplicate inventory entry; keep existing row and KelpieId.",
+    "differentPathAndSameFileMobId": "Keep each row with its own unique KelpieId.",
+    "scope": "Inventory row duplication; eligible metadata may still enrich the kept row. No new cross-scan persistence specified.",
+    "unresolved": [
+      "Unknown/unreadable IDs in duplicate comparisons",
+      "Path aliases and case ambiguities",
+      "Detailed internal ID-storage representation"
+    ],
+    "samePathConflictingFileMobIds": "For release one, the user explicitly assumes this cannot happen. Do not add conflict-handling machinery."
+  },
+  "binFilterScopeClarification": {
+    "date": "2026-10-18",
+    "status": "User scope clarification; existing Bin Filter system remains unchanged",
+    "authority": "Project Bella/README.md#agreed-identity-and-duplicate-rules",
+    "userInstruction": "This scope is for the Scanner/parser system. We are leaving the Bin Filter system alone, just confirmed that MDVX also uses FileMobId to filter Bins.",
+    "scope": "Bella replaces the scanner/parser system only. The Bin Filter system is outside Bella and remains unchanged; no new bin algorithm, matching or per-row behavior is required.",
+    "comparisonConfirmed": "The inspected MDVx bin filtering uses FileMobId identity; that comparison does not approve changes to MediaMuster Bin Filter behavior."
+  },
+  "approvedBellaSetFallback": {
+    "date": "2026-10-18",
+    "status": "User-approved release-one policy; not implemented",
+    "authority": "Project Bella/README.md#agreed-pmr-reading-rules",
+    "userInstruction": "For now, the first release of the app: lets keep it basic and straight forward. If an entry is damaged, abandon the set and fall back to another set. How should we determine this?",
+    "damagedRecord": "Any damaged record makes its entire set unusable; do not salvage individual records or combine metadata from the two sets.",
+    "setSelection": "Prefer a usable version-16 set. If it is missing or unusable, use the older set only if that whole set is usable.",
+    "neitherUsable": "Use no PMR metadata when neither set is usable. Keep the physical media-file inventory independently.",
+    "validationStatus": "User-approved release-one damage and usability checks on 18 October 2026; not implemented.",
+    "validationApproval": "OK, let's lock those checks in for Bella.",
+    "approvedChecks": {
+      "completeEntry": "Every declared record must contain all bytes required by its supported version: complete IDs, length words and counted text payloads, and the four bounded skipped modification bytes. A short record makes its whole set unusable.",
+      "lengthsAndCounts": "Stored text lengths and record counts must fit the available data; an overrun or impossible count makes the whole set unusable.",
+      "version16Filename": "Require the verified v16 filename framing and strict UTF-8. Its two reserved prefix bytes must be present and the first zero; the native PMR helper does not constrain the second. Invalid framing or UTF-8 makes the whole set unusable.",
+      "emptyFilename": "An empty or null Filename makes the whole set unusable because it cannot associate that entry with a physical file. This is a Bella usability rule, not proof of structural corruption.",
+      "emptySet": "A set with no entries supplies no usable PMR metadata; fall back to the other usable set."
+    },
+    "notDamage": [
+      "Blank Project",
+      "Fields legitimately absent in older versions, including v1 Project and MasterMobId",
+      "Different entry counts between the older and version-16 sets",
+      "A database reference to a physical file that has since disappeared"
+    ],
+    "safeVersion16Location": "The older set physically precedes v16. Follow its lengths and counts safely to locate v16; if damaged framing makes that boundary unknowable, ignore PMR metadata rather than search for a plausible version word. Keep physical inventory.",
+    "validationLimit": "These checks cannot detect every incorrect value with a valid representation. MacRoman accepts every byte, so successful decoding does not prove a Project character is correct. Ignored modification values are not inspected for semantic validity."
+  }
+}

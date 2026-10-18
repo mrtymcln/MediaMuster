@@ -1,0 +1,1290 @@
+{
+  "date": "2026-10-18",
+  "purpose": "PMR-first source research for Bella; no production implementation or performance benchmark",
+  "chosenConcurrency": {
+    "maximumPmrJobs": 4,
+    "unit": "one PMR and containing directory per job"
+  },
+  "mediaComposer": {
+    "identity": {
+      "app": "/Applications/Avid Media Composer/AvidMediaComposer.app",
+      "library": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "version": "26.8.0.58987",
+      "build": "26.8.0",
+      "size": 73527536,
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+      "uuid": "UUID: 9CC3CF45-9F28-380C-949C-C7B321D0858A (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib\nUUID: D55FFCED-FD76-3667-99B8-C9A84180173E (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "uuid_error": "",
+      "file": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib: Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit dynamically linked shared library x86_64] [arm64]\n/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib (for architecture x86_64):\tMach-O 64-bit dynamically linked shared library x86_64\n/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib (for architecture arm64):\tMach-O 64-bit dynamically linked shared library arm64",
+      "file_error": ""
+    },
+    "sliceHashes": [
+      {
+        "cpu": "0x1000007",
+        "offset": 16384,
+        "size": 37001936,
+        "sha256": "bd94990e9bba01b71a63fa9948cc07e23c38310a5cfc3d378eedd041607569c7"
+      },
+      {
+        "cpu": "0x100000c",
+        "offset": 37027840,
+        "size": 36499696,
+        "sha256": "70b6f2810f53dc044a9b6b2d3f9d3e3c50df40c91fcc263e21a2678752566f9e"
+      }
+    ],
+    "avidCore": {
+      "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+      "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+      "uuid": "UUID: F10B2E1F-07ED-31AC-8DDD-C2122C7B4405 (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore\nUUID: EDC22A12-1101-3C73-A57C-4256A82633F9 (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+      "segments": [
+        [
+          "__TEXT",
+          0,
+          3735552,
+          0,
+          3735552
+        ],
+        [
+          "__DATA_CONST",
+          3735552,
+          147456,
+          3735552,
+          147456
+        ],
+        [
+          "__DATA",
+          3883008,
+          196608,
+          3883008,
+          147456
+        ],
+        [
+          "__LINKEDIT",
+          4079616,
+          3014656,
+          4030464,
+          3002480
+        ]
+      ],
+      "vtable_slots": [
+        {
+          "class": "CoreMacFileLocator",
+          "vtable": "0x39d110",
+          "method_offset": "0x310",
+          "raw_pointer": "0x100000000e329c"
+        },
+        {
+          "class": "CoreMacFileLocator",
+          "vtable": "0x39d110",
+          "method_offset": "0x318",
+          "raw_pointer": "0x100000000e33f4"
+        },
+        {
+          "class": "CoreMacFileLocator",
+          "vtable": "0x39d110",
+          "method_offset": "0x320",
+          "raw_pointer": "0x100000000e33fc"
+        },
+        {
+          "class": "CoreMacFileLocator",
+          "vtable": "0x39d110",
+          "method_offset": "0x328",
+          "raw_pointer": "0x100000000e3418"
+        },
+        {
+          "class": "CoreMacFileLocator",
+          "vtable": "0x39d110",
+          "method_offset": "0x330",
+          "raw_pointer": "0x100000000e3434"
+        },
+        {
+          "class": "AFileLocator",
+          "vtable": "0x39e360",
+          "method_offset": "0x310",
+          "raw_pointer": "0x80100000000004ff"
+        },
+        {
+          "class": "AFileLocator",
+          "vtable": "0x39e360",
+          "method_offset": "0x318",
+          "raw_pointer": "0x80100000000004ff"
+        },
+        {
+          "class": "AFileLocator",
+          "vtable": "0x39e360",
+          "method_offset": "0x320",
+          "raw_pointer": "0x80100000000004ff"
+        },
+        {
+          "class": "AFileLocator",
+          "vtable": "0x39e360",
+          "method_offset": "0x328",
+          "raw_pointer": "0x80100000000004ff"
+        },
+        {
+          "class": "AFileLocator",
+          "vtable": "0x39e360",
+          "method_offset": "0x330",
+          "raw_pointer": "0x80100000000004ff"
+        }
+      ]
+    },
+    "nativeFindings": {
+      "scope": "Fresh read-only static audit of installed Media Composer 26.8.0.58987 arm64; no execution of MC or its private reader APIs; no repository/media edits.",
+      "header": {
+        "LoadPMR": "0x4443f0",
+        "magic_check": "0x444b98..0x444bc8: MAGIC 0x000007a9; byte-swapped 0xa9070000 enables AStream byte swap",
+        "version": "0x444bcc..0x444c14: VERSION accepted when signed value <9; does not prove every accepted signed value was historically written",
+        "count": "0x445154..0x4451b4: numMobs and legacy record loop",
+        "unicode": "0x4451c0..0x445260: VERSION_UNICODE must be16 and count>=1 to read Unicode records"
+      },
+      "record": {
+        "function": "0x4474e0 ReadPmrRec",
+        "file_identity": "0x447544..0x447588: OMF 2x32-bit read for version<=7; AAF MobID 32-byte fields otherwise",
+        "filename": "0x447590..0x447678: filename via current Mac MBCS when version<=15; filenameUTF16 through UTF8-to-UTF16 stream method when >15",
+        "native_name_buffer": "record+0x20 has256 UTF16 code units; native ignores empty/oversize invalid filenames rather than retaining them as accepted records",
+        "project_master": "0x4476c8..0x447850: version1 obtains project/master from existing in-memory objects, not stored bytes; other versions read project then second mobID",
+        "dtm": "0x447854..0x44786c: DTM read as32-bit scalar into record+0x280"
+      },
+      "strings": {
+        "ReadString": "AvidCore0x27770: endian-aware16-bit counted bytes; ffff null marker; native destination capacity bound",
+        "ReadUTF8ToUTF16": "AvidCore0x27d9c:16-bit count includes2 marker bytes; first marker byte checked zero; payload read then UTF8ToUTF16; ffff null marker",
+        "project_encoding": "Project always goes through ordinary ReadString even in Unicode set; it is not made UTF8 by the filename layout"
+      },
+      "sets": {
+        "preference": "0x445264..0x4452ec: choose nonempty Unicode accepted-record vector; otherwise legacy vector; warn if fewer Unicode records; no positional merge",
+        "writer": "DumpCache0x4506f8: selects base version2 or8 by media-directory domain; constructs one source record per cached file; may omit a legacy entry if filename conversion is lossy, yet keeps it in Unicode vector; separately writes version16 set. Counts can legitimately differ."
+      },
+      "dtm_producer": {
+        "locator_call": "ScanMXFFileToCache0x44e304..0x44e328 calls fileLoc virtual+0x320 with true, saving timestamp",
+        "vtable": "CoreMacFileLocator vtable0x39d110 address-point+0x320 points to0xe33fc GetModDateUTC(bool)",
+        "filesystem": "AvidCore AMacFileSystemObject::GetModDateUTC0xaa464 calls stat0xaa4f0, loads32-bit low seconds from stat buffer+0x30 at0xaa504; SDK slot st_mtimespec.tv_sec",
+        "storage": "ScanMXF passes timestamp to AddCacheEntry;0x453178 stores low32-bit value in fileInfo+0x10; INFO2REC0x4511d4..0x4511d8 copies to record+0x280; WritePmrRec0x45142c..0x451444 writes DTM",
+        "limit": "This establishes current native Mac path uses low32 Unix mtime seconds. Does not establish universal epoch/timezone for historical/other-platform PMRs, and does not establish Date Created or camera recording time."
+      },
+      "clip_vs_filename": {
+        "record": "Native record diagnostics specifically name filename / filenameUTF16; no independent clip-name field is read/written",
+        "separate_api": "GetClipName0x43a91c obtains associated master then looks up MobManager composition and invokes name getter0x43a988..0x43a9dc. GetFileName0x43cb2c reads file-cache name separately."
+      }
+    },
+    "decompilation": [
+      {
+        "name": "LoadPMR",
+        "symbol": "__ZN19MSMDBMediaStreamMgr7LoadPMREP17MSMMediaDirRecordb",
+        "address": 4473840,
+        "slug": "LoadPMR",
+        "blocks": 158,
+        "hopper_name": "__ZN19MSMDBMediaStreamMgr7LoadPMREP17MSMMediaDirRecordb",
+        "output": "/private/tmp/bella-pmr-20261018-hopper/LoadPMR.c",
+        "characters": 125165,
+        "addressHex": "0x4443f0",
+        "temporaryOutputSha256": "9fd9496a85a86360caa1c4a5df8ef3caa5a635d23a482ebdf8bd45212571e254"
+      },
+      {
+        "name": "ReadPmrRec",
+        "symbol": "__ZL10ReadPmrRecP7AStreamiPKDsP11icsPMRrec_t",
+        "address": 4486368,
+        "slug": "ReadPmrRec",
+        "blocks": 45,
+        "hopper_name": "__ZL10ReadPmrRecP7AStreamiPKDsP11icsPMRrec_t",
+        "output": "/private/tmp/bella-pmr-20261018-hopper/ReadPmrRec.c",
+        "characters": 11196,
+        "addressHex": "0x4474e0",
+        "temporaryOutputSha256": "d8df1d6034926663b43e1928224cf5470ed5b65938dc3413265288a769cf3bee"
+      },
+      {
+        "name": "DumpCache",
+        "symbol": "__ZN19MSMDBMediaStreamMgr9DumpCacheEP17MSMMediaDirRecord",
+        "address": 4523768,
+        "slug": "DumpCache",
+        "blocks": 58,
+        "hopper_name": "__ZN19MSMDBMediaStreamMgr9DumpCacheEP17MSMMediaDirRecord",
+        "output": "/private/tmp/bella-pmr-20261018-hopper/DumpCache.c",
+        "characters": 8092,
+        "addressHex": "0x4506f8",
+        "temporaryOutputSha256": "27ee833d9546878195ef88c8c39578fcb4fe57c4131c9fb314eda7c815ec7c08"
+      },
+      {
+        "name": "INFO2REC",
+        "symbol": "__Z8INFO2RECRK8fileInfoR11icsPMRrec_t",
+        "address": 4526320,
+        "slug": "INFO2REC",
+        "blocks": 10,
+        "hopper_name": "__Z8INFO2RECRK8fileInfoR11icsPMRrec_t",
+        "output": "/private/tmp/bella-pmr-20261018-hopper/INFO2REC.c",
+        "characters": 1424,
+        "addressHex": "0x4510f0",
+        "temporaryOutputSha256": "2a88aeae09e4e08ea5d14463f0721c145304341fcf4e3aed0aa748af0edce4b1"
+      },
+      {
+        "name": "WritePmrRec",
+        "symbol": "__ZL11WritePmrRecP7AStreamiR11icsPMRrec_tRb",
+        "address": 4526576,
+        "slug": "WritePmrRec",
+        "blocks": 24,
+        "hopper_name": "__ZL11WritePmrRecP7AStreamiR11icsPMRrec_tRb",
+        "output": "/private/tmp/bella-pmr-20261018-hopper/WritePmrRec.c",
+        "characters": 9291,
+        "addressHex": "0x4511f0",
+        "temporaryOutputSha256": "e2882c3c7af8d0d605c7b98f56b1c0805b970624b539bb7551a96383309e2a20"
+      },
+      {
+        "name": "AddCacheEntry",
+        "symbol": "__ZN19MSMDBMediaStreamMgr13AddCacheEntryEP17MSMMediaDirRecord13_aafMCMobID_tS2_PDsPKclhxxhh",
+        "address": 4534112,
+        "slug": "AddCacheEntry",
+        "blocks": 31,
+        "hopper_name": "__ZN19MSMDBMediaStreamMgr13AddCacheEntryEP17MSMMediaDirRecord13_aafMCMobID_tS2_PDsPKclhxxhh",
+        "output": "/private/tmp/bella-pmr-20261018-hopper/AddCacheEntry.c",
+        "characters": 5330,
+        "addressHex": "0x452f60",
+        "temporaryOutputSha256": "181a31af4d3398cb18088f951fc03fb5e3e792f0f1a8bc4ca32814d40845130c"
+      }
+    ],
+    "reproductionCommands": [
+      [
+        "nm",
+        "-arch",
+        "arm64",
+        "-nm",
+        "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+      ],
+      [
+        "xcrun",
+        "dwarfdump",
+        "--uuid",
+        "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+      ],
+      [
+        "xcrun",
+        "llvm-objdump",
+        "--macho",
+        "--arch=arm64",
+        "--disassemble",
+        "--dis-symname",
+        "__ZN19MSMDBMediaStreamMgr7LoadPMREP17MSMMediaDirRecordb",
+        "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+      ],
+      [
+        "xcrun",
+        "llvm-objdump",
+        "--macho",
+        "--arch=arm64",
+        "--disassemble",
+        "--dis-symname",
+        "__ZL10ReadPmrRecP7AStreamiPKDsP11icsPMRrec_t",
+        "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+      ],
+      [
+        "xcrun",
+        "llvm-objdump",
+        "--macho",
+        "--arch=arm64",
+        "--disassemble",
+        "--dis-symname",
+        "__Z8INFO2RECRK8fileInfoR11icsPMRrec_t",
+        "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+      ],
+      [
+        "xcrun",
+        "llvm-objdump",
+        "--macho",
+        "--arch=arm64",
+        "--disassemble",
+        "--dis-symname",
+        "__ZL11WritePmrRecP7AStreamiR11icsPMRrec_tRb",
+        "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+      ],
+      [
+        "xcrun",
+        "llvm-objdump",
+        "--macho",
+        "--arch=arm64",
+        "--disassemble",
+        "--dis-symname",
+        "__ZN19MSMDBMediaStreamMgr9DumpCacheEP17MSMMediaDirRecord",
+        "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+      ],
+      [
+        "xcrun",
+        "llvm-objdump",
+        "--macho",
+        "--arch=arm64",
+        "--disassemble",
+        "--dis-symname",
+        "__ZN19MSMDBMediaStreamMgr13AddCacheEntryEP17MSMMediaDirRecord13_aafMCMobID_tS2_PDsPKclhxxhh",
+        "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+      ],
+      [
+        "xcrun",
+        "llvm-objdump",
+        "--macho",
+        "--arch=arm64",
+        "--disassemble",
+        "--dis-symname",
+        "__ZN19MSMDBMediaStreamMgr18ScanMXFFileToCacheEP17MSMMediaDirRecordPDsP12AFileLocatorb",
+        "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+      ],
+      [
+        "xcrun",
+        "llvm-objdump",
+        "--macho",
+        "--arch=arm64",
+        "--disassemble",
+        "--dis-symname",
+        "__ZN19MSMDBMediaStreamMgr11GetClipNameE13_aafMCMobID_tPcm",
+        "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+      ],
+      [
+        "xcrun",
+        "llvm-objdump",
+        "--macho",
+        "--arch=arm64",
+        "--disassemble",
+        "--dis-symname",
+        "__ZN19MSMDBMediaStreamMgr11GetFileNameE13_aafMCMobID_tPDsm",
+        "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+      ],
+      [
+        "xcrun",
+        "llvm-objdump",
+        "--macho",
+        "--arch=arm64",
+        "--disassemble",
+        "--dis-symname",
+        "__Z13Read_OMFMobIDP7AStreamPKc",
+        "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+      ],
+      [
+        "xcrun",
+        "llvm-objdump",
+        "--macho",
+        "--arch=arm64",
+        "--disassemble",
+        "--dis-symname",
+        "__Z13Read_AAFMobIDP7AStreamPKc",
+        "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+      ]
+    ],
+    "qualification": "Approximate Hopper pseudo-C cross-checked with arm64 instructions. Reader branch acceptance does not prove every base-version value was historically written."
+  },
+  "genuineDatabases": {
+    "scope": {
+      "bases": [
+        "/Volumes/EDIT",
+        "/Users/Shared/AvidMediaComposer"
+      ],
+      "roots": [
+        "/Volumes/EDIT/Avid MediaFiles/MXF",
+        "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF",
+        "/Users/Shared/AvidMediaComposer/OMFI MediaFiles"
+      ],
+      "admittedFolders": [
+        "/Volumes/EDIT/Avid MediaFiles/MXF/1",
+        "/Volumes/EDIT/Avid MediaFiles/MXF/86452",
+        "/Volumes/EDIT/Avid MediaFiles/MXF/8646",
+        "/Volumes/EDIT/Avid MediaFiles/MXF/8647",
+        "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1",
+        "/Users/Shared/AvidMediaComposer/OMFI MediaFiles"
+      ],
+      "pmrs": [
+        "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr"
+      ]
+    },
+    "databaseCount": 6,
+    "totalPmrBytes": 583336,
+    "logicalFileRecords": 2412,
+    "storedRecordsAllSets": 4824,
+    "distinctFileIds": 2412,
+    "distinctMasterIds": 1340,
+    "mastersWithMultipleFiles": 642,
+    "masterGroupSizes": {
+      "3": 309,
+      "2": 279,
+      "1": 698,
+      "5": 7,
+      "4": 44,
+      "6": 3
+    },
+    "nonAsciiProjectLogicalRecords": 361,
+    "nonAsciiProjectObservation": "Raw byte a7 is not standalone UTF-8. User subsequently confirmed typing ß on a Mac-based Avid; MacRoman decoding is established for this observed Project pattern. Other writers/locales are not inferred from that specimen.",
+    "modificationMinusFilesystemSeconds": {
+      "2082880800": 76,
+      "2082884400": 313,
+      "0": 2023
+    },
+    "modificationInterpretationLimit": "2023 exact Unix-mtime matches; 389 historical values have 1904-epoch-plus-10h/11h numerical differences. This does not establish all historical writer rules.",
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "before": {
+          "size": 97250,
+          "mtime_ns": 1561095049000000000,
+          "mtime_utc": "2019-06-21T05:30:49+00:00",
+          "inode": 469152,
+          "device": 16777237
+        },
+        "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544",
+        "byteOrder": "little",
+        "bytesConsumed": 97250,
+        "unparsedTailBytes": 0,
+        "stableImmediate": true,
+        "sets": [
+          {
+            "name": "legacy",
+            "version": 8,
+            "declaredCount": 389,
+            "parsedCount": 389,
+            "identityWidthBytes": 32,
+            "complete": true,
+            "physicalFilesExisting": 389,
+            "duplicateFileIds": 0,
+            "duplicateFilenames": 0,
+            "nonAsciiFilenames": 0,
+            "nonAsciiProjects": 0,
+            "utf8ValidProjects": 389
+          },
+          {
+            "name": "unicode",
+            "version": 16,
+            "declaredCount": 389,
+            "parsedCount": 389,
+            "identityWidthBytes": 32,
+            "complete": true,
+            "physicalFilesExisting": 389,
+            "duplicateFileIds": 0,
+            "duplicateFilenames": 0,
+            "nonAsciiFilenames": 0,
+            "nonAsciiProjects": 0,
+            "utf8ValidProjects": 389
+          }
+        ],
+        "setComparison": {
+          "count_equal": true,
+          "paired_records": 389,
+          "differences_by_record_index": {},
+          "first_differences": []
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "before": {
+          "size": 164660,
+          "mtime_ns": 1785052993000000000,
+          "mtime_utc": "2026-07-26T08:03:13+00:00",
+          "inode": 1081385,
+          "device": 16777237
+        },
+        "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79",
+        "byteOrder": "little",
+        "bytesConsumed": 164660,
+        "unparsedTailBytes": 0,
+        "stableImmediate": true,
+        "sets": [
+          {
+            "name": "legacy",
+            "version": 8,
+            "declaredCount": 686,
+            "parsedCount": 686,
+            "identityWidthBytes": 32,
+            "complete": true,
+            "physicalFilesExisting": 686,
+            "duplicateFileIds": 0,
+            "duplicateFilenames": 0,
+            "nonAsciiFilenames": 0,
+            "nonAsciiProjects": 0,
+            "utf8ValidProjects": 686
+          },
+          {
+            "name": "unicode",
+            "version": 16,
+            "declaredCount": 686,
+            "parsedCount": 686,
+            "identityWidthBytes": 32,
+            "complete": true,
+            "physicalFilesExisting": 686,
+            "duplicateFileIds": 0,
+            "duplicateFilenames": 0,
+            "nonAsciiFilenames": 0,
+            "nonAsciiProjects": 0,
+            "utf8ValidProjects": 686
+          }
+        ],
+        "setComparison": {
+          "count_equal": true,
+          "paired_records": 686,
+          "differences_by_record_index": {},
+          "first_differences": []
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "before": {
+          "size": 123140,
+          "mtime_ns": 1790763274000000000,
+          "mtime_utc": "2026-09-30T10:14:34+00:00",
+          "inode": 1082005,
+          "device": 16777237
+        },
+        "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7",
+        "byteOrder": "little",
+        "bytesConsumed": 123140,
+        "unparsedTailBytes": 0,
+        "stableImmediate": true,
+        "sets": [
+          {
+            "name": "legacy",
+            "version": 8,
+            "declaredCount": 513,
+            "parsedCount": 513,
+            "identityWidthBytes": 32,
+            "complete": true,
+            "physicalFilesExisting": 513,
+            "duplicateFileIds": 0,
+            "duplicateFilenames": 0,
+            "nonAsciiFilenames": 0,
+            "nonAsciiProjects": 0,
+            "utf8ValidProjects": 513
+          },
+          {
+            "name": "unicode",
+            "version": 16,
+            "declaredCount": 513,
+            "parsedCount": 513,
+            "identityWidthBytes": 32,
+            "complete": true,
+            "physicalFilesExisting": 513,
+            "duplicateFileIds": 0,
+            "duplicateFilenames": 0,
+            "nonAsciiFilenames": 0,
+            "nonAsciiProjects": 0,
+            "utf8ValidProjects": 513
+          }
+        ],
+        "setComparison": {
+          "count_equal": true,
+          "paired_records": 513,
+          "differences_by_record_index": {},
+          "first_differences": []
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "before": {
+          "size": 111140,
+          "mtime_ns": 1785052993000000000,
+          "mtime_utc": "2026-07-26T08:03:13+00:00",
+          "inode": 1082472,
+          "device": 16777237
+        },
+        "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524",
+        "byteOrder": "little",
+        "bytesConsumed": 111140,
+        "unparsedTailBytes": 0,
+        "stableImmediate": true,
+        "sets": [
+          {
+            "name": "legacy",
+            "version": 8,
+            "declaredCount": 463,
+            "parsedCount": 463,
+            "identityWidthBytes": 32,
+            "complete": true,
+            "physicalFilesExisting": 463,
+            "duplicateFileIds": 0,
+            "duplicateFilenames": 0,
+            "nonAsciiFilenames": 0,
+            "nonAsciiProjects": 0,
+            "utf8ValidProjects": 463
+          },
+          {
+            "name": "unicode",
+            "version": 16,
+            "declaredCount": 463,
+            "parsedCount": 463,
+            "identityWidthBytes": 32,
+            "complete": true,
+            "physicalFilesExisting": 463,
+            "duplicateFileIds": 0,
+            "duplicateFilenames": 0,
+            "nonAsciiFilenames": 0,
+            "nonAsciiProjects": 0,
+            "utf8ValidProjects": 463
+          }
+        ],
+        "setComparison": {
+          "count_equal": true,
+          "paired_records": 463,
+          "differences_by_record_index": {},
+          "first_differences": []
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "before": {
+          "size": 86754,
+          "mtime_ns": 1790740372078265906,
+          "mtime_utc": "2026-09-30T03:52:52.078266+00:00",
+          "inode": 6813560,
+          "device": 16777230
+        },
+        "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a",
+        "byteOrder": "little",
+        "bytesConsumed": 86754,
+        "unparsedTailBytes": 0,
+        "stableImmediate": true,
+        "sets": [
+          {
+            "name": "legacy",
+            "version": 8,
+            "declaredCount": 359,
+            "parsedCount": 359,
+            "identityWidthBytes": 32,
+            "complete": true,
+            "physicalFilesExisting": 359,
+            "duplicateFileIds": 0,
+            "duplicateFilenames": 0,
+            "nonAsciiFilenames": 0,
+            "nonAsciiProjects": 359,
+            "utf8ValidProjects": 0
+          },
+          {
+            "name": "unicode",
+            "version": 16,
+            "declaredCount": 359,
+            "parsedCount": 359,
+            "identityWidthBytes": 32,
+            "complete": true,
+            "physicalFilesExisting": 359,
+            "duplicateFileIds": 0,
+            "duplicateFilenames": 0,
+            "nonAsciiFilenames": 0,
+            "nonAsciiProjects": 359,
+            "utf8ValidProjects": 0
+          }
+        ],
+        "setComparison": {
+          "count_equal": true,
+          "paired_records": 359,
+          "differences_by_record_index": {},
+          "first_differences": []
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+        "before": {
+          "size": 392,
+          "mtime_ns": 1788291482553506886,
+          "mtime_utc": "2026-09-01T19:38:02.553507+00:00",
+          "inode": 14769210,
+          "device": 16777230
+        },
+        "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928",
+        "byteOrder": "little",
+        "bytesConsumed": 392,
+        "unparsedTailBytes": 0,
+        "stableImmediate": true,
+        "sets": [
+          {
+            "name": "legacy",
+            "version": 2,
+            "declaredCount": 2,
+            "parsedCount": 2,
+            "identityWidthBytes": 8,
+            "complete": true,
+            "physicalFilesExisting": 2,
+            "duplicateFileIds": 0,
+            "duplicateFilenames": 0,
+            "nonAsciiFilenames": 0,
+            "nonAsciiProjects": 2,
+            "utf8ValidProjects": 0
+          },
+          {
+            "name": "unicode",
+            "version": 16,
+            "declaredCount": 2,
+            "parsedCount": 2,
+            "identityWidthBytes": 32,
+            "complete": true,
+            "physicalFilesExisting": 2,
+            "duplicateFileIds": 0,
+            "duplicateFilenames": 0,
+            "nonAsciiFilenames": 0,
+            "nonAsciiProjects": 2,
+            "utf8ValidProjects": 0
+          }
+        ],
+        "setComparison": {
+          "count_equal": true,
+          "paired_records": 2,
+          "differences_by_record_index": {
+            "file_id": 2,
+            "master_id": 2
+          },
+          "first_differences": []
+        }
+      }
+    ],
+    "finalStability": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "size": 97250,
+        "mtime_ns": 1561095049000000000,
+        "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544",
+        "sha256_equal_initial": true,
+        "stat_equal_initial": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "size": 164660,
+        "mtime_ns": 1785052993000000000,
+        "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79",
+        "sha256_equal_initial": true,
+        "stat_equal_initial": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "size": 123140,
+        "mtime_ns": 1790763274000000000,
+        "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7",
+        "sha256_equal_initial": true,
+        "stat_equal_initial": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "size": 111140,
+        "mtime_ns": 1785052993000000000,
+        "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524",
+        "sha256_equal_initial": true,
+        "stat_equal_initial": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "size": 86754,
+        "mtime_ns": 1790740372078265906,
+        "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a",
+        "sha256_equal_initial": true,
+        "stat_equal_initial": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+        "size": 392,
+        "mtime_ns": 1788291482553506886,
+        "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928",
+        "sha256_equal_initial": true,
+        "stat_equal_initial": true
+      }
+    ]
+  },
+  "independentMxfIdentityChecks": {
+    "filesChecked": 17,
+    "bytesRead": 2241688,
+    "fileRoleMatches": 17,
+    "masterRoleAndGraphMatches": 17,
+    "essenceRead": false,
+    "method": "Bounded KLV/Primer metadata probe; ECD.LinkedPackageUID and descriptor-owning SourcePackage; active MaterialPackage track/component SourceClip graph. Normalize mixed-endian numeric MobID fields before comparison.",
+    "perFile": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_78D9V02.22180610.586550.mxf",
+        "bytesRead": 124296,
+        "fileMobId": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64",
+        "masterMobId": "060a2b340101010501010f1013000000d97717225586059099ba34363bcdaf64",
+        "metadataSha256": "60e71471624289e9ede127839f56e862cb634e1384e5eef6d91b9dfb23e63c8f",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1025.WAVA01.D8875D20312A78A.mxf",
+        "bytesRead": 125196,
+        "fileMobId": "060a2b340101010501010f1013000000782a3120258505911bcb34363bcdaf64",
+        "masterMobId": "060a2b340101010501010f1013000000702a312025850591436534363bcdaf64",
+        "metadataSha256": "b3e57cbc8316332d8c7276688b531b1bb5f1a328a36ae1f42d470dda8d8166ae",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1046.WAVA02.D77B775B553A70A.mxf",
+        "bytesRead": 129450,
+        "fileMobId": "060a2b340101010101010f0013000000703a555bbd866e0a060e2b347f7f2a80",
+        "masterMobId": "060a2b340101010101010f0013000000703a555bb1866e0a060e2b347f7f2a80",
+        "metadataSha256": "7c27ddc71a8dc946ceb813fdf69c34db0e7edfee5d1497bcee8c59dcaeca0d99",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_781549863709V01A835D72V.mxf",
+        "bytesRead": 123559,
+        "fileMobId": "060a2b340101010501010f1013000000725d831a258505918fa634363bcdaf64",
+        "masterMobId": "060a2b340101010501010f10130000006c5d831a25850591b7e834363bcdaf64",
+        "metadataSha256": "b3a28720e19ec0b017d1acc48952e75d5429978158a24831ec90335de1434878",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A0415E4_1557715577CF1V.mxf",
+        "bytesRead": 136099,
+        "fileMobId": "060a2b340101010501010f1013000000f17c57157311069695617c57583610fa",
+        "masterMobId": "060a2b340101010501010f10130000005d6b2b157311069622b57c57583610fa",
+        "metadataSha256": "104954b9d5ba4fd2e1713d2da74a539010194e7a49c9d7fd45f0eeadde654f8f",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A04182D_16CB616CB6603V.mxf",
+        "bytesRead": 136119,
+        "fileMobId": "060a2b340101010501010f10130000000366cb167311069641ed7c57583610fa",
+        "masterMobId": "060a2b340101010501010f1013000000fd952b1573110696dabc7c57583610fa",
+        "metadataSha256": "0f94d9dbc805727ee8975dabde3cfbd8d12b477119510c3d86900db09982f327",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V02.6A0415BA_154BE154BEE61V.mxf",
+        "bytesRead": 129686,
+        "fileMobId": "060a2b340101010501010f101300000061ee4b15731106965ddf7c57583610fa",
+        "masterMobId": "060a2b340101010501010f10130000002e692b1573110696f4757c57583610fa",
+        "metadataSha256": "11245d8be06eec28188e45c27ccde7c0b6551e34b90bbfe7db50b9c4ff06d74e",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/V01.6A04FFEA_90B47090B47ECV.mxf",
+        "bytesRead": 136109,
+        "fileMobId": "060a2b340101010501010f1013000000ec470b09731106963c3a7c57583610fa",
+        "masterMobId": "060a2b340101010501010f1013000000442aa70873110696bc8a7c57583610fa",
+        "metadataSha256": "e0b691bec1e1e2e787d90fafb162326c2667e930514109c74ade029dc24cbef8",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7301908LMA03.6A04F08801B9FA.mxf",
+        "bytesRead": 133209,
+        "fileMobId": "060a2b340101010501010f10130000009f1b8008731106964ee97c57583610fa",
+        "masterMobId": "060a2b340101010501010f1013000000197f7a0873110696f5d97c57583610fa",
+        "metadataSha256": "8a2ebeaf02369af866ce4c1d65c59e32f01b112596d8e07bca2d64fb97e474c8",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7300109SSA01.6A04F088BC516A.mxf",
+        "bytesRead": 130959,
+        "fileMobId": "060a2b340101010501010f101300000016c58b0873110696598d7c57583610fa",
+        "masterMobId": "060a2b340101010501010f1013000000dd837a087311069696187c57583610fa",
+        "metadataSha256": "8d9bea7f6f13b00078ad90537c0618de209a853cbfcb35f99ba8123da9099ffb",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/V01.6A050309_BF2560BF25691V.mxf",
+        "bytesRead": 136103,
+        "fileMobId": "060a2b340101010501010f10130000009156f20b7311069649d87c57583610fa",
+        "masterMobId": "060a2b340101010501010f1013000000d0e4940b7311069687eb7c57583610fa",
+        "metadataSha256": "a6ee5b69914c5f8aa2be1a9edfe11da609f018537d1e0f7bb1ad1f61902e8ae5",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7303008SSWA02.6A050BC3646EA.mxf",
+        "bytesRead": 131180,
+        "fileMobId": "060a2b340101010501010f10130000006e64c30b731106969b4e7c57583610fa",
+        "masterMobId": "060a2b340101010501010f10130000000be0940b731106964e8c7c57583610fa",
+        "metadataSha256": "5db53b0d19e5f0dd5929f3fd23e6d72a526ac1535d643f32458c1a3504dbdb79",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A05030F_BFADF0BFADF69A.mxf",
+        "bytesRead": 131180,
+        "fileMobId": "060a2b340101010501010f101300000069dffa0b73110696161d7c57583610fa",
+        "masterMobId": "060a2b340101010501010f101300000037e5940b7311069697437c57583610fa",
+        "metadataSha256": "4ea0473e55781c7c9ca07b6f8cfb79e5831467024e52f7c20b147a94270a60a8",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69684C0_1C5401C5406FAV.mxf",
+        "bytesRead": 134023,
+        "fileMobId": "060a2b340101010501010f1013000000fa06541c55120690f7b846fc807fda72",
+        "masterMobId": "060a2b340101010501010f1013000000f006541c55120690f42a46fc807fda72",
+        "metadataSha256": "5df38b66b1534af728b1ed181b39279ba53fbdb0be485dc522cbab639c28e87d",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E69CB57D_CE619CE61917BA.mxf",
+        "bytesRead": 135408,
+        "fileMobId": "060a2b340101010501010f10130000007b9161ce601206909ffb46fc807fda72",
+        "masterMobId": "060a2b340101010501010f10130000006a9161ce60120690aab246fc807fda72",
+        "metadataSha256": "25ef4579bc119ea6622e48a7c1bbc0cf3789cced0be2d5dcf0849a9422627e8b",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E696842B_1BE361BE366C3V.mxf",
+        "bytesRead": 133742,
+        "fileMobId": "060a2b340101010501010f1013000000c366e31b55120690636346fc807fda72",
+        "masterMobId": "060a2b340101010501010f1013000000b266e31b55120690871b46fc807fda72",
+        "metadataSha256": "8a47db0e3e54d1272cb9f44522e36cfc4a4d7d15a303c5f4373cc01d65fc7a3f",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968416_1BD321BD3225EV.mxf",
+        "bytesRead": 135370,
+        "fileMobId": "060a2b340101010501010f10130000005e22d31b55120690bf0246fc807fda72",
+        "masterMobId": "060a2b340101010501010f10130000005622d31b55120690b12e46fc807fda72",
+        "metadataSha256": "38f9e5bc1075a19ab4343f588b4666d7d677b97630c264843955dfda3a520812",
+        "fileRoleMatch": true,
+        "masterRoleAndGraphMatch": true,
+        "stableImmediate": true
+      }
+    ],
+    "repeat": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_78D9V02.22180610.586550.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1025.WAVA01.D8875D20312A78A.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1046.WAVA02.D77B775B553A70A.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_781549863709V01A835D72V.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A0415E4_1557715577CF1V.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A04182D_16CB616CB6603V.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V02.6A0415BA_154BE154BEE61V.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/V01.6A04FFEA_90B47090B47ECV.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7301908LMA03.6A04F08801B9FA.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7300109SSA01.6A04F088BC516A.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/V01.6A050309_BF2560BF25691V.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7303008SSWA02.6A050BC3646EA.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/A01.6A05030F_BFADF0BFADF69A.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69684C0_1C5401C5406FAV.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E69CB57D_CE619CE61917BA.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E696842B_1BE361BE366C3V.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E6968416_1BD321BD3225EV.mxf",
+        "same_metadata_hash": true,
+        "same_before_after_stats": true,
+        "file_role_match": true,
+        "master_role_and_graph_match": true
+      }
+    ],
+    "limit": "Two legacy audio identities not independently checked against embedded OMF."
+  },
+  "github": {
+    "repository": "https://github.com/leancoderkavy/avid-media-composer-mcp",
+    "branch": "main",
+    "commit": "726f81ccd5f5e92fba8b2923dad1101cdf101565",
+    "trackedTreeEntries": 774,
+    "trackedBlobCount": 733,
+    "treeTruncated": false,
+    "searchedTextFiles": 686,
+    "gitBlobHashMismatches": [],
+    "pmrSearchPattern": "\\bpmr\\b|msmFMID|amaFMID|msmMMOB|amaMMOB|ReadPmr|LoadPMR|0x0*7a9",
+    "pmrSearchMatches": [],
+    "findings": [
+      {
+        "claim": "No PMR/MDB parser or record schema identified in searched source, tests, research scripts or documents.",
+        "qualification": "This is a pinned-commit inspection, not a statement about other branches or future releases."
+      },
+      {
+        "claim": ".pmr and .mdb have no classifier cases and fall through to unknown.",
+        "path": "src/analysis/file-inventory.ts",
+        "lines": "64-85"
+      },
+      {
+        "claim": "Project dispatch has configuration, AVB, AAF, ALE, EDL and media analysis, without PMR dispatch.",
+        "path": "src/analysis/project.ts",
+        "lines": "137-232"
+      },
+      {
+        "claim": "Technical media analysis invokes ffprobe, not a PMR decoder.",
+        "path": "src/analysis/media.ts",
+        "lines": "124-145"
+      },
+      {
+        "claim": "Python inspector offers probe, analyze-bin and analyze-aaf commands, using pyavb/pyaaf2.",
+        "path": "python/avid_inspector.py",
+        "lines": "246-303,333-357"
+      },
+      {
+        "claim": "Generic binary configuration inspection reports magic/hash/entropy/strings, not semantic PMR records.",
+        "path": "src/analysis/configuration.ts",
+        "lines": "105-116"
+      },
+      {
+        "claim": "Repository code license is MIT; copied substantial portions require preservation of copyright/permission notice.",
+        "path": "LICENSE",
+        "lines": "1-21"
+      }
+    ],
+    "execution": "Downloaded source text only; no repository code or installation scripts were executed."
+  },
+  "mdvx": {
+    "identity": {
+      "binary": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "bundleVersion": "4073",
+      "shortVersion": "0.2",
+      "architecture": "arm64"
+    },
+    "method": "Hopper pseudo-C plus arm64 instructions and Objective-C metadata; no timed MDVx scan.",
+    "confirmedPmrBehavior": [
+      "NSOperation queue maximum 6; one operation per PMR. Bella requested 4 instead.",
+      "Whole PMR buffered once; serial cursor walk within a job.",
+      "Flat items retain selected fields plus mutable copies of PMR record slices.",
+      "Parser recognizes versions 2, 8 and 16 in inspected paths.",
+      "Parses both record sets then later deduplicates; exact duplicate winner not established.",
+      "Ordinary enrichment can open sibling msmMMOB.mdb, fallback amaMMOB.mdb, when ScanMDB is enabled.",
+      "Optional ScanMXF fallback is separate from PMR parsing.",
+      "Directory names listed once; subtract referenced/reserved names; per-file filesystem checks remain.",
+      "Missing or zero-count PMR prevents inspected directory-listing path.",
+      "Batch append uses short shared lock; parsing occurs outside it.",
+      "MDB lookup uses 8-byte identity excerpt at offset 16."
+    ],
+    "extensionGate": {
+      "function": "PMRFile FillItem:",
+      "addresses": [
+        "0x100039e84",
+        "0x100039ec8",
+        "0x100039ecc",
+        "0x100039ed0",
+        "0x100039f88"
+      ],
+      "behavior": "Require extension version16 and count equal to the original first-set count; otherwise warn/stop. Resets cursor count on success without adopting independent second count.",
+      "comparison": "Native MC writer can legitimately emit unequal counts; none of six live PMRs exercises this difference."
+    },
+    "textBranches": {
+      "function": "MDVxDatabaseItem setupWithPmrBytes:length:PMRVersion:usebyteswap:",
+      "legacyFilenameAscii": [
+        "0x1000305c0",
+        "0x1000305c4"
+      ],
+      "legacyProjectAscii": [
+        "0x10003065c",
+        "0x100030688"
+      ],
+      "v16FilenameMarkedUtf8": [
+        "0x100030584",
+        "0x100030664",
+        "0x100030674"
+      ],
+      "v16ProjectMarkedUtf8": [
+        "0x100030618",
+        "0x100030678",
+        "0x100030688"
+      ],
+      "behavior": "v16 filename and project use UTF-8 only when the first 16-bit payload word is zero; skip that prefix. Otherwise ASCII path. Ordinary legacy strings request ASCII.",
+      "enumDefinitions": {
+        "NSASCIIStringEncoding": 1,
+        "NSUTF8StringEncoding": 4
+      },
+      "sdkHeader": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Foundation.framework/Headers/NSString.h"
+    }
+  },
+  "limitations": [
+    "No comparative timing or peak-memory benchmark; concurrency limit does not establish speedup.",
+    "No production source changed or Bella parser implemented.",
+    "Live samples are little-endian; no genuine v1, unequal-count, malformed or non-ASCII-filename PMR in this set.",
+    "Native static behavior for missing/invalid records must be distinguished from Bella inventory policy.",
+    "No universal legacy text codepage or historical DTM epoch established.",
+    "Temporary generated probes and decompilation stay outside repository documentation."
+  ],
+  "textEncodingFollowUp": "pmr-text-encoding-2026-10-18.json",
+  "approvedBellaTextRule": {
+    "date": "2026-10-18",
+    "status": "User-approved requirements; not implemented",
+    "authority": "Project Bella/README.md#agreed-pmr-reading-rules",
+    "userInstruction": "OK understood. let's lock that in for Bella: use v16 set when usable, read Filename as UTF-8 and Project as MacRoman, and fall back to the older set only if v16 is missing or unusable.",
+    "setSelection": "Use a usable version-16 record set; use the older base set only if version 16 is missing or unusable. Select a whole set, not a Project-only fallback.",
+    "version16": {
+      "filename": "UTF-8",
+      "project": "MacRoman"
+    },
+    "olderSet": {
+      "filename": "MacRoman",
+      "project": "MacRoman when stored; version 1 has no stored Project"
+    },
+    "deferred": "How Windows producers write Project names remains deferred. The usable-set and damage checks are now user-approved; see approvedBellaSetFallback. PMR DTM interpretation and use remain excluded."
+  },
+  "approvedBellaModificationRule": {
+    "date": "2026-10-18",
+    "status": "User-approved requirements; not implemented",
+    "rule": "Ignore PMR DTM throughout Bella scanner/parser pipeline; bounded skip of four bytes only, no retention, date interpretation, time comparison or scan trigger.",
+    "evidence": "pmr-modification-2026-10-18.json: bellaDecision"
+  },
+  "mdvxIdentityFollowup": {
+    "date": "2026-10-18",
+    "evidence": "mdvx-identities-2026-10-18.json",
+    "report": "docs/reviews/2026-10-18-bella-pmr/REVIEW.md#mdvx-handling-of-filemobid-and-mastermobid",
+    "conclusion": "MDVx stores full modern IDs but compares an eight-byte excerpt for MDB and ordinary bin matching. Ordinary duplicate-row equality also requires the same path."
+  },
+  "approvedBellaIdentityRules": {
+    "date": "2026-10-18",
+    "status": "User-approved requirements; not implemented",
+    "authority": "Project Bella/README.md#agreed-identity-and-duplicate-rules",
+    "fullIds": "Read complete FileMobId and MasterMobId, not only an eight-byte excerpt of modern IDs. Respect complete legacy representations when falling back.",
+    "kelpieId": "Retain current internal MediaMuster scan-session row identifier, independent of Avid IDs.",
+    "samePathAndSameFileMobId": "Ignore duplicate inventory entry; keep existing row and KelpieId.",
+    "differentPathAndSameFileMobId": "Keep each row with its own unique KelpieId.",
+    "scope": "Inventory row duplication; eligible metadata may still enrich the kept row. No new cross-scan persistence specified.",
+    "unresolved": [
+      "Unknown/unreadable IDs in duplicate comparisons",
+      "Path aliases and case ambiguities",
+      "Detailed internal ID-storage representation"
+    ],
+    "samePathConflictingFileMobIds": "For release one, the user explicitly assumes this cannot happen. Do not add conflict-handling machinery."
+  },
+  "concurrencyClarification": {
+    "approvedMaximum": 4,
+    "unit": "One PMR file per job, including its older and v16 sets. Up to four PMR jobs in progress at once.",
+    "cpuMeaning": "No reserved CPU/core count; workers are scheduled by the OS and may wait for storage. No speed multiplier established.",
+    "notYetSelected": "Worker implementation mechanism and later MDB/media-header concurrency."
+  },
+  "binFilterScopeClarification": {
+    "date": "2026-10-18",
+    "status": "User scope clarification; existing Bin Filter system remains unchanged",
+    "authority": "Project Bella/README.md#agreed-identity-and-duplicate-rules",
+    "userInstruction": "This scope is for the Scanner/parser system. We are leaving the Bin Filter system alone, just confirmed that MDVX also uses FileMobId to filter Bins.",
+    "scope": "Bella replaces the scanner/parser system only. The Bin Filter system is outside Bella and remains unchanged; no new bin algorithm, matching or per-row behavior is required.",
+    "comparisonConfirmed": "The inspected MDVx bin filtering uses FileMobId identity; that comparison does not approve changes to MediaMuster Bin Filter behavior."
+  },
+  "approvedBellaSetFallback": {
+    "date": "2026-10-18",
+    "status": "User-approved release-one policy; not implemented",
+    "authority": "Project Bella/README.md#agreed-pmr-reading-rules",
+    "userInstruction": "For now, the first release of the app: lets keep it basic and straight forward. If an entry is damaged, abandon the set and fall back to another set. How should we determine this?",
+    "damagedRecord": "Any damaged record makes its entire set unusable; do not salvage individual records or combine metadata from the two sets.",
+    "setSelection": "Prefer a usable version-16 set. If it is missing or unusable, use the older set only if that whole set is usable.",
+    "neitherUsable": "Use no PMR metadata when neither set is usable. Keep the physical media-file inventory independently.",
+    "validationStatus": "User-approved release-one damage and usability checks on 18 October 2026; not implemented.",
+    "validationApproval": "OK, let's lock those checks in for Bella.",
+    "approvedChecks": {
+      "completeEntry": "Every declared record must contain all bytes required by its supported version: complete IDs, length words and counted text payloads, and the four bounded skipped modification bytes. A short record makes its whole set unusable.",
+      "lengthsAndCounts": "Stored text lengths and record counts must fit the available data; an overrun or impossible count makes the whole set unusable.",
+      "version16Filename": "Require the verified v16 filename framing and strict UTF-8. Its two reserved prefix bytes must be present and the first zero; the native PMR helper does not constrain the second. Invalid framing or UTF-8 makes the whole set unusable.",
+      "emptyFilename": "An empty or null Filename makes the whole set unusable because it cannot associate that entry with a physical file. This is a Bella usability rule, not proof of structural corruption.",
+      "emptySet": "A set with no entries supplies no usable PMR metadata; fall back to the other usable set."
+    },
+    "notDamage": [
+      "Blank Project",
+      "Fields legitimately absent in older versions, including v1 Project and MasterMobId",
+      "Different entry counts between the older and version-16 sets",
+      "A database reference to a physical file that has since disappeared"
+    ],
+    "safeVersion16Location": "The older set physically precedes v16. Follow its lengths and counts safely to locate v16; if damaged framing makes that boundary unknowable, ignore PMR metadata rather than search for a plausible version word. Keep physical inventory.",
+    "validationLimit": "These checks cannot detect every incorrect value with a valid representation. MacRoman accepts every byte, so successful decoding does not prove a Project character is correct. Ignored modification values are not inspected for semantic validity."
+  }
+}

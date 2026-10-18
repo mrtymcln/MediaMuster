@@ -1,0 +1,1021 @@
+{
+  "date": "2026-10-18",
+  "purpose": "Close the actual PMR Project-name display path in installed Media Composer before choosing Bella encoding policy.",
+  "scope": "Static arm64 decompilation, instructions, vtables, Mach-O binds and concrete control construction; no private Avid API execution or media rescanning.",
+  "applicationVersion": "26.8.0.58987",
+  "binaryIdentities": [
+    {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer",
+      "size": 215615984,
+      "sha256": "a4a1d1b41f2f8b509781c3b8a50286c0cd7c9746cf85e609ec5a7bcbf45a727a",
+      "uuids": [
+        "UUID: CAFB1223-D926-3C6E-94E2-D7D09073B0A0 (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer",
+        "UUID: D636BCED-BAF3-3940-A21E-33ADE42EBFAB (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer"
+      ]
+    },
+    {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libUIshell.dylib",
+      "size": 5848384,
+      "sha256": "3af24ea7b55d6dc949e529346bf68c61de0c83ca08117f68eaa87a4e319461be",
+      "uuids": [
+        "UUID: BE6A3671-CA31-3322-BD1C-7ED3A729C29B (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libUIshell.dylib",
+        "UUID: F26124E1-1817-3107-BFA7-130E56DA566A (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libUIshell.dylib"
+      ]
+    },
+    {
+      "app": "/Applications/Avid Media Composer/AvidMediaComposer.app",
+      "library": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "version": "26.8.0.58987",
+      "build": "26.8.0",
+      "size": 73527536,
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+      "uuid": "UUID: 9CC3CF45-9F28-380C-949C-C7B321D0858A (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib\nUUID: D55FFCED-FD76-3667-99B8-C9A84180173E (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "uuid_error": "",
+      "file": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib: Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit dynamically linked shared library x86_64] [arm64]\n/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib (for architecture x86_64):\tMach-O 64-bit dynamically linked shared library x86_64\n/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib (for architecture arm64):\tMach-O 64-bit dynamically linked shared library arm64",
+      "file_error": ""
+    },
+    {
+      "name": "AvidCore",
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+      "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+      "uuid": "UUID: F10B2E1F-07ED-31AC-8DDD-C2122C7B4405 (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore\nUUID: EDC22A12-1101-3C73-A57C-4256A82633F9 (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore\n"
+    },
+    {
+      "name": "Mac2Qt",
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/Mac2Qt.framework/Versions/A/Mac2Qt",
+      "sha256": "1551e56d4039ad08929cb626bf804f0e1223c6a39c61003db87b2770415981f6",
+      "uuid": "UUID: C3555E14-132A-3DE0-AFFD-44049E63F84C (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/Mac2Qt.framework/Versions/A/Mac2Qt\nUUID: 26061054-16EF-3798-AEBC-AAC29A53FB60 (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/Mac2Qt.framework/Versions/A/Mac2Qt\n"
+    }
+  ],
+  "conclusions": [
+    "The accepted stored PMR Project bytes reach the known-project cache unchanged; the actual Media Tool chooser explicitly decodes them using CurrentMacMBCSEncodingToUTF16.",
+    "The converter supplies selector 5 to EncodedToUTF16, which queries CFStringGetSystemEncoding and creates Unicode from the returned codec. No UTF-8-first trial or originating-code-page lookup occurs on this route.",
+    "Projects_ListBox is concretely created as ATextListPane. Its actual UTF16 setter round-trips through current Mac legacy bytes, then stores UTF16 and reaches QString::fromUtf16 and QPainter::drawText.",
+    "The bin Project column is distinct: FindProjectName resolves composition/source attributes, then uses the same current-Mac decoder before returning Unicode to Qt.",
+    "Empty PMR Project may acquire current-project context; the chooser may also add the current project when absent.",
+    "The separately run public CoreFoundation probe returned MacRoman and A7 -> U+00DF, agreeing with the user-confirmed Mac-created sharp-s project. This was not an in-process Media Composer observation.",
+    "This establishes the native Mac decoder rule, not a universal source encoding for every historical PMR. Bella policy remains undecided; no production code changed."
+  ],
+  "pmrToCache": [
+    {
+      "function": "ReadPmrRec",
+      "address": "0x4474e0",
+      "steps": [
+        "For stored Project (version!=1), read counted bytes through AStream::ReadString at0x4477f8..0x447814 into record+0x240. No Unicode/MacRoman/UTF8 conversion there.",
+        "Version1 has no stored Project; that separate branch attempts FindProjectName from existing objects."
+      ]
+    },
+    {
+      "function": "MSMDBMediaStreamMgr::LoadPMR",
+      "address": "0x4443f0",
+      "steps": [
+        "Legacy and Unicode record vectors built independently. Nonempty accepted Unicode vector preferred; otherwise legacy vector.",
+        "For each selected record, fileID/masterID/timestamp/name supplied to virtual AddCacheEntry. Project argument x5 points at record+0x240 at0x445334; call0x445348 through manager virtual+0x328.",
+        "No source-platform, original-language, or codepage parameter accompanies Project on this path."
+      ]
+    },
+    {
+      "function": "MSMDBMediaStreamMgr::AddCacheEntry",
+      "address": "0x452f60",
+      "steps": [
+        "Project argument x5 saved in x26 at0x452f88.",
+        "Nonempty Project copied unchanged with strcpy at0x453040..0x453050; empty/null project uses current-project getter fallback at0x453058..0x45306c.",
+        "Allocate strlen+1 and strcpy unchanged bytes at0x45307c..0x453094.",
+        "Search _gProjectList0x1511910 using AArray::Search (slot+0xb0), LocalStrcmp0x45aeb8 -> strcmp; deduplicate exact stored spelling.",
+        "If absent, insert char* pointer at new index through AArray::InsertAtIndex (slot+0x68); if already present, discard new allocated copy.",
+        "Interned index retained in fileInfo+0x8, through pair stored at0x453174. No encoding tag or conversion is created."
+      ]
+    },
+    {
+      "function": "MSMDBMediaStreamMgr::IMediaStreamMgr",
+      "address": "0x444128",
+      "steps": [
+        "Initialize _gProjectList at0x4441e4..0x4441f8 using AArray::NewWithSlotAndBlock(8,10,10); slots hold char* project strings."
+      ]
+    },
+    {
+      "function": "MSMDBMediaStreamMgr::GetKnownProjects",
+      "address": "0x452f0c",
+      "virtualSlot": "0x190",
+      "steps": [
+        "Load _gProjectList0x1511910 at0x452f18..0x452f1c.",
+        "Call AArray::Copy through slot+0x8 at0x452f28.",
+        "Sort copied array through AArray::Qsort slot+0x120 at0x452f40, comparator LocalCIStrcmp0x452f54 -> CIstrcmp.",
+        "Return sorted AArray of project char* pointers. No decoding/conversion occurs on the getter path."
+      ]
+    },
+    {
+      "function": "AArray::Copy",
+      "address": "AvidCore0xd80a4",
+      "steps": [
+        "Copy AObject then duplicate slot storage with AvPtrToPtr; project char* values remain pointers to existing interned strings. No string recoding."
+      ]
+    },
+    {
+      "function": "LocalCIStrcmp / CIstrcmp",
+      "address": "libame0x452f54 / AvidCore0xb6e70",
+      "steps": [
+        "Comparator dereferences slot char* pointers and uses bytewise tolower comparisons. Does not replace or transcode stored strings."
+      ]
+    }
+  ],
+  "managerDispatch": {
+    "vtable": "0x12bdf90",
+    "primaryAddressPoint": "0x12bdfa0",
+    "getKnownProjects": {
+      "offset": "0x190",
+      "target": "0x452f0c"
+    },
+    "addCacheEntry": {
+      "offset": "0x328",
+      "target": "0x452f60"
+    },
+    "currentProject": {
+      "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "architecture": "arm64",
+      "vtable": "0x12bdf90",
+      "addressPoint": "0x12bdfa0",
+      "methodOffset": "0x1e8",
+      "slotAddress": "0x12be188",
+      "rawChainedPointer": "0x100000004443d0",
+      "target": "0x4443d0",
+      "symbol": "__ZN19MSMDBMediaStreamMgr17GetCurProjectNameEPci"
+    }
+  },
+  "currentProjectGetter": {
+    "date": "2026-10-18",
+    "proof": {
+      "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "architecture": "arm64",
+      "vtable": "0x12bdf90",
+      "addressPoint": "0x12bdfa0",
+      "methodOffset": "0x1e8",
+      "slotAddress": "0x12be188",
+      "rawChainedPointer": "0x100000004443d0",
+      "target": "0x4443d0",
+      "symbol": "__ZN19MSMDBMediaStreamMgr17GetCurProjectNameEPci"
+    },
+    "getterInstructions": [
+      {
+        "address": "0x4443d0",
+        "instruction": "ldr x8,[x0,#0x28]",
+        "meaning": "Read manager current-project char*."
+      },
+      {
+        "address": "0x4443d4",
+        "instruction": "cbz x8,0x4443e8",
+        "meaning": "If null, return null."
+      },
+      {
+        "address": "0x4443d8..0x4443e4",
+        "instruction": "sxtw x2,w2; mov x0,x1; mov x1,x8; b strncpy",
+        "meaning": "Copy requested bytes to caller buffer without character decoding."
+      }
+    ],
+    "provenanceCaveats": [
+      "AddCacheEntry uses GetCurProjectName as fallback for an empty/null Project, so a cached/displayed Project can be supplied by current project context rather than stored in that PMR record.",
+      "GetKnownProjects returns interned C-string Project bytes in a sorted copied pointer array; UI conversion, not this getter, establishes displayed Unicode.",
+      "The AME Project column is a distinct composition/attribute lookup path (_PJ/PROJNAME, _USER._PJ and referenced-source lookups), not a direct PMR-record-to-column display.",
+      "A standalone public CFStringGetSystemEncoding probe proves its own process result. Without an in-process MC observation, describe MC decoder as statically calling that API and the same-machine probe separately; app-specific language overrides or process environment were not tested here.",
+      "No foreign-producer encoding tag or source-locale repair was found in these inspected paths. This supports a statement about the traced paths, not every historical/platform implementation."
+    ],
+    "evidenceFile": {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-engine/__ZN19MSMDBMediaStreamMgr17GetCurProjectNameEPci.txt",
+      "bytes": 469,
+      "sha256": "3ed874f654cf42efdd2bd7c64301e0b415e39aff9fdcffe036bccb5035ea36ed"
+    }
+  },
+  "actualChooser": {
+    "caller": {
+      "symbol": "__Z19MToolSetDisplayableP5brRecb",
+      "address": "0x100e361b0"
+    },
+    "getKnownProjects": {
+      "getMsmdbCall": "0x100e36654",
+      "vtableOffset": "0x190",
+      "indirectCall": "0x100e3666c",
+      "returnedPointerStoredAt": "0x10478dc60",
+      "globalSymbol": "__ZL8ProjList"
+    },
+    "dialogInit": {
+      "symbol": "__ZN17MediaSelectionDlg18IMediaSelectionDlgEP5brRecPPhS3_",
+      "address": "0x100e374dc"
+    },
+    "dataPath": [
+      {
+        "address": "0x100e37560",
+        "action": "Load ProjList pointer and count."
+      },
+      {
+        "address": "0x100e376fc",
+        "action": "Fetch each project-name pointer through AArray virtual+0x90."
+      },
+      {
+        "address": "0x100e3771c",
+        "action": "Call CurrentMacMBCSEncodingToUTF16(char const*,char16_t*,size_t), output capacity256 UTF16 units."
+      },
+      {
+        "address": "0x100e37738",
+        "action": "Load DialogWindow primary virtual+0x508; pass Projects_ListBox and the converted UTF16 buffer."
+      },
+      {
+        "address": "0x100e3774c",
+        "action": "Indirect call to DialogWindow::SetTextValUTF16, verified by most-derived vtable and MachO bind."
+      }
+    ],
+    "vtableProof": {
+      "constructorSymbol": "__ZN17MediaSelectionDlgC2EhPKc",
+      "constructorAddress": "0x100e3a56c",
+      "vtableSymbol": "__ZTV17MediaSelectionDlg",
+      "vtableAddress": "0x1045a5fd8",
+      "primaryAddressPoint": "0x1045a5fe8",
+      "slotOffset": "0x508",
+      "slotAddress": "0x1045a64f0",
+      "boundLibrary": "libUIShell",
+      "boundSymbol": "__ZN12DialogWindow15SetTextValUTF16EPKcPKDs",
+      "boundFunctionAddress": "0x74728",
+      "bindReceipt": "__DATA_CONST __const            0x1045A64F0 bind ptr        0 libUIShell       __ZN12DialogWindow15SetTextValUTF16EPKcPKDs",
+      "narrowSetterSlotOffset": "0x4f8",
+      "narrowSetterSlotAddress": "0x1045a64e0",
+      "narrowSetterBoundSymbol": "__ZN12DialogWindow10SetTextValEPKcS1_",
+      "narrowSetterFunctionAddress": "0x747bc"
+    },
+    "meaning": "The actual PMR-backed Media Tool project chooser explicitly decodes names through current Mac MBCS. It does not guess UTF8 from valid byte sequences and does not use the PMR Unicode-filename marker to decode Project.",
+    "controlClassProof": {
+      "dialogDesignSymbol": "__ZN17MediaSelectionDlg16DialogDesignInitEv",
+      "dialogDesignAddress": "0x100e3a634",
+      "literalNameAddress": "0x100e3a6ec",
+      "factoryCallAddress": "0x100e3a70c",
+      "factorySymbol": "__ZN12DialogWindow15AddTextListPaneEPKcS1_ssssssS1_hhss",
+      "factoryAddressInUIShell": "0x77c48",
+      "newTextListPaneCall": "0x77cd0",
+      "newSymbol": "__ZN13ATextListPane3NewEP5APanessssss10AvRGBColor10frameStyle",
+      "nameIdForwardedToNewPane": "0x77ce0..0x77cec via virtual+0x430",
+      "returnsNewPane": "0x77e5c",
+      "conclusion": "Projects_ListBox is concretely constructed as an ATextListPane; the SetTextVal ATextListPane branch is the actual control path."
+    },
+    "provenanceQualification": "The current project may supplement the chooser list. The engine getter is verified separately below."
+  },
+  "actualChooserControlToQt": {
+    "date": "2026-10-18",
+    "scope": "Complete static chooser route after MediaSelectionDlg converts PMR known-project narrow bytes to UTF16. No private API execution.",
+    "conclusion": "The actual Projects_ListBox chooser control ends in UTF16 storage and QString/QPainter Unicode drawing. Its SetTextValUTF16 interface first round-trips through current Mac MBCS, so it is not pure UTF16 pass-through. With current system MacRoman this roundtrip preserves the observed sharp-s byte mapping.",
+    "chain": [
+      {
+        "binary": "main",
+        "address": "0x100e3771c",
+        "function": "IMediaSelectionDlg",
+        "operation": "CurrentMacMBCSEncodingToUTF16 on known PMR project string; supplied UIowner proof."
+      },
+      {
+        "binary": "main",
+        "address": "0x100e3774c",
+        "function": "IMediaSelectionDlg",
+        "operation": "Dialogvirtual+0x508 with Projects_ListBox and UTF16buffer."
+      },
+      {
+        "binary": "main",
+        "address": "0x1045a64f0",
+        "operation": "MediaSelectionDlg primaryvtable+0x508 bind -> DialogWindow::SetTextValUTF16."
+      },
+      {
+        "binary": "libUIshell",
+        "address": "0x74728",
+        "function": "DialogWindow::SetTextValUTF16",
+        "symbol": "__ZN12DialogWindow15SetTextValUTF16EPKcPKDs",
+        "operation": "UTF16ToCurrentMacMBCSEncodingString at0x74754; virtual+0x4f8 with narrow string at0x74778."
+      },
+      {
+        "binary": "main",
+        "address": "0x1045a64e0",
+        "operation": "MediaSelectionDlg primaryvtable+0x4f8 bind -> DialogWindow::SetTextVal."
+      },
+      {
+        "binary": "libUIshell",
+        "address": "0x747bc",
+        "function": "DialogWindow::SetTextVal",
+        "symbol": "__ZN12DialogWindow10SetTextValEPKcS1_",
+        "operation": "FindPaneByID; ATextListPane IsInstanceOf at0x74854..68; call ATextListEntry::New at0x74888; append throughvirtual+0x7f0 at0x74894."
+      },
+      {
+        "binary": "libUIshell",
+        "address": "0xd56b0",
+        "function": "ATextListEntry::New",
+        "symbol": "__ZN14ATextListEntry3NewEsPKc",
+        "operation": "CurrentMacMBCSEncodingToUnicodeString at0xd56dc; ICU getTerminatedBuffer; call NewUTF16 at0xd56f0."
+      },
+      {
+        "binary": "libUIshell",
+        "address": "0xd574c",
+        "function": "ATextListEntry::NewUTF16",
+        "symbol": "__ZN14ATextListEntry8NewUTF16EsPKDs",
+        "operation": "Allocate UTF16handle; u_strcpy at0xd5784; assign actual entryvptr0x1586b0 at0xd57a0 andhandle+0x18 at0xd57a4."
+      },
+      {
+        "binary": "libUIshell",
+        "address": "0xc6564",
+        "function": "ATextListPane::AddEntry",
+        "symbol": "__ZN13ATextListPane8AddEntryEP10AListEntry",
+        "operation": "Actualpanevtable+0x7f0; delegates AListPane::AddEntry at0xc65ec; storesentry without furthertextconversion."
+      },
+      {
+        "binary": "libUIshell",
+        "address": "0xbcda0",
+        "function": "AListPane::DrawDetail",
+        "symbol": "__ZN9AListPane10DrawDetailEP6AvRect10AvRGBColorPv",
+        "operation": "For visible entries, virtual+0x70 at0xbcfe8/0xbcffc."
+      },
+      {
+        "binary": "libUIshell",
+        "address": "0xd593c",
+        "function": "ATextListEntry::DrawDetail",
+        "symbol": "__ZN14ATextListEntry10DrawDetailEP6AvRect10AvRGBColorPv",
+        "operation": "Actualentryvtable+0x70; dereferenceUTF16handle+0x18 at0xd59c8/0xd59fc; CDrawStringUTF16 at0xd5a00."
+      },
+      {
+        "binary": "libUIshell",
+        "address": "0xa3e64",
+        "function": "CDrawStringUTF16",
+        "symbol": "__Z16CDrawStringUTF16PKDs",
+        "operation": "u_strlen then tailcall Mac2Qt::DrawTextBufUTF16 at0xa3e90."
+      },
+      {
+        "binary": "Mac2Qt",
+        "address": "0xe9a8",
+        "function": "Mac2Qt::DrawTextBufUTF16",
+        "symbol": "__ZN6Mac2Qt16DrawTextBufUTF16EbPKDsss",
+        "operation": "QString::fromUtf16 at0xe9d4; DrawTextUTF16 at0xe9e8."
+      },
+      {
+        "binary": "Mac2Qt",
+        "address": "0xe934",
+        "function": "Mac2Qt::DrawTextUTF16",
+        "symbol": "__ZN6Mac2Qt13DrawTextUTF16EbRK7QStringss",
+        "operation": "QString substring then StdTextInternalUTF16 at0xe978."
+      },
+      {
+        "binary": "Mac2Qt",
+        "address": "0x12f08",
+        "function": "Mac2Qt::StdTextInternalUTF16",
+        "symbol": "__ZN6Mac2Qt20StdTextInternalUTF16EbRK7QStringRK5PointS5_",
+        "operation": "QPainter::drawText(QPointF,QString) at0x12fd4; no narrow text redecoding."
+      }
+    ],
+    "virtualDispatch": [
+      {
+        "class": "ATextListPane",
+        "vtable": "0x14ffd8",
+        "addressPoint": "0x14ffe8",
+        "slot": "0x7f0",
+        "entryAddress": "0x1507d8",
+        "raw": "0x100000000c6564",
+        "target": "0xc6564",
+        "symbol": "__ZN13ATextListPane8AddEntryEP10AListEntry"
+      },
+      {
+        "class": "ATextListPane",
+        "vtable": "0x14ffd8",
+        "addressPoint": "0x14ffe8",
+        "slot": "0x808",
+        "entryAddress": "0x1507f0",
+        "raw": "0x100000000bcc84",
+        "target": "0xbcc84",
+        "symbol": "__ZN9AListPane13GetNumEntriesEv"
+      },
+      {
+        "class": "ATextListEntry",
+        "vtable": "0x1586a0",
+        "addressPoint": "0x1586b0",
+        "slot": "0x70",
+        "entryAddress": "0x158720",
+        "raw": "0x100000000d593c",
+        "target": "0xd593c",
+        "symbol": "__ZN14ATextListEntry10DrawDetailEP6AvRect10AvRGBColorPv"
+      }
+    ],
+    "limits": [
+      "Static route for installed Mac arm64 Media Composer26.8.0.58987. Actual font glyph rasterization outside text encoding question.",
+      "Current system encoding and source PMR writer encoding are separate facts; this display path uses reader current Mac encoding."
+    ]
+  },
+  "mainBinColumnBridge": {
+    "functions": [
+      {
+        "symbol": "__ZNK9ABinModel4dataERK11QModelIndexi",
+        "address": "0x100d165dc"
+      },
+      {
+        "symbol": "__Z15binGetTextUTF16P5brRecPP7objinfosPDss",
+        "address": "0x100e65150"
+      },
+      {
+        "symbol": "__Z15MobGetTextUTF16P12ACompositionPDsmsPKch",
+        "address": "0x100e61014"
+      },
+      {
+        "symbol": "__Z14AME_MobGetTextP12ACompositionPDsisPKcihh",
+        "importStub": "0x101ead340"
+      }
+    ],
+    "dataPath": [
+      {
+        "address": "0x100d17374",
+        "action": "ABinModel normal text data calls binGetTextUTF16."
+      },
+      {
+        "address": "0x100e652f4",
+        "action": "binGetTextUTF16 resolves composition via MobManager and calls MobGetTextUTF16 with column type."
+      },
+      {
+        "address": "0x100e61494",
+        "action": "MobGetTextUTF16 invokes AME_MobGetText for its engine-backed column branch."
+      },
+      {
+        "address": "0x100d17388",
+        "action": "UTF16 result enters QString::fromUtf16."
+      },
+      {
+        "address": "0x100d17394",
+        "action": "QString enters QVariant for Qt model data."
+      }
+    ],
+    "qualification": "The engine Project case below resolves composition/source attributes. This does not establish exclusively MDB or PMR provenance for every composition."
+  },
+  "engineProjectColumn": {
+    "date": "2026-10-18",
+    "scope": "Distinct Media Composer Project column in AME_MobGetText; arm64 static analysis, no private API execution.",
+    "function": {
+      "symbol": "__Z14AME_MobGetTextP12ACompositionPDsisPKcihh",
+      "address": "0x243794"
+    },
+    "columnSwitch": [
+      {
+        "columnIdentifier": 204,
+        "switchIndex": 203,
+        "encodedTableHalfword": 2381,
+        "jumpTableAddress": "0x10ecdee",
+        "target": "0x245ed8"
+      }
+    ],
+    "switchDerivation": "Argument x3 supplies internal short column identifier, saved x21. At0x243950 index=column-1; maxindex203. At0x24397c tablebase0x10ecc58; at0x243988 load unsigned16 offset; branch target0x2439a4 + entry*4. Entry203 (column204) equals2381 and targets0x245ed8. This is not a visible table column position.",
+    "case": [
+      {
+        "address": "0x245ed8..0x245ee0",
+        "operation": "CompIsASequence; sequence returns blank via common exit."
+      },
+      {
+        "address": "0x245ee4..0x245f08",
+        "operation": "Zero 256-byte temporary char buffer."
+      },
+      {
+        "address": "0x245f0c..0x245f1c",
+        "operation": "FindProjectName(comp, track0, temporaryCharBuffer,256)."
+      },
+      {
+        "address": "0x245f20..0x245f2c",
+        "operation": "CurrentMacMBCSEncodingToUTF16(temporaryCharBuffer, UTF16 output,256)."
+      },
+      {
+        "address": "0x245f30",
+        "operation": "Branch common return path; output is already UTF16."
+      }
+    ],
+    "metadataLookup": [
+      {
+        "function": "FindProjectName",
+        "address": "0x29e974",
+        "operation": "First CMGetProjectName(comp,out,length); on failure GetPropValue(\"_PJ\",comp,out,length,true); if still absent, follow source compositions and retry CMGetProjectName."
+      },
+      {
+        "function": "CMGetProjectName",
+        "address": "0x282b9c",
+        "operation": "Query composition attribute list _PJ; fallback PROJNAME; AAttrList::FindString char-output route."
+      },
+      {
+        "function": "GetPropValue",
+        "address": "0x29eaf8",
+        "operation": "Query _USER named list for requested _PJ via FindString; when missing/empty and followSources true, PropValueVisitor traverses media tracks."
+      },
+      {
+        "function": "PropValueVisitor::VisitSourceClip",
+        "address": "0x2ace60",
+        "operation": "For source compositions, query _USER list and requested _PJ. Current call has nonnull char buffer, so uses AAttrList FindString at0x2acf38..0x2acf44; no UTF8 output mode enabled."
+      },
+      {
+        "function": "AAttrList::FindString",
+        "address": "0x1775e0",
+        "operation": "Delegates CoreAttrList::FindString0x6dd10 (vtable targets verified in previous task)."
+      },
+      {
+        "function": "CoreAttrList::FindString",
+        "address": "AvidCore0x6dd10",
+        "operation": "Kind2 raw legacy string copied through FindStringOnly0x6de28; kind4 UTF8 string converted through UTF8ToCurrentMacMBCSEncoding0x12c840."
+      }
+    ],
+    "finalDecoding": [
+      {
+        "function": "CurrentMacMBCSEncodingToUTF16",
+        "address": "AvidCore0x12c7f4",
+        "operation": "Uses strlen, passes ScriptEncoding selector5 at0x12c820 to EncodedToUTF16."
+      },
+      {
+        "function": "EncodedToUTF16",
+        "address": "AvidCore0x12bb3c",
+        "operation": "Selector5 calls CFStringGetSystemEncoding at0x12bb88, then CFStringCreateWithBytes at0x12bba0 under returned encoding."
+      }
+    ],
+    "distinctionFromPmr": [
+      "This visible column case resolves Project through composition metadata and linked sources, not directly through a PMR record or GetKnownProjects.",
+      "The separate PMR project-selection list obtains raw PMR bytes through GetKnownProjects; parent traced its UI caller to the same CurrentMacMBCSEncodingToUTF16 helper.",
+      "A UTF8 attribute may be converted to current Mac bytes before the final UTF16 conversion. This is the actual native path, not proof that every international character survives that intermediate encoding.",
+      "No original-producer encoding tag or per-record codepage is passed into the final conversion in this column case."
+    ]
+  },
+  "publicCoreFoundationProbe": {
+    "systemEncoding": 0,
+    "encodingName": "Western (Mac OS Roman)",
+    "macRomanConstant": 0,
+    "byteA7Unicode": 223,
+    "unicodeHex": "U+00DF",
+    "decodedCharacter": "ß",
+    "timestampUtc": "2026-10-18T04:01:31.798517+00:00",
+    "macOsVersion": "15.8.2",
+    "architecture": "arm64",
+    "sourceSha256": "de8f85339f01c574a6e0a92d18ba55ffd0ec892a925525cbc0261260b20826e9",
+    "scope": "Read-only public CoreFoundation API probe in a standalone process; no Media Composer private APIs executed and no language settings changed."
+  },
+  "userConfirmedSpecimen": {
+    "statement": "ß was the character I typed into that project name, on a Mac-based Avid.",
+    "basis": "Direct user message in this chat on 18 October 2026",
+    "scope": "Intended character and Mac origin of the observed project text, not a declaration of every PMR writer"
+  },
+  "decompilation": [
+    {
+      "name": "GetKnownProjects",
+      "slug": "GetKnownProjects",
+      "address": 4534028,
+      "blocks": 1,
+      "hopper_name": "__ZN19MSMDBMediaStreamMgr16GetKnownProjectsEv",
+      "output": "/private/tmp/bella-pmr-project-display-20261018-hopper/engine/GetKnownProjects.c",
+      "characters": 149,
+      "binary": "engine",
+      "addressHex": "0x452f0c",
+      "outputReceipt": {
+        "path": "/private/tmp/bella-pmr-project-display-20261018-hopper/engine/GetKnownProjects.c",
+        "bytes": 250,
+        "sha256": "071a421a5e6cdfe6e2632c1730de20d1d9e01ed075e3ebac9e5f75e034b7b77b"
+      }
+    },
+    {
+      "name": "LocalCIStrcmp",
+      "slug": "LocalCIStrcmp",
+      "address": 4534100,
+      "blocks": 1,
+      "hopper_name": "__ZL13LocalCIStrcmpPvS_",
+      "output": "/private/tmp/bella-pmr-project-display-20261018-hopper/engine/LocalCIStrcmp.c",
+      "characters": 61,
+      "binary": "engine",
+      "addressHex": "0x452f54",
+      "outputReceipt": {
+        "path": "/private/tmp/bella-pmr-project-display-20261018-hopper/engine/LocalCIStrcmp.c",
+        "bytes": 159,
+        "sha256": "c29634f6a9bf02db525fdf2a6e460ba75c159b65e5871ea750eed5720403f35c"
+      }
+    },
+    {
+      "name": "AddCacheEntry",
+      "slug": "AddCacheEntry",
+      "address": 4534112,
+      "blocks": 31,
+      "hopper_name": "__ZN19MSMDBMediaStreamMgr13AddCacheEntryEP17MSMMediaDirRecord13_aafMCMobID_tS2_PDsPKclhxxhh",
+      "output": "/private/tmp/bella-pmr-project-display-20261018-hopper/engine/AddCacheEntry.c",
+      "characters": 5309,
+      "binary": "engine",
+      "addressHex": "0x452f60",
+      "outputReceipt": {
+        "path": "/private/tmp/bella-pmr-project-display-20261018-hopper/engine/AddCacheEntry.c",
+        "bytes": 5407,
+        "sha256": "e856366e3fa46ac65cf9171deff389bb6045c944fade0d94840079cb95d68d84"
+      }
+    },
+    {
+      "name": "MToolSetDisplayable",
+      "slug": "MToolSetDisplayable",
+      "address": 4309868976,
+      "blocks": 144,
+      "hopper_name": "__Z19MToolSetDisplayableP5brRecb",
+      "output": "/private/tmp/bella-pmr-project-display-20261018-hopper/main/MToolSetDisplayable.c",
+      "characters": 55568,
+      "binary": "main",
+      "addressHex": "0x100e361b0",
+      "outputReceipt": {
+        "path": "/private/tmp/bella-pmr-project-display-20261018-hopper/main/MToolSetDisplayable.c",
+        "bytes": 55675,
+        "sha256": "0c64abc07c647f415c2f693d46817cbf23ba702668459cfcf4b91343c3087b8f"
+      }
+    },
+    {
+      "name": "ATextListEntry_NewUTF16",
+      "slug": "ATextListEntry_NewUTF16",
+      "address": 874316,
+      "blocks": 1,
+      "hopper_name": "__ZN14ATextListEntry8NewUTF16EsPKDs",
+      "output": "/private/tmp/bella-pmr-project-display-20261018-hopper/uishell/ATextListEntry_NewUTF16.c",
+      "characters": 291,
+      "binary": "uishell",
+      "addressHex": "0xd574c",
+      "outputReceipt": {
+        "path": "/private/tmp/bella-pmr-project-display-20261018-hopper/uishell/ATextListEntry_NewUTF16.c",
+        "bytes": 398,
+        "sha256": "19491889263f745b321b70a68b87fc8a7f14fc392b306642512e69ba2a344bee"
+      }
+    },
+    {
+      "name": "ATextListEntry_DrawDetail",
+      "slug": "ATextListEntry_DrawDetail",
+      "address": 874812,
+      "blocks": 5,
+      "hopper_name": "__ZN14ATextListEntry10DrawDetailEP6AvRect10AvRGBColorPv",
+      "output": "/private/tmp/bella-pmr-project-display-20261018-hopper/uishell/ATextListEntry_DrawDetail.c",
+      "characters": 971,
+      "binary": "uishell",
+      "addressHex": "0xd593c",
+      "outputReceipt": {
+        "path": "/private/tmp/bella-pmr-project-display-20261018-hopper/uishell/ATextListEntry_DrawDetail.c",
+        "bytes": 1080,
+        "sha256": "d87815d222908fded67cef719f73f346c89b5341dbc10bb6a9f4f6a2643260a4"
+      }
+    },
+    {
+      "name": "DialogWindow_SetTextValUTF16",
+      "slug": "DialogWindow_SetTextValUTF16",
+      "address": 476968,
+      "blocks": 3,
+      "hopper_name": "__ZN12DialogWindow15SetTextValUTF16EPKcPKDs",
+      "output": "/private/tmp/bella-pmr-project-display-20261018-hopper/uishell/DialogWindow_SetTextValUTF16.c",
+      "characters": 435,
+      "binary": "uishell",
+      "addressHex": "0x74728",
+      "outputReceipt": {
+        "path": "/private/tmp/bella-pmr-project-display-20261018-hopper/uishell/DialogWindow_SetTextValUTF16.c",
+        "bytes": 547,
+        "sha256": "2e507df518760904037aa27135f062e376917dd7cc80c979b3dd6edf54d52ebb"
+      }
+    },
+    {
+      "name": "DialogWindow_SetTextVal",
+      "slug": "DialogWindow_SetTextVal",
+      "address": 477116,
+      "blocks": 20,
+      "hopper_name": "__ZN12DialogWindow10SetTextValEPKcS1_",
+      "output": "/private/tmp/bella-pmr-project-display-20261018-hopper/uishell/DialogWindow_SetTextVal.c",
+      "characters": 5881,
+      "binary": "uishell",
+      "addressHex": "0x747bc",
+      "outputReceipt": {
+        "path": "/private/tmp/bella-pmr-project-display-20261018-hopper/uishell/DialogWindow_SetTextVal.c",
+        "bytes": 5988,
+        "sha256": "04ce4f9309bbdc31eac3ac974d067a3506dd258abf96ce2e998bb0b526fc51d7"
+      }
+    },
+    {
+      "name": "ATextListEntry_New",
+      "slug": "ATextListEntry_New",
+      "address": 874160,
+      "blocks": 3,
+      "hopper_name": "__ZN14ATextListEntry3NewEsPKc",
+      "output": "/private/tmp/bella-pmr-project-display-20261018-hopper/uishell/ATextListEntry_New.c",
+      "characters": 450,
+      "binary": "uishell",
+      "addressHex": "0xd56b0",
+      "outputReceipt": {
+        "path": "/private/tmp/bella-pmr-project-display-20261018-hopper/uishell/ATextListEntry_New.c",
+        "bytes": 552,
+        "sha256": "41e88822574884c0dd00a09596d947110892a44011b56b63cf45df7ef8b32004"
+      }
+    },
+    {
+      "name": "MediaSelectionDlg_Init",
+      "slug": "MediaSelectionDlg_Init",
+      "address": 4309873884,
+      "binary": "main",
+      "addressHex": "0x100e374dc",
+      "output": "/private/tmp/bella-pmr-project-display-20261018-hopper/main/MediaSelectionDlg_Init.c",
+      "retainedArtifactNote": "Exported by Hopper in the earlier pass; a later retry manifest retained only the retried function. This receipt hashes the existing pseudo-C export.",
+      "outputReceipt": {
+        "path": "/private/tmp/bella-pmr-project-display-20261018-hopper/main/MediaSelectionDlg_Init.c",
+        "bytes": 5367,
+        "sha256": "7a7ce739454e3ab76bf28042cf26e6365c03056a6f91c9f0d9fe30bf5f7af061"
+      }
+    },
+    {
+      "name": "MobGetTextUTF16",
+      "slug": "MobGetTextUTF16",
+      "address": 4310044692,
+      "binary": "main",
+      "addressHex": "0x100e61014",
+      "output": "/private/tmp/bella-pmr-project-display-20261018-hopper/main/MobGetTextUTF16.c",
+      "retainedArtifactNote": "Exported by Hopper in the earlier pass; a later retry manifest retained only the retried function. This receipt hashes the existing pseudo-C export.",
+      "outputReceipt": {
+        "path": "/private/tmp/bella-pmr-project-display-20261018-hopper/main/MobGetTextUTF16.c",
+        "bytes": 94455,
+        "sha256": "4ea647b94afda2e9eadb3d9d621aacb8c6d4a36a89e08dff8337681fd064c2d1"
+      }
+    },
+    {
+      "name": "binGetTextUTF16",
+      "slug": "binGetTextUTF16",
+      "address": 4310061392,
+      "binary": "main",
+      "addressHex": "0x100e65150",
+      "output": "/private/tmp/bella-pmr-project-display-20261018-hopper/main/binGetTextUTF16.c",
+      "retainedArtifactNote": "Exported by Hopper in the earlier pass; a later retry manifest retained only the retried function. This receipt hashes the existing pseudo-C export.",
+      "outputReceipt": {
+        "path": "/private/tmp/bella-pmr-project-display-20261018-hopper/main/binGetTextUTF16.c",
+        "bytes": 2574,
+        "sha256": "fc9a296021c6817563c48a3c99171c2143d8bd5811dabe2842d523adc5b83d5e"
+      }
+    },
+    {
+      "name": "ABinModel_data",
+      "slug": "ABinModel_data",
+      "address": 4308690396,
+      "binary": "main",
+      "addressHex": "0x100d165dc",
+      "output": "/private/tmp/bella-pmr-project-display-20261018-hopper/main/ABinModel_data.c",
+      "retainedArtifactNote": "Exported by Hopper in the earlier pass; a later retry manifest retained only the retried function. This receipt hashes the existing pseudo-C export.",
+      "outputReceipt": {
+        "path": "/private/tmp/bella-pmr-project-display-20261018-hopper/main/ABinModel_data.c",
+        "bytes": 93656,
+        "sha256": "4d1c660cdb6d33ed76f50743050c624ddf992c64e105de47e455afaf2a53c775"
+      }
+    }
+  ],
+  "reusedEncodingDecompilation": [
+    {
+      "name": "CurrentMacMBCSEncodingToUnicodeString",
+      "slug": "CurrentMacMBCSEncodingToUnicodeString",
+      "address": 1231868,
+      "blocks": 7,
+      "hopper_name": "__Z37CurrentMacMBCSEncodingToUnicodeStringPKc",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/CurrentMacMBCSEncodingToUnicodeString.c",
+      "characters": 1256,
+      "addressHex": "0x12cbfc",
+      "temporaryOutputSha256": "64a583333c2122d3dd97fd6ac137b767231017fcf9fa66e4583fcd2978191c32"
+    },
+    {
+      "name": "UTF16ToCurrentMacMBCSEncoding",
+      "slug": "UTF16ToCurrentMacMBCSEncoding",
+      "address": 1230240,
+      "blocks": 3,
+      "hopper_name": "__Z29UTF16ToCurrentMacMBCSEncodingPKDsPcmPb",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/UTF16ToCurrentMacMBCSEncoding.c",
+      "characters": 323,
+      "addressHex": "0x12c5a0",
+      "temporaryOutputSha256": "0198a542136aab8c1b878b86dbf96491b667826be4a751b1c48916f2a9db33cc"
+    },
+    {
+      "name": "EncodedToUTF16",
+      "slug": "EncodedToUTF16",
+      "address": 1227580,
+      "blocks": 13,
+      "hopper_name": "__Z14EncodedToUTF16PKcm14ScriptEncodingPDsm",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/EncodedToUTF16.c",
+      "characters": 1611,
+      "addressHex": "0x12bb3c",
+      "temporaryOutputSha256": "38a2fc1ce389f57be0e0448ec49b89459d1a5c7b2caf62a79e8dae22aae6c39b"
+    },
+    {
+      "name": "UTF16ToEncoded",
+      "slug": "UTF16ToEncoded",
+      "address": 1227356,
+      "blocks": 13,
+      "hopper_name": "__Z14UTF16ToEncodedPKDsm14ScriptEncodingPcmPb",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/UTF16ToEncoded.c",
+      "characters": 1247,
+      "addressHex": "0x12ba5c",
+      "temporaryOutputSha256": "efb1f865aeaace4e335e69f7814ae9e6771fad95f5f50822a2cbcee34c575f78"
+    },
+    {
+      "name": "EncodeToUTF16String",
+      "slug": "EncodeToUTF16String",
+      "address": 1229168,
+      "blocks": 13,
+      "hopper_name": "__Z19EncodeToUTF16StringPKc14ScriptEncoding",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/EncodeToUTF16String.c",
+      "characters": 2479,
+      "addressHex": "0x12c170",
+      "temporaryOutputSha256": "377893462c28816500a0e3fb0c8269fdbde65ec5d684005a135a4709e7ab8bd9"
+    },
+    {
+      "name": "UnicodeStringToCurrentMacMBCSEncoding",
+      "slug": "UnicodeStringToCurrentMacMBCSEncoding",
+      "address": 1232276,
+      "blocks": 6,
+      "hopper_name": "__Z37UnicodeStringToCurrentMacMBCSEncodingRKN11icu_72_Avid13UnicodeStringEPcmPb",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/UnicodeStringToCurrentMacMBCSEncoding.c",
+      "characters": 434,
+      "addressHex": "0x12cd94",
+      "temporaryOutputSha256": "928dc3ffe72fc50075d9b901be27b2793b018d00db26807a1272bfe19ee20306"
+    },
+    {
+      "name": "StringEncodingConversionsInit",
+      "slug": "StringEncodingConversionsInit",
+      "address": 1236456,
+      "blocks": 1,
+      "hopper_name": "__GLOBAL__sub_I_StringEncodingConversions.cpp",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/StringEncodingConversionsInit.c",
+      "characters": 63,
+      "addressHex": "0x12dde8",
+      "temporaryOutputSha256": "6595b6f995d5055597dafc6fe86907447a0a994fe61042ae624f35a032263657"
+    },
+    {
+      "name": "CoreAttrListFindString",
+      "slug": "CoreAttrListFindString",
+      "address": 449808,
+      "blocks": 8,
+      "hopper_name": "__ZN12CoreAttrList10FindStringEPKcPcmPh",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/CoreAttrListFindString.c",
+      "characters": 1950,
+      "addressHex": "0x6dd10",
+      "temporaryOutputSha256": "9be6df5db2dd49c9168d68313bfbcac1a2be85dec7d57251ee0ecae4a882789d"
+    },
+    {
+      "name": "UTF8ToCurrentMacMBCSEncoding",
+      "slug": "UTF8ToCurrentMacMBCSEncoding",
+      "address": 1230912,
+      "blocks": 3,
+      "hopper_name": "__Z28UTF8ToCurrentMacMBCSEncodingPKhPcmPb",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/UTF8ToCurrentMacMBCSEncoding.c",
+      "characters": 167,
+      "addressHex": "0x12c840",
+      "temporaryOutputSha256": "227bb3835543bc74327843c6f042648b29513abf5e0746b92cc5840f561ba4fe"
+    },
+    {
+      "name": "UTF8ToEncoded",
+      "slug": "UTF8ToEncoded",
+      "address": 1227124,
+      "blocks": 12,
+      "hopper_name": "__Z13UTF8ToEncodedPKcm14ScriptEncodingPcmPb",
+      "output": "/private/tmp/bella-pmr-encoding-20261018-hopper/UTF8ToEncoded.c",
+      "characters": 1306,
+      "addressHex": "0x12b974",
+      "temporaryOutputSha256": "bf69230ed1d75bc52045e92db558ad5862902deba04f49a008647eb7c37467e9"
+    }
+  ],
+  "temporaryDisassemblyReceipts": [
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-ui/MToolSetDisplayable.txt",
+      "bytes": 56502,
+      "sha256": "d63463b205744c92ac693c3536c0ed9c92b5309d99eeda9e82a58b5c636bc2ff"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-ui/MediaSelectionDlg-init.txt",
+      "bytes": 12876,
+      "sha256": "6bced68418457169e58450e98188199df41ffb480342fd3229b7e265f45dea84"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-ui/MediaSelectionDlg-constructor.txt",
+      "bytes": 1383,
+      "sha256": "3cca6fd1aae58947d8b8ce828bb3de5c77da937bd87f6a59cdf150b1f806e621"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-ui/MediaSelectionDlg-design.txt",
+      "bytes": 29596,
+      "sha256": "b55e93ac0b62a4e2ac5108cd6dde4908ca6b07587919c7cd5cfd02c93ab0650c"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-ui/chooser-vtable-slot.txt",
+      "bytes": 240,
+      "sha256": "b19d2c991cfe15397f44cddec79b26babdac1bb1bb47c90e452164964c3d0b3c"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-ui/DialogWindow-AddTextListPane.txt",
+      "bytes": 6033,
+      "sha256": "9470666ca6a3bef29eaac4c2680117b0552e5299108850a284e2a2d018c696d6"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-ui/ABinModel-data.txt",
+      "bytes": 52320,
+      "sha256": "5a35a481cd31c043e7978c9f842986221cb5abb290415bf592efd9f4e32725d2"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-ui/binGetTextUTF16.txt",
+      "bytes": 5479,
+      "sha256": "d9e3ecf858583ed808bb093410f07fef06fdd0ee52fad786c78f24f1ec531597"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-ui/MobGetTextUTF16.txt",
+      "bytes": 36648,
+      "sha256": "71a37fc311226097b2c6d8bce169e1fde5dc0b78c8f0f08e47fc49fe687d8b33"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-render/SetTextValUTF16.txt",
+      "bytes": 1762,
+      "sha256": "87f99a03650203af9a974a5db53a64d96f7897dfc2386f757eff97c643b96288"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-render/SetTextVal.txt",
+      "bytes": 5524,
+      "sha256": "31d79e5603b5649681b8c4caf48074eee860875f256ace94a4b04ad5424d2fbc"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-render/actual-project-list-vtables.json",
+      "bytes": 800,
+      "sha256": "df6b7f4545655538522d84551566d70905a4214df56ad9b696d6dac5d28db100"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-render/__ZN14ATextListEntry3NewEsPKc.txt",
+      "bytes": 2062,
+      "sha256": "750fce0b40481ccd666f4487abd18064beefedcf4edc05ceff96a0baf75a8210"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-render/__ZN14ATextListEntry8NewUTF16EsPKDs.txt",
+      "bytes": 1777,
+      "sha256": "1c78362fabcc3da4043e47659e5476884723fb63d3f4f6d958397dc6878bfdcd"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-render/__ZN13ATextListPane8AddEntryEP10AListEntry.txt",
+      "bytes": 1827,
+      "sha256": "a5f6b97bf94c1282063e3303107fae8db49adf7c65e90bc8088cdb8c9d3f6557"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-render/__ZN9AListPane10DrawDetailEP6AvRect10AvRGBColorPv.txt",
+      "bytes": 7570,
+      "sha256": "2c7a6218cdbad3973cd10fcd3d7743e52973504a3d994e603b69e271096d57d6"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-render/__ZN14ATextListEntry10DrawDetailEP6AvRect10AvRGBColorPv.txt",
+      "bytes": 3421,
+      "sha256": "bfd1092dd84c6a60fb8755033d826316b44e3c74c31277d3b55ef41329313805"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-render/__Z16CDrawStringUTF16PKDs.txt",
+      "bytes": 706,
+      "sha256": "eb08bc490fd21d4cdb358ad9601713c6fd60211a51070a500630c1f19cc7478e"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-render/__ZN6Mac2Qt16DrawTextBufUTF16EbPKDsss.txt",
+      "bytes": 1436,
+      "sha256": "7658c13ee19d8c15f456340382be724cc336c9786786dd1c4af0254278e056cf"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-render/__ZN6Mac2Qt13DrawTextUTF16EbRK7QStringss.txt",
+      "bytes": 1422,
+      "sha256": "f5bd859b187bdb22415ec0fb4d3bf51d2750c1986da257ec53f200711f547d49"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-render/__ZN6Mac2Qt20StdTextInternalUTF16EbRK7QStringRK5PointS5_.txt",
+      "bytes": 5193,
+      "sha256": "d61242631991ae6021712f47fa58663e1bbccbd487c46565dae0475083ebb133"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-engine/AME-MobGetText-Project-case-arm64.txt",
+      "bytes": 7290,
+      "sha256": "69bee96e98b7c71075284dc57d0f4b2e668a9db87e299e60c54680c92519a8bc"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-engine/ame-project-switch.json",
+      "bytes": 161,
+      "sha256": "c734aa5427f266a41723b963e8bd0f84e877dde670ce4d3e824d8417d1144dee"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-engine/ReadPmrRec-arm64.txt",
+      "bytes": 25942,
+      "sha256": "3c738d22696640dd3b165a48dc7147c48fb39a882abd1930dd715f1052f99801"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-engine/__Z15FindProjectNameP12ACompositioniPcm.txt",
+      "bytes": 4071,
+      "sha256": "b6adcaf3b8cde7be19558c086a4118165554a14841b8ff4cb3b026ad70b1c2a0"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-engine/__Z16CMGetProjectNameP12ACompositionPcm.txt",
+      "bytes": 1847,
+      "sha256": "58c38f8ab168ebb1c996a5e56652315eeabf9acbbc72e3c56e93d87f118e77f2"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-engine/__Z12GetPropValuePKcP12ACompositionPcmb.txt",
+      "bytes": 3487,
+      "sha256": "362a4b81e29282fcf35827eb054aec8e5d6621e6517db2bfa8b69c3b765010dc"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-engine/__Z29CurrentMacMBCSEncodingToUTF16PKcPDsm.txt",
+      "bytes": 980,
+      "sha256": "aaa3051664bbe7bcda58eaeb21243f5ca1a02e0d37587a063f6c21a02407310f"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-project-display-20261018-engine/__Z14EncodedToUTF16PKcm14ScriptEncodingPDsm.txt",
+      "bytes": 2656,
+      "sha256": "0454679188b882e308eff00c0506870aadfe54ca6f63e9ae3dffea23e2602c71"
+    }
+  ],
+  "limitations": [
+    "Static trace of this installed Mac build; no runtime call interception, language-setting changes, timed scan or font/glyph rasterization audit.",
+    "The public codec probe ran in a standalone process. Media Composer-specific language/environment overrides were not exercised.",
+    "No Windows binary was traced; no universal all-platform or all-locale PMR codec is asserted.",
+    "Recovered pseudo-C is approximate and was checked against instructions. Raw disassembly and pseudo-C remain in temporary storage; hashes identify those artifacts, not a guarantee they will persist.",
+    "No encoding fallback/default, setting, concurrency implementation or scanner/parser code was implemented."
+  ],
+  "supersedes": "The earlier text-encoding.md limitation that the later Project UI consumer was untraced is now resolved for this chooser and bin Project column."
+}
