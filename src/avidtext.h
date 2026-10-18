@@ -4,19 +4,7 @@
 #include <QString>
 #include <QStringDecoder>
 
-/// Turn a byte string from an Avid database into text.
-///
-/// Avid's databases still carry MacRoman, a legacy of Media Composer's
-/// Mac-only early years. The PMR writes MacRoman in its first record set
-/// and UTF-8 filenames in its second; the MDB writes MacRoman unless the
-/// property has a `…UTF8` twin (bin names, paths) — the parsers read the
-/// twin first, and clip names and attribute values have no twin at all.
-///
-/// decode() takes whatever bytes it is given: valid UTF-8 decodes as
-/// UTF-8 (ASCII is a subset, so plain names go straight through);
-/// anything else goes through the MacRoman table. A MacRoman-only value
-/// is therefore never blanked or shown as replacement characters — the
-/// old MDB reader did exactly that, and six ß-named renders came out empty.
+/// Decode valid UTF-8, falling back to MacRoman for legacy Avid text.
 namespace AvidText
 {
 	/// Apple's MacRoman upper half (0x80–0xFF) to Unicode. 0xDB is €,

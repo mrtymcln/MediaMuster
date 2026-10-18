@@ -1,4 +1,4 @@
-// Exercises the fresh legacy reader with real Avid files and independently
+// Exercises the legacy reader with real Avid files and independently
 // authored containers. Large sample ranges are guarded so metadata-only reads
 // cannot accidentally pass by copying the audio or video into memory.
 

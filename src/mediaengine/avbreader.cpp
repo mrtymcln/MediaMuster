@@ -1,7 +1,5 @@
-// Reads a bin's document header and indexed chunks without following their
-// references. Each chunk keeps its original number even when its private layout
-// is unknown. Bin membership and view settings are source evidence; sequence
-// selection and media matching belong to the separate reference resolver.
+// Reads a bin's header and indexed chunks without following references.
+// Preserve original chunk numbers, including unknown layouts, for the resolver.
 // Framing/layout evidence: pyavb file.py, bin.py and ioctx.py.
 
 #include "avbreader.h"
@@ -109,7 +107,7 @@ namespace MediaEngine
 					const qint64 received = m_device.read(buffer.data(), request);
 					if (received <= 0)
 						throw AvbReadFailure{received == 0 && m_device.atEnd() ? Outcome::Incomplete : Outcome::IoError,
-										 QStringLiteral("Cannot read AVB at byte %1: %2").arg(m_position).arg(m_device.errorString())};
+											 QStringLiteral("Cannot read AVB at byte %1: %2").arg(m_position).arg(m_device.errorString())};
 					bytes.append(buffer.data(), received);
 					m_position += received;
 					count -= received;

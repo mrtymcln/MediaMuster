@@ -27,19 +27,10 @@ class QDropEvent;
 
 // MARK: - AvbFilterDialog
 
-/// Filters the main table by one or more Avid bins. User loads bins
-/// via drag-drop or the picker, ticks the ones to use, then chains
-/// Intersect / Subtract / Add to filter media-row membership.
-///
-/// State:
-///   - Loaded bins: parsed AvbBins with tickboxes.
-///   - Chain: ordered (operation, snapshot of ticked media-file identities)
-///     steps. Each applyOperation snapshots ticks so subsequent
-///     re-ticking doesn't disturb prior steps.
-///
-/// The proxy matches each row's file identity against the MSML references, in order.
-/// Loading is asynchronous. Unreadable bins report loadError; readable partial
-/// bins remain available with loadWarning and persistent filter warnings.
+/// Loads bins asynchronously and builds an Intersect / Subtract / Add chain.
+/// Loaded bins keep compact file references and warnings, not parsed graphs.
+/// Each step snapshots the ticked references; later ticks or bin removal leave it intact.
+/// Readable partial bins remain available with persistent warnings.
 class AvbFilterDialog : public QDialog
 {
 	Q_OBJECT
@@ -58,9 +49,7 @@ public:
 	/// Duplicate canonical paths are ignored.
 	void addBinFromFile(const QString &avbFilePath);
 
-	/// Drops every chain step, leaving loaded bins untouched. Used
-	/// when the user dismisses the bin filter from the main-window
-	/// chip strip; keeps dialog state and chip state in lockstep.
+	/// Clear the chain while keeping loaded bins.
 	void clearFilterSteps();
 
 signals:
@@ -98,9 +87,7 @@ private slots:
 	void onAddClicked();
 	void onRemoveStep(int index);
 
-	/// Convenience: when the chain is empty and bins were just added,
-	/// apply Intersect across whatever's currently ticked once the complete
-	/// loading batch settles. Drop-bursts collapse into one step.
+	/// Apply one Intersect after the loading batch settles, if the chain is empty.
 	void tryAutoIntersect();
 	void finishLoadingBatch();
 

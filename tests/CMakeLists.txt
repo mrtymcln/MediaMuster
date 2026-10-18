@@ -1,6 +1,6 @@
 ### MediaMuster test suite ###
 
-### Same exact Qt release as the app; the Check the version step holds the two together ###
+# Keep Qt Test pinned to the application's Qt release.
 find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Test)
 
 ### Test target helper ###
@@ -11,9 +11,7 @@ function(mediamuster_add_test name label)
     )
     target_link_libraries(${name} PRIVATE Qt6::Test Qt6::Core)
     target_include_directories(${name} PRIVATE ${CMAKE_SOURCE_DIR}/src)
-    ### Two loggers: stdout for local runs, a file for CI — the Windows ###
-    ### runner captures no test stdout at all, so the file is the only ###
-    ### record the workflow can print after a failure ###
+    # Save results as well as printing them: Windows CI can lose QtTest stdout.
     add_test(NAME ${name} COMMAND ${name} -o -,txt -o ${CMAKE_CURRENT_BINARY_DIR}/${name}.result.txt,txt)
     set_tests_properties(${name} PROPERTIES LABELS "${label}")
 endfunction()
@@ -28,7 +26,7 @@ mediamuster_add_test(tst_diagnostics core
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 
-# Header-only namespaces.
+# Core value types and metadata selection.
 mediamuster_add_test(tst_mobid core)
 mediamuster_add_test(tst_pathkey core)
 mediamuster_add_test(tst_format core)
@@ -36,8 +34,7 @@ mediamuster_add_test(tst_mediaevidence core)
 mediamuster_add_test(tst_metadataselectionpolicy core)
 target_link_libraries(tst_metadataselectionpolicy PRIVATE mediamuster_mediaengine_core)
 
-# Conventions: the agreed folder names, essence-name rules and folder
-# limits every feature keys on (header-only).
+# Shared folder names, essence-name rules and folder limits.
 mediamuster_add_test(tst_conventions core)
 
 ### Media ###
@@ -55,7 +52,7 @@ mediamuster_add_test(tst_mediaenginepmrrobustness media)
 target_link_libraries(tst_mediaenginepmrrobustness PRIVATE mediamuster_mediaengine_core)
 target_compile_definitions(tst_mediaenginepmrrobustness PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
-# Fresh MDB graph reader: original bytes, dictionaries, references and real sources.
+# MDB graphs: original bytes, dictionaries, references and real sources.
 mediamuster_add_test(tst_mediaenginemdb media)
 target_link_libraries(tst_mediaenginemdb PRIVATE mediamuster_mediaengine_core)
 target_compile_definitions(tst_mediaenginemdb PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
@@ -142,7 +139,7 @@ mediamuster_add_test(tst_mediaengine_mxfprojection media)
 target_link_libraries(tst_mediaengine_mxfprojection PRIVATE mediamuster_mediaengine_core)
 target_compile_definitions(tst_mediaengine_mxfprojection PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
-# Real PMR/MDB/header joins across the 795 MXF and 82 legacy corpus files.
+# Real PMR/MDB/header joins across MXF and legacy-media fixtures.
 mediamuster_add_test(tst_readerregressions media)
 target_link_libraries(tst_readerregressions PRIVATE mediamuster_mediaengine_core)
 target_compile_definitions(tst_readerregressions PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
@@ -154,9 +151,8 @@ target_compile_definitions(tst_omfuid PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
-# AvbBinLoader: complete structured documents in both byte orders, malformed
-# object/reference boundaries and final file identities, plus
-# the two real OMF-era bins in fixtures/omf.
+# Bin loading: both byte orders, malformed boundaries and file identities,
+# using authored documents and genuine OMF-era bins.
 mediamuster_add_test(tst_avbparser media
     ${CMAKE_SOURCE_DIR}/src/avbbinloader.cpp
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
@@ -166,8 +162,7 @@ target_compile_definitions(tst_avbparser PRIVATE
     FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
 )
 
-# AvidEffects: precompute clip name -> Avid effect name + palette
-# category, from the catalogue compiled into effectcatalogue.cpp itself.
+# Precompute names mapped to effect names and categories in the compiled catalogue.
 mediamuster_add_test(tst_avideffects media
     ${CMAKE_SOURCE_DIR}/src/effectcatalogue.cpp
 )
@@ -246,8 +241,7 @@ mediamuster_link_native_operations(tst_fileoperations)
 # MediaCsv: the export's header/field alignment and shared display columns.
 mediamuster_add_test(tst_mediacsv ui ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp)
 
-# Prepared table rows, Qt notifications and transfer updates.
-# The model is QtCore only (QAbstractTableModel); no widgets, no icons.
+# Prepared table rows, QtCore model notifications and transfer updates.
 mediamuster_add_test(tst_mediatablemodel ui
     ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
     ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp

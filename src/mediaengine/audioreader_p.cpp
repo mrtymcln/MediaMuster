@@ -1,6 +1,5 @@
-// Inspects the chunk headers and native metadata in legacy audio files without
-// loading their sound samples. Every chunk keeps its original location; private
-// metadata stays available even when its meaning is not yet established.
+// Reads legacy audio metadata without loading sound samples. Chunk locations
+// and uninterpreted metadata stay attached to their temporary source records.
 
 #include "audioreader_p.h"
 

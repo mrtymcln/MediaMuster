@@ -1,8 +1,5 @@
-// Interprets the MDB reader's object graph without using the OMF media path.
-// MDB uses OMFI property names, but its database entries are independent file
-// candidates: a media file's own contents list does not select their ownership.
-// These local helpers are deliberately separate so OMF support can be removed
-// without changing database interpretation. Recorded references remain intact.
+// Interprets MDB's object graph independently of OMF media. OMFI property names
+// do not impose a media file's contents-list ownership on database candidates.
 
 #include "projection.h"
 #include "compressionnames_p.h"
@@ -204,10 +201,8 @@ namespace MediaEngine
 
 		MediaRate legacyDnxNamingRate(qint64 resolution, MediaRate recorded)
 		{
-			// Matched MDB/MXF identities establish these decimal database clocks;
-			// Avid's supplied OMF slate also establishes 1243 at 29.97. This is
-			// only a name-table lookup: retain the original rate for every fact
-			// and duration. See the 7 October DNx clock evidence.
+			// Only corroborated decimal clocks qualify for this naming lookup.
+			// Keep recorded rates/durations unchanged. See Project Canon/dnx-codec-evidence.md.
 			if (recorded.sameRate({2997, 100}))
 			{
 				switch (resolution)

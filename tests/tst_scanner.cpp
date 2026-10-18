@@ -231,16 +231,11 @@ private slots:
 	void mdb_name_fills_in_when_the_mxf_has_none();
 	void unknown_clip_name_is_blank_not_the_filename();
 
-	// An MXF SourcePackage name is NOT a rung. It names what the media came
-	// from — the imported file, or the tape — and measured across 1212 real
-	// files it was the source filename on 1191 of them. That name does not
-	// establish a recorded source path and must not fill the Clip Name column.
+	// A SourcePackage name establishes neither Clip Name nor a recorded Source Path.
 	void source_package_name_is_not_a_clip_name();
 
-	// Classification follows master usage metadata, never filename/clip-name
-	// shapes. This mixdown has an ordinary MaterialPackage with neither usage
-	// property, so it comes back as Media even though its name resembles an
-	// effect. A header that cannot be parsed yields no verdict: Unknown.
+	// Usage metadata classifies the mixdown as Media despite its name.
+	// Unreadable metadata leaves classification Unknown.
 	void mixdown_is_media_not_precompute();
 	void unreadable_header_stays_unknown();
 
@@ -264,8 +259,6 @@ private slots:
 	void folder_without_databases_reads_every_header();
 	void mpeg_audio_falls_back_to_its_header();
 
-	// New facts: the render's effect name/category/sequence, and the
-	// file's modified time.
 	void precompute_row_gets_effect_fields();
 	void modified_is_the_filesystem_mtime();
 
@@ -560,14 +553,12 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 	QVERIFY(!mf.hasNoProject());
 	QVERIFY(!mf.isNonPortable);
 
-	// From MXF (Stage 2)
+	// From the MXF header.
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 	QVERIFY(!mf.compression.isEmpty());
 	QVERIFY(mf.sampleRate > 0);
 
-	// Audio rows leave Resolution and Frame Rate blank — those columns are video
-	// facts. (An early prototype filled them with an em-dash and the sample
-	// rate; both ideas were dropped, 23 July 2026.)
+	// Audio rows leave picture Resolution and Frame Rate blank.
 	QVERIFY2(mf.resolution.isEmpty(), qPrintable(mf.resolution));
 	QVERIFY2(mf.frameRate.isEmpty(), qPrintable(mf.frameRate));
 }
@@ -598,12 +589,8 @@ void TestScanner::unreferenced_mxf_recovered_via_mdb()
 	QCOMPARE(results.size(), 1);
 	const MediaFile &mf = results.first();
 
-	// Recovery discriminators. NB: clipName is NOT one — the header pass reads
-	// it from the MXF MaterialPackage, so it is set with or without the MDB
-	// (the no-mdb partner test confirms that). The recovery signal is the
-	// original bin, which this MXF header does not store. The project
-	// comes from the file's own header. The MDB's validated local file identity
-	// establishes membership even without a PMR filename entry.
+	// Original Bin proves the MDB join: this header supplies Clip Name and Project
+	// but no bin. The MDB file identity establishes membership without a PMR entry.
 	QCOMPARE(mf.dbStatus, MediaFile::DbStatus::Listed);
 	QCOMPARE(mf.project, QStringLiteral("block 1729"));
 	const QString adoptedMob =
@@ -624,12 +611,10 @@ void TestScanner::stage3_mdb_name_must_not_clobber_material_name()
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
 
-	// No msmFMID.pmr, so Stage 1 can't attribute the file and Stage 3 must.
+	// Without a PMR entry, the header supplies identity for the MDB join.
 	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
 
-	// A one-clip MDB: the tone's MOB (PMR/MDB byte order — what
-	// MobId::swapMaterialByteOrder(umid) resolves to) as a master mob carrying a WRONG
-	// clip name.
+	// The authored MDB gives this MasterMobId a competing Clip Name in database byte order.
 	TypedBentoBuilder w;
 	const quint32 master = w.addObject("MOBJ");
 	w.set(master, "OMFI:MOBJ:MobID",
@@ -679,11 +664,8 @@ void TestScanner::stage3_mdb_name_must_not_clobber_material_name()
 	QVERIFY(mf.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mxf);
 }
 
-// Partner to unreferenced_mxf_recovered_via_mdb, with NO databases in the
-// folder at all. An absent index can't verify a miss, so the app must not
-// claim "No reference" — the honest state is "No database" (nothing to check
-// against); the project still comes from the file's own header, and the
-// re-join has nothing to recover against.
+// No local databases means No Database, not a verified missing reference.
+// Header metadata remains available independently.
 void TestScanner::mxf_without_any_database_is_no_database()
 {
 	QTemporaryDir tmp;
@@ -714,9 +696,8 @@ void TestScanner::mxf_without_any_database_is_no_database()
 	QVERIFY(mf.originalBin.isEmpty());
 }
 
-// The verified-miss case: the folder HAS readable databases and the file is in
-// neither (an unreadable media header cannot supply a matching ID). This is the
-// only combination allowed to claim "No reference".
+// The complete local databases do not list this file. An unreadable header
+// cannot supply an identity match, so the result is No Reference.
 void TestScanner::unlisted_media_with_readable_databases_is_no_reference()
 {
 	QTemporaryDir tmp;
@@ -813,11 +794,8 @@ void TestScanner::effect_render_names_classify_as_precompute()
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
 
-	// Real MC 2025 render header (512 KB slice); no databases needed — the
-	// verdict comes from the MXF UsageCode. This fixture earns its keep twice:
-	// it is the ONE file of 823 that stores the UsageCode UL with its two
-	// 8-byte halves swapped (the AAF AUID form), so it also pins the fact that
-	// isPrecomputeUsage accepts both byte orders.
+	// This genuine render stores UsageCode with its 8-byte halves exchanged
+	// (AAF AUID order). Classification must also accept that serialization.
 	copyFixture(QString::fromUtf8("corpus_headers/zT_\xc3\x9ft_1080i_50_seqDD866C6BV.mxf"), folder);
 
 	MediaScanner scanner;
@@ -839,8 +817,7 @@ namespace
 	const QByteArray kLadderMob = QByteArray::fromHex("060a2b340101010501010f1013000000"
 													  "d2467dea7411069091901e6a605d3613");
 
-	/// A PMR attributing `fileName` to kLadderMob, so Stage 1 joins the file
-	/// to the MDB record. LE header + FILE + MASTER.
+	/// A PMR linking `fileName` to kLadderMob: LE header + FILE + MASTER.
 	QByteArray ladderPmr(const QByteArray &fileName)
 	{
 		QByteArray pmr;
@@ -867,9 +844,7 @@ namespace
 		return pmr;
 	}
 
-	/// An MDB holding one master clip for kLadderMob, built to the real
-	/// Bento/OMF shape (tests/testbento.h): a MOBJ with the MobID, the clip
-	/// name and a master-clip usage code.
+	/// Authored MDB master with kLadderMob, Clip Name and master-clip usage.
 	QByteArray ladderMdb(const QByteArray &clipName)
 	{
 		TypedBentoBuilder w;
@@ -881,9 +856,8 @@ namespace
 		return w.build();
 	}
 
-	/// One MXF metadata set: `setType` 0x36 = MaterialPackage, 0x37 =
-	/// SourcePackage. Local tag 0x4401 is the package UMID, 0x4402 the name
-	/// (UTF-16BE), as stored by the MXF tagged-value type.
+	/// Authored MXF package set: 0x36 = MaterialPackage, 0x37 = SourcePackage.
+	/// Local tags 0x4401 and 0x4402 carry UMID and UTF-16BE name.
 	QByteArray packageSet(quint8 setType, const QByteArray &umid32, const QString &name)
 	{
 		const auto u16be = [](quint16 v)
@@ -912,9 +886,7 @@ namespace
 		return out;
 	}
 
-	/// A CDCI picture descriptor carrying stored width/height. Without one the
-	/// the descriptor ownership cannot be established, so metadata selection skips
-	/// everything, so a package-only buffer would prove nothing about naming.
+	/// Authored CDCI fields for the package-name control.
 	QByteArray cdciSet(quint32 width, quint32 height)
 	{
 		const auto u16be = [](quint16 v)
@@ -955,8 +927,7 @@ void TestScanner::mdb_name_fills_in_when_the_mxf_has_none()
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"), ladderPmr("garbage.mxf")));
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"), ladderMdb("Interview Take 3")));
 
-	// The media file itself is unparseable, so no MaterialPackage name will
-	// ever arrive — the case that used to fall back to the filename.
+	// An unreadable header cannot supply a competing Clip Name.
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/garbage.mxf"), QByteArray(2048, '\x11')));
 
 	MediaScanner scanner;
@@ -970,10 +941,7 @@ void TestScanner::mdb_name_fills_in_when_the_mxf_has_none()
 	QCOMPARE(results.size(), 1);
 	const MediaFile &mf = results.first();
 
-	// The join happened (project from PMR)...
 	QCOMPARE(mf.project, QStringLiteral("tst_proj"));
-	// ...and the database supplied the name. This read "garbage" — the
-	// filename base — until 2026-08-14.
 	QCOMPARE(mf.clipName, QStringLiteral("Interview Take 3"));
 	QVERIFY(mf.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mdb);
 }
@@ -985,9 +953,7 @@ void TestScanner::unknown_clip_name_is_blank_not_the_filename()
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
 
-	// Same unparseable file, and a PMR so the row is still attributed — but
-	// an MDB whose only record names a DIFFERENT MOB, so nothing knows this
-	// file's name.
+	// The PMR matches, but the MDB describes a different master and cannot name this clip.
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmFMID.pmr"), ladderPmr("garbage.mxf")));
 	QByteArray otherMdb = ladderMdb("Some Other Clip");
 	otherMdb.replace(kLadderMob, QByteArray::fromHex("060a2b340101010501010f1013000000"
@@ -1007,11 +973,9 @@ void TestScanner::unknown_clip_name_is_blank_not_the_filename()
 	const MediaFile &mf = results.first();
 
 	QCOMPARE(mf.project, QStringLiteral("tst_proj"));
-	// Nothing knew the name, so the cell stays blank. The filename is a fact
-	// about the disk, not a name Avid gave the clip.
+	// A disk filename cannot fill an unknown Clip Name.
 	QVERIFY2(mf.clipName.isEmpty(), qPrintable("clip name invented: " + mf.clipName));
 	QVERIFY(!mf.metadataStatus.field(MediaProperty::ClipName).selectedSource);
-	// And the display string agrees — no fallback hiding behind the column.
 	QVERIFY(mf.clipNameDisplay().isEmpty());
 }
 
@@ -1022,16 +986,11 @@ void TestScanner::source_package_name_is_not_a_clip_name()
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
 
-	// An MXF whose ONLY named package is a SourcePackage — a tape name. The
-	// parser reads it (and flags it non-material); the scanner must not take
-	// it. No databases either, so nothing else can answer.
+	// Only the SourcePackage is named; its tape name cannot fill Clip Name.
 	const QByteArray srcUmid = QByteArray::fromHex("060a2b340101010501010f1013000000"
 												   "3333333333333333"
 												   "4444444444444444");
-	// The descriptor is what makes the parse `valid`; without it
-	// a reader without an owning descriptor could skip every field and pass for the
-	// wrong reason. Stage 2 also skips files under 1 KB, so pad past that —
-	// trailing zeros read as empty KLV keys and the walk still terminates.
+	// This packet control does not establish a complete MXF ownership graph.
 	QByteArray mxf = cdciSet(1920, 1080);
 	mxf += packageSet(0x37, srcUmid, QStringLiteral("7302108SL"));
 	mxf.append(QByteArray(2048 - mxf.size(), '\0'));
@@ -1061,11 +1020,7 @@ void TestScanner::mixdown_is_media_not_precompute()
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
 
-	// A real Video Mixdown header. Its clip name reads exactly like a render
-	// ("Untitled Sequence.05,Video Mixdown,1") and the old keyword rule called
-	// it a Precompute — via 'title' inside "Untitled". But a mixdown is a
-	// master clip with its own media, so Avid writes it NO UsageCode, and the
-	// structural rule gets it right with no special case.
+	// This genuine mixdown has no UsageCode and remains Media despite its render-like name.
 	copyFixture(QStringLiteral("corpus_headers/Untitled Sequence.175B1728V.mxf"), folder);
 
 	MediaScanner scanner;
@@ -1113,11 +1068,7 @@ void TestScanner::unreadable_header_stays_unknown()
 
 void TestScanner::appledouble_sibling_is_never_media()
 {
-	// macOS writing to SMB leaves an AppleDouble "._clip.mxf" beside every
-	// real clip. Unix enumeration hides dotfiles, so this is trivially
-	// green on macOS — its teeth are on Windows CI, where the sibling IS
-	// enumerated and only the scanner's Conventions::isDotHidden skip keeps
-	// it out of the table, the counts, and Stage 2's MXF parse.
+	// AppleDouble sidecars must stay excluded on platforms that enumerate dotfiles.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
@@ -1143,9 +1094,7 @@ void TestScanner::appledouble_sibling_is_never_media()
 
 void TestScanner::non_avid_files_are_invisible()
 {
-	// The table shows only Avid media (.mxf/.omf + the OMF era's
-	// .aif/.wav — user ruling 2026-08-12). Stray exports, notes, and OS
-	// junk never become rows, never count, never get operated on.
+	// Unsupported files must not enter the inventory or its media counts.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
@@ -1324,17 +1273,8 @@ void TestScanner::scan_can_restart_from_its_queued_receiver()
 
 void TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()
 {
-	// The genuine failure: only the NORMAL scan exit used to clear the
-	// cached MDB maps, so a CANCELLED scan left them behind and the next
-	// scan attributed files from a database that no longer exists on
-	// disk. A rescan after a *completed* scan proves nothing here — the
-	// normal exit always cleared — so this test cancels.
-	//
-	// Timing: processFolderTask inserts the folder's parsed MDB into the
-	// cache and THEN hits TestPause's 4-second pause, so cancelling
-	// anywhere inside that window is what we need. 500 ms sits deep
-	// inside 4000 ms; the only work that has to finish first is reading
-	// three small fixture files.
+	// A cancelled scan must not supply database facts to a later scan.
+	// TestPause keeps the first scan active while cancellation is requested.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
@@ -1368,8 +1308,7 @@ void TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()
 		QVERIFY2(spy.wait(20000), "rescan did not finish");
 		const auto results = spy.takeFirst().at(0).value<QVector<MediaFile>>();
 		QCOMPARE(results.size(), 1);
-		// Without the clear, the header pass re-joins this file against the
-		// cancelled scan's cached MDB and adopts its editorial bin.
+		// This header has no bin name; a value here would leak the earlier MDB.
 		QCOMPARE(results.first().dbStatus, MediaFile::DbStatus::NoDatabase);
 		QVERIFY2(results.first().originalBin.isEmpty(), qPrintable(results.first().originalBin));
 		QCOMPARE(results.first().masterMobId,
@@ -1377,8 +1316,6 @@ void TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()
 	}
 }
 
-// _GUILESS_ pulls in a QCoreApplication event loop; queued signals
-// and QSignalSpy::wait both need one.
 // MARK: - Database-first
 
 namespace
@@ -2033,9 +1970,8 @@ void TestScanner::unreadable_header_keeps_qualified_database_fallback()
 	QVERIFY(bytes.contains("OMFI:MDAU:BitsPerSample"));
 	bytes.replace("OMFI:MDAU:BitsPerSample", "TEST:MDAU:BitsPerSample");
 	QVERIFY(tryWriteFile(mdbPath, bytes));
-	// The user approved database fallback when a header cannot be read.
-	// A different filesystem timestamp does not prove or disprove this PMR
-	// word's interpretation. Preserve unknown freshness, not a current verdict.
+	// A failed header read preserves qualified database facts with unknown freshness.
+	// A filesystem timestamp cannot establish the PMR word's meaning.
 	writeJunk(folder + QLatin1Char('/') + kToneName, 4096);
 
 	const auto results = runScan(tmp.path());
@@ -2444,8 +2380,7 @@ void TestScanner::mxf_header_keeps_master_identity_with_unknown_classification()
 	QCOMPARE(withoutConnection.first().kind, MediaFile::Kind::Video);
 	QVERIFY(tryWriteFile(path, bytes));
 
-	// An ambiguous header classification does not assert a competing type.
-	// The approved database fallback can fill it, with unknown freshness.
+	// Ambiguous header classification permits qualified database fallback with unknown freshness.
 	const QByteArray fileId = QByteArray::fromHex(mf.fileMobId.toLatin1());
 	const QByteArray masterId = QByteArray::fromHex(mf.masterMobId.toLatin1());
 	TypedBentoBuilder db;
@@ -2551,7 +2486,7 @@ void TestScanner::mpeg_audio_falls_back_to_its_header()
 	QCOMPARE(mf.kind, MediaFile::Kind::Audio);
 	QVERIFY2(mf.compression.contains(QStringLiteral("MP2")), qPrintable(mf.compression));
 	QVERIFY(mf.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Mxf);
-	QVERIFY(!mf.originalBin.isEmpty()); // identity still from the MDB
+	QVERIFY(!mf.originalBin.isEmpty()); // The MDB still supplies its bin name.
 }
 
 void TestScanner::precompute_row_gets_effect_fields()
@@ -2606,10 +2541,7 @@ void TestScanner::modified_is_the_filesystem_mtime()
 
 namespace
 {
-	/// The MC 2026 audio pair in fixtures/omf/mc2026_audio and what the
-	/// v2 PMR / MDB say about each (pinned by the reader fixtures;
-	/// repeated here so a scanner row can be checked
-	/// end to end).
+	/// Recorded PMR/MDB values for the genuine mc2026_audio fixtures.
 	const QString kOmfWav = QStringLiteral("TONE_100A01.6A972974.039700.wav");
 	const QString kOmfAif = QStringLiteral("TONE_100A01.6A972997.0C53E0.aif");
 	constexpr quint32 kOmfWavModified = 1788291444u;
@@ -2628,10 +2560,7 @@ namespace
 		QStringLiteral("060a2b3401010101.01010f0013000000.9729976a3dc57047.060e2b347f7f2a80");
 	const QString kOmfProject = QString::fromUtf8("zTe\xc3\x9ft_PAL_25p");
 	const QString kOmfFolder = QString(Conventions::kOmfMediaFilesDir);
-	/// The trailer of 73 of the shipped PMR's 80 pairs — every slate pinned
-	/// below among them; the other 7 read 1626810312, still inside
-	/// a two-second recording difference. These words are retained without
-	/// certifying an otherwise unverified database timestamp interpretation.
+	/// Recorded PMR trailer word for these slates; its timestamp meaning is unverified.
 	constexpr quint32 kSlateModified = 1626810310u;
 
 	QVector<MediaFile> runScanWith(const MediaScanner::Options &opts)
@@ -2674,8 +2603,7 @@ namespace
 		return nullptr;
 	}
 
-	/// What every OMF audio row must say whichever way it was described —
-	/// the database (no header read) or the file's own tail.
+	/// Selected audio values agree across database and header acquisition paths.
 	void checkOmfAudioMetadata(const MediaFile &mf, const QString &clip, const QString &bin,
 							   const QString &fileMob, const QString &masterMob)
 	{
@@ -2864,8 +2792,7 @@ void TestScanner::stale_omf_database_does_not_describe_replacement()
 	QVERIFY(QDir().mkpath(folder));
 	const QString databasePath = folder + QStringLiteral("/msmMMOB.mdb");
 	QVERIFY(tryWriteFile(databasePath, waveOmf(false)));
-	// A missing required Clip Name triggers the header read that must reject
-	// the old database identity; master-track lengths no longer gate reading.
+	// Missing Clip Name triggers a header read that must reject the replaced file's DB identity.
 	removeDatabaseClipNames(databasePath);
 	const auto database = databaseProjection(databasePath);
 	QVERIFY(!database.masters.isEmpty());
@@ -2905,9 +2832,8 @@ void TestScanner::incomplete_omf_database_recovers_file_identity_from_header()
 	QVERIFY(tryWriteFile(path, waveOmf(false, false, fileUid)));
 	setModified(path, kToneModified);
 
-	// The indexed timestamp matches, but the database's incomplete
-	// technical description requires a header read. The actual
-	// The file descriptor is usable; the missing master association remains unknown.
+	// Missing technical metadata triggers a header read despite the matching timestamp.
+	// The header descriptor is usable; its absent master association stays unknown.
 	const auto database = databaseProjection(mdbPath);
 	const QString oldFileId = OmfUid::toIdText(TestOmf::uid(2));
 	const auto *databaseFile = fileWithId(database.files, oldFileId);
@@ -2933,8 +2859,7 @@ void TestScanner::incomplete_omf_database_recovers_file_identity_from_header()
 
 void TestScanner::omf_volume_root_scans_both_folders()
 {
-	// A drive with both roots at its top level: the MXF tree exactly as
-	// every test above builds it, and the flat OMF root beside it.
+	// A media base can contain both MXF and flat OMFI managed trees.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString mediaFolderName = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
@@ -3019,10 +2944,7 @@ void TestScanner::copied_media_tree_requires_a_managed_root()
 
 void TestScanner::omf_root_pointed_at_directly_never_scans_as_mxf_folders()
 {
-	// The OMF root, with the subfolders a real one can carry — Avid's
-	// transient `Creating`, and here a stray numbered folder as well. It
-	// used to pass "MXF-or-OMF root with subfolders" and be walked as an
-	// MXF root: subfolder rows, the flat media skipped. The name decides now.
+	// Subfolders must not make a flat OMFI tree behave like a numbered MXF tree.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString omfRoot = Conventions::omfRootUnder(tmp.path());
@@ -3087,7 +3009,7 @@ void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
 		QCOMPARE(mf.project, kOmfProject);
 		QCOMPARE(mf.fileMobId, kOmfWavFileMob);		// the file's own identity
 		QCOMPARE(mf.masterMobId, kOmfWavMasterMob); // verified by the file's graph
-		QCOMPARE(mf.originalBin, kOmfWavBin);		// which is the only place a bin lives
+		QCOMPARE(mf.originalBin, kOmfWavBin);		// From the MDB.
 	}
 
 	// With no database at all the tail still names the clip, the project and
@@ -3103,7 +3025,7 @@ void TestScanner::omf_root_without_a_pmr_gets_identity_from_its_header()
 		QCOMPARE(mf.fileMobId, kOmfWavFileMob);
 		QCOMPARE(mf.masterMobId, kOmfWavMasterMob);
 		QVERIFY(mf.originalBin.isEmpty());
-		QCOMPARE(mf.compression, QStringLiteral("PCM")); // Compression and container are distinct facts. // OMF-era: Avid's container label
+		QCOMPARE(mf.compression, QStringLiteral("PCM")); // Compression and container are distinct facts.
 	}
 }
 
@@ -3586,10 +3508,8 @@ void TestScanner::omf_database_metadata_survives_source_path_fallback()
 
 void TestScanner::ama_databases_are_read()
 {
-	// The AMA-linked spelling of the same two files. Folder 1 carries only
-	// the ama* pair; folder 2 both spellings of each (the same database
-	// twice, so the merge has to cope with duplicate keys). Junk under the
-	// real name, stamped: every fact below is the database's.
+	// Compare ama* databases alone with duplicate ama*/msm* spellings in another folder.
+	// The media headers are unreadable, so metadata must come from the databases.
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString folder1 = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
@@ -3623,7 +3543,7 @@ void TestScanner::ama_databases_are_read()
 	}
 }
 
-// MARK: - MXF-era behaviour pinned across the OMF-era rework
+// MARK: - MXF scan scope
 
 void TestScanner::manual_media_tree_scans_eligible_siblings_without_nested_archives()
 {

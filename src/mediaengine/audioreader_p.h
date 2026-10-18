@@ -17,9 +17,8 @@ namespace MediaEngine::Detail
 
     AudioReadResult readChunkedAudio(QIODevice &device, const ReaderContext &context);
 
-    // Native audio chunks and OMF descriptor summaries contain the same fields.
-    // Keep each field's own bytes, location and read state alongside the useful
-    // aggregate map; a missing extension cannot erase readable base fields.
+    // Native chunks and OMF summaries share these fields. Preserve each field's
+    // bytes/location/read state; a missing extension cannot erase readable base fields.
     struct AudioFormatResult
     {
         QVariantMap values;

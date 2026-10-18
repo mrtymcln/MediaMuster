@@ -8,7 +8,7 @@ if(APPLE)
         set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "Build architectures for macOS")
     endif()
 
-    ### Fall back to the pinned local Qt when nothing else names one ###
+    # Use the pinned local Qt unless a Qt path was supplied.
     if(NOT DEFINED CMAKE_PREFIX_PATH AND NOT DEFINED Qt6_DIR AND NOT DEFINED ENV{Qt6_DIR})
         set(_qt_pinned "$ENV{HOME}/Qt/6.5.3/macos")
         if(EXISTS "${_qt_pinned}/lib/cmake/Qt6/Qt6Config.cmake")
@@ -47,7 +47,7 @@ else()
     add_compile_options(-Wall -Wextra)
 endif()
 
-### Beta expiry; the date reaches the target further down ###
+### Beta expiry ###
 option(SELF_DESTRUCT "Lock the app after the expiry date" OFF)
 set(SELF_DESTRUCT_DATE "2026-12-31" CACHE STRING "Self destruct date")
 if(SELF_DESTRUCT)
@@ -78,16 +78,13 @@ if(APPLE)
         CACHE STRING "Codesign identity for the .app bundle")
 endif()
 
-### MediaEngine: format readers, matching and metadata ###
-# The live scanner and bin adapter share this parsing and reconciliation engine.
 ### Test suite; disable with -DMEDIAMUSTER_BUILD_TESTS=OFF ###
 option(MEDIAMUSTER_BUILD_TESTS "Build the MediaMuster test suite" ON)
 
 ### Pin to Qt version ###
 find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Widgets Core Gui Concurrent)
 
-# MDB and OMF own separate parsing and interpretation implementations. Keep the
-# lists independent so removing one media family cannot remove the MDB decoder.
+# Keep MDB and OMF implementations separate for isolated reader tests.
 set(MEDIAENGINE_MDB_SOURCES
     src/mediaengine/mdbreader.cpp
     src/mediaengine/mdbbentoreader_p.cpp
@@ -152,7 +149,7 @@ target_link_libraries(mediamuster_mediaengine PUBLIC mediamuster_mediaengine_cor
 
 message(STATUS "Using Qt6 ${Qt6_VERSION}")
 
-### AGL deprecated ###
+# Use OpenGL without the deprecated AGL framework.
 if(APPLE AND TARGET WrapOpenGL::WrapOpenGL)
     set_target_properties(WrapOpenGL::WrapOpenGL PROPERTIES
         INTERFACE_LINK_LIBRARIES "-framework OpenGL")
@@ -232,8 +229,7 @@ elseif(WIN32)
         endif()
     endforeach()
     set(MM_RC_VERSION_COMMA "${_mm_rc_MAJOR},${_mm_rc_MINOR},${_mm_rc_PATCH},0")
-    ### rc.exe reads the icon path from a quoted string, where a single
-    ### backslash is an escape; native path with the backslashes doubled. ###
+    # Escape native backslashes inside the resource compiler's quoted icon path.
     file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/res/mediamuster-win.ico" MM_RC_ICON)
     string(REPLACE "\\" "\\\\" MM_RC_ICON "${MM_RC_ICON}")
     configure_file(res/mediamuster-win.rc.in ${CMAKE_CURRENT_BINARY_DIR}/mediamuster-win.rc @ONLY)
@@ -279,7 +275,7 @@ if(SELF_DESTRUCT)
     )
 endif()
 
-### Sign the bundle so FDA permissions survive ###
+### Sign local builds with the configured identity ###
 if(APPLE)
     execute_process(
         COMMAND security find-identity -v -p codesigning
@@ -289,7 +285,7 @@ if(APPLE)
     string(FIND "${_mm_identities}" "${MEDIAMUSTER_CODESIGN_IDENTITY}" _mm_idx)
     if(_mm_idx GREATER -1)
         message(STATUS "Codesign identity: ${MEDIAMUSTER_CODESIGN_IDENTITY}")
-        ### No --deep: it is deprecated. Sign the bundle itself. ###
+        # Sign the app itself; packaging signs deployed dependencies separately.
         set(_mm_bundle "$<TARGET_BUNDLE_DIR:MediaMuster>")
         add_custom_command(TARGET MediaMuster POST_BUILD
             COMMAND xattr -cr "${_mm_bundle}"

@@ -1,6 +1,5 @@
-// Reads MDB's Bento container, joining only explicitly continued values.
-// This verified decoding is intentionally independent of the OMF media reader;
-// MDB values keep their original bytes, order and locations.
+// Reads MDB's Bento container independently of OMF media, joining only declared
+// continuations and preserving value bytes, order and locations.
 
 #include "mdbbentoreader_p.h"
 

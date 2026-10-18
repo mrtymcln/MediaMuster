@@ -1,7 +1,6 @@
 #pragma once
 
-// Reads an explicitly loaded Avid bin into MediaEngine's source graph. Bin entries,
-// sequence links and original property bytes survive independently of filtering.
+// Reads an Avid bin into a temporary source graph for Whole Bin resolution.
 
 #include "sourcereader.h"
 

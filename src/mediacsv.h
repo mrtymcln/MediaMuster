@@ -6,14 +6,8 @@
 #include <QVector>
 
 // MARK: - MediaCsv
-/// One header line and one line per physical MediaFile. Optional columns carry
-/// precompute details. The explicit export schema follows
-/// the established export order, ending with the No Database and No Reference
-/// booleans, MOB IDs, KelpieId
-/// and the OmfScan family boolean;
-/// dragging table columns does not change export order. The caller captures
-/// the enabled column groups from the table model. Tests compare headings with
-/// the default table layout with precompute details enabled and disabled, and check emitted values.
+/// One header and one line per physical file, in fixed export order.
+/// The caller selects optional columns; rearranging the table does not affect CSV order.
 
 namespace MediaCsv
 {
@@ -26,17 +20,11 @@ namespace MediaCsv
 	/// Column headings in emission order, using the same options as rows.
 	QString headerLine(Options options = {});
 
-	/// One CSV line for `f`, newline included. Every string column goes
-	/// through CsvUtil::quoted (spreadsheet-formula injection is
-	/// neutralised there). Kind, Type, precompute details, Sample Rate, Duration, Size (MB)
-	/// and Date Created route through MediaFile's display helpers so the export and
-	/// the table can't disagree. Clip Name and Compression use their stored text,
-	/// matching the table's displayed values.
+	/// One CSV line, including its newline. Quotes and neutralises free-text fields;
+	/// uses the same display values as the table.
 	QString rowLine(const MediaFile &f, Options options = {});
 
-	/// Writes header + rows to `path`. False on any I/O failure.
-	/// Emits a UTF-8 BOM: Excel on Windows assumes the legacy ANSI code
-	/// page for a BOM-less CSV and renders non-Latin clip/bin names as
-	/// mojibake. Numbers and other readers ignore it.
+	/// Writes and commits the file; false on I/O failure.
+	/// Includes a UTF-8 BOM so Excel recognises non-Latin names.
 	bool write(const QString &path, const QVector<MediaFile> &rows, Options options = {});
 } // namespace MediaCsv

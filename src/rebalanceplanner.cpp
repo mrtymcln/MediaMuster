@@ -109,15 +109,11 @@ namespace
 		return result;
 	}
 
-	// Prefix for synthetic relatives keys assigned to loose files
-	// (no masterMobId). Lets us detect 'this was a loose file'
-	// later via a cheap startsWith check.
+	// Distinguish individually planned files from MasterMobId groups.
 	inline constexpr QLatin1String kLoneKeyPrefix("__lone__:");
 
-	// Loose files get a unique synthetic key so each becomes a
-	// one-member group; files with a master MOB share their master
-	// clip's ID. Single implementation; planner-side and
-	// executor-side overloads delegate here so the format can't drift.
+	// Group valid MasterMobIds within an MXF tree and workstation prefix.
+	// Unidentified files each keep their own path-based group.
 	QString relativesKey(const QString &masterMobId, const QString &fallbackPath)
 	{
 		if (masterMobId.isEmpty() || MobId::isAllZero(masterMobId) ||
@@ -234,8 +230,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 
 	// MARK: Tally bytes + bucket files into relatives groups
 
-	// One pass over `files` does both: tallies bytes per source folder,
-	// and groups files by master MOB so relatives stay together.
+	// Tally source bytes and group relatives by MasterMobId.
 	QHash<NumberedMxfFolder, qint64> realBytes;
 	QHash<QString, QVector<IndexedMedia>> bucketed;
 	for (const auto &mf : files)
@@ -289,9 +284,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 
 	// MARK: Sort groups for stable, deterministic packing
 
-	// Prefix asc > home N asc > larger groups first within a home.
-	// Larger first so we don't waste capacity by scattering small
-	// groups into a folder that a 4000-file group then can't fit.
+	// Order by prefix and home folder, then pack larger groups first to reduce fragmentation.
 	std::sort(groups.begin(), groups.end(),
 			  [](const Group &a, const Group &b)
 			  {
@@ -419,10 +412,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 			continue;
 		}
 
-		// Home is full. First-fit ascending within the prefix; if
-		// nothing existing has room, allocate a new folder.
-		// First-fit (not best-fit) keeps low Ns denser, matching
-		// editor intuition that "1" is the busiest folder.
+		// Fill the lowest-numbered folder with room, or allocate a new one.
 		NumberedMxfFolder dest;
 		bool found = false;
 		QSet<int> all = allFoldersForPrefix(prefix);

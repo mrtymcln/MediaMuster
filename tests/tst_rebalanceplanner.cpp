@@ -29,10 +29,7 @@ private slots:
 	void quarantined_folder_left_alone();
 	void out_of_scope_media_files_dropped();
 
-	// Only real media files occupy Avid's per-folder budget. The folder's
-	// own databases (msmFMID.pmr / msmMMOB.mdb), dot-hidden files (incl.
-	// AppleDouble "._*"), and Windows shell junk used to inflate the
-	// preview's count AND steal slots from the 5000-file packing target.
+	// Databases, hidden files and shell files must not consume the media folder budget.
 	void folder_count_excludes_databases_and_hidden_files();
 	void folder_counts_distinguish_empty_absent_and_unavailable();
 	void unreadable_folder_is_not_counted_or_planned();
@@ -56,11 +53,7 @@ private:
 	/// Returns "<tmp>/Avid MediaFiles/MXF"; creates the path.
 	static QString stageMxfRoot(const QTemporaryDir &tmp);
 
-	/// Fills <mxfRootPath>/<mediaFolderName>/ with `fillerCount` empty .mxf-named
-	/// files. Bumps the on-disk count without producing MediaFiles —
-	/// only .mxf entries count toward the folder budget, so cap tests
-	/// use these to make a folder 'full' without indexing thousands of
-	/// MediaFiles.
+	/// Fill a folder with empty .mxf files to test capacity without indexing media rows.
 	static void makeFillers(const QString &mxfRootPath, const QString &mediaFolderName, int fillerCount);
 
 	/// Creates one sparse file under <mxfRootPath>/<mediaFolderName>/<name>
@@ -215,8 +208,7 @@ void TestRebalancePlanner::consolidates_relatives_into_home_folder()
 	QVERIFY(tmp.isValid());
 	const QString root = stageMxfRoot(tmp);
 
-	// Comp C1: two members in '1', one in '2'. Home wins on member
-	// count, giving '1'. The '2' member moves to '1'.
+	// Master C1 has most of its files in '1', so the remaining file moves there.
 	const QVector<MediaFile> files{
 		makeMxf(root, "1", "a.mxf", "C1"),
 		makeMxf(root, "1", "b.mxf", "C1"),
@@ -264,10 +256,7 @@ void TestRebalancePlanner::folder_count_excludes_databases_and_hidden_files()
 	QVERIFY(tmp.isValid());
 	const QString root = stageMxfRoot(tmp);
 
-	// Two real media files plus everything that must NOT count: Avid
-	// databases, a dot-hidden file, an AppleDouble sidecar (named .mxf but
-	// not media), Windows shell junk, and a stray non-MXF file. Only .mxf
-	// entries occupy Avid's per-folder budget.
+	// Only the two visible .mxf files count, including when a hidden sidecar ends in .mxf.
 	const QVector<MediaFile> files{
 		makeMxf(root, "1", "a.mxf"),
 		makeMxf(root, "1", "b.MXF"),

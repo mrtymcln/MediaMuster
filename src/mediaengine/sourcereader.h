@@ -1,8 +1,7 @@
 #pragma once
 
-// The common contract for MediaEngine's format readers: inspect an already-open source
-// and return the facts that can be read from it. The scan coordinator manages
-// file access, matching between sources and choosing values for display.
+// Readers inspect already-open sources. The coordinator handles file access,
+// matching between sources and display selection.
 
 #include "scanmodel.h"
 #include <QIODevice>

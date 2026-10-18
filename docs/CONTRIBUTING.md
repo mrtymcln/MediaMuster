@@ -4,6 +4,11 @@ MediaMuster is a C++17 / Qt Widgets application for macOS and Windows. Start wit
 [current behaviour](current-behaviour.md), [the architecture map](architecture.md)
 and [the documentation index](README.md).
 
+[Project Copland](../Project%20Copland/README.md) records the active V1 scope and
+confirmed decisions. Use those decisions where they revise earlier Canon plans;
+keep proposals and open questions distinct from approved work. Dated reports
+record their tested source state, rather than requirements to restore old code.
+
 ## Naming
 
 | Item | Convention | Example |

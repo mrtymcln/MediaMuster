@@ -42,10 +42,7 @@ public:
 	bool isTrashFallbackPending(quint64 requestId) const;
 	void respondTrashFallback(quint64 requestId, bool accepted);
 
-	/// The engine's entire read of a MediaFile, in one place: path,
-	/// name, folder name, size, the per-file conflict policy, and the scan's
-	/// Avid identity claims (mob ids + clip name) that the runner
-	/// cross-checks and the journal records.
+	/// Convert selected rows and frozen scan checks into independent journalled requests.
 	static QVector<OpItem> itemsFromMediaFiles(const QVector<MediaFile> &files,
 											   const QHash<QString, ConflictPolicy> &policies);
 
@@ -88,8 +85,6 @@ private:
 	bool m_trashFallbackAnswered = false;
 	bool m_trashFallbackAccepted = false;
 
-	/// Must stay the LAST member: BackgroundJob's destructor joins the
-	/// worker, and members declared after it would be destroyed first —
-	/// out from under a still-running worker.
+	/// Keep last: its destructor joins the worker before other members are destroyed.
 	BackgroundJob m_job;
 };

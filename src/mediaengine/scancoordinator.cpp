@@ -122,8 +122,7 @@ namespace MediaEngine
 
 		void selectMatchingEffects(MediaEvidence &evidence)
 		{
-			// Keep the existing interpretation history while matching adds sources.
-			// Only these two fields feed effects; the other fields can wait.
+			// Effect derivation needs selected ClipName and Type while matching adds sources.
 			for (const auto property : {MediaProperty::ClipName, MediaProperty::Type})
 				evidence.select(property, resolveProperty(evidence, propertyPolicy(property)));
 			selectEffectMetadata(evidence);
@@ -235,10 +234,8 @@ namespace MediaEngine
 	{
 		ScanResult result = DiscoveryEngine{}.discover(request, cancellation, callbacks.discovering);
 		const bool discoveryCancelled = result.cancelled;
-		// Finish the CPU-only inventory and matching even after Cancel. Only
-		// acquisition and freshness checks may request more filesystem work.
-		// Resolve folder spellings before acquisition, so final matching never
-		// needs to canonicalize a path after cancellation.
+		// After Cancel, finish matching from captured facts without further I/O.
+		// Capture canonical folder spellings before acquisition so matching can reuse them.
 		QHash<QString, QString> folderKeys;
 		const auto cachedFolderKey = [&](const QString &path)
 		{

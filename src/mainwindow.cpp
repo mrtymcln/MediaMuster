@@ -397,9 +397,7 @@ QWidget *MainWindow::buildToolbar()
 
 namespace
 {
-	// The default behaviour of QTableView is such that it scrolls to always
-	// keep the 'current cell' visible. autoScroll is off in buildTable; but
-	// that also disables the scroll on arrow keys, so we restore it below.
+	// Disable automatic scrolling, then restore it for keyboard navigation below.
 	class MediaTableView : public QTableView
 	{
 	public:
@@ -431,9 +429,7 @@ void MainWindow::buildTable()
 	m_tableView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 	m_tableView->setAlternatingRowColors(true);
 	m_tableView->setShowGrid(false);
-	// Fill the whole column width and hard-clip at the edge rather than the
-	// default ElideRight, which drops extra characters to make room for an
-	// "…". No ellipsis; a narrow column shows as many characters as fit.
+	// Clip text without reserving room for an ellipsis in narrow columns.
 	m_tableView->setTextElideMode(Qt::ElideNone);
 	m_tableView->verticalHeader()->setVisible(false);
 	m_tableView->verticalHeader()->setDefaultSectionSize(24);
@@ -678,8 +674,7 @@ void MainWindow::buildHelpMenu()
 
 	helpMenu->addSeparator();
 
-	// The diagnostic log always runs; this just surfaces it so the user can
-	// send it in, even though it lives in hidden ~/Library.
+	// Reveal the saved log for support reporting.
 	auto *diagnosticsAction = helpMenu->addAction(tr("Reveal Diagnostics"));
 	connect(diagnosticsAction, &QAction::triggered, this,
 			[this]
@@ -837,10 +832,7 @@ void MainWindow::setupConnections()
 	connect(m_tableView, &QTableView::customContextMenuRequested, this,
 			&MainWindow::showTableContextMenu);
 
-	// No keyboard shortcut for Delete: QKeySequence::Delete is Forward Delete
-	// (⌦), which isn't the macOS "delete selected item" key (that's ⌘⌫), and a
-	// destructive action shouldn't hang off a stray keypress. Delete stays
-	// available via the right-click menu and Manage Media.
+	// Avoid accidental destructive keypresses; Delete stays in Manage Media and the context menu.
 	// Separate dialogs must keep their own Escape dismissal/cancellation path.
 	new QShortcut(QKeySequence(Qt::Key_Escape), this, [this]()
 				  { m_searchField->clear(); }, Qt::WidgetWithChildrenShortcut);
@@ -970,7 +962,7 @@ void MainWindow::onFilterByBins()
 					// A matching inventory row still counts when other filters hide it.
 					const auto &files = m_model->allFiles();
 					const bool matched = std::any_of(files.cbegin(), files.cend(), [&bin](const MediaFile &file)
-														 { return bin.mediaFileIds.matches(AvbFileId::fromMobId(file.fileMobId)); });
+													 { return bin.mediaFileIds.matches(AvbFileId::fromMobId(file.fileMobId)); });
 					if (!matched)
 						addLog(QtInfoMsg, QStringLiteral("filters"),
 							   tr("Bin has no matching files in the current scan: %1").arg(bin.filePath));
@@ -1367,8 +1359,7 @@ void MainWindow::startScan(const QVector<MediaScanner::Location> &locations)
 	opts.locations = locations;
 
 	m_operations->setActivity(FileOperationController::Activity::Scanning);
-	// A new scan replaces the session, including its archived source details.
-	// Release the old rows before constructing another complete inventory.
+	// Release the previous inventory and issue snapshots before building another.
 	m_model->setMediaFiles({});
 	m_persistentSelectedPaths.clear();
 	resetFiltersForNewScan();
@@ -1548,8 +1539,7 @@ void MainWindow::onSelectionChanged()
 		selectedCount += range.bottom() - range.top() + 1;
 	const bool hasSelection = selectedCount > 0;
 
-	// Background bin metadata can change the selection while a scan or
-	// operation is running. Preserve the busy gate during that restoration.
+	// A background bin load can change selection; preserve the operation's busy gate.
 	updateSelectionActions();
 	m_statusSep1->setVisible(hasSelection);
 	m_statusSelected->setVisible(hasSelection);
@@ -2041,8 +2031,7 @@ ProgressDialog *MainWindow::progressDialog()
 
 void MainWindow::updateStatusBar()
 {
-	// Coalesces bursts: doUpdateStatusBar fires 200 ms after the
-	// last call.
+	// Coalesce repeated updates before tallying bytes.
 	m_statusBarUpdateTimer->start();
 }
 
@@ -2293,9 +2282,7 @@ void MainWindow::resetFiltersForNewScan()
 		m_projectList->clearSelection();
 	}
 
-	// Bin filter: when the dialog exists, clearFilterSteps() tears down its internal
-	// chain and the chain-list UI. The cached chip state is reset here for the
-	// no-dialog / empty-chain paths clearFilterSteps() skips.
+	// Clear both the dialog's chain and the chip state, even if no dialog exists.
 	if (m_binFilterDialog)
 		m_binFilterDialog->clearFilterSteps();
 	m_binFilterActive = false;

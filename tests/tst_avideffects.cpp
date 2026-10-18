@@ -1,7 +1,4 @@
-// AvidEffects: precompute clip name → Avid effect name + palette
-// category. The 15 real render names in the corpus (14 match; the 15th is a
-// user-typed title), current 26.8 registrations, the parse rule, the mangle rule
-// (space/colon → underscore), ambiguity, and a localised spelling.
+// Recorded render names and catalogue spellings exercise effect-name parsing and lookup.
 
 #include "effectcatalogue.h"
 
@@ -28,8 +25,7 @@ private slots:
 
 void TestAvidEffects::the_whole_catalogue_is_compiled_in()
 {
-	// The fresh 26.8 extraction produces 887 distinct name/category pairs.
-	// This checks the compiled-in catalogue is complete; it does not count availability.
+	// Catalogue size does not establish which effects are available at runtime.
 	QCOMPARE(AvidEffects::size(), 887);
 }
 
@@ -43,8 +39,7 @@ void TestAvidEffects::corpus_render_names_resolve()
 		const char *sequence;
 		int instance;
 	};
-	// The MaterialPackage names of the corpus's 15 precomputes (8 distinct
-	// effect tokens), as MXF/MDB spell them.
+	// MaterialPackage names recorded in the genuine MXF/MDB fixtures.
 	const Case cases[] = {
 		{"zT_\xc3\x9ft_1080i_50_seq,Color_Correction+1", "Color Correction", "Image", "zT_\xc3\x9ft_1080i_50_seq", 1},
 		{"zT_\xc3\x9ft_1080i_50_seq,AniMatte+6", "AniMatte", "Key", "zT_\xc3\x9ft_1080i_50_seq", 6},
@@ -116,7 +111,7 @@ void TestAvidEffects::aliases_do_not_guess_arbitrary_names()
 
 void TestAvidEffects::user_typed_title_is_not_a_standard_effect()
 {
-	// The 15th corpus render: a title whose text the user typed.
+	// Recorded title text is not a catalogue effect name.
 	const AvidEffects::Hit h = AvidEffects::lookup(QString::fromUtf8("zT_\xc3\x9ft_1080i_50_seq,10101010+3"));
 	QVERIFY(!h.matched);
 	QCOMPARE(h.name, QStringLiteral("10101010"));
@@ -127,25 +122,22 @@ void TestAvidEffects::user_typed_title_is_not_a_standard_effect()
 
 void TestAvidEffects::parse_splits_on_the_last_comma_and_strips_the_instance()
 {
-	// A sequence name containing a comma: the separator is the LAST one.
+	// Commas inside the sequence name must not split the effect token.
 	AvidEffects::Hit h = AvidEffects::lookup(QStringLiteral("Act_1,_Scene_2,Dissolve+12"));
 	QVERIFY(h.matched);
 	QCOMPARE(h.name, QStringLiteral("Dissolve"));
 	QCOMPARE(h.sequence, QStringLiteral("Act_1,_Scene_2"));
 	QCOMPARE(h.instance, 12);
 
-	// No comma and no instance: the whole name is the token, nothing invented.
 	h = AvidEffects::lookup(QStringLiteral("Dissolve"));
 	QVERIFY(h.matched);
 	QVERIFY(h.sequence.isEmpty());
 	QCOMPARE(h.instance, 0);
 
-	// A name that is not a render shape at all comes back verbatim, unmatched.
 	h = AvidEffects::lookup(QStringLiteral("Interview Take 3"));
 	QVERIFY(!h.matched);
 	QCOMPARE(h.name, QStringLiteral("Interview Take 3"));
 
-	// Empty in, empty-but-safe out.
 	h = AvidEffects::lookup(QString());
 	QVERIFY(!h.matched);
 	QVERIFY(h.name.isEmpty());
@@ -160,9 +152,7 @@ void TestAvidEffects::comma_instances_data()
 	QTest::addColumn<int>("instance");
 	QTest::addColumn<bool>("matched");
 
-	// Actual 2026-09-05 export rows 235, 236 and 245. Their Effect column
-	// used to show 4.new.01/9.new.01/79.new.01, and Sequence included the
-	// real effect token. Current AAudioDissolve registers Audio Dissolve / Blend.
+	// Recorded render names use a final comma-separated instance and optional rename suffix.
 	QTest::newRow("real-title")
 		<< QStringLiteral("HAA_1730_8647_SUBMASTER,Title,4.new.01")
 		<< QStringLiteral("Title") << QStringLiteral("Title")

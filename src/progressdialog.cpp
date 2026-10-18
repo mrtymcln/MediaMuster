@@ -15,11 +15,7 @@
 ProgressDialog::ProgressDialog(QWidget *parent)
 	: QDialog(parent)
 {
-	// No title of any kind: it is a sheet on the main window, and the
-	// console says what is running. The detail line carries the rest.
-
-	// Modal so the user can't kick off a second operation whilst this
-	// one is mid-flight; Cancel is the only way out.
+	// The Console identifies the run; this modal sheet shows progress and Cancel.
 	setModal(true);
 	setWindowFlags(Qt::Sheet);
 
@@ -31,9 +27,7 @@ ProgressDialog::ProgressDialog(QWidget *parent)
 
 	m_detailLabel = new QLabel;
 	m_detailLabel->setTextFormat(Qt::PlainText);
-	// Fixed width so the dialog's own width is stable: the detail text is
-	// mid-elided to this width in setDetail(), and it's the widest row, so it
-	// determines the fixed dialog size below.
+	// Keep the sheet's width stable as the current path changes.
 	m_detailLabel->setFixedWidth(600);
 	layout->addWidget(m_detailLabel);
 
@@ -58,8 +52,6 @@ ProgressDialog::ProgressDialog(QWidget *parent)
 
 	layout->addLayout(bottomRow);
 
-	// Size to content and lock it: the dialog can't be resized, and because the
-	// detail row is fixed-width the size never jitters as the text changes.
 	layout->setSizeConstraint(QLayout::SetFixedSize);
 }
 
@@ -99,13 +91,11 @@ void ProgressDialog::setItemProgress(int current, int total, double pct)
 {
 	if (total <= 0)
 	{
-		setProgress(current, total); // indeterminate path, one home
+		setProgress(current, total);
 		return;
 	}
 
-	// 1000 bar ticks per item: fine enough that a multi-GB file's bytes
-	// move the bar visibly, coarse enough to never overflow int for any
-	// plausible selection size.
+	// Subdivide work units so progress advances within a large file.
 	constexpr int kTicksPerItem = 1000;
 	const int clampedCurrent = qBound(1, current, total);
 	const double clampedPct = qBound(0.0, pct, 100.0);
@@ -126,7 +116,6 @@ void ProgressDialog::setItemProgress(int current, int total, double pct)
 
 void ProgressDialog::setDetail(const QString &text)
 {
-	// Mid-elide so long paths still show the head and the tail.
 	const int availWidth = m_detailLabel->width() > 0 ? m_detailLabel->width() : 420;
 	const QString elided =
 		m_detailLabel->fontMetrics().elidedText(text, Qt::ElideMiddle, availWidth);
@@ -142,13 +131,10 @@ void ProgressDialog::finish()
 
 void ProgressDialog::requestCancel()
 {
-	// Already cancelling: don't re-emit for button mashing or Esc.
 	if (!m_cancelBtn->isEnabled())
 		return;
 
-	// Acknowledge immediately. The worker's cooperative cancel can take
-	// seconds on a large copy, and a silent, still-enabled button reads
-	// as broken. begin() re-arms the button for the next run.
+	// Acknowledge immediately while the worker finishes cooperative cancellation.
 	m_cancelBtn->setEnabled(false);
 	m_cancelBtn->setText(tr("Cancelling..."));
 	emit cancelRequested();
@@ -158,15 +144,12 @@ void ProgressDialog::requestCancel()
 
 void ProgressDialog::closeEvent(QCloseEvent *event)
 {
-	// Redirect the OS close button to our Cancel flow.
 	event->ignore();
 	requestCancel();
 }
 
 void ProgressDialog::reject()
 {
-	// Esc lands here, not in closeEvent — QDialog::reject would hide
-	// the dialog while the operation kept running headless. Treat it
-	// as a cancel request and stay visible until finish().
+	// QDialog::reject would hide the sheet before the worker finishes.
 	requestCancel();
 }

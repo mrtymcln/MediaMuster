@@ -5,10 +5,7 @@
 #include <QTemporaryDir>
 #include <QTest>
 
-// The CSV export. Its header string and its field chain are two parallel
-// lists that must stay column-for-column aligned: insert a field in one
-// and not the other and every later column shifts under the wrong
-// heading — silently, in a file the user hands to production.
+// Export headings and row values must keep the same column order.
 
 namespace
 {
@@ -112,8 +109,6 @@ void TestMediaCsv::selected_master_and_physical_row_identity_are_exported()
 
 void TestMediaCsv::header_and_row_have_the_same_field_count()
 {
-	// The alignment guard: this fails the moment someone adds a field to
-	// one list and forgets the other.
 	const auto headerFields = readCsvRecord(MediaCsv::headerLine()).size();
 	QCOMPARE(headerFields, 22);
 	QCOMPARE(readCsvRecord(MediaCsv::rowLine(sampleRow())).size(), headerFields);
@@ -324,8 +319,7 @@ void TestMediaCsv::source_path_is_exported_with_csv_protection()
 
 void TestMediaCsv::created_date_carries_time_of_day()
 {
-	// Ruled 2026-08-12: the export matches what the table shows, rather
-	// than silently dropping the time as it used to.
+	// Export the same date and time shown in the table.
 	QVERIFY(MediaCsv::rowLine(sampleRow()).contains(QStringLiteral("2026-07-20 12:30")));
 }
 
@@ -350,7 +344,7 @@ void TestMediaCsv::formula_injection_is_neutralised()
 	MediaFile f = sampleRow();
 	f.clipName = QStringLiteral("=cmd|'/c calc'!A1");
 	const QString line = MediaCsv::rowLine(f);
-	// CsvUtil prefixes a quote so a spreadsheet reads it as text.
+	// Prefix formula-like text with an apostrophe so spreadsheets treat it as text.
 	QVERIFY(line.startsWith(QStringLiteral("\"'=cmd")));
 }
 
@@ -372,7 +366,7 @@ void TestMediaCsv::write_produces_header_plus_one_line_per_row()
 		QFile f(path);
 		QVERIFY(f.open(QIODevice::ReadOnly));
 		const QByteArray raw = f.readAll();
-		// UTF-8 BOM keeps Excel on Windows from mojibaking non-Latin names.
+		// The UTF-8 BOM lets Excel on Windows recognize non-Latin text.
 		QVERIFY(raw.startsWith("\xEF\xBB\xBF"));
 		QCOMPARE(raw.mid(3), (MediaCsv::headerLine(options) +
 							  MediaCsv::rowLine(sampleRow(), options) + MediaCsv::rowLine(sampleRow(), options))

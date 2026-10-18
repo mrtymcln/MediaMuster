@@ -1,6 +1,5 @@
-// Reads Bento's container structure independently of the old application parser.
-// The table of contents describes where values live; only declared continuations
-// are joined. Unknown properties keep their bytes for the OMF reader to interpret.
+// Reads OMF's Bento container, joining only declared continuations.
+// Unknown properties keep their bytes for later interpretation.
 
 #include "omfbentoreader_p.h"
 

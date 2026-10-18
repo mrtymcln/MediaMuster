@@ -204,9 +204,7 @@ private slots:
 		QFETCH(QByteArray, label);
 		QFETCH(int, depth);
 		QFETCH(int, horizontal);
-		// This tests the decision to remove unsupported lookup entries. These
-		// are authored formatter inputs, not specimens of an Avid file format.
-		// Otherwise valid HD facts cannot establish an unknown coding profile.
+		// Authored formatter inputs: valid HD geometry cannot establish an unknown coding profile.
 		auto facts = dnxHqxFacts();
 		facts.codingLabel = label;
 		facts.depth = depth;

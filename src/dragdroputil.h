@@ -9,9 +9,7 @@
 /// Shared local-URL check; callers supply their own acceptance predicate.
 namespace DragDropUtil
 {
-	/// True iff any URL in `mime` is a local file path that
-	/// satisfies `pred`. `pred` is invoked with the local file
-	/// path (the result of `QUrl::toLocalFile()`).
+	/// Test local file paths against the caller's acceptance predicate.
 	template <typename Predicate>
 	inline bool hasAnyLocalUrl(const QMimeData *mime, Predicate pred)
 	{

@@ -1,8 +1,7 @@
 #pragma once
 
-// The private container reader behind MediaEngine's OMF media reader. It follows Bento's
-// table of contents and preserves each recorded value, without deciding what
-// Avid's property names mean or which value a Media File row should display.
+// Reads OMF's Bento contents list and preserves recorded values.
+// Property interpretation and display selection belong to later stages.
 
 #include "scanmodel.h"
 #include <QIODevice>

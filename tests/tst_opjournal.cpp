@@ -137,7 +137,6 @@ void TestOpJournal::serialized_kind_names_round_trip()
 		QVERIFY(back.has_value());
 		QCOMPARE(*back, k);
 	}
-	// The exact spellings are load-bearing (they live in journal files).
 	QCOMPARE(opKindName(OpKind::Copy), QStringLiteral("copy"));
 	QCOMPARE(opKindName(OpKind::Move), QStringLiteral("move"));
 	QCOMPARE(opKindName(OpKind::Delete), QStringLiteral("delete"));
@@ -149,8 +148,7 @@ void TestOpJournal::unknown_serialized_kind_name_is_refused()
 {
 	QVERIFY(!opKindFromName(QStringLiteral("bogus")).has_value());
 	QVERIFY(!opKindFromName(QString()).has_value());
-	// Case matters: the writer always emits lowercase, so anything else
-	// is not one of ours.
+	// Persisted kind names are case-sensitive.
 	QVERIFY(!opKindFromName(QStringLiteral("Copy")).has_value());
 }
 

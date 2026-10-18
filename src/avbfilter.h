@@ -58,9 +58,7 @@ struct AvbFilter
 		if (steps.isEmpty())
 			return true;
 
-		// A leading Subtract removes matches from all media rows, including
-		// rows outside every loaded bin. A leading Add starts with its own
-		// matches. This remains stable when earlier steps or bins are removed.
+		// Start Subtract from all rows and Add from none, regardless of earlier removed steps.
 		const auto fileId = AvbFileId::fromMobId(fileMobId);
 		bool accepted = true;
 		bool started = false;

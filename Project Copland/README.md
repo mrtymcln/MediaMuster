@@ -1594,6 +1594,23 @@ file operations, CSV, table model, filter proxy, bin dialog and operation UI.
 policy code are unchanged. Full workload/memory and NEXIS acceptance remain
 separate; no performance gain is claimed.
 
+### Current documentation cleanup — 18 October 2026
+
+The user chose **Clean up current documentation** before measuring Console/log
+overhead. The current guides now describe temporary scan/bin working data and
+compact retained results consistently. The documentation index and contributor
+guide identify Copland's confirmed decisions as the active V1 plan; Canon's index
+is labelled historical. Dated evidence reports retain their original findings
+and limits. This changes documentation only, without changing reader, scanner or
+application behaviour.
+
+The follow-up comment review covers every tracked application, engine and C++
+test/helper file, plus build, CI, packaging and platform configuration. It removes
+obsolete cache/stage descriptions and repeated narration while retaining safety,
+format, lifetime and fixture limits. Dated source snapshots and licences remain
+intact. Clang's lexer confirms unchanged non-comment tokens; build and CI commands
+are also unchanged.
+
 ### Copy and Move Console summaries — 18 October 2026
 
 After the disposable file-operation check, the user requested Copy and Move

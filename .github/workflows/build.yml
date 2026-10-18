@@ -11,7 +11,7 @@ on:
 permissions:
   contents: read
 
-### Versions. The Check the version step holds these to CMakeLists.txt ###
+# Keep versions aligned with CMakeLists.txt.
 env:
   APP_VERSION: "0.0.2"
   QT_VERSION: "6.5.3"
@@ -30,9 +30,7 @@ jobs:
             name: MediaMuster-Mac
             qt-host: mac
             qt-arch: ''
-          ### Pinned image, not a rolling label: the pinned Qt's headers are
-          ### patched below for the MSVC that ships on this image, and a
-          ### rolling label would move the compiler under that patch. ###
+          # Pin the image: the Qt compatibility patch targets this MSVC toolchain.
           - os: windows-2022
             name: MediaMuster-Win
             qt-host: windows
@@ -44,7 +42,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      ### Every version is written out by hand; stop early if any two disagree ###
       - name: Check the version
         run: cmake -P .github/cmake/check-versions.cmake
 
@@ -65,7 +62,6 @@ jobs:
       - name: Build (macOS and Windows)
         run: cmake -P .github/cmake/build.cmake
 
-      ### Test (macOS and Windows) ###
       - name: Test (macOS and Windows)
         run: cmake -P .github/cmake/test.cmake
 
@@ -80,7 +76,6 @@ jobs:
             build/tests/Release/*.result.txt
           if-no-files-found: ignore
 
-      ### Code signing certificate (macOS) ###
       - name: Import code-signing cert
         if: runner.os == 'macOS' && github.event_name != 'pull_request'
         uses: Apple-Actions/import-codesign-certs@v7
@@ -88,7 +83,6 @@ jobs:
           p12-file-base64: ${{ secrets.MAC_CERTS_BASE64 }}
           p12-password:    ${{ secrets.MAC_CERTS_PASSWORD }}
 
-      ### Package (macOS) ###
       - name: Package (macOS)
         if: runner.os == 'macOS' && github.event_name != 'pull_request'
         env:
@@ -97,12 +91,10 @@ jobs:
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
         run: cmake -P .github/cmake/package-macos.cmake
 
-      ### Package (Windows) ###
       - name: Package (Windows)
         if: runner.os == 'Windows'
         run: cmake -P .github/cmake/package-windows.cmake
 
-      ### Upload artefacts ###
       - name: Upload macOS artefact
         if: runner.os == 'macOS' && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7
@@ -118,7 +110,6 @@ jobs:
           name: MediaMuster-${{ env.APP_VERSION }}-Win
           path: build/MediaMuster-${{ env.APP_VERSION }}-Win
 
-  ### Push to Releases if tagged ###
   release:
     name: Publish Release
     needs: build

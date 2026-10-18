@@ -1,4 +1,4 @@
-// Independently authored MXF packets exercise the new reader's evidence contract.
+// Independently authored MXF packets exercise the reader's evidence contract.
 // Real Avid excerpts remain explicitly incomplete files; they still provide usable
 // metadata. Guarded devices catch accidental reads of large essence payloads.
 

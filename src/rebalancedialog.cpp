@@ -434,12 +434,7 @@ void RebalanceDialog::setupUi()
 	m_cardScroll->setWidget(m_cardContainer);
 	m_cardScroll->setWidgetResizable(true);
 	m_cardScroll->setFrameShape(QFrame::NoFrame);
-	// Always-visible vanilla scrollbar with arrow buttons. The
-	// macOS native style hides scrollbars on auto-fade and skips
-	// arrows entirely; swapping just the scrollbar to Fusion gives
-	// us a chunky always-on bar with top/bottom arrow buttons that
-	// behaves the same on every platform. Parent the QStyle to the
-	// dialog so it cleans up with us.
+	// Use Fusion for a persistent scrollbar with arrows; parent its style to the dialog.
 	m_cardScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	if (auto *fusion = QStyleFactory::create(QStringLiteral("Fusion")))
 	{
@@ -497,19 +492,14 @@ void RebalanceDialog::recomputePlan()
 	const QString mxfRootPath = m_mxfRootPathsByLabel.value(label);
 	const QVector<MediaFile> files = m_filesByMxfRootPath.value(mxfRootPath);
 
-	// Lock the card grid + Rebalance button until the new plan lands.
-	// Volume picker stays live so the user can flip volumes; a
-	// fresh setFuture() silently displaces any in-flight compute.
+	// Await the new plan while allowing another volume choice to replace it.
 	m_cardScroll->setEnabled(false);
 	m_rebalanceButton->setEnabled(false);
 	m_statsLine->setText(tr("Computing plan..."));
 	// Standard palette text, matching the summary and balanced states.
 	m_statsLine->setStyleSheet(QString());
 
-	// Capture by value so the pool task is independent of dialog
-	// lifetime. computePlan stat-walks every subfolder, which can
-	// take seconds on a slow network volume, so it runs off
-	// the main thread.
+	// Probe folders off the GUI thread, using value captures independent of dialog lifetime.
 	m_planWatcher.setFuture(QtConcurrent::run(
 		[mxfRootPath, label, files]
 		{ return RebalancePlanner::computePlan(mxfRootPath, label, files); }));
@@ -658,10 +648,7 @@ void RebalanceDialog::onCancelClicked()
 
 void RebalanceDialog::reject()
 {
-	// Esc during a run takes the Cancel button's path: cooperative
-	// cancel, dialog stays up. Letting QDialog::reject tear the dialog
-	// down mid-run would silently cancel the rebalance and stall the UI
-	// while ~Rebalancer joins its worker.
+	// Keep the dialog alive while cooperative cancellation finishes.
 	if (m_running)
 	{
 		onCancelClicked();

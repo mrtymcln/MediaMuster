@@ -1,7 +1,5 @@
-// Interprets OMF and legacy audio metadata as observations about one file.
-// Recorded media-data ownership connects descriptors to that physical file.
-// This path does not interpret database entries; its local helpers remain
-// independent so legacy media support can be removed without changing MDB.
+// Projects OMF and native audio metadata using recorded media-data ownership.
+// MDB database interpretation is separate.
 
 #include "projection.h"
 #include "compressionnames_p.h"
@@ -94,9 +92,8 @@ namespace MediaEngine
 
 		bool mediaDataClass(const QString &value)
 		{
-			// Avid's six supplied MPEG50 slates root-list MPEG data objects and
-			// record OMFI:MDAT:MobID on them. Recognize that proven ownership
-			// marker without inferring any compression from the class name.
+			// Avid MPEG50 slates root-list MPEG data objects with OMFI:MDAT:MobID.
+			// This establishes ownership, not compression inferred from a class name.
 			return named(value, {"MDAT", "IDAT", "JPEG", "TIFF", "WAVE", "AIFC", "MPEG"});
 		}
 
@@ -206,10 +203,8 @@ namespace MediaEngine
 
 		MediaRate legacyDnxNamingRate(qint64 resolution, MediaRate recorded)
 		{
-			// Matched MDB/MXF identities establish these decimal database clocks;
-			// Avid's supplied OMF slate also establishes 1243 at 29.97. This is
-			// only a name-table lookup: retain the original rate for every fact
-			// and duration. See the 7 October DNx clock evidence.
+			// Only corroborated decimal clocks qualify for this naming lookup.
+			// Keep recorded rates/durations unchanged. See Project Canon/dnx-codec-evidence.md.
 			if (recorded.sameRate({2997, 100}))
 			{
 				switch (resolution)
@@ -1531,9 +1526,8 @@ namespace MediaEngine
 				}
 				if (known)
 				{
-					// These Avid database descriptors explicitly declare no
-					// compression and one alpha component. Missing coding alone
-					// cannot establish this descriptive codec name.
+					// Require explicit no-compression and a sole alpha component;
+					// missing coding alone cannot establish uncompressed alpha.
 					const auto oneValue = [](const QByteArray &bytes, char expected)
 					{
 						return bytes == QByteArray(1, expected) ||

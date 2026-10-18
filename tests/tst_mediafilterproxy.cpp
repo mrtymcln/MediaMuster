@@ -1,10 +1,4 @@
-// MediaFilterProxy search behaviour across Unicode normalisation forms.
-// macOS volumes often hand back decomposed (NFD) filenames — 'é' stored as
-// 'e' + combining acute — which render identically to composed (NFC)
-// keyboard input but are different code points. Search must treat the two
-// forms as the same text while keeping accents themselves significant.
-// Raw escape sequences throughout so source-file encoding can't drift what
-// the assertions actually test.
+// Search treats composed and decomposed Unicode alike while preserving accents.
 
 #include "testmediafile.h"
 #include "enumutil.h"
@@ -40,8 +34,7 @@ namespace
 
 	// "café" composed: one precomposed é (U+00E9).
 	const QString kCafeNfc = QStringLiteral("café");
-	// "café" decomposed: 'e' + combining acute (U+0301) — what APFS/SMB
-	// paths frequently contain.
+	// "café" decomposed: 'e' + combining acute (U+0301).
 	const QString kCafeNfd = QStringLiteral("café");
 
 	class CountingMediaFilterProxy : public MediaFilterProxy
@@ -66,10 +59,7 @@ private slots:
 	void unicode_search_normalises_and_folds();
 	void plain_ascii_never_matches_accents();
 
-	// Sorting. The Size column sorts on exact byte counts, not the
-	// rounded MB display string — two files that both show "850.0 MB"
-	// still order by their real sizes, and no double rounding sits
-	// between the user and the answer.
+	// Equal rounded sizes still sort by exact byte counts.
 	void size_column_sorts_on_exact_bytes();
 	void sample_rate_column_sorts_numerically();
 	void bit_depth_column_sorts_numbers_before_labels();
@@ -77,10 +67,7 @@ private slots:
 	void master_column_sorts_selected_identity();
 	void source_path_column_sorts_recorded_path();
 
-	// Search covers the path (2026-08-18). The Location column shows the
-	// full path, so the search box has to match it — and because the
-	// filename and the Avid folder are both substrings of the path, they
-	// keep matching without a pass of their own.
+	// Location search also covers its filename and folder components.
 	void search_matches_the_path_shown_in_the_location_column();
 	void source_path_search_uses_recorded_text_data();
 	void source_path_search_uses_recorded_text();
@@ -141,11 +128,7 @@ void TestMediaFilterProxy::unicode_search_normalises_and_folds()
 
 void TestMediaFilterProxy::plain_ascii_never_matches_accents()
 {
-	// Accents stay significant; only the FORM is insensitive. This must
-	// hold for both storage forms — before the fix an NFD row matched the
-	// bare-ASCII needle ("cafe" is literally a prefix of "cafe" + accent)
-	// while an NFC row didn't, so results depended on which volume a file
-	// came from.
+	// Normalise before substring matching: "cafe" must not match "cafe" + an accent.
 	MediaTableModel model;
 	model.setMediaFiles(TestMediaFile::seeded({rowNamed(kCafeNfc), rowNamed(kCafeNfd)}));
 	MediaFilterProxy proxy;
@@ -154,7 +137,6 @@ void TestMediaFilterProxy::plain_ascii_never_matches_accents()
 	proxy.setSearchText(QStringLiteral("cafe"));
 	QCOMPARE(proxy.rowCount(), 0);
 
-	// Sanity: the accented needle still finds both rows.
 	proxy.setSearchText(kCafeNfc);
 	QCOMPARE(proxy.rowCount(), 2);
 }
@@ -177,8 +159,6 @@ void TestMediaFilterProxy::search_matches_the_path_shown_in_the_location_column(
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 
-	// A folder name, a filename fragment and a whole path segment all live
-	// inside mediaFilePath, so one match pass covers them.
 	proxy.setSearchText(QStringLiteral("8646"));
 	QCOMPARE(proxy.rowCount(), 1);
 	proxy.setSearchText(QStringLiteral("V02.def"));
@@ -319,8 +299,7 @@ void TestMediaFilterProxy::size_column_sorts_on_exact_bytes()
 	QCOMPARE(order, (QStringList{QStringLiteral("empty"), QStringLiteral("mid_lo"),
 								 QStringLiteral("mid_hi"), QStringLiteral("big")}));
 
-	// The two neighbours really do render identically — proof the order
-	// above cannot have come from the display string.
+	// Identical display strings still sort by their distinct byte counts.
 	QCOMPARE(model.fileAt(1).sizeMBDisplay(), model.fileAt(2).sizeMBDisplay());
 }
 

@@ -3,10 +3,9 @@
 #include <QtEndian>
 #include <initializer_list>
 
-// AVB descriptors explain the stored media; these other objects hold locators,
-// attributes and effect settings. Every field stays attached to its source object,
-// including repeated attributes and both legacy and Unicode text. Unsupported
-// layouts stop at that field so the caller can retain the untouched remainder.
+// Reads AVB descriptors, locators, attributes and effect settings. Preserve
+// repeated attributes and both text forms on their source object; unsupported
+// layouts leave the untouched remainder for the caller.
 // Grammar reference: Mark Reid's MIT-licensed pyavb essence/misc/attributes readers.
 // PCMA extension 2 is also verified against Avid's native descriptor Get/Put methods.
 

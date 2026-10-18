@@ -1,5 +1,5 @@
 // Independent object graphs establish ownership and arithmetic expectations.
-// Genuine fixtures then exercise the fresh reader and projector together.
+// Genuine fixtures then exercise the reader and projector together.
 
 #include "mediaengine/projection.h"
 #include "mediaengine/mdbreader.h"
@@ -1958,9 +1958,8 @@ void TestMediaEngineOmfProjection::genuineLegacyCompressionRefinements()
 	const auto result = project(source);
 	QCOMPARE(result.files.size(), 80);
 	int checked = 0;
-	// The retained genuine-file receipt identifies 61 legacy descriptors.
-	// Their qualified coding labels now give the same catalogue names directly,
-	// without a second short-name override from the private identifiers.
+	// The genuine database's qualified coding labels must supply catalogue names
+	// without a private-identifier override.
 	for (const auto &descriptor : source.objects)
 	{
 		qint64 resolution = -1;

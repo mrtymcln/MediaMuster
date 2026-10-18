@@ -38,9 +38,10 @@ Databases are still read first and buffered in RAM during parsing. Projected
 database facts remain available for matching across folders and reporting unmatched
 references during scanning. Reconciliation issues may separately retain source
 snapshot diagnostics without keeping the complete scan result. AVB loading is
-independent: bin graphs remain retained because reference
-resolution and filtering use them. Loaded bins do not supply names or derived effect
-fields to the media inventory, and rows no longer retain separate AVB history owners.
+independent: parsed bin graphs and detailed resolution records are temporary
+loading data. Loaded bins and applied filters keep compact file references,
+status and warnings. They do not supply names or derived effect fields to the
+media inventory, and rows retain no AVB history owners.
 `AvbReferenceIndex` accepts one AVB and resolves Whole Bin from its root item list,
 following listed compositions to their dependencies and file locators. Unrelated
 stored records are excluded, and lookup cannot borrow objects from other bins.
@@ -92,9 +93,7 @@ transfers directly update physical values, field status and destination membersh
 while keeping selected media values and frozen operation checks. No histories are
 rebuilt. Ordinary row/stamp/reporting associations retain one scalar MasterMobId.
 Independent header safety records preserve all captured live checks. Broader
-requested-field acquisition checks remain separate tasks. Loaded-bin graphs and
-detailed resolution records are temporary; the dialog receives resolved file
-references, load status and warnings.
+requested-field acquisition checks remain separate tasks.
 Compact status preparation derives blank Resolution as not applicable for a
 qualified, undisputed selected Audio result. Kind disagreement keeps applicability
 unknown, and uncertain Kind cannot establish inapplicability. Actual

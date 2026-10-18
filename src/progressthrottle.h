@@ -3,13 +3,7 @@
 #include <QElapsedTimer>
 #include <atomic>
 
-/// Caps progress-signal emit frequency to ~one per `minIntervalMs`.
-/// Used by MediaScanner's folder and media-header passes to avoid
-/// flooding the event loop with progress updates.
-///
-/// `shouldEmit()` is thread-safe: an atomic timestamp plus CAS means
-/// that when pool threads race at the same instant, one wins and the
-/// rest return false.
+/// Limits progress updates across threads using one atomic timestamp.
 
 class ProgressThrottle
 {
@@ -20,10 +14,7 @@ public:
 		m_timer.start();
 	}
 
-	/// Returns true at most once per `minIntervalMs` window across
-	/// all callers. The caller is responsible for the actual emit;
-	/// this just answers 'has enough time passed since the last
-	/// positive response?'.
+	/// At most one caller succeeds per interval; the caller emits the update.
 	bool shouldEmit()
 	{
 		const qint64 nowMs = m_timer.elapsed();

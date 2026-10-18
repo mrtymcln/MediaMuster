@@ -1,8 +1,7 @@
 #pragma once
 
-// The shared in-memory records for a scan. Physical media files stay
-// separate from the Avid objects and database records that describe them.
-// Each file copy has its own row; source evidence can be shared between rows.
+// Temporary scan records keep each physical copy separate from its source evidence.
+// UI rows retain selected values and captured safety checks instead of these records.
 
 #include "mediaevidence.h"
 #include <QByteArray>
@@ -202,9 +201,8 @@ namespace MediaEngine
 		QStringList diagnostics;
 	};
 
-	// Matching and capture of operation safety checks use these small receipts.
-	// Operation requests use the captured row checks, without consulting these arrays.
-	// Supported observations own their evidence independently of temporary reader records.
+	// Scan matching and safety-check capture use these receipts after reader records
+	// are released. File operations use the captured row checks instead.
 	struct SourceReceipt
 	{
 		ParsedSource::Outcome outcome = ParsedSource::Outcome::NotRead;

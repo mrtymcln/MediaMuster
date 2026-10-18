@@ -7,7 +7,7 @@
 
 class QStorageInfo;
 
-/// One mounted volume the user might want to scan.
+/// A mounted volume or manually added location in the volume list.
 struct VolumeInfo
 {
 	QString name;
@@ -20,10 +20,8 @@ struct VolumeInfo
 
 // MARK: - VolumeManager
 
-/// Detects mounted volumes that might contain Avid media on request.
-/// QStorageInfo alone misses some Nexis mounts, so
-/// detection cross-references three sources (QStorageInfo, a direct
-/// /Volumes walk on macOS, and known Avid install paths) and merges.
+/// Detect mounted volumes and known Avid locations on request.
+/// The macOS /Volumes fallback includes mounts missing from QStorageInfo.
 class VolumeManager : public QObject
 {
 	Q_OBJECT

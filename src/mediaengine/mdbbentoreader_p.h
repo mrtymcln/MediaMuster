@@ -1,8 +1,7 @@
 #pragma once
 
-// MDB's private container reader follows its Bento contents list and retains
-// recorded values. It has its own implementation so removing OMF media support
-// cannot change database reading. Property meanings belong to mdbobjects_p.
+// Reads MDB's Bento contents list independently of OMF media.
+// Property meanings belong to mdbobjects_p.
 
 #include "scanmodel.h"
 #include <QIODevice>

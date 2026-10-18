@@ -3,12 +3,7 @@
 
 #include <QtTest>
 
-// Conventions: the shared facts about Avid's folder layout and essence
-// naming. These predicates are what keep the scanner, the rebalancer,
-// and the copy-path builder agreeing on what counts as Avid media —
-// the drift this header was extracted to end (a lowercase 'mxf' share
-// scanned but wouldn't rebalance; AppleDouble "._*.mxf" siblings
-// counted as media in the table but not in the folder budget).
+// Shared folder and filename rules keep scanning, rebalancing and copy paths consistent.
 
 class TestConventions : public QObject
 {
@@ -42,9 +37,7 @@ private slots:
 
 void TestConventions::mxf_root_name_is_case_insensitive()
 {
-	// The lowercase spelling is the live bug this fixes: Linux-hosted
-	// SMB shares and hand-restored backups carry 'mxf', the scanner
-	// accepted it, and the rebalance picker didn't.
+	// Shares and restored backups may use lowercase folder names.
 	QVERIFY(Conventions::isMxfRootName(QStringLiteral("MXF")));
 	QVERIFY(Conventions::isMxfRootName(QStringLiteral("mxf")));
 	QVERIFY(Conventions::isMxfRootName(QStringLiteral("Mxf")));
@@ -55,22 +48,15 @@ void TestConventions::mxf_root_name_is_case_insensitive()
 
 void TestConventions::omf_root_is_not_an_mxf_root()
 {
-	// The scanner scans OMF roots; the rebalancer must never treat one
-	// as an MXF root. The two predicates stay distinct on purpose.
-
-	// Avid's real OMF root: a TOP-LEVEL folder beside "Avid MediaFiles",
-	// matched case-insensitively like every other folder name here.
+	// OMFI MediaFiles is a separate managed tree, not an MXF rebalance target.
 	QVERIFY(Conventions::isOmfRootName(QStringLiteral("OMFI MediaFiles")));
 	QVERIFY(Conventions::isOmfRootName(QStringLiteral("omfi mediafiles")));
 
-	// A bare "OMF" was a prototype guess. Media Composer 25.12 writes no
-	// such folder, so accepting it only ever matched hand-made ones.
+	// Abbreviated names do not identify the managed folder.
 	QVERIFY(!Conventions::isOmfRootName(QStringLiteral("OMF")));
 	QVERIFY(!Conventions::isOmfRootName(QStringLiteral("omf")));
-	// Nor is OMFI a subfolder of Avid MediaFiles, the way MXF is.
 	QVERIFY(!Conventions::isOmfRootName(QStringLiteral("OMFI")));
 
-	// The two roots never collide.
 	QVERIFY(!Conventions::isMxfRootName(QStringLiteral("OMFI MediaFiles")));
 	QVERIFY(!Conventions::isOmfRootName(QStringLiteral("MXF")));
 }
@@ -94,8 +80,7 @@ void TestConventions::mxf_extension_is_case_insensitive()
 	QVERIFY(Conventions::hasMxfExtension(QStringLiteral("clip.mxf")));
 	QVERIFY(Conventions::hasMxfExtension(QStringLiteral("CLIP.MXF")));
 	QVERIFY(Conventions::hasMxfExtension(QStringLiteral("clip.Mxf")));
-	// MediaFile::extension is the bare normalised ".mxf"; the predicate
-	// must accept it so the Stage-2 gate can use the same rule.
+	// Also accept the bare extension used by metadata consumers.
 	QVERIFY(Conventions::hasMxfExtension(QStringLiteral(".mxf")));
 	QVERIFY(!Conventions::hasMxfExtension(QStringLiteral("clip.mxfx")));
 	QVERIFY(!Conventions::hasMxfExtension(QStringLiteral("clip.mov")));
@@ -136,12 +121,10 @@ void TestConventions::folder_budget_thresholds_stay_ordered()
 
 void TestConventions::omf_root_constant_and_omf_root_under()
 {
-	// The name is Avid's, spelled once; the predicate reads the constant.
 	QCOMPARE(QString(Conventions::kOmfMediaFilesDir), QStringLiteral("OMFI MediaFiles"));
 	QVERIFY(Conventions::isOmfRootName(QString(Conventions::kOmfMediaFilesDir)));
 
-	// One level, not two: the OMF folder IS the media root. Beside the
-	// MXF root, never inside it.
+	// OMFI MediaFiles sits directly under the media base, outside Avid MediaFiles/MXF.
 	QCOMPARE(Conventions::omfRootUnder(QStringLiteral("/Volumes/Archive")),
 			 QStringLiteral("/Volumes/Archive/OMFI MediaFiles"));
 	QVERIFY(!Conventions::omfRootUnder(QStringLiteral("/v")).contains(Conventions::kAvidMediaFilesDir));

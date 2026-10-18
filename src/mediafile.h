@@ -29,8 +29,7 @@ struct MediaFile
 	// Full IDs use PMR/MDB field order. The scanner converts MXF header IDs
 	// before storing them; database, OMF and AVB readers already use this order.
 	QString fileMobId;	 ///< FileMobId recovered from databases or media metadata.
-	QString masterMobId; ///< Selected MasterMobId of the associated master clip (AAF MasterMob);
-						 ///< V01/A01/A02 relatives share this.
+	QString masterMobId; ///< Selected MasterMobId, shared by related essence files.
 
 	// MARK: MDB and PMR metadata
 
@@ -66,12 +65,9 @@ struct MediaFile
 
 	// MARK: Precompute detail (table, CSV and filtering when enabled)
 
-	/// For a Precompute row: the effect Avid's catalogue knows the clip name
-	/// by ("Color Correction"), else the raw token; its palette category
-	/// ("Image"; "A / B" when ambiguous; "unknown" when
-	/// unknown — a user-typed title, an unregistered plug-in, a renamed
-	/// template); the sequence the render belongs to (as Avid wrote it, spaces
-	/// as underscores). Empty on every Media row.
+	/// Precompute details derived from the clip name and effect catalogue.
+	/// Unknown effects keep their token; sequence spelling follows the recorded name.
+	/// Empty for ordinary media.
 	QString effect;
 	QString effectCategory;
 	QString effectSequence;
@@ -127,8 +123,7 @@ struct MediaFile
 	};
 	DbStatus dbStatus = DbStatus::Listed;
 
-	/// The one "No Database" filter tab covers both couldn't-check states;
-	/// the tooltip says which.
+	/// Missing databases and unresolved checks share this tab; tooltips distinguish them.
 	bool isNoDatabase() const
 	{
 		return dbStatus == DbStatus::NoDatabase || dbStatus == DbStatus::DbUnreadable;
@@ -186,8 +181,7 @@ struct MediaFile
 							  "creates media; some ingest tools and older media leave it blank.");
 	}
 
-	/// "Project" column / sidebar / CSV string: the project, or "No project"
-	/// when nothing names one. The words live here so every consumer agrees.
+	/// Shared table, sidebar and CSV label; an empty name displays as "No project".
 	QString projectDisplay() const
 	{
 		return project.isEmpty() ? QStringLiteral("No project") : project;
@@ -227,8 +221,7 @@ struct MediaFile
 		return QStringLiteral("unknown");
 	}
 
-	/// "Kind" column / CSV string. One definition site so the table,
-	/// the sort, and the export can't drift apart.
+	/// Shared Kind label for the table, sorting and CSV.
 	QString kindDisplay() const
 	{
 		switch (kind)
@@ -243,7 +236,7 @@ struct MediaFile
 		return QString{};
 	}
 
-	/// "Type" column / CSV string; same single-site rule as kindDisplay.
+	/// Shared Type label for the table and CSV.
 	QString typeDisplay() const
 	{
 		switch (type)
@@ -261,10 +254,7 @@ struct MediaFile
 	/// Decimal MB for table/CSV display; sorting uses the exact byte count.
 	QString sizeMBDisplay() const { return QString::number(sizeBytes / 1'000'000.0, 'f', 1); }
 
-	/// "Date Created" column AND CSV string — one format for both, with
-	/// time-of-day (the two hand-rolled formats drifted apart once).
-	/// Blank when the filesystem records no birth time; an unknown is
-	/// never substituted.
+	/// Shared Date Created format; blank when the filesystem records no birth time.
 	QString createdDisplay() const
 	{
 		return created.isValid() ? created.toString(QStringLiteral("yyyy-MM-dd HH:mm"))

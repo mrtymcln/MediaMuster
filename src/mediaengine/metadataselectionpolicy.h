@@ -1,7 +1,7 @@
 #pragma once
 
-// Shared display preferences operate on retained, qualified evidence. Source
-// ownership, freshness and format interpretation are established before selection.
+// Field preferences for qualified working evidence. Ownership, freshness and
+// format interpretation are established before selection.
 #include "mediaevidence.h"
 
 #include <array>

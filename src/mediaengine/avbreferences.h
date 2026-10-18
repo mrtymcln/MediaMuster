@@ -1,8 +1,7 @@
 #pragma once
 
-// Resolves Whole Bin references from one already-read bin. It does not reread
-// files, merge physical copies or choose metadata for display. The result keeps
-// the edges needed to explain each inclusion.
+// Resolves Whole Bin references from one temporary bin graph, keeping the edges
+// that explain each inclusion. No file access or display-value selection occurs here.
 
 #include "scanmodel.h"
 #include <QHash>

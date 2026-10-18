@@ -1,4 +1,4 @@
-// Prepares MXF facts without retaining a second copy of the reading materials.
+// Projects MXF facts and releases temporary reader records.
 
 #include "mxfsource.h"
 #include "mxfreader.h"

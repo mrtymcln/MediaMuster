@@ -62,10 +62,7 @@ QVector<VolumeInfo> VolumeManager::detectVolumes() const
 
 		const QString mountPath = vol.rootPath();
 
-		// Mark every mount we rule on as seen — whether we keep OR reject it —
-		// before applying the filters below. Otherwise the /Volumes walk in
-		// pass 2 resurrects anything we filtered out here (a sub-500 MB DMG at
-		// /Volumes/Foo would slip straight back in).
+		// Record rejected mounts too, so the /Volumes fallback cannot add them back.
 		if (seenPaths.contains(mountPath))
 			continue;
 		seenPaths.insert(mountPath);
@@ -73,9 +70,7 @@ QVector<VolumeInfo> VolumeManager::detectVolumes() const
 		if (vol.bytesTotal() < kMinAvidVolumeBytes)
 			continue;
 
-		// Skip system-volume roots in the general mount list. Pass 3 adds the
-		// known Avid locations, including the legacy C:/ media base on Windows.
-		// Users can also add a folder or volume manually.
+		// Known Avid locations on system volumes are probed separately below.
 #if defined(Q_OS_MAC)
 		if (mountPath == "/" || mountPath.startsWith("/System/Volumes/") ||
 			mountPath == "/private/var/vm")
@@ -122,9 +117,7 @@ QVector<VolumeInfo> VolumeManager::detectVolumes() const
 
 	// MARK: Pass 3 — Avid directories on existing mounts
 
-	// Check listed locations rather than seen mounts: C:/ may have been
-	// skipped as the Windows system drive, but its legacy Avid folders
-	// still need this explicit probe.
+	// A skipped system mount may still contain a supported Avid media location.
 	const auto alreadyListed = [&volumes](const QString &path)
 	{
 		return std::any_of(volumes.cbegin(), volumes.cend(),
@@ -137,8 +130,6 @@ QVector<VolumeInfo> VolumeManager::detectVolumes() const
 		if (!avidDir.exists() || alreadyListed(avidPath) || !hasAvidMediaFolder(avidPath))
 			continue;
 
-		// Path is a known Avid location (loop guard above), so hasAvidMedia
-		// resolves true via hasAvidMediaFolder — no need to force it here.
 		// A drive root has no dirName; show the path itself.
 		QString name = avidDir.dirName();
 		if (name.isEmpty())
@@ -182,8 +173,6 @@ QString VolumeManager::detectVolumeType(const QString &name, const QString &path
 	if (path.startsWith("\\\\"))
 		return QStringLiteral("Network"); // UNC
 
-	// GetDriveTypeW needs wide chars; toStdWString() is correct here
-	// (QFile::encodeName would hand narrow bytes to the W variant).
 	if (GetDriveTypeW(path.toStdWString().c_str()) == DRIVE_REMOTE)
 		return QStringLiteral("Network");
 #else
@@ -196,8 +185,6 @@ QString VolumeManager::detectVolumeType(const QString &name, const QString &path
 
 bool VolumeManager::hasAvidMediaFolder(const QString &path)
 {
-	// Check a mount or known Avid base, including legacy Windows root media.
 	const QDir dir(path);
-	// OMF-era: an OMF-only drive is still an Avid drive.
 	return dir.exists(Conventions::kAvidMediaFilesDir) || dir.exists(Conventions::kOmfMediaFilesDir);
 }

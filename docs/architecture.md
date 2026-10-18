@@ -79,7 +79,7 @@ Applicability, agreement, eligibility and freshness remain separate facts; see t
 | [MediaEngine::MdbReader](../src/mediaengine/mdbreader.cpp) | Decodes source-local Bento objects, typed properties, dictionaries, qualified relationships and the HEAD-established `OmfRevision`, independently of the Bento container version. |
 | [MediaEngine::MxfReader](../src/mediaengine/mxfreader.cpp) | Decodes MXF partitions, Primer mappings, raw/typed metadata and source-local references for projection; skips recording payloads. |
 | [MediaEngine::OmfReader](../src/mediaengine/omfreader.cpp) | Reads OMF and native WAV/AIFF metadata for projection; embedded OMF graphs have separate source contexts. |
-| [MediaEngine::AvbReader](../src/mediaengine/avbreader.cpp) and [reference engine](../src/mediaengine/avbreferences.cpp) | Retain bin objects and resolve Whole Bin references with explicit completeness warnings. |
+| [MediaEngine::AvbReader](../src/mediaengine/avbreader.cpp) and [reference engine](../src/mediaengine/avbreferences.cpp) | Decode temporary bin objects and resolve Whole Bin references with explicit completeness warnings. |
 | [MediaEngine source projections](../src/mediaengine/projection.h) | Interpret recorded properties as file-owned or master-owned observations, preserving supported observation bytes and competing evidence independently of temporary reading storage. |
 | [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp) | Public entry point for database-first scanning. Its working result keeps evidence and `SourceReceipt`s after parser storage is released; the scanner discards that result after preparing UI rows and diagnostics. |
 | [MediaEngine::ScanCoordinator](../src/mediaengine/scancoordinator.cpp) | Coordinates discovery, database-first reads, exact-name/identity matching, field selection and scoped unmatched-reference issues. |
@@ -128,8 +128,9 @@ A `MediaEngine::ParsedSource` temporarily contains source-local objects, raw pro
 and edges while readers and projectors establish supported facts. The working scan
 retains those facts and their evidence for matching, validation and row preparation;
 ordinary UI rows retain selected values and status only. Reader/projector tests can
-inspect working source records and evidence directly. AVB graphs remain separately
-retained for bin consumers.
+inspect working source records and evidence directly. AVB graphs are temporary
+bin-loading data; the loader releases them after preparing compact filter
+references, load status and warnings.
 An object reference is a source receipt plus handle, not a globally unique Avid ID.
 Native WAV/AIFF and embedded OMF graphs keep separate handles and receipts. MXF
 partition copies also remain separate observations. Every physical location keeps

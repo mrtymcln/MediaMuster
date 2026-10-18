@@ -72,26 +72,17 @@ private slots:
 	void row_removal_preserves_rows_and_notifications_data();
 	void row_removal_preserves_rows_and_notifications();
 
-	// An unknown creation date must display blank — never silently
-	// substituted with another timestamp (the modified-time fallback was
-	// removed 2026-07: an unknown coerced to a different fact is a wrong
-	// value wearing a confident face).
+	// A modification time cannot substitute for an unknown creation date.
 	void unknown_created_date_displays_blank();
 	void physical_row_ids_survive_moves_and_separate_copies_data();
 	void physical_row_ids_survive_moves_and_separate_copies();
 	void omf_gate_preserves_optional_column_indexes();
 
-	// The Location column shows the whole path; View ▸ Resize Columns to
-	// Fit (Cmd+T) is what makes it readable, so nothing here may quietly
-	// shorten the value.
+	// Column width must not shorten the stored Location value.
 	void location_cell_shows_the_full_path();
 	void source_path_cell_preserves_recorded_value_data();
 	void source_path_cell_preserves_recorded_value();
 
-	// The attribution setters own the flag+label pairing; a half-set
-	// state (label without flag, or stale flags after a transition)
-	// must be impossible. Labels asserted as raw literals on purpose —
-	// the rename tripwire.
 	void status_words_come_from_one_table();
 	void database_columns_show_the_compact_result_data();
 	void database_columns_show_the_compact_result();
@@ -100,7 +91,7 @@ private slots:
 	void effect_columns_only_display_precompute_details();
 	void precompute_categories_and_unknown_effects_display_consistently();
 
-	// Metadata preparation boundaries; the ownership migration retains these checks.
+	// The model displays prepared values without retaining their working evidence.
 	void prepared_metadata_reaches_table_cells();
 	void selected_master_and_source_status_reach_table();
 	void prepared_scan_load_releases_history_and_preserves_results();
@@ -465,11 +456,8 @@ void TestMediaTableModel::unknown_created_date_displays_blank()
 	QVERIFY(!m.index(1, col).data(Qt::UserRole).toDateTime().isValid());
 }
 
-// The database status is one enum value and its words live in one table; the
-// Project tooltip and filter tabs share those explanations. This
-// pins the table: every status has a label, the two couldn't-check states
-// share the one "No Database" label but explain themselves differently, and
-// "No project" is a separate fact (an empty project) with its own sentence.
+// Missing and unreadable databases share a label but keep distinct explanations.
+// Project availability remains independent of database membership.
 void TestMediaTableModel::status_words_come_from_one_table()
 {
 	using DbStatus = MediaFile::DbStatus;
@@ -493,15 +481,12 @@ void TestMediaTableModel::status_words_come_from_one_table()
 	f.dbStatus = DbStatus::NoDatabase;
 	QVERIFY(f.isNoDatabase());
 
-	// The project is independent of the status: empty means "No project"
-	// wherever it is shown, and a named project never reads as a state.
 	QVERIFY(f.hasNoProject());
 	QCOMPARE(f.projectDisplay(), QStringLiteral("No project"));
 	f.project = QStringLiteral("Tëst");
 	QVERIFY(!f.hasNoProject());
 	QCOMPARE(f.projectDisplay(), QStringLiteral("Tëst"));
 
-	// The model shows projectDisplay() and explains the row in its tooltip.
 	MediaTableModel m;
 	MediaFile unlisted;
 	unlisted.dbStatus = DbStatus::NoReference;

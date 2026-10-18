@@ -29,8 +29,7 @@ namespace MediaEngine
 			throw std::invalid_argument("Unknown source in metadata preference group.");
 		}
 
-		// Compile named groups into the resolver's existing ranks. Invalid or repeated
-		// sources make a constexpr policy fail compilation rather than silently overwrite it.
+		// Invalid or repeated sources make constexpr policies fail compilation.
 		constexpr SourceRanks prefer(std::initializer_list<Source> first,
 									 std::initializer_list<Source> second = {}, std::initializer_list<Source> third = {})
 		{
@@ -50,12 +49,9 @@ namespace MediaEngine
 			return ranks;
 		}
 
-		// Read each prefer() left to right: first choice, fallback, final fallback.
-		// Sources in one group are equal. Conflicting top-group values remain unresolved.
-		// Unlisted sources cannot supply the selected value; their evidence is retained.
-		// Source::Omf includes the OmfReader's OMF, WAV and AIFF observations.
-		// These are application field names; observations retain original source property names.
-		// Edit one row for the next build. Keep one row per property in catalogue order.
+		// prefer() groups run from highest to lowest priority; equal-rank conflicts
+		// remain unresolved. Unlisted sources cannot supply the selected value.
+		// Source::Omf covers OMF, WAV and AIFF. Keep catalogue property order.
 		constexpr PropertyPolicies kPropertyPolicies{{
 			// Editor's clip name: header first, MDB second. Loaded bins only filter rows.
 			{MediaProperty::ClipName, SelectionRule::PreferredValue,
@@ -113,8 +109,7 @@ namespace MediaEngine
 			{MediaProperty::BitDepth, SelectionRule::PreferredValue,
 			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb})},
 
-			// Internal numeric representation: integer, float or fixed point, with supporting
-			// evidence.
+			// Numeric representation: integer, float or fixed point.
 			{MediaProperty::SampleFormat, SelectionRule::PreferredValue,
 			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb})},
 
@@ -130,8 +125,7 @@ namespace MediaEngine
 			{MediaProperty::PrecomputeCategory, SelectionRule::PreferredValue,
 			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb})},
 
-			// Effect catalogue category inferred from the selected precompute name; not proof of
-			// effect identity.
+			// Category inferred from the selected precompute name; not proof of effect identity.
 			{MediaProperty::EffectCategory, SelectionRule::DerivedEffect,
 			 prefer({Source::Mdb, Source::Mxf, Source::Omf})},
 
@@ -139,8 +133,7 @@ namespace MediaEngine
 			{MediaProperty::Effect, SelectionRule::DerivedEffect,
 			 prefer({Source::Mdb, Source::Mxf, Source::Omf})},
 
-			// Sequence name inferred from the selected precompute name when the naming pattern
-			// supplies it.
+			// Sequence name inferred from the selected precompute name's pattern.
 			{MediaProperty::EffectSequence, SelectionRule::DerivedEffect,
 			 prefer({Source::Mdb, Source::Mxf, Source::Omf})},
 
@@ -188,8 +181,7 @@ namespace MediaEngine
 			{MediaProperty::DatabaseStatus, SelectionRule::PreferredValue,
 			 prefer({Source::Filesystem})},
 
-			// Whether this row belongs to the admitted legacy folder family; not proof of an OMF
-			// container.
+			// Managed legacy folder membership; not proof of an OMF container.
 			{MediaProperty::OmfScan, SelectionRule::PreferredValue,
 			 prefer({Source::Filesystem})},
 
@@ -197,8 +189,7 @@ namespace MediaEngine
 			{MediaProperty::Channels, SelectionRule::PreferredValue,
 			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb})},
 
-			// Internal binary coding label, read or normalized from format evidence; supports
-			// Compression interpretation.
+			// Binary coding label used to interpret Compression.
 			{MediaProperty::CompressionLabel, SelectionRule::PreferredValue,
 			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb})},
 
@@ -206,8 +197,7 @@ namespace MediaEngine
 			{MediaProperty::WrappingLabel, SelectionRule::PreferredValue,
 			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb})},
 
-			// Recorded pixel-component layout, retained separately from its interpreted depth and
-			// sample format.
+			// Recorded pixel layout, separate from interpreted depth and sample format.
 			{MediaProperty::PixelLayout, SelectionRule::PreferredValue,
 			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb})},
 
@@ -215,8 +205,7 @@ namespace MediaEngine
 			{MediaProperty::DropFrame, SelectionRule::PreferredValue,
 			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb})},
 
-			// Recorded component-depth encoding, which can differ from displayed precision for DNx
-			// sentinel values.
+			// Recorded depth encoding; DNx sentinels may differ from displayed precision.
 			{MediaProperty::ComponentDepth, SelectionRule::PreferredValue,
 			 prefer({Source::Mxf, Source::Omf}, {Source::Mdb})},
 		}};

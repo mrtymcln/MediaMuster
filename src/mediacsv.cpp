@@ -80,10 +80,7 @@ namespace MediaCsv
 	bool write(const QString &path, const QVector<MediaFile> &rows, Options options)
 	{
 		QSaveFile file(path);
-		// Binary, deliberately: headerLine()/rowLine() already end every
-		// line with '\n', and QIODevice::Text would rewrite those to CRLF
-		// on Windows — including the newlines inside quoted effect fields.
-		// Without it the export is byte-identical on every platform.
+		// Binary mode preserves LF endings, including newlines inside quoted fields on Windows.
 		if (!file.open(QIODevice::WriteOnly))
 			return false;
 		QTextStream out(&file);

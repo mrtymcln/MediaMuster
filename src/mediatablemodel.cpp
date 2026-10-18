@@ -112,8 +112,7 @@ void MediaTableModel::applyTransfer(const QString &source, const QString &destin
 		transferred.scanStamp.modified = transferred.modified;
 		transferred.scanStamp.volumeIdentifier = VolumeIdentity::capture(destination).identifier();
 		transferred.isQuarantined = info.dir().dirName().compare(QStringLiteral("Quarantined Files"), Qt::CaseInsensitive) == 0;
-		// Only physical facts change. Metadata and the frozen scan safety record
-		// still describe this media; no old observations need to be rebuilt.
+		// Refresh physical facts; selected metadata and frozen operation checks still apply.
 		for (const auto property : {MediaProperty::Location, MediaProperty::Filename, MediaProperty::Size,
 			MediaProperty::Modified})
 			transferred.metadataStatus.field(property) = filesystemStatus(true);
@@ -175,10 +174,7 @@ void MediaTableModel::removeFilesByPath(const QSet<QString> &paths)
 
 const MediaFile &MediaTableModel::fileAt(int row) const
 {
-	// Every proxy-mapped lookup funnels through here, so this is the one
-	// place to catch a bogus row (e.g. a -1 from mapToSource during a
-	// filter shuffle). Assert loudly in debug; in release hand back a
-	// safe empty record rather than reading off the end of the vector.
+	// Filtering can invalidate mapped rows. Assert in debug and return an empty record in release.
 	Q_ASSERT(row >= 0 && row < m_files.size());
 	if (row < 0 || row >= m_files.size())
 	{
@@ -290,9 +286,7 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 	}
 	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::Project)
 	{
-		// Explain the row where the user is looking: why there is no project
-		// name, and/or why the folder's databases couldn't vouch for the file.
-		// The sentences live on MediaFile so the tabs share these explanations.
+		// Share missing-project and database explanations with the filter tabs.
 		QStringList lines;
 		if (f.hasNoProject())
 			lines << MediaFile::noProjectWhy();

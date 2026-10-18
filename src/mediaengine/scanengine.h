@@ -1,7 +1,7 @@
 #pragma once
 
-// Keeps supported metadata and receipts from databases and media headers.
-// The coordinator owns discovery, scheduling, matching and metadata selection.
+// Returns working metadata and source receipts; retains no scan state.
+// The coordinator handles discovery, scheduling, matching and selection.
 
 #include "mediaengine/scancoordinator.h"
 

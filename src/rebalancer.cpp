@@ -53,11 +53,8 @@ void Rebalancer::executeAsync(const RebalancePlan &plan)
 		{
 			// MARK: Build the engine request, group-contiguously
 			//
-			// Relatives (one master clip's video + audio essence) are
-			// contiguous in the item order and share a groupKey, and the
-			// engine's Rename machine only honours cancel at group
-			// boundaries — so cancellation does not split a group. I/O failure stops
-			// the run with every completed move recorded for recovery.
+			// Keep relatives contiguous under one groupKey so cancellation cannot split them.
+			// I/O failures still stop the run and retain completed moves for recovery.
 			OpRequest req = RebalancePlanner::requestForPlan(plan);
 
 			const bool cancelled = m_preflight.isCancelled();

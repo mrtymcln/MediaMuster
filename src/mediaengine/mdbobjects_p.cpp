@@ -1,6 +1,5 @@
-// Interprets MDB's dictionaries, property bytes and local references without
-// selecting displayed values. Keep this implementation independent of OMF
-// media support; the shared scan model still gives every reader the same output.
+// Interprets MDB dictionaries, property bytes and local references independently
+// of OMF media. Display selection belongs to the coordinator.
 
 #include "mdbobjects_p.h"
 #include "mdbaudiosummary_p.h"
@@ -322,8 +321,7 @@ namespace MediaEngine
 			{
 				RawProperty property;
 				property.locator.name = nameOf(m_properties, value.property);
-				// A large database repeats its small dictionary thousands of times.
-				// QByteArray sharing avoids a separate key allocation for every value.
+				// Share dictionary key bytes across repeated properties.
 				auto key = m_keys.constFind(value.property);
 				if (key == m_keys.cend())
 					key = m_keys.insert(value.property, numericKey(value.property));

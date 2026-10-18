@@ -1,5 +1,4 @@
-// These graphs are authored independently of the old MXF parser. They test
-// ownership and semantic boundaries; the reader tests cover binary framing.
+// Independent authored graphs test ownership and semantics; reader tests cover binary framing.
 
 #include "mediaengine/projection.h"
 #include "mediaengine/mxfreader.h"

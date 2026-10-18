@@ -1,6 +1,5 @@
-// Checks source evidence rather than the old bin-filter output. The authored
-// documents are independent of the reader, and every retained byte must still
-// point back to its original place in the source. External bins are opt-in.
+// Independent authored bins check that evidence bytes map to their source positions.
+// External bins are opt-in.
 
 #include "mediaengine/avbreader.h"
 #include "testavb.h"

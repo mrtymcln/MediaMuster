@@ -1,6 +1,5 @@
-// Walks the agreed Avid folders, and records what is physically present.
-// Copies in different locations keep separate rows. Folder access failures stay
-// visible so later matching can account for incomplete parts of the scan.
+// Inventories managed Avid folders, keeping physical copies separate and
+// reporting access failures so matching can account for incomplete discovery.
 
 #include "discoveryengine.h"
 #include "discoveryengine_p.h"

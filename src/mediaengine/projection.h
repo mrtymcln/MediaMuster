@@ -1,8 +1,7 @@
 #pragma once
 
-// Gives understood source properties their application meaning. Projections own
-// the observations and source references they need after reading finishes. They
-// never merge physical files or choose a display winner.
+// Projects source properties into temporary file/master observations. Their
+// evidence owns the required bytes and source references after reader storage is released.
 
 #include "scanmodel.h"
 #include "mediaduration.h"

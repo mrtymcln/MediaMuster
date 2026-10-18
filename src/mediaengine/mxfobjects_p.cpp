@@ -1,7 +1,6 @@
-// MXF stores typed properties inside metadata sets. The Primer maps each local
-// tag to its real property identity; fixed tag numbers are never a substitute.
-// Keep raw bytes alongside decoded values and resolve references only within
-// the same partition's metadata copy. File matching and display come later.
+// The Primer establishes each MXF local tag's identity. Keep raw bytes alongside
+// decoded values and resolve references within the same partition's metadata.
+// File matching and display selection belong to later stages.
 
 #include "mxfobjects_p.h"
 #include "mxfcatalogue_p.h"

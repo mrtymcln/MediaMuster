@@ -987,8 +987,8 @@ namespace MediaEngine
 
 			QPair<qint64, qint64> dnxNamingGeometry(const AvidObject &descriptor) const
 			{
-				// DNx operating-point names use the recorded active raster. Keep
-				// that existing rule independent of table-resolution selection.
+				// DNx operating-point names use the recorded active raster,
+				// independently of table-resolution selection.
 				for (const auto *prefix : {"Display", "Sampled", "Stored"})
 				{
 					const auto geometry = frameGeometry(descriptor, prefix);

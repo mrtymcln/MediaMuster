@@ -323,8 +323,7 @@ namespace MediaEngine
 			{
 				RawProperty property;
 				property.locator.name = nameOf(m_properties, value.property);
-				// A large database repeats its small dictionary thousands of times.
-				// QByteArray sharing avoids a separate key allocation for every value.
+				// Share dictionary key bytes across repeated properties.
 				auto key = m_keys.constFind(value.property);
 				if (key == m_keys.cend())
 					key = m_keys.insert(value.property, numericKey(value.property));

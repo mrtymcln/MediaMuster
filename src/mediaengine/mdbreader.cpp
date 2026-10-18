@@ -1,5 +1,4 @@
-// Reads MDB database values and relationships using its own container and
-// object decoders. Removing OMF media support cannot remove this implementation.
+// Reads MDB values and relationships through its own container and object decoders.
 
 #include "mdbreader.h"
 #include "mdbobjects_p.h"

@@ -114,8 +114,8 @@ namespace MediaEngine
 
 		std::optional<AvbTerminalReference::Kind> terminal(const QByteArray &identity)
 		{
-			// Exact native Avid IsNullMobID/IsFillerMobID specimens, in our
-			// canonical material-LE form. See the archived native evidence receipt.
+			// Native IsNullMobID/IsFillerMobID values, in canonical material-LE form.
+			// See Project Canon/evidence/avb-reference-semantics-native-evidence-2026-10-04.json.
 			static const auto nullId = QByteArray::fromHex("060a2b340101010101010f00130000000000000000000000060e2b347f7f2a80");
 			static const auto fillerId = QByteArray::fromHex("060a2b340101010101010f00130000000000000001000000060e2b347f7f2a80");
 			if (identity.size() == 32 && (!nonzero(identity) || identity == nullId))
@@ -353,8 +353,7 @@ namespace MediaEngine
 			if (!uncertain && matches == 1)
 				return {matchingSlot, true};
 			issue(result.issues, matches > 1 ? AvbResolutionIssue::Kind::AmbiguousReference : AvbResolutionIssue::Kind::UnresolvedReference,
-				  object.handle, QStringLiteral("Source track %1 (media kind %2) cannot be uniquely matched; its track branches were not included.")
-								 .arg(request.number).arg(request.kind));
+				  object.handle, QStringLiteral("Source track %1 (media kind %2) cannot be uniquely matched; its track branches were not included.").arg(request.number).arg(request.kind));
 			return {};
 		};
 
@@ -503,7 +502,8 @@ namespace MediaEngine
 					{
 						issue(result.issues, AvbResolutionIssue::Kind::AmbiguousReference, key,
 							  sourceJump ? QStringLiteral("Multiple recorded objects have this MobID; the ambiguous source-track link was not included.")
-										 : QStringLiteral("Multiple recorded objects have this MobID. All candidate edges remain available; no first-wins selection."), edge.locator);
+										 : QStringLiteral("Multiple recorded objects have this MobID. All candidate edges remain available; no first-wins selection."),
+							  edge.locator);
 						if (sourceJump)
 							continue;
 					}

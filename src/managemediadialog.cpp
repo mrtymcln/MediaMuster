@@ -308,11 +308,7 @@ void ManageMediaDialog::onGlobalConflictPolicyChanged(int index)
 	const ConflictPolicy policy =
 		static_cast<ConflictPolicy>(m_conflictGlobalCombo->itemData(index).toInt());
 
-	// Walk conflict rows directly; only they own a combo at
-	// column 2. The signal blocker stops each per-file change from
-	// re-firing syncGlobalFromPerFile, which would otherwise bounce
-	// us back to 'Mixed' mid-iteration. Update the destination
-	// preview ourselves instead.
+	// Block per-file signals so applying a global choice cannot switch it to Mixed mid-update.
 	for (int i = 0; i < m_previewTree->topLevelItemCount(); ++i)
 	{
 		QTreeWidgetItem *item = m_previewTree->topLevelItem(i);
@@ -370,12 +366,7 @@ void ManageMediaDialog::updatePreview()
 		}
 		else
 		{
-			// Pure, local pass: compute every destination and spot two
-			// selected files that resolve to the *same* path (folder
-			// flattening reuses filenames). No disk I/O on this thread — the
-			// exists()/rename probes run on a pool thread below, because
-			// thousands of synchronous stats against an SMB/Nexis share froze
-			// the dialog on every option change.
+			// Compute destinations and batch duplicates locally; probe disk conflicts on the worker.
 			QVector<QString> destPaths;
 			destPaths.reserve(m_files.size());
 			QHash<QString, int> destCounts;
@@ -543,10 +534,7 @@ void ManageMediaDialog::applyDestinationCheck(const DestCheckResult &result, boo
 		}
 		if (result.exists[i])
 		{
-			// A real on-disk conflict: the user gets Keep Both / Skip
-			// (combo added below). A row that's also a batch
-			// dup still counts as on-disk — there really is a file at the
-			// destination to act on.
+			// Existing destinations require a policy even when the batch also contains duplicates.
 			row.item->setForeground(1, Qt::red);
 			row.item->setToolTip(1, tr("File already exists at destination"));
 			++onDiskConflicts;
@@ -554,12 +542,8 @@ void ManageMediaDialog::applyDestinationCheck(const DestCheckResult &result, boo
 		}
 		else if (row.dupLater)
 		{
-			// Clashes only with another *selected* file, not with disk.
-			// The engine always keeps both here (the later file is renamed)
-			// so the preview shows the automatic Keep Both result.
-			// With 3+ identical names the preview can repeat a suffix (it
-			// can't see files that don't exist yet), but the outcome — kept,
-			// renamed — is faithful.
+			// Batch duplicates are kept under new names. Preview suffixes may repeat
+			// because later destinations do not exist yet; execution reserves unique names.
 			const QString &renamed = result.renamed[i];
 			row.item->setText(1, renamed.isNull() ? row.destPath : renamed);
 			row.item->setToolTip(1, renamed.isNull()

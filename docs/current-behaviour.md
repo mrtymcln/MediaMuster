@@ -5,10 +5,13 @@ files from that inventory, and copies, moves, trashes or reorganises them.
 This guide describes the current implementation. It is not a record of proposed
 features or a claim that every storage system has been tested.
 
-For the names and responsibilities of the code components, see the
-[architecture map](architecture.md). For dated platform test results, see
-[current integration verification](../Project%20Canon/canon2-live-integration-2026-10-10.md) and
-[file-operation validation](file-operations-native-api-validation.md).
+For the active V1 scope and confirmed decisions, see
+[Project Copland](../Project%20Copland/README.md). For code responsibilities, see
+the [architecture map](architecture.md). The
+[18 October workflow comparison](../Project%20Copland/local-workflow-comparison-2026-10-18.md)
+and [disposable file-operation check](../Project%20Copland/file-operation-acceptance-2026-10-18.md)
+record bounded local results; [file-operation validation](file-operations-native-api-validation.md)
+records further platform checks and their limits.
 
 ## Starting the app
 

@@ -948,8 +948,7 @@ void TestOperationUi::clickInterrupted(const QString &button)
 
 QString TestOperationUi::makeRetainedOriginal(const QString &name)
 {
-	// A move interrupted after relocating its
-	// original. No destination evidence is needed to restore that original.
+	// An interrupted Move can restore its relocated original without destination evidence.
 	auto old = request(name);
 	old.kind = OpKind::Move;
 	old.copyThenRemove = true;

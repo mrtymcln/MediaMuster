@@ -1,8 +1,7 @@
 #pragma once
 
-// Scanner fixtures need real OMF types, a HEAD and byte-order declarations.
-// The older untyped BentoBuilder remains useful for low-level container tests;
-// this writer declares the schema that the semantic tests intend to exercise.
+// Authored scanner fixtures declare OMF property types, HEAD and byte order.
+// Use the untyped BentoBuilder for container-only controls.
 
 #include "testmediaenginebento.h"
 #include <cstring>

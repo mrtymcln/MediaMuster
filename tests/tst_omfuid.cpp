@@ -1,10 +1,5 @@
-// OMF-era (legacy Avid media, pre-MXF). OmfUid is the bridge from the
-// 8-byte MOB a version-2 msmFMID.pmr stores (and the 12-byte omfi:UID an
-// OMF file or OMF-era MDB carries) to the 32-byte canonical hex every
-// consumer keys on. The wrap is Avid's own: its PMR Unicode set and its
-// .avb bins write the same prefix + core + suffix, so the tests pin the
-// constants against the real bytes in tests/fixtures/omf rather than
-// against a value someone typed in.
+// Genuine PMR bytes establish Avid's legacy ID wrapper. General OMF UIDs keep
+// all three words, and full modern IDs remain unchanged.
 
 #include "mobid.h"
 #include "omfuid.h"
@@ -54,19 +49,14 @@ void TestOmfUid::toMobIdBytes_is_prefix_core_suffix()
 	QVERIFY(std::equal(std::begin(OmfUid::kSuffix), std::end(OmfUid::kSuffix),
 					   wrapped.begin() + sizeof OmfUid::kPrefix + OmfUid::kPmrSize));
 
-	// The worked example from the plan: the wav file mob in MC 26.8's
-	// own PMR Unicode set.
+	// FileMobId recorded for the WAVE fixture in Avid's PMR Unicode set.
 	QCOMPARE(OmfUid::toMobIdText(core),
 			 QStringLiteral("060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80"));
 }
 
 void TestOmfUid::toMobIdBytes_matches_the_unicode_set_in_the_real_pmrs()
 {
-	// Both fixtures: take the first MASTER record's 8-byte MOB, wrap it,
-	// and require the 32 wrapped bytes to occur verbatim later in the
-	// file — the Unicode set is where Avid writes the same MOB in the
-	// wrapped form. If kPrefix or kSuffix were wrong by a byte, nothing
-	// would match.
+	// The PMR Unicode set must contain the exact wrapped form of its legacy record.
 	const QString fixtures = QStringLiteral(FIXTURES_DIR "/omf/");
 	for (const char *pmr : {"mc2026_audio/msmFMID.pmr", "avid_supporting/msmFMID.pmr"})
 	{
@@ -79,8 +69,7 @@ void TestOmfUid::toMobIdBytes_matches_the_unicode_set_in_the_real_pmrs()
 
 		const qsizetype at = data.indexOf(needle);
 		QVERIFY2(at > kPmrV2HeaderSize + OmfUid::kPmrSize, pmr);
-		// And it sits in the Unicode set, not the fixed section: the
-		// 8-byte core alone appears earlier (in the record we read).
+		// The legacy core occurs earlier than its wrapped Unicode form.
 		QCOMPARE(data.indexOf(QByteArray(reinterpret_cast<const char *>(first), OmfUid::kPmrSize)),
 				 qsizetype(kPmrV2HeaderSize));
 		QVERIFY(OmfUid::isWrappedOmfId(OmfUid::toMobIdText(first)));
@@ -89,9 +78,7 @@ void TestOmfUid::toMobIdBytes_matches_the_unicode_set_in_the_real_pmrs()
 
 void TestOmfUid::toMobIdBytes_does_not_swap_middle_fields()
 {
-	// The wrap is Avid's layout, not an MXF UMID: the core lands at bytes
-	// 16..23 in the order given. MobId::swapMaterialByteOrder's swap must NOT be part
-	// of it (the PMR Unicode set already holds this exact order).
+	// The wrapper copies bytes 16..23 unchanged; MXF material-byte swapping does not apply.
 	const unsigned char core[OmfUid::kPmrSize] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
 	const auto wrapped = OmfUid::toMobIdBytes(core);
 	for (int i = 0; i < OmfUid::kPmrSize; ++i)
@@ -161,14 +148,8 @@ void TestOmfUid::isWrappedOmfId_recognises_only_the_wrap()
 
 void TestOmfUid::omf_form_never_collides_with_mxf_form()
 {
-	// The suffix is the discriminator, not the prefix. A SMPTE UMID (most
-	// MXF-era keys) differs in the prefix too, but Avid's MXF-era writer
-	// also mints MobIDs carrying the wrap's exact 16-byte prefix — the
-	// second key below is one of four in tests/fixtures/corpus_headers/
-	// msmMMOB_round3.mdb — with a per-host random where the wrap has the
-	// AAF "prefix 42" marker. Neither reads as OMF form in either byte
-	// order (swapMaterialByteOrder only touches bytes 16..23), and the wrap of any
-	// core never reads as a UMID.
+	// The genuine msmMMOB_round3.mdb ID below shares the OMF wrapper's prefix.
+	// Its different suffix must prevent legacy matching in either material byte order.
 	const QString mxf =
 		QStringLiteral("060a2b3401010105.01010f1013000000.a4bb7f1311399006.6d01ce4ff0f5d57a");
 	QVERIFY(!OmfUid::isWrappedOmfId(mxf));
@@ -182,9 +163,7 @@ void TestOmfUid::omf_form_never_collides_with_mxf_form()
 	const QString omf = OmfUid::toMobIdText(core);
 	QVERIFY(OmfUid::isWrappedOmfId(omf));
 	QVERIFY(!omf.startsWith(QStringLiteral("060a2b3401010105")));
-	// The swap maps an OMF key to another OMF key (prefix and suffix are
-	// outside bytes 16..23), so a consumer that normalises through
-	// swapMaterialByteOrder cannot turn one into something that looks MXF-era.
+	// Material swapping leaves the wrapper's prefix and suffix intact.
 	QVERIFY(OmfUid::isWrappedOmfId(MobId::swapMaterialByteOrder(omf)));
 	QVERIFY(!MobId::isAllZero(omf));
 }

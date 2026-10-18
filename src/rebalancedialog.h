@@ -24,22 +24,8 @@ class Rebalancer;
 
 // MARK: - RebalanceDialog
 
-/// UI for the `Rebalancer`: volume picker, a grid of before/after
-/// folder cards, warnings. Rebalance runs async; dialog stays open through
-/// progress and final summary.
-///
-/// Two state phases:
-///
-///   - **Planning**: the volume picker computes a fresh plan via
-///     `RebalancePlanner::computePlan` and the folder cards show what would
-///     happen. No disk changes yet.
-///
-///   - **Running**: Rebalance is in flight. The picker is disabled,
-///     the progress bar tracks execution, and Cancel turns
-///     into a cooperative cancel for the worker.
-///
-/// On close, callers can read `didRebalance()` to know whether a run
-/// started (so the mainwindow can rescan even after cancellation).
+/// Previews folder changes, then displays asynchronous Rebalance progress and results.
+/// During execution, keep the volume fixed and treat Cancel as a cooperative request.
 class RebalanceDialog : public QDialog
 {
 	Q_OBJECT
@@ -52,12 +38,10 @@ public:
 
 	// MARK: - Result accessors
 
-	/// True if the user confirmed and the rebalancer ran (even if
-	/// some moves failed). False on dismiss without acting.
+	/// A run started; the caller must rescan even after cancellation or failure.
 	bool didRebalance() const { return m_didRebalance; }
 
-	/// Label of the volume that was rebalanced; the caller uses
-	/// this to know which volume's scan needs refreshing.
+	/// Identifies the volume to rescan after a run.
 	QString rebalancedLabel() const { return m_rebalancedLabel; }
 
 	/// MainWindow resolves any previous interrupted job immediately before
@@ -66,18 +50,14 @@ public:
 
 signals:
 
-	/// Forwarded from `Rebalancer::log` so the mainwindow can
-	/// mirror our log lines into the console.
+	/// Forward worker messages to the main-window Console.
 	void logMessage(QtMsgType level, const QString &message);
 
 protected:
 	void showEvent(QShowEvent *event) override;
 
-	/// Esc maps here. Mid-run it must behave exactly like the Cancel
-	/// button (cooperative cancel, dialog stays up); QDialog::reject
-	/// would otherwise tear down a dialog whose worker is still moving
-	/// files — a silent cancel plus a UI stall while ~Rebalancer joins
-	/// the thread. When idle, closes as normal.
+	/// Escape requests Cancel during a run and keeps the dialog open until completion.
+	/// When idle, close normally.
 	void reject() override;
 
 private slots:
@@ -98,13 +78,10 @@ private:
 	void finishDisplay(int succeeded,
 					   const QHash<NumberedMxfFolder, RebalancePlanner::FolderCount> &counts);
 
-	/// Rebuild the inline summary line from explicit counts.
-	/// `past=true` shifts captions to 'moved' / 'files moved' for
-	/// the post-run summary.
+	/// Use past-tense captions for the post-run summary.
 	void buildSummaryLine(int files, int foldersAffected, int newFolders, bool past);
 
-	/// Every folder that's a source or destination of a planned move in
-	/// `m_currentPlan` — used for the preview and final folder recount.
+	/// Source and destination folders needing preview or final recounts.
 	QSet<NumberedMxfFolder> affectedFolders() const;
 
 	QHash<QString, QString> m_mxfRootPathsByLabel;
@@ -112,9 +89,7 @@ private:
 
 	RebalancePlan m_currentPlan;
 
-	/// Drives computePlan off the UI thread. setFuture() replaces an
-	/// in-flight planning future silently; when the user flips
-	/// volumes rapidly, only the latest result ever fires onPlanReady.
+	/// Watch only the latest background plan when the selected volume changes.
 	QFutureWatcher<RebalancePlan> m_planWatcher;
 
 	Rebalancer *m_rebalancer = nullptr;
@@ -129,9 +104,7 @@ private:
 	/// Shows the plan summary, planning progress or an empty-plan message.
 	QLabel *m_statsLine = nullptr;
 
-	/// Scrollable container for the folder cards. renderPlan() wipes
-	/// the grid and rebuilds it; live updates touch only the affected
-	/// cards by NumberedMxfFolder lookup.
+	/// Rebuild cards for a new plan; update affected cards as moves complete.
 	QScrollArea *m_cardScroll = nullptr;
 	QWidget *m_cardContainer = nullptr;
 	QGridLayout *m_cardGrid = nullptr;

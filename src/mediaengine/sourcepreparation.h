@@ -1,7 +1,6 @@
 #pragma once
 
-// Reading materials live only until their supported facts have been projected.
-// The scanner receives those facts and a small receipt of what was read.
+// Projected facts and a source receipt outlive temporary reader records.
 
 #include "projection.h"
 

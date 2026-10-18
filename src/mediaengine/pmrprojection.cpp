@@ -1,5 +1,5 @@
 // Keeps PMR records and their legacy/Unicode set provenance separate.
-// Linking their recorded filenames to physical files belongs to ScanEngine.
+// Linking their recorded filenames to physical files belongs to the coordinator.
 
 #include "projection.h"
 

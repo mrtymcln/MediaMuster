@@ -11,17 +11,10 @@
 #include <array>
 #include <cstring>
 
-/// Avid's prefix-42 OMF IDs use bytes [4:12] of the 12-byte omfi:UID
-/// in the legacy PMR. Avid already chose how to widen those IDs: its PMR Unicode
-/// set and its .avb bins wrap those 8 bytes in a constant 16-byte prefix
-/// and 8-byte suffix. Reusing that wrap, byte for byte, means an OMF row's
-/// ID is the same string Avid writes into its bins, and nothing downstream
-/// has to learn a second form for Avid media. General OMF IDs preserve
-/// all three words in an explicit omf: namespace, without claiming a PMR join.
-///
-/// Byte-verified against tests/fixtures/omf/mc2026_audio/msmFMID.pmr and
-/// avid_supporting/msmFMID.pmr (every Unicode-set MOB is kPrefix + the
-/// pair's 8 bytes + kSuffix) and against the two OMF bins.
+/// Prefix-42 OMF UIDs share bytes [4:12] with legacy PMR IDs. Use Avid's
+/// 16-byte prefix and 8-byte suffix to match their Unicode PMR and AVB forms.
+/// Other OMF UIDs retain all three words in an omf: namespace without claiming a PMR join.
+/// Format evidence: docs/parser-compatibility.md.
 namespace OmfUid
 {
 	// MARK: - Widths
@@ -37,27 +30,17 @@ namespace OmfUid
 
 	// MARK: - Avid's wrapper
 
-	/// [AVID — DO NOT CHANGE] The 16 bytes Avid puts before the 8-byte core
-	/// when it writes a 32-byte form. NOT a discriminator on its own: a
-	/// SMPTE UMID has 0x05 at byte 7 and 0x0f10 at bytes 10-11, but Avid's
-	/// own MXF-era writer also mints MobIDs with exactly these 16 bytes
-	/// (four in the corpus MDB msmMMOB_round3.mdb, four in a live MC 2026
-	/// MXF folder, 2026-09-03) — they differ only in the suffix below.
+	/// Avid's 16-byte wrapper prefix. Modern identities can share it;
+	/// only the prefix and suffix together establish the prefix-42 family.
 	inline constexpr unsigned char kPrefix[16] = {0x06, 0x0a, 0x2b, 0x34, 0x01, 0x01, 0x01, 0x01,
 												  0x01, 0x01, 0x0f, 0x00, 0x13, 0x00, 0x00, 0x00};
 
-	/// [AVID — DO NOT CHANGE] The 8 bytes Avid puts after the core — the
-	/// AAF SDK's "prefix 42" material marker (7f7f2a80 is 42 padded). This
-	/// identifies the prefix-42 family. MXF can carry that family too: the AAF
-	/// SDK generator used by libMXF writes these same bytes. Prefix and suffix
-	/// establish the identity family, not the container or its byte order.
+	/// AAF's prefix-42 material marker (7f7f2a80 is 42 padded).
+	/// This identity family also occurs in MXF; it does not establish container or byte order.
 	inline constexpr unsigned char kSuffix[8] = {0x06, 0x0e, 0x2b, 0x34, 0x7f, 0x7f, 0x2a, 0x80};
 
-	/// kPrefix + eight + kSuffix. Deliberately NO middle-field swap: the
-	/// input already has the PMR/database byte order. The same identity read
-	/// from an MXF UMID property must instead have its material numeric fields
-	/// converted from that property's wire order. Caller guarantees kPmrSize
-	/// valid bytes in the canonical database representation.
+	/// Wrap kPmrSize readable bytes already in database order, without swapping.
+	/// MXF material numeric fields must be converted from wire order before this call.
 	inline std::array<unsigned char, MobId::kRawSize> toMobIdBytes(const unsigned char *eight)
 	{
 		std::array<unsigned char, MobId::kRawSize> out;
@@ -75,11 +58,7 @@ namespace OmfUid
 		return MobId::format(toMobIdBytes(eight).data());
 	}
 
-	/// One formatter for whatever width a mob arrives in: a prefix-42
-	/// omfi:UID is wrapped from its core, other 12-byte UIDs retain all words,
-	/// and a 32-byte UMID (MC 2026 writes
-	/// one on the physical mob of the same file) formats unchanged, and any
-	/// other width is empty so a caller can skip it rather than guess.
+	/// Format 12-byte OMF UIDs or 32-byte MobIds; unsupported widths return empty.
 	inline QString toIdText(QByteArrayView uid)
 	{
 		const auto *raw = reinterpret_cast<const unsigned char *>(uid.data());

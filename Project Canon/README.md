@@ -1,5 +1,13 @@
 # Project Canon
 
+**Historical plan and evidence.** [Project Copland](../Project%20Copland/README.md)
+now records the active V1 scope and confirmed decisions, including revisions to
+Canon's retention and bin-enrichment design. The descriptions below record the
+Canon stage. For the current implementation, use
+[How MediaMuster works](../docs/current-behaviour.md) and the
+[architecture map](../docs/architecture.md). Dated reports retain their original
+source-state and validation limits.
+
 This folder records the user's requirements, RAM metadata design and the evidence
 behind MediaMuster's Avid-format interpretation. **MediaEngine** is the live engine,
 under `src/mediaengine/` and namespace `MediaEngine`; its concrete components are

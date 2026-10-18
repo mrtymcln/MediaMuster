@@ -138,13 +138,12 @@ namespace MediaEngine::Detail
 			NameRow{"060e2b340401010d0402020204020300", "MP3"},
 			NameRow{"060e2b340401010a0402020101000000", "AES3"},
 			NameRow{"060e2b34040101030e04411001010000", "Apple Lossless"},
-			// DNx thin-raster profiles are unchanged and have no numbered alias.
+			// DNx thin-raster profiles have no numbered alias.
 			NameRow{"060e2b340401010d04010202710a0000", "Avid DNx TR"},
 			NameRow{"060e2b340401010d0401020271180000", "Avid DNx TR"},
 			NameRow{"060e2b340401010d0401020271190000", "Avid DNx TR"},
 			NameRow{"060e2b340401010d04010202711a0000", "Avid DNx TR"},
-			// Existing DNx compatibility spellings remain unchanged in this
-			// naming-only work; dnx_uncompressed.lua records these identifiers.
+			// dnx_uncompressed.lua records these identifiers.
 			NameRow{"060e2b34040101030e04410101030000", "Avid DNxRLE Alpha"},
 			NameRow{"060e2b34040101030e04410101050200", "Avid DNx HQ"},
 			NameRow{"060e2b34040101030e04410101050300", "Avid DNx SQ"},

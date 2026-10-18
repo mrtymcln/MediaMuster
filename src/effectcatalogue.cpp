@@ -919,9 +919,7 @@ namespace
 		QHash<QString, QVector<int>> byKey; ///< mangled name (any language) → rows
 	};
 
-	/// Built once, on first use, from the compiled-in catalogue. Names are
-	/// mangled and hashed, a few milliseconds. The table itself costs nothing
-	/// to load — it is string literals in the binary, not a file to find.
+	/// Build the name index once from the compiled-in catalogue.
 	const Table &table()
 	{
 		static const Table t = []

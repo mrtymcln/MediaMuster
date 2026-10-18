@@ -1,6 +1,5 @@
-// Decodes PMR records whilst keeping the Legacy and Unicode sets separate.
-// Reading bytes, interpreting text, and following the record layout are kept apart
-// so format rules and damaged-file handling can be checked without the UI.
+// Decodes PMR records with separate Legacy/Unicode sets and independent
+// byte-reading, text-decoding and layout checks.
 
 #include "pmrreader.h"
 #include "sourcestorage_p.h"

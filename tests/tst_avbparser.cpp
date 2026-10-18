@@ -530,7 +530,7 @@ void TestAvbParser::large_object_inventory_has_no_policy_limit()
 	const auto listed = TestAvb::appendFileSource(document, TestAvb::mediaLocator(false));
 	document.objects[0].payload = TestAvb::bin(false, {listed});
 	auto bytes = document.bytes();
-	// Cross both the former million-object cap and the 192 MiB estimate budget.
+	// Exercise a large object count without imposing an estimated-memory cutoff.
 	constexpr quint32 extraObjects = 2'097'152;
 	TestAvb::replaceU32(bytes, document.countOffset, extraObjects + quint32(document.objects.size()));
 	TestAvb::Bytes object(false);

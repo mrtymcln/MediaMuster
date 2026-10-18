@@ -107,8 +107,7 @@ private:
 						   const QString &dest, bool preserve,
 						   const QHash<QString, ConflictPolicy> &policies);
 
-	/// Collects MacOS crash reports into the logs folder,
-	/// and nudges the user to send them to the developer.
+	/// Collect macOS crash reports and offer to reveal them for reporting.
 	void collectCrashReports();
 
 	// MARK: - Status bar
@@ -139,17 +138,12 @@ private:
 	/// Coalesce ascending visible rows into ranges to reduce selection signals.
 	QItemSelection selectionForRows(const QVector<int> &proxyRows) const;
 
-	/// Sum of sizeBytes over the inclusive proxy-row range [first, last].
-	/// An empty range (last < first) sums to 0. Backs both the table total
-	/// and the per-selection total in the status bar.
+	/// Sum sizeBytes over inclusive proxy rows [first, last]; empty ranges sum to zero.
 	qint64 sumBytesInProxyRange(int first, int last) const;
 
 	// MARK: - Selection persistence
 
-	/// Wrap a proxy filter mutation so the user's selection survives
-	/// the row-visibility shuffle. The proxy drops hidden rows from
-	/// the selection model when filtered out; this helper re-applies
-	/// the persistent path set after the mutation runs.
+	/// Restore selections by path after filtering drops hidden rows from Qt's selection model.
 	void applyFilterPreservingSelection(const std::function<void()> &mutation);
 
 	/// Keeps manually-added paths when detected volumes change.
@@ -165,9 +159,7 @@ private:
 	void setOmfScanEnabled(bool enabled);
 	void setPrecomputesEnabled(bool enabled);
 
-	/// Drop every active filter back to its default after a scan swaps in a
-	/// new dataset, so a stale predicate (a project name or bin MOB from the
-	/// previous scan) can't hide the fresh results.
+	/// Reset filters so criteria from the previous scan cannot hide new results.
 	void resetFiltersForNewScan();
 
 	// MARK: - Owned services
@@ -240,20 +232,15 @@ private:
 
 	// MARK: - Selection persistence
 
-	/// File paths of every row the user has selected, tracked across
-	/// filter changes. The selection model itself drops hidden rows
-	/// when a filter excludes them; this set survives.
+	/// Selected paths survive filtering, including rows hidden from Qt's selection model.
 	QSet<QString> m_persistentSelectedPaths;
 
-	/// Guards `onSelectionChanged` while `applyFilterPreservingSelection`
-	/// shuffles rows; without this the rows the proxy drops would
-	/// shrink the persistent record and lose the user's picks.
+	/// Ignore selection notifications caused by filter restoration.
 	bool m_inFilterRestore = false;
 
 	class AvbFilterDialog *m_binFilterDialog = nullptr;
 
-	/// Cached so the chip strip can render without reaching into
-	/// the dialog (which may not exist yet if not opened).
+	/// Chip state remains available without constructing the dialog.
 	bool m_binFilterActive = false;
 	bool m_binFilterIncomplete = false;
 	QStringList m_binFilterBinNames;
@@ -263,12 +250,9 @@ private:
 	/// Debounces typed searches; stopped when a new scan clears the search.
 	QTimer *m_searchDebounceTimer = nullptr;
 
-	/// Debounces the status bar's O(n) byte tally so bursts of
-	/// filter changes coalesce into a single walk.
+	/// Coalesce repeated status-bar byte tallies after filter changes.
 	QTimer *m_statusBarUpdateTimer = nullptr;
 
-	/// Same pattern for the selected-bytes tally; every keystroke
-	/// fires onSelectionChanged; the cheap state runs synchronously,
-	/// the expensive byte sum waits for this timer.
+	/// Defer the selected-byte tally; selection controls update immediately.
 	QTimer *m_selectionBytesTimer = nullptr;
 };

@@ -10,10 +10,7 @@ namespace Format
 
 	inline QString count(qint64 n)
 	{
-		// thread_local, not plain static: FolderCard::paintEvent formats counts on
-		// the UI thread while the rebalancer worker formats its summary off-thread.
-		// A shared QLocale isn't safe for concurrent use; per-thread keeps the
-		// cache without the race.
+		// UI and worker callers each reuse their own locale instance.
 		static thread_local const QLocale loc(QLocale::English, QLocale::UnitedKingdom);
 		return loc.toString(n);
 	}

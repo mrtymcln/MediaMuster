@@ -2,7 +2,7 @@
 
 #include <type_traits>
 
-/// C++17 backport of 'std::to_underlying' for future C++23 upgrade.
+/// C++17 equivalent of std::to_underlying.
 namespace Enum
 {
 

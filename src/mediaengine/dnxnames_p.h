@@ -21,9 +21,9 @@ namespace MediaEngine::Detail
 		int layout;
 	};
 
-	// Registered VC-3 profile labels; profile identity is distinct from an
-	// application's numeric ResolutionID. See the MediaEngine DNx evidence document,
-	// ST 2019-1:2016 Annex C/H and Avid's 2012 and 2026 white papers.
+	// VC-3 labels identify profiles, independently of Avid's ResolutionID.
+	// Sources: ST 2019-1:2016 Annex C/H and Avid's 2012/2026 white papers;
+	// see Project Canon/dnx-codec-evidence.md.
 	inline constexpr DnxProfile dnxProfiles[] = {
 		{"060e2b340401010a0401020271010000", "HQX", false, 1920, 1080, 0},
 		{"060e2b340401010a0401020271070000", "HQX", false, 1920, 1080, 1},
@@ -55,11 +55,9 @@ namespace MediaEngine::Detail
 		const char *rgb444;
 	};
 
-	// Hand-transcribed and visually checked against the user-supplied 2012
-	// Avid DNxHD Technology white paper, pp. 9–10, "family of mastering
-	// resolutions". These are the Resolution names, not the Mbps values.
-	// The footnoted 1440/960 thin-raster rows are deliberately not full-raster
-	// aliases. 1080i/50 and /59.94 have frame clocks 25 and 30000/1001.
+	// Resolution names from Avid DNxHD Technology (2012), pp. 9–10; not Mbps values.
+	// Thin-raster rows do not supply full-raster aliases. Interlaced 50/59.94
+	// uses frame clocks 25 and 30000/1001, respectively.
 	inline constexpr DnxOperatingPoint dnxOperatingPoints[] = {
 		{1920, 1080, 0, {60, 1}, "90", "290", "440", "440x", ""},
 		{1920, 1080, 0, {60000, 1001}, "90", "290", "440", "440x", ""},

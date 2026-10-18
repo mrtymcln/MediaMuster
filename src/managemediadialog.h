@@ -25,11 +25,7 @@ class QShowEvent;
 
 /// Collects Copy / Move / Delete choices and previews destinations and conflicts.
 /// MainWindow passes the accepted choices to FileOperationController for execution.
-///
-/// Preview tree shows source + destination per file. Conflicting
-/// rows gain a per-row policy combo (Keep Both / Skip).
-/// A global combo applies the same policy to every conflicting row;
-/// Per-file choices also update the global combo.
+/// Conflict policies can be set per file or for all conflicting rows.
 class ManageMediaDialog : public QDialog
 {
 	Q_OBJECT
@@ -104,8 +100,7 @@ private:
 	QTreeWidget *m_previewTree = nullptr;
 	QLabel *m_summaryLabel = nullptr;
 
-	/// Keyed by source path. Only conflict rows have entries;
-	/// that's how we know which rows to walk.
+	/// Conflict-row controls keyed by source path.
 	QHash<QString, QComboBox *> m_perFileConflictCombos;
 
 	QPushButton *m_cancelButton = nullptr;
@@ -113,17 +108,11 @@ private:
 
 	// MARK: - Async destination check
 
-	// All conflict, rename, identity and space probes run on a pool thread: on an
-	// SMB/Nexis share, thousands of synchronous stats per option change froze
-	// the dialog for seconds. While a sweep is in flight the Execute button is
-	// held disabled (m_checkingDest) so a Copy/Move can't launch against
-	// unknown conflicts; the engine still re-checks the disk live at
-	// execution time, so the preview is advisory either way.
+	// Probe storage off the GUI thread and disable Execute until results arrive.
+	// The preview is advisory; execution rechecks identities and conflicts.
 
-	/// One preview row awaiting sweep results. `item` stays valid for the
-	/// generation it was created in: updatePreview() is the only place the
-	/// tree is cleared, and it bumps m_destCheckGeneration first, so a
-	/// generation match guarantees the pointers are live.
+	/// Borrowed row pointer, valid only for its preview generation.
+	/// updatePreview() invalidates that generation before clearing the tree.
 	struct PendingRow
 	{
 		QTreeWidgetItem *item = nullptr;

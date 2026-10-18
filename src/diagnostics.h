@@ -12,11 +12,8 @@
 // Removes lines older than 30 days at startup.
 namespace Diagnostics
 {
-	/// Open the log and install the handler. Call once, early in main(), after
-	/// the application/organisation name is set (the path depends on them).
-	/// Logs the app version and system details for each session, without a file title.
-	/// The five dated detail lines are enclosed by plain decorative dividers.
-	/// An explicit directory allows isolated callers to keep all output there.
+	/// Open the log, write session details and install the Qt handler.
+	/// Call once after setting application/organisation names; directory overrides the default path.
 	void install(const QString &directory = {}, const QDateTime &now = QDateTime::currentDateTime());
 
 	/// Absolute path to the current log file, for Help > Reveal Diagnostics.
@@ -26,7 +23,7 @@ namespace Diagnostics
 	void appendConsoleLine(QtMsgType level, const QString &module, const QString &message,
 						   const QDateTime &now = QDateTime::currentDateTime());
 
-	/// Timestamp every physical line, including severity/category and source locations.
+	/// Timestamp each physical line; warning/error lines also include available source locations.
 	QString formatMessage(QtMsgType type, const QMessageLogContext &context, const QString &message,
 						  const QDateTime &now = QDateTime::currentDateTime());
 

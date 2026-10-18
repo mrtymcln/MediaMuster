@@ -181,7 +181,7 @@ namespace
 	HRESULT recycleBinItem(IShellItem **item)
 	{
 		// The bin is a virtual folder; SHGetKnownFolderItem does not support
-		// virtual known folders. Resolve its PIDL, including for old receipts.
+		// virtual known folders. Resolve its PIDL for receipt lookup.
 		PIDLIST_ABSOLUTE id = nullptr;
 		HRESULT status = ::SHGetKnownFolderIDList(FOLDERID_RecycleBinFolder, KF_FLAG_DEFAULT, nullptr, &id);
 		if (SUCCEEDED(status))

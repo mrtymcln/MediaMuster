@@ -12,7 +12,7 @@
 class BentoBuilder
 {
 public:
-	/// A fresh object carrying OMFI:ObjID = `fourcc` (4 bytes, immediate).
+	/// Add an object with immediate OMFI:ObjID = `fourcc` (4 bytes).
 	quint32 addObject(const char *fourcc)
 	{
 		const quint32 id = m_nextObject++;
@@ -20,9 +20,8 @@ public:
 		return id;
 	}
 
-	/// `bytes` stored in the value area. Strings must include their NUL.
-	/// `flags` overrides the TOC entry's flag word (bit 1 = "continued") —
-	/// only for tests that want the reader to refuse the entry.
+	/// Store `bytes` in the value area; strings must include their NUL.
+	/// `flags` is the raw TOC flag word (bit 1 = continued).
 	void set(quint32 object, const char *property, const QByteArray &bytes, quint16 flags = 0)
 	{
 		m_entries.append({object, propertyId(property), bytes, flags});
@@ -60,9 +59,7 @@ public:
 		set(object, property, b);
 	}
 
-	/// Serialise. `tocTrailer` appends raw bytes after the TOC but before the
-	/// label — never valid, used only to break the arithmetic on purpose.
-	/// `labelVersion` other than 1 is likewise only for the refusal test.
+	/// Serialize with an optional trailer between the declared TOC and label.
 	QByteArray build(const QByteArray &tocTrailer = {}, quint32 labelVersion = 1) const
 	{
 		QByteArray values;
@@ -73,7 +70,7 @@ public:
 		};
 		QVector<Toc> toc;
 
-		// Value area, in entry order (file order = first-wins order).
+		// Preserve insertion order, including repeated values.
 		for (const auto &e : m_entries)
 		{
 			if (e.flags & kImmediate)
@@ -148,6 +145,6 @@ private:
 
 	QVector<Pending> m_entries;
 	QHash<QByteArray, quint32> m_propIds;
-	quint32 m_nextObject = 68000;	///< Avid's objects start around here.
-	quint32 m_nextProperty = 66000; ///< ...and its property ids around here.
+	quint32 m_nextObject = 68000;
+	quint32 m_nextProperty = 66000;
 };

@@ -15,18 +15,13 @@
 
 namespace Conventions
 {
-	// ═══════════════════════════════════════════════════════════════
 	// MARK: - Avid's folder names
-	// ═══════════════════════════════════════════════════════════════
 
-	/// [AVID] The folder Media Composer creates at a
-	/// volume root, and the essence folder inside it.
+	/// Avid's managed-media tree and its MXF subfolder.
 	inline constexpr QLatin1String kAvidMediaFilesDir("Avid MediaFiles");
 	inline constexpr QLatin1String kMxfDir("MXF");
 
-	/// Case-insensitive: the case-insensitive file systems macOS and
-	/// Windows default to accept any spelling, and Linux-hosted shares
-	/// or hand-restored backups may carry one. Avid itself writes 'MXF'.
+	/// Accept case variants on shares and restored media trees.
 	inline bool isMxfRootName(QStringView name)
 	{
 		return name.compare(kMxfDir, Qt::CaseInsensitive) == 0;
@@ -53,8 +48,7 @@ namespace Conventions
 		return base + QLatin1Char('/') + kAvidMediaFilesDir + QLatin1Char('/') + kMxfDir;
 	}
 
-	/// OMF-era: "<base>/OMFI MediaFiles" — one level, not two, because the
-	/// OMF folder is the media root itself; there is no "MXF" inside it.
+	/// "<base>/OMFI MediaFiles"; OMF has no MXF subfolder.
 	inline QString omfRootUnder(const QString &base)
 	{
 		return base + QLatin1Char('/') + kOmfMediaFilesDir;
@@ -62,12 +56,8 @@ namespace Conventions
 
 	// MARK: - Avid's transient capture folder
 
-	/// [AVID] The staging subfolder Media Composer makes
-	/// inside a media root while it is writing new media, in BOTH eras
-	/// (under "Avid MediaFiles/MXF" and under "OMFI MediaFiles"). Its
-	/// contents are half-written files that will be renamed into a real
-	/// folder when capture finishes, so nothing here counts as media, fits
-	/// a folder budget, or should be copied.
+	/// In-progress capture folder in MXF and OMF trees; exclude its unfinished files
+	/// from scans, transfers and folder budgets.
 	inline constexpr QLatin1String kCreatingDir("Creating");
 
 	/// Avid's destination for quarantined media; the scanner inventories
@@ -98,29 +88,19 @@ namespace Conventions
 		return bases;
 	}
 
-	// ═══════════════════════════════════════════════════════════════
 	// MARK: - Avid's database file names
-	// ═══════════════════════════════════════════════════════════════
 
-	/// [AVID] The per-folder index and clip database, in
-	/// both spellings Media Composer writes: msm* for media it manages,
-	/// ama* for AMA-linked folders. A folder may hold either or both; the
-	/// scanner reads every one present and merges. Same names in both eras;
-	/// OMF databases live in the root or a shared workstation folder.
+	/// Per-folder databases: msm* for managed media and ama* for AMA-linked folders.
+	/// Scan all present spellings in either media family; OMF databases may also
+	/// be directly inside OMFI MediaFiles.
 	inline constexpr std::array<QLatin1String, 2> kPmrFileNames = {
 		QLatin1String("msmFMID.pmr"), QLatin1String("amaFMID.pmr")};
 	inline constexpr std::array<QLatin1String, 2> kMdbFileNames = {
 		QLatin1String("msmMMOB.mdb"), QLatin1String("amaMMOB.mdb")};
 
-	// ═══════════════════════════════════════════════════════════════
 	// MARK: - Avid's essence-file names
-	// ═══════════════════════════════════════════════════════════════
 
-	/// Leading-dot names are never Avid media: macOS metadata and the
-	/// AppleDouble "._clip.mxf" resource-fork siblings macOS writes onto
-	/// SMB shares. Matched by NAME, not the OS hidden attribute — Unix
-	/// enumeration hides dotfiles anyway, but Windows reading a
-	/// Mac-written share enumerates them, and both platforms must agree.
+	/// Exclude leading-dot names, including AppleDouble sidecars, consistently across platforms.
 	inline bool isDotHidden(QStringView fileName)
 	{
 		return fileName.startsWith(QLatin1Char('.'));
@@ -141,9 +121,7 @@ namespace Conventions
 			   fileName.endsWith(QLatin1String(".wav"), Qt::CaseInsensitive);
 	}
 
-	// ═══════════════════════════════════════════════════════════════
 	// MARK: - Avid's per-folder file budget
-	// ═══════════════════════════════════════════════════════════════
 
 	/// Avid's automatic rollover threshold, used for folder warnings and Rebalance.
 	/// This is a file-count budget, not a byte-size limit.
@@ -155,17 +133,13 @@ namespace Conventions
 	/// [MEDIAMUSTER] Where it turns amber.
 	inline constexpr int kFolderWarn = 4500;
 
-	// ═══════════════════════════════════════════════════════════════
 	// MARK: - Names MediaMuster writes to disk
-	// ═══════════════════════════════════════════════════════════════
 
 	/// Delete's retained-file folder, beside the Avid media tree on the same
 	/// filesystem. All locations and original paths are journalled.
 	inline constexpr QLatin1String kMediaMusterTrashDir("_MediaMuster_Trash");
 
-	// ═══════════════════════════════════════════════════════════════
 	// MARK: - What counts as media
-	// ═══════════════════════════════════════════════════════════════
 
 	/// True when a directory entry occupies Avid's per-folder file budget
 	/// (kFolderMax above): an .mxf that isn't dot-hidden. Used by the
