@@ -2,8 +2,8 @@
 // The controlled device alters I/O timing and failures, never the MXF layout.
 // Genuine header excerpts also exercise incomplete-read outcomes.
 
-#include "mediaengine/mxfsource.h"
-#include "mediaengine/mxfreader.h"
+#include "oldscanner/mediaengine/mxfsource.h"
+#include "oldscanner/mediaengine/mxfreader.h"
 #include "mediaenginefingerprint.h"
 #include <QBuffer>
 #include <QFile>

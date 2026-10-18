@@ -3,7 +3,7 @@
 // Finds media files and databases (if present) in the supported folders.
 // Returns a file inventory and a list of sources for the readers to open next.
 
-#include "scanmodel.h"
+#include "mediaengine/scanmodel.h"
 #include <functional>
 
 namespace MediaEngine

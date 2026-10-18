@@ -5,7 +5,7 @@
 // create a dependency on MediaMuster's OMF media reader.
 
 #include "mdbbentoreader_p.h"
-#include "sourcereader.h"
+#include "mediaengine/sourcereader.h"
 
 namespace MediaEngine::MdbDetail
 {

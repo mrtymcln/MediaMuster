@@ -1,21 +1,21 @@
-// Drives the live MediaEngine scanner through MediaScanner using disposable Avid
+// Drives the live MediaEngine scanner through OldScanner using disposable Avid
 // layouts and real format fixtures. Reader checks use the same verified format APIs.
 
 #include "conventions.h"
 #include "mediaengine/scanmodel.h"
-#include "mediaengine/projection.h"
-#include "mediaengine/mdbreader.h"
-#include "mediaengine/mxfreader.h"
-#include "mediaengine/omfreader.h"
-#include "mediaengine/pmrreader.h"
-#include "mediaengine/scancoordinator.h"
-#include "mediaengineadapter.h"
+#include "oldscanner/mediaengine/projection.h"
+#include "oldscanner/mediaengine/mdbreader.h"
+#include "oldscanner/mediaengine/mxfreader.h"
+#include "oldscanner/mediaengine/omfreader.h"
+#include "oldscanner/mediaengine/pmrreader.h"
+#include "oldscanner/mediaengine/scancoordinator.h"
+#include "oldscanner/mediaengineadapter.h"
 #include "featureflags.h"
 #include "mediafile.h"
 #include "mediametadata.h"
 #include "mediacsv.h"
 #include "testpause.h"
-#include "mediascanner.h"
+#include "oldscanner/oldscanner.h"
 #include "mobid.h"
 #include "omfuid.h"
 #include "testbento.h"
@@ -359,21 +359,21 @@ void TestScanner::optional_read_only_real_scan()
 	const QString roots = qEnvironmentVariable("MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_ROOTS");
 	if (roots.isEmpty())
 		QSKIP("Opt-in real-drive audit; set MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_ROOTS to semicolon-separated managed roots");
-	MediaScanner scanner;
-	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
-	QSignalSpy issues(&scanner, &MediaScanner::scanIssuesFinished);
-	MediaScanner::Options options;
+	OldScanner scanner;
+	QSignalSpy finished(&scanner, &OldScanner::scanFinished);
+	QSignalSpy issues(&scanner, &OldScanner::scanIssuesFinished);
+	OldScanner::Options options;
 	for (const QString &root : roots.split(';', Qt::SkipEmptyParts))
-		options.locations.append(MediaScanner::rescanLocation(root));
+		options.locations.append(OldScanner::rescanLocation(root));
 	options.includeOmf = true;
 	const QJsonObject memoryBefore = auditMemory();
 	QElapsedTimer timer;
 	timer.start();
-	connect(&scanner, &MediaScanner::scanProgress, &scanner, [&](int current, int total, const QString &path)
+	connect(&scanner, &OldScanner::scanProgress, &scanner, [&](int current, int total, const QString &path)
 			{
 		if (current % 100 == 0)
 			qInfo() << "MediaEngine audit progress:" << current << "/" << total << "at" << timer.elapsed() << "ms" << path; });
-	connect(&scanner, &MediaScanner::scanFinalising, &scanner, [&]
+	connect(&scanner, &OldScanner::scanFinalising, &scanner, [&]
 			{ qInfo() << "MediaEngine audit matching at" << timer.elapsed() << "ms"; });
 	scanner.startScan(options);
 	QVERIFY(finished.wait(600000));
@@ -461,11 +461,11 @@ void TestScanner::mediaengine_extension_discovery_keeps_copies_and_local_referen
 	const QString three = temp.path() + QStringLiteral("/Avid MediaFiles/MXF/3");
 	QVERIFY(QDir().mkpath(three));
 	copyFixture(QStringLiteral("msmFMID.pmr"), three);
-	MediaScanner scanner;
-	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
-	QSignalSpy issueSpy(&scanner, &MediaScanner::scanIssuesFinished);
-	MediaScanner::Options options;
-	options.locations = {{MediaScanner::Location::Kind::MediaBase, temp.path()}};
+	OldScanner scanner;
+	QSignalSpy finished(&scanner, &OldScanner::scanFinished);
+	QSignalSpy issueSpy(&scanner, &OldScanner::scanIssuesFinished);
+	OldScanner::Options options;
+	options.locations = {{OldScanner::Location::Kind::MediaBase, temp.path()}};
 	scanner.startScan(options);
 	QVERIFY(finished.wait(10000));
 	QTRY_COMPARE(issueSpy.count(), 1);
@@ -509,15 +509,15 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
 	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
 
-	MediaScanner scanner;
-	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
+	OldScanner scanner;
+	QSignalSpy finishedSpy(&scanner, &OldScanner::scanFinished);
 
-	MediaScanner::Options opts;
-	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	OldScanner::Options opts;
+	opts.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 
 	// This genuine tone fixture contains the complete MXF file.
-	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
+	QVERIFY2(finishedSpy.wait(5000), "OldScanner::scanFinished did not fire within 5 s");
 	QCOMPARE(finishedSpy.size(), 1);
 
 	const auto results = finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
@@ -577,14 +577,14 @@ void TestScanner::unreferenced_mxf_recovered_via_mdb()
 	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
 	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
 
-	MediaScanner scanner;
-	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
+	OldScanner scanner;
+	QSignalSpy finishedSpy(&scanner, &OldScanner::scanFinished);
 
-	MediaScanner::Options opts;
-	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	OldScanner::Options opts;
+	opts.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 
-	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
+	QVERIFY2(finishedSpy.wait(5000), "OldScanner::scanFinished did not fire within 5 s");
 	const auto results = finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
 	QCOMPARE(results.size(), 1);
 	const MediaFile &mf = results.first();
@@ -638,14 +638,14 @@ void TestScanner::stage3_mdb_name_must_not_clobber_material_name()
 	QCOMPARE(names.size(), 1);
 	QCOMPARE(names.first().value.toString(), QStringLiteral("Wrong Neighbour Clip"));
 
-	MediaScanner scanner;
-	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
+	OldScanner scanner;
+	QSignalSpy finishedSpy(&scanner, &OldScanner::scanFinished);
 
-	MediaScanner::Options opts;
-	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	OldScanner::Options opts;
+	opts.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 
-	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
+	QVERIFY2(finishedSpy.wait(5000), "OldScanner::scanFinished did not fire within 5 s");
 	const auto results = finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
 	QCOMPARE(results.size(), 1);
 	const MediaFile &mf = results.first();
@@ -677,14 +677,14 @@ void TestScanner::mxf_without_any_database_is_no_database()
 	// MXF only — no msmFMID.pmr, no msmMMOB.mdb.
 	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
 
-	MediaScanner scanner;
-	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
+	OldScanner scanner;
+	QSignalSpy finishedSpy(&scanner, &OldScanner::scanFinished);
 
-	MediaScanner::Options opts;
-	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	OldScanner::Options opts;
+	opts.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 
-	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
+	QVERIFY2(finishedSpy.wait(5000), "OldScanner::scanFinished did not fire within 5 s");
 	const auto results = finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
 	QCOMPARE(results.size(), 1);
 	const MediaFile &mf = results.first();
@@ -711,15 +711,15 @@ void TestScanner::unlisted_media_with_readable_databases_is_no_reference()
 
 	writeJunk(folder + QStringLiteral("/stray.mxf"), 16);
 
-	MediaScanner scanner;
-	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
+	OldScanner scanner;
+	QSignalSpy finishedSpy(&scanner, &OldScanner::scanFinished);
 
-	MediaScanner::Options opts;
+	OldScanner::Options opts;
 	opts.includeOmf = true;
-	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	opts.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 
-	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
+	QVERIFY2(finishedSpy.wait(5000), "OldScanner::scanFinished did not fire within 5 s");
 	const auto results = finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
 	QCOMPARE(results.size(), 1);
 	const MediaFile &mf = results.first();
@@ -750,15 +750,15 @@ void TestScanner::failed_pmr_does_not_hide_validated_mdb_reference()
 
 	writeJunk(folder + QStringLiteral("/stray.mxf"), 16);
 
-	MediaScanner scanner;
-	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
+	OldScanner scanner;
+	QSignalSpy finishedSpy(&scanner, &OldScanner::scanFinished);
 
-	MediaScanner::Options opts;
+	OldScanner::Options opts;
 	opts.includeOmf = true;
-	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	opts.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
 
-	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
+	QVERIFY2(finishedSpy.wait(5000), "OldScanner::scanFinished did not fire within 5 s");
 	const auto results = finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
 	QCOMPARE(results.size(), 2);
 
@@ -798,12 +798,12 @@ void TestScanner::effect_render_names_classify_as_precompute()
 	// (AAF AUID order). Classification must also accept that serialization.
 	copyFixture(QString::fromUtf8("corpus_headers/zT_\xc3\x9ft_1080i_50_seqDD866C6BV.mxf"), folder);
 
-	MediaScanner scanner;
-	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
-	MediaScanner::Options opts;
-	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	OldScanner scanner;
+	QSignalSpy finishedSpy(&scanner, &OldScanner::scanFinished);
+	OldScanner::Options opts;
+	opts.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
-	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
+	QVERIFY2(finishedSpy.wait(5000), "OldScanner::scanFinished did not fire within 5 s");
 
 	const auto results = finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
 	QCOMPARE(results.size(), 1);
@@ -930,12 +930,12 @@ void TestScanner::mdb_name_fills_in_when_the_mxf_has_none()
 	// An unreadable header cannot supply a competing Clip Name.
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/garbage.mxf"), QByteArray(2048, '\x11')));
 
-	MediaScanner scanner;
-	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
-	MediaScanner::Options opts;
-	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	OldScanner scanner;
+	QSignalSpy finishedSpy(&scanner, &OldScanner::scanFinished);
+	OldScanner::Options opts;
+	opts.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
-	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
+	QVERIFY2(finishedSpy.wait(5000), "OldScanner::scanFinished did not fire within 5 s");
 
 	const auto results = finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
 	QCOMPARE(results.size(), 1);
@@ -961,12 +961,12 @@ void TestScanner::unknown_clip_name_is_blank_not_the_filename()
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/msmMMOB.mdb"), otherMdb));
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/garbage.mxf"), QByteArray(2048, '\x11')));
 
-	MediaScanner scanner;
-	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
-	MediaScanner::Options opts;
-	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	OldScanner scanner;
+	QSignalSpy finishedSpy(&scanner, &OldScanner::scanFinished);
+	OldScanner::Options opts;
+	opts.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
-	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
+	QVERIFY2(finishedSpy.wait(5000), "OldScanner::scanFinished did not fire within 5 s");
 
 	const auto results = finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
 	QCOMPARE(results.size(), 1);
@@ -996,12 +996,12 @@ void TestScanner::source_package_name_is_not_a_clip_name()
 	mxf.append(QByteArray(2048 - mxf.size(), '\0'));
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/tape.mxf"), mxf));
 
-	MediaScanner scanner;
-	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
-	MediaScanner::Options opts;
-	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	OldScanner scanner;
+	QSignalSpy finishedSpy(&scanner, &OldScanner::scanFinished);
+	OldScanner::Options opts;
+	opts.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
-	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
+	QVERIFY2(finishedSpy.wait(5000), "OldScanner::scanFinished did not fire within 5 s");
 
 	const auto results = finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
 	QCOMPARE(results.size(), 1);
@@ -1023,12 +1023,12 @@ void TestScanner::mixdown_is_media_not_precompute()
 	// This genuine mixdown has no UsageCode and remains Media despite its render-like name.
 	copyFixture(QStringLiteral("corpus_headers/Untitled Sequence.175B1728V.mxf"), folder);
 
-	MediaScanner scanner;
-	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
-	MediaScanner::Options opts;
-	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	OldScanner scanner;
+	QSignalSpy finishedSpy(&scanner, &OldScanner::scanFinished);
+	OldScanner::Options opts;
+	opts.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
-	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
+	QVERIFY2(finishedSpy.wait(5000), "OldScanner::scanFinished did not fire within 5 s");
 
 	const auto results = finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
 	QCOMPARE(results.size(), 1);
@@ -1050,12 +1050,12 @@ void TestScanner::unreadable_header_stays_unknown()
 	QVERIFY(tryWriteFile(folder + QStringLiteral("/Untitled_Sequence.0B4A3F9FV.mxf"),
 						 QByteArray(2048, '\x11')));
 
-	MediaScanner scanner;
-	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
-	MediaScanner::Options opts;
-	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	OldScanner scanner;
+	QSignalSpy finishedSpy(&scanner, &OldScanner::scanFinished);
+	OldScanner::Options opts;
+	opts.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
-	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
+	QVERIFY2(finishedSpy.wait(5000), "OldScanner::scanFinished did not fire within 5 s");
 
 	const auto results = finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
 	QCOMPARE(results.size(), 1);
@@ -1080,12 +1080,12 @@ void TestScanner::appledouble_sibling_is_never_media()
 	junk.write(QByteArray(4096, '\0')); // resource-fork noise, not an MXF
 	junk.close();
 
-	MediaScanner scanner;
-	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
-	MediaScanner::Options opts;
-	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	OldScanner scanner;
+	QSignalSpy finishedSpy(&scanner, &OldScanner::scanFinished);
+	OldScanner::Options opts;
+	opts.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
-	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
+	QVERIFY2(finishedSpy.wait(5000), "OldScanner::scanFinished did not fire within 5 s");
 
 	const auto results = finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
 	QCOMPARE(results.size(), 1);
@@ -1109,12 +1109,12 @@ void TestScanner::non_avid_files_are_invisible()
 		f.close();
 	}
 
-	MediaScanner scanner;
-	QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
-	MediaScanner::Options opts;
-	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	OldScanner scanner;
+	QSignalSpy finishedSpy(&scanner, &OldScanner::scanFinished);
+	OldScanner::Options opts;
+	opts.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(opts);
-	QVERIFY2(finishedSpy.wait(5000), "MediaScanner::scanFinished did not fire within 5 s");
+	QVERIFY2(finishedSpy.wait(5000), "OldScanner::scanFinished did not fire within 5 s");
 
 	const auto results = finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
 	QCOMPARE(results.size(), 1);
@@ -1128,15 +1128,15 @@ void TestScanner::discovery_progress_precedes_source_progress()
 	const QString folder = temp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
 	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
-	MediaScanner scanner;
+	OldScanner scanner;
 	QStringList events;
-	connect(&scanner, &MediaScanner::scanDiscovering, &scanner, [&](const QString &path)
+	connect(&scanner, &OldScanner::scanDiscovering, &scanner, [&](const QString &path)
 		{ events.append(QStringLiteral("Discover: ") + path); }, Qt::DirectConnection);
-	connect(&scanner, &MediaScanner::scanProgress, &scanner, [&](int, int, const QString &path)
+	connect(&scanner, &OldScanner::scanProgress, &scanner, [&](int, int, const QString &path)
 		{ events.append(QStringLiteral("Read: ") + path); }, Qt::DirectConnection);
-	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
-	MediaScanner::Options options;
-	options.locations = {{MediaScanner::Location::Kind::MediaBase, temp.path()}};
+	QSignalSpy finished(&scanner, &OldScanner::scanFinished);
+	OldScanner::Options options;
+	options.locations = {{OldScanner::Location::Kind::MediaBase, temp.path()}};
 	scanner.startScan(options);
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 5000);
 	QVERIFY(!events.isEmpty());
@@ -1156,17 +1156,17 @@ void TestScanner::cancellation_during_root_preparation_stops_scan()
 	const QString folder = first.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
 	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
-	MediaScanner scanner;
+	OldScanner scanner;
 	QStringList reported;
-	connect(&scanner, &MediaScanner::scanDiscovering, &scanner, [&](const QString &path)
+	connect(&scanner, &OldScanner::scanDiscovering, &scanner, [&](const QString &path)
 		{
 			reported.append(path);
 			scanner.cancelScan();
 		}, Qt::DirectConnection);
-	QSignalSpy progress(&scanner, &MediaScanner::scanProgress);
-	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
-	MediaScanner::Options options;
-	options.locations = {{MediaScanner::Location::Kind::MediaBase, first.path()}, {MediaScanner::Location::Kind::MediaBase, second.path()}};
+	QSignalSpy progress(&scanner, &OldScanner::scanProgress);
+	QSignalSpy finished(&scanner, &OldScanner::scanFinished);
+	OldScanner::Options options;
+	options.locations = {{OldScanner::Location::Kind::MediaBase, first.path()}, {OldScanner::Location::Kind::MediaBase, second.path()}};
 	scanner.startScan(options);
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 5000);
 	QCOMPARE(reported, QStringList{first.path()});
@@ -1181,18 +1181,18 @@ void TestScanner::cancellation_during_finalising_reports_cancelled()
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
 	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
-	MediaScanner scanner;
+	OldScanner scanner;
 	QStringList messages;
-	connect(&scanner, &MediaScanner::scanLogBatch, this, [&](const QVector<LogMessage> &batch)
+	connect(&scanner, &OldScanner::scanLogBatch, this, [&](const QVector<LogMessage> &batch)
 			{
 		for (const auto &msg : batch)
 			messages.append(msg.message); }, Qt::QueuedConnection);
 	// Cancel at the phase boundary without relying on scan speed.
-	connect(&scanner, &MediaScanner::scanFinalising, &scanner, [&scanner]
+	connect(&scanner, &OldScanner::scanFinalising, &scanner, [&scanner]
 			{ scanner.cancelScan(); }, Qt::DirectConnection);
-	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
-	MediaScanner::Options options;
-	options.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	QSignalSpy finished(&scanner, &OldScanner::scanFinished);
+	OldScanner::Options options;
+	options.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	scanner.startScan(options);
 	QVERIFY(finished.wait(5000));
 	QTRY_VERIFY(messages.contains(QStringLiteral("Scan cancelled by user; results are incomplete")));
@@ -1219,12 +1219,12 @@ void TestScanner::scan_can_restart_from_its_queued_receiver()
 	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
 	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
 
-	MediaScanner scanner;
-	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
-	QSignalSpy issues(&scanner, &MediaScanner::scanIssuesFinished);
-	QSignalSpy failed(&scanner, &MediaScanner::scanFailed);
+	OldScanner scanner;
+	QSignalSpy finished(&scanner, &OldScanner::scanFinished);
+	QSignalSpy issues(&scanner, &OldScanner::scanIssuesFinished);
+	QSignalSpy failed(&scanner, &OldScanner::scanFailed);
 	QStringList terminalMessages;
-	connect(&scanner, &MediaScanner::scanLogBatch, &scanner, [&](const QVector<LogMessage> &batch)
+	connect(&scanner, &OldScanner::scanLogBatch, &scanner, [&](const QVector<LogMessage> &batch)
 	{
 		for (const auto &message : batch)
 			if (message.message.startsWith(QStringLiteral("Scan complete:")) ||
@@ -1233,17 +1233,17 @@ void TestScanner::scan_can_restart_from_its_queued_receiver()
 	});
 	int publicationCount = 0;
 	bool cancellationAccepted = false;
-	scanner.m_testCheckpoint = [&](MediaScanner::Checkpoint phase, qsizetype)
+	scanner.m_testCheckpoint = [&](OldScanner::Checkpoint phase, qsizetype)
 	{
-		if (phase == MediaScanner::Checkpoint::BeforePublication && ++publicationCount == 1 && cancelFirst)
+		if (phase == OldScanner::Checkpoint::BeforePublication && ++publicationCount == 1 && cancelFirst)
 			cancellationAccepted = scanner.cancelScan();
 	};
-	MediaScanner::Options options;
-	options.locations = {{MediaScanner::Location::Kind::MediaBase, temporary.path()}};
+	OldScanner::Options options;
+	options.locations = {{OldScanner::Location::Kind::MediaBase, temporary.path()}};
 	int received = 0;
 	// A UI receiver can request the next scan as soon as completion arrives.
 	// Its restart must join the old worker without being rejected as running.
-	connect(&scanner, &MediaScanner::scanFinished, &scanner, [&]
+	connect(&scanner, &OldScanner::scanFinished, &scanner, [&]
 	{
 		if (++received == 1)
 			scanner.startScan(options);
@@ -1284,13 +1284,13 @@ void TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()
 	copyFixture(QStringLiteral("msmMMOB.mdb"), folder);
 	copyFixture(QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), folder);
 
-	MediaScanner scanner;
-	MediaScanner::Options opts;
-	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	OldScanner scanner;
+	OldScanner::Options opts;
+	opts.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 
 	{
 		TestPause::setEnabled(true);
-		QSignalSpy spy(&scanner, &MediaScanner::scanFinished);
+		QSignalSpy spy(&scanner, &OldScanner::scanFinished);
 		scanner.startScan(opts);
 		QTest::qWait(500);
 		scanner.cancelScan();
@@ -1303,7 +1303,7 @@ void TestScanner::cancelled_scan_does_not_leak_databases_into_the_next()
 	QVERIFY(QFile::remove(folder + QStringLiteral("/msmMMOB.mdb")));
 
 	{
-		QSignalSpy spy(&scanner, &MediaScanner::scanFinished);
+		QSignalSpy spy(&scanner, &OldScanner::scanFinished);
 		scanner.startScan(opts);
 		QVERIFY2(spy.wait(20000), "rescan did not finish");
 		const auto results = spy.takeFirst().at(0).value<QVector<MediaFile>>();
@@ -1478,10 +1478,10 @@ namespace
 
 	QVector<MediaFile> runScan(const QString &root, bool includeOmf = false)
 	{
-		MediaScanner scanner;
-		QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
-		MediaScanner::Options opts;
-		opts.locations = {{MediaScanner::Location::Kind::MediaBase, root}};
+		OldScanner scanner;
+		QSignalSpy finishedSpy(&scanner, &OldScanner::scanFinished);
+		OldScanner::Options opts;
+		opts.locations = {{OldScanner::Location::Kind::MediaBase, root}};
 		opts.includeOmf = includeOmf;
 		scanner.startScan(opts);
 		if (!finishedSpy.wait(5000))
@@ -1493,9 +1493,9 @@ namespace
 void TestScanner::cancellation_before_publication_keeps_prepared_results_data()
 {
 	QTest::addColumn<int>("phase");
-	QTest::newRow("during-row-formatting") << int(MediaScanner::Checkpoint::FormattingRow);
-	QTest::newRow("worker-results-prepared") << int(MediaScanner::Checkpoint::Prepared);
-	QTest::newRow("owner-before-publication") << int(MediaScanner::Checkpoint::BeforePublication);
+	QTest::newRow("during-row-formatting") << int(OldScanner::Checkpoint::FormattingRow);
+	QTest::newRow("worker-results-prepared") << int(OldScanner::Checkpoint::Prepared);
+	QTest::newRow("owner-before-publication") << int(OldScanner::Checkpoint::BeforePublication);
 }
 
 void TestScanner::cancellation_before_publication_keeps_prepared_results()
@@ -1517,11 +1517,11 @@ void TestScanner::cancellation_before_publication_keeps_prepared_results()
 	const QString missingName = QStringLiteral("ExpectedButAbsent.mxf");
 	QVERIFY(tryWriteFile(referenceFolder + QStringLiteral("/msmFMID.pmr"),
 		singlePmr(missingName.toUtf8(), kToneFileId, QByteArray(32, '\x02'), "Cancellation test", 0)));
-	MediaScanner::Options options;
-	options.locations = {{MediaScanner::Location::Kind::MediaBase, temporary.path()}};
-	MediaScanner baseline;
-	QSignalSpy baselineFinished(&baseline, &MediaScanner::scanFinished);
-	QSignalSpy baselineIssues(&baseline, &MediaScanner::scanIssuesFinished);
+	OldScanner::Options options;
+	options.locations = {{OldScanner::Location::Kind::MediaBase, temporary.path()}};
+	OldScanner baseline;
+	QSignalSpy baselineFinished(&baseline, &OldScanner::scanFinished);
+	QSignalSpy baselineIssues(&baseline, &OldScanner::scanIssuesFinished);
 	baseline.startScan(options);
 	QTRY_COMPARE_WITH_TIMEOUT(baselineFinished.count(), 1, 5000);
 	QTRY_COMPARE(baselineIssues.count(), 1);
@@ -1537,22 +1537,22 @@ void TestScanner::cancellation_before_publication_keeps_prepared_results()
 	QVERIFY(missingReference->scopeComplete);
 	QCOMPARE(missingReference->matchingPaths.size(), 2);
 
-	MediaScanner scanner;
-	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
-	QSignalSpy issues(&scanner, &MediaScanner::scanIssuesFinished);
-	QSignalSpy failed(&scanner, &MediaScanner::scanFailed);
+	OldScanner scanner;
+	QSignalSpy finished(&scanner, &OldScanner::scanFinished);
+	QSignalSpy issues(&scanner, &OldScanner::scanIssuesFinished);
+	QSignalSpy failed(&scanner, &OldScanner::scanFailed);
 	QStringList messages;
-	connect(&scanner, &MediaScanner::scanLogBatch, &scanner, [&](const QVector<LogMessage> &batch)
+	connect(&scanner, &OldScanner::scanLogBatch, &scanner, [&](const QVector<LogMessage> &batch)
 	{
 		for (const auto &message : batch)
 			messages.append(message.message);
 	});
-	const auto target = MediaScanner::Checkpoint(phase);
+	const auto target = OldScanner::Checkpoint(phase);
 	std::atomic_bool checkpointReached{false};
 	std::atomic_bool cancellationAccepted{false};
-	scanner.m_testCheckpoint = [&](MediaScanner::Checkpoint checkpoint, qsizetype row)
+	scanner.m_testCheckpoint = [&](OldScanner::Checkpoint checkpoint, qsizetype row)
 	{
-		if (checkpoint == target && (checkpoint != MediaScanner::Checkpoint::FormattingRow || row == 1))
+		if (checkpoint == target && (checkpoint != OldScanner::Checkpoint::FormattingRow || row == 1))
 		{
 			checkpointReached.store(true);
 			cancellationAccepted.store(scanner.cancelScan());
@@ -1633,12 +1633,12 @@ void TestScanner::completed_scan_rejects_cancellation_after_publication()
 	const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
 	copyFixture(kToneName, folder);
-	MediaScanner scanner;
-	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
+	OldScanner scanner;
+	QSignalSpy finished(&scanner, &OldScanner::scanFinished);
 	QStringList messages;
 	bool completedMessageReceived = false;
 	bool cancellationAccepted = true;
-	connect(&scanner, &MediaScanner::scanLogBatch, &scanner, [&](const QVector<LogMessage> &batch)
+	connect(&scanner, &OldScanner::scanLogBatch, &scanner, [&](const QVector<LogMessage> &batch)
 	{
 		for (const auto &message : batch)
 		{
@@ -1650,8 +1650,8 @@ void TestScanner::completed_scan_rejects_cancellation_after_publication()
 			}
 		}
 	});
-	MediaScanner::Options options;
-	options.locations = {{MediaScanner::Location::Kind::MediaBase, temporary.path()}};
+	OldScanner::Options options;
+	options.locations = {{OldScanner::Location::Kind::MediaBase, temporary.path()}};
 	scanner.startScan(options);
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 5000);
 	QVERIFY(completedMessageReceived);
@@ -1672,16 +1672,16 @@ void TestScanner::publication_failure_allows_a_later_scan()
 	const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
 	copyFixture(kToneName, folder);
-	MediaScanner scanner;
-	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
-	QSignalSpy failed(&scanner, &MediaScanner::scanFailed);
-	scanner.m_testCheckpoint = [](MediaScanner::Checkpoint phase, qsizetype)
+	OldScanner scanner;
+	QSignalSpy finished(&scanner, &OldScanner::scanFinished);
+	QSignalSpy failed(&scanner, &OldScanner::scanFailed);
+	scanner.m_testCheckpoint = [](OldScanner::Checkpoint phase, qsizetype)
 	{
-		if (phase == MediaScanner::Checkpoint::BeforePublication)
+		if (phase == OldScanner::Checkpoint::BeforePublication)
 			throw std::runtime_error("Test publication failure");
 	};
-	MediaScanner::Options options;
-	options.locations = {{MediaScanner::Location::Kind::MediaBase, temporary.path()}};
+	OldScanner::Options options;
+	options.locations = {{OldScanner::Location::Kind::MediaBase, temporary.path()}};
 	scanner.startScan(options);
 	QTRY_COMPARE_WITH_TIMEOUT(failed.count(), 1, 5000);
 	QVERIFY(finished.isEmpty());
@@ -2563,14 +2563,14 @@ namespace
 	/// Recorded PMR trailer word for these slates; its timestamp meaning is unverified.
 	constexpr quint32 kSlateModified = 1626810310u;
 
-	QVector<MediaFile> runScanWith(const MediaScanner::Options &opts)
+	QVector<MediaFile> runScanWith(const OldScanner::Options &opts)
 	{
-		MediaScanner scanner;
-		QSignalSpy finishedSpy(&scanner, &MediaScanner::scanFinished);
+		OldScanner scanner;
+		QSignalSpy finishedSpy(&scanner, &OldScanner::scanFinished);
 		scanner.startScan(opts);
 		if (finishedSpy.isEmpty() && !finishedSpy.wait(10000))
 		{
-			QTest::qFail("MediaScanner::scanFinished did not fire within 10 s", __FILE__, __LINE__);
+			QTest::qFail("OldScanner::scanFinished did not fire within 10 s", __FILE__, __LINE__);
 			return {};
 		}
 		return finishedSpy.takeFirst().at(0).value<QVector<MediaFile>>();
@@ -2578,8 +2578,8 @@ namespace
 
 	QVector<MediaFile> runManualScan(const QString &folder, bool includeOmf = false)
 	{
-		MediaScanner::Options opts;
-		const auto location = MediaScanner::addedLocation(folder);
+		OldScanner::Options opts;
+		const auto location = OldScanner::addedLocation(folder);
 		if (!location)
 			return {};
 		opts.locations = {*location};
@@ -2589,8 +2589,8 @@ namespace
 
 	QVector<MediaFile> runRescan(const QString &path, bool includeOmf = false)
 	{
-		MediaScanner::Options options;
-		options.locations = {MediaScanner::rescanLocation(path)};
+		OldScanner::Options options;
+		options.locations = {OldScanner::rescanLocation(path)};
 		options.includeOmf = includeOmf;
 		return runScanWith(options);
 	}
@@ -2661,18 +2661,18 @@ void TestScanner::omf_is_disabled_for_all_path_shapes()
 	const QString nestedMxf = Conventions::mxfRootUnder(legacyFolder + QStringLiteral("/Archive")) + QStringLiteral("/1");
 	QVERIFY(QDir().mkpath(nestedMxf));
 	copyFixture(kToneName, nestedMxf);
-	MediaScanner::Options options;
+	OldScanner::Options options;
 	QVERIFY(!options.includeOmf);
 	if (requestKind == QStringLiteral("base"))
-		options.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+		options.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	else if (requestKind == QStringLiteral("manual"))
 	{
-		const auto location = MediaScanner::addedLocation(legacyFolder);
+		const auto location = OldScanner::addedLocation(legacyFolder);
 		QVERIFY(location); // Admission remains independent of the OMF scan setting.
 		options.locations = {*location};
 	}
 	else
-		options.locations = {MediaScanner::rescanLocation(legacyFolder)};
+		options.locations = {OldScanner::rescanLocation(legacyFolder)};
 	QVERIFY(runScanWith(options).isEmpty());
 }
 
@@ -2706,7 +2706,7 @@ void TestScanner::omf_disabled_preserves_mxf_and_its_databases()
 								: tmp.path();
 	const QString folder = Conventions::mxfRootUnder(project) + QLatin1Char('/') + mediaFolderName;
 	QVERIFY(QDir().mkpath(folder));
-	QVERIFY(!MediaScanner::addedLocation(folder));
+	QVERIFY(!OldScanner::addedLocation(folder));
 	if (withDatabases)
 	{
 		copyFixture(QStringLiteral("msmFMID.pmr"), folder);
@@ -2721,13 +2721,13 @@ void TestScanner::omf_disabled_preserves_mxf_and_its_databases()
 	QVERIFY(QDir().mkpath(omfi));
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, omfi);
 
-	MediaScanner::Options options;
+	OldScanner::Options options;
 	QVERIFY(!options.includeOmf);
 	if (shape == QStringLiteral("volume"))
-		options.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+		options.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	else
 	{
-		const auto location = MediaScanner::addedLocation(project + QStringLiteral("/Avid MediaFiles"));
+		const auto location = OldScanner::addedLocation(project + QStringLiteral("/Avid MediaFiles"));
 		QVERIFY(location);
 		options.locations = {*location};
 	}
@@ -2924,7 +2924,7 @@ void TestScanner::copied_media_tree_requires_a_managed_root()
 	QVERIFY(runScan(tmp.path(), true).isEmpty());
 	QVERIFY(runManualScan(tmp.path(), true).isEmpty());
 
-	QVERIFY(!MediaScanner::addedLocation(project));
+	QVERIFY(!OldScanner::addedLocation(project));
 	QVERIFY(runManualScan(project, true).isEmpty());
 	const auto manual = runRescan(project, true);
 	QCOMPARE(manual.size(), 2);
@@ -3230,8 +3230,8 @@ void TestScanner::shared_omf_folder_without_any_database_is_scanned()
 		QVERIFY(row.metadataStatus.field(MediaProperty::ClipName).selectedSource == MetadataSource::Omf);
 	}
 	QVERIFY(runManualScan(root).isEmpty());
-	QVERIFY(!MediaScanner::addedLocation(base));
-	QVERIFY(!MediaScanner::addedLocation(folder));
+	QVERIFY(!OldScanner::addedLocation(base));
+	QVERIFY(!OldScanner::addedLocation(folder));
 	QVERIFY(runManualScan(folder + QStringLiteral("/Old"), true).isEmpty());
 }
 
@@ -3440,7 +3440,7 @@ void TestScanner::mxf_and_omf_staging_rules()
 		const QString workstation = omfRoot + QLatin1Char('/') + name;
 		QVERIFY(QDir().mkpath(workstation));
 		copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, workstation);
-		QVERIFY(!MediaScanner::addedLocation(workstation));
+		QVERIFY(!OldScanner::addedLocation(workstation));
 	}
 
 	const auto results = runScan(tmp.path(), true);
@@ -3483,10 +3483,10 @@ void TestScanner::omf_database_metadata_survives_source_path_fallback()
 	writeJunk(folder + QLatin1Char('/') + kOmfAif, 4096);
 	setModified(folder + QLatin1Char('/') + kOmfWav, kOmfWavModified);
 	setModified(folder + QLatin1Char('/') + kOmfAif, kOmfAifModified);
-	MediaScanner scanner;
-	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
-	MediaScanner::Options options;
-	const auto location = MediaScanner::addedLocation(root);
+	OldScanner scanner;
+	QSignalSpy finished(&scanner, &OldScanner::scanFinished);
+	OldScanner::Options options;
+	const auto location = OldScanner::addedLocation(root);
 	QVERIFY(location);
 	options.locations = {*location};
 	options.includeOmf = true;
@@ -3570,9 +3570,9 @@ void TestScanner::manual_media_tree_scans_eligible_siblings_without_nested_archi
 #endif
 	for (const QString &shape : shapes)
 	{
-		const auto location = MediaScanner::addedLocation(shape);
+		const auto location = OldScanner::addedLocation(shape);
 		QVERIFY(location);
-		QCOMPARE(location->kind, MediaScanner::Location::Kind::MediaTree);
+		QCOMPARE(location->kind, OldScanner::Location::Kind::MediaTree);
 		QCOMPARE(location->path, QFileInfo(tree).canonicalFilePath());
 		const auto rows = runManualScan(shape);
 		QCOMPARE(rows.size(), 2);
@@ -3592,12 +3592,12 @@ void TestScanner::manual_media_tree_scans_eligible_siblings_without_nested_archi
 	QVERIFY(runRescan(folder).isEmpty());
 	QVERIFY(QFileInfo(QStorageInfo(tmp.path()).rootPath()).canonicalFilePath() !=
 		QFileInfo(tmp.path()).canonicalFilePath());
-	QVERIFY(!MediaScanner::addedLocation(tmp.path()));
-	QVERIFY(!MediaScanner::addedLocation(root));
-	QVERIFY(!MediaScanner::addedLocation(folder));
+	QVERIFY(!OldScanner::addedLocation(tmp.path()));
+	QVERIFY(!OldScanner::addedLocation(root));
+	QVERIFY(!OldScanner::addedLocation(folder));
 	// A tree supplied as a base must not trigger a second interpretation.
-	MediaScanner::Options asBase;
-	asBase.locations = {{MediaScanner::Location::Kind::MediaBase, tree}};
+	OldScanner::Options asBase;
+	asBase.locations = {{OldScanner::Location::Kind::MediaBase, tree}};
 	QVERIFY(runScanWith(asBase).isEmpty());
 }
 
@@ -3692,17 +3692,17 @@ void TestScanner::ume_exclusion_preserves_supported_siblings()
 #endif
 	for (bool manual : {false, true})
 	{
-		MediaScanner::Options options;
+		OldScanner::Options options;
 		options.includeOmf = true;
 		if (manual)
 		{
-			const auto avidLocation = MediaScanner::addedLocation(tmp.path() + QStringLiteral("/Avid MediaFiles"));
-			const auto omfLocation = MediaScanner::addedLocation(omf);
+			const auto avidLocation = OldScanner::addedLocation(tmp.path() + QStringLiteral("/Avid MediaFiles"));
+			const auto omfLocation = OldScanner::addedLocation(omf);
 			QVERIFY(avidLocation && omfLocation);
 			options.locations = {*avidLocation, *omfLocation};
 		}
 		else
-			options.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+			options.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 		const auto rows = runScanWith(options);
 		QCOMPARE(rows.size(), 2);
 		const MediaFile *mxfRow = rowNamed(rows, kToneName);
@@ -3722,10 +3722,10 @@ void TestScanner::overlapping_volume_and_manual_roots_scan_each_folder_once()
 	const QString folder = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
 	QVERIFY(QDir().mkpath(folder));
 	copyFixture(kToneName, folder);
-	MediaScanner::Options opts;
-	opts.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}, {MediaScanner::Location::Kind::MediaBase, tmp.path() + QLatin1Char('/')}};
-	const auto tree = MediaScanner::addedLocation(tmp.path() + QStringLiteral("/Avid MediaFiles"));
-	const auto normalizedTree = MediaScanner::addedLocation(tmp.path() + QStringLiteral("/Avid MediaFiles/."));
+	OldScanner::Options opts;
+	opts.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}, {OldScanner::Location::Kind::MediaBase, tmp.path() + QLatin1Char('/')}};
+	const auto tree = OldScanner::addedLocation(tmp.path() + QStringLiteral("/Avid MediaFiles"));
+	const auto normalizedTree = OldScanner::addedLocation(tmp.path() + QStringLiteral("/Avid MediaFiles/."));
 	QVERIFY(tree && normalizedTree);
 	opts.locations.append(*tree);
 	opts.locations.append(*normalizedTree);
@@ -3833,7 +3833,7 @@ void TestScanner::unsupported_manual_locations_are_rejected()
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, folder);
 	copyFixture(QStringLiteral("omf/avid_supporting/BLACK_720x243x2_JFIF35.omf"), folder);
 	const QString selected = selectParent ? QFileInfo(folder).absolutePath() : folder;
-	QVERIFY(!MediaScanner::addedLocation(selected));
+	QVERIFY(!OldScanner::addedLocation(selected));
 	QVERIFY(runManualScan(selected).isEmpty());
 	QVERIFY(runManualScan(selected, true).isEmpty());
 }
@@ -3859,8 +3859,8 @@ void TestScanner::mxf_quarantined_files_remain_diagnostic()
 	copyFixture(kToneName, folder);
 	copyFixture(kToneName, quarantined);
 	copyFixture(QStringLiteral("omf/mc2026_audio/") + kOmfWav, folder);
-	QVERIFY(!MediaScanner::addedLocation(quarantined));
-	QVERIFY(!MediaScanner::addedLocation(folder));
+	QVERIFY(!OldScanner::addedLocation(quarantined));
+	QVERIFY(!OldScanner::addedLocation(folder));
 	// Only direct quarantine contents qualify; nested files remain outside the inventory.
 	const auto rows = manual ? runManualScan(tmp.path() + QStringLiteral("/Avid MediaFiles"), true) : runScan(tmp.path(), true);
 	QCOMPARE(rows.size(), 2);
@@ -3942,7 +3942,7 @@ void TestScanner::quarantine_alias_cannot_expand_a_normal_media_folder()
 	// Its actual target is in another managed tree, ensuring de-duplication
 	// cannot accidentally hide the alias's incorrect quarantine classification.
 	QVERIFY(runScan(selectedBase, true).isEmpty());
-	QVERIFY(!MediaScanner::addedLocation(alias));
+	QVERIFY(!OldScanner::addedLocation(alias));
 	QVERIFY(runManualScan(alias, true).isEmpty());
 	// The actual admitted tree retains ordinary classification.
 	const auto aliasRows = runManualScan(tmp.path() + QStringLiteral("/Actual/Avid MediaFiles"), true);
@@ -3970,7 +3970,7 @@ void TestScanner::numbered_alias_cannot_hide_quarantined_status()
 	const QString alias = root + QStringLiteral("/1");
 	QVERIFY(QFile::link(quarantined, alias));
 	QVERIFY(runScan(selectedBase, true).isEmpty());
-	QVERIFY(!MediaScanner::addedLocation(alias));
+	QVERIFY(!OldScanner::addedLocation(alias));
 	QVERIFY(runManualScan(alias, true).isEmpty());
 	// Admitting the actual tree cannot lose its quarantine classification.
 	const auto rows = runManualScan(tmp.path() + QStringLiteral("/Actual/Avid MediaFiles"), true);
@@ -4076,19 +4076,19 @@ void TestScanner::missing_media_base_reports_only_required_scope()
 		QVERIFY(QDir().mkpath(avid + QStringLiteral("/MXF/1")));
 	else if (treeState == QStringLiteral("omfi"))
 		QVERIFY(tryWriteFile(Conventions::omfRootUnder(tmp.path()) + QStringLiteral("/unread.omf"), "opaque bytes"));
-	MediaScanner::Options options;
-	options.locations = {required ? MediaScanner::rescanLocation(tmp.path())
-		: MediaScanner::Location{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	OldScanner::Options options;
+	options.locations = {required ? OldScanner::rescanLocation(tmp.path())
+		: OldScanner::Location{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	QVERIFY(!options.includeOmf);
 	if (treeState == QStringLiteral("removed"))
 	{
-		QVERIFY(MediaScanner::addedLocation(avid));
+		QVERIFY(OldScanner::addedLocation(avid));
 		QVERIFY(QDir(avid).removeRecursively());
 	}
-	MediaScanner scanner;
-	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
+	OldScanner scanner;
+	QSignalSpy finished(&scanner, &OldScanner::scanFinished);
 	QStringList warnings;
-	connect(&scanner, &MediaScanner::scanLogBatch, this, [&](const QVector<LogMessage> &batch)
+	connect(&scanner, &OldScanner::scanLogBatch, this, [&](const QVector<LogMessage> &batch)
 		{
 			for (const auto &message : batch)
 				if (message.level == QtWarningMsg)
@@ -4124,18 +4124,18 @@ void TestScanner::unreadable_avid_container_preserves_other_family_and_incomplet
 	if (::access(restrictedPath.constData(), R_OK | X_OK) == 0)
 		QSKIP("Host bypasses restrictive directory permissions");
 	QCOMPARE(errno, EACCES);
-	MediaScanner scanner;
-	QSignalSpy finished(&scanner, &MediaScanner::scanFinished);
-	QSignalSpy issueSpy(&scanner, &MediaScanner::scanIssuesFinished);
+	OldScanner scanner;
+	QSignalSpy finished(&scanner, &OldScanner::scanFinished);
+	QSignalSpy issueSpy(&scanner, &OldScanner::scanIssuesFinished);
 	QStringList warnings;
-	connect(&scanner, &MediaScanner::scanLogBatch, this, [&](const QVector<LogMessage> &batch)
+	connect(&scanner, &OldScanner::scanLogBatch, this, [&](const QVector<LogMessage> &batch)
 		{
 			for (const auto &message : batch)
 				if (message.level == QtWarningMsg)
 					warnings.append(message.message);
 		});
-	MediaScanner::Options options;
-	options.locations = {{MediaScanner::Location::Kind::MediaBase, tmp.path()}};
+	OldScanner::Options options;
+	options.locations = {{OldScanner::Location::Kind::MediaBase, tmp.path()}};
 	options.includeOmf = true;
 	scanner.startScan(options);
 	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 10000);

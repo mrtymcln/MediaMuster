@@ -4,24 +4,32 @@ MediaMuster is a C++17 / Qt Widgets desktop application. The interface coordinat
 media discovery, an in-memory inventory, and a shared file-operation engine.
 For what the user sees, start with [How MediaMuster works](current-behaviour.md).
 
+The active scanner/parser is [OldScanner](../src/oldscanner/README.md), isolated
+under `src/oldscanner/` with its existing behavior and internal `MediaEngine`
+namespace. The AVB reader/reference resolver and shared reading types remain
+under `src/mediaengine/`; Bin Filter stays unchanged. [Bella](../Project%20Bella/README.md)
+will be a new, independent C++17 / Qt 6.5.3 implementation. Its source folder is
+reserved while requirements are reviewed, with no parser code or target yet.
+The app continues using OldScanner until the user approves switching to Bella.
+
 ## From storage to table
 
 1. [VolumeManager](../src/volumemanager.cpp) discovers storage locations at startup
    and on explicit Refresh Volumes. There is no periodic or post-operation drive
    checking. The helper keeps no detection cache or live media inventory.
 2. [MainWindow](../src/mainwindow.cpp) passes the selected detected and manually
-   added paths to [MediaScanner](../src/mediascanner.cpp). It retains only the
+   added paths to [OldScanner](../src/oldscanner/oldscanner.cpp). It retains only the
    detected paths from the last startup/Refresh result, including a valid empty
    result, and uses them for Scan All and detected/manual root classification.
    Scan commands do not rediscover drives. Scan All also includes session manual
    paths, including unavailable entries no longer displayed after Refresh, so the
    scanner can report their current admission/access result. Refresh clears
    sidebar selection and restores still-scannable manual entries.
-3. The worker calls [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp), which
-   supplies the read/project/match pipeline to [ScanCoordinator](../src/mediaengine/scancoordinator.cpp).
-   The coordinator uses [DiscoveryEngine](../src/mediaengine/discoveryengine.cpp), reads
+3. The worker calls [MediaEngine::ScanEngine](../src/oldscanner/mediaengine/scanengine.cpp), which
+   supplies the read/project/match pipeline to [ScanCoordinator](../src/oldscanner/mediaengine/scancoordinator.cpp).
+   The coordinator uses [DiscoveryEngine](../src/oldscanner/mediaengine/discoveryengine.cpp), reads
    databases first, schedules necessary headers, then matches and selects metadata.
-4. The [MediaEngine adapter](../src/mediaengineadapter.cpp) prepares one
+4. The [MediaEngine adapter](../src/oldscanner/mediaengineadapter.cpp) prepares one
    [MediaFile](../src/mediafile.h) row per physical file: typed selected values,
    inline metadata status, a scan stamp and an optional frozen operation receipt.
    It borrows working evidence; the scanner releases the working scan result and
@@ -75,22 +83,22 @@ Applicability, agreement, eligibility and freshness remain separate facts; see t
 
 | Component | Responsibility |
 | --- | --- |
-| [MediaEngine::PmrReader](../src/mediaengine/pmrreader.cpp) | Decodes both PMR file sets, names, identities, original encodings and record locations into temporary source records for projection. |
-| [MediaEngine::MdbReader](../src/mediaengine/mdbreader.cpp) | Decodes source-local Bento objects, typed properties, dictionaries, qualified relationships and the HEAD-established `OmfRevision`, independently of the Bento container version. |
-| [MediaEngine::MxfReader](../src/mediaengine/mxfreader.cpp) | Decodes MXF partitions, Primer mappings, raw/typed metadata and source-local references for projection; skips recording payloads. |
-| [MediaEngine::OmfReader](../src/mediaengine/omfreader.cpp) | Reads OMF and native WAV/AIFF metadata for projection; embedded OMF graphs have separate source contexts. |
+| [MediaEngine::PmrReader](../src/oldscanner/mediaengine/pmrreader.cpp) | Decodes both PMR file sets, names, identities, original encodings and record locations into temporary source records for projection. |
+| [MediaEngine::MdbReader](../src/oldscanner/mediaengine/mdbreader.cpp) | Decodes source-local Bento objects, typed properties, dictionaries, qualified relationships and the HEAD-established `OmfRevision`, independently of the Bento container version. |
+| [MediaEngine::MxfReader](../src/oldscanner/mediaengine/mxfreader.cpp) | Decodes MXF partitions, Primer mappings, raw/typed metadata and source-local references for projection; skips recording payloads. |
+| [MediaEngine::OmfReader](../src/oldscanner/mediaengine/omfreader.cpp) | Reads OMF and native WAV/AIFF metadata for projection; embedded OMF graphs have separate source contexts. |
 | [MediaEngine::AvbReader](../src/mediaengine/avbreader.cpp) and [reference engine](../src/mediaengine/avbreferences.cpp) | Decode temporary bin objects and resolve Whole Bin references with explicit completeness warnings. |
-| [MediaEngine source projections](../src/mediaengine/projection.h) | Interpret recorded properties as file-owned or master-owned observations, preserving supported observation bytes and competing evidence independently of temporary reading storage. |
-| [MediaEngine::ScanEngine](../src/mediaengine/scanengine.cpp) | Public entry point for database-first scanning. Its working result keeps evidence and `SourceReceipt`s after parser storage is released; the scanner discards that result after preparing UI rows and diagnostics. |
-| [MediaEngine::ScanCoordinator](../src/mediaengine/scancoordinator.cpp) | Coordinates discovery, database-first reads, exact-name/identity matching, field selection and scoped unmatched-reference issues. |
-| [MediaEngine selection policy](../src/mediaengine/metadataselectionpolicy.cpp) | One compiled row per semantic property, using source preferences 3 > 2 > 1 > 0 and explicit duration, association and effect rules. |
+| [MediaEngine source projections](../src/oldscanner/mediaengine/projection.h) | Interpret recorded properties as file-owned or master-owned observations, preserving supported observation bytes and competing evidence independently of temporary reading storage. |
+| [MediaEngine::ScanEngine](../src/oldscanner/mediaengine/scanengine.cpp) | Public entry point for database-first scanning. Its working result keeps evidence and `SourceReceipt`s after parser storage is released; the scanner discards that result after preparing UI rows and diagnostics. |
+| [MediaEngine::ScanCoordinator](../src/oldscanner/mediaengine/scancoordinator.cpp) | Coordinates discovery, database-first reads, exact-name/identity matching, field selection and scoped unmatched-reference issues. |
+| [MediaEngine selection policy](../src/oldscanner/mediaengine/metadataselectionpolicy.cpp) | One compiled row per semantic property, using source preferences 3 > 2 > 1 > 0 and explicit duration, association and effect rules. |
 | [MediaEvidence](../src/mediaevidence.h) | Stores scan-time observations separately from selected values, with read state, agreement, eligibility, source, basis and explanation. Ordinary UI rows do not own it. |
 | [MediaMetadataStatus](../src/mediametadatastatus.h) | Fixed inline checklist of field conclusions and header outcome. Contains flags and enum tags, with no selected values, strings or source owners. |
 | [AvbBinLoader](../src/avbbinloader.cpp) | Loads bins through AvbReader, resolves file identities and prepares compact filter results and warnings. Releases parsed graphs and does not enrich media inventory rows. |
-| [MediaEngine presentation adapter](../src/mediaengineadapter.cpp) | Borrows completed scan evidence to prepare typed table/filter/CSV values, inline status and frozen operation checks without retaining the evidence or scan. |
+| [MediaEngine presentation adapter](../src/oldscanner/mediaengineadapter.cpp) | Borrows completed scan evidence to prepare typed table/filter/CSV values, inline status and frozen operation checks without retaining the evidence or scan. |
 | [AvidEffects](../src/effectcatalogue.cpp) | Maps the selected name of an established precompute to derived effect details; it does not classify the file. |
 
-`MediaScanner` owns the background/UI boundary, cancellation, progress,
+`OldScanner` owns the background/UI boundary, cancellation, progress,
 logs and result delivery. Its `doScan()` prepares compact rows in the worker;
 the owning thread accepts and publishes the prepared completion. MediaEngine owns per-scan source storage and reconciliation;
 the adapter prepares selected facts for existing consumers. One scoped
@@ -198,7 +206,7 @@ carrier; ScanCoordinator indexes its eligible claims so the disagreement reaches
 reconciliation and header fallback. The selection engine then applies the approved
 per-field priorities; original observation bytes and alternatives remain available
 until row preparation finishes, then are released with the working scan. Scanning uses the
-[compiled policy table](../src/mediaengine/metadataselectionpolicy.cpp): Clip Name
+[compiled policy table](../src/oldscanner/mediaengine/metadataselectionpolicy.cpp): Clip Name
 prefers header then MDB; Original Bin prefers MDB then header. Loaded AVBs do not
 supply row names or derived effect fields.
 Zero excludes a source from value selection while retaining its read state and

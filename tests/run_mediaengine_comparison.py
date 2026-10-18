@@ -58,7 +58,8 @@ def source_hashes():
     # MediaEngine's readers/projection/selection and the app adapter are proof inputs.
     paths.update(ROOT.joinpath("src").glob("*.h"))
     paths.update(ROOT.joinpath("src").glob("*.cpp"))
-    for directory in (ROOT / "src/mediaengine",):
+    for directory in (ROOT / "src/mediaengine", ROOT / "src/oldscanner",
+                      ROOT / "src/oldscanner/mediaengine"):
         paths.update(directory.glob("*.h"))
         paths.update(directory.glob("*.cpp"))
     return {str(path.relative_to(ROOT)): sha256(path) for path in sorted(paths)}
@@ -96,8 +97,8 @@ def build_receipt(probe):
     receipt["releaseConfigurationVerified"] = release
     receipt["configurationEvidence"] = "Recorded CMake cache settings and probe location; no build flags inferred from filenames."
     libraries = {}
-    for name in ("libmediamuster_mediaengine_core.a", "libmediamuster_mediaengine.a",
-                 "mediamuster_mediaengine_core.lib", "mediamuster_mediaengine.lib"):
+    for name in ("libmediamuster_oldscanner_core.a", "libmediamuster_oldscanner.a",
+                 "mediamuster_oldscanner_core.lib", "mediamuster_oldscanner.lib"):
         for parent in (cache.parent, probe.parent, cache.parent / "Release"):
             path = parent / name
             if path.is_file():

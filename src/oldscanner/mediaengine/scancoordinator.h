@@ -5,7 +5,7 @@
 // The caller owns the worker thread. Matching uses projected facts and small
 // source receipts; temporary reader records are released after projection.
 
-#include "scanmodel.h"
+#include "mediaengine/scanmodel.h"
 #include <functional>
 
 namespace MediaEngine

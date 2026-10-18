@@ -1,8 +1,20 @@
-# MediaEngine terminology and ownership
+# OldScanner and MediaEngine ownership
 
-**MediaEngine** is the umbrella name for discovery, format reading, metadata
-interpretation and reconciliation. Its code lives in `src/mediaengine/`, under
-namespace `MediaEngine`.
+**OldScanner** is the retained scanner/parser used by the app. Its facade and
+presentation adapter live under `src/oldscanner/`; its discovery, media readers,
+interpretation and reconciliation live under `src/oldscanner/mediaengine/`.
+Those internals retain namespace `MediaEngine`.
+
+The existing AVB reader, bin reference resolver and shared reading types remain
+under `src/mediaengine/`, also in namespace `MediaEngine`. Bin Filter is unchanged.
+The file-operation engine continues using the existing MXF/OMF readers and
+projections to verify identities on opened files. This organization preserves
+those consumers while isolating the scanner being replaced.
+
+[Bella](../Project%20Bella/README.md) is a new, independent C++17 / Qt 6.5.3
+scanner/parser. Its requirements review must finish before reader implementation.
+`src/bella/` is reserved and has no parser code or target. Do not patch OldScanner
+into Bella. The app stays on OldScanner until the user approves the switch.
 
 | Component | Role |
 | --- | --- |
@@ -23,8 +35,8 @@ namespace `MediaEngine`.
 | `MediaScanStamp` / `OpScanReceipt` | Current path/time/volume claims and optional frozen header/database safety conclusions used by live operations. |
 | `ScanRowLookup` | Scoped path lookup of header outcomes and change/skipped flags used during row preparation. Owns no scan or parsed-source data. |
 
-The two build targets, `mediamuster_mediaengine_core` and
-`mediamuster_mediaengine`, are parts of this implementation: readers/coordination
+The two build targets, `mediamuster_oldscanner_core` and
+`mediamuster_oldscanner`, are parts of the retained implementation: readers/coordination
 and the public scan entry point. Parser images, unused source graphs, unprojected
 properties and framing details are temporary reading storage. Supported values,
 original observation bytes, alternatives, coverage, source receipts and selection
@@ -86,7 +98,7 @@ scan time and process memory. Reader and projector tests inspect genuine source
 records directly while those inputs are alive; they also check that extracted
 evidence survives the reading storage's lifetime.
 
-Outside this folder, `MediaScanner` owns the background/UI boundary. The
+The `OldScanner` facade owns the background/UI boundary. The
 presentation adapter prepares selected facts for the table and CSV. Table insertion
 stores prepared values without reselecting or projecting metadata. Confirmed
 transfers directly update physical values, field status and destination membership

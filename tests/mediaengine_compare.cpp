@@ -2,9 +2,9 @@
 // and measures scan time/RAM before producing proof hashes and CSV rows.
 // Only the requested report and CSV are written.
 #include "mediaenginefingerprint.h"
-#include "mediaengine/scanengine.h"
-#include "mediaengine/discoveryengine.h"
-#include "mediaengineadapter.h"
+#include "oldscanner/mediaengine/scanengine.h"
+#include "oldscanner/mediaengine/discoveryengine.h"
+#include "oldscanner/mediaengineadapter.h"
 #include "mediacsv.h"
 #include <QCommandLineParser>
 #include <QCoreApplication>

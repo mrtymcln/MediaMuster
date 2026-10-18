@@ -1,8 +1,8 @@
 // Authored in-memory typed Bento specimens characterize F17/F21 boundaries.
 // No genuine-format certification or real-media I/O is performed.
 
-#include "mediaengine/projection.h"
-#include "mediaengine/mdbreader.h"
+#include "oldscanner/mediaengine/projection.h"
+#include "oldscanner/mediaengine/mdbreader.h"
 #include "testmediaenginebento.h"
 
 #include <QBuffer>

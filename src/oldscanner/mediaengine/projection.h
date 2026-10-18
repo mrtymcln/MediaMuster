@@ -3,7 +3,7 @@
 // Projects source properties into temporary file/master observations. Their
 // evidence owns the required bytes and source references after reader storage is released.
 
-#include "scanmodel.h"
+#include "mediaengine/scanmodel.h"
 #include "mediaduration.h"
 #include <initializer_list>
 

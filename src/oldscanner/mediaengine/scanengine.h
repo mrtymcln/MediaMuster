@@ -3,7 +3,7 @@
 // Returns working metadata and source receipts; retains no scan state.
 // The coordinator handles discovery, scheduling, matching and selection.
 
-#include "mediaengine/scancoordinator.h"
+#include "oldscanner/mediaengine/scancoordinator.h"
 
 namespace MediaEngine
 {

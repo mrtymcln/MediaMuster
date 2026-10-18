@@ -1,12 +1,12 @@
 #pragma once
 
-// Reads OMF's Bento contents list and preserves recorded values.
-// Property interpretation and display selection belong to later stages.
+// Reads MDB's Bento contents list independently of OMF media.
+// Property meanings belong to mdbobjects_p.
 
-#include "scanmodel.h"
+#include "mediaengine/scanmodel.h"
 #include <QIODevice>
 
-namespace MediaEngine::Detail
+namespace MediaEngine::MdbDetail
 {
 	struct BentoValue
 	{
@@ -20,7 +20,7 @@ namespace MediaEngine::Detail
 		QVector<ByteRange> tocRanges;
 		PropertyReadState state = PropertyReadState::NotRead;
 		QString problem;
-		bool bytesRetained = true; // Internal extents and optional media payloads stay as ranges.
+		bool bytesRetained = true; // Internal container extents stay as ranges.
 	};
 
 	struct BentoReadResult
@@ -33,12 +33,5 @@ namespace MediaEngine::Detail
 		QStringList diagnostics;
 	};
 
-	struct BentoReadOptions
-	{
-		bool metadataOnly = false; // Keep known essence as ranges; read descriptor summaries.
-		qint64 labelOffset = -1;   // Absolute file offset; -1 means the final 24 bytes.
-	};
-
-	BentoReadResult readBento(QIODevice &source, const Cancellation &cancellation,
-							  const BentoReadOptions &options = {});
+	BentoReadResult readBento(QIODevice &source, const Cancellation &cancellation);
 }

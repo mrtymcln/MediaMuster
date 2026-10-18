@@ -4,7 +4,7 @@
 // private stage names known properties and follows local references; it does
 // not decide which package owns a file or which value the UI should show.
 
-#include "scanmodel.h"
+#include "mediaengine/scanmodel.h"
 
 namespace MediaEngine::Detail
 {

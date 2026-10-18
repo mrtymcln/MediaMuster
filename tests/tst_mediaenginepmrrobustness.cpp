@@ -5,8 +5,8 @@
 #include <QSet>
 #include <algorithm>
 #include <cstring>
-#include "mediaengine/discoveryengine.h"
-#include "mediaengine/pmrreader.h"
+#include "oldscanner/mediaengine/discoveryengine.h"
+#include "oldscanner/mediaengine/pmrreader.h"
 
 namespace
 {

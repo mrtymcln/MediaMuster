@@ -2,8 +2,8 @@
 // OMF video and Avid WAV/AIF files exercise relationships and deferred samples
 // without loading or linking an MDB reader.
 
-#include "mediaengine/omfreader.h"
-#include "mediaengine/projection.h"
+#include "oldscanner/mediaengine/omfreader.h"
+#include "oldscanner/mediaengine/projection.h"
 
 #include <QFile>
 #include <QSet>

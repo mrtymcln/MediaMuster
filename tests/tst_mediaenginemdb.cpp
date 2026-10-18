@@ -2,8 +2,8 @@
 // and genuine Avid databases. The expectations come from their recorded
 // bytes; the production MDB parser is not used as an oracle.
 
-#include "mediaengine/mdbreader.h"
-#include "mediaengine/mdbbentoreader_p.h"
+#include "oldscanner/mediaengine/mdbreader.h"
+#include "oldscanner/mediaengine/mdbbentoreader_p.h"
 #include "testmediaenginebento.h"
 
 #include <QBuffer>

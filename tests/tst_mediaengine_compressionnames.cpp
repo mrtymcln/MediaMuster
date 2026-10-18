@@ -1,6 +1,6 @@
 // Naming controls use established labels and Avid operating points. These are
 // authored inputs to the shared formatter, not claims about binary parsing.
-#include "mediaengine/compressionnames_p.h"
+#include "oldscanner/mediaengine/compressionnames_p.h"
 
 #include <QTest>
 

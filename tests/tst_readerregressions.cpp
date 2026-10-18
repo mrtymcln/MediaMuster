@@ -1,12 +1,12 @@
 // Genuine Avid database/header joins. Read each source independently and verify
 // matching identities, shared facts and explicitly recorded differences.
 // No source is an oracle for another source's bytes or clock.
-#include "mediaengine/mdbreader.h"
-#include "mediaengine/mxfreader.h"
-#include "mediaengine/omfreader.h"
-#include "mediaengine/pmrreader.h"
-#include "mediaengine/projection.h"
-#include "mediaengine/scancoordinator.h"
+#include "oldscanner/mediaengine/mdbreader.h"
+#include "oldscanner/mediaengine/mxfreader.h"
+#include "oldscanner/mediaengine/omfreader.h"
+#include "oldscanner/mediaengine/pmrreader.h"
+#include "oldscanner/mediaengine/projection.h"
+#include "oldscanner/mediaengine/scancoordinator.h"
 #include "pmrkey.h"
 #include <QDir>
 #include <QFile>

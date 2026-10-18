@@ -5,7 +5,7 @@
 // uncertainty without choosing a physical file or a displayed value.
 
 #include "omfbentoreader_p.h"
-#include "sourcereader.h"
+#include "mediaengine/sourcereader.h"
 
 namespace MediaEngine::Detail
 {

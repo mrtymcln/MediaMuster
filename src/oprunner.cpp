@@ -3,10 +3,10 @@
 #include "conventions.h"
 #include "mobid.h"
 #include "opscanreceipt.h"
-#include "mediaengine/mxfreader.h"
-#include "mediaengine/omfreader.h"
-#include "mediaengine/projection.h"
-#include "mediaengine/scancoordinator.h"
+#include "oldscanner/mediaengine/mxfreader.h"
+#include "oldscanner/mediaengine/omfreader.h"
+#include "oldscanner/mediaengine/projection.h"
+#include "oldscanner/mediaengine/scancoordinator.h"
 #include "pathkey.h"
 #include <QDateTime>
 #include <QDir>

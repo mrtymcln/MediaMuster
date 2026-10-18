@@ -4,8 +4,8 @@
 // Lists retain their recorded order; only unordered map keys are sorted. Pointer
 // IDs describe alias topology without depending on allocator addresses.
 
-#include "mediaengine/projection.h"
-#include "mediaengine/scancoordinator.h"
+#include "oldscanner/mediaengine/projection.h"
+#include "oldscanner/mediaengine/scancoordinator.h"
 #include <QCryptographicHash>
 #include <QDataStream>
 #include <QIODevice>

@@ -2,9 +2,9 @@
 #include <QBuffer>
 #include <QFile>
 #include <QtEndian>
-#include "mediaengine/pmrreader.h"
-#include "mediaengine/discoveryengine.h"
-#include "mediaengine/projection.h"
+#include "oldscanner/mediaengine/pmrreader.h"
+#include "oldscanner/mediaengine/discoveryengine.h"
+#include "oldscanner/mediaengine/projection.h"
 
 namespace
 {

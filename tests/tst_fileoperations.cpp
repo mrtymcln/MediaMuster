@@ -8,10 +8,10 @@
 #include "operationplan.h"
 #include "operationrecovery.h"
 #include "optrash.h"
-#include "mediaengine/mxfreader.h"
-#include "mediaengine/omfreader.h"
-#include "mediaengine/projection.h"
-#include "mediaengine/scancoordinator.h"
+#include "oldscanner/mediaengine/mxfreader.h"
+#include "oldscanner/mediaengine/omfreader.h"
+#include "oldscanner/mediaengine/projection.h"
+#include "oldscanner/mediaengine/scancoordinator.h"
 #include <QTest>
 #include <QSignalSpy>
 #include <QRegularExpression>

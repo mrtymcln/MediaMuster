@@ -1,8 +1,8 @@
 // Prepares exact media roots, owns the background scan and forwards results.
 // MediaEngine owns source reading, matching and temporary working scan evidence.
-#include "mediascanner.h"
-#include "mediaengine/scanengine.h"
-#include "mediaengineadapter.h"
+#include "oldscanner/oldscanner.h"
+#include "oldscanner/mediaengine/scanengine.h"
+#include "oldscanner/mediaengineadapter.h"
 #include "app_avidmedialayout.h"
 #include "conventions.h"
 #include "testpause.h"
@@ -73,7 +73,7 @@ namespace
 	}
 }
 
-struct MediaScanner::FolderList
+struct OldScanner::FolderList
 {
 	struct MediaRoot
 	{
@@ -85,12 +85,12 @@ struct MediaScanner::FolderList
 	QVector<MediaRoot> contexts;
 };
 
-MediaScanner::MediaScanner(QObject *parent)
+OldScanner::OldScanner(QObject *parent)
 	: QObject(parent)
 {
 }
 
-std::optional<MediaScanner::Location> MediaScanner::addedLocation(const QString &requestedPath)
+std::optional<OldScanner::Location> OldScanner::addedLocation(const QString &requestedPath)
 {
 	if (requestedPath.isEmpty())
 		return std::nullopt;
@@ -125,7 +125,7 @@ std::optional<MediaScanner::Location> MediaScanner::addedLocation(const QString 
 	return std::nullopt;
 }
 
-MediaScanner::Location MediaScanner::rescanLocation(const QString &requestedPath)
+OldScanner::Location OldScanner::rescanLocation(const QString &requestedPath)
 {
 	QString path = requestedPath.isEmpty() ? QString{} : QDir::cleanPath(QDir::fromNativeSeparators(requestedPath));
 	if (AvidMediaLayout::isMxfRoot(path))
@@ -134,7 +134,7 @@ MediaScanner::Location MediaScanner::rescanLocation(const QString &requestedPath
 	return {tree ? Location::Kind::MediaTree : Location::Kind::RequiredMediaBase, path};
 }
 
-void MediaScanner::startScan(const Options &options)
+void OldScanner::startScan(const Options &options)
 {
 	{
 		const std::lock_guard<std::mutex> lock(m_stateMutex);
@@ -194,13 +194,13 @@ void MediaScanner::startScan(const Options &options)
 		QMetaObject::invokeMethod(this, [this, failure] { publishFailure(failure); }, Qt::QueuedConnection); });
 }
 
-void MediaScanner::checkpoint(Checkpoint phase, qsizetype row)
+void OldScanner::checkpoint(Checkpoint phase, qsizetype row)
 {
 	if (m_testCheckpoint)
 		m_testCheckpoint(phase, row);
 }
 
-void MediaScanner::publishCompletion(ScanCompletion completion)
+void OldScanner::publishCompletion(ScanCompletion completion)
 {
 	checkpoint(Checkpoint::BeforePublication, completion.rows.size());
 	{
@@ -232,7 +232,7 @@ void MediaScanner::publishCompletion(ScanCompletion completion)
 	emit scanIssuesFinished(completion.issues);
 }
 
-void MediaScanner::publishFailure(const QString &message)
+void OldScanner::publishFailure(const QString &message)
 {
 	{
 		const std::lock_guard<std::mutex> lock(m_stateMutex);
@@ -241,7 +241,7 @@ void MediaScanner::publishFailure(const QString &message)
 	reportFailure(message);
 }
 
-void MediaScanner::reportFailure(const QString &message)
+void OldScanner::reportFailure(const QString &message)
 {
 	const QString module = QStringLiteral("scanner");
 	Diagnostics::appendConsoleLine(QtCriticalMsg, module, message);
@@ -249,7 +249,7 @@ void MediaScanner::reportFailure(const QString &message)
 	emit scanFailed(message);
 }
 
-bool MediaScanner::cancelScan()
+bool OldScanner::cancelScan()
 {
 	const std::lock_guard<std::mutex> lock(m_stateMutex);
 	if (m_state != ScanState::Active && m_state != ScanState::CancelRequested)
@@ -259,7 +259,7 @@ bool MediaScanner::cancelScan()
 	return true;
 }
 
-MediaScanner::FolderList MediaScanner::buildFolderList(const MediaEngine::Cancellation &cancellation)
+OldScanner::FolderList OldScanner::buildFolderList(const MediaEngine::Cancellation &cancellation)
 {
 	MediaEngine::ScanRequest request;
 	QVector<FolderList::MediaRoot> contexts;
@@ -364,7 +364,7 @@ MediaScanner::FolderList MediaScanner::buildFolderList(const MediaEngine::Cancel
 	return {std::move(request), std::move(contexts)};
 }
 
-MediaScanner::ScanCompletion MediaScanner::doScan()
+OldScanner::ScanCompletion OldScanner::doScan()
 {
 	QElapsedTimer timer;
 	timer.start();

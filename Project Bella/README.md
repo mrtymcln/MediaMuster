@@ -11,6 +11,13 @@ comparison with the installed MDVx executable.
 
 - The new effort is called **Bella**.
 - The user requested starting again with the scanner and parser.
+- Build Bella as a new, independent scanner/parser using C++17 and the project's
+  pinned Qt 6.5.3 building blocks. Do not modify, adapt or rename the existing
+  scanner/parser into Bella. Clarified 18 October 2026.
+- Isolate the existing implementation as **OldScanner**, keeping it active in
+  the app until the user explicitly approves switching to Bella. The isolation
+  changes its organization and entry-point name, not its scanning behavior.
+  Clarified 18 October 2026.
 - Review requirements first: agree what Bella must find, read and keep before
   designing it. Chosen 18 October 2026.
 - List every supported physical media file, including files absent from databases
@@ -34,11 +41,36 @@ comparison with the installed MDVx executable.
   coordination. C++20/23-only examples in the attachment do not change the
   project's language standard. Requested 18 October 2026.
 
-The current app still uses MediaEngine. Its implementation and genuine-media
-fixtures provide references for reviewing behavior and comparing a replacement.
-Bella has no runtime implementation yet.
+The current app uses [OldScanner](../src/oldscanner/README.md). Its existing
+MediaEngine readers and genuine-media fixtures provide references for reviewing
+behavior and comparing a replacement. They do not supply Bella's implementation.
+The [Bella source folder](../src/bella/README.md) is reserved, with no runtime
+implementation or build target yet.
 The requested examination of an exact MDVx-style PMR scanner/parser is hypothetical;
 it does not yet choose all of MDVx's format and behavior limitations for Bella.
+
+## Approved staging
+
+Confirmed by the user on 18 October 2026:
+
+1. Move the current scanner facade, presentation adapter and media-scanning
+   engine into `src/oldscanner/`. Name the active facade `OldScanner`.
+   Its existing internal `MediaEngine` namespace remains in place.
+2. Keep Bin Filter, its AVB reader/reference resolver and their shared reading
+   types outside this move at `src/mediaengine/`. The file-operation engine
+   continues using the existing media readers for live identity verification.
+3. **Finish the requirements review first.** The next source review is MDB;
+   do not start Bella reader/parser code while that review is unfinished.
+4. Build Bella independently after the required decisions are agreed. Use
+   compact value records, scoped ownership, checked reads and clear lifetimes
+   within C++17 and Qt 6.5.3. The attached C++ guidance applies within those
+   versions, rather than introducing C++20/23-only facilities.
+5. Keep the app on OldScanner during Bella's development and comparison.
+   Switching the app to Bella requires the user's explicit approval.
+
+OldScanner is the retained implementation, not a foundation to patch into the
+Bella requirements. Its existing behavior remains the app's behavior until that
+approved switch. Bella's approved PMR rules below describe the future replacement.
 
 ## Requirements review
 
@@ -213,7 +245,7 @@ temporary data structures.
 The current header-read checklist requires usable applicable metadata before
 skipping a media header. Missing Source Path can request a read; missing Original
 Bin alone does not request MXF reading. See the
-[current checklist](../src/mediaengine/scancoordinator.cpp) and
+[current checklist](../src/oldscanner/mediaengine/scancoordinator.cpp) and
 [field reference](../Project%20Copland/metadata-reference.md). Deciding to retain
 a displayed field and deciding whether its absence must trigger another read are
 separate requirements choices.
@@ -282,10 +314,10 @@ rules should be reviewed separately. OMF/WAV/AIFF remain in Bella's agreed scope
 their individual capability review follows the same approach.
 
 Implementation references:
-[PMR record projection](../src/mediaengine/pmrprojection.cpp),
-[MDB projection](../src/mediaengine/mdbprojection.cpp),
-[MXF projection](../src/mediaengine/mxfprojection.cpp),
-[effect derivation](../src/mediaengine/projection.cpp), and the
+[PMR record projection](../src/oldscanner/mediaengine/pmrprojection.cpp),
+[MDB projection](../src/oldscanner/mediaengine/mdbprojection.cpp),
+[MXF projection](../src/oldscanner/mediaengine/mxfprojection.cpp),
+[effect derivation](../src/oldscanner/mediaengine/projection.cpp), and the
 [metadata reference](../Project%20Copland/metadata-reference.md).
 
 ## Starting references

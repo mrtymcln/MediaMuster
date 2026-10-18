@@ -1,7 +1,7 @@
 // Authored in-memory MXF packets characterize the F09/F10 type-width boundary.
 // Controls compare valid widths; no genuine-format certification is implied.
 
-#include "mediaengine/mxfreader.h"
+#include "oldscanner/mediaengine/mxfreader.h"
 
 #include <QBuffer>
 #include <QJsonDocument>

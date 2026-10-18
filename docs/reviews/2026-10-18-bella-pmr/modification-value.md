@@ -96,9 +96,9 @@ require converting DTM into a date or retaining it in final results.
 
 Current MediaMuster reads the raw number temporarily but does not select it as
 a timestamp. Its dates and operation checks use the physical filesystem's
-information. See [PMR reading](../../../src/mediaengine/pmrreader.cpp#L305),
-[projection](../../../src/mediaengine/pmrprojection.cpp#L40),
-[date selection](../../../src/mediaengine/metadataselectionpolicy.cpp#L164) and
+information. See [PMR reading](../../../src/oldscanner/mediaengine/pmrreader.cpp#L305),
+[projection](../../../src/oldscanner/mediaengine/pmrprojection.cpp#L40),
+[date selection](../../../src/oldscanner/mediaengine/metadataselectionpolicy.cpp#L164) and
 [operation checks](../../../src/opfile.cpp#L145).
 
 **User decision, 18 October 2026:** Bella's scanner and related parsers will
@@ -168,7 +168,7 @@ every internal storage detail. Current MediaMuster formats dotted hexadecimal
 strings; compact binary storage has not been implemented for Bella.
 
 There is a specific implementation check to resolve when writing the new reader:
-the current [database-ID helper](../../../src/mediaengine/projection.cpp#L59)
+the current [database-ID helper](../../../src/oldscanner/mediaengine/projection.cpp#L59)
 adjusts 8/12-byte big-endian values but passes 32-byte values through unchanged.
 Native `Read_AAFMobID`, libame `0x235bf0`, instead reads the material's numeric
 fields through the stream's scalar readers, which apply numeric byte swapping.

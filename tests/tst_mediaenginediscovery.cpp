@@ -1,5 +1,5 @@
-#include "mediaengine/discoveryengine.h"
-#include "mediaengine/discoveryengine_p.h"
+#include "oldscanner/mediaengine/discoveryengine.h"
+#include "oldscanner/mediaengine/discoveryengine_p.h"
 #include "mediaengine/sourcereader.h"
 #include <QDir>
 #include <QFile>

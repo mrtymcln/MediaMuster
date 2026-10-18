@@ -3,7 +3,7 @@
 // Turns filesystem results into evidence, distinguishing unavailable values
 // from properties that have not been checked.
 
-#include "scanmodel.h"
+#include "mediaengine/scanmodel.h"
 
 namespace MediaEngine::Detail
 {

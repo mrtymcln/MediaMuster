@@ -5,7 +5,7 @@
 #include "omfreader.h"
 #include "audioreader_p.h"
 #include "omfobjects_p.h"
-#include "sourcestorage_p.h"
+#include "mediaengine/sourcestorage_p.h"
 
 #include <QSet>
 #include <array>

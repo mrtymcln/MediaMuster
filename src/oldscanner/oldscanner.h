@@ -21,7 +21,7 @@ struct LogMessage
 	QString message;
 };
 
-class MediaScanner : public QObject
+class OldScanner : public QObject
 {
 	Q_OBJECT
 public:
@@ -44,8 +44,8 @@ public:
 		QVector<Location> locations;
 		bool includeOmf = false;
 	};
-	explicit MediaScanner(QObject *parent = nullptr);
-	~MediaScanner() override { m_job.shutdown(); }
+	explicit OldScanner(QObject *parent = nullptr);
+	~OldScanner() override { m_job.shutdown(); }
 	/// Strict Add Folder/drop admission; independent of the OMF build setting.
 	static std::optional<Location> addedLocation(const QString &path);
 	/// Trusted operation scope; normalizes known tree roots without filesystem I/O.

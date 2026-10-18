@@ -2,11 +2,11 @@
 // reader output. Authored byte controls below exercise acquisition failures only;
 // they do not make claims about PMR or MDB framing.
 
-#include "mediaengine/databaseimage.h"
-#include "mediaengine/databasesource.h"
-#include "mediaengine/mdbreader.h"
-#include "mediaengine/pmrreader.h"
-#include "mediaengine/scancoordinator.h"
+#include "oldscanner/mediaengine/databaseimage.h"
+#include "oldscanner/mediaengine/databasesource.h"
+#include "oldscanner/mediaengine/mdbreader.h"
+#include "oldscanner/mediaengine/pmrreader.h"
+#include "oldscanner/mediaengine/scancoordinator.h"
 #include "mediaenginefingerprint.h"
 
 #include <QBuffer>

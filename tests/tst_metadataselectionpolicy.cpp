@@ -1,6 +1,6 @@
 // Shared preferences select from qualified evidence without changing the source
 // observations. Authored values exercise policy choices, not format correctness.
-#include "mediaengine/metadataselectionpolicy.h"
+#include "oldscanner/mediaengine/metadataselectionpolicy.h"
 
 #include <QTest>
 #include <stdexcept>

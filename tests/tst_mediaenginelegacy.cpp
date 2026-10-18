@@ -2,9 +2,9 @@
 // authored containers. Large sample ranges are guarded so metadata-only reads
 // cannot accidentally pass by copying the audio or video into memory.
 
-#include "mediaengine/omfreader.h"
-#include "mediaengine/projection.h"
-#include "mediaengine/audioreader_p.h"
+#include "oldscanner/mediaengine/omfreader.h"
+#include "oldscanner/mediaengine/projection.h"
+#include "oldscanner/mediaengine/audioreader_p.h"
 #include "mediaenginefingerprint.h"
 #include "testmediaenginebento.h"
 

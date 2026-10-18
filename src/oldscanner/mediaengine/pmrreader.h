@@ -3,7 +3,7 @@
 // Reads the records in a PMR database, keeping their original evidence.
 // Later stages associate those records with physical files and choose display values.
 
-#include "sourcereader.h"
+#include "mediaengine/sourcereader.h"
 
 namespace MediaEngine
 {

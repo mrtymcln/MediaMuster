@@ -3,8 +3,9 @@
 ## Start here
 
 - [Project Bella](../Project%20Bella/README.md): fresh scanner and parser effort;
-  requirements and implementation choices are being agreed. The current app still
-  uses MediaEngine.
+  finish requirements before implementing new C++17 / Qt 6.5.3 code. The current
+  app uses [OldScanner](../src/oldscanner/README.md) until an explicitly approved
+  switch to Bella. Bin Filter stays unchanged.
 - [Project Copland](../Project%20Copland/README.md): active V1 scope, confirmed
   decisions and remaining work. Proposals and open questions are not approval.
 - [How MediaMuster works](current-behaviour.md): current behaviour in plain English,

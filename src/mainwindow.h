@@ -3,7 +3,7 @@
 #include "managemediadialog.h"
 #include "mediafile.h"
 #include "mediafilterproxy.h"
-#include "mediascanner.h"
+#include "oldscanner/oldscanner.h"
 #include "mediatablemodel.h"
 #include "fileoperationcontroller.h"
 #include "volumelistwidget.h"
@@ -99,7 +99,7 @@ private:
 	void setupConnections();
 	void scanListedPaths(const QStringList &paths);
 	void rescanPaths(const QStringList &paths);
-	void startScan(const QVector<MediaScanner::Location> &locations);
+	void startScan(const QVector<OldScanner::Location> &locations);
 	void addLog(QtMsgType level, const QString &module, const QString &message);
 
 	/// Adapt the selected media rows to the controller's request format.
@@ -165,7 +165,7 @@ private:
 	// MARK: - Owned services
 
 	VolumeManager *m_volumeManager;
-	MediaScanner *m_scanner;
+	OldScanner *m_scanner;
 	FileOperationController *m_operations;
 
 	MediaTableModel *m_model;
@@ -228,7 +228,7 @@ private:
 	/// Paths found by the last startup/Refresh detection; empty is a valid result.
 	QStringList m_detectedVolumePaths;
 	/// Session-only manual paths and their admitted tree/base meaning.
-	QHash<QString, MediaScanner::Location::Kind> m_manualVolumes;
+	QHash<QString, OldScanner::Location::Kind> m_manualVolumes;
 
 	// MARK: - Selection persistence
 

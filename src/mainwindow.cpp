@@ -175,7 +175,7 @@ namespace
 MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	: QMainWindow(parent),
 	  m_volumeManager(new VolumeManager(this)),
-	  m_scanner(new MediaScanner(this)),
+	  m_scanner(new OldScanner(this)),
 	  m_operations(new FileOperationController(this)),
 	  m_model(new MediaTableModel(this)),
 	  m_proxy(new MediaFilterProxy(this))
@@ -704,19 +704,19 @@ void MainWindow::onAbout()
 
 void MainWindow::setupConnections()
 {
-	connect(m_scanner, &MediaScanner::scanDiscovering, this, &MainWindow::onScanDiscovering,
+	connect(m_scanner, &OldScanner::scanDiscovering, this, &MainWindow::onScanDiscovering,
 			Qt::QueuedConnection);
-	connect(m_scanner, &MediaScanner::scanProgress, this, &MainWindow::onScanProgress,
+	connect(m_scanner, &OldScanner::scanProgress, this, &MainWindow::onScanProgress,
 			Qt::QueuedConnection);
-	connect(m_scanner, &MediaScanner::scanLogBatch, this, &MainWindow::onScanLogBatch,
+	connect(m_scanner, &OldScanner::scanLogBatch, this, &MainWindow::onScanLogBatch,
 			Qt::QueuedConnection);
-	connect(m_scanner, &MediaScanner::scanIssuesFinished, m_model, &MediaTableModel::setScanIssues, Qt::QueuedConnection);
-	connect(m_scanner, &MediaScanner::scanFinished, this, &MainWindow::onScanFinished,
+	connect(m_scanner, &OldScanner::scanIssuesFinished, m_model, &MediaTableModel::setScanIssues, Qt::QueuedConnection);
+	connect(m_scanner, &OldScanner::scanFinished, this, &MainWindow::onScanFinished,
 			Qt::QueuedConnection);
-	connect(m_scanner, &MediaScanner::scanFailed, this, &MainWindow::onScanFailed,
+	connect(m_scanner, &OldScanner::scanFailed, this, &MainWindow::onScanFailed,
 			Qt::QueuedConnection);
 	connect(
-		m_scanner, &MediaScanner::scanFinalising, this,
+		m_scanner, &OldScanner::scanFinalising, this,
 		[this]
 		{
 			// Show finalisation separately so a slow finish doesn't look stuck at 100%.
@@ -1200,7 +1200,7 @@ void MainWindow::onPathsDropped(const QStringList &paths)
 
 void MainWindow::addVolumePath(const QString &requestedPath)
 {
-	const auto location = MediaScanner::addedLocation(requestedPath);
+	const auto location = OldScanner::addedLocation(requestedPath);
 	if (!location)
 	{
 		const QString message = tr("Please add an Avid MediaFiles or OMFI MediaFiles folder, or a drive containing them at its root.");
@@ -1263,7 +1263,7 @@ void MainWindow::rebuildVolumeList(const QVector<VolumeInfo> &volumes)
 	manualPaths.sort();
 	for (const QString &path : manualPaths)
 	{
-		const auto location = MediaScanner::addedLocation(path);
+		const auto location = OldScanner::addedLocation(path);
 		if (!location)
 			continue;
 		m_manualVolumes.insert(path, location->kind);
@@ -1328,33 +1328,33 @@ void MainWindow::scanEverything()
 
 void MainWindow::scanListedPaths(const QStringList &paths)
 {
-	QVector<MediaScanner::Location> locations;
+	QVector<OldScanner::Location> locations;
 	for (const auto &path : paths)
-		locations.append({m_manualVolumes.value(path, MediaScanner::Location::Kind::MediaBase), path});
+		locations.append({m_manualVolumes.value(path, OldScanner::Location::Kind::MediaBase), path});
 	startScan(locations);
 }
 
 void MainWindow::rescanPaths(const QStringList &paths)
 {
-	QVector<MediaScanner::Location> locations;
+	QVector<OldScanner::Location> locations;
 	for (const auto &path : paths)
 	{
 		const auto manual = m_manualVolumes.constFind(path);
 		if (manual != m_manualVolumes.cend())
 			locations.append({manual.value(), path});
 		else if (m_detectedVolumePaths.contains(path))
-			locations.append({MediaScanner::Location::Kind::MediaBase, path});
+			locations.append({OldScanner::Location::Kind::MediaBase, path});
 		else
-			locations.append(MediaScanner::rescanLocation(path));
+			locations.append(OldScanner::rescanLocation(path));
 	}
 	startScan(locations);
 }
 
-void MainWindow::startScan(const QVector<MediaScanner::Location> &locations)
+void MainWindow::startScan(const QVector<OldScanner::Location> &locations)
 {
 	if (!m_operations->isIdle() || locations.isEmpty())
 		return;
-	MediaScanner::Options opts;
+	OldScanner::Options opts;
 	opts.includeOmf = m_omfScanEnabled;
 	opts.locations = locations;
 

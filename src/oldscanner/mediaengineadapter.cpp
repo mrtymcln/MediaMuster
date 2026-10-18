@@ -1,5 +1,5 @@
-#include "mediaengineadapter.h"
-#include "mediaengine/projection.h"
+#include "oldscanner/mediaengineadapter.h"
+#include "oldscanner/mediaengine/projection.h"
 #include <QFileInfo>
 #include <QStorageInfo>
 #include <QDir>

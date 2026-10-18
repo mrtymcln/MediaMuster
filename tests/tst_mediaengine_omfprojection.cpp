@@ -1,9 +1,9 @@
 // Independent object graphs establish ownership and arithmetic expectations.
 // Genuine fixtures then exercise the reader and projector together.
 
-#include "mediaengine/projection.h"
-#include "mediaengine/mdbreader.h"
-#include "mediaengine/omfreader.h"
+#include "oldscanner/mediaengine/projection.h"
+#include "oldscanner/mediaengine/mdbreader.h"
+#include "oldscanner/mediaengine/omfreader.h"
 #include "testmediaenginebento.h"
 #include "testtypedbento.h"
 

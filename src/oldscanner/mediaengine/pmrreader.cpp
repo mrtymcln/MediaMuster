@@ -2,7 +2,7 @@
 // byte-reading, text-decoding and layout checks.
 
 #include "pmrreader.h"
-#include "sourcestorage_p.h"
+#include "mediaengine/sourcestorage_p.h"
 
 #include <QByteArrayView>
 #include <QStringDecoder>

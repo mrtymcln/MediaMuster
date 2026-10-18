@@ -1,8 +1,8 @@
 // Authored post-reader graphs check F06/F07 reference and identity selection.
 // This diagnostic reports observations; it does not certify genuine MXF files.
 
-#include "mediaengine/projection.h"
-#include "mediaengine/scancoordinator.h"
+#include "oldscanner/mediaengine/projection.h"
+#include "oldscanner/mediaengine/scancoordinator.h"
 
 #include <QJsonDocument>
 #include <QJsonObject>

@@ -1,8 +1,8 @@
 // Independent authored graphs test ownership and semantics; reader tests cover binary framing.
 
-#include "mediaengine/projection.h"
-#include "mediaengine/mxfreader.h"
-#include "mediaengine/scancoordinator.h"
+#include "oldscanner/mediaengine/projection.h"
+#include "oldscanner/mediaengine/mxfreader.h"
+#include "oldscanner/mediaengine/scancoordinator.h"
 
 #include <QFile>
 #include <QTest>

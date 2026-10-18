@@ -37,9 +37,9 @@ An undecoded or empty PMR Project can fall back to another eligible source, but
 contradictory usable PMR Project values are not settled by lower-ranked MDB/header
 Project observations. This differs from Media Composer's whole-set preference.
 
-Source references: [version gate](../../../src/mediaengine/pmrreader.cpp),
-[PMR projection](../../../src/mediaengine/pmrprojection.cpp) and
-[text inference](../../../src/mediaengine/projection.cpp), with
+Source references: [version gate](../../../src/oldscanner/mediaengine/pmrreader.cpp),
+[PMR projection](../../../src/oldscanner/mediaengine/pmrprojection.cpp) and
+[text inference](../../../src/oldscanner/mediaengine/projection.cpp), with
 [source-ranked resolution](../../../src/mediaevidence.h). Existing documentation
 previously described a UTF-8/MacRoman heuristic without distinguishing PMR from
 MDB/OMF. The compatibility reference now describes the actual PMR call path.

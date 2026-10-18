@@ -1,8 +1,8 @@
 // This target links only MDB's reader and projector implementations. A genuine
 // database with copied audio summaries proves that OMF media support is optional.
 
-#include "mediaengine/mdbreader.h"
-#include "mediaengine/projection.h"
+#include "oldscanner/mediaengine/mdbreader.h"
+#include "oldscanner/mediaengine/projection.h"
 
 #include <QFile>
 #include <QMap>

@@ -84,68 +84,69 @@ option(MEDIAMUSTER_BUILD_TESTS "Build the MediaMuster test suite" ON)
 ### Pin to Qt version ###
 find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Widgets Core Gui Concurrent)
 
+# OldScanner remains the active implementation until the approved Bella cutover.
 # Keep MDB and OMF implementations separate for isolated reader tests.
-set(MEDIAENGINE_MDB_SOURCES
-    src/mediaengine/mdbreader.cpp
-    src/mediaengine/mdbbentoreader_p.cpp
-    src/mediaengine/mdbobjects_p.cpp
-    src/mediaengine/mdbaudiosummary_p.cpp
-    src/mediaengine/mdbprojection.cpp
+set(OLDSCANNER_MDB_SOURCES
+    src/oldscanner/mediaengine/mdbreader.cpp
+    src/oldscanner/mediaengine/mdbbentoreader_p.cpp
+    src/oldscanner/mediaengine/mdbobjects_p.cpp
+    src/oldscanner/mediaengine/mdbaudiosummary_p.cpp
+    src/oldscanner/mediaengine/mdbprojection.cpp
 )
-set(MEDIAENGINE_OMF_SOURCES
-    src/mediaengine/omfreader.cpp
-    src/mediaengine/omfbentoreader_p.cpp
-    src/mediaengine/omfobjects_p.cpp
-    src/mediaengine/audioreader_p.cpp
-    src/mediaengine/omfprojection.cpp
+set(OLDSCANNER_OMF_SOURCES
+    src/oldscanner/mediaengine/omfreader.cpp
+    src/oldscanner/mediaengine/omfbentoreader_p.cpp
+    src/oldscanner/mediaengine/omfobjects_p.cpp
+    src/oldscanner/mediaengine/audioreader_p.cpp
+    src/oldscanner/mediaengine/omfprojection.cpp
 )
 
-add_library(mediamuster_mediaengine_core STATIC
-    src/mediaengine/discoveryengine.cpp
-    src/mediaengine/pmrreader.cpp
-    ${MEDIAENGINE_MDB_SOURCES}
-    ${MEDIAENGINE_OMF_SOURCES}
-    src/mediaengine/mxfreader.cpp
-    src/mediaengine/mxfobjects_p.cpp
+add_library(mediamuster_oldscanner_core STATIC
+    src/oldscanner/mediaengine/discoveryengine.cpp
+    src/oldscanner/mediaengine/pmrreader.cpp
+    ${OLDSCANNER_MDB_SOURCES}
+    ${OLDSCANNER_OMF_SOURCES}
+    src/oldscanner/mediaengine/mxfreader.cpp
+    src/oldscanner/mediaengine/mxfobjects_p.cpp
     src/mediaengine/avbreader.cpp
     src/mediaengine/avbobjects_p.cpp
     src/mediaengine/avbcomponents_p.cpp
     src/mediaengine/avbdescriptors_p.cpp
     src/mediaengine/avbreferences.cpp
-    src/mediaengine/projection.cpp
-    src/mediaengine/compressionnames_p.cpp
-    src/mediaengine/metadataselectionpolicy.cpp
-    src/mediaengine/metadataselectionpolicy.h
+    src/oldscanner/mediaengine/projection.cpp
+    src/oldscanner/mediaengine/compressionnames_p.cpp
+    src/oldscanner/mediaengine/metadataselectionpolicy.cpp
+    src/oldscanner/mediaengine/metadataselectionpolicy.h
     src/mediaengine/sourcestorage_p.h
-    src/mediaengine/databaseimage.cpp
-    src/mediaengine/databaseimage.h
-    src/mediaengine/databasesource.cpp
-    src/mediaengine/databasesource.h
-    src/mediaengine/mxfsource.cpp
-    src/mediaengine/mxfsource.h
-    src/mediaengine/sourcepreparation.h
-    src/mediaengine/pmrprojection.cpp
-    src/mediaengine/mxfprojection.cpp
-    src/mediaengine/picturegeometry_p.h
-    src/mediaengine/scancoordinator.cpp
+    src/oldscanner/mediaengine/databaseimage.cpp
+    src/oldscanner/mediaengine/databaseimage.h
+    src/oldscanner/mediaengine/databasesource.cpp
+    src/oldscanner/mediaengine/databasesource.h
+    src/oldscanner/mediaengine/mxfsource.cpp
+    src/oldscanner/mediaengine/mxfsource.h
+    src/oldscanner/mediaengine/sourcepreparation.h
+    src/oldscanner/mediaengine/pmrprojection.cpp
+    src/oldscanner/mediaengine/mxfprojection.cpp
+    src/oldscanner/mediaengine/picturegeometry_p.h
+    src/oldscanner/mediaengine/scancoordinator.cpp
     src/effectcatalogue.cpp
     src/mediametadatastatus.cpp
     src/diagnostics.cpp
     src/volumeidentity.cpp
     src/nativefile.cpp
 )
-set_target_properties(mediamuster_mediaengine_core PROPERTIES AUTOMOC OFF)
-target_include_directories(mediamuster_mediaengine_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
-target_link_libraries(mediamuster_mediaengine_core PUBLIC Qt6::Core)
+set_target_properties(mediamuster_oldscanner_core PROPERTIES AUTOMOC OFF)
+target_include_directories(mediamuster_oldscanner_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(mediamuster_oldscanner_core PUBLIC Qt6::Core)
 
 # Public scan entry point; preparation and coordination share the core library.
-add_library(mediamuster_mediaengine STATIC
-    src/mediaengine/scanengine.cpp
-    src/mediaengine/scanengine.h
+add_library(mediamuster_oldscanner STATIC
+    src/oldscanner/mediaengine/scanengine.cpp
+    src/oldscanner/mediaengine/scanengine.h
 )
-set_target_properties(mediamuster_mediaengine PROPERTIES AUTOMOC OFF)
-target_include_directories(mediamuster_mediaengine PUBLIC ${CMAKE_SOURCE_DIR}/src)
-target_link_libraries(mediamuster_mediaengine PUBLIC mediamuster_mediaengine_core Qt6::Core)
+set_target_properties(mediamuster_oldscanner PROPERTIES AUTOMOC OFF)
+target_include_directories(mediamuster_oldscanner PUBLIC ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(mediamuster_oldscanner PUBLIC mediamuster_oldscanner_core Qt6::Core)
 
 message(STATUS "Using Qt6 ${Qt6_VERSION}")
 
@@ -171,8 +172,8 @@ set(SOURCES
     src/revealinfinder.cpp
     src/volumelistwidget.cpp
     src/volumemanager.cpp
-    src/mediascanner.cpp
-    src/mediaengineadapter.cpp
+    src/oldscanner/oldscanner.cpp
+    src/oldscanner/mediaengineadapter.cpp
     src/effectcatalogue.cpp
     src/mediacsv.cpp
     src/volumeidentity.cpp
@@ -245,7 +246,7 @@ target_include_directories(MediaMuster PRIVATE
 )
 
 target_link_libraries(MediaMuster PRIVATE
-    mediamuster_mediaengine
+    mediamuster_oldscanner
     Qt6::Widgets
     Qt6::Core
     Qt6::Gui

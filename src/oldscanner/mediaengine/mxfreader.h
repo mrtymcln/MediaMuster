@@ -4,7 +4,7 @@
 // and original tag mappings survive independently; choosing a clip, descriptor
 // or displayed value belongs to the later metadata engine.
 
-#include "sourcereader.h"
+#include "mediaengine/sourcereader.h"
 
 namespace MediaEngine
 {

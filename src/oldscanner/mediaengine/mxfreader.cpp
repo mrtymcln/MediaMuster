@@ -3,7 +3,7 @@
 // every encountered set and property remains available for later reconciliation.
 
 #include "mxfreader.h"
-#include "sourcestorage_p.h"
+#include "mediaengine/sourcestorage_p.h"
 #include "mxfobjects_p.h"
 
 #include <QHash>

@@ -1,9 +1,9 @@
 // Table row notifications, display values, metadata preparation and transfer safety.
 
-#include "mediaengineadapter.h"
-#include "mediaengine/projection.h"
+#include "oldscanner/mediaengineadapter.h"
+#include "oldscanner/mediaengine/projection.h"
 #include "mediaengine/scanmodel.h"
-#include "mediaengine/scancoordinator.h"
+#include "oldscanner/mediaengine/scancoordinator.h"
 #include "enumutil.h"
 #include "mediafile.h"
 #include "mediacsv.h"

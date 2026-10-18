@@ -4,7 +4,7 @@
 // It preserves competing observations; matching files and choosing table values
 // belong to later stages of the scan.
 
-#include "sourcereader.h"
+#include "mediaengine/sourcereader.h"
 
 namespace MediaEngine
 {

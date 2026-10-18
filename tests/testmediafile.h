@@ -5,9 +5,9 @@
 // Effect names are derived by the real catalogue; display-only labels cannot
 // override the recorded clip-name evidence.
 
-#include "mediaengineadapter.h"
-#include "mediaengine/projection.h"
-#include "mediaengine/scancoordinator.h"
+#include "oldscanner/mediaengineadapter.h"
+#include "oldscanner/mediaengine/projection.h"
+#include "oldscanner/mediaengine/scancoordinator.h"
 #include <optional>
 #include <utility>
 

@@ -2,7 +2,7 @@
 // Real Avid excerpts remain explicitly incomplete files; they still provide usable
 // metadata. Guarded devices catch accidental reads of large essence payloads.
 
-#include "mediaengine/mxfreader.h"
+#include "oldscanner/mediaengine/mxfreader.h"
 
 #include <QBuffer>
 #include <QDir>

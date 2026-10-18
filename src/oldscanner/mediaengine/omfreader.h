@@ -4,7 +4,7 @@
 // including their embedded OMF metadata. Each source keeps its own observations;
 // the reader does not merge media rows or select the table's metadata.
 
-#include "sourcereader.h"
+#include "mediaengine/sourcereader.h"
 
 namespace MediaEngine
 {
