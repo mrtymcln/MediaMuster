@@ -1,0 +1,682 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-27",
+  "timezone": "Australia/Sydney",
+  "status": "All eight initial scanner-workflow decisions resolved. Current progress delivery and numeric timecode Duration order retained;200ms/coalescing and elapsed-time sort declined. New concrete implementation choices still require check-ins. No runtime/cutover.",
+  "instruction": {
+    "source": "Direct human user message",
+    "quote": "Can you make a point, to check-in with ME at every decision. Give me a list of the decisions explained in plain English and the recommendation highlighted. Do not always assume, do not hallucinate - ground yourself in the plan and the codebase every now and then."
+  },
+  "workingAgreement": [
+    "Check in at every new decision, including internal engineering choices.",
+    "Explain options in plain English, highlight the recommendation, give its reason/tradeoff and relevant plan/code evidence.",
+    "Separate approved decisions, observed current behavior, proposals and unknowns.",
+    "Normally one decision at a time; await the answer before dependent implementation.",
+    "Keep approved metadata/result/Cancel rules; revisit only with a stated new reason.",
+    "Read-only evidence gathering may continue while an answer is pending.",
+    "Record each answer before building on it. Recheck current source revision periodically and before relying on implementation claims.",
+    "Do not claim speed/memory improvements without measurements. Bring later concrete choices back instead of assuming a broad policy approves every number, label or layout."
+  ],
+  "headAtReview": "c2cc89e9404fae5f84787c624f14e16d862d68bc",
+  "evidence": {
+    "sourceFiles": [
+      {
+        "path": "src/backgroundjob.h",
+        "bytes": 3062,
+        "sha256": "b4a3488d0ed3cdd917c474e47366a658def978471987df0ece9523d7274bd9c2"
+      },
+      {
+        "path": "src/oldscanner/oldscanner.cpp",
+        "bytes": 18381,
+        "sha256": "9c8d0cb547dc8e8916f928c9988d6cf51a18364e2696143620b1e0bf068f02bb"
+      },
+      {
+        "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+        "bytes": 36110,
+        "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e"
+      },
+      {
+        "path": "src/oldscanner/mediaengine/databaseimage.cpp",
+        "bytes": 3546,
+        "sha256": "4f0d4c9e6c2e06909f63ee8ade22c90d566bc876ccaaa1c7afcf7d126909e662"
+      },
+      {
+        "path": "src/mediafilterproxy.cpp",
+        "bytes": 11470,
+        "sha256": "2c10657c82a6d3456815966664c62ab0b77a29d02a6e514fd865510fe7349e0c"
+      },
+      {
+        "path": "src/mainwindow.cpp",
+        "bytes": 75685,
+        "sha256": "08da8be52c79f5670ddd8e4daa7a94d3c13dc0f93ee9fff747a8796c5d39f693"
+      },
+      {
+        "path": "src/mediacsv.cpp",
+        "bytes": 3609,
+        "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442"
+      },
+      {
+        "path": "src/oldscanner/mediaengine/databasesource.cpp",
+        "bytes": 3136,
+        "sha256": "fe4235c24e024ffd31431c68e01a40626188e1e8ed46d1212f6adad40b84f6b8"
+      },
+      {
+        "path": "src/oldscanner/mediaengine/projection.h",
+        "bytes": 3517,
+        "sha256": "23a73ab8460279016b89602f505a4e2d939271b1a1c3c2f8eff6c5ffa4c30294"
+      },
+      {
+        "path": "src/oldscanner/mediaengine/projection.cpp",
+        "bytes": 10189,
+        "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce"
+      },
+      {
+        "path": "src/mediaengine/scanmodel.h",
+        "bytes": 8066,
+        "sha256": "004f3dfe373e14cd2640521958fb2bfc589f41c23bcc515365ea27c5f1f24187"
+      },
+      {
+        "path": "src/oldscanner/mediaengineadapter.cpp",
+        "bytes": 5202,
+        "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935"
+      },
+      {
+        "path": "src/progressdialog.cpp",
+        "bytes": 3972,
+        "sha256": "354947a2a400b56b88468670796734314593380a49c6838a24a5a6ab83abcf43"
+      },
+      {
+        "path": "src/diagnostics.cpp",
+        "bytes": 8855,
+        "sha256": "e8699c6a6762741b8d2275dc3b50c0ffbbfb447dcc59128f0cec0c3b0e3f9565"
+      },
+      {
+        "path": "src/mediaduration.h",
+        "bytes": 3071,
+        "sha256": "c59928f0d6f4ac92c93ad7a258bbcaf60516da2fd9fed616293b63bb839fafb6"
+      },
+      {
+        "path": "src/mediafile.h",
+        "bytes": 12788,
+        "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3"
+      }
+    ],
+    "reviewedPlan": "Project Bella/README.md",
+    "design": "docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md",
+    "verifiedFindings": [
+      "OldScanner starts one BackgroundJob and calls database reads sequentially in the coordinator loop.",
+      "Separate PMR/MDB maxima retained; user approved max4 source-reading jobs total plus one background organiser/shared reader team on 27 October. Detailed policies remain pending.",
+      "Current shutdown/start join can wait on the calling thread; OS-blocked I/O can delay stop.",
+      "Current coordinator has a bounded changed-source fallback pass.",
+      "Existing log batching/throttled header checkpoints already exist.",
+      "Current Duration sort compares displayed timecode components; elapsed-time sorting was proposed, then declined under decision8.",
+      "Current MDB file/master enrichment is scan-wide; PMR filename matching and NoReference/List status are folder-local. Raw-buffer release and compact-lookup release are different lifetimes."
+    ],
+    "limits": "Source/plan review only; no runtime changes, executed tests, benchmarks, binary or media reads."
+  },
+  "currentPendingDecisions": [],
+  "alreadyAgreed": [
+    "Metadata/text/ID/damage rules and final source priorities/header triggers.",
+    "Separate scanner/parser components and scoped read-once/extract/release.",
+    "Up to four PMR jobs and up to four MDB jobs.",
+    "27 October decision1: at most four source-reading jobs total across PMR, MDB and required media headers.",
+    "27 October decision2: one background organiser with one reusable shared reader team, organiser outside four reader slots.",
+    "27 October decision3: retain required compact matching facts until all files are matched, then release them; raw captures/parser workspace release after extraction.",
+    "27 October decision4: measure and present findings, with no added RAM cap, database-size policy limit or automatic memory controls; prior four-job maximum preserved.",
+    "27 October decision5: report/exclude the changed read; retain physical row/unaffected valid facts and approved fallbacks, leave a fresh source read to manual rescan.",
+    "27 October decision6: responsive safe cleanup; all readers stop/release state before another scan or final app close, with existing partial results preserved.",
+    "27 October decision7: keep current event-driven progress delivery and full warning/path/logging/batching behaviour; no proposed200ms timer/latest-snapshot coalescing.",
+    "27 October decision8: keep current numeric displayed HH/MM/SS/FF Duration sort, equal-display Kind tie order and blank grouping; no elapsed-time key, no new Duration display/export convention.",
+    "Clear old results at start, publish new results at end.",
+    "Keep partial results on Cancel and mark cancelled/incomplete.",
+    "OldScanner remains active; cutover needs explicit approval."
+  ],
+  "futureConcreteCheckIns": [
+    "Any later memory policy change requires a new user decision after the findings have been presented; no control is approved in advance.",
+    "Current progress delivery is approved. Any later timer/coalescing, warning-summary/suppression or retention change requires new evidence and a user decision.",
+    "Uncommon labels and any further presentation/export change.",
+    "Native-audio source layout and other new implementation choices as they arise.",
+    "Acceptance numbers after measured baselines."
+  ],
+  "validation": {
+    "runtimeCodeChanged": false,
+    "testsOrBuildsExecuted": false,
+    "performanceMeasured": false,
+    "localLinksChecked": 437,
+    "missingLocalLinks": 0,
+    "newSourceHashesVerified": 16,
+    "priorSourceHashesVerified": 18,
+    "approvedResultCancelChoicesRetained": true,
+    "pendingEngineeringChoices": 0,
+    "firstQuestionPresented": true,
+    "answerReceived": true,
+    "sourcePriorityRecordsUnmodified": true,
+    "runtimeDiffPaths": [
+      "src/bella/README.md"
+    ],
+    "untrackedRuntimeFiles": [],
+    "gitDiffCheck": "passed",
+    "independentReview": "Final source/plan check confirmed chosen numeric displayed tuple order, equal-display Kind ties, blank grouping and prior zero fixes. Current progress retained. Eight resolved choices are not treated as selecting every recommendation or approving future implementation details. Older active Duration notes aligned.",
+    "agreedEngineeringChoices": 8,
+    "firstAnswer": "Four reads total (Recommended)",
+    "secondAnswer": "One organiser, shared team (Recommended)",
+    "recommendationRevisedFromSourceEvidence": true,
+    "thirdAnswer": "Keep useful notes until all files matched, then release them.",
+    "fourthAnswer": "Lets measure- but no caps or memory controls. Lets just see the findings",
+    "noMemoryCapsOrControlsRecorded": true,
+    "existingFourJobMaximumRetained": true,
+    "fifthAnswer": "Report change; let me rescan (Recommended)",
+    "cancelRequestVsShutdownDistinctionVerified": true,
+    "sixthAnswer": "Responsive safe cleanup (Recommended)",
+    "seventhAnswer": "Keep current progress delivery",
+    "progressTimerDeclined": true,
+    "existingWarningDetailsPreserved": true,
+    "durationExampleArithmeticVerified": true,
+    "eighthAnswer": "Current timecode-number order",
+    "elapsedTimeSortDeclined": true,
+    "initialDecisionRegisterComplete": true,
+    "noDecisionQuestionPending": true,
+    "lastQuestion": "duration_sorting",
+    "earlierDurationNotesAlignedWithDecision8": true
+  },
+  "agreedEngineeringDecisions": [
+    {
+      "id": "combined_read_limit",
+      "title": "How many reads at once?",
+      "recommendation": "Four reads total shared by PMR/MDB/required headers.",
+      "alternative": "Up to four PMRs plus four MDBs together; header allowance decided separately.",
+      "status": "Agreed",
+      "number": 1,
+      "approval": {
+        "date": "2026-10-27",
+        "source": "Direct human answer to asynchronous decision 1",
+        "question": "First decision: should Bella share four reading jobs between PMR, MDB and required media headers, or allow four PMRs plus four MDBs at once? I recommend four total initially to limit competing reads and temporary memory; its speed still needs measuring. If you choose four of each, we would decide the header limit separately.",
+        "answer": "Four reads total (Recommended)",
+        "agreedRule": "Maximum four source-reading jobs total across PMR, MDB and required media headers.",
+        "scope": "Approves the combined source-job ceiling only. Worker organisation, memory admission, lifecycle and other pending choices remain unapproved."
+      }
+    },
+    {
+      "id": "work_organisation",
+      "title": "Who organises the work?",
+      "recommendation": "One background organiser and one reusable shared worker group.",
+      "alternative": "Separate worker groups by format, with no more than four source-reading jobs total across them.",
+      "status": "Agreed",
+      "number": 2,
+      "condition": "Background organiser separate from four source-reader slots; one shared team chosen. Detailed handoff/lifetime/memory policies remain separate decisions.",
+      "approval": {
+        "date": "2026-10-27",
+        "source": "Direct human answer to asynchronous decision 2",
+        "question": "Decision 2: how should Bella organise those four reading jobs? I recommend one background organiser with one shared team of readers: the organiser assigns work and collects results, while the readers handle PMR, MDB or headers. The alternative is separate teams for each format. Both options stay within four reading jobs total; the organiser is separate from those readers. A shared team gives us one place to manage the limit and fewer queues. OldScanner already has one background organiser, but reads databases sequentially.",
+        "answer": "One organiser, shared team (Recommended)",
+        "agreedRule": "One background organiser and one reusable shared reader team, with at most four source-reading jobs total across PMR/MDB/required headers; organiser outside reader slots.",
+        "scope": "Approves work organisation. Does not approve pending compact-lookup lifetime, memory admission, capture/retry, cleanup, progress or Duration sorting policies."
+      }
+    },
+    {
+      "id": "folder_lookup_lifetime",
+      "title": "When to release extracted database information?",
+      "recommendation": "Keep required compact source-qualified file/master facts until all file/header matches and dependent checks finish, then release them.",
+      "alternative": "Investigate earlier release with explicit dependency management, preserving every eligible cross-folder match.",
+      "condition": "Release raw database buffers and parser workspace after extraction as already agreed. Do not discard compact metadata merely because its source folder is finished; do not arbitrarily keep one record per full ID when sources disagree.",
+      "status": "Agreed",
+      "number": 3,
+      "approval": {
+        "date": "2026-10-27",
+        "source": "Direct human instruction following the ELI5 clarification",
+        "statement": "OK understood. Let's lock that in for Bella: keep the useful notes until all files have been matched, then release them. does the app currently work like that? What's the next decision?",
+        "agreedRule": "Keep required compact matching information available until all files have been matched, then release the temporary catalogue. Full database buffers and parser workspace still release after extraction.",
+        "scope": "Approves compact-lookup lifetime. Does not change matching-source eligibility, retain permanent parser graphs/cache, discard required final row/status/operation facts, or approve memory-based scheduling.",
+        "clarificationBeforeApproval": "The earlier reply asking for ELI5 was not approval; the explicit lock-in followed the book/notes explanation."
+      }
+    },
+    {
+      "id": "large_database_scheduling",
+      "title": "What if databases are large?",
+      "recommendation": "Measure and report actual findings without added RAM caps or automatic memory controls; preserve the separately agreed four-job maximum.",
+      "alternative": "Add automatic memory-based admission now; estimates and numerical thresholds still need concrete evidence and a further user decision.",
+      "condition": "No RAM quota, arbitrary database-size policy limit or automatic memory-based reader reduction. Existing type/bounds/extent checks remain; four jobs are not a fixed byte limit. Findings do not authorise a later control.",
+      "status": "Agreed",
+      "number": 4,
+      "approval": {
+        "date": "2026-10-27",
+        "source": "Direct human answer to asynchronous decision4",
+        "question": "Decision 4: should Bella automatically use fewer readers when databases are large? I recommend testing the agreed four-reader design and measuring its memory use first, then bringing you any demonstrated need for extra controls. The alternative is to add automatic memory controls now, with their memory threshold still to be decided. Both options keep the four-job maximum. Four jobs are not a fixed memory limit, and Bella's actual peak memory use is not measured yet.",
+        "answer": "Lets measure- but no caps or memory controls. Lets just see the findings",
+        "agreedRule": "Measure the agreed design and present findings; do not add RAM caps or automatic memory controls.",
+        "scope": "Memory-policy decision only. The existing four-source-job maximum is preserved because the question explicitly retains it in both options; no new approval is implied for later memory controls. Existing parser safety/extent validation remains.",
+        "measurementsAvailable": false,
+        "measurementTiming": "Bella runtime is not implemented yet. Actual Bella measurements follow an executable independent implementation; no findings fabricated from source review."
+      }
+    },
+    {
+      "id": "changed_capture_policy",
+      "title": "What if a file changes during reading?",
+      "recommendation": "Exclude the changed read, report it and allow manual rescan. Keep the physical row and independently valid information; apply only already-approved fallback rules.",
+      "alternative": "Add one fresh retry of the changed source, with recapture/identity safety explicitly defined.",
+      "condition": "An unusable database may permit the agreed header fallback. Changed physical media invalidates facts tied to its earlier identity. Current OldScanner does not reread changed PMR/MDB sources; a fresh retry would be new. Exact change checks are distinct from the ignored PMR DTM.",
+      "status": "Agreed",
+      "number": 5,
+      "approval": {
+        "date": "2026-10-27",
+        "source": "Direct human answer to asynchronous decision5",
+        "question": "Decision 5: if a database or media file changes while Bella is reading it, what should happen? I recommend ignoring that changed read, reporting the change and letting you rescan. The physical file stays listed, and unaffected valid information and our agreed fallbacks can still be used. Alternative: automatically try reading the changed source once more. That might recover a finished update, but adds work and may find another change. OldScanner already excludes changed database data without rereading it.",
+        "answer": "Report change; let me rescan (Recommended)",
+        "agreedRule": "Exclude and report a detected changed read; leave a fresh recapture to manual rescan. Retain the physical row and independently valid facts; apply only previously approved fallback rules.",
+        "scope": "No automatic fresh source retry or new blank-field header trigger. Does not use ignored PMR DTM or change approved same-buffer PMR set fallback. Facts tied to replaced media's earlier identity are not unaffected valid information. Detailed change-check mechanism remains to be specified."
+      }
+    },
+    {
+      "id": "cancel_close_cleanup",
+      "title": "How to wait for Cancel or closing?",
+      "recommendation": "Preserve current responsive Cancel and keep the interface responsive while shared readers stop and cleanup finishes; allow another scan/final app close only after safe cleanup.",
+      "alternative": "Retain synchronous restart/shutdown waiting on the calling thread, as used by the current BackgroundJob.",
+      "condition": "Current Cancel is already nonblocking and shows Cancelling. The proposed change extends responsiveness through pool cleanup and app closing; it does not change agreed partial-result retention. Blocked OS/network reads can delay safe completion with either approach.",
+      "status": "Agreed",
+      "number": 6,
+      "approval": {
+        "date": "2026-10-27",
+        "source": "Direct human answer to asynchronous decision6",
+        "question": "Decision 6: how should Bella finish stopping its readers when you cancel or quit during a scan? I recommend keeping the window responsive while the readers stop safely and release their working data. Another scan or final app close would wait until that cleanup finishes; partial results stay as agreed. The alternative is to reuse the current restart/shutdown waiting method, which can pause the calling interface. Current Cancel already responds immediately and shows “Cancelling…”; the shutdown/cleanup path is the proposed change. A blocked drive read could still delay finishing.",
+        "answer": "Responsive safe cleanup (Recommended)",
+        "agreedRule": "Preserve responsive Cancel and keep the window responsive while readers stop safely and release working data. Permit another scan or final app close only after cleanup; partial results remain as agreed.",
+        "scope": "High-level Bella scan cleanup/closing behaviour. Does not approve every detailed state/API/lifetime mechanism automatically, force thread termination, add overlapping scans, or guarantee an instant finish for blocked OS reads. File-operation engine/Bin Filter scope remains unchanged."
+      }
+    },
+    {
+      "id": "progress_warning_delivery",
+      "title": "How often to update progress and warnings?",
+      "recommendation": "Keep current event-driven progress delivery and existing full warning/path details, diagnostic logging and batching.",
+      "alternative": "Retain current ordinary-progress delivery frequency and existing warning/logging behaviour.",
+      "condition": "Progress-presentation policy only. No new warning suppression, repeated-warning summaries, history cap, source-job rate limit or RAM control. Existing warnings are already batched. Any later policy/content changes require another decision.",
+      "status": "Agreed",
+      "number": 7,
+      "chosenOrdinaryProgressIntervalMs": null,
+      "newProgressTimerApproved": false,
+      "rejectedProposal": {
+        "ordinaryProgressIntervalMs": 200,
+        "latestSnapshotCoalescing": true,
+        "recommendationAtQuestion": "Coalesce ordinary progress to the latest snapshot about five times per second (200ms); phase changes, Cancel acknowledgment and terminal events delivered promptly. Preserve existing full warning text/paths and diagnostic/batched Console logging.",
+        "approved": false
+      },
+      "approval": {
+        "date": "2026-10-27",
+        "source": "Direct human answer to asynchronous decision7",
+        "question": "Decision 7: how often should the progress display refresh? I recommend showing the latest count and file path about five times per second, while scanning continues normally. Stage changes, Cancel, errors and finishing would still be shown promptly. Keep the current warning details, file paths and diagnostic logging/batching. The alternative is to keep the current per-file progress updates. I checked the code: warnings are already batched, so I’m not proposing warning suppression or summaries.",
+        "answer": "Keep current progress delivery",
+        "agreedRule": "Preserve current ordinary event-driven progress and warning/logging/batching behaviour. Do not add the proposed200ms refresh timer or latest-snapshot coalescing.",
+        "scope": "User chose the alternative, not the recommendation. No warning summaries/suppression or new history cap; existing phase/cancel/completion behaviour and max4 source jobs remain. Any later reporting change needs another decision."
+      }
+    },
+    {
+      "id": "duration_sorting",
+      "title": "How should Duration sort?",
+      "recommendation": "Chosen policy: preserve current numeric displayed HH/MM/SS/FF order and Kind ties for equal displayed tuples.",
+      "alternative": "Preserve comparison of numeric displayed HH/MM/SS/FF components, with current Kind tie order.",
+      "condition": "Sorting only; no extra reads or new Duration display/export convention. Preserve blank grouping and existing equivalent-row behaviour. Earlier Bella known-zero/rounded-zero display rules still apply.",
+      "status": "Agreed",
+      "number": 8,
+      "rejectedProposal": {
+        "elapsedTimeSortKey": true,
+        "recommendationAtQuestion": "Sort available Duration values by exact elapsed duration. Keep approved timecode display/CSV, current unavailable grouping and Kind tie order.",
+        "approved": false
+      },
+      "chosenSortKey": [
+        "Hours",
+        "Minutes",
+        "Seconds",
+        "Frames"
+      ],
+      "equalDisplayedTupleKindOrder": [
+        "Audio",
+        "Video",
+        "Unknown"
+      ],
+      "approval": {
+        "date": "2026-10-27",
+        "source": "Direct human answer to asynchronous decision8",
+        "question": "Decision 8: should Duration sort by actual running time, shortest first, or by the displayed timecode numbers as today? I recommend actual running time when frame rates differ. Illustrative example: 20 frames at 25 fps lasts 0.8 seconds; 24 frames at 60 fps lasts 0.4 seconds. Current timecode sorting puts 20 before 24; actual-time sorting puts the shorter file first, so the displayed numbers can look out of order. The timecode display and CSV stay unchanged, with existing blank grouping and equal-duration tie handling.",
+        "answer": "Current timecode-number order",
+        "agreedRule": "Compare numeric displayed(HH,MM,SS,FF) tuples. Equal displayed tuples use Audio/Video/Unknown and existing equivalent-row behaviour. Keep unavailable grouping first ascending; descending reverses order. No elapsed-time key or lexical string comparison.",
+        "scope": "User chose the alternative, not the elapsed-time recommendation. Exact Length/rate interpretation and Duration maths remain required for display. Preserve earlier known-zero/rounded-zero corrections. Duration display/export convention is unchanged by sorting; earlier Bella field exclusions/renames remain. No new source reads or filename tiebreak."
+      }
+    }
+  ],
+  "recommendationRevisions": [
+    {
+      "date": "2026-10-27",
+      "decision": "folder_lookup_lifetime",
+      "previousRecommendation": "Finish a small folder group and release lookups once required associations and header rejoins finish.",
+      "newRecommendation": "Keep required compact source-qualified file/master facts until all file/header matches and dependent checks finish, then release them.",
+      "reason": "Fresh source check shows mdbById and mastersById are scan-wide. PMR/header identity can match another folder's MDB. IDs/paths alone cannot preserve its metadata fields. Earlier folder-release proposal was premature.",
+      "codeAnchors": [
+        {
+          "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+          "startLine": 387,
+          "endLine": 399,
+          "finding": "All loaded MDB file/master facts indexed globally."
+        },
+        {
+          "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+          "startLine": 548,
+          "endLine": 581,
+          "finding": "Physical file and selected master lookups use global indexes, without folder restriction."
+        },
+        {
+          "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+          "startLine": 587,
+          "endLine": 609,
+          "finding": "Local database-reference flags remain folder-bound."
+        },
+        {
+          "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+          "startLine": 748,
+          "endLine": 789,
+          "finding": "Compact full-ID/path summaries support final cross-folder diagnostic paths."
+        }
+      ],
+      "planBasis": [
+        "docs/reviews/2026-10-18-bella-mdb/identities-and-pmr.md:148-158",
+        "docs/reviews/2026-10-25-bella-source-priorities/REVIEW.md:61-75"
+      ],
+      "scope": "Proposal revision only, not user approval or a new matching-source rule. No measured memory result."
+    },
+    {
+      "date": "2026-10-27",
+      "decision": "large_database_scheduling",
+      "previousRecommendation": "Reduce simultaneous reads when estimated temporary memory is high.",
+      "newRecommendation": "Start with the agreed max4 source-job cap and lifetimes, measure representative peak memory, then propose automatic memory-based reductions only if measurements justify them.",
+      "reason": "No Bella peak-memory baseline, extraction-memory multiplier or numerical admission budget is established. Current source reserves full input size; a guessed adaptive threshold would add accounting/scheduling logic before its need or effect is measured. First-release simplicity favors measuring the agreed design first.",
+      "codeAnchors": [
+        {
+          "path": "src/oldscanner/mediaengine/databaseimage.cpp",
+          "startLine": 36,
+          "endLine": 79,
+          "finding": "Full input size is reserved; 1MiB read chunks do not cap the allocation. Extent check is representability, not a RAM quota."
+        },
+        {
+          "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+          "startLine": 365,
+          "endLine": 376,
+          "finding": "Current database preparation is sequential; current peak cannot be described as four concurrent captures."
+        }
+      ],
+      "scope": "Recommendation revision only. User has not selected decision4; no numeric threshold or memory guarantee adopted."
+    },
+    {
+      "date": "2026-10-27",
+      "decision": "progress_warning_delivery",
+      "previousRecommendation": "Latest progress plus combined repeated warnings and bounded notification delivery.",
+      "newRecommendation": "Coalesce ordinary progress to the latest snapshot about five times per second (200ms); phase changes, Cancel acknowledgment and terminal events delivered promptly. Preserve existing full warning text/paths and diagnostic/batched Console logging.",
+      "reason": "Current code already batches full warning/log messages and throttles routine header checkpoints. Warning summarising would change diagnostic contents without an agreed loss/grouping rule. Narrow the proposal to ordinary progress coalescing while preserving warning details and existing logging.",
+      "codeAnchors": [
+        {
+          "path": "src/oldscanner/oldscanner.cpp",
+          "startLine": 377,
+          "endLine": 385,
+          "finding": "Worker persists each complete log message, then emits a batch."
+        },
+        {
+          "path": "src/oldscanner/oldscanner.cpp",
+          "startLine": 403,
+          "endLine": 430,
+          "finding": "10-second header checkpoints, per-callback progress signal and warning accumulator flush at50."
+        },
+        {
+          "path": "src/mainwindow.cpp",
+          "startLine": 1400,
+          "endLine": 1416,
+          "finding": "Console appends one combined string per batch, preserving contents."
+        }
+      ],
+      "scope": "Revised proposal only. No measured bottleneck/speedup; warning summaries/suppression and new caps are not approved."
+    }
+  ],
+  "currentLifetimeCheck": {
+    "date": "2026-10-27",
+    "head": "c2cc89e9404fae5f84787c624f14e16d862d68bc",
+    "answer": "Yes, broadly. Current OldScanner releases each full database capture/parsed objects after projection, retains extracted facts/global indexes through matching, then releases the working session after formatting final rows.",
+    "difference": "OldScanner projections retain richer observations including raw field values, source references and explanations. Bella plans fewer required facts and simpler representation. Final rows already avoid owning the scan session; required status/operation receipts remain.",
+    "codeAnchors": [
+      {
+        "path": "src/oldscanner/mediaengine/databasesource.cpp",
+        "startLine": 63,
+        "endLine": 91,
+        "finding": "Scoped image/parsed objects; returns projection plus SourceReceipt."
+      },
+      {
+        "path": "src/oldscanner/mediaengine/projection.h",
+        "startLine": 12,
+        "endLine": 28,
+        "finding": "Retained file/master evidence values."
+      },
+      {
+        "path": "src/mediaengine/scanmodel.h",
+        "startLine": 206,
+        "endLine": 218,
+        "finding": "SourceReceipt omits parsed object graph."
+      },
+      {
+        "path": "src/oldscanner/oldscanner.cpp",
+        "startLine": 438,
+        "endLine": 475,
+        "finding": "ScanResult session lives through final row preparation; scoped release on return."
+      },
+      {
+        "path": "src/oldscanner/mediaengineadapter.cpp",
+        "startLine": 70,
+        "endLine": 103,
+        "finding": "Final rows receive values/status/operation checks, not working scan owners."
+      }
+    ],
+    "measurement": "Source-only check; no runtime or memory measurements. No claim that this lifetime pattern itself is new or proves a saving."
+  },
+  "measurementDirective": {
+    "answer": "Lets measure- but no caps or memory controls. Lets just see the findings",
+    "reportFindingsFirst": true,
+    "addMemoryControls": false,
+    "addRamQuota": false,
+    "addDatabaseSizePolicyCap": false,
+    "automaticMemoryBasedReaderReduction": false,
+    "existingMaxSourceJobs": 4,
+    "measuredBellaResultsAvailable": false,
+    "scope": "Measure actual runtime on the agreed design when it exists. No numerical estimate is represented as a measurement."
+  },
+  "currentChangedSourceCheck": {
+    "date": "2026-10-27",
+    "head": "c2cc89e9404fae5f84787c624f14e16d862d68bc",
+    "findings": [
+      "Current coordinator excludes facts from a source detected missing or modified after discovery.",
+      "Each PMR/MDB is prepared once; changed databases are not reread.",
+      "A bounded later pass reconsiders unopened headers, not a fresh database capture.",
+      "Database length changes during capture produce incomplete outcome, without retry.",
+      "A changed physical media file is not automatically recaptured as a new trusted identity by the old changed-source latch."
+    ],
+    "codeAnchors": [
+      {
+        "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+        "startLine": 282,
+        "endLine": 306
+      },
+      {
+        "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+        "startLine": 365,
+        "endLine": 376
+      },
+      {
+        "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+        "startLine": 705,
+        "endLine": 733
+      },
+      {
+        "path": "src/oldscanner/mediaengine/databaseimage.cpp",
+        "startLine": 83,
+        "endLine": 92
+      }
+    ],
+    "proposalScope": "Decision5 response policy now approved: report/exclude changed read and allow manual rescan, physical row/unaffected facts and approved fallbacks preserved. Exact detection mechanism, PMR DTM exclusion and header-opening rules are not changed by that approval."
+  },
+  "currentCancelCloseCheck": {
+    "date": "2026-10-27",
+    "head": "c2cc89e9404fae5f84787c624f14e16d862d68bc",
+    "findings": [
+      "Current Cancel button immediately shows Cancelling and emits the request.",
+      "Closing the progress sheet/Escape requests cooperative cancellation; this differs from quitting the app.",
+      "OldScanner cancelScan sets state and atomic flag, with no worker join.",
+      "BackgroundJob restart and shutdown join synchronously and can wait indefinitely after a warning.",
+      "OldScanner is a MainWindow-owned child and calls shutdown in its destructor; final application destruction can therefore wait on that path.",
+      "Normal scanning activity already prevents another ordinary scan before completion."
+    ],
+    "codeAnchors": [
+      {
+        "path": "src/progressdialog.cpp",
+        "startLine": 132,
+        "endLine": 154
+      },
+      {
+        "path": "src/oldscanner/oldscanner.cpp",
+        "startLine": 252,
+        "endLine": 259
+      },
+      {
+        "path": "src/backgroundjob.h",
+        "startLine": 42,
+        "endLine": 48
+      },
+      {
+        "path": "src/backgroundjob.h",
+        "startLine": 77,
+        "endLine": 91
+      },
+      {
+        "path": "src/oldscanner/oldscanner.h",
+        "startLine": 48,
+        "endLine": 48
+      },
+      {
+        "path": "src/mainwindow.cpp",
+        "startLine": 178,
+        "endLine": 178
+      },
+      {
+        "path": "src/mainwindow.cpp",
+        "startLine": 224,
+        "endLine": 230
+      }
+    ],
+    "limits": "Source-only review; no executed UI test, blocked-drive experiment or observed frequency/latency claim. Current Cancel is not claimed to block.",
+    "proposalScope": "Bella scan cleanup/app closing only. Preserve partial results and existing file-operation/Bin Filter scope. No instant-safe-quit promise for blocked operating-system reads."
+  },
+  "currentProgressWarningCheck": {
+    "date": "2026-10-27",
+    "head": "c2cc89e9404fae5f84787c624f14e16d862d68bc",
+    "findings": [
+      "Progress emits per callback without a time throttle.",
+      "Warnings accumulate to50 log entries or an earlier phase/read flush.",
+      "Worker writes full supplied log messages before queued Console delivery.",
+      "Header read checkpoints use10000ms and reset on each logged source start; database starts are logged.",
+      "Console appends a combined batch string; its existing visible-history maximum is2000 blocks, distinct from disk logging."
+    ],
+    "codeAnchors": [
+      {
+        "path": "src/oldscanner/oldscanner.cpp",
+        "startLine": 21,
+        "endLine": 21
+      },
+      {
+        "path": "src/oldscanner/oldscanner.cpp",
+        "startLine": 377,
+        "endLine": 435
+      },
+      {
+        "path": "src/mainwindow.cpp",
+        "startLine": 1400,
+        "endLine": 1416
+      },
+      {
+        "path": "src/mainwindow.cpp",
+        "startLine": 472,
+        "endLine": 472
+      },
+      {
+        "path": "src/diagnostics.cpp",
+        "startLine": 210,
+        "endLine": 215
+      }
+    ],
+    "limits": "Read-only source check; no measured queue backlog or performance gain. Existing log persistence is behaviour, not an unlimited-history or filesystem-success guarantee."
+  },
+  "currentDurationSortCheck": {
+    "date": "2026-10-27",
+    "head": "c2cc89e9404fae5f84787c624f14e16d862d68bc",
+    "currentBehaviour": "Numeric displayed(HH,MM,SS,FF) tuple ascending; Audio/Video/Unknown on equal tuples. Unknown display uses hour-1 and therefore groups first.",
+    "codeAnchors": [
+      {
+        "path": "src/mediafilterproxy.cpp",
+        "startLine": 16,
+        "endLine": 25,
+        "finding": "Kind order Audio/Video/Unknown."
+      },
+      {
+        "path": "src/mediafilterproxy.cpp",
+        "startLine": 284,
+        "endLine": 292,
+        "finding": "Duration tuple comparator, then Kind."
+      },
+      {
+        "path": "src/mediafile.h",
+        "startLine": 294,
+        "endLine": 355,
+        "finding": "Display availability, nominal-base/DF formatting and timecode fields."
+      },
+      {
+        "path": "src/mediaduration.h",
+        "startLine": 24,
+        "endLine": 44,
+        "finding": "Exact units/rate retained separately from display clock."
+      }
+    ],
+    "illustrativeExamples": [
+      {
+        "name": "A",
+        "frames": 20,
+        "rateNumerator": 25,
+        "rateDenominator": 1,
+        "display": "00:00:00:20",
+        "elapsedFraction": "4/5",
+        "elapsedDecimalSeconds": "0.8"
+      },
+      {
+        "name": "B",
+        "frames": 24,
+        "rateNumerator": 60,
+        "rateDenominator": 1,
+        "display": "00:00:00:24",
+        "elapsedFraction": "2/5",
+        "elapsedDecimalSeconds": "0.4"
+      }
+    ],
+    "exampleAssumptions": "Illustrative NDF video rows with available coherent timing and matching display clocks. Not observations of real media files.",
+    "ascendingTimecodeOrder": [
+      "A",
+      "B"
+    ],
+    "ascendingElapsedOrder": [
+      "B",
+      "A"
+    ],
+    "arithmeticVerifiedWithPythonFractions": true,
+    "runtimeTestsOrMediaReads": false,
+    "approvedBellaBehaviour": "Numeric displayed(HH,MM,SS,FF) order. Equal DISPLAY tuples retain Audio/Video/Unknown; blank grouping first ascending, reverse descending. Earlier Bella known-zero/rounded-zero availability/display correction still applies. No new filename tiebreak.",
+    "elapsedAlternativeSelected": false,
+    "chosenExampleAscendingOrder": [
+      "A",
+      "B"
+    ],
+    "decisionDate": "2026-10-27"
+  },
+  "initialDecisionRegisterComplete": true,
+  "allOriginalRecommendationsSelected": false,
+  "futureImplementationChoicesRequireUserCheckIn": true,
+  "nextStage": "Build independent Bella from the approved baseline. Present any new concrete implementation choice before dependent work. Keep OldScanner active until explicit cutover approval; report actual measurements when a runnable Bella build exists."
+}

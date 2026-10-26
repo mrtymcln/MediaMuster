@@ -13,7 +13,7 @@ not certify later builds. Current ownership and behavior are in the
 | [Console wording](2026-09-24-console/console-review.md) | Accepted wording decisions. |
 | [Dialog/progress review](2026-10-08-dialog-wording/REVIEW.md) | Pending wording proposals for scans, operations, bins and Rebalance. |
 | [Bella PMR research](2026-10-18-bella-pmr/REVIEW.md) | Native PMR reader/writer, genuine records and hypothetical MDVx scanning with four concurrent jobs. |
-| [Bella scanner design](2026-10-26-bella-scanner-design/REVIEW.md) | Standard C++17/Qt coordination, four source jobs total, bounded owned data, cancellation/progress/publication and verification; final-results delivery and partial-result retention on Cancel agreed 27 October. |
+| [Bella scanner design](2026-10-26-bella-scanner-design/REVIEW.md) | All eight choices resolved: current event-driven progress and numeric timecode Duration order retained; proposed timer/coalescing and elapsed-time sort declined. No added memory controls. Further concrete choices still need check-ins; no runtime/cutover. |
 | [PMR reading and memory](2026-10-18-bella-pmr/memory-lifetime.md) | Current/MDVx buffered reading and retained state; agreed Bella single-capture, compact-result lifetime with whole-set fallback. |
 | [Bella MDB research](2026-10-18-bella-mdb/REVIEW.md) | Native MDB objects and encodings, MDVx enrichment, six genuine databases and agreed four-MDB-job, read-once/extract/release workflow. |
 | [MDB text read/write](2026-10-18-bella-mdb/text-encoding.md) | Native paired writers/readers, typed Project text, legacy conversion and agreed field-level fallback. |

@@ -9,6 +9,13 @@ preserving current behaviour. This
 folder currently contains documentation only; there is no Bella runtime code or
 build target.
 
+The user's 27 October instruction requires a check-in at every new decision,
+including internal engineering choices. Explain options in plain English,
+highlight the recommendation, ground it in the plan/current code and wait for
+the user's answer before dependent implementation. The design's engineering
+recommendations are not approvals. See
+[decision check-ins](../../Project%20Bella/README.md#decision-check-ins).
+
 Bella will use C++17 and the project's pinned Qt 6.5.3 building blocks, applying
 the attached C++ guidance through scoped ownership, type and bounds safety,
 compact value records and explicit lifetimes. It must not be produced by
@@ -42,8 +49,24 @@ The app continues using [OldScanner](../oldscanner/README.md). Bin Filter stays
 outside Bella's scope. A switch to Bella requires the user's explicit approval.
 
 [Project Bella](../../Project%20Bella/README.md) records the approved scope,
-staging, parser behaviour and final field-source/header-opening rules. The design
-starts with one background coordinator outside a scanner-owned Qt pool of four
-source jobs total, shared by PMR/MDB/headers, with bounded completions and owned
-results. The two visible choices are settled; next build and compare the
-independent replacement. No runtime implementation is added by this design record.
+staging, parser behaviour and final field-source/header-opening rules. Result
+timing and Cancel are settled, and the user approved **four source-reading jobs
+total** on 27 October, shared by PMR/MDB/required headers. The user also chose
+**one background organiser with one shared reader team**, with the organiser
+outside the four reader slots. A scanner-owned Qt pool is the proposed standard
+implementation. The user also approved retaining required compact matching facts
+until all files are matched, then releasing them; raw buffers/parser workspace
+go after extraction. Decision 4 is agreed: measure and report findings with no
+added RAM caps or automatic memory controls; the four-job maximum remains.
+Changed reads are also settled: report them, retain the physical row and
+independently valid facts, apply only approved fallbacks, and leave a fresh read
+to manual rescan. Responsive cleanup is agreed too: keep the window responsive
+until readers stop safely, then allow another scan or finish app close, preserving
+partial results. Progress delivery is settled: preserve current event-driven
+updates and warning/logging behaviour; no added 200 ms refresh timer or progress
+coalescing. Duration sorting is settled too: keep numeric displayed HH/MM/SS/FF
+order, current blank grouping and Kind ties, preserving earlier Bella zero-display
+corrections. All eight registered choices are resolved; other new implementation
+choices still need review before affected work,
+then build and compare the independent replacement. No runtime implementation
+is added here.

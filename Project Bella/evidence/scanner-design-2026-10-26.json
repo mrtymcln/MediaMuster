@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "date": "2026-10-26",
   "timezone": "Australia/Sydney",
-  "status": "Result delivery and Cancel behaviour agreed 27 October 2026. Engineering design recorded; independent implementation next. No runtime or cutover.",
+  "status": "All eight initial scanner-workflow decisions resolved. Current progress and numeric timecode Duration sorting retained; proposed200ms/coalescing and elapsed-time key declined. Further new concrete choices require check-ins. No runtime or cutover.",
   "userRequest": "Yep those are all good decisions. How do we do we ensure the app does that as elegantly and \"standard\" as possible? What other questions do you need answering? Leave no stone unturned.",
   "currentHead": "c8541868b10334ad0fddd5928a960202008768c9",
   "design": "docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md",
@@ -205,8 +205,8 @@
       {
         "id": "csv-duration-display",
         "path": "src/mediacsv.cpp",
-        "startLine": 60,
-        "endLine": 66,
+        "startLine": 54,
+        "endLine": 59,
         "finding": "CSV uses MediaFile::durationDisplay(), the same label used by the table."
       },
       {
@@ -253,27 +253,27 @@
     }
   ],
   "engineeringRecommendations": {
-    "structure": "GUI QObject facade, single synchronous background coordinator outside pool, ordinary separate format parser functions.",
-    "concurrency": "Initial scanner-owned service-lifetime pool max4 source jobs total, PMR/MDB/header combined. One extra coordinator thread. Not four reserved CPUs or four of each simultaneously.",
+    "structure": "One background organiser and reusable shared reader team agreed 27 October. Proposed standard implementation uses GUI QObject facade, coordinator thread, Qt worker pool and ordinary format parser functions; further detailed policies need check-ins.",
+    "concurrency": "Max4 source-reading jobs total across PMR/MDB/required headers, organised by one background organiser/shared reader team, agreed 27 October. Organiser outside source-reader slots.",
     "dispatch": "Count dispatched through consumed completion; at most4 outstanding. Every task terminal completion exactly once; mutex/condition predicate loop; cancel wakes coordinator.",
-    "memory": "Bound folder window and completed result store, release raw/index data then folder lookups after header rejoins. Account bytes as well as job count; internal admission budget measured; oversized valid job can run alone without arbitrary format cap.",
+    "memory": "Decisions3-4 agreed: raw buffers/parser workspace release after extraction; keep required compact facts until matching finishes then release. Measure the agreed design and report findings; no added RAM cap, database-size policy limit or automatic memory-based scheduling. Prior max4 source jobs stays; no measured Bella result exists yet.",
     "ownership": "Owned results, scoped file/buffer lifetime, no expired views or UI/parser mutation across workers.",
     "selection": "Coordinator-only matching/KelpieId allocation and source choice; deterministic row positions; no completion-order preference.",
     "cancellation": "Fresh atomic/generation each run, stop dispatch/open, cooperative checks and wake. Coordinator drains actual pool execution/cleanup off GUI. Coordinator finished notification alone is insufficient: require successful join before final publication/reuse, using nonblocking wait(0) readiness/defer on GUI. No active blocking GUI join. GUI generation/cancel check remains effective until acceptance.",
-    "shutdown": "No GUI-thread join or pool destruction while active. Defer final close/service destruction until jobs end; OS-blocked network reads may delay completion.",
-    "progress": "Latest snapshot with at most one pending GUI notification; bounded batched diagnostics; truthful discovery/read/finalisation phases.",
-    "capture": "Cheap opened-file identity/size/change checks; reject detected changes, no atomic snapshot claim, no automatic retry/hash/lock/cache feature.",
-    "presentation": "Preserve current display/export except agreed corrections, exact duration/rate sorting, CSV exports duration display. Rare unsupported labels remain unavailable rather than fabricated.",
+    "shutdown": "Decision6 agreed: preserve responsive Cancel and keep interface responsive through shared-reader cleanup/app closing; another scan/final destruction only after safe cleanup. Partial results stay. Blocked OS reads can delay completion; detailed API/lifetime choices still require review.",
+    "progress": "Decision7 agreed: keep current event-driven progress, full warning/path details, diagnostic persistence and Console batching. No new200ms refresh timer, latest-snapshot coalescing, warning suppression/summaries or history cap. Later changes require another decision.",
+    "capture": "Decision5 agreed: exclude/report a detected changed read, retain physical row and independently valid information, apply only approved fallbacks, leave fresh recapture to manual rescan. No automatic source retry. PMR DTM remains ignored and same-buffer set fallback unchanged. Exact check mechanism remains to specify.",
+    "presentation": "Decision8 agreed: keep numeric displayed HH/MM/SS/FF Duration order, Kind ties for equal DISPLAY tuples and existing blank grouping. No elapsed-time key or lexical string sort. Earlier Bella zero-display corrections and exact timing interpretation remain; Duration display-label CSV convention unchanged by sorting. Earlier field exclusions/renames remain.",
     "verification": "Real output equivalence plus deliberate differences, parser corruption/bounds, task caps, reordered completion, cancellation/publication/lifetime, repeated scan memory, same-workload time/RSS/header-open/byte/GUI benchmarks.",
     "conventions": "Repository naming/formatting and explicit CMake source lists; clean warnings, pinned macOS/Windows builds, focused tests and available sanitizers; release performance measurements."
   },
-  "boundedFollowUps": "Uncommon rate-label precision and fixed10.6/12.4 generic depth wording are implementation checks; no additional metadata-source product blocker found. Preserve known labels and unsupported cases.",
+  "boundedFollowUps": "Concrete uncommon rate precision and fixed10.6/12.4 depth labels require user check-in with examples; no invented fallback labels or expanded parser review by implication.",
   "validation": {
     "sourceHashesRechecked": 18,
     "runtimeCodeChanged": false,
     "testsOrBuildsExecuted": false,
     "performanceMeasured": false,
-    "localLinksChecked": 364,
+    "localLinksChecked": 437,
     "missingLocalLinks": 0,
     "sourcePriorityRecordsUnmodified": true,
     "gitDiffCheck": "passed",
@@ -284,7 +284,11 @@
     "untrackedRuntimeFiles": [],
     "bothUserChoicesAnswered": true,
     "workflowApprovalDate": "2026-10-27",
-    "workflowRecordVerified": "2026-10-27: both direct answers recorded; no pending workflow markers in active design/indexes."
+    "workflowRecordVerified": "27 October: user chose current timecode-number Duration order. All8 register choices resolved; recommendations for progress coalescing and elapsed-time sort were declined. Exact Duration arithmetic/display rules preserved.",
+    "pendingEngineeringChoices": 0,
+    "agreedEngineeringChoices": 8,
+    "unresolvedRegisteredDecisions": [],
+    "futureImplementationChoicesStillRequireReview": true
   },
   "independentReview": {
     "currentSourceAndProductScope": "26 October review found current behavior and then-unanswered choices accurate, with no additional product gap. Corrected finished-notification versus successful-join distinction. User answered both choices on 27 October.",
@@ -317,7 +321,38 @@
     "date": "2026-10-27",
     "source": "Direct human answers to the two asynchronous scan-workflow questions.",
     "scope": "Preserves current result timing and partial-result retention on cancellation. Does not approve app cutover or add streaming/background/retry features.",
-    "questionsRemaining": 0,
-    "nextStage": "Build and compare independent Bella under the existing staging rules; OldScanner remains active pending explicit cutover approval."
+    "nextStage": "The initial eight-decision register is complete. Build independent Bella from approved requirements, bringing new concrete implementation choices for user decision before dependent work. OldScanner remains active until explicit cutover approval.",
+    "resultAndCancelQuestionsRemaining": 0
+  },
+  "decisionCheckInPolicy": {
+    "date": "2026-10-27",
+    "record": "Project Bella/evidence/decision-check-ins-2026-10-27.json",
+    "pendingEngineeringDecisions": [],
+    "agreedEngineeringDecisions": [
+      "combined_read_limit",
+      "work_organisation",
+      "folder_lookup_lifetime",
+      "large_database_scheduling",
+      "changed_capture_policy",
+      "cancel_close_cleanup",
+      "progress_warning_delivery",
+      "duration_sorting"
+    ],
+    "allRegisteredDecisionsResolved": true,
+    "allOriginalRecommendationsSelected": false,
+    "futureNewChoicesRequireCheckIn": true
+  },
+  "agreedConcurrency": {
+    "date": "2026-10-27",
+    "answer": "Four reads total (Recommended)",
+    "limit": 4,
+    "scope": [
+      "PMR",
+      "MDB",
+      "Required media headers"
+    ],
+    "approvalRecord": "Project Bella/evidence/decision-check-ins-2026-10-27.json",
+    "organisationApproved": true,
+    "organisation": "One background organiser, one reusable shared reader team; organiser outside four source-reader slots."
   }
 }

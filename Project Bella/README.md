@@ -1,7 +1,8 @@
 # Project Bella
 
-Started 18 October 2026. Status: first-release metadata and visible scan-workflow
-requirements settled; independent implementation next.
+Started 18 October 2026. Status: first-release parser/source requirements and
+the eight registered scanner-workflow decisions are settled. Independent Bella
+implementation is next; new concrete choices still require user check-ins.
 
 Bella is a fresh start for MediaMuster's scanner and parser. The motivation is to
 reduce scan time and memory use after the Canon and Copland iterations and the
@@ -27,17 +28,21 @@ review focused on real format-specific gaps, rather than repeating shared-field
 research or expanding the metadata model. Finish that bounded review before
 runtime implementation under the already agreed staging and cutover rules.
 
-**Review progress, 27 October 2026:** the agreed first-release OMF requirements
-baseline is complete, including damage handling. Native WAVE/AIFF requirements
-are settled by preserving current behaviour in Bella's fresh implementation.
-The final source-priority/header-opening rules were approved on 26 October.
-The [scanner design proposal](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md)
-now covers coordination, cancellation, progress, result delivery and memory
-lifetimes using standard C++17/Qt facilities. On 27 October the user confirmed
-both visible choices: clear the previous table at scan start and show new
-results at the end; retain partial results on Cancel and mark the scan
-cancelled/incomplete. No workflow questions remain. Bounded uncommon display-label
-checks remain implementation work; OldScanner stays active until cutover approval.
+**Review progress, 27 October 2026:** the first-release parser baselines, preserved
+native WAVE/AIFF behaviour and final source-priority/header-opening rules are
+agreed. The [eight scanner-workflow decisions](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#decision-register)
+are now recorded, including the user's choices to retain current progress
+delivery and current numeric timecode Duration sorting. The proposed progress
+timer/coalescing and elapsed-time sort were not selected. Measure the agreed
+design without added memory caps/controls; keep the four-job maximum.
+
+Clear the old table at scan start and publish new rows at the end. Cancel retains
+partial results and incomplete status; cleanup remains responsive. Keep only
+required compact matching facts through matching, then release them. New concrete
+implementation/label/API choices still need a plain-English check-in before
+dependent work; completion of this register is not approval of every proposal
+or app cutover. No Bella runtime or measured improvement exists yet. OldScanner
+stays active until explicit cutover approval.
 
 Standing design principle reaffirmed by the user on 25 October 2026: actively
 look for a simpler, more elegant way to achieve each agreed accurate result.
@@ -45,6 +50,38 @@ Prefer direct source choices, shared small helpers, compact owned values and
 clear lifetimes. Add complexity only for a concrete supported case or required
 behavior. Preserve necessary ownership/type/bounds checks and agreed metadata;
 judge the implementation by correct results and measured scan time/peak memory.
+
+## Decision check-ins
+
+**User instruction, 27 October 2026:** check in with the user at every new
+decision. Present the decisions in plain English and highlight the recommendation.
+Do not assume approval or invent evidence; return to the agreed plan and current
+codebase regularly. This includes internal design, scheduling, memory, error
+handling and presentation choices, not only visible features.
+
+Before implementing a new choice, explain what needs deciding, the realistic
+options, the **recommended option**, its reason and tradeoff, and the relevant
+plan/code evidence. Distinguish what is approved, what the current app actually
+does, what is proposed and what remains unknown. Ask in manageable groups,
+normally one decision at a time, and wait for the user's answer before dependent
+implementation. Approved decisions stay approved unless new evidence or a
+changed requirement warrants revisiting them; explain that reason first.
+
+Read-only investigation can continue while an answer is pending. Record each
+answer before building on it. Check the current revision when returning to the
+code; do not present old source observations as a fresh check. Claims about
+speed/memory require measurements, and unknowns must remain explicit.
+
+The [decision register](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#decision-register)
+separates the engineering recommendations from approved metadata/result rules.
+On 27 October the user approved **four reads total** across PMR, MDB and required
+headers, then chose one background organiser with one shared reader team.
+All eight decisions in the current register are now resolved, including compact
+facts through matching, current progress delivery and current numeric timecode
+Duration order. New implementation choices still require check-ins. The
+[instruction record](evidence/decision-check-ins-2026-10-27.json) preserves this
+working agreement. Earlier statements that engineering defaults could be settled
+without a check-in are superseded.
 
 ## Evidence standard for improvement claims
 
@@ -98,6 +135,12 @@ records the detailed assessment and limits. This adds no new feature or cutover.
 - Allow four concurrent MDB jobs as well. Read each database once into memory,
   extract only the required information, and release its temporary storage.
   Chosen 21 October 2026; detailed ownership and concurrency rules appear below.
+- **Combined limit agreed 27 October 2026:** at most four reading jobs total,
+  shared by PMR, MDB and required media headers. The separate earlier PMR/MDB
+  maxima do not permit eight database jobs together. This sets the total work
+  ceiling. The user subsequently chose one background organiser and one shared
+  reader team, with the organiser outside the four reader slots. This does not
+  approve the pending memory-admission or other engineering policies.
 - Apply the user's attached C++ coding guidance within C++17: scoped ownership,
   bounds and type safety, explicit lifetimes, simple value records and safe task
   coordination. C++20/23-only examples in the attachment do not change the
@@ -128,7 +171,8 @@ Confirmed by the user on 18 October 2026:
 3. **Finish the requirements review first.** PMR/MDB/MXF/OMF baselines are now
    agreed and native WAVE/AIFF behaviour is preserved. The final shared
    source rules are approved, and the two visible workflow choices were settled
-   on 27 October. The scanner design records the engineering defaults.
+   on 27 October. The scanner design records engineering recommendations;
+   new decisions require the user's check-in before affected implementation.
    Do not start Bella reader/parser code while the requirements review is unfinished.
 4. Build Bella independently after the required decisions are agreed. Use
    compact value records, scoped ownership, checked reads and clear lifetimes
@@ -976,9 +1020,10 @@ required display clock is blank, and hours have no 24-hour wrap. Preserve safe p
 higher-rate frame numbers. A positive sub-frame audio duration can round to
 zero displayed frames while remaining positive internally. Unsupported
 rate/layout coverage remains implementation work. The discussed source
-qualification and missing/damaged policy are now agreed; Duration sorting and
-CSV details remain separate presentation work. No Bella runtime code or current
-app behaviour changed.
+qualification and missing/damaged policy are now agreed. **27 October decision 8:**
+retain numeric displayed HH/MM/SS/FF sorting and the Duration display-label CSV
+convention. Exact elapsed arithmetic remains required for interpretation/display,
+not the sort key. No Bella runtime code or current app behaviour changed.
 
 **Native fidelity clarification, 20 October:** the video rate interpretation
 follows verified Media Composer code. The proposed DurationFormatter is not a
@@ -1361,9 +1406,10 @@ changed and no performance improvement is measured.
 **27 October update:** OMF is agreed and native WAVE/AIFF behaviour is preserved.
 The [final field-priority/opening rules](../docs/reviews/2026-10-25-bella-source-priorities/REVIEW.md)
 are approved. The [scanner design proposal](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md)
-covers scheduling, cancellation, progress and result delivery. The user settled
-both visible workflow choices on 27 October. Other design details are engineering
-choices and implementation checks. The checkpoint below records the earlier sequence.
+covers scheduling, cancellation, progress and result delivery. The two visible
+workflow choices and all eight registered design decisions are settled on
+27 October. Other concrete choices still require check-ins. The checkpoint below
+records the earlier sequence.
 
 **Planning checkpoint, 23 October 2026:** PMR and the release-one MDB product
 requirements are substantially settled. The individual MXF output-field reviews
@@ -1395,7 +1441,9 @@ and using the separate exact Avid interpreter are agreed. HH:MM:SS:FF and
 recorded drop-frame numbering when available are also agreed. The user has now
 approved the discussed audio display clock/verified maths and qualified DF
 selection: NDF if genuinely missing, blank Duration if required data is damaged.
-Duration sorting/CSV and extended layout coverage remain separate work.
+Duration sorting/CSV were settled on 27 October: current numeric timecode order
+and the Duration display-label export convention. Extended-layout coverage
+remains separate verification work.
 Frame Rate's shared numeric design,
 late labels, numeric sorting and MDB-first/already-read-header-only fallback
 are agreed; uncommon-rate label precision and format coverage remain pending.
@@ -3114,15 +3162,18 @@ Do not mix masters or timing/descriptor facts; do not open headers solely for
 missing columns or preference/verification. Existing parser/damage/text rules,
 physical inventory, current WAVE/AIFF behaviour and ignored PMR modification
 remain. No new format, identity-conflict UI, repair, retained candidate graph,
-Bin Filter change or runtime/cutover. Header worker counts and remaining scan
-coordination still belong to the brief design. See the
+Bin Filter change or runtime/cutover. On 27 October the user approved a combined
+ceiling of four PMR/MDB/required-header jobs total, followed by one background
+organiser and one shared reader team. Remaining scan-coordination choices still
+require review. See the
 [decision basis](evidence/source-priorities-2026-10-25.json).
 
 The [26 October workflow proposal](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md)
 coordinates these sources and their lifetimes. The database maxima do not
 require eight database jobs to run simultaneously or reserve dedicated CPUs.
-The visible choices were settled on 27 October; next build/test/measure
-independent Bella. OldScanner remains active until explicit cutover approval.
+The visible choices were settled on 27 October. Review new engineering choices
+with the user before implementing them, then build/test/measure independent
+Bella. OldScanner remains active until explicit cutover approval.
 
 ## Scanner workflow proposal
 
@@ -3131,12 +3182,84 @@ the agreed rules elegantly using standard facilities, and which further
 questions require their input. The
 [design](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md) and
 [source record](evidence/scanner-design-2026-10-26.json) propose one GUI facade,
-one background coordinator and one scanner-owned Qt thread pool. Start with
-**four source jobs total**, shared by PMR, MDB and required headers, satisfying
-each approved database maximum. The coordinator stays outside that pool.
+one background coordinator and one shared reader team, with a Qt thread pool
+as the proposed standard implementation. On 27 October the user approved both
+**four source jobs total**, shared by PMR/MDB/required headers, and **one
+background organiser with one shared reader team**. The organiser is outside
+the four source-reader slots. Further lifetime, queue and memory policies
+remain separate decisions.
 
-Bound dispatched/undrained jobs and temporary folder data, use owned compact
-results, select sources independently of completion order, and publish one
+**Decision 3 evidence update, 27 October:** the current scanner uses scan-wide
+MDB file/master indexes, so a file may receive metadata from a database in
+another scanned folder. Releasing all extracted facts when their folder finishes
+could lose those matches. The revised recommendation is to release raw database
+buffers/parser workspace after extraction as agreed, but retain the required
+compact matching facts until all file/header matches and dependent checks finish.
+The user approved this on 27 October: “keep the useful notes until all files
+have been matched, then release them.” This replaces the earlier folder-release
+recommendation. It does not create a permanent cache, retain parser object
+graphs or change which sources are eligible under the approved matching rules.
+
+The current app already follows this broad lifetime pattern: database preparation
+releases the whole-file image and parsed objects after extracting its projection;
+matching retains projections/indexes, then the final row adapter produces owned
+rows and compact checks before the working session is released. Bella's planned
+change is to reduce and simplify the retained facts, not to claim OldScanner
+currently keeps every whole database alive or repeatedly reads it per row.
+No memory improvement is measured by this source check.
+
+**Decision 4 agreed, 27 October:** “Lets measure- but no caps or memory controls.
+Lets just see the findings”. Measure the agreed design and report actual findings
+before proposing changes. Add no RAM quota, database-size policy cap or automatic
+reduction of readers based on estimated memory. The earlier four-job maximum
+is preserved: the question explicitly kept that maximum in both options, and
+the reply concerns memory controls. Existing bounds/type/extent validation is
+unchanged. No memory budget or Bella peak-memory result is established, and
+this instruction does not approve a later controller automatically.
+
+**Decision 5 agreed, 27 October:** report the changed read and let the user
+rescan. Keep the physical row and independently valid information; apply only
+the already approved fallback rules. Add no automatic fresh recapture of the
+changed source. Facts tied to a replaced media file's earlier identity are not
+independently valid. This does not change the ignored PMR DTM, existing in-memory
+PMR set fallback or the approved reasons for opening another source. The current
+scanner excludes that source's captured facts; it does not retry a changed PMR/MDB.
+Its bounded follow-up pass can reconsider unopened headers under its old rules,
+which is different from rereading a database.
+
+**Decision 6 agreed, 27 October:** responsive safe cleanup. Keep the window
+responsive while Bella's readers stop safely and release their working data;
+allow another scan or final app close only after cleanup. Partial results stay
+as previously agreed. The
+current Cancel button already requests a cooperative stop without joining the
+worker and shows “Cancelling...”. Restart/shutdown use a blocking join in
+BackgroundJob; closing can wait on that path. Bella's agreed behaviour extends
+responsiveness through cleanup/application closing, rather than claiming Cancel
+itself is newly responsive. A blocked OS/network read can still delay completion.
+Detailed lifetime/API choices still require review when concrete.
+
+**Decision 7 agreed, 27 October:** keep current progress delivery. Preserve
+event-driven progress updates rather than adding the proposed 200 ms timer or
+latest-snapshot coalescing. Keep existing warning details/paths, diagnostic
+logging and batched Console delivery. Current warning batching and routine
+header-checkpoint logging remain; add no warning suppression, summaries or new
+history cap. The user chose the current-delivery option, not the recommendation.
+If measurements later show a reporting problem, present the finding before
+proposing a change; no improvement is assumed here.
+
+**Decision 8 agreed, 27 October:** keep current timecode-number order. Compare
+numeric displayed HH/MM/SS/FF components, not elapsed seconds or a lexical
+comparison of formatted strings. Equal displayed tuples retain Audio/Video/Unknown
+order and existing equivalent-row behaviour; unavailable Duration keeps its
+current grouping. The already approved known-zero/rounded-zero display correction
+still applies. Duration display/export conventions and source reads are unchanged
+by this sorting choice; earlier Bella field exclusions/renames remain in force.
+The proposed elapsed-time key was not selected. All eight registered choices
+are now resolved; subsequent concrete implementation decisions still need check-ins.
+
+Respect the four-source-job maximum and scoped temporary parser workspace;
+retain the approved compact catalogue through matching. Use owned results,
+select sources independently of completion order, and publish one
 coherent outcome. Cancel cooperatively, wake waiting coordination, drain before
 another run and keep GUI delivery generation-aware. Blocking operating-system
 I/O may delay completion; do not block the GUI waiting for it. Preserve existing
@@ -3145,11 +3268,12 @@ scan/operation interlocks and operation-check meanings.
 **Agreed on 27 October:** preserve the current clear-at-start/final-results
 behaviour. Cancel retains discovered files and usable completed metadata,
 with the scan reported as cancelled/incomplete. Both user questions are closed.
-Worker limits,
-queue/storage choices, cheap capture checks and helper names are engineering
-decisions, not another metadata review. Keep established display/export
-conventions with the approved changes and exact numeric sorting; uncommon
-representation labels remain bounded checks. No new source, cache, retry or
+Any new choice or proposed change in worker limits, queue/storage design,
+capture-check mechanisms, presentation or file layout must still be explained
+to the user before implementation. Existing approvals remain in force. In particular,
+Duration retains the current numeric displayed-timecode sort; the proposed
+elapsed-time key was not selected. Uncommon representation labels need concrete
+examples and a user check-in. No new source, cache, retry or
 background scan feature, runtime code or cutover is implied.
 
 ## Retained result fields

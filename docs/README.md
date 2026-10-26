@@ -40,9 +40,12 @@ requirements. Use the behaviour guide and implementation to check what is built.
   current/MDVx buffering and retention, with agreed single-capture lifetime
   and whole-set fallback for Bella.
 - [Bella scanner design](reviews/2026-10-26-bella-scanner-design/REVIEW.md):
-  standard C++17/Qt coordination, four source jobs total, bounded lifetimes,
-  cancellation/progress/publication and implementation checks; final-results
-  delivery and partial-result retention on Cancel agreed 27 October.
+  agreed four-reading-job total, one organiser/shared reader team and result/Cancel
+  rules, plus compact matching facts retained through matching then released.
+  Measurement without memory controls and changed-read/manual-rescan handling
+  and responsive cleanup are agreed. Current progress/warning delivery is retained;
+  current numeric timecode Duration sorting is retained. All eight registered
+  choices are resolved; new concrete implementation choices still need check-ins.
 - [Bella MDB research](reviews/2026-10-18-bella-mdb/REVIEW.md): native typed values
   and text encodings, MDVx enrichment, six actual databases and the agreed four-MDB-job,
   read-once/extract/release workflow.

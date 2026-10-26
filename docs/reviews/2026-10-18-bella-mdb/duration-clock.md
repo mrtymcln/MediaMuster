@@ -135,8 +135,11 @@ explicit MXF rational is used directly; a generic Rational property or an
 unrecognised decimal must not acquire an alias merely because it is close.
 
 With an interpreted rational N/D, elapsed duration is **Length × D / N**.
-Sorting and any other elapsed-duration calculation should use that same
-interpretation. Presentation rounding occurs afterwards. Audio rate source
+Elapsed-duration calculations use that same interpretation; presentation
+rounding occurs afterwards. **Sorting decision, 27 October 2026:** the user
+chose current numeric displayed-timecode order, not an elapsed-time sort key.
+That choice supersedes the earlier elapsed-sorting recommendation without
+changing the interpretation/arithmetic. Audio rate source
 selection, pulled-audio conventions, timecode/drop-frame display and extended
 length wire layouts remain separate reviews. This video finding does not
 change an audio frequency of 48,000/1.
@@ -180,7 +183,9 @@ not a broad claim that current displayed durations are wrong. No speed or memory
 benefit has been measured for this conversion. Reading fewer media files is a
 separate I/O choice; no Bella implementation or benchmark exists yet. The
 discussed audio clock, formatting and missing/damaged numbering rules are now
-agreed. Duration sorting/CSV and supported-layout coverage remain separate work.
+agreed. **27 October decision 8** retains current numeric displayed HH/MM/SS/FF
+sorting and the Duration display-label CSV convention. Supported-layout coverage
+remains separate verification work.
 
 ## Table display: required frame timecode
 

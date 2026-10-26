@@ -94,8 +94,10 @@ exact arithmetic, nominal bases only for numbering, qualified DF, preserved
 audio samples, known zero `00:00:00:00`, unavailable blank and hours beyond 24.
 The user subsequently locked in the discussed audio display-clock/verified
 maths and qualified DF source, genuine-absence NDF fallback and damaged-required-
-input blank behaviour. Supported layouts/edges and Duration sorting/CSV remain
-separate work; the native audio UI path is not claimed fully traced.
+input blank behaviour. Supported layouts/edges remain verification work.
+**27 October decision 8** retains numeric displayed-timecode Duration order,
+current blank/Kind handling and the Duration display-label CSV convention.
+The native audio UI path is not claimed fully traced.
 
 The [20 October audio Sample Rate follow-up](audio-sample-rate.md) traces
 PCMA's dedicated AudioSamplingRate and AIFD/WAVD's embedded Summary frequencies.

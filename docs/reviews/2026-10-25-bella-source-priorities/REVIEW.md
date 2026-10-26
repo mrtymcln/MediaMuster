@@ -103,11 +103,18 @@ introduce a staleness gate based on that ignored value.
 
 Implement fixed source choices and compact results. No retained candidate
 history, voting, quality score, per-column framework or completion-order wins.
-Reader-specific damage/version/text policies remain in force. Final scheduling,
-cancellation/progress/publication and concurrency coordination are the brief
-design still to complete; four PMR/four MDB jobs does not decide header workers.
+Reader-specific damage/version/text policies remain in force. The original
+four-PMR/four-MDB maxima did not decide the overall/header allowance.
+**Scheduling update, 27 October:** the user approved a combined maximum of four
+reading jobs total across PMR, MDB and required media headers, then chose one
+background organiser with one shared reader team. Remaining engineering choices
+still require the user's check-in; see the
+[decision register](../2026-10-26-bella-scanner-design/REVIEW.md#decision-register).
 
 The [decision basis](../../../Project%20Bella/evidence/source-priorities-2026-10-25.json)
 links the relevant existing approvals/reviews. This turn adds no new binary or
 physical-media audit, parser/test/build run, measured performance result or
-runtime change. The field/opening table is agreed; the brief scanner design is next.
+runtime change. The field/opening table is agreed. **27 October update:** all
+eight scanner-workflow register decisions are resolved, including retaining
+current progress delivery and numeric timecode Duration order. New concrete
+implementation choices still need check-ins; see the decision register above.

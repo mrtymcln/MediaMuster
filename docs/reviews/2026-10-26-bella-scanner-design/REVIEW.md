@@ -1,11 +1,62 @@
-# Bella scanner design proposal
+# Bella scanner design and decisions
 
-Design proposal: 26 October 2026. Visible result/Cancel choices agreed:
-27 October 2026. Bella will use ordinary C++17 and the project's pinned Qt 6.5.3
-facilities to implement the agreed parser and source rules. The design covers
-ownership, scheduling and the scan's visible behaviour. OldScanner
-remains active during development and comparison; cutover still requires the
-user's explicit approval.
+Initial proposal: 26 October 2026. All eight registered decisions resolved:
+27 October 2026. Bella will use C++17 and the project's pinned Qt 6.5.3 to
+implement the agreed parser and source rules. The register distinguishes the
+chosen policies from rejected recommendations. Detailed implementation proposals
+below still require check-ins when concrete. OldScanner remains active during
+development/comparison; cutover requires the user's explicit approval.
+
+**Decision check-ins, 27 October:** the user requires every new decision to be
+explained in plain English, with the recommendation highlighted, before it is
+implemented. The engineering details below are proposals. The approved metadata,
+source priorities, separate PMR/MDB maxima, shared four-job ceiling,
+organiser/shared-team arrangement, compact-lookup lifetime, measurement without
+added memory controls, changed-read/manual-rescan handling, responsive cleanup,
+retained current progress/warning delivery, numeric timecode Duration order
+and result/Cancel choices remain
+approved. The [working agreement](../../../Project%20Bella/README.md#decision-check-ins)
+supersedes earlier wording that engineering defaults needed no user decision.
+
+## Decision register
+
+All eight decisions below are resolved. This does not mean every recommendation
+was selected or every future implementation choice has been identified. The user
+kept current progress delivery and numeric timecode Duration order, declining
+the proposed timer/coalescing and elapsed-time sort. New concrete API, lifetime,
+layout or label choices still require check-ins. Added memory controls are not
+approved; measurements must be presented first. No runtime or cutover is implied.
+
+| Decision | Options and recommendation | Basis |
+| --- | --- | --- |
+| 1. How many reads at once? **Agreed 27 October.** | **Four reads total**, shared by PMR, MDB and required headers. The four slots may be used by one format or a mixture; no more than four source jobs together. The user chose this option explicitly. | The current [database loop](../../../src/oldscanner/mediaengine/scancoordinator.cpp#L365) reads sequentially. The new combined limit is approved; runtime benefit remains unmeasured. |
+| 2. Who organises the work? **Agreed 27 October.** | **One background organiser with one reusable shared team of readers.** The organiser assigns work and collects results; all formats share no more than four source-reader jobs total. The organiser sits outside those four reader slots. | The user chose this option explicitly. Current [OldScanner](../../../src/oldscanner/oldscanner.cpp#L137) already has one background organiser; shared concurrent readers are new work. Further lifetime/queue policies remain separate decisions. |
+| 3. When to release extracted database information? **Agreed 27 October.** | **Keep the required compact matching facts until all files have been matched, then release them.** Full database buffers/parser workspace still go after extraction. The user approved this following the book/notes explanation. Keep completed table values and required compact operation/status facts; the temporary matching catalogue is not a permanent cache. | Current [scan-wide indexes](../../../src/oldscanner/mediaengine/scancoordinator.cpp#L387) feed [file/master matching](../../../src/oldscanner/mediaengine/scancoordinator.cpp#L548) without a folder restriction. The earlier folder-release recommendation was corrected before approval. Matching scope is not changed by this lifetime decision. |
+| 4. What if databases are large? **Agreed 27 October.** | **Measure and report findings; no added memory caps or automatic memory controls.** The separate four-job maximum stays. Add no RAM quota, database-size policy limit or automatic reader reductions. Findings must come back to the user before any proposed change; approval does not pre-authorise later controls. | Captures [reserve the declared extent](../../../src/oldscanner/mediaengine/databaseimage.cpp#L59). Four jobs do not impose a fixed byte ceiling. No Bella measurements exist yet; existing bounds/type/extent checks remain. |
+| 5. What if a file changes during reading? **Agreed 27 October.** | **Report the changed read and let the user rescan.** Exclude that read, keep the physical row and independently valid facts, and use only already-approved fallback rules. Add no automatic fresh source retry. Changed physical media invalidates facts tied to the earlier identity. This leaves PMR DTM exclusion, in-memory set fallback and other opening rules unchanged. | Current [change checks](../../../src/oldscanner/mediaengine/scancoordinator.cpp#L282) exclude captured facts. Its [bounded fallback pass](../../../src/oldscanner/mediaengine/scancoordinator.cpp#L705) reconsiders unopened headers; it does not reread changed databases. Cheap checks still do not guarantee an atomic snapshot. |
+| 6. How to wait for Cancel or closing to finish? **Agreed 27 October.** | **Responsive safe cleanup.** Preserve responsive Cancel and keep the window responsive while readers stop safely and release working data. Permit another scan/final app close only once cleanup finishes. Keep partial results as already agreed. Blocked drive reads may still delay safe completion; detailed API/lifetime mechanisms remain to review. | Current [Cancel](../../../src/oldscanner/oldscanner.cpp#L252) sets a state/flag without joining; [the progress sheet](../../../src/progressdialog.cpp#L132) already shows Cancelling. [BackgroundJob restart/shutdown](../../../src/backgroundjob.h#L77) joins on the calling thread and can wait indefinitely. The new behaviour extends responsiveness through cleanup/closing. |
+| 7. How often to update progress and warnings? **Agreed 27 October.** | **Keep current progress delivery.** Preserve event-driven ordinary progress, existing full warning/path details, diagnostic logging and batched Console delivery. The proposed 200 ms timer/latest-snapshot coalescing was not selected. Add no warning summaries/suppression or new history cap. Any later change needs findings and another decision. | Current [callbacks](../../../src/oldscanner/oldscanner.cpp#L377) persist each full log line then send batches, accumulate warnings to 50 entries and throttle header checkpoints to 10 seconds; progress is emitted per callback. The [Console](../../../src/mainwindow.cpp#L1400) appends a combined batch and already has an existing visible-history limit. No measured reporting gain is claimed. |
+| 8. How should Duration sort? **Agreed 27 October.** | **Current timecode-number order.** Compare numeric displayed HH/MM/SS/FF components. Equal displayed tuples use Audio/Video/Unknown, then existing equivalent-row behaviour; blank grouping stays as today. Preserve earlier Bella known-zero/rounded-zero display corrections. No elapsed-time sort key, string-lexical sort, extra reads or new Duration display/export convention. | Current [Duration sort](../../../src/mediafilterproxy.cpp#L284) implements this tuple/Kind order. [Unavailable display](../../../src/mediafile.h#L294) groups first ascending. Existing [CSV](../../../src/mediacsv.cpp#L57) exports the displayed label. The user chose this alternative rather than the elapsed-time recommendation. |
+
+Illustrative decision 8 example, using NDF and matching display clocks:
+
+| Example | Display | Exact running time |
+| --- | --- | --- |
+| A: 20 frames at 25 fps | `00:00:00:20` | 4/5 second, or 0.8 s |
+| B: 24 frames at 60 fps | `00:00:00:24` | 2/5 second, or 0.4 s |
+
+Chosen ascending order remains A then B. The rejected elapsed-time alternative
+would put B then A. These are arithmetic examples, not inspected media-file
+results. Equal displayed timecode tuples use the current Kind order (Audio,
+Video, Unknown); equivalent rows keep existing behaviour without a new filename
+tie-break. Unavailable Duration remains a separate group, first ascending as
+today. Descending reverses these orders. Known zero and rounding
+to a zero display frame use the already-agreed Bella display rules, rather than
+restoring OldScanner's zero-as-unavailable limitation.
+
+The requested check-ins are about choices, not repeated approval of already
+agreed requirements. Reading source and gathering evidence may continue while
+a decision is pending; implementation depending on that answer must wait.
 
 ## Small components and standard facilities
 
@@ -24,12 +75,12 @@ Its [model threading rules](https://doc.qt.io/qt-6.5/qabstractitemmodel.html#thr
 require queued updates to a GUI-owned model. These facilities support this
 design; they do not enforce Bella's ownership or source-selection rules for us.
 
-The coordinator runs outside the four-job pool, so it can wait for source work
-without occupying a slot needed by that work. This means up to four source
-workers plus one coordinator, not four reserved CPUs. Start with four source
-jobs total, rather than four PMRs plus four MDBs plus additional headers. This
-engineering default satisfies both approved database maxima and sets an initial
-header limit; compare throughput and memory before changing it.
+The agreed ceiling is four source-reading jobs total, including required
+headers, managed by one background organiser and one shared reader team. The
+organiser runs outside the source-reader slots. That means up to four readers
+plus one organiser, not four reserved CPUs or a fifth source reader. Further
+queue, cancellation and memory policies remain separate decisions. Compare
+throughput and memory before proposing any later limit change.
 
 Use a small completion store protected by `QMutex` and
 [QWaitCondition](https://doc.qt.io/qt-6.5/qwaitcondition.html). Count dispatched
@@ -56,21 +107,27 @@ delivery; do not introduce APIs from later Qt releases.
    Use one coordinator-owned KelpieId allocator and the agreed path/full-ID
    duplicate rule. Preserve current path semantics rather than adding new
    case folding, symlink resolution or Unicode filename normalization.
-3. Work through a bounded window of media folders. Read each required PMR/MDB
-   once, extract the approved compact facts, and release raw bytes and temporary
-   container indexes. Keep the compact file/master lookup only while that
-   folder still needs matching or header-to-MDB rejoins.
-4. Wait for the folder's applicable database decisions before scheduling its
-   headers. Apply the [approved source table and opening rules](../2026-10-25-bella-source-priorities/REVIEW.md).
-   Open a header only for identification or database-unavailable fallback.
-   A blank column does not schedule another read.
+3. Read each required PMR/MDB once, extract the approved compact facts, and
+   release raw bytes and temporary container indexes. Agreed decision 3 keeps
+   the necessary compact file/master facts available until matching finishes,
+   because later files may match databases in other folders.
+   Source/association qualifications and conflicting claims must remain
+   distinguishable; this does not mean one arbitrary record wins per full ID.
+4. Before declaring MDB metadata unavailable, wait for database work eligible
+   to affect that file under the approved matching rules. Finishing only its
+   local folder is not proof that no eligible record exists elsewhere. Apply
+   the [approved source table and opening rules](../2026-10-25-bella-source-priorities/REVIEW.md):
+   a header is read only for identification or database-unavailable fallback,
+   never for an individual blank column. A header independently required for
+   identification need not wait for an unrelated database decision.
 5. If the required header identifies the file, try the retained compact MDB
    lookup and apply the same source table. Select one qualified master; keep
    each timing bundle and descriptor interpretation coherent. Task completion
    order must never decide the winning value or master. Use stable discovery
    positions for row placement, independently of worker completion order.
 6. Derive final fields and optional Effect/Category once from the selected
-   values. Release folder lookup data after all its consumers finish. Return
+   values. Release the temporary matching catalogue once matching and its
+   dependent checks are complete, as agreed in decision 3. Return
    one owned result containing rows, issues, completeness, outcome and timing.
 
 ## Memory and resource ownership
@@ -86,12 +143,27 @@ graphs after extraction.
 
 The file count determines the final inventory's memory cost. Four active jobs
 alone do not bound temporary bytes: databases and their decoded indexes vary
-in size. Account for raw captures, extraction workspace, retained folder facts
-and undrained completions. Use an internal admission budget informed by
-measurements; reduce parallelism for large captures, and permit a large valid
-job to run alone rather than rejecting it at an arbitrary format-size limit.
-An admission estimate cannot guarantee that every valid file fits available
-memory. Resource exhaustion is a resource failure, not corrupt media.
+in size. Account for raw captures, extraction workspace, retained compact matching
+facts and undrained completions. The agreed compact-lookup policy in decision 3
+retains only required extracted facts until matching completes; it does not
+retain raw databases or parser object graphs. Agreed decision 4 requires
+measurement and presentation of findings without added RAM caps or automatic
+memory-based reader reductions. The four-job maximum remains. Do not adopt a
+budget or controller while collecting measurements, or treat findings as
+automatic approval to add one. Existing bounds/type/extent checks remain;
+actual resource exhaustion is a resource failure, not corrupt media. Report
+representative scan time and peak memory under the agreed design before any
+new policy proposal. A job-count limit is not a fixed memory-byte limit.
+
+The current app already uses the same broad lifetime pattern. Its
+[database preparation](../../../src/oldscanner/mediaengine/databasesource.cpp#L63)
+releases the full image/parsed records after returning extracted projections
+and a source receipt. Projections/indexes survive matching; the working session
+survives [row preparation](../../../src/oldscanner/oldscanner.cpp#L438), then is
+released on return. Final rows retain values and compact status/operation checks.
+OldScanner's extracted observations also include raw field values, source
+references and explanations. Bella's intended simplification is in the retained
+representation and fields; no saving has yet been measured.
 
 Estimate header work from the metadata sections that will be read, not the
 whole media file's size. Keep picture/sound samples on disk. Preserve approved
@@ -105,6 +177,10 @@ filter rebuilding as well as parsing; one final handoff does not automatically
 make a large GUI update cheap.
 
 ## Cancellation and lifetime
+
+Decision 6's responsive cleanup behaviour is agreed. The detailed state,
+ownership and API arrangements below remain implementation proposals to review
+when concrete; they are not all selected automatically by the behaviour choice.
 
 Use a small explicit state sequence: idle, running, cancelling, publishing,
 then idle. Keep close/shutdown handling explicit. Cancel stops new dispatches
@@ -145,10 +221,20 @@ would be a separate feature, outside this design.
 
 Preserve the current discovering, reading and finalising phases. Show counts
 only when their scope is known; a file/job count is not a reliable estimate of
-elapsed time. Coalesce progress to the latest snapshot, with at most one pending
-GUI notification, and batch bounded log output. Do not enqueue an event for
-every row or allow progress/log queues to grow without limit. Keep summaries
-of repeated failures rather than retaining an unbounded duplicate message list.
+elapsed time. Agreed decision 7 retains current event-driven ordinary-progress
+delivery. Do not add a fixed refresh timer, latest-snapshot coalescing or a new
+progress rate limit. Preserve the existing phase/progress/Cancel/completion
+semantics and the agreed responsive cleanup. Any later reporting change must be
+presented with evidence for another user decision.
+
+Preserve existing warning details and file paths, diagnostic persistence and
+batched Console delivery. Current code already batches warning/log messages
+and throttles routine header checkpoints. The former proposal to summarise
+repeated warnings is withdrawn; suppressing/grouping their contents or adding a
+new history cap needs a separate decision. The existing Console's 2,000-block
+display history is distinct from disk logging and is not changed here. No
+measured UI bottleneck or gain is claimed. Current reporting behaviour is the
+approved baseline; the rejected timer/coalescing proposal is not a requirement.
 
 Apply the approved format-specific damage rules at their existing value,
 association, record or container boundary. A source failure leaves its physical
@@ -163,7 +249,10 @@ change information before and after reading, and reject a detected change.
 This is a practical change check, not a guarantee of an atomic filesystem
 snapshot: same-size rewrites may escape detection. Do not introduce whole-file
 hashes, locks, automatic repair, or an automatic retry loop. A manual rescan is
-a new run. Catch unexpected failures at the task boundary, release resources
+a new run. Agreed decision 5 excludes the changed read, reports it and leaves a
+fresh attempt to manual rescan, while retaining independently valid facts and
+only approved fallback rules. Facts for the former identity of replaced media
+cannot describe the new file. Catch unexpected failures at the task boundary, release resources
 and fail the scan coherently rather than letting an exception escape a worker
 or leaving the coordinator waiting for a completion that will never arrive.
 
@@ -184,14 +273,17 @@ choices and failure presentation. Do not add overlapping scans, background
 refresh or a new retry interface. These do not need new product decisions
 unless their current behaviour is deliberately changed.
 
-Keep established export/display conventions except the already approved Bella
-changes. Duration sorts by its exact elapsed value, independently of its
-HH:MM:SS:FF or DF HH:MM:SS;FF text; preserve the current CSV convention of
-exporting the displayed label. Keep numeric rates/depth/geometry for sorting
-where agreed, preserve known labels, and leave unsupported representations
-unavailable rather than inventing a label. Uncommon rate precision and the
-generic fixed `10.6`/`12.4` depth wording are bounded implementation checks,
-not reasons to reopen the parser plan.
+Keep approved export/display conventions. Agreed decision 8 retains numeric
+displayed-timecode component sorting; exact elapsed time is not the sort key.
+Retain blank grouping and Kind ties for equal displayed tuples. The display
+remains NDF `HH:MM:SS:FF` or DF `HH;MM;SS;FF`, including previously agreed zero
+and unavailable handling. Duration CSV uses its display label; this decision
+does not undo earlier Bella field exclusions/renames. Any new export change
+requires a check-in. Keep numeric rates/depth/geometry where agreed
+and apply each field's approved unavailable presentation. Bring concrete
+uncommon rate precision and fixed `10.6`/`12.4` depth-label choices to the user
+with examples before deciding them. Do not invent a label or reopen settled
+parser rules without a stated reason.
 
 ## Starting source layout
 

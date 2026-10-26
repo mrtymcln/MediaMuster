@@ -264,7 +264,10 @@ rejected on 20 October. Exact arithmetic and source preservation, qualified DF,
 known zero/unavailable display and no 24-hour wrap are agreed. The discussed
 audio display clock/verified maths and linked DF selection are now accepted,
 including genuine-absence NDF and damaged-required-input blank display.
-Safe supported-layout/edge coverage and Duration sorting/CSV remain separate work.
+Safe supported-layout/edge coverage remains verification work. **27 October
+decision 8** settles sorting: retain current numeric displayed HH/MM/SS/FF order,
+with current blank grouping and Kind ties; Duration CSV keeps its display label.
+Exact elapsed arithmetic remains required for interpretation/display.
 
 ### Internal rate and separate table columns
 
