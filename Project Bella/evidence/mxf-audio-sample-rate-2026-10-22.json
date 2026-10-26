@@ -1,0 +1,1215 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "MXF audio sampling frequency: dedicated own AudioSamplingRate rational, installed native/library/current comparison, compact exact retention and unavailable-value proposal.",
+  "request": "OK, let's lock those Frame Rate rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read audio Sample Rate from MXF, and what should Bella read and keep?\nAnd how far % are we from finishing?",
+  "status": "Focused MXF audio Sample Rate requirements approved2026-10-22; unimplemented. Earlier pending wording in the historical research body is superseded by the separate approval receipt. Raw/native/source/corpus facts and artifact hashes remain unchanged.",
+  "precedingFrameRateApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-frame-rate-plan-2026-10-22.json",
+    "sha256": "8f8a4c69e164538b4b82326f03a342d22fa04e598eeb0d09c3576920329ca717",
+    "bytes": 4934
+  },
+  "rawReceipts": [
+    {
+      "path": "/private/tmp/bella-mxf-audio-rate-mc-20261022/findings.json",
+      "sha256": "cf7f6510a8b97b620d186576a166c129af773a1c9bd2f6d89096677b64fd3b23",
+      "bytes": 18701
+    },
+    {
+      "path": "/private/tmp/bella-mxf-audio-rate-mdvx-20261022/findings.json",
+      "sha256": "7d15792efcf30f772f1ef32b34c4518a3263d73a81fcc7858e3f8c7b11ca8460",
+      "bytes": 5960
+    },
+    {
+      "path": "/private/tmp/bella-mxf-audio-rate-current-20261022.json",
+      "sha256": "f415ea9fcbfa0efe8aafd53b7f81c43e86375576bb2326cb3f4053202086674f",
+      "bytes": 35637
+    }
+  ],
+  "mediaComposer": {
+    "date": "2026-10-22",
+    "timezone": "Australia/Sydney",
+    "purpose": "Focused installed Media Composer own sound-descriptor audio sampling-frequency import, getter, publication, export and failure-path audit.",
+    "method": "Read-only named arm64 disassembly, prior connected own physical SourceMob descriptor import receipts, explicit engine chained-vtable decoding and toolkit ordinary getter/setter slots. No application/private API or media execution.",
+    "findings": [
+      {
+        "topic": "Own sound-descriptor AudioSamplingRate is explicitly imported",
+        "anchors": [
+          "ordinary own descriptor chain: prior Kind/Duration receipts",
+          "PCMAudioDescriptor::GetAAFProperties calls AudioMediaDesc::GetAAFProperties 0x3ea24c",
+          "AudioMediaDesc::GetAAFProperties 0x362aac",
+          "same supplied object query IAAFSoundDescriptor 0x362b44",
+          "typed GetAudioSamplingRate interface slot 0x40 call 0x362c30",
+          "ConvertAAFEditRate call 0x362c68",
+          "audio sampling setter slot 0x3a0 call 0x362c7c"
+        ],
+        "evidence": "After separately calling the FileDescriptor base importer on the same own object, the sound importer queries IAAFSoundDescriptor, obtains its typed rational AudioSamplingRate and assigns the internal audio sampling-rate state. The toolkit getter returns the stored rational through the sound descriptor property, rather than parsing a text label. This is the own file sound frequency route; track EditRate, Preface.ProjectEditRate and nominal timecode base are different facts."
+      },
+      {
+        "topic": "Typed getter and setter resolve to separate audio state",
+        "anchors": [
+          "CAAFSoundDescriptor::GetAudioSamplingRate 0x5a438",
+          "ImplAAFSoundDescriptor::GetAudioSamplingRate 0x148d94",
+          "CAAFSoundDescriptor::SetAudioSamplingRate 0x5a384",
+          "AudioMediaDesc::GetAudioSamplingRate 0x360a54",
+          "AudioMediaDesc::SetAudioSamplingRate 0x360aa8",
+          "toolkit sound interface point 0x2f5c60, setter/getter offsets 0x38/0x40"
+        ],
+        "evidence": "The implementation getter copies the packed eight-byte rational property to the caller. The engine audio getter/setter use state at this+0x450, distinct from the base file rate state. The bounded getter does not perform its own positive numerator/denominator semantic validation; that does not establish arbitrary malformed property safety."
+      },
+      {
+        "topic": "Failure is not a universal native blank/default policy",
+        "anchors": [
+          "zero rational output initialization 0x362c1c",
+          "GetAudioSamplingRate HRESULT branch 0x362c34",
+          "SUCCEEDED(hr) assertion machinery 0x362c38..0x362c5c",
+          "conversion and setter continue 0x362c60..0x362c7c",
+          "sound interface failure exit 0x362b48 to 0x363350"
+        ],
+        "evidence": "The sound-interface query failure returns false. The sampling getter result is checked, but failure enters assertion/debug machinery; if execution continues, the importer still reads the initialized output and calls conversion/setter. There is no frequency-specific missing-to-48000 default or clean blank policy proved by this block. The base file import boolean is not checked before sound fields are imported. Bella can independently retain a valid AudioSamplingRate while Duration metadata is unusable; an explicit missing/damaged/sentinel-to-unavailable rule is Bella design rather than a claim that every native subclass/UI does that."
+      },
+      {
+        "topic": "Native conversion uses internal edit-rate representation, not a raw MXF fallback rule",
+        "anchors": [
+          "AAFDomain::ConvertAAFEditRate 0x4ecc8",
+          "PCM SetRate 0x3e9450",
+          "PCM GetExactEditRate 0x3e9444",
+          "PCM SetAudioSamplingRate 0x3e948c"
+        ],
+        "evidence": "AudioSamplingRate is passed through the same native finite-alias/internal-decimal conversion routine used by other typed rates. PCM SetRate initializes both base file rate and audio rate; later explicit AudioSamplingRate import can replace the audio frequency. PCM GetExactEditRate forwards to its audio-rate getter, while a direct base getter preserves the separately stored file clock where needed. This coupled class architecture is not permission to infer a raw absent AudioSamplingRate from FileDescriptor.SampleRate, nor to apply video aliases indiscriminately to explicit audio-frequency rationals in Bella."
+      },
+      {
+        "topic": "Audio metadata publication has an audio-specific rational boundary",
+        "anchors": [
+          "AudioMediaDesc::FillMetadataSet 0x363658",
+          "base file metadata call 0x363688",
+          "audio getter slot 0x358 call 0x3636d0",
+          "zero-mantissa alternative getter slot 0x278 call 0x3636e4",
+          "ameAMAFI::AudioExactEditRateToRational call 0x3636ec",
+          "AMAFI::Metadata::AudioSampleRate at 0x14ef9d8 set 0x363708",
+          "AudioExactEditRateToRational 0x48fd48"
+        ],
+        "evidence": "The audio publisher first invokes the base file publisher, then obtains audio sampling rate and writes a distinct rational AudioSampleRate metadata property. If the audio getter mantissa is zero, it obtains the virtual exact descriptor rate instead before conversion. The audio-specific converter calls ClockRateToAudioClock and can use AudioClockToClockRational; its other branch uses RationalFromExactEditRate. These are native internal publication conventions, not proof of a universal wire-property fallback, perfect rational round trip or table-cell selection. Bella should preserve a usable explicit raw AudioSamplingRate rational directly."
+      },
+      {
+        "topic": "Native AAF/MXF typed property export is separate",
+        "anchors": [
+          "AudioMediaDesc::SetAAFProperties 0x362494",
+          "audio getter call 0x3625d8",
+          "ConvertCMEditRate call 0x3625e8",
+          "typed sound SetAudioSamplingRate slot 0x38 call 0x3625fc"
+        ],
+        "evidence": "The export path obtains the internal audio sampling frequency, converts it with the domain ConvertCMEditRate and calls the typed sound descriptor setter. This connects import/state/export property meaning. It is not a complete all-format GUI Sample Rate trace and does not make native internal decimal conversion a Bella storage requirement."
+      },
+      {
+        "topic": "AES3 PCM shares the sound path; legacy WAVE Summary is a different route",
+        "anchors": [
+          "AES3PCMAudioDescriptor::GetAAFProperties 0xb73b40",
+          "PCM property import call 0xb73b94",
+          "WAVEDescriptor::GetAAFProperties 0x3fae10",
+          "WAVE base file import call 0x3fae90",
+          "WAVE Summary size/getter/import around 0x3faea8..0x3faf20"
+        ],
+        "evidence": "The AES3 PCM property importer delegates to PCM, whose property importer calls AudioMediaDesc. The native factory also has PCM/Sound interface map entries, but a generic factory map alone is not proof every concrete class satisfies every later PCM interface check. A separate legacy IAAFWAVEDescriptor importer calls the file base and reads/parses an embedded WAVE Summary rather than calling this sound property routine. Do not conflate that legacy AAF interface with the modern MXF WaveAudioDescriptor subclass inheriting GenericSound properties. These bounded branches do not broaden Bella release scope or create a WAVE Summary fallback requirement."
+      },
+      {
+        "topic": "Frequency cannot be inferred from similarly named clocks",
+        "evidence": "Own FileDescriptor.SampleRate gives the physical duration count clock; AudioSamplingRate gives sound sampling frequency; track EditRate and recorded Preface.ProjectEditRate can support editing/frame-numbering context. Ordinary 48000/1 examples may make some values equal without proving interchangeability. No 48000 default, no sample-rate borrowing from another package, no channel-count multiplication and no duration/byte-size/codec decode inference are established by this native audit."
+      }
+    ],
+    "settledBellaBoundary": "Prior MXF Frame Rate rules are user-approved; new focused audio Sample Rate details remain research/proposal. Exact rational/numeric storage, late display labels, audio frequency separate from audio Duration display clock, video Sample Rate blank and MDB-first/already-required-header source boundaries are not reopened. No additional header-opening rule or Duration/DF change is introduced.",
+    "limits": [
+      "No complete Media Composer Sample Rate table-cell source, formatting/default/error behavior or universal GUI parity is established.",
+      "Typed property import/state/publication/export is connected for the inspected own descriptor audio path. Legacy WAVE Summary and modern MXF WaveAudioDescriptor are distinct contexts.",
+      "No arbitrary malformed-input, unobserved fractional/clock alias, generic class, unsupported wrapping, MultipleDescriptor or source/master recovery guarantee is established.",
+      "Native internal publication fallbacks/converters are evidence, not instructions to copy missing-value fallback into Bella.",
+      "No application/private API execution, media read/write, production test, scan benchmark or repository edit was performed."
+    ],
+    "binaries": [
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libcom-api.dylib",
+        "sha256": "9bef7c474afa461af413cde63dcbc0b048aeabe2a685bc3fd487cb4647447728"
+      }
+    ]
+  },
+  "mdvx": {
+    "date": "2026-10-22",
+    "method": "Read-only bounded installed arm64 MDVx trace reusing unchanged matching native disassembly. No app/UI/privateAPI, runtime probes, media/database or repository writes.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "size": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+    },
+    "libraryCapability": {
+      "owner": "Selected file SourcePackage.Descriptor; existing helper selects file package via singular ECD.LinkedPackageUID -> ContentStorage package fullIDmatch -> SourcePackage class. Not MaterialPackage or arbitraryfirstsounddescriptor.",
+      "guard": "After picture-descriptor branch isnotselected, ami0x1000108a8..0x1000108bc calls mxf_is_subclass_of(...GenericSoundEssenceDescriptor). No exact WaveAudioDescriptor/AES3AudioDescriptor branchhere. Acceptanceofdescendantsdependsregistereddata-modelinheritance.",
+      "property": "GenericSoundEssenceDescriptor.AudioSamplingRate, optional mxf_have_item check0x1000108c0..0x1000108d0; getter0x1000108d4..0x1000108e8.",
+      "rawType": "mxf_get_rational_item0x10004a17c requires8bytes, readsnumerator/denominatoras2BE32words, writesdirectlyinfo.audioSamplingRate at+0x108. No floatingrounding, kHzconversion, re-inferencefromEditRate orlegacyMDBwordconversionhere.",
+      "units": "Thisis descriptor audio samplingfrequency ratherthan project/material EditRate. Librarypreservesrationalpair: e.g. stored48000/1 remains48000/1; no1000scaleisapplied. FormalMXFunitmeaningcomesfromschema, notaneyexampleexecutedhere.",
+      "diagnostic": "ami_print_info0x100012a8c..0x100012aa0 prints originalpairwith Audio sampling rate = %d/%d. Diagnosticonly, notordinarytableprojection.",
+      "absence": "Info initializedzeroatentry; missingAudioSamplingRate skipsgetter andleavespair0/0. DoesnotfallbacktoFileDescriptor.SampleRate ortrackEditRate.",
+      "damage": "Presentwrongwidth/failedgetter branches0x1000108e8->0x100010f20 andamierrorcleanup. Gettervalidatesshape, notpositivefrequency/nondenominator0. No damagedfixtureexecution.",
+      "scope": "Unknown/non-GenericSounddescriptor doesnotreadthisproperty; no MultipleDescriptorchildselectioninthisordinaryamibranch. Unregisteredclassdoesnotgaineffectthroughpropertypresence."
+    },
+    "ordinaryMxfProjection": {
+      "wrapper": "MDVxMXF.openFile0x100032410..0x100032668 createsdictionaryforclipname/project/fileUID/matUIDonly, thenami_free_info. addInfoToItem0x1000326b4..0x100032804 transfersthosefouronly. NoSampleRatekey orsettercall.",
+      "item": "setSampleRateNumerator:denominator:0x100031098 writespairitem+0xd0; DB_samplerate0x1000315e8 returnsstored8bytes. MXFwrapperdoesnotpopulateit.",
+      "table": "SamplerateCellID0x100050918..0x1000509fc normallygetsDB_samplerate, blankifnumeratorzero, substitutesdenominator1ifzero, dividesasdoubleandlookslabelup; stringvaluepath0x1000511c0..0x1000512a4 matches. SeparateDIDResolutionID1235..1274 branchshowsbitratetextinthatcolumn. Theseformattingchoicesdo notestablishMXFsample-rateprojection.",
+      "bareHeaderFallback": "A bareMXFfallbackwithoutotherrateenrichmentleavessample-ratepairzero, sostatictableaudio-ratepathhasnovalue. NoactualUIobservationasserted."
+    },
+    "plainSummary": "BundledlibMXFknowsandreadsownsounddescriptorAudioSamplingRateasexactrational, butordinaryMDVXMXFscannerdoesnotkeepit. Bellaextraaudiofrequencywouldbeadditionalprojectionofalreadyreadmetadata, notcopyingexistingMDVXrowbehavior.",
+    "limits": [
+      "Installedbinary/staticpaths only.",
+      "NoFrameRate/Duration/audioSampleRatepriorityapprovalcreatedhere.",
+      "NoMXFrateconformanceorallproducercoverageclaim.",
+      "Libraryratepairwidthchecksarenotproofallsemanticvaluesvalid.",
+      "Nomemory/speedimprovementmeasured."
+    ]
+  },
+  "currentMediaMuster": {
+    "sourceInputs": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+        "sha256": "c8c68e78db5f3efaa62235f55624c5478e89a0adc37581a922af050f931cad55",
+        "bytes": 63597
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+        "sha256": "379a31643b62b945e3e1ed83245e5f3a7be8df4ebeec73aea31327c1d915b374",
+        "bytes": 23401
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+        "sha256": "6d67b2300f380cd63a50547595154ee27d8ab69f36b6d87e83e81fd3a33ff75c",
+        "bytes": 54490
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+        "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce",
+        "bytes": 10189
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+        "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6",
+        "bytes": 10816
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+        "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e",
+        "bytes": 36110
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+        "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935",
+        "bytes": 5202
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaduration.h",
+        "sha256": "c59928f0d6f4ac92c93ad7a258bbcaf60516da2fd9fed616293b63bb839fafb6",
+        "bytes": 3071
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+        "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3",
+        "bytes": 12788
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+        "sha256": "c85f1d11bcb15eddcfbba7c9cbbc57c8fdafdb8cac8c4af6b575d62c1575c746",
+        "bytes": 25170
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+        "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56",
+        "bytes": 12214
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafilterproxy.cpp",
+        "sha256": "2c10657c82a6d3456815966664c62ab0b77a29d02a6e514fd865510fe7349e0c",
+        "bytes": 11470
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp",
+        "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442",
+        "bytes": 3609
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+        "sha256": "f9f633bc0022e5f681b210d58a95cf472b04db0b6189ead78f9d22b7e8618a22",
+        "bytes": 60904
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp",
+        "sha256": "111291a8f3b4b737852cdf12e9801a7397cc0cf9e2550e8292247ab87831a72c",
+        "bytes": 62711
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediacsv.cpp",
+        "sha256": "4f14378fcd87ad7acf4b903de30c7d93e208a26c679068bff4c5dc5a70b582b8",
+        "bytes": 21349
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_scanner.cpp",
+        "sha256": "6eb123f014a1eacd66442e3e1ce96a61631382f9ed1890b79dfc8c8d00e69426",
+        "bytes": 185966
+      }
+    ],
+    "sourceFindings": [
+      {
+        "topic": "Wire format and identity",
+        "detail": "Own GenericSoundEssenceDescriptor.AudioSamplingRate has registered UL060e2b34010101050402030101010000 and Rational type. Rational consists of complete eight-byte numerator then denominator, both signed big-endian32. Decode exact words, not text. It is distinct from FileDescriptor.SampleRate, Track.EditRate and Preface.ProjectEditRate.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": [
+              148,
+              150
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": [
+              224,
+              224
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": [
+              439,
+              439
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": [
+              506,
+              514
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+            "lines": [
+              282,
+              332
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Owner and current class handling",
+        "detail": "Current descriptor belongs to the essence-qualified physical SourcePackage through its complete descriptor relationship. Wave and AES3 inherit GenericSound. Current OldScanner also infers sound from AudioSamplingRate or SoundEssenceCompression property presence on unknown classes; if sound and picture classifications coexist it returns unresolved. Bella already approved exact known-class Kind mapping instead of this unknown-class inference.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              240,
+              283
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              510,
+              553
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              654,
+              670
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              742,
+              759
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": [
+              299,
+              301
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Current concrete sampling source",
+        "detail": "For sound, projector reads only its own GenericSoundEssenceDescriptor.AudioSamplingRate and emits SampleRate if positive numerator/denominator are usable. No fallback to FileDescriptor.SampleRate, track rate, master/project editing clock, PCM coding default,48k assumption or standard-frequency whitelist occurs. It separately reads ChannelCount; channel count does not multiply sampling frequency.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              764,
+              774
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              800,
+              807
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+            "lines": [
+              138,
+              145
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediaduration.h",
+            "lines": [
+              7,
+              19
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Duration and visible Frame Rate remain independent",
+        "detail": "FileDescriptor.ContainerDuration is paired with its same FileDescriptor.SampleRate. AudioSamplingRate is a separate concrete frequency. Audio Duration uses a separate recorded display clock; that clock and48000Hz never become visible audio FrameRate. A missing/damaged AudioSamplingRate does not by itself erase a separately usable Duration pair, and valid AudioSamplingRate does not repair missing/damaged Duration unit-rate/count.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              764,
+              774
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              829,
+              834
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              622,
+              627
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Damage and ambiguity",
+        "detail": "unique rejects unreadable/invalid or conflicting repeated decoded values. Complete known Rational with numerator>0 and denominator>0 is required to emit the rate; zero/negative/zero-divisor do not become48k or a valid zero frequency. MultipleDescriptor projection can emit several child values; resolver compares positive rate fractions exactly by64-bit cross-products and blanks incompatible equal-rank alternatives. Do not conflate that OldScanner traversal with Bella approving all interleaved variants.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              24,
+              36
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              510,
+              553
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              769,
+              773
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+            "lines": [
+              565,
+              650
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Current cross-source policy and scheduling",
+        "detail": "Current SampleRate source priority is usable MXF/OMF before MDB. Audio missing usable SampleRate is one required-metadata reason to read a header. This is current OldScanner behavior. Bella audio SampleRate cross-source priorities/header-open conditions remain later decisions; do not automatically import the specific approved FrameRate fallback rule into this field.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+            "lines": [
+              104,
+              106
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+            "lines": [
+              131,
+              157
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Exact pair and compatibility integer",
+        "detail": "Adapter copies selected exact numerator/denominator to row.sampleRateRatio, preserving unreduced fractions. It separately derives qRound(ratio.value()) into whole-Hz int sampleRate, or0 when unavailable. This integer is a compatibility duplicate, not the authoritative preserved value. The table/sorting/CSV all prefer the exact ratio when valid, so rounding that int normally does not cause displayed or sorted fractional frequency loss.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+            "lines": [
+              20,
+              24
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+            "lines": [
+              43,
+              46
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+            "lines": [
+              53,
+              54
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+            "lines": [
+              271,
+              281
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Late kHz labels, table and CSV",
+        "detail": "sampleRateHz() uses double(numerator)/denominator when the exact pair is valid, otherwise nonnegative compatibility int. sampleRateDisplay() divides Hz by1000 and formats general notation with10 significant digits plus kHz. No stored per-row SampleRate label is created by the adapter. Unknown/nonpositive values show blank. Table and CSV call that shared helper, e.g.48kHz,44.1kHz,96kHz. The current helper itself does not gate on Kind; normal projections supply SampleRate only for audio. Bella already requires blank SampleRate for video.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+            "lines": [
+              271,
+              281
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+            "lines": [
+              238,
+              239
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp",
+            "lines": [
+              59,
+              59
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediacsv.cpp",
+            "lines": [
+              215,
+              250
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Numeric comparison",
+        "detail": "SampleRate sorting directly compares sampleRateHz() doubles, never parses the formatted kHz label or uses the rounded whole-Hz compatibility int when an exact ratio exists. Table UserRole exposes the same positive numeric Hz. Thus current source retains exact ratio and avoids label-round-trip sorting, though comparison still converts to floating point. Bella can share a small exact rational comparison helper; qint32 positive factors fit exact qint64 cross-products. Generic uncommon-frequency label precision remains a presentation choice.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediafilterproxy.cpp",
+            "lines": [
+              320,
+              321
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+            "lines": [
+              312,
+              313
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediaduration.h",
+            "lines": [
+              7,
+              19
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+            "lines": [
+              574,
+              580
+            ]
+          }
+        ]
+      }
+    ],
+    "plainSummary": "Current own sound descriptor AudioSamplingRate is the concrete frequency source. Positive exact rational survives in sampleRateRatio; rounded whole-Hz compatibility integer is secondary. Table/CSV use late kHz labels from the ratio; sorting uses numeric frequency, not parsed label. No clock/default fallback is supplied. This good source separation can be re-expressed in fresh small Bella helpers.",
+    "reviewedExistingTestsNotRun": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+        "lines": [
+          755,
+          775
+        ],
+        "fact": "WaveAudio48k concrete AudioSamplingRate and Duration sample preservation; no visible FrameRate. Not AES3/non48k actual-file coverage."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_scanner.cpp",
+        "lines": [
+          1837,
+          1910
+        ],
+        "fact": "GeneratedMDB96000/2 preserves original sampleRateRatio while integer compatibility value48000. This is useful rational retention coverage, not MXF-source evidence."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp",
+        "lines": [
+          306,
+          331
+        ],
+        "fact": "Integer-Hz sorting examples0,44100,48000,96000,192000; not a fractional-rate precision test."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediacsv.cpp",
+        "lines": [
+          215,
+          250
+        ],
+        "fact": "Synthetic44.1/48/96kHz table/CSVlabels and videozero blank. DoesnotestablishtheseactualMXFproducers."
+      }
+    ]
+  },
+  "actualEvidence": {
+    "reusedOverallHeaderCount": 13,
+    "audioCount": 5,
+    "audioDescriptorClass": "WaveAudioDescriptor",
+    "audioSamplingRateCounts": [
+      {
+        "numerator": 48000,
+        "denominator": 1,
+        "files": 5
+      }
+    ],
+    "durationUnitRateEqualsConcreteFrequency": 5,
+    "ownTrackEditRateEqualsConcreteFrequency": 5,
+    "separateRecordedPrefaceProjectRates": [
+      [
+        24,
+        1
+      ],
+      [
+        25,
+        1
+      ],
+      [
+        25,
+        1
+      ],
+      [
+        25,
+        1
+      ],
+      [
+        30000,
+        1001
+      ]
+    ],
+    "readThisFollowup": false,
+    "observations": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1001.WAVA01.D8875D202DA97BA.mxf",
+        "reusedHeaderRange": [
+          256,
+          261920
+        ],
+        "reusedHeaderSha256": "f8475c6079b53ff1aefaa33c7306a48538c43ffba8c3e3b189da14617d3cef44",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f10130000007ba92d202585059152bc34363bcdaf64",
+        "descriptorOffset": 122972,
+        "descriptorClass": "WaveAudioDescriptor",
+        "audioSamplingRate": [
+          {
+            "property": "GenericSoundEssenceDescriptor.AudioSamplingRate",
+            "type": "MXF_RATIONAL_TYPE",
+            "hex": "0000bb8000000001",
+            "range": [
+              123068,
+              8
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ],
+        "durationUnitRate": [
+          {
+            "property": "FileDescriptor.SampleRate",
+            "type": "MXF_RATIONAL_TYPE",
+            "hex": "0000bb8000000001",
+            "range": [
+              123120,
+              8
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ],
+        "ownTrackEditRates": [
+          {
+            "trackOffset": 123128,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  123229,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000bb8000000001",
+                "range": [
+                  123189,
+                  8
+                ],
+                "value": [
+                  48000,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "prefaceProjectEditRate": [
+          {
+            "property": "Preface.ProjectEditRate",
+            "type": "MXF_RATIONAL_TYPE",
+            "hex": "0000001800000001",
+            "range": [
+              91022,
+              8
+            ],
+            "value": [
+              24,
+              1
+            ]
+          }
+        ],
+        "mdbAudioSamplingRate": [
+          {
+            "property": "OMFI:PCMA:AudioSamplingRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "80bb000001000000",
+            "ranges": [
+              [
+                1343431,
+                8
+              ]
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/5511410TA01.6A041816BE45ECA.mxf",
+        "reusedHeaderRange": [
+          256,
+          261920
+        ],
+        "reusedHeaderSha256": "050a663a4f9d5a77abfea1df9581b2943205234cb7277e95e3aebded19dbf032",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ec45be167311069643cb7c57583610fa",
+        "descriptorOffset": 135501,
+        "descriptorClass": "WaveAudioDescriptor",
+        "audioSamplingRate": [
+          {
+            "property": "GenericSoundEssenceDescriptor.AudioSamplingRate",
+            "type": "MXF_RATIONAL_TYPE",
+            "hex": "0000bb8000000001",
+            "range": [
+              135597,
+              8
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ],
+        "durationUnitRate": [
+          {
+            "property": "FileDescriptor.SampleRate",
+            "type": "MXF_RATIONAL_TYPE",
+            "hex": "0000bb8000000001",
+            "range": [
+              135649,
+              8
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ],
+        "ownTrackEditRates": [
+          {
+            "trackOffset": 135657,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  135758,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000bb8000000001",
+                "range": [
+                  135718,
+                  8
+                ],
+                "value": [
+                  48000,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "prefaceProjectEditRate": [
+          {
+            "property": "Preface.ProjectEditRate",
+            "type": "MXF_RATIONAL_TYPE",
+            "hex": "0000001900000001",
+            "range": [
+              91896,
+              8
+            ],
+            "value": [
+              25,
+              1
+            ]
+          }
+        ],
+        "mdbAudioSamplingRate": [
+          {
+            "property": "OMFI:PCMA:AudioSamplingRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "80bb000001000000",
+            "ranges": [
+              [
+                3693532,
+                8
+              ]
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7280108SMA01.6A04F087D5405A.mxf",
+        "reusedHeaderRange": [
+          256,
+          261920
+        ],
+        "reusedHeaderSha256": "7250a5396f79cd9b932e1af16fd33402f436ce0f4f11de7f51d80a0efc8fac70",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f101300000005547d087311069613b27c57583610fa",
+        "descriptorOffset": 126951,
+        "descriptorClass": "WaveAudioDescriptor",
+        "audioSamplingRate": [
+          {
+            "property": "GenericSoundEssenceDescriptor.AudioSamplingRate",
+            "type": "MXF_RATIONAL_TYPE",
+            "hex": "0000bb8000000001",
+            "range": [
+              127047,
+              8
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ],
+        "durationUnitRate": [
+          {
+            "property": "FileDescriptor.SampleRate",
+            "type": "MXF_RATIONAL_TYPE",
+            "hex": "0000bb8000000001",
+            "range": [
+              127099,
+              8
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ],
+        "ownTrackEditRates": [
+          {
+            "trackOffset": 127107,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  127208,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000bb8000000001",
+                "range": [
+                  127168,
+                  8
+                ],
+                "value": [
+                  48000,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "prefaceProjectEditRate": [
+          {
+            "property": "Preface.ProjectEditRate",
+            "type": "MXF_RATIONAL_TYPE",
+            "hex": "0000001900000001",
+            "range": [
+              91896,
+              8
+            ],
+            "value": [
+              25,
+              1
+            ]
+          }
+        ],
+        "mdbAudioSamplingRate": [
+          {
+            "property": "OMFI:PCMA:AudioSamplingRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "80bb000001000000",
+            "ranges": [
+              [
+                1477100,
+                8
+              ]
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7293007LMA01.6A0500C57EA1CA.mxf",
+        "reusedHeaderRange": [
+          256,
+          261920
+        ],
+        "reusedHeaderSha256": "3fd75b378276e469f6799026f3e68db865f2e5e1317666c721dd3e50db540a52",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f10130000001cea570c73110696a5e97c57583610fa",
+        "descriptorOffset": 127394,
+        "descriptorClass": "WaveAudioDescriptor",
+        "audioSamplingRate": [
+          {
+            "property": "GenericSoundEssenceDescriptor.AudioSamplingRate",
+            "type": "MXF_RATIONAL_TYPE",
+            "hex": "0000bb8000000001",
+            "range": [
+              127490,
+              8
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ],
+        "durationUnitRate": [
+          {
+            "property": "FileDescriptor.SampleRate",
+            "type": "MXF_RATIONAL_TYPE",
+            "hex": "0000bb8000000001",
+            "range": [
+              127542,
+              8
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ],
+        "ownTrackEditRates": [
+          {
+            "trackOffset": 127550,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  127651,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000bb8000000001",
+                "range": [
+                  127611,
+                  8
+                ],
+                "value": [
+                  48000,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "prefaceProjectEditRate": [
+          {
+            "property": "Preface.ProjectEditRate",
+            "type": "MXF_RATIONAL_TYPE",
+            "hex": "0000001900000001",
+            "range": [
+              91896,
+              8
+            ],
+            "value": [
+              25,
+              1
+            ]
+          }
+        ],
+        "mdbAudioSamplingRate": [
+          {
+            "property": "OMFI:PCMA:AudioSamplingRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "80bb000001000000",
+            "ranges": [
+              [
+                1508909,
+                8
+              ]
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf",
+        "reusedHeaderRange": [
+          256,
+          261920
+        ],
+        "reusedHeaderSha256": "4e1ea26a6459f3e1d07e3c361986602f1c28e8a9d31d0de4ff7ef5ed80676b38",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f10130000009a583c0a5512069048e346fc807fda72",
+        "descriptorOffset": 131287,
+        "descriptorClass": "WaveAudioDescriptor",
+        "audioSamplingRate": [
+          {
+            "property": "GenericSoundEssenceDescriptor.AudioSamplingRate",
+            "type": "MXF_RATIONAL_TYPE",
+            "hex": "0000bb8000000001",
+            "range": [
+              131383,
+              8
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ],
+        "durationUnitRate": [
+          {
+            "property": "FileDescriptor.SampleRate",
+            "type": "MXF_RATIONAL_TYPE",
+            "hex": "0000bb8000000001",
+            "range": [
+              131435,
+              8
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ],
+        "ownTrackEditRates": [
+          {
+            "trackOffset": 131443,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  131544,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000bb8000000001",
+                "range": [
+                  131504,
+                  8
+                ],
+                "value": [
+                  48000,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "prefaceProjectEditRate": [
+          {
+            "property": "Preface.ProjectEditRate",
+            "type": "MXF_RATIONAL_TYPE",
+            "hex": "00007530000003e9",
+            "range": [
+              92358,
+              8
+            ],
+            "value": [
+              30000,
+              1001
+            ]
+          }
+        ],
+        "mdbAudioSamplingRate": [
+          {
+            "property": "OMFI:PCMA:AudioSamplingRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "80bb000001000000",
+            "ranges": [
+              [
+                193620,
+                8
+              ]
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ]
+      }
+    ],
+    "limits": [
+      "AllfiveobservedAudioSamplingRatevaluesare48000/1; actualaudio-frequencyfraction,non48k,AES3,missing/damaged/conflictingpropertyorMultipleDescriptorcaseisnotexercised.",
+      "No readily identified actual AES3/non48k fixture came from the targeted existing relevant test/fixture-document references. No broad fixture inventory or media reread was performed. Schema support and synthetic display tests are not actual-file coverage.",
+      "Agreement between the separate48k properties is research evidence, not proposed mandatory cross-checks or interchangeability."
+    ]
+  },
+  "proposal": {
+    "status": "Proposed MXF source/retention rule, not approved or implemented.",
+    "source": "Already qualified physical file own supported GenericSound/WaveAudio/AES3Audio descriptor GenericSoundEssenceDescriptor.AudioSamplingRate. Keep source property name AudioSamplingRate internally; audio column heading Sample Rate.",
+    "representation": "Known complete eight-byte big-endian Rational, signed32 numerator then denominator, both positive. Preserve original words and legitimate uncommon fractions. Numeric frequency, not text.",
+    "unavailable": "Missing, damaged, conflicting, unsupported, unsafe ownership or distinguished0/1 supplies no MXF audio frequency. Retain physical file and independent facts; blank if no eligible source supplies it. No invented48k default, whitelist or substitute FileDescriptor.SampleRate/track/project clock.",
+    "independence": "Duration physical unit rate, audio editing/display clock, video Frame Rate and concrete audio frequency retain separate meanings. No channel-count multiplication or MDB video NTSC alias interpretation. Video Sample Rate and audio Frame Rate stay blank.",
+    "retention": "One compact exact frequency record and needed availability. Reuse C++17/Qt fixed-width numeric/comparison/endian helpers. Derive any compatibility integer at the boundary; no permanent whole-Hz source duplicate or retained property graph. Release temporary header/reference storage.",
+    "displayAndSort": "Generate kHz labels from frequency at display time, preserving familiar48kHz/44.1kHz/96kHz behavior. Sort numerically; shared exact fraction comparison can be used. Uncommon fractional label precision remains prior presentation follow-up.",
+    "readAndPriorityBoundary": "Extract during an independently required header parse. No new dependency, essence decode or frequency-only consistency walk. Do not infer audio source precedence/read triggers from the separately approved FrameRate-specific rule; final table remains deferred."
+  },
+  "primaryFormatSource": {
+    "url": "https://pub.smpte.org/latest/st377-1/st377-1-2019.pdf",
+    "section": "F.5 Generic Sound Essence Descriptor",
+    "meaning": "Dedicated audio sampling frequency Rational8 and distinguished0/1; not a48k default. Wave/AES subclasses inherit the sound property. Format semantics do not prove every native GUI behavior."
+  },
+  "planningCheckpoint": {
+    "authority": "Assistant rough scope estimate in response to the user status question; not a measured schedule or a new approved requirement.",
+    "basis": "PMR and release-one MDB requirements substantially settled; MXF identities/names/Project/Kind/Duration/Frame Rate reviewed and agreed. Remaining work includes MXF audio/technical/classification and navigation/damage, OMF/WAV/AIFF, consolidated source priorities/read triggers and scanner coordination design.",
+    "runtimeState": "src/bella contains README.md only; no Bella runtime code or build target. Implementation and comparative correctness/time/memory testing have not started.",
+    "limits": "Not a percentage of finished application code, elapsed/remaining time or total implementation effort. No delivery ETA is established.",
+    "requirementsPlanningPercentRangeApproximate": [
+      60,
+      70
+    ]
+  },
+  "validation": {
+    "rawReceiptsVerified": true,
+    "distinctReferencedHashesVerified": 63,
+    "jsonParsed": true,
+    "freshPhysicalMediaRead": false,
+    "reusedAudioHeaderObservations": 5,
+    "essenceRead": false,
+    "productionTestsRun": false,
+    "appOrPrivateApiRun": false,
+    "runtimeCodeChanged": false,
+    "performanceMeasured": false
+  },
+  "approvedBy": {
+    "date": "2026-10-22",
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-audio-sample-rate-plan-2026-10-22.json",
+    "statement": "OK, let's lock those audio Sample Rate rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Bit Depth from MXF, and what should Bella read and keep?"
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-25",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted: preserve current native WAVE/AIFF rules and behaviour in fresh Bella implementation. Supersedes pending native-audio behaviour changes; no runtime/cutover.",
+  "authorization": {
+    "source": "Direct human user instruction",
+    "statement": "Ah ok. Lets just keep the same rules/behaviour for WAVE and AIFF that we already have.",
+    "context": "User found the preceding detailed proposal too complicated. Preserve existing behaviour and focus implementation on simplicity/efficiency; stop further per-field native-audio requirements review."
+  },
+  "currentHead": "c8541868b10334ad0fddd5928a960202008768c9",
+  "agreedBellaRules": {
+    "behaviour": "Current OldScanner native WAVE/AIFF format recognition, metadata interpretation, useful results/labels and availability/failure behaviour are the reference. Carry over interpretation rules and useful cases into small fresh helpers, rather than patching/copying the whole old pipeline.",
+    "formats": "Keep currently supported native RIFF/WAVE, RF64/WAVE, FORM/AIFF and FORM/AIFC under current managed discovery/feature scope. No new format, codec, suffix/import feature or extra metadata columns.",
+    "versionChecks": "Do not add the pending FVER admission/version gate. Preserve current handling, including Avid AIFF-C without FVER. Earlier proposed stricter handling of present unknown/malformed FVER is not accepted.",
+    "implementation": "Fresh C++17/Qt6.5.3 Bella code with shared small format helpers, scoped resources, compact useful results and clear temporary lifetimes. Read/extract/release and skip sound samples; avoid unused payload copies only while preserving required interpretation, diagnostics/availability and useful outputs. No new framework or per-chunk/per-column class.",
+    "integration": "Previously approved OMF parser requirements remain separate and authoritative for embedded OMF. One physical row, independent contributions and physical inventory remain. Final source priorities, header-read triggers and scheduling are still deferred; do not import OldScanner scheduling/completeness heuristics by implication.",
+    "planning": "Close native WAVE/AIFF field-by-field planning. Preserve the research as evidence, not new requirements. Implement/verify behaviour equivalence under agreed Bella-wide output contracts and explicit already-approved differences; raise only a concrete conflict if one actually blocks implementation.",
+    "verification": "Compare useful results with OldScanner during implementation; measure scan time and peak memory then. No measured improvement or current runtime implementation/cutover is implied."
+  },
+  "supersededProposals": [
+    "New present-FVER validity/admission gate.",
+    "Additional native-audio field-by-field redesign, new metadata decoding/features or new format expansion.",
+    "Treating the earlier selective-read proposal as permission to change useful native results or error/availability behaviour."
+  ],
+  "researchAtDecision": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/audio-layouts-2026-10-25.json",
+    "bytes": 233694,
+    "sha256": "2273b578347f229c2088850dc0c8c048346b20a60abc1dbaa33ba2d6ff920dee"
+  },
+  "currentBehaviourSourceBaseline": [
+    {
+      "path": "src/oldscanner/mediaengine/audioreader_p.cpp",
+      "sha256": "12d0dced7337113a75e5096951ac9540d859b697b357975e8f5edaafe9856abf",
+      "bytes": 34947
+    },
+    {
+      "path": "src/oldscanner/mediaengine/audioreader_p.h",
+      "sha256": "7cba1baf31dd62eca37ad8b87d2ba99cd10992a51f268ee402a42e8ac6ccad53",
+      "bytes": 1093
+    },
+    {
+      "path": "src/oldscanner/mediaengine/omfreader.cpp",
+      "sha256": "08faf0201a3bf2db91d5774558a055abd78977e7d258919530184339aa1925b3",
+      "bytes": 7331
+    },
+    {
+      "path": "src/oldscanner/mediaengine/omfprojection.cpp",
+      "sha256": "df8844ea1313a12c8c34b18d6aeadc92c8d75885ba1eeabd6cf948136b998c71",
+      "bytes": 72795
+    },
+    {
+      "path": "tests/tst_mediaenginelegacy.cpp",
+      "sha256": "0112af258cb22f7d1f421fd7712619bb84dab4aa38161a2446cb921e86be0f35",
+      "bytes": 36413
+    },
+    {
+      "path": "tests/tst_mediaengine_omfprojection.cpp",
+      "sha256": "fd8f664611e66782f1cf6b4ae09590664c42922940585fcf0f7e8eb859655877",
+      "bytes": 125360
+    }
+  ],
+  "validation": {
+    "sixSourceTestFilesEqualHead": true,
+    "researchUnmodified": true,
+    "runtimeCodeChanged": false,
+    "testsOrBuildsExecuted": false,
+    "freshNativeOrMediaAudit": false,
+    "localLinksChecked": 382,
+    "missingLocalLinks": 0,
+    "gitDiffCheck": "passed",
+    "runtimeDiffPaths": [
+      "src/bella/README.md"
+    ],
+    "runtimeDiffBoundary": "Pre-existing planning README only; no scanner/parser/test/CMake changes.",
+    "independentScopeCheck": "Current-source reviewer agrees preservation includes present/absent non-gating FVER, no further native field planning and unchanged separate OMF/global priority scope."
+  }
+}

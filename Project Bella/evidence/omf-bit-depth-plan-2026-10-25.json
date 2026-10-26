@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-25",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF Bit Depth rules; OMF Compression review follows. No runtime implementation or cutover.",
+  "authorization": {
+    "source": "Direct human user instruction",
+    "statement": "OK, let's lock those Bit Depth rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Compression from OMF, and what should Bella read and keep? Keep the current naming system.",
+    "scope": "Accepts the proposed OMF own-source, precision, numeric retention, shared summary/helpers, late labels and unsupported/blank rules. Explicit TIFF release-one limit and still-unsettled uncommon shared fixed-point label boundary remain as recorded. No Bin Filter change or extra-header opening policy."
+  },
+  "agreedBellaRules": {
+    "scope": "Qualified physical file own descriptor; established first-release OMF/Bento1 layouts only. Bin Filter and existing MDB Kind scope unchanged.",
+    "sources": {
+      "PCMA_MPGA": "Own OMFI:MDAU:BitsPerSample, UInt16 in established OMF object numeric order.",
+      "WAVD_contextualWAVE": "Own supported WAVD Summary fmt width and qualified extensible valid precision; UInt16 little-endian with known subtype/encoding meaning. Existing contextual WAVE compatibility only.",
+      "AIFD": "Own supported AIFD Summary COMM sampleSize signed16BE at payload offset6, with necessary AIFF/AIFF-C encoding meaning.",
+      "CDCI_MPGI_JPED": "Own OMFI:CDCI:ComponentWidth signed32 in established OMF numeric order. Known special values require complete supported coding context; JPED calls CDCIGet.",
+      "RGBA": "Own separate bounded PixelLayout and PixelStructure arrays, up to8, with supported roles and common interpreted non-fill component precision; not MXF interleaved pairs.",
+      "TIFD": "Native Summary/IFD route is distinct; no verified small current depth mapping or actual sample here. Depth unavailable for release one; no new general TIFF decoder solely for depth."
+    },
+    "precision": "Depth is sample/component precision. Preserve necessary distinction from storage container, channel count, total bits per pixel, bitrate or codec maximum. Supported extensible valid precision must be positive and no greater than container width. 24valid-in32container displays24-bit. Unknown/bad subtype or unsupported required meaning gives no depth, not a storage-as-precision repair.",
+    "audioEncoding": "Ordinary supported PCM/IEEEfloat WAVE width and AIFF COMM sampleSize need required known format meaning. AIFF descriptive codec name is not authority. Native temporaryfl32 setup then enclosing COMM assignment is not a proved contradiction-repair rule. Preserve independent readable facts if an unrelated codec label fails.",
+    "pictureSpecials": "Reuse small verified full-coding-qualified interpretation with necessary format context. No generic MXF sentinel table copied into arbitrary legacy OMF. Unknown/raw255 unestablished combinations remain unavailable. Existing uncommon fixed10.6/12.4 generic-label choice stays open; do not silently adopt current16-bit storage label or alter Compression naming.",
+    "rgba": "Require all meaningful supported non-fill components to agree, including alpha-only. Never sum or choose first component. Mixed/palette-index/unsupported/malformed layouts do not supply one depth. Preserve necessary bounded context only where required by agreed interpretation.",
+    "implementation": "One small fixed class choice and shared ordinary functions, no parser/class per column, registry, candidate graph, duplicated format decode or new dependency. Decode required audio summary once per job into same compact temporary format facts used for Sample Rate; share bounded helpers between MDB/OMF and release raw buffers/graphs.",
+    "retentionAndDisplay": "Keep numeric depth, necessary representation/coding/precision-storage context and compact availability. Generate familiar N-bit labels at display/export, sort numerically. Raw codes/small layout context only where needed. Existing Compression interpretation/naming unchanged.",
+    "invalid": "Missing/zero/unsafe/damaged/conflicting required/unsupported selected depth gives no OMF depth; keep physical inventory and independent valid fields. Blank cell if no eligible source supplies a value. Do not guess from master, filename, bitrate or advertised codec depth.",
+    "otherDecisions": "Accepted Sample Rate, Frame Rate and Duration sources/maths unchanged. No extra file opening or essence decoding solely for this column. Full cross-source priorities/read triggers and general OMF damage policy remain separate. Standing simplification principle preserved; no measured efficiency claim."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-bit-depth-2026-10-25.json",
+    "sha256": "d6d7091dbbcbf2db46a2bdaa8a8b8d5227aa6db45f0dc90f447a0f41a19b591b"
+  },
+  "compressionPreservationReaffirmed": "Preserve current naming system while reviewing OMF inputs and simple integration; no replacement catalogue or visible rename.",
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/bit-depth.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "newBinaryOrMediaResearchForApproval": false,
+    "newBuildsOrTestsForApproval": false,
+    "appCutover": false,
+    "performanceMeasured": false
+  }
+}

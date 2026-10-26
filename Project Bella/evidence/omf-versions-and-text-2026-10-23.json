@@ -1,0 +1,3862 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-23",
+  "timezone": "Australia/Sydney",
+  "status": "OMF versions/text recommendations awaiting approval; selective reading/lifetime already agreed.",
+  "currentHead": "c8541868b10334ad0fddd5928a960202008768c9",
+  "readingApproval": "omf-reading-plan-2026-10-23.json",
+  "proposedBellaRules": {
+    "status": "Proposed, awaiting user approval.",
+    "versionBaseline": "Release-one evidenced Avid OMF media: Bento1.0 plus known OMF1 records; canonical0100 and qualified observedlegacy0001. Record and container versions independent.",
+    "numericOrder": "Support recognized II/MM typed numeric forms, with no text-codec inference from order. Conflicting/unproved overrides unavailable. Real opposite-order coverage remains verification.",
+    "deferred": "Bento2/OMF2 and mixed import variants, extended labels/legacy40bit/update overlays and unknown layouts. Deliberate reduction from current broader capability, not invalidation of those formats.",
+    "unicode": "Strict bounded explicitly identified UTF8 properties and established marked Unicode text attributes for required known text fields; kind4 alone is not text.",
+    "legacy": "MacRoman for ordinary unlabelled legacy strings within agreed Mac-focused scope; no UTF8-validity first guess.",
+    "fallback": "Use a usable separately recorded legacy counterpart for the same field/owner when Unicode is missing, empty or damaged. No same-byte reinterpretation or invented sibling; kind2/kind4 normally alternative forms.",
+    "retention": "Owned compact QString/status results, preserved spelling/whitespace; release temporary buffers/indexes, no general detector, runtime locale probe or raw-value history.",
+    "unsupported": "Keep physical row and independently eligible database/native-audio/filesystem facts. Detailed OMF damage and owner/source rules continue separately.",
+    "scope": "No Windows/universal-producer encoding claim, source priority, extra-read reason, runtime implementation or app cutover.",
+    "performance": "No measured speed/memory improvement; dropping a decoder branch alone is not a benchmark."
+  },
+  "publicPrimaryEvidence": [
+    {
+      "title": "Avid OMF Interchange Specification2.1 (1997)",
+      "url": "https://www.cubase.it/wp/wp-content/uploads/2014/12/omfspec21.pdf",
+      "reviewed": "2026-10-23",
+      "sections": [
+        "HEAD chapter4",
+        "AppendixB String/VersionType"
+      ],
+      "support": "Defines HEAD version and numeric byte-order separately; String is a character-string type without a universal codec declaration in that definition. Does not establish native private extensions or all producers."
+    },
+    {
+      "title": "Public OMF toolkit example pinned Git blob",
+      "url": "https://api.github.com/repos/LWKS-Software/omfkt22/git/blobs/10879df78a8d428572540e7e5c9fa5bd6f83e07c",
+      "gitBlob": "10879df78a8d428572540e7e5c9fa5bd6f83e07c",
+      "support": "Independent raw inspection establishes a genuine Bento2.0/OMF2 exchange sample, not ordinary managed-media support or Unicode encoding proof."
+    }
+  ],
+  "receiptFiles": {
+    "mediaComposer": {
+      "path": "/private/tmp/bella-omf-versions-text-mc-20261023/findings.json",
+      "sha256": "bc79e6e9829331a596a4bcb0080be79021fd01991e61f6961e52c304de154863"
+    },
+    "mdvx": {
+      "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/findings.json",
+      "sha256": "82cdbd8463f6a635b781359773b62bc30db9776be5f48242722fc9604421c403"
+    },
+    "oldScanner": {
+      "path": "/private/tmp/bella-omf-versions-text-current-20261023/findings.json",
+      "sha256": "744776f52b2adedbca0769f5f097eb6332fb6b09289b0b521181faabee3618fb"
+    },
+    "externalOmf2": {
+      "path": "/private/tmp/bella-omf-versions-text-external-20261023/findings.json",
+      "sha256": "42a63bb121f9b499abffbed9fcfb2732ff8c115757af6beccd18527d17385021"
+    },
+    "macProject": {
+      "path": "/private/tmp/bella-omf-versions-text-observed-20261023/project-text.json",
+      "sha256": "e0d3e7adbf81dafb98bbb0eaa9e93e4ff1c1d90c8f11aeaf733ab164275b7a19"
+    }
+  },
+  "nativeSourceAndObservationReceipts": {
+    "mediaComposer": {
+      "date": "2026-10-23",
+      "scope": "Bounded read-only native OMF version and selected text routes, relating ordinary physical legacy OMF scan to shared native object serialization. No application/privateAPI/media reader execution, live writer experiment, build, tests or media mutation.",
+      "binaries": [
+        {
+          "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "bytes": 73527536,
+          "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+        },
+        {
+          "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+          "bytes": 14340208,
+          "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb"
+        }
+      ],
+      "navigationInputs": [
+        {
+          "path": "/private/tmp/bella-omf-mc-20261023/findings.json",
+          "bytes": 30895,
+          "sha256": "affe3a791fa4c09949b89844c6e88cfd6970290125f90a5be6239c6043d70798"
+        },
+        {
+          "path": "/private/tmp/bella-omf-mc-20261023/ACompositionGet.txt",
+          "bytes": 52170,
+          "sha256": "6c3a5051f7861742b371f98846805327e0a41c6bd36e40ba138bc6d71d1f0129"
+        },
+        {
+          "path": "/private/tmp/bella-omf-mc-20261023/AComponentGet.txt",
+          "bytes": 14810,
+          "sha256": "a089fb7ac0abbc70867f9b281ecb86ef0fb64a5f27e9d4cc182a5327245067bc"
+        },
+        {
+          "path": "/private/tmp/bella-omf-mc-20261023/MSMDBScanOMF.txt",
+          "bytes": 39694,
+          "sha256": "ec101964874cc8ac6cf6abe846f63509081e4bca51970ee91c93ec445770c694"
+        },
+        {
+          "path": "/private/tmp/bella-mdb-versions-20261021-native/findings.json",
+          "bytes": 14041,
+          "sha256": "90c4085d078c3f8b8ae320d62ffc25d0a3398c22b55f9e35311b8229de721029"
+        },
+        {
+          "path": "/private/tmp/bella-mdb-versions-20261021-native/HP-CloseContainer.txt",
+          "bytes": 24716,
+          "sha256": "4ae396a3520bb09356ddbc88fb593be9982ce18b29f08d6a8568353c333be21c"
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mdb-text-encoding-2026-10-18.json",
+          "bytes": 61388,
+          "sha256": "2752871777dd4fcad90bcfacd9f5feb421969620b1a942f530f05d1bd60500c6"
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/pmr-project-display-2026-10-18.json",
+          "bytes": 47515,
+          "sha256": "357152c755ecddb2c5c6b54c299cfc4552f38d7b2a5d67c54698f88f062ed806"
+        },
+        {
+          "path": "/private/tmp/bella-mdb-project-20261019-mc/findings.json",
+          "bytes": 17105,
+          "sha256": "13d646f80bd1fab49ea63368165bca1d6761f8d72220500c11738d2e4aab8d2c"
+        }
+      ],
+      "freshFunctions": [
+        {
+          "name": "LegacyLoadBentoObject",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN14omfiDualStream15LoadBentoObjectEi",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/LegacyLoadBentoObject.txt",
+          "bytes": 19814,
+          "sha256": "33802f5024c0a1071e48ace74b968539a73f951c0ed750a1c1f324504e4232e3",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN14omfiDualStream15LoadBentoObjectEi",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "LegacyReadMAIN",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN12omfiHPDomain8ReadMAINEv",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/LegacyReadMAIN.txt",
+          "bytes": 1348,
+          "sha256": "251ef2cc35f9774f011dbeae0c999791cf47459fe2a385b48921249df667850d",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN12omfiHPDomain8ReadMAINEv",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "OMF2HeadGet",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN8omf2HEAD7omf2GetEP14omf2DualStream",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/OMF2HeadGet.txt",
+          "bytes": 4002,
+          "sha256": "67b69d5e236b1638da97eddb3401161aa3bd55088252e11385e269af1a65dbb1",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN8omf2HEAD7omf2GetEP14omf2DualStream",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "OMF2GetVersionType",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN8omf2OOBJ13GetFromStreamEP14omf2DualStream12omf2PropCodeRN4omf215omf2VersionTypeE",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/OMF2GetVersionType.txt",
+          "bytes": 693,
+          "sha256": "fdaf71bfa73cdc2fbfdd11707c39792ad2b0d2f29ee1aed9ed0376943ec99679",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN8omf2OOBJ13GetFromStreamEP14omf2DualStream12omf2PropCodeRN4omf215omf2VersionTypeE",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "AComponentPut",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN10AComponent3PutEP7AStreamP7AIODesc",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/AComponentPut.txt",
+          "bytes": 10420,
+          "sha256": "546090126d2eeaad995229cfbc57e69c177af53b08e33ee3930c354a9b8654dd",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN10AComponent3PutEP7AStreamP7AIODesc",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "NameSetUTF16",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN10AComponent16SetNameCopyUTF16EPKDs",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/NameSetUTF16.txt",
+          "bytes": 1603,
+          "sha256": "36672f18cead8324e2de7b221479318f498f1084f2879363af6b33b325b86867",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN10AComponent16SetNameCopyUTF16EPKDs",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "NameGetUTF16",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN10AComponent16GetNameCopyUTF16EPDsm",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/NameGetUTF16.txt",
+          "bytes": 1970,
+          "sha256": "f4e30b0acf9dc8defc1496bb433f5406a346db131fe3123a2da9fa8d03fd2c19",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN10AComponent16GetNameCopyUTF16EPDsm",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "BinRefGet",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN9AMCBinRef3GetEP7AStreamP7AIODesc",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/BinRefGet.txt",
+          "bytes": 7257,
+          "sha256": "50bf6c85a1489e39e40f4345e7045a2df20f0beb2848ad0c86c7fbb99e504d84",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN9AMCBinRef3GetEP7AStreamP7AIODesc",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "BinRefPut",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN9AMCBinRef3PutEP7AStreamP7AIODesc",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/BinRefPut.txt",
+          "bytes": 5051,
+          "sha256": "ae91b744e3bc3e58edb992d96f1328c582a3b743b57845ab50c516b3cc6003e2",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN9AMCBinRef3PutEP7AStreamP7AIODesc",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "OMF2MobGet",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN8omf2MOBJ7omf2GetEP14omf2DualStream",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/OMF2MobGet.txt",
+          "bytes": 2699,
+          "sha256": "b8bcdff7b01f6f80bd8cc84f8be3ab6cc01a538961042945f008317d23aa5a77",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN8omf2MOBJ7omf2GetEP14omf2DualStream",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "OMF2MobConvertToCM",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZNK8omf2MOBJ11ConvertToCMEv",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/OMF2MobConvertToCM.txt",
+          "bytes": 570,
+          "sha256": "6e86a80610784542cc08f15026d00a73f6a99f250298f2c603a93e46e301d2c2",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZNK8omf2MOBJ11ConvertToCMEv",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "OMF2GetString",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN8omf2OOBJ13GetFromStreamEP14omf2DualStream12omf2PropCodeRN4omf210omf2StringE",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/OMF2GetString.txt",
+          "bytes": 3215,
+          "sha256": "eb27b014faee74d6218568f723da58ba59ad5ff2c6901e6cd3c6be9410f6c73d",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN8omf2OOBJ13GetFromStreamEP14omf2DualStream12omf2PropCodeRN4omf210omf2StringE",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "OMF2ReadProp",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN14omf2DualStream8ReadPropE12omf2PropCode12omf2TypeCodePviPS1_",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/OMF2ReadProp.txt",
+          "bytes": 16979,
+          "sha256": "8e57d14422920c6e6610dcbd869b50302f0702c898efd3ef0fb72f036c171b9d",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN14omf2DualStream8ReadPropE12omf2PropCode12omf2TypeCodePviPS1_",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "OMF2ReadMAIN",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN10omf2Domain8ReadMAINEv",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/OMF2ReadMAIN.txt",
+          "bytes": 1153,
+          "sha256": "bdc13a3fc51e497c88fe706990677f674010f24bcbe926a3b526902c0d61d7b1",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN10omf2Domain8ReadMAINEv",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "AttributeGetOMFI",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN9AAttrList7GetOMFIEP7AStreamP7AIODesc",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/AttributeGetOMFI.txt",
+          "bytes": 17968,
+          "sha256": "26c326797a11487aa0899c43b59dbb5378b2cd96f951b0332978e80e9be4ef1b",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN9AAttrList7GetOMFIEP7AStreamP7AIODesc",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "ProjectGet",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__Z16CMGetProjectNameP12ACompositionPcm",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/ProjectGet.txt",
+          "bytes": 1847,
+          "sha256": "58c38f8ab168ebb1c996a5e56652315eeabf9acbbc72e3c56e93d87f118e77f2",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__Z16CMGetProjectNameP12ACompositionPcm",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "ProjectSet",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__Z16CMSetProjectNameP12ACompositionPc",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/ProjectSet.txt",
+          "bytes": 1331,
+          "sha256": "40313027da7a35423c8582a63543c08abe061d5e9066b6bd5241e03415a402f0",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__Z16CMSetProjectNameP12ACompositionPc",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "TrackGroupSegmentGet",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN18ATrackGroupSegment3GetEP7AStreamP7AIODesc",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/TrackGroupSegmentGet.txt",
+          "bytes": 2153,
+          "sha256": "e242d6bce380bdf3943bad1aad98d8a29f518bfc26d35bf5f75ede7cf31a8456",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN18ATrackGroupSegment3GetEP7AStreamP7AIODesc",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "TrackGroupGet",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN11ATrackGroup3GetEP7AStreamP7AIODesc",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/TrackGroupGet.txt",
+          "bytes": 281,
+          "sha256": "8ec2be119212c2072851366ff66961da2447f0240465e18c9e696dec319e9b8e",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN11ATrackGroup3GetEP7AStreamP7AIODesc",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        },
+        {
+          "name": "TrackGroupGetVersion",
+          "binary": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "symbol": "__ZN11ATrackGroup23GetAndReturnReadVersionEP7AStreamP7AIODescPc",
+          "path": "/private/tmp/bella-omf-versions-text-mc-20261023/TrackGroupGetVersion.txt",
+          "bytes": 25902,
+          "sha256": "46d05883ff50df0fb89cd4f598c153ebfd0f5a028fbe7141817b9bdb977545eb",
+          "command": [
+            "xcrun",
+            "llvm-objdump",
+            "--macho",
+            "--arch=arm64",
+            "--disassemble",
+            "--dis-symname",
+            "__ZN11ATrackGroup23GetAndReturnReadVersionEP7AStreamP7AIODescPc",
+            "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          ]
+        }
+      ],
+      "versionTypeRawDispatch": {
+        "path": "/private/tmp/bella-omf-versions-text-mc-20261023/version-type-dispatch.json",
+        "bytes": 722,
+        "sha256": "ca18f019e60045ecee513684a19fe22f93fa81d41eaadc6a7ce7cd9255788f02"
+      },
+      "findings": [
+        {
+          "topic": "Three independent version notions; ordinary scan versus import",
+          "status": "prior verified exact-hash native route, fresh semantic getters",
+          "claim": "Bento container version, semantic OMF HEAD Version and per-class/native read versions are separate. The ordinary physical OMF scan creates legacy omfiHPDomain with its Bento1.0 gate. The real separate OMF2 import creates omf2Domain with Bento2.0 gate. Neither is a global UTF8-versus-MacRoman selector.",
+          "anchors": [
+            "Prior OMF receipt: LocalMDB ScanFileToMobManager -> ScanOMFFileToMobManager0x42073c -> omfiHPDomain::New(mode1)0x415094; MSMDB equivalent0x44d630.",
+            "Prior version receipt: legacy Bento major1/minor0 gate0xddb68..0xddb94; separate omf2 Bento major2/minor0 gate0x4b512c..0x4b5160.",
+            "Prior OMF2ImportFile0x83183c opens a stream and calls omf2Domain::New(mode1)0x8318cc, constructs OMF2ImportResolver0x831900, then domain-based import0x83198c.",
+            "Fresh BinRefGet is a private Avid MCBR class reader with optional extension tags; presence of Unicode fields does not upgrade Bento1 to Bento2."
+          ]
+        },
+        {
+          "topic": "HEAD semantic Version: exact bytes/type matter, not application release or generic word swapping",
+          "status": "fresh OMF2 typed reader plus prior legacy writer; no universal legacy semantic gate established",
+          "claim": "The OMF2 HEAD reader obtains a two-byte VersionType through a dedicated typed overload. The legacy HP writer separately prepares the two bytes 00 01 for its header-version property and writes exactly two bytes. Do not treat the legacy spelling as an arbitrary integer from which to infer text encoding, or accept all future semantic revisions solely because Bento navigation succeeds.",
+          "anchors": [
+            "Fresh OMF2HeadGet0x4d88f0: propertycode0x16 read into head+0xa0 using GetFromStream(omf2VersionType&) at0x4d896c..0x4d897c.",
+            "Fresh OMF2GetVersionType0x4fdcdc: typecode0x2f, request2bytes0x4fdcec..0x4fdcf8, returns success only when returnedcount==2 at0x4fdcfc..0x4fdd00.",
+            "Fresh ReadProp has a type-specific path for0x2f at0x4afea0..0x4afea4. Raw jump-table entry0x10fe7b2=e900 with ADR branchbase0x4afb98 maps to0x4aff3c, the two-byte reversal path; omf2String type0x22 maps directly to0x4afb98. Thus this native type has its own in-memory transformation, distinct from a generic II/MM rule or text.",
+            "Prior HP-CloseContainer0xe28a4: prepares halfword0x0100 on this little-endian arm64 at0xe28e8..0xe28ec (memory00 01), translates propertycode0x11 at0xe2a90..0xe2a94 and passes its address with length2 to writeTOCEntryImmed0xe2aac..0xe2ab8. Prior dictionary/corpus evidence is required for naming that code; this fresh task did not reconstruct the dictionary again."
+          ],
+          "limits": [
+            "No complete native legacy HEAD Version read/rejection policy was found in this bounded trace. LoadBentoObject and InitHPDomainOld show byte-order/class preparation, not an established universal semantic-version admission test.",
+            "No native proof from these functions alone that every legacy0001/0100 or OMF2 0200 combination is admitted in every workflow. Root owns format specification, actual labels/property types and supported combinations. Preserve raw2bytes and declared type for an explicit compatibility decision."
+          ]
+        },
+        {
+          "topic": "Recorded numeric byte order is not a codepage",
+          "status": "fresh legacy loader and prior exact-hash initializers",
+          "claim": "The legacy loader extracts and inherits an object/container byte-order mark; missing usable byte order can raise an error. Native initialization accepts II or MM. This does not make II text ASCII/UTF8 or MM text MacRoman and does not determine writer OS.",
+          "anchors": [
+            "Fresh LegacyLoadBentoObject0xb2680: loads declared byte-order field into stream+0x1e0 at0xb2800..0xb2810; object1 records container default+0x1e2 at0xb283c..0xb2844; absent local mark uses default0xb284c..0xb2854; no mark raises Illegal OMFI File: No byte order specified0xb2858..0xb2878.",
+            "Prior HPInitOld0xda398..0xda3d4 and separate OMF2InitOld0x4b2fb0..0x4b2ffc accept numeric marks0x4949/0x4d4d."
+          ]
+        },
+        {
+          "topic": "Ordinary legacy OMF restoration reaches the same component name code previously reviewed for MDB",
+          "status": "fresh direct inheritance-chain link plus prior ordinary-call route",
+          "claim": "This is shared native object serialization code, not a generic MXF/AAF text assumption. The physical legacy OMF scanner copies out composition mobs and reads their descriptors. Its AComposition base reader reaches the component reader through the verified track-group inheritance calls.",
+          "anchors": [
+            "Prior physical OMF route CopyOutMob0x415180..0x41518c followed by GetMediaDesc0x4151d4; ACompositionGet calls ATrackGroupSegment::Get0x181470.",
+            "Fresh TrackGroupSegmentGet calls ATrackGroup::Get0xa1bb28; TrackGroupGet0x1d8b38 tail-branches GetAndReturnReadVersion; fresh helper calls AComponent::Get0x1d8b80.",
+            "Prior AComponentGet reads dictionary+0x190 (CPNT:Name under the established legacy dictionary) through stream+0x290 ReadStringHandle0x1482b4..0x1482cc. The same native omfiDualStream reader is used by the legacy domain.",
+            "Fresh AComponentPut0x147e90..0x147ea4 selects dictionary+0x190 and writes legacy name handle+0x38 through WriteStringHandle. No paired CPNT:NameUTF8 property is added here."
+          ]
+        },
+        {
+          "topic": "Legacy name conversion selects current-Mac encoding, not a universal fixed producer codepage",
+          "status": "fresh name setters/getters, exact-hash prior AvidCore conversion trace and public probe",
+          "claim": "AComponent Unicode-name setter converts to current-Mac bytes before storing the legacy handle; Unicode display conversion reverses that current-Mac route. The linked Core conversion selects CFStringGetSystemEncoding. The existing standalone public CoreFoundation probe returned MacRoman on this Mac and maps A7 to sharp-s. That supports a Mac-focused Bella rule, not every historical or Windows producer.",
+          "anchors": [
+            "Fresh NameSetUTF16 calls UTF16ToCurrentMacMBCSEncodingString with null loss-report pointer0x149540..0x149548, then legacy SetNameCopy virtual+0x2a8 at0x14955c..0x149568.",
+            "Fresh NameGetUTF16 copies legacy name bytes then calls CurrentMacMBCSEncodingToUTF16 at0x14949c..0x1494a8. This is the shared name-to-Unicode helper, not a proof every UI column uses this exact call chain.",
+            "Prior curated MDB text: UnicodeStringToCurrentMacMBCSString0x12cdec chooses scriptencoding5; UTF16ToEncoded0x12ba5c uses CFStringGetSystemEncoding at0x12bae8. CFStringRefToEncoded0x12b7e8 passes question-mark lossByte0x3f to CFStringGetBytes.",
+            "Existing public standalone probe2026-10-18 returned encoding0 Western (Mac OS Roman), byteA7=>U+00DF. No new process/API probe or Media Composer execution occurred."
+          ]
+        },
+        {
+          "topic": "OMF2 master/name property is a typed byte string, not automatic UTF8",
+          "status": "fresh OMF2 MOBJ/string readers; property naming correlated with established OMF schema",
+          "claim": "The separate OMF2 MOBJ reader obtains its Name through omf2String. That getter reads declared bytes, NUL-terminates/truncates its local buffer and stores ACharString; it does not call a UTF8 decoder here. OMF2 object/schema version therefore does not by itself prove every MOBJ Name is UTF8.",
+          "anchors": [
+            "Fresh OMF2MobGet0x4d3d2c: propertycode0x41 into mob+0x30 via omf2String overload0x4d3d5c..0x4d3d6c. MOBJ:Name naming is the corresponding OMF schema mapping, not a fresh native dictionary reconstruction.",
+            "Fresh OMF2GetString0x4fded8 calls ReadProp(typecode0x22) at0x4fdf24..0x4fdf30; termination/size handling0x4fdf38..0x4fdf64, ACharString construction/assignment0x4fdf68..0x4fdf7c.",
+            "Raw type0x22 dispatch targets ReadProp return path0x4afb98; string bytes are not generic numeric byte-swapped.",
+            "The native fixed buffer cap0x7f8a and forcibly written NUL are implementation behavior; do not copy that cap or its permissive framing as a universal valid OMF string contract."
+          ],
+          "limits": [
+            "This bounded trace did not reconstruct every OMF2 importer name-to-visible-UI conversion or prove a fixed codepage for arbitrary OMF2 writers. OMF2MobConvertToCM is merely a wrapper around a virtual conversion, not a full conversion proof."
+          ]
+        },
+        {
+          "topic": "Project uses one named typed attribute; PROJNAME is a key fallback",
+          "status": "fresh physical consumer/Project getter+setter/attribute restoration plus reused Core type dispatch",
+          "claim": "The ordinary OMF scan calls CMGetProjectName. Its direct getter checks _PJ, then PROJNAME only when _PJ is not found. The restored attribute kind determines representation: Kind2 legacy string; known Unicode-string Kind4 has marker-bearing bytes. This is not a normal paired UTF8/legacy value under the same key, and PROJNAME is not inherently a Unicode counterpart.",
+          "anchors": [
+            "Prior physical MSMDBScanOMF calls CMGetProjectName0x44d778. Fresh ProjectGet0x282b9c calls FindString(_PJ)0x282bf0; only foundfalse enters PROJNAME0x282c1c. Present empty _PJ stops this native key fallback.",
+            "Fresh ProjectSet0x282c44 calls AddString(_PJ)0x282c90; does not create a paired Unicode value.",
+            "Fresh AttributeGetOMFI0x176294: Kind2 branch0x176488..0x1764d4 reads StringAttribute through raw string-pointer virtual+0x298; Kind4 branch0x1764e0..0x176558 obtains BobSize/BobData. Representation interpretation comes later.",
+            "Prior exact-hash CoreAttrList::FindString0x6dd10 inspects one name/kind, Kind2=>FindStringOnly, Kind4=>FindUTF8StringOnly then current-Mac conversion. Native ordered_unique attrNameIndex and string-add methods replace same-name supported strings; no ordinary paired old/new same-key search.",
+            "Prior AddUTF8String0x6d740 writes00 00 + UTF8 + NUL. FindUTF8StringOnly0x6e0fc checks the two zero markers and capacity, but does not itself strictly validate UTF8. Kind4 also represents arbitrary binary blobs; familiar name/prefix alone is insufficient."
+          ],
+          "limits": [
+            "No universal claim malformed Kind4 Project throws. The prior Unicode attribute conversion route uses ICU fromUTF8 without the same explicit status check established for named UTF8 properties.",
+            "Source-owner/inherited Project selection is a separate rule; no new priority order is approved by this text receipt."
+          ]
+        },
+        {
+          "topic": "Original Bin has explicit sibling encodings when the qualified Avid private object exists",
+          "status": "fresh AMCBinRef legacy shared serializer and prior property-name mapping",
+          "claim": "AMCBinRef writes distinct binName legacy and binNameUTF8 properties. Its reader can prefer a nonempty Unicode value, falling back to its separate legacy handle on missing/empty Unicode. The strict named UTF8 conversion can raise before that local fallback. This capability does not guarantee bin metadata exists in each OMF media file or in every OMF2 interchange graph.",
+          "anchors": [
+            "Fresh BinRefPut0x2d5990: current-Mac conversion0x2d5a84, legacy property/write0x2d5a98..0x2d5ab8, original Unicode to explicit UTF8 sibling0x2d5ae0..0x2d5b00. Exact OMFI:MCBR:MC:binName / binNameUTF8 names established by prior dictionary+text receipt.",
+            "Fresh BinRefGet0x2d5b48: legacy handle read0x2d5c54..0x2d5c68; optional tag1 chooses dictionary+0x620 and UTF8-to-UTF16 reader0x2d5ce8..0x2d5d00; empty Unicode plus available legacy converts current-Mac at0x2d5d4c..0x2d5d68.",
+            "Prior strict ReadUTF8StringAndConvertToUTF160xb8168 uses UTF8ToUTF16, explicit conversion error path0xb8248..0xb8260. Native conversion failure is before the empty-value fallback; Bella damaged-Unicode recovery from the separate sibling is a deliberate policy difference."
+          ]
+        }
+      ],
+      "bellaProposalNotApproval": [
+        "Separate container and semantic-version admission from per-field text decoding. Validate actual label, declared HEAD Version property type/width and supported object/schema layout. Keep raw semantic-version bytes for explicit legacy compatibility; do not silently generic-byte-swap every2byte version into an invented supported value.",
+        "For explicitly identified UTF8 fields or a supported Unicode-text attribute contract, validate framing and UTF8. For separately recorded legacy strings in the approved Mac-focused scope, decode MacRoman. Do not use valid-UTF8-looking bytes or II/MM as a codec heuristic.",
+        "A real named UTF8/legacy sibling pair (such as qualified bin name) can use usable UTF8 then a separate usable legacy fallback. Never reinterpret the damaged UTF8 payload itself as MacRoman.",
+        "Project _PJ/PROJNAME is a typed attribute-key/owner decision, not a global UTF8-first sibling pair. Known Kind4Unicode framing differs from named UTF8 strings. Same-key legacy/Unicode duplicates are not a normal native writer arrangement; handling malformed duplicates needs separate explicit policy.",
+        "Legacy CPNT:Name and OMF2 MOBJ:Name need their supported format-specific mapping. The examined native byte-string route does not establish a separate UTF8 Name counterpart or make every OMF2 name Unicode.",
+        "Retain compact decoded text/availability; no raw text graph or encoding-trial ladder is required. Missing/unusable unrelated metadata must not remove the physical media row."
+      ],
+      "limits": [
+        "No new attached-drive corpus read by this subtask; actual supported HEAD property types/spellings and text values are independently checked by root/other agent.",
+        "No Windows writer behavior or universal producer encoding claim.",
+        "Ordinary legacy OMF/MDB share these native serializers, but arbitrary AVB, generic AAF/MXF or every OMF2 route must not inherit that conclusion.",
+        "No complete all-caller or all-fields read/write/display reconstruction; local getter/setter/serializer behavior is kept distinct from complete native UI policy.",
+        "No complete native semantic HEAD Version admission table. The proven Bento1/2 gates and typed two-byte version operations are different facts.",
+        "OMF versions/text remain recommendations pending user review; approved TOC-selective Bella reading approach is not changed."
+      ]
+    },
+    "mdvx": {
+      "date": "2026-10-23",
+      "scope": "Installed MDVx Bento label versions and OMFI/MDB/browser text conversion; fresh bounded static verification, separate from OMF media field support.",
+      "binary": {
+        "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+        "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+        "bytes": 3204640,
+        "version": "0.2",
+        "build": "4073",
+        "arch": "arm64",
+        "disassemblySha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074"
+      },
+      "method": "Fresh complete installed arm64 disassembly and Objective-C metadata; all37 MDVxOMFI methods plus5 ordinary route methods extracted with exact raw-code/file-offset hashes. Explicit NSString encoding IDs checked against installed Apple SDK NSString.h. No MDVx/application/private API, Foundation conversion experiment, build/test, media read/write, runtime/repository edit or unsupported-format execution.",
+      "mainFinding": "MDVx custom reader implements flat24-byte Bento TOC and explicitly rejects label major2. Its ordinary OMFI/MDB row text helper requests ASCII or MacRoman according to label-derived _isII, not usable-UTF8-first with separate legacy recovery. The raw TOC browser has one explicit UTF8-property branch; these are different call paths. None establishes a universal OMF schema support or encoding policy for Bella.",
+      "ordinaryRouteBoundary": {
+        "directInventory": "MDVxCore AddFile_TypeSelector0x10004af94..4b138 creates a PMR scanner operation for PMR; physical .omf/.aif/.wav branches return without distinct parser task. PMR operation opens companion MDB and generic OMFI enriches matching rows.",
+        "correspondingHeader": "MDVxDatabaseItem addinfoToItemFromCorrespondingFile0x10003092c..30a14 and setupWithUnrefFile0x100030a14..30c34 establish optional MXF header opening, not direct OMF physical-header opening.",
+        "genericCapability": "MDVxMediafile openFile0x1000439bc..43b58 dispatches mdb/omf/aif/wav to MDVxOMFI by extension. This establishes common generic reader/browser plumbing, not ordinary OMF/WAVE/AIFF-header coverage. No RIFF/FORM chunk search established in OMFI openFile.",
+        "qualification": "Do not present the common MDB property vocabulary or generic browser path as an ordinary physical .omf header scan."
+      },
+      "versions": {
+        "labelNotSchema": {
+          "method": "-[MDVxOMFI openFile:withIndicator:]",
+          "anchors": [
+            "0x100061ce4 minimum128bytes.",
+            "0x100061d04 obtains final24-byte label;0x100061d0c..61d24 checks a4434da5486472d7.",
+            "0x100061d3c loads label+0x0c;0x100061d40 compares major to2.",
+            "0x100061d44 non2→0x100061dc8;2→OMFiTOCReader02 at0x100061dc0 thenfalse.",
+            "0x100061e34 non2 calls flat OMFiTOCReader01;0x100061e38..e40 success based on objectcount."
+          ],
+          "interpretation": "Branch concerns Bento label major, not separately proven OMF1/OMF2 object schema. Non2 falls into flat reader without explicit major1 or minor-version acceptance gate; do not infer unknown majors work."
+        },
+        "major2Stub": {
+          "method": "-[MDVxOMFI OMFiTOCReader02]",
+          "range": "0x100061e48..61eac",
+          "decodedMessage": "OMF 2 not supported",
+          "interpretation": "Logging stub; no compact Bento2 TOC decoder established."
+        },
+        "minor": "No label minor-version test established in openFile. This is not an arbitrary-minor compatibility guarantee.",
+        "schemaHead": "No separate HEAD schema-version dispatch/gate identified in examined openFile, TOCReader01 and row-projection routes. All37 complete custom OMFI methods retained for bounded verification; absence of a newly established gate is not a universal schema-support proof.",
+        "byteOrder": "Label+0x0a==0x4949 stores _isII at object+0x28 (0x100061d28..d38). Objective-C ivar metadata confirms _MDVxOMFI._isII offset40. Payload numeric paths have direct/reverse branches while label/flat TOC words are loaded natively. No new big-endian fixture or comprehensive format matrix executed."
+      },
+      "encodingIdsPrimarySource": {
+        "header": {
+          "path": "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/Foundation.framework/Headers/NSString.h",
+          "bytes": 50127,
+          "sha256": "3293347d32ecd09e326c766dd4674a0df66a6cb102d1ef3c3f670a7d6c2e529a",
+          "excerptStartLine": 65,
+          "excerptEndLine": 91
+        },
+        "excerptArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/NSString-encoding-enum.txt",
+        "definitions": {
+          "1": {
+            "name": "NSASCIIStringEncoding",
+            "line": 69,
+            "headerComment": "0..127 only"
+          },
+          "4": {
+            "name": "NSUTF8StringEncoding",
+            "line": 72
+          },
+          "30": {
+            "name": "NSMacOSRomanStringEncoding",
+            "line": 85
+          }
+        },
+        "qualification": "Numeric IDs identify the requested decoder, not proof of strict high-byte rejection or actual output on this OS. No runtime Foundation experiment performed in this task."
+      },
+      "ordinaryTextHelper": {
+        "method": "-[MDVxOMFI GetStringForObjectAt:]",
+        "range": "0x100063a58..63bb0",
+        "selection": "Scans contiguous same-object entries for first accepted hardcoded property ID; does not dispatch on a Unicode/legacy field pair or a character-set marker.",
+        "acceptedIdsAsMappedInEarlierActualMdb": {
+          "0x10261": "OMFI:ATTB:StringAttribute",
+          "0x1027f": "OMFI:CLSD:ClassID",
+          "0x10298": "OMFI:CPNT:EffectID",
+          "0x1029d": "OMFI:CPNT:Name",
+          "0x102e1": "OMFI:FL:PathName",
+          "0x10257": "OMFI:ATTB:Name"
+        },
+        "mapQualification": "Names derive from the earlier actual MDB dictionary receipt, not a new physical OMF sample. Bento property IDs are local to a container in principle; MDVx code hardcodes these numeric IDs.",
+        "conversion": [
+          "0x100063b14 loads _isII.",
+          "0x100063b30..b38 selects encoding30 when flag0, encoding1 when flag nonzero.",
+          "0x100063b40 invokes initWithBytes:length:encoding:.",
+          "0x100063b54..b74 trims NUL characters from both ends after successful conversion.",
+          "Null/no bytes, zero length or failed conversion returnsnil via0x100063b98."
+        ],
+        "notEstablished": [
+          "No UTF8-first conversion in this helper.",
+          "No retry of the same bytes using a second decoder after failure.",
+          "No intentional UTF8-field then separate legacy-field recovery in this helper.",
+          "No defaultCStringEncoding or omitted/default-decoder initializer; explicit enum arguments are used.",
+          "No Unicode/legacy semantic classification based solely on CString type in this helper."
+        ],
+        "qualification": "A byte sequence valid as UTF8 may still be passed to the legacy decoder; code does not prove actual high-byte output. It can encounter candidate attributes whose names share a prefix; absence of intentional pair logic is not a claim that no UTF8 bytes can ever reach it."
+      },
+      "actualRowCalls": {
+        "clipName": "addInfoToItem0x1000648d4 calls GetStringForObjectAt on chosen master; setter0x1000648ec.",
+        "project": "addInfoToItem0x100064ab8 calls getProjectNameForObjAt. getProjectAttributeForObjectAt0x1000651dc follows attributes and compares only first3 rawNamebytes to_PJ at0x1000652d8..2ec; invokes generic string helper0x1000652f8 at NameTOCindex+1. Later matching attribute can replace earlier result.",
+        "projectLinkedFallback": "getProjectNameForObjAt0x100064df8 tries direct attribute; if unavailable, traverses linked source route and invokes same attribute helper0x100064ffc. This is source selection fallback, not Unicode-to-legacy decoder recovery.",
+        "notApprovedCopy": "Do not copy this raw three-byte prefix/lastmatch selection as Bella exact named/type/ownership rule."
+      },
+      "browserTextDifference": {
+        "method": "-[MDVxOMFI StringForTocIndexItem:]",
+        "range": "0x1000631bc..6368c",
+        "typeAndProperty": "String type0x10090 branch compares property ID to0x102e0 at0x1000634a4..b4. Earlier actual MDB map identifies0x102e0 as OMFI:FL:PathNameUTF8.",
+        "utf8": "Matching property selects encoding4 at0x1000634d8 and calls initializer0x1000635ac.",
+        "otherStrings": "Other strings load _isII0x1000634fc and select encoding1 at0x100063524 or30 at0x1000635a8.",
+        "failedUtf8": "Initializer nil at0x1000635b4 branches to diagnostic/raw property representation0x1000635ec; no lookup of separate legacy field or retry with MacRoman established here.",
+        "notScanHelper": "This browser UTF8 special case is not called by addInfoToItem for ClipName or Project. StringForItem0x1000631b4 simply returnsnil and does not forward to this method.",
+        "otherUiHelpers": [
+          "GetNameForObjectAt0x1000637b0 selects encoding1/30 at0x100063934..944.",
+          "getDescriptionForTOCindex0x100063efc selects explicit encoding1/30 at0x100064208..4218 and0x100064520/64558..55c.",
+          "TOCReader01 converts dynamic dictionary names with explicit encoding1 at0x100062280..284. Dictionary name text is not a metadata-value encoding specification."
+        ],
+        "qualification": "Browser can expose some UTF8 correctly; no whole-app Unicode incapability claim. No proof ordinary .omf files contain this exact UTF8 path property in this task."
+      },
+      "BellaImplicationsNotApproval": [
+        "Keep Bento storage version and OMF object-schema version separate in requirements and diagnostics.",
+        "MDVx is not a sound source for a no-guess universal legacy encoding rule; its observed byte-order-linked decoder is not a field-encoding specification.",
+        "Use Media Composer/actual OMF property definitions to establish each named Unicode and separate legacy counterpart. A typed bounded parser can recover a separate legacy value without reinterpreting damaged UTF8 bytes, subject to the user-approved policy.",
+        "No new Bella format-support matrix, fallback/source priority, Windows encoding choice or runtime implementation approved by this evidence."
+      ],
+      "priorReceipts": [
+        {
+          "path": "/private/tmp/bella-omf-mdvx-20261023/findings.json",
+          "sha256": "8bf937ca7bdb8acdc191daf811ac1872295c65db1b35f732efc74aabbca35408",
+          "role": "Recent OMF overview/navigation; present receipt freshly verifies relevant binary methods."
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mdb-research-2026-10-18.json",
+          "sha256": "ad8f6e59ac3973e6f6650d288a5cf2a8bf8f73ecee5c8e60c2714e4d7e9b4cb0",
+          "role": "Earlier actual MDB property-name mapping and prior field-path navigation only. Its Foundation conversion experiments and real MDB bytes are not rerun or upgraded to new OMF-media observations."
+        }
+      ],
+      "functions": [
+        {
+          "symbol": "-[MDVxOMFI init]",
+          "start": "0x1000619f4",
+          "endExclusive": "0x100061b70",
+          "binaryOffset": 2038260,
+          "codeBytes": 380,
+          "codeSha256": "dc78d88349b83c1424a3544cd4f38440d37c8e4bbd2f70ebe23469f4d003f82e",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_init.txt",
+          "artifactSha256": "7458933a1b05ed83d5f9f5d59d3f37c278969cfef3b723163cc21d96a3e9adba",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_init-resolved.txt",
+          "resolvedArtifactSha256": "7458933a1b05ed83d5f9f5d59d3f37c278969cfef3b723163cc21d96a3e9adba",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI dealloc]",
+          "start": "0x100061b70",
+          "endExclusive": "0x100061c08",
+          "binaryOffset": 2038640,
+          "codeBytes": 152,
+          "codeSha256": "a48b4027ba00fce821710a41b71b8ef4b7fb16d6928b2a0ed1205297e567d522",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_dealloc.txt",
+          "artifactSha256": "8460b99858224e2bfa990801401a06c11b05f4cd8153f1e3ca02afb5cc1bc40c",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_dealloc-resolved.txt",
+          "resolvedArtifactSha256": "8460b99858224e2bfa990801401a06c11b05f4cd8153f1e3ca02afb5cc1bc40c",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI getType]",
+          "start": "0x100061c08",
+          "endExclusive": "0x100061c10",
+          "binaryOffset": 2038792,
+          "codeBytes": 8,
+          "codeSha256": "5103ba3de080c52a046485f800433848701faa49ab8f60241a80987ca249d7ac",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getType.txt",
+          "artifactSha256": "78f215c159041748a19f3c1133d6db38c58dfb1cf6185f2198bb1efce469fb90",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getType-resolved.txt",
+          "resolvedArtifactSha256": "78f215c159041748a19f3c1133d6db38c58dfb1cf6185f2198bb1efce469fb90",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI openFile:withIndicator:]",
+          "start": "0x100061c10",
+          "endExclusive": "0x100061e48",
+          "binaryOffset": 2038800,
+          "codeBytes": 568,
+          "codeSha256": "dd62bb9877470c53c49090cc7fdf9fbd2674ddf145b5cd8ec7684ac221b9d779",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_openFile_withIndicator.txt",
+          "artifactSha256": "a955bfbb112157739d65e0391becf85414dd12ac96367c6ef474cb2412ccba08",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_openFile_withIndicator-resolved.txt",
+          "resolvedArtifactSha256": "7812aa6efc1e95419d1a5b523dcc6200eac0b562aea38ad1dbbd7f6a9e3ba68e",
+          "cfstrings": [
+            {
+              "instruction": "0x100061d70",
+              "constantAddress": "0x1000ed458",
+              "constantFileOffset": 2610264,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c4f76",
+              "charactersFileOffset": 2445174,
+              "length": 17,
+              "text": "OMF 2 found at %@"
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxOMFI OMFiTOCReader02]",
+          "start": "0x100061e48",
+          "endExclusive": "0x100061eac",
+          "binaryOffset": 2039368,
+          "codeBytes": 100,
+          "codeSha256": "2e5673664c8ba0430b7db6b8513c12d1a7a8edcd2a9ecb39317e80f045e01dcf",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_OMFiTOCReader02.txt",
+          "artifactSha256": "422d4132137d1a9a2dbbddc547717fb240bf3f3f9cc6609e33e5d03247e17d77",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_OMFiTOCReader02-resolved.txt",
+          "resolvedArtifactSha256": "7e1c465ccd49357d01d77602bd713847d3677171acaeab47722a219602ccd5e5",
+          "cfstrings": [
+            {
+              "instruction": "0x100061e64",
+              "constantAddress": "0x1000ed478",
+              "constantFileOffset": 2610296,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c4fa4",
+              "charactersFileOffset": 2445220,
+              "length": 19,
+              "text": "OMF 2 not supported"
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxOMFI pDataFor:]",
+          "start": "0x100061eac",
+          "endExclusive": "0x100061f64",
+          "binaryOffset": 2039468,
+          "codeBytes": 184,
+          "codeSha256": "dffe5e56a4c3c4fda062d67cd433645f71b401a5d37c64650208517258c11106",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_pDataFor.txt",
+          "artifactSha256": "75e55bd0c41f90de4a3415912b10c99baa90f72d4ce45c0c4ab987f2a8bcd7ef",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_pDataFor-resolved.txt",
+          "resolvedArtifactSha256": "75e55bd0c41f90de4a3415912b10c99baa90f72d4ce45c0c4ab987f2a8bcd7ef",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI howManyBentoObjectsV01]",
+          "start": "0x100061f64",
+          "endExclusive": "0x100061fb8",
+          "binaryOffset": 2039652,
+          "codeBytes": 84,
+          "codeSha256": "68c308463e0403ba868ae5e853a392d6bc5297d8bbe2bebf3c7d5f7f43df9b74",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_howManyBentoObjectsV01.txt",
+          "artifactSha256": "240e9a5b87e27eb0a9104f9be0dc746224fcd8f1f4fae251a0c346b27356c15c",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_howManyBentoObjectsV01-resolved.txt",
+          "resolvedArtifactSha256": "240e9a5b87e27eb0a9104f9be0dc746224fcd8f1f4fae251a0c346b27356c15c",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI getMDBCompositionsCount]",
+          "start": "0x100061fb8",
+          "endExclusive": "0x100061fc0",
+          "binaryOffset": 2039736,
+          "codeBytes": 8,
+          "codeSha256": "ac1915dbf8ae56825a9e0c79c21190a655d4b32b9c10f299546aad7c9ecadc66",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getMDBCompositionsCount.txt",
+          "artifactSha256": "2deff9c3f450bae1af53e70131d8b9c19c500363e4aba9769e32751a7b128a32",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getMDBCompositionsCount-resolved.txt",
+          "resolvedArtifactSha256": "2deff9c3f450bae1af53e70131d8b9c19c500363e4aba9769e32751a7b128a32",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI OMFiTOCReader01]",
+          "start": "0x100061fc0",
+          "endExclusive": "0x100062518",
+          "binaryOffset": 2039744,
+          "codeBytes": 1368,
+          "codeSha256": "2056454e8abaf450ccc7de3555b877331a8aca9eee688b983e8f6f0166f45dde",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_OMFiTOCReader01.txt",
+          "artifactSha256": "aabeb26f44a9e142eeb1f171d53de76600b151006b9a0abcef9ca007e8fba627",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_OMFiTOCReader01-resolved.txt",
+          "resolvedArtifactSha256": "aabeb26f44a9e142eeb1f171d53de76600b151006b9a0abcef9ca007e8fba627",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI InitDictionary]",
+          "start": "0x1000625e4",
+          "endExclusive": "0x100062b2c",
+          "binaryOffset": 2041316,
+          "codeBytes": 1352,
+          "codeSha256": "75287abb99b2813d046200c5690a52d776f2fd711d970022dac0b1a528ade5cc",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_InitDictionary.txt",
+          "artifactSha256": "4c66cede9e0d88261f79bca2bcb0df897b8997cde045eb01cb9de4f66a186318",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_InitDictionary-resolved.txt",
+          "resolvedArtifactSha256": "e2d66441c50783fff77afdab9e40c871d031fbd13d9911d24676f071e07fa387",
+          "cfstrings": [
+            {
+              "instruction": "0x10006289c",
+              "constantAddress": "0x1000ed7b8",
+              "constantFileOffset": 2611128,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5214",
+              "charactersFileOffset": 2445844,
+              "length": 24,
+              "text": "CM_StdObjID_8BitImmValue"
+            },
+            {
+              "instruction": "0x1000628a8",
+              "constantAddress": "0x1000ed798",
+              "constantFileOffset": 2611096,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c51fa",
+              "charactersFileOffset": 2445818,
+              "length": 25,
+              "text": "CM_StdObjID_16BitImmValue"
+            },
+            {
+              "instruction": "0x1000628b4",
+              "constantAddress": "0x1000ed778",
+              "constantFileOffset": 2611064,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c51e0",
+              "charactersFileOffset": 2445792,
+              "length": 25,
+              "text": "CM_StdObjID_32BitImmValue"
+            },
+            {
+              "instruction": "0x1000628c0",
+              "constantAddress": "0x1000ed758",
+              "constantFileOffset": 2611032,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c51c9",
+              "charactersFileOffset": 2445769,
+              "length": 22,
+              "text": "CM_StdObjID_ObjRefData"
+            },
+            {
+              "instruction": "0x1000628cc",
+              "constantAddress": "0x1000ed738",
+              "constantFileOffset": 2611000,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c51af",
+              "charactersFileOffset": 2445743,
+              "length": 25,
+              "text": "CM_StdObjID_ObjReferences"
+            },
+            {
+              "instruction": "0x1000628d8",
+              "constantAddress": "0x1000ed718",
+              "constantFileOffset": 2610968,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5197",
+              "charactersFileOffset": 2445719,
+              "length": 23,
+              "text": "CM_StdObjID_UpdatesData"
+            },
+            {
+              "instruction": "0x1000628e4",
+              "constantAddress": "0x1000ed6f8",
+              "constantFileOffset": 2610936,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c517e",
+              "charactersFileOffset": 2445694,
+              "length": 24,
+              "text": "CM_StdObjID_ValueUpdates"
+            },
+            {
+              "instruction": "0x1000628f0",
+              "constantAddress": "0x1000ed6d8",
+              "constantFileOffset": 2610904,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5162",
+              "charactersFileOffset": 2445666,
+              "length": 27,
+              "text": "CM_StdObjID_TargetContainer"
+            },
+            {
+              "instruction": "0x100062900",
+              "constantAddress": "0x1000ed6b8",
+              "constantFileOffset": 2610872,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5149",
+              "charactersFileOffset": 2445641,
+              "length": 24,
+              "text": "CM_StdObjID_BaseTypeList"
+            },
+            {
+              "instruction": "0x100062910",
+              "constantAddress": "0x1000ed698",
+              "constantFileOffset": 2610840,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5133",
+              "charactersFileOffset": 2445619,
+              "length": 21,
+              "text": "CM_StdObjID_BaseTypes"
+            },
+            {
+              "instruction": "0x100062920",
+              "constantAddress": "0x1000ed678",
+              "constantFileOffset": 2610808,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5119",
+              "charactersFileOffset": 2445593,
+              "length": 25,
+              "text": "CM_StdObjID_DynamicValues"
+            },
+            {
+              "instruction": "0x100062930",
+              "constantAddress": "0x1000ed658",
+              "constantFileOffset": 2610776,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c50fe",
+              "charactersFileOffset": 2445566,
+              "length": 26,
+              "text": "CM_StdObjID_GlobalPropName"
+            },
+            {
+              "instruction": "0x100062940",
+              "constantAddress": "0x1000ed638",
+              "constantFileOffset": 2610744,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c50e3",
+              "charactersFileOffset": 2445539,
+              "length": 26,
+              "text": "CM_StdObjID_GlobalTypeName"
+            },
+            {
+              "instruction": "0x100062950",
+              "constantAddress": "0x1000ed618",
+              "constantFileOffset": 2610712,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c50cd",
+              "charactersFileOffset": 2445517,
+              "length": 21,
+              "text": "CM_StdObjID_8BitASCII"
+            },
+            {
+              "instruction": "0x100062960",
+              "constantAddress": "0x1000ed5f8",
+              "constantFileOffset": 2610680,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c50b7",
+              "charactersFileOffset": 2445495,
+              "length": 21,
+              "text": "CM_StdObjID_7BitASCII"
+            },
+            {
+              "instruction": "0x100062970",
+              "constantAddress": "0x1000ed5d8",
+              "constantFileOffset": 2610648,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c50a2",
+              "charactersFileOffset": 2445474,
+              "length": 20,
+              "text": "CM_StdObjID_TOC_Type"
+            },
+            {
+              "instruction": "0x100062980",
+              "constantAddress": "0x1000ed5b8",
+              "constantFileOffset": 2610616,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5087",
+              "charactersFileOffset": 2445447,
+              "length": 26,
+              "text": "CM_StdObjID_TOC_DeleteList"
+            },
+            {
+              "instruction": "0x100062990",
+              "constantAddress": "0x1000ed598",
+              "constantFileOffset": 2610584,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5070",
+              "charactersFileOffset": 2445424,
+              "length": 22,
+              "text": "CM_StdObjID_TOC_Target"
+            },
+            {
+              "instruction": "0x1000629a0",
+              "constantAddress": "0x1000ed578",
+              "constantFileOffset": 2610552,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5053",
+              "charactersFileOffset": 2445395,
+              "length": 28,
+              "text": "CM_StdObjID_TOC_NewValuesTOC"
+            },
+            {
+              "instruction": "0x1000629b0",
+              "constantAddress": "0x1000ed558",
+              "constantFileOffset": 2610520,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c503e",
+              "charactersFileOffset": 2445374,
+              "length": 20,
+              "text": "CM_StdObjID_TOC_Free"
+            },
+            {
+              "instruction": "0x1000629c0",
+              "constantAddress": "0x1000ed538",
+              "constantFileOffset": 2610488,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5026",
+              "charactersFileOffset": 2445350,
+              "length": 23,
+              "text": "CM_StdObjID_TOC_Deleted"
+            },
+            {
+              "instruction": "0x1000629d0",
+              "constantAddress": "0x1000ed518",
+              "constantFileOffset": 2610456,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c500c",
+              "charactersFileOffset": 2445324,
+              "length": 25,
+              "text": "CM_StdObjID_TOC_Container"
+            },
+            {
+              "instruction": "0x1000629e0",
+              "constantAddress": "0x1000ed4f8",
+              "constantFileOffset": 2610424,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c4ff5",
+              "charactersFileOffset": 2445301,
+              "length": 22,
+              "text": "CM_StdObjID_TOC_Object"
+            },
+            {
+              "instruction": "0x1000629f0",
+              "constantAddress": "0x1000ed4d8",
+              "constantFileOffset": 2610392,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c4fdd",
+              "charactersFileOffset": 2445277,
+              "length": 23,
+              "text": "CM_StdObjID_TOC_MinSeed"
+            },
+            {
+              "instruction": "0x100062a00",
+              "constantAddress": "0x1000ed4b8",
+              "constantFileOffset": 2610360,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c4fc8",
+              "charactersFileOffset": 2445256,
+              "length": 20,
+              "text": "CM_StdObjID_TOC_Seed"
+            },
+            {
+              "instruction": "0x100062a08",
+              "constantAddress": "0x1000ed498",
+              "constantFileOffset": 2610328,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c4fb8",
+              "charactersFileOffset": 2445240,
+              "length": 15,
+              "text": "CM_StdObjID_TOC"
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxOMFI createViewItem:withIndex:isExpandable:withName:]",
+          "start": "0x100062b2c",
+          "endExclusive": "0x100062c78",
+          "binaryOffset": 2042668,
+          "codeBytes": 332,
+          "codeSha256": "8550ba46b0137965f8388de5acb9a39fa51f1a365c8e08abce868680c37c5b2f",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_createViewItem_withIndex_isExpandable_withName.txt",
+          "artifactSha256": "eab9b06472ee34b849243dc95e0f43f58ec5f4566c09573f463867f16de8f472",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_createViewItem_withIndex_isExpandable_withName-resolved.txt",
+          "resolvedArtifactSha256": "eab9b06472ee34b849243dc95e0f43f58ec5f4566c09573f463867f16de8f472",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI numberOfChildrenOfItem:]",
+          "start": "0x100062c78",
+          "endExclusive": "0x100062d70",
+          "binaryOffset": 2043000,
+          "codeBytes": 248,
+          "codeSha256": "2d9c38cc89d93f50a5f811bcdd20e359ba1fef14cf0377d384fe819247577f6f",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_numberOfChildrenOfItem.txt",
+          "artifactSha256": "b2d0024ad9f7d8bc3f8e40c705883cea673a4cb0c63a480ba5616d321d8e39b5",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_numberOfChildrenOfItem-resolved.txt",
+          "resolvedArtifactSha256": "b2d0024ad9f7d8bc3f8e40c705883cea673a4cb0c63a480ba5616d321d8e39b5",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI numberOfChildrenOfItemByTocIndex:]",
+          "start": "0x100062d70",
+          "endExclusive": "0x100062e48",
+          "binaryOffset": 2043248,
+          "codeBytes": 216,
+          "codeSha256": "687292cd207e4c3fbedd912fe5a21efa2982cc3ed13834db9a8fdc3b3ae7396d",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_numberOfChildrenOfItemByTocIndex.txt",
+          "artifactSha256": "6d0836cb442b060770b4a81cd06de608adc9d3973b0e16e8af4df90d4a41a267",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_numberOfChildrenOfItemByTocIndex-resolved.txt",
+          "resolvedArtifactSha256": "6d0836cb442b060770b4a81cd06de608adc9d3973b0e16e8af4df90d4a41a267",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI child:ofItem:]",
+          "start": "0x100062e48",
+          "endExclusive": "0x100062fbc",
+          "binaryOffset": 2043464,
+          "codeBytes": 372,
+          "codeSha256": "288d6b8d02e821430d650748692b38d55b7c957b7883468ee965ec8305571235",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_child_ofItem.txt",
+          "artifactSha256": "4fe6e09ed73859461ff3e8dbf9f191a713d5cd74e43e5247c566971435315099",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_child_ofItem-resolved.txt",
+          "resolvedArtifactSha256": "741bc015660ecf7c3565f5b66ee6ffabb465f9eec94177b73f5b65a4ef18c641",
+          "cfstrings": [
+            {
+              "instruction": "0x100062ee0",
+              "constantAddress": "0x1000ed7f8",
+              "constantFileOffset": 2611192,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5247",
+              "charactersFileOffset": 2445895,
+              "length": 11,
+              "text": "[ OBJECTS ]"
+            },
+            {
+              "instruction": "0x100062ee8",
+              "constantAddress": "0x1000ed7d8",
+              "constantFileOffset": 2611160,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c522d",
+              "charactersFileOffset": 2445869,
+              "length": 25,
+              "text": "[ ID=0x1] CM_StdObjID_TOC"
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxOMFI child:ofTocItem:]",
+          "start": "0x100062fbc",
+          "endExclusive": "0x100063124",
+          "binaryOffset": 2043836,
+          "codeBytes": 360,
+          "codeSha256": "9771fcc5a9a184c36ed33bacbddd54f0d5e60be50fa4fa4566086cc5ca7836f1",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_child_ofTocItem.txt",
+          "artifactSha256": "a5f8f8b20e77c3525da675173b7cc81717ee6950e51cb4d426bc6a2b459daa78",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_child_ofTocItem-resolved.txt",
+          "resolvedArtifactSha256": "a5f8f8b20e77c3525da675173b7cc81717ee6950e51cb4d426bc6a2b459daa78",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI isItemExpandable:]",
+          "start": "0x100063124",
+          "endExclusive": "0x10006312c",
+          "binaryOffset": 2044196,
+          "codeBytes": 8,
+          "codeSha256": "2f6110664dbd16b514a0c2c7c8326932a36e85d2f15b91e57ca76efd2c7a625a",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_isItemExpandable.txt",
+          "artifactSha256": "a7506f721ed81d19fd08905d72032c81df0101e791f4a37b06a9b0a7818ae0ab",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_isItemExpandable-resolved.txt",
+          "resolvedArtifactSha256": "a7506f721ed81d19fd08905d72032c81df0101e791f4a37b06a9b0a7818ae0ab",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI isTocItemExpandable:]",
+          "start": "0x10006312c",
+          "endExclusive": "0x1000631b4",
+          "binaryOffset": 2044204,
+          "codeBytes": 136,
+          "codeSha256": "a32c6e05e7c13858c3d0ecbc4df6a3b58ef36bf5a82a56cbdcce389bffd32914",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_isTocItemExpandable.txt",
+          "artifactSha256": "ca30bb80d77b6bd7dc2f2f5b6eb99ecace1e6ad6f69b5bcfc0bd7bdae5a133dc",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_isTocItemExpandable-resolved.txt",
+          "resolvedArtifactSha256": "ca30bb80d77b6bd7dc2f2f5b6eb99ecace1e6ad6f69b5bcfc0bd7bdae5a133dc",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI StringForItem:]",
+          "start": "0x1000631b4",
+          "endExclusive": "0x1000631bc",
+          "binaryOffset": 2044340,
+          "codeBytes": 8,
+          "codeSha256": "d3c844a0173107453aa9896cdb7276470625501e7ff067cd764c7a160ece5ca3",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_StringForItem.txt",
+          "artifactSha256": "e7baf0a21a5155becc075f6ff68b043de5882915599d7ca68717958d2901fde9",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_StringForItem-resolved.txt",
+          "resolvedArtifactSha256": "e7baf0a21a5155becc075f6ff68b043de5882915599d7ca68717958d2901fde9",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI StringForTocIndexItem:]",
+          "start": "0x1000631bc",
+          "endExclusive": "0x10006368c",
+          "binaryOffset": 2044348,
+          "codeBytes": 1232,
+          "codeSha256": "cb2d76408f5db844e10f25cf624a6435ecc4112a15c51a461882aa0ac0c65b29",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_StringForTocIndexItem.txt",
+          "artifactSha256": "ee8dc5f1153b19d8b94d026df075395905963b02c5c20a8867e66fd2d7b5f4c7",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_StringForTocIndexItem-resolved.txt",
+          "resolvedArtifactSha256": "058db92d768b8994c8e6e07010fccb25fac82f53df8e0779f8461cb171a25d9f",
+          "cfstrings": [
+            {
+              "instruction": "0x100063244",
+              "constantAddress": "0x1000ed818",
+              "constantFileOffset": 2611224,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5253",
+              "charactersFileOffset": 2445907,
+              "length": 2,
+              "text": "%x"
+            },
+            {
+              "instruction": "0x1000632a8",
+              "constantAddress": "0x1000ed818",
+              "constantFileOffset": 2611224,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5253",
+              "charactersFileOffset": 2445907,
+              "length": 2,
+              "text": "%x"
+            },
+            {
+              "instruction": "0x10006330c",
+              "constantAddress": "0x1000ed818",
+              "constantFileOffset": 2611224,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5253",
+              "charactersFileOffset": 2445907,
+              "length": 2,
+              "text": "%x"
+            },
+            {
+              "instruction": "0x100063390",
+              "constantAddress": "0x1000ed878",
+              "constantFileOffset": 2611320,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c529d",
+              "charactersFileOffset": 2445981,
+              "length": 34,
+              "text": "\"%@\"  [ ID=%@ ][%@] tocindex:0x%lx"
+            },
+            {
+              "instruction": "0x1000633e8",
+              "constantAddress": "0x1000ed838",
+              "constantFileOffset": 2611256,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5256",
+              "charactersFileOffset": 2445910,
+              "length": 27,
+              "text": "[ ID=%@ ] %@ [ValueType:%@]"
+            },
+            {
+              "instruction": "0x1000634e8",
+              "constantAddress": "0x1000ed858",
+              "constantFileOffset": 2611288,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5272",
+              "charactersFileOffset": 2445938,
+              "length": 42,
+              "text": "[ ID=%@ ] %@ [ValueType:%@] tocindex:0x%lx"
+            },
+            {
+              "instruction": "0x10006353c",
+              "constantAddress": "0x1000ed8f8",
+              "constantFileOffset": 2611448,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5308",
+              "charactersFileOffset": 2446088,
+              "length": 5,
+              "text": "%u/%u"
+            },
+            {
+              "instruction": "0x10006355c",
+              "constantAddress": "0x1000ed918",
+              "constantFileOffset": 2611480,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c530e",
+              "charactersFileOffset": 2446094,
+              "length": 33,
+              "text": "[ ID=%@ ][%@] \"%@\" tocindex:0x%lx"
+            },
+            {
+              "instruction": "0x100063580",
+              "constantAddress": "0x1000ed8d8",
+              "constantFileOffset": 2611416,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5304",
+              "charactersFileOffset": 2446084,
+              "length": 3,
+              "text": "int"
+            },
+            {
+              "instruction": "0x100063588",
+              "constantAddress": "0x1000ed8b8",
+              "constantFileOffset": 2611384,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5300",
+              "charactersFileOffset": 2446080,
+              "length": 3,
+              "text": "ext"
+            },
+            {
+              "instruction": "0x1000635c8",
+              "constantAddress": "0x1000ed878",
+              "constantFileOffset": 2611320,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c529d",
+              "charactersFileOffset": 2445981,
+              "length": 34,
+              "text": "\"%@\"  [ ID=%@ ][%@] tocindex:0x%lx"
+            },
+            {
+              "instruction": "0x10006360c",
+              "constantAddress": "0x1000ed8d8",
+              "constantFileOffset": 2611416,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5304",
+              "charactersFileOffset": 2446084,
+              "length": 3,
+              "text": "int"
+            },
+            {
+              "instruction": "0x100063618",
+              "constantAddress": "0x1000ed8b8",
+              "constantFileOffset": 2611384,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5300",
+              "charactersFileOffset": 2446080,
+              "length": 3,
+              "text": "ext"
+            },
+            {
+              "instruction": "0x100063638",
+              "constantAddress": "0x1000ed898",
+              "constantFileOffset": 2611352,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c52c0",
+              "charactersFileOffset": 2446016,
+              "length": 63,
+              "text": "[ ID=%@ ] %@ [ValueType:%@] = %@[0x%lx : 0x%lx ] tocindex:0x%lx"
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxOMFI getStringForUID:]",
+          "start": "0x10006368c",
+          "endExclusive": "0x1000637b0",
+          "binaryOffset": 2045580,
+          "codeBytes": 292,
+          "codeSha256": "d3f1fdb4f9aa1034f517b7720c1aae8b4231bcf0333bce612fe51afa2a63f8cf",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getStringForUID.txt",
+          "artifactSha256": "b255c099dd57fd5ba7bd386e5c145013c8a6ed40c0f5c35e39dd64fee9c80f3a",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getStringForUID-resolved.txt",
+          "resolvedArtifactSha256": "138c163155f3728900bd24f9531e30b1b0532e38e65aa0ba242a6896b27f2e63",
+          "cfstrings": [
+            {
+              "instruction": "0x1000636d8",
+              "constantAddress": "0x1000ea398",
+              "constantFileOffset": 2597784,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a916d",
+              "charactersFileOffset": 2330989,
+              "length": 2,
+              "text": "{ "
+            },
+            {
+              "instruction": "0x1000636f4",
+              "constantAddress": "0x1000ed938",
+              "constantFileOffset": 2611512,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5330",
+              "charactersFileOffset": 2446128,
+              "length": 6,
+              "text": "%02hhx"
+            },
+            {
+              "instruction": "0x1000636fc",
+              "constantAddress": "0x1000ea3b8",
+              "constantFileOffset": 2597816,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a9170",
+              "charactersFileOffset": 2330992,
+              "length": 1,
+              "text": "-"
+            },
+            {
+              "instruction": "0x100063760",
+              "constantAddress": "0x1000ea3d8",
+              "constantFileOffset": 2597848,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a9172",
+              "charactersFileOffset": 2330994,
+              "length": 2,
+              "text": " }"
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxOMFI GetNameForObjectAt:]",
+          "start": "0x1000637b0",
+          "endExclusive": "0x100063a58",
+          "binaryOffset": 2045872,
+          "codeBytes": 680,
+          "codeSha256": "d1b8f5960b9e33cb55c4e160417dbb56742877c2477dca4492fb859ee2dafcd8",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_GetNameForObjectAt.txt",
+          "artifactSha256": "852e4ddcbce1491e32b107ff34442f96e981504128bef38be5f8805ee8e6718f",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_GetNameForObjectAt-resolved.txt",
+          "resolvedArtifactSha256": "b67b9fb577458527b644b3426b4bf7182eaf0747fc88449fdf3fb12bb994f796",
+          "cfstrings": [
+            {
+              "instruction": "0x1000639dc",
+              "constantAddress": "0x1000ed958",
+              "constantFileOffset": 2611544,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5337",
+              "charactersFileOffset": 2446135,
+              "length": 9,
+              "text": "\" \"UID:%@"
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxOMFI GetStringForObjectAt:]",
+          "start": "0x100063a58",
+          "endExclusive": "0x100063bb0",
+          "binaryOffset": 2046552,
+          "codeBytes": 344,
+          "codeSha256": "1e08bbc84de70e48b3526b6af033449d89fcd5b4748f4b13390f794e210bbe7b",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_GetStringForObjectAt.txt",
+          "artifactSha256": "0c0a905402cf8e8a111c74781c8aaa7af858cac9bd5e44213465d5d558807e02",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_GetStringForObjectAt-resolved.txt",
+          "resolvedArtifactSha256": "ad472b0e5c9441c46f0646376397d7daebdc077a728673be4225805b686e496e",
+          "cfstrings": [
+            {
+              "instruction": "0x100063b54",
+              "constantAddress": "0x1000ed978",
+              "constantFileOffset": 2611576,
+              "flags": "0x7d0",
+              "charactersAddress": "0x1000e6cd0",
+              "charactersFileOffset": 2583760,
+              "length": 1,
+              "text": "\u0000"
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxOMFI lookForProperty:At:]",
+          "start": "0x100063bb0",
+          "endExclusive": "0x100063bf0",
+          "binaryOffset": 2046896,
+          "codeBytes": 64,
+          "codeSha256": "c472085fc39d3a17d09b73fca3e3f76ed60d6099cc2aaadeddd8b34a644ef262",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_lookForProperty_At.txt",
+          "artifactSha256": "9b2bae1244433defc604c74abb1908cc9274e2faf8e7cbb47bb58ba4ec2852c7",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_lookForProperty_At-resolved.txt",
+          "resolvedArtifactSha256": "9b2bae1244433defc604c74abb1908cc9274e2faf8e7cbb47bb58ba4ec2852c7",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI getNSViewWithContentsFor:]",
+          "start": "0x100063bf0",
+          "endExclusive": "0x100063e00",
+          "binaryOffset": 2046960,
+          "codeBytes": 528,
+          "codeSha256": "c7d4978db93a813f33e5f557a6530de3967cdfde371f48be33ba09f4a62322c7",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getNSViewWithContentsFor.txt",
+          "artifactSha256": "58e9aa0fe3987b0e27c82944e490a5a5e79415dd2c14c86e37f3a5d6209c49d8",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getNSViewWithContentsFor-resolved.txt",
+          "resolvedArtifactSha256": "58e9aa0fe3987b0e27c82944e490a5a5e79415dd2c14c86e37f3a5d6209c49d8",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI getExtendedDescriptionFor:]",
+          "start": "0x100063e00",
+          "endExclusive": "0x100063efc",
+          "binaryOffset": 2047488,
+          "codeBytes": 252,
+          "codeSha256": "c35e62e508c3bfdbe9c918140ce0b4fc9b155f24ce80d7798e8dc4ac03ef5d6b",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getExtendedDescriptionFor.txt",
+          "artifactSha256": "0e943e0b853c0d0abc0acd9caff12763f6a3105689c4a49d0d0d698d692b17d2",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getExtendedDescriptionFor-resolved.txt",
+          "resolvedArtifactSha256": "2d1184d96b0333f6c33fb0683511734c407698f1d05f2dbf2d85630221ed6209",
+          "cfstrings": [
+            {
+              "instruction": "0x100063e2c",
+              "constantAddress": "0x1000ed998",
+              "constantFileOffset": 2611608,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5341",
+              "charactersFileOffset": 2446145,
+              "length": 12,
+              "text": "OMFI:Object "
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxOMFI getDescriptionForTOCindex:]",
+          "start": "0x100063efc",
+          "endExclusive": "0x1000645e8",
+          "binaryOffset": 2047740,
+          "codeBytes": 1772,
+          "codeSha256": "c64210de8f2fd6820983bb0e6e0aa6eacfd72bed07806b31009761be8e592ced",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getDescriptionForTOCindex.txt",
+          "artifactSha256": "80a5096b7c030dca1aa918ba854b422a88870426c3d091dcca69e529158dd6c5",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getDescriptionForTOCindex-resolved.txt",
+          "resolvedArtifactSha256": "6d92c808c54a4dce2d147b98b5b0a0aed68dc524945d10b021d68844c62097dc",
+          "cfstrings": [
+            {
+              "instruction": "0x100063f2c",
+              "constantAddress": "0x1000ed998",
+              "constantFileOffset": 2611608,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5341",
+              "charactersFileOffset": 2446145,
+              "length": 12,
+              "text": "OMFI:Object "
+            },
+            {
+              "instruction": "0x100063f48",
+              "constantAddress": "0x1000ed9b8",
+              "constantFileOffset": 2611640,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c534e",
+              "charactersFileOffset": 2446158,
+              "length": 16,
+              "text": "TOCIndex [ %lu ]"
+            },
+            {
+              "instruction": "0x100063f70",
+              "constantAddress": "0x1000ed9d8",
+              "constantFileOffset": 2611672,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c535f",
+              "charactersFileOffset": 2446175,
+              "length": 3,
+              "text": "\n%@"
+            },
+            {
+              "instruction": "0x100063fb0",
+              "constantAddress": "0x1000ed9f8",
+              "constantFileOffset": 2611704,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5363",
+              "charactersFileOffset": 2446179,
+              "length": 23,
+              "text": "\nBento object ID = 0x%x"
+            },
+            {
+              "instruction": "0x100064004",
+              "constantAddress": "0x1000eda18",
+              "constantFileOffset": 2611736,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c537b",
+              "charactersFileOffset": 2446203,
+              "length": 25,
+              "text": "\nProperty Name = [0x%x]%@"
+            },
+            {
+              "instruction": "0x100064058",
+              "constantAddress": "0x1000eda38",
+              "constantFileOffset": 2611768,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5395",
+              "charactersFileOffset": 2446229,
+              "length": 30,
+              "text": "\nProperty Type Name = [0x%x]%@"
+            },
+            {
+              "instruction": "0x100064090",
+              "constantAddress": "0x1000eda58",
+              "constantFileOffset": 2611800,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c53b4",
+              "charactersFileOffset": 2446260,
+              "length": 57,
+              "text": "\nValue is external\n stored at offset 0x%x has length 0x%x"
+            },
+            {
+              "instruction": "0x1000640b4",
+              "constantAddress": "0x1000eda78",
+              "constantFileOffset": 2611832,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c53ee",
+              "charactersFileOffset": 2446318,
+              "length": 25,
+              "text": "\nDumping First 128 bytes:"
+            },
+            {
+              "instruction": "0x1000640e8",
+              "constantAddress": "0x1000ea9b8",
+              "constantFileOffset": 2599352,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b0187",
+              "charactersFileOffset": 2359687,
+              "length": 1,
+              "text": "\n"
+            },
+            {
+              "instruction": "0x100064144",
+              "constantAddress": "0x1000ea9b8",
+              "constantFileOffset": 2599352,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b0187",
+              "charactersFileOffset": 2359687,
+              "length": 1,
+              "text": "\n"
+            },
+            {
+              "instruction": "0x100064198",
+              "constantAddress": "0x1000e97d8",
+              "constantFileOffset": 2594776,
+              "flags": "0x7c8",
+              "charactersAddress": "0x100074d9d",
+              "charactersFileOffset": 2117021,
+              "length": 2,
+              "text": "%@"
+            },
+            {
+              "instruction": "0x100064224",
+              "constantAddress": "0x1000eda98",
+              "constantFileOffset": 2611864,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5408",
+              "charactersFileOffset": 2446344,
+              "length": 18,
+              "text": "\nString Value = %@"
+            },
+            {
+              "instruction": "0x1000642e8",
+              "constantAddress": "0x1000edb18",
+              "constantFileOffset": 2611992,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5454",
+              "charactersFileOffset": 2446420,
+              "length": 17,
+              "text": "\nomfi_Char = %hhd"
+            },
+            {
+              "instruction": "0x1000643a8",
+              "constantAddress": "0x1000edaf8",
+              "constantFileOffset": 2611960,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5444",
+              "charactersFileOffset": 2446404,
+              "length": 15,
+              "text": "\nomfi_Long = %d"
+            },
+            {
+              "instruction": "0x1000643dc",
+              "constantAddress": "0x1000edab8",
+              "constantFileOffset": 2611896,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c541b",
+              "charactersFileOffset": 2446363,
+              "length": 12,
+              "text": "\nomfi_UID:%@"
+            },
+            {
+              "instruction": "0x100064410",
+              "constantAddress": "0x1000edb58",
+              "constantFileOffset": 2612056,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5478",
+              "charactersFileOffset": 2446456,
+              "length": 16,
+              "text": "\nomfi_Ulong = %u"
+            },
+            {
+              "instruction": "0x100064450",
+              "constantAddress": "0x1000edb78",
+              "constantFileOffset": 2612088,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5489",
+              "charactersFileOffset": 2446473,
+              "length": 18,
+              "text": "\nomfi_Ushort = %hu"
+            },
+            {
+              "instruction": "0x100064474",
+              "constantAddress": "0x1000edb98",
+              "constantFileOffset": 2612120,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c549c",
+              "charactersFileOffset": 2446492,
+              "length": 19,
+              "text": "\nomfi_Boolean= TRUE"
+            },
+            {
+              "instruction": "0x1000644b0",
+              "constantAddress": "0x1000edb38",
+              "constantFileOffset": 2612024,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5466",
+              "charactersFileOffset": 2446438,
+              "length": 17,
+              "text": "\nomfi_Short = %hd"
+            },
+            {
+              "instruction": "0x100064528",
+              "constantAddress": "0x1000edbb8",
+              "constantFileOffset": 2612152,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c54b0",
+              "charactersFileOffset": 2446512,
+              "length": 20,
+              "text": "\nomfi_Boolean= FALSE"
+            },
+            {
+              "instruction": "0x100064544",
+              "constantAddress": "0x1000edad8",
+              "constantFileOffset": 2611928,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5428",
+              "charactersFileOffset": 2446376,
+              "length": 27,
+              "text": "\nomfi_ExactEditRate = %u/%u"
+            },
+            {
+              "instruction": "0x100064570",
+              "constantAddress": "0x1000eda98",
+              "constantFileOffset": 2611864,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c5408",
+              "charactersFileOffset": 2446344,
+              "length": 18,
+              "text": "\nString Value = %@"
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxOMFI hexlifyTOCat:]",
+          "start": "0x1000645e8",
+          "endExclusive": "0x100064678",
+          "binaryOffset": 2049512,
+          "codeBytes": 144,
+          "codeSha256": "c4e4562383ae6c71dddb35dc14b85ab479d1999a09969911765000365f4dd34a",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_hexlifyTOCat.txt",
+          "artifactSha256": "562c7dae66536e09b0e9b3bd7f92340832d1f12029a4c53cf81731148942252a",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_hexlifyTOCat-resolved.txt",
+          "resolvedArtifactSha256": "b650c194d8a588cca7e5919ff316a7782b00ce1523320e8456ae8f686c2cc273",
+          "cfstrings": [
+            {
+              "instruction": "0x100064628",
+              "constantAddress": "0x1000edbd8",
+              "constantFileOffset": 2612184,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c54c5",
+              "charactersFileOffset": 2446533,
+              "length": 86,
+              "text": "   BentoID  |  Prop Name  |  Prop Type  | Value/offset| Value length|  isExternal |\n%@"
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxOMFI hexlifyRawBytes:length:]",
+          "start": "0x100064678",
+          "endExclusive": "0x100064794",
+          "binaryOffset": 2049656,
+          "codeBytes": 284,
+          "codeSha256": "8ea9889da5358947e3e08dabb534edcadde2cbd9ffa2ac0cb11974df357936ad",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_hexlifyRawBytes_length.txt",
+          "artifactSha256": "0a797fc48e95052a08ae9f92ac627e521f8b3161be1bac38e729f488b580ad86",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_hexlifyRawBytes_length-resolved.txt",
+          "resolvedArtifactSha256": "0bc4ea8987fa97c2f6770d17665071a492d7b5b44c95c343cb7971f1664336b6",
+          "cfstrings": [
+            {
+              "instruction": "0x1000646cc",
+              "constantAddress": "0x1000ea038",
+              "constantFileOffset": 2596920,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a8f7e",
+              "charactersFileOffset": 2330494,
+              "length": 5,
+              "text": "%02lx"
+            },
+            {
+              "instruction": "0x1000646d4",
+              "constantAddress": "0x1000ea078",
+              "constantFileOffset": 2596984,
+              "flags": "0x7c8",
+              "charactersAddress": "0x10007724c",
+              "charactersFileOffset": 2126412,
+              "length": 1,
+              "text": " "
+            },
+            {
+              "instruction": "0x1000646dc",
+              "constantAddress": "0x1000ea058",
+              "constantFileOffset": 2596952,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a8f84",
+              "charactersFileOffset": 2330500,
+              "length": 3,
+              "text": " | "
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxOMFI addInfoToItem:]",
+          "start": "0x100064794",
+          "endExclusive": "0x100064b60",
+          "binaryOffset": 2049940,
+          "codeBytes": 972,
+          "codeSha256": "4b31597de7386a3e8283c564eab7ab858d436c9b1a7a3e06e4d95b27bdf2146c",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_addInfoToItem.txt",
+          "artifactSha256": "c1097f5a0d8ab935e22379d9737a89b4a7e0f0676ed2959d827684f241978b3a",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_addInfoToItem-resolved.txt",
+          "resolvedArtifactSha256": "c1097f5a0d8ab935e22379d9737a89b4a7e0f0676ed2959d827684f241978b3a",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI getCompression_data:forObjAt:]",
+          "start": "0x100064b60",
+          "endExclusive": "0x100064dc4",
+          "binaryOffset": 2050912,
+          "codeBytes": 612,
+          "codeSha256": "a9e57c7941c43f007da9b0bd6ff14d4d05be952f93160d782775ba362e429254",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getCompression_data_forObjAt.txt",
+          "artifactSha256": "9ce588c5093400d37b9276d1689742616bb591da98f7a419e893471b0046a2e3",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getCompression_data_forObjAt-resolved.txt",
+          "resolvedArtifactSha256": "9ce588c5093400d37b9276d1689742616bb591da98f7a419e893471b0046a2e3",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI getProjectNameForObjAt:]",
+          "start": "0x100064dc4",
+          "endExclusive": "0x1000651dc",
+          "binaryOffset": 2051524,
+          "codeBytes": 1048,
+          "codeSha256": "a1f8eaf564fa97a663b49a16278c2f47c21790f13fe9c8948a29da3cf3ea3b62",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getProjectNameForObjAt.txt",
+          "artifactSha256": "a07afd55a76b9fc076f99135b6abff37bf155b393bd35ea8ad7d120d783e604a",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getProjectNameForObjAt-resolved.txt",
+          "resolvedArtifactSha256": "ef3c68d69aae47836666842f6f4d6211de14e28a7fc65423d9ab611b2780fdba",
+          "cfstrings": [
+            {
+              "instruction": "0x100065034",
+              "constantAddress": "0x1000edbf8",
+              "constantFileOffset": 2612216,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c554f",
+              "charactersFileOffset": 2446671,
+              "length": 43,
+              "text": "ERROR IN OMFI PARSER. UID capacity is::%ul\n"
+            },
+            {
+              "instruction": "0x1000650b0",
+              "constantAddress": "0x1000e9778",
+              "constantFileOffset": 2594680,
+              "flags": "0x7c8",
+              "charactersAddress": "0x100074d3c",
+              "charactersFileOffset": 2116924,
+              "length": 7,
+              "text": "[%@ %@]"
+            },
+            {
+              "instruction": "0x100065134",
+              "constantAddress": "0x1000edc18",
+              "constantFileOffset": 2612248,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c557b",
+              "charactersFileOffset": 2446715,
+              "length": 3,
+              "text": "%@\n"
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxOMFI getProjectAttributeForObjectAt:]",
+          "start": "0x1000651dc",
+          "endExclusive": "0x100065344",
+          "binaryOffset": 2052572,
+          "codeBytes": 360,
+          "codeSha256": "5688b6fa1dce0889f5eaa243124a22ff90a6da6ae3aa12fc47bddf1e96725340",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getProjectAttributeForObjectAt.txt",
+          "artifactSha256": "2dbb0e44652d9a237b5a2fd6f65c163fd527e87996d203abb48db2cc09ac2f6f",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getProjectAttributeForObjectAt-resolved.txt",
+          "resolvedArtifactSha256": "2dbb0e44652d9a237b5a2fd6f65c163fd527e87996d203abb48db2cc09ac2f6f",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI MustReadDictionary]",
+          "start": "0x100065344",
+          "endExclusive": "0x100065350",
+          "binaryOffset": 2052932,
+          "codeBytes": 12,
+          "codeSha256": "a0ffabf1260a5bbae12ad3f206ef5c1c3ff051b3f8999ace8232641240ec2a9f",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_MustReadDictionary.txt",
+          "artifactSha256": "f02e5974138ddf4accfce38b29a8b81a8747f71df807d2949554dbb05d0568f9",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_MustReadDictionary-resolved.txt",
+          "resolvedArtifactSha256": "f02e5974138ddf4accfce38b29a8b81a8747f71df807d2949554dbb05d0568f9",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI setMustReadDictionary:]",
+          "start": "0x100065350",
+          "endExclusive": "0x100065358",
+          "binaryOffset": 2052944,
+          "codeBytes": 8,
+          "codeSha256": "efe9f99c6fe9ff6fd9e701c4ebda03329ef4da0c5a07a6bdf219fa0c36c584d5",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_setMustReadDictionary.txt",
+          "artifactSha256": "82d48098c754ccb41386f2c92e35c1db5c2835681d6724afb72e954720a48869",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_setMustReadDictionary-resolved.txt",
+          "resolvedArtifactSha256": "82d48098c754ccb41386f2c92e35c1db5c2835681d6724afb72e954720a48869",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI localWorkInProgressIndicator]",
+          "start": "0x100065358",
+          "endExclusive": "0x100065364",
+          "binaryOffset": 2052952,
+          "codeBytes": 12,
+          "codeSha256": "eadbb8dc0b1a5a6bb1def926889ce997430c98fef8e774ed08b072e5e4c96135",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_localWorkInProgressIndicator.txt",
+          "artifactSha256": "d79e5e89213564746fa2ba3ed777ae277a7f06a7c025f406e5b1ed4fd419172d",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_localWorkInProgressIndicator-resolved.txt",
+          "resolvedArtifactSha256": "d79e5e89213564746fa2ba3ed777ae277a7f06a7c025f406e5b1ed4fd419172d",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI setLocalWorkInProgressIndicator:]",
+          "start": "0x100065364",
+          "endExclusive": "0x10006536c",
+          "binaryOffset": 2052964,
+          "codeBytes": 8,
+          "codeSha256": "fcc660f697e17f6cd1dff04537db306996cf63acc6ea1e52a64c96d40d7096c0",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_setLocalWorkInProgressIndicator.txt",
+          "artifactSha256": "557fa1427937de59b82728b60d9299bee21ff4d2c78ec523b7524b8c2568da65",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_setLocalWorkInProgressIndicator-resolved.txt",
+          "resolvedArtifactSha256": "557fa1427937de59b82728b60d9299bee21ff4d2c78ec523b7524b8c2568da65",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxOMFI .cxx_destruct]",
+          "start": "0x10006536c",
+          "endExclusive": "0x1000653e4",
+          "binaryOffset": 2052972,
+          "codeBytes": 120,
+          "codeSha256": "fe8df479778357e5ea9daa15fa77721fae9aaf5dd05fdee19157ae41f90858e5",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_cxx_destruct.txt",
+          "artifactSha256": "d5cdf6e7262ad28cabfca453b9e2dca4b728d7b9c675a4e54d5babbf29e81c1c",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_cxx_destruct-resolved.txt",
+          "resolvedArtifactSha256": "d5cdf6e7262ad28cabfca453b9e2dca4b728d7b9c675a4e54d5babbf29e81c1c",
+          "cfstrings": []
+        },
+        {
+          "symbol": "-[MDVxCore AddFile_TypeSelector:]",
+          "start": "0x10004af94",
+          "endExclusive": "0x10004b138",
+          "binaryOffset": 1945492,
+          "codeBytes": 420,
+          "codeSha256": "1a869bbd78a06818317e0bfdc7af98496cf9b53a25a189b021d73f03e20940ed",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxCore_AddFile_TypeSelector.txt",
+          "artifactSha256": "68ee9e27a65180d9d3b6d953718e4ce3ec9985db19fe077e4d7dca9e864259cb",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxCore_AddFile_TypeSelector-resolved.txt",
+          "resolvedArtifactSha256": "d51b7c6afc0f6862839bd7a5cc0463428aab2644e875d7cee502accce6425316",
+          "cfstrings": [
+            {
+              "instruction": "0x10004afc8",
+              "constantAddress": "0x1000eaff8",
+              "constantFileOffset": 2600952,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000c0129",
+              "charactersFileOffset": 2425129,
+              "length": 3,
+              "text": "pmr"
+            },
+            {
+              "instruction": "0x10004afd8",
+              "constantAddress": "0x1000ea218",
+              "constantFileOffset": 2597400,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a9011",
+              "charactersFileOffset": 2330641,
+              "length": 3,
+              "text": "mxf"
+            },
+            {
+              "instruction": "0x10004afec",
+              "constantAddress": "0x1000ea278",
+              "constantFileOffset": 2597496,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a90d4",
+              "charactersFileOffset": 2330836,
+              "length": 3,
+              "text": "omf"
+            },
+            {
+              "instruction": "0x10004b000",
+              "constantAddress": "0x1000ea2b8",
+              "constantFileOffset": 2597560,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a90dc",
+              "charactersFileOffset": 2330844,
+              "length": 3,
+              "text": "aif"
+            },
+            {
+              "instruction": "0x10004b014",
+              "constantAddress": "0x1000ea2d8",
+              "constantFileOffset": 2597592,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a90e0",
+              "charactersFileOffset": 2330848,
+              "length": 3,
+              "text": "wav"
+            },
+            {
+              "instruction": "0x10004b028",
+              "constantAddress": "0x1000ea298",
+              "constantFileOffset": 2597528,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a90d8",
+              "charactersFileOffset": 2330840,
+              "length": 3,
+              "text": "aaf"
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxPMRScannerOperation main]",
+          "start": "0x10003a1c0",
+          "endExclusive": "0x10003b204",
+          "binaryOffset": 1876416,
+          "codeBytes": 4164,
+          "codeSha256": "78ac1af4235780fe47c23012154aa9e15508c524e0c396dca017bd7e296b1bcf",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxPMRScannerOperation_main.txt",
+          "artifactSha256": "8fe130b7ce11347c17412389b4eb320ffd7dd21ff3aade72d8353e6b0162710f",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxPMRScannerOperation_main-resolved.txt",
+          "resolvedArtifactSha256": "90d4f5522005c2304b5b8043f9678a7db75e9d6aebd85445f787567b011586ff",
+          "cfstrings": [
+            {
+              "instruction": "0x10003a218",
+              "constantAddress": "0x1000eac58",
+              "constantFileOffset": 2600024,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b08c7",
+              "charactersFileOffset": 2361543,
+              "length": 7,
+              "text": "ScanMDB"
+            },
+            {
+              "instruction": "0x10003a2b0",
+              "constantAddress": "0x1000eac78",
+              "constantFileOffset": 2600056,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b08cf",
+              "charactersFileOffset": 2361551,
+              "length": 11,
+              "text": "msmMMOB.mdb"
+            },
+            {
+              "instruction": "0x10003a2f4",
+              "constantAddress": "0x1000eac98",
+              "constantFileOffset": 2600088,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b08db",
+              "charactersFileOffset": 2361563,
+              "length": 11,
+              "text": "amaMMOB.mdb"
+            },
+            {
+              "instruction": "0x10003a558",
+              "constantAddress": "0x1000ead18",
+              "constantFileOffset": 2600216,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b09cb",
+              "charactersFileOffset": 2361803,
+              "length": 33,
+              "text": "**** WARN : %@ contains %lu files"
+            },
+            {
+              "instruction": "0x10003a5d8",
+              "constantAddress": "0x1000eac78",
+              "constantFileOffset": 2600056,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b08cf",
+              "charactersFileOffset": 2361551,
+              "length": 11,
+              "text": "msmMMOB.mdb"
+            },
+            {
+              "instruction": "0x10003a5e4",
+              "constantAddress": "0x1000eac98",
+              "constantFileOffset": 2600088,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b08db",
+              "charactersFileOffset": 2361563,
+              "length": 11,
+              "text": "amaMMOB.mdb"
+            },
+            {
+              "instruction": "0x10003a5f4",
+              "constantAddress": "0x1000ead38",
+              "constantFileOffset": 2600248,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b09ed",
+              "charactersFileOffset": 2361837,
+              "length": 11,
+              "text": "msmFMID.pmr"
+            },
+            {
+              "instruction": "0x10003a604",
+              "constantAddress": "0x1000ead58",
+              "constantFileOffset": 2600280,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b09f9",
+              "charactersFileOffset": 2361849,
+              "length": 11,
+              "text": "amaFMID.pmr"
+            },
+            {
+              "instruction": "0x10003a614",
+              "constantAddress": "0x1000ead78",
+              "constantFileOffset": 2600312,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b0a05",
+              "charactersFileOffset": 2361861,
+              "length": 8,
+              "text": "Creating"
+            },
+            {
+              "instruction": "0x10003a8e4",
+              "constantAddress": "0x1000ea338",
+              "constantFileOffset": 2597688,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000778ab",
+              "charactersFileOffset": 2128043,
+              "length": 5,
+              "text": "Audio"
+            },
+            {
+              "instruction": "0x10003a98c",
+              "constantAddress": "0x1000ead98",
+              "constantFileOffset": 2600344,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b0a0e",
+              "charactersFileOffset": 2361870,
+              "length": 34,
+              "text": "Exception adding to foundClips: %@"
+            },
+            {
+              "instruction": "0x10003a9f8",
+              "constantAddress": "0x1000eadb8",
+              "constantFileOffset": 2600376,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b0a31",
+              "charactersFileOffset": 2361905,
+              "length": 13,
+              "text": "Item path: %@"
+            },
+            {
+              "instruction": "0x10003aa78",
+              "constantAddress": "0x1000eacb8",
+              "constantFileOffset": 2600120,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b0960",
+              "charactersFileOffset": 2361696,
+              "length": 29,
+              "text": "**** Error **** can't open %@"
+            },
+            {
+              "instruction": "0x10003aae8",
+              "constantAddress": "0x1000eadd8",
+              "constantFileOffset": 2600408,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b0a3f",
+              "charactersFileOffset": 2361919,
+              "length": 33,
+              "text": "Error:: PMR :: DB_ClipName is nil"
+            },
+            {
+              "instruction": "0x10003abf4",
+              "constantAddress": "0x1000eadf8",
+              "constantFileOffset": 2600440,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b0a61",
+              "charactersFileOffset": 2361953,
+              "length": 16,
+              "text": "Error:: PMR ::%@"
+            },
+            {
+              "instruction": "0x10003ac68",
+              "constantAddress": "0x1000eadf8",
+              "constantFileOffset": 2600440,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b0a61",
+              "charactersFileOffset": 2361953,
+              "length": 16,
+              "text": "Error:: PMR ::%@"
+            },
+            {
+              "instruction": "0x10003acd0",
+              "constantAddress": "0x1000eae18",
+              "constantFileOffset": 2600472,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b0a72",
+              "charactersFileOffset": 2361970,
+              "length": 21,
+              "text": "Item :: %08x of %08x "
+            },
+            {
+              "instruction": "0x10003ae90",
+              "constantAddress": "0x1000ea338",
+              "constantFileOffset": 2597688,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000778ab",
+              "charactersFileOffset": 2128043,
+              "length": 5,
+              "text": "Audio"
+            },
+            {
+              "instruction": "0x10003aff4",
+              "constantAddress": "0x1000eacd8",
+              "constantFileOffset": 2600152,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b097e",
+              "charactersFileOffset": 2361726,
+              "length": 37,
+              "text": "**** Error **** can't open dir for %@"
+            },
+            {
+              "instruction": "0x10003b0b0",
+              "constantAddress": "0x1000eacf8",
+              "constantFileOffset": 2600184,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000b09a4",
+              "charactersFileOffset": 2361764,
+              "length": 38,
+              "text": "**** Error **** no files in dir for %@"
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxDatabaseItem addinfoToItemFromCorrespondingFile]",
+          "start": "0x10003092c",
+          "endExclusive": "0x100030a14",
+          "binaryOffset": 1837356,
+          "codeBytes": 232,
+          "codeSha256": "ea86f5a07a79d1b1837a64533e8c570dcf43674418c3fceeac19f9309a3f2951",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxDatabaseItem_addinfoToItemFromCorrespondingFile.txt",
+          "artifactSha256": "2f6f281cfe8f9709a41e780146bf3d0e98e7f0c1f859dda0a85883d76a447b0a",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxDatabaseItem_addinfoToItemFromCorrespondingFile-resolved.txt",
+          "resolvedArtifactSha256": "3d3fe24e992e940109d507dc9e5443ed635ad88ecb015518ef2203a225ed6e0e",
+          "cfstrings": [
+            {
+              "instruction": "0x100030964",
+              "constantAddress": "0x1000ea218",
+              "constantFileOffset": 2597400,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a9011",
+              "charactersFileOffset": 2330641,
+              "length": 3,
+              "text": "mxf"
+            },
+            {
+              "instruction": "0x10003098c",
+              "constantAddress": "0x1000ea238",
+              "constantFileOffset": 2597432,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a9015",
+              "charactersFileOffset": 2330645,
+              "length": 7,
+              "text": "ScanMXF"
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxDatabaseItem setupWithUnrefFile:clipname:]",
+          "start": "0x100030a14",
+          "endExclusive": "0x100030c34",
+          "binaryOffset": 1837588,
+          "codeBytes": 544,
+          "codeSha256": "8cd9124fde5e157d9b8d75e9e9d538309b979ba6b16fbabdf5808b36d25d5695",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxDatabaseItem_setupWithUnrefFile_clipname.txt",
+          "artifactSha256": "61cf4237ee5e802dd77ce9f204d02229ff31b5d390421dd6d182a1d90aab74d6",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxDatabaseItem_setupWithUnrefFile_clipname-resolved.txt",
+          "resolvedArtifactSha256": "69fd02ac420a17acc12e01f2b56daa35e71300ef8e3328834ea4fe5fcbf4778f",
+          "cfstrings": [
+            {
+              "instruction": "0x100030a5c",
+              "constantAddress": "0x1000ea258",
+              "constantFileOffset": 2597464,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a90a0",
+              "charactersFileOffset": 2330784,
+              "length": 51,
+              "text": "Error in setupWithUnrefFile - clipname can't be nil"
+            },
+            {
+              "instruction": "0x100030af4",
+              "constantAddress": "0x1000ea218",
+              "constantFileOffset": 2597400,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a9011",
+              "charactersFileOffset": 2330641,
+              "length": 3,
+              "text": "mxf"
+            },
+            {
+              "instruction": "0x100030b1c",
+              "constantAddress": "0x1000ea238",
+              "constantFileOffset": 2597432,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a9015",
+              "charactersFileOffset": 2330645,
+              "length": 7,
+              "text": "ScanMXF"
+            },
+            {
+              "instruction": "0x100030b84",
+              "constantAddress": "0x1000ea278",
+              "constantFileOffset": 2597496,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a90d4",
+              "charactersFileOffset": 2330836,
+              "length": 3,
+              "text": "omf"
+            },
+            {
+              "instruction": "0x100030b98",
+              "constantAddress": "0x1000ea298",
+              "constantFileOffset": 2597528,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a90d8",
+              "charactersFileOffset": 2330840,
+              "length": 3,
+              "text": "aaf"
+            },
+            {
+              "instruction": "0x100030bac",
+              "constantAddress": "0x1000ea2b8",
+              "constantFileOffset": 2597560,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a90dc",
+              "charactersFileOffset": 2330844,
+              "length": 3,
+              "text": "aif"
+            },
+            {
+              "instruction": "0x100030bc0",
+              "constantAddress": "0x1000ea2d8",
+              "constantFileOffset": 2597592,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a90e0",
+              "charactersFileOffset": 2330848,
+              "length": 3,
+              "text": "wav"
+            }
+          ]
+        },
+        {
+          "symbol": "-[MDVxMediafile openFile:withIndicator:]",
+          "start": "0x1000439bc",
+          "endExclusive": "0x100043b58",
+          "binaryOffset": 1915324,
+          "codeBytes": 412,
+          "codeSha256": "67d3d578c413ef687d262db75249fb7e6af93b7f5397c10078f290272c4f4296",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxMediafile_openFile_withIndicator.txt",
+          "artifactSha256": "918afaa90acd4e5aed2a4ff0a26791c2dc51f223f72539cec46cb95edab893c0",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxMediafile_openFile_withIndicator-resolved.txt",
+          "resolvedArtifactSha256": "4535a277f586f7ba944d9599f2430cf6b9808b3cf8c580a0789e85ae21ae3f52",
+          "cfstrings": [
+            {
+              "instruction": "0x100043a2c",
+              "constantAddress": "0x1000eaed8",
+              "constantFileOffset": 2600664,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000be389",
+              "charactersFileOffset": 2417545,
+              "length": 3,
+              "text": "mdb"
+            },
+            {
+              "instruction": "0x100043a3c",
+              "constantAddress": "0x1000ea218",
+              "constantFileOffset": 2597400,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a9011",
+              "charactersFileOffset": 2330641,
+              "length": 3,
+              "text": "mxf"
+            },
+            {
+              "instruction": "0x100043a50",
+              "constantAddress": "0x1000ea278",
+              "constantFileOffset": 2597496,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a90d4",
+              "charactersFileOffset": 2330836,
+              "length": 3,
+              "text": "omf"
+            },
+            {
+              "instruction": "0x100043a64",
+              "constantAddress": "0x1000ea2b8",
+              "constantFileOffset": 2597560,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a90dc",
+              "charactersFileOffset": 2330844,
+              "length": 3,
+              "text": "aif"
+            },
+            {
+              "instruction": "0x100043a78",
+              "constantAddress": "0x1000ea2d8",
+              "constantFileOffset": 2597592,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a90e0",
+              "charactersFileOffset": 2330848,
+              "length": 3,
+              "text": "wav"
+            },
+            {
+              "instruction": "0x100043a8c",
+              "constantAddress": "0x1000ea298",
+              "constantFileOffset": 2597528,
+              "flags": "0x7c8",
+              "charactersAddress": "0x1000a90d8",
+              "charactersFileOffset": 2330840,
+              "length": 3,
+              "text": "aaf"
+            }
+          ]
+        }
+      ],
+      "rawInstructionProofs": [
+        {
+          "method": "-[MDVxOMFI openFile:withIndicator:]",
+          "start": "0x100061d28",
+          "endExclusive": "0x100061d48",
+          "binaryOffset": 2039080,
+          "bytes": 32,
+          "hex": "091540792a2989523f010a6be9179f1aa9a20039091940793f09007121040054",
+          "sha256": "393911185fa48b7fbb81acddcadb97c30633ef77586d2d481835bc7b4942cf2f"
+        },
+        {
+          "method": "-[MDVxOMFI openFile:withIndicator:]",
+          "start": "0x100061dbc",
+          "endExclusive": "0x100061dcc",
+          "binaryOffset": 2039228,
+          "bytes": 16,
+          "hex": "e00315aab823009406000014161540b9",
+          "sha256": "040490f7d7e7d3555e052c2f4b7eb6fee94eb7fdb6e0061bf491dca68aa46bae"
+        },
+        {
+          "method": "-[MDVxOMFI GetStringForObjectAt:]",
+          "start": "0x100063b14",
+          "endExclusive": "0x100063b48",
+          "binaryOffset": 2046740,
+          "bytes": 52,
+          "hex": "76a240391f2003d5a0904c58001f0094680e40f90801158b031140b9df020071c803805204059f9ae20314aab8240094a00200b4",
+          "sha256": "1c8f7bbabfa7400c7de16f33bf675839759110e182b59f47ab0b9a30a4073fdb"
+        },
+        {
+          "method": "-[MDVxOMFI StringForTocIndexItem:]",
+          "start": "0x1000634a4",
+          "endExclusive": "0x1000634e0",
+          "binaryOffset": 2045092,
+          "bytes": 60,
+          "hex": "080540b9095c80522900a0721f01096b410200541f2003d5a0c34c5898200094e82641a90a038052c9260a9b2a8d412902010a8b8400805234000014",
+          "sha256": "a444fc01ca0c0fdf9f8e9735aa35a995973b477338a9c302e2c29c82ac0c7681"
+        },
+        {
+          "method": "-[MDVxOMFI StringForTocIndexItem:]",
+          "start": "0x1000635a8",
+          "endExclusive": "0x1000635b8",
+          "binaryOffset": 2045352,
+          "bytes": 16,
+          "hex": "c40380521d260094f80300aac00100b4",
+          "sha256": "a99fee4ceb5517968b9752d56dec8e22d7624931e385a9dfd7f0c341c4070d6b"
+        },
+        {
+          "method": "-[MDVxOMFI getProjectAttributeForObjectAt:]",
+          "start": "0x1000652d8",
+          "endExclusive": "0x100065314",
+          "binaryOffset": 2052824,
+          "bytes": 60,
+          "hex": "080040790801184a090840392901194a0801092a48010035c2060011e00313aada150094fd031daa92120094f60300aae00315aa83120094f50316aa",
+          "sha256": "a37ca84cd9fe91ae28c23af02133e39a2cdfcfe945fcca31401f7ccad23aa39d"
+        }
+      ],
+      "limits": [
+        "Installed MDVx0.2/build4073 arm64 static paths only; no every-release/x86/runtime parity.",
+        "No app/UI, private API, conversion experiment, builds/tests/benchmarks, media read/write, malformed execution or repo edit.",
+        "No comprehensive OMF schema/codec/version/byteorder/text corpus claimed.",
+        "No claim all CString data are UTF8, all legacy values are MacRoman, or _isII reliably identifies originating platform/character set.",
+        "Static nil/fallback reconstruction is not a newly observed final displayed application result."
+      ],
+      "artifacts": [
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxCore_AddFile_TypeSelector-resolved.txt",
+          "bytes": 4667,
+          "sha256": "d51b7c6afc0f6862839bd7a5cc0463428aab2644e875d7cee502accce6425316"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxCore_AddFile_TypeSelector.txt",
+          "bytes": 4565,
+          "sha256": "68ee9e27a65180d9d3b6d953718e4ce3ec9985db19fe077e4d7dca9e864259cb"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxDatabaseItem_addinfoToItemFromCorrespondingFile-resolved.txt",
+          "bytes": 2559,
+          "sha256": "3d3fe24e992e940109d507dc9e5443ed635ad88ecb015518ef2203a225ed6e0e"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxDatabaseItem_addinfoToItemFromCorrespondingFile.txt",
+          "bytes": 2521,
+          "sha256": "2f6f281cfe8f9709a41e780146bf3d0e98e7f0c1f859dda0a85883d76a447b0a"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxDatabaseItem_setupWithUnrefFile_clipname-resolved.txt",
+          "bytes": 6255,
+          "sha256": "69fd02ac420a17acc12e01f2b56daa35e71300ef8e3328834ea4fe5fcbf4778f"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxDatabaseItem_setupWithUnrefFile_clipname.txt",
+          "bytes": 6084,
+          "sha256": "61cf4237ee5e802dd77ce9f204d02229ff31b5d390421dd6d182a1d90aab74d6"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxMediafile_openFile_withIndicator-resolved.txt",
+          "bytes": 4375,
+          "sha256": "4535a277f586f7ba944d9599f2430cf6b9808b3cf8c580a0789e85ae21ae3f52"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxMediafile_openFile_withIndicator.txt",
+          "bytes": 4273,
+          "sha256": "918afaa90acd4e5aed2a4ff0a26791c2dc51f223f72539cec46cb95edab893c0"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_GetNameForObjectAt-resolved.txt",
+          "bytes": 6466,
+          "sha256": "b67b9fb577458527b644b3426b4bf7182eaf0747fc88449fdf3fb12bb994f796"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_GetNameForObjectAt.txt",
+          "bytes": 6441,
+          "sha256": "852e4ddcbce1491e32b107ff34442f96e981504128bef38be5f8805ee8e6718f"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_GetStringForObjectAt-resolved.txt",
+          "bytes": 3489,
+          "sha256": "ad472b0e5c9441c46f0646376397d7daebdc077a728673be4225805b686e496e"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_GetStringForObjectAt.txt",
+          "bytes": 3469,
+          "sha256": "0c0a905402cf8e8a111c74781c8aaa7af858cac9bd5e44213465d5d558807e02"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_InitDictionary-resolved.txt",
+          "bytes": 16811,
+          "sha256": "e2d66441c50783fff77afdab9e40c871d031fbd13d9911d24676f071e07fa387"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_InitDictionary.txt",
+          "bytes": 15844,
+          "sha256": "4c66cede9e0d88261f79bca2bcb0df897b8997cde045eb01cb9de4f66a186318"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_MustReadDictionary-resolved.txt",
+          "bytes": 125,
+          "sha256": "f02e5974138ddf4accfce38b29a8b81a8747f71df807d2949554dbb05d0568f9"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_MustReadDictionary.txt",
+          "bytes": 125,
+          "sha256": "f02e5974138ddf4accfce38b29a8b81a8747f71df807d2949554dbb05d0568f9"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_OMFiTOCReader01-resolved.txt",
+          "bytes": 13506,
+          "sha256": "aabeb26f44a9e142eeb1f171d53de76600b151006b9a0abcef9ca007e8fba627"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_OMFiTOCReader01.txt",
+          "bytes": 13506,
+          "sha256": "aabeb26f44a9e142eeb1f171d53de76600b151006b9a0abcef9ca007e8fba627"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_OMFiTOCReader02-resolved.txt",
+          "bytes": 1230,
+          "sha256": "7e1c465ccd49357d01d77602bd713847d3677171acaeab47722a219602ccd5e5"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_OMFiTOCReader02.txt",
+          "bytes": 1197,
+          "sha256": "422d4132137d1a9a2dbbddc547717fb240bf3f3f9cc6609e33e5d03247e17d77"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_StringForItem-resolved.txt",
+          "bytes": 79,
+          "sha256": "e7baf0a21a5155becc075f6ff68b043de5882915599d7ca68717958d2901fde9"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_StringForItem.txt",
+          "bytes": 79,
+          "sha256": "e7baf0a21a5155becc075f6ff68b043de5882915599d7ca68717958d2901fde9"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_StringForTocIndexItem-resolved.txt",
+          "bytes": 13138,
+          "sha256": "058db92d768b8994c8e6e07010fccb25fac82f53df8e0779f8461cb171a25d9f"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_StringForTocIndexItem.txt",
+          "bytes": 12680,
+          "sha256": "ee8dc5f1153b19d8b94d026df075395905963b02c5c20a8867e66fd2d7b5f4c7"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_addInfoToItem-resolved.txt",
+          "bytes": 9424,
+          "sha256": "c1097f5a0d8ab935e22379d9737a89b4a7e0f0676ed2959d827684f241978b3a"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_addInfoToItem.txt",
+          "bytes": 9424,
+          "sha256": "c1097f5a0d8ab935e22379d9737a89b4a7e0f0676ed2959d827684f241978b3a"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_child_ofItem-resolved.txt",
+          "bytes": 3983,
+          "sha256": "741bc015660ecf7c3565f5b66ee6ffabb465f9eec94177b73f5b65a4ef18c641"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_child_ofItem.txt",
+          "bytes": 3919,
+          "sha256": "4fe6e09ed73859461ff3e8dbf9f191a713d5cd74e43e5247c566971435315099"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_child_ofTocItem-resolved.txt",
+          "bytes": 3348,
+          "sha256": "a5f8f8b20e77c3525da675173b7cc81717ee6950e51cb4d426bc6a2b459daa78"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_child_ofTocItem.txt",
+          "bytes": 3348,
+          "sha256": "a5f8f8b20e77c3525da675173b7cc81717ee6950e51cb4d426bc6a2b459daa78"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_createViewItem_withIndex_isExpandable_withName-resolved.txt",
+          "bytes": 3732,
+          "sha256": "eab9b06472ee34b849243dc95e0f43f58ec5f4566c09573f463867f16de8f472"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_createViewItem_withIndex_isExpandable_withName.txt",
+          "bytes": 3732,
+          "sha256": "eab9b06472ee34b849243dc95e0f43f58ec5f4566c09573f463867f16de8f472"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_cxx_destruct-resolved.txt",
+          "bytes": 1343,
+          "sha256": "d5cdf6e7262ad28cabfca453b9e2dca4b728d7b9c675a4e54d5babbf29e81c1c"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_cxx_destruct.txt",
+          "bytes": 1343,
+          "sha256": "d5cdf6e7262ad28cabfca453b9e2dca4b728d7b9c675a4e54d5babbf29e81c1c"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_dealloc-resolved.txt",
+          "bytes": 1688,
+          "sha256": "8460b99858224e2bfa990801401a06c11b05f4cd8153f1e3ca02afb5cc1bc40c"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_dealloc.txt",
+          "bytes": 1688,
+          "sha256": "8460b99858224e2bfa990801401a06c11b05f4cd8153f1e3ca02afb5cc1bc40c"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getCompression_data_forObjAt-resolved.txt",
+          "bytes": 5493,
+          "sha256": "9ce588c5093400d37b9276d1689742616bb591da98f7a419e893471b0046a2e3"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getCompression_data_forObjAt.txt",
+          "bytes": 5493,
+          "sha256": "9ce588c5093400d37b9276d1689742616bb591da98f7a419e893471b0046a2e3"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getDescriptionForTOCindex-resolved.txt",
+          "bytes": 17909,
+          "sha256": "6d92c808c54a4dce2d147b98b5b0a0aed68dc524945d10b021d68844c62097dc"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getDescriptionForTOCindex.txt",
+          "bytes": 17189,
+          "sha256": "80a5096b7c030dca1aa918ba854b422a88870426c3d091dcca69e529158dd6c5"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getExtendedDescriptionFor-resolved.txt",
+          "bytes": 2843,
+          "sha256": "2d1184d96b0333f6c33fb0683511734c407698f1d05f2dbf2d85630221ed6209"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getExtendedDescriptionFor.txt",
+          "bytes": 2817,
+          "sha256": "0e943e0b853c0d0abc0acd9caff12763f6a3105689c4a49d0d0d698d692b17d2"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getMDBCompositionsCount-resolved.txt",
+          "bytes": 95,
+          "sha256": "2deff9c3f450bae1af53e70131d8b9c19c500363e4aba9769e32751a7b128a32"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getMDBCompositionsCount.txt",
+          "bytes": 95,
+          "sha256": "2deff9c3f450bae1af53e70131d8b9c19c500363e4aba9769e32751a7b128a32"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getNSViewWithContentsFor-resolved.txt",
+          "bytes": 5575,
+          "sha256": "58e9aa0fe3987b0e27c82944e490a5a5e79415dd2c14c86e37f3a5d6209c49d8"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getNSViewWithContentsFor.txt",
+          "bytes": 5575,
+          "sha256": "58e9aa0fe3987b0e27c82944e490a5a5e79415dd2c14c86e37f3a5d6209c49d8"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getProjectAttributeForObjectAt-resolved.txt",
+          "bytes": 3401,
+          "sha256": "2dbb0e44652d9a237b5a2fd6f65c163fd527e87996d203abb48db2cc09ac2f6f"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getProjectAttributeForObjectAt.txt",
+          "bytes": 3401,
+          "sha256": "2dbb0e44652d9a237b5a2fd6f65c163fd527e87996d203abb48db2cc09ac2f6f"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getProjectNameForObjAt-resolved.txt",
+          "bytes": 10806,
+          "sha256": "ef3c68d69aae47836666842f6f4d6211de14e28a7fc65423d9ab611b2780fdba"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getProjectNameForObjAt.txt",
+          "bytes": 10709,
+          "sha256": "a07afd55a76b9fc076f99135b6abff37bf155b393bd35ea8ad7d120d783e604a"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getStringForUID-resolved.txt",
+          "bytes": 3170,
+          "sha256": "138c163155f3728900bd24f9531e30b1b0532e38e65aa0ba242a6896b27f2e63"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getStringForUID.txt",
+          "bytes": 3103,
+          "sha256": "b255c099dd57fd5ba7bd386e5c145013c8a6ed40c0f5c35e39dd64fee9c80f3a"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getType-resolved.txt",
+          "bytes": 72,
+          "sha256": "78f215c159041748a19f3c1133d6db38c58dfb1cf6185f2198bb1efce469fb90"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getType.txt",
+          "bytes": 72,
+          "sha256": "78f215c159041748a19f3c1133d6db38c58dfb1cf6185f2198bb1efce469fb90"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_hexlifyRawBytes_length-resolved.txt",
+          "bytes": 3114,
+          "sha256": "0bc4ea8987fa97c2f6770d17665071a492d7b5b44c95c343cb7971f1664336b6"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_hexlifyRawBytes_length.txt",
+          "bytes": 3063,
+          "sha256": "0a797fc48e95052a08ae9f92ac627e521f8b3161be1bac38e729f488b580ad86"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_hexlifyTOCat-resolved.txt",
+          "bytes": 1685,
+          "sha256": "b650c194d8a588cca7e5919ff316a7782b00ce1523320e8456ae8f686c2cc273"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_hexlifyTOCat.txt",
+          "bytes": 1584,
+          "sha256": "562c7dae66536e09b0e9b3bd7f92340832d1f12029a4c53cf81731148942252a"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_howManyBentoObjectsV01-resolved.txt",
+          "bytes": 701,
+          "sha256": "240e9a5b87e27eb0a9104f9be0dc746224fcd8f1f4fae251a0c346b27356c15c"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_howManyBentoObjectsV01.txt",
+          "bytes": 701,
+          "sha256": "240e9a5b87e27eb0a9104f9be0dc746224fcd8f1f4fae251a0c346b27356c15c"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_init-resolved.txt",
+          "bytes": 3906,
+          "sha256": "7458933a1b05ed83d5f9f5d59d3f37c278969cfef3b723163cc21d96a3e9adba"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_init.txt",
+          "bytes": 3906,
+          "sha256": "7458933a1b05ed83d5f9f5d59d3f37c278969cfef3b723163cc21d96a3e9adba"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_isItemExpandable-resolved.txt",
+          "bytes": 82,
+          "sha256": "a7506f721ed81d19fd08905d72032c81df0101e791f4a37b06a9b0a7818ae0ab"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_isItemExpandable.txt",
+          "bytes": 82,
+          "sha256": "a7506f721ed81d19fd08905d72032c81df0101e791f4a37b06a9b0a7818ae0ab"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_isTocItemExpandable-resolved.txt",
+          "bytes": 1130,
+          "sha256": "ca30bb80d77b6bd7dc2f2f5b6eb99ecace1e6ad6f69b5bcfc0bd7bdae5a133dc"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_isTocItemExpandable.txt",
+          "bytes": 1130,
+          "sha256": "ca30bb80d77b6bd7dc2f2f5b6eb99ecace1e6ad6f69b5bcfc0bd7bdae5a133dc"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_localWorkInProgressIndicator-resolved.txt",
+          "bytes": 171,
+          "sha256": "d79e5e89213564746fa2ba3ed777ae277a7f06a7c025f406e5b1ed4fd419172d"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_localWorkInProgressIndicator.txt",
+          "bytes": 171,
+          "sha256": "d79e5e89213564746fa2ba3ed777ae277a7f06a7c025f406e5b1ed4fd419172d"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_lookForProperty_At-resolved.txt",
+          "bytes": 559,
+          "sha256": "9b2bae1244433defc604c74abb1908cc9274e2faf8e7cbb47bb58ba4ec2852c7"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_lookForProperty_At.txt",
+          "bytes": 559,
+          "sha256": "9b2bae1244433defc604c74abb1908cc9274e2faf8e7cbb47bb58ba4ec2852c7"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_numberOfChildrenOfItem-resolved.txt",
+          "bytes": 2439,
+          "sha256": "b2d0024ad9f7d8bc3f8e40c705883cea673a4cb0c63a480ba5616d321d8e39b5"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_numberOfChildrenOfItem.txt",
+          "bytes": 2439,
+          "sha256": "b2d0024ad9f7d8bc3f8e40c705883cea673a4cb0c63a480ba5616d321d8e39b5"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_numberOfChildrenOfItemByTocIndex-resolved.txt",
+          "bytes": 1900,
+          "sha256": "6d0836cb442b060770b4a81cd06de608adc9d3973b0e16e8af4df90d4a41a267"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_numberOfChildrenOfItemByTocIndex.txt",
+          "bytes": 1900,
+          "sha256": "6d0836cb442b060770b4a81cd06de608adc9d3973b0e16e8af4df90d4a41a267"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_openFile_withIndicator-resolved.txt",
+          "bytes": 5779,
+          "sha256": "7812aa6efc1e95419d1a5b523dcc6200eac0b562aea38ad1dbbd7f6a9e3ba68e"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_openFile_withIndicator.txt",
+          "bytes": 5748,
+          "sha256": "a955bfbb112157739d65e0391becf85414dd12ac96367c6ef474cb2412ccba08"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_pDataFor-resolved.txt",
+          "bytes": 1650,
+          "sha256": "75e55bd0c41f90de4a3415912b10c99baa90f72d4ce45c0c4ab987f2a8bcd7ef"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_pDataFor.txt",
+          "bytes": 1650,
+          "sha256": "75e55bd0c41f90de4a3415912b10c99baa90f72d4ce45c0c4ab987f2a8bcd7ef"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_setLocalWorkInProgressIndicator-resolved.txt",
+          "bytes": 152,
+          "sha256": "557fa1427937de59b82728b60d9299bee21ff4d2c78ec523b7524b8c2568da65"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_setLocalWorkInProgressIndicator.txt",
+          "bytes": 152,
+          "sha256": "557fa1427937de59b82728b60d9299bee21ff4d2c78ec523b7524b8c2568da65"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_setMustReadDictionary-resolved.txt",
+          "bytes": 95,
+          "sha256": "82d48098c754ccb41386f2c92e35c1db5c2835681d6724afb72e954720a48869"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_setMustReadDictionary.txt",
+          "bytes": 95,
+          "sha256": "82d48098c754ccb41386f2c92e35c1db5c2835681d6724afb72e954720a48869"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxPMRScannerOperation_main-resolved.txt",
+          "bytes": 46717,
+          "sha256": "90d4f5522005c2304b5b8043f9678a7db75e9d6aebd85445f787567b011586ff"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxPMRScannerOperation_main.txt",
+          "bytes": 46076,
+          "sha256": "8fe130b7ce11347c17412389b4eb320ffd7dd21ff3aade72d8353e6b0162710f"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/NSString-encoding-enum.txt",
+          "bytes": 1477,
+          "sha256": "a8ca3f161dfc7f24c84bfcb83a77485d63aedb7cd47292024aad0f8a74ada6e9"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/NSString-header-receipt.json",
+          "bytes": 282,
+          "sha256": "61b1f7c6cc3cb0c9bd94f982d0dc3556876155155bb77164ddee73d8f36ba778"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/arm64-disassembly.txt",
+          "bytes": 4552262,
+          "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/arm64-objc-metadata.txt",
+          "bytes": 801388,
+          "sha256": "7477f70e70144bd55e1b60ed75ba1614ca51a8e5d869e0184fa4666749cecc69"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/binary-receipt.json",
+          "bytes": 308,
+          "sha256": "ea3021829248156ec9472931257905092bfbfc538861abc2b8ff50ef9933d69f"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/extract.py",
+          "bytes": 4416,
+          "sha256": "72467030fc1c290e007763a49c2616e7405396d2d3ff253a28efdee0299fc84f"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/extracted.json",
+          "bytes": 69862,
+          "sha256": "b6ab567a3d80451bc33d91f93a8bd3b9a2f7b81a26c430f89fdbe2dcd40ea0c1"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/omfi-selector-calls.json",
+          "bytes": 43728,
+          "sha256": "aba7f6d03781a06f22881a16cd128faaeff3a9ad99e153a3efcbb2e6d415b826"
+        },
+        {
+          "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/summarize.py",
+          "bytes": 11570,
+          "sha256": "1926572728a3e723f23b0634df189517e464dafff9e75310d0bf48bbe0f98826"
+        }
+      ]
+    },
+    "oldScanner": {
+      "task": "Current OldScanner OMF versions and text; static source and authored-test coverage",
+      "researchDate": "2026-10-23",
+      "repository": "/Users/martymclean/Developer/MediaMuster",
+      "currentCommit": "c8541868b10334ad0fddd5928a960202008768c9",
+      "sourceHashesSha256": {
+        "docs/reviews/2026-10-18-bella-mdb/text-encoding.md": "2ee727796d53d0a93b83a1d89e2529409d1d6e418f525fe3c7da0abf080fef60",
+        "src/avidtext.h": "32d45b13d8cfec1aeb63ef053753f80053632e7f8feb7ba299ffdb12005ee52f",
+        "src/oldscanner/mediaengine/omfbentoreader_p.cpp": "efe641798bdfb65fddfacf998f37581ee3eccbab4329eccfcc7c38d5a173b318",
+        "src/oldscanner/mediaengine/omfobjects_p.cpp": "6b1d703bf839f28e038d117ce24bd8fb4544dae0809558bdfff8b4d905b64aae",
+        "src/oldscanner/mediaengine/omfprojection.cpp": "df8844ea1313a12c8c34b18d6aeadc92c8d75885ba1eeabd6cf948136b998c71",
+        "src/oldscanner/mediaengine/projection.cpp": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce",
+        "tests/testmediaenginebento.h": "e03c344f2bc5a3de1593477613ff136893b44151fefe7c146fd39a93a2df2819",
+        "tests/testtypedbento.h": "a39535b7944ff3bf6407a12fecbc1a752e49f5082d6663cd89b956b5e089a7c3",
+        "tests/tst_mediaengine_omfprojection.cpp": "fd8f664611e66782f1cf6b4ae09590664c42922940585fcf0f7e8eb859655877",
+        "tests/tst_mediaenginemdb.cpp": "ffa222e5ff96d58947ef00906f1c316b7b7bc3ddf5234bbe5f6af738a8128491",
+        "tests/tst_scanner.cpp": "6eb123f014a1eacd66442e3e1ce96a61631382f9ed1890b79dfc8c8d00e69426"
+      },
+      "anchors": {
+        "label-toc": {
+          "path": "src/oldscanner/mediaengine/omfbentoreader_p.cpp",
+          "startLine": 104,
+          "endLine": 161,
+          "note": "Bento labels1.0/2.0, container order, TOC location/length, complete TOC buffered.",
+          "excerptSha256": "1db1685f06fd8d5e330d15b3b6be82d5208437a434afbc82f9b9f564c54c1faa"
+        },
+        "toc-layouts": {
+          "path": "src/oldscanner/mediaengine/omfbentoreader_p.cpp",
+          "startLine": 325,
+          "endLine": 465,
+          "note": "Bento1 fixed24-byte entries/Bento2 compact opcodes, immediate/continued32/64-bit values; legacy40-bit extension unsupported.",
+          "excerptSha256": "e5f700b5e2152e78544e969eba823b03356eccd6a1df057b23a71b3cfa2dd3b6"
+        },
+        "values": {
+          "path": "src/oldscanner/mediaengine/omfbentoreader_p.cpp",
+          "startLine": 178,
+          "endLine": 241,
+          "note": "Declared continuations and checked value ranges; update instructions unsupported.",
+          "excerptSha256": "a4c2b24278312b905945bd343ed32cd889fe9d65b11345ec130efa0d836cf92f"
+        },
+        "revision-order": {
+          "path": "src/oldscanner/mediaengine/omfobjects_p.cpp",
+          "startLine": 232,
+          "endLine": 333,
+          "note": "OMF object revision1/2 independent of Bento; verified0001 legacy spelling; metadata II/MM separate.",
+          "excerptSha256": "93bcdf3fa47cd20b59beb9bd9b2fb85e689931291384f72d0b44d0c70c05ea3f"
+        },
+        "refs": {
+          "path": "src/oldscanner/mediaengine/omfobjects_p.cpp",
+          "startLine": 419,
+          "endLine": 555,
+          "note": "Bento2 reference tables; OMF1 8-byte/OMF2 4-byte refs, exact array framing.",
+          "excerptSha256": "f84d0023c7aed3f8bcd2d7989df4139ccc7aff849d19c846d55d96453b7f5af9"
+        },
+        "raw-text": {
+          "path": "src/oldscanner/mediaengine/omfobjects_p.cpp",
+          "startLine": 391,
+          "endLine": 418,
+          "note": "NamedUTF8 strict; ASCII direct; other nonASCII unknown/raw.",
+          "excerptSha256": "8e868fe89c8366d39de9aaeb3fa55af56a88e4f99b3d4d87bf940833e55a16b9"
+        },
+        "inference": {
+          "path": "src/oldscanner/mediaengine/projection.cpp",
+          "startLine": 13,
+          "endLine": 43,
+          "note": "Current UTF8 validity then MacRoman inferred display policy, not source encoding proof.",
+          "excerptSha256": "c431fcaa7bb2b2dc570a694874dd84521bd66ade2bcda0e63f399e71ca9a371a"
+        },
+        "editorial": {
+          "path": "src/oldscanner/mediaengine/omfprojection.cpp",
+          "startLine": 879,
+          "endLine": 977,
+          "note": "Current inferred text, _PJ, import attributes, _ORG_BIN→MCBR and UTF8-first separate legacy bin name.",
+          "excerptSha256": "ade0c73db55986d31a0c288aebe56ae12db0e395a85f12e6a26ba74f73889161"
+        },
+        "typed": {
+          "path": "src/oldscanner/mediaengine/omfobjects_p.cpp",
+          "startLine": 558,
+          "endLine": 645,
+          "note": "Known types exact widths/order; UID12/32 raw; rational integer pairs; unsupported remains raw.",
+          "excerptSha256": "1a684de0ef4d2110f5dc8c6cf2a99a7f2b1ede673af665f0a1e450101ea9b4e4"
+        },
+        "suite-route": {
+          "path": "tests/tst_mediaengine_omfprojection.cpp",
+          "startLine": 60,
+          "endLine": 73,
+          "note": "Default read(database=true) uses MDB. Suite name alone is not proof of OMF route.",
+          "excerptSha256": "3517165da5739d7eab6a17d778760e3bb0d2493a6facc75b7725c8a8925b4960"
+        },
+        "string-framing": {
+          "path": "src/oldscanner/mediaengine/omfobjects_p.cpp",
+          "startLine": 34,
+          "endLine": 48,
+          "note": "FirstNUL endsstring; noNUL accepted; no decoder check of later padding bytes.",
+          "excerptSha256": "271515884f27999fa5b812cdb574f3dbe97e5abbb8d8c1c7db396be2ee87effe"
+        },
+        "explicit-utf8-names": {
+          "path": "src/oldscanner/mediaengine/omfobjects_p.cpp",
+          "startLine": 122,
+          "endLine": 132,
+          "note": "Exactly four recognized namedUTF8 properties; suffix alone insufficient.",
+          "excerptSha256": "be0b207cf11cd61e56750660a4e64556de8f04f135622d990bfa9134365556e3"
+        },
+        "orders": {
+          "path": "src/oldscanner/mediaengine/omfobjects_p.cpp",
+          "startLine": 80,
+          "endLine": 103,
+          "note": "II/MM bytes required; missing/conflicting metadataorder unknown.",
+          "excerptSha256": "8e009d5cd8e2b53741b9a87578ca0233bca8b2eee9ac50007039c361b836d1c1"
+        },
+        "omf-header-outcome": {
+          "path": "src/oldscanner/mediaengine/omfobjects_p.cpp",
+          "startLine": 661,
+          "endLine": 677,
+          "note": "Supported OMFrevision setsOmf container; otherwise completeBento becomesUnsupported.",
+          "excerptSha256": "3fed7e39e718e711175ce1d99b9ba3b805d0e63b0312fb8291ec164a4da093c6"
+        },
+        "clip-name-selectors": {
+          "path": "src/oldscanner/mediaengine/omfprojection.cpp",
+          "startLine": 363,
+          "endLine": 385,
+          "note": "Both CPNT:Name andMOBJ:Name collected for qualifiedmaster, not a fixed schema-specific preference.",
+          "excerptSha256": "fa8eb8d7d321172f7cd247f92bd3b96808475c96240fb2c0ad86ac0c0b0ca1ee"
+        },
+        "property-iterator": {
+          "path": "src/oldscanner/mediaengine/omfprojection.cpp",
+          "startLine": 16,
+          "endLine": 51,
+          "note": "All matching names retained; unique only succeeds when repeated decoded values agree.",
+          "excerptSha256": "73814414978e416291c4ce08b2ad118b47ab03ca72ff4bff5c94a3909ce38d3d"
+        },
+        "typed-attribute-switch": {
+          "path": "src/oldscanner/mediaengine/omfprojection.cpp",
+          "startLine": 894,
+          "endLine": 932,
+          "note": "Kind2StringAttribute andKind3ObjAttribute only; otherkinds skipped. NoKind4UnicodeBOB textdecoder here.",
+          "excerptSha256": "900c458b535cccae1acb8e61706d502c047f33d467b7c02158c4c6d37d755f67"
+        },
+        "test-writer": {
+          "path": "tests/testmediaenginebento.h",
+          "startLine": 34,
+          "endLine": 73,
+          "note": "Fixture builder versionmajor/minor0100/0200 independentmetadataMM/II andcontainermajor; referencewidth revision-specific.",
+          "excerptSha256": "2e5616b022c1b5521feb2baf8c42abd92d4fcd85a9017972164f9af1cdd0b073"
+        },
+        "typed-test-writer": {
+          "path": "tests/testtypedbento.h",
+          "startLine": 10,
+          "endLine": 28,
+          "note": "Typedfixture compactBento2 vsBento1 andbig setting; revision suppliedseparately.",
+          "excerptSha256": "cb67fe0a327a851ec6845d6dc24c9bb157b48b06f6b1d53306393e5764ae19ea"
+        },
+        "scanner-fixture": {
+          "path": "tests/tst_scanner.cpp",
+          "startLine": 1345,
+          "endLine": 1419,
+          "note": "OMF1/2 fixture field/role/name mappings andASCIIKind2Project.",
+          "excerptSha256": "8f6034b50418dafec86bc5e3747e86b4986b1bb60ddff2d948fb0c1a97bc7dce"
+        },
+        "mdb-test-route": {
+          "path": "tests/tst_mediaenginemdb.cpp",
+          "startLine": 20,
+          "endLine": 40,
+          "note": "MDBtests callMdbReader/MdbDetail, not OMFreader.",
+          "excerptSha256": "988a29c887c4cc4dd9a82953b43ad5be97bfd45f11dfbc3fd5cee24e14500449"
+        },
+        "macroman-table": {
+          "path": "src/avidtext.h",
+          "startLine": 8,
+          "endLine": 34,
+          "note": "Current explicit fixedMacRoman upperhalf mapping; not origin/platform detection.",
+          "excerptSha256": "b6cc8a25e7dcea185cd428d907c1feba1bfdbe5798629b1158a0ba17a81c7c7e"
+        },
+        "approved-mdb-text": {
+          "path": "docs/reviews/2026-10-18-bella-mdb/text-encoding.md",
+          "startLine": 147,
+          "endLine": 178,
+          "note": "Priorapproved MDBrules: typedexplicitUTF8/separatelegacyMacRoman; not generic same-byte codec guessing. Contextonly; OMFmustestablishschema.",
+          "excerptSha256": "774b9d5da09e358a5aac15b2f3855f2ac8e5473261917c21a7ae404c0513168f"
+        },
+        "test-direct-omf2": {
+          "path": "tests/tst_mediaengine_omfprojection.cpp",
+          "startLine": 409,
+          "endLine": 429,
+          "note": "Bento2/OMF2 identity survives unknownType; authored expectation only.",
+          "excerptSha256": "1d669dd1fa19cb3a64cf97ca7322472a0400486784d48f10d1e0b5624ab6723b"
+        },
+        "test-direct-root1": {
+          "path": "tests/tst_mediaengine_omfprojection.cpp",
+          "startLine": 430,
+          "endLine": 458,
+          "note": "OMF1root/sourceownership/ASCIIselectedname, not encodingmatrix.",
+          "excerptSha256": "5ca9fdcb216c9aff4877394a85e860d9f03264b69864de72333a2c9190af1fec"
+        },
+        "test-direct-root2": {
+          "path": "tests/tst_mediaengine_omfprojection.cpp",
+          "startLine": 459,
+          "endLine": 484,
+          "note": "OMF2activeHEADcollections, noorphanfallback.",
+          "excerptSha256": "9331595a560a691d53e1eadd6a11d39d8d844c6d2b50f924e673ed40c7ca3047"
+        },
+        "test-direct-project": {
+          "path": "tests/tst_mediaengine_omfprojection.cpp",
+          "startLine": 2275,
+          "endLine": 2308,
+          "note": "RawA7Project retainedUnknown then projectedMacRomaninferred; nofreshmediaread/testexecution.",
+          "excerptSha256": "31b3bac08f7297e9fcb5215ce54440d8812e175705662976995a2bf766edfe24"
+        },
+        "test-scanner-omf2": {
+          "path": "tests/tst_scanner.cpp",
+          "startLine": 2248,
+          "endLine": 2264,
+          "note": "ASCIIProject andfullmaster/fileidentity retained; classificationUnknown.",
+          "excerptSha256": "f7ee7c637aeef4ca3a3b38afd1f87626728ba980107fc3f02c3300c9c0c0d310"
+        },
+        "test-inferred-utf8": {
+          "path": "tests/tst_mediaengine_omfprojection.cpp",
+          "startLine": 1378,
+          "endLine": 1410,
+          "note": "ValidUTF8untaggedName inferred, rawbytes unchanged; notdirectOMFproof.",
+          "excerptSha256": "50f457b7051ce16f3eb2404e95c3a6b1aeb024fb34bcca0d36c42b2a4f84d60c"
+        },
+        "test-inferred-macroman": {
+          "path": "tests/tst_mediaengine_omfprojection.cpp",
+          "startLine": 1411,
+          "endLine": 1430,
+          "note": "MacRomanfallbackforinvalidUTF8 legacyName, basisDerived; notdirectOMFproof.",
+          "excerptSha256": "592329a8b815a5b627dae0d9a0055d9a2040b7f1d9bd20317e821b7cb18346ce"
+        },
+        "test-empty-text": {
+          "path": "tests/tst_mediaengine_omfprojection.cpp",
+          "startLine": 1431,
+          "endLine": 1466,
+          "note": "EmptyPresent value andUnreadable separate; noinventedname. NotdirectOMFproof.",
+          "excerptSha256": "cab2744945910e11a4c30b6cf856e2d7da6d444d83487985e8e57e17eb810c7b"
+        },
+        "test-bin-pair": {
+          "path": "tests/tst_mediaengine_omfprojection.cpp",
+          "startLine": 1659,
+          "endLine": 1701,
+          "note": "Legacyonly/emptyUTF8/invalidUTF8 fallback; usableUTF8preferred; conflictingmodernblank. NotdirectOMFproof.",
+          "excerptSha256": "e8829f10de7b2d8255600869a0f5314c940300eb1024f7256ee81e867b751b9a"
+        },
+        "test-both-paths": {
+          "path": "tests/tst_mediaengine_omfprojection.cpp",
+          "startLine": 1485,
+          "endLine": 1521,
+          "note": "ImportedpathASCII andUTF8inference preservesexactpath; productSourcePathexcludedforBella.",
+          "excerptSha256": "372f1efc3b92a211e288ebb0f43b1418013066925bc7a81da5d74ec84b24e256"
+        },
+        "test-mdb-orders": {
+          "path": "tests/tst_mediaenginemdb.cpp",
+          "startLine": 252,
+          "endLine": 290,
+          "note": "Independentcontainer/metadataorder matrix withnumeric/rational/refs; notOMFcoverage.",
+          "excerptSha256": "18b3b46adc9dd6853f1055b5af0b0a242c6bfc199e254680b01ba9b6d2b1d178"
+        },
+        "test-mdb-text": {
+          "path": "tests/tst_mediaenginemdb.cpp",
+          "startLine": 316,
+          "endLine": 367,
+          "note": "ExplicitUTF8strictinvalid/overlong/truncated; noNFCnormalization; NULpadding kept; unlabellednonASCIIraw. NotOMFcoverage.",
+          "excerptSha256": "9663155d283b12576f9f6976dbfb67c4c97982f368648e31a2cd310436aec9f9"
+        },
+        "test-mdb-uncertain": {
+          "path": "tests/tst_mediaenginemdb.cpp",
+          "startLine": 368,
+          "endLine": 406,
+          "note": "Conflictingbyteorder leavesnumericraw; conflictingversion removesdependentrefs. NotOMFcoverage.",
+          "excerptSha256": "9ae625d9f5dcaa5b5379d620ed8408f2e0c5f6923402f55a9bff7edc8f82f2fc"
+        },
+        "test-mdb-local-order": {
+          "path": "tests/tst_mediaenginemdb.cpp",
+          "startLine": 471,
+          "endLine": 514,
+          "note": "HEADclass/typeconflict, OM F1localcontraryorderunknown, OMF2usesHEAD; notOMFcoverage.",
+          "excerptSha256": "2fa0d078722474a223970abec3f238b1eba639d52812650a7bd9ece197d16e3b"
+        }
+      },
+      "findings": [
+        {
+          "id": "two-versions",
+          "summary": "Bento container labelversion andOMFobjectrevision are independent. Current source accepts labels1.0/2.0 only. OMFHEADdeclaredVersionType2bytes establishesrevision1/2. Versionbytes are major/minor bytes, not integerbyteorder. MetadataII/MM doesnotselecta textencoding.",
+          "anchors": [
+            "label-toc",
+            "revision-order",
+            "typed",
+            "orders"
+          ]
+        },
+        {
+          "id": "current-version-permissiveness",
+          "summary": "CurrentOMF1 accepts any two-bytevalue whosefirstbyteis1 (including0100; secondbyteunchecked), plus0001 onlyforOMFI:Version withlegacyHEADandnomodernHEAD. OMF2requires0200. Unknown/missing/conflictingrevision suppliesnosupportedOMFheader. This permissiveness iscurrentcode, notBellaapprovalforallminorversions.",
+          "anchors": [
+            "revision-order",
+            "omf-header-outcome"
+          ]
+        },
+        {
+          "id": "container-unsupported",
+          "summary": "Bento1.1 andotherlabelminors/majorsunsupported; unknownflagsoutside0101unsupported. Bento1fixedTOCwordslittleendian; highproperty/typebytes40bitextensionunsupported. Updateinstructionsunsupported. Bento2unknownopcode0Malformed, otherunknownopcodeUnsupported; immediate/continued/wideoffsetformschecked.",
+          "anchors": [
+            "label-toc",
+            "values",
+            "toc-layouts"
+          ]
+        },
+        {
+          "id": "order-no-default",
+          "summary": "Bento2containerwordordercomesfromlabel; numericmetadataorderfromtypedHEADII/MM. Missing/conflictingHEADorder leavesmultibytenumbersundecoded; OMF1contraryoruncertainlocalorderwithheld, notsilentlyswapped. OMF2usesHEADorder. Referencesdecodekeyincontainerorderwith8/4-byteOMF1/2width.",
+          "anchors": [
+            "orders",
+            "revision-order",
+            "refs",
+            "typed"
+          ]
+        },
+        {
+          "id": "current-text-read",
+          "summary": "ASCII recognizedbytewise. ExplicitUTF8 onlyonDL:PathNameUTF8,FL:PathNameUTF8,MCBR:MC:binNameUTF8,MSML:LastKnownVolumeUTF8 whendeclaredString/UniqueName. StatelessQStringDecoderrejectsinvalidUTF8. UntaggednonASCIIremainsrawUnknownatreaderlayer. NoautomaticUTF16namepath.",
+          "anchors": [
+            "explicit-utf8-names",
+            "raw-text",
+            "typed"
+          ]
+        },
+        {
+          "id": "current-text-projection",
+          "summary": "withInferredText appliesonlyPresent/undecoded/Unknown values: validUTF8first, elseMacRomanwhenallowed. OMFClipName/Project/Bin/pathcallallowMacRoman=true. ExplicitdamagedUTF8isUnreadable andisnotretriedasMacRoman. Inferredbasisdoesnotproveproducerencoding.",
+          "anchors": [
+            "inference",
+            "editorial"
+          ]
+        },
+        {
+          "id": "current-string-strictness",
+          "summary": "Reader/inferencecutatfirstNUL, acceptmissingterminator, ignoredlaterbytesfordecodingwhilepreservingraw. No trim orUnicodeNFC/NFDnormalizationapplied. CurrentacceptanceisnotarecommendationtoblindlyreuseallterminatorrulesinBella.",
+          "anchors": [
+            "string-framing",
+            "inference",
+            "raw-text"
+          ]
+        },
+        {
+          "id": "clip-name",
+          "summary": "QualifiedmastercollectsbothCPNT:Name andMOBJ:Name candidates acrossrevisions; nofirstCPNTthenMOBJ preferenceandnopairedNameUTF8establishedinthiscode. Multipleconflictingusableobservationscanremainunresolved. OMF1/2schemaowner-mappingrequiresnative/specproofseparately.",
+          "anchors": [
+            "clip-name-selectors",
+            "property-iterator",
+            "editorial"
+          ]
+        },
+        {
+          "id": "bin-name",
+          "summary": "MCBRbinNameUTF8nonempty/usable preferredoverseparatebinName; ifallmodernabsent/empty/unreadable, legacycanbeeligible. Conflictingnonemptymodernvaluesdonotfallthrougharbitrarily. Legacycurrentprojection usesinference;BellaMacRomandirectpolicywoulddiffer.",
+          "anchors": [
+            "editorial",
+            "test-bin-pair"
+          ]
+        },
+        {
+          "id": "unicode-bob",
+          "summary": "NoUnicodeBOB/Kind4textinterpretationinreviewedcurrentOMFreader/projector. AttributeprojectionhandlesKind2StringAttribute andKind3ObjAttribute; Kind4skipped. GenericDataValue/VarLenBytes stayrawunlessknownaudioSummary. Do notclaimcurrentUnicodeBOBsupportorformatfromabsence; parentnative/specworkmustestablishexactproperty/framing.",
+          "anchors": [
+            "typed-attribute-switch",
+            "typed"
+          ]
+        },
+        {
+          "id": "coverage-boundaries",
+          "summary": "DirectOMFauthoredcoverageincludesBento2/OMF2master/root, normal-scannerOMF2ASCIIProject, actualfixtureMacRomanA7projection. Broaderorder/strictUTF8/binfallbacktestsareMDBrouteonly/defaultMDB; separateimplementationsmeantheseareusefulcontrolsnotproofOMFpassed. NoKind4orBento1.1/40bit/update/unknownopcodeOMF-specifictestfoundinboundedinspectedfiles. Noexecutionperformed.",
+          "anchors": [
+            "suite-route",
+            "mdb-test-route",
+            "test-direct-omf2",
+            "test-direct-project",
+            "test-scanner-omf2",
+            "test-mdb-orders",
+            "test-mdb-text",
+            "test-bin-pair"
+          ]
+        },
+        {
+          "id": "bella-context",
+          "summary": "ExistingapprovedMDBtextprinciplesmaycarryafterOMFschemaestablished: explicittypedUnicodefirst, separatelegacycounterpartMacRoman, legacy-onlydirectMacRoman, separatevaluefallbackfordamagedUnicode, blankunavailable. Do notcopyPMRwhole-setselectionorcurrentUTF8-validityguessontoOMFlegacystrings; do notinventpairedClipNameorinterpretallKind4binaryastext. OMFscope/version/textremainpendingparentreview.",
+          "anchors": [
+            "approved-mdb-text",
+            "raw-text",
+            "inference",
+            "typed-attribute-switch"
+          ]
+        }
+      ],
+      "testsInspectedOnly": [
+        {
+          "anchor": "test-direct-omf2",
+          "route": "Explicit OmfReader read(...false)",
+          "executed": false
+        },
+        {
+          "anchor": "test-direct-root1",
+          "route": "Explicit OmfReader read(...false)",
+          "executed": false
+        },
+        {
+          "anchor": "test-direct-root2",
+          "route": "Explicit OmfReader read(...false)",
+          "executed": false
+        },
+        {
+          "anchor": "test-direct-project",
+          "route": "Direct OmfReader on genuineWAVEfixture",
+          "executed": false
+        },
+        {
+          "anchor": "test-scanner-omf2",
+          "route": "Normal scanner syntheticOMF2mediaheader",
+          "executed": false
+        },
+        {
+          "anchor": "test-inferred-utf8",
+          "route": "Default read(...database=true): MDB",
+          "executed": false
+        },
+        {
+          "anchor": "test-inferred-macroman",
+          "route": "Default read(...database=true): MDB",
+          "executed": false
+        },
+        {
+          "anchor": "test-empty-text",
+          "route": "Default read(...database=true): MDB",
+          "executed": false
+        },
+        {
+          "anchor": "test-bin-pair",
+          "route": "Default read(...database=true): MDB",
+          "executed": false
+        },
+        {
+          "anchor": "test-both-paths",
+          "route": "Data explicitly loops database=true/false",
+          "executed": false
+        },
+        {
+          "anchor": "test-mdb-orders",
+          "route": "MdbReader only",
+          "executed": false
+        },
+        {
+          "anchor": "test-mdb-text",
+          "route": "MdbReader only",
+          "executed": false
+        },
+        {
+          "anchor": "test-mdb-uncertain",
+          "route": "MdbReader only",
+          "executed": false
+        },
+        {
+          "anchor": "test-mdb-local-order",
+          "route": "MdbReader only",
+          "executed": false
+        }
+      ],
+      "limits": [
+        "No source/runtime/repository/docs edits; only this temporary evidence receipt.",
+        "No app/privateAPI/parser/build/test/benchmark execution or media-content reads.",
+        "Native UnicodeBOB layout and fresh physical versions/text observations belong to parent/other-agent receipts.",
+        "Unsupported coverage statement bounded to reviewedOMFreader/projector and namedtests; absence isnotproofeveryrepo/historytestabsent.",
+        "Authoredassertions are expectedbehavior,notfreshpass/fail. MDBandOMFimplementationsareseparate.",
+        "Currentpermissiveversion/stringdefaultsarenotBellaapprovaloruniversalOMFsupport.",
+        "ApprovedMDBtextdocumentispriorrequirementscontext,notnewOMFapproval."
+      ]
+    },
+    "externalOmf2": {
+      "provenance": {
+        "repository": "https://github.com/LWKS-Software/omfkt22",
+        "treeSha": "4216021db63f3ef6f094b24f260fbdd67f4cb7e2",
+        "path": "NTProjects_VS10/Complx2x.omf",
+        "blobSha1": "10879df78a8d428572540e7e5c9fa5bd6f83e07c",
+        "blobSha1Verified": true,
+        "url": "https://api.github.com/repos/LWKS-Software/omfkt22/git/blobs/10879df78a8d428572540e7e5c9fa5bd6f83e07c",
+        "size": 143480,
+        "sha256": "bae7af2aa64f57ea42c30e44ec43e584e4b3888d8cf73d9bc7280f2dffab71ae",
+        "humanPageUrl": "https://github.com/LWKS-Software/omfkt22/blob/main/NTProjects_VS10/Complx2x.omf"
+      },
+      "label": {
+        "offset": 143456,
+        "rawHex": "a4434da5486472d7010101000200000028f10100383f0000",
+        "major": 2,
+        "minor": 0,
+        "flagsHex": "0x101",
+        "containerOrder": "little",
+        "tocOffset": 127272,
+        "tocLength": 16184,
+        "bufferBlockSize": 1024
+      },
+      "index": {
+        "valueCount": 785,
+        "opcodeCounts": {
+          "1": 437,
+          "4": 16,
+          "13": 305,
+          "2": 348,
+          "5": 463,
+          "11": 9,
+          "15": 98,
+          "6": 107,
+          "24": 15,
+          "10": 8
+        },
+        "propertyDefinitionCount": 180,
+        "typeDefinitionCount": 47,
+        "ambiguousDefinitionCount": 0
+      },
+      "selectedValues": [
+        {
+          "object": 1,
+          "property": "OMFI:OOBJ:ObjClass",
+          "type": "omfi:ClassID",
+          "ranges": [
+            [
+              127369,
+              4
+            ]
+          ],
+          "rawHex": "48454144",
+          "asciiBeforeFirstNul": "HEAD"
+        },
+        {
+          "object": 1,
+          "property": "OMFI:HEAD:Version",
+          "type": "omfi:VersionType",
+          "ranges": [
+            [
+              127383,
+              2
+            ]
+          ],
+          "rawHex": "0200",
+          "asciiBeforeFirstNul": "\u0002"
+        },
+        {
+          "object": 1,
+          "property": "OMFI:HEAD:ByteOrder",
+          "type": "omfi:Int16",
+          "ranges": [
+            [
+              127397,
+              2
+            ]
+          ],
+          "rawHex": "4949",
+          "asciiBeforeFirstNul": "II"
+        },
+        {
+          "object": 65791,
+          "property": "OMFI:MOBJ:Name",
+          "type": "omfi:String",
+          "ranges": [
+            [
+              841,
+              18
+            ]
+          ],
+          "rawHex": "5772697465436f6d7020546170656d6f6200",
+          "asciiBeforeFirstNul": "WriteComp Tapemob"
+        },
+        {
+          "object": 65847,
+          "property": "OMFI:MOBJ:Name",
+          "type": "omfi:String",
+          "ranges": [
+            [
+              1365,
+              16
+            ]
+          ],
+          "rawHex": "53796e6368726f6e697a656420415600",
+          "asciiBeforeFirstNul": "Synchronized AV"
+        },
+        {
+          "object": 65850,
+          "property": "OMFI:MOBJ:Name",
+          "type": "omfi:String",
+          "ranges": [
+            [
+              1429,
+              16
+            ]
+          ],
+          "rawHex": "53796e6368726f6e697a656420415600",
+          "asciiBeforeFirstNul": "Synchronized AV"
+        },
+        {
+          "object": 65869,
+          "property": "OMFI:MOBJ:Name",
+          "type": "omfi:String",
+          "ranges": [
+            [
+              3395,
+              16
+            ]
+          ],
+          "rawHex": "53796e6368726f6e697a656420415600",
+          "asciiBeforeFirstNul": "Synchronized AV"
+        },
+        {
+          "object": 65886,
+          "property": "OMFI:MOBJ:Name",
+          "type": "omfi:String",
+          "ranges": [
+            [
+              62621,
+              16
+            ]
+          ],
+          "rawHex": "53796e6368726f6e697a656420415600",
+          "asciiBeforeFirstNul": "Synchronized AV"
+        },
+        {
+          "object": 65906,
+          "property": "OMFI:MOBJ:Name",
+          "type": "omfi:String",
+          "ranges": [
+            [
+              121893,
+              8
+            ],
+            [
+              121947,
+              1
+            ]
+          ],
+          "rawHex": "4c697361204d6f6200",
+          "asciiBeforeFirstNul": "Lisa Mob"
+        }
+      ],
+      "unicodeRelatedPropertyDefinitions": [],
+      "method": {
+        "independentBoundedPythonObserver": true,
+        "productionParserOrApplicationExecuted": false,
+        "tocFullyFramed": true,
+        "selectedValueReadLimit": 4096,
+        "selectedReadCallsIncludingDictionary": 236,
+        "selectedReadBytesIncludingDictionary": 4710,
+        "wholeSmallPublicBlobLoadedForIndependentByteInspection": true,
+        "mediaSamplesDecoded": false,
+        "selectedReadCallsIncludingDictionaryAndClassSummary": 236,
+        "selectedReadBytesIncludingDictionaryAndClassSummary": 4710
+      },
+      "limits": [
+        "Public toolkit sample is external compatibility evidence, not a current managed Media Composer recording or local attached-drive survey.",
+        "Bento2 label alone does not establish OMF2 schema; HEAD version/class/property values shown separately.",
+        "Selected ASCII strings establish these bytes only, not a nonASCII producer codec.",
+        "Independent observation does not prove OldScanner/Bella can parse this file or select correct owned metadata; neither parser was executed.",
+        "No repository/runtime/media-file modifications or tests/builds/apps/privateAPI executions."
+      ],
+      "indexedObjectClassCounts": {
+        "HEAD": 1,
+        "DDEF": 24,
+        "IDNT": 1,
+        "MDTP": 1,
+        "SMOB": 4,
+        "TCCP": 2,
+        "SEQU": 7,
+        "FILL": 11,
+        "MSLT": 15,
+        "TRKD": 15,
+        "SCLP": 14,
+        "MMOB": 1,
+        "TIFD": 1,
+        "TIFF": 1,
+        "AIFD": 2,
+        "AIFC": 2,
+        "UNXL": 2,
+        "CMOB": 1,
+        "EDEF": 1,
+        "EFFE": 1,
+        "TRAN": 1,
+        "SLCT": 1,
+        "ECCP": 1,
+        "CLSD": 2
+      },
+      "headCollectionsObservedWithoutResolvingReferences": [
+        {
+          "property": "OMFI:HEAD:Mobs",
+          "type": "omfi:ObjRefArray",
+          "ranges": [
+            [
+              872,
+              6
+            ],
+            [
+              1425,
+              4
+            ],
+            [
+              1466,
+              4
+            ],
+            [
+              3432,
+              4
+            ],
+            [
+              62658,
+              4
+            ],
+            [
+              121943,
+              4
+            ]
+          ],
+          "byteLength": 26,
+          "referenceListObject": 65793,
+          "rawHex": "0600ff000100370101003a0101004d0101005e01010072010100"
+        },
+        {
+          "property": "OMFI:HEAD:PrimaryMobs",
+          "type": "omfi:ObjRefArray",
+          "ranges": [
+            [
+              1391,
+              6
+            ],
+            [
+              121919,
+              4
+            ]
+          ],
+          "byteLength": 10,
+          "referenceListObject": 65848,
+          "rawHex": "02003701010072010100"
+        },
+        {
+          "property": "OMFI:HEAD:MediaData",
+          "type": "omfi:ObjRefArray",
+          "ranges": [
+            [
+              1793,
+              6
+            ],
+            [
+              3555,
+              4
+            ],
+            [
+              62781,
+              4
+            ]
+          ],
+          "byteLength": 14,
+          "referenceListObject": 65860,
+          "rawHex": "0300430101005601010067010100"
+        }
+      ],
+      "semanticBoundary": "The public Toolkit sample contains CMOB/MMOB/SMOB and editing-component classes alongside media data. Its Bento2/OMF2 structure is real external compatibility evidence; it does not establish that ordinary Avid managed-media folders write or require this form. No complete media-owner, track or project-import interpretation was performed.",
+      "observerSourcesSha256": {
+        "inspect.py": "87430740f96ee71c41ab324a669027664b42d107a41878647c456e25d5d6b6c2",
+        "inspect-summary.py": "38f7bb7cd662612ea2ac672257e730e840ffe05153dab4abe9c0257c389920d6"
+      }
+    },
+    "macProject": {
+      "date": "2026-10-23",
+      "basis": "Reanalysis of same-day hashed raw OMF captures; no new media read.",
+      "observations": [
+        {
+          "file": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/TONE_100A01.6A972974.039700.wav",
+          "object": 68007,
+          "property": "OMFI:ATTB:StringAttribute",
+          "hex": "7a5465a7745f50414c5f323570",
+          "strictUtf8Usable": false,
+          "macRomanText": "zTeßt_PAL_25p",
+          "scope": "Raw recorded attribute, no new owner/precedence choice."
+        },
+        {
+          "file": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/TONE_100A01.6A972997.0C53E0.aif",
+          "object": 68007,
+          "property": "OMFI:ATTB:StringAttribute",
+          "hex": "7a5465a7745f50414c5f323570",
+          "strictUtf8Usable": false,
+          "macRomanText": "zTeßt_PAL_25p",
+          "scope": "Raw recorded attribute, no new owner/precedence choice."
+        }
+      ],
+      "limits": "Known Mac-written examples; does not establish every producer encoding or a usable Unicode sibling."
+    }
+  },
+  "rootVerification": {
+    "hashedSourceAndArtifactFiles": 143,
+    "mdvxFunctionByteRanges": 42,
+    "oldScannerInputsHashed": 11,
+    "oldScannerRuntimeAndTestFilesEqualHead": 10,
+    "oldScannerExactAnchors": 37,
+    "testsInspectedNotExecuted": 14,
+    "externalGitBlobVerified": true,
+    "externalSelectedRawValueRangesVerified": 9,
+    "knownMacProjectByteReanalyses": 2,
+    "newUserMediaRead": false,
+    "publicExternalFixtureDownloadedWhole": true,
+    "appsPrivateApisProductionParsersBuildsTestsExecuted": false,
+    "runtimeCodeChanged": false,
+    "userMediaWritten": false,
+    "performanceMeasured": false
+  },
+  "limits": [
+    "Native static traces are bounded; no complete native version/producer support matrix or exact full UI parity is claimed.",
+    "Same-day Mac captures are5selected Avid examples; externalOMF2 is a public interchange/editing fixture downloaded whole, with selectedASCII names.",
+    "Current OMF inference and missingKind4 handling are source findings, not a demonstrated count of affected real rows."
+  ]
+}

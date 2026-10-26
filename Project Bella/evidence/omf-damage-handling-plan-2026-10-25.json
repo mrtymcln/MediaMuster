@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-25",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF damage handling. Agreed first-release OMF requirements baseline ready to move to native WAV/AIFF review; no runtime implementation/cutover.",
+  "authorization": {
+    "source": "Direct human user instruction",
+    "statement": "OK, let's lock those damage handling rules in for Bella. Is there anything else we need to decide for OMF before moving on to WAV and AIFF?",
+    "scope": "Accepts the proposed general OMF damage boundaries, compact checks/statuses, independent physical/source facts and read-only scan policy. Does not approve new format support, source priority/opening/scheduling, unresolved shared labels or runtime/cutover."
+  },
+  "agreedBellaRules": {
+    "releaseScope": "Already-agreed OMF1/Bento1 container/version/text/owner rules only; no OMF2, overlay, extended-label, Windows or raw-byte recovery support added.",
+    "foundation": "Validate complete supported TOC framing and required file-local mapping/membership/ownership before publishing that OMF contribution. One temporary TOC read/index followed by only needed metadata payloads; no whole media/essence read or permanent raw graph.",
+    "valueFailure": "Safely bounded bad text/numeric/payload/continuation invalidates that value and dependent answers; retain independent facts and only agreed separate fallbacks.",
+    "linkFailure": "Bad own ID, conflicting singular claim or unresolved required link invalidates dependent owner/association facts, not separately qualified branches. No arbitrary first/last or substitute unrelated owner.",
+    "structuralFailure": "Unsafe/incomplete shared framing or unusable required global ownership foundation rejects that OMF container contribution. Retain physical row and independent eligible database/filesystem/native-audio facts; expected format failures permit other files to continue. No unsafe structural-prefix salvage.",
+    "completeness": "Structural completeness differs from decoding every optional value. Relevant lookup must be complete to prove absence/default/NoReference; unrelated bounded optional failure does not prevent independent absence. Scope a bad mapping to demonstrably dependent facts when possible.",
+    "unsupportedAndRepeated": "Safely framed optional unknown data is skipped; needed unsupported forms unavailable. Preserve legitimate ordered arrays, declared continuations and identical repeats without treating all repetition as conflicting singular claims.",
+    "fieldRules": "Keep approved Unicode/separate legacy MacRoman, exact timing and damaged-vs-absent DF, Kind/Type/category, compression and summary rules. Short audio summaries omit samples intentionally; metadata readability is not media playback validation.",
+    "sources": "Native WAV/AIFF facts already independently read survive bad embedded OMF. No new fallback read, read trigger, priority or scheduling decision. General source capture/retry policy remains later; length stability is not proof against in-place change.",
+    "implementation": "Small C++17/Qt6.5.3 exact typed/bounds helpers, checked arithmetic/representability before indexing/allocation, scoped resources, compact availability/reasons and summary diagnostics. Release temporary bytes/indexes; no repair/recovery framework, permanent rejected-byte history or blanket corrupt catch.",
+    "outcomes": "Keep I/O, cancellation, detected source change, unsupported scope and resource/programming failures distinct from malformed metadata. Do not publish cancelled jobs as successful or hide out-of-memory/programming failures as corrupt files.",
+    "noRepair": "No automatic file/database delete, rewrite, rebuild, raw-byte resynchronization or guessed replacement records.",
+    "currentBoundary": "Current OMF metadata-only flow frames TOC before deferred payload reads; preserved partial source objects/no explicit framing gate is not proof of demonstrated decoded-prefix publication or crash. Broad Complete can inhibit independent absence/defaults.",
+    "verificationBoundary": "Static source/native checks and inspected synthetic cases; no malformed-input runtime campaign, damaged physical sample, native/private API/parser/test/build execution or measured Bella gain. No 100percent semantic/crash safety guarantee."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-damage-handling-2026-10-25.json",
+    "bytes": 206102,
+    "sha256": "3e7311f6a6fbb5d9c25e9cb88b4ae0430df6e311c6c89ffdffbae855cb03bb7c"
+  },
+  "closureAssessment": {
+    "omfSpecificProductDecisionBlockingNativeAudioReview": false,
+    "basis": "All focused OMF version/text, identity/ownership, retained-field, reading/lifetime and damage rules are agreed.",
+    "next": "Native WAV/AIFF reading and supported audio representations; then final cross-source priorities/opening/scheduling and brief design.",
+    "sharedFollowUps": [
+      "Uncommon rate-label precision/representability remains bounded shared review.",
+      "Fixed 10.6/12.4 generic Bit Depth label remains shared follow-up; approved OMF rules already keep unestablished generic combinations unavailable.",
+      "Final source precedence including native audio/embedded OMF and reasons to read another source remain deferred."
+    ],
+    "verificationNotNewScope": [
+      "Opposite numeric byte order, uncommon supported representations and malformed-input cases must be verified in implementation.",
+      "Required outputs, scan time and peak memory must be compared after implementation."
+    ],
+    "unchangedScope": "OMF1/Bento1 baseline; OMF2/extended/update forms deferred. No new decoder, header trigger, Bin Filter change or app switch."
+  }
+}

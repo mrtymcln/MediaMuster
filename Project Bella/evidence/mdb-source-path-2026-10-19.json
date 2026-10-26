@@ -1,0 +1,1887 @@
+{
+  "date": "2026-10-19",
+  "timezone": "Australia/Sydney",
+  "purpose": "Preserved native/actual recorded Source Path research and approved Bella physical Filename/File Path-only decision.",
+  "status": "User approved physical Filename and File Path only on19October2026. Recorded Source Path is excluded from Bella; original findings remain research, not runtime requirements. No current app/media/Bin Filter changes.",
+  "mediaComposer": {
+    "date": "2026-10-19",
+    "scope": "Bounded native Source Path/import-path MDB research. Static inspection only: no app launch, private native API execution, filesystem existence/alias resolution, media writes, production changes or Bin Filter work.",
+    "method": "Read prior MDB/text reviews and same-hash locator disassembly; freshly disassemble source-attribute getters, import-path helper, master writer and relevant conversions. Scan exact _SRCFILE/_IMPORTSETTING/UNC Path ADRP+ADD references and direct BL call sites in selected binaries. Manually reconstruct data/control flow. Decode AMacFileLocator chained import vtable entries to establish actual path getter names.",
+    "binaries": {
+      "engine": {
+        "version": "26.8.0.58987",
+        "binaries": [
+          {
+            "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+            "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+            "bytes": 73527536,
+            "uuid": "UUID: 9CC3CF45-9F28-380C-949C-C7B321D0858A (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib\nUUID: D55FFCED-FD76-3667-99B8-C9A84180173E (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          },
+          {
+            "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+            "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+            "bytes": 14340208,
+            "uuid": "UUID: F10B2E1F-07ED-31AC-8DDD-C2122C7B4405 (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore\nUUID: EDC22A12-1101-3C73-A57C-4256A82633F9 (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore"
+          }
+        ]
+      },
+      "main": {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer",
+        "sha256": "a4a1d1b41f2f8b509781c3b8a50286c0cd7c9746cf85e609ec5a7bcbf45a727a",
+        "bytes": 215615984,
+        "uuid": "UUID: CAFB1223-D926-3C6E-94E2-D7D09073B0A0 (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer\nUUID: D636BCED-BAF3-3940-A21E-33ADE42EBFAB (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer"
+      }
+    },
+    "plainMeaning": [
+      "Source Path records where source/imported material came from. A locator on current managed media is not automatically that fact.",
+      "A concrete native import route is the applicable master’s own _IMPORTSETTING attribute list, then its _SRCFILE object reference to a file locator.",
+      "Another concrete route is that owner’s own _USER list and its exact UNC Path text attribute. Despite the label, a native Mac writer stores its full Mac-encoded source path there; the label alone does not prove a Windows network path.",
+      "Native helpers can follow explicit source-clip links to descriptors belonging to source-file material; they do not need to use every arbitrary locator in the MDB.",
+      "Encoding preference and path-variant preference are different decisions. UTF8 and legacy spellings, canonical paths, POSIX paths and UNC variants may differ without referring to different original files."
+    ],
+    "recordedAttributeRoutes": {
+      "importSettings": "owner CPNT:Attributes → exact _IMPORTSETTING Kind3 ObjectAttribute → ATTR list → exact _SRCFILE Kind3 ObjectAttribute → file locator",
+      "userPath": "owner CPNT:Attributes → exact _USER Kind3 ObjectAttribute → ATTR list → exact UNC Path supported text attribute",
+      "notLiteralDottedKeys": "_IMPORTSETTING._SRCFILE and _USER.UNC Path describe reference traversal. They are not literal combined property names.",
+      "noFlattening": "Do not flatten similarly named attributes from unrelated/archived lists into Source Path."
+    },
+    "attributeReader": {
+      "function": "GetFileLocatorFromAttrList(AComposition*,AFileLocator**)",
+      "address": "0x2ab824",
+      "anchors": [
+        "Own GetAttrList0x2ab858..60, FindObject(_IMPORTSETTING)0x2ab868..84.",
+        "If importsettinglist exists, FindObject(_SRCFILE)0x2ab88c..0x2ab8a0; found and nonnull returns that pointer0x2ab8a4..b4 without checking pathname content.",
+        "If no locator, legacy UNC recovery branch requires nonnull own attrs AND an existing importsettinglist0x2ab8d0..d8; missing importsettinglist exits with null even if local _USER might exist.",
+        "Get own _USER0x2ab910..30; FindString(UNC Path,charbuffer,1024,&found)0x2ab934..58.",
+        "Foundflagtrue creates native AFileLocator0x2ab960, SetFullPathNameMacEncodedMBCS virtualslot0x2a0 at0x2ab968..74, and writes new _SRCFILE object into existing importsettinglist0x2ab978..94."
+      ],
+      "meaning": "This native helper can repair in-memory import settings from a user path. Bella should read the recorded values without reproducing that mutation.",
+      "blankQualification": "The _SRCFILE pointer branch is presence-based rather than nonempty pathname. The UNC branch checks foundflag, not a semantic path-availability test."
+    },
+    "fullPathConsumer": {
+      "function": "binImportGetPathName(AComposition*,char16_t*,size_t)",
+      "address": "0x2ab9a0",
+      "anchors": [
+        "GetFileLocatorFromAttrList on supplied owner0x2ab9c8.",
+        "If null pointer, GetSourceFileLocator(owner)0x2ab9dc.",
+        "If a locator exists, call GetFullPathUTF16 virtualslot0x1a0 at0x2ab9e8..0x2aba0c; if none, outputfirstUTF16unit cleared0x2aba10."
+      ],
+      "meaning": "This traced import-path helper returns a full path. It does not split a new Source Filename column. It is not proof that every Media Composer UI column uses identical final presentation."
+    },
+    "qualifiedSourceLocator": {
+      "function": "GetSourceFileLocator(AComposition*,AFileLocator**)",
+      "address": "0x2aa4f0",
+      "anchors": [
+        "Iterates applicable tracks through composition virtual+0x758, obtains trackcomponent via FindTrack+0x7280x2aa524..68.",
+        "Requires ASourceClip component0x2aa570..80, reads its full SourceID through+0x5b0, exactmobmanagerlookup0x2aa590..b8.",
+        "Referenced owner must be source MobType3 at0x2aa5c4..d4 before descriptor consideration.",
+        "Reads its descriptor and locator0x2aa5d8..e8; returns locator only when descriptor GetPhysMobType()==5 and locator IsInstanceOf(AFileLocator)0x2aa5ec..0x2aa614.",
+        "Otherwise recursively calls GetSourceFileLocator on that referenced source owner0x2aa618..28 and then advances original track if unresolved0x2aa62c..48."
+      ],
+      "meaning": "PhysMobType5 is the source-file descriptor route, not any managed MXF/OMF file descriptor merely having a locator. AddSFILE_MOB creates AMediaDesc(locator,5) at0xa7b150..78, corroborating the source-file role.",
+      "limits": "Native helper lacks a visibly explicit cycle/ambiguity policy in this bounded body. Bella must apply its own safe bounded graph traversal and cannot infer a universal scan owner order."
+    },
+    "sourceReportConsumer": {
+      "wrapper": "getImportPathFromComposition(AComposition*)0xa7cd68",
+      "ownerContext": "Accepts a master(type2) directly; subclips/appropriate effects are resolved to a master with kMasterMobGenSpec0xa7cda0..0xa7ce18. Calls FindSourceMob(master), then FindImportPath(master,source)0xa7ce24..3c.",
+      "function": "SourceComponentVisitor::FindImportPath(AComposition*primary,AComposition*source)0xa7cffc",
+      "priority": [
+        "Primary owner own _IMPORTSETTING._SRCFILE; if nonnull reference found, GetFullPathUTF16 into result0xa7d064..c4.",
+        "If _SRCFILE not found, primary owner own _USER.UNC Path via FindString0xa7d0d4..0xa7d11c and CurrentMacMBCSEncodingToUTF16 at0xa7d134.",
+        "If output empty and supplied source nonnull, source descriptor passed to FindImportPathFromMediaDescriptor0xa7d140..6c.",
+        "If still empty, iterate primary track components, follow source clip FindMob and eligible type2/type3 referenced descriptors0xa7d180..250; first nonempty output wins."
+      ],
+      "blankQualification": "A found _SRCFILE suppresses the same-owner UNC branch even if its produced path is empty; later descriptor fallback depends on output length. No universal usable-value policy can be inferred from this mixed native behavior.",
+      "descriptorHelper": {
+        "function": "SourceComponentVisitor::FindImportPathFromMediaDescriptor",
+        "address": "0xa7d664",
+        "meaning": "Walks supplied descriptor/nextdesc chain, takes AFileLocator GetFullPathUTF16 at0xa7d6d0..fc or AURLLocator GetURLUTF16 at0xa7d720..5c then MakeFilePathFromURLPath0xa7d778. Stops at first nonempty output. This helper itself does not repeat the PhysMobType5 restriction of GetSourceFileLocator; caller/owner context matters."
+      },
+      "urlPresentation": "Wrapper checks IsFileURLPath0xa7ce48 and calls MakeFilePathFromURLPath0xa7ce74 for file URLs. Do not generalize that to stripping arbitrary URLs, query strings or filenames."
+    },
+    "nativeWriters": [
+      {
+        "function": "CreateImportSettingList(AFileLocator*)",
+        "address": "main0x10021ce4c",
+        "evidence": "Builds settings list. For supplied source filelocator, obtains filename UTF16 virtual+0x210 at0x10021d104..1c; obtains directory and reconstructs locator0x10021d120..60; stores locator as _SRCFILE ObjectAttribute0x10021d164..80.",
+        "meaning": "_SRCFILE is the recorded imported file locator, not stringified settings and not automatically current transcoded media."
+      },
+      {
+        "function": "AddListToMaster(AComposition*,AAttrList*)",
+        "address": "main0x10021d278",
+        "evidence": "Own attributes obtained/created0x10021d290..bc; stores supplied list as exact _IMPORTSETTING ObjectAttribute0x10021d2c0..0x10021d2e8.",
+        "meaning": "Native import-settings writer deliberately attaches this route to master owners. It is a supported owner context, not proof every historical MDB stores only there."
+      },
+      {
+        "function": "setUNCPath(AComposition*,AFileLocator*)",
+        "address": "0xa7b444",
+        "evidence": "Supplied filelocator GetFullPathMacEncodedMBCS virtual+0x1980xa7b47c..94; own _USER obtained/created0xa7b4c4..d4; AddString(UNC Path,rawbytes,true)0xa7b504..1c.",
+        "meaning": "Writes legacy Kind2 text in current-Mac encoding. Called by AddSFILE_MOB on its supplied first composition0xa7b074..7c and by UpdateSFILE_MOBLocator. Field label UNC Path alone is not proof of Windows syntax or UTF8."
+      }
+    ],
+    "locatorNameAndSyntax": {
+      "nativeClass": "AMacFileLocator Put0xa1814 / Get0xa1d40. Chained import vtable bindings confirm +0x198=GetFullPathMacEncodedMBCS, +0x1a0=GetFullPathUTF16, +0x1b8=GetFullPathCanonicalUTF16, +0x2a0=SetFullPathNameMacEncodedMBCS, +0x3b8=SetFullPathNameUTF16_NoUNCSync.",
+      "explicitUtf8": {
+        "property": "OMFI:FL:PathNameUTF8",
+        "write": "Canonical Unicode path produced by GetFullPathCanonicalUTF16 at0xa1adc; written by WriteUTF16AsUTF8String at0xa1c08 (extensiontag2). Optional separate UNCUnicode path also written with same named property under extensiontag3 at0xa1c88.",
+        "read": "Extensiontag2 knownUTF8 reader0xa22a4..bc→UnicodeString. Nonempty canonicalUnicode route installs path via SetFullPathNameUTF16_NoUNCSync0xa2330..48. Extensiontag3 separately reads UTF8 at0xa20e0..f8 and installs UNCUnicode via SetUNCPathUnicodeStr_NoNativeSync0xa2148.",
+        "meaning": "Canonical native and UNC path are contextual variants, not independent contradictory originals simply because strings differ. Preserve extension/property role when available; do not choose arbitrary duplicate raw property values by object order."
+      },
+      "legacyCanonical": {
+        "property": "OMFI:FL:PathName",
+        "write": "Native POSIX Unicode path→MacHFS Unicode→canonical legacy encoding0xa18f4/0xa1984/0xa1998. Compatibility switch can instead write empty string0xa1aa8.",
+        "read": "If no nonempty preferred Unicode path, CanonicalPathToHFS0xa2358 then MacHFSMBCSToPosixUTF16Path0xa2380/0xa23e8.",
+        "meaning": "Decoding MacRoman and applying known path syntax are distinct operations. Legacy path may be volume-relative or have a boot-volume prefix; raw text is not necessarily already an absolute modern POSIX path."
+      },
+      "posixNamedLegacy": {
+        "property": "OMFI:FL:POSIXPathName",
+        "write": "0xa1b34 GetApplicationTextEncoding;0xa1b5c CFStringGetBytes uses returned encoding; raw stringwritten0xa1ba8..bc. This is not automaticUTF8 because property name says POSIX.",
+        "read": "Extensiontag1 raw ReadString0xa2164..7c then CurrentMacMBCSEncodingToUnicodeString0xa2194. Reader has further legacy compatibility/path-format branches; exact-string inequality with canonicalUnicode alone does not establish conflict.",
+        "bellaScope": "Within approved Mac-focused legacy policy treat known legacy text as MacRoman, not UTF8 sniffing. No universal Windows-origin codec is inferred."
+      },
+      "nativeCorePaths": "CoreMacFileLocator GetFullPathUTF160xe16c4 uses active stored Unicode path. GetFullPathCanonicalUTF160xe1a24→AMacFileSystemObject GetFullPathCanonicalUTF160xab954→GetFullPathPosixUTF16 then NativePathToCanonicalUTF160xe9a64. Active path can select native or UNC storage according to object state0xa8bb0/0xa8bd4. This is not a universal stateless POSIX-versus-UNC priority.",
+      "recoveryLimit": "Native locator reader also contains old volume/directory-ID lookups, filesystem conversion and alias/native-path state. Those resolution operations are outside a passive Bella metadata scan. Do not copy them to decide whether a recorded path exists or to relink material.",
+      "utf8Failure": "Prior same-hash strict namedUTF8 helper can throw before native legacy fallback. User-approved Bella permits independent legacy fallback without interpreting malformedUTF8 bytes as MacRoman.",
+      "otherClasses": "omf2MACL::ConvertToCM0x4d74a8 constructs native Mac locator from its OMF2 fields. Inspected installed-Mac omf2WINL::ConvertToCM0x4f37b4 and omf2NETL::ConvertToCM0x51f184 return null. AURLLocator Put0xd7214/Get0xd7218 are no-op bodies here; its AAF conversion path is separate. No general OMF1 DOSL/UNXL/NETL/TXTL codec/priority coverage is claimed by this trace."
+    },
+    "bellaImplicationsNotNewApproval": [
+      "Use an explicit owner/path-route priority table. Selected-master own _IMPORTSETTING._SRCFILE and own _USER.UNC Path are supported native routes; other owner/source-descriptor fallbacks require an agreed bounded relationship rule.",
+      "Keep one full recorded source path or supported URL and a compact availability/provenance status. Do not add a Source Filename column or strip its basename by assumption.",
+      "Within a chosen locator prefer its supported knownUTF8 canonical representation, then its separately stored known legacy fallback under approved MacRoman scope. A POSIX or UNC variant is not higher quality merely from its name.",
+      "Do not pool all path strings and demand equality. Named UTF8 and legacy text, canonical/POSIX representation, and native/UNC variants can legitimately differ. Choose by established property/extension role, not equality or object order.",
+      "Current physical media path remains filesystem Location. Never use an arbitrary managed-media descriptor locator to fill original Source Path simply because it is nonempty.",
+      "Do not introduce filesystem existence checks, alias resolution, volume search, mount attempts, relinking, or writes to repair _SRCFILE. Missing metadata leaves the physical row intact."
+    ],
+    "limits": [
+      "Static code evidence describes these native routes, not every MDB producer/version or every Media Composer UI presentation.",
+      "No actualMDBcounts claimed here; parent/data agent owns current raw corpus probes and semantic variant examples.",
+      "Fresh inspected main functions use same main hash as OriginalBin review; engine hashes match Project/text reviews.",
+      "No proof all generic path-like names are UTF8 or MacRoman; this receipt identifies specific named/typed contracts under approved scope.",
+      "SourceMobFinder internals, every source graph/effect case and unsupported locator formats were not globally audited.",
+      "Some native helpers choose first found/first nonempty and can mutate in-memory state; Bella can deliberately use safer independent rules rather than copy those behaviors."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/AMacFileLocator-Get-prior.txt",
+        "bytes": 26200,
+        "sha256": "922693364f3353f93747bd3b8ef2e8cc9bb63da4a80d38f6acfef1ec3b84d61a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/AMacFileLocator-Put-prior.txt",
+        "bytes": 15874,
+        "sha256": "0e329aefce62c75f86dacda0d36aa347bf82104b7bb77620b87d9f2149ec2793"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/AMacFileSystemObject-GetActivePathUTF16.txt",
+        "bytes": 857,
+        "sha256": "97eef51eac7d04519e5e9f8cea769ca70aa6669ba5e218fbfd8c622f75c99e9a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/AMacFileSystemObject-GetActivePathUnicodeString.txt",
+        "bytes": 455,
+        "sha256": "6b30d5e5bae66641dc0d16802cd9528a470226595fe587425f480c3573d8f998"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/AMacFileSystemObject-GetFullPathCanonicalUTF16.txt",
+        "bytes": 842,
+        "sha256": "a7cdd399cc66fda41e5a57c1b8964101666ee3f532af46380fada234d483b57e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/AURLLocator-Get.txt",
+        "bytes": 184,
+        "sha256": "6936046cdbeecc139303aaeb72c20948e991bc7ee809cc711535566d2299aff3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/AURLLocator-Put.txt",
+        "bytes": 184,
+        "sha256": "d717edbcac6f664c8a1c396b5a28cd03e8f2c99f981bd3067560ec71b573ffc0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/AddListToMaster.txt",
+        "bytes": 1400,
+        "sha256": "d2c2f86c6b53f0556887461600e13dc8a23bdfcb3a41d661b037e6bb04235415"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/AddSFILE_MOB.txt",
+        "bytes": 12966,
+        "sha256": "667aea58e8a5824dbde420d6bd11825aebe6c829e6eee9917091a0f2ee65f263"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/CoreMacFileLocator-GetFullPathCanonicalUTF16.txt",
+        "bytes": 1741,
+        "sha256": "809bb6a7397b8f7b507258ea528ada5afaa3cce85b2888855807ae57f9829ff1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/CoreMacFileLocator-GetFullPathUTF16.txt",
+        "bytes": 1868,
+        "sha256": "3d42106c85ddfa541d0b2f876f08fd1d157129ea32ceb20b886448aae1a41a37"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/CreateImportSettingList.txt",
+        "bytes": 12655,
+        "sha256": "94ae3a43811b8ba6f629cffa5ab77260bd381068bac60fd3df4b29f8e5f7ca79"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/DetermineUNCPath.txt",
+        "bytes": 1775,
+        "sha256": "f01aed37a56bac748bfe6bc53647313092ab5da93cafcc988bb69db8478b6a67"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/GetFileLocatorFromAttrList.txt",
+        "bytes": 4232,
+        "sha256": "29569098dfc1b64d778b1edb120e1f807ce35761078e38b4ae7b8b955e2e0f48"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/GetImportSettingAttrList.txt",
+        "bytes": 1196,
+        "sha256": "e784e948eec4c930ce7faf0350d363f7c7c1953b8cb8f8ed69c497204e9628f1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/GetSourceFileLocator.txt",
+        "bytes": 4431,
+        "sha256": "2142f0122d0efaf3ffc00802d05eb40192b2408930c34c9481540980c6b88cf2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/NativePathToCanonicalUTF16.txt",
+        "bytes": 6060,
+        "sha256": "4ac6b15431f8593e21d4d46aed239c179048bbf3d7c8821d5244d00fa0fa80bd"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/SourceComponentVisitor-AddToSourceMobMap.txt",
+        "bytes": 20701,
+        "sha256": "c795d305e9c2c4dcec0fa1bea85ab58459c928b6fbbc1a2b8ca916bc5039b59b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/SourceComponentVisitor-FindImportPath.txt",
+        "bytes": 7132,
+        "sha256": "37c1e422d6462e43b7fdf28adc7bc4f3449312e4b21b5f03a5eeb2b1e6e7209a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/SourceComponentVisitor-FindImportPathFromMediaDescriptor.txt",
+        "bytes": 4376,
+        "sha256": "bb0cf263cbd499828478c1ced09cfe6fc1c711238e8a257400cc75d5e95d6a48"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/SourceComponentVisitor-FindSourceMob.txt",
+        "bytes": 2643,
+        "sha256": "1e915b4478ea069f6289c276a20dd239194b953f0c5ca8eb4636ad144b4166da"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/binImportGetPathName.txt",
+        "bytes": 1615,
+        "sha256": "738e23407bbbff2338e284ed073f08f0accb1024f7b928529a02c9a159d52c2a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/direct-callers.json",
+        "bytes": 2021,
+        "sha256": "0615aa599f90bd4d672bfcab792a74bdd5e53e787805dc5af25e4604a6246c64"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/engine-identity.json",
+        "bytes": 1187,
+        "sha256": "a8e3a9411ad0924e0435bef362de8d7fc53166b50f35752b8aed68ccb8fe7044"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/filelocator-vtable-imports.json",
+        "bytes": 1259,
+        "sha256": "5d9397276d78e15c368dcd6038fea1006e33698056d0d1caf897196be75fca52"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/getImportPathFromComposition.txt",
+        "bytes": 4952,
+        "sha256": "f2f6d4dd40bb7e98d1edf9f5d460bc54130fed6d800b94aa4b8637fd9a35e0b3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/main-identity.json",
+        "bytes": 501,
+        "sha256": "20a39c9fd61288bbd49f5f9e62294947dfdf8efc476dee59ab00c0e97ea0f0fc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/main-source-key-xrefs.json",
+        "bytes": 3433,
+        "sha256": "f5164b592f4200259ded9ac460571dae2b65926884692ff6db23748bd80fe747"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/native-property-offsets-prior.json",
+        "bytes": 27054,
+        "sha256": "fcd42e31b206ecb79c37072d1eced4bcb46e81df4fd2c1027224e9341f5632f8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/omf2MACL-ConvertToCM.txt",
+        "bytes": 5025,
+        "sha256": "fa56f9a9dc7c82b24aa7ae22d8ae44275169c34323a1cafc485d4787a6c0566b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/omf2NETL-ConvertToCM.txt",
+        "bytes": 237,
+        "sha256": "74ef0c00861939cf1f9acc12191825cad82100cc93d8c5e35286fa8520f5e21c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/omf2WINL-ConvertToCM.txt",
+        "bytes": 237,
+        "sha256": "7b9c66ab8f0a37af40cd0b4416656c06d6b7834fed0457086ec3bcfdc9c8a67f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/setUNCPath.txt",
+        "bytes": 3403,
+        "sha256": "cabb7c72dd2cff9a89703e65df186a0812745adbc77fb4a72d63de2c3f9c5ac6"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/source-key-xrefs.json",
+        "bytes": 4886,
+        "sha256": "f476fb4d791ce55d2208b9be8fe6193c8d0fef1a6d10896eb4ffc1f300243eb9"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/AMediaDesc-GetPhysMobType.txt",
+        "bytes": 222,
+        "sha256": "fac943dc6efc779d640d178bf5b0f95561ca89377d60a8b1505ce6c67950e27e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/AMediaDesc-Get.txt",
+        "bytes": 9249,
+        "sha256": "672bc9f1b578a87789dd242318976b4fc7ce1c5c7af954d5adf1b252ec5c0d47"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/AMediaDesc-Put.txt",
+        "bytes": 16755,
+        "sha256": "951c435faecbcee55cd5d12d2da3aee406dddd25a5e700d9160b1fd90a2f47b1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/AMediaDesc-GetOMFI.txt",
+        "bytes": 7927,
+        "sha256": "ec65c92d10db870517a7897a12a6b15e3adc752f42635fc5a87a6f30e3da44b4"
+      }
+    ],
+    "sourceDescriptorQualificationFollowup": {
+      "date": "2026-10-19",
+      "storedProperty": "OMFI:MDES:MobKind",
+      "dictionaryOffset": "0x290",
+      "physicalSourceFileValue": 5,
+      "nativeGetter": "AMediaDesc::GetPhysMobType0x1a54d0 reads signedbyte at object+0x31.",
+      "nativeReaders": [
+        "AMediaDesc::Get0x1a5f08: dictionary+0x290 at0x1a5fd4; reader slot0x218 at0x1a5fdc; returnedbyte storedobject+0x310x1a5fe8.",
+        "AMediaDesc::GetOMFI0x1a5b88: same dictionary+0x290 at0x1a5c04; reader slot0x2180x1a5c0c; storedsamebyte0x1a5c18. This covers the alternate OMFI stream branch from Get0x1a5f8c."
+      ],
+      "nativeWriter": "AMediaDesc::Put0x1a5530 selects dictionary+0x290 at0x1a5608, reads signedbyteobject+0x310x1a560c and writes it through slot0x1380x1a5614..1c.",
+      "constructionCorroboration": "AddSFILE_MOB constructs AMediaDesc(locator,5) at0xa7b150..78. GetSourceFileLocator requires GetPhysMobType()==5 at0x2aa5f0..0x2aa5fc before returning file locator.",
+      "bellaQualification": "For deliberately bounded immediate-source fallback, follow physical file mob own explicit SourceID to referenced source owner, resolve its authoritative descriptor, require safely readable MobKind=5 and supported locator; locator class/nonempty text alone is insufficient. This is a Bella bounded selection proposal, not exact reproduction of every native descriptor helper.",
+      "limits": "This scalar mapping is established in matching installedMac binary. Do not infer source-file eligibility merely from source MobType3, descriptorclassMDES or MACL/URLL presence. Other native report helper can accept URLlocators without repeating this scalar check; no universal application owner policy is claimed."
+    }
+  },
+  "mdvx": {
+    "date": "2026-10-19",
+    "timezone": "Australia/Sydney",
+    "purpose": "Read-only MDVx ordinary scanner Source Path MDB audit; no app launch, media writes, repository changes or Bin Filter changes.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "bytes": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "version": "0.2",
+      "build": "4073",
+      "analysisArchitecture": "arm64",
+      "universalArchitectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "date": "2026-10-19",
+      "priorDisassembly": {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-disassembly.txt",
+        "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074"
+      }
+    },
+    "method": "Fresh hash and arm64 symbols; bounded manual instruction reconstruction of complete ordinary MDB enrichment, scanner path construction and row/table fields, tied to matching-hash prior disassembly. No original source recovery claimed.",
+    "conclusion": {
+      "originalSourcePath": "No independent recorded/original Source Path is read, stored or displayed in the traced ordinary MDVx PMR/MDB inventory route.",
+      "DB_itemPath": "This NSURL stores the current scanned physical file locator, constructed from PMR folder URL plus the PMR physical filename. PathCellID displays its filesystem .path; it is not MDB recorded original source metadata.",
+      "DB_SourcePath": "No DB_SourcePath property/ivar/selector exists in the inspected row metadata/symbol inventory. Do not rename DB_itemPath conceptually to original Source Path.",
+      "MDB_pathPropertyQualification": "GetStringForObjectAt: does accept OMFI:FL:PathName among generic same-object string properties, but ordinary callers assign its result to Clip Name or Project. This is not a dedicated Source Path extraction/column.",
+      "browserQualification": "The separate raw database browser StringForTocIndexItem: has a UTF8 FL:PathNameUTF8 property branch. That does not establish an inventory Source Path reader.",
+      "ownerCodecFallback": "No Original Source Path owner order, key preference, codec or missing/blank/duplicate/source-ancestry fallback is implemented by this ordinary inventory route. Those must come from other evidence and explicit Bella field rules."
+    },
+    "ordinaryMDB": {
+      "function": "-[MDVxOMFI addInfoToItem:]",
+      "address": "0x100064794",
+      "master": "Master excerpt → CompositionMobs → master TOC; generic string at 0x1000648d4 → setDB_NameInBin at 0x1000648ec (Clip Name), usageCode, edit rate and import classification only.",
+      "importSetting": "0x100064998..0x100064aa4 follows master CPNT:Attributes→ATTR:AttrRefs. Compares attribute Name raw prefix _IMPORTSETTING at 0x100064a78..0x100064a8c, then forces usageCode15 at 0x100064a98. It does not follow that ObjectAttribute, read nested filename/path text or assign a source path.",
+      "file": "File excerpt → SourceMobs → file TOC; invokes getProjectNameForObjAt: and technical descriptor helper. No locator-chain, _SRCFILE/UNCPath or import-setting-path reader is called.",
+      "absenceQualification": "The complete ordinary addInfoToItem flow and its called metadata helper purposes were traced. Literal searches alone are only corroboration; no whole-app impossibility claim."
+    },
+    "currentPhysicalPath": {
+      "scanner": "-[MDVxPMRScannerOperation main] 0x10003a1c0",
+      "PMRURL": "0x10003a234..0x10003a24c obtains self._pmrURL.absoluteURL in x26; stored to stack+0x58 at 0x10003a62c.",
+      "construction": "0x10003a6c4 loads that PMR URL; 0x10003a6c8 removes final component; 0x10003a6dc fetches DB_ClipName (physical filename); 0x10003a6f4 appends it; 0x10003a70c setDB_itemPath:.",
+      "validation": "0x10003a72c invokes validatePath. That routine tests current URL reachability, file size and creation date. It may try a path-extension variant and replace the URL with that reachable filesystem variant; no MDB original-source property supplies this URL.",
+      "rowField": {
+        "getter": "0x10003150c -[MDVxDatabaseItem DB_itemPath]",
+        "setter": "0x100031518 -[MDVxDatabaseItem setDB_itemPath:]",
+        "offset": "0x88",
+        "type": "NSURL"
+      },
+      "display": "-[MDVxCore tableView:viewForTableColumn:row:] 0x100050304: DatabaseTableID at 0x100050370, PathCellID at 0x1000503a0. Match calls DB_itemPath 0x1000503c0, NSURL path 0x1000503d0, then stringByRemovingPercentEncoding 0x1000503e8. This is the row physical path, not a separate original source path or just a containing-folder value.",
+      "stringExport": "-[MDVxCore tableView:NSStringValueForTableColumn:row:] 0x100050ce4: PathCellID at 0x100050dc4 → DB_itemPath 0x100050de4 → path 0x100050df4 → percent decoding 0x100050e0c."
+    },
+    "genericVsBrowser": {
+      "generic": {
+        "function": "-[MDVxOMFI GetStringForObjectAt:]",
+        "address": "0x100063a58",
+        "accepts": {
+          "0x10261": "OMFI:ATTB:StringAttribute",
+          "0x1027f": "OMFI:CLSD:ClassID",
+          "0x10298": "OMFI:CPNT:EffectID",
+          "0x1029d": "OMFI:CPNT:Name",
+          "0x102e1": "OMFI:FL:PathName",
+          "0x10257": "OMFI:ATTB:Name"
+        },
+        "selection": "First accepted property within same object from supplied TOC index; no explicit path-priority chain. FL:PathNameUTF8 0x102e0 is not among accepted properties.",
+        "codec": "0x100063b30..0x100063b40: Foundation encoding1 ASCII when _isII; encoding30 MacRoman otherwise; NUL trim only. Do not attribute this generic codec to a nonexistent independent Source Path field."
+      },
+      "browser": {
+        "function": "-[MDVxOMFI StringForTocIndexItem:]",
+        "address": "0x1000631bc",
+        "branch": "0x1000634a4..0x1000634dc recognizes property0x102e0 FL:PathNameUTF8 and uses NSString encoding4 UTF8. This formats a database TOC item rather than projecting row Source Path."
+      }
+    },
+    "headerQualification": "MXF addInfoToItem: 0x1000326b4 assigns clipname, project, fileUID and matUID dictionary keys. No Source Path setter exists in this row model/path. Other parser internals or unrelated workflows are outside this bounded inventory claim.",
+    "BellaImplicationsNotApproval": [
+      "Keep current filesystem Location/path separate from recorded original Source Path.",
+      "MDVx omission does not establish that MDB contains no useful recorded source paths. Bella may read supported actual owner/key structures shown by native and actual-data evidence.",
+      "Existing full identity, Unicode/legacy decoder, selected-master, Project and Original Bin rules are unchanged. This task adds no Source Path owner/fallback or extra-header-read requirement."
+    ],
+    "limits": [
+      "No MDVx app launch, live UI scan, runtime fixture injection or performance measurement.",
+      "Arm64 ordinary inventory/table route only, not every UI/browser/import/AMA workflow and not independently traced x86_64.",
+      "Binary literal absence cannot alone exclude dynamic/numeric property recognition; complete ordinary path and row model supply the bounded negative evidence.",
+      "No inference that all FL path names universally identify the original import source. Their actual owner/property purpose must be established separately."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt",
+        "bytes": 16441,
+        "sha256": "be932b1a1d04bf4539a0f4fe6b8fadb68d4d4170387b8613806c5c6af8b0fee1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt",
+        "bytes": 25206,
+        "sha256": "e9f502df3ddc289f84c65be937ec441a847c638c8b17d1df97c3b1f0655644cb"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/MDVxDatabaseItem-objc-excerpt.txt",
+        "bytes": 24581,
+        "sha256": "99ee84dd15386551c5a986e99eb6ddd750e6aee6275a6914a9306a9a381e34dc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/MDVxDatabaseItem_DB_itemPath.txt",
+        "bytes": 162,
+        "sha256": "1d4ff814e3d5f72bcec869ad164d3924c010a8e69b7907101e6e443aacdd944e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/MDVxDatabaseItem_setDB_itemPath_.txt",
+        "bytes": 143,
+        "sha256": "6789a30489c6a931039fd1a8f1c2fb122cba0eb220dd2e042d3be48c393d8d6b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/MDVxDatabaseItem_validatePath.txt",
+        "bytes": 7618,
+        "sha256": "e20dd4111ce6a2fb3bb0a89eee49fd53e9c8e759c5cd9c5c1fafdd8c77124bc8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/MDVxMXF_addInfoToItem_.txt",
+        "bytes": 3747,
+        "sha256": "18281f5391667e37e8e3b5884b1a498e680ac0ccc0a99fcf8f470c42101ea1d0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/MDVxOMFI_GetStringForObjectAt_.txt",
+        "bytes": 3468,
+        "sha256": "bab9dc9340d24802b7f984fcb1d0aca837cdfa7882e3179b3e3a4335464ba2a3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/MDVxOMFI_StringForTocIndexItem_.txt",
+        "bytes": 12679,
+        "sha256": "de2eb249c006828d24186c8c2021d9e18de8560087bec1c1c55143e7bf7111fd"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/MDVxOMFI_addInfoToItem_.txt",
+        "bytes": 9423,
+        "sha256": "20211e8a6dbcd33b0e034f3885504d5af7a54cffd3a05b5d776446549e0f6829"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/MDVxOMFI_getCompression_data_forObjAt_.txt",
+        "bytes": 5492,
+        "sha256": "56eb914605cab3b729d4dd8de955f3e18298097b96c2c1f546c00a32f1cbe0ef"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/MDVxPMRScannerOperation_main.txt",
+        "bytes": 53423,
+        "sha256": "3eeb0753fa8ace9baa58c04efa2bf9345553e74d265102be7d4739b877cabff8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/binary-literal-search.json",
+        "bytes": 375,
+        "sha256": "71b3764e4564aec078da2af02a571b468edbd08f42b40bb0cb9658951857dfeb"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/binary-receipt.json",
+        "bytes": 507,
+        "sha256": "a5f00bc9f99ef64e4ce49087d5623ed3d53087f58f32c7c42c6b9d53c390b6e5"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/browser-utf8-path-excerpt.txt",
+        "bytes": 539,
+        "sha256": "ad2114e5519c6b437fe6e1320ad3582413c3a25b3fb7d632eff75e75fa786818"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/symbols-current-arm64.txt",
+        "bytes": 225054,
+        "sha256": "2d00e21aac7d5cf927d18e2ff40d14f2a8399ddb076ffa48ed89f3dc70b0adb9"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/table-labels.json",
+        "bytes": 693,
+        "sha256": "a2fc288e42f85e752a3dab51942c5879a2b86bc2ffc1784f85b45c733b979e8f"
+      }
+    ]
+  },
+  "actualDatabases": {
+    "purpose": "Independent read-only MDB Source Path route/owner observation after live source/cache hash checks. No OldScanner interpretation used.",
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "cacheSha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "countsPerPmrFile": {
+          "pmrFileRows": 389,
+          "fileRowsWithMobKind5FileLocatorText": 0,
+          "fileRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "fileRowsWithMobKind5URLLocator": 0,
+          "fileRowsWithMobKind5URLLocatorText": 0,
+          "fileRowsWithExplicitSourcePath": 0,
+          "fileRowsWithUncPath": 0,
+          "fileRowsWithSrcfilePath": 0,
+          "fileRowsWithSeveralExactPathStrings": 0,
+          "fileRowsWithDescriptorLocatorText": 0,
+          "fileRowsWithDescriptorMSML": 389,
+          "fileRowsWithAttrErrors": 0,
+          "masterRowsWithMobKind5FileLocatorText": 0,
+          "masterRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "masterRowsWithMobKind5URLLocator": 0,
+          "masterRowsWithMobKind5URLLocatorText": 0,
+          "masterRowsWithExplicitSourcePath": 170,
+          "masterRowsWithUncPath": 140,
+          "masterRowsWithSrcfilePath": 170,
+          "masterRowsWithSeveralExactPathStrings": 0,
+          "masterRowsWithDescriptorLocatorText": 0,
+          "masterRowsWithDescriptorMSML": 0,
+          "masterRowsWithAttrErrors": 0,
+          "immediateSourceRowsWithMobKind5FileLocatorText": 389,
+          "immediateSourceRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "immediateSourceRowsWithMobKind5URLLocator": 0,
+          "immediateSourceRowsWithMobKind5URLLocatorText": 0,
+          "immediateSourceRowsWithExplicitSourcePath": 0,
+          "immediateSourceRowsWithUncPath": 0,
+          "immediateSourceRowsWithSrcfilePath": 0,
+          "immediateSourceRowsWithSeveralExactPathStrings": 0,
+          "immediateSourceRowsWithDescriptorLocatorText": 389,
+          "immediateSourceRowsWithDescriptorMSML": 0,
+          "immediateSourceRowsWithAttrErrors": 0,
+          "fallbackRowsWithoutMasterSrcfileWithOneQualifiedPath": 219,
+          "fallbackRowsWithoutAnyMasterExplicitWithOneQualifiedPath": 219,
+          "fallbackRowsWithoutMasterSrcfileWithSeveralQualifiedPaths": 0,
+          "rowsWithMasterSrcfileOrOneQualifiedFallbackPath": 389,
+          "fileOrMasterRowsWithExplicitSourcePath": 170,
+          "anyOwnerRowsWithExplicitSourcePath": 170
+        },
+        "distinctOwnersByRole": {
+          "file": 389,
+          "master": 153,
+          "immediateSource": 153
+        },
+        "candidateRoutesOnDistinctOwners": {
+          "master": {
+            "_USER/UNC Path": 70,
+            "_IMPORTSETTING/_SRCFILE": 80
+          }
+        },
+        "candidatePathStylesOnDistinctOwners": {
+          "master": {
+            "POSIXAbsolute": 150
+          }
+        },
+        "descriptorLocatorClassesOnDistinctOwners": {
+          "file": {
+            "MSML": 389
+          },
+          "immediateSource": {
+            "MACL": 153
+          }
+        },
+        "sameOwnerUncVsSrcfileRelationPerFile": {
+          "master": {
+            "exact": 140
+          }
+        },
+        "crossOwnerRelationsPerFile": {
+          "masterExplicitVsSourceDescriptor:exact": 170
+        },
+        "sameLocatorRepresentationRelations": {
+          "OMFI:FL:PathNameUTF8VsOMFI:FL:PathName:volumePrefixSyntax": 233,
+          "OMFI:FL:PathNameUTF8VsOMFI:FL:POSIXPathName:exact": 233
+        },
+        "containerTokensOnDistinctOwners": {
+          "Video:RedCode RAW": 292
+        },
+        "attributeTextKindStatesOnDistinctOwners": {
+          "UNC Path:kind2:usable": 70,
+          "Video:kind2:usable": 292
+        },
+        "srcfileRoutesOnDistinctOwners": {
+          "_IMPORTSETTING/_SRCFILE:kind3": 80
+        },
+        "sourceGraphIssues": {},
+        "descriptorKindsOnDistinctOwners": {
+          "file:1:PCMA": 286,
+          "file:1:CDCI": 93,
+          "file:1:RGBA": 10,
+          "immediateSource:5:MDES": 153
+        },
+        "mobKind5LocatorClassesOnDistinctOwners": {
+          "immediateSource:MACL:usable": 153
+        },
+        "masterSrcfileVsQualifiedSourceDescriptorPerFile": {
+          "exact": 170
+        },
+        "qualifiedFallbackExamples": [
+          {
+            "fileObject": 74924,
+            "fileMobId": "060a2b340101010101010f001300000069ffc55bd5a4b305060e2b347f7f2a80",
+            "masterObject": 74881,
+            "masterMobId": "060a2b340101010101010f001300000069ffc55bd3a4b305060e2b347f7f2a80",
+            "immediateSourceObjects": [
+              87573
+            ],
+            "sourceMobIds": [
+              "060a2b340101010101010f0013a100002bbf5c32c17211d39f1d2cb69d020efb"
+            ],
+            "qualifiedDescriptors": [
+              {
+                "descriptorObject": 87572,
+                "descriptorClass": "MDES",
+                "descriptorMobKind": 5,
+                "locatorObject": 87571,
+                "locatorClass": "MACL",
+                "selectedProperty": "OMFI:FL:PathNameUTF8",
+                "shape": {
+                  "style": "POSIXAbsolute",
+                  "characters": 135,
+                  "components": 9,
+                  "leafExtension": ".r3d",
+                  "percentEscapes": false,
+                  "textSha256": "8c7c3f0206204c120d00a42d582d3b156c5d79d84b655d592a4f9cf5698ee034",
+                  "leafSha256": "8164e8beccf9257dd89ca35b995a38a8901530d4d8c56b8c4d9318313eabb5c8"
+                }
+              }
+            ]
+          },
+          {
+            "fileObject": 74177,
+            "fileMobId": "060a2b340101010101010f00130000006207c65babccd205060e2b347f7f2a80",
+            "masterObject": 74134,
+            "masterMobId": "060a2b340101010101010f00130000006207c65ba9ccd205060e2b347f7f2a80",
+            "immediateSourceObjects": [
+              88709
+            ],
+            "sourceMobIds": [
+              "060a2b340101010101010f0013a100006c8deb10c17311d39f1b2cb69d020efb"
+            ],
+            "qualifiedDescriptors": [
+              {
+                "descriptorObject": 88708,
+                "descriptorClass": "MDES",
+                "descriptorMobKind": 5,
+                "locatorObject": 88707,
+                "locatorClass": "MACL",
+                "selectedProperty": "OMFI:FL:PathNameUTF8",
+                "shape": {
+                  "style": "POSIXAbsolute",
+                  "characters": 135,
+                  "components": 9,
+                  "leafExtension": ".r3d",
+                  "percentEscapes": false,
+                  "textSha256": "4b3dd8a832855c3a3d89833e784fb8851c8cbc870435037756e2ea1da5d3d2be",
+                  "leafSha256": "78701cd5acb9714925173124ad4b5c29fea0940a77a4006fc26c611f78fae128"
+                }
+              }
+            ]
+          }
+        ],
+        "sharedExample": [],
+        "known93868Locator": [
+          {
+            "object": 93868,
+            "class": "MACL",
+            "fields": {
+              "OMFI:FL:PathName": {
+                "shapes": [
+                  {
+                    "style": "SlashRelativeOrVolumeQualified",
+                    "characters": 79,
+                    "components": 6,
+                    "leafExtension": ".pict",
+                    "percentEscapes": false,
+                    "textSha256": "50de7be9a4b2855831c446d2075f318aa808c50646217dc2fde109076c3751a2",
+                    "leafSha256": "423f72ac62124fbd6386353ff247b9763832c16d0999ce53d2f8a18340be8c68"
+                  }
+                ],
+                "ranges": [
+                  [
+                    1396693,
+                    80
+                  ]
+                ]
+              },
+              "OMFI:FL:POSIXPathName": {
+                "shapes": [
+                  {
+                    "style": "POSIXAbsolute",
+                    "characters": 73,
+                    "components": 5,
+                    "leafExtension": ".pict",
+                    "percentEscapes": false,
+                    "textSha256": "261576b6ab4af7b93f26a045fe915e5ec5ef88dfc30177bbbc15321223c8265d",
+                    "leafSha256": "423f72ac62124fbd6386353ff247b9763832c16d0999ce53d2f8a18340be8c68"
+                  }
+                ],
+                "ranges": [
+                  [
+                    1396773,
+                    74
+                  ]
+                ]
+              },
+              "OMFI:FL:PathNameUTF8": {
+                "shapes": [
+                  {
+                    "style": "POSIXAbsolute",
+                    "characters": 73,
+                    "components": 5,
+                    "leafExtension": ".pict",
+                    "percentEscapes": false,
+                    "textSha256": "261576b6ab4af7b93f26a045fe915e5ec5ef88dfc30177bbbc15321223c8265d",
+                    "leafSha256": "423f72ac62124fbd6386353ff247b9763832c16d0999ce53d2f8a18340be8c68"
+                  }
+                ],
+                "ranges": [
+                  [
+                    1396847,
+                    74
+                  ]
+                ]
+              }
+            },
+            "utf8VsPosixRelation": "exact"
+          }
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "cacheSha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "countsPerPmrFile": {
+          "pmrFileRows": 686,
+          "fileRowsWithMobKind5FileLocatorText": 0,
+          "fileRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "fileRowsWithMobKind5URLLocator": 0,
+          "fileRowsWithMobKind5URLLocatorText": 0,
+          "fileRowsWithExplicitSourcePath": 0,
+          "fileRowsWithUncPath": 0,
+          "fileRowsWithSrcfilePath": 0,
+          "fileRowsWithSeveralExactPathStrings": 0,
+          "fileRowsWithDescriptorLocatorText": 0,
+          "fileRowsWithDescriptorMSML": 686,
+          "fileRowsWithAttrErrors": 0,
+          "masterRowsWithMobKind5FileLocatorText": 0,
+          "masterRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "masterRowsWithMobKind5URLLocator": 0,
+          "masterRowsWithMobKind5URLLocatorText": 0,
+          "masterRowsWithExplicitSourcePath": 41,
+          "masterRowsWithUncPath": 15,
+          "masterRowsWithSrcfilePath": 41,
+          "masterRowsWithSeveralExactPathStrings": 15,
+          "masterRowsWithDescriptorLocatorText": 0,
+          "masterRowsWithDescriptorMSML": 0,
+          "masterRowsWithAttrErrors": 0,
+          "immediateSourceRowsWithMobKind5FileLocatorText": 242,
+          "immediateSourceRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "immediateSourceRowsWithMobKind5URLLocator": 31,
+          "immediateSourceRowsWithMobKind5URLLocatorText": 0,
+          "immediateSourceRowsWithExplicitSourcePath": 0,
+          "immediateSourceRowsWithUncPath": 0,
+          "immediateSourceRowsWithSrcfilePath": 0,
+          "immediateSourceRowsWithSeveralExactPathStrings": 0,
+          "immediateSourceRowsWithDescriptorLocatorText": 626,
+          "immediateSourceRowsWithDescriptorMSML": 0,
+          "immediateSourceRowsWithAttrErrors": 0,
+          "fallbackRowsWithoutMasterSrcfileWithOneQualifiedPath": 232,
+          "fallbackRowsWithoutAnyMasterExplicitWithOneQualifiedPath": 232,
+          "fallbackRowsWithoutMasterSrcfileWithSeveralQualifiedPaths": 0,
+          "rowsWithMasterSrcfileOrOneQualifiedFallbackPath": 273,
+          "fileOrMasterRowsWithExplicitSourcePath": 41,
+          "anyOwnerRowsWithExplicitSourcePath": 41
+        },
+        "distinctOwnersByRole": {
+          "file": 686,
+          "master": 415,
+          "immediateSource": 338
+        },
+        "candidateRoutesOnDistinctOwners": {
+          "master": {
+            "_IMPORTSETTING/_SRCFILE": 19,
+            "_USER/UNC Path": 10
+          }
+        },
+        "candidatePathStylesOnDistinctOwners": {
+          "master": {
+            "POSIXAbsolute": 11,
+            "WindowsDriveAbsolute": 10,
+            "UNCOrDoubleSlashNetwork": 8
+          }
+        },
+        "descriptorLocatorClassesOnDistinctOwners": {
+          "file": {
+            "MSML": 686
+          },
+          "immediateSource": {
+            "MACL": 297,
+            "URLL": 13
+          }
+        },
+        "sameOwnerUncVsSrcfileRelationPerFile": {
+          "master": {
+            "sameLeafDifferentPathSpelling": 15
+          }
+        },
+        "crossOwnerRelationsPerFile": {},
+        "sameLocatorRepresentationRelations": {
+          "OMFI:FL:PathNameUTF8VsOMFI:FL:POSIXPathName:exact": 11
+        },
+        "containerTokensOnDistinctOwners": {
+          "Video:QTFF": 15,
+          "Video:H.264": 3
+        },
+        "attributeTextKindStatesOnDistinctOwners": {
+          "Video:kind2:usable": 18,
+          "UNC Path:kind2:usable": 20
+        },
+        "srcfileRoutesOnDistinctOwners": {
+          "_IMPORTSETTING/_SRCFILE:kind3": 19
+        },
+        "sourceGraphIssues": {},
+        "descriptorKindsOnDistinctOwners": {
+          "file:1:PCMA": 407,
+          "file:1:CDCI": 271,
+          "file:1:RGBA": 8,
+          "immediateSource:2:MDTP": 103,
+          "immediateSource:5:MDES": 207
+        },
+        "mobKind5LocatorClassesOnDistinctOwners": {
+          "immediateSource:MACL:usable": 194,
+          "immediateSource:URLL:noUsableText": 13
+        },
+        "masterSrcfileVsQualifiedSourceDescriptorPerFile": {
+          "exact": 10
+        },
+        "qualifiedFallbackExamples": [
+          {
+            "fileObject": 199790,
+            "fileMobId": "060a2b340101010501010f1013000000f17c57157311069695617c57583610fa",
+            "masterObject": 166574,
+            "masterMobId": "060a2b340101010501010f10130000005d6b2b157311069622b57c57583610fa",
+            "immediateSourceObjects": [
+              141974
+            ],
+            "sourceMobIds": [
+              "060a2b340101010501010d4313a10000be84e04f0912c60600804582f8000000"
+            ],
+            "qualifiedDescriptors": [
+              {
+                "descriptorObject": 141973,
+                "descriptorClass": "MDES",
+                "descriptorMobKind": 5,
+                "locatorObject": 141972,
+                "locatorClass": "MACL",
+                "selectedProperty": "OMFI:FL:PathNameUTF8",
+                "shape": {
+                  "style": "UNCOrDoubleSlashNetwork",
+                  "characters": 79,
+                  "components": 8,
+                  "leafExtension": ".mxf",
+                  "percentEscapes": false,
+                  "textSha256": "89146b90ce3df4ac219545e693ac67882241f029b398402ce811446184af7158",
+                  "leafSha256": "3b8e9fa4fdf5aaadff5d1513dfcdad2647156b6b3244031a72f8f8b4795109d1"
+                }
+              }
+            ]
+          },
+          {
+            "fileObject": 199866,
+            "fileMobId": "060a2b340101010501010f1013000000f3230a1673110696eeb17c57583610fa",
+            "masterObject": 162235,
+            "masterMobId": "060a2b340101010501010f10130000004e822b15731106962add7c57583610fa",
+            "immediateSourceObjects": [
+              133846
+            ],
+            "sourceMobIds": [
+              "060a2b340101010501010d4313a100002ac243e80914c00600804582f8000000"
+            ],
+            "qualifiedDescriptors": [
+              {
+                "descriptorObject": 133845,
+                "descriptorClass": "MDES",
+                "descriptorMobKind": 5,
+                "locatorObject": 133844,
+                "locatorClass": "MACL",
+                "selectedProperty": "OMFI:FL:PathNameUTF8",
+                "shape": {
+                  "style": "UNCOrDoubleSlashNetwork",
+                  "characters": 79,
+                  "components": 8,
+                  "leafExtension": ".mxf",
+                  "percentEscapes": false,
+                  "textSha256": "537c3d8795a730b1b5740510b23d37cdd0a7c2ff72abfb38680a84cf24f01235",
+                  "leafSha256": "f7ba6761cd1b792fb7acd3edf22cf26bb01a0c8c2de0c86c044ba2dc73cae954"
+                }
+              }
+            ]
+          }
+        ],
+        "sharedExample": [],
+        "known93868Locator": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "cacheSha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "countsPerPmrFile": {
+          "pmrFileRows": 513,
+          "fileRowsWithMobKind5FileLocatorText": 0,
+          "fileRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "fileRowsWithMobKind5URLLocator": 0,
+          "fileRowsWithMobKind5URLLocatorText": 0,
+          "fileRowsWithExplicitSourcePath": 0,
+          "fileRowsWithUncPath": 0,
+          "fileRowsWithSrcfilePath": 0,
+          "fileRowsWithSeveralExactPathStrings": 0,
+          "fileRowsWithDescriptorLocatorText": 0,
+          "fileRowsWithDescriptorMSML": 513,
+          "fileRowsWithAttrErrors": 0,
+          "masterRowsWithMobKind5FileLocatorText": 0,
+          "masterRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "masterRowsWithMobKind5URLLocator": 0,
+          "masterRowsWithMobKind5URLLocatorText": 0,
+          "masterRowsWithExplicitSourcePath": 23,
+          "masterRowsWithUncPath": 17,
+          "masterRowsWithSrcfilePath": 23,
+          "masterRowsWithSeveralExactPathStrings": 17,
+          "masterRowsWithDescriptorLocatorText": 0,
+          "masterRowsWithDescriptorMSML": 0,
+          "masterRowsWithAttrErrors": 0,
+          "immediateSourceRowsWithMobKind5FileLocatorText": 180,
+          "immediateSourceRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "immediateSourceRowsWithMobKind5URLLocator": 14,
+          "immediateSourceRowsWithMobKind5URLLocatorText": 0,
+          "immediateSourceRowsWithExplicitSourcePath": 0,
+          "immediateSourceRowsWithUncPath": 0,
+          "immediateSourceRowsWithSrcfilePath": 0,
+          "immediateSourceRowsWithSeveralExactPathStrings": 0,
+          "immediateSourceRowsWithDescriptorLocatorText": 431,
+          "immediateSourceRowsWithDescriptorMSML": 0,
+          "immediateSourceRowsWithAttrErrors": 0,
+          "fallbackRowsWithoutMasterSrcfileWithOneQualifiedPath": 169,
+          "fallbackRowsWithoutAnyMasterExplicitWithOneQualifiedPath": 169,
+          "fallbackRowsWithoutMasterSrcfileWithSeveralQualifiedPaths": 0,
+          "rowsWithMasterSrcfileOrOneQualifiedFallbackPath": 192,
+          "fileOrMasterRowsWithExplicitSourcePath": 23,
+          "anyOwnerRowsWithExplicitSourcePath": 23
+        },
+        "distinctOwnersByRole": {
+          "file": 513,
+          "master": 353,
+          "immediateSource": 308
+        },
+        "candidateRoutesOnDistinctOwners": {
+          "master": {
+            "_USER/UNC Path": 9,
+            "_IMPORTSETTING/_SRCFILE": 15
+          }
+        },
+        "candidatePathStylesOnDistinctOwners": {
+          "master": {
+            "WindowsDriveAbsolute": 9,
+            "UNCOrDoubleSlashNetwork": 6,
+            "POSIXAbsolute": 9
+          }
+        },
+        "descriptorLocatorClassesOnDistinctOwners": {
+          "file": {
+            "MSML": 513
+          },
+          "immediateSource": {
+            "URLL": 11,
+            "MACL": 229
+          }
+        },
+        "sameOwnerUncVsSrcfileRelationPerFile": {
+          "master": {
+            "sameLeafDifferentPathSpelling": 17
+          }
+        },
+        "crossOwnerRelationsPerFile": {},
+        "sameLocatorRepresentationRelations": {
+          "OMFI:FL:PathNameUTF8VsOMFI:FL:POSIXPathName:exact": 9
+        },
+        "containerTokensOnDistinctOwners": {
+          "Video:QTFF": 3
+        },
+        "attributeTextKindStatesOnDistinctOwners": {
+          "UNC Path:kind2:usable": 18,
+          "Video:kind2:usable": 3
+        },
+        "srcfileRoutesOnDistinctOwners": {
+          "_IMPORTSETTING/_SRCFILE:kind3": 15
+        },
+        "sourceGraphIssues": {},
+        "descriptorKindsOnDistinctOwners": {
+          "file:1:PCMA": 320,
+          "file:1:CDCI": 193,
+          "immediateSource:5:MDES": 158,
+          "immediateSource:2:MDTP": 82
+        },
+        "mobKind5LocatorClassesOnDistinctOwners": {
+          "immediateSource:URLL:noUsableText": 11,
+          "immediateSource:MACL:usable": 147
+        },
+        "masterSrcfileVsQualifiedSourceDescriptorPerFile": {
+          "exact": 11
+        },
+        "qualifiedFallbackExamples": [
+          {
+            "fileObject": 164668,
+            "fileMobId": "060a2b340101010501010f1013000000ec470b09731106963c3a7c57583610fa",
+            "masterObject": 135368,
+            "masterMobId": "060a2b340101010501010f1013000000442aa70873110696bc8a7c57583610fa",
+            "immediateSourceObjects": [
+              122667
+            ],
+            "sourceMobIds": [
+              "060a2b340101010501010d4313a10000ed93570d0918fb0600804582f8000000"
+            ],
+            "qualifiedDescriptors": [
+              {
+                "descriptorObject": 122666,
+                "descriptorClass": "MDES",
+                "descriptorMobKind": 5,
+                "locatorObject": 122665,
+                "locatorClass": "MACL",
+                "selectedProperty": "OMFI:FL:PathNameUTF8",
+                "shape": {
+                  "style": "UNCOrDoubleSlashNetwork",
+                  "characters": 79,
+                  "components": 8,
+                  "leafExtension": ".mxf",
+                  "percentEscapes": false,
+                  "textSha256": "bbe52ac19f77ec8a466e4b1705262bb611286554b595c741b3550487a8ca5b68",
+                  "leafSha256": "e965c8db5b7e234c914316aec940f948cff44bcb050e23562b7db80912af3b69"
+                }
+              }
+            ]
+          },
+          {
+            "fileObject": 140618,
+            "fileMobId": "060a2b340101010501010f10130000006263850973110696a8477c57583610fa",
+            "masterObject": 167307,
+            "masterMobId": "060a2b340101010501010f1013000000f833a708731106967ce17c57583610fa",
+            "immediateSourceObjects": [
+              116497
+            ],
+            "sourceMobIds": [
+              "060a2b340101010501010d4313a10000129ef16b0929cb0600804582f8000000"
+            ],
+            "qualifiedDescriptors": [
+              {
+                "descriptorObject": 116496,
+                "descriptorClass": "MDES",
+                "descriptorMobKind": 5,
+                "locatorObject": 116495,
+                "locatorClass": "MACL",
+                "selectedProperty": "OMFI:FL:PathNameUTF8",
+                "shape": {
+                  "style": "UNCOrDoubleSlashNetwork",
+                  "characters": 79,
+                  "components": 8,
+                  "leafExtension": ".mxf",
+                  "percentEscapes": false,
+                  "textSha256": "5dd2b9567aa9bba38e95773a6f5da4f76237cb644f684fc45cf922769cba431b",
+                  "leafSha256": "1f0c0f6aa397e9182b2d65c702699aae4977480e7be650246e0cb46daeb3a917"
+                }
+              }
+            ]
+          }
+        ],
+        "sharedExample": [],
+        "known93868Locator": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "cacheSha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "countsPerPmrFile": {
+          "pmrFileRows": 463,
+          "fileRowsWithMobKind5FileLocatorText": 0,
+          "fileRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "fileRowsWithMobKind5URLLocator": 0,
+          "fileRowsWithMobKind5URLLocatorText": 0,
+          "fileRowsWithExplicitSourcePath": 0,
+          "fileRowsWithUncPath": 0,
+          "fileRowsWithSrcfilePath": 0,
+          "fileRowsWithSeveralExactPathStrings": 0,
+          "fileRowsWithDescriptorLocatorText": 0,
+          "fileRowsWithDescriptorMSML": 463,
+          "fileRowsWithAttrErrors": 0,
+          "masterRowsWithMobKind5FileLocatorText": 0,
+          "masterRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "masterRowsWithMobKind5URLLocator": 0,
+          "masterRowsWithMobKind5URLLocatorText": 0,
+          "masterRowsWithExplicitSourcePath": 24,
+          "masterRowsWithUncPath": 20,
+          "masterRowsWithSrcfilePath": 24,
+          "masterRowsWithSeveralExactPathStrings": 18,
+          "masterRowsWithDescriptorLocatorText": 0,
+          "masterRowsWithDescriptorMSML": 0,
+          "masterRowsWithAttrErrors": 0,
+          "immediateSourceRowsWithMobKind5FileLocatorText": 197,
+          "immediateSourceRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "immediateSourceRowsWithMobKind5URLLocator": 17,
+          "immediateSourceRowsWithMobKind5URLLocatorText": 0,
+          "immediateSourceRowsWithExplicitSourcePath": 0,
+          "immediateSourceRowsWithUncPath": 0,
+          "immediateSourceRowsWithSrcfilePath": 0,
+          "immediateSourceRowsWithSeveralExactPathStrings": 0,
+          "immediateSourceRowsWithDescriptorLocatorText": 433,
+          "immediateSourceRowsWithDescriptorMSML": 0,
+          "immediateSourceRowsWithAttrErrors": 0,
+          "fallbackRowsWithoutMasterSrcfileWithOneQualifiedPath": 187,
+          "fallbackRowsWithoutAnyMasterExplicitWithOneQualifiedPath": 187,
+          "fallbackRowsWithoutMasterSrcfileWithSeveralQualifiedPaths": 0,
+          "rowsWithMasterSrcfileOrOneQualifiedFallbackPath": 211,
+          "fileOrMasterRowsWithExplicitSourcePath": 24,
+          "anyOwnerRowsWithExplicitSourcePath": 24
+        },
+        "distinctOwnersByRole": {
+          "file": 463,
+          "master": 293,
+          "immediateSource": 244
+        },
+        "candidateRoutesOnDistinctOwners": {
+          "master": {
+            "_USER/UNC Path": 8,
+            "_IMPORTSETTING/_SRCFILE": 12
+          }
+        },
+        "candidatePathStylesOnDistinctOwners": {
+          "master": {
+            "WindowsDriveAbsolute": 7,
+            "POSIXAbsolute": 9,
+            "UNCOrDoubleSlashNetwork": 4
+          }
+        },
+        "descriptorLocatorClassesOnDistinctOwners": {
+          "file": {
+            "MSML": 463
+          },
+          "immediateSource": {
+            "MACL": 219,
+            "URLL": 12
+          }
+        },
+        "sameOwnerUncVsSrcfileRelationPerFile": {
+          "master": {
+            "sameLeafDifferentPathSpelling": 18,
+            "exact": 2
+          }
+        },
+        "crossOwnerRelationsPerFile": {
+          "masterExplicitVsSourceDescriptor:exact": 2
+        },
+        "sameLocatorRepresentationRelations": {
+          "OMFI:FL:PathNameUTF8VsOMFI:FL:POSIXPathName:exact": 9
+        },
+        "containerTokensOnDistinctOwners": {
+          "Video:H.264": 3,
+          "Video:QTFF": 3
+        },
+        "attributeTextKindStatesOnDistinctOwners": {
+          "Video:kind2:usable": 6,
+          "UNC Path:kind2:usable": 16
+        },
+        "srcfileRoutesOnDistinctOwners": {
+          "_IMPORTSETTING/_SRCFILE:kind3": 12
+        },
+        "sourceGraphIssues": {},
+        "descriptorKindsOnDistinctOwners": {
+          "file:1:CDCI": 205,
+          "file:1:PCMA": 258,
+          "immediateSource:2:MDTP": 78,
+          "immediateSource:5:MDES": 153
+        },
+        "mobKind5LocatorClassesOnDistinctOwners": {
+          "immediateSource:MACL:usable": 141,
+          "immediateSource:URLL:noUsableText": 12
+        },
+        "masterSrcfileVsQualifiedSourceDescriptorPerFile": {
+          "exact": 10
+        },
+        "qualifiedFallbackExamples": [
+          {
+            "fileObject": 144350,
+            "fileMobId": "060a2b340101010501010f10130000009156f20b7311069649d87c57583610fa",
+            "masterObject": 156570,
+            "masterMobId": "060a2b340101010501010f1013000000d0e4940b7311069687eb7c57583610fa",
+            "immediateSourceObjects": [
+              118201
+            ],
+            "sourceMobIds": [
+              "060a2b340101010501010d4313a10000aa65c50a0919f20600804582f8000000"
+            ],
+            "qualifiedDescriptors": [
+              {
+                "descriptorObject": 118200,
+                "descriptorClass": "MDES",
+                "descriptorMobKind": 5,
+                "locatorObject": 118199,
+                "locatorClass": "MACL",
+                "selectedProperty": "OMFI:FL:PathNameUTF8",
+                "shape": {
+                  "style": "UNCOrDoubleSlashNetwork",
+                  "characters": 79,
+                  "components": 8,
+                  "leafExtension": ".mxf",
+                  "percentEscapes": false,
+                  "textSha256": "f02c7c2b0302e3e64cf3b956a7dc5677d49dedce753a2d58a0055420b90656de",
+                  "leafSha256": "36ba3a684a33912ef8aeb50b8e8b9ef7567a3bc82004550ee49f3bbc488f76bb"
+                }
+              }
+            ]
+          },
+          {
+            "fileObject": 148422,
+            "fileMobId": "060a2b340101010501010f1013000000a3139a0b73110696c4af7c57583610fa",
+            "masterObject": 138436,
+            "masterMobId": "060a2b340101010501010f10130000006add940b73110696d72c7c57583610fa",
+            "immediateSourceObjects": [
+              112697
+            ],
+            "sourceMobIds": [
+              "060a2b340101010501010d1213a1cb1704ff8cae090896069dd0a08cfdc50271"
+            ],
+            "qualifiedDescriptors": [
+              {
+                "descriptorObject": 112696,
+                "descriptorClass": "MDES",
+                "descriptorMobKind": 5,
+                "locatorObject": 112695,
+                "locatorClass": "MACL",
+                "selectedProperty": "OMFI:FL:PathNameUTF8",
+                "shape": {
+                  "style": "UNCOrDoubleSlashNetwork",
+                  "characters": 93,
+                  "components": 6,
+                  "leafExtension": ".mxf",
+                  "percentEscapes": false,
+                  "textSha256": "99bf1ee3b34ca9b86bf336506a680a313b5c1c7005c4d735784d5f90f4231307",
+                  "leafSha256": "b6d2e0ef20b8fd70ee6858cb8b3eae50420524704120f440401cffdcdc8cf9f6"
+                }
+              }
+            ]
+          }
+        ],
+        "sharedExample": [],
+        "known93868Locator": []
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "cacheSha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "countsPerPmrFile": {
+          "pmrFileRows": 359,
+          "fileRowsWithMobKind5FileLocatorText": 0,
+          "fileRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "fileRowsWithMobKind5URLLocator": 0,
+          "fileRowsWithMobKind5URLLocatorText": 0,
+          "fileRowsWithExplicitSourcePath": 0,
+          "fileRowsWithUncPath": 0,
+          "fileRowsWithSrcfilePath": 0,
+          "fileRowsWithSeveralExactPathStrings": 0,
+          "fileRowsWithDescriptorLocatorText": 0,
+          "fileRowsWithDescriptorMSML": 359,
+          "fileRowsWithAttrErrors": 0,
+          "masterRowsWithMobKind5FileLocatorText": 0,
+          "masterRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "masterRowsWithMobKind5URLLocator": 0,
+          "masterRowsWithMobKind5URLLocatorText": 0,
+          "masterRowsWithExplicitSourcePath": 353,
+          "masterRowsWithUncPath": 353,
+          "masterRowsWithSrcfilePath": 353,
+          "masterRowsWithSeveralExactPathStrings": 0,
+          "masterRowsWithDescriptorLocatorText": 0,
+          "masterRowsWithDescriptorMSML": 0,
+          "masterRowsWithAttrErrors": 0,
+          "immediateSourceRowsWithMobKind5FileLocatorText": 353,
+          "immediateSourceRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "immediateSourceRowsWithMobKind5URLLocator": 0,
+          "immediateSourceRowsWithMobKind5URLLocatorText": 0,
+          "immediateSourceRowsWithExplicitSourcePath": 0,
+          "immediateSourceRowsWithUncPath": 0,
+          "immediateSourceRowsWithSrcfilePath": 0,
+          "immediateSourceRowsWithSeveralExactPathStrings": 0,
+          "immediateSourceRowsWithDescriptorLocatorText": 353,
+          "immediateSourceRowsWithDescriptorMSML": 0,
+          "immediateSourceRowsWithAttrErrors": 0,
+          "fallbackRowsWithoutMasterSrcfileWithOneQualifiedPath": 0,
+          "fallbackRowsWithoutAnyMasterExplicitWithOneQualifiedPath": 0,
+          "fallbackRowsWithoutMasterSrcfileWithSeveralQualifiedPaths": 0,
+          "rowsWithMasterSrcfileOrOneQualifiedFallbackPath": 353,
+          "fileOrMasterRowsWithExplicitSourcePath": 353,
+          "anyOwnerRowsWithExplicitSourcePath": 353
+        },
+        "distinctOwnersByRole": {
+          "file": 359,
+          "master": 124,
+          "immediateSource": 124
+        },
+        "candidateRoutesOnDistinctOwners": {
+          "master": {
+            "_USER/UNC Path": 118,
+            "_IMPORTSETTING/_SRCFILE": 118
+          }
+        },
+        "candidatePathStylesOnDistinctOwners": {
+          "master": {
+            "POSIXAbsolute": 236
+          }
+        },
+        "descriptorLocatorClassesOnDistinctOwners": {
+          "file": {
+            "MSML": 359
+          },
+          "immediateSource": {
+            "MACL": 118
+          }
+        },
+        "sameOwnerUncVsSrcfileRelationPerFile": {
+          "master": {
+            "exact": 353
+          }
+        },
+        "crossOwnerRelationsPerFile": {
+          "masterExplicitVsSourceDescriptor:exact": 353
+        },
+        "sameLocatorRepresentationRelations": {
+          "OMFI:FL:PathNameUTF8VsOMFI:FL:POSIXPathName:exact": 236
+        },
+        "containerTokensOnDistinctOwners": {
+          "Video:QTFF": 236
+        },
+        "attributeTextKindStatesOnDistinctOwners": {
+          "Video:kind2:usable": 236,
+          "UNC Path:kind2:usable": 118
+        },
+        "srcfileRoutesOnDistinctOwners": {
+          "_IMPORTSETTING/_SRCFILE:kind3": 118
+        },
+        "sourceGraphIssues": {},
+        "descriptorKindsOnDistinctOwners": {
+          "file:1:CDCI": 111,
+          "file:1:PCMA": 240,
+          "file:1:MPGI": 8,
+          "immediateSource:5:MDES": 118
+        },
+        "mobKind5LocatorClassesOnDistinctOwners": {
+          "immediateSource:MACL:usable": 118
+        },
+        "masterSrcfileVsQualifiedSourceDescriptorPerFile": {
+          "exact": 353
+        },
+        "qualifiedFallbackExamples": [],
+        "sharedExample": [
+          {
+            "fileMobId": "060a2b340101010501010f1013000000fa06541c55120690f7b846fc807fda72",
+            "masterMobId": "060a2b340101010501010f1013000000f006541c55120690f42a46fc807fda72",
+            "fileObject": 88016,
+            "masterObject": 88069,
+            "immediateSources": [
+              87949
+            ],
+            "masterCandidates": [
+              {
+                "route": "_USER/UNC Path",
+                "key": "UNC Path",
+                "attributeObject": 88035,
+                "locatorObject": null,
+                "selectedProperty": null,
+                "shape": {
+                  "style": "POSIXAbsolute",
+                  "characters": 78,
+                  "components": 5,
+                  "leafExtension": ".mov",
+                  "percentEscapes": false,
+                  "textSha256": "c21a2848c044f9c277be6a3684edf6762e5bf2dce0f27abd8d43f04f4ef0652c",
+                  "leafSha256": "213c3ac5ffcac7980d9cce94ea80b15a26cb769d4c9f6a2c9d112f247d89c371"
+                }
+              },
+              {
+                "route": "_IMPORTSETTING/_SRCFILE",
+                "key": "_SRCFILE",
+                "attributeObject": 88030,
+                "locatorObject": 88029,
+                "selectedProperty": "OMFI:FL:PathNameUTF8",
+                "shape": {
+                  "style": "POSIXAbsolute",
+                  "characters": 78,
+                  "components": 5,
+                  "leafExtension": ".mov",
+                  "percentEscapes": false,
+                  "textSha256": "c21a2848c044f9c277be6a3684edf6762e5bf2dce0f27abd8d43f04f4ef0652c",
+                  "leafSha256": "213c3ac5ffcac7980d9cce94ea80b15a26cb769d4c9f6a2c9d112f247d89c371"
+                }
+              }
+            ],
+            "sourceDescriptorLocators": [
+              {
+                "descriptorObject": 87948,
+                "descriptorClass": "MDES",
+                "locatorObject": 87947,
+                "locatorClass": "MACL",
+                "property": "OMFI:FL:PathNameUTF8",
+                "shape": {
+                  "style": "POSIXAbsolute",
+                  "characters": 78,
+                  "components": 5,
+                  "leafExtension": ".mov",
+                  "percentEscapes": false,
+                  "textSha256": "c21a2848c044f9c277be6a3684edf6762e5bf2dce0f27abd8d43f04f4ef0652c",
+                  "leafSha256": "213c3ac5ffcac7980d9cce94ea80b15a26cb769d4c9f6a2c9d112f247d89c371"
+                }
+              }
+            ]
+          }
+        ],
+        "known93868Locator": []
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "cacheSha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "countsPerPmrFile": {
+          "pmrFileRows": 2,
+          "fileRowsWithMobKind5FileLocatorText": 0,
+          "fileRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "fileRowsWithMobKind5URLLocator": 0,
+          "fileRowsWithMobKind5URLLocatorText": 0,
+          "fileRowsWithExplicitSourcePath": 0,
+          "fileRowsWithUncPath": 0,
+          "fileRowsWithSrcfilePath": 0,
+          "fileRowsWithSeveralExactPathStrings": 0,
+          "fileRowsWithDescriptorLocatorText": 0,
+          "fileRowsWithDescriptorMSML": 2,
+          "fileRowsWithAttrErrors": 0,
+          "masterRowsWithMobKind5FileLocatorText": 0,
+          "masterRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "masterRowsWithMobKind5URLLocator": 0,
+          "masterRowsWithMobKind5URLLocatorText": 0,
+          "masterRowsWithExplicitSourcePath": 0,
+          "masterRowsWithUncPath": 0,
+          "masterRowsWithSrcfilePath": 0,
+          "masterRowsWithSeveralExactPathStrings": 0,
+          "masterRowsWithDescriptorLocatorText": 0,
+          "masterRowsWithDescriptorMSML": 0,
+          "masterRowsWithAttrErrors": 0,
+          "immediateSourceRowsWithMobKind5FileLocatorText": 0,
+          "immediateSourceRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+          "immediateSourceRowsWithMobKind5URLLocator": 0,
+          "immediateSourceRowsWithMobKind5URLLocatorText": 0,
+          "immediateSourceRowsWithExplicitSourcePath": 0,
+          "immediateSourceRowsWithUncPath": 0,
+          "immediateSourceRowsWithSrcfilePath": 0,
+          "immediateSourceRowsWithSeveralExactPathStrings": 0,
+          "immediateSourceRowsWithDescriptorLocatorText": 0,
+          "immediateSourceRowsWithDescriptorMSML": 0,
+          "immediateSourceRowsWithAttrErrors": 0,
+          "fallbackRowsWithoutMasterSrcfileWithOneQualifiedPath": 0,
+          "fallbackRowsWithoutAnyMasterExplicitWithOneQualifiedPath": 0,
+          "fallbackRowsWithoutMasterSrcfileWithSeveralQualifiedPaths": 0,
+          "rowsWithMasterSrcfileOrOneQualifiedFallbackPath": 0,
+          "fileOrMasterRowsWithExplicitSourcePath": 0,
+          "anyOwnerRowsWithExplicitSourcePath": 0
+        },
+        "distinctOwnersByRole": {
+          "file": 2,
+          "master": 2,
+          "immediateSource": 2
+        },
+        "candidateRoutesOnDistinctOwners": {},
+        "candidatePathStylesOnDistinctOwners": {},
+        "descriptorLocatorClassesOnDistinctOwners": {
+          "file": {
+            "MSML": 2
+          }
+        },
+        "sameOwnerUncVsSrcfileRelationPerFile": {},
+        "crossOwnerRelationsPerFile": {},
+        "sameLocatorRepresentationRelations": {},
+        "containerTokensOnDistinctOwners": {},
+        "attributeTextKindStatesOnDistinctOwners": {},
+        "srcfileRoutesOnDistinctOwners": {},
+        "sourceGraphIssues": {},
+        "descriptorKindsOnDistinctOwners": {
+          "file:1:AIFD": 1,
+          "file:1:WAVD": 1
+        },
+        "mobKind5LocatorClassesOnDistinctOwners": {},
+        "masterSrcfileVsQualifiedSourceDescriptorPerFile": {},
+        "qualifiedFallbackExamples": [],
+        "sharedExample": [],
+        "known93868Locator": []
+      }
+    ],
+    "method": [
+      "Full normalized file/master IDs plus catalogue ownership choose target objects; source ancestry is only the immediate file-own SourceID relation.",
+      "Explicit attribute paths are recorded only under direct or known _USER/_IMPORTSETTING ATTR routes; _SRCFILE target locators and UNC Path text remain distinguishable.",
+      "Audio/Video strings are inspected separately as container metadata and are not promoted into Source Path.",
+      "File/source descriptor MDES:Locator records are counted separately. The additional qualified fallback count requires immediate file-own SourceID relation, descriptor MDES:MobKind type omfi:PhysicalMobType width 2 littleendian value 5, and a usable known file-locator class. URLL remains separately counted; a managed-media locator is not an import Source Path.",
+      "For counting a single locator uses known namedUTF8 then separately stored legacy/class path; FL:POSIXPathName stays separately visible. This is not approval of cross-owner or all-field fallback order.",
+      "Path syntax comparisons are lexical observations, not filesystem equivalence, existence checks or a new normalization rule. Exact spellings are preserved locally; only shapes/hashes are exported.",
+      "Same-locator representation variants, explicit UNC-vs_SRCFILE route comparisons and cross-owner values are counted separately."
+    ],
+    "limits": [
+      "Actual corpus is six littleendian MDBs; no universal locator/attribute coverage is claimed.",
+      "NonASCII locator text, unsupported locator subclasses, malformed relationship paths and some Source Path ambiguity cases may remain unexercised.",
+      "No network source path is opened or checked for existence.",
+      "No bulk private path text, source transcriptions or lyrics appear in findings.",
+      "No extra media-header read conditions, source priority, Bin Filter changes or Bella implementation are selected by this probe."
+    ]
+  },
+  "aggregateCountsPerPhysicalFile": {
+    "pmrFileRows": 2412,
+    "fileRowsWithMobKind5FileLocatorText": 0,
+    "fileRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+    "fileRowsWithMobKind5URLLocator": 0,
+    "fileRowsWithMobKind5URLLocatorText": 0,
+    "fileRowsWithExplicitSourcePath": 0,
+    "fileRowsWithUncPath": 0,
+    "fileRowsWithSrcfilePath": 0,
+    "fileRowsWithSeveralExactPathStrings": 0,
+    "fileRowsWithDescriptorLocatorText": 0,
+    "fileRowsWithDescriptorMSML": 2412,
+    "fileRowsWithAttrErrors": 0,
+    "masterRowsWithMobKind5FileLocatorText": 0,
+    "masterRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+    "masterRowsWithMobKind5URLLocator": 0,
+    "masterRowsWithMobKind5URLLocatorText": 0,
+    "masterRowsWithExplicitSourcePath": 611,
+    "masterRowsWithUncPath": 545,
+    "masterRowsWithSrcfilePath": 611,
+    "masterRowsWithSeveralExactPathStrings": 50,
+    "masterRowsWithDescriptorLocatorText": 0,
+    "masterRowsWithDescriptorMSML": 0,
+    "masterRowsWithAttrErrors": 0,
+    "immediateSourceRowsWithMobKind5FileLocatorText": 1361,
+    "immediateSourceRowsWithSeveralQualifiedFileDescriptorPaths": 0,
+    "immediateSourceRowsWithMobKind5URLLocator": 62,
+    "immediateSourceRowsWithMobKind5URLLocatorText": 0,
+    "immediateSourceRowsWithExplicitSourcePath": 0,
+    "immediateSourceRowsWithUncPath": 0,
+    "immediateSourceRowsWithSrcfilePath": 0,
+    "immediateSourceRowsWithSeveralExactPathStrings": 0,
+    "immediateSourceRowsWithDescriptorLocatorText": 2232,
+    "immediateSourceRowsWithDescriptorMSML": 0,
+    "immediateSourceRowsWithAttrErrors": 0,
+    "fallbackRowsWithoutMasterSrcfileWithOneQualifiedPath": 807,
+    "fallbackRowsWithoutAnyMasterExplicitWithOneQualifiedPath": 807,
+    "fallbackRowsWithoutMasterSrcfileWithSeveralQualifiedPaths": 0,
+    "rowsWithMasterSrcfileOrOneQualifiedFallbackPath": 1418,
+    "fileOrMasterRowsWithExplicitSourcePath": 611,
+    "anyOwnerRowsWithExplicitSourcePath": 611
+  },
+  "aggregateMasterUncVsSrcfile": {
+    "exact": 495,
+    "sameLeafDifferentPathSpelling": 50
+  },
+  "aggregateMasterVsQualifiedSourceAgreement": {
+    "exact": 554
+  },
+  "primaryDocumentation": [
+    {
+      "url": "https://resources.avid.com/SupportFiles/attach/Media_Composer/Media_Composer_v2025.x_Editing_Guide.pdf#page=363",
+      "meaning": "Source File and Source Path are distinct public headings. Does not specify private MDB layout or Bella full-path display."
+    }
+  ],
+  "receipts": {
+    "rawSummaryReceipts": [
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mc/findings.json",
+        "bytes": 26341,
+        "sha256": "3e4e1120f7887e79ae8d9640f8ad141800fb8f95d43b3c44379b5d5748ce033e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-mdvx/findings.json",
+        "bytes": 10928,
+        "sha256": "e4af5f30d3aa6dc6e3e3228d254f3b9fe423353a131bf4cf535441c81a797e43"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-drives/findings.json",
+        "bytes": 40547,
+        "sha256": "c2c27838071a1a9c338a2c959789922b49c64a1529c0a7137c9aade1cac2a9c3"
+      }
+    ],
+    "sourceInputReceipts": [
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "bytes": 73527536,
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+        "bytes": 14340208,
+        "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer",
+        "bytes": 215615984,
+        "sha256": "a4a1d1b41f2f8b509781c3b8a50286c0cd7c9746cf85e609ec5a7bcbf45a727a"
+      },
+      {
+        "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+        "bytes": 3204640,
+        "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 5159032,
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "bytes": 97250,
+        "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "bytes": 22745976,
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "bytes": 164660,
+        "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "bytes": 16616336,
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "bytes": 123140,
+        "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "bytes": 15703416,
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "bytes": 111140,
+        "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 3668720,
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "bytes": 86754,
+        "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "bytes": 60680,
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+        "bytes": 392,
+        "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928"
+      }
+    ],
+    "rawIndexInputReceipts": [
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+        "bytes": 57405807,
+        "sha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+        "bytes": 277457615,
+        "sha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+        "bytes": 202174044,
+        "sha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+        "bytes": 191199626,
+        "sha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+        "bytes": 45335148,
+        "sha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-OMFI MediaFiles-values.json",
+        "bytes": 535484,
+        "sha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df"
+      }
+    ],
+    "validatedNativeRawArtifacts": 55,
+    "probeReceipts": [
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-drives/probe.py",
+        "bytes": 20968,
+        "sha256": "ec01bad972317e9dc213619d6e648ebc809d9044534f4c43a2c7310fa7878d14"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-drives/artifact-hashes.json",
+        "bytes": 406,
+        "sha256": "1649495da214cb48416b48a2b33cdf82762277bcdcaf1addbad54b2eedeaf5f2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-source-path-20261019-drives/source-hash-receipts.json",
+        "bytes": 4668,
+        "sha256": "f336e88d4fe007a2b21ec8a126a74a9e37512852d37fdc11b9836876e733350c"
+      }
+    ],
+    "sharedHelperReceipt": {
+      "path": "/private/tmp/bella-mdb-project-20261019-drives/check.py",
+      "bytes": 14085,
+      "sha256": "184dbbf28d7b0fdbdd8b6a02d9791c233ac1b2c27ce4a5d7bc6cbc016d2419ec"
+    },
+    "curationScript": {
+      "path": "/private/tmp/bella-mdb-source-path-20261019-curate.py",
+      "bytes": 8275,
+      "sha256": "69b87fd223c1f1a4daf1f44c685822f02025a943ed9786cb5fa683d02b41ba5c"
+    }
+  },
+  "limits": [
+    "Static native reconstruction; no live app/native API/fixture write or performance result.",
+    "Six legacy Bento1 little-endian MDBs; no universal graph, historical/Windows codec or all-locator/URLL coverage.",
+    "Same leaf/different path spelling is lexical observation, not filesystem equivalence.",
+    "Broad2232 descriptor-text rows include tape descriptors; proposed qualified union1418 includes807 additions beyond611 masters.",
+    "Private original paths remain temporary; curated observations use hashes/shapes and numeric relationships."
+  ],
+  "supersededExtractionProposal": {
+    "status": "Superseded by approved physical-path-only decision; retained solely to explain research, not for implementation.",
+    "meaning": "One full recorded source/import path or supported URL, including any filename present. It need not exist today and is not necessarily earliest camera original. Location remains separate.",
+    "owner": "Already selected master for direct import paths, even if its Clip Name is blank. Never select a different master for a path.",
+    "routeOrder": [
+      "Selected master own exact _IMPORTSETTING Kind3 -> ATTR -> exact _SRCFILE Kind3 -> supported file locator",
+      "If no usable import path: selected master own exact _USER Kind3 -> ATTR -> exact UNC Path supported text",
+      "If still unavailable: physical file own supported local components SourceID -> full-ID-qualified immediate source MobType3 -> typed MDES:MobKind=5 descriptor -> proven MACL locator"
+    ],
+    "examinedMaclVariantOrder": [
+      "Usable explicitly known OMFI:FL:PathNameUTF8 canonical/full-path representation",
+      "Separate readable OMFI:FL:POSIXPathName under approved MacRoman legacy scope",
+      "Separate readable OMFI:FL:PathName under approved MacRoman legacy scope"
+    ],
+    "variantQualification": "Legacy POSIX before legacy canonical is a proposed Bella display choice, not universal native state/OS behavior. Preserve chosen recorded spelling without filesystem/HFS reconstruction. Distinguish known canonical and UNC roles where layout provides them; unresolved same-priority Unicode variants leave field unavailable rather than choosing by order.",
+    "encoding": "Approved strict known UTF8 then separate readable MacRoman fallback. POSIXPathName is not declared UTF8 by its label. Known UNC Path Kind2 uses MacRoman; supported marker-bearing text Kind4 uses its known UTF8 layout. Never reinterpret malformed Unicode as legacy.",
+    "fallbackScope": "Immediate file-to-source relationship only; no recursive original-source ancestry search in release one. Require correct catalogue/role, full identity, readable descriptor kind5 and proven locator text contract. Unavailable master may still permit an independently qualified file/source fact; never replace the supplied master ID.",
+    "conflict": "Same-priority qualified candidates must provide one unambiguous value or exact agreement. Unresolved relationships or conflicting same-priority candidates leave MDB Source Path unavailable. A usable higher-priority path need not equal lower-priority variants/routes. No basename or filesystem-equivalence heuristic.",
+    "excluded": "No arbitrary MSML managed-media locator, tape(kind2) descriptor path, Audio/Video container tag, archived attribute, or unproven URLL-only storage projection. Other locator/layout support remains separately reviewable.",
+    "empty": "Advance along this bounded order for absent/blank/unusable text; if exhausted leave Source Path blank and keep physical file. Missing metadata is not proof no original source ever existed.",
+    "retention": "One selected full path/URL and compact availability/owner/route status. Preserve nonblank spelling, separators and percent escapes. No Source Filename, basename, alternative spellings, second URI-decoded value or lasting raw graph.",
+    "passive": "No source-file opening/existence checks, alias resolution, volume/network/mount searches, relinking, repair writes, guessed current paths or appended filenames.",
+    "deferred": [
+      "MDB versus media-header priority and additional header reads",
+      "General MDB layouts and structural damage",
+      "Additional locator contracts",
+      "Scheduling and implementation"
+    ]
+  },
+  "researchCoverage": {
+    "masterImportFilePath": 611,
+    "masterUncOnlyAdditionalRows": 0,
+    "qualifiedImmediateSourceAdditionalRows": 807,
+    "total": 1418,
+    "unavailableWithinTheseRules": 994,
+    "qualifiedSourceDescriptorRowsIncludingOverlap": 1361,
+    "masterSourceOverlapExactlyMatching": 554,
+    "broadDescriptorTextCountNotEquivalentToQualifiedCoverage": 2232,
+    "mobKind5UrllRowsWithoutStoredText": 62
+  },
+  "agreedPhysicalPathRule": {
+    "date": "2026-10-19",
+    "status": "Approved by user on19October2026; requirements only, not yet implemented.",
+    "userRequest": "Can we just use the physical file path? surely that would be a speed & memory improvement too? Still keep the findings:1418of2412,611frommastersettingsplus807fromqualifiedlinkedsourcefiles.",
+    "recommendation": "Keep current physical path once, currently mediaFilePath/Location. Retire independent recorded Source Path extraction/selection/status/result/column/search/export/sort and extra reads solely for it. Suggested full-path label File Path; do not duplicate physical path into Source Path and Location.",
+    "preservedResearch": {
+      "master": 611,
+      "qualifiedAdditionalSource": 807,
+      "total": 1418,
+      "physicalFilesExamined": 2412
+    },
+    "preserve": [
+      "Physical inventory discovery and operation paths",
+      "Filename, full physical path and containing folder",
+      "Shared parsers needed for other retained metadata",
+      "All original Source Path findings and hashed evidence"
+    ],
+    "performanceQualification": "Avoids dedicated processing/retained original-path text; no timing or memory amount measured. QString buffers can share. MDB/header work for other fields remains.",
+    "labels": {
+      "Filename": "Physical filename including extension.",
+      "File Path": "Current full physical filesystem path including filename, obtained from discovery; replaces current Location label for Bella."
+    },
+    "decision": "Keep physical path once. Ignore recorded Source Path: no dedicated extraction, selection, retained value/status, separate column/search/sort/export, or extra source/header read solely for it. Preserve actual operation paths and shared parsing required for other retained fields.",
+    "researchStatus": "All native receipts, actual database observations and611+807=1418of2412finding retained. Recorded-path extraction order is superseded research."
+  },
+  "approval": {
+    "date": "2026-10-19",
+    "userInstruction": "OK, let's lock in \"Filename\" and \"File Path\" for Bella. Use the physical file path only and ignore recorded Source Path, but keep the research findings.",
+    "scope": [
+      "Filename and File Path labels",
+      "Current physical file path only",
+      "Ignore recorded Source Path in Bella",
+      "Preserve research findings"
+    ],
+    "deferred": [
+      "Kind and remaining metadata field reviews",
+      "Source preference/additional reads for retained fields",
+      "General MDB layout/damage policy",
+      "Bella implementation and app cutover"
+    ]
+  },
+  "labelReferences": [
+    {
+      "url": "https://support.apple.com/en-nz/guide/applestyleguide/apsg1d47a4df/web",
+      "meaning": "filename is one word"
+    },
+    {
+      "url": "https://developer.apple.com/design/human-interface-guidelines/lists-and-tables",
+      "meaning": "Title-style column headings; Filename and File Path labels"
+    }
+  ],
+  "historicalReceiptNote": "Embedded native observations and original curation script describe the research before this later user decision. Approval and agreedPhysicalPathRule above govern Bella requirements; do not implement the superseded recorded-path proposal."
+}

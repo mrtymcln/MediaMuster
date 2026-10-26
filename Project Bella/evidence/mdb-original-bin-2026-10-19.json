@@ -1,0 +1,1316 @@
+{
+  "date": "2026-10-19",
+  "timezone": "Australia/Sydney",
+  "purpose": "Original Bin MDB field review: native Media Composer path, MDVx omission, independent actual owner/name observations and proposed Bella rule.",
+  "status": "Original Bin field-specific rules approved by user on 19 October 2026; requirements only, not implemented. Extra header-read policy remains deferred.",
+  "mediaComposer": {
+    "date": "2026-10-19",
+    "scope": "Original Bin owner/reference/name read and write behavior in installed Media Composer, bounded static inspection. No app launch, private API invocation, media write, repo change, Bella code or Bin Filter change.",
+    "method": "Read existing MDB/text reviews, then fresh arm64 llvm-objdump function disassembly. Bounded exact _ORG_BIN ADRP/ADD references and direct BL callers in libame and main executable. Native vtable targets decoded and checked against symbols. Manual control/dataflow reconstruction, not a live UI test.",
+    "binaries": {
+      "engine": {
+        "version": "26.8.0.58987",
+        "binaries": [
+          {
+            "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+            "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+            "bytes": 73527536,
+            "uuid": "UUID: 9CC3CF45-9F28-380C-949C-C7B321D0858A (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib\nUUID: D55FFCED-FD76-3667-99B8-C9A84180173E (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+          },
+          {
+            "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+            "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+            "bytes": 14340208,
+            "uuid": "UUID: F10B2E1F-07ED-31AC-8DDD-C2122C7B4405 (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore\nUUID: EDC22A12-1101-3C73-A57C-4256A82633F9 (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore"
+          }
+        ]
+      },
+      "main": {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer",
+        "sha256": "a4a1d1b41f2f8b509781c3b8a50286c0cd7c9746cf85e609ec5a7bcbf45a727a",
+        "bytes": 215615984,
+        "uuid": "UUID: CAFB1223-D926-3C6E-94E2-D7D09073B0A0 (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer\nUUID: D636BCED-BAF3-3940-A21E-33ADE42EBFAB (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer"
+      }
+    },
+    "plainMeaning": [
+      "Original Bin is a recorded reference belonging to a particular mob/object. The reference stores a bin identifier and a bin name.",
+      "It is reached by that owner’s direct _ORG_BIN object attribute, then the referenced MCBR object’s bin-name properties. _ORG_BIN is not itself a text value.",
+      "The named UTF8 binName and legacy binName are two stored forms of the same bin name on that same reference. Native code prefers a nonempty UTF8 name and otherwise uses legacy current-Mac bytes.",
+      "The native getter does not search a file’s master or source ancestry. It reads the supplied owner only. Owner priority for Bella is a separate requirement.",
+      "Recorded association can be updated when a mob is linked into a bin. It is not guaranteed first-ever bin, current loaded membership or a current .avb filename/path."
+    ],
+    "route": {
+      "owner": "Caller-supplied AComposition/mob",
+      "steps": [
+        "owner OMFI:CPNT:Attributes → ATTR list",
+        "ATTB:Name=_ORG_BIN, Kind3 ObjectAttribute → referenced object",
+        "expected MCBR bin-reference object → OMFI:MCBR:MC:binNameUTF8 / OMFI:MCBR:MC:binName"
+      ],
+      "unicodePayload": "Ordinary UTF8 NUL-terminated property payload through named-property reader/writer. No typed-attribute BobData 00 00 prefix.",
+      "additionalProperties": {
+        "OMFI:MCBR:MC:binID.high": "native dictionary offset0x608; first32-bit word of 8-byte bin avuid_t",
+        "OMFI:MCBR:MC:binID.low": "native dictionary offset0x610; second32-bit word",
+        "OMFI:MCBR:MC:binName": "dictionary offset0x618",
+        "OMFI:MCBR:MC:binNameUTF8": "dictionary offset0x620"
+      },
+      "identityQualification": "This bin ID is an 8-byte bin avuid_t, not FileMobId or MasterMobId. Keeping it for provenance does not require modifying bin membership/filtering."
+    },
+    "getter": {
+      "function": "CMGetOrigBinInfo(AComposition*,avuid_t*,char16_t*,short)",
+      "address": "0x282aa4",
+      "anchors": [
+        "Initial foundflagfalse0x282ac8; optionally MakeNilUid(outputBinID)0x282ad0..d4.",
+        "Nullowner returnsfalse0x282ad8; own GetAttrList slot0x250 at0x282adc..e8; missingattrs returnsfalse0x282aec.",
+        "Own attrs FindObject slot0x208 with _ORG_BIN and foundflag0x282af0..0x282b04.",
+        "If found, referencedobject slot0x148 GetBinID→outputID0x282b14..28, slot0x150 GetBinNameCopy→UTF16output0x282b2c..44.",
+        "Returns original ObjectAttribute foundflag0x282b48. There is no nonempty-name check, source traversal, master lookup or ID-versus-name membership validation.",
+        "The getter does not clear caller’s name buffer on missing. Own result handling must distinguish absent from blank; native callers commonly initialize buffers."
+      ],
+      "referenceCaution": "Getter assumes the referenced native object has the expected virtual methods; it does not visibly validate MCBR class before those dispatches. This is not a recommendation for Bella to trust malformed references.",
+      "delegates": {
+        "AAttrList::FindObject": "0x1779f4→CoreAttrList virtual+0x250",
+        "AMCBinRef::GetBinID": "0x2d5f10 reads8bytesatobject+0x18",
+        "AMCBinRef::GetBinNameCopy": "0x2d5f18 extracts stored UnicodeString atobject+0x20 to caller UTF16buffer0x2d5f80"
+      }
+    },
+    "pairedNameReader": {
+      "function": "AMCBinRef::Get(AStream*,AIODesc*)",
+      "address": "0x2d5b48",
+      "anchors": [
+        "Read object class MCBR/version1 marker0x2d5bcc..e0. This local class marker does not name a PMR version or a whole-MDB schema.",
+        "Read binID.high0x2d5c04..18 and binID.low0x2d5c2c..40 through integer reader slot0x238.",
+        "Read legacy binName as stringhandle slot0x290 at0x2d5c54..68.",
+        "Inside extensiontag1 branch, named binNameUTF8 reader slot0x2a8 at0x2d5ce8..0x2d5d00; output into256-unit UTF16buffer, then replace UnicodeString0x2d5d04..44.",
+        "After extensions, if UnicodeString remains empty and legacy stringhandle exists, CurrentMacMBCSEncodingToUnicodeString0x2d5d68 provides fallback. No owner switch occurs0x2d5d4c..7c."
+      ],
+      "missingEmptyInvalid": "Absent/no-usable-extension or empty Unicode value permits legacy fallback here. The named UTF8 helper reports conversion errors by XError before this fallback if UTF8 conversion fails; no field-local catch is visible in AMCBinRef::Get.",
+      "errorReceipt": "ReadUTF8StringAndConvertToUTF16-prior.txt0xb8168: readnull→returnnull0xb8270; UTF8ToUTF16failure→STRM_UNICODE_CONVERSION_ERROR0xb8250..60. Prior matching-hash text review traced XError operator+ to __cxa_throw.",
+      "bellaApprovedDifference": "User-approved Bella validation may recover using separate legacy property when explicit UTF8 is malformed. Never reinterpret the broken UTF8 property’s own bytes as MacRoman."
+    },
+    "pairedNameWriter": {
+      "function": "AMCBinRef::Put(AStream*,AIODesc*)",
+      "address": "0x2d5990",
+      "anchors": [
+        "BinID words fromobject+0x18/+0x1c written to dictionary slots0x608/0x610 at0x2d5a34..70.",
+        "UnicodeStringToCurrentMacMBCSString(sourceUnicode,nullLossFlag)0x2d5a84, then legacy binName raw WriteString slot0x1b8 at0x2d5a98..b8.",
+        "Emit extensiontag1 at0x2d5ac8..cc; original UnicodeString getTerminatedBuffer0x2d5ae8; WriteUTF16AsUTF8String binNameUTF8 at0x2d5ae0..0x2d5b00.",
+        "Both properties therefore derive from the same Unicode name. Legacy conversion can lose unrepresentable characters through the current-Mac conversion path; full Unicode is retained in named UTF8."
+      ],
+      "payload": "WriteUTF16AsUTF8String0xb6300→WriteUTF8String0xb62f4→rawWriteString0xb5d34; strlen+1 stores terminatingNUL. No typed-attribute prefix.",
+      "legacyCodecLimit": "Native uses receiving/writing Mac current system encoding. Prior same-machine public CoreFoundation probe returned MacRoman. This does not prove every foreign/historical MDB producer uses MacRoman; Bella MacRoman is approved policy."
+    },
+    "ownerSetter": {
+      "function": "CMSetOrigBinInfo(AComposition*,avuid_t,char16_t*,uchar overwrite)",
+      "address": "0x282940",
+      "anchors": [
+        "Obtain/create own attribute list via GetAttrListDammit slot0x2680x282988..94.",
+        "Find own _ORG_BIN ObjectAttribute0x28299c..b4.",
+        "If overwriteflagfalse and referencefound, returnwithoutchanging0x2829bc..c0, even if existing reference name blank.",
+        "If overwrite allowed and referencefound, compare existing BinID+UnicodeName to supplied values0x2829c8..0x282a10; equal→nochange; otherwiseSetBinInfo slot0x1580x282a14..28.",
+        "If missing, AMCBinRef::New(binID,name)0x282a30..38; add own _ORG_BIN ObjectAttribute slot0x190 at0x282a40..58.",
+        "Marks owner changed through slot0xa28at0x282a5c..68."
+      ],
+      "meaning": "This setter records one supplied owner, and can preserve or overwrite existing data depending on caller flag. It does not impose a universal file/master rule."
+    },
+    "boundedNativeCallers": [
+      {
+        "function": "brObjLinkIn1(brRec*,objinfo**,uchar)",
+        "address": "main0x100db760c",
+        "evidence": "Resolves exact bin item MobID through mob manager0x100db7694..bc; under native link conditions obtains current bin ID frombrRec0x100db779c and Unicode binname frombinlocator0x100db77a0..b4; calls CMSetOrigBinInfo(owner,binID,name,overwrite=true)0x100db77bc..c8.",
+        "meaning": "A bin-link operation can update the recorded association. The inspected setter call is not restricted by MobType before call; later code separately checks masterrole2 for another purpose."
+      },
+      {
+        "function": "MonPane::FindBinCmdHelper(AComposition*,int,uchar)",
+        "address": "main0x101b7480c",
+        "evidence": "Uses supplied composition at0x101b74940 and0x101b749e4 for direct CMGetOrigBinInfo calls0x101b74948/0x101b749ec. Separately checks recorded bin ID and actual membership/search helpers at0x101b74954/0x101b74970/0x101b749c8.",
+        "meaning": "Recorded origin and live bin membership are distinct; helper can fall back to actual membership/search instead of treating recorded name as guaranteed current location."
+      }
+    ],
+    "ownerPolicyLimit": {
+      "established": "Known direct _ORG_BIN route on whichever exact owner carries it, with paired name preference. Native getter neither inherits nor globally chooses owner.",
+      "notEstablished": "No universal native physical-file→selected-master→source order for scanner OriginalBin is established by these inspected routines. Inspect actual associations to choose a deliberate Bella priority table. An unrelated same-name bin reference is never proof of owner association.",
+      "possibleBellaShape": "Choose owner priority separately from text preference. Within selected valid owner/reference prefer usable binNameUTF8 then legacy MacRoman; if neither usable, move to another owner only under an explicit approved field rule."
+    },
+    "limits": [
+      "Static installedMac code only; no bin operations, native API execution or testMDBwrite.",
+      "Exact literal and direct BL callers are bounded scans, not an audit of every indirect caller or other library.",
+      "Original Bin association is not a loaded-bin filter and does not authorize Bin Filter changes.",
+      "No actual-data counts copied here; parent/data agent is auditing owner associations independently.",
+      "No claim a bin-name string proves current .avb filename/path, existence or location."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/AAttrList-FindObject.txt",
+        "bytes": 298,
+        "sha256": "6a7f7ef55a517ee3f322336239340d4dd60490e0800e1bb8cac97280e9dcae03"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/AMCBinRef-Get.txt",
+        "bytes": 7257,
+        "sha256": "50bf6c85a1489e39e40f4345e7045a2df20f0beb2848ad0c86c7fbb99e504d84"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/AMCBinRef-GetBinID.txt",
+        "bytes": 211,
+        "sha256": "34500773d1b8dce2f2d015dbb37d5e95f0fae68c71524bde474f9401939c4e50"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/AMCBinRef-GetBinNameCopy.txt",
+        "bytes": 2173,
+        "sha256": "37e8de4a47e19baddd49d729eff83c7cb9e4ccb09463af097544c1d2c8346f2c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/AMCBinRef-New.txt",
+        "bytes": 8646,
+        "sha256": "d36585db3fd1789e68446c10dd9b43960d62ac2179e33e119247a2c80a02d416"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/AMCBinRef-Put.txt",
+        "bytes": 5051,
+        "sha256": "ae91b744e3bc3e58edb992d96f1328c582a3b743b57845ab50c516b3cc6003e2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/AMCBinRef-SetBinInfo.txt",
+        "bytes": 2426,
+        "sha256": "9fc9c30dc0c86aa567154bd6cd903a5fc81af515358ff5043656c639f08c084d"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/CMGetOrigBinInfo.txt",
+        "bytes": 2043,
+        "sha256": "056abb66039d6792600e201cb9dfcb35ca0e68cc32474f9ec19511d7a9fa0f64"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/CMSetOrigBinInfo.txt",
+        "bytes": 3895,
+        "sha256": "6c167acbccbfb36cd40672b5881dc204e35cc66435af302be07850af80f9cf0a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/MonPane-FindBinCmdHelper.txt",
+        "bytes": 19741,
+        "sha256": "b043e2a631bd2edcc7032e4296472f535f117e0545afdd2e3ec56572f34a60af"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/ReadUTF8StringAndConvertToUTF16-prior.txt",
+        "bytes": 4404,
+        "sha256": "9b085573f9f541ca3d1d351b3bf6b53838ae0245bca4ba37e3c9e4d42f865cad"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/UIScriptWindow-FindBin.txt",
+        "bytes": 17370,
+        "sha256": "55bbc58b3ee1648343d3a7b5b06f97dc309365d207d9e84f866b5ee505de5ed7"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/WriteUTF16AsUTF8String-prior.txt",
+        "bytes": 4941,
+        "sha256": "86481b84c47f7bffde92230c8102c4bc430d46ac53224ca8f75ec5bd937f7d81"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/brObjLinkIn1.txt",
+        "bytes": 20614,
+        "sha256": "fa54fde91c9c10c88930377ef66b336e464a61520bec64ea84f15cc609140ae9"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/direct-callers.json",
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/engine-identity.json",
+        "bytes": 1187,
+        "sha256": "a8e3a9411ad0924e0435bef362de8d7fc53166b50f35752b8aed68ccb8fe7044"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/main-direct-callers.json",
+        "bytes": 3041,
+        "sha256": "798ebd7ae895a4600d539fb1700e286dc57e8e914c7aa2c3079f0a7b990beab3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/main-identity.json",
+        "bytes": 501,
+        "sha256": "20a39c9fd61288bbd49f5f9e62294947dfdf8efc476dee59ab00c0e97ea0f0fc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/main-orig-bin-stubs.txt",
+        "bytes": 302,
+        "sha256": "ad9cb3b843f1d6a984ec69429806b781b91db5594e00fb62dfc41f209a36c383"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/native-property-offsets-prior.json",
+        "bytes": 27054,
+        "sha256": "fcd42e31b206ecb79c37072d1eced4bcb46e81df4fd2c1027224e9341f5632f8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/org-bin-key-xrefs.json",
+        "bytes": 1258,
+        "sha256": "433b2149500f8301344f01cb34257ef91a526a6762e63ecf4082ad7bb3951262"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/vtable-targets.json",
+        "bytes": 1176,
+        "sha256": "9e9eb9a4311441d9c8df9fc2dc5ce6a4e3749a21401340c2886c0e7fc908e069"
+      }
+    ]
+  },
+  "mdvx": {
+    "date": "2026-10-19",
+    "timezone": "Australia/Sydney",
+    "purpose": "Read-only bounded Original Bin audit of installed MDVx ordinary PMR/MDB enrichment. No app launch, media write, repository edit or Bin Filter change.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "sizeBytes": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "version": "0.2",
+      "build": "4073",
+      "architectureAudited": "arm64",
+      "universalArchitectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "priorDisassembly": {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-disassembly.txt",
+        "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074"
+      },
+      "date": "2026-10-19"
+    },
+    "method": "Re-read prior full arm64 instruction extracts tied to freshly refreshed identical universal executable hash; fresh nm arm64 symbol inventory; inspect Objective-C row properties and complete ordinary scanner/table methods. Manual control-flow reconstruction, not recovered original source.",
+    "conclusion": {
+      "ordinaryMDBEnrichment": "No Original Bin extraction or stored row field was found in the completely traced ordinary MDVx MDB enrichment path. It does not traverse _ORG_BIN to MCBR binNameUTF8/binName in this path.",
+      "importantNameDistinction": "DB_NameInBin is the clip name as named inside a bin, not the original/containing bin name. It is fed from the selected master generic string, normally CPNT:Name, and mapped to ClipnameCellID.",
+      "startingOwnerForOriginalBin": "Not applicable: this routine does not attempt an Original Bin lookup. Do not invent file-versus-master owner precedence for a nonexistent read.",
+      "codecForOriginalBin": "Not applicable: no binNameUTF8/binName read or Original Bin-specific decoder call was found in this path. Generic name decoder observations below refer to clip name, not bin name.",
+      "missingBlankDuplicateFallback": "No Original Bin missing/blank/duplicate/source-ancestry policy exists in this traced routine because it does not request/store that field. Do not copy clip-name or Project rules onto Original Bin."
+    },
+    "ordinaryPath": {
+      "scanner": {
+        "function": "-[MDVxPMRScannerOperation main]",
+        "address": "0x10003a1c0",
+        "evidence": "Ordinary PMR iteration obtains an MDVxDatabaseItem, then calls MDB addInfoToItem: when reader exists (0x10003a8b4..0x10003a8c0). No independent Original Bin reader or assignment found in this method."
+      },
+      "MDBEnrichment": {
+        "function": "-[MDVxOMFI addInfoToItem:]",
+        "address": "0x100064794",
+        "masterLookup": "PMR material/master ID bytes16..23 → CompositionMobs index → local Bento object’s TOC index (0x100064800..0x10006484c). The existing MDVx eight-byte shortcut is not Bella full-ID policy.",
+        "masterReads": [
+          "0x1000648d4 GetStringForObjectAt: then 0x1000648ec setDB_NameInBin:",
+          "MOBJ:UsageCode at 0x1000648f8..0x100064930",
+          "CPNT:EditRate at 0x100064934..0x100064994",
+          "CPNT:Attributes → ATTR:AttrRefs to check _IMPORTSETTING prefix and set usageCode15 at 0x100064998..0x100064aa4"
+        ],
+        "fileReads": [
+          "File ID bytes16..23 → SourceMobs index → TOC index at 0x100064860..0x1000648b8",
+          "0x100064ab8 getProjectNameForObjAt: and optional Project assignment",
+          "0x100064ae4 getCompression_data:forObjAt: → compression/resolution/sample-rate/bits setters"
+        ],
+        "absenceEvidence": "Complete addInfoToItem control flow and its called metadata helpers supply no _ORG_BIN object traversal, MCBR class/property selection or bin-name assignment. The only master attribute-key test here is _IMPORTSETTING classification; the Project helper separately checks _PJ."
+      },
+      "PMRSetup": {
+        "function": "-[MDVxDatabaseItem setupWithPmrBytes:length:PMRVersion:usebyteswap:]",
+        "address": "0x100030450",
+        "evidence": "Supported PMR record branches populate file/master IDs, physical filename, Project and modification value; no Original Bin row property is populated by this constructor."
+      }
+    },
+    "DBNameInBinIsClipName": {
+      "storage": {
+        "getter": "-[MDVxDatabaseItem DB_NameInBin] 0x100031558",
+        "setter": "-[MDVxDatabaseItem setDB_NameInBin:] 0x100031564",
+        "offset": "0xa8",
+        "type": "NSString"
+      },
+      "separateFilename": {
+        "getter": "-[MDVxDatabaseItem DB_ClipName] 0x1000314f4",
+        "offset": "0x78",
+        "meaning": "Mapped to FilenameCellID, despite confusing internal DB_ClipName name."
+      },
+      "table": "-[MDVxCore tableView:viewForTableColumn:row:] at 0x100050304: decoded ClipnameCellID literal at 0x100050554; matching branch invokes DB_NameInBin at 0x10005056c. FilenameCellID at 0x1000504f0 maps to DB_ClipName at 0x100050508.",
+      "stringExport": "-[MDVxCore tableView:NSStringValueForTableColumn:row:] at 0x100050ce4: ClipnameCellID at 0x100050f3c maps to DB_NameInBin at 0x100050f54; FilenameCellID at 0x100050f14 maps to DB_ClipName at 0x100050f2c.",
+      "genericDecoderQualification": "GetStringForObjectAt: 0x100063a58 scans the same object for the first accepted string property. It chooses Foundation encoding1 (ASCII) for _isII and encoding30 (MacRoman) otherwise, then trims NUL only. This is observed clip/Project text behavior, not evidence for Original Bin decoding."
+    },
+    "structuralCorroboration": {
+      "rowMetadata": "MDVxDatabaseItem Objective-C metadata describes 29 ivars and 26 properties (see raw class block). It contains DB_NameInBin but no Original Bin or bin-reference storage field. Fresh symbols agree with those getter/setter names.",
+      "binaryLiteralSearch": "Whole universal executable contains zero case-sensitive ASCII occurrences of _ORG_BIN, MCBR, binNameUTF8, binName, Original Bin, OriginalBin or originalBin. This only corroborates the complete ordinary-path trace; numeric-property implementations elsewhere could lack literals.",
+      "browserQualification": "A raw MDB browser can expose underlying database data separately. No ordinary inventory Original Bin semantic/display behavior should be inferred from a generic browser representation."
+    },
+    "BellaImplicationsNotNewApproval": [
+      "Read Original Bin from its actual named owner/reference/property structure established by Media Composer and actual MDB evidence, even though this MDVx ordinary enrichment omits it.",
+      "Apply Bella’s already approved known-field Unicode/legacy decoding to the actual bin-name property if present; do not treat MDVx generic clip-name decoder as its specification.",
+      "No Original Bin owner, missing/blank/conflict or source-fallback decision is approved by this research."
+    ],
+    "limits": [
+      "Bounded ordinary PMR/MDB inventory path and row/table mapping, not a whole-app impossibility proof.",
+      "No live MDVx UI scan, runtime fixture injection, altered MDB test or performance measurement.",
+      "Analyzed arm64 code only; x86_64 control flow not separately audited.",
+      "No AVB/Bin Filter changes or inference that Original Bin metadata establishes current loaded-bin membership.",
+      "Absence of a binary literal alone is not proof that every numeric-property reader omits it."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/DatabaseItem-symbols.txt",
+        "bytes": 6010,
+        "sha256": "ba934b47a53dc8edc4b7b1dd9374f924636ffd605ada7003dfc8d1a3e5ded7d3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt",
+        "bytes": 16441,
+        "sha256": "be932b1a1d04bf4539a0f4fe6b8fadb68d4d4170387b8613806c5c6af8b0fee1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt",
+        "bytes": 25206,
+        "sha256": "e9f502df3ddc289f84c65be937ec441a847c638c8b17d1df97c3b1f0655644cb"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/MDVxDatabaseItem-objc-excerpt.txt",
+        "bytes": 24581,
+        "sha256": "99ee84dd15386551c5a986e99eb6ddd750e6aee6275a6914a9306a9a381e34dc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/MDVxDatabaseItem_DB_ClipName.txt",
+        "bytes": 162,
+        "sha256": "ac68db904a9a918a0bb67a3efcf0091242e83a1f8a61774a8cc2c02f4d085c97"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/MDVxDatabaseItem_DB_NameInBin.txt",
+        "bytes": 163,
+        "sha256": "99f9eb5a78ad9dcbad32324a94dd833b3bb864a8969bcbaf67373c40c23a4577"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/MDVxDatabaseItem_setDB_NameInBin_.txt",
+        "bytes": 144,
+        "sha256": "19be6ea96bd2556a46c87e3feff4450f65160ffbe6b526c2425f37ef73d45c30"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/MDVxDatabaseItem_setupWithPmrBytes_length_PMRVersion_usebyteswap_.txt",
+        "bytes": 6841,
+        "sha256": "1f2b786849a8ffd5d41a93e7f4a7b285018b56a74b5d1ea7f6855c1cfdab5e61"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/MDVxOMFI_GetStringForObjectAt_.txt",
+        "bytes": 3468,
+        "sha256": "bab9dc9340d24802b7f984fcb1d0aca837cdfa7882e3179b3e3a4335464ba2a3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/MDVxOMFI_addInfoToItem_.txt",
+        "bytes": 9423,
+        "sha256": "20211e8a6dbcd33b0e034f3885504d5af7a54cffd3a05b5d776446549e0f6829"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/MDVxOMFI_getCompression_data_forObjAt_.txt",
+        "bytes": 5492,
+        "sha256": "56eb914605cab3b729d4dd8de955f3e18298097b96c2c1f546c00a32f1cbe0ef"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/MDVxPMRScannerOperation_main.txt",
+        "bytes": 53423,
+        "sha256": "3eeb0753fa8ace9baa58c04efa2bf9345553e74d265102be7d4739b877cabff8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/binary-literal-search.json",
+        "bytes": 961,
+        "sha256": "2cbac5bcc99e9e4aaefa3968826fa2c898f0de174d72161e3b3c22f8d2cc467f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/binary-receipt.json",
+        "bytes": 510,
+        "sha256": "5fb43d8ad7dd93bdee13c8d776dabb94d5002fafe8bb1bb59e4650d487c6d32b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/symbols-current-arm64.txt",
+        "bytes": 225054,
+        "sha256": "2d00e21aac7d5cf927d18e2ff40d14f2a8399ddb076ffa48ed89f3dc70b0adb9"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/table-cfstring-labels.json",
+        "bytes": 351,
+        "sha256": "bf5353427c956f050dd0151b5a337234201634ce41e8f3943a53b6198d41b3ef"
+      }
+    ]
+  },
+  "actualDatabases": {
+    "purpose": "Independent actual MDB Original Bin ownership and paired-name review. Uses raw cached values after live MDB/PMR hash verification, not OldScanner interpretation. No implementation or media writes.",
+    "identityRules": "Complete normalized file/master IDs select appropriate catalogue owners. MCBR binID.high/low are reported as their full named32bit fields, not treated as MobIds or new Bin Filter policy.",
+    "nameRules": "Named binNameUTF8 property is ordinary strictUTF8 text; legacy binName is separately stored MacRoman text. Neither is a PMR counted string or marked BOB attribute. Usable name selection here applies only approved representation choice on a single MCBR, not cross-owner priority.",
+    "ownerScope": "Exact _ORG_BIN Kind3 references to MCBR, separately for file, associated master, immediate source and nested_USER. Other nested ATTR paths are reported but not automatically promoted.",
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "cachePath": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+        "cacheSha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "countsPerPmrFile": {
+          "pmrFileRows": 389,
+          "fileRowsWithAnyOrgBin": 0,
+          "fileRowsWithUsableName": 0,
+          "fileRowsWithMultipleNames": 0,
+          "fileRowsAllAbsent": 389,
+          "fileRowsWithErrors": 0,
+          "fileRowsWithSeveralBinIds": 0,
+          "masterRowsWithAnyOrgBin": 232,
+          "masterRowsWithUsableName": 232,
+          "masterRowsWithMultipleNames": 0,
+          "masterRowsAllAbsent": 157,
+          "masterRowsWithErrors": 0,
+          "masterRowsWithSeveralBinIds": 0,
+          "immediateSourceRowsWithAnyOrgBin": 0,
+          "immediateSourceRowsWithUsableName": 0,
+          "immediateSourceRowsWithMultipleNames": 0,
+          "immediateSourceRowsAllAbsent": 389,
+          "immediateSourceRowsWithErrors": 0,
+          "immediateSourceRowsWithSeveralBinIds": 0,
+          "anyRoleRowsWithUsableName": 232
+        },
+        "distinctOwnersByRole": {
+          "file": 389,
+          "master": 153,
+          "immediateSource": 153
+        },
+        "orgBinPathsOnDistinctOwners": {
+          "master": {
+            "direct:kind3": 91
+          }
+        },
+        "distinctReferencedMcbrObjectsByRole": {
+          "master": 91
+        },
+        "ownerNameComparisons": {},
+        "allRawMcbrObjectCount": 91,
+        "allRawMcbrTextStats": {
+          "unicode:usable": 91,
+          "unicode:nulTerminated": 91,
+          "unicode:nonAscii": 0,
+          "unicode:postNulNonzero": 0,
+          "legacy:usable": 91,
+          "legacy:nulTerminated": 91,
+          "legacy:nonAscii": 0,
+          "legacy:postNulNonzero": 0,
+          "bothUsable": 91,
+          "decodedNamePairsEqual": 91
+        },
+        "allRawMcbrDecodedPairDifferences": 0,
+        "allRawMcbrIdStats": {
+          "bothNamedIdWordsReadable": 91
+        },
+        "allRawDistinctNamedHighLowIdPairs": 4,
+        "allRawDistinctNameHashesCount": 4,
+        "sourceGraphErrors": {},
+        "ownerProblems": [],
+        "sharedOmfiExamples": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "cachePath": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+        "cacheSha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "countsPerPmrFile": {
+          "pmrFileRows": 686,
+          "fileRowsWithAnyOrgBin": 0,
+          "fileRowsWithUsableName": 0,
+          "fileRowsWithMultipleNames": 0,
+          "fileRowsAllAbsent": 686,
+          "fileRowsWithErrors": 0,
+          "fileRowsWithSeveralBinIds": 0,
+          "masterRowsWithAnyOrgBin": 634,
+          "masterRowsWithUsableName": 634,
+          "masterRowsWithMultipleNames": 0,
+          "masterRowsAllAbsent": 52,
+          "masterRowsWithErrors": 0,
+          "masterRowsWithSeveralBinIds": 0,
+          "immediateSourceRowsWithAnyOrgBin": 0,
+          "immediateSourceRowsWithUsableName": 0,
+          "immediateSourceRowsWithMultipleNames": 0,
+          "immediateSourceRowsAllAbsent": 686,
+          "immediateSourceRowsWithErrors": 0,
+          "immediateSourceRowsWithSeveralBinIds": 0,
+          "anyRoleRowsWithUsableName": 634
+        },
+        "distinctOwnersByRole": {
+          "file": 686,
+          "master": 415,
+          "immediateSource": 338
+        },
+        "orgBinPathsOnDistinctOwners": {
+          "master": {
+            "direct:kind3": 379
+          }
+        },
+        "distinctReferencedMcbrObjectsByRole": {
+          "master": 379
+        },
+        "ownerNameComparisons": {},
+        "allRawMcbrObjectCount": 380,
+        "allRawMcbrTextStats": {
+          "unicode:usable": 380,
+          "unicode:nulTerminated": 380,
+          "unicode:nonAscii": 0,
+          "unicode:postNulNonzero": 0,
+          "legacy:usable": 380,
+          "legacy:nulTerminated": 380,
+          "legacy:nonAscii": 0,
+          "legacy:postNulNonzero": 0,
+          "bothUsable": 380,
+          "decodedNamePairsEqual": 380
+        },
+        "allRawMcbrDecodedPairDifferences": 0,
+        "allRawMcbrIdStats": {
+          "bothNamedIdWordsReadable": 380
+        },
+        "allRawDistinctNamedHighLowIdPairs": 1,
+        "allRawDistinctNameHashesCount": 1,
+        "sourceGraphErrors": {},
+        "ownerProblems": [],
+        "sharedOmfiExamples": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "cachePath": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+        "cacheSha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "countsPerPmrFile": {
+          "pmrFileRows": 513,
+          "fileRowsWithAnyOrgBin": 0,
+          "fileRowsWithUsableName": 0,
+          "fileRowsWithMultipleNames": 0,
+          "fileRowsAllAbsent": 513,
+          "fileRowsWithErrors": 0,
+          "fileRowsWithSeveralBinIds": 0,
+          "masterRowsWithAnyOrgBin": 439,
+          "masterRowsWithUsableName": 439,
+          "masterRowsWithMultipleNames": 0,
+          "masterRowsAllAbsent": 74,
+          "masterRowsWithErrors": 0,
+          "masterRowsWithSeveralBinIds": 0,
+          "immediateSourceRowsWithAnyOrgBin": 0,
+          "immediateSourceRowsWithUsableName": 0,
+          "immediateSourceRowsWithMultipleNames": 0,
+          "immediateSourceRowsAllAbsent": 513,
+          "immediateSourceRowsWithErrors": 0,
+          "immediateSourceRowsWithSeveralBinIds": 0,
+          "anyRoleRowsWithUsableName": 439
+        },
+        "distinctOwnersByRole": {
+          "file": 513,
+          "master": 353,
+          "immediateSource": 308
+        },
+        "orgBinPathsOnDistinctOwners": {
+          "master": {
+            "direct:kind3": 279
+          }
+        },
+        "distinctReferencedMcbrObjectsByRole": {
+          "master": 279
+        },
+        "ownerNameComparisons": {},
+        "allRawMcbrObjectCount": 279,
+        "allRawMcbrTextStats": {
+          "unicode:usable": 279,
+          "unicode:nulTerminated": 279,
+          "unicode:nonAscii": 0,
+          "unicode:postNulNonzero": 0,
+          "legacy:usable": 279,
+          "legacy:nulTerminated": 279,
+          "legacy:nonAscii": 0,
+          "legacy:postNulNonzero": 0,
+          "bothUsable": 279,
+          "decodedNamePairsEqual": 279
+        },
+        "allRawMcbrDecodedPairDifferences": 0,
+        "allRawMcbrIdStats": {
+          "bothNamedIdWordsReadable": 279
+        },
+        "allRawDistinctNamedHighLowIdPairs": 1,
+        "allRawDistinctNameHashesCount": 1,
+        "sourceGraphErrors": {},
+        "ownerProblems": [],
+        "sharedOmfiExamples": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "cachePath": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+        "cacheSha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "countsPerPmrFile": {
+          "pmrFileRows": 463,
+          "fileRowsWithAnyOrgBin": 0,
+          "fileRowsWithUsableName": 0,
+          "fileRowsWithMultipleNames": 0,
+          "fileRowsAllAbsent": 463,
+          "fileRowsWithErrors": 0,
+          "fileRowsWithSeveralBinIds": 0,
+          "masterRowsWithAnyOrgBin": 447,
+          "masterRowsWithUsableName": 447,
+          "masterRowsWithMultipleNames": 0,
+          "masterRowsAllAbsent": 16,
+          "masterRowsWithErrors": 0,
+          "masterRowsWithSeveralBinIds": 0,
+          "immediateSourceRowsWithAnyOrgBin": 0,
+          "immediateSourceRowsWithUsableName": 0,
+          "immediateSourceRowsWithMultipleNames": 0,
+          "immediateSourceRowsAllAbsent": 463,
+          "immediateSourceRowsWithErrors": 0,
+          "immediateSourceRowsWithSeveralBinIds": 0,
+          "anyRoleRowsWithUsableName": 447
+        },
+        "distinctOwnersByRole": {
+          "file": 463,
+          "master": 293,
+          "immediateSource": 244
+        },
+        "orgBinPathsOnDistinctOwners": {
+          "master": {
+            "direct:kind3": 277
+          }
+        },
+        "distinctReferencedMcbrObjectsByRole": {
+          "master": 277
+        },
+        "ownerNameComparisons": {},
+        "allRawMcbrObjectCount": 277,
+        "allRawMcbrTextStats": {
+          "unicode:usable": 277,
+          "unicode:nulTerminated": 277,
+          "unicode:nonAscii": 0,
+          "unicode:postNulNonzero": 0,
+          "legacy:usable": 277,
+          "legacy:nulTerminated": 277,
+          "legacy:nonAscii": 0,
+          "legacy:postNulNonzero": 0,
+          "bothUsable": 277,
+          "decodedNamePairsEqual": 277
+        },
+        "allRawMcbrDecodedPairDifferences": 0,
+        "allRawMcbrIdStats": {
+          "bothNamedIdWordsReadable": 277
+        },
+        "allRawDistinctNamedHighLowIdPairs": 1,
+        "allRawDistinctNameHashesCount": 1,
+        "sourceGraphErrors": {},
+        "ownerProblems": [],
+        "sharedOmfiExamples": []
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "cachePath": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+        "cacheSha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "countsPerPmrFile": {
+          "pmrFileRows": 359,
+          "fileRowsWithAnyOrgBin": 0,
+          "fileRowsWithUsableName": 0,
+          "fileRowsWithMultipleNames": 0,
+          "fileRowsAllAbsent": 359,
+          "fileRowsWithErrors": 0,
+          "fileRowsWithSeveralBinIds": 0,
+          "masterRowsWithAnyOrgBin": 0,
+          "masterRowsWithUsableName": 0,
+          "masterRowsWithMultipleNames": 0,
+          "masterRowsAllAbsent": 359,
+          "masterRowsWithErrors": 0,
+          "masterRowsWithSeveralBinIds": 0,
+          "immediateSourceRowsWithAnyOrgBin": 0,
+          "immediateSourceRowsWithUsableName": 0,
+          "immediateSourceRowsWithMultipleNames": 0,
+          "immediateSourceRowsAllAbsent": 359,
+          "immediateSourceRowsWithErrors": 0,
+          "immediateSourceRowsWithSeveralBinIds": 0,
+          "anyRoleRowsWithUsableName": 0
+        },
+        "distinctOwnersByRole": {
+          "file": 359,
+          "master": 124,
+          "immediateSource": 124
+        },
+        "orgBinPathsOnDistinctOwners": {},
+        "distinctReferencedMcbrObjectsByRole": {},
+        "ownerNameComparisons": {},
+        "allRawMcbrObjectCount": 0,
+        "allRawMcbrTextStats": {},
+        "allRawMcbrDecodedPairDifferences": 0,
+        "allRawMcbrIdStats": {},
+        "allRawDistinctNamedHighLowIdPairs": 0,
+        "allRawDistinctNameHashesCount": 0,
+        "sourceGraphErrors": {},
+        "ownerProblems": [],
+        "sharedOmfiExamples": []
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "cachePath": "/private/tmp/bella-mdb-20261018-drives/shared-OMFI MediaFiles-values.json",
+        "cacheSha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "countsPerPmrFile": {
+          "pmrFileRows": 2,
+          "fileRowsWithAnyOrgBin": 0,
+          "fileRowsWithUsableName": 0,
+          "fileRowsWithMultipleNames": 0,
+          "fileRowsAllAbsent": 2,
+          "fileRowsWithErrors": 0,
+          "fileRowsWithSeveralBinIds": 0,
+          "masterRowsWithAnyOrgBin": 2,
+          "masterRowsWithUsableName": 2,
+          "masterRowsWithMultipleNames": 0,
+          "masterRowsAllAbsent": 0,
+          "masterRowsWithErrors": 0,
+          "masterRowsWithSeveralBinIds": 0,
+          "immediateSourceRowsWithAnyOrgBin": 0,
+          "immediateSourceRowsWithUsableName": 0,
+          "immediateSourceRowsWithMultipleNames": 0,
+          "immediateSourceRowsAllAbsent": 2,
+          "immediateSourceRowsWithErrors": 0,
+          "immediateSourceRowsWithSeveralBinIds": 0,
+          "anyRoleRowsWithUsableName": 2
+        },
+        "distinctOwnersByRole": {
+          "file": 2,
+          "master": 2,
+          "immediateSource": 2
+        },
+        "orgBinPathsOnDistinctOwners": {
+          "master": {
+            "direct:kind3": 2
+          }
+        },
+        "distinctReferencedMcbrObjectsByRole": {
+          "master": 2
+        },
+        "ownerNameComparisons": {},
+        "allRawMcbrObjectCount": 2,
+        "allRawMcbrTextStats": {
+          "unicode:usable": 2,
+          "unicode:nulTerminated": 2,
+          "unicode:nonAscii": 0,
+          "unicode:postNulNonzero": 0,
+          "legacy:usable": 2,
+          "legacy:nulTerminated": 2,
+          "legacy:nonAscii": 0,
+          "legacy:postNulNonzero": 0,
+          "bothUsable": 2,
+          "decodedNamePairsEqual": 2
+        },
+        "allRawMcbrDecodedPairDifferences": 0,
+        "allRawMcbrIdStats": {
+          "bothNamedIdWordsReadable": 2
+        },
+        "allRawDistinctNamedHighLowIdPairs": 2,
+        "allRawDistinctNameHashesCount": 2,
+        "sourceGraphErrors": {},
+        "ownerProblems": [],
+        "sharedOmfiExamples": [
+          {
+            "fileMobId": "060a2b340101010101010f00130000007429976a70397047060e2b347f7f2a80",
+            "masterMobId": "060a2b340101010101010f00130000007429976a4e397047060e2b347f7f2a80",
+            "fileObject": 68071,
+            "masterObject": 68062,
+            "immediateSources": [
+              68077
+            ],
+            "owners": {
+              "file": [
+                {
+                  "object": 68071,
+                  "state": "absent",
+                  "entries": [],
+                  "bins": []
+                }
+              ],
+              "master": [
+                {
+                  "object": 68062,
+                  "state": "usable",
+                  "entries": [
+                    {
+                      "attributeObject": 68058,
+                      "listObject": 68059,
+                      "path": [],
+                      "kind": 3,
+                      "targets": [
+                        68057
+                      ],
+                      "referenceRanges": [
+                        [
+                          [
+                            4760,
+                            8
+                          ]
+                        ]
+                      ]
+                    }
+                  ],
+                  "bins": [
+                    {
+                      "object": 68057,
+                      "class": "MCBR",
+                      "name": "WAVE(OMF)",
+                      "unicode": {
+                        "state": "usable",
+                        "text": "WAVE(OMF)",
+                        "observations": [
+                          {
+                            "ranges": [
+                              [
+                                4741,
+                                10
+                              ]
+                            ],
+                            "length": 10,
+                            "type": "omfi:String",
+                            "endsNul": true,
+                            "firstTwoHex": "5741",
+                            "nonAscii": false,
+                            "postNulNonzero": false,
+                            "valid": true
+                          }
+                        ],
+                        "issues": []
+                      },
+                      "legacy": {
+                        "state": "usable",
+                        "text": "WAVE(OMF)",
+                        "observations": [
+                          {
+                            "ranges": [
+                              [
+                                4731,
+                                10
+                              ]
+                            ],
+                            "length": 10,
+                            "type": "omfi:String",
+                            "endsNul": true,
+                            "firstTwoHex": "5741",
+                            "nonAscii": false,
+                            "postNulNonzero": false,
+                            "valid": true
+                          }
+                        ],
+                        "issues": []
+                      },
+                      "binIdNamedWords": {
+                        "high": {
+                          "rawHex": "5f29976a",
+                          "unsignedValueLittleEndian": 1788291423,
+                          "ranges": [
+                            [
+                              [
+                                50540,
+                                4
+                              ]
+                            ]
+                          ]
+                        },
+                        "low": {
+                          "rawHex": "4de96f47",
+                          "unsignedValueLittleEndian": 1198516557,
+                          "ranges": [
+                            [
+                              [
+                                50564,
+                                4
+                              ]
+                            ]
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "immediateSource": [
+                {
+                  "object": 68077,
+                  "state": "absent",
+                  "entries": [],
+                  "bins": []
+                }
+              ]
+            }
+          },
+          {
+            "fileMobId": "060a2b340101010101010f00130000009729976a3ec57047060e2b347f7f2a80",
+            "masterMobId": "060a2b340101010101010f00130000009729976a3dc57047060e2b347f7f2a80",
+            "fileObject": 68128,
+            "masterObject": 68119,
+            "immediateSources": [
+              68134
+            ],
+            "owners": {
+              "file": [
+                {
+                  "object": 68128,
+                  "state": "absent",
+                  "entries": [],
+                  "bins": []
+                }
+              ],
+              "master": [
+                {
+                  "object": 68119,
+                  "state": "usable",
+                  "entries": [
+                    {
+                      "attributeObject": 68115,
+                      "listObject": 68116,
+                      "path": [],
+                      "kind": 3,
+                      "targets": [
+                        68114
+                      ],
+                      "referenceRanges": [
+                        [
+                          [
+                            9526,
+                            8
+                          ]
+                        ]
+                      ]
+                    }
+                  ],
+                  "bins": [
+                    {
+                      "object": 68114,
+                      "class": "MCBR",
+                      "name": "AIFF-C(OMF)",
+                      "unicode": {
+                        "state": "usable",
+                        "text": "AIFF-C(OMF)",
+                        "observations": [
+                          {
+                            "ranges": [
+                              [
+                                9505,
+                                12
+                              ]
+                            ],
+                            "length": 12,
+                            "type": "omfi:String",
+                            "endsNul": true,
+                            "firstTwoHex": "4149",
+                            "nonAscii": false,
+                            "postNulNonzero": false,
+                            "valid": true
+                          }
+                        ],
+                        "issues": []
+                      },
+                      "legacy": {
+                        "state": "usable",
+                        "text": "AIFF-C(OMF)",
+                        "observations": [
+                          {
+                            "ranges": [
+                              [
+                                9493,
+                                12
+                              ]
+                            ],
+                            "length": 12,
+                            "type": "omfi:String",
+                            "endsNul": true,
+                            "firstTwoHex": "4149",
+                            "nonAscii": false,
+                            "postNulNonzero": false,
+                            "valid": true
+                          }
+                        ],
+                        "issues": []
+                      },
+                      "binIdNamedWords": {
+                        "high": {
+                          "rawHex": "8929976a",
+                          "unsignedValueLittleEndian": 1788291465,
+                          "ranges": [
+                            [
+                              [
+                                54668,
+                                4
+                              ]
+                            ]
+                          ]
+                        },
+                        "low": {
+                          "rawHex": "648c7047",
+                          "unsignedValueLittleEndian": 1198558308,
+                          "ranges": [
+                            [
+                              [
+                                54692,
+                                4
+                              ]
+                            ]
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "immediateSource": [
+                {
+                  "object": 68134,
+                  "state": "absent",
+                  "entries": [],
+                  "bins": []
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "limits": [
+      "Source priority and final Original Bin owner/fallback policy are not selected by this observation.",
+      "Readable duplicate names/IDs and field blanks are reported separately from malformed structure; future ambiguous-owner cases require a rule.",
+      "Actual six MDBs are littleendian; all live bin names were previously ASCII, so nonASCII text behavior also relies on native/fixture evidence.",
+      "No loaded-bin membership, current bin rename tracking, wholeBin filter behavior or new Bin Filter identity matching is inferred.",
+      "No bulk bin-name or arbitrary private attribute dump; only two relevant Shared OMFI examples include text."
+    ]
+  },
+  "aggregateCountsPerPhysicalFile": {
+    "pmrFileRows": 2412,
+    "fileRowsWithAnyOrgBin": 0,
+    "fileRowsWithUsableName": 0,
+    "fileRowsWithMultipleNames": 0,
+    "fileRowsAllAbsent": 2412,
+    "fileRowsWithErrors": 0,
+    "fileRowsWithSeveralBinIds": 0,
+    "masterRowsWithAnyOrgBin": 1754,
+    "masterRowsWithUsableName": 1754,
+    "masterRowsWithMultipleNames": 0,
+    "masterRowsAllAbsent": 658,
+    "masterRowsWithErrors": 0,
+    "masterRowsWithSeveralBinIds": 0,
+    "immediateSourceRowsWithAnyOrgBin": 0,
+    "immediateSourceRowsWithUsableName": 0,
+    "immediateSourceRowsWithMultipleNames": 0,
+    "immediateSourceRowsAllAbsent": 2412,
+    "immediateSourceRowsWithErrors": 0,
+    "immediateSourceRowsWithSeveralBinIds": 0,
+    "anyRoleRowsWithUsableName": 1754
+  },
+  "aggregateRawMcbrTextStats": {
+    "unicode:usable": 1029,
+    "unicode:nulTerminated": 1029,
+    "unicode:nonAscii": 0,
+    "unicode:postNulNonzero": 0,
+    "legacy:usable": 1029,
+    "legacy:nulTerminated": 1029,
+    "legacy:nonAscii": 0,
+    "legacy:postNulNonzero": 0,
+    "bothUsable": 1029,
+    "decodedNamePairsEqual": 1029
+  },
+  "rawMcbrObjects": 1029,
+  "referencedMcbrObjectsOnSelectedMasters": 1028,
+  "primaryDocumentation": [
+    {
+      "url": "https://resources.avid.com/SupportFiles/attach/Interplay_Access_User_Guide_v2022.3.pdf#page=229",
+      "meaning": "Avid documents the field as the recorded original capture bin name; does not prescribe MDB structure, unchanged history or current membership."
+    }
+  ],
+  "receipts": {
+    "rawSummaryReceipts": [
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mc/findings.json",
+        "bytes": 16374,
+        "sha256": "ae2f8404c03c836f12daf5df8fd735f4341af0d1890938aa3cc9140acd50941a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-mdvx/findings.json",
+        "bytes": 10819,
+        "sha256": "8670a237daec4a3f86b153b350e96d546ab82436c19971e7126f93e1fc170ee0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-drives/findings.json",
+        "bytes": 22795,
+        "sha256": "14f9cef69c238e7ff2cba564206db853498e9f0cfb0ec7299568fbcb16d75db3"
+      }
+    ],
+    "sourceInputReceipts": [
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "bytes": 73527536,
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+        "bytes": 14340208,
+        "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer",
+        "bytes": 215615984,
+        "sha256": "a4a1d1b41f2f8b509781c3b8a50286c0cd7c9746cf85e609ec5a7bcbf45a727a"
+      },
+      {
+        "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+        "bytes": 3204640,
+        "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 5159032,
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "bytes": 97250,
+        "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "bytes": 22745976,
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "bytes": 164660,
+        "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "bytes": 16616336,
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "bytes": 123140,
+        "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "bytes": 15703416,
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "bytes": 111140,
+        "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 3668720,
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "bytes": 86754,
+        "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "bytes": 60680,
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+        "bytes": 392,
+        "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928"
+      }
+    ],
+    "rawIndexInputReceipts": [
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+        "bytes": 57405807,
+        "sha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+        "bytes": 277457615,
+        "sha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+        "bytes": 202174044,
+        "sha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+        "bytes": 191199626,
+        "sha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+        "bytes": 45335148,
+        "sha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-OMFI MediaFiles-values.json",
+        "bytes": 535484,
+        "sha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df"
+      }
+    ],
+    "validatedNativeRawArtifacts": 38,
+    "probeReceipts": [
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-drives/probe.py",
+        "bytes": 15541,
+        "sha256": "d51ffbbd4d2c207a30048f9a23e717b4089e23e58418581f4c4fad6382164694"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-drives/artifact-hashes.json",
+        "bytes": 413,
+        "sha256": "3c3e5522c24da548087d94f7d234a9369cd248d37bcf591bb4aebdbbda381191"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-original-bin-20261019-drives/source-hash-receipts.json",
+        "bytes": 4728,
+        "sha256": "5895e5e965c62ba1ce0d7027fdfbe9cd3f746149dcb7e4ef0cbf50c3e0579d58"
+      }
+    ],
+    "sharedHelperReceipt": {
+      "path": "/private/tmp/bella-mdb-project-20261019-drives/check.py",
+      "bytes": 14085,
+      "sha256": "184dbbf28d7b0fdbdd8b6a02d9791c233ac1b2c27ce4a5d7bc6cbc016d2419ec"
+    }
+  },
+  "validationLimits": [
+    "No live app scan, native API execution, test MDB write or performance measurement.",
+    "Six genuine MDBs remain the legacy Bento1 little-endian corpus; all observed bin names are ASCII and paired values agree. NonASCII/invalid/blank/conflicting cases are not live fixtures.",
+    "MDVx absence claim is bounded to fully traced ordinary PMR/MDB enrichment and its row/table model.",
+    "Native direct getter does not select a universal scanner owner; selected-master-only Bella policy is proposed explicitly with actual-data support."
+  ],
+  "approval": {
+    "date": "2026-10-19",
+    "userInstruction": "I dont know what the Bin Id is - just use binNameUTF8 first, then fall back to binName if empty. If still empty, then remain empty in the table. let's lock those Original Bin rules in for Bella.",
+    "scope": [
+      "Previously proposed selected-master Original Bin owner/name/empty/compact-retention rules",
+      "Usable binNameUTF8 first, then separate binName if empty, then empty table cell",
+      "No stored bin ID needed for this field"
+    ],
+    "preserved": [
+      "Already approved Unicode/legacy validity and damaged-Unicode recovery rules",
+      "Existing selected-master association rules",
+      "Physical file remains listed",
+      "Bin Filter unchanged"
+    ],
+    "deferred": [
+      "Extra media-header reads",
+      "General MDB supported layout/damage rules",
+      "Implementation and app cutover"
+    ]
+  },
+  "agreedBellaRule": {
+    "status": "Approved by user on 19 October 2026; not implemented.",
+    "meaning": "Recorded bin association on selected master, not proof of first-ever bin, current bin membership or current .avb filename/path.",
+    "owner": "Same complete-ID-qualified selected master as Clip Name, even if its clip name text is blank. Existing PMR-supplied or unique recovered master selection applies unchanged.",
+    "route": [
+      "Selected master own attribute list",
+      "Exact _ORG_BIN, supported Kind3 object attribute",
+      "Safely resolved MCBR class target",
+      "Exact OMFI:MCBR:MC:binNameUTF8 then separate OMFI:MCBR:MC:binName"
+    ],
+    "text": "Approved usable known UTF8 then separate readable legacy MacRoman. Named UTF8 is ordinary NUL-terminated property text, not marked BOB. Blank/whitespace-only text is unavailable; preserve nonblank spelling/spacing.",
+    "invalidUnicode": "Deliberately recover through the separate readable legacy property; never reinterpret malformed UTF8 payload as MacRoman.",
+    "missingBlankUnresolved": "If neither name is usable or the selected master/reference is unavailable, leave MDB-derived Original Bin blank and keep the physical row. A missing optional association is normal; structural damage treatment remains a separate review.",
+    "conflict": "Ambiguous/conflicting _ORG_BIN references or different duplicate values of the same property at the same priority leave the field unavailable rather than choosing by object order. A usable UTF8 name wins over a different legacy partner; their representation difference is not a conflict. Do not read outside safely qualified references.",
+    "fallbackOwners": "No alternative master selection, file/source ancestry search, arbitrary nested-attribute search or unrelated MCBR/name lookup merely to fill Original Bin.",
+    "retention": "Keep one resolved Original Bin name and compact availability/selected-owner status required by reconciliation. Read references and bin-name properties temporarily. No lasting raw bin object/graph or second legacy string after selection.",
+    "binId": "MCBR bin ID has two named32-bit words, unrelated to full FileMobId/MasterMobId normalization. Proposed release one can skip those values for this display-only field; they do not control file/master join, duplicates, KelpieId or Bin Filter.",
+    "deferred": [
+      "Whether missing Original Bin justifies a separate media-header read",
+      "Global PMR/MDB/header order for other fields",
+      "General MDB supported layouts and structural damage policy",
+      "MDB scheduling and implementation"
+    ]
+  },
+  "historicalNativeReceiptNote": "Embedded native agent Bella implications describe the research state before approval. Current approval and agreedBellaRule above record requirements."
+}

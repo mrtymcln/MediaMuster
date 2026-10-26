@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-23",
+  "status": "Historical clarification; no new Bella resource-cap decision or code change.",
+  "source": {
+    "revision": "1253c785c826e24fdf263aa79222dd362403355f^",
+    "path": "src/mxfparser.cpp",
+    "sha256": "d6cb579e25a8e17b3dc42e94cb97c579ce18e3f3ed584112bacf0fabdc051cab"
+  },
+  "findings": {
+    "oldLimit": "64 MiB capped accumulated Primer and recognized metadata-set bytes retained in memory; not the physical file prefix or HeaderByteCount extent.",
+    "navigation": "The same parser already computed metadataEnd from declaredHeaderBytes and stopped at that boundary; other payloads were seek-skipped.",
+    "bella": "Declared-section navigation and an optional retained-memory ceiling are separate choices. User says the prior 64 MB limit worked; this clarification does not claim a new benchmark or impose/remove a cap."
+  },
+  "anchors": [
+    {
+      "lineStart": 229,
+      "lineEnd": 230,
+      "excerpt": "\tconstexpr qint64 kRunInLimit = 64 * 1024;\n\tconstexpr qint64 kMetadataLimit = 64 * 1024 * 1024;"
+    },
+    {
+      "lineStart": 263,
+      "lineEnd": 264,
+      "excerpt": "\t\tif (metadataEnd >= 0 && file.pos() >= metadataEnd)\n\t\t\tbreak;"
+    },
+    {
+      "lineStart": 321,
+      "lineEnd": 330,
+      "excerpt": "\t\tif (metadataEnd < 0 && declaredHeaderBytes > 0 && (isSet || key == primerKey))\n\t\t{\n\t\t\tif (declaredHeaderBytes > quint64(std::numeric_limits<qint64>::max() - keyStart))\n\t\t\t{\n\t\t\t\tstatus = Status::Malformed;\n\t\t\t\tbreak;\n\t\t\t}\n\t\t\tmetadataEnd = keyStart + qint64(declaredHeaderBytes);\n\t\t}\n\t\tif (metadataEnd >= 0 && (file.pos() > metadataEnd || length > metadataEnd - file.pos()))"
+    },
+    {
+      "lineStart": 363,
+      "lineEnd": 363,
+      "excerpt": "\t\t\tdeclaredHeaderBytes = qFromBigEndian<quint64>(fixed.constData() + 32);"
+    },
+    {
+      "lineStart": 383,
+      "lineEnd": 400,
+      "excerpt": "\t\telse if (isSet || key == primerKey)\n\t\t{\n\t\t\tif (length > kMetadataLimit - metadata.size() - key.size() - ber.size())\n\t\t\t{\n\t\t\t\tstatus = Status::LimitExceeded;\n\t\t\t\tbreak;\n\t\t\t}\n\t\t\tconst QByteArray value = read(length);\n\t\t\tif (value.size() != length)\n\t\t\t{\n\t\t\t\tstatus = file.error() == QFileDevice::NoError ? Status::Incomplete : Status::IoError;\n\t\t\t\tbreak;\n\t\t\t}\n\t\t\tmetadata += key;\n\t\t\tmetadata += ber;\n\t\t\tmetadata += value;\n\t\t}\n\t\telse if (!file.seek(file.pos() + length))"
+    }
+  ]
+}

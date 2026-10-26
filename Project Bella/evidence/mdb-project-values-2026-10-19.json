@@ -1,0 +1,559 @@
+{
+  "date": "2026-10-19",
+  "purpose": "Requested actual Project names and owner disagreements, following the MDB Project field review. No new Bella policy approval or implementation.",
+  "scope": "Same six hash-matched MDBs and sibling PMRs; catalogue-qualified physical file owners, PMR-associated masters and immediately linked sources. Counts are per physical PMR file row, not unique clips or source objects.",
+  "locations": "No PROJNAME or nested _USER._PJ Project on the compared qualified owners; all observed Project values there are direct Kind 2 _PJ.",
+  "counts": {
+    "physicalFileRows": 2412,
+    "distinctPmrProjects": 9,
+    "distinctProjectNamesAcrossComparedOwners": 25,
+    "sourceOnlyProjectNames": 16,
+    "usableOwnFileProjectRows": 2382,
+    "absentOwnFileProjectRows": 30,
+    "usableSourceProjectRows": 666,
+    "sourceProjectMatchesPmrRows": 595,
+    "sourceProjectDiffersFromUsableFileRows": 71,
+    "distinctDifferingPairs": 20,
+    "pmrVsUsableFileDifferences": 0
+  },
+  "names": [
+    {
+      "project": "03_HAA_SFX",
+      "pmrFileRows": 0,
+      "ownFileRecordRows": 0,
+      "linkedSourceFileRows": 4
+    },
+    {
+      "project": "BLOCK_1164",
+      "pmrFileRows": 0,
+      "ownFileRecordRows": 0,
+      "linkedSourceFileRows": 2
+    },
+    {
+      "project": "BLOCK_1188 SW",
+      "pmrFileRows": 0,
+      "ownFileRecordRows": 0,
+      "linkedSourceFileRows": 2
+    },
+    {
+      "project": "BLOCK_1231",
+      "pmrFileRows": 0,
+      "ownFileRecordRows": 0,
+      "linkedSourceFileRows": 2
+    },
+    {
+      "project": "BLOCK_1440_JC_DR",
+      "pmrFileRows": 0,
+      "ownFileRecordRows": 0,
+      "linkedSourceFileRows": 3
+    },
+    {
+      "project": "BLOCK_1455_JC_DG",
+      "pmrFileRows": 0,
+      "ownFileRecordRows": 0,
+      "linkedSourceFileRows": 6
+    },
+    {
+      "project": "BLOCK_1551_PS_DG",
+      "pmrFileRows": 0,
+      "ownFileRecordRows": 0,
+      "linkedSourceFileRows": 2
+    },
+    {
+      "project": "BLOCK_1662_PB_PA",
+      "pmrFileRows": 0,
+      "ownFileRecordRows": 0,
+      "linkedSourceFileRows": 2
+    },
+    {
+      "project": "BLOCK_1707_SW_AC",
+      "pmrFileRows": 0,
+      "ownFileRecordRows": 0,
+      "linkedSourceFileRows": 18
+    },
+    {
+      "project": "BLOCK_1718_PB_IW",
+      "pmrFileRows": 0,
+      "ownFileRecordRows": 0,
+      "linkedSourceFileRows": 1
+    },
+    {
+      "project": "BLOCK_1726_PB_DR",
+      "pmrFileRows": 0,
+      "ownFileRecordRows": 0,
+      "linkedSourceFileRows": 2
+    },
+    {
+      "project": "BLOCK_1728_SH_AC",
+      "pmrFileRows": 0,
+      "ownFileRecordRows": 0,
+      "linkedSourceFileRows": 1
+    },
+    {
+      "project": "BLOCK_1729_PS_DG",
+      "pmrFileRows": 686,
+      "ownFileRecordRows": 686,
+      "linkedSourceFileRows": 18
+    },
+    {
+      "project": "BLOCK_1730_PB_PA",
+      "pmrFileRows": 976,
+      "ownFileRecordRows": 976,
+      "linkedSourceFileRows": 57
+    },
+    {
+      "project": "FIXING_JAMES_KINGSLEY",
+      "pmrFileRows": 389,
+      "ownFileRecordRows": 359,
+      "linkedSourceFileRows": 170
+    },
+    {
+      "project": "HAA Stock Footage",
+      "pmrFileRows": 0,
+      "ownFileRecordRows": 0,
+      "linkedSourceFileRows": 1
+    },
+    {
+      "project": "HAA_ASSISTS",
+      "pmrFileRows": 0,
+      "ownFileRecordRows": 0,
+      "linkedSourceFileRows": 9
+    },
+    {
+      "project": "HAA_PROGRAMME_BUILD",
+      "pmrFileRows": 0,
+      "ownFileRecordRows": 0,
+      "linkedSourceFileRows": 12
+    },
+    {
+      "project": "HAA_STOCKS",
+      "pmrFileRows": 0,
+      "ownFileRecordRows": 0,
+      "linkedSourceFileRows": 1
+    },
+    {
+      "project": "zTeßt_1080i_59.94",
+      "pmrFileRows": 84,
+      "ownFileRecordRows": 84,
+      "linkedSourceFileRows": 83
+    },
+    {
+      "project": "zTeßt_1080p_23.976",
+      "pmrFileRows": 88,
+      "ownFileRecordRows": 88,
+      "linkedSourceFileRows": 87
+    },
+    {
+      "project": "zTeßt_1080p_29.97",
+      "pmrFileRows": 88,
+      "ownFileRecordRows": 88,
+      "linkedSourceFileRows": 87
+    },
+    {
+      "project": "zTeßt_720p_23.976",
+      "pmrFileRows": 52,
+      "ownFileRecordRows": 52,
+      "linkedSourceFileRows": 51
+    },
+    {
+      "project": "zTeßt_NTSC_30i",
+      "pmrFileRows": 28,
+      "ownFileRecordRows": 28,
+      "linkedSourceFileRows": 27
+    },
+    {
+      "project": "zTeßt_PAL_25p",
+      "pmrFileRows": 21,
+      "ownFileRecordRows": 21,
+      "linkedSourceFileRows": 18
+    }
+  ],
+  "differingPairs": [
+    {
+      "fileAndPmrProject": "BLOCK_1729_PS_DG",
+      "sourceProject": "03_HAA_SFX",
+      "fileRows": 4
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1729_PS_DG",
+      "sourceProject": "BLOCK_1164",
+      "fileRows": 2
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1729_PS_DG",
+      "sourceProject": "BLOCK_1188 SW",
+      "fileRows": 2
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1729_PS_DG",
+      "sourceProject": "BLOCK_1440_JC_DR",
+      "fileRows": 3
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1729_PS_DG",
+      "sourceProject": "BLOCK_1551_PS_DG",
+      "fileRows": 2
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1729_PS_DG",
+      "sourceProject": "BLOCK_1707_SW_AC",
+      "fileRows": 12
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1729_PS_DG",
+      "sourceProject": "BLOCK_1718_PB_IW",
+      "fileRows": 1
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1729_PS_DG",
+      "sourceProject": "BLOCK_1728_SH_AC",
+      "fileRows": 1
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1729_PS_DG",
+      "sourceProject": "BLOCK_1730_PB_PA",
+      "fileRows": 1
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1729_PS_DG",
+      "sourceProject": "HAA Stock Footage",
+      "fileRows": 1
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1729_PS_DG",
+      "sourceProject": "HAA_PROGRAMME_BUILD",
+      "fileRows": 4
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1729_PS_DG",
+      "sourceProject": "HAA_STOCKS",
+      "fileRows": 1
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1730_PB_PA",
+      "sourceProject": "BLOCK_1231",
+      "fileRows": 2
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1730_PB_PA",
+      "sourceProject": "BLOCK_1455_JC_DG",
+      "fileRows": 6
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1730_PB_PA",
+      "sourceProject": "BLOCK_1662_PB_PA",
+      "fileRows": 2
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1730_PB_PA",
+      "sourceProject": "BLOCK_1707_SW_AC",
+      "fileRows": 6
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1730_PB_PA",
+      "sourceProject": "BLOCK_1726_PB_DR",
+      "fileRows": 2
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1730_PB_PA",
+      "sourceProject": "BLOCK_1729_PS_DG",
+      "fileRows": 2
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1730_PB_PA",
+      "sourceProject": "HAA_ASSISTS",
+      "fileRows": 9
+    },
+    {
+      "fileAndPmrProject": "BLOCK_1730_PB_PA",
+      "sourceProject": "HAA_PROGRAMME_BUILD",
+      "fileRows": 8
+    }
+  ],
+  "perDatabase": [
+    {
+      "database": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "fileRows": 359,
+      "differingFileSourceRows": 0,
+      "differentPairs": []
+    },
+    {
+      "database": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "fileRows": 2,
+      "differingFileSourceRows": 0,
+      "differentPairs": []
+    },
+    {
+      "database": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "fileRows": 389,
+      "differingFileSourceRows": 0,
+      "differentPairs": []
+    },
+    {
+      "database": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "fileRows": 686,
+      "differingFileSourceRows": 34,
+      "differentPairs": [
+        {
+          "fileAndPmrProject": "BLOCK_1729_PS_DG",
+          "sourceProject": "HAA_STOCKS",
+          "fileRows": 1
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1729_PS_DG",
+          "sourceProject": "BLOCK_1551_PS_DG",
+          "fileRows": 2
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1729_PS_DG",
+          "sourceProject": "03_HAA_SFX",
+          "fileRows": 4
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1729_PS_DG",
+          "sourceProject": "BLOCK_1707_SW_AC",
+          "fileRows": 12
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1729_PS_DG",
+          "sourceProject": "HAA_PROGRAMME_BUILD",
+          "fileRows": 4
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1729_PS_DG",
+          "sourceProject": "BLOCK_1188 SW",
+          "fileRows": 2
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1729_PS_DG",
+          "sourceProject": "BLOCK_1440_JC_DR",
+          "fileRows": 3
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1729_PS_DG",
+          "sourceProject": "BLOCK_1728_SH_AC",
+          "fileRows": 1
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1729_PS_DG",
+          "sourceProject": "HAA Stock Footage",
+          "fileRows": 1
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1729_PS_DG",
+          "sourceProject": "BLOCK_1718_PB_IW",
+          "fileRows": 1
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1729_PS_DG",
+          "sourceProject": "BLOCK_1164",
+          "fileRows": 2
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1729_PS_DG",
+          "sourceProject": "BLOCK_1730_PB_PA",
+          "fileRows": 1
+        }
+      ]
+    },
+    {
+      "database": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "fileRows": 513,
+      "differingFileSourceRows": 18,
+      "differentPairs": [
+        {
+          "fileAndPmrProject": "BLOCK_1730_PB_PA",
+          "sourceProject": "HAA_ASSISTS",
+          "fileRows": 9
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1730_PB_PA",
+          "sourceProject": "BLOCK_1729_PS_DG",
+          "fileRows": 2
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1730_PB_PA",
+          "sourceProject": "HAA_PROGRAMME_BUILD",
+          "fileRows": 4
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1730_PB_PA",
+          "sourceProject": "BLOCK_1707_SW_AC",
+          "fileRows": 3
+        }
+      ]
+    },
+    {
+      "database": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "fileRows": 463,
+      "differingFileSourceRows": 19,
+      "differentPairs": [
+        {
+          "fileAndPmrProject": "BLOCK_1730_PB_PA",
+          "sourceProject": "HAA_PROGRAMME_BUILD",
+          "fileRows": 4
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1730_PB_PA",
+          "sourceProject": "BLOCK_1726_PB_DR",
+          "fileRows": 2
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1730_PB_PA",
+          "sourceProject": "BLOCK_1455_JC_DG",
+          "fileRows": 6
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1730_PB_PA",
+          "sourceProject": "BLOCK_1707_SW_AC",
+          "fileRows": 3
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1730_PB_PA",
+          "sourceProject": "BLOCK_1231",
+          "fileRows": 2
+        },
+        {
+          "fileAndPmrProject": "BLOCK_1730_PB_PA",
+          "sourceProject": "BLOCK_1662_PB_PA",
+          "fileRows": 2
+        }
+      ]
+    }
+  ],
+  "inputReceipts": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "bytes": 5159032,
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+      "bytes": 97250,
+      "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "bytes": 22745976,
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+      "bytes": 164660,
+      "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "bytes": 16616336,
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+      "bytes": 123140,
+      "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "bytes": 15703416,
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+      "bytes": 111140,
+      "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "bytes": 3668720,
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+      "bytes": 86754,
+      "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "bytes": 60680,
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+      "bytes": 392,
+      "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928"
+    },
+    {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "bytes": 73527536,
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+    },
+    {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+      "bytes": 14340208,
+      "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb"
+    },
+    {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "bytes": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-drives/curated.json",
+      "bytes": 249162,
+      "sha256": "d41e936deabf6b0f8a639fc055aa55db4bebf98684b98bf679ab1a0f5afecc39"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+      "bytes": 57405807,
+      "sha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+      "bytes": 277457615,
+      "sha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+      "bytes": 202174044,
+      "sha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+      "bytes": 191199626,
+      "sha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+      "bytes": 45335148,
+      "sha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-drives/shared-OMFI MediaFiles-values.json",
+      "bytes": 535484,
+      "sha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df"
+    }
+  ],
+  "probeReceipts": [
+    {
+      "path": "/private/tmp/bella-mdb-project-values-20261019/probe.py",
+      "bytes": 14859,
+      "sha256": "2c39d0c7a60467c85db7c3e492f7b20a9a6f2ea13eea00b85fd8f538343d3304"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-project-values-20261019/file-project-rows.json",
+      "bytes": 1868576,
+      "sha256": "0534f594348d7a7ffeff265ab60964fb245368dab8207ccba13280ad0faa5e3d"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-project-values-20261019/compact-summary.json",
+      "bytes": 12092,
+      "sha256": "fd6e5cabce793413cbe8cbf5e333936f434cadb909dd9bda5b1b801a38dc2e15"
+    }
+  ],
+  "limits": [
+    "Owner disagreement is distinct from duplicate attribute-key disagreement; no competing Project keys were observed on these owners.",
+    "A file and its source may describe different recorded associations. The records alone do not prove a particular reuse/import/consolidation history or that either stored value is corrupt.",
+    "Source Project is usable for666rows and absent for1746rows. PMR already supplies Project for all2412; no missing-PMR fixture is exercised.",
+    "No media/app/runtime files changed. Raw per-file details remain temporary; curated evidence contains requested Project names and aggregate pairs."
+  ]
+}

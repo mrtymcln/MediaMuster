@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "request": "How should Bella handle these two differences? Can we make Compression consistent between MDB and MXF while keeping the current naming system?",
+  "status": "JPEG2000 naming-only adapter and subsequent narrow alpha header identification rules approved22October2026; both unimplemented. Original proposed keys retained as historical research, superseded where follow-up/approval explicitly applies.",
+  "verifiedBaseline": {
+    "physicalPairs": 2411,
+    "equal": 2397,
+    "different": 14,
+    "alphaDifferences": 10,
+    "jpeg2000Differences": 4,
+    "reference": "Project Bella/evidence/mxf-mdb-compression-comparison-2026-10-22.json"
+  },
+  "proposedJ2K": {
+    "scope": "Compression naming input adapter for qualified own MDB OMFI:MDFL:SampleRate known ExactEditRate context and exact genericJ2K coding060e2b34040101070401020203010100. Preserve all existing helper raster/layout/depth/subsampling checks.",
+    "exactMappings": [
+      {
+        "recorded": [
+          2997,
+          100
+        ],
+        "naming": [
+          30000,
+          1001
+        ]
+      },
+      {
+        "recorded": [
+          23976,
+          1000
+        ],
+        "naming": [
+          24000,
+          1001
+        ]
+      }
+    ],
+    "expectedResult": "The four verified qualified pairs would both name J2K HD; source/branch design conclusion, modifiedadapter not executed.",
+    "unchanged": "Recorded SampleRate and agreed FrameRate/Duration interpretations, catalogue/label wording, othercodec logic.",
+    "excluded": "No tolerance, nearest-rate selection, blanket decimal conversion, extra file read or relaxed HD qualification."
+  },
+  "proposedAlpha": {
+    "knownMDB": "Keep existing eligible same-file MDB1:1Alpha8bit. Headerunavailability does not erase establishedMDBname under existing fallback.",
+    "proofBoundary": "A8PixelLayout does not prove uncompressed encoding; installed Avid packer defines both uncompressedAlpha8 andRLEAlpha8. Do not equate absentcoding with explicitlegacyNONE.",
+    "currentMXFMarkerCheck": "Fresh stable bounded samehash own RGBA header has no recognized ResolutionID orPictureEssenceCoding; privatewrapping060e2b34010101ff4b464141000d4d4f is not established as anuncompressedcodec marker. CodingEquations is not a compressionidentifier.",
+    "rule": "Use existing uncompressedalpha name only with separately verified coding/formatproof and supported ownalpha layout/depth. Never fabricateNONE/codingidentity just to feed existing helper. UnqualifiedcurrentMXF-onlycase supplies noCompression.",
+    "consistencyLimit": "Consistent displayedname possible whereMDBalready suppliesproof; independentMXF-onlyequivalence for these10files not established. Paddingfix suppliesdepth, not codecproof."
+  },
+  "primarySource": {
+    "url": "https://pub.smpte.org/latest/st377-1/st377-1-2019.pdf",
+    "sections": [
+      "G.2.25 PictureEssenceCoding",
+      "G.2.40 PixelLayout"
+    ],
+    "distinction": "Component layout/type/depth separatefromcoding."
+  },
+  "inputs": [
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/compressionnames_p.cpp",
+      "sha256": "fe5a52e5c1f932330f30e41e5d14465f75777959ad66fa4845133dde52945a82",
+      "bytes": 18766
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/compressionnames_p.h",
+      "sha256": "26fc69bad86718511987028cd87f4356488ccb1f47a7db2bb915b9154e1654ff",
+      "bytes": 1384
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbprojection.cpp",
+      "sha256": "75757ff663c541992768c502fa7b0887c4f31a02d23b7ec9e7b28532b160be5f",
+      "bytes": 65892
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+      "sha256": "c8c68e78db5f3efaa62235f55624c5478e89a0adc37581a922af050f931cad55",
+      "bytes": 63597
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_omfprojection.cpp",
+      "sha256": "fd8f664611e66782f1cf6b4ae09590664c42922940585fcf0f7e8eb859655877",
+      "bytes": 125360
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/packer.lua",
+      "sha256": "44b6cae25628de0077fcea9fd464be08e9f9dcef62b1f840a4ae60819e799a31",
+      "bytes": 27942
+    },
+    {
+      "path": "/private/tmp/bella-compression-alpha-markers-20261022.json",
+      "sha256": "d1ee38476179a923fb8855f3057701599ddc8857dd1019ff10d186d31efac3cb",
+      "bytes": 1518
+    },
+    {
+      "path": "/private/tmp/bella-compression-pairs-20261022/j2k-cause.json",
+      "sha256": "939922a67e370f13578110bda81d41c07dcdb514b47bfee2eb38b7274d8a4d00",
+      "bytes": 43414
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-mdb-compression-comparison-2026-10-22.json",
+      "sha256": "34bb33e4b57913d05c155ce9ebff9935c3604959482ce6ba1977a902649829b1",
+      "bytes": 49034
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/Project Canon/evidence/compression-name-source-evidence-2026-10-08.json",
+      "sha256": "0b1e052f4352a9f41f3636c84b055ce5515f5c71e0c1081ad9b422b2cecea90b",
+      "bytes": 44961
+    }
+  ],
+  "validation": {
+    "runtimeSourceChanged": false,
+    "modifiedAdapterExecuted": false,
+    "newProbeTestRun": false,
+    "freshBoundedAlphaHeaderMarkerCheck": true,
+    "mediaPayloadDecoded": false,
+    "independentReadOnlyReview": "Review confirmed narrowJ2Kinterpretation approach and rejected alpha-onlyuncompressedinference."
+  },
+  "references": {
+    "proposal": "docs/reviews/2026-10-21-bella-mxf/compression-consistency.md",
+    "plan": "Project Bella/README.md"
+  },
+  "scopeBoundaries": [
+    "Requirementreview beforeBella runtimeimplementation;OldScanner active.",
+    "Compression catalogue/helper unchanged; targeted J2K outputcorrection proposed.",
+    "No new sourcepriority or extraopenpolicy; fullprioritytable remains later.",
+    "UncommonBitDepthlabels and otherrequirements unchanged."
+  ],
+  "jpeg2000ApprovedBy": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-jpeg2000-consistency-plan-2026-10-22.json",
+    "date": "2026-10-22",
+    "statement": "Let's lock in the JPEG 2000 fix."
+  },
+  "alphaIdentificationFollowup": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-alpha-identification-2026-10-22.json",
+    "date": "2026-10-22",
+    "status": "Positive partition/Preface uncompressed RGBA marker found in all10. Subsequent narrow rule approved22October2026; unimplemented. JPEG approval scope unchanged."
+  },
+  "alphaApprovedBy": "Project Bella/evidence/mxf-alpha-identification-plan-2026-10-22.json"
+}

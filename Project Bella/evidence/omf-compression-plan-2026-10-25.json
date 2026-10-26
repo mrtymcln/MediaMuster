@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-25",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF Compression acquisition and integration rules, preserving current naming. Resolution review follows. No implementation or cutover.",
+  "authorization": {
+    "source": "Direct human user instruction",
+    "statement": "OK, let's lock those Compression rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Resolution from OMF, and what should Bella read and keep? Look for the simplest accurate approach.",
+    "scope": "Accepts equivalent validated own-descriptor identifiers/supporting facts, unchanged current naming helper/catalogue/results, shared audio summary decoding, guarded fallbacks and compact temporary lifetimes. No extra opens, new codec framework, Bin Filter change, final source-priority decision or runtime/cutover approval."
+  },
+  "agreedBellaRules": {
+    "ownerAndScope": "Qualified physical file own descriptor/owned supported summaries; agreed OMF/Bento1 scope and full-ID qualification. No master/source codec substitutes, new type aliases, QT/native-enum mapper or TIFF decoder.",
+    "nameResolver": "Keep CompressionFacts/compressionNames and dnxnames catalogue/decision order unchanged. Supply equivalent supported compact facts; preserve names, branding, exact historical aliases, family fallbacks, unknown/ambiguous outcomes and app/export outputs.",
+    "coding": "Full supported structured16-byte DIDD:EssenceCompression, correctly type/order-normalized to resolver label. No blind on-disk UL assumption, prefix match or version-byte rewrite. Present unknown/unreadable/damaged/conflicting required coding is not absence.",
+    "legacy": "Own typed DIDD:Compression String4 or5-with-terminal-zero and own typed4-byte DIDResolutionID in known numeric order. Preserve finite code/class/ID/coding-compatible mappings and verified absent-coding DNx-ID recovery only with established relevant completeness. MobId length and filename are unrelated.",
+    "nativeBoundary": "Native DIDCompressMethod Char4 is separate from serialized DIDD:Compression String. No new Bella alias. Native zero-to-NONE defaults, writer VCID transforms, low16 WAVE subtype shortcut and PCMA/MDAU AudioCodingFormat enums are not copied into naming rules.",
+    "auxiliaryFacts": "Preserve own stored naming geometry/field-height handling, naming clock plus narrow legacy DNx naming-only decimal interpretation, layout, raw component width/subsampling and necessary representation/alpha details. No inference from display columns or change to accepted Duration/Frame Rate maths. Existing approved J2K correction unchanged.",
+    "audio": "Decode own supported WAVD/AIFD summary once with Sample Rate/Bit Depth. Known WAVE format tag/full qualified extensible subtype and trueAIFF versus requiredAIFF-C code choose current PCM/IEEEfloat names. Human-readable AIFC description and container name are not encoding authority. Required bad/unknown encoding never becomes guessed PCM.",
+    "guardedFallbacks": "Narrow PCMA/contextualWAVE class/absence PCM fallback only if applicable required encoding context qualifies; never override known float or bypass required owned-summary code. No blanket audio/MPGA->PCM/MP2/MP3. Preserve OMF explicitNONE+qualifiedsolealpha; no MXF partition-marker rule transplant.",
+    "independentDetail": "Known family can remain named when only optional refinement is unavailable. Blank generic Bit Depth does not erase compact format details needed by Compression or settle open uncommon fixed-point generic labels. Generate transient compatible depth/format strings only as needed.",
+    "retention": "Keep owned current Compression and existing naming outputs required by app/export. Retain compact raw facts only for other agreed results; release temporary naming facts, raw summaries/indexes/graphs. Small adapter and ordinary shared functions; no per-column parser/class/registry/candidate history/dependency.",
+    "readingAndPriorities": "No extra file open, essence decode or source-policy change. Already accepted eligible already-read OMF/MXF preference over MDB stays; full priorities/opening/scheduling later. No claim all MDB/OMF same-file names agree or measured speed/memory/stability gain."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-compression-2026-10-25.json",
+    "sha256": "edb6373505919ce0eace744ad1ffb6d25ee5b7c9c7749c035858f3ce71e26a81"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/compression.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "newBinaryOrMediaResearchForApproval": false,
+    "newBuildsOrTestsForApproval": false,
+    "appCutover": false,
+    "performanceMeasured": false
+  }
+}

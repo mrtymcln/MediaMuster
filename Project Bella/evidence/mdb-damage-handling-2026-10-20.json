@@ -1,0 +1,1182 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-20",
+  "timezone": "Australia/Sydney",
+  "purpose": "Compare Media Composer, MDVx and current MediaMuster MDB damage handling; recommend isolated value/association failures versus whole database rejection.",
+  "status": "General MDB damage policy approved by the user on 2026-10-21. Research remains bounded static evidence, not runtime verification. Earlier field-specific recovery and Duration decisions remain approved. No Bella runtime implementation or cutover is authorized by this approval alone.",
+  "approval": {
+    "date": "2026-10-21",
+    "timezone": "Australia/Sydney",
+    "userStatement": "Your recommended rules sound good!  Honestly I find it way too confusing to think about as a non-coder.",
+    "decision": "Adopt the recommendedBellaBoundaries below: isolate damaged values and dependent record/link metadata within trustworthy shared structure; ignore all metadata from an MDB whose required shared structure is unusable; retain physical files and independent facts.",
+    "scope": "Requirements approval only. Preserve existing text, Duration and header-read policies; no Avid database repair or rewrite. Complete the remaining requirements review before Bella implementation. OldScanner remains active until explicit cutover approval."
+  },
+  "historicalPolicyStatusNote": "Embedded native/source receipts are preserved as research snapshots, including their original pending-policy wording. The top-level 2026-10-21 approval supersedes that wording for recommendedBellaBoundaries only; it does not convert research limits or future verification recommendations into runtime findings.",
+  "scope": {
+    "method": "Independent static native traces for MC and MDVx plus source/test-source review for current MediaMuster; no damaged live databases created or fed to apps.",
+    "productionCodeChanged": false,
+    "newAppExecutions": false,
+    "newPrivateApiExecutions": false,
+    "testsOrBuildsRun": false,
+    "databaseOrMediaWrites": false,
+    "mediaHeadersRead": false,
+    "measuredSpeedOrMemoryClaim": false
+  },
+  "mediaComposer": {
+    "date": "2026-10-20",
+    "method": "Bounded static disassembly and manual control-flow reconstruction; no runtime/app/private API execution, no damagedfixture experiment, no source ormediawrites.",
+    "binaries": [
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "bytes": 73527536,
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+        "bytes": 14340208,
+        "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb"
+      }
+    ],
+    "domainScope": "Legacy omfiHPDomain/omfiDualStream path used by retained LocalMDB loader; observed legacy MDB context. The native engine also has separate OMF2 domains. Do not generalize the legacy Bento1.0 label check into global rejection of all other layouts.",
+    "observations": [
+      {
+        "boundary": "missing or short scalar",
+        "functions": [
+          "omfiDualStream::ReadInt32 0xb7294",
+          "ReadRational 0xb84e4",
+          "ReadUID0xb66e8",
+          "ReadObjectReference0xb6e18"
+        ],
+        "finding": "ReadInt32 returns0 when translation is absent or a requiredread has wrongbytecount (genericcase4bytes). ReadRational returnsfalse if translation absent or<8bytes. ReadUID initializesNullMobID and only handles12or32bytepayload. ReadObjectReference returns0 for missingtranslation or<4byte result. These results can conflate unavailablewithzero/null; they are not a generic correct Bella policy. Actualseek/readexceptionsstillpropagate."
+      },
+      {
+        "boundary": "unsafe to copy native leniency",
+        "function": "ReadExactEditRate0xb696c",
+        "finding": "Requests8bytes at0xb6998 but only testsreturnedcountnonzero at0xb69a0 before loadingbothwords. Does not itself establishcomplete8bytepayload; static evidence only, not observedcrashorfixturefailure. Bella should requirecomplete supportedwidth."
+      },
+      {
+        "boundary": "value range/data pointer failure",
+        "function": "GetValueData0xb3778",
+        "finding": "Absentpropertyreturns0; otherwise aggregates fragments up torequestedsize. Seek/read exceptions are caught/logged and wrapped as Corrupt OMFI File: Bad data pointer at0xb3a80, raisedthroughoperator+(XError)0xb3a8c. MissingloadedobjectraisesInternalError at0xb37b8. PartialvaluebytecountswithoutI/Oexceptionscanreturntocaller."
+      },
+      {
+        "boundary": "container label/version",
+        "function": "CheckBentoLabel0xdda24",
+        "finding": "RaisesomfiHPDomain_BAD_MAGIC forstreamsize<=23 orIsOMFIFilefalse; explicitlegacyBento1.0 check raisesomfiHPDomain_UNKNOWN_VERSION otherwise. InitHPDomainOld0xda39c..3d4 separatelyacceptsII/MMobjectbyteorderandraisesUNKNOWN_BYTESEXforunsupportedvalue. Scopeisthislegacydomain,notallMCschemas."
+      },
+      {
+        "boundary": "TOC shared structure",
+        "function": "LoadTOCOffsets0xb4408",
+        "finding": "RaisesIllegal OMFI File: Corrupt TOC ifseed/minSeedmissing at0xb4594..b45ac. RaisesTOCentryoidnotbetweenminSeedandseed at0xb4920..4940, exceptexplicitlabelsentinelbranch. Stopsnormalinitialization,notfield-onlyabsence."
+      },
+      {
+        "boundary": "mob catalogue/index",
+        "function": "ReadMobIndex0xdf0ac",
+        "finding": "Forlegacyindexpayload,checks(length-2) multipleof20 at0xdf164..1a0 andcompletebytecount at0xdf1e8..20c; raisesCORRUPT_INDEX. DUPLICATE_INDEX at0xdf32c/354/37c checkswhethera mob-index/listpointeralreadyinstalled; it is NOT proofthat repeatedFileMobIdrowsarecorrupt. UnknownrequestedmoblistkindraisesUNKNOWN_MOB_TYPE."
+      },
+      {
+        "boundary": "required object reference",
+        "function": "GetObjectByID0xe370c",
+        "finding": "OutofdomainobjectIDraisesOBJECT_ID_OUT_OF_RANGE at0xe3750..768; ownobjectGetparseexceptionsaresafelycleanedup/restoredthenreraisedat0xe3b2c. ExplicittranslatedUNKNclassreturnsnull at0xe37bc..d0. Thisalone doesnotprovearbitraryunknownclasshandling."
+      },
+      {
+        "boundary": "native registry distinction",
+        "function": "AvidCore::NewByClassID0xb84d8",
+        "finding": "RegistryconstructorhasexplicitPCREG_UNKNOWN_CLASSID catchand AUnknown substitution0xb8740..87bc; otherexceptionsreraised0xb87d0. Noend-to-endMDBarbitraryunknownclasspreservationclaim: MDB TranslateTag/FindClassName runsbeforeconstructor."
+      },
+      {
+        "boundary": "mob-level catches",
+        "function": "LocalMDB::ScanOMFFileToMobManager0x414fd8",
+        "finding": "LogicalmobloophaslocalXError/catch at0x4155d8..624 and0x4156f8..99c, logsErrorreadingmobconditionedbydebugflag, thenreraisesat0x415998ifcapturedXErrornonempty. Thereforepresenceofcatchdoesnotproveignorebadrecordandcontinue. Physicalmob/outerfailurepathalsoexists; badmagicmapsreturnstatus4at0x4159d4..e8; othernonemptyerrorspropagateat0x4159fc. Completepartialrollback/cacheeffectsnottraced."
+      },
+      {
+        "boundary": "directory/database failure",
+        "function": "LocalMDB::LoadMobsFromMDB0x413718",
+        "finding": "CallsScanOMFFileToMobManagerat0x413f3c, thenclosesMDBstream0x413fb8. Nonemptyperdirectoryerrorbranches0x414034..120 constructAnerroroccurredloadingmediadatabase andinvokeUIdialog; diagnosticFailureoccurredloading.mdbfromdir. BASE_USER_ABORT is propagated;OUTOFMEMORY separatelyhandled. Normalhandledfailurecontinuesnextdirectoryat0x414184..1a4. Thisprovesaboundedreport-and-nextdirectorypath,notguaranteedallerrorsrecoverorallpartiallyloadedmobsrolledback."
+      },
+      {
+        "boundary": "exception semantic proof",
+        "functions": [
+          "AvidCoreoperator+(XError)0xc840",
+          "xraisexerror0xc678"
+        ],
+        "finding": "operator+ checksnonemptyXErrorthenallocatesandthrowsC++XError at0xc994..c9bc; xraisexerroralsoallocatesandthrows at0xc78c..c7b4. Errorstringsinlistedraisecontrolflowsareactualexceptionpaths,notmereloggingstrings."
+      }
+    ],
+    "notEstablished": [
+      "Universal MediaComposer GUI handling for everydamagedMDB/property",
+      "Automaticrebuild/deletion/quarantine/repairfortheseerrors",
+      "All-formatpartialrecordrollbackorcachecontentsafterfailure",
+      "DamagefoundinactualattachedMDBs",
+      "A universalrulethatonebadfieldinvalidateswholeMDB,oronebadrecordalwaysgetsskipped",
+      "PrivateABIbehaviornotstaticallytracedhere"
+    ],
+    "bellaRecommendationInference": "Useindependentlynewsmalltypedreaders: missingorunusablefieldonlyinvalidatesdependentvalue; associationfailureonlyinvalidatesdependentjoin; shareduntrustedTOC/bounds/dictionaryboundarypreventsMDBuse. Keepallphysicalfilesandotherindependentvalidmetadata. Generaldamagepolicyrequiresuserapproval; nativezerodefaultsandlenientchecksarenotproposedcopy.",
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/CheckBentoLabel.txt",
+        "bytes": 6419,
+        "sha256": "5158c1b007c8c461df96710ce0c4225ebcc558d0c5e5ecccb43fe37682a66ded"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/ChkReadCallback.txt",
+        "bytes": 3508,
+        "sha256": "a13499fb39c7047c0da70826cadf537ea63ed5c63efb59acef4998500fea322d"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/Core-NewByClassID.txt",
+        "bytes": 10318,
+        "sha256": "1a18a4918933873880a0c334ae453211c1aa627aedd63e940e0475b050c9ca4e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/Core-XError-operator-plus.txt",
+        "bytes": 5221,
+        "sha256": "46c73a3d7c1e5dd27e3e4b64ca8e41f66f2b261007dff159dd47d64b2ead5553"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/Core-xraisexerror.txt",
+        "bytes": 5304,
+        "sha256": "0e222f1931b647740fdebeaa49fe2819e1832c6a2a0250cad4015ca1fa0bbe3f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/GetObjectByID.txt",
+        "bytes": 13866,
+        "sha256": "1ab6decb3d1c8ee6e82596ae069c70266534c8ccecd6b52650dfc0318421ba98"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/GetValueData.txt",
+        "bytes": 12007,
+        "sha256": "6aeb8a34f5d7402970c0822b55f4333914be53d6fd27dae32ea9be1bde7b788f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/HPNew.txt",
+        "bytes": 13520,
+        "sha256": "cb18a2abb8f372d2cae0f120051fba8f11ca9b517a4f37637d36f70637924208"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/InitHPDomainOld.txt",
+        "bytes": 28530,
+        "sha256": "7f89a0db52972060421e8c70f8a8d788933d039fbcbc87a7324303f6832bad39"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/LoadBentoObject.txt",
+        "bytes": 19777,
+        "sha256": "55cbc57b2a647fa24cf6153f4de1a295f2ca532388a7d70f5601da6d4c15eeb0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/LoadTOCOffsets.txt",
+        "bytes": 17352,
+        "sha256": "e782659b675e15c9a2a0c936144ff08ecd2b555f853ccb55a68a13ab2a123f95"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/LocalMDB-LoadMDB.txt",
+        "bytes": 332,
+        "sha256": "1a4518111c010154e6f82f575006fab4d0c66baab07ab496e24f610b7934583d"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/LocalMDB-LoadMobsFromMDB.txt",
+        "bytes": 54191,
+        "sha256": "128693af9c3151dfbce83b2ad392b587cea7c7f0650eb410139c978ae8cb606f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/LocalMDB-ScanOMFFileToMobManager.txt",
+        "bytes": 47762,
+        "sha256": "a6958c8426bcdc3b214850d91469db7e6cec5748cd1f08f14a3e17aa78523392"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/MediaStreamMgr-LoadMDB.txt",
+        "bytes": 26004,
+        "sha256": "8cf7b48f78ce2b371912ead157caba589d2c19dc8079d5a470a1dc7ebcd640bf"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/MediaStreamMgr-ScanOMFFileToCache.txt",
+        "bytes": 39657,
+        "sha256": "815d54e3905e463dd247e6bf3a21d63926d79efc8945e11ef88391252171c36a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/ReadCallback.txt",
+        "bytes": 9177,
+        "sha256": "7a0a64436b7b6fd0d3ac539ccb2f54410756ecd9d92fbe52c509d8bf68225803"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/ReadCallbackWithID.txt",
+        "bytes": 8878,
+        "sha256": "077546610d65dd4bb3f4d540fcf42d4bcff0d61f90e57e6d0aa0bcafb7e68abd"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/ReadExactEditRate.txt",
+        "bytes": 2677,
+        "sha256": "db6bef0a86cbbba27ef0288defee3874a5c42e1f5dd50a62689cc2cc6fa07ade"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/ReadInt32.txt",
+        "bytes": 3783,
+        "sha256": "d75d660eb157ae619aa07773a1267af33dd9828aa2cf7739a096bd988d38fa3f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/ReadMobIndex.txt",
+        "bytes": 17838,
+        "sha256": "c71ef6e34181494c5e5577d9aee05007352f9d1e9300df5cebf2fe9477b895da"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/ReadObjectReference.txt",
+        "bytes": 953,
+        "sha256": "d0e06f7d1afb88b759c8a5196182f6f056a735e2573f49587faa4c2c804af70b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/ReadRational.txt",
+        "bytes": 1570,
+        "sha256": "847a480b7979ec2b7e0d55cc3ca00f1811a9a213dcb3022a976daf984ea997e0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/ReadUID.txt",
+        "bytes": 4403,
+        "sha256": "bebb739fab82403bef8304652bb4c8a9002cdda19b65811ce10ed1888bf30f32"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-native/TranslateTag.txt",
+        "bytes": 15912,
+        "sha256": "740307654a8bc7a49e859d50eaa6fcf41f51b3a97dbefe6e4986df152e647ed1"
+      }
+    ]
+  },
+  "mdvx": {
+    "purpose": "Read-only bounded static trace of installed MDVx ordinary MDB damage handling for Bella requirements comparison. No product policy is approved by this evidence.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "bytes": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "CFBundleShortVersionString": "0.2",
+      "CFBundleVersion": "4073",
+      "architectureInspected": "arm64"
+    },
+    "method": {
+      "retainedDisassembly": {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-disassembly.txt",
+        "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074"
+      },
+      "freshConfirmation": "Five bounded routines freshly disassembled from installed binary with otool -arch arm64 -tvV -p; each exactly matched the retained function text.",
+      "noApplicationExecution": true,
+      "noMDBOrMediaReads": true,
+      "noProductSourceEdits": true
+    },
+    "container": {
+      "function": "-[MDVxOMFI openFile:withIndicator:]",
+      "address": "0x100061c10",
+      "defensiveChecks": [
+        {
+          "addresses": "0x100061cac..1ce8",
+          "behavior": "Returns false for a nil URL, NSData load failure, or file length below 128 bytes."
+        },
+        {
+          "addresses": "0x100061d00..1d24",
+          "behavior": "Reads the final 24-byte trailer and requires literal 64-bit magic 0xd7726448a54d43a4."
+        },
+        {
+          "addresses": "0x100061d3c..1dc4",
+          "behavior": "Trailer word at +0xc equal to 2 routes to OMFiTOCReader02. That function only logs OMF 2 not supported; open returns false."
+        },
+        {
+          "addresses": "0x100061dc8..1e44",
+          "behavior": "For other version words, requires file length >= declared TOC length, builds TOC base = file base + raw 32-bit offset, runs OMFiTOCReader01, and reports a nonzero Bento object count as success."
+        }
+      ],
+      "staticValidationLimits": [
+        "No complete TOC span check, offset + length <= file length, appears before the initial TOC walk.",
+        "No explicit exact multiple-of-24 check appears. OMFiTOCReader01 obtains the entry count by integer division of declared TOC length by 24.",
+        "The explicit version-2 refusal is not an accepted-version whitelist: other word values use Reader01.",
+        "Endian selection tests marker 0x4949. This boundary does not separately prove every other marker is valid.",
+        "Success based on a nonzero object count does not establish complete required properties, wire types, associations, or semantic validity."
+      ],
+      "wholeFileOutcomeQualification": "Obvious open failures return false. Ordinary PMR scanner 0x10003a398..3a3a8 does not branch on that boolean; it retains the wrapper and continues PMR handling. The wrapper count getter checks successful open, whereas addInfo dispatch uses a capability bit rather than the open flag. A fresh reader has no UID tree matches after early failure. This is not a transactional quarantine of every partially parsed MDB."
+    },
+    "commonValueAccess": {
+      "function": "-[MDVxOMFI pDataFor:]",
+      "address": "0x100061eac",
+      "checks": [
+        {
+          "addresses": "0x100061ebc..1ee4",
+          "behavior": "Returns null for index UINT32_MAX, a zero TOC count, a missing TOC base, or a missing file base. Compares the entry index against the TOC count."
+        },
+        {
+          "addresses": "0x100061ef0..1f08",
+          "behavior": "Returns null for a zero declared payload length."
+        },
+        {
+          "addresses": "0x100061f10..1f30",
+          "behavior": "When the raw 32-bit storage word equals 1, returns null unless raw offset + declared length fits the NSData length."
+        }
+      ],
+      "staticLimits": [
+        "The index comparison rejects index > count, not index >= count, so the routine itself admits the one-past-count index.",
+        "Other raw storage-word values return a pointer into TOC + 12. There is no explicit rejection of an unknown storage form, or inline payload length <= 4 check here.",
+        "A successful pointer does not prove the expected wire type or a caller-required scalar/array size. External extent checks do not repair a previously invalid TOC span."
+      ]
+    },
+    "propertyAndString": {
+      "propertyLookup": {
+        "function": "-[MDVxOMFI lookForProperty:At:]",
+        "address": "0x100063bb0",
+        "behavior": "Finds the requested property ID within consecutive equal-object-ID entries. Returns 0 when the object changes without a match.",
+        "staticLimits": "Reads starting and subsequent TOC entries directly, with no explicit TOC-count bound or starting-index validation in this routine."
+      },
+      "stringLookup": {
+        "function": "-[MDVxOMFI GetStringForObjectAt:]",
+        "address": "0x100063a58",
+        "behavior": "Scans recognized text property IDs, uses pDataFor, requires a nonzero declared length, constructs NSString with an explicit length, returns nil if construction/decoding returns nil, and otherwise trims its recorded terminator character set.",
+        "addresses": [
+          "0x100063a68..3af0",
+          "0x100063af4..3b44",
+          "0x100063b48..3bac"
+        ],
+        "encoding": "Existing endian-selected NSASCIIStringEncoding (1) for II and NSMacOSRomanStringEncoding (30) for the other branch. This is not Bella approved text policy and not the browser UTF-8 branch.",
+        "staticLimits": "No per-record transaction, explicit strict UTF-8 validation, or expected Bento wire-type check. Scans continue based on object-ID change, without an explicit count bound. Decode failure gives nil rather than rejecting the whole MDB."
+      },
+      "valueFailureGranularity": "Missing/null values typically skip that field or branch. addInfoToItem updates name, usage, rate, project, and technical fields at different points; it does not roll back previous successful fields if a later one fails."
+    },
+    "referenceAndTypedReads": {
+      "examplesWithChecks": [
+        {
+          "function": "-[MDVxOMFI addInfoToItem:]",
+          "addresses": "0x100064838..48bc",
+          "behavior": "Missing master/file UID tree hits become -1 object indices and their associated enrichment branches are skipped."
+        },
+        {
+          "function": "-[MDVxOMFI addInfoToItem:]",
+          "addresses": "0x100064948..4994",
+          "behavior": "The master edit-rate pair declared length must be at least 8 and pDataFor must be nonnull before the two 32-bit loads."
+        },
+        {
+          "function": "-[MDVxOMFI getCompression_data:forObjAt:]",
+          "addresses": "0x100064bf8..4c30",
+          "behavior": "The audio-rate pair also has nonnull and declared-length >= 8 checks."
+        },
+        {
+          "function": "-[MDVxOMFI getProjectNameForObjAt:]",
+          "addresses": "0x100064f60..4fb0",
+          "behavior": "For the reviewed source UID value, accepts declared lengths 12 or 32. Other lengths route to logging rather than that UID lookup."
+        }
+      ],
+      "examplesWithIncompleteLocalValidation": [
+        {
+          "function": "-[MDVxOMFI OMFiTOCReader01]",
+          "addresses": "0x1000622ec..2494",
+          "behavior": "Root Mob index arrays check pDataFor for nonnull, then read a 16-bit count and stride 20-byte entries. No check here establishes that the declared payload holds 2 + 20 * count bytes."
+        },
+        {
+          "function": "-[MDVxOMFI addInfoToItem:]",
+          "addresses": "0x1000649b4..4aa4",
+          "behavior": "Attribute-reference arrays check null, then read a count and stride 8 bytes without a local 2 + 8 * count check. Import-prefix comparison reads 14 bytes after only a nonnull pointer check."
+        },
+        {
+          "function": "-[MDVxOMFI getProjectAttributeForObjectAt:]",
+          "addresses": "0x10006525c..531c",
+          "behavior": "The counted attribute-reference walk similarly uses 8 bytes per entry and checks absent targets, but without a local declared count-span validation."
+        },
+        {
+          "function": "-[MDVxOMFI getCompression_data:forObjAt:]",
+          "addresses": "0x100064cac..4cc4",
+          "behavior": "DIDResolutionID pDataFor result is followed by a 32-bit load without a local null or length guard."
+        },
+        {
+          "function": "-[MDVxOMFI getCompression_data:forObjAt:]",
+          "addresses": "0x100064d88..4da4",
+          "behavior": "The bits value has a null guard but a 32-bit load without a declared-width check. Prior Bit Depth evidence showed actual PCMA 2-byte immediate values padded with zero in the corpus, not an observed misread."
+        },
+        {
+          "function": "-[MDVxOMFI addInfoToItem:]",
+          "addresses": "0x10006490c..4930",
+          "behavior": "UsageCode is read directly from TOC + 12 without the general extent accessor or width/type/storage checks. Prior Type corpus evidence showed all selected actual values were compatible with this path."
+        }
+      ],
+      "consequenceQualification": "These static paths expose missing validation and possible invalid reads or misinterpretation on constructed malformed input. No malformed MDB was executed, no actual crash was observed, and no universal crash claim is made."
+    },
+    "exceptionsAndCancellation": {
+      "ordinaryOperationHandler": {
+        "function": "-[MDVxPMRScannerOperation main]",
+        "addresses": "0x10003a958..3aa4c",
+        "behavior": "One Objective-C catch handler logs Exception adding to foundClips and Item path, ends the catch, and branches to current-row release/increment and the next PMR row. A nonmatching exception selector branches to cleanup/unwind.",
+        "scopeQualification": "This establishes ordinary PMR-operation row exception handling, not all MDB open/TOC/member reads being protected. Full LSDA protected call ranges were not reconstructed. No separate MDB-reader-local exception handler was identified in the bounded reader functions. Objective-C catch handling does not establish recovery from native invalid memory access."
+      },
+      "readerCancellation": "OMFiTOCReader01 queries Status isRunning around progress updates; its false branch still continues parsing. No isCancelled poll or parse abort was found in the captured TOC/object/value/reference bodies. This does not claim the whole application has no cancellation."
+    },
+    "bellaDesignInferenceNotApproved": [
+      "Require a trusted complete TOC/container before using any MDB metadata. Structural offset/span/count/storage failures mean rejecting this MDB rather than resynchronizing or trusting a valid-looking prefix.",
+      "Within a trusted container, an invalid optional typed value can be unavailable individually. Preserve independent valid fields and all physical files.",
+      "Missing, damaged or ambiguous identity/owner references invalidate dependent association/field results. Never join with guessed, truncated, or first-found IDs.",
+      "Check bounds, type and declared count before scalar, array, string or reference access. Preserve agreed field-specific fallback and display rules. No MDB repair, media writes, automatic encoding guess, or new header-read policy is justified by these MDVx findings."
+    ],
+    "limits": [
+      "Bounded ordinary MDB enrichment trace. Raw-browser diagnostic paths are not used as ordinary output policy.",
+      "Static reverse engineering of one installed binary, not a fuzzing campaign, memory-safety proof, or complete whole-application exception audit.",
+      "No MDB, media or application was executed or rewritten. No product implementation or requirements edits were performed."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxMediafile_SetDataSource.txt",
+        "bytes": 3119,
+        "sha256": "d30576eaa3c31da05b3ce6f1f58eafbe213a6ef05f1ad1ed3d86436280ad2993"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxMediafile_addInfoToItem.txt",
+        "bytes": 792,
+        "sha256": "855362f4b6fdf88b181503c6fffd87680a2339dc4286a1e770438c2f81779152"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxMediafile_getMDBCompositionsCount.txt",
+        "bytes": 856,
+        "sha256": "8c3139c0bdbb7e2f6e993195f15e178ab114bfa5a833e33175ea4bf977e33464"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxMediafile_init.txt",
+        "bytes": 2745,
+        "sha256": "41923c12ea2a3f2af4e44e1b88ec2367af63d9551e5e204cc32774aadbd815fc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxMediafile_openFile_withIndicator.txt",
+        "bytes": 4273,
+        "sha256": "918afaa90acd4e5aed2a4ff0a26791c2dc51f223f72539cec46cb95edab893c0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_GetStringForObjectAt.fresh.txt",
+        "bytes": 3469,
+        "sha256": "0c0a905402cf8e8a111c74781c8aaa7af858cac9bd5e44213465d5d558807e02"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_GetStringForObjectAt.txt",
+        "bytes": 3469,
+        "sha256": "0c0a905402cf8e8a111c74781c8aaa7af858cac9bd5e44213465d5d558807e02"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_InitDictionary.txt",
+        "bytes": 15844,
+        "sha256": "4c66cede9e0d88261f79bca2bcb0df897b8997cde045eb01cb9de4f66a186318"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_OMFiTOCReader01.txt",
+        "bytes": 13506,
+        "sha256": "aabeb26f44a9e142eeb1f171d53de76600b151006b9a0abcef9ca007e8fba627"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_OMFiTOCReader02.txt",
+        "bytes": 1197,
+        "sha256": "422d4132137d1a9a2dbbddc547717fb240bf3f3f9cc6609e33e5d03247e17d77"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_addInfoToItem.txt",
+        "bytes": 9424,
+        "sha256": "c1097f5a0d8ab935e22379d9737a89b4a7e0f0676ed2959d827684f241978b3a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_dealloc.txt",
+        "bytes": 1688,
+        "sha256": "8460b99858224e2bfa990801401a06c11b05f4cd8153f1e3ca02afb5cc1bc40c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_getCompression_data_forObjAt.fresh.txt",
+        "bytes": 5493,
+        "sha256": "9ce588c5093400d37b9276d1689742616bb591da98f7a419e893471b0046a2e3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_getCompression_data_forObjAt.txt",
+        "bytes": 5493,
+        "sha256": "9ce588c5093400d37b9276d1689742616bb591da98f7a419e893471b0046a2e3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_getMDBCompositionsCount.txt",
+        "bytes": 95,
+        "sha256": "2deff9c3f450bae1af53e70131d8b9c19c500363e4aba9769e32751a7b128a32"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_getProjectAttributeForObjectAt.txt",
+        "bytes": 3401,
+        "sha256": "2dbb0e44652d9a237b5a2fd6f65c163fd527e87996d203abb48db2cc09ac2f6f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_getProjectNameForObjAt.txt",
+        "bytes": 10709,
+        "sha256": "a07afd55a76b9fc076f99135b6abff37bf155b393bd35ea8ad7d120d783e604a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_howManyBentoObjectsV01.txt",
+        "bytes": 701,
+        "sha256": "240e9a5b87e27eb0a9104f9be0dc746224fcd8f1f4fae251a0c346b27356c15c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_init.txt",
+        "bytes": 3906,
+        "sha256": "7458933a1b05ed83d5f9f5d59d3f37c278969cfef3b723163cc21d96a3e9adba"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_lookForProperty_At.fresh.txt",
+        "bytes": 559,
+        "sha256": "9b2bae1244433defc604c74abb1908cc9274e2faf8e7cbb47bb58ba4ec2852c7"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_lookForProperty_At.txt",
+        "bytes": 559,
+        "sha256": "9b2bae1244433defc604c74abb1908cc9274e2faf8e7cbb47bb58ba4ec2852c7"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_openFile_withIndicator.fresh.txt",
+        "bytes": 5748,
+        "sha256": "a955bfbb112157739d65e0391becf85414dd12ac96367c6ef474cb2412ccba08"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_openFile_withIndicator.txt",
+        "bytes": 5748,
+        "sha256": "a955bfbb112157739d65e0391becf85414dd12ac96367c6ef474cb2412ccba08"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_pDataFor.fresh.txt",
+        "bytes": 1650,
+        "sha256": "75e55bd0c41f90de4a3415912b10c99baa90f72d4ce45c0c4ab987f2a8bcd7ef"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_pDataFor.txt",
+        "bytes": 1650,
+        "sha256": "75e55bd0c41f90de4a3415912b10c99baa90f72d4ce45c0c4ab987f2a8bcd7ef"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxPMRScannerOperation_main.txt",
+        "bytes": 46076,
+        "sha256": "8fe130b7ce11347c17412389b4eb320ffd7dd21ff3aade72d8353e6b0162710f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxRBTree_TreefindNode.txt",
+        "bytes": 3284,
+        "sha256": "5b94f5e798b2b621e261787bbb6e4935251ef1e6527d2e409fa19c05afe82b30"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/fresh-disassembly-commands.json",
+        "bytes": 2265,
+        "sha256": "36c2a4d2f31ef78b38f5a3b8bdd091cd4112850e115957f9c25550a4d38613f8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/function-artifacts.json",
+        "bytes": 3822,
+        "sha256": "b8dd57664225508ffc45e35bb1260624f116b88c4c166f126f43a266a5aa46a5"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/resolved-cfstrings.json",
+        "bytes": 10354,
+        "sha256": "4b8dfeba89349b76439f1068dab9d4938eb007a56034d8c61f25b8ef388d4ed2"
+      }
+    ]
+  },
+  "mediaMuster": {
+    "date": "2026-10-20",
+    "scope": "Current MediaMuster/OldScanner MDB damage handling: source-only audit; no builds, app runs, new runtime tests, mutated media, or source edits",
+    "sources": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/databaseimage.cpp",
+        "sha256": "4f0d4c9e6c2e06909f63ee8ade22c90d566bc876ccaaa1c7afcf7d126909e662"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/databasesource.cpp",
+        "sha256": "fe4235c24e024ffd31431c68e01a40626188e1e8ed46d1212f6adad40b84f6b8"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbbentoreader_p.cpp",
+        "sha256": "92e281f63f7d3903e011cf84d24003332f3dffa12c49e72142ec0d3ff1d42fd0"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbobjects_p.cpp",
+        "sha256": "21a013b4de7a3e346553e2f4bef73404e9d3c63551f6653aa9403a7128244814"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbprojection.cpp",
+        "sha256": "75757ff663c541992768c502fa7b0887c4f31a02d23b7ec9e7b28532b160be5f"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+        "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+        "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginemdb.cpp",
+        "sha256": "ffa222e5ff96d58947ef00906f1c316b7b7bc3ddf5234bbe5f6af738a8128491"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_omfprojection.cpp",
+        "sha256": "fd8f664611e66782f1cf6b4ae09590664c42922940585fcf0f7e8eb859655877"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginescan.cpp",
+        "sha256": "3a349703d4932ac7cdfa568fbd6053c1d45fc12f22606dffbb5cce1b3cfe5c68"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginedatabase.cpp",
+        "sha256": "44ffe3a63cf82085db3171286ac65b3b4bf598827c13989dc0c86bfec57b4f7a"
+      }
+    ],
+    "findings": [
+      {
+        "finding": "Production database wrapper acquires an entire binary RAM image; open/read/length-change/cancellation failure prevents MDB parser and projection from running. Short successful reads loop; short EOF incomplete.",
+        "refs": [
+          "databaseimage.cpp:31-96",
+          "databasesource.cpp:69-90"
+        ]
+      },
+      {
+        "finding": "Bento 1/2 framing checked. Invalid whole label, TOC outside label, unsupported label flags/version/update instructions/opcodes, truncated entries/boundary violations stop container decode with diagnostic and explicit outcome. Already read values remain retained.",
+        "refs": [
+          "mdbbentoreader_p.cpp:101-142",
+          "mdbbentoreader_p.cpp:227-255",
+          "mdbbentoreader_p.cpp:308-380",
+          "mdbbentoreader_p.cpp:392-410"
+        ]
+      },
+      {
+        "finding": "Bounded per-value extent/continuation fault marks specific value Unreadable and overall Malformed; continuation identity mismatch starts next distinct value and decode can continue. No unconditional global gate on noncomplete parser outcome at projection or matching.",
+        "refs": [
+          "mdbbentoreader_p.cpp:166-228",
+          "mdbprojection.cpp:284-295",
+          "scancoordinator.cpp:559-562"
+        ]
+      },
+      {
+        "finding": "Object layer preserves duplicate ordered scalars and unknown properties; ambiguous dictionaries are left unnamed; absent/conflicting OMF revision leaves revision-dependent values raw; absent/conflicting HEAD order leaves multibyte numeric values raw. Invalid explicit UTF8 marks value unreadable instead of replacement decoding.",
+        "refs": [
+          "mdbobjects_p.cpp:28-64",
+          "mdbobjects_p.cpp:271-317",
+          "mdbobjects_p.cpp:389-414"
+        ]
+      },
+      {
+        "finding": "Invalid widths/types can remain Present/raw with no decoded value rather than global parse failure. Observation layer converts Present with unusable value to Unreadable. Bad reference tables/keys retain unresolved relationships; no guessed target.",
+        "refs": [
+          "mdbobjects_p.cpp:417-601",
+          "projection.cpp:74-82"
+        ]
+      },
+      {
+        "finding": "Required active catalogs are strict global projection boundary: missing/bad OMF revision or incomplete invalid ObjectSpine (v1), HEAD:Mobs/HEAD:MediaData (v2) emits no file/master projection. Includes duplicate catalog properties even same contents. Optional v1 typed index disputes affect relevant mob ownership.",
+        "refs": [
+          "mdbprojection.cpp:439-600"
+        ]
+      },
+      {
+        "finding": "Sound catalog/identity/descriptor allow sound per-file technical facts despite damaged unrelated values. Unreadable/conflicting identity or descriptor relationship removes physical association, damaged master linkage removes editorial attachment but sound descriptor metadata survives.",
+        "refs": [
+          "mdbprojection.cpp:264-280",
+          "mdbprojection.cpp:304-419",
+          "mdbprojection.cpp:620-747"
+        ]
+      },
+      {
+        "finding": "Duplicate scalar conflicts/malformed duplicates are not first/last wins; unique helpers withhold field. Ordered repetition such as VideoLineMap is valid and retained. UTF8 modern unusable can fall back to distinct legacy binName; conflicting modern nonempty fields do not silently choose legacy.",
+        "refs": [
+          "mdbprojection.cpp:38-69",
+          "mdbprojection.cpp:902-923",
+          "tests/tst_mediaenginemdb.cpp:648-666",
+          "tests/tst_mediaengine_omfprojection.cpp:1648-1690"
+        ]
+      },
+      {
+        "finding": "Current scheduler broadly opens media headers if no complete usable PMR+MDB match or missing/conflicting required table fields; one unknown UTF8 field may globally change source outcome Incomplete and thereby trigger header scan even if unrelated to required values. Future Bella specific approved no-open rules must override this behavior.",
+        "refs": [
+          "scancoordinator.cpp:145-178",
+          "scancoordinator.cpp:559-562",
+          "scancoordinator.cpp:639-693"
+        ]
+      },
+      {
+        "finding": "Filesystem physical rows independently retained. Current MDB status needs positive qualified reference to mark Listed and only complete file-reference coverage establishes absence. One good record survives damaged sibling and can prove listed; no match on broken catalog means unresolved, not absent.",
+        "refs": [
+          "scancoordinator.cpp:587-617",
+          "tests/tst_mediaenginescan.cpp:478-513",
+          "tests/tst_mediaengine_omfprojection.cpp:210-350"
+        ]
+      },
+      {
+        "finding": "Database capture checks changing size; coordinator rechecks existence+lastModified (not hash/lock/identity) against discovery, excludes changed source facts; final one bounded header fallback pass for prior skips, not endless retry. Same-size content mutation with unchanged mtime not established detectable.",
+        "refs": [
+          "databaseimage.cpp:83-96",
+          "scancoordinator.cpp:282-354",
+          "scancoordinator.cpp:705-732"
+        ]
+      }
+    ],
+    "testSourceCoverage": {
+      "tests/tst_mediaenginemdb.cpp": [
+        "ambiguousDictionariesAndUnknownSchema (170)",
+        "referenceMapsAndAmbiguity (291)",
+        "textEncodingIsPerProperty (316)",
+        "ambiguousContextAndTimestampShapes (368)",
+        "compactWidthsBoundariesAndIncompleteContinuations (407)",
+        "realOrderedRepeatedScalars (648)",
+        "truncationAndCorruption (669): every synthetic truncation not Complete, bad range retains objects",
+        "shortReadsCancellationAndFailures (692): short reads, I/O, partial cancel, changing size"
+      ],
+      "tests/tst_mediaengine_omfprojection.cpp": [
+        "mdbFileReferenceCoverage (210-350): independent damaged sibling, reference vs technical/editorial coverage",
+        "requiredContentsLists (486-539): seven damages across roots, no projection",
+        "incompleteDependentReferences (820-910): descriptor vs attribute vs editorial branch",
+        "checkedAbsenceRequiresCompleteNamedObject (1555-1587)",
+        "originalBinTextPriority (1648)"
+      ],
+      "tests/tst_mediaenginescan.cpp": [
+        "conflicting_active_database_identity_cannot_disappear_during_matching (450)",
+        "damaged_database_contents_list_reads_header_and_keeps_physical_row (478)",
+        "incomplete_or_conflicting_table_metadata_reads_header (916)",
+        "a_database_changed_after_a_skip_triggers_header_fallback (1138)",
+        "ambiguous_master_keeps_physical_facts_and_all_header_checks (1288)"
+      ]
+    },
+    "verificationLimits": [
+      "Tests were read, not executed during this task. No measured corrupt real-database behavior claimed.",
+      "Container Outcome::Complete does not mean semantically complete, supported or consistent; malformed outcome alone does not guarantee all retained facts unusable.",
+      "Useful Bella simplification is boundary-based rejection with compact states and diagnostics, not full retention of every raw property or whole-graph repair."
+    ],
+    "sourceDerivedRiskNotReproduced": {
+      "finding": "A stopped TOC decode retains earlier values, and projectMdb does not blanket reject Malformed/Unsupported/Incomplete. If the decoded prefix already contains usable required catalogs and identities, later framing damage may not prevent facts from being selected even though unseen entries could contain duplicates/conflicts. This code-path implication was not tested against a constructed corrupt MDB during this source-only audit.",
+      "refs": [
+        "mdbbentoreader_p.cpp:392-410",
+        "mdbprojection.cpp:284-295",
+        "scancoordinator.cpp:559-562"
+      ],
+      "bellaBoundary": "Complete trusted TOC plus bounded isolated payload defect may salvage unrelated facts. Incomplete/untrustworthy structural TOC should reject MDB metadata instead of prefix salvage."
+    }
+  },
+  "publicPrimaryEvidence": [
+    {
+      "url": "https://kb.avid.com/pkb/articles/en_US/Knowledge/Refreshing-Media-Databases",
+      "checked": "2026-10-20",
+      "articleUpdated": "2026-08-01",
+      "supports": "Public refresh/rebuild recovery for media offline or wrong information. Standalone workflow scope; not universal native per-record policy and not authorization for Bella to rebuild databases."
+    },
+    {
+      "url": "https://kb.avid.com/pkb/articles/en_US/Knowledge/en284411",
+      "checked": "2026-10-20",
+      "articleUpdated": "2024-05-20",
+      "supports": "Avid documents corrupt databases as a possible cause of reported segmentation faults. Does not demonstrate a crash in this research or in current installed binaries."
+    }
+  ],
+  "recommendedBellaBoundaries": {
+    "principle": "Use unaffected facts only when their complete framing, type, owner and association can be trusted; isolate failure at the smallest demonstrably independent scope.",
+    "value": {
+      "examples": [
+        "Unsupported/malformed selected numeric payload",
+        "Invalid explicit UTF8 with independently framed value",
+        "Out-of-range value extent with complete trustworthy TOC entry boundaries"
+      ],
+      "action": "Withhold the affected value/derived field; keep other independent metadata. Use only separately approved field fallback (e.g.usable separate MacRoman counterpart), not generic repair or byte reinterpretation."
+    },
+    "associationOrRecord": {
+      "examples": [
+        "Unusable FileMobId/record role preventing physical association",
+        "Broken descriptor reference",
+        "Broken master or optional bin-reference branch"
+      ],
+      "action": "Withhold metadata dependent on that record/link. Keep other safely associated records/branches and physical file. Do not assume one broken attribute invalidates every field on the physical row."
+    },
+    "wholeMdb": {
+      "examples": [
+        "Bad/missing required container label or unsupported structure that cannot be framed safely",
+        "Incomplete or malformed shared TOC framing",
+        "Required global active-object catalogue cannot establish eligible ownership",
+        "Capture/read failure or changed source prevents a consistent usable database snapshot"
+      ],
+      "action": "Do not publish or retain that MDB metadata; continue physical inventory, independent PMR facts and other database jobs. Do not salvage a decoded TOC prefix or resynchronize by hunting plausible raw objects."
+    },
+    "wholeMdbQualification": "An unsupported layout, cancellation or I/O failure is not automatically corruption; report the actual reason. A localized bad payload does not equal malformed global TOC. Root/catalog failures are global only when sound ownership cannot be established; optional unused definitions do not poison unrelated fields.",
+    "completeTocBoundary": "Establish complete trusted TOC framing and required lookup foundations before publishing metadata. Do not require every optional payload to decode or materialize unused payloads merely to call the database structurally usable.",
+    "normalNotDamage": [
+      "Optional field absent/empty",
+      "Unknown private field or descriptor class with safe known framing",
+      "Legitimate ordered/repeated property values",
+      "Physical file absent from complete database catalogue",
+      "Unused ambiguous dictionary definition outside needed interpretation"
+    ],
+    "conflicts": "Do not pick arbitrary conflicting scalar/identity values. Apply existing field-specific availability rules and isolate dependent association. Ordered repetition must be interpreted according to the supported property layout.",
+    "missingVsUnresolved": "A failed/incomplete lookup does not prove property or physical reference absence. Unreadable MDB alone does not establish No Reference.",
+    "fieldPoliciesPreserved": "MDB-only Duration remains; damaged required Duration input means blank, truly absent applicable DF meansNDF. FrameRate absence does not open headers and its eligible already-read-header fallback remains. Text recovery uses separate actual legacy values only.",
+    "scannerBoundary": "No MDB failure removes a discovered physical file or aborts unrelated folders. No automatic AvidDB deletion/rewriting/rebuild. No new header scheduling implied; full priority-table discussion remains deferred.",
+    "smallDesign": "Fresh C++17/Qt6.5.3 checked typed readers, compact availability/reason states, temporary validated indexes. Carry verified rules/useful test cases without importing OldScanner raw-property histories or whole-graph repair into retained rows."
+  },
+  "specificCurrentRisk": {
+    "claim": "Current stopped TOC decoding retains preceding values and no blanket complete-TOC gate prevents projection if roots qualify. Unseen later entries might alter uniqueness/identity interpretation.",
+    "evidence": "Source-derived control-flow implication; not a reproduced malformed fixture result.",
+    "recommendation": "Do not copy prefix salvage after structural TOC failure."
+  },
+  "verificationRecommendations": [
+    "Container/TOC truncation and invalid extents reject structural publication.",
+    "Isolated bad optional payload retains independent fields and siblings.",
+    "Broken identity/descriptor/editorial link scopes affected facts only.",
+    "Unknown/repeated/unused properties do not cause false wholeDB rejection.",
+    "No Reference requires complete relevant membership check.",
+    "One failed MDB cannot remove physical rows or force prohibited header reads."
+  ],
+  "limits": [
+    "No universal MC or MDVx crash-safety guarantee or malformed-input runtime campaign.",
+    "Native per-mob rollback/cache state and automatic reconstruction not proved.",
+    "Supported MDB/Bento versions/layouts are a separate remaining review.",
+    "No actual user database has been classified damaged by this static comparison."
+  ],
+  "researchReceipts": [
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/findings.json",
+      "sha256": "f5eca0ad403cb9daa5953491bd37009691dcc2e8562c793e160f173ba59249ce"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/findings.json",
+      "sha256": "7d70b9bf0ecd3aac703c02831e4e2be1c5d8d172ad9e50a94fca0efc2be5f635"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-current-20261020.json",
+      "sha256": "7fc5943b977ac5af791ebb7e0ca924250e1eae2cf7e1b5baca1128083348de15"
+    }
+  ],
+  "verifiedInputAndArtifactCount": 69,
+  "verifiedInputsAndArtifacts": [
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/CheckBentoLabel.txt",
+      "sha256": "5158c1b007c8c461df96710ce0c4225ebcc558d0c5e5ecccb43fe37682a66ded",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/ChkReadCallback.txt",
+      "sha256": "a13499fb39c7047c0da70826cadf537ea63ed5c63efb59acef4998500fea322d",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/Core-NewByClassID.txt",
+      "sha256": "1a18a4918933873880a0c334ae453211c1aa627aedd63e940e0475b050c9ca4e",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/Core-XError-operator-plus.txt",
+      "sha256": "46c73a3d7c1e5dd27e3e4b64ca8e41f66f2b261007dff159dd47d64b2ead5553",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/Core-xraisexerror.txt",
+      "sha256": "0e222f1931b647740fdebeaa49fe2819e1832c6a2a0250cad4015ca1fa0bbe3f",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/GetObjectByID.txt",
+      "sha256": "1ab6decb3d1c8ee6e82596ae069c70266534c8ccecd6b52650dfc0318421ba98",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/GetValueData.txt",
+      "sha256": "6aeb8a34f5d7402970c0822b55f4333914be53d6fd27dae32ea9be1bde7b788f",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/HPNew.txt",
+      "sha256": "cb18a2abb8f372d2cae0f120051fba8f11ca9b517a4f37637d36f70637924208",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/InitHPDomainOld.txt",
+      "sha256": "7f89a0db52972060421e8c70f8a8d788933d039fbcbc87a7324303f6832bad39",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/LoadBentoObject.txt",
+      "sha256": "55cbc57b2a647fa24cf6153f4de1a295f2ca532388a7d70f5601da6d4c15eeb0",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/LoadTOCOffsets.txt",
+      "sha256": "e782659b675e15c9a2a0c936144ff08ecd2b555f853ccb55a68a13ab2a123f95",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/LocalMDB-LoadMDB.txt",
+      "sha256": "1a4518111c010154e6f82f575006fab4d0c66baab07ab496e24f610b7934583d",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/LocalMDB-LoadMobsFromMDB.txt",
+      "sha256": "128693af9c3151dfbce83b2ad392b587cea7c7f0650eb410139c978ae8cb606f",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/LocalMDB-ScanOMFFileToMobManager.txt",
+      "sha256": "a6958c8426bcdc3b214850d91469db7e6cec5748cd1f08f14a3e17aa78523392",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/MediaStreamMgr-LoadMDB.txt",
+      "sha256": "8cf7b48f78ce2b371912ead157caba589d2c19dc8079d5a470a1dc7ebcd640bf",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/MediaStreamMgr-ScanOMFFileToCache.txt",
+      "sha256": "815d54e3905e463dd247e6bf3a21d63926d79efc8945e11ef88391252171c36a",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/ReadCallback.txt",
+      "sha256": "7a0a64436b7b6fd0d3ac539ccb2f54410756ecd9d92fbe52c509d8bf68225803",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/ReadCallbackWithID.txt",
+      "sha256": "077546610d65dd4bb3f4d540fcf42d4bcff0d61f90e57e6d0aa0bcafb7e68abd",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/ReadExactEditRate.txt",
+      "sha256": "db6bef0a86cbbba27ef0288defee3874a5c42e1f5dd50a62689cc2cc6fa07ade",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/ReadInt32.txt",
+      "sha256": "d75d660eb157ae619aa07773a1267af33dd9828aa2cf7739a096bd988d38fa3f",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/ReadMobIndex.txt",
+      "sha256": "c71ef6e34181494c5e5577d9aee05007352f9d1e9300df5cebf2fe9477b895da",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/ReadObjectReference.txt",
+      "sha256": "d0e06f7d1afb88b759c8a5196182f6f056a735e2573f49587faa4c2c804af70b",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/ReadRational.txt",
+      "sha256": "847a480b7979ec2b7e0d55cc3ca00f1811a9a213dcb3022a976daf984ea997e0",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/ReadUID.txt",
+      "sha256": "bebb739fab82403bef8304652bb4c8a9002cdda19b65811ce10ed1888bf30f32",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-native/TranslateTag.txt",
+      "sha256": "740307654a8bc7a49e859d50eaa6fcf41f51b3a97dbefe6e4986df152e647ed1",
+      "role": "mediaComposer:artifacts"
+    },
+    {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+      "role": "mediaComposer:binaries"
+    },
+    {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+      "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+      "role": "mediaComposer:binaries"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxMediafile_SetDataSource.txt",
+      "sha256": "d30576eaa3c31da05b3ce6f1f58eafbe213a6ef05f1ad1ed3d86436280ad2993",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxMediafile_addInfoToItem.txt",
+      "sha256": "855362f4b6fdf88b181503c6fffd87680a2339dc4286a1e770438c2f81779152",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxMediafile_getMDBCompositionsCount.txt",
+      "sha256": "8c3139c0bdbb7e2f6e993195f15e178ab114bfa5a833e33175ea4bf977e33464",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxMediafile_init.txt",
+      "sha256": "41923c12ea2a3f2af4e44e1b88ec2367af63d9551e5e204cc32774aadbd815fc",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxMediafile_openFile_withIndicator.txt",
+      "sha256": "918afaa90acd4e5aed2a4ff0a26791c2dc51f223f72539cec46cb95edab893c0",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_GetStringForObjectAt.fresh.txt",
+      "sha256": "0c0a905402cf8e8a111c74781c8aaa7af858cac9bd5e44213465d5d558807e02",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_GetStringForObjectAt.txt",
+      "sha256": "0c0a905402cf8e8a111c74781c8aaa7af858cac9bd5e44213465d5d558807e02",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_InitDictionary.txt",
+      "sha256": "4c66cede9e0d88261f79bca2bcb0df897b8997cde045eb01cb9de4f66a186318",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_OMFiTOCReader01.txt",
+      "sha256": "aabeb26f44a9e142eeb1f171d53de76600b151006b9a0abcef9ca007e8fba627",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_OMFiTOCReader02.txt",
+      "sha256": "422d4132137d1a9a2dbbddc547717fb240bf3f3f9cc6609e33e5d03247e17d77",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_addInfoToItem.txt",
+      "sha256": "c1097f5a0d8ab935e22379d9737a89b4a7e0f0676ed2959d827684f241978b3a",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_dealloc.txt",
+      "sha256": "8460b99858224e2bfa990801401a06c11b05f4cd8153f1e3ca02afb5cc1bc40c",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_getCompression_data_forObjAt.fresh.txt",
+      "sha256": "9ce588c5093400d37b9276d1689742616bb591da98f7a419e893471b0046a2e3",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_getCompression_data_forObjAt.txt",
+      "sha256": "9ce588c5093400d37b9276d1689742616bb591da98f7a419e893471b0046a2e3",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_getMDBCompositionsCount.txt",
+      "sha256": "2deff9c3f450bae1af53e70131d8b9c19c500363e4aba9769e32751a7b128a32",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_getProjectAttributeForObjectAt.txt",
+      "sha256": "2dbb0e44652d9a237b5a2fd6f65c163fd527e87996d203abb48db2cc09ac2f6f",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_getProjectNameForObjAt.txt",
+      "sha256": "a07afd55a76b9fc076f99135b6abff37bf155b393bd35ea8ad7d120d783e604a",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_howManyBentoObjectsV01.txt",
+      "sha256": "240e9a5b87e27eb0a9104f9be0dc746224fcd8f1f4fae251a0c346b27356c15c",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_init.txt",
+      "sha256": "7458933a1b05ed83d5f9f5d59d3f37c278969cfef3b723163cc21d96a3e9adba",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_lookForProperty_At.fresh.txt",
+      "sha256": "9b2bae1244433defc604c74abb1908cc9274e2faf8e7cbb47bb58ba4ec2852c7",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_lookForProperty_At.txt",
+      "sha256": "9b2bae1244433defc604c74abb1908cc9274e2faf8e7cbb47bb58ba4ec2852c7",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_openFile_withIndicator.fresh.txt",
+      "sha256": "a955bfbb112157739d65e0391becf85414dd12ac96367c6ef474cb2412ccba08",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_openFile_withIndicator.txt",
+      "sha256": "a955bfbb112157739d65e0391becf85414dd12ac96367c6ef474cb2412ccba08",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_pDataFor.fresh.txt",
+      "sha256": "75e55bd0c41f90de4a3415912b10c99baa90f72d4ce45c0c4ab987f2a8bcd7ef",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxOMFI_pDataFor.txt",
+      "sha256": "75e55bd0c41f90de4a3415912b10c99baa90f72d4ce45c0c4ab987f2a8bcd7ef",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxPMRScannerOperation_main.txt",
+      "sha256": "8fe130b7ce11347c17412389b4eb320ffd7dd21ff3aade72d8353e6b0162710f",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/MDVxRBTree_TreefindNode.txt",
+      "sha256": "5b94f5e798b2b621e261787bbb6e4935251ef1e6527d2e409fa19c05afe82b30",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/fresh-disassembly-commands.json",
+      "sha256": "36c2a4d2f31ef78b38f5a3b8bdd091cd4112850e115957f9c25550a4d38613f8",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/function-artifacts.json",
+      "sha256": "b8dd57664225508ffc45e35bb1260624f116b88c4c166f126f43a266a5aa46a5",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/resolved-cfstrings.json",
+      "sha256": "4b8dfeba89349b76439f1068dab9d4938eb007a56034d8c61f25b8ef388d4ed2",
+      "role": "mdvx:artifacts"
+    },
+    {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "role": "mdvx:binary"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/databaseimage.cpp",
+      "sha256": "4f0d4c9e6c2e06909f63ee8ade22c90d566bc876ccaaa1c7afcf7d126909e662",
+      "role": "mediaMuster:sources"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/databasesource.cpp",
+      "sha256": "fe4235c24e024ffd31431c68e01a40626188e1e8ed46d1212f6adad40b84f6b8",
+      "role": "mediaMuster:sources"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbbentoreader_p.cpp",
+      "sha256": "92e281f63f7d3903e011cf84d24003332f3dffa12c49e72142ec0d3ff1d42fd0",
+      "role": "mediaMuster:sources"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbobjects_p.cpp",
+      "sha256": "21a013b4de7a3e346553e2f4bef73404e9d3c63551f6653aa9403a7128244814",
+      "role": "mediaMuster:sources"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbprojection.cpp",
+      "sha256": "75757ff663c541992768c502fa7b0887c4f31a02d23b7ec9e7b28532b160be5f",
+      "role": "mediaMuster:sources"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+      "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce",
+      "role": "mediaMuster:sources"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+      "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e",
+      "role": "mediaMuster:sources"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginemdb.cpp",
+      "sha256": "ffa222e5ff96d58947ef00906f1c316b7b7bc3ddf5234bbe5f6af738a8128491",
+      "role": "mediaMuster:sources"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_omfprojection.cpp",
+      "sha256": "fd8f664611e66782f1cf6b4ae09590664c42922940585fcf0f7e8eb859655877",
+      "role": "mediaMuster:sources"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginescan.cpp",
+      "sha256": "3a349703d4932ac7cdfa568fbd6053c1d45fc12f22606dffbb5cce1b3cfe5c68",
+      "role": "mediaMuster:sources"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginedatabase.cpp",
+      "sha256": "44ffe3a63cf82085db3171286ac65b3b4bf598827c13989dc0c86bfec57b4f7a",
+      "role": "mediaMuster:sources"
+    }
+  ]
+}

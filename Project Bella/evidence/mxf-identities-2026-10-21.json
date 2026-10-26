@@ -1,0 +1,2425 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "timezone": "Australia/Sydney",
+  "purpose": "Focused MXF FileMobId/MasterMobId reading, full representation and qualified ownership review for fresh Bella.",
+  "status": "Research captured on 2026-10-21. The six focused MXF identity rules were subsequently approved by the user on 2026-10-22; they remain unimplemented. Historical research findings and limits are unchanged.",
+  "request": "OK, let's look at FileMobId and MasterMobId in MXF next. How do Media Composer and MDVX read them, and what should Bella read and keep?",
+  "alreadyApproved": {
+    "identities": "Keep complete IDs, normalized by known source layout and byte order; use full equality. Modern form32 bytes; known older PMR8/MDBorganization42legacy12 converted without losing identity information.",
+    "normalizerDesign": "Fresh shared pure normalizer, C++17 std::array MobId, QtEndian source-specific decoding, QHash lookup separate from full equality. Binary storage and late hexadecimal formatting.",
+    "inventory": "KelpieId is separate. Same full path plus same complete FileMobId duplicate ignored; different path plus same ID stays unique row/KelpieId; shared MasterMobId does not collapse rows. No conflicting-ID same-path workflow added.",
+    "latestFallback": "MDB-first Duration with own MXF timing when scan falls back because usable databases unavailable; Original Bin blank on MXF fallback. No new header trigger or priority table in this review.",
+    "staging": "Requirements before new implementation; OldScanner active until explicit cutover; Bin Filter unchanged."
+  },
+  "mediaComposer": {
+    "binary": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+    },
+    "findings": [
+      {
+        "topic": "Typed complete identity read",
+        "anchors": [
+          "AAFDomain::GetMobIDPropFromObject 0x4d7ac",
+          "AAFDomain::SetMobIDPropOnObject 0x4d74c"
+        ],
+        "evidence": "Getter selects tdMobIDType at 0x4d7d8 then passes size 0x20 at 0x4d7f4 into GetRecordPropFromObject. Setter likewise supplies size 0x20 at 0x4d794. These are typed binary records, not UTF-8/MacRoman text."
+      },
+      {
+        "topic": "Internal AAF/CM conversion",
+        "anchors": [
+          "MakeAAFMobID 0x20cb8",
+          "MakeCMMobID 0x20cc4",
+          "AAFDomain::ConvertMobID(AAF) 0x4b120",
+          "AAFDomain::ConvertMobID(CM) 0x4a9f4"
+        ],
+        "evidence": "Make helpers load and store two 128-bit registers, all 32 bytes. Convert wrappers copy complete 32-byte input to helpers. This occurs after typed AAF decoding and does not prove raw MXF wire bytes equal PMR bytes or authorize omitting source-specific decoding."
+      },
+      {
+        "topic": "Optional Avid summary IDs",
+        "anchors": [
+          "MXFDomain::GetPMRPropertiesFromAAFHeader 0x478db8"
+        ],
+        "evidence": "Reads kAAFPropID_MXFHeaderMasterMobID at 0x478f30 and EssenceFileMobID at 0x478f54, then ProjectName at 0x478f78. Checks the first two HRESULT sign bits at 0x478f34/0x478f58 and Project getter status at 0x478f7c..0x478fb0 before normal ID outputs. Converts/copies full32 master at 0x478fc8..0x478fd4 and file at 0x478fec..0x478ff8. Later Project conversion occurs after those copies; do not claim transactional outputs for every exception. Getter success is not proof of nonzero IDs or correct file/master association."
+      },
+      {
+        "topic": "Managed-media scanner roles",
+        "anchors": [
+          "LocalMDB::ScanMXFFileToMobManager 0x41b924",
+          "MSMDBMediaStreamMgr::ScanMXFFileToCache 0x44e184",
+          "AAFTranslationTable::AddMobEntry(IAAFMob*) 0x446b8"
+        ],
+        "evidence": "LocalMDB enumerates mobs and calls AddMobEntry at 0x41bb40; queries SourceMob and FileDescriptor interfaces before physical file branch, and separately queries MasterMob. AddMobEntry reads MobID via typed interface at 0x44738, explicitly tests IsMasterMob at 0x44768 and IsFileMob at 0x44774, retaining the full32 typed ID around 0x44748. MSMDB enumerates/test masters and logs unexpected count if not one at 0x44e690..0x44e6c8. Counts above one continue into later processing; this is an expectation, not proof of a reject-multiple policy."
+      }
+    ],
+    "limits": [
+      "Selective static disassembly; no exhaustive reconstruction of every Media Composer import path, malformed input or third-party writer.",
+      "Normal modern scanner uses the cached typed AAF-MXF object model from the prior native review. The optional summary helper is separately established; universal precedence between summary IDs and package graph is not established.",
+      "Internal copy helpers are not raw MXF wire decoders. Source-specific representation normalization remains necessary.",
+      "No runtime scan benchmark or binary parser execution."
+    ]
+  },
+  "mdvx": {
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "size": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+    },
+    "fileIdSelection": {
+      "entry": "ami_read_info calls mxf_uu_get_top_file_package0x10001015c; reads selected GenericPackage.PackageUID into info+0xac at0x100010164..0x10001017c.",
+      "helper": "mxf_uu_get_top_file_package0x1000656d4",
+      "steps": [
+        "Require exactly one parsed EssenceContainerData class set via mxf_find_singular_set_by_key at0x1000656f8.",
+        "Read its LinkedPackageUID as an exact32-byte UMID at0x100065700..0x100065714.",
+        "Call mxf_uu_get_referenced_package(header,fullUID,&set)0x100065724.",
+        "Require resolved package to be SourcePackage subclass at0x10006572c..0x100065748.",
+        "Return selected set; ami separately reads its PackageUID(full32) and Descriptor strongref."
+      ],
+      "referencedPackageLookup": "mxf_uu_get_referenced_package0x1000657dc requires exactly one ContentStorage via0x100065808; iterates its Packages array of strong references0x100065820..0x100065888; resolves each ref by full16-byte InstanceUID; reads each resolved GenericPackage.PackageUID using exact32-byte getter; mxf_equals_umid compares all32 at0x100065874; first match returns immediately0x100065904.",
+      "notUsedForSelection": [
+        "Preface.PrimaryPackage",
+        "First SourcePackage found in raw byte order",
+        "An arbitrary first PackageUID"
+      ],
+      "ambiguity": "Singular ECD and ContentStorage require exactly one exact-class set, but matching PackageUID lookup stops at first equal fullUID; duplicate matching PackageUID entries and duplicate InstanceUID resolution are not exhaustively rejected.",
+      "malformed": "Broken package strongref is skipped to next array element0x100065854->0x10006587c. Resolved package with absent/wrong-sized PackageUID aborts helper0x100065868->0x1000658c4. Missing/no matching package or wrong selected class returnsfailure."
+    },
+    "masterIdSelection": {
+      "selection": "ami_read_info0x100010044..0x100010070 requires exactly one exact MaterialPackage class set across the parsed header metadata and reads its GenericPackage.PackageUID into info+0x28.",
+      "singularity": "mxf_find_set_by_key0x1000449ac iterates headerMetadata sets, exact-key compares, builds matching list; mxf_find_singular_set_by_key0x100044aa8 requires list length==1. Zero or multiple MaterialPackage sets fail ami_read_info.",
+      "notUsedForSelection": [
+        "ContentStorage.Packages membership of that MaterialPackage",
+        "SourceClip link from FilePackage to choose a master",
+        "First MaterialPackage among several"
+      ],
+      "laterLinks": "After both IDs are selected, ami traverses material tracks and SourceClip/Sequence/EssenceGroup relationships for durations/rate/track-number information. It compares SourceClip.SourcePackageID to fileUID with full32-byte mxf_equals_umid at0x100010b80,0x100010cd8,0x100010d30. Those comparisons do not select/replace info.materialPackageUID. Do not describe this as linked-master selection."
+    },
+    "identityReadingAndNormalisation": {
+      "wireWidth": "mxf_get_umid_item0x10004974c checks propertylength exactly0x20 at0x100049778 and copies2x16bytes; other widths fail. Does not text-parse digits or truncate bytes here.",
+      "zero": "UMIDgetter has no all-zero/prefix validation;32 zero bytes can pass its width check.",
+      "storage": "MDVxMXF openFile0x100032578..0x10003259c copies FileUID32 bytes;0x1000325f4..0x100032618 copies MaterialUID32 bytes. addInfoToItem0x100032754..0x1000327e0 retrieves both, applies same swap helper, calls file/material setters.",
+      "swap": "swapUUIDfromMXFtoMDVx0x100032808 first requires NSData.length32. Preserves bytes0..15, reverses16..19, swaps20..21 and22..23, preserves24..31. This handles representation; it does not shorten identity.",
+      "wrongWidthSwap": "nil/wrong-lengthNSData takes zero-initialized32-byte result instead of explicit unavailable result.",
+      "itemStorage": "setFileUIDWithNSData0x100030730 copies modern32-byte result into item+0x8; material setter0x1000307c4 copies into item+0x28. Both call checkUUID and store boolean but do not reject/erase the copied IDs.",
+      "validityCheck": "checkUUID0x100030fb4 checks first4bytes of both modern IDs against0x342b0a06, logs/returnsfalse on failure. It does not compare allbytes to validate UMID or make a zero-ID unavailable.",
+      "downstreamLimit": "isEqualByUUID0x1000302e0 compares hash(XOR two32-bit words) plus exactly those two words at normalized FileUID offsets16 and20, not all32bytes. Previously verified MDB/bin matching similarly uses8-byte excerpts. Thus full32 read/storage does not imply full32matching throughout MDVX."
+    },
+    "errorProjectionCaution": {
+      "amiFailure": "Absent/wrong-width required ID, non-singular required class or relationship failure generally returns error and frees temporary resources via0x100010824..0x100010864.",
+      "wrapper": "MDVxMXF.openFile logs amierrors and normally leaves its info dictionary nil. Its final return0x100032684 tests FILE*non-null, not ami success. Caller can still call addInfo; nil dictionary IDs pass through zero32 swap result. Do not adopt this as Bella validity policy."
+    },
+    "bellaImplications": [
+      "Take entire32-byte identities and source-aware normalisation.",
+      "Use ECD->LinkedPackageUID->qualified SourcePackage as a proven file identity link; do not choose arbitrary SourcePackage.",
+      "MDVX uniqueMaterialPackage assumption works for its narrow OPAtom route but is not a general linked-master ambiguity policy.",
+      "Keep unavailable/ambiguous separatefrom allzero orsynthetic IDs.",
+      "Do not reuse MDVX8-byte matching shortcut."
+    ],
+    "limits": [
+      "InstalledMDVx arm64binary only.",
+      "Statictrace only; no damagedfixture execution or comparativebenchmark.",
+      "No complete arbitraryOP1a/multiple-master workflow inferred from OPAtom-specificcode.",
+      "No Bellaheaderopening/fallbackpriority decision made."
+    ]
+  },
+  "currentMediaMuster": {
+    "findings": [
+      {
+        "topic": "Own file identity is graph-owned, not first source record",
+        "fact": "Current projector requires a unique Preface/ContentStorage root, complete registered active Package and EssenceContainerData member lists, then follows active ECD.LinkedPackageUID to the unique matching SourcePackage.PackageUID. Descriptor relationship belongs to this file package. Unlisted SourcePackages, camera/import source packages, same-name records and arbitrary32byte values do not establish the mediafileowner.",
+        "references": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "231-278"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "294-321"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "407-434"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "629-669"
+          }
+        ]
+      },
+      {
+        "topic": "Master is an associated MaterialPackage",
+        "fact": "Current projector considers active MaterialPackages; validates their Tracks and supported component graph; a SourceClip.SourcePackageID in that graph must name this established fileSourcePackage. MaterialPackage.PackageUID supplies MasterMobId and same group supplies ClipName. Current implementation retains multiple separate candidates; centralselection withholds unqualified/ambiguous master data. Bella can keep one selected completeID after applying qualifiedselection without permanent candidategraph.",
+        "references": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "562-621"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "1107-1178"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": "484-515"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": "612-664"
+          }
+        ]
+      },
+      {
+        "topic": "Package IDs are full32 bytes; InstanceUID distinct16",
+        "fact": "Catalogue registers ECD.LinkedPackageUID and GenericPackage.PackageUID as UMID, SourceClip.SourcePackageID asPackageID. Umid/PackageID have fixed32byte layout. InstanceUID is distinct16byte UUID; strongreferences resolve raw16bytes in same partitionmetadata copy. Never normalizeInstanceUID with mediaIDconverter or truncateUMID intoInstanceUID.",
+        "references": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": "380-386"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": "401-428"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+            "lines": "282-315"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+            "lines": "511-559"
+          }
+        ]
+      },
+      {
+        "topic": "Source-specific wireorder normalization",
+        "fact": "Current canonicalMxfId requires exactly32; takes MXFwirematerial numeric fields to app/database convention by reversing bytes16..19,20..21,22..23. Other24bytes unchanged. Same conversion applies prefix42family; prefix/suffix is identityfamily, never an encodingflag. Existing littleendian MDBfull32/PMRfull32 values retained. MDBorganization42legacy12 and approved olderPMR8 map through verified wrappercore, preserving information. No trialswaps, prefix exemptions, padding guesses or8byte moderncomparison. Mobidhelper comments warning against swappingalready-normalized wrappers must not be misread as exemptionfor MXFwirebytes.",
+        "references": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+            "lines": "46-67"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mobid.h",
+            "lines": "51-85"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/omfuid.h",
+            "lines": "14-16"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/omfuid.h",
+            "lines": "33-49"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/omfuid.h",
+            "lines": "61-82"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/omfuid.h",
+            "lines": "86-88"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": "295-335"
+          }
+        ]
+      },
+      {
+        "topic": "Optional Avid summary ID copies",
+        "fact": "Current code records privatePreface.EssenceFileMobID and MasterMobID as extraobservations. Master summary eligible onlyafter track-to-fileassociation; file summary mismatches create diagnostics. No need toretain these redundantcopies once completegraphID isestablished for Bella. Skipping them is a proposed simplicitychoice, not provedMCuniversalprecedence or alreadyapprovedsummary-onlyrecovery.",
+        "references": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": "737-740"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "635-650"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "1180-1197"
+          }
+        ]
+      },
+      {
+        "topic": "Bounds/ambiguity validation",
+        "fact": "Fixed-width decoder rejects wrongbytecount; identity wrapper rejects unavailable/wrongtype/non32/allzero beforeconversion. InstanceUIDtarget uniqueness scopedpartition. Current packagesWithId considers matching and unknown/unreadableactive identities so removingadamagedclaim cannot manufactureuniqueness. Tests cover inactiveobjects, duplicates/contradictions, missingroots, unfinishedreferencegraphs and multiplemastergroups. No new testsrun.",
+        "references": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+            "lines": "282-286"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+            "lines": "511-559"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "94-108"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "407-434"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "436-505"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": "338-481"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": "484-515"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": "612-688"
+          }
+        ]
+      }
+    ],
+    "sourceInputs": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+        "sha256": "c8c68e78db5f3efaa62235f55624c5478e89a0adc37581a922af050f931cad55",
+        "bytes": 63597
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+        "sha256": "379a31643b62b945e3e1ed83245e5f3a7be8df4ebeec73aea31327c1d915b374",
+        "bytes": 23401
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+        "sha256": "6d67b2300f380cd63a50547595154ee27d8ab69f36b6d87e83e81fd3a33ff75c",
+        "bytes": 54490
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+        "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce",
+        "bytes": 10189
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mobid.h",
+        "sha256": "6a6d13d5ed86acd52eabc437c7893f5eaffceba0399cbb21ea87ab209fa4ddc8",
+        "bytes": 2883
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/omfuid.h",
+        "sha256": "59d30117ed9d58f145d18ee517005a388faa9e976b57e92763386e56eed1c04d",
+        "bytes": 4081
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+        "sha256": "f9f633bc0022e5f681b210d58a95cf472b04db0b6189ead78f9d22b7e8618a22",
+        "bytes": 60904
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginemxf.cpp",
+        "sha256": "4b7e38b030383277be0e59cf0fc2346fd21cfccf8453e27252d746bca8904299",
+        "bytes": 33071
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/README.md",
+        "sha256": "3543f238e325de648ec72d05538e116ac5f3a2c6255324f2089d14e7821c8b6b",
+        "bytes": 97116
+      }
+    ],
+    "requirementsSnapshot": {
+      "originalPath": "/Users/martymclean/Developer/MediaMuster/Project Bella/README.md",
+      "capturedCopy": "/private/tmp/bella-mxf-ids-current-20261021/bella-readme-at-source-audit.md",
+      "note": "Original requirements input is a historical capture; the current plan has since received wording clarifications."
+    }
+  },
+  "actualComparisonSummary": {
+    "actualHeaderCount": 10,
+    "graphOwnedUniqueFileCount": 10,
+    "uniqueLinkedMasterCount": 10,
+    "filePmrFullEqualityCount": 10,
+    "masterPmrFullEqualityCount": 10,
+    "fileMdbFullEqualityCount": 10,
+    "masterMdbFullEqualityCount": 10,
+    "summaryFilePresentAndAgrees": 10,
+    "summaryMasterPresentAndAgrees": 10,
+    "legacy12MdbFileOwnerCount": 1,
+    "inactiveSameIdMdbObjectsIgnored": 12
+  },
+  "actualObservations": {
+    "date": "2026-10-21",
+    "scope": "Independent actual initial MXF header graph ownership, wire-ID normalization and full-ID matches to selected PMR and current hashed MDB values. No production parser execution, essence decoding, whole-media hashing, app or userfile writes.",
+    "normalization": {
+      "mxf": "32 bytes preserved except material numeric fields16..19/20..21/22..23 reversed from MXF big-endian wire to existing internal little-endian field convention; bytes0..15 and24..31 unchanged. No prefix/suffix exemption.",
+      "pmr": "Known 32-byte values already in database convention; legacy8 wrapped using verified family.",
+      "mdb": "Current inspected MDBs little-endian: full32 retained, organization42 legacy12 mapped via preserved8-byte core to known wrapper. HEADMobIndex12 never substitutes for owner full32.",
+      "instanceUID": "Separate16-byte object identity for internal strong references; preserve exact bytes and never normalize as a media UMID."
+    },
+    "modelInputs": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-03-format-audit/evidence/mxf_baseline_data_model.h",
+        "sha256": "cd1a1b26a680da57a90d35992266e9840b9799fc6b9a22e65f3b9c4220e276b1"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-03-format-audit/evidence/mxf_extensions_data_model.h",
+        "sha256": "1cd3304ae1560ee1663a38daa9aad849c3849fb3ce0162409a0a0e27298ad7e3"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/Project Canon/evidence/fresh-mxf-avid-data-model-2026-10-04.h",
+        "sha256": "e653e27e6cdbbef3baf18799a80803cdfe700016f76e40fbd08a4271f0d49927"
+      }
+    ],
+    "priorInventory": {
+      "path": "/private/tmp/bella-mxf-headers-20261021/inventory.json",
+      "sha256": "0ab1e522dd3d7eb15f3ee7eee7c01004f4fa42674610a9caabcf677db092843d"
+    },
+    "databaseInputs": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 5159032,
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+        "rawValueIndexSHA256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "bytes": 22745976,
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+        "rawValueIndexSHA256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "bytes": 16616336,
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+        "rawValueIndexSHA256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "bytes": 15703416,
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+        "rawValueIndexSHA256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 3668720,
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+        "rawValueIndexSHA256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657"
+      }
+    ],
+    "pmrInputs": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544",
+        "setVersion": 16
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79",
+        "setVersion": 16
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7",
+        "setVersion": 16
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524",
+        "setVersion": 16
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a",
+        "setVersion": 16
+      }
+    ],
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1001.WAVA01.D8875D202DA97BA.mxf",
+        "fileBytes": 10403042,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "f8475c6079b53ff1aefaa33c7306a48538c43ffba8c3e3b189da14617d3cef44",
+        "stableImmediate": true,
+        "activePackageCount": 3,
+        "activeEssenceContainerDataCount": 1,
+        "prefaceOffset": 90937,
+        "contentStorageOffset": 119630,
+        "ecdOffset": 119763,
+        "filePackageOffset": 122647,
+        "filePackageClass": "SourcePackage",
+        "filePackageName": "1001.WAV",
+        "fileInstanceUIDHex": "63b8666fb5e2ab4fb3ffce53989a7bce",
+        "fileWireHex": "060a2b340101010501010f1013000000202da97b8525910552bc34363bcdaf64",
+        "fileNormalizedHex": "060a2b340101010501010f10130000007ba92d202585059152bc34363bcdaf64",
+        "fileIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f1013000000202da97b8525910552bc34363bcdaf64",
+            "range": [
+              119820,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          },
+          {
+            "hex": "060a2b340101010501010f1013000000202da97b8525910552bc34363bcdaf64",
+            "range": [
+              122818,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "descriptorClass": "WaveAudioDescriptor",
+        "masterPackageOffset": 119852,
+        "masterPackageName": "1001.WAV",
+        "masterWireHex": "060a2b340101010501010f10130000002026362f8525910579ee34363bcdaf64",
+        "masterNormalizedHex": "060a2b340101010501010f10130000002f3626202585059179ee34363bcdaf64",
+        "masterInstanceUIDHex": "cb7647eadfa3a044b4b2adf12e5a5115",
+        "masterIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f10130000002026362f8525910579ee34363bcdaf64",
+            "range": [
+              120084,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "linkedMasterCount": 1,
+        "masterTrackToFilePaths": [
+          [
+            {
+              "className": "MaterialPackage",
+              "offset": 119852,
+              "reference": "GenericPackage.Tracks",
+              "targetOffset": 121917
+            },
+            {
+              "className": "Track",
+              "offset": 121917,
+              "reference": "GenericTrack.Sequence",
+              "targetOffset": 122044
+            },
+            {
+              "className": "Sequence",
+              "offset": 122044,
+              "reference": "Sequence.StructuralComponents",
+              "targetOffset": 122149
+            },
+            {
+              "className": "SourceClip",
+              "offset": 122149,
+              "reference": "SourceClip.SourcePackageID",
+              "valueHex": "060a2b340101010501010f1013000000202da97b8525910552bc34363bcdaf64"
+            }
+          ]
+        ],
+        "prefaceSummaryFileIds": [
+          {
+            "hex": "060a2b340101010501010f1013000000202da97b8525910552bc34363bcdaf64",
+            "range": [
+              91034,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "prefaceSummaryMasterIds": [
+          {
+            "hex": "060a2b340101010501010f10130000002026362f8525910579ee34363bcdaf64",
+            "range": [
+              90986,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "pmrMatch": {
+          "index": 59,
+          "offset": 55680,
+          "filename": "1001.WAVA01.D8875D202DA97BA.mxf",
+          "fileId": "060a2b340101010501010f10130000007ba92d202585059152bc34363bcdaf64",
+          "masterId": "060a2b340101010501010f10130000002f3626202585059179ee34363bcdaf64",
+          "storedFileHex": "060a2b340101010501010f10130000007ba92d202585059152bc34363bcdaf64",
+          "storedMasterHex": "060a2b340101010501010f10130000002f3626202585059179ee34363bcdaf64"
+        },
+        "filePmrFullEquality": true,
+        "masterPmrFullEquality": true,
+        "fileMdbMatch": {
+          "object": 92343,
+          "recordedMobIdHex": "060a2b340101010501010f10130000007ba92d202585059152bc34363bcdaf64",
+          "mobIdRanges": [
+            [
+              1343527,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": true
+        },
+        "fileMdbInactiveSameIdObjects": [],
+        "masterMdbMatch": {
+          "object": 91576,
+          "recordedMobIdHex": "060a2b340101010501010f10130000002f3626202585059179ee34363bcdaf64",
+          "mobIdRanges": [
+            [
+              1311232,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": false
+        },
+        "masterMdbInactiveSameIdObjects": [],
+        "summaryFileAgreesWithGraph": true,
+        "summaryMasterAgreesWithGraph": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/A001_C001_V01.D7EB5BC5323BV.mxf",
+        "fileBytes": 490865249,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "7bf7822774ef479d0425f2b1756ef96242cfc40e68b5aebe2c83b6d21ead4770",
+        "stableImmediate": true,
+        "activePackageCount": 3,
+        "activeEssenceContainerDataCount": 1,
+        "prefaceOffset": 90253,
+        "contentStorageOffset": 123379,
+        "ecdOffset": 123512,
+        "filePackageOffset": 143618,
+        "filePackageClass": "SourcePackage",
+        "filePackageName": "A001_C001_01019M",
+        "fileInstanceUIDHex": "55fe09d80d046c41ae4884fcae7c86f4",
+        "fileWireHex": "060a2b340101010101010f00130000005bc5323b22390292060e2b347f7f2a80",
+        "fileNormalizedHex": "060a2b340101010101010f00130000003b32c55b39229202060e2b347f7f2a80",
+        "fileIdSourceRanges": [
+          {
+            "hex": "060a2b340101010101010f00130000005bc5323b22390292060e2b347f7f2a80",
+            "range": [
+              123577,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          },
+          {
+            "hex": "060a2b340101010101010f00130000005bc5323b22390292060e2b347f7f2a80",
+            "range": [
+              143833,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "masterPackageOffset": 123609,
+        "masterPackageName": "A001_C001_01019M.new.01",
+        "masterWireHex": "060a2b340101010101010f00130000005bc5323b22380292060e2b347f7f2a80",
+        "masterNormalizedHex": "060a2b340101010101010f00130000003b32c55b38229202060e2b347f7f2a80",
+        "masterInstanceUIDHex": "4de2b3621222a84e99c4c23cd50c54fd",
+        "masterIdSourceRanges": [
+          {
+            "hex": "060a2b340101010101010f00130000005bc5323b22380292060e2b347f7f2a80",
+            "range": [
+              125439,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "linkedMasterCount": 1,
+        "masterTrackToFilePaths": [
+          [
+            {
+              "className": "MaterialPackage",
+              "offset": 123609,
+              "reference": "GenericPackage.Tracks",
+              "targetOffset": 142559
+            },
+            {
+              "className": "Track",
+              "offset": 142559,
+              "reference": "GenericTrack.Sequence",
+              "targetOffset": 142674
+            },
+            {
+              "className": "Sequence",
+              "offset": 142674,
+              "reference": "Sequence.StructuralComponents",
+              "targetOffset": 142779
+            },
+            {
+              "className": "SourceClip",
+              "offset": 142779,
+              "reference": "SourceClip.SourcePackageID",
+              "valueHex": "060a2b340101010101010f00130000005bc5323b22390292060e2b347f7f2a80"
+            }
+          ]
+        ],
+        "prefaceSummaryFileIds": [
+          {
+            "hex": "060a2b340101010101010f00130000005bc5323b22390292060e2b347f7f2a80",
+            "range": [
+              90350,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "prefaceSummaryMasterIds": [
+          {
+            "hex": "060a2b340101010101010f00130000005bc5323b22380292060e2b347f7f2a80",
+            "range": [
+              90302,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "pmrMatch": {
+          "index": 238,
+          "offset": 78228,
+          "filename": "A001_C001_V01.D7EB5BC5323BV.mxf",
+          "fileId": "060a2b340101010101010f00130000003b32c55b39229202060e2b347f7f2a80",
+          "masterId": "060a2b340101010101010f00130000003b32c55b38229202060e2b347f7f2a80",
+          "storedFileHex": "060a2b340101010101010f00130000003b32c55b39229202060e2b347f7f2a80",
+          "storedMasterHex": "060a2b340101010101010f00130000003b32c55b38229202060e2b347f7f2a80"
+        },
+        "filePmrFullEquality": true,
+        "masterPmrFullEquality": true,
+        "fileMdbMatch": {
+          "object": 72570,
+          "recordedMobIdHex": "2a0000003b32c55b39229202",
+          "mobIdRanges": [
+            [
+              343877,
+              12
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": true
+        },
+        "fileMdbInactiveSameIdObjects": [],
+        "masterMdbMatch": {
+          "object": 72552,
+          "recordedMobIdHex": "2a0000003b32c55b38229202",
+          "mobIdRanges": [
+            [
+              343378,
+              12
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": false
+        },
+        "masterMdbInactiveSameIdObjects": [],
+        "summaryFileAgreesWithGraph": true,
+        "summaryMasterAgreesWithGraph": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/5511410TA01.6A041816BE45ECA.mxf",
+        "fileBytes": 2134625,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "050a663a4f9d5a77abfea1df9581b2943205234cb7277e95e3aebded19dbf032",
+        "stableImmediate": true,
+        "activePackageCount": 3,
+        "activeEssenceContainerDataCount": 1,
+        "prefaceOffset": 91811,
+        "contentStorageOffset": 124195,
+        "ecdOffset": 124328,
+        "filePackageOffset": 134876,
+        "filePackageClass": "SourcePackage",
+        "filePackageName": "",
+        "fileInstanceUIDHex": "36199a7213c04aa288341e1099a3bf72",
+        "fileWireHex": "060a2b340101010501010f101300000016be45ec1173960643cb7c57583610fa",
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ec45be167311069643cb7c57583610fa",
+        "fileIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f101300000016be45ec1173960643cb7c57583610fa",
+            "range": [
+              124393,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          },
+          {
+            "hex": "060a2b340101010501010f101300000016be45ec1173960643cb7c57583610fa",
+            "range": [
+              135047,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "descriptorClass": "WaveAudioDescriptor",
+        "masterPackageOffset": 131679,
+        "masterPackageName": "155/2.new.01",
+        "masterWireHex": "060a2b340101010501010f1013000000152b948f11739606b3ba7c57583610fa",
+        "masterNormalizedHex": "060a2b340101010501010f10130000008f942b1573110696b3ba7c57583610fa",
+        "masterInstanceUIDHex": "cc975116e07647c6bc9d05c0eccb581a",
+        "masterIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f1013000000152b948f11739606b3ba7c57583610fa",
+            "range": [
+              131999,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "linkedMasterCount": 1,
+        "masterTrackToFilePaths": [
+          [
+            {
+              "className": "MaterialPackage",
+              "offset": 131679,
+              "reference": "GenericPackage.Tracks",
+              "targetOffset": 134178
+            },
+            {
+              "className": "Track",
+              "offset": 134178,
+              "reference": "GenericTrack.Sequence",
+              "targetOffset": 134289
+            },
+            {
+              "className": "Sequence",
+              "offset": 134289,
+              "reference": "Sequence.StructuralComponents",
+              "targetOffset": 134394
+            },
+            {
+              "className": "SourceClip",
+              "offset": 134394,
+              "reference": "SourceClip.SourcePackageID",
+              "valueHex": "060a2b340101010501010f101300000016be45ec1173960643cb7c57583610fa"
+            }
+          ]
+        ],
+        "prefaceSummaryFileIds": [
+          {
+            "hex": "060a2b340101010501010f101300000016be45ec1173960643cb7c57583610fa",
+            "range": [
+              91908,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "prefaceSummaryMasterIds": [
+          {
+            "hex": "060a2b340101010501010f1013000000152b948f11739606b3ba7c57583610fa",
+            "range": [
+              91860,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "pmrMatch": {
+          "index": 500,
+          "offset": 142154,
+          "filename": "5511410TA01.6A041816BE45ECA.mxf",
+          "fileId": "060a2b340101010501010f1013000000ec45be167311069643cb7c57583610fa",
+          "masterId": "060a2b340101010501010f10130000008f942b1573110696b3ba7c57583610fa",
+          "storedFileHex": "060a2b340101010501010f1013000000ec45be167311069643cb7c57583610fa",
+          "storedMasterHex": "060a2b340101010501010f10130000008f942b1573110696b3ba7c57583610fa"
+        },
+        "filePmrFullEquality": true,
+        "masterPmrFullEquality": true,
+        "fileMdbMatch": {
+          "object": 199348,
+          "recordedMobIdHex": "060a2b340101010501010f1013000000ec45be167311069643cb7c57583610fa",
+          "mobIdRanges": [
+            [
+              3693647,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": true
+        },
+        "fileMdbInactiveSameIdObjects": [
+          {
+            "object": 70139,
+            "recordedMobIdHex": "060a2b340101010501010f1013000000ec45be167311069643cb7c57583610fa",
+            "mobIdRanges": [
+              [
+                59526,
+                32
+              ]
+            ],
+            "classHex": "4d4f424a",
+            "inRequiredCatalogue": false,
+            "inObjectSpine": false,
+            "hasPhysicalMedia": true
+          }
+        ],
+        "masterMdbMatch": {
+          "object": 178614,
+          "recordedMobIdHex": "060a2b340101010501010f10130000008f942b1573110696b3ba7c57583610fa",
+          "mobIdRanges": [
+            [
+              3050495,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": false
+        },
+        "masterMdbInactiveSameIdObjects": [
+          {
+            "object": 78831,
+            "recordedMobIdHex": "060a2b340101010501010f10130000008f942b1573110696b3ba7c57583610fa",
+            "mobIdRanges": [
+              [
+                293220,
+                32
+              ]
+            ],
+            "classHex": "4d4f424a",
+            "inRequiredCatalogue": false,
+            "inObjectSpine": false,
+            "hasPhysicalMedia": false
+          }
+        ],
+        "summaryFileAgreesWithGraph": true,
+        "summaryMasterAgreesWithGraph": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041581_152C6152C6FCEV.mxf",
+        "fileBytes": 276741217,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "41d6454ebd62894de5c876116d8da15f95663bcbc4753729ef14341937360244",
+        "stableImmediate": true,
+        "activePackageCount": 3,
+        "activeEssenceContainerDataCount": 1,
+        "prefaceOffset": 89600,
+        "contentStorageOffset": 122035,
+        "ecdOffset": 122168,
+        "filePackageOffset": 126434,
+        "filePackageClass": "SourcePackage",
+        "filePackageName": "",
+        "fileInstanceUIDHex": "bdcdde799c574566b8408d9f74901406",
+        "fileWireHex": "060a2b340101010501010f1013000000152c6fce11739606ab807c57583610fa",
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ce6f2c1573110696ab807c57583610fa",
+        "fileIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f1013000000152c6fce11739606ab807c57583610fa",
+            "range": [
+              122233,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          },
+          {
+            "hex": "060a2b340101010501010f1013000000152c6fce11739606ab807c57583610fa",
+            "range": [
+              126589,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "masterPackageOffset": 123653,
+        "masterPackageName": "06-T95-01D-DRONE.new.01",
+        "masterWireHex": "060a2b340101010501010f1013000000152b64161173960627027c57583610fa",
+        "masterNormalizedHex": "060a2b340101010501010f101300000016642b157311069627027c57583610fa",
+        "masterInstanceUIDHex": "aa2a960aceca40eebdba1c3329637d77",
+        "masterIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f1013000000152b64161173960627027c57583610fa",
+            "range": [
+              123883,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "linkedMasterCount": 1,
+        "masterTrackToFilePaths": [
+          [
+            {
+              "className": "MaterialPackage",
+              "offset": 123653,
+              "reference": "GenericPackage.Tracks",
+              "targetOffset": 126085
+            },
+            {
+              "className": "Track",
+              "offset": 126085,
+              "reference": "GenericTrack.Sequence",
+              "targetOffset": 126196
+            },
+            {
+              "className": "Sequence",
+              "offset": 126196,
+              "reference": "Sequence.StructuralComponents",
+              "targetOffset": 126301
+            },
+            {
+              "className": "SourceClip",
+              "offset": 126301,
+              "reference": "SourceClip.SourcePackageID",
+              "valueHex": "060a2b340101010501010f1013000000152c6fce11739606ab807c57583610fa"
+            }
+          ]
+        ],
+        "prefaceSummaryFileIds": [
+          {
+            "hex": "060a2b340101010501010f1013000000152c6fce11739606ab807c57583610fa",
+            "range": [
+              89697,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "prefaceSummaryMasterIds": [
+          {
+            "hex": "060a2b340101010501010f1013000000152b64161173960627027c57583610fa",
+            "range": [
+              89649,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "pmrMatch": {
+          "index": 235,
+          "offset": 110089,
+          "filename": "V01.6A041581_152C6152C6FCEV.mxf",
+          "fileId": "060a2b340101010501010f1013000000ce6f2c1573110696ab807c57583610fa",
+          "masterId": "060a2b340101010501010f101300000016642b157311069627027c57583610fa",
+          "storedFileHex": "060a2b340101010501010f1013000000ce6f2c1573110696ab807c57583610fa",
+          "storedMasterHex": "060a2b340101010501010f101300000016642b157311069627027c57583610fa"
+        },
+        "filePmrFullEquality": true,
+        "masterPmrFullEquality": true,
+        "fileMdbMatch": {
+          "object": 193426,
+          "recordedMobIdHex": "060a2b340101010501010f1013000000ce6f2c1573110696ab807c57583610fa",
+          "mobIdRanges": [
+            [
+              3509869,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": true
+        },
+        "fileMdbInactiveSameIdObjects": [
+          {
+            "object": 71816,
+            "recordedMobIdHex": "060a2b340101010501010f1013000000ce6f2c1573110696ab807c57583610fa",
+            "mobIdRanges": [
+              [
+                103985,
+                32
+              ]
+            ],
+            "classHex": "4d4f424a",
+            "inRequiredCatalogue": false,
+            "inObjectSpine": false,
+            "hasPhysicalMedia": true
+          }
+        ],
+        "masterMdbMatch": {
+          "object": 148544,
+          "recordedMobIdHex": "060a2b340101010501010f101300000016642b157311069627027c57583610fa",
+          "mobIdRanges": [
+            [
+              2098532,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": false
+        },
+        "masterMdbInactiveSameIdObjects": [
+          {
+            "object": 93950,
+            "recordedMobIdHex": "060a2b340101010501010f101300000016642b157311069627027c57583610fa",
+            "mobIdRanges": [
+              [
+                696603,
+                32
+              ]
+            ],
+            "classHex": "4d4f424a",
+            "inRequiredCatalogue": false,
+            "inObjectSpine": false,
+            "hasPhysicalMedia": false
+          }
+        ],
+        "summaryFileAgreesWithGraph": true,
+        "summaryMasterAgreesWithGraph": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7280108SMA01.6A04F087D5405A.mxf",
+        "fileBytes": 2163297,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "7250a5396f79cd9b932e1af16fd33402f436ce0f4f11de7f51d80a0efc8fac70",
+        "stableImmediate": true,
+        "activePackageCount": 3,
+        "activeEssenceContainerDataCount": 1,
+        "prefaceOffset": 91811,
+        "contentStorageOffset": 124611,
+        "ecdOffset": 124744,
+        "filePackageOffset": 126386,
+        "filePackageClass": "SourcePackage",
+        "filePackageName": "",
+        "fileInstanceUIDHex": "c46bd81b1e61427b9fe81f7cbbeab540",
+        "fileWireHex": "060a2b340101010501010f1013000000087d54051173960613b27c57583610fa",
+        "fileNormalizedHex": "060a2b340101010501010f101300000005547d087311069613b27c57583610fa",
+        "fileIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f1013000000087d54051173960613b27c57583610fa",
+            "range": [
+              124809,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          },
+          {
+            "hex": "060a2b340101010501010f1013000000087d54051173960613b27c57583610fa",
+            "range": [
+              126557,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "descriptorClass": "WaveAudioDescriptor",
+        "masterPackageOffset": 127456,
+        "masterPackageName": "104/2.new.01",
+        "masterWireHex": "060a2b340101010501010f1013000000087a7d77117396062c307c57583610fa",
+        "masterNormalizedHex": "060a2b340101010501010f1013000000777d7a08731106962c307c57583610fa",
+        "masterInstanceUIDHex": "0b1419993fe1488a89d529df71bee633",
+        "masterIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f1013000000087a7d77117396062c307c57583610fa",
+            "range": [
+              127776,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "linkedMasterCount": 1,
+        "masterTrackToFilePaths": [
+          [
+            {
+              "className": "MaterialPackage",
+              "offset": 127456,
+              "reference": "GenericPackage.Tracks",
+              "targetOffset": 130576
+            },
+            {
+              "className": "Track",
+              "offset": 130576,
+              "reference": "GenericTrack.Sequence",
+              "targetOffset": 130687
+            },
+            {
+              "className": "Sequence",
+              "offset": 130687,
+              "reference": "Sequence.StructuralComponents",
+              "targetOffset": 130792
+            },
+            {
+              "className": "SourceClip",
+              "offset": 130792,
+              "reference": "SourceClip.SourcePackageID",
+              "valueHex": "060a2b340101010501010f1013000000087d54051173960613b27c57583610fa"
+            }
+          ]
+        ],
+        "prefaceSummaryFileIds": [
+          {
+            "hex": "060a2b340101010501010f1013000000087d54051173960613b27c57583610fa",
+            "range": [
+              91908,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "prefaceSummaryMasterIds": [
+          {
+            "hex": "060a2b340101010501010f1013000000087a7d77117396062c307c57583610fa",
+            "range": [
+              91860,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "pmrMatch": {
+          "index": 443,
+          "offset": 114670,
+          "filename": "7280108SMA01.6A04F087D5405A.mxf",
+          "fileId": "060a2b340101010501010f101300000005547d087311069613b27c57583610fa",
+          "masterId": "060a2b340101010501010f1013000000777d7a08731106962c307c57583610fa",
+          "storedFileHex": "060a2b340101010501010f101300000005547d087311069613b27c57583610fa",
+          "storedMasterHex": "060a2b340101010501010f1013000000777d7a08731106962c307c57583610fa"
+        },
+        "filePmrFullEquality": true,
+        "masterPmrFullEquality": true,
+        "fileMdbMatch": {
+          "object": 124591,
+          "recordedMobIdHex": "060a2b340101010501010f101300000005547d087311069613b27c57583610fa",
+          "mobIdRanges": [
+            [
+              1477214,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": true
+        },
+        "fileMdbInactiveSameIdObjects": [
+          {
+            "object": 91263,
+            "recordedMobIdHex": "060a2b340101010501010f101300000005547d087311069613b27c57583610fa",
+            "mobIdRanges": [
+              [
+                634589,
+                32
+              ]
+            ],
+            "classHex": "4d4f424a",
+            "inRequiredCatalogue": false,
+            "inObjectSpine": false,
+            "hasPhysicalMedia": true
+          }
+        ],
+        "masterMdbMatch": {
+          "object": 144032,
+          "recordedMobIdHex": "060a2b340101010501010f1013000000777d7a08731106962c307c57583610fa",
+          "mobIdRanges": [
+            [
+              2101508,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": false
+        },
+        "masterMdbInactiveSameIdObjects": [
+          {
+            "object": 68896,
+            "recordedMobIdHex": "060a2b340101010501010f1013000000777d7a08731106962c307c57583610fa",
+            "mobIdRanges": [
+              [
+                25074,
+                32
+              ]
+            ],
+            "classHex": "4d4f424a",
+            "inRequiredCatalogue": false,
+            "inObjectSpine": false,
+            "hasPhysicalMedia": false
+          }
+        ],
+        "summaryFileAgreesWithGraph": true,
+        "summaryMasterAgreesWithGraph": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/1730_8646_submastede88816cv.mxf",
+        "fileBytes": 31637089,
+        "headerRange": [
+          256,
+          524064
+        ],
+        "headerSha256": "ae8cf0aff0369ca65ed2f11e9ab0873c57eae9292228d9123455ae748b757711",
+        "stableImmediate": true,
+        "activePackageCount": 3,
+        "activeEssenceContainerDataCount": 1,
+        "prefaceOffset": 88456,
+        "contentStorageOffset": 119265,
+        "ecdOffset": 119398,
+        "filePackageOffset": 120685,
+        "filePackageClass": "SourcePackage",
+        "filePackageName": "",
+        "fileInstanceUIDHex": "a6717ae37f434615a1aeb0865876bcbd",
+        "fileWireHex": "060a2b340101010501010f1013000000de88816c10279606dc0d30138b72a179",
+        "fileNormalizedHex": "060a2b340101010501010f10130000006c8188de27100696dc0d30138b72a179",
+        "fileIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f1013000000de88816c10279606dc0d30138b72a179",
+            "range": [
+              119463,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          },
+          {
+            "hex": "060a2b340101010501010f1013000000de88816c10279606dc0d30138b72a179",
+            "range": [
+              120848,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "masterPackageOffset": 120098,
+        "masterPackageName": "1730_8646_SUBMASTER,Stabilize,181",
+        "masterWireHex": "060a2b340101010501010f1013000000de88816b1027960613a130138b72a179",
+        "masterNormalizedHex": "060a2b340101010501010f10130000006b8188de2710069613a130138b72a179",
+        "masterInstanceUIDHex": "4607895a920b46c582064927dc989b08",
+        "masterIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f1013000000de88816b1027960613a130138b72a179",
+            "range": [
+              120304,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "linkedMasterCount": 1,
+        "masterTrackToFilePaths": [
+          [
+            {
+              "className": "MaterialPackage",
+              "offset": 120098,
+              "reference": "GenericPackage.Tracks",
+              "targetOffset": 120336
+            },
+            {
+              "className": "Track",
+              "offset": 120336,
+              "reference": "GenericTrack.Sequence",
+              "targetOffset": 120447
+            },
+            {
+              "className": "Sequence",
+              "offset": 120447,
+              "reference": "Sequence.StructuralComponents",
+              "targetOffset": 120552
+            },
+            {
+              "className": "SourceClip",
+              "offset": 120552,
+              "reference": "SourceClip.SourcePackageID",
+              "valueHex": "060a2b340101010501010f1013000000de88816c10279606dc0d30138b72a179"
+            }
+          ]
+        ],
+        "prefaceSummaryFileIds": [
+          {
+            "hex": "060a2b340101010501010f1013000000de88816c10279606dc0d30138b72a179",
+            "range": [
+              88553,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "prefaceSummaryMasterIds": [
+          {
+            "hex": "060a2b340101010501010f1013000000de88816b1027960613a130138b72a179",
+            "range": [
+              88505,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "pmrMatch": {
+          "index": 1,
+          "offset": 61188,
+          "filename": "1730_8646_submastede88816cv.mxf",
+          "fileId": "060a2b340101010501010f10130000006c8188de27100696dc0d30138b72a179",
+          "masterId": "060a2b340101010501010f10130000006b8188de2710069613a130138b72a179",
+          "storedFileHex": "060a2b340101010501010f10130000006c8188de27100696dc0d30138b72a179",
+          "storedMasterHex": "060a2b340101010501010f10130000006b8188de2710069613a130138b72a179"
+        },
+        "filePmrFullEquality": true,
+        "masterPmrFullEquality": true,
+        "fileMdbMatch": {
+          "object": 142451,
+          "recordedMobIdHex": "060a2b340101010501010f10130000006c8188de27100696dc0d30138b72a179",
+          "mobIdRanges": [
+            [
+              2050616,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": true
+        },
+        "fileMdbInactiveSameIdObjects": [
+          {
+            "object": 92786,
+            "recordedMobIdHex": "060a2b340101010501010f10130000006c8188de27100696dc0d30138b72a179",
+            "mobIdRanges": [
+              [
+                675579,
+                32
+              ]
+            ],
+            "classHex": "4d4f424a",
+            "inRequiredCatalogue": false,
+            "inObjectSpine": false,
+            "hasPhysicalMedia": true
+          }
+        ],
+        "masterMdbMatch": {
+          "object": 142305,
+          "recordedMobIdHex": "060a2b340101010501010f10130000006b8188de2710069613a130138b72a179",
+          "mobIdRanges": [
+            [
+              2046159,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": false
+        },
+        "masterMdbInactiveSameIdObjects": [
+          {
+            "object": 92770,
+            "recordedMobIdHex": "060a2b340101010501010f10130000006b8188de2710069613a130138b72a179",
+            "mobIdRanges": [
+              [
+                675035,
+                32
+              ]
+            ],
+            "classHex": "4d4f424a",
+            "inRequiredCatalogue": false,
+            "inObjectSpine": false,
+            "hasPhysicalMedia": false
+          }
+        ],
+        "summaryFileAgreesWithGraph": true,
+        "summaryMasterAgreesWithGraph": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7293007LMA01.6A0500C57EA1CA.mxf",
+        "fileBytes": 2568801,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "3fd75b378276e469f6799026f3e68db865f2e5e1317666c721dd3e50db540a52",
+        "stableImmediate": true,
+        "activePackageCount": 3,
+        "activeEssenceContainerDataCount": 1,
+        "prefaceOffset": 91811,
+        "contentStorageOffset": 124611,
+        "ecdOffset": 124744,
+        "filePackageOffset": 126769,
+        "filePackageClass": "SourcePackage",
+        "filePackageName": "",
+        "fileInstanceUIDHex": "448b7ac5e22d4213974ac5a2e3766314",
+        "fileWireHex": "060a2b340101010501010f10130000000c57ea1c11739606a5e97c57583610fa",
+        "fileNormalizedHex": "060a2b340101010501010f10130000001cea570c73110696a5e97c57583610fa",
+        "fileIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f10130000000c57ea1c11739606a5e97c57583610fa",
+            "range": [
+              124809,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          },
+          {
+            "hex": "060a2b340101010501010f10130000000c57ea1c11739606a5e97c57583610fa",
+            "range": [
+              126940,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "descriptorClass": "WaveAudioDescriptor",
+        "masterPackageOffset": 127899,
+        "masterPackageName": "106/2.new.01",
+        "masterWireHex": "060a2b340101010501010f10130000000b94edbd1173960657a37c57583610fa",
+        "masterNormalizedHex": "060a2b340101010501010f1013000000bded940b7311069657a37c57583610fa",
+        "masterInstanceUIDHex": "a646be58bbbb4604b3e5d13780890538",
+        "masterIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f10130000000b94edbd1173960657a37c57583610fa",
+            "range": [
+              128251,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "linkedMasterCount": 1,
+        "masterTrackToFilePaths": [
+          [
+            {
+              "className": "MaterialPackage",
+              "offset": 127899,
+              "reference": "GenericPackage.Tracks",
+              "targetOffset": 131159
+            },
+            {
+              "className": "Track",
+              "offset": 131159,
+              "reference": "GenericTrack.Sequence",
+              "targetOffset": 131270
+            },
+            {
+              "className": "Sequence",
+              "offset": 131270,
+              "reference": "Sequence.StructuralComponents",
+              "targetOffset": 131375
+            },
+            {
+              "className": "SourceClip",
+              "offset": 131375,
+              "reference": "SourceClip.SourcePackageID",
+              "valueHex": "060a2b340101010501010f10130000000c57ea1c11739606a5e97c57583610fa"
+            }
+          ]
+        ],
+        "prefaceSummaryFileIds": [
+          {
+            "hex": "060a2b340101010501010f10130000000c57ea1c11739606a5e97c57583610fa",
+            "range": [
+              91908,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "prefaceSummaryMasterIds": [
+          {
+            "hex": "060a2b340101010501010f10130000000b94edbd1173960657a37c57583610fa",
+            "range": [
+              91860,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "pmrMatch": {
+          "index": 82,
+          "offset": 65039,
+          "filename": "7293007LMA01.6A0500C57EA1CA.mxf",
+          "fileId": "060a2b340101010501010f10130000001cea570c73110696a5e97c57583610fa",
+          "masterId": "060a2b340101010501010f1013000000bded940b7311069657a37c57583610fa",
+          "storedFileHex": "060a2b340101010501010f10130000001cea570c73110696a5e97c57583610fa",
+          "storedMasterHex": "060a2b340101010501010f1013000000bded940b7311069657a37c57583610fa"
+        },
+        "filePmrFullEquality": true,
+        "masterPmrFullEquality": true,
+        "fileMdbMatch": {
+          "object": 125847,
+          "recordedMobIdHex": "060a2b340101010501010f10130000001cea570c73110696a5e97c57583610fa",
+          "mobIdRanges": [
+            [
+              1509023,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": true
+        },
+        "fileMdbInactiveSameIdObjects": [
+          {
+            "object": 79489,
+            "recordedMobIdHex": "060a2b340101010501010f10130000001cea570c73110696a5e97c57583610fa",
+            "mobIdRanges": [
+              [
+                306029,
+                32
+              ]
+            ],
+            "classHex": "4d4f424a",
+            "inRequiredCatalogue": false,
+            "inObjectSpine": false,
+            "hasPhysicalMedia": true
+          }
+        ],
+        "masterMdbMatch": {
+          "object": 152833,
+          "recordedMobIdHex": "060a2b340101010501010f1013000000bded940b7311069657a37c57583610fa",
+          "mobIdRanges": [
+            [
+              2369382,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": false
+        },
+        "masterMdbInactiveSameIdObjects": [
+          {
+            "object": 104821,
+            "recordedMobIdHex": "060a2b340101010501010f1013000000bded940b7311069657a37c57583610fa",
+            "mobIdRanges": [
+              [
+                989088,
+                32
+              ]
+            ],
+            "classHex": "4d4f424a",
+            "inRequiredCatalogue": false,
+            "inObjectSpine": false,
+            "hasPhysicalMedia": false
+          }
+        ],
+        "summaryFileAgreesWithGraph": true,
+        "summaryMasterAgreesWithGraph": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/V01.6A050275_B95B90B95B9CCV.mxf",
+        "fileBytes": 46431841,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "2fdd3de7e4ad0db8c93ed7dad92be469eaf0424c61da09716802d21f0bab8499",
+        "stableImmediate": true,
+        "activePackageCount": 3,
+        "activeEssenceContainerDataCount": 1,
+        "prefaceOffset": 89600,
+        "contentStorageOffset": 121886,
+        "ecdOffset": 122019,
+        "filePackageOffset": 126127,
+        "filePackageClass": "SourcePackage",
+        "filePackageName": "",
+        "fileInstanceUIDHex": "3169c26d0cf8463c850a410262f4023e",
+        "fileWireHex": "060a2b340101010501010f10130000000b95b9cc1173960637c77c57583610fa",
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ccb9950b7311069637c77c57583610fa",
+        "fileIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f10130000000b95b9cc1173960637c77c57583610fa",
+            "range": [
+              122084,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          },
+          {
+            "hex": "060a2b340101010501010f10130000000b95b9cc1173960637c77c57583610fa",
+            "range": [
+              126282,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "masterPackageOffset": 123490,
+        "masterPackageName": "Ident_2sec.new.01",
+        "masterWireHex": "060a2b340101010501010f10130000000b94dd02117396069cd47c57583610fa",
+        "masterNormalizedHex": "060a2b340101010501010f101300000002dd940b731106969cd47c57583610fa",
+        "masterInstanceUIDHex": "d5f6bd7a80db468aad34d84b96d83c7a",
+        "masterIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f10130000000b94dd02117396069cd47c57583610fa",
+            "range": [
+              123708,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "linkedMasterCount": 1,
+        "masterTrackToFilePaths": [
+          [
+            {
+              "className": "MaterialPackage",
+              "offset": 123490,
+              "reference": "GenericPackage.Tracks",
+              "targetOffset": 125778
+            },
+            {
+              "className": "Track",
+              "offset": 125778,
+              "reference": "GenericTrack.Sequence",
+              "targetOffset": 125889
+            },
+            {
+              "className": "Sequence",
+              "offset": 125889,
+              "reference": "Sequence.StructuralComponents",
+              "targetOffset": 125994
+            },
+            {
+              "className": "SourceClip",
+              "offset": 125994,
+              "reference": "SourceClip.SourcePackageID",
+              "valueHex": "060a2b340101010501010f10130000000b95b9cc1173960637c77c57583610fa"
+            }
+          ]
+        ],
+        "prefaceSummaryFileIds": [
+          {
+            "hex": "060a2b340101010501010f10130000000b95b9cc1173960637c77c57583610fa",
+            "range": [
+              89697,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "prefaceSummaryMasterIds": [
+          {
+            "hex": "060a2b340101010501010f10130000000b94dd02117396069cd47c57583610fa",
+            "range": [
+              89649,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "pmrMatch": {
+          "index": 230,
+          "offset": 82947,
+          "filename": "V01.6A050275_B95B90B95B9CCV.mxf",
+          "fileId": "060a2b340101010501010f1013000000ccb9950b7311069637c77c57583610fa",
+          "masterId": "060a2b340101010501010f101300000002dd940b731106969cd47c57583610fa",
+          "storedFileHex": "060a2b340101010501010f1013000000ccb9950b7311069637c77c57583610fa",
+          "storedMasterHex": "060a2b340101010501010f101300000002dd940b731106969cd47c57583610fa"
+        },
+        "filePmrFullEquality": true,
+        "masterPmrFullEquality": true,
+        "fileMdbMatch": {
+          "object": 155596,
+          "recordedMobIdHex": "060a2b340101010501010f1013000000ccb9950b7311069637c77c57583610fa",
+          "mobIdRanges": [
+            [
+              2458026,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": true
+        },
+        "fileMdbInactiveSameIdObjects": [
+          {
+            "object": 87466,
+            "recordedMobIdHex": "060a2b340101010501010f1013000000ccb9950b7311069637c77c57583610fa",
+            "mobIdRanges": [
+              [
+                519375,
+                32
+              ]
+            ],
+            "classHex": "4d4f424a",
+            "inRequiredCatalogue": false,
+            "inObjectSpine": false,
+            "hasPhysicalMedia": true
+          }
+        ],
+        "masterMdbMatch": {
+          "object": 121171,
+          "recordedMobIdHex": "060a2b340101010501010f101300000002dd940b731106969cd47c57583610fa",
+          "mobIdRanges": [
+            [
+              1362354,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": false
+        },
+        "masterMdbInactiveSameIdObjects": [
+          {
+            "object": 96678,
+            "recordedMobIdHex": "060a2b340101010501010f101300000002dd940b731106969cd47c57583610fa",
+            "mobIdRanges": [
+              [
+                770790,
+                32
+              ]
+            ],
+            "classHex": "4d4f424a",
+            "inRequiredCatalogue": false,
+            "inObjectSpine": false,
+            "hasPhysicalMedia": false
+          }
+        ],
+        "summaryFileAgreesWithGraph": true,
+        "summaryMasterAgreesWithGraph": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf",
+        "fileBytes": 3207777,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "4e1ea26a6459f3e1d07e3c361986602f1c28e8a9d31d0de4ff7ef5ed80676b38",
+        "stableImmediate": true,
+        "activePackageCount": 3,
+        "activeEssenceContainerDataCount": 1,
+        "prefaceOffset": 92273,
+        "contentStorageOffset": 126584,
+        "ecdOffset": 126717,
+        "filePackageOffset": 130660,
+        "filePackageClass": "SourcePackage",
+        "filePackageName": "",
+        "fileInstanceUIDHex": "f63b8df7d438864ebc7d4c43da0458cd",
+        "fileWireHex": "060a2b340101010501010f10130000000a3c589a1255900648e346fc807fda72",
+        "fileNormalizedHex": "060a2b340101010501010f10130000009a583c0a5512069048e346fc807fda72",
+        "fileIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f10130000000a3c589a1255900648e346fc807fda72",
+            "range": [
+              126782,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          },
+          {
+            "hex": "060a2b340101010501010f10130000000a3c589a1255900648e346fc807fda72",
+            "range": [
+              130831,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "descriptorClass": "WaveAudioDescriptor",
+        "masterPackageOffset": 126814,
+        "masterPackageName": "Avid DNx SQ",
+        "masterWireHex": "060a2b340101010501010f10130000000a3c588612559006c09946fc807fda72",
+        "masterNormalizedHex": "060a2b340101010501010f101300000086583c0a55120690c09946fc807fda72",
+        "masterInstanceUIDHex": "094b67ae9ce0b04c96599b53c0756907",
+        "masterIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f10130000000a3c588612559006c09946fc807fda72",
+            "range": [
+              127052,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "linkedMasterCount": 1,
+        "masterTrackToFilePaths": [
+          [
+            {
+              "className": "MaterialPackage",
+              "offset": 126814,
+              "reference": "GenericPackage.Tracks",
+              "targetOffset": 129962
+            },
+            {
+              "className": "Track",
+              "offset": 129962,
+              "reference": "GenericTrack.Sequence",
+              "targetOffset": 130073
+            },
+            {
+              "className": "Sequence",
+              "offset": 130073,
+              "reference": "Sequence.StructuralComponents",
+              "targetOffset": 130178
+            },
+            {
+              "className": "SourceClip",
+              "offset": 130178,
+              "reference": "SourceClip.SourcePackageID",
+              "valueHex": "060a2b340101010501010f10130000000a3c589a1255900648e346fc807fda72"
+            }
+          ]
+        ],
+        "prefaceSummaryFileIds": [
+          {
+            "hex": "060a2b340101010501010f10130000000a3c589a1255900648e346fc807fda72",
+            "range": [
+              92370,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "prefaceSummaryMasterIds": [
+          {
+            "hex": "060a2b340101010501010f10130000000a3c588612559006c09946fc807fda72",
+            "range": [
+              92322,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "pmrMatch": {
+          "index": 279,
+          "offset": 77018,
+          "filename": "A01.E6966CE6_A3C580A3C589AA.mxf",
+          "fileId": "060a2b340101010501010f10130000009a583c0a5512069048e346fc807fda72",
+          "masterId": "060a2b340101010501010f101300000086583c0a55120690c09946fc807fda72",
+          "storedFileHex": "060a2b340101010501010f10130000009a583c0a5512069048e346fc807fda72",
+          "storedMasterHex": "060a2b340101010501010f101300000086583c0a55120690c09946fc807fda72"
+        },
+        "filePmrFullEquality": true,
+        "masterPmrFullEquality": true,
+        "fileMdbMatch": {
+          "object": 75154,
+          "recordedMobIdHex": "060a2b340101010501010f10130000009a583c0a5512069048e346fc807fda72",
+          "mobIdRanges": [
+            [
+              193707,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": true
+        },
+        "fileMdbInactiveSameIdObjects": [],
+        "masterMdbMatch": {
+          "object": 75336,
+          "recordedMobIdHex": "060a2b340101010501010f101300000086583c0a55120690c09946fc807fda72",
+          "mobIdRanges": [
+            [
+              198681,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": false
+        },
+        "masterMdbInactiveSameIdObjects": [],
+        "summaryFileAgreesWithGraph": true,
+        "summaryMasterAgreesWithGraph": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/Untitled Sequence.175B1728V.mxf",
+        "fileBytes": 11119016545,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "0d324bb99c9183d04541c75b00944e5808410cee4d72eae603c322eaf6994a62",
+        "stableImmediate": true,
+        "activePackageCount": 3,
+        "activeEssenceContainerDataCount": 1,
+        "prefaceOffset": 89144,
+        "contentStorageOffset": 121482,
+        "ecdOffset": 121615,
+        "filePackageOffset": 123290,
+        "filePackageClass": "SourcePackage",
+        "filePackageName": "Untitled Sequence.05,Video Mixdown,1.PHYS",
+        "fileInstanceUIDHex": "5d6fb4db177b014eb700e4efdca5a4c0",
+        "fileWireHex": "060a2b340101010501010f1013000000175b172812619006badf46fc807fda72",
+        "fileNormalizedHex": "060a2b340101010501010f101300000028175b1761120690badf46fc807fda72",
+        "fileIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f1013000000175b172812619006badf46fc807fda72",
+            "range": [
+              121680,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          },
+          {
+            "hex": "060a2b340101010501010f1013000000175b172812619006badf46fc807fda72",
+            "range": [
+              123527,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "masterPackageOffset": 122637,
+        "masterPackageName": "Untitled Sequence.05,Video Mixdown,1",
+        "masterWireHex": "060a2b340101010501010f1013000000175b1719126190061ff746fc807fda72",
+        "masterNormalizedHex": "060a2b340101010501010f101300000019175b17611206901ff746fc807fda72",
+        "masterInstanceUIDHex": "9229b7a2032a954a912eac187911e71e",
+        "masterIdSourceRanges": [
+          {
+            "hex": "060a2b340101010501010f1013000000175b1719126190061ff746fc807fda72",
+            "range": [
+              122821,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "linkedMasterCount": 1,
+        "masterTrackToFilePaths": [
+          [
+            {
+              "className": "MaterialPackage",
+              "offset": 122637,
+              "reference": "GenericPackage.Tracks",
+              "targetOffset": 122853
+            },
+            {
+              "className": "Track",
+              "offset": 122853,
+              "reference": "GenericTrack.Sequence",
+              "targetOffset": 123036
+            },
+            {
+              "className": "Sequence",
+              "offset": 123036,
+              "reference": "Sequence.StructuralComponents",
+              "targetOffset": 123141
+            },
+            {
+              "className": "SourceClip",
+              "offset": 123141,
+              "reference": "SourceClip.SourcePackageID",
+              "valueHex": "060a2b340101010501010f1013000000175b172812619006badf46fc807fda72"
+            }
+          ]
+        ],
+        "prefaceSummaryFileIds": [
+          {
+            "hex": "060a2b340101010501010f1013000000175b172812619006badf46fc807fda72",
+            "range": [
+              89241,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "prefaceSummaryMasterIds": [
+          {
+            "hex": "060a2b340101010501010f1013000000175b1719126190061ff746fc807fda72",
+            "range": [
+              89193,
+              32
+            ],
+            "type": "MXF_UMID_TYPE"
+          }
+        ],
+        "pmrMatch": {
+          "index": 65,
+          "offset": 50925,
+          "filename": "Untitled Sequence.175B1728V.mxf",
+          "fileId": "060a2b340101010501010f101300000028175b1761120690badf46fc807fda72",
+          "masterId": "060a2b340101010501010f101300000019175b17611206901ff746fc807fda72",
+          "storedFileHex": "060a2b340101010501010f101300000028175b1761120690badf46fc807fda72",
+          "storedMasterHex": "060a2b340101010501010f101300000019175b17611206901ff746fc807fda72"
+        },
+        "filePmrFullEquality": true,
+        "masterPmrFullEquality": true,
+        "fileMdbMatch": {
+          "object": 73992,
+          "recordedMobIdHex": "060a2b340101010501010f101300000028175b1761120690badf46fc807fda72",
+          "mobIdRanges": [
+            [
+              161923,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": true
+        },
+        "fileMdbInactiveSameIdObjects": [],
+        "masterMdbMatch": {
+          "object": 74031,
+          "recordedMobIdHex": "060a2b340101010501010f101300000019175b17611206901ff746fc807fda72",
+          "mobIdRanges": [
+            [
+              163039,
+              32
+            ]
+          ],
+          "classHex": "4d4f424a",
+          "inRequiredCatalogue": true,
+          "inObjectSpine": true,
+          "hasPhysicalMedia": false
+        },
+        "masterMdbInactiveSameIdObjects": [],
+        "summaryFileAgreesWithGraph": true,
+        "summaryMasterAgreesWithGraph": true
+      }
+    ],
+    "limits": [
+      "Ten selected initial headers, not all files.",
+      "Current metadata headers re-read with immediate size/mtime/inode stability and priorheaderhash equality, not atomic snapshot.",
+      "MDB dictionaries/ranges come from earlier independent raw-value index; current entireMDB hash and relevant original bytes verified afresh.",
+      "Only recorded complete known supported graph chains checked, not runtime allformats parity or ambiguity experiment.",
+      "Optional summary IDs are reported, not required for graph-derived identity; their absence is not corruption.",
+      "No production code or repository docs changed."
+    ]
+  },
+  "recommendedBella": {
+    "fileIdentity": "Follow rooted active ContentStorage/ECD membership, LinkedPackageUID and internal essence BodySID to the qualified unique file SourcePackage with owned file descriptor; read full PackageUID. No first-source, filename or PrimaryPackage-only selection.",
+    "masterIdentity": "Use one distinct qualified active MaterialPackage whose own supported track/component SourceClip refers to the exact file package and target track. No source ancestry inference or object-order tie break. Unavailable master does not erase a sound file identity.",
+    "representation": "Full32 binary IDs; use approved shared source-aware normalizer design. MXF material fields16..19/20..21/22..23 converted to documented internal field order, rest preserved. InstanceUID is separate16-byte object lookup. No prefix exemptions or trial byte swaps.",
+    "storage": "Retain only normalized IDs/availability. Two modern ID payloads64 bytes, plus overhead. Temporary package/reference indexes released with header. No permanent hex spelling, complete graph or per-byte evidence.",
+    "summaryCopies": "Graph-selected identities need no retained duplicate Preface summary copies or mandatory runtime comparison. Baseline proposal does not select summary-only rescue; proven compatibility variants remain evidence-driven work.",
+    "availability": "Missing/wrong-width/zero/ambiguous own identities remain unavailable; physical row retained, no synthetic IDs. A zero SourceClip reference normally terminates source ancestry and is not by itself damage.",
+    "crossSource": "Full normalized equality joins PMR/MDB/MXF. Disagreement precedence and header-open triggers remain deferred."
+  },
+  "publicPrimaryEvidence": [
+    {
+      "url": "https://pub.smpte.org/latest/st377-1/st377-1-2019.pdf",
+      "scope": "PackageID32, distinct InstanceUID16, file/ECD BodySID association, material SourceClip package/track references; sections4.2,9.4.3,9.5.7-9.5.9 and AnnexB."
+    }
+  ],
+  "researchReceipts": [
+    {
+      "path": "/private/tmp/bella-mxf-ids-mc-20261021/findings.json",
+      "sha256": "f639d58b4d3b21b8af0050f23efd858f5c99ef1eabdb00c685e53e9e5ccdf333"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/findings.json",
+      "sha256": "6a1d72804a636473e61e2259b53119d40feef978f32ae5b9cfc2fb70a723867d"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-current-20261021.json",
+      "sha256": "e5f351e2b39fdf19ddaf3d3f217d3738dc7a58713c70a60c6ea7dc20d9731596"
+    }
+  ],
+  "verifiedInputAndArtifactCount": 66,
+  "verifiedInputsAndArtifacts": [
+    {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mc-20261021/MakeAAFMobID.txt",
+      "sha256": "f981d376268f1ee023b56897c9afc81f1a84390fc2ae8c5b543a22b9a3a14b0c"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mc-20261021/MakeCMMobID.txt",
+      "sha256": "a64e434a571b94065a6b15f19e3734eb72c84b8c7777c2748dd1a8b46665f377"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mc-20261021/ConvertAAFToCM.txt",
+      "sha256": "4a95d8c498d3e4b332ec63f39c8ed099ec4690fb9fe5b2f34794e98ac4c630a1"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mc-20261021/ConvertCMToAAF.txt",
+      "sha256": "09b307775be19120e95ececd5467d7613d0a7301e1345414c9d16949d49f56eb"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mc-20261021/GetMobIDProp.txt",
+      "sha256": "154cede4b993164b4afb4fc984ae4330e9421d397b1260351b93eaefd3d1aaa1"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mc-20261021/SetMobIDProp.txt",
+      "sha256": "3eb4fab88cf0bff0496302f256f0c7e033ab27d6590485f4c64e7308f9077d6c"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mc-20261021/AddMobEntry.txt",
+      "sha256": "8fd2bb3df1435b08303440656c874b91f5033a19c5f588d64ae5800f1db7d659"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mc-20261021/GetPMRProperties.txt",
+      "sha256": "ab524f2445d72d808d9a86c1a43429914638a1e0dc9890b64ad3b50c99b3dc24"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-native-20261021/LocalMDB-ScanMXF.txt",
+      "sha256": "d13af51c72b5b144a49a8fd14606201eeeee71f143880366b8c53890d5c4fd2f"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-native-20261021/MSMDB-ScanMXF.txt",
+      "sha256": "fbfd816b70edc479839cb730df023c771122f81300d6051e614b840feb1cb589"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-native-20261021/findings.json",
+      "sha256": "f1036f660fe800546ce48c1c8fb670d622c8bfba6ad4591fa6668d4b10cbbce5"
+    },
+    {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/MDVxDatabaseItem_checkUUID.txt",
+      "sha256": "e375a04b4944ef6762ec29562cdc9f7d12208115b4e5933197b5d0459461136d"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/MDVxDatabaseItem_hash.txt",
+      "sha256": "bb00b7deac99df29fb5099f7fe1919f8c635839cd163d6b58b67ad1eb7cbb3be"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/MDVxDatabaseItem_isEqualByUUID.annotated.txt",
+      "sha256": "4786f11fd88782e03e8f5234d2795f9c0170d6d59486a3809a53f9a6d202d176"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/MDVxDatabaseItem_isEqualByUUID.txt",
+      "sha256": "4786f11fd88782e03e8f5234d2795f9c0170d6d59486a3809a53f9a6d202d176"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/MDVxDatabaseItem_setFileUIDWithNSData.annotated.txt",
+      "sha256": "0ba8048b8935a816a26291b8b06a9727aaa0e20db808ae2c6908cef801b8b557"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/MDVxDatabaseItem_setFileUIDWithNSData.txt",
+      "sha256": "0ba8048b8935a816a26291b8b06a9727aaa0e20db808ae2c6908cef801b8b557"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/MDVxDatabaseItem_setMaterialUIDWithNSData.annotated.txt",
+      "sha256": "cb7a97c6420cb271470d353e56e4a2d742f7494951375afe2b4c630e3e877b36"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/MDVxDatabaseItem_setMaterialUIDWithNSData.txt",
+      "sha256": "cb7a97c6420cb271470d353e56e4a2d742f7494951375afe2b4c630e3e877b36"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/MDVxMXF_addInfoToItem.annotated.txt",
+      "sha256": "e37c236ca4026ed36cc941ee3c643b3678bec7acf5f58f8e37f898291f80f532"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/MDVxMXF_openFile_withIndicator.annotated.txt",
+      "sha256": "2c170a352a7c54bc0bb9d77e2bff5c97f1298b035ff9ce5c03cef88d016f1eaa"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/MDVxMXF_swapUUIDfromMXFtoMDVx.annotated.txt",
+      "sha256": "f982493a4e328bf009a708c50a63d8eae2564fb75100b272573c5441f994b5d2"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/ami_read_info.annotated.txt",
+      "sha256": "7f7e2ff52992ffb6def9dca758949b79cc969ced37deeac652b29f8a7ec4e344"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_dereference.annotated.txt",
+      "sha256": "35e47d29a3860d32934059806d08a0d66c63f2b5bdc2e48780902f241310e8a3"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_dereference.txt",
+      "sha256": "4db1aafa31309db8829070655796b6f7f23aa01fe0eb6cb270537d00aa339b4c"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_equals_umid.txt",
+      "sha256": "9c6107360e6bebf61b1b8dd1209cb694b7468c19f68ecdc5d77fd1847fc5ce81"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_find_list_element.txt",
+      "sha256": "a91c2913576f9f23093a7903fe0d6d2626e2b2f8d619137d86db6c88192c4638"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_find_set_by_key.annotated.txt",
+      "sha256": "d326311180b0357a426e7c230f637ebbe86e2a73d2241cb0124b8c19ce042dda"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_find_set_by_key.txt",
+      "sha256": "d326311180b0357a426e7c230f637ebbe86e2a73d2241cb0124b8c19ce042dda"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_find_singular_set_by_key.annotated.txt",
+      "sha256": "3fbf8e014935e16854c1d5a96684d6d2fcab7b42151c794193e79174933f4ea5"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_find_singular_set_by_key.txt",
+      "sha256": "3fbf8e014935e16854c1d5a96684d6d2fcab7b42151c794193e79174933f4ea5"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_get_strongref.annotated.txt",
+      "sha256": "cf6f72376c4267b1cbf4ff359693c8cbc2ce058047f76b6b3ea615c21d2b4b86"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_get_strongref.txt",
+      "sha256": "628c457216552dab443bd977ddeafe040da91cc8c137b002b8dfdbfc9ff725c2"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_get_strongref_item.annotated.txt",
+      "sha256": "01e4797e43b7df544effb15b719968080388bfdf6264d0c7826ff821eaab36bd"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_get_strongref_item.txt",
+      "sha256": "ac9c11263abc2f9e6c47354c3c0fc33b8aa0211de5f5cee263075e812f02daf3"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_get_umid_item.annotated.txt",
+      "sha256": "f5a2cdf6f54918515dad8f1437d0160db109f664e849cbdf3027e64ff7162f0e"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_get_umid_item.txt",
+      "sha256": "da13041402307b7869cfdb357990b4b2ec0a97ca7e3bf7af13c38d267b311592"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_is_op_atom.annotated.txt",
+      "sha256": "82f2dbf270aad1c4c788624dd44170fc7201deb87824e3ce2a8c8a417f314bb3"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_is_op_atom.txt",
+      "sha256": "82f2dbf270aad1c4c788624dd44170fc7201deb87824e3ce2a8c8a417f314bb3"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_uu_get_referenced_package.annotated.txt",
+      "sha256": "8fd8c7b046b805420bd21ebf7d65d3a3002e2284d1463710cd15f83e0e3947d4"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_uu_get_referenced_package.txt",
+      "sha256": "bc9c815b43305985f9455509b93ec1094d629db01628cc0e6d76255c912437b3"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_uu_get_top_file_package.annotated.txt",
+      "sha256": "98d03fe46430ab03bfbb36d04d4f81391468dd85da69e899579a7ce9dc4b2b91"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_uu_get_top_file_package.txt",
+      "sha256": "95b3ae528c9c5f11d2d61bc37765acf3c8599bd3faf838fe93d0ec66df4c21f3"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_uu_get_track_reference.annotated.txt",
+      "sha256": "caf9c9b5362b08f223ea7c4adefac4de41aa9d4e69f9c21c5fea663b123a9e0f"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/mxf_uu_get_track_reference.txt",
+      "sha256": "1b548655c7bcea353bef80647be308d6f67e3942bec8ea17be725e06fe4cdc42"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/set_eq_instanceuid.txt",
+      "sha256": "72403bd7dd8a97fb291db506b2d7f99ff93834884a09ddc7c94194933ba7d08b"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+      "sha256": "c8c68e78db5f3efaa62235f55624c5478e89a0adc37581a922af050f931cad55"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+      "sha256": "379a31643b62b945e3e1ed83245e5f3a7be8df4ebeec73aea31327c1d915b374"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+      "sha256": "6d67b2300f380cd63a50547595154ee27d8ab69f36b6d87e83e81fd3a33ff75c"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+      "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mobid.h",
+      "sha256": "6a6d13d5ed86acd52eabc437c7893f5eaffceba0399cbb21ea87ab209fa4ddc8"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/omfuid.h",
+      "sha256": "59d30117ed9d58f145d18ee517005a388faa9e976b57e92763386e56eed1c04d"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+      "sha256": "f9f633bc0022e5f681b210d58a95cf472b04db0b6189ead78f9d22b7e8618a22"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginemxf.cpp",
+      "sha256": "4b7e38b030383277be0e59cf0fc2346fd21cfccf8453e27252d746bca8904299"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-current-20261021/bella-readme-at-source-audit.md",
+      "sha256": "3543f238e325de648ec72d05538e116ac5f3a2c6255324f2089d14e7821c8b6b"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-current-20261021/probe.py",
+      "sha256": "be835507f34f9014b4f04209047691af861541c128c24b0b25f4509ae0a3d50b"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-current-20261021/observations.json",
+      "sha256": "061cb597e5d95497d19f523049be26b78fb72a8ae7c206aff367bc978eb3b5ef"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-03-format-audit/evidence/mxf_baseline_data_model.h",
+      "sha256": "cd1a1b26a680da57a90d35992266e9840b9799fc6b9a22e65f3b9c4220e276b1"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-03-format-audit/evidence/mxf_extensions_data_model.h",
+      "sha256": "1cd3304ae1560ee1663a38daa9aad849c3849fb3ce0162409a0a0e27298ad7e3"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/Project Canon/evidence/fresh-mxf-avid-data-model-2026-10-04.h",
+      "sha256": "e653e27e6cdbbef3baf18799a80803cdfe700016f76e40fbd08a4271f0d49927"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-headers-20261021/inventory.json",
+      "sha256": "0ab1e522dd3d7eb15f3ee7eee7c01004f4fa42674610a9caabcf677db092843d"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mc-20261021/findings.json",
+      "sha256": "f639d58b4d3b21b8af0050f23efd858f5c99ef1eabdb00c685e53e9e5ccdf333"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-mdvx-20261021/findings.json",
+      "sha256": "6a1d72804a636473e61e2259b53119d40feef978f32ae5b9cfc2fb70a723867d"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-current-20261021.json",
+      "sha256": "e5f351e2b39fdf19ddaf3d3f217d3738dc7a58713c70a60c6ea7dc20d9731596"
+    }
+  ],
+  "limits": [
+    "All10selectedinitialheaderschecked, not all corpus; actual results do not prove everyAvid/thirdpartyvariant.",
+    "No runtime productiontest, corruptionexperiment, scanbenchmark or rootMCnativeuniversalprecedence inference.",
+    "Headerreadrange/hashes only; noessencepayloadread or wholemediahash.",
+    "MDBrawindexfrompriorindependentaudit was reused with freshwholeDBhash and all relevant rawbytesverified; cataloguescope is necessary because12inactive sameIDobjects werefound alongsideuniqueactiveowners.",
+    "General sourcepriorityandnewheaderopening triggers remain separate. No scanner code/doc change in repository.",
+    "Fresh source/native observations are not a scan benchmark, proof of every writer or a new Bella runtime test.",
+    "No universal Media Composer preference between optional summary properties and graph identity was established."
+  ],
+  "validation": {
+    "productionCodeChanged": false,
+    "appOrPrivateApiRun": false,
+    "buildsOrParserTestsRun": false,
+    "actualHeaderAndDatabaseComparison": true,
+    "essenceRead": false,
+    "wholeMediaHash": false,
+    "oldScannerActive": true,
+    "binFilterChanged": false
+  },
+  "approvedBy": {
+    "date": "2026-10-22",
+    "timezone": "Australia/Sydney",
+    "receipt": "Project Bella/evidence/mxf-identities-plan-2026-10-22.json",
+    "scope": "All six focused file/master identity, normalization, retention, summary-copy and availability rules. Other MXF rules, including the requested Clip Name review, are not approved by this decision.",
+    "historicalStatus": "This file originally recorded proposed MXF-specific requirements. The approval receipt supersedes only that proposal status; recommendedBella remains the historical research wording."
+  }
+}

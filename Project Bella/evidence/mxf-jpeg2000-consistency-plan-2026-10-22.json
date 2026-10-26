@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "Record explicit approval of the narrow JPEG2000 Compression consistency fix; alpha tracing remains separate.",
+  "status": "Approved requirements; not implemented or cut over.",
+  "authorization": {
+    "source": "Direct human request in current conversation",
+    "statement": "Let's lock in the JPEG 2000 fix. Next, trace how Media Composer identifies those alpha MXF files without the MDB. Can Bella follow a proven rule to tell whether they're compressed or uncompressed?",
+    "scope": "Approves preceding JPEG2000 naming-only adapter recommendation. Separately authorizes native alpha investigation, not a guessed alpha naming rule."
+  },
+  "agreedBellaRules": {
+    "scope": "Compression naming input adapter for qualified own MDB OMFI:MDFL:SampleRate known ExactEditRate context and exact genericJ2K coding060e2b34040101070401020203010100. Preserve all existing helper raster/layout/depth/subsampling checks.",
+    "exactMappings": [
+      {
+        "recorded": [
+          2997,
+          100
+        ],
+        "naming": [
+          30000,
+          1001
+        ]
+      },
+      {
+        "recorded": [
+          23976,
+          1000
+        ],
+        "naming": [
+          24000,
+          1001
+        ]
+      }
+    ],
+    "expectedResult": "The four verified qualified pairs would both name J2K HD; source/branch design conclusion, modifiedadapter not executed.",
+    "unchanged": "Recorded SampleRate and agreed FrameRate/Duration interpretations, catalogue/label wording, othercodec logic.",
+    "excluded": "No tolerance, nearest-rate selection, blanket decimal conversion, extra file read or relaxed HD qualification."
+  },
+  "expectedResult": "For four verified qualified pairs, both sources should name J2K HD through unchanged helper; modified adapter not yet executed.",
+  "unchanged": [
+    "Current Compression catalogue and wording.",
+    "Original recorded SampleRate and agreed Frame Rate/Duration interpretation.",
+    "Other codec mappings and exact helper raster/layout/depth/subsampling qualification.",
+    "No new source priority, tolerance, blanket rate conversion or extra header opening.",
+    "OldScanner remains active; Bella runtime follows requirements review; Bin Filter unchanged."
+  ],
+  "deferred": "Alpha MXF-only identification is under independent native/wire investigation; no uncompressed inference from A8/absence alone approved.",
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-compression-consistency-proposal-2026-10-22.json",
+    "sha256BeforeApprovalMetadata": "fd63048c46d8424bca1a310de8337c3b885940c275fce248d329421140af8060"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-21-bella-mxf/compression-consistency.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeImplemented": false,
+    "productionTestsRun": false,
+    "rawResearchChanged": false
+  }
+}

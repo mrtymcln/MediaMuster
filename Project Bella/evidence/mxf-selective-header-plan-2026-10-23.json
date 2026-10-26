@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-23",
+  "timezone": "Australia/Sydney",
+  "status": "Agreed selective header reading and compact retention; not implemented or cut over.",
+  "authorization": {
+    "source": "Direct human direction after section/memory-ceiling clarification",
+    "statement": "Well then if we are well below 64 MB - then this limit is redundant? Only read the defined Header, parse the info we need, and only store that? Sorry I'm not a coder but that sounds good to me unless you disagree",
+    "interpretation": "Accept the selective header/retention design and omit carrying over the historical accumulated-metadata buffer cap. This does not accept every pending layout/admission/recovery restriction."
+  },
+  "agreedRules": {
+    "readScope": "For an eligible header read, use the safely established declared Header Metadata section and stop at its boundary.",
+    "extraction": "Parse the agreed values plus only the temporary framing/type/ownership/reference context required to establish them. Skip unnecessary payloads by safe extent.",
+    "retention": "Keep owned compact agreed results and necessary availability/format facts; release temporary header bytes, mappings and lookups after extraction. Do not retain a whole raw header/property graph or per-row raw copies.",
+    "old64MiBCap": "Do not carry over the historical 64 MiB accumulated raw-metadata-buffer ceiling into this new design. There is no requirement to accumulate all recognised metadata into that old buffer.",
+    "bounds": "Still validate declared header/file extents, packet/value lengths, arithmetic and supported typed forms before reading/allocating. No unchecked HeaderByteCount-sized allocation.",
+    "performance": "Small sample size alone does not prove a universal maximum. Savings are expected from selective work/retention; no measured speed or memory result and no claim that removing a rarely reached check makes scanning faster.",
+    "separateScope": "Closed/complete-only admission, byte-zero/run-in behavior, unsupported OP forms and footer/RIP recovery restrictions remain pending in the navigation review. Source-opening priorities, concurrency and cutover remain separate."
+  },
+  "references": {
+    "plan": "Project Bella/README.md",
+    "review": "docs/reviews/2026-10-21-bella-mxf/layouts-and-navigation.md",
+    "historicalBufferReceipt": "Project Bella/evidence/mxf-header-boundary-clarification-2026-10-23.json"
+  },
+  "validation": {
+    "documentationOnly": true,
+    "runtimeCodeChanged": false,
+    "newBuildsOrTests": false,
+    "newMediaReads": false
+  },
+  "explicitConfirmations": [
+    {
+      "date": "2026-10-23",
+      "statement": "OK, let's lock that in for Bella. Is there anything else we need to decide for MXF before moving on to OMF?",
+      "scope": "Explicitly confirms selective defined-header reading, required-field extraction, compact retention/release and omission of the historical raw-buffer ceiling. Remaining unusual-layout/admission/recovery scope is not inferred as approved."
+    }
+  ],
+  "subsequentNavigationScopeApproval": "mxf-layouts-and-navigation-plan-2026-10-23.json"
+}

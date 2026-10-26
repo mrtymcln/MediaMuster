@@ -1,0 +1,1111 @@
+{
+  "date": "2026-10-19",
+  "timezone": "Australia/Sydney",
+  "purpose": "Field-specific MDB Project review for Bella; native observation, actual-data evidence and proposed policy kept distinct.",
+  "status": "Project owner/key/blank/immediate-source rules approved by user on 19 October 2026; requirements only, not implemented. PMR/MDB/header precedence remains deferred.",
+  "mediaComposer": {
+    "date": "2026-10-19",
+    "scope": "Read-only bounded static native Project lookup in installed Media Composer. No app launch, private API execution, media writes or production edits. Bella policy is not altered by this research.",
+    "method": "Fresh arm64 llvm-objdump disassembly, direct BL call-site scan within libame __text, native symbol/vtable target verification, manual register/control-flow reconstruction. Existing typed-string receipts reused only where installed hashes match.",
+    "application": {
+      "version": "26.8.0.58987",
+      "binaries": [
+        {
+          "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+          "bytes": 73527536,
+          "uuid": "UUID: 9CC3CF45-9F28-380C-949C-C7B321D0858A (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib\nUUID: D55FFCED-FD76-3667-99B8-C9A84180173E (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        },
+        {
+          "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+          "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+          "bytes": 14340208,
+          "uuid": "UUID: F10B2E1F-07ED-31AC-8DDD-C2122C7B4405 (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore\nUUID: EDC22A12-1101-3C73-A57C-4256A82633F9 (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore"
+        }
+      ]
+    },
+    "summary": [
+      "Project is metadata on a particular mob/composition; there is no single MDB-global Project and no universal native file-before-master priority.",
+      "Direct Project lookup tries the owner’s _PJ and only if not found tries PROJNAME. A present blank _PJ stops both PROJNAME and higher-level native FindProjectName fallback.",
+      "Native inherited Project lookup can inspect _USER._PJ and then linked source compositions, in track/graph traversal order. It stops on the first found applicable value rather than comparing all candidates.",
+      "Native cache consumers start from different owners: AddMobIDToDir starts from its supplied master; PMR v1 recovery starts from its file mob. Media Tool PMR Project chooser separately uses cached PMR Project and can substitute current-project context for empty input.",
+      "Bella can choose a conservative physical-file-centered lookup explicitly, while preserving missing, blank, unusable and conflicting states internally. That proposal is separate from a claim of exact native behavior."
+    ],
+    "directLookup": {
+      "function": "CMGetProjectName(AComposition*,char*,size_t)",
+      "address": "0x282b9c",
+      "steps": [
+        "Null owner or missing attribute list returns null at0x282bb0/0x282bc8→0x282c28.",
+        "GetAttrList virtualslot0x250; output firstbyte cleared0x282bd0.",
+        "FindString(_PJ,out,length,&found) at0x282bdc..0x282bf0.",
+        "Foundflag checked0x282bf4..0x282bf8. True returns output pointer0x282c2c even when output is empty.",
+        "Only foundfalse calls FindString(PROJNAME)0x282c04..0x282c1c; result then controls pointer/null return."
+      ],
+      "meaning": "These keys are alternatives on the same owner. PROJNAME is a legacy key fallback, not a separately proven UTF8 variant.",
+      "structuralCaution": "Core FindString buffer overload0x6dd10 gets named-kind metadata through InfoName; Kind2→FindStringOnly0x6dd78..94; Kind4→FindUTF8StringOnly and current-Mac conversion0x6dda0..0x6dddc. Other kinds leave output without supported conversion; no semantic-validity test is performed by CMGetProjectName. Native foundflag must not be reinterpreted as Bella usable-value validation."
+    },
+    "inheritedLookup": {
+      "function": "FindProjectName(AComposition*,int,char*,size_t)",
+      "address": "0x29e974",
+      "steps": [
+        "Call CMGetProjectName on supplied composition0x29e9b0; any nonnull pointer returns success0x29e9b4..bc, including blank.",
+        "If direct lookup absent, call GetPropValue(_PJ,owner,out,length,true)0x29e9c0..dc; success returns immediately0x29e9e0.",
+        "If still absent, iterate owner tracks from0 using NumTracks slot0x708 and FindTrack slot0x728.",
+        "For a track call FindActualSource with kNextMobGenSpec0x29ea44..6c, then CMGetProjectName on returned source composition0x29ea78..80.",
+        "Any nonnull source result returns success. Otherwise follow its source-linked track using SearchForLabel0x29ea94..9c and repeat; checks avoid immediate no-progress/self returns0x29eaa4..c4.",
+        "On failure advance original owner track0x29eac8..e8; exhaustion returnsfalse."
+      ],
+      "meaning": "Inherited source lookup is directional along track/component references. It is not a reverse scan for any master with the same file, and does not rank all related mobs globally.",
+      "qualification": "FindActualSource1 implementation and every selector/sequence/effect case were not globally re-audited here. Use explicit proven graph edges in Bella rather than claiming a universal physical-source selection algorithm from this bounded trace."
+    },
+    "userAttributeLookup": {
+      "function": "GetPropValue(char const*,AComposition*,char*,size_t,bool)",
+      "address": "0x29eaf8",
+      "local": [
+        "GetNamedList(owner,_USER,false)0x29eb28..38; this accesses owner CPNT Attributes and a named ObjectAttribute list, without creating a list.",
+        "FindString(_PJ,...) in local _USER0x29eb40..58.",
+        "With followSources false return foundflag; with true return immediately only if found AND outputfirstbyte nonzero0x29eb60..6c.",
+        "Thus local missing or blank _USER._PJ invokes PropValueVisitor::VisitTracks0x29ebb8."
+      ],
+      "visitor": {
+        "tracksFunction": "PropValueVisitor::VisitTracks",
+        "tracksAddress": "0x2a542c",
+        "sourceFunction": "PropValueVisitor::VisitSourceClip",
+        "sourceAddress": "0x2ace60",
+        "steps": [
+          "Track traversal uses ascending track index, IsMediaTrackType filter0x2a54b4..c8, component visitor slot0x4b8 at0x2a54e0..f4; stops when visitorfound flag becomestrue0x2a54fc..5500.",
+          "It contains initial MobType/AppCode guard0x2a5454..5488; this is not an unfiltered walk of every owner in the MDB.",
+          "VisitSourceClip ignores postvisit calls, resolves sourceclip FindMob slot0x5a8 and skips missing or previously visited mob pointers0x2ace80..cc.",
+          "Only linked MobType1 or2 is queried for _USER._PJ0x2aced4..0x2acf00. MobType3 does not enter this own-_USER query branch; its tracks may be traversed recursively.",
+          "Current charbuffer route calls FindString with &visitor.found0x2acf28..44. Found blank sets flagtrue and prevents recursion0x2acf60..64. This differs from the local blank check in GetPropValue.",
+          "If notfound, recurse into that source composition via visitor slot0xb8=VisitTracks at0x2acf68..78; visited set guards repeat objects."
+        ],
+        "meaning": "Native source _USER inheritance uses first applicable found value in this visitor order, including a blank linked value. It is not a consistent nonempty-only fallback chain."
+      }
+    },
+    "nativeConsumerOwners": [
+      {
+        "function": "MSMDBMediaStreamMgr::AddMobIDToDir",
+        "address": "0x43afbc",
+        "evidence": [
+          "First supplied fullMobID argumentx1 is savedx22; lookup0x43b06c..88, GetMobType==3 check0x43b094..a8, error literal Mob is not a file mob0x43b0b0..c4.",
+          "Second supplied IDargumentx2 is savedstack+0x38 at0x43afdc; lookup0x43b250..6c returns compositionx24.",
+          "FindProjectName(x24,0,ProjectBuffer,63) at0x43b27c..28c. Thus this path starts Project lookup at supplied master, not the first file owner.",
+          "Project buffer passed x5 to AddCacheEntry vtable+0x328 at0x43b310..32c, along with first/file ID and second/master ID."
+        ]
+      },
+      {
+        "function": "ReadPmrRec version1 branch",
+        "address": "0x4474e0",
+        "evidence": "Prior matching-hash receipt: version1 has no stored Project/master; file-mob lookup result is passed to FindProjectName0x447704. Does not establish modern missing-Project repair.",
+        "priorReceipt": "/private/tmp/bella-mdb-clipname-20261018-mc/findings.json"
+      },
+      {
+        "function": "AME_MobGetText Project case",
+        "address": "0x245ed8",
+        "evidence": "Starts from displayed composition; FindProjectName(comp,0,temp,256)0x245f1c; native current-Mac bytes→UTF16 at0x245f2c. Sequence display case is blank.",
+        "priorReceipt": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/pmr-project-display-2026-10-18.json"
+      },
+      {
+        "function": "MSMDBMediaStreamMgr::AddCacheEntry",
+        "address": "0x452f60",
+        "evidence": "Prior verified path copies nonempty supplied Project bytes at0x453040..50. Null/empty input calls GetCurProjectName at0x453058..6c. This is contextual cache behavior; not a Project stored in this MDB owner.",
+        "priorReceipt": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/pmr-project-display-2026-10-18.json"
+      }
+    ],
+    "nativeWriteProvenance": [
+      {
+        "function": "CMSetProjectName",
+        "address": "0x282c44",
+        "meaning": "Prior matching-hash proof AddString(_PJ,rawchar*,true)→Kind2, not an automatic named UTF8 partner."
+      },
+      {
+        "function": "CMFixupProjectNameIfNeeded",
+        "address": "0x282f44",
+        "meaning": "Only MobType2: reads direct Project0x282fb4, removes existing direct Project0x282fc4, tries FindProjectName0x283014. If inherited lookup fails, calls CMAddProjectNameAttrToTapeMobIfNeeded with saved old Project or sentinel-2. This demonstrates writer/import repair may relocate master Project onto physical tape source."
+      },
+      {
+        "function": "CMAddProjectNameAttrToTapeMobIfNeeded",
+        "address": "0x282d50",
+        "meaning": "For type3 owner with descriptor GetPhysMobType==2, if CMGetProjectName absent then CMSetProjectName0x282e24. Otherwise walks tracks with kTapeMobGenSpec0x282e7c and FindSource0x282ea8; first matching tape source gets Project only if its own lookup absent0x282ed4/0x282f18. Existing blank own Project counts as present."
+      },
+      {
+        "function": "AComposition::AddProjectNameToSourceMobsIfNeeded",
+        "address": "0x1877e0",
+        "meaning": "Only source-role MobType3 enters0x18780c..14; own _PJ foundflag0x18785c..78 triggers trackwalk toward kSFileMobGenSpec and CompIsASource(mode5), then AddString(_PJ)0x187934. The propagation copies decoded-to-current-Mac bytes even if blank. No requirement here that every master carry its own Project."
+      }
+    ],
+    "encodingUnchanged": "Approved Bella per-field explicit UTF8/typed-string validation then separate legacy MacRoman fallback remains unchanged. Native legacy/current-Mac behavior and marker-bearing typed attributes are documented by prior text receipts. This task does not establish a new UTF8 Project property or equate PROJNAME with UTF8.",
+    "bellaProposalNotApproval": {
+      "startingOwner": "For a physical media row, start at the MDB file mob matched by complete FileMobId. Read only Project values belonging to that owner and explicitly linked source ancestors.",
+      "sameOwner": "Evaluate direct _PJ before legacy key PROJNAME; a valid blank can be recorded as present blank, independently of missing/unusable. Local _USER._PJ is a distinct nested location, not any arbitrary project-named attribute elsewhere.",
+      "sourceFallback": "If approved as desired fallback, follow explicit SourceID ancestry only, bound cycles, and retain owner/provenance. Native paths are first-found, but Bella can conservatively decline ambiguous or conflicting source values rather than choose arbitrary objects.",
+      "excludedInference": "Do not substitute current open project, flatten archived bin/user columns, or scan unrelated masters merely because they refer to the same file. A master-first policy could be chosen explicitly, but it is not implied by native universal ordering.",
+      "decisionLeftForParent": "Choose when valid blank stops fallback and whether _USER/source inheritance belongs in first release. This receipt reports native distinctions; it does not modify approved requirements."
+    },
+    "limits": [
+      "Static installedMac binary only; no live display, native Project API execution, or generated MDB write test.",
+      "Bounded libame direct BL scan is not proof of every possible indirect caller or other dynamic library.",
+      "Native caller-sensitive source resolution is not a universal provenance or user intention guarantee.",
+      "No automatic Bella policy, PMR DTM, ClipName selection or BinFilter change.",
+      "Malformed typed UTF8 attribute behavior must not be generalized from strict named UTF8 properties; prior text review covers those distinct helper paths."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/AddMobIDToDir.txt",
+        "bytes": 15522,
+        "sha256": "2eb0918ebcc66d0b4e8ad2e396f620e2919a5ba8836c2b69d0ca30275574499f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/AddProjectNameToSourceMobsIfNeeded.txt",
+        "bytes": 4613,
+        "sha256": "6af23838bb1ade88e4f2df89173270ba2e262169eec56f07d17e57477f9b1e36"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/CMAddProjectNameAttrToTapeMobIfNeeded.txt",
+        "bytes": 5603,
+        "sha256": "76c2dd110772655633e14d4fcfd4486098ee39e24d5c2d2e91be7e6257b01724"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/CMFixupProjectNameIfNeeded.txt",
+        "bytes": 3453,
+        "sha256": "087685aeb76b405740d9411b4ef0068ca514d7f8f5b9e2d4efcf9625c65935f3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/CMGetProjectName.txt",
+        "bytes": 1847,
+        "sha256": "58c38f8ab168ebb1c996a5e56652315eeabf9acbbc72e3c56e93d87f118e77f2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/CoreAttrList-FindString-buffer.txt",
+        "bytes": 2965,
+        "sha256": "d4d0a713df04486d6157e52be2ef1b63a9919f83a9f66014d619ba6f4555f680"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/CoreAttrList-FindStringOnly.txt",
+        "bytes": 1358,
+        "sha256": "e4212e2532cd6b5cf2a7b4f371dac86cbaff11bc101720328e75fb4504b7ae5d"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/FindActualSource.txt",
+        "bytes": 953,
+        "sha256": "aa2b277065f0dc515f9846bf3afbef1ef4402d8c48b692735ba5405ae377d469"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/FindFirstSrcCB.txt",
+        "bytes": 1746,
+        "sha256": "6164d21f85355e213ff8b27452acd4862d76a8e79879cdf74ef18db05ba68c95"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/FindProjectName.txt",
+        "bytes": 4071,
+        "sha256": "b6adcaf3b8cde7be19558c086a4118165554a14841b8ff4cb3b026ad70b1c2a0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/GetNamedList.txt",
+        "bytes": 2123,
+        "sha256": "86e3aba683e49e163a79c71b2cae73987c57f588d02684899b8e6684d3bb1e20"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/GetPropValue.txt",
+        "bytes": 3487,
+        "sha256": "362a4b81e29282fcf35827eb054aec8e5d6621e6517db2bfa8b69c3b765010dc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/Get_kNextMobGenSpec.txt",
+        "bytes": 258,
+        "sha256": "2fb60d9117e9b1a8c9fdd39d105731656ad0fa98ac44ab51f726ac2c29aa73e3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/PropValueVisitor-VisitSourceClip.txt",
+        "bytes": 3493,
+        "sha256": "138a0e1f1aa6ae03665b7dac1588e543e96362436ed8b380ba4172f81856268a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/PropValueVisitor-VisitTracks.txt",
+        "bytes": 2412,
+        "sha256": "a2bf9ed3425b91b214af69ece2cdbaa2f98a32e07be6f94dbec1e8c8b9a0c167"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/ScanOMFFileToCache.txt",
+        "bytes": 39694,
+        "sha256": "ec101964874cc8ac6cf6abe846f63509081e4bca51970ee91c93ec445770c694"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/core-vtable-slots-prior.json",
+        "bytes": 2071,
+        "sha256": "a0bd963ee15c9bb9cad70ad45a64c665ce915ce36686e67d156d9912230dd410"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/direct-callers.json",
+        "bytes": 8323,
+        "sha256": "1265d9f7b66711d82f251a04ca30804111c1444180725c96ff00dcb19e34c3a7"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/installed-identity.json",
+        "bytes": 1187,
+        "sha256": "a8e3a9411ad0924e0435bef362de8d7fc53166b50f35752b8aed68ccb8fe7044"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/vtable-targets.json",
+        "bytes": 1472,
+        "sha256": "a9b8a82097583a8d7845b3bfe996d690190f72c27f550753181d4b6d8de575db"
+      }
+    ]
+  },
+  "mdvx": {
+    "date": "2026-10-19",
+    "purpose": "Read-only MDVx ordinary scanner MDB Project trace for Bella field review. Observed MDVx behavior is evidence, not an approved Bella rule.",
+    "binary": {
+      "date": "2026-10-19",
+      "timezone": "Australia/Sydney",
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "sizeBytes": 3204640,
+      "CFBundleShortVersionString": "0.2",
+      "CFBundleVersion": "4073",
+      "architectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "analysisArchitecture": "arm64",
+      "fullBinaryLiteralOccurrences": {
+        "PROJNAME": 0,
+        "No project": 0,
+        "No Project": 0
+      },
+      "priorDisassembly": {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-disassembly.txt",
+        "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074"
+      },
+      "note": "Binary SHA-256 refreshed 19 October and equals prior arm64 static extraction receipt. Exact method extracts and selected prior Foundation evidence copied here. No app launched, no media or production files modified."
+    },
+    "method": "Manual arm64 Objective-C instruction and data-flow reconstruction from installed MDVx executable; no claim of original source recovery. Prior disassembly tied to refreshed identical universal binary hash. No runtime app scan, UI launch or fixture injection.",
+    "functions": {
+      "-[MDVxOMFI addInfoToItem:]": "0x100064794",
+      "-[MDVxOMFI getProjectNameForObjAt:]": "0x100064dc4",
+      "-[MDVxOMFI getProjectAttributeForObjectAt:]": "0x1000651dc",
+      "-[MDVxOMFI GetStringForObjectAt:]": "0x100063a58",
+      "-[UIDtoBentoObj initWithUID:]": "0x10006163c",
+      "-[MDVxOMFI openFile:withIndicator:]": "0x100061c10",
+      "-[MDVxDatabaseItem get_DB_ProjectName]": "0x10003014c",
+      "-[MDVxDatabaseItem setDB_ProjectName:]": "0x100031500",
+      "+[MDVxDatabaseItem GetProjectNameUnmanaged]": "0x1000300bc",
+      "+[MDVxDatabaseItem GetProjectNameEmpty]": "0x1000300c8",
+      "+[MDVxDatabaseItem GetProjectNameNull]": "0x1000300d4",
+      "-[MDVxCore tableView:viewForTableColumn:row:]": "0x100050304",
+      "-[MDVxCore tableView:NSStringValueForTableColumn:row:]": "0x100050ce4",
+      "-[MDVxPMRScannerOperation main]": "0x10003a1c0",
+      "-[MDVxDatabaseItem addinfoToItemFromCorrespondingFile]": "0x10003092c",
+      "-[MDVxMXF addInfoToItem:]": "0x1000326b4"
+    },
+    "ordinaryScanProject": {
+      "owner": {
+        "result": "Project lookup starts from the matched file SourceMob, not the master selected for Clip Name.",
+        "trace": "PMR FileMobId bytes 16..23 form an eight-byte lookup key into SourceMobs; matched local Bento object ID resolves to first TOC index. addInfoToItem invokes getProjectNameForObjAt with that file TOC index at 0x100064ab8.",
+        "qualification": "This eight-byte join is an observed MDVx shortcut. Bella already requires full normalized IDs; it must not be copied."
+      },
+      "directAttributePrecedence": {
+        "result": "Direct file Project is tried first. Any nonnil NSString, including empty or whitespace-only, returns immediately.",
+        "trace": [
+          "0x100064df8 calls getProjectAttributeForObjectAt:",
+          "0x100064e04 tests the pointer only",
+          "0x100064e10 branches to return cleanup; no length/space check"
+        ]
+      },
+      "sourceFallback": {
+        "trigger": "Only a nil direct-file Project result enters the source fallback.",
+        "path": [
+          "File OMFI:TRKG:Tracks (0x1040f)",
+          "Each track OMFI:TRAK:TrackComponent (0x103f6)",
+          "Required component OMFI:SEQU:Sequence (0x10374)",
+          "Each sequence source clip OMFI:SCLP:SourceID (0x10356)",
+          "Resolve SourceID through SourceMobs index to local object",
+          "Call getProjectAttributeForObjectAt: directly on resolved source"
+        ],
+        "depth": "One relationship level only. The source call at 0x100064ffc is getProjectAttributeForObjectAt:, not recursive getProjectNameForObjAt:. No further source ancestry is searched by this path.",
+        "ids": "SourceID length 32 uses bytes 16..23; length 12 uses bytes 4..11. Other lengths take a diagnostic branch. Neither width supplies a full canonical identity in MDVx.",
+        "selection": "The loops continue over all tracks and source entries in stored order. Each resolved source replaces the candidate with its direct attribute result, including nil or empty. Therefore the last resolved source result wins; it is not first found, first nonempty, unique-source, or best-source selection.",
+        "replacementTrace": [
+          "0x100064ffc calls direct attribute helper",
+          "0x100065008 saves previous candidate",
+          "0x10006500c unconditionally replaces candidate with x0",
+          "0x10006518c advances source entry; 0x100065198 advances track"
+        ],
+        "unresolvedSource": "A failed SourceMobs lookup skips that source without replacing the current candidate. A resolved source with no Project does replace it with nil.",
+        "qualification": "This does not cover arbitrary direct source-clip components or nested component forms lacking the required Sequence property; no general recursive graph search is implemented in this routine."
+      },
+      "attributeSelection": {
+        "path": [
+          "OMFI:CPNT:Attributes (0x1028e) object reference",
+          "OMFI:ATTR:AttrRefs (0x1026b) array in stored order",
+          "Each attribute OMFI:ATTB:Name (0x10257)"
+        ],
+        "keyMatch": "Case-sensitive first three raw bytes _PJ only. Instructions 0x1000652d8..0x1000652ec compare two bytes _P and third J; do not test a following NUL or exact total length. A longer raw name beginning _PJ can match.",
+        "valueRead": "At 0x1000652f8 calls GetStringForObjectAt: from the matched Name TOC index + 1. No attribute Kind-aware dispatch occurs in this route.",
+        "duplicates": "Continues scanning attribute refs and replaces candidate at 0x100065310 for every matching _PJ prefix, including a nil/empty returned value. Last matching prefix wins.",
+        "PROJNAME": "No PROJNAME alternative in either traced Project helper. Corroborating whole universal executable byte search found zero occurrences; absence of a literal alone is not used as a general proof about unrelated app behavior."
+      },
+      "textDecoding": {
+        "reader": "Generic GetStringForObjectAt: scans the same object from the supplied TOC index and returns the first accepted string property, not a type-aware attribute-string decoder.",
+        "acceptedProperties": {
+          "0x10261": "OMFI:ATTB:StringAttribute",
+          "0x1027f": "OMFI:CLSD:ClassID",
+          "0x10298": "OMFI:CPNT:EffectID",
+          "0x1029d": "OMFI:CPNT:Name",
+          "0x102e1": "OMFI:FL:PathName",
+          "0x10257": "OMFI:ATTB:Name"
+        },
+        "encoding": "0x100063b30..0x100063b40: _isII true selects Foundation encoding 1 (NSASCIIStringEncoding), otherwise encoding 30 (NSMacOSRomanStringEncoding). openFile 0x100061d28..0x100061d38 sets _isII from label extra bytes 0x4949.",
+        "trimming": "0x100063b74 trims leading/trailing NUL characters only. No whitespace trim and no normalization of an existing nonempty string was found.",
+        "kind4": "This route does not decode known UTF8 Kind 4 Blob/BobData attributes or follow a named Unicode Project property. A generic BOB field must not be assumed to be a UTF8 alternative.",
+        "priorMeasuredExample": "Copied prior Foundation converter and exact MacRoman A7 Project specimen demonstrate that encoding 1 returns section sign U+00A7 rather than sharp-s U+00DF for that byte. See Foundation-actual-pj-720p.txt, actual-pj-path.json and check_actual_nsstring.m.",
+        "qualification": "Database browser StringForTocIndexItem: has a different explicit UTF8 file-path branch. That browser behavior must not be generalized to this ordinary scanner Project route. Bella approved decoding differs from this observed MDVx implementation."
+      },
+      "PMRvsMDB": {
+        "result": "MDB getProjectNameForObjAt return replaces the PMR-derived raw Project only when nonnil. Empty nonnil MDB result overwrites PMR. Nil MDB result retains PMR. Missing MDB file-object match also leaves prior PMR Project.",
+        "trace": "addInfoToItem 0x100064ac8 checks pointer only; 0x100064ad4 invokes setDB_ProjectName:. PMR setup stores parsed Project in item +0x80.",
+        "qualification": "An observed MDVx precedence, not an approved Bella source-priority policy."
+      }
+    },
+    "display": {
+      "rawStorage": "setDB_ProjectName: 0x100031500 stores NSString directly at item +0x80.",
+      "nil": "get_DB_ProjectName 0x10003014c maps nil to literal _00_MDV_NULL_PROJECT_NAME via class helper 0x1000300d4.",
+      "empty": "get_DB_ProjectName maps NSString length zero to literal _00_MDV_EMPTY_PROJECT_NAME via class helper 0x1000300c8.",
+      "nonempty": "Returns raw nonempty Project unchanged, including whitespace-only.",
+      "unreferenced": "setupWithUnrefFile:clipname: 0x100030bd8..0x100030c00 assigns _00_MDV_UNMANAGED_FILES if raw Project is nil. The nonempty label then passes through the display getter.",
+      "ordinaryTableTrace": "ProjectCellID branch 0x1000505fc..0x100050614 calls get_DB_ProjectName; table text field receives it at 0x100050be4. Export/string path ProjectCellID branch 0x100050f64..0x100050f7c also calls this getter.",
+      "noProjectLiteral": "No generic No project or No Project spelling in this path, and zero occurrences of those literal byte strings in the executable.",
+      "qualification": "Static trace of ordinary table/string-return paths only; no UI launch or claim about every app surface."
+    },
+    "noMDBHeaderPath": {
+      "result": "In ordinary PMRScannerOperation main, missing MDB reader permits a physical-header path only if the file exists and Clip Name (DB_NameInBin) is nil. It is not a test for missing Project.",
+      "trace": "0x10003a8b4..0x10003a8c0: nonnil MDB reader invokes MDB addInfo; nil reader leads to 0x10003a8f4..0x10003a924 existence and DB_NameInBin test then addinfoToItemFromCorrespondingFile.",
+      "headerReader": "addinfoToItemFromCorrespondingFile 0x10003092c gates on MXF extension, ScanMXF preference and minimum file size. MDVxMXF addInfoToItem dictionary key project invokes setDB_ProjectName: at 0x100032748; clipname is handled separately at 0x100032718.",
+      "qualification": "Separate fallback reader; not evidence that a missing MDB Project alone triggers MXF reading. Other AMA/unreferenced operations have separate conditions and were not exhaustively traced here."
+    },
+    "confidence": {
+      "high": [
+        "Starting owner and eight-byte index lookup",
+        "Direct nonnil stops, including empty",
+        "One-level source path and later-result replacement",
+        "Raw _PJ prefix test and lack of PROJNAME branch",
+        "Generic Foundation codec selection and NUL-only trimming",
+        "Nonnil MDB assignment over PMR",
+        "Literal nil/empty/unmanaged placeholders and ordinary table display call sites",
+        "No-MDB ordinary PMR header trigger depends on missing Clip Name"
+      ],
+      "limits": [
+        "No runtime fixture injection to observe source/attribute duplicates or nil-overwrite examples; behavior inferred directly from control flow.",
+        "No original source or symbolically reconstructed high-level code claimed.",
+        "The analyzed arm64 path is tied to refreshed hash; x86_64 implementation not separately control-flow audited.",
+        "Not a complete corrupted-MDB safety audit; bound checking weaknesses in earlier audit remain.",
+        "No claim that unknown attributes or every database object share these semantics.",
+        "No Bella Project owner/key/priority rule approved merely by recording this evidence."
+      ]
+    },
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/Foundation-actual-pj-720p.txt",
+        "sizeBytes": 94,
+        "sha256": "90ff25e2fcba02922021799873f851194b35a23cc5fb24428b9541721a30dd08"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt",
+        "sizeBytes": 16441,
+        "sha256": "be932b1a1d04bf4539a0f4fe6b8fadb68d4d4170387b8613806c5c6af8b0fee1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt",
+        "sizeBytes": 25206,
+        "sha256": "e9f502df3ddc289f84c65be937ec441a847c638c8b17d1df97c3b1f0655644cb"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/MDVxDatabaseItem_addinfoToItemFromCorrespondingFile.txt",
+        "sizeBytes": 2520,
+        "sha256": "aa67805e2bf40d384e2ed142e4f8f64f4bcffb57ce2454c0948a8291c45228b4"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/MDVxDatabaseItem_get_DB_ProjectName.txt",
+        "sizeBytes": 1194,
+        "sha256": "24b52a379c0afa8e63c10eb00246b0d2da94a6b023219e92bf7b954975950120"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/MDVxDatabaseItem_setDB_ProjectName_.txt",
+        "sizeBytes": 170,
+        "sha256": "657700d40c9933a3e4507d7e28975d49bfaa2439e3edfc5681518572c272f155"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/MDVxDatabaseItem_setupWithPmrBytes_length_PMRVersion_usebyteswap_.txt",
+        "sizeBytes": 6841,
+        "sha256": "1f2b786849a8ffd5d41a93e7f4a7b285018b56a74b5d1ea7f6855c1cfdab5e61"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/MDVxDatabaseItem_setupWithUnrefFile_clipname_.txt",
+        "sizeBytes": 6083,
+        "sha256": "6d572855139d4f8e45bf5a449e993da62851964cf74eea1873a1839dc83dfb5b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/MDVxMXF_addInfoToItem_.txt",
+        "sizeBytes": 3747,
+        "sha256": "18281f5391667e37e8e3b5884b1a498e680ac0ccc0a99fcf8f470c42101ea1d0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/MDVxOMFI_GetStringForObjectAt_.txt",
+        "sizeBytes": 3468,
+        "sha256": "bab9dc9340d24802b7f984fcb1d0aca837cdfa7882e3179b3e3a4335464ba2a3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/MDVxOMFI_addInfoToItem_.txt",
+        "sizeBytes": 9423,
+        "sha256": "20211e8a6dbcd33b0e034f3885504d5af7a54cffd3a05b5d776446549e0f6829"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/MDVxOMFI_getProjectAttributeForObjectAt_.txt",
+        "sizeBytes": 3400,
+        "sha256": "9f7786010a44e0bfd4e45bcf7ac9dd14f7b504b1aa81101502cbcf3810d93633"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/MDVxOMFI_getProjectNameForObjAt_.txt",
+        "sizeBytes": 10708,
+        "sha256": "05c52440ac65ed3ecb191d63fd85f501e1b89365f632ef58c2138eef76a86882"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/MDVxPMRScannerOperation_main.txt",
+        "sizeBytes": 53423,
+        "sha256": "3eeb0753fa8ace9baa58c04efa2bf9345553e74d265102be7d4739b877cabff8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/UIDtoBentoObj_initWithUID_.txt",
+        "sizeBytes": 760,
+        "sha256": "4462894da9a48a23ba3f5686ef16771a6bd87c803b96c6e6c11be8f00de16fed"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/actual-pj-720p-value.bin",
+        "sizeBytes": 18,
+        "sha256": "fcc4eb3b02603ea9c842410e38739205e643d4bee1acfea8d62a726dd73cccba"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/actual-pj-path.json",
+        "sizeBytes": 1984,
+        "sha256": "be4fff358000f584e5fee017e9be51085bbb00d30db84b2ff0b36ccb796cf17f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/binary-receipt.json",
+        "sizeBytes": 895,
+        "sha256": "9a237c3ca42665374362886cf12da8cd251d874cbf00eec18a60ac9d76e7c089"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/check_actual_nsstring.m",
+        "sizeBytes": 539,
+        "sha256": "c282f82c0f0f546f700b5793787f3f887a60e2fe9712fe0d34a906adb4118ff4"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/class-MDVxDatabaseItem_GetProjectNameEmpty.txt",
+        "sizeBytes": 156,
+        "sha256": "6993f0256887b7688cbb91a804009a66fb4bbbef3709aefe578312a7c3401f3f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/class-MDVxDatabaseItem_GetProjectNameNull.txt",
+        "sizeBytes": 155,
+        "sha256": "5eed3d44e35979d3eed9eaa5d2fe7c3d5d194bc028e096fe424eebf5d46bc684"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/class-MDVxDatabaseItem_GetProjectNameUnmanaged.txt",
+        "sizeBytes": 160,
+        "sha256": "d58bd4f86986ec3e132d1c5bb71673b3668a8ff96a931ab69f2050a954c87df0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/decoded-cfstrings.json",
+        "sizeBytes": 9304,
+        "sha256": "e10eb5412d7c3031f2d03295805756f0a34b464101525a3d8fcbbca5ecc7d1f1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/openFile_withIndicator_.txt",
+        "sizeBytes": 5747,
+        "sha256": "9e39a835a301d7740e9e47a51e7d63f7a146b5ec1df4b6dad4a9378d5e805fe8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/sample-dictionary.json",
+        "sizeBytes": 778,
+        "sha256": "379ab6b3b350866a31184f09824d857ec2332160ef32baf042c6ff0f89c0e457"
+      }
+    ]
+  },
+  "actualDatabases": {
+    "purpose": "Independent read-only owner-aware MDB Project observation using cached raw values and actual sibling PMRs. No production or media writes.",
+    "method": [
+      "PMR v16 Project read as approvedMacRoman for comparison only; no cross-source preference selected.",
+      "Complete IDs select unique catalogue file and PMR-associated master objects; local object references establish catalogue membership.",
+      "Project attributes are located through CPNT:Attributes -> ATTR:AttrRefs. Direct own _PJ results are counted separately from nested _USER/_IMPORTSETTING or other nested paths.",
+      "No arbitrary nested Name/PreservedBinData column is promoted into Project. PROJNAME and Kind4 occurrences are reported independently.",
+      "Immediate source candidates follow only the file-own track/component tree to exact SCLP:SourceID targets in the source catalogue. No arbitrary first source or master is substituted.",
+      "Whitespace determines usability only; nonblank stored spelling is preserved for exact equality comparison.",
+      "Counts state perPMRfile versus distinct owner objects explicitly; one master can describe multiple audio/video files."
+    ],
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "countsPerPmrFile": {
+          "pmrRecords": 389,
+          "pmrStoredProjectPresent": 389,
+          "pmrProjectUsable": 389,
+          "pmrProjectWhitespaceOnly": 0,
+          "fileDirectPj_absent": 30,
+          "masterDirectPj_absent": 389,
+          "fileWithUsableImmediateSourcePj": 170,
+          "fileWithMultipleDifferentImmediateSourcePj": 0,
+          "allUsableImmediateSourcePjEqualPmr": 170,
+          "someUsableImmediateSourcePjDiffersPmr": 0,
+          "fileDirectPj_usable": 359,
+          "fileDirectPjEqualsPmr": 359,
+          "fileDirectPjDiffersPmr": 0,
+          "allUsableImmediateSourcePjEqualFilePj": 140,
+          "someUsableImmediateSourcePjDiffersFilePj": 0
+        },
+        "distinctOwnersByRole": {
+          "file": 389,
+          "master": 153,
+          "immediateSource": 153
+        },
+        "projectAttributeLocationsOnDistinctOwners": {
+          "file": {
+            "direct:_PJ": 359
+          },
+          "immediateSource": {
+            "direct:_PJ": 80
+          }
+        },
+        "projectAttributeKindsOnDistinctOwners": {
+          "file": {
+            "direct:_PJ:kind2": 359
+          },
+          "immediateSource": {
+            "direct:_PJ:kind2": 80
+          }
+        },
+        "immediateSourceTargetCountDistributionPerFile": {
+          "1": 389
+        },
+        "immediateSourceProjectStateCountsPerFileTraversal": {
+          "usable": 170,
+          "absent": 219
+        },
+        "sourceGraphIssues": {},
+        "sourceGraphEndpointVisits": {},
+        "knownUserProjectExample": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "countsPerPmrFile": {
+          "pmrRecords": 686,
+          "pmrStoredProjectPresent": 686,
+          "pmrProjectUsable": 686,
+          "pmrProjectWhitespaceOnly": 0,
+          "fileDirectPj_usable": 686,
+          "fileDirectPjEqualsPmr": 686,
+          "fileDirectPjDiffersPmr": 0,
+          "masterDirectPj_absent": 686,
+          "fileWithUsableImmediateSourcePj": 50,
+          "fileWithMultipleDifferentImmediateSourcePj": 0,
+          "allUsableImmediateSourcePjEqualPmr": 16,
+          "someUsableImmediateSourcePjDiffersPmr": 34,
+          "allUsableImmediateSourcePjEqualFilePj": 16,
+          "someUsableImmediateSourcePjDiffersFilePj": 34
+        },
+        "distinctOwnersByRole": {
+          "file": 686,
+          "master": 415,
+          "immediateSource": 338
+        },
+        "projectAttributeLocationsOnDistinctOwners": {
+          "file": {
+            "direct:_PJ": 686
+          },
+          "immediateSource": {
+            "direct:_PJ": 24
+          }
+        },
+        "projectAttributeKindsOnDistinctOwners": {
+          "file": {
+            "direct:_PJ:kind2": 686
+          },
+          "immediateSource": {
+            "direct:_PJ:kind2": 24
+          }
+        },
+        "immediateSourceTargetCountDistributionPerFile": {
+          "1": 686
+        },
+        "immediateSourceProjectStateCountsPerFileTraversal": {
+          "absent": 636,
+          "usable": 50
+        },
+        "sourceGraphIssues": {},
+        "sourceGraphEndpointVisits": {},
+        "knownUserProjectExample": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "countsPerPmrFile": {
+          "pmrRecords": 513,
+          "pmrStoredProjectPresent": 513,
+          "pmrProjectUsable": 513,
+          "pmrProjectWhitespaceOnly": 0,
+          "fileDirectPj_usable": 513,
+          "fileDirectPjEqualsPmr": 513,
+          "fileDirectPjDiffersPmr": 0,
+          "masterDirectPj_absent": 513,
+          "fileWithUsableImmediateSourcePj": 43,
+          "fileWithMultipleDifferentImmediateSourcePj": 0,
+          "allUsableImmediateSourcePjEqualPmr": 25,
+          "someUsableImmediateSourcePjDiffersPmr": 18,
+          "allUsableImmediateSourcePjEqualFilePj": 25,
+          "someUsableImmediateSourcePjDiffersFilePj": 18
+        },
+        "distinctOwnersByRole": {
+          "file": 513,
+          "master": 353,
+          "immediateSource": 308
+        },
+        "projectAttributeLocationsOnDistinctOwners": {
+          "file": {
+            "direct:_PJ": 513
+          },
+          "immediateSource": {
+            "direct:_PJ": 25
+          }
+        },
+        "projectAttributeKindsOnDistinctOwners": {
+          "file": {
+            "direct:_PJ:kind2": 513
+          },
+          "immediateSource": {
+            "direct:_PJ:kind2": 25
+          }
+        },
+        "immediateSourceTargetCountDistributionPerFile": {
+          "1": 513
+        },
+        "immediateSourceProjectStateCountsPerFileTraversal": {
+          "absent": 470,
+          "usable": 43
+        },
+        "sourceGraphIssues": {},
+        "sourceGraphEndpointVisits": {},
+        "knownUserProjectExample": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "countsPerPmrFile": {
+          "pmrRecords": 463,
+          "pmrStoredProjectPresent": 463,
+          "pmrProjectUsable": 463,
+          "pmrProjectWhitespaceOnly": 0,
+          "fileDirectPj_usable": 463,
+          "fileDirectPjEqualsPmr": 463,
+          "fileDirectPjDiffersPmr": 0,
+          "masterDirectPj_absent": 463,
+          "fileWithUsableImmediateSourcePj": 50,
+          "fileWithMultipleDifferentImmediateSourcePj": 0,
+          "allUsableImmediateSourcePjEqualPmr": 31,
+          "someUsableImmediateSourcePjDiffersPmr": 19,
+          "allUsableImmediateSourcePjEqualFilePj": 31,
+          "someUsableImmediateSourcePjDiffersFilePj": 19
+        },
+        "distinctOwnersByRole": {
+          "file": 463,
+          "master": 293,
+          "immediateSource": 244
+        },
+        "projectAttributeLocationsOnDistinctOwners": {
+          "file": {
+            "direct:_PJ": 463
+          },
+          "immediateSource": {
+            "direct:_PJ": 22
+          }
+        },
+        "projectAttributeKindsOnDistinctOwners": {
+          "file": {
+            "direct:_PJ:kind2": 463
+          },
+          "immediateSource": {
+            "direct:_PJ:kind2": 22
+          }
+        },
+        "immediateSourceTargetCountDistributionPerFile": {
+          "1": 463
+        },
+        "immediateSourceProjectStateCountsPerFileTraversal": {
+          "absent": 413,
+          "usable": 50
+        },
+        "sourceGraphIssues": {},
+        "sourceGraphEndpointVisits": {},
+        "knownUserProjectExample": []
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "countsPerPmrFile": {
+          "pmrRecords": 359,
+          "pmrStoredProjectPresent": 359,
+          "pmrProjectUsable": 359,
+          "pmrProjectWhitespaceOnly": 0,
+          "fileDirectPj_usable": 359,
+          "fileDirectPjEqualsPmr": 359,
+          "fileDirectPjDiffersPmr": 0,
+          "masterDirectPj_absent": 359,
+          "fileWithUsableImmediateSourcePj": 353,
+          "fileWithMultipleDifferentImmediateSourcePj": 0,
+          "allUsableImmediateSourcePjEqualPmr": 353,
+          "someUsableImmediateSourcePjDiffersPmr": 0,
+          "allUsableImmediateSourcePjEqualFilePj": 353,
+          "someUsableImmediateSourcePjDiffersFilePj": 0
+        },
+        "distinctOwnersByRole": {
+          "file": 359,
+          "master": 124,
+          "immediateSource": 124
+        },
+        "projectAttributeLocationsOnDistinctOwners": {
+          "file": {
+            "direct:_PJ": 359
+          },
+          "immediateSource": {
+            "direct:_PJ": 118
+          }
+        },
+        "projectAttributeKindsOnDistinctOwners": {
+          "file": {
+            "direct:_PJ:kind2": 359
+          },
+          "immediateSource": {
+            "direct:_PJ:kind2": 118
+          }
+        },
+        "immediateSourceTargetCountDistributionPerFile": {
+          "1": 359
+        },
+        "immediateSourceProjectStateCountsPerFileTraversal": {
+          "usable": 353,
+          "absent": 6
+        },
+        "sourceGraphIssues": {},
+        "sourceGraphEndpointVisits": {},
+        "knownUserProjectExample": [
+          {
+            "fileMobId": "060a2b340101010501010f1013000000fa06541c55120690f7b846fc807fda72",
+            "masterMobId": "060a2b340101010501010f1013000000f006541c55120690f42a46fc807fda72",
+            "fileObject": 88016,
+            "masterObject": 88069,
+            "fileProject": "zTeßt_1080i_59.94",
+            "fileProjectAttributeObject": 87999,
+            "fileProjectAttrListObject": 88004,
+            "fileProjectKind": 2,
+            "fileProjectPayloads": [
+              {
+                "payloadHex": "7a5465a7745f31303830695f35392e393400",
+                "ranges": [
+                  [
+                    541874,
+                    18
+                  ]
+                ]
+              }
+            ],
+            "masterProjectState": "absent",
+            "immediateSourceObjects": [
+              87949
+            ],
+            "pmrProjectHex": "7a5465a7745f31303830695f35392e3934",
+            "pmrAndFileProjectEqual": true
+          }
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "countsPerPmrFile": {
+          "pmrRecords": 2,
+          "pmrStoredProjectPresent": 2,
+          "pmrProjectUsable": 2,
+          "pmrProjectWhitespaceOnly": 0,
+          "fileDirectPj_usable": 2,
+          "fileDirectPjEqualsPmr": 2,
+          "fileDirectPjDiffersPmr": 0,
+          "masterDirectPj_absent": 2,
+          "fileWithUsableImmediateSourcePj": 0,
+          "fileWithMultipleDifferentImmediateSourcePj": 0
+        },
+        "distinctOwnersByRole": {
+          "file": 2,
+          "master": 2,
+          "immediateSource": 2
+        },
+        "projectAttributeLocationsOnDistinctOwners": {
+          "file": {
+            "direct:_PJ": 2
+          }
+        },
+        "projectAttributeKindsOnDistinctOwners": {
+          "file": {
+            "direct:_PJ:kind2": 2
+          }
+        },
+        "immediateSourceTargetCountDistributionPerFile": {
+          "1": 2
+        },
+        "immediateSourceProjectStateCountsPerFileTraversal": {
+          "absent": 2
+        },
+        "sourceGraphIssues": {},
+        "sourceGraphEndpointVisits": {},
+        "knownUserProjectExample": []
+      }
+    ],
+    "limits": [
+      "All actualPMRs store Project; no genuine missing-PMR-Project fallback case exercised.",
+      "Direct _PJ result counters do not choose a PROJNAME fallback or cross-owner/cross-source priority.",
+      "No full-depth ancestor traversal is attempted where direct own file Project is present.",
+      "The separate master owner may describe a different provenance; agreement where values exist is evidence, not permission to borrow it universally.",
+      "Malformed Unicode/unknown encoding and missing optional properties are not guessed from successful ASCII or MacRoman decoding.",
+      "No bulk raw Project names, transcription text, lyrics or private binary payloads are copied."
+    ]
+  },
+  "aggregateCountsPerPmrFile": {
+    "pmrRecords": 2412,
+    "pmrStoredProjectPresent": 2412,
+    "pmrProjectUsable": 2412,
+    "pmrProjectWhitespaceOnly": 0,
+    "fileDirectPj_absent": 30,
+    "masterDirectPj_absent": 2412,
+    "fileWithUsableImmediateSourcePj": 666,
+    "fileWithMultipleDifferentImmediateSourcePj": 0,
+    "allUsableImmediateSourcePjEqualPmr": 595,
+    "someUsableImmediateSourcePjDiffersPmr": 71,
+    "fileDirectPj_usable": 2382,
+    "fileDirectPjEqualsPmr": 2382,
+    "fileDirectPjDiffersPmr": 0,
+    "allUsableImmediateSourcePjEqualFilePj": 565,
+    "someUsableImmediateSourcePjDiffersFilePj": 71
+  },
+  "aggregateDistinctOwnersWithinDatabases": {
+    "files": 2412,
+    "associatedMasters": 1340,
+    "immediateSources": 1169
+  },
+  "observedFileFirstImmediateFallback": {
+    "directFileProjects": 2382,
+    "immediateSourceFallbackProjects": 30,
+    "total": 2412,
+    "allAgreeWithStoredPmrProject": true,
+    "sourceProjectsDifferDespiteUsableFileProject": 71,
+    "allAssociatedMastersHaveNoProject": true
+  },
+  "receipts": {
+    "date": "2026-10-19",
+    "rawSummaryReceipts": [
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mc/findings.json",
+        "bytes": 17105,
+        "sha256": "13d646f80bd1fab49ea63368165bca1d6761f8d72220500c11738d2e4aab8d2c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-mdvx/findings.json",
+        "bytes": 17219,
+        "sha256": "6250fbd5730b629329086804b4dbaa36bf836cb43deceeb891abc1ff11270243"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-drives/compact-summary.json",
+        "bytes": 12092,
+        "sha256": "fd6e5cabce793413cbe8cbf5e333936f434cadb909dd9bda5b1b801a38dc2e15"
+      }
+    ],
+    "sourceInputReceipts": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 5159032,
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "bytes": 97250,
+        "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "bytes": 22745976,
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "bytes": 164660,
+        "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "bytes": 16616336,
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "bytes": 123140,
+        "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "bytes": 15703416,
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "bytes": 111140,
+        "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 3668720,
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "bytes": 86754,
+        "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "bytes": 60680,
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+        "bytes": 392,
+        "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "bytes": 73527536,
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+        "bytes": 14340208,
+        "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb"
+      },
+      {
+        "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+        "bytes": 3204640,
+        "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+      }
+    ],
+    "validatedRawArtifactCount": 45,
+    "probeReceipts": [
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-drives/check.py",
+        "bytes": 14085,
+        "sha256": "184dbbf28d7b0fdbdd8b6a02d9791c233ac1b2c27ce4a5d7bc6cbc016d2419ec"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-drives/artifact-hashes.json",
+        "bytes": 178,
+        "sha256": "42e1a720e59d7285890416eba14487b0eceed1b958ca8b941efeaf689a54549d"
+      }
+    ]
+  },
+  "rawIndexInputReceipts": [
+    {
+      "path": "/private/tmp/bella-mdb-20261018-drives/curated.json",
+      "bytes": 249162,
+      "sha256": "d41e936deabf6b0f8a639fc055aa55db4bebf98684b98bf679ab1a0f5afecc39"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+      "bytes": 57405807,
+      "sha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+      "bytes": 277457615,
+      "sha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+      "bytes": 202174044,
+      "sha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+      "bytes": 191199626,
+      "sha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+      "bytes": 45335148,
+      "sha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-drives/shared-OMFI MediaFiles-values.json",
+      "bytes": 535484,
+      "sha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df"
+    }
+  ],
+  "methodLimits": [
+    "Static arm64 instruction reconstruction, not original source recovery; no live app scan or altered-database experiment.",
+    "Independent MDB probe reuses prior raw value indexes from hash-matched files; sibling PMR Project is read independently for comparison.",
+    "All six MDBs are observed legacy Bento 1 little-endian; no new supported-layout decision follows.",
+    "No usable PROJNAME, local _USER._PJ, Unicode Project, blank Project or conflicting duplicate/source fixture was exercised in the qualified actual owners.",
+    "All actual PMRs already have Project; MDB fallback for missing PMR Project remains unexercised.",
+    "Native caller selection differs; Bella file-first is an explicit proposed design, not a universal Media Composer rule."
+  ],
+  "approval": {
+    "date": "2026-10-19",
+    "userInstruction": "OK, let's keep the simple priority table and lock in the Project rules for Bella.",
+    "scope": [
+      "Proposed MDB Project owner/key/blank/immediate-source fallback rules",
+      "Small fixed per-field source-priority table with permitted fallback and separate extra-read decision"
+    ],
+    "deferred": [
+      "Cross-source PMR/MDB/header priority",
+      "Additional media-header reads",
+      "General MDB layout/damage policy",
+      "Scanner implementation and app cutover"
+    ]
+  },
+  "agreedBellaRule": {
+    "status": "Approved by user on 19 October 2026; not implemented.",
+    "fieldMeaning": "Recorded media-project association; not a guarantee of original creation project or current open project.",
+    "primaryOwner": "MDB catalogue-qualified physical file mob matched by complete normalized FileMobId; independent of the master selected for Clip Name.",
+    "sameOwnerCandidatesInOrder": [
+      "Exact direct _PJ",
+      "Exact direct PROJNAME",
+      "Exact local _USER object-attribute list, then exact _PJ within that list"
+    ],
+    "encoding": "Apply already approved typed, known-field Unicode/legacy decoding to each exact candidate. PROJNAME is a key alternative, not an established Unicode partner. Do not reinterpret malformed UTF8 as MacRoman.",
+    "usable": "Readable supported text with at least one non-whitespace character. Preserve original nonblank spelling, case and spacing; whitespace is used only for the blank test.",
+    "candidateFallback": "Absent, blank or individually unusable text can advance to the next recognized same-owner candidate only when structural boundaries and ownership remain safely readable. Blank is not corruption.",
+    "sourceFallback": "Only after no same-owner candidate is usable: follow the file own supported track/component references to immediate SourceID targets, resolving full normalized IDs in the appropriate source catalogue. Apply the same local candidate order to those source owners. No recursive referenced-mob ancestry search for release one.",
+    "sourceSelection": "Accept one distinct usable Project, or exact agreement among all usable immediate-source Projects, only when relevant references are sufficiently readable and resolved to establish this result. Missing/blank source Project is normal. Conflicting values or incomplete/ambiguous relationships leave MDB Project unavailable; no first/last-object-order selection.",
+    "conflictingDuplicateCandidates": "Different usable values for repeated same-priority exact keys are conflict, not ordinary absence; do not hide the conflict by taking a later key or source. Identical duplicates can agree. This case was not observed in the corpus.",
+    "doNotSubstitute": [
+      "Selected Clip Name master",
+      "Current Media Composer project",
+      "Containing folder name",
+      "Arbitrary nested _IMPORTSETTING, archived bin columns or unrelated project-like attributes"
+    ],
+    "noUsableResult": "Leave MDB-derived Project unavailable/blank and keep physical inventory row; do not invent a placeholder project name.",
+    "compactProvenance": "Keep only the resolved value plus compact availability/conflict and chosen owner/key origin needed by reconciliation; no lasting full raw graph.",
+    "deferred": [
+      "PMR versus MDB versus header source priority",
+      "Conditions for extra header reads",
+      "General MDB supported layouts and structural damage policy",
+      "MDB scheduling and implementation"
+    ]
+  },
+  "historicalNativeReceiptNote": "Embedded agent-native Bella proposals report the research state before user approval; current approval and agreedBellaRule above are authoritative for requirements."
+}

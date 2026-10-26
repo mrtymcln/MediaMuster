@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-25",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF audio Sample Rate source/precision/retention rules and shared-helper simplification. Bit Depth and remaining OMF fields under review.",
+  "authorization": {
+    "source": "Direct human assent and request to move on after the refinement proposal",
+    "statement": "Great! Remember that we can always do things in a more elegant and simplified way - even whilst maintaining accuracy.  What's next?",
+    "interpretation": "Contextual acceptance of the pending OMF Sample Rate rules with the simplification just proposed; this is not a quotation of an explicit lock-in instruction. The same message reaffirms simplicity with accuracy as a standing Bella design principle.",
+    "scope": "Agrees concrete per-class audio frequency, exact supported representation/late labels, compact status, shared summary decoding once per parser job and unchanged Duration rules. No runtime implementation/cutover, Bin Filter change, new header-opening trigger or final cross-source priority table."
+  },
+  "agreedBellaRules": {
+    "scope": "OMF audio Sample Rate column proposal only; Frame Rate accepted. No runtime implementation/cutover, Bin Filter change, final source-priority table or new header-opening reason. MDB Kind/class scope unchanged.",
+    "concreteClassSources": {
+      "PCMA": "Own OMFI:PCMA:AudioSamplingRate, known eight-byte ExactEditRate.",
+      "MPGA": "Own OMFI:MDAU:AudioSamplingRate, known eight-byte ExactEditRate.",
+      "AIFD": "Own OMFI:AIFD:Summary COMM sampleRate, ten-byte extended80BE.",
+      "WAVD": "Own OMFI:WAVD:Summary fmt nSamplesPerSec, unsigned32LE Hz.",
+      "contextualWAVE": "Existing accepted qualified WAVE descriptor compatibility only through its own supported WAVD Summary; not a root WAVE MediaData shortcut or new native descriptor proof."
+    },
+    "singleAuthority": "One class-specific concrete audio-frequency authority. Explicit OMF extension of agreed MDB source principle, adding native-proven MPGA source. No competing MDFL/summary votes, generic MDAU fallback for every class, MDFL/master/project/timecode/other-descriptor repair or guessed48kHz default for this column.",
+    "validation": "Safely owned descriptor, known property type/width and summary container/chunk framing; checked ranges/offsets/padding; positive numerator/denominator or supported positive finite exact Hz. Missing/damaged/conflicting required concrete claims, unsafe or unsupported representation gives no OMF Sample Rate, preserving inventory and other valid facts. No need for sound payload or unrelated codec-label success.",
+    "byteOrder": "PCMA/MPGA signed32 pair follows established OMF object numeric order. WAVE fmt UInt32 is little-endian; AIFF COMM extended80 is big-endian independently. No text decoder or video NTSC audio-Hz alias.",
+    "precisionAndRetention": "Preserve exact supported numeric value, original fraction/WAVE integer/necessary AIFF80 representation and compact source/type/availability. Small bounded format decoder and existing C++17/QtEndian value/comparison helpers; unsupported unrepresentable values remain unavailable, never silently narrowed/rounded. No full Summary copy, raw graph or arbitrary-precision dependency required.",
+    "presentation": "Reuse current useful late kHz labels and numeric-rate sorting, with shared exact comparison.48kHz/44.1kHz are examples, no frequency whitelist. No unnecessary permanent whole-Hz copy. Video Sample Rate and audio Frame Rate remain blank; channels do not multiply frequency. Uncommon label precision remains existing presentation follow-up.",
+    "durationUnchanged": "Accepted OMF Duration retains own MDFL Length/unit clock and bounded same-owner summary-frequency recovery only when that Duration clock is unusable, plus own audio EditRate and qualified numbering. Concrete Sample Rate selection does not replace Duration count/clock or editing/display clock. Different roles may differ without creating competing frequency votes or a consistency graph.",
+    "readingAndPriorities": "Read required metadata from already justified OMF job with bounded chunk navigation, skipping sound and unrelated payload. Native WAV/AIFF layout/general damage and final cross-source priorities/opening decisions remain separate. No new file open solely from this review."
+  },
+  "agreedImplementationRefinements": [
+    "One small class switch and ordinary helper functions; no per-column parser/class, registry or configurable fallback framework.",
+    "Share bounded WAV/AIFF summary-field decoders between MDB and OMF; decode each required owned summary once and reuse compact facts for already-approved fields. Native audio container framing remains for its later review.",
+    "Preserve independent field availability; validate ownership/ranges/framing at input and individual field constraints where needed.",
+    "One exact supported frequency representation with compact availability/source context; original words or necessary AIFF bits are part of that representation, not a second permanent backup. No redundant normalized pair, cached double, whole-Hz copy, label, raw Summary or candidate history solely for this column.",
+    "Pass already decoded summary frequency to the accepted Duration recovery only when its MDFL clock is unusable. No repeated summary decode, reversed fallback into Sample Rate or change to either field source policy.",
+    "No pre-parsing unapproved future fields, arbitrary-precision dependency or new representability/label-precision decision. Final function names/signatures/file placement remain for implementation design."
+  ],
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-audio-sample-rate-2026-10-24.json",
+    "sha256": "448040cb35039d38c8a25b521943dcb2e0e950cc50afde08f598e2fe772a7e2e"
+  },
+  "refinementAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-audio-sample-rate-simplification-2026-10-25.json",
+    "sha256": "6556e9beaa340c01943bf2e20222d4db29502c27a41c8791df760a146655e0e6"
+  },
+  "standingDesignPrinciple": "Actively seek a simpler elegant implementation preserving the agreed accurate result. Prefer direct choices/shared small helpers/compact owned values/clear lifetimes; add complexity for concrete supported cases or required behavior; keep necessary ownership/type/bounds checks and measure correctness/time/memory.",
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/audio-sample-rate.md",
+    "plan": "Project Bella/README.md",
+    "implementationGuidance": "src/bella/README.md"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "newBinaryOrMediaResearch": false,
+    "newBuildsOrTests": false,
+    "appCutover": false,
+    "performanceMeasured": false
+  }
+}

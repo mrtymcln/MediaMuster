@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-24",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF Frame Rate source/interpretation/interlace/independence/presentation/retention rules. Audio Sample Rate and remaining OMF fields under review.",
+  "authorization": {
+    "source": "Direct human reply",
+    "statement": "OK, let's lock those Frame Rate rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read audio Sample Rate from OMF, and what should Bella read and keep?",
+    "scope": "Accepts preceding safely owned typed video SampleRate, shared exact interpretation, no automatic interlace adjustment, audio blank, independence from Length/DF, late labels/exact numeric sorting and compact retention. Starts OMF audio Sample Rate research. No runtime implementation/cutover, Bin Filter change, new header-opening trigger or final cross-source priority table."
+  },
+  "agreedBellaRules": {
+    "scope": "OMF Frame Rate proposal only; Duration accepted. No runtime code/cutover, Bin Filter change, new header-opening trigger or reopened full source-priority discussion.",
+    "source": "Safely qualified physical video file own descriptor MDFL:SampleRate, preserving positive original numerator/denominator and supported typed context under Avid name SampleRate. No master/project/codec/timecode-FPS/audio-rate substitute; no extra master/track corroboration walk. Audio Frame Rate blank.",
+    "decode": "Known legacy eight-byte ExactEditRate two signed32 words in established numeric order, checked supported type/width/range. Structured numeric, not UTF8/MacRoman. Missing/damaged/conflicting/unresolved/unsupported required rate gives no OMF Frame Rate; retain inventory and other valid facts.",
+    "interpretation": "Reuse exact Avid video interpreter accepted for OMF Duration, preserving source words. Finite exact decimal aliases and equivalent fractions as already agreed; no approximate snapping, generic-Rational or audio-frequency aliases.",
+    "interlaceAndUnits": "Known supported frame-based layouts use interpreted own clock without automatic interlace/half-height/raw-enum halving or doubling. Native codec-wrapper and optional presentation helpers have separate contexts; no new generic field-rate recovery/layout scope. Future proven conversion must preserve raw Duration count/unit pair.",
+    "independence": "A usable Frame Rate does not require usable Length/Duration or DF mode. DF changes numbering, not fps. Unknown relevant rate is blank if no eligible source; do not erase independently valid metadata.",
+    "presentationAndRetention": "Share existing preserved rate and pure interpreter with Duration. Late familiar labels and exact numeric sorting; no duplicate permanent pair/string solely for this column or label-parsing for maths/sorting. Nominal30 does not replace29.97. Keep compact type/source/availability and release scratch. Uncommon label precision remains existing presentation follow-up.",
+    "buildingBlocks": "Small C++17 fixed-width fraction/value helpers and checked QtEndian decoding. No new dependency, separate rate parser or additional media read solely for this column.",
+    "existingPriority": "Usable MDB first; eligible usable own-file header rate only if MDB unusable and header independently already read. No new open or MDB Duration repair from isolated header Frame Rate. Full source table remains deferred."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-frame-rate-2026-10-24.json",
+    "sha256": "df3dd103de996e9a3b6e683c77e5842afdf7faa66c7692a02eb14aad1a114b0f"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/frame-rate.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "newBuildsOrTests": false,
+    "appCutover": false,
+    "performanceMeasured": false
+  }
+}

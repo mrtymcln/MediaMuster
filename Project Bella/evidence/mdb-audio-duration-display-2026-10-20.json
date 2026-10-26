@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-20",
+  "timezone": "Australia/Sydney",
+  "purpose": "Recommendation for audio Duration HH:MM:SS:FF using own-file MDB editing clock and exact preserved samples.",
+  "status": "Proposal for current user review. Existing MDB-only source and six formatting principles remain approved; new qualification, audio-clock semantic extension, tie and zero-edge details are not newly approved.",
+  "methods": {
+    "currentSourceRead": true,
+    "existingCuratedCorpusReaggregated": true,
+    "newLiveDatabaseReads": false,
+    "newMediaReads": false,
+    "newNativeBinaryTrace": false,
+    "independentArithmetic": "Python fractions.Fraction; seven deterministic explicit-NDF examples and half-frame error bound assertions.",
+    "cppQtTestsOrBuilds": false,
+    "appExecuted": false,
+    "runtimeCodeChanged": false
+  },
+  "priorCorpusAudioOwnEditRates": [
+    {
+      "originalPair": [
+        24,
+        1
+      ],
+      "rows": 286
+    },
+    {
+      "originalPair": [
+        25,
+        1
+      ],
+      "rows": 1000
+    },
+    {
+      "originalPair": [
+        2997,
+        100
+      ],
+      "rows": 133
+    },
+    {
+      "originalPair": [
+        23976,
+        1000
+      ],
+      "rows": 94
+    }
+  ],
+  "totalAudioRows": 1513,
+  "proposal": {
+    "durationPair": "Preserve own MDFL Length and SampleRate without changing samples or substituting audio Sample Rate column sources.",
+    "displayClock": "Qualified own-file MDB CPNT EditRate, or appropriately supported own-media-slot representation; do not borrow master/project rate.",
+    "scope": "Audio Frame Rate column stays blank. This clock is internal to Duration presentation.",
+    "interpretation": "Applying the verified Avid decimal-rate convention to typed audio editing clocks is proposed; native audio Duration UI use is not proven. Do not alias audio sampling frequency or generic nearby rational values.",
+    "formula": "Length * SampleRate.denominator * interpretedEditRate.numerator / (SampleRate.numerator * interpretedEditRate.denominator)",
+    "rounding": "Nearest whole display frame once at final quotient; propose exact positive half-frame upward.",
+    "numbering": "Use supported nominal base only after exact frame conversion, with compatible qualified recorded DF setting; keep HH:MM:SS:FF colons and no day wrap.",
+    "zero": "Proposal: established zero pair displays zeros even without display clock; missing count or invalid sample clock is not established zero. Positive valid audio rounding to zero also displays zeros.",
+    "unavailablePositive": "Blank if a required display clock is unusable; retain exact audio and file; no guessed 25/30fps and no header recovery.",
+    "countNotEndPosition": "Duration is a count from zero, without source start-timecode offset or inclusive-end +1.",
+    "implementation": "Small pure helper with exact runtime numeric records, cancellation/checked wide arithmetic, and availability separate from numeric zero; no per-row formatted string required."
+  },
+  "examples": [
+    {
+      "case": "12 seconds",
+      "Length": 576000,
+      "SampleRate": [
+        48000,
+        1
+      ],
+      "interpretedDisplayEditRate": [
+        25,
+        1
+      ],
+      "nominalBase": 25,
+      "mode": "explicit NDF",
+      "exactFrames": [
+        300,
+        1
+      ],
+      "roundedFrames": 300,
+      "label": "00:00:12:00"
+    },
+    {
+      "case": "12.5 seconds",
+      "Length": 600000,
+      "SampleRate": [
+        48000,
+        1
+      ],
+      "interpretedDisplayEditRate": [
+        25,
+        1
+      ],
+      "nominalBase": 25,
+      "mode": "explicit NDF",
+      "exactFrames": [
+        625,
+        2
+      ],
+      "roundedFrames": 313,
+      "label": "00:00:12:13"
+    },
+    {
+      "case": "half-frame tie",
+      "Length": 47040,
+      "SampleRate": [
+        96000,
+        2
+      ],
+      "interpretedDisplayEditRate": [
+        25,
+        1
+      ],
+      "nominalBase": 25,
+      "mode": "explicit NDF",
+      "exactFrames": [
+        49,
+        2
+      ],
+      "roundedFrames": 25,
+      "label": "00:00:01:00"
+    },
+    {
+      "case": "positive sub-half-frame",
+      "Length": 1,
+      "SampleRate": [
+        48000,
+        1
+      ],
+      "interpretedDisplayEditRate": [
+        25,
+        1
+      ],
+      "nominalBase": 25,
+      "mode": "explicit NDF",
+      "exactFrames": [
+        1,
+        1920
+      ],
+      "roundedFrames": 0,
+      "label": "00:00:00:00"
+    },
+    {
+      "case": "fractional edit-clock NDF",
+      "Length": 48048000,
+      "SampleRate": [
+        48000,
+        1
+      ],
+      "interpretedDisplayEditRate": [
+        24000,
+        1001
+      ],
+      "nominalBase": 24,
+      "mode": "explicit NDF",
+      "exactFrames": [
+        24000,
+        1
+      ],
+      "roundedFrames": 24000,
+      "label": "00:16:40:00"
+    },
+    {
+      "case": "known zero with usable clock",
+      "Length": 0,
+      "SampleRate": [
+        48000,
+        1
+      ],
+      "interpretedDisplayEditRate": [
+        25,
+        1
+      ],
+      "nominalBase": 25,
+      "mode": "explicit NDF",
+      "exactFrames": [
+        0,
+        1
+      ],
+      "roundedFrames": 0,
+      "label": "00:00:00:00"
+    },
+    {
+      "case": "beyond 24 hours",
+      "Length": 4505760000,
+      "SampleRate": [
+        48000,
+        1
+      ],
+      "interpretedDisplayEditRate": [
+        25,
+        1
+      ],
+      "nominalBase": 25,
+      "mode": "explicit NDF",
+      "exactFrames": [
+        2346750,
+        1
+      ],
+      "roundedFrames": 2346750,
+      "label": "26:04:30:00"
+    }
+  ],
+  "primaryDocumentation": [
+    {
+      "url": "https://developer.avid.com/ctms/api/rs_common_object_properties.html",
+      "checked": "2026-10-20",
+      "scope": "Public CTMS distinction between rational editRate, duration, durationTC and dropframe. Does not establish private MDB owner selection or native MC audio Duration cell."
+    },
+    {
+      "url": "https://developer.avid.com/ctms/api/aa/resources/keyframes.html",
+      "checked": "2026-10-20",
+      "scope": "Public conventional rational/decimal rate labels; not audio UI proof."
+    }
+  ],
+  "references": [
+    {
+      "path": "src/oldscanner/mediaengine/mdbprojection.cpp",
+      "sha256": "75757ff663c541992768c502fa7b0887c4f31a02d23b7ec9e7b28532b160be5f"
+    },
+    {
+      "path": "src/mediaduration.h",
+      "sha256": "c59928f0d6f4ac92c93ad7a258bbcaf60516da2fd9fed616293b63bb839fafb6"
+    },
+    {
+      "path": "src/mediafile.h",
+      "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3"
+    },
+    {
+      "path": "tests/tst_scanner.cpp",
+      "sha256": "6eb123f014a1eacd66442e3e1ce96a61631382f9ed1890b79dfc8c8d00e69426"
+    },
+    {
+      "path": "Project Bella/evidence/mdb-duration-2026-10-19.json",
+      "sha256": "306c5bd8c567323c2d930218bbff42d2eedcd6465deb122a3bb7bb694f7cd194"
+    },
+    {
+      "path": "Project Bella/evidence/mdb-duration-clock-2026-10-19.json",
+      "sha256": "a29d66698d82e09e4c102372113c9000761733c8beea2aa92bbe54e901372bf0"
+    },
+    {
+      "path": "Project Bella/README.md",
+      "sha256": "734d18bf3aa17fdc2f5bd6c6c20afe7af485a60150d29357eef8b655befd01cb"
+    },
+    {
+      "path": "docs/reviews/2026-10-18-bella-mdb/duration-clock.md",
+      "sha256": "e89d6cacd87233cce287fec6523fdff832399c330f7c7bf96130f082993f99e7"
+    }
+  ],
+  "nextReview": "Qualified recorded drop-frame owner/reference and missing/conflicting/incompatible flag behavior; full priority-table discussion stays deferred."
+}

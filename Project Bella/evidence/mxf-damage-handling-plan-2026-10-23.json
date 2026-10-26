@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-23",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted requirements; not implemented or cut over.",
+  "authorization": {
+    "source": "Direct human reply",
+    "statement": "OK, let's lock those damage handling rules in for Bella.",
+    "scope": "Accepts preceding MXF damage boundaries. Requests a separate supported-layout/header-navigation review; does not approve its future proposals or new source-opening reasons."
+  },
+  "agreedBellaRules": {
+    "selectedHeaderFoundation": "Require trustworthy complete selected-region framing and needed mapping/ownership foundations, not successful decoding of every optional value or whole-file Complete.",
+    "value": "Withhold a safely bounded damaged value and dependent calculations; retain independent usable facts under approved field rules.",
+    "objectOrRelationship": "Withhold dependent facts when identity or association is unsafe; retain independently qualified branches.",
+    "sharedStructure": "Do not publish metadata from an unsafe selected region or arbitrary structural prefix; keep physical row and independent PMR/MDB/filesystem facts.",
+    "unknownOrExternal": "Safely bounded unknown optional data and legitimate external references are not automatic corruption; unavailable needed dependency remains unavailable.",
+    "otherOutcomes": "Distinguish I/O, cancellation, changing source, unsupported layout and resource failure; no blanket corrupt-file catch.",
+    "unchangedScope": "No new priorities, header opens, footer recovery, repair, essence verification, runtime implementation or app cutover."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-damage-handling-2026-10-23.json",
+    "sha256BeforeApprovalMetadata": "b9822222afe5a83a82817e69dcd4f7d1b8f3116ae841047aa1a9054556b6333a"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-21-bella-mxf/damage-handling.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeImplemented": false,
+    "appCutover": false,
+    "rawNativeAndSourceReceiptsChanged": false
+  }
+}

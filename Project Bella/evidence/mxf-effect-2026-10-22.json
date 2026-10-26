@@ -1,0 +1,964 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "request": "Research Media Composer, MDVx and MediaMuster Effect from MXF; recommend Bella inputs and retained output.",
+  "status": "Focused MXF Effect display contract accepted 23 October 2026; not implemented. OldScanner active; Bin Filter unchanged.",
+  "rawReceipts": {
+    "mc": {
+      "path": "/private/tmp/bella-mxf-effect-mc-20261022/findings.json",
+      "sha256": "8af202bfca929cbce88f533a2b8ee8636bceb9e133704c2a1b7d18b10b91eef6"
+    },
+    "current": {
+      "path": "/private/tmp/bella-mxf-effect-current-20261022/findings.json",
+      "sha256": "d51d1f615feb35dcd239ef61f60d58f09b1151d56084e3aabea6cac50c5d168f"
+    }
+  },
+  "nativeRegisteredEffectName": {
+    "date": "2026-10-22",
+    "scope": "Bounded read-only native Media Composer Effect display-name review, extending the immediately preceding Effect Category research. Four fresh narrow setter/getter functions and two raw vtable entries; earlier native import and ordinary MDVx route evidence reused with explicit provenance. No app, plug-in, private API, GUI, media-read, build, test or benchmark execution; no runtime source changes.",
+    "inputReceipts": {
+      "nativeEffectCategory": {
+        "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/findings.json",
+        "bytes": 20610,
+        "sha256": "01fec6c74fe3c1ffd54e8c0f31c981248dc28e0809d243ec24fb993491a973e2"
+      },
+      "ordinaryMdvxEffectCategory": {
+        "path": "/private/tmp/bella-mxf-effect-category-mdvx-20261022/findings.json",
+        "bytes": 125141,
+        "sha256": "3d786452e4d08225bc0bd4a90b07e50509a83e42f3ec1ce46ac611443ffbb791"
+      },
+      "agreedMdbEffect": {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-18-bella-mdb/effect.md",
+        "bytes": 5687,
+        "sha256": "f7a81c9dd47ec5d59781d93a9ee85221c032f6b0e0ecc5f70cb6a3f34a2cd4b8"
+      }
+    },
+    "nativeBinary": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "bytes": 73527536,
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+    },
+    "freshFunctions": [
+      {
+        "name": "SetFundementals",
+        "symbol": "__ZN7AEffect15SetFundementalsEPKcS1_i",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN7AEffect15SetFundementalsEPKcS1_i",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "path": "/private/tmp/bella-mxf-effect-mc-20261022/SetFundementals.txt",
+        "bytes": 9327,
+        "sha256": "ede751aeac6d88c28d01dc92c411cda900c3322405183fba7481314ef22242ec"
+      },
+      {
+        "name": "SetName",
+        "symbol": "__ZN7AEffect7SetNameEPKc",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN7AEffect7SetNameEPKc",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "path": "/private/tmp/bella-mxf-effect-mc-20261022/SetName.txt",
+        "bytes": 1547,
+        "sha256": "50fc2aacfafaf6f2667991e8f418d84fa223735790019f5ccbe5861d522911f7"
+      },
+      {
+        "name": "GetNameBuffer",
+        "symbol": "__ZN7AEffect7GetNameEPci",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN7AEffect7GetNameEPci",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "path": "/private/tmp/bella-mxf-effect-mc-20261022/GetNameBuffer.txt",
+        "bytes": 976,
+        "sha256": "45e372b803c13dc7c74555e095ffc9a88945240541a18ad8f8acdae85aecfd0a"
+      },
+      {
+        "name": "GetNameString",
+        "symbol": "__ZNK7AEffect7GetNameEv",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZNK7AEffect7GetNameEv",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "path": "/private/tmp/bella-mxf-effect-mc-20261022/GetNameString.txt",
+        "bytes": 538,
+        "sha256": "ce27895e0e0ad9aba44250f64473c12c1f8aee6f4296dafd837a835b7a8d22e4"
+      }
+    ],
+    "freshNameVtableEntries": {
+      "binaryPath": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "binarySha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+      "entries": [
+        {
+          "class": "AEffect",
+          "addressPoint": "0x137ebc8",
+          "slot": "0x6d0",
+          "fileOffset": 57471640,
+          "rawPointerLE": "34b9750000001000",
+          "targetLow32": "0x75b934",
+          "symbol": "AEffect::SetEffectID(char const*)"
+        },
+        {
+          "class": "AEffect",
+          "addressPoint": "0x137ebc8",
+          "slot": "0x6f8",
+          "fileOffset": 57471680,
+          "rawPointerLE": "94bb750000001000",
+          "targetLow32": "0x75bb94",
+          "symbol": "AEffect::SetName(char const*)"
+        }
+      ]
+    },
+    "reusedNativeFunctions": [
+      {
+        "name": "GetMCEffectID",
+        "symbol": "__Z13GetMCEffectIDP9AAFDomainP18IAAFOperationGroupjPc",
+        "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/GetMCEffectID.txt",
+        "bytes": 13293,
+        "sha256": "d8de9de55afb778bed26be79f423949a7d6440c87b09333559d4714d3483515d",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__Z13GetMCEffectIDP9AAFDomainP18IAAFOperationGroupjPc",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "stderr": ""
+      },
+      {
+        "name": "ATrackEffectConvertFromAAF7",
+        "symbol": "__ZN12ATrackEffect24ConvertComponentFromAAF7EP9AAFDomainP10IAAFObject15ExactEditRate_tS4_S4_P10AComponenti",
+        "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectConvertFromAAF7.txt",
+        "bytes": 27137,
+        "sha256": "98c609de8f69149ae68dee4a2259482863382c5fcc849777545b2fd0afbd8818",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN12ATrackEffect24ConvertComponentFromAAF7EP9AAFDomainP10IAAFObject15ExactEditRate_tS4_S4_P10AComponenti",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "stderr": ""
+      },
+      {
+        "name": "AEffectSetInfo",
+        "symbol": "__ZN7AEffect27SetEffectInfoFromIdentifierEii",
+        "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/AEffectSetInfo.txt",
+        "bytes": 136707,
+        "sha256": "8eebdff2935cae6847e4f6dffda2a0e0692a716e28bd2de69d4d61f26c99d1b2",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN7AEffect27SetEffectInfoFromIdentifierEii",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "stderr": ""
+      },
+      {
+        "name": "ATrackEffectSetEffectID",
+        "symbol": "__ZN12ATrackEffect11SetEffectIDEPKc",
+        "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectSetEffectID.txt",
+        "bytes": 602,
+        "sha256": "99c0e94bd3c5280f71c268e673bf6e76e7d1611c1d93a32a19f7afd257c372d1",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN12ATrackEffect11SetEffectIDEPKc",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "stderr": ""
+      },
+      {
+        "name": "ATrackEffectGetEffect",
+        "symbol": "__ZN12ATrackEffect9GetEffectEh",
+        "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectGetEffect.txt",
+        "bytes": 4450,
+        "sha256": "e90711791bbe1fee124ac8979bd9060afbcbc4b32dfd7e56b81b48b2be7606d6",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN12ATrackEffect9GetEffectEh",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "stderr": ""
+      }
+    ],
+    "nativeFindings": [
+      {
+        "topic": "Recorded effect identity and registered name are separate from the selected master Clip Name",
+        "anchors": [
+          "Previously captured ATrackEffect::ConvertComponentFromAAF7 starts 0x1ece24; OperationGroup interface query 0x1ed01c..0x1ed034, GetMCEffectID call 0x1ed04c.",
+          "Component effect-ID assignment 0x1ed128..0x1ed138; registered effect retrieval 0x1ed164..0x1ed178; AEffect::ConvertFromAAF call 0x1ed198.",
+          "Previously captured ATrackEffect::GetEffect 0x1f3aac..0x1f3acc passes its own component effect ID to AEffectLibrary::FindEffect."
+        ],
+        "conclusion": "This is actual effect-component import using its identifier. It is not a native parser of an editable rendered Clip Name. A physical rendered MXF does not automatically prove its original generating effect simply because a related operation or familiar name exists."
+      },
+      {
+        "topic": "Fresh registered-name setter trace",
+        "anchors": [
+          "Previously fresh AEffect::SetEffectInfoFromIdentifier 0x7467e0: 0x746890..0x7468a4 selects display name 3D Warp or 3D Warp Legacy according to AlphaFlex; 0x7468bc..0x7468c4 localises that name.",
+          "0x7468cc supplies identifier EFF_SBLEND; 0x7468d8 calls SetFundementals with the separate display-name input.",
+          "Fresh SetFundementals 0x7464fc saves its display-name argument in x19; version-1 branch 0x746528..0x746558 dispatches ID setter +0x6d0 separately from name setter +0x6f8.",
+          "Version-2 branch can transform the identifier spelling, then 0x746734..0x746754 calls those separate setters and supplies the original display-name argument to +0x6f8.",
+          "Fresh AEffect vtable bytes map +0x6d0 to SetEffectID 0x75b934 and +0x6f8 to SetName 0x75bb94.",
+          "Fresh SetName 0x75bbac..0x75bbc0 applies the native localisation check; 0x75bbc4..0x75bbfc replaces the display-name handle at object +0x98 with its copied string.",
+          "Fresh GetName(buffer) 0x75ba6c and GetName(string) 0x75bac0 read that +0x98 name storage."
+        ],
+        "conclusion": "AEffect has a registered readable effect name separate from its effect identifier and category. This representative registration branch corroborates catalogue provenance. It is not a fresh exhaustive registration audit or proof of live AlphaFlex setting, a particular GUI cell, or universal rendering-name construction."
+      },
+      {
+        "topic": "MXF/AAF route limit",
+        "conclusion": "The earlier receipt establishes the bounded AAF operation-import path. This review does not redo the broader MXF-domain dispatch or establish a complete physical-MXF-to-GUI path. No new evidence establishes the generating effect identity on every selected precompute master."
+      }
+    ],
+    "mdvxReusedFinding": {
+      "scope": "Reuses the 22 October ordinary MXF adapter/table/CSV/filter inspection. No new complete MDVx disassembly, app run or universal library capability claim.",
+      "binarySha256RecordedByInput": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "anchors": [
+        "MDVxMXF addInfoToItem 0x1000326b4..0x100032808 publishes NameInBin, ProjectName, file UID and material UID.",
+        "Its four staged ordinary values contain no separate inferred Effect display-name result. Earlier complete row/table/export/filter inspection finds no MediaMuster-style effect-token/catalogue resolver."
+      ],
+      "conclusion": "Ordinary MDVx may display effect-looking text inside a raw Clip Name; that is not a separately resolved Effect column or authenticated generating-effect identity."
+    },
+    "bellaRecommendation": {
+      "input": "Keep the existing shared name lookup, using final selected Clip Name and independently proven Precompute Type. This is the already agreed MDB Effect contract applied to MXF-supplied names, not a new native-effect-identity reader.",
+      "outputRules": [
+        "Known token or supported localized/compatibility alias: existing first matching canonical English Effect name.",
+        "Unrecognised nonempty token: retain extracted token verbatim, including case and underscores.",
+        "Empty/unavailable Effect on a Precompute: lowercase unknown at display/export.",
+        "Ordinary Media or unknown Type: blank Effect."
+      ],
+      "integration": "Use the same single AvidEffects::Hit as Effect Category, retain Hit.name as an owned shared QString, reuse within selected-master/name processing, and recompute when selected inputs change. Discard legacy Sequence output; Effect Sequence remains excluded.",
+      "scope": "No new decoder, effect graph traversal, registry/plug-in read, media-header open or permanent per-name cache solely for Effect. General source priorities remain separately agreed. No performance gain is measured."
+    },
+    "limits": [
+      "The native name is established from registration/identifier context, while Bella retains name-derived recognition from editable Clip Names. Those are not claimed equivalent identities.",
+      "The fresh check covers a representative built-in registered-name route and setter/getter separation; no full plug-in/name/feature-gate extraction was repeated.",
+      "No actual MXF specimen or production resolver output was executed by this agent. Other current-source/wire work owns specimen comparisons.",
+      "No universal absence of effect metadata in MXF is claimed, and no original rendering identity or plug-in availability follows from a matched name."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mxf-effect-mc-20261022/fresh-functions.json",
+        "bytes": 2153,
+        "sha256": "55529f50b66e7945ea7d248f95bdfb71985062d4587a2b268f4701f7dd4731a6"
+      },
+      {
+        "path": "/private/tmp/bella-mxf-effect-mc-20261022/name-vtable.json",
+        "bytes": 722,
+        "sha256": "c2be3943285c23f62a0ae985ef26043a286fe1461902cf5356724f65ea8a137a"
+      }
+    ]
+  },
+  "currentEffectAndCapturedNames": {
+    "schema": "bella-mxf-effect-current-v1",
+    "date": "2026-10-22",
+    "scope": "Bounded current Effect output contract from already selected MXF Precompute name; reuse prior name/range proofs and source-derived observer results. No new native audit or broad category proof.",
+    "currentHead": "c8541868b10334ad0fddd5928a960202008768c9",
+    "status": "Research only. No new Bella runtime implementation or field approval inferred.",
+    "contract": {
+      "input": "Final independently established Type and selected decoded Clip Name. MXF name ownership/UTF-16BE handling already agreed; same qualified master and combined lookup as Effect Category.",
+      "recognized": "Use AvidEffects::Hit.name: first matching canonical English display name, including recognized localized names and explicit compatibility aliases. Category ambiguity does not change this first-name rule.",
+      "unrecognized": "Preserve extracted nonempty token verbatim, including uppercase, underscores, whitespace and custom spelling. Do not change it to unknown merely because catalogue recognition fails.",
+      "empty": "Empty/unavailable Effect on a confirmed Precompute displays/exports lowercase unknown; ordinary Media and Unknown Type display blank.",
+      "parsing": "Preserve current anchored full suffix validation and precedence for sequence,Effect+N and sequence,Effect,N[.new.N...]. Preserve malformed/overflow numeric text. Keep sequence commas, exact case, localized keys, space/colon mangling of catalogue names and explicit 3DWarp alias. Do not fuzzily normalize unmatched text.",
+      "selection": "One combined lookup per derivation pass after final Type/name selection; current matching may perform more than one derivation pass. Bella can derive once per selected master/name and reuse associated rows, deriving again if final inputs change.",
+      "consumers": "Adapter keeps Hit.name as Effect; table, CSV and filter/search display helpers use the same text. No second Effect decoder/resolver is needed.",
+      "retention": "Bella retains needed Effect and Effect Category owned QStrings, not a separately derived Effect Sequence value or permanent all-name cache. Existing legacy helper still computes Sequence for OldScanner; that is not a Bella retained requirement.",
+      "identityLimit": "Name-derived label remains an inference from editable text, not proof of original effect ID, execution variant, active plug-in, Type or Precompute Category.",
+      "io": "No extra header or effect-graph walk required solely for this label. Current absence alone does not request a header; generic unresolved derived-label conflicts can. Broader source/opening priorities are unchanged."
+    },
+    "actualExamples": [
+      {
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_78D9V02.22180610.586550.mxf",
+        "qualifiedType": "Precompute",
+        "selectedMasterMobId": "060a2b340101010501010f1013000000d97717225586059099ba34363bcdaf64",
+        "masterName": "NOV_78",
+        "effectToken": "NOV_78",
+        "sourceDerivedEffect": "NOV_78",
+        "sourceDerivedDisplayedEffect": "NOV_78",
+        "catalogueMatched": false,
+        "independentCategory": "unknown",
+        "headerInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/NOV_78D9V02.22180610.586550.mxf.header.bin",
+          "sha256": "a38155c6b34a9f570b7648fb69751b822e9a1818da0ca5be7ec975d03d9098f5",
+          "headerRange": [
+            256,
+            261920
+          ]
+        },
+        "objectInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/NOV_78D9V02.22180610.586550.mxf.objects.json",
+          "sha256": "426eb444e3beba876ea44d2c5524e0ae939a4bb1bfb7dd3dc3dc556c27ff1658"
+        },
+        "copiedHeaderAndObjectHashesReverified": true,
+        "priorNameOwnershipAndRangeProof": "See prior receipt actualExamples for exact own master UID/AppCode/Name field ranges, bytes and active-association receipt. No physical file reopened."
+      },
+      {
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/FEB_79.0V02.2232CBEE.586550.mxf",
+        "qualifiedType": "Precompute",
+        "selectedMasterMobId": "060a2b340101010501010f10130000000542322255860590370e34363bcdaf64",
+        "masterName": "FEB_79.01",
+        "effectToken": "FEB_79.01",
+        "sourceDerivedEffect": "FEB_79.01",
+        "sourceDerivedDisplayedEffect": "FEB_79.01",
+        "catalogueMatched": false,
+        "independentCategory": "unknown",
+        "headerInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/FEB_79.0V02.2232CBEE.586550.mxf.header.bin",
+          "sha256": "46f25b8c88793945c4114eb74d1adc2e3bb301e2bdf915e6d4c8bbefd4118a89",
+          "headerRange": [
+            256,
+            261920
+          ]
+        },
+        "objectInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/FEB_79.0V02.2232CBEE.586550.mxf.objects.json",
+          "sha256": "6be1543d0553d22b426a0e5d14f99c70ea53d0ea7aab0dcaa6e3b0216e97fe2d"
+        },
+        "copiedHeaderAndObjectHashesReverified": true,
+        "priorNameOwnershipAndRangeProof": "See prior receipt actualExamples for exact own master UID/AppCode/Name field ranges, bytes and active-association receipt. No physical file reopened."
+      },
+      {
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/FEB_791549863640V01A4EB2EDV.mxf",
+        "qualifiedType": "Precompute",
+        "selectedMasterMobId": "060a2b340101010501010f1013000000952d4e1a25850591959b34363bcdaf64",
+        "masterName": "FEB_79",
+        "effectToken": "FEB_79",
+        "sourceDerivedEffect": "FEB_79",
+        "sourceDerivedDisplayedEffect": "FEB_79",
+        "catalogueMatched": false,
+        "independentCategory": "unknown",
+        "headerInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/FEB_791549863640V01A4EB2EDV.mxf.header.bin",
+          "sha256": "d8175ff0f34af87d527e9c5e6b760cab3a198cc4d80b3fb6de3eefdc02c39bfc",
+          "headerRange": [
+            256,
+            261920
+          ]
+        },
+        "objectInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/FEB_791549863640V01A4EB2EDV.mxf.objects.json",
+          "sha256": "c1931a5f5229f8c60bb9b291a53d36c7286e84f3eb5d1b0f77bbf1898a55d408"
+        },
+        "copiedHeaderAndObjectHashesReverified": true,
+        "priorNameOwnershipAndRangeProof": "See prior receipt actualExamples for exact own master UID/AppCode/Name field ranges, bytes and active-association receipt. No physical file reopened."
+      },
+      {
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/FEB_79FFV02.21F84E6C.586550.mxf",
+        "qualifiedType": "Precompute",
+        "selectedMasterMobId": "060a2b340101010501010f1013000000ffc1f7215586059054d334363bcdaf64",
+        "masterName": "FEB_79",
+        "effectToken": "FEB_79",
+        "sourceDerivedEffect": "FEB_79",
+        "sourceDerivedDisplayedEffect": "FEB_79",
+        "catalogueMatched": false,
+        "independentCategory": "unknown",
+        "headerInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/FEB_79FFV02.21F84E6C.586550.mxf.header.bin",
+          "sha256": "2682ac444dc605e28179ea8214aaeaf61f553416804f9f5513480fdfc984199a",
+          "headerRange": [
+            256,
+            261920
+          ]
+        },
+        "objectInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/FEB_79FFV02.21F84E6C.586550.mxf.objects.json",
+          "sha256": "0592cf42ba79e64f528b987f8f33b6c8af04d7b52ca3806a399fd191ec25b21d"
+        },
+        "copiedHeaderAndObjectHashesReverified": true,
+        "priorNameOwnershipAndRangeProof": "See prior receipt actualExamples for exact own master UID/AppCode/Name field ranges, bytes and active-association receipt. No physical file reopened."
+      },
+      {
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_781549863710V01A83E1CEV.mxf",
+        "qualifiedType": "Precompute",
+        "selectedMasterMobId": "060a2b340101010501010f10130000006c5d831a25850591b7e834363bcdaf64",
+        "masterName": "NOV_78",
+        "effectToken": "NOV_78",
+        "sourceDerivedEffect": "NOV_78",
+        "sourceDerivedDisplayedEffect": "NOV_78",
+        "catalogueMatched": false,
+        "independentCategory": "unknown",
+        "headerInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/NOV_781549863710V01A83E1CEV.mxf.header.bin",
+          "sha256": "0ab9b11fe6e804c681312520f3fc3499d54a51f946098e5ed1fc3533551b05fc",
+          "headerRange": [
+            256,
+            261920
+          ]
+        },
+        "objectInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/NOV_781549863710V01A83E1CEV.mxf.objects.json",
+          "sha256": "9b935bdaa56d28e4d43b1e9f99756d94b66fa709db7f275ce907995564e4278b"
+        },
+        "copiedHeaderAndObjectHashesReverified": true,
+        "priorNameOwnershipAndRangeProof": "See prior receipt actualExamples for exact own master UID/AppCode/Name field ranges, bytes and active-association receipt. No physical file reopened."
+      },
+      {
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/SLATE.01V02.21719A73.586550.mxf",
+        "qualifiedType": "Precompute",
+        "selectedMasterMobId": "060a2b340101010501010f1013000000540c7121558605902e7e34363bcdaf64",
+        "masterName": "SLATE.01",
+        "effectToken": "SLATE.01",
+        "sourceDerivedEffect": "SLATE.01",
+        "sourceDerivedDisplayedEffect": "SLATE.01",
+        "catalogueMatched": false,
+        "independentCategory": "unknown",
+        "headerInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/SLATE.01V02.21719A73.586550.mxf.header.bin",
+          "sha256": "a28087fc6b69f51549e39d7e85eeeddbc1543484edf5558507a907301af532df",
+          "headerRange": [
+            256,
+            261920
+          ]
+        },
+        "objectInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/SLATE.01V02.21719A73.586550.mxf.objects.json",
+          "sha256": "82be64a4a8e48f2c8a3024e5b4646fb4ef17132f71c4fee1e9524d9330a92e4a"
+        },
+        "copiedHeaderAndObjectHashesReverified": true,
+        "priorNameOwnershipAndRangeProof": "See prior receipt actualExamples for exact own master UID/AppCode/Name field ranges, bytes and active-association receipt. No physical file reopened."
+      },
+      {
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/SLATE1549867000V02443C0F7V.mxf",
+        "qualifiedType": "Precompute",
+        "selectedMasterMobId": "060a2b340101010501010f101300000025364324258505911e9d34363bcdaf64",
+        "masterName": "SLATE",
+        "effectToken": "SLATE",
+        "sourceDerivedEffect": "SLATE",
+        "sourceDerivedDisplayedEffect": "SLATE",
+        "catalogueMatched": false,
+        "independentCategory": "unknown",
+        "headerInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/SLATE1549867000V02443C0F7V.mxf.header.bin",
+          "sha256": "1266a09e6b065440887ebc328f1645e812083c1407dfb2171f497307ce1379d0",
+          "headerRange": [
+            256,
+            261920
+          ]
+        },
+        "objectInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/SLATE1549867000V02443C0F7V.mxf.objects.json",
+          "sha256": "0797aa0c7b2827429cf74fe25851089d618353b24811056bf757c31dcbdeeb09"
+        },
+        "copiedHeaderAndObjectHashesReverified": true,
+        "priorNameOwnershipAndRangeProof": "See prior receipt actualExamples for exact own master UID/AppCode/Name field ranges, bytes and active-association receipt. No physical file reopened."
+      },
+      {
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/SLATEA09V02.214C1556.586550.mxf",
+        "qualifiedType": "Precompute",
+        "selectedMasterMobId": "060a2b340101010501010f1013000000097a4b2155860590e78734363bcdaf64",
+        "masterName": "SLATE",
+        "effectToken": "SLATE",
+        "sourceDerivedEffect": "SLATE",
+        "sourceDerivedDisplayedEffect": "SLATE",
+        "catalogueMatched": false,
+        "independentCategory": "unknown",
+        "headerInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/SLATEA09V02.214C1556.586550.mxf.header.bin",
+          "sha256": "c1f296b873b2ce3dbe784be29f4aa60a56ed5f8fa8b331e34b36c9fd862e07b2",
+          "headerRange": [
+            256,
+            261920
+          ]
+        },
+        "objectInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/SLATEA09V02.214C1556.586550.mxf.objects.json",
+          "sha256": "8ed46d3a9c80799f360746ac9d180da52784bcb4babaed87bf6c2a1543f05216"
+        },
+        "copiedHeaderAndObjectHashesReverified": true,
+        "priorNameOwnershipAndRangeProof": "See prior receipt actualExamples for exact own master UID/AppCode/Name field ranges, bytes and active-association receipt. No physical file reopened."
+      },
+      {
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/TITLE1549863508V019EA9DAAV.mxf",
+        "qualifiedType": "Precompute",
+        "selectedMasterMobId": "060a2b340101010501010f10130000008d18ea192585059178c034363bcdaf64",
+        "masterName": "TITLE",
+        "effectToken": "TITLE",
+        "sourceDerivedEffect": "TITLE",
+        "sourceDerivedDisplayedEffect": "TITLE",
+        "catalogueMatched": false,
+        "independentCategory": "unknown",
+        "headerInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/TITLE1549863508V019EA9DAAV.mxf.header.bin",
+          "sha256": "b31ba33ed08b19bf645cf90795d024993c293ddfb69202c39e49965507ead09b",
+          "headerRange": [
+            256,
+            261920
+          ]
+        },
+        "objectInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/TITLE1549863508V019EA9DAAV.mxf.objects.json",
+          "sha256": "56067e8243af2063cb75f7d2fc47ce7204804780b7be2b570381f54eefdc6b13"
+        },
+        "copiedHeaderAndObjectHashesReverified": true,
+        "priorNameOwnershipAndRangeProof": "See prior receipt actualExamples for exact own master UID/AppCode/Name field ranges, bytes and active-association receipt. No physical file reopened."
+      },
+      {
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/TITLE3E0V02.21D19536.586550.mxf",
+        "qualifiedType": "Precompute",
+        "selectedMasterMobId": "060a2b340101010501010f1013000000e003d12155860590207934363bcdaf64",
+        "masterName": "TITLE",
+        "effectToken": "TITLE",
+        "sourceDerivedEffect": "TITLE",
+        "sourceDerivedDisplayedEffect": "TITLE",
+        "catalogueMatched": false,
+        "independentCategory": "unknown",
+        "headerInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/TITLE3E0V02.21D19536.586550.mxf.header.bin",
+          "sha256": "71e70b841412498d1f97dfd522fc04d2f63b0751adb275a1d2902b3bf496e777",
+          "headerRange": [
+            256,
+            261920
+          ]
+        },
+        "objectInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/TITLE3E0V02.21D19536.586550.mxf.objects.json",
+          "sha256": "05640be00664d41f0b043744ad12f6af72cc534593e1437b01314cd0e6cc2d3b"
+        },
+        "copiedHeaderAndObjectHashesReverified": true,
+        "priorNameOwnershipAndRangeProof": "See prior receipt actualExamples for exact own master UID/AppCode/Name field ranges, bytes and active-association receipt. No physical file reopened."
+      },
+      {
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/1730_8646_submastede88816cv.mxf",
+        "qualifiedType": "Precompute",
+        "selectedMasterMobId": "060a2b340101010501010f10130000006b8188de2710069613a130138b72a179",
+        "masterName": "1730_8646_SUBMASTER,Stabilize,181",
+        "effectToken": "Stabilize",
+        "sourceDerivedEffect": "Stabilize",
+        "sourceDerivedDisplayedEffect": "Stabilize",
+        "catalogueMatched": true,
+        "independentCategory": "Image",
+        "headerInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/1730_8646_submastede88816cv.mxf.header.bin",
+          "sha256": "ae8cf0aff0369ca65ed2f11e9ab0873c57eae9292228d9123455ae748b757711",
+          "headerRange": [
+            256,
+            524064
+          ]
+        },
+        "objectInput": {
+          "path": "/private/tmp/bella-alpha-wire-20261022/1730_8646_submastede88816cv.mxf.objects.json",
+          "sha256": "7f8d5fab7f101d86d376c30143ef1c7c3b22edf88f5a0dbd606a3d99e025c969"
+        },
+        "copiedHeaderAndObjectHashesReverified": true,
+        "priorNameOwnershipAndRangeProof": "See prior receipt actualExamples for exact own master UID/AppCode/Name field ranges, bytes and active-association receipt. No physical file reopened."
+      }
+    ],
+    "sourceDerivedContractExamples": [
+      {
+        "clipName": "Sequence,Color_Correction+1",
+        "sourceDerivedEffect": "Color Correction",
+        "matched": true,
+        "scope": "Existing catalogue/test source and reused independent Python observer, not an actual file or C++ execution"
+      },
+      {
+        "clipName": "Sequence,Bottom_to_Top+1",
+        "sourceDerivedEffect": "Bottom to Top",
+        "matched": true,
+        "scope": "Existing catalogue/test source and reused independent Python observer, not an actual file or C++ execution"
+      },
+      {
+        "clipName": "Sequence,Title,4.new.01",
+        "sourceDerivedEffect": "Title",
+        "matched": true,
+        "scope": "Existing catalogue/test source and reused independent Python observer, not an actual file or C++ execution"
+      },
+      {
+        "clipName": "Sequence,TITLE+1",
+        "sourceDerivedEffect": "TITLE",
+        "matched": false,
+        "scope": "Existing catalogue/test source and reused independent Python observer, not an actual file or C++ execution"
+      },
+      {
+        "clipName": "Sequenz_1,Blende+2",
+        "sourceDerivedEffect": "Dissolve",
+        "matched": true,
+        "scope": "Existing catalogue/test source and reused independent Python observer, not an actual file or C++ execution"
+      },
+      {
+        "clipName": "Sequence,3DWarp+1",
+        "sourceDerivedEffect": "3D Warp",
+        "matched": true,
+        "scope": "Existing catalogue/test source and reused independent Python observer, not an actual file or C++ execution"
+      },
+      {
+        "clipName": "Sequence,MY_CUSTOM_TITLE+1",
+        "sourceDerivedEffect": "MY_CUSTOM_TITLE",
+        "matched": false,
+        "scope": "Existing catalogue/test source and reused independent Python observer, not an actual file or C++ execution"
+      },
+      {
+        "clipName": "",
+        "type": "Precompute",
+        "storedEffect": "",
+        "displayedEffect": "unknown",
+        "scope": "Source display-helper rule, not runtime execution"
+      },
+      {
+        "clipName": "Sequence,Color_Correction+1",
+        "type": "Media",
+        "displayedEffect": "",
+        "scope": "Source display-helper gate, not runtime execution"
+      },
+      {
+        "clipName": "Sequence,Color_Correction+1",
+        "type": "Unknown",
+        "displayedEffect": "",
+        "scope": "Source display-helper gate, not runtime execution"
+      }
+    ],
+    "priorCaptureProof": {
+      "path": "/private/tmp/bella-mxf-effect-category-current-20261022/findings.json",
+      "sha256": "5d0c65474770cea3b819adf63c31a8bcb3d569d31528de90af1a2cdd75ab5bbe",
+      "use": "Previously verified own-master Name/Type inputs, exact copied-header field ranges and source-derived catalogue observer; current source hashes and 22 copied-header/object hashes rechecked."
+    },
+    "requirementsReferences": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-18-bella-mdb/effect.md",
+        "sha256": "f7a81c9dd47ec5d59781d93a9ee85221c032f6b0e0ecc5f70cb6a3f34a2cd4b8",
+        "use": "Already agreed Effect and combined-lookup contract; separate derived Sequence excluded."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-18-bella-mdb/effect-category.md",
+        "sha256": "03896c67288a0450d76cb807c60d5c2ecee18fd5aa0215b83aa82c4a0b10eff4",
+        "use": "Already agreed Effect and combined-lookup contract; separate derived Sequence excluded."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/effect-sequence-exclusion-2026-10-20.json",
+        "sha256": "1e2290113d749ecad2c8bcf927ab5eebe4c0dd6f74a732e0e84f969e206d0df6",
+        "use": "Already agreed Effect and combined-lookup contract; separate derived Sequence excluded."
+      }
+    ],
+    "sourceReceipts": {
+      "src/effectcatalogue.h": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.h",
+        "sha256": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1",
+        "bytes": 1797,
+        "gitBlob": "d25ce182c7b3fe79ccf38279c7bfa91150306c16"
+      },
+      "src/effectcatalogue.cpp": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.cpp",
+        "sha256": "0989aeb6b02bf4a254b01e5d5881a82997205797de7d448336b5f4a0d0535d35",
+        "bytes": 69548,
+        "gitBlob": "07545233302539baff37273409a8e7852e141971"
+      },
+      "src/oldscanner/mediaengine/projection.cpp": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+        "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce",
+        "bytes": 10189,
+        "gitBlob": "2b90ee0613f4aab96ef03cb85639bf6c84f2e8c0"
+      },
+      "src/oldscanner/mediaengine/scancoordinator.cpp": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+        "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e",
+        "bytes": 36110,
+        "gitBlob": "006065d6394f2625b75ae6e2a622674ff3d8927c"
+      },
+      "src/oldscanner/mediaengineadapter.cpp": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+        "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935",
+        "bytes": 5202,
+        "gitBlob": "c93e7fbd7e539797406e38f41a0188656934ed83"
+      },
+      "src/mediafile.h": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+        "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3",
+        "bytes": 12788,
+        "gitBlob": "b8f081754ef3335f24e7e2067148a63e1ec28d36"
+      },
+      "src/mediatablemodel.cpp": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+        "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56",
+        "bytes": 12214,
+        "gitBlob": "c3fb2993dc4bc1f8f46a1f061d0ab327c3398c0b"
+      },
+      "src/mediafilterproxy.cpp": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafilterproxy.cpp",
+        "sha256": "2c10657c82a6d3456815966664c62ab0b77a29d02a6e514fd865510fe7349e0c",
+        "bytes": 11470,
+        "gitBlob": "7d28860f0a460666b8a7f32fd720ee8d8a933461"
+      },
+      "src/precomputefilter.h": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/precomputefilter.h",
+        "sha256": "2303ece77ad98b02048978d8aa7e3c590e336e6519f6615f331abfef993d8f0d",
+        "bytes": 1649,
+        "gitBlob": "1284fd920e8fe37fa2ddf1ad6123fca858bf36f5"
+      },
+      "src/precomputefilterdialog.cpp": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/precomputefilterdialog.cpp",
+        "sha256": "04c8a20bce6172f71c58ba5aabbaa56d81fd9f652802f5005da8099d7c274f87",
+        "bytes": 10762,
+        "gitBlob": "e3449228130eae2351c74a21411c10232ac61dbc"
+      },
+      "src/mediacsv.cpp": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp",
+        "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442",
+        "bytes": 3609,
+        "gitBlob": "11ca75cbd8afb6521a52e2db2cea9e278d34e524"
+      },
+      "tests/tst_avideffects.cpp": {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_avideffects.cpp",
+        "sha256": "f278d23e14b05130c616d7be64989020b185d6ee2862e93d6437cfbd48664fc0",
+        "bytes": 11104,
+        "gitBlob": "871dd7c6ee6eae64f888d89f62b985391b33a195"
+      }
+    },
+    "sourceAnchors": [
+      {
+        "source": "src/effectcatalogue.h",
+        "lineStart": 20,
+        "lineEnd": 34,
+        "needle": "struct Hit",
+        "excerpt": "\tstruct Hit\n\t{\n\t\tQString name;\t  ///< Avid's display name (\"Color Correction\"), or the raw token when unknown.\n\t\tQString category; ///< Avid category/group (\"Image\", \"Timewarp\"...), \"A / B\" when ambiguous,\n\t\t\t\t\t\t  ///< \"unknown\" when unknown (a user-typed title,\n\t\t\t\t\t\t  ///< an unregistered plug-in, or a renamed template).\n\t\tQString sequence; ///< The text preceding the effect token, as Avid wrote it (mangled).\n\t\tint instance = 0; ///< The +N or comma-N instance; 0 when absent or invalid.\n\t\tbool matched = false;\n\t};\n\n\t/// Parse a precompute clip name and look the effect up. An unrecognised\n\t/// effect token is returned verbatim, unmatched. Malformed or out-of-range\n\t/// numeric suffixes remain in the token rather than being silently lost.\n\t[[nodiscard]] Hit lookup(const QString &clipName);"
+      },
+      {
+        "source": "src/effectcatalogue.cpp",
+        "lineStart": 965,
+        "lineEnd": 1049,
+        "needle": "AvidEffects::Hit AvidEffects::lookup(",
+        "excerpt": "AvidEffects::Hit AvidEffects::lookup(const QString &clipName)\n{\n\t// Effect names and categories come only from the clip name, not an effect ID.\n\t// If a rename removes the effect name, this lookup cannot recover it:\n\t// unmatched text is kept with category \"unknown\". A name that\n\t// happens to match another effect can also give a misleading label.\n\t// This does not change the media type established separately from metadata.\n\tHit hit;\n\t// Both observed render names keep the effect at the right-hand end:\n\t// `<sequence>,<Effect>+<N>` and `<sequence>,<Effect>,<N>[.new.<N>...]`.\n\t// Validate the latter's entire numeric suffix before using the preceding\n\t// comma; earlier commas still belong to the sequence.\n\tQString token = clipName;\n\tconst int comma = clipName.lastIndexOf(QLatin1Char(','));\n\tif (comma >= 0)\n\t{\n\t\thit.sequence = clipName.left(comma);\n\t\ttoken = clipName.mid(comma + 1);\n\t}\n\tbool commaInstance = false;\n\tstatic const QRegularExpression kCommaInstance(QStringLiteral(\"\\\\A[0-9]+(?:\\\\.new\\\\.[0-9]+)*\\\\z\"));\n\tif (comma > 0 && kCommaInstance.match(token).hasMatch())\n\t{\n\t\tconst int effectComma = clipName.lastIndexOf(QLatin1Char(','), comma - 1);\n\t\tif (effectComma >= 0 && effectComma + 1 < comma)\n\t\t{\n\t\t\tconst QStringList numbers = token.split(QStringLiteral(\".new.\"));\n\t\t\tbool valid = true;\n\t\t\tint instance = 0;\n\t\t\tfor (qsizetype i = 0; i < numbers.size(); ++i)\n\t\t\t{\n\t\t\t\tbool ok = false;\n\t\t\t\tconst int value = numbers[i].toInt(&ok);\n\t\t\t\tif (!ok)\n\t\t\t\t{\n\t\t\t\t\tvalid = false;\n\t\t\t\t\tbreak;\n\t\t\t\t}\n\t\t\t\tif (i == 0)\n\t\t\t\t\tinstance = value;\n\t\t\t}\n\t\t\tif (valid)\n\t\t\t{\n\t\t\t\thit.sequence = clipName.left(effectComma);\n\t\t\t\ttoken = clipName.mid(effectComma + 1, comma - effectComma - 1);\n\t\t\t\thit.instance = instance;\n\t\t\t\tcommaInstance = true;\n\t\t\t}\n\t\t}\n\t}\n\tif (!commaInstance)\n\t{\n\t\tstatic const QRegularExpression kInstance(QStringLiteral(\"\\\\+([0-9]+)\\\\z\"));\n\t\tconst QRegularExpressionMatch m = kInstance.match(token);\n\t\tif (m.hasMatch() && m.capturedStart(0) > 0)\n\t\t{\n\t\t\tbool ok = false;\n\t\t\tconst int instance = m.captured(1).toInt(&ok);\n\t\t\tif (ok)\n\t\t\t{\n\t\t\t\thit.instance = instance;\n\t\t\t\ttoken.chop(m.capturedLength(0));\n\t\t\t}\n\t\t}\n\t}\n\n\tconst Table &t = table();\n\tconst auto it = t.byKey.constFind(token);\n\tif (it == t.byKey.constEnd() || it->isEmpty())\n\t{\n\t\thit.name = token;\n\t\thit.category = QStringLiteral(\"unknown\");\n\t\treturn hit;\n\t}\n\thit.matched = true;\n\thit.name = t.rows[it->first()].name;\n\t// One name can live in several palette groups (\"Bottom to Top\" is a\n\t// Conceal, a Peel, a Push and a Squeeze); say all of them, in file order.\n\tQStringList categories;\n\tfor (int idx : *it)\n\t\tif (!categories.contains(t.rows[idx].category))\n\t\t\tcategories << t.rows[idx].category;\n\thit.category = categories.join(QStringLiteral(\" / \"));\n\treturn hit;\n}"
+      },
+      {
+        "source": "src/effectcatalogue.cpp",
+        "lineStart": 923,
+        "lineEnd": 958,
+        "needle": "const Table &table()",
+        "excerpt": "\tconst Table &table()\n\t{\n\t\tstatic const Table t = []\n\t\t{\n\t\t\tTable out;\n\t\t\tout.rows.reserve(std::size(kEffects));\n\t\t\tfor (const Entry &e : kEffects)\n\t\t\t{\n\t\t\t\tconst int idx = out.rows.size();\n\t\t\t\tout.rows.append({QString::fromUtf8(e.name), QString::fromUtf8(e.category)});\n\t\t\t\t// English name, then every localised spelling Avid ships.\n\t\t\t\tQSet<QString> keys{AvidEffects::mangle(out.rows[idx].name)};\n\t\t\t\tfor (const char *localised : e.localised)\n\t\t\t\t\tif (localised && *localised)\n\t\t\t\t\t\tkeys.insert(AvidEffects::mangle(QString::fromUtf8(localised)));\n\t\t\t\tfor (const QString &k : keys)\n\t\t\t\t\tout.byKey[k].append(idx);\n\t\t\t}\n\t\t\t// Observed render spelling, corroborated by the current 3D Warp\n\t\t\t// registration and 2026 Effects Guide. This explicit compatibility\n\t\t\t// alias does not identify the producer's AlphaFlex execution variant.\n\t\t\tout.byKey.insert(QStringLiteral(\"3DWarp\"),\n\t\t\t\t\t\t\t out.byKey.value(QStringLiteral(\"3D_Warp\")));\n\t\t\treturn out;\n\t\t}();\n\t\treturn t;\n\t}\n} // namespace\n\nQString AvidEffects::mangle(const QString &displayName)\n{\n\tQString s = displayName;\n\ts.replace(QLatin1Char(' '), QLatin1Char('_'));\n\ts.replace(QLatin1Char(':'), QLatin1Char('_'));\n\treturn s;\n}"
+      },
+      {
+        "source": "src/effectcatalogue.cpp",
+        "lineStart": 952,
+        "lineEnd": 960,
+        "needle": "QString AvidEffects::mangle(",
+        "excerpt": "QString AvidEffects::mangle(const QString &displayName)\n{\n\tQString s = displayName;\n\ts.replace(QLatin1Char(' '), QLatin1Char('_'));\n\ts.replace(QLatin1Char(':'), QLatin1Char('_'));\n\treturn s;\n}\n\nint AvidEffects::size()"
+      },
+      {
+        "source": "src/oldscanner/mediaengine/projection.cpp",
+        "lineStart": 157,
+        "lineEnd": 188,
+        "needle": "void selectEffectMetadata(",
+        "excerpt": "\tvoid selectEffectMetadata(MediaEvidence &evidence)\n\t{\n\t\tconst auto fields = {MediaProperty::Effect, MediaProperty::EffectCategory, MediaProperty::EffectSequence};\n\t\tconst QString locator = QStringLiteral(\"MediaEngine.EffectFromClipName\");\n\t\tfor (const auto field : fields)\n\t\t\tevidence.excludeInterpretation(field, locator);\n\t\tconst auto name = evidence.selected(MediaProperty::ClipName);\n\t\tconst auto type = evidence.selected(MediaProperty::Type);\n\t\tconst auto &names = evidence.observations(MediaProperty::ClipName);\n\t\tif (type.value.isValid() && type.value.toInt() == int(MediaType::Precompute) &&\n\t\t\tname.selectedObservation >= 0 && name.selectedObservation < names.size())\n\t\t{\n\t\t\tconst auto hit = AvidEffects::lookup(name.value.toString());\n\t\t\tfor (const auto field : fields)\n\t\t\t{\n\t\t\t\tauto item = names[name.selectedObservation];\n\t\t\t\titem.property = locator;\n\t\t\t\titem.value = field == MediaProperty::Effect ? hit.name : field == MediaProperty::EffectCategory ? hit.category\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t: hit.sequence;\n\t\t\t\titem.basis = EvidenceBasis::Derived;\n\t\t\t\titem.explanation = QStringLiteral(\"Inferred from the selected precompute clip name using the Avid effect-name catalogue; editable names do not prove effect identity. Source property: %1\").arg(names[name.selectedObservation].property);\n\t\t\t\tevidence.observe(field, std::move(item));\n\t\t\t}\n\t\t}\n\t\tfor (const auto field : fields)\n\t\t\tevidence.select(field, resolveProperty(evidence, propertyPolicy(field)));\n\t}\n\tvoid appendEvidence(MediaEvidence &target, const MediaEvidence &source, bool eligible)\n\t{\n\t\tfor (const auto &coverage : source.sourceCoverage())\n\t\t\ttarget.appendCoverage(coverage, eligible);\n\t\tfor (int index = int(MediaProperty::ClipName); index < int(MediaProperty::Count); ++index)"
+      },
+      {
+        "source": "src/oldscanner/mediaengine/scancoordinator.cpp",
+        "lineStart": 184,
+        "lineEnd": 222,
+        "needle": "void selectMetadata(",
+        "excerpt": "\tvoid selectMetadata(MediaEvidence &evidence)\n\t{\n\t\tfor (const auto &policy : propertyPolicies())\n\t\t{\n\t\t\t// Effects depend on the final selected name and type, so derive them last.\n\t\t\tif (policy.rule == SelectionRule::DerivedEffect)\n\t\t\t\tcontinue;\n\t\t\tauto field = resolveProperty(evidence, policy);\n\t\t\tif (policy.rule == SelectionRule::FileDuration && field.value.isValid())\n\t\t\t{\n\t\t\t\t// A display clock does not change the recorded length. Only clocks\n\t\t\t\t// attached to equivalent durations can supplement the selected one.\n\t\t\t\tconst auto selected = mediaDuration(field.value);\n\t\t\t\tMediaEvidence clocks;\n\t\t\t\tfor (auto item : evidence.observations(policy.property))\n\t\t\t\t{\n\t\t\t\t\tconst auto candidate = mediaDuration(item.value);\n\t\t\t\t\tif (!item.eligible || candidate.units != selected.units ||\n\t\t\t\t\t\t!candidate.rate.sameRate(selected.rate) || !candidate.displayRate.valid())\n\t\t\t\t\t\tcontinue;\n\t\t\t\t\titem.value = rateValue(candidate.displayRate);\n\t\t\t\t\tclocks.observe(MediaProperty::FrameRate, std::move(item));\n\t\t\t\t}\n\t\t\t\tauto clockPolicy = policy;\n\t\t\t\tclockPolicy.property = MediaProperty::FrameRate;\n\t\t\t\tconst auto clock = resolveProperty(clocks, clockPolicy);\n\t\t\t\tauto value = field.value.toMap();\n\t\t\t\tvalue.insert(QStringLiteral(\"DisplayRate\"), clock.value);\n\t\t\t\tfield.value = value;\n\t\t\t\tfield.reason = EvidenceExplanation::withDisplayClock(field.reason, clock.reason);\n\t\t\t}\n\t\t\tevidence.select(policy.property, std::move(field));\n\t\t}\n\t\tselectEffectMetadata(evidence);\n\t}\n\n\tMediaEvidence selectedProjectedEvidence(const ProjectedFile &file, const Projection &projection)\n\t{\n\t\tMediaEvidence result = file.evidence;"
+      },
+      {
+        "source": "src/oldscanner/mediaengineadapter.cpp",
+        "lineStart": 64,
+        "lineEnd": 68,
+        "needle": "assign(row.effect,",
+        "excerpt": "\tassign(row.effect, value(MediaProperty::Effect).toString());\n\tassign(row.effectCategory, value(MediaProperty::EffectCategory).toString());\n\tassign(row.effectSequence, value(MediaProperty::EffectSequence).toString());\n\treturn changed;\n}"
+      },
+      {
+        "source": "src/mediafile.h",
+        "lineStart": 191,
+        "lineEnd": 203,
+        "needle": "QString effectDisplay() const",
+        "excerpt": "\n\t// The table, CSV and filters share these labels. Unknown effect names\n\t// stay selectable even when a renamed clip no longer carries a token.\n\tQString effectDisplay() const\n\t{\n\t\tif (type != Type::Precompute)\n\t\t\treturn {};\n\t\treturn effect.isEmpty() ? QStringLiteral(\"unknown\") : effect;\n\t}\n\n\tQString effectCategoryDisplay() const\n\t{\n\t\tif (type != Type::Precompute)"
+      },
+      {
+        "source": "src/mediatablemodel.cpp",
+        "lineStart": 266,
+        "lineEnd": 269,
+        "needle": "case Column::Effect:",
+        "excerpt": "\t\tcase Column::Effect:\n\t\t\treturn f.effectDisplay();\n\t\tcase Column::EffectSequence:\n\t\t\treturn f.type == MediaFile::Type::Precompute ? f.effectSequence : QString();"
+      },
+      {
+        "source": "src/mediacsv.cpp",
+        "lineStart": 63,
+        "lineEnd": 69,
+        "needle": "<< CsvUtil::quoted(f.effectDisplay())",
+        "excerpt": "\t\t\tconst bool precompute = f.type == MediaFile::Type::Precompute;\n\t\t\tout << CsvUtil::quoted(f.precomputeCategoryDisplay()) << ','\n\t\t\t\t<< CsvUtil::quoted(f.effectCategoryDisplay()) << ','\n\t\t\t\t<< CsvUtil::quoted(f.effectDisplay()) << ','\n\t\t\t\t<< CsvUtil::quoted(precompute ? f.effectSequence : QString()) << ',';\n\t\t}\n\t\tout << f.createdDisplay() << ','"
+      },
+      {
+        "source": "src/precomputefilter.h",
+        "lineStart": 26,
+        "lineEnd": 36,
+        "needle": "bool matches(const MediaFile &file) const",
+        "excerpt": "\tbool matches(const MediaFile &file) const\n\t{\n\t\treturn file.type == MediaFile::Type::Precompute &&\n\t\t\t   (precomputeCategory.isEmpty() || precomputeCategory == file.precomputeCategoryDisplay()) &&\n\t\t\t   (effectCategory.isEmpty() || effectCategory == file.effectCategoryDisplay()) &&\n\t\t\t   (effect.isEmpty() || effect == file.effectDisplay());\n\t}\n};\n\n/// Checked branches are alternatives: a row may match any complete path.\n/// An active filter with no checked branches deliberately matches no files;"
+      },
+      {
+        "source": "src/mediafilterproxy.cpp",
+        "lineStart": 234,
+        "lineEnd": 243,
+        "needle": "return matches(f.clipName)",
+        "excerpt": "\t\treturn matches(f.clipName) || matches(f.project) || matches(f.originalBin) ||\n\t\t\t   matches(f.compression) || matches(f.volumeName) || matches(f.mediaFilePath) ||\n\t\t\t   matches(f.sourceFilePath) ||\n\t\t\t   (m_precomputesEnabled && f.type == MediaFile::Type::Precompute &&\n\t\t\t\t(matches(f.precomputeCategoryDisplay()) || matches(f.effectDisplay()) ||\n\t\t\t\t matches(f.effectCategoryDisplay()) || matches(f.effectSequence)));\n\t}\n\treturn true;\n}\n"
+      },
+      {
+        "source": "src/oldscanner/mediaengine/scancoordinator.cpp",
+        "lineStart": 171,
+        "lineEnd": 183,
+        "needle": "// Effect details may legitimately be absent.",
+        "excerpt": "\t\t\t// Effect details may legitimately be absent. A recorded disagreement\n\t\t\t// still requests a header read; absence alone does not. Internal sample\n\t\t\t// representation and channels do not gate I/O.\n\t\t\tfor (const auto property : {MediaProperty::Effect, MediaProperty::EffectCategory, MediaProperty::EffectSequence})\n\t\t\t{\n\t\t\t\tconst auto selected = evidence.selected(property);\n\t\t\t\tif (!selected.value.isValid() && selected.agreement == PropertyAgreement::Conflicting)\n\t\t\t\t\tmissing.append(mediaPropertyName(property));\n\t\t\t}\n\t\t\treturn missing;\n\t\t}\n\t}\n"
+      }
+    ],
+    "limits": {
+      "productionCppResolverExecutions": 0,
+      "testsRun": 0,
+      "buildsRun": 0,
+      "nativeAppOrPrivateApiExecuted": false,
+      "newPhysicalMediaReads": false,
+      "essenceReads": false,
+      "runtimeOrRepositoryEdits": false,
+      "performanceMeasurements": false,
+      "sampleClaim": "Eleven captured Precompute headers only; no new final multi-source table comparison or universal recognition assertion."
+    }
+  },
+  "reusedOrdinaryMDVxEvidence": {
+    "path": "/private/tmp/bella-mxf-effect-category-mdvx-20261022/findings.json",
+    "bytes": 125141,
+    "sha256": "3d786452e4d08225bc0bd4a90b07e50509a83e42f3ec1ce46ac611443ffbb791"
+  },
+  "independentRootVerification": {
+    "uniqueFullFileHashesChecked": 53,
+    "sourceCommit": "c8541868b10334ad0fddd5928a960202008768c9",
+    "runtimeAndTestSourcesEqualHEAD": true,
+    "freshNameVtableByteProofs": 2,
+    "reusedCompleteMdvxFunctionCodeHashesChecked": 11,
+    "capturedPrecomputeInputs": 11,
+    "unrecognizedEffectsRetainToken": 10,
+    "recognizedStabilizeEffect": 1,
+    "productionCppResolverExecutions": 0,
+    "fileReferences": {
+      "/private/tmp/bella-mxf-effect-category-mc-20261022/findings.json": "01fec6c74fe3c1ffd54e8c0f31c981248dc28e0809d243ec24fb993491a973e2",
+      "/private/tmp/bella-mxf-effect-category-mdvx-20261022/findings.json": "3d786452e4d08225bc0bd4a90b07e50509a83e42f3ec1ce46ac611443ffbb791",
+      "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-18-bella-mdb/effect.md": "f7a81c9dd47ec5d59781d93a9ee85221c032f6b0e0ecc5f70cb6a3f34a2cd4b8",
+      "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+      "/private/tmp/bella-mxf-effect-mc-20261022/SetFundementals.txt": "ede751aeac6d88c28d01dc92c411cda900c3322405183fba7481314ef22242ec",
+      "/private/tmp/bella-mxf-effect-mc-20261022/SetName.txt": "50fc2aacfafaf6f2667991e8f418d84fa223735790019f5ccbe5861d522911f7",
+      "/private/tmp/bella-mxf-effect-mc-20261022/GetNameBuffer.txt": "45e372b803c13dc7c74555e095ffc9a88945240541a18ad8f8acdae85aecfd0a",
+      "/private/tmp/bella-mxf-effect-mc-20261022/GetNameString.txt": "ce27895e0e0ad9aba44250f64473c12c1f8aee6f4296dafd837a835b7a8d22e4",
+      "/private/tmp/bella-mxf-effect-category-mc-20261022/GetMCEffectID.txt": "d8de9de55afb778bed26be79f423949a7d6440c87b09333559d4714d3483515d",
+      "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectConvertFromAAF7.txt": "98c609de8f69149ae68dee4a2259482863382c5fcc849777545b2fd0afbd8818",
+      "/private/tmp/bella-mxf-effect-category-mc-20261022/AEffectSetInfo.txt": "8eebdff2935cae6847e4f6dffda2a0e0692a716e28bd2de69d4d61f26c99d1b2",
+      "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectSetEffectID.txt": "99c0e94bd3c5280f71c268e673bf6e76e7d1611c1d93a32a19f7afd257c372d1",
+      "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectGetEffect.txt": "e90711791bbe1fee124ac8979bd9060afbcbc4b32dfd7e56b81b48b2be7606d6",
+      "/private/tmp/bella-mxf-effect-mc-20261022/fresh-functions.json": "55529f50b66e7945ea7d248f95bdfb71985062d4587a2b268f4701f7dd4731a6",
+      "/private/tmp/bella-mxf-effect-mc-20261022/name-vtable.json": "c2be3943285c23f62a0ae985ef26043a286fe1461902cf5356724f65ea8a137a",
+      "/private/tmp/bella-alpha-wire-20261022/NOV_78D9V02.22180610.586550.mxf.header.bin": "a38155c6b34a9f570b7648fb69751b822e9a1818da0ca5be7ec975d03d9098f5",
+      "/private/tmp/bella-alpha-wire-20261022/NOV_78D9V02.22180610.586550.mxf.objects.json": "426eb444e3beba876ea44d2c5524e0ae939a4bb1bfb7dd3dc3dc556c27ff1658",
+      "/private/tmp/bella-alpha-wire-20261022/FEB_79.0V02.2232CBEE.586550.mxf.header.bin": "46f25b8c88793945c4114eb74d1adc2e3bb301e2bdf915e6d4c8bbefd4118a89",
+      "/private/tmp/bella-alpha-wire-20261022/FEB_79.0V02.2232CBEE.586550.mxf.objects.json": "6be1543d0553d22b426a0e5d14f99c70ea53d0ea7aab0dcaa6e3b0216e97fe2d",
+      "/private/tmp/bella-alpha-wire-20261022/FEB_791549863640V01A4EB2EDV.mxf.header.bin": "d8175ff0f34af87d527e9c5e6b760cab3a198cc4d80b3fb6de3eefdc02c39bfc",
+      "/private/tmp/bella-alpha-wire-20261022/FEB_791549863640V01A4EB2EDV.mxf.objects.json": "c1931a5f5229f8c60bb9b291a53d36c7286e84f3eb5d1b0f77bbf1898a55d408",
+      "/private/tmp/bella-alpha-wire-20261022/FEB_79FFV02.21F84E6C.586550.mxf.header.bin": "2682ac444dc605e28179ea8214aaeaf61f553416804f9f5513480fdfc984199a",
+      "/private/tmp/bella-alpha-wire-20261022/FEB_79FFV02.21F84E6C.586550.mxf.objects.json": "0592cf42ba79e64f528b987f8f33b6c8af04d7b52ca3806a399fd191ec25b21d",
+      "/private/tmp/bella-alpha-wire-20261022/NOV_781549863710V01A83E1CEV.mxf.header.bin": "0ab9b11fe6e804c681312520f3fc3499d54a51f946098e5ed1fc3533551b05fc",
+      "/private/tmp/bella-alpha-wire-20261022/NOV_781549863710V01A83E1CEV.mxf.objects.json": "9b935bdaa56d28e4d43b1e9f99756d94b66fa709db7f275ce907995564e4278b",
+      "/private/tmp/bella-alpha-wire-20261022/SLATE.01V02.21719A73.586550.mxf.header.bin": "a28087fc6b69f51549e39d7e85eeeddbc1543484edf5558507a907301af532df",
+      "/private/tmp/bella-alpha-wire-20261022/SLATE.01V02.21719A73.586550.mxf.objects.json": "82be64a4a8e48f2c8a3024e5b4646fb4ef17132f71c4fee1e9524d9330a92e4a",
+      "/private/tmp/bella-alpha-wire-20261022/SLATE1549867000V02443C0F7V.mxf.header.bin": "1266a09e6b065440887ebc328f1645e812083c1407dfb2171f497307ce1379d0",
+      "/private/tmp/bella-alpha-wire-20261022/SLATE1549867000V02443C0F7V.mxf.objects.json": "0797aa0c7b2827429cf74fe25851089d618353b24811056bf757c31dcbdeeb09",
+      "/private/tmp/bella-alpha-wire-20261022/SLATEA09V02.214C1556.586550.mxf.header.bin": "c1f296b873b2ce3dbe784be29f4aa60a56ed5f8fa8b331e34b36c9fd862e07b2",
+      "/private/tmp/bella-alpha-wire-20261022/SLATEA09V02.214C1556.586550.mxf.objects.json": "8ed46d3a9c80799f360746ac9d180da52784bcb4babaed87bf6c2a1543f05216",
+      "/private/tmp/bella-alpha-wire-20261022/TITLE1549863508V019EA9DAAV.mxf.header.bin": "b31ba33ed08b19bf645cf90795d024993c293ddfb69202c39e49965507ead09b",
+      "/private/tmp/bella-alpha-wire-20261022/TITLE1549863508V019EA9DAAV.mxf.objects.json": "56067e8243af2063cb75f7d2fc47ce7204804780b7be2b570381f54eefdc6b13",
+      "/private/tmp/bella-alpha-wire-20261022/TITLE3E0V02.21D19536.586550.mxf.header.bin": "71e70b841412498d1f97dfd522fc04d2f63b0751adb275a1d2902b3bf496e777",
+      "/private/tmp/bella-alpha-wire-20261022/TITLE3E0V02.21D19536.586550.mxf.objects.json": "05640be00664d41f0b043744ad12f6af72cc534593e1437b01314cd0e6cc2d3b",
+      "/private/tmp/bella-alpha-wire-20261022/1730_8646_submastede88816cv.mxf.header.bin": "ae8cf0aff0369ca65ed2f11e9ab0873c57eae9292228d9123455ae748b757711",
+      "/private/tmp/bella-alpha-wire-20261022/1730_8646_submastede88816cv.mxf.objects.json": "7f8d5fab7f101d86d376c30143ef1c7c3b22edf88f5a0dbd606a3d99e025c969",
+      "/private/tmp/bella-mxf-effect-category-current-20261022/findings.json": "5d0c65474770cea3b819adf63c31a8bcb3d569d31528de90af1a2cdd75ab5bbe",
+      "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-18-bella-mdb/effect-category.md": "03896c67288a0450d76cb807c60d5c2ecee18fd5aa0215b83aa82c4a0b10eff4",
+      "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/effect-sequence-exclusion-2026-10-20.json": "1e2290113d749ecad2c8bcf927ab5eebe4c0dd6f74a732e0e84f969e206d0df6",
+      "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.h": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1",
+      "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.cpp": "0989aeb6b02bf4a254b01e5d5881a82997205797de7d448336b5f4a0d0535d35",
+      "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce",
+      "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e",
+      "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935",
+      "/Users/martymclean/Developer/MediaMuster/src/mediafile.h": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3",
+      "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56",
+      "/Users/martymclean/Developer/MediaMuster/src/mediafilterproxy.cpp": "2c10657c82a6d3456815966664c62ab0b77a29d02a6e514fd865510fe7349e0c",
+      "/Users/martymclean/Developer/MediaMuster/src/precomputefilter.h": "2303ece77ad98b02048978d8aa7e3c590e336e6519f6615f331abfef993d8f0d",
+      "/Users/martymclean/Developer/MediaMuster/src/precomputefilterdialog.cpp": "04c8a20bce6172f71c58ba5aabbaa56d81fd9f652802f5005da8099d7c274f87",
+      "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442",
+      "/Users/martymclean/Developer/MediaMuster/tests/tst_avideffects.cpp": "f278d23e14b05130c616d7be64989020b185d6ee2862e93d6437cfbd48664fc0",
+      "/Applications/MDVx.app/Contents/MacOS/MDVx": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+    }
+  },
+  "proposedBellaRules": {
+    "inputs": "Final selected independently established Precompute Type and decoded Clip Name from the agreed qualified master. Supported MXF Name decoding already agreed as UTF-16BE.",
+    "known": "First matching canonical English Effect name from existing shared AvidEffects::lookup, including recognized localized or explicit compatibility aliases.",
+    "unrecognized": "Nonempty extracted token preserved verbatim, including case, underscores, whitespace and spelling. Unknown Effect Category does not erase Effect text.",
+    "unavailable": "Empty/unavailable Effect on Precompute displays lowercase unknown. Ordinary Media/unknown Type blank. No change to independent Type or Precompute Category.",
+    "parserContract": "Preserve exact suffix validation and precedence, sequence commas, malformed/overflow suffix text, case rules, aliases and existing first-name selection for category ambiguity.",
+    "retention": "Keep owned QString Effect and Effect Category results from the same combined lookup. Reuse associated master/name results during processing, derive again after selected inputs change. Do not retain Effect Sequence or a permanent all-name cache.",
+    "readScope": "No separate Effect decoder, effect graph, plug-in load or additional source/header read solely for this value. Cross-source priorities remain separate.",
+    "identityLimit": "Editable-name recognition does not establish the original generating effect identity or live plug-in variant. Native registered names use actual effect-object identifiers.",
+    "implementation": "Small fresh adapter around existing standalone catalogue/resolver and C++17/Qt6.5.3 values; no measured performance improvement or new framework."
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-21-bella-mxf/effect.md",
+    "plan": "Project Bella/README.md",
+    "approvedMdbEffect": "docs/reviews/2026-10-18-bella-mdb/effect.md",
+    "approvedMxfCategory": "Project Bella/evidence/mxf-effect-category-plan-2026-10-22.json",
+    "priorCapturedNameProof": {
+      "path": "/private/tmp/bella-mxf-effect-category-current-20261022/findings.json",
+      "sha256": "5d0c65474770cea3b819adf63c31a8bcb3d569d31528de90af1a2cdd75ab5bbe",
+      "use": "Previously verified own-master Name/Type inputs, exact copied-header field ranges and source-derived catalogue observer; current source hashes and 22 copied-header/object hashes rechecked."
+    }
+  },
+  "validation": {
+    "runtimeChanged": false,
+    "appsOrPrivateApiExecuted": false,
+    "newPhysicalMediaRead": false,
+    "essenceRead": false,
+    "productionCppResolverExecuted": false,
+    "buildsRun": false,
+    "testsRun": false,
+    "benchmarksRun": false,
+    "newFinalMultisourceTableComparison": false
+  },
+  "approval": {
+    "source": "Direct human reply to the preceding MXF Effect recommendation",
+    "statement": "Great! What is next? :)",
+    "scope": "Accepts the preceding preserved MXF Effect output contract and asks for the next requirements-review topic. No new source priorities, parser implementation or cutover are approved."
+  },
+  "approvalReceipt": "Project Bella/evidence/mxf-effect-plan-2026-10-23.json"
+}

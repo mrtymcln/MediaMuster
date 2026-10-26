@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-23",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted release-one MXF scope; not implemented or cut over.",
+  "authorization": {
+    "source": "Direct human reply",
+    "statement": "OK, let's lock that MXF scope in for Bella. Next, let's look at OMF headers. How do Media Composer, MDVX and current MediaMuster read them, and what should Bella read and keep?",
+    "scope": "Accepts the preceding release-one MXF layout/admission/navigation/recovery scope, alongside already agreed field/damage/selective-retention rules. Starts OMF requirements review; no implementation or app cutover."
+  },
+  "agreedBellaRules": {
+    "status": "Accepted release-one scope on 23 October 2026.",
+    "family": "Supported Avid-compatible OP-Atom, including third-party Avid files and verified qualifier variants 0/1/2/3. No generic OP1a expansion or unproven all-zero OP compatibility.",
+    "headerAdmission": "Closed and complete initial Header Partition at byte zero, validated under agreed damage/ownership rules. Status is not proof of sound bytes.",
+    "navigation": "Partition pack, recognized optional alignment Fill, Primer; checked HeaderByteCount enclosing region beginning at Primer key. Stop after that metadata region.",
+    "storage": "Bounded reads, checked file/enclosing extents, needed compact values/lookups; skip unneeded definitions/payloads safely. No fixed first-N-MiB cap or unchecked HeaderByteCount allocation; release temporary storage.",
+    "compatibility": "Preserve known version-1 byte layout and supported label/local-set/private forms. Actual minor1.2 must not be rejected by requiring1.3. Future incompatible major unsupported.",
+    "unsupportedStates": "Open or closed-incomplete initial header, run-in, absent/unsafe initial region and unsupported pattern contribute no MXF metadata in this first-release path. They are not all automatically damaged. Physical row and eligible independent PMR/MDB/filesystem facts remain.",
+    "noAutomaticRecovery": "No footer/RIP/later-copy search, EOF packet walk, essence/index decoding, repair or byte resynchronization merely for these columns.",
+    "tradeoff": "Does not recover metadata requiring later header copies or provisional recording state; deliberately narrower than broad OldScanner/toolkit structural navigation.",
+    "separateDecisions": "Source priority, extra header-opening reasons and MXF concurrency remain separate. No runtime implementation or app cutover.",
+    "performance": "Removes unconditional traversal beyond selected header in design; scan time/memory benefit remains unmeasured."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-layouts-and-navigation-2026-10-23.json",
+    "sha256BeforeApprovalMetadata": "b405f8141e7185daa2c1b6b35bb626626a97f95b6a1f310795bbbacbb619fc7e"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-21-bella-mxf/layouts-and-navigation.md",
+    "plan": "Project Bella/README.md",
+    "selectiveRetention": "mxf-selective-header-plan-2026-10-23.json"
+  },
+  "validation": {
+    "runtimeImplemented": false,
+    "appCutover": false,
+    "rawResearchChanged": false
+  }
+}

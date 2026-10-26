@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-23",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF reading/lifetime approach; detailed format and field rules remain under review.",
+  "authorization": {
+    "source": "Direct human reply",
+    "statement": "OK, let's lock that reading approach in for Bella. Next, let's look at OMF versions and text encoding. How do Media Composer, MDVX and MediaMuster handle them, and what should Bella do?",
+    "scope": "Accepts TOC-driven selective acquisition and compact retention/release. Starts OMF version/text review, without accepting its future rules or a general project/sequence importer."
+  },
+  "agreedBellaRules": {
+    "navigation": "Independent OMF parser: locate supported label/TOC or embedded graph, capture TOC once, read required definitions, active ownership/links and selected value ranges. No whole-media image or MXF front-header assumption.",
+    "retention": "Owned compact results and necessary exact numeric/format/availability data; release temporary bytes/indexes/relationships. Do not retain broad raw property graph or per-row header copies.",
+    "requiredContext": "Read required definitions and ownership/reference context with the requested values. Validate ranges and skip known recording payloads and proven unneeded metadata. Native WAV/AIFF and embedded OMF remain one physical file.",
+    "independence": "New OMF parser, separate from scanner and MDB reader, using small C++17/Qt6.5.3 helpers. No adaptation/cutover of OldScanner.",
+    "separateDecisions": "OMF versions, text decoding, exact field sources/ownership and damage rules remain for focused review. Cross-source priorities, extra reads and concurrency remain later decisions.",
+    "performance": "No measured scan-time or peak-memory improvement claimed; current raw graph is already temporary."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-header-review-2026-10-23.json",
+    "sha256": "253721f29f9afb231b9766b944c50d2d608ae443dbabdf5af45c6ff706fb2068"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/REVIEW.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "newBuildsOrTests": false,
+    "appCutover": false
+  }
+}

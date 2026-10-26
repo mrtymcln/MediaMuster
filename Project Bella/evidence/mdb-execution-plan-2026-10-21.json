@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "timezone": "Australia/Sydney",
+  "purpose": "Approved Bella MDB concurrency, in-memory source lifetime and efficiency objective.",
+  "status": "Approved requirements; fresh runtime implementation, performance measurement and cutover remain future work.",
+  "authorization": "MediaMuster should also read 4 MDB's at once - just like PMR.\n\nThis all sounds great - keep the database in memory read it once, extract only the info we need, and release it from memory.\n\nMy goal is that the Bella scanner is more effecient and elegant than the current Old scanner. Just as efficient as MDVX - but I do want some extra info that MDVX doesnt read. Thats the gist.",
+  "agreedBellaRule": {
+    "pmrMaximumInProgress": 4,
+    "mdbMaximumInProgress": 4,
+    "jobUnit": "One MDB file per job. Up to four MDB jobs may progress concurrently; waiting work can start as a slot becomes available. The independent four-PMR maximum remains unchanged.",
+    "coordination": "These are per-source-type maxima, not four MDB children per PMR or a requirement for eight dedicated CPUs. Worker/pool and phase coordination remain implementation choices within the agreed limits.",
+    "capture": "Read each needed unchanged MDB once into job-owned memory. All metadata extraction for that database reuses this image rather than reopening it per row. One capture may use multiple bounded I/O reads and in-memory passes.",
+    "interpretation": "Validate complete shared structure under the approved damage policy. Use temporary catalogue/property/identity lookups; interpret only approved fields and owner relationships, without decoding unrelated optional payloads.",
+    "lifetime": "Release the database image and temporary parsing/index storage after extraction when no longer needed. Compact selected facts can survive for joins/publication. Do not retain raw databases, copied PMR slices or unrelated property graphs with scan rows.",
+    "retainedFacts": "Approved additional metadata, complete FileMobId/MasterMobId and normalization, KelpieId/duplicate rules, exact numeric timing/technical values and necessary availability states remain.",
+    "failureAndReadBoundaries": "Physical media remain listed; approved text recovery, structural/local damage handling and per-field header-read restrictions remain. Failed/changed captures do not introduce speculative repair or generic fallback reads.",
+    "efficiencyObjective": "More efficient and elegant than OldScanner; target MDVx-comparable efficiency while keeping Bella's agreed additional information. This is a future design/comparison objective, not a measured guarantee.",
+    "verificationObjective": "Compare elapsed scan time, peak memory and required-field coverage on representative local and attached/network media. Distinguish common metadata workload from Bella's additional work; do not gain apparent speed by omitting agreed results."
+  },
+  "unchangedScope": {
+    "mdbVersionBaseline": "The separate narrowed Bento1/legacy MDB baseline remains proposed, not treated as approved by this buffering/concurrency instruction.",
+    "implementation": "Finish the remaining requirements review before writing independent Bella parser/scanner code. OldScanner is not to be patched into Bella.",
+    "cutover": "OldScanner stays active until explicit approval to switch the app to Bella.",
+    "binFilter": "No changes.",
+    "laterReview": "Media-header capabilities and the full priority table remain separate review work; worker/phase details respect the now-agreed concurrency maxima."
+  },
+  "supersedes": [
+    "Earlier current-plan statements that MDB concurrency is undecided or that the four-job approval concerns only PMR.",
+    "Earlier recommendation-only wording for in-memory single capture, selective MDB extraction and release of temporary source/index storage."
+  ],
+  "relatedResearch": [
+    "docs/reviews/2026-10-18-bella-pmr/REVIEW.md#hypothetical-mdvx-copy-with-four-concurrent-jobs",
+    "docs/reviews/2026-10-18-bella-mdb/REVIEW.md#agreed-extraction-workflow-and-remaining-decisions",
+    "docs/reviews/2026-10-18-bella-mdb/damage-handling.md",
+    "docs/reviews/2026-10-18-bella-mdb/versions.md"
+  ],
+  "validation": {
+    "scope": "Approval and requirements documentation only.",
+    "productionCodeChanged": false,
+    "buildsOrTestsRun": false,
+    "newBinaryOrMediaReads": false,
+    "appRun": false,
+    "oldScannerActive": true,
+    "binFilterChanged": false,
+    "performanceImprovementMeasured": false
+  }
+}

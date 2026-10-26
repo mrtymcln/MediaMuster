@@ -1,0 +1,1218 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-20",
+  "timezone": "Australia/Sydney",
+  "purpose": "MDB drop-frame wire meaning, physical-file/source/timecode qualification, and missing versus damaged display recommendation.",
+  "status": "Research completed; source qualification and absence/damage handling are Bella proposals, not newly approved or implemented.",
+  "scope": {
+    "native": "Bounded static installed Media Composer arm64 Get/Put/OMF2 conversion; no native app execution or complete native Duration UI trace.",
+    "corpus": "Six cached raw indexes plus PMR identity associations, all six live MDB hashes freshly matched and stable. Aggregate candidate/clock census is not full per-row track/range qualification.",
+    "actualPositive": "Single recorded DF case separately bounded through physical descriptor, SourceID/SourceTrack/kind, mapped interval and TC span; selected raw bytes freshly compared with live MDB.",
+    "runtimeCodeChanged": false,
+    "buildsOrTestsRun": false,
+    "mediaHeadersRead": false,
+    "databaseOrMediaWrites": false,
+    "rawExampleFieldsVerified": 66
+  },
+  "terms": {
+    "editRate": "Clock in edit units per second, not a length.",
+    "durationCount": "How many units a particular length contains.",
+    "durationTC": "That length expressed with the selected clock/numbering convention as HH:MM:SS:FF.",
+    "audio": "Original samples and MDFL sample clock establish precise audio length; own qualified editing clock is proposed for its FF presentation.",
+    "publicApiLimit": "Avid CTMS separates these facts; it does not specify private MDB owner selection or the native MC physical Duration cell."
+  },
+  "native": {
+    "date": "2026-10-20",
+    "scope": "Static native Get/Put/OMF2 conversion and timecode helper tracing; single actual legacy MDB flag byte check. No app execution, source edits, header reads or full ownership policy assertion.",
+    "nativeLibInstalled": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+    },
+    "streamVtableSlots": [
+      {
+        "streamSlot": "0x150",
+        "rawChainedWord": "0x100000000b54dc",
+        "target": "0xb54dc",
+        "symbol": "__ZN14omfiDualStream11WriteUInt16EPKct"
+      },
+      {
+        "streamSlot": "0x158",
+        "rawChainedWord": "0x100000000b5604",
+        "target": "0xb5604",
+        "symbol": "__ZN14omfiDualStream10WriteInt32EPKci"
+      },
+      {
+        "streamSlot": "0x230",
+        "rawChainedWord": "0x100000000b71e0",
+        "target": "0xb71e0",
+        "symbol": "__ZN14omfiDualStream10ReadUInt16EPKc"
+      },
+      {
+        "streamSlot": "0x238",
+        "rawChainedWord": "0x100000000b7294",
+        "target": "0xb7294",
+        "symbol": "__ZN14omfiDualStream9ReadInt32EPKc"
+      }
+    ],
+    "getPut": {
+      "ATimecodeClipPut": "0x21d694 calls TCPut0x257198",
+      "ATimecodeClipGet": "0x21d708 calls TCGet0x2572c4",
+      "FlagsProperty": "dictionary+0x410 read/writeInt32",
+      "FPSProperty": "dictionary+0x408 read/writeUInt16",
+      "StartTCProperty": "dictionary+0x418 read/writeInt32",
+      "nativeFPSAbsentBehavior": "TCGet0x2573d0 tests FPS0 and obtains global native default via TCGetDefault0x52484; Bella need not copy globaldefault."
+    },
+    "flagMeaning": {
+      "legacyFlags": "ATimecodeClip::ConvertToOMF2 at0x21e79c masks native flags with1; AvidCore::TCDeconstruct0x5259c and0x525f8 also mask/test bit0 forDF. Native legacy flags therefore need not be limited semantically to wholeinteger0or1; other bits remain outside this bounded review.",
+      "omf2Drop": "omf2TCCP Get0x5203c8/Put0x52036c use separate boolean propertycode0x53; ConvertToCM0x520440..450 uses equality1 to selectDF.",
+      "nativeDFNominalBasePredicate": "TCFPSCanBeDF0x52238 returns true for positive multiples30; neighboring TCGetNumFramesDroppedPerMinute0x522a4 returns2*(nominalFPS/30). This is not evidence for every Bella displayclock/rate or a native Duration UI policy."
+    },
+    "actualDFExample": {
+      "mdbPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "mdbBytes": 3668720,
+      "mdbSHA256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "object": 70283,
+      "class": "TCCP",
+      "flags": {
+        "property": "OMFI:TCCP:Flags",
+        "type": "omfi:Long",
+        "offset": 923468,
+        "length": 4,
+        "hex": "01000000",
+        "value": 1
+      },
+      "fps": {
+        "property": "OMFI:TCCP:FPS",
+        "type": "omfi:Short",
+        "offset": 923492,
+        "length": 2,
+        "hex": "1e00",
+        "value": 30
+      },
+      "componentEditRate": {
+        "type": "omfi:ExactEditRate",
+        "offset": 60995,
+        "length": 8,
+        "hex": "b50b000064000000",
+        "pair": [
+          2997,
+          100
+        ]
+      },
+      "parentChainFromRetainedIndex": [
+        70283,
+        70285,
+        70286,
+        70288
+      ],
+      "ownerName": "Signature Source Mob",
+      "ownerId": "060a2b340101010101010f001300000038d60dbefb6d163b8e40da9649f531f4",
+      "limit": "Source-parent chain establishes containment, not by itself applicability to each physical file or Duration display. Separate owner/sourcechain audit is in progress."
+    },
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-drop-frame-20261020-native/TCGetDefault.txt",
+        "sha256": "d9108f78d05083284d056dd818990aca55a03a9c7c426a780f7c6bf9dd9f4724",
+        "bytes": 6019
+      },
+      {
+        "path": "/private/tmp/bella-mdb-drop-frame-20261020-native/omf2TCCP-Get-Put-Convert.txt",
+        "sha256": "9b01409c1fbe0d14a9b0b1fd3991881fc950f3a72ab9e384e63315477dae3672",
+        "bytes": 4565
+      },
+      {
+        "path": "/private/tmp/bella-mdb-drop-frame-20261020-native/TCFPSCanBeDF.txt",
+        "sha256": "a9d4740788918221899d74a6699fb7b4b61563bef1cd7f8f677ed5c1399a07e9",
+        "bytes": 2324
+      },
+      {
+        "path": "/private/tmp/bella-mdb-drop-frame-20261020-native/TCGet-TCPut.txt",
+        "sha256": "e3c8a007fb21e773633c479eca6d0f543f41b80ebb8130904ac513402a3411c6",
+        "bytes": 6945
+      },
+      {
+        "path": "/private/tmp/bella-mdb-drop-frame-20261020-native/ATimecodeClip-Get-Put.txt",
+        "sha256": "ba25c56b1617e1adba8b3985caa3ea7558da59e5d937433d3853364cb822b3d1",
+        "bytes": 2804
+      },
+      {
+        "path": "/private/tmp/bella-mdb-drop-frame-20261020-native/ATimecodeClip-ConvertToOMF2.txt",
+        "sha256": "dd9da4880387c27518a0fa0f498a8c173987c6d071a0b4b91389af0f444a93c7",
+        "bytes": 5681
+      }
+    ]
+  },
+  "liveMdbReceipts": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "expectedSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "matchesIndexInput": true,
+      "stableDuringRead": true,
+      "bytes": 5159032
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "expectedSha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "matchesIndexInput": true,
+      "stableDuringRead": true,
+      "bytes": 22745976
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "expectedSha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "matchesIndexInput": true,
+      "stableDuringRead": true,
+      "bytes": 16616336
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "expectedSha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "matchesIndexInput": true,
+      "stableDuringRead": true,
+      "bytes": 15703416
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "expectedSha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "matchesIndexInput": true,
+      "stableDuringRead": true,
+      "bytes": 3668720
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "expectedSha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "matchesIndexInput": true,
+      "stableDuringRead": true,
+      "bytes": 60680
+    }
+  ],
+  "candidateCensus": {
+    "physicalRows": 2412,
+    "rowsWithOwnTCCP": 0,
+    "rowsWithOneImmediateSourceMob": 2412,
+    "rowsWithSeveralImmediateSourceMobs": 0,
+    "rowsNoImmediateSourceMob": 0,
+    "rowsOwnGraphIncomplete": 0,
+    "rowsExactlyOneOwnSCLP": 2412,
+    "rowsWithImmediateSourceTCCP": 2304,
+    "rowsWithDeeperSourceTCCP": 0,
+    "rowsNoReachableTCCP": 108,
+    "rowsAnyReachableSourceGraphError": 0,
+    "rowsWithAnyReachableClockCompatibleTCCP": 2252,
+    "rowsWithOnlyClockIncompatibleReachableTCCP": 52,
+    "rowsWithAnyClockIncompatibleReachableTCCP": 52,
+    "rowsReachableFlagsOnlyNDF": 2303,
+    "rowsReachableFlagsOnlyDF": 1,
+    "rowsReachableFlagsConflict": 0,
+    "rowsReachableFlagsUnknown": 0
+  },
+  "timecodeObjects": {
+    "total": 2011,
+    "observedFlagsZero": 2010,
+    "observedFlagsOne": 1,
+    "note": "Object counts, not physical media rows. All current observed Flags are omfi:Long4 and FPS omfi:Short2; no actual OMF2 Drop/malformed/high-bit examples."
+  },
+  "actualClockMismatch": {
+    "rows": 52,
+    "fileDisplayOriginal": [
+      23976,
+      1000
+    ],
+    "sourceTimecodeOriginal": [
+      59940,
+      1000
+    ],
+    "sourceTimecodeFPS": 60,
+    "classes": {
+      "PCMA": 35,
+      "CDCI": 15,
+      "MPGI": 2
+    },
+    "meaning": "Valid source numbering can be inapplicable to physical Duration. Do not override or blank supported 23.976/base24 Duration because of this unrelated timecode."
+  },
+  "positiveDfBinding": {
+    "physicalFile": 73992,
+    "descriptor": 73991,
+    "Length": 18340,
+    "SampleRate": [
+      2997,
+      100
+    ],
+    "ownClip": 73985,
+    "sourceOwner": 70288,
+    "sourceTrack": 1,
+    "sourceTrackKind": "picture, recorded1",
+    "sourceMediaTrack": 70278,
+    "timecodeTrack": 70286,
+    "timecodeComponent": 70283,
+    "timecodeLength": 18340,
+    "timecodeOriginalRate": [
+      2997,
+      100
+    ],
+    "timecodeFPS": 30,
+    "flagWord": 1,
+    "mappedInterval": [
+      0,
+      18340
+    ],
+    "timecodeSpan": [
+      0,
+      18340
+    ],
+    "interpretedClock": [
+      30000,
+      1001
+    ],
+    "limit": "One qualified positive example; general interval/slot/pulldown/mixed-rate layouts are not newly certified.",
+    "rawVerifiedFields": [
+      {
+        "object": 70276,
+        "propertyName": "OMFI:ObjID",
+        "typeName": "omfi:ObjectTag",
+        "length": 4,
+        "ranges": [
+          [
+            922316,
+            4
+          ]
+        ],
+        "hex": "53455155"
+      },
+      {
+        "object": 70276,
+        "propertyName": "OMFI:CPNT:TrackKind",
+        "typeName": "omfi:TrackType",
+        "length": 2,
+        "ranges": [
+          [
+            922340,
+            2
+          ]
+        ],
+        "hex": "0100"
+      },
+      {
+        "object": 70276,
+        "propertyName": "OMFI:CPNT:EditRate",
+        "typeName": "omfi:ExactEditRate",
+        "length": 8,
+        "ranges": [
+          [
+            60870,
+            8
+          ]
+        ],
+        "hex": "b50b000064000000"
+      },
+      {
+        "object": 70276,
+        "propertyName": "OMFI:SEQU:Sequence",
+        "typeName": "omfi:ObjRefArray",
+        "length": 26,
+        "ranges": [
+          [
+            60886,
+            26
+          ]
+        ],
+        "hex": "0300811201000000000082120100000000008312010000000000"
+      },
+      {
+        "object": 70278,
+        "propertyName": "OMFI:ObjID",
+        "typeName": "omfi:ObjectTag",
+        "length": 4,
+        "ranges": [
+          [
+            922748,
+            4
+          ]
+        ],
+        "hex": "5452414b"
+      },
+      {
+        "object": 70278,
+        "propertyName": "OMFI:TRAK:LabelNumber",
+        "typeName": "omfi:Short",
+        "length": 2,
+        "ranges": [
+          [
+            922772,
+            2
+          ]
+        ],
+        "hex": "0100"
+      },
+      {
+        "object": 70278,
+        "propertyName": "OMFI:TRAK:TrackComponent",
+        "typeName": "omfi:ObjRef",
+        "length": 8,
+        "ranges": [
+          [
+            60928,
+            8
+          ]
+        ],
+        "hex": "8412010000000000"
+      },
+      {
+        "object": 70282,
+        "propertyName": "OMFI:ObjID",
+        "typeName": "omfi:ObjectTag",
+        "length": 4,
+        "ranges": [
+          [
+            923108,
+            4
+          ]
+        ],
+        "hex": "46494c4c"
+      },
+      {
+        "object": 70282,
+        "propertyName": "OMFI:CPNT:TrackKind",
+        "typeName": "omfi:TrackType",
+        "length": 2,
+        "ranges": [
+          [
+            923132,
+            2
+          ]
+        ],
+        "hex": "0300"
+      },
+      {
+        "object": 70282,
+        "propertyName": "OMFI:CPNT:EditRate",
+        "typeName": "omfi:ExactEditRate",
+        "length": 8,
+        "ranges": [
+          [
+            60987,
+            8
+          ]
+        ],
+        "hex": "b50b000064000000"
+      },
+      {
+        "object": 70282,
+        "propertyName": "OMFI:CLIP:Length",
+        "typeName": "omfi:Long",
+        "length": 4,
+        "ranges": [
+          [
+            923228,
+            4
+          ]
+        ],
+        "hex": "00000000"
+      },
+      {
+        "object": 70283,
+        "propertyName": "OMFI:ObjID",
+        "typeName": "omfi:ObjectTag",
+        "length": 4,
+        "ranges": [
+          [
+            923300,
+            4
+          ]
+        ],
+        "hex": "54434350"
+      },
+      {
+        "object": 70283,
+        "propertyName": "OMFI:CPNT:TrackKind",
+        "typeName": "omfi:TrackType",
+        "length": 2,
+        "ranges": [
+          [
+            923324,
+            2
+          ]
+        ],
+        "hex": "0300"
+      },
+      {
+        "object": 70283,
+        "propertyName": "OMFI:CPNT:EditRate",
+        "typeName": "omfi:ExactEditRate",
+        "length": 8,
+        "ranges": [
+          [
+            60995,
+            8
+          ]
+        ],
+        "hex": "b50b000064000000"
+      },
+      {
+        "object": 70283,
+        "propertyName": "OMFI:CLIP:Length",
+        "typeName": "omfi:Long",
+        "length": 4,
+        "ranges": [
+          [
+            923420,
+            4
+          ]
+        ],
+        "hex": "a4470000"
+      },
+      {
+        "object": 70283,
+        "propertyName": "OMFI:TCCP:Flags",
+        "typeName": "omfi:Long",
+        "length": 4,
+        "ranges": [
+          [
+            923468,
+            4
+          ]
+        ],
+        "hex": "01000000"
+      },
+      {
+        "object": 70283,
+        "propertyName": "OMFI:TCCP:FPS",
+        "typeName": "omfi:Short",
+        "length": 2,
+        "ranges": [
+          [
+            923492,
+            2
+          ]
+        ],
+        "hex": "1e00"
+      },
+      {
+        "object": 70283,
+        "propertyName": "OMFI:TCCP:StartTC",
+        "typeName": "omfi:Long",
+        "length": 4,
+        "ranges": [
+          [
+            923516,
+            4
+          ]
+        ],
+        "hex": "00000000"
+      },
+      {
+        "object": 70284,
+        "propertyName": "OMFI:ObjID",
+        "typeName": "omfi:ObjectTag",
+        "length": 4,
+        "ranges": [
+          [
+            923564,
+            4
+          ]
+        ],
+        "hex": "46494c4c"
+      },
+      {
+        "object": 70284,
+        "propertyName": "OMFI:CPNT:TrackKind",
+        "typeName": "omfi:TrackType",
+        "length": 2,
+        "ranges": [
+          [
+            923588,
+            2
+          ]
+        ],
+        "hex": "0300"
+      },
+      {
+        "object": 70284,
+        "propertyName": "OMFI:CPNT:EditRate",
+        "typeName": "omfi:ExactEditRate",
+        "length": 8,
+        "ranges": [
+          [
+            61003,
+            8
+          ]
+        ],
+        "hex": "b50b000064000000"
+      },
+      {
+        "object": 70284,
+        "propertyName": "OMFI:CLIP:Length",
+        "typeName": "omfi:Long",
+        "length": 4,
+        "ranges": [
+          [
+            923684,
+            4
+          ]
+        ],
+        "hex": "00000000"
+      },
+      {
+        "object": 70285,
+        "propertyName": "OMFI:ObjID",
+        "typeName": "omfi:ObjectTag",
+        "length": 4,
+        "ranges": [
+          [
+            923756,
+            4
+          ]
+        ],
+        "hex": "53455155"
+      },
+      {
+        "object": 70285,
+        "propertyName": "OMFI:CPNT:TrackKind",
+        "typeName": "omfi:TrackType",
+        "length": 2,
+        "ranges": [
+          [
+            923780,
+            2
+          ]
+        ],
+        "hex": "0300"
+      },
+      {
+        "object": 70285,
+        "propertyName": "OMFI:CPNT:EditRate",
+        "typeName": "omfi:ExactEditRate",
+        "length": 8,
+        "ranges": [
+          [
+            61011,
+            8
+          ]
+        ],
+        "hex": "b50b000064000000"
+      },
+      {
+        "object": 70285,
+        "propertyName": "OMFI:SEQU:Sequence",
+        "typeName": "omfi:ObjRefArray",
+        "length": 26,
+        "ranges": [
+          [
+            61027,
+            26
+          ]
+        ],
+        "hex": "03008a120100000000008b120100000000008c12010000000000"
+      },
+      {
+        "object": 70286,
+        "propertyName": "OMFI:ObjID",
+        "typeName": "omfi:ObjectTag",
+        "length": 4,
+        "ranges": [
+          [
+            923948,
+            4
+          ]
+        ],
+        "hex": "5452414b"
+      },
+      {
+        "object": 70286,
+        "propertyName": "OMFI:TRAK:LabelNumber",
+        "typeName": "omfi:Short",
+        "length": 2,
+        "ranges": [
+          [
+            923972,
+            2
+          ]
+        ],
+        "hex": "0100"
+      },
+      {
+        "object": 70286,
+        "propertyName": "OMFI:TRAK:TrackComponent",
+        "typeName": "omfi:ObjRef",
+        "length": 8,
+        "ranges": [
+          [
+            61061,
+            8
+          ]
+        ],
+        "hex": "8d12010000000000"
+      },
+      {
+        "object": 70288,
+        "propertyName": "OMFI:ObjID",
+        "typeName": "omfi:ObjectTag",
+        "length": 4,
+        "ranges": [
+          [
+            924164,
+            4
+          ]
+        ],
+        "hex": "4d4f424a"
+      },
+      {
+        "object": 70288,
+        "propertyName": "OMFI:CPNT:TrackKind",
+        "typeName": "omfi:TrackType",
+        "length": 2,
+        "ranges": [
+          [
+            924188,
+            2
+          ]
+        ],
+        "hex": "0000"
+      },
+      {
+        "object": 70288,
+        "propertyName": "OMFI:CPNT:EditRate",
+        "typeName": "omfi:ExactEditRate",
+        "length": 8,
+        "ranges": [
+          [
+            61069,
+            8
+          ]
+        ],
+        "hex": "b50b000064000000"
+      },
+      {
+        "object": 70288,
+        "propertyName": "OMFI:TRKG:Tracks",
+        "typeName": "omfi:ObjRefArray",
+        "length": 18,
+        "ranges": [
+          [
+            61106,
+            18
+          ]
+        ],
+        "hex": "020086120100000000008e12010000000000"
+      },
+      {
+        "object": 70288,
+        "propertyName": "OMFI:MOBJ:MobID",
+        "typeName": "omfi:UID",
+        "length": 32,
+        "ranges": [
+          [
+            61124,
+            32
+          ]
+        ],
+        "hex": "060a2b340101010101010f001300000038d60dbefb6d163b8e40da9649f531f4"
+      },
+      {
+        "object": 70288,
+        "propertyName": "OMFI:MOBJ:PhysicalMedia",
+        "typeName": "omfi:ObjRef",
+        "length": 8,
+        "ranges": [
+          [
+            61161,
+            8
+          ]
+        ],
+        "hex": "8f12010000000000"
+      },
+      {
+        "object": 70288,
+        "propertyName": "OMFI:MOBJ:MobID",
+        "typeName": "omfi:UID",
+        "length": 32,
+        "ranges": [
+          [
+            61169,
+            32
+          ]
+        ],
+        "hex": "060a2b340101010101010f001300000038d60dbefb6d163b8e40da9649f531f4"
+      },
+      {
+        "object": 73984,
+        "propertyName": "OMFI:ObjID",
+        "typeName": "omfi:ObjectTag",
+        "length": 4,
+        "ranges": [
+          [
+            1493588,
+            4
+          ]
+        ],
+        "hex": "46494c4c"
+      },
+      {
+        "object": 73984,
+        "propertyName": "OMFI:CPNT:TrackKind",
+        "typeName": "omfi:TrackType",
+        "length": 2,
+        "ranges": [
+          [
+            1493612,
+            2
+          ]
+        ],
+        "hex": "0100"
+      },
+      {
+        "object": 73984,
+        "propertyName": "OMFI:CPNT:EditRate",
+        "typeName": "omfi:ExactEditRate",
+        "length": 8,
+        "ranges": [
+          [
+            161461,
+            8
+          ]
+        ],
+        "hex": "b50b000064000000"
+      },
+      {
+        "object": 73984,
+        "propertyName": "OMFI:CLIP:Length",
+        "typeName": "omfi:Long",
+        "length": 4,
+        "ranges": [
+          [
+            1493708,
+            4
+          ]
+        ],
+        "hex": "00000000"
+      },
+      {
+        "object": 73985,
+        "propertyName": "OMFI:ObjID",
+        "typeName": "omfi:ObjectTag",
+        "length": 4,
+        "ranges": [
+          [
+            1493780,
+            4
+          ]
+        ],
+        "hex": "53434c50"
+      },
+      {
+        "object": 73985,
+        "propertyName": "OMFI:CPNT:TrackKind",
+        "typeName": "omfi:TrackType",
+        "length": 2,
+        "ranges": [
+          [
+            1493804,
+            2
+          ]
+        ],
+        "hex": "0100"
+      },
+      {
+        "object": 73985,
+        "propertyName": "OMFI:CPNT:EditRate",
+        "typeName": "omfi:ExactEditRate",
+        "length": 8,
+        "ranges": [
+          [
+            161469,
+            8
+          ]
+        ],
+        "hex": "b50b000064000000"
+      },
+      {
+        "object": 73985,
+        "propertyName": "OMFI:CLIP:Length",
+        "typeName": "omfi:Long",
+        "length": 4,
+        "ranges": [
+          [
+            1493900,
+            4
+          ]
+        ],
+        "hex": "a4470000"
+      },
+      {
+        "object": 73985,
+        "propertyName": "OMFI:SCLP:SourceID",
+        "typeName": "omfi:UID",
+        "length": 32,
+        "ranges": [
+          [
+            161477,
+            32
+          ]
+        ],
+        "hex": "060a2b340101010101010f001300000038d60dbefb6d163b8e40da9649f531f4"
+      },
+      {
+        "object": 73985,
+        "propertyName": "OMFI:SCLP:SourceTrack",
+        "typeName": "omfi:Short",
+        "length": 2,
+        "ranges": [
+          [
+            1493972,
+            2
+          ]
+        ],
+        "hex": "0100"
+      },
+      {
+        "object": 73985,
+        "propertyName": "OMFI:SCLP:SourcePosition",
+        "typeName": "omfi:Long",
+        "length": 4,
+        "ranges": [
+          [
+            1493996,
+            4
+          ]
+        ],
+        "hex": "00000000"
+      },
+      {
+        "object": 73985,
+        "propertyName": "OMFI:SCLP:SourceID",
+        "typeName": "omfi:UID",
+        "length": 32,
+        "ranges": [
+          [
+            161509,
+            32
+          ]
+        ],
+        "hex": "060a2b340101010101010f001300000038d60dbefb6d163b8e40da9649f531f4"
+      },
+      {
+        "object": 73986,
+        "propertyName": "OMFI:ObjID",
+        "typeName": "omfi:ObjectTag",
+        "length": 4,
+        "ranges": [
+          [
+            1494068,
+            4
+          ]
+        ],
+        "hex": "46494c4c"
+      },
+      {
+        "object": 73986,
+        "propertyName": "OMFI:CPNT:TrackKind",
+        "typeName": "omfi:TrackType",
+        "length": 2,
+        "ranges": [
+          [
+            1494092,
+            2
+          ]
+        ],
+        "hex": "0100"
+      },
+      {
+        "object": 73986,
+        "propertyName": "OMFI:CPNT:EditRate",
+        "typeName": "omfi:ExactEditRate",
+        "length": 8,
+        "ranges": [
+          [
+            161541,
+            8
+          ]
+        ],
+        "hex": "b50b000064000000"
+      },
+      {
+        "object": 73986,
+        "propertyName": "OMFI:CLIP:Length",
+        "typeName": "omfi:Long",
+        "length": 4,
+        "ranges": [
+          [
+            1494188,
+            4
+          ]
+        ],
+        "hex": "00000000"
+      },
+      {
+        "object": 73987,
+        "propertyName": "OMFI:ObjID",
+        "typeName": "omfi:ObjectTag",
+        "length": 4,
+        "ranges": [
+          [
+            1494260,
+            4
+          ]
+        ],
+        "hex": "53455155"
+      },
+      {
+        "object": 73987,
+        "propertyName": "OMFI:CPNT:TrackKind",
+        "typeName": "omfi:TrackType",
+        "length": 2,
+        "ranges": [
+          [
+            1494284,
+            2
+          ]
+        ],
+        "hex": "0100"
+      },
+      {
+        "object": 73987,
+        "propertyName": "OMFI:CPNT:EditRate",
+        "typeName": "omfi:ExactEditRate",
+        "length": 8,
+        "ranges": [
+          [
+            161549,
+            8
+          ]
+        ],
+        "hex": "b50b000064000000"
+      },
+      {
+        "object": 73987,
+        "propertyName": "OMFI:SEQU:Sequence",
+        "typeName": "omfi:ObjRefArray",
+        "length": 26,
+        "ranges": [
+          [
+            161565,
+            26
+          ]
+        ],
+        "hex": "0300002101000000000001210100000000000221010000000000"
+      },
+      {
+        "object": 73991,
+        "propertyName": "OMFI:ObjID",
+        "typeName": "omfi:ObjectTag",
+        "length": 4,
+        "ranges": [
+          [
+            1495028,
+            4
+          ]
+        ],
+        "hex": "43444349"
+      },
+      {
+        "object": 73991,
+        "propertyName": "OMFI:MDFL:SampleRate",
+        "typeName": "omfi:ExactEditRate",
+        "length": 8,
+        "ranges": [
+          [
+            161723,
+            8
+          ]
+        ],
+        "hex": "b50b000064000000"
+      },
+      {
+        "object": 73991,
+        "propertyName": "OMFI:MDFL:Length",
+        "typeName": "omfi:Long",
+        "length": 4,
+        "ranges": [
+          [
+            1495172,
+            4
+          ]
+        ],
+        "hex": "a4470000"
+      },
+      {
+        "object": 73992,
+        "propertyName": "OMFI:ObjID",
+        "typeName": "omfi:ObjectTag",
+        "length": 4,
+        "ranges": [
+          [
+            1496876,
+            4
+          ]
+        ],
+        "hex": "4d4f424a"
+      },
+      {
+        "object": 73992,
+        "propertyName": "OMFI:CPNT:TrackKind",
+        "typeName": "omfi:TrackType",
+        "length": 2,
+        "ranges": [
+          [
+            1496900,
+            2
+          ]
+        ],
+        "hex": "0000"
+      },
+      {
+        "object": 73992,
+        "propertyName": "OMFI:CPNT:EditRate",
+        "typeName": "omfi:ExactEditRate",
+        "length": 8,
+        "ranges": [
+          [
+            161810,
+            8
+          ]
+        ],
+        "hex": "b50b000064000000"
+      },
+      {
+        "object": 73992,
+        "propertyName": "OMFI:TRKG:Tracks",
+        "typeName": "omfi:ObjRefArray",
+        "length": 10,
+        "ranges": [
+          [
+            161868,
+            10
+          ]
+        ],
+        "hex": "01000521010000000000"
+      },
+      {
+        "object": 73992,
+        "propertyName": "OMFI:MOBJ:MobID",
+        "typeName": "omfi:UID",
+        "length": 32,
+        "ranges": [
+          [
+            161878,
+            32
+          ]
+        ],
+        "hex": "060a2b340101010501010f101300000028175b1761120690badf46fc807fda72"
+      },
+      {
+        "object": 73992,
+        "propertyName": "OMFI:MOBJ:PhysicalMedia",
+        "typeName": "omfi:ObjRef",
+        "length": 8,
+        "ranges": [
+          [
+            161915,
+            8
+          ]
+        ],
+        "hex": "0721010000000000"
+      },
+      {
+        "object": 73992,
+        "propertyName": "OMFI:MOBJ:MobID",
+        "typeName": "omfi:UID",
+        "length": 32,
+        "ranges": [
+          [
+            161923,
+            32
+          ]
+        ],
+        "hex": "060a2b340101010501010f101300000028175b1761120690badf46fc807fda72"
+      }
+    ]
+  },
+  "proposedBellaRule": {
+    "firstResolveClock": "Use the already selected qualified Duration display clock. Supported NDF-only clocks such as24/25 need no DF lookup. Do not infer DF merely from29.97/59.94.",
+    "association": "For DF-capable clocks, follow this physical file own essence SourceClip ID, SourceTrack/kind and position into explicitly linked source timecode; validate relevant timeline segment/range and clock. Accept a direct own-file timecode only when its layout/association is established. No generic recursive sweep of every reachable TCCP.",
+    "limitedFirstRelease": "Support demonstrated simple direct/immediate source relationships and bounded segment spans; unresolved, unsupported or ambiguous mappings remain unavailable rather than guessed.",
+    "legacyLayout": "Validate complete supported32-bit Flags scalar and object byte order, then extract bit0. Other bits are not themselves proven damage; do not require wholeword0/1.",
+    "omf2Layout": "Separate typed one-byte Boolean Drop, valid0/1 only; do not reinterpret a malformed Boolean as false.",
+    "compatibility": "Qualify TC FPS and timing/range against selected display clock. Initial DF modes are30000/1001 base30 and60000/1001 base60. Avid native supports a broader nominal predicate, not automatically broader Bella coverage.",
+    "recordedTrue": "Use DF only when applicable and compatible.",
+    "recordedFalse": "Use NDF when applicable.",
+    "provenAbsent": "Recommend explicit NDF display fallback with absent status distinct from recorded false.",
+    "irrelevant": "Clearly unrelated or different-clock TC does not participate; it cannot override or blank a known NDF-only Duration.",
+    "unusableApplicable": "Where numbering mode is needed, unreadable or conflicting applicable metadata, unresolved association, or an incompatible purported DF mode leaves formatted Duration blank while independently valid Length/rate and file remain.",
+    "missingVsDamaged": "An incomplete or broken reference lookup does not prove absence and cannot silently take the clean-absence fallback.",
+    "zero": "Established zero can keep00:00:00:00 because numbering mode cannot change a zero length; original zero qualification remains separate from unavailable input.",
+    "storage": "Compact selected numbering mode and shared availability/reason status; no permanent candidate graph or alternative-value history solely for DF.",
+    "boundaries": "MDB-only Duration remains. Do not open/reuse media headers to repair Duration or its numbering. Do not add StartTC, replace Length, infer mode from rate, or change audio samples. Keep colon layout and >24hour display."
+  },
+  "currentDifference": "Current scanner recursively gathers Flags/Drop from source mobs, accepts whole0/1, and row toBool collapses unavailable into false. Existing test may linkDF to25fps without compatibility validation; carry over arithmetic/association facts selectively.",
+  "primarySources": [
+    {
+      "url": "https://developer.avid.com/ctms/api/rs_common_object_properties.html",
+      "role": "Public rate/count/timecode-duration separation."
+    },
+    {
+      "url": "https://developer.avid.com/ctms/api/aa/resources/time-based.html",
+      "role": "Specific public resource treats omitteddropFrame asfalse; policy precedent, not privateMDBdamage proof."
+    },
+    {
+      "url": "https://www.cubase.it/wp/wp-content/uploads/2014/12/omfspec21.pdf",
+      "author": "Avid Technology, Inc., OMF Developers Desk",
+      "pages": "Printed95–96 and206; PDF indices106–107 and217",
+      "role": "Original OMF2.1 source/timecode mapping and typed Drop/FPS schema; third-party mirror of primary document."
+    }
+  ],
+  "limits": [
+    "No full native Duration-cell owner/default/error policy proved.",
+    "General source/timecode range qualification not exhaustively executed on all2412rows.",
+    "No actual damaged/conflicting/high-bit/OMF2Drop fixtures run; structural damage and unsupported layouts still need explicit coverage.",
+    "Missing NDF and damaged blank are proposed Bella display policies, not discovered universal MC behavior.",
+    "Audio own-edit-clock interpretation remains proposed in the separate audio review; do not mark it approved here."
+  ],
+  "references": [
+    {
+      "path": "/private/tmp/bella-mdb-drop-frame-20261020-native/findings.json",
+      "sha256": "4829cde4870be55d8e16e26eb06bc9b53502318e802428a264000f74f6cd1476"
+    },
+    {
+      "path": "/private/tmp/bella-df-owner-audit-20261020-findings.json",
+      "sha256": "352cfcf504fdeb05e32aa0c2be4e6e832e96e68fb05143fb30cc2b0955120d68"
+    },
+    {
+      "path": "/private/tmp/bella-df-owner-audit-20261020-clock-findings.json",
+      "sha256": "ec60b396a7fc1aa404faa7c8fcb88bb9d648ab66a2080a71d3a19c1587b5a855"
+    },
+    {
+      "path": "/private/tmp/bella-df-live-mdb-receipts-20261020.json",
+      "sha256": "4b3742eb732f7224f0cb822d4abcc1ed0f6144aea2b74e440129a2dfba1c2140"
+    },
+    {
+      "path": "/private/tmp/bella-df-owner-audit-20261020.py",
+      "sha256": "449c8d9aa3c97b4fa95ede3f86cf816dae412f7921b04bfd4f6cb344a873143e"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbprojection.cpp",
+      "sha256": "75757ff663c541992768c502fa7b0887c4f31a02d23b7ec9e7b28532b160be5f"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbobjects_p.cpp",
+      "sha256": "21a013b4de7a3e346553e2f4bef73404e9d3c63551f6653aa9403a7128244814"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+      "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+      "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_omfprojection.cpp",
+      "sha256": "fd8f664611e66782f1cf6b4ae09590664c42922940585fcf0f7e8eb859655877"
+    }
+  ]
+}

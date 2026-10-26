@@ -1,0 +1,1412 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "request": "Compare the MDB and MXF for the same files. Does OldScanner actually produce the same Compression label from both? Show me any differences you can verify.",
+  "status": "Verified controlled execution results for currently available five MXF folders. No Bella requirement or runtime implementation changed.",
+  "method": "Actual current OldScanner readers, projectors, naming, source-local selection and existing table adapter; same file identity; actual physical MXF paths, no media-payload decode.",
+  "sourceIsolation": "Actual prepareDatabase and prepareMxf, selectedProjectedEvidence per source, then existing applyResolvedMetadata adapter. Never merge source evidence for the primary comparison; adapter Compression string asserted equal selected string.",
+  "scope": {
+    "mdbFiles": 5,
+    "physicalMXFPaths": 2411,
+    "uniqueFileMobIds": 2410,
+    "extraPhysicalCopy": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A0416EF_15EDA15EDA552V copy.mxf",
+    "omfFilesExcludedFromScope": 2,
+    "knownRoots": [
+      "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb"
+    ]
+  },
+  "results": {
+    "samePhysicalFiles": 2397,
+    "differentPhysicalFiles": 14,
+    "excludedOrUnmatched": 0,
+    "differenceGroups": [
+      {
+        "mdb": "1:1 Alpha 8bit",
+        "mxf": "",
+        "files": 10,
+        "equal": false
+      },
+      {
+        "mdb": "JPEG2000",
+        "mxf": "J2K HD",
+        "files": 4,
+        "equal": false
+      }
+    ],
+    "allComparedDnxLabelsEqual": true,
+    "pcmEqualFiles": 1511
+  },
+  "identityQualification": {
+    "normalization": "Full32-byte physicalMXF identity; exactPMR32 canonical identity for2410 listed paths; original raw eligible MDB observations independently checked. No suffix-only matching.",
+    "mdbRaw32Paths": 2134,
+    "mdbLegacy12Paths": 277,
+    "legacy12": "Known organization42, exact verified prefix+8core+suffix canonical expansion; independent conversion checked every row against actualMXF fullID/currentPMR association. No raw8 source IDs in this corpus.",
+    "uniqueMdbOwnerPerComparedId": true
+  },
+  "differences": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_78D9V02.22180610.586550.mxf",
+      "mdbPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "fileMobId": "060a2b3401010105.01010f1013000000.1006182255860590.475534363bcdaf64",
+      "mdbCompression": "1:1 Alpha 8bit",
+      "mxfCompression": "",
+      "mdbClipName": "NOV_78",
+      "mxfClipName": "NOV_78",
+      "mdbCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Typed RGBA descriptor Compression 'NONE' and applicable DIDResolutionID/descriptor facts match the shared verified Avid name catalogue; EssenceCompression is absent; original properties retained. All recorded text bytes are ASCII; the producer's broader character set is not established.",
+            "owner": "object:93779",
+            "property": "OMFI:DIDD:Compression",
+            "raw": {
+              "bytes": 5,
+              "hex": "4e4f4e4500"
+            },
+            "sourcePath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": "1:1 Alpha 8bit"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "1:1 Alpha 8bit"
+      },
+      "mxfCompressionEvidence": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mdbCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mxfCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/FEB_79.0V02.2232CBEE.586550.mxf",
+      "mdbPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "fileMobId": "060a2b3401010105.01010f1013000000.eecb322255860590.cd9134363bcdaf64",
+      "mdbCompression": "1:1 Alpha 8bit",
+      "mxfCompression": "",
+      "mdbClipName": "FEB_79.01",
+      "mxfClipName": "FEB_79.01",
+      "mdbCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Typed RGBA descriptor Compression 'NONE' and applicable DIDResolutionID/descriptor facts match the shared verified Avid name catalogue; EssenceCompression is absent; original properties retained. All recorded text bytes are ASCII; the producer's broader character set is not established.",
+            "owner": "object:93916",
+            "property": "OMFI:DIDD:Compression",
+            "raw": {
+              "bytes": 5,
+              "hex": "4e4f4e4500"
+            },
+            "sourcePath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": "1:1 Alpha 8bit"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "1:1 Alpha 8bit"
+      },
+      "mxfCompressionEvidence": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mdbCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mxfCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/FEB_791549863640V01A4EB2EDV.mxf",
+      "mdbPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "fileMobId": "060a2b3401010105.01010f1013000000.edb24e1a25850591.a87d34363bcdaf64",
+      "mdbCompression": "1:1 Alpha 8bit",
+      "mxfCompression": "",
+      "mdbClipName": "FEB_79",
+      "mxfClipName": "FEB_79",
+      "mdbCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Typed RGBA descriptor Compression 'NONE' and applicable DIDResolutionID/descriptor facts match the shared verified Avid name catalogue; EssenceCompression is absent; original properties retained. All recorded text bytes are ASCII; the producer's broader character set is not established.",
+            "owner": "object:93176",
+            "property": "OMFI:DIDD:Compression",
+            "raw": {
+              "bytes": 5,
+              "hex": "4e4f4e4500"
+            },
+            "sourcePath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": "1:1 Alpha 8bit"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "1:1 Alpha 8bit"
+      },
+      "mxfCompressionEvidence": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mdbCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mxfCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/FEB_79FFV02.21F84E6C.586550.mxf",
+      "mdbPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "fileMobId": "060a2b3401010105.01010f1013000000.6c4ef82155860590.5f7e34363bcdaf64",
+      "mdbCompression": "1:1 Alpha 8bit",
+      "mxfCompression": "",
+      "mdbClipName": "FEB_79",
+      "mxfClipName": "FEB_79",
+      "mdbCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Typed RGBA descriptor Compression 'NONE' and applicable DIDResolutionID/descriptor facts match the shared verified Avid name catalogue; EssenceCompression is absent; original properties retained. All recorded text bytes are ASCII; the producer's broader character set is not established.",
+            "owner": "object:93706",
+            "property": "OMFI:DIDD:Compression",
+            "raw": {
+              "bytes": 5,
+              "hex": "4e4f4e4500"
+            },
+            "sourcePath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": "1:1 Alpha 8bit"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "1:1 Alpha 8bit"
+      },
+      "mxfCompressionEvidence": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mdbCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mxfCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_781549863710V01A83E1CEV.mxf",
+      "mdbPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "fileMobId": "060a2b3401010105.01010f1013000000.cee1831a25850591.586a34363bcdaf64",
+      "mdbCompression": "1:1 Alpha 8bit",
+      "mxfCompression": "",
+      "mdbClipName": "NOV_78",
+      "mxfClipName": "NOV_78",
+      "mdbCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Typed RGBA descriptor Compression 'NONE' and applicable DIDResolutionID/descriptor facts match the shared verified Avid name catalogue; EssenceCompression is absent; original properties retained. All recorded text bytes are ASCII; the producer's broader character set is not established.",
+            "owner": "object:93061",
+            "property": "OMFI:DIDD:Compression",
+            "raw": {
+              "bytes": 5,
+              "hex": "4e4f4e4500"
+            },
+            "sourcePath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": "1:1 Alpha 8bit"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "1:1 Alpha 8bit"
+      },
+      "mxfCompressionEvidence": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mdbCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mxfCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/SLATE.01V02.21719A73.586550.mxf",
+      "mdbPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "fileMobId": "060a2b3401010105.01010f1013000000.739a712155860590.7c2734363bcdaf64",
+      "mdbCompression": "1:1 Alpha 8bit",
+      "mxfCompression": "",
+      "mdbClipName": "SLATE.01",
+      "mxfClipName": "SLATE.01",
+      "mdbCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Typed RGBA descriptor Compression 'NONE' and applicable DIDResolutionID/descriptor facts match the shared verified Avid name catalogue; EssenceCompression is absent; original properties retained. All recorded text bytes are ASCII; the producer's broader character set is not established.",
+            "owner": "object:93556",
+            "property": "OMFI:DIDD:Compression",
+            "raw": {
+              "bytes": 5,
+              "hex": "4e4f4e4500"
+            },
+            "sourcePath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": "1:1 Alpha 8bit"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "1:1 Alpha 8bit"
+      },
+      "mxfCompressionEvidence": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mdbCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mxfCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/SLATE1549867000V02443C0F7V.mxf",
+      "mdbPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "fileMobId": "060a2b3401010105.01010f1013000000.f7c0432425850591.eb0b34363bcdaf64",
+      "mdbCompression": "1:1 Alpha 8bit",
+      "mxfCompression": "",
+      "mdbClipName": "SLATE",
+      "mxfClipName": "SLATE",
+      "mdbCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Typed RGBA descriptor Compression 'NONE' and applicable DIDResolutionID/descriptor facts match the shared verified Avid name catalogue; EssenceCompression is absent; original properties retained. All recorded text bytes are ASCII; the producer's broader character set is not established.",
+            "owner": "object:93342",
+            "property": "OMFI:DIDD:Compression",
+            "raw": {
+              "bytes": 5,
+              "hex": "4e4f4e4500"
+            },
+            "sourcePath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": "1:1 Alpha 8bit"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "1:1 Alpha 8bit"
+      },
+      "mxfCompressionEvidence": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mdbCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mxfCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/SLATEA09V02.214C1556.586550.mxf",
+      "mdbPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "fileMobId": "060a2b3401010105.01010f1013000000.56154c2155860590.a57634363bcdaf64",
+      "mdbCompression": "1:1 Alpha 8bit",
+      "mxfCompression": "",
+      "mdbClipName": "SLATE",
+      "mxfClipName": "SLATE",
+      "mdbCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Typed RGBA descriptor Compression 'NONE' and applicable DIDResolutionID/descriptor facts match the shared verified Avid name catalogue; EssenceCompression is absent; original properties retained. All recorded text bytes are ASCII; the producer's broader character set is not established.",
+            "owner": "object:93443",
+            "property": "OMFI:DIDD:Compression",
+            "raw": {
+              "bytes": 5,
+              "hex": "4e4f4e4500"
+            },
+            "sourcePath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": "1:1 Alpha 8bit"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "1:1 Alpha 8bit"
+      },
+      "mxfCompressionEvidence": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mdbCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mxfCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/TITLE1549863508V019EA9DAAV.mxf",
+      "mdbPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "fileMobId": "060a2b3401010105.01010f1013000000.aa9dea1925850591.2ac134363bcdaf64",
+      "mdbCompression": "1:1 Alpha 8bit",
+      "mxfCompression": "",
+      "mdbClipName": "TITLE",
+      "mxfClipName": "TITLE",
+      "mdbCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Typed RGBA descriptor Compression 'NONE' and applicable DIDResolutionID/descriptor facts match the shared verified Avid name catalogue; EssenceCompression is absent; original properties retained. All recorded text bytes are ASCII; the producer's broader character set is not established.",
+            "owner": "object:92810",
+            "property": "OMFI:DIDD:Compression",
+            "raw": {
+              "bytes": 5,
+              "hex": "4e4f4e4500"
+            },
+            "sourcePath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": "1:1 Alpha 8bit"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "1:1 Alpha 8bit"
+      },
+      "mxfCompressionEvidence": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mdbCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mxfCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/TITLE3E0V02.21D19536.586550.mxf",
+      "mdbPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "fileMobId": "060a2b3401010105.01010f1013000000.3695d12155860590.0c4e34363bcdaf64",
+      "mdbCompression": "1:1 Alpha 8bit",
+      "mxfCompression": "",
+      "mdbClipName": "TITLE",
+      "mxfClipName": "TITLE",
+      "mdbCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Typed RGBA descriptor Compression 'NONE' and applicable DIDResolutionID/descriptor facts match the shared verified Avid name catalogue; EssenceCompression is absent; original properties retained. All recorded text bytes are ASCII; the producer's broader character set is not established.",
+            "owner": "object:93610",
+            "property": "OMFI:DIDD:Compression",
+            "raw": {
+              "bytes": 5,
+              "hex": "4e4f4e4500"
+            },
+            "sourcePath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": "1:1 Alpha 8bit"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "1:1 Alpha 8bit"
+      },
+      "mxfCompressionEvidence": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mdbCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      },
+      "mxfCodingLabel": {
+        "agreement": 0,
+        "observations": [],
+        "reason": 5,
+        "state": 0,
+        "value": null
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69685CF_1D2171D217E9EV.mxf",
+      "mdbPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "fileMobId": "060a2b3401010105.01010f1013000000.9e7e211d55120690.75ea46fc807fda72",
+      "mdbCompression": "JPEG2000",
+      "mxfCompression": "J2K HD",
+      "mdbClipName": "J2K HD",
+      "mxfClipName": "J2K HD",
+      "mdbCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Established descriptor coding and shared verified Avid compression-name catalogue; original identifiers retained.",
+            "owner": "object:84549",
+            "property": "OMFI:DIDD:EssenceCompression",
+            "raw": {
+              "bytes": 16,
+              "hex": "0202010401030001060e2b3404010107"
+            },
+            "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": "JPEG2000"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "JPEG2000"
+      },
+      "mxfCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Shared verified Avid compression-name catalogue; any historical DNx numbered alias requires the exact checked operating point. The original label remains separately available.",
+            "owner": "object:728",
+            "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "raw": {
+              "bytes": 16,
+              "hex": "060e2b34040101070401020203010100"
+            },
+            "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69685CF_1D2171D217E9EV.mxf",
+            "state": 1,
+            "value": "J2K HD"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "J2K HD"
+      },
+      "mdbCodingLabel": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Recorded structured AUID converted to its UL octet order.",
+            "owner": "object:84549",
+            "property": "OMFI:DIDD:EssenceCompression",
+            "raw": {
+              "bytes": 16,
+              "hex": "0202010401030001060e2b3404010107"
+            },
+            "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": {
+              "bytes": 16,
+              "hex": "060e2b34040101070401020203010100"
+            }
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": {
+          "bytes": 16,
+          "hex": "060e2b34040101070401020203010100"
+        }
+      },
+      "mxfCodingLabel": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "",
+            "owner": "object:728",
+            "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "raw": {
+              "bytes": 16,
+              "hex": "060e2b34040101070401020203010100"
+            },
+            "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69685CF_1D2171D217E9EV.mxf",
+            "state": 1,
+            "value": {
+              "bytes": 16,
+              "hex": "060e2b34040101070401020203010100"
+            }
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": {
+          "bytes": 16,
+          "hex": "060e2b34040101070401020203010100"
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E696915A_25E3625E36DC6V.mxf",
+      "mdbPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "fileMobId": "060a2b3401010105.01010f1013000000.c66de32555120690.a45b46fc807fda72",
+      "mdbCompression": "JPEG2000",
+      "mxfCompression": "J2K HD",
+      "mdbClipName": "J2K HD",
+      "mxfClipName": "J2K HD",
+      "mdbCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Established descriptor coding and shared verified Avid compression-name catalogue; original identifiers retained.",
+            "owner": "object:83593",
+            "property": "OMFI:DIDD:EssenceCompression",
+            "raw": {
+              "bytes": 16,
+              "hex": "0202010401030001060e2b3404010107"
+            },
+            "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": "JPEG2000"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "JPEG2000"
+      },
+      "mxfCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Shared verified Avid compression-name catalogue; any historical DNx numbered alias requires the exact checked operating point. The original label remains separately available.",
+            "owner": "object:728",
+            "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "raw": {
+              "bytes": 16,
+              "hex": "060e2b34040101070401020203010100"
+            },
+            "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E696915A_25E3625E36DC6V.mxf",
+            "state": 1,
+            "value": "J2K HD"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "J2K HD"
+      },
+      "mdbCodingLabel": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Recorded structured AUID converted to its UL octet order.",
+            "owner": "object:83593",
+            "property": "OMFI:DIDD:EssenceCompression",
+            "raw": {
+              "bytes": 16,
+              "hex": "0202010401030001060e2b3404010107"
+            },
+            "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": {
+              "bytes": 16,
+              "hex": "060e2b34040101070401020203010100"
+            }
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": {
+          "bytes": 16,
+          "hex": "060e2b34040101070401020203010100"
+        }
+      },
+      "mxfCodingLabel": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "",
+            "owner": "object:728",
+            "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "raw": {
+              "bytes": 16,
+              "hex": "060e2b34040101070401020203010100"
+            },
+            "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E696915A_25E3625E36DC6V.mxf",
+            "state": 1,
+            "value": {
+              "bytes": 16,
+              "hex": "060e2b34040101070401020203010100"
+            }
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": {
+          "bytes": 16,
+          "hex": "060e2b34040101070401020203010100"
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC980_1B6141B614459V.mxf",
+      "mdbPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "fileMobId": "060a2b3401010105.01010f1013000000.5944611b59120690.97fb46fc807fda72",
+      "mdbCompression": "JPEG2000",
+      "mxfCompression": "J2K HD",
+      "mdbClipName": "J2K HD",
+      "mxfClipName": "J2K HD",
+      "mdbCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Established descriptor coding and shared verified Avid compression-name catalogue; original identifiers retained.",
+            "owner": "object:87188",
+            "property": "OMFI:DIDD:EssenceCompression",
+            "raw": {
+              "bytes": 16,
+              "hex": "0202010401030001060e2b3404010107"
+            },
+            "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": "JPEG2000"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "JPEG2000"
+      },
+      "mxfCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Shared verified Avid compression-name catalogue; any historical DNx numbered alias requires the exact checked operating point. The original label remains separately available.",
+            "owner": "object:728",
+            "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "raw": {
+              "bytes": 16,
+              "hex": "060e2b34040101070401020203010100"
+            },
+            "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC980_1B6141B614459V.mxf",
+            "state": 1,
+            "value": "J2K HD"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "J2K HD"
+      },
+      "mdbCodingLabel": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Recorded structured AUID converted to its UL octet order.",
+            "owner": "object:87188",
+            "property": "OMFI:DIDD:EssenceCompression",
+            "raw": {
+              "bytes": 16,
+              "hex": "0202010401030001060e2b3404010107"
+            },
+            "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": {
+              "bytes": 16,
+              "hex": "060e2b34040101070401020203010100"
+            }
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": {
+          "bytes": 16,
+          "hex": "060e2b34040101070401020203010100"
+        }
+      },
+      "mxfCodingLabel": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "",
+            "owner": "object:728",
+            "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "raw": {
+              "bytes": 16,
+              "hex": "060e2b34040101070401020203010100"
+            },
+            "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69BC980_1B6141B614459V.mxf",
+            "state": 1,
+            "value": {
+              "bytes": 16,
+              "hex": "060e2b34040101070401020203010100"
+            }
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": {
+          "bytes": 16,
+          "hex": "060e2b34040101070401020203010100"
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CB5EF_CEB88CEB88AC8V.mxf",
+      "mdbPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "fileMobId": "060a2b3401010105.01010f1013000000.c88ab8ce60120690.c29446fc807fda72",
+      "mdbCompression": "JPEG2000",
+      "mxfCompression": "J2K HD",
+      "mdbClipName": "J2K HD",
+      "mxfClipName": "J2K HD",
+      "mdbCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Established descriptor coding and shared verified Avid compression-name catalogue; original identifiers retained.",
+            "owner": "object:82089",
+            "property": "OMFI:DIDD:EssenceCompression",
+            "raw": {
+              "bytes": 16,
+              "hex": "0202010401030001060e2b3404010107"
+            },
+            "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": "JPEG2000"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "JPEG2000"
+      },
+      "mxfCompressionEvidence": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Shared verified Avid compression-name catalogue; any historical DNx numbered alias requires the exact checked operating point. The original label remains separately available.",
+            "owner": "object:736",
+            "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "raw": {
+              "bytes": 16,
+              "hex": "060e2b34040101070401020203010100"
+            },
+            "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CB5EF_CEB88CEB88AC8V.mxf",
+            "state": 1,
+            "value": "J2K HD"
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": "J2K HD"
+      },
+      "mdbCodingLabel": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "Recorded structured AUID converted to its UL octet order.",
+            "owner": "object:82089",
+            "property": "OMFI:DIDD:EssenceCompression",
+            "raw": {
+              "bytes": 16,
+              "hex": "0202010401030001060e2b3404010107"
+            },
+            "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+            "state": 1,
+            "value": {
+              "bytes": 16,
+              "hex": "060e2b34040101070401020203010100"
+            }
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": {
+          "bytes": 16,
+          "hex": "060e2b34040101070401020203010100"
+        }
+      },
+      "mxfCodingLabel": {
+        "agreement": 1,
+        "observations": [
+          {
+            "eligible": true,
+            "explanation": "",
+            "owner": "object:736",
+            "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "raw": {
+              "bytes": 16,
+              "hex": "060e2b34040101070401020203010100"
+            },
+            "sourcePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69CB5EF_CEB88CEB88AC8V.mxf",
+            "state": 1,
+            "value": {
+              "bytes": 16,
+              "hex": "060e2b34040101070401020203010100"
+            }
+          }
+        ],
+        "reason": 0,
+        "state": 1,
+        "value": {
+          "bytes": 16,
+          "hex": "060e2b34040101070401020203010100"
+        }
+      }
+    }
+  ],
+  "causes": {
+    "alpha": {
+      "outputVerifiedFiles": 10,
+      "rawDetailedSpecimen": "NOV_78D9V02.22180610.586550.mxf",
+      "evidence": "alpha-cause.json",
+      "finding": "MDB explicitly supplies legacy NONE plus alpha layout/depth and names it. OwnMXF has no usable PictureEssenceCoding; current picture path does not call equivalent absent-coding alpha fallback. All10 current MDB Compression observations carry NONE bytes and qualified alpha naming; noMXF Compression coding/name observed. Padding fix alone does not add Compression fallback."
+    },
+    "jpeg2000": {
+      "outputVerifiedFiles": 4,
+      "evidence": "j2k-cause.json",
+      "finding": "Decoded coding ID and effective naming geometry/layout/depth/subsampling agree for all4. Two MDB rates2997/100 vsMXF30000/1001 and two23976/1000 vs24000/1001. Existing jpeg2000Name requires exact supported rate, so MDB staysJPEG2000 andMXFqualifiesJ2KHD. Source-level causal check from original bytes/actualcurrentbranch, not a counterfactual helper execution. This is a representation-handling difference, not a missing-field claim."
+    }
+  },
+  "validation": {
+    "originalCoreBuild": "cmake --build build --target mediamuster_oldscanner_core mediamuster_oldscanner -j4: no work to do",
+    "cppStandard": 17,
+    "qtVersion": "6.5.3 EXACT",
+    "rawSourcesComplete": true,
+    "sourceErrorExceptions": 0,
+    "immediateFileStatsStable": true,
+    "mdbHashesUnchangedAfterComparison": true,
+    "fullPMRHashesReverifiedIndependently": true,
+    "directNormalQFileRechecks": 17,
+    "differentFilesDirectlyRechecked": 14,
+    "matchingControlsDirectlyRechecked": 3,
+    "directRechecksAllEqualFirstRun": true,
+    "independentRawRecounts": 2,
+    "runtimeRepositorySourceChanged": false,
+    "bellaImplemented": false,
+    "normalAppScanLaunched": false,
+    "essenceDecoded": false,
+    "performanceBenchmarkClaimed": false
+  },
+  "databaseReceipts": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sha256AfterComparison": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "projectionFileRows": 392
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256AfterComparison": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "projectionFileRows": 686
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256AfterComparison": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "projectionFileRows": 525
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256AfterComparison": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "projectionFileRows": 471
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sha256AfterComparison": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "projectionFileRows": 359
+    }
+  ],
+  "labelPairGroups": [
+    {
+      "mdb": "1:1 Alpha 8bit",
+      "mxf": "",
+      "files": 10,
+      "equal": false
+    },
+    {
+      "mdb": "AVC Intra",
+      "mxf": "AVC Intra",
+      "files": 12,
+      "equal": true
+    },
+    {
+      "mdb": "AVC Long-GOP Constrained Baseline",
+      "mxf": "AVC Long-GOP Constrained Baseline",
+      "files": 8,
+      "equal": true
+    },
+    {
+      "mdb": "AVC Long-GOP High",
+      "mxf": "AVC Long-GOP High",
+      "files": 6,
+      "equal": true
+    },
+    {
+      "mdb": "AVC Long-GOP High422",
+      "mxf": "AVC Long-GOP High422",
+      "files": 15,
+      "equal": true
+    },
+    {
+      "mdb": "Apple ProRes 422",
+      "mxf": "Apple ProRes 422",
+      "files": 6,
+      "equal": true
+    },
+    {
+      "mdb": "Apple ProRes 422 HQ",
+      "mxf": "Apple ProRes 422 HQ",
+      "files": 6,
+      "equal": true
+    },
+    {
+      "mdb": "Apple ProRes 422 LT",
+      "mxf": "Apple ProRes 422 LT",
+      "files": 6,
+      "equal": true
+    },
+    {
+      "mdb": "Apple ProRes 422 Proxy",
+      "mxf": "Apple ProRes 422 Proxy",
+      "files": 6,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNx HQ [DNxHD 175]",
+      "mxf": "Avid DNx HQ [DNxHD 175]",
+      "files": 1,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNx HQ [DNxHD 220]",
+      "mxf": "Avid DNx HQ [DNxHD 220]",
+      "files": 2,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNx HQ [DNxHD 90]",
+      "mxf": "Avid DNx HQ [DNxHD 90]",
+      "files": 1,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNx HQX [DNxHD 175x]",
+      "mxf": "Avid DNx HQX [DNxHD 175x]",
+      "files": 1,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNx HQX [DNxHD 185x]",
+      "mxf": "Avid DNx HQX [DNxHD 185x]",
+      "files": 670,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNx HQX [DNxHD 220x]",
+      "mxf": "Avid DNx HQX [DNxHD 220x]",
+      "files": 2,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNx HQX [DNxHD 90x]",
+      "mxf": "Avid DNx HQX [DNxHD 90x]",
+      "files": 1,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNx LB [DNxHD 36]",
+      "mxf": "Avid DNx LB [DNxHD 36]",
+      "files": 94,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNx LB [DNxHD 45]",
+      "mxf": "Avid DNx LB [DNxHD 45]",
+      "files": 1,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNx SQ [DNxHD 115]",
+      "mxf": "Avid DNx SQ [DNxHD 115]",
+      "files": 1,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNx SQ [DNxHD 145]",
+      "mxf": "Avid DNx SQ [DNxHD 145]",
+      "files": 3,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNx SQ [DNxHD 60]",
+      "mxf": "Avid DNx SQ [DNxHD 60]",
+      "files": 1,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNxUncompressed",
+      "mxf": "Avid DNxUncompressed",
+      "files": 8,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNxUncompressed — 10-bit Integer",
+      "mxf": "Avid DNxUncompressed — 10-bit Integer",
+      "files": 4,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNxUncompressed — 12-bit Integer",
+      "mxf": "Avid DNxUncompressed — 12-bit Integer",
+      "files": 4,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNxUncompressed — 16-bit S2.14 fixed point",
+      "mxf": "Avid DNxUncompressed — 16-bit S2.14 fixed point",
+      "files": 4,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNxUncompressed — 32-bit Float",
+      "mxf": "Avid DNxUncompressed — 32-bit Float",
+      "files": 4,
+      "equal": true
+    },
+    {
+      "mdb": "Avid DNxUncompressed — 8-bit Integer",
+      "mxf": "Avid DNxUncompressed — 8-bit Integer",
+      "files": 4,
+      "equal": true
+    },
+    {
+      "mdb": "DV 1080 60i",
+      "mxf": "DV 1080 60i",
+      "files": 1,
+      "equal": true
+    },
+    {
+      "mdb": "DV NTSC 25Mbps 4:1:1",
+      "mxf": "DV NTSC 25Mbps 4:1:1",
+      "files": 1,
+      "equal": true
+    },
+    {
+      "mdb": "DV NTSC 50Mbps 4:2:2",
+      "mxf": "DV NTSC 50Mbps 4:2:2",
+      "files": 1,
+      "equal": true
+    },
+    {
+      "mdb": "JPEG2000",
+      "mxf": "J2K HD",
+      "files": 4,
+      "equal": false
+    },
+    {
+      "mdb": "JPEG2000",
+      "mxf": "JPEG2000",
+      "files": 4,
+      "equal": true
+    },
+    {
+      "mdb": "PCM",
+      "mxf": "PCM",
+      "files": 1511,
+      "equal": true
+    },
+    {
+      "mdb": "XDCAM",
+      "mxf": "XDCAM",
+      "files": 4,
+      "equal": true
+    },
+    {
+      "mdb": "XDCAM HD 50",
+      "mxf": "XDCAM HD 50",
+      "files": 4,
+      "equal": true
+    }
+  ],
+  "actualReaderIO": {
+    "returnedBytes": 354167965,
+    "readCalls": 33201969,
+    "seekCalls": 33200340
+  },
+  "rawReceipts": [
+    {
+      "path": "/private/tmp/bella-compression-pairs-20261022/comparison.json",
+      "sha256": "89734c4fabb7bdf8cf715f1554270095ac52e3bbc9b180eac9d76bdefdfdf8d9",
+      "bytes": 7646612
+    },
+    {
+      "path": "/private/tmp/bella-compression-pairs-20261022/inventory.json",
+      "sha256": "7d2a6395e4182f1afb2ca42291aea63ea18f9b0dc324981471a1b94a05afed68",
+      "bytes": 2262371
+    },
+    {
+      "path": "/private/tmp/bella-compression-pairs-20261022/direct-recheck-receipt.json",
+      "sha256": "12e571d5a4164e2b4caa417c2ff0e33833d9cc1277a9e533ab31eb041e6e33a0",
+      "bytes": 1156
+    },
+    {
+      "path": "/private/tmp/bella-compression-pairs-20261022/direct-recheck.jsonl",
+      "sha256": "c093c87430aaf1c22bc880773a70af4823b8e68910da5286727effd522caba03",
+      "bytes": 73827
+    },
+    {
+      "path": "/private/tmp/bella-compression-pairs-20261022/independent-id-audit.json",
+      "sha256": "28bc7af3ac81331f7eff6ddee599d7cff93952106699644601114f3464b7f355",
+      "bytes": 754
+    },
+    {
+      "path": "/private/tmp/bella-compression-pairs-20261022/independent-recount.json",
+      "sha256": "f3c6fb662e8b2ae13714a0893607fb32bc48322e111768a6371657bfdcc35fcb",
+      "bytes": 8642
+    },
+    {
+      "path": "/private/tmp/bella-compression-pairs-20261022/alpha-cause.json",
+      "sha256": "cdc677dfad0e07fe46210a971a50799aaea17ad96ada27078b529d9e551f0ba3",
+      "bytes": 74609
+    },
+    {
+      "path": "/private/tmp/bella-compression-pairs-20261022/j2k-cause.json",
+      "sha256": "939922a67e370f13578110bda81d41c07dcdb514b47bfee2eb38b7274d8a4d00",
+      "bytes": 43414
+    },
+    {
+      "path": "/private/tmp/bella-compression-pairs-20261022/compare.py",
+      "sha256": "be1551edc75fe89b8aac71f14bb68ac668522d85e13f19dc0c3cc5b9b2270064",
+      "bytes": 5990
+    },
+    {
+      "path": "/private/tmp/bella-compression-pairs-20261022/probe-audited.cpp",
+      "sha256": "9549a767c46b78ea851cd5451a7304e6868f9c79de3161184806410620fb58d8",
+      "bytes": 8526
+    },
+    {
+      "path": "/private/tmp/bella-compression-pairs-20261022/probe.cpp",
+      "sha256": "6d8a2e4050b9fe5feb2d04eb50596f21d88d829f26c0750bd2cbd984ff84b2d1",
+      "bytes": 8687
+    },
+    {
+      "path": "/private/tmp/bella-compression-pairs-20261022/CMakeLists.txt",
+      "sha256": "904320f18a2287633703a599589f72bb25b8bd8dab1b4634c51cb850bba2aa27",
+      "bytes": 657
+    },
+    {
+      "path": "/private/tmp/bella-compression-pairs-20261022/compression_pairs-audited",
+      "sha256": "2eb3839eddc012cfc46d36195f53797b588250fd6f67aa95500ff9b6d3a3ea4c",
+      "bytes": 4741360
+    },
+    {
+      "path": "/private/tmp/bella-compression-pairs-20261022/build/compression_pairs",
+      "sha256": "4a8701c0165f6df54058dddba883284fa08a2f396b6838a26d3d3218d10186d6",
+      "bytes": 4741360
+    }
+  ],
+  "linkedCoreArchive": {
+    "path": "/Users/martymclean/Developer/MediaMuster/build/libmediamuster_oldscanner_core.a",
+    "sha256": "dee2f9144c744eb19a409e6402db11847b30291531034219a71a39e18b05dbd6"
+  },
+  "sourceInputs": [
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/databasesource.cpp",
+      "sha256": "fe4235c24e024ffd31431c68e01a40626188e1e8ed46d1212f6adad40b84f6b8"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfsource.cpp",
+      "sha256": "9d50bcd74df4e98bfc69f8a26777e63b682ee376d8a458f800549c0a260bdbd9"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbreader.cpp",
+      "sha256": "caf9ef08219020a9408cbffccac475d52807c48548491c048b8e647b44e0836a"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfreader.cpp",
+      "sha256": "704f0f864d16350daccd819ed1759c5f71f06eab308b9ae6d1cfd6cb4e9c2df8"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbprojection.cpp",
+      "sha256": "75757ff663c541992768c502fa7b0887c4f31a02d23b7ec9e7b28532b160be5f"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+      "sha256": "c8c68e78db5f3efaa62235f55624c5478e89a0adc37581a922af050f931cad55"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+      "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+      "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/compressionnames_p.cpp",
+      "sha256": "fe5a52e5c1f932330f30e41e5d14465f75777959ad66fa4845133dde52945a82"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/compressionnames_p.h",
+      "sha256": "26fc69bad86718511987028cd87f4356488ccb1f47a7db2bb915b9154e1654ff"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/dnxnames_p.h",
+      "sha256": "9cd7f0d2f2dbfdd7a8a16bd9186f7e4158ebceb506acd5441a44afdd898b44c6"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+      "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+      "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+      "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56"
+    }
+  ],
+  "artifacts": {
+    "review": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-21-bella-mxf/compression-comparison.md",
+    "allPairsCSV": {
+      "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-21-bella-mxf/compression-comparison.csv",
+      "sha256": "6bd75c3c69509a0e7fc97863c005e36f0b2d20f94f707fd389a17c7ca79f275d",
+      "dataRows": 2411
+    }
+  },
+  "limits": [
+    "Controlled standalone source output, not a claim about which source an existing live scan chose or opened.",
+    "Only five known currently available MXF folders; two OMF files are outside this MDB/MXF comparison.",
+    "Full32 MXF identity and exact full normalized PMR identity used where PMR-listed; MDB known12-byte legacy mapping is recorded separately and requires exact canonical match, not short-core-only comparison.",
+    "Immediate stat stability and post-run MDB hashes do not make an atomic cross-file snapshot.",
+    "No production runtime source changed or Bella code implemented.",
+    "MDB informational/coverage diagnostics are retained; Complete is not a claim that every unrelated field or dictionary definition was understood.",
+    "Four JPEG2000 causes and one detailed alpha specimen checked at raw bytes; tenalpha output evidence and all14 rechecks verified.",
+    "Earlier generic less-information hypothetical is superseded by these concrete observed differences."
+  ]
+}

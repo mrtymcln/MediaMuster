@@ -1,0 +1,2209 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "MXF Project source/text decoding and compact-retention review for Bella.",
+  "request": "OK, let's lock those Clip Name rules in for Bella. Next, how do Media Composer and MDVX read Project from MXF, and what should Bella read and keep?",
+  "status": "The simplified header Project -> qualified file-owned Project -> blank rule and its presented text/availability/retention details were explicitly approved on 2026-10-22. Unimplemented requirements; historical research and proposal-revision findings remain unchanged.",
+  "precedingClipNameApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-clip-name-plan-2026-10-22.json",
+    "sha256": "8534a8c44f956c2d31f0b39a4a4048ec8d481139754172302127b447266d96b3"
+  },
+  "mediaComposer": {
+    "findings": [
+      {
+        "topic": "Header Project writer derives from final master lookup",
+        "anchors": [
+          "MXFDomain::AddPropertiesToHeader 0x473f4c",
+          "this+0x398 assertion 0x473fb4..0x473fd0",
+          "FindProjectName call 0x474138",
+          "AvText Unicode conversion 0x47417c",
+          "SetStringPropOnObject 0x47419c"
+        ],
+        "conclusion": "The object at this+0x398 is labelled _finalMasterMob by its assertion. The writer calls FindProjectName on it with argument 0 and a 64-byte char buffer initially empty, converts that through AvText to wide Unicode, and sets the Avid header ProjectName property. The FindProjectName return is not tested here. This does not prove the input is the currently open global project, guarantee a nonempty Project, or establish a universal length/encoding rule for all writers."
+      },
+      {
+        "topic": "Summary Project reader has typed getter and combined success gates",
+        "anchors": [
+          "MXFDomain::GetPMRPropertiesFromAAFHeader 0x478db8",
+          "Master ID getter 0x478f30",
+          "File ID getter 0x478f54",
+          "Project getter 0x478f78",
+          "combined gate 0x478fa8..0x478fb0"
+        ],
+        "conclusion": "This helper reads two summary IDs and typed Project text; ordinary output conversion occurs only after the three getter calls succeed. It does not establish universal precedence between summary Project and mob-owned tagged values, nor all-or-nothing output rollback under later exceptions."
+      },
+      {
+        "topic": "Generic owner attribute import and string conversion",
+        "anchors": [
+          "AComposition::ConvertCompositionFromAAF attribute block 0x1943d8..0x194438",
+          "AAFDomain::GetAttributeList 0x4dc48",
+          "GetObjRefArrayPropFromObject 0x4ddb0",
+          "attribute converter virtual call 0x4dde4",
+          "AAttrList::ConvertAttributesFromAAF 0x179f34",
+          "name Unicode conversion 0x17a04c",
+          "type category 12 branch 0x17a188..0x17a18c",
+          "string Unicode conversion 0x17a2c4",
+          "string setter call 0x17a320"
+        ],
+        "conclusion": "Generic composition import obtains the supplied mob-owned attribute list, converts typed tagged attributes and attaches the list to that composition. The converter distinguishes integer, opaque and string categories. String category 12 reads the typed string, runs ConvertUnicodeToInternal and sets a char-string attribute; special __AttributeList and __PortableObject strings enter separate object-handling branches. This is general attribute import, not a proven Project-specific source-selection rule.",
+        "unicodeLimit": "Both attribute names and string values use ConvertUnicodeToInternal. Prior traced converter has a domain-flag ASCII-cleanup/wcstombs path and an AvText system-encoding path. It is not proof of lossless Unicode preservation or a universal raw MacRoman/UTF-8 wire encoding."
+      },
+      {
+        "topic": "DMS1 Project is a separate typed descriptive route",
+        "anchors": [
+          "MXFDomain::ScanDMS1ForProject 0x47a14c",
+          "GetNamedList _USER 0x47a180",
+          "DMS1ClipFramework_Projects reference 0x47a1c8",
+          "DMS1Project_Name typed string 0x47a1f0",
+          "Unicode conversion 0x47a218",
+          "_PJ string setter 0x47a240"
+        ],
+        "conclusion": "The function obtains the composition _USER list, follows the typed DMS1ClipFramework Projects reference to a DMS1Project, reads its Name with GetStringPropFromObject, converts it through ConvertUnicodeToInternal, and sets _PJ. A separate DMS1Project_Number route can set Production. This demonstrates an explicit descriptive-metadata to internal-attribute mapping, not semantic equivalence of every production project name to the Avid Project column."
+      },
+      {
+        "topic": "DMS1 framework dispatch is conditional",
+        "anchors": [
+          "MXFDomain::ScanDMS1File 0x479e64",
+          "framework ID comparisons 0x47a094..0x47a0e0",
+          "Project call 0x47a10c"
+        ],
+        "conclusion": "ScanDMS1File traverses a typed track/segment/framework chain and compares the framework class identity against two fixed alternatives. Only the matching Project-bearing branch calls ScanDMS1ForProject, followed by people/take handling; the other recognized branch calls the scene scanner. Unsupported/missing traversal or unmatched class exits false. These extracts alone do not connect DMS1 scanning to every ordinary media scanner path."
+      }
+    ],
+    "resolvedSymbols": {
+      "0x10e1368": "kAAFPropID_ComponentAttributeList",
+      "0x11b95b8": "AUID_AAFMob",
+      "0x10fc9e8": "kAAFClassID_DMS1ClipFramework",
+      "0x10fca08": "kAAFTypeID_DMS1ProjectStrongReference",
+      "0x10fca18": "kAAFPropID_DMS1ClipFramework_Projects",
+      "0x10fca28": "kAAFClassID_DMS1Project",
+      "0x10fca38": "kAAFPropID_DMS1Project_Name",
+      "0x10fca48": "kAAFPropID_DMS1Project_Number"
+    },
+    "limits": [
+      "Selected static functions, not full native GUI/project display or all scanner precedence.",
+      "GetAttributeList uses a virtual attribute converter call. The converter body was independently inspected; this audit does not add a separate exact vtable-fixup proof for that one slot.",
+      "No malformed fixtures, Unicode conformance tests or runtime side-effect/rollback guarantees.",
+      "No new Bella Project requirement is approved or implemented by this research."
+    ],
+    "binary": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+    }
+  },
+  "mdvx": {
+    "date": "2026-10-22",
+    "method": "Read-only arm64 native disassembly from fresh22Oct otool capture. Bounded Project-related functions extracted; ADR constants resolve against installed-binary symbols/CFStrings. Search literal _PJ freshly read and validated from static Mach-O. No app, privateAPI, malformedfixture execution, media/database writes or repo edits.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "size": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+    },
+    "projectSelection": {
+      "first": "ami_read_info requires singular Preface, checks Preface.ProjectName at0x10000ffe8..0x10000fff8; if present calls get_string_value to info.projectName (info+0x8) at0x100010010.",
+      "fallbackTrigger": "After selecting MaterialPackage and reading its Name/date,0x1000100d0..0x1000100d8 tests ONLY projectName pointer fornull. Nullbranches0x100010664 to fallback. An allocatedempty string is nonnull, so emptyPrefaceProjectName suppresses fallback.",
+      "fallbackOwner": "Selected singular MaterialPackage.GenericPackage.MobAttributeList; NOT file SourcePackage, physical SourcePackage, UserComments or nested _USER attributes. Fallback0x100010664 loads materialPackageSet and checks MobAttributeList; collectioncall0x100010684.",
+      "fallbackKey": "Flat typedtaggedvalue collection returns parallel hostwide name/value lists; ami searches exact wide literal_PJ at0x100010690..0x10001069c via mxf_avid_get_mob_attribute. Literal0x1000c6920 freshlyvalidated.",
+      "matchPolicy": "mxf_avid_get_mob_attribute0x100017e80 iterates parallel lists and uses wcscmp0x100017edc; exactcase-sensitive match, notprefix/suffix/nestedsearch. Returns firstmatchingname in arrayorder, noduplicate/conflictresolution.",
+      "noCandidate": "NoMobAttributeList, no_PJmatch or list with no usablematchingvalue leaves projectName null; it does not search other package owners."
+    },
+    "normalPropertyEncoding": {
+      "wire": "Preface.ProjectName is read by normal MXF UTF16BE string reader (mxf_get_utf16string_item0x10004993c), then convert_string0x100011c7c ->mxf_utf16_to_utf8.",
+      "representation": "Standard field has no MacRoman fallback in this route; UTF8 is intermediate returnedCstring, not wireencoding.",
+      "terminatorsAndLength": "Tracednormalreader stops atfirstNUL, appendsmissingtermination, ignoresoddtrailingbyte and treatslen0/1 asempty. No whitespace trim/normalisation/BOMstrip identified. These are MDVXtolerances, notrecommendedBellavalidityrules.",
+      "malformed": "Malformedsurrogate conversion returnsfailure; present PrefaceProjectName read failure causes amierror at0x100010014->0x100010588. It does not proceedto_PJrecovery. Empty allocatedtext does nottriggerfallback."
+    },
+    "taggedValueEncodingAndCollection": {
+      "collection": "mxf_avid_read_string_mob_attributes0x1000179ec delegates GenericPackage.MobAttributeList to mxf_avid_read_string_tagged_values0x100017a00. Arrayorder, directstrongrefs, no recursion.",
+      "name": "TaggedValue.Name is normalUTF16BE via mxf_get_utf16string_item_size/getter0x100017c58..0x100017c98.",
+      "value": "TaggedValue.Value is indirect: _get_indirect_string0x100017378 requires >=18bytes, byte0 B(0x42)orL(0x4c), checks all16typeidentifierbytes beginningoffset1 against recognisedStringAUID. Payload beginsatbyte17; markerdecidesUTF16BEorLE. Valueconvertedtohostwide, then onlyselected_PJ convertedtoUTF8 byami0x1000106a4..0x1000106b4.",
+      "typeBytes": {
+        "B": "0110020000000000060e2b3401040101",
+        "L": "0002100100000000060e2b3401040101",
+        "canonicalAUID": "01100200-0000-0000-060e-2b3401040101",
+        "note": "Canonical notation describes inspected typeconstant, not a generalclaim allindirectvalues are strings."
+      },
+      "extraTolerance": "Despite functionname, mxf_avid_read_string_tagged_value0x100017c18 tries _get_indirect_int32 afterstringtypefails0x100017cb4..0x100017cdc, formatsInt32asdecimalASCII, expandsit to hostwide. Thus an integer_PJcould become numericProjecttext; do notcopythisasBellavalidityrule.",
+      "empty": "Recognisedemptyindirectstring yields allocatedemptyvalue; firstmatching_PJremains empty. No skipempty or trylaterduplicate.",
+      "malformedCollection": "Arraycount/element/strongreffailure abortscollectionandami. A single unrecognised/unusabletaggedvalue returningfalse is skipped at0x100017abc->0x100017ae8; laterentries cancontinue. Collection doesnotdistinguish missing/unsupported/damaged in itsbooleanreturn.",
+      "malformedSelectedText": "UTF16indirectpayload can be materializedwithout surrogatevalidation; selected_PJconversiontoUTF8 then detectsbad surrogate andabortsentireami, withouttryingnextduplicate.",
+      "terminators": "Indirectreader zero-initializeshostbuffer, copiesfloor((length-17)/2) codeunits, stopsatfirstNUL; no strictterminator/paritycheck. Notstrictmalformedvalidation."
+    },
+    "ordinaryProjection": {
+      "dictionary": "MDVxMXF.openFile0x1000324d0..0x100032568 converts info.projectName UTF8viaNSString.stringWithUTF8String, stores keyproject; nullpointer meansnodictionaryentry, conversionnil logsandstoresemptyNSString.",
+      "item": "MDVxMXF.addInfoToItem0x100032724..0x100032750 retrievesprojectandcallssetDB_ProjectName.",
+      "errorCaution": "ExistingwrapperFILEopen-vs-amisuccesscautionapplies; no observedUIbehaviorclaimed."
+    },
+    "plainSummary": "MDVX prefers PrefaceProjectName evenwhenempty; onlymissing/nullproject fallsbacktoexact_PJ on selectedMaterialPackage. NormalProjectNameisUTF16BE;_PJindirectvaluecarriesB/LbyteorderandtypeandcontainsUTF16,notMacRoman. MDVXhas extraint32-to-texttoleranceandbroadfailurebehaviorthatBellashouldnotcopyblindly.",
+    "limits": [
+      "Staticinstalledbinarytrace, notallMDVXversions.",
+      "No runtimefault/conformancecampaign or UIobservation.",
+      "NothinghereestablishesMacRomanforMXFProjecttext.",
+      "NoBellaPMR/MDB/MXFpriorityorheaderopeningrulechanged.",
+      "Precisetagarrayunsupported/corruptcasesmaycollapsetosameboolreturn;notuniversalrecoveryclaim."
+    ]
+  },
+  "currentMediaMuster": {
+    "sourceFindings": [
+      {
+        "topic": "CurrentProjectsources",
+        "finding": "projectFile copies unique-rootPreface.ProjectName then projectAttributes(filepackage). projectMasters creates qualifiedmastergroups and runs projectAttributes(master). EachprojectAttributes recursively traverses MobAttributeList AND UserComments AND arbitrarynested TaggedValueAttributeList withseenhandlefilter; exactkeys_PJ/PROJNAME are independentobservations atsameMXFsourcepriority. ThereisnoexplicitPreface/file/master/keypriorityinsideMXFfield. Do notinherit broadflatteningintoBella.",
+        "references": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "629-669"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "671-706"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "1160-1177"
+          }
+        ]
+      },
+      {
+        "topic": "ImmediateSources",
+        "finding": "projectOrigins recursively follows supportedsourcepackages to findimport NetworkLocator/SourcePath. It doesnot callprojectAttributes on thoseonwardsources; therefore currentMXFProjectprojectiondoesnot implement MDB-styleimmediatesourceProjectfallback. GenuineonwardsourceProjectmaydifferfromfile.",
+        "references": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "709-739"
+          }
+        ]
+      },
+      {
+        "topic": "Encodingfollowsknownproperty/type",
+        "finding": "Preface.ProjectNameprivateproperty mappedbyPrimer/fullpropertylabel isUtf16String→bigendianUTF16. TaggedValue.Name alsoUTF16BE; TaggedValue.Value isAvidAAFIndirect, known17byteprefix determinesstringtypeandBE/LEpayloadbyteorder. Inactualsampleall20ProjectTaggedValuepayloads useL/littleendianstringprefix. NoMacRoman/UTF8guess; PMR/MDBlegacyMacRoman remainsseparateencoding. Oddbytes/unpairedsurrogates invalid; knownnumericIndirect notProjecttext; unknownIndirect remainsuninterpreted.",
+        "references": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": "656-658"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": "736-743"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": "750"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+            "lines": "154-217"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+            "lines": "220-227"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+            "lines": "475-509"
+          }
+        ]
+      },
+      {
+        "topic": "Blank/conflict/currentpriority",
+        "finding": "Currentgenericresolver skipsQString.isEmpty only; whitespace-onlytextisnonempty/selectable. Preservesnonblankspacing/case asdecoded. Same-sourceusableProjectdisagreementsremainconflicting ratherthanexplicitPreface/keyownerorder. CurrentglobalProjectpriority PMR→MDB→MXF/OMF isseparateandnotnewBellaapproval. AgreedMDBProjectrulesalreadytreatwhitespace-onlyasblank andallowboundednextcandidate; MXFcanreuseblanktestasa proposedconsistentproductrulewithoutreinterpretingbytes.",
+        "references": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+            "lines": "596-644"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+            "lines": "60-62"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-18-bella-mdb/project.md",
+            "lines": "139-179"
+          }
+        ]
+      },
+      {
+        "topic": "Usefulexistingtestsource",
+        "finding": "master_details_stay_separate_from_physical_facts demonstratesPrefacePhysicalProjectseparatefrommastertagMasterProject; itdoesnotestablishafinalMXFownerpriority. textAndRational andIndirectValuesPreserveRecordedByteOrder coverUnicodeUTF16BEandtypedIndirectBE/LE. NoProjectnativeparity/newmalformedcampaignexecuted.",
+        "references": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": "691-724"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginemxf.cpp",
+            "lines": "322-365"
+          }
+        ]
+      }
+    ],
+    "observedAttributeForms": [
+      {
+        "role": "file",
+        "key": "_PJ",
+        "nesting": [],
+        "encoding": "AvidAAFIndirectStringLE",
+        "count": 12
+      },
+      {
+        "role": "immediateSource",
+        "key": "_PJ",
+        "nesting": [],
+        "encoding": "AvidAAFIndirectStringLE",
+        "count": 8
+      }
+    ],
+    "limits": [
+      "Purposeful13samplesincludeprevious10+exactMDBfileowner88016+onefileProjectabsence+onefile/sourceProjectdisagreement. Notallmedia/producercoverage.",
+      "Prefacepresentandusable13/13 meansfallbackordercannotbeestablishedfromactualneed; orderremainsanexplicitBelladesignproposal.",
+      "AllobservedProjecttagkeysaredirect_PJ; noPROJNAME/_USERProject/selectedmasterProject/corrupttext/blankfoundintheseowners.",
+      "Allfile/master/immediatesourceProjectattributesagreebetweenmatchedMXFandMDBowners; ownersmaydisagreewitheachother. Differentownersmustnotbecalleddamagedversionsofonestring.",
+      "MXFheaderhashesnotfullmedia; currentMDBwholehashandrelevantoriginalbytesandtypedreferencesverified. Immediateheaderstatstabilitynotatomiccapture."
+    ]
+  },
+  "actualSummary": {
+    "headerCount": 13,
+    "usablePrefaceCount": 13,
+    "prefaceEqualsPmrCount": 13,
+    "prefaceEqualsAgreedMdbResult": 13,
+    "usableOwnFileProjectCount": 12,
+    "ownFileAbsentCount": 1,
+    "ownFileAgreesPrefaceCount": 12,
+    "selectedMasterProjectPresentCount": 0,
+    "usableImmediateSourceProjectCount": 8,
+    "sourceAgreesPmrCount": 4,
+    "sourceDiffersPmrCount": 4,
+    "fileMxfMdbAttrsExactAgreement": 13,
+    "masterMxfMdbAttrsExactAgreement": 13,
+    "immediateSourceIdSetAgreement": 13,
+    "immediateSourceMxfMdbAttrsExactAgreement": 13
+  },
+  "disagreementExamples": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/5511410TA01.6A041816BE45ECA.mxf",
+      "preface": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "file": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "immediateSource": [
+        "BLOCK_1551_PS_DG"
+      ],
+      "pmr": "BLOCK_1729_PS_DG",
+      "mdb": {
+        "state": "usable",
+        "text": "BLOCK_1729_PS_DG",
+        "origin": "file"
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041581_152C6152C6FCEV.mxf",
+      "preface": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "file": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "immediateSource": [
+        "BLOCK_1728_SH_AC"
+      ],
+      "pmr": "BLOCK_1729_PS_DG",
+      "mdb": {
+        "state": "usable",
+        "text": "BLOCK_1729_PS_DG",
+        "origin": "file"
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/V01.6A050275_B95B90B95B9CCV.mxf",
+      "preface": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "file": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "immediateSource": [
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "pmr": "BLOCK_1730_PB_PA",
+      "mdb": {
+        "state": "usable",
+        "text": "BLOCK_1730_PB_PA",
+        "origin": "file"
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041582_152D2152D2556V.mxf",
+      "preface": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "file": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "immediateSource": [
+        "HAA_STOCKS"
+      ],
+      "pmr": "BLOCK_1729_PS_DG",
+      "mdb": {
+        "state": "usable",
+        "text": "BLOCK_1729_PS_DG",
+        "origin": "file"
+      }
+    }
+  ],
+  "exactSharpSExample": [
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69684C0_1C5401C5406FAV.mxf",
+      "preface": [
+        {
+          "hex": "007a0054006500df0074005f00310030003800300069005f00350039002e003900340000",
+          "range": [
+            92493,
+            36
+          ],
+          "type": "MXF_UTF16STRING_TYPE",
+          "text": "zTeßt_1080i_59.94"
+        }
+      ],
+      "fileTags": [
+        {
+          "key": "_PJ",
+          "nesting": [],
+          "group": "GenericPackage.MobAttributeList",
+          "attributeOffset": 133176,
+          "valueType": "AvidAAFIndirectStringLE",
+          "text": "zTeßt_1080i_59.94",
+          "valueHex": "4c0002100100000000060e2b34010401017a0054006500df0074005f00310030003800300069005f00350039002e00390034000000",
+          "valueRange": [
+            133225,
+            53
+          ],
+          "nameHex": "005f0050004a0000"
+        }
+      ],
+      "pmrProject": "zTeßt_1080i_59.94",
+      "pmrHex": "7a5465a7745f31303830695f35392e3934",
+      "mdbFileObject": 88016,
+      "mdbAttributes": [
+        {
+          "key": "_PJ",
+          "nesting": [],
+          "kind": 2,
+          "text": "zTeßt_1080i_59.94",
+          "attributeObject": 87999,
+          "valueHex": "7a5465a7745f31303830695f35392e393400",
+          "ranges": [
+            [
+              541874,
+              18
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "actualSamples": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1001.WAVA01.D8875D202DA97BA.mxf",
+      "headerRange": [
+        256,
+        261920
+      ],
+      "headerSha256": "f8475c6079b53ff1aefaa33c7306a48538c43ffba8c3e3b189da14617d3cef44",
+      "stableImmediate": true,
+      "selection": "existing ten initial-header sample",
+      "fileNormalizedHex": "060a2b340101010501010f10130000007ba92d202585059152bc34363bcdaf64",
+      "masterNormalizedHex": "060a2b340101010501010f10130000002f3626202585059179ee34363bcdaf64",
+      "projectData": {
+        "prefaceProject": [
+          {
+            "hex": "0046004900580049004e0047005f004a0041004d00450053005f004b0049004e00470053004c004500590000",
+            "range": [
+              91070,
+              44
+            ],
+            "type": "MXF_UTF16STRING_TYPE",
+            "text": "FIXING_JAMES_KINGSLEY"
+          }
+        ],
+        "file": {
+          "offset": 122647,
+          "className": "SourcePackage",
+          "wireIdHex": "060a2b340101010501010f1013000000202da97b8525910552bc34363bcdaf64",
+          "normalizedIdHex": "060a2b340101010501010f10130000007ba92d202585059152bc34363bcdaf64",
+          "projectAttributes": [
+            {
+              "key": "_PJ",
+              "nesting": [],
+              "group": "GenericPackage.MobAttributeList",
+              "attributeOffset": 122850,
+              "valueType": "AvidAAFIndirectStringLE",
+              "text": "FIXING_JAMES_KINGSLEY",
+              "valueHex": "4c0002100100000000060e2b340104010146004900580049004e0047005f004a0041004d00450053005f004b0049004e00470053004c00450059000000",
+              "valueRange": [
+                122899,
+                61
+              ],
+              "nameHex": "005f0050004a0000"
+            }
+          ]
+        },
+        "master": {
+          "offset": 119852,
+          "className": "MaterialPackage",
+          "wireIdHex": "060a2b340101010501010f10130000002026362f8525910579ee34363bcdaf64",
+          "normalizedIdHex": "060a2b340101010501010f10130000002f3626202585059179ee34363bcdaf64",
+          "projectAttributes": []
+        },
+        "immediateSources": [
+          {
+            "offset": 123477,
+            "className": "SourcePackage",
+            "wireIdHex": "060a2b340101010501010f1013000000202da9bf8525910556d134363bcdaf64",
+            "normalizedIdHex": "060a2b340101010501010f1013000000bfa92d202585059156d134363bcdaf64",
+            "projectAttributes": [
+              {
+                "key": "_PJ",
+                "nesting": [],
+                "group": "GenericPackage.MobAttributeList",
+                "attributeOffset": 123712,
+                "valueType": "AvidAAFIndirectStringLE",
+                "text": "FIXING_JAMES_KINGSLEY",
+                "valueHex": "4c0002100100000000060e2b340104010146004900580049004e0047005f004a0041004d00450053005f004b0049004e00470053004c00450059000000",
+                "valueRange": [
+                  123761,
+                  61
+                ],
+                "nameHex": "005f0050004a0000"
+              }
+            ]
+          }
+        ]
+      },
+      "pmrProject": "FIXING_JAMES_KINGSLEY",
+      "pmrProjectHex": "464958494e475f4a414d45535f4b494e47534c4559",
+      "mdbProject": {
+        "fileObject": 92343,
+        "masterObject": 91576,
+        "fileAttributes": [
+          {
+            "key": "_PJ",
+            "nesting": [],
+            "kind": 2,
+            "text": "FIXING_JAMES_KINGSLEY",
+            "attributeObject": 92337,
+            "valueHex": "464958494e475f4a414d45535f4b494e47534c455900",
+            "ranges": [
+              [
+                1343227,
+                22
+              ]
+            ]
+          }
+        ],
+        "masterAttributes": [],
+        "immediateSources": [
+          {
+            "object": 92989,
+            "normalizedIdHex": "060a2b340101010501010f1013000000bfa92d202585059156d134363bcdaf64",
+            "attributes": [
+              {
+                "key": "_PJ",
+                "nesting": [],
+                "kind": 2,
+                "text": "FIXING_JAMES_KINGSLEY",
+                "attributeObject": 92979,
+                "valueHex": "464958494e475f4a414d45535f4b494e47534c455900",
+                "ranges": [
+                  [
+                    1370005,
+                    22
+                  ]
+                ]
+              }
+            ],
+            "ownerLocalProject": {
+              "state": "usable",
+              "text": "FIXING_JAMES_KINGSLEY"
+            }
+          }
+        ],
+        "effectiveAgreedMdbProject": {
+          "state": "usable",
+          "text": "FIXING_JAMES_KINGSLEY",
+          "origin": "file"
+        }
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/A001_C001_V01.D7EB5BC5323BV.mxf",
+      "headerRange": [
+        256,
+        261920
+      ],
+      "headerSha256": "7bf7822774ef479d0425f2b1756ef96242cfc40e68b5aebe2c83b6d21ead4770",
+      "stableImmediate": true,
+      "selection": "existing ten initial-header sample",
+      "fileNormalizedHex": "060a2b340101010101010f00130000003b32c55b39229202060e2b347f7f2a80",
+      "masterNormalizedHex": "060a2b340101010101010f00130000003b32c55b38229202060e2b347f7f2a80",
+      "projectData": {
+        "prefaceProject": [
+          {
+            "hex": "0046004900580049004e0047005f004a0041004d00450053005f004b0049004e00470053004c004500590000",
+            "range": [
+              90386,
+              44
+            ],
+            "type": "MXF_UTF16STRING_TYPE",
+            "text": "FIXING_JAMES_KINGSLEY"
+          }
+        ],
+        "file": {
+          "offset": 143618,
+          "className": "SourcePackage",
+          "wireIdHex": "060a2b340101010101010f00130000005bc5323b22390292060e2b347f7f2a80",
+          "normalizedIdHex": "060a2b340101010101010f00130000003b32c55b39229202060e2b347f7f2a80",
+          "projectAttributes": [
+            {
+              "key": "_PJ",
+              "nesting": [],
+              "group": "GenericPackage.MobAttributeList",
+              "attributeOffset": 143865,
+              "valueType": "AvidAAFIndirectStringLE",
+              "text": "FIXING_JAMES_KINGSLEY",
+              "valueHex": "4c0002100100000000060e2b340104010146004900580049004e0047005f004a0041004d00450053005f004b0049004e00470053004c00450059000000",
+              "valueRange": [
+                143914,
+                61
+              ],
+              "nameHex": "005f0050004a0000"
+            }
+          ]
+        },
+        "master": {
+          "offset": 123609,
+          "className": "MaterialPackage",
+          "wireIdHex": "060a2b340101010101010f00130000005bc5323b22380292060e2b347f7f2a80",
+          "normalizedIdHex": "060a2b340101010101010f00130000003b32c55b38229202060e2b347f7f2a80",
+          "projectAttributes": []
+        },
+        "immediateSources": [
+          {
+            "offset": 144921,
+            "className": "SourcePackage",
+            "wireIdHex": "060a2b340101010101010f0013a10000f08a1dd870c1d3119f0e2cb69d020efb",
+            "normalizedIdHex": "060a2b340101010101010f0013a10000d81d8af0c17011d39f0e2cb69d020efb",
+            "projectAttributes": []
+          }
+        ]
+      },
+      "pmrProject": "FIXING_JAMES_KINGSLEY",
+      "pmrProjectHex": "464958494e475f4a414d45535f4b494e47534c4559",
+      "mdbProject": {
+        "fileObject": 72570,
+        "masterObject": 72552,
+        "fileAttributes": [
+          {
+            "key": "_PJ",
+            "nesting": [],
+            "kind": 2,
+            "text": "FIXING_JAMES_KINGSLEY",
+            "attributeObject": 72553,
+            "valueHex": "464958494e475f4a414d45535f4b494e47534c455900",
+            "ranges": [
+              [
+                343390,
+                22
+              ]
+            ]
+          }
+        ],
+        "masterAttributes": [],
+        "immediateSources": [
+          {
+            "object": 90273,
+            "normalizedIdHex": "060a2b340101010101010f0013a10000d81d8af0c17011d39f0e2cb69d020efb",
+            "attributes": [],
+            "ownerLocalProject": {
+              "state": "unavailable",
+              "text": null
+            }
+          }
+        ],
+        "effectiveAgreedMdbProject": {
+          "state": "usable",
+          "text": "FIXING_JAMES_KINGSLEY",
+          "origin": "file"
+        }
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/5511410TA01.6A041816BE45ECA.mxf",
+      "headerRange": [
+        256,
+        261920
+      ],
+      "headerSha256": "050a663a4f9d5a77abfea1df9581b2943205234cb7277e95e3aebded19dbf032",
+      "stableImmediate": true,
+      "selection": "existing ten initial-header sample",
+      "fileNormalizedHex": "060a2b340101010501010f1013000000ec45be167311069643cb7c57583610fa",
+      "masterNormalizedHex": "060a2b340101010501010f10130000008f942b1573110696b3ba7c57583610fa",
+      "projectData": {
+        "prefaceProject": [
+          {
+            "hex": "0042004c004f0043004b005f0031003700320039005f00500053005f004400470000",
+            "range": [
+              91944,
+              34
+            ],
+            "type": "MXF_UTF16STRING_TYPE",
+            "text": "BLOCK_1729_PS_DG"
+          }
+        ],
+        "file": {
+          "offset": 134876,
+          "className": "SourcePackage",
+          "wireIdHex": "060a2b340101010501010f101300000016be45ec1173960643cb7c57583610fa",
+          "normalizedIdHex": "060a2b340101010501010f1013000000ec45be167311069643cb7c57583610fa",
+          "projectAttributes": [
+            {
+              "key": "_PJ",
+              "nesting": [],
+              "group": "GenericPackage.MobAttributeList",
+              "attributeOffset": 135079,
+              "valueType": "AvidAAFIndirectStringLE",
+              "text": "BLOCK_1729_PS_DG",
+              "valueHex": "4c0002100100000000060e2b340104010142004c004f0043004b005f0031003700320039005f00500053005f00440047000000",
+              "valueRange": [
+                135128,
+                51
+              ],
+              "nameHex": "005f0050004a0000"
+            }
+          ]
+        },
+        "master": {
+          "offset": 131679,
+          "className": "MaterialPackage",
+          "wireIdHex": "060a2b340101010501010f1013000000152b948f11739606b3ba7c57583610fa",
+          "normalizedIdHex": "060a2b340101010501010f10130000008f942b1573110696b3ba7c57583610fa",
+          "projectAttributes": []
+        },
+        "immediateSources": [
+          {
+            "offset": 124425,
+            "className": "SourcePackage",
+            "wireIdHex": "060a2b340101010501010f1013000000088f30399501960515746451062c95b3",
+            "normalizedIdHex": "060a2b340101010501010f101300000039308f080195059615746451062c95b3",
+            "projectAttributes": [
+              {
+                "key": "_PJ",
+                "nesting": [],
+                "group": "GenericPackage.MobAttributeList",
+                "attributeOffset": 124916,
+                "valueType": "AvidAAFIndirectStringLE",
+                "text": "BLOCK_1551_PS_DG",
+                "valueHex": "4c0002100100000000060e2b340104010142004c004f0043004b005f0031003500350031005f00500053005f00440047000000",
+                "valueRange": [
+                  124965,
+                  51
+                ],
+                "nameHex": "005f0050004a0000"
+              }
+            ]
+          }
+        ]
+      },
+      "pmrProject": "BLOCK_1729_PS_DG",
+      "pmrProjectHex": "424c4f434b5f313732395f50535f4447",
+      "mdbProject": {
+        "fileObject": 199348,
+        "masterObject": 178614,
+        "fileAttributes": [
+          {
+            "key": "_PJ",
+            "nesting": [],
+            "kind": 2,
+            "text": "BLOCK_1729_PS_DG",
+            "attributeObject": 199314,
+            "valueHex": "424c4f434b5f313732395f50535f444700",
+            "ranges": [
+              [
+                3692508,
+                17
+              ]
+            ]
+          }
+        ],
+        "masterAttributes": [],
+        "immediateSources": [
+          {
+            "object": 156503,
+            "normalizedIdHex": "060a2b340101010501010f101300000039308f080195059615746451062c95b3",
+            "attributes": [
+              {
+                "key": "_PJ",
+                "nesting": [],
+                "kind": 2,
+                "text": "BLOCK_1551_PS_DG",
+                "attributeObject": 156370,
+                "valueHex": "424c4f434b5f313535315f50535f444700",
+                "ranges": [
+                  [
+                    2344814,
+                    17
+                  ]
+                ]
+              }
+            ],
+            "ownerLocalProject": {
+              "state": "usable",
+              "text": "BLOCK_1551_PS_DG"
+            }
+          }
+        ],
+        "effectiveAgreedMdbProject": {
+          "state": "usable",
+          "text": "BLOCK_1729_PS_DG",
+          "origin": "file"
+        }
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041581_152C6152C6FCEV.mxf",
+      "headerRange": [
+        256,
+        261920
+      ],
+      "headerSha256": "41d6454ebd62894de5c876116d8da15f95663bcbc4753729ef14341937360244",
+      "stableImmediate": true,
+      "selection": "existing ten initial-header sample",
+      "fileNormalizedHex": "060a2b340101010501010f1013000000ce6f2c1573110696ab807c57583610fa",
+      "masterNormalizedHex": "060a2b340101010501010f101300000016642b157311069627027c57583610fa",
+      "projectData": {
+        "prefaceProject": [
+          {
+            "hex": "0042004c004f0043004b005f0031003700320039005f00500053005f004400470000",
+            "range": [
+              89733,
+              34
+            ],
+            "type": "MXF_UTF16STRING_TYPE",
+            "text": "BLOCK_1729_PS_DG"
+          }
+        ],
+        "file": {
+          "offset": 126434,
+          "className": "SourcePackage",
+          "wireIdHex": "060a2b340101010501010f1013000000152c6fce11739606ab807c57583610fa",
+          "normalizedIdHex": "060a2b340101010501010f1013000000ce6f2c1573110696ab807c57583610fa",
+          "projectAttributes": [
+            {
+              "key": "_PJ",
+              "nesting": [],
+              "group": "GenericPackage.MobAttributeList",
+              "attributeOffset": 126621,
+              "valueType": "AvidAAFIndirectStringLE",
+              "text": "BLOCK_1729_PS_DG",
+              "valueHex": "4c0002100100000000060e2b340104010142004c004f0043004b005f0031003700320039005f00500053005f00440047000000",
+              "valueRange": [
+                126670,
+                51
+              ],
+              "nameHex": "005f0050004a0000"
+            }
+          ]
+        },
+        "master": {
+          "offset": 123653,
+          "className": "MaterialPackage",
+          "wireIdHex": "060a2b340101010501010f1013000000152b64161173960627027c57583610fa",
+          "normalizedIdHex": "060a2b340101010501010f101300000016642b157311069627027c57583610fa",
+          "projectAttributes": []
+        },
+        "immediateSources": [
+          {
+            "offset": 122265,
+            "className": "SourcePackage",
+            "wireIdHex": "060a2b340101010001010f0013000000b585699656fdb42aaa071b7343824798",
+            "normalizedIdHex": "060a2b340101010001010f0013000000966985b5fd562ab4aa071b7343824798",
+            "projectAttributes": [
+              {
+                "key": "_PJ",
+                "nesting": [],
+                "group": "GenericPackage.MobAttributeList",
+                "attributeOffset": 122518,
+                "valueType": "AvidAAFIndirectStringLE",
+                "text": "BLOCK_1728_SH_AC",
+                "valueHex": "4c0002100100000000060e2b340104010142004c004f0043004b005f0031003700320038005f00530048005f00410043000000",
+                "valueRange": [
+                  122567,
+                  51
+                ],
+                "nameHex": "005f0050004a0000"
+              }
+            ]
+          }
+        ]
+      },
+      "pmrProject": "BLOCK_1729_PS_DG",
+      "pmrProjectHex": "424c4f434b5f313732395f50535f4447",
+      "mdbProject": {
+        "fileObject": 193426,
+        "masterObject": 148544,
+        "fileAttributes": [
+          {
+            "key": "_PJ",
+            "nesting": [],
+            "kind": 2,
+            "text": "BLOCK_1729_PS_DG",
+            "attributeObject": 193407,
+            "valueHex": "424c4f434b5f313732395f50535f444700",
+            "ranges": [
+              [
+                3509106,
+                17
+              ]
+            ]
+          }
+        ],
+        "masterAttributes": [],
+        "immediateSources": [
+          {
+            "object": 128376,
+            "normalizedIdHex": "060a2b340101010001010f0013000000966985b5fd562ab4aa071b7343824798",
+            "attributes": [
+              {
+                "key": "_PJ",
+                "nesting": [],
+                "kind": 2,
+                "text": "BLOCK_1728_SH_AC",
+                "attributeObject": 128350,
+                "valueHex": "424c4f434b5f313732385f53485f414300",
+                "ranges": [
+                  [
+                    1615640,
+                    17
+                  ]
+                ]
+              }
+            ],
+            "ownerLocalProject": {
+              "state": "usable",
+              "text": "BLOCK_1728_SH_AC"
+            }
+          }
+        ],
+        "effectiveAgreedMdbProject": {
+          "state": "usable",
+          "text": "BLOCK_1729_PS_DG",
+          "origin": "file"
+        }
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7280108SMA01.6A04F087D5405A.mxf",
+      "headerRange": [
+        256,
+        261920
+      ],
+      "headerSha256": "7250a5396f79cd9b932e1af16fd33402f436ce0f4f11de7f51d80a0efc8fac70",
+      "stableImmediate": true,
+      "selection": "existing ten initial-header sample",
+      "fileNormalizedHex": "060a2b340101010501010f101300000005547d087311069613b27c57583610fa",
+      "masterNormalizedHex": "060a2b340101010501010f1013000000777d7a08731106962c307c57583610fa",
+      "projectData": {
+        "prefaceProject": [
+          {
+            "hex": "0042004c004f0043004b005f0031003700330030005f00500042005f005000410000",
+            "range": [
+              91944,
+              34
+            ],
+            "type": "MXF_UTF16STRING_TYPE",
+            "text": "BLOCK_1730_PB_PA"
+          }
+        ],
+        "file": {
+          "offset": 126386,
+          "className": "SourcePackage",
+          "wireIdHex": "060a2b340101010501010f1013000000087d54051173960613b27c57583610fa",
+          "normalizedIdHex": "060a2b340101010501010f101300000005547d087311069613b27c57583610fa",
+          "projectAttributes": [
+            {
+              "key": "_PJ",
+              "nesting": [],
+              "group": "GenericPackage.MobAttributeList",
+              "attributeOffset": 126589,
+              "valueType": "AvidAAFIndirectStringLE",
+              "text": "BLOCK_1730_PB_PA",
+              "valueHex": "4c0002100100000000060e2b340104010142004c004f0043004b005f0031003700330030005f00500042005f00500041000000",
+              "valueRange": [
+                126638,
+                51
+              ],
+              "nameHex": "005f0050004a0000"
+            }
+          ]
+        },
+        "master": {
+          "offset": 127456,
+          "className": "MaterialPackage",
+          "wireIdHex": "060a2b340101010501010f1013000000087a7d77117396062c307c57583610fa",
+          "normalizedIdHex": "060a2b340101010501010f1013000000777d7a08731106962c307c57583610fa",
+          "projectAttributes": []
+        },
+        "immediateSources": [
+          {
+            "offset": 124841,
+            "className": "SourcePackage",
+            "wireIdHex": "060a2b340101010101010f0013a100006646ccd70744d7fc58124b09bbe8522f",
+            "normalizedIdHex": "060a2b340101010101010f0013a10000d7cc46664407fcd758124b09bbe8522f",
+            "projectAttributes": []
+          }
+        ]
+      },
+      "pmrProject": "BLOCK_1730_PB_PA",
+      "pmrProjectHex": "424c4f434b5f313733305f50425f5041",
+      "mdbProject": {
+        "fileObject": 124591,
+        "masterObject": 144032,
+        "fileAttributes": [
+          {
+            "key": "_PJ",
+            "nesting": [],
+            "kind": 2,
+            "text": "BLOCK_1730_PB_PA",
+            "attributeObject": 124558,
+            "valueHex": "424c4f434b5f313733305f50425f504100",
+            "ranges": [
+              [
+                1476022,
+                17
+              ]
+            ]
+          }
+        ],
+        "masterAttributes": [],
+        "immediateSources": [
+          {
+            "object": 114233,
+            "normalizedIdHex": "060a2b340101010101010f0013a10000d7cc46664407fcd758124b09bbe8522f",
+            "attributes": [],
+            "ownerLocalProject": {
+              "state": "unavailable",
+              "text": null
+            }
+          }
+        ],
+        "effectiveAgreedMdbProject": {
+          "state": "usable",
+          "text": "BLOCK_1730_PB_PA",
+          "origin": "file"
+        }
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/1730_8646_submastede88816cv.mxf",
+      "headerRange": [
+        256,
+        524064
+      ],
+      "headerSha256": "ae8cf0aff0369ca65ed2f11e9ab0873c57eae9292228d9123455ae748b757711",
+      "stableImmediate": true,
+      "selection": "existing ten initial-header sample",
+      "fileNormalizedHex": "060a2b340101010501010f10130000006c8188de27100696dc0d30138b72a179",
+      "masterNormalizedHex": "060a2b340101010501010f10130000006b8188de2710069613a130138b72a179",
+      "projectData": {
+        "prefaceProject": [
+          {
+            "hex": "0042004c004f0043004b005f0031003700330030005f00500042005f005000410000",
+            "range": [
+              88589,
+              34
+            ],
+            "type": "MXF_UTF16STRING_TYPE",
+            "text": "BLOCK_1730_PB_PA"
+          }
+        ],
+        "file": {
+          "offset": 120685,
+          "className": "SourcePackage",
+          "wireIdHex": "060a2b340101010501010f1013000000de88816c10279606dc0d30138b72a179",
+          "normalizedIdHex": "060a2b340101010501010f10130000006c8188de27100696dc0d30138b72a179",
+          "projectAttributes": [
+            {
+              "key": "_PJ",
+              "nesting": [],
+              "group": "GenericPackage.MobAttributeList",
+              "attributeOffset": 120880,
+              "valueType": "AvidAAFIndirectStringLE",
+              "text": "BLOCK_1730_PB_PA",
+              "valueHex": "4c0002100100000000060e2b340104010142004c004f0043004b005f0031003700330030005f00500042005f00500041000000",
+              "valueRange": [
+                120929,
+                51
+              ],
+              "nameHex": "005f0050004a0000"
+            }
+          ]
+        },
+        "master": {
+          "offset": 120098,
+          "className": "MaterialPackage",
+          "wireIdHex": "060a2b340101010501010f1013000000de88816b1027960613a130138b72a179",
+          "normalizedIdHex": "060a2b340101010501010f10130000006b8188de2710069613a130138b72a179",
+          "projectAttributes": []
+        },
+        "immediateSources": [
+          {
+            "offset": 119495,
+            "className": "SourcePackage",
+            "wireIdHex": "060a2b340101010501010f1013000000de895a0b1027960678cd30138b72a179",
+            "normalizedIdHex": "060a2b340101010501010f10130000000b5a89de2710069678cd30138b72a179",
+            "projectAttributes": []
+          }
+        ]
+      },
+      "pmrProject": "BLOCK_1730_PB_PA",
+      "pmrProjectHex": "424c4f434b5f313733305f50425f5041",
+      "mdbProject": {
+        "fileObject": 142451,
+        "masterObject": 142305,
+        "fileAttributes": [
+          {
+            "key": "_PJ",
+            "nesting": [],
+            "kind": 2,
+            "text": "BLOCK_1730_PB_PA",
+            "attributeObject": 142434,
+            "valueHex": "424c4f434b5f313733305f50425f504100",
+            "ranges": [
+              [
+                2049921,
+                17
+              ]
+            ]
+          }
+        ],
+        "masterAttributes": [],
+        "immediateSources": [
+          {
+            "object": 91670,
+            "normalizedIdHex": "060a2b340101010501010f10130000000b5a89de2710069678cd30138b72a179",
+            "attributes": [],
+            "ownerLocalProject": {
+              "state": "unavailable",
+              "text": null
+            }
+          }
+        ],
+        "effectiveAgreedMdbProject": {
+          "state": "usable",
+          "text": "BLOCK_1730_PB_PA",
+          "origin": "file"
+        }
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7293007LMA01.6A0500C57EA1CA.mxf",
+      "headerRange": [
+        256,
+        261920
+      ],
+      "headerSha256": "3fd75b378276e469f6799026f3e68db865f2e5e1317666c721dd3e50db540a52",
+      "stableImmediate": true,
+      "selection": "existing ten initial-header sample",
+      "fileNormalizedHex": "060a2b340101010501010f10130000001cea570c73110696a5e97c57583610fa",
+      "masterNormalizedHex": "060a2b340101010501010f1013000000bded940b7311069657a37c57583610fa",
+      "projectData": {
+        "prefaceProject": [
+          {
+            "hex": "0042004c004f0043004b005f0031003700330030005f00500042005f005000410000",
+            "range": [
+              91944,
+              34
+            ],
+            "type": "MXF_UTF16STRING_TYPE",
+            "text": "BLOCK_1730_PB_PA"
+          }
+        ],
+        "file": {
+          "offset": 126769,
+          "className": "SourcePackage",
+          "wireIdHex": "060a2b340101010501010f10130000000c57ea1c11739606a5e97c57583610fa",
+          "normalizedIdHex": "060a2b340101010501010f10130000001cea570c73110696a5e97c57583610fa",
+          "projectAttributes": [
+            {
+              "key": "_PJ",
+              "nesting": [],
+              "group": "GenericPackage.MobAttributeList",
+              "attributeOffset": 126972,
+              "valueType": "AvidAAFIndirectStringLE",
+              "text": "BLOCK_1730_PB_PA",
+              "valueHex": "4c0002100100000000060e2b340104010142004c004f0043004b005f0031003700330030005f00500042005f00500041000000",
+              "valueRange": [
+                127021,
+                51
+              ],
+              "nameHex": "005f0050004a0000"
+            }
+          ]
+        },
+        "master": {
+          "offset": 127899,
+          "className": "MaterialPackage",
+          "wireIdHex": "060a2b340101010501010f10130000000b94edbd1173960657a37c57583610fa",
+          "normalizedIdHex": "060a2b340101010501010f1013000000bded940b7311069657a37c57583610fa",
+          "projectAttributes": []
+        },
+        "immediateSources": [
+          {
+            "offset": 124841,
+            "className": "SourcePackage",
+            "wireIdHex": "060a2b340101010101010f0013a100005d04857010611f525645c8a275a58d78",
+            "normalizedIdHex": "060a2b340101010101010f0013a100007085045d6110521f5645c8a275a58d78",
+            "projectAttributes": []
+          }
+        ]
+      },
+      "pmrProject": "BLOCK_1730_PB_PA",
+      "pmrProjectHex": "424c4f434b5f313733305f50425f5041",
+      "mdbProject": {
+        "fileObject": 125847,
+        "masterObject": 152833,
+        "fileAttributes": [
+          {
+            "key": "_PJ",
+            "nesting": [],
+            "kind": 2,
+            "text": "BLOCK_1730_PB_PA",
+            "attributeObject": 125811,
+            "valueHex": "424c4f434b5f313733305f50425f504100",
+            "ranges": [
+              [
+                1507821,
+                17
+              ]
+            ]
+          }
+        ],
+        "masterAttributes": [],
+        "immediateSources": [
+          {
+            "object": 110797,
+            "normalizedIdHex": "060a2b340101010101010f0013a100007085045d6110521f5645c8a275a58d78",
+            "attributes": [],
+            "ownerLocalProject": {
+              "state": "unavailable",
+              "text": null
+            }
+          }
+        ],
+        "effectiveAgreedMdbProject": {
+          "state": "usable",
+          "text": "BLOCK_1730_PB_PA",
+          "origin": "file"
+        }
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/V01.6A050275_B95B90B95B9CCV.mxf",
+      "headerRange": [
+        256,
+        261920
+      ],
+      "headerSha256": "2fdd3de7e4ad0db8c93ed7dad92be469eaf0424c61da09716802d21f0bab8499",
+      "stableImmediate": true,
+      "selection": "existing ten initial-header sample",
+      "fileNormalizedHex": "060a2b340101010501010f1013000000ccb9950b7311069637c77c57583610fa",
+      "masterNormalizedHex": "060a2b340101010501010f101300000002dd940b731106969cd47c57583610fa",
+      "projectData": {
+        "prefaceProject": [
+          {
+            "hex": "0042004c004f0043004b005f0031003700330030005f00500042005f005000410000",
+            "range": [
+              89733,
+              34
+            ],
+            "type": "MXF_UTF16STRING_TYPE",
+            "text": "BLOCK_1730_PB_PA"
+          }
+        ],
+        "file": {
+          "offset": 126127,
+          "className": "SourcePackage",
+          "wireIdHex": "060a2b340101010501010f10130000000b95b9cc1173960637c77c57583610fa",
+          "normalizedIdHex": "060a2b340101010501010f1013000000ccb9950b7311069637c77c57583610fa",
+          "projectAttributes": [
+            {
+              "key": "_PJ",
+              "nesting": [],
+              "group": "GenericPackage.MobAttributeList",
+              "attributeOffset": 126314,
+              "valueType": "AvidAAFIndirectStringLE",
+              "text": "BLOCK_1730_PB_PA",
+              "valueHex": "4c0002100100000000060e2b340104010142004c004f0043004b005f0031003700330030005f00500042005f00500041000000",
+              "valueRange": [
+                126363,
+                51
+              ],
+              "nameHex": "005f0050004a0000"
+            }
+          ]
+        },
+        "master": {
+          "offset": 123490,
+          "className": "MaterialPackage",
+          "wireIdHex": "060a2b340101010501010f10130000000b94dd02117396069cd47c57583610fa",
+          "normalizedIdHex": "060a2b340101010501010f101300000002dd940b731106969cd47c57583610fa",
+          "projectAttributes": []
+        },
+        "immediateSources": [
+          {
+            "offset": 122116,
+            "className": "SourcePackage",
+            "wireIdHex": "060a2b34010101050101051213a1ebb34b5c6d0097050696a6db7c57583610fa",
+            "normalizedIdHex": "060a2b34010101050101051213a1ebb3006d5c4b05979606a6db7c57583610fa",
+            "projectAttributes": [
+              {
+                "key": "_PJ",
+                "nesting": [],
+                "group": "GenericPackage.MobAttributeList",
+                "attributeOffset": 122339,
+                "valueType": "AvidAAFIndirectStringLE",
+                "text": "HAA_PROGRAMME_BUILD",
+                "valueHex": "4c0002100100000000060e2b34010401014800410041005f00500052004f004700520041004d004d0045005f004200550049004c0044000000",
+                "valueRange": [
+                  122388,
+                  57
+                ],
+                "nameHex": "005f0050004a0000"
+              }
+            ]
+          }
+        ]
+      },
+      "pmrProject": "BLOCK_1730_PB_PA",
+      "pmrProjectHex": "424c4f434b5f313733305f50425f5041",
+      "mdbProject": {
+        "fileObject": 155596,
+        "masterObject": 121171,
+        "fileAttributes": [
+          {
+            "key": "_PJ",
+            "nesting": [],
+            "kind": 2,
+            "text": "BLOCK_1730_PB_PA",
+            "attributeObject": 155578,
+            "valueHex": "424c4f434b5f313733305f50425f504100",
+            "ranges": [
+              [
+                2457301,
+                17
+              ]
+            ]
+          }
+        ],
+        "masterAttributes": [],
+        "immediateSources": [
+          {
+            "object": 112338,
+            "normalizedIdHex": "060a2b34010101050101051213a1ebb3006d5c4b05979606a6db7c57583610fa",
+            "attributes": [
+              {
+                "key": "_PJ",
+                "nesting": [],
+                "kind": 2,
+                "text": "HAA_PROGRAMME_BUILD",
+                "attributeObject": 112312,
+                "valueHex": "4841415f50524f4752414d4d455f4255494c4400",
+                "ranges": [
+                  [
+                    1177233,
+                    20
+                  ]
+                ]
+              }
+            ],
+            "ownerLocalProject": {
+              "state": "usable",
+              "text": "HAA_PROGRAMME_BUILD"
+            }
+          }
+        ],
+        "effectiveAgreedMdbProject": {
+          "state": "usable",
+          "text": "BLOCK_1730_PB_PA",
+          "origin": "file"
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf",
+      "headerRange": [
+        256,
+        261920
+      ],
+      "headerSha256": "4e1ea26a6459f3e1d07e3c361986602f1c28e8a9d31d0de4ff7ef5ed80676b38",
+      "stableImmediate": true,
+      "selection": "existing ten initial-header sample",
+      "fileNormalizedHex": "060a2b340101010501010f10130000009a583c0a5512069048e346fc807fda72",
+      "masterNormalizedHex": "060a2b340101010501010f101300000086583c0a55120690c09946fc807fda72",
+      "projectData": {
+        "prefaceProject": [
+          {
+            "hex": "007a0054006500df0074005f00310030003800300069005f00350039002e003900340000",
+            "range": [
+              92406,
+              36
+            ],
+            "type": "MXF_UTF16STRING_TYPE",
+            "text": "zTeßt_1080i_59.94"
+          }
+        ],
+        "file": {
+          "offset": 130660,
+          "className": "SourcePackage",
+          "wireIdHex": "060a2b340101010501010f10130000000a3c589a1255900648e346fc807fda72",
+          "normalizedIdHex": "060a2b340101010501010f10130000009a583c0a5512069048e346fc807fda72",
+          "projectAttributes": [
+            {
+              "key": "_PJ",
+              "nesting": [],
+              "group": "GenericPackage.MobAttributeList",
+              "attributeOffset": 130863,
+              "valueType": "AvidAAFIndirectStringLE",
+              "text": "zTeßt_1080i_59.94",
+              "valueHex": "4c0002100100000000060e2b34010401017a0054006500df0074005f00310030003800300069005f00350039002e00390034000000",
+              "valueRange": [
+                130912,
+                53
+              ],
+              "nameHex": "005f0050004a0000"
+            }
+          ]
+        },
+        "master": {
+          "offset": 126814,
+          "className": "MaterialPackage",
+          "wireIdHex": "060a2b340101010501010f10130000000a3c588612559006c09946fc807fda72",
+          "normalizedIdHex": "060a2b340101010501010f101300000086583c0a55120690c09946fc807fda72",
+          "projectAttributes": []
+        },
+        "immediateSources": [
+          {
+            "offset": 131792,
+            "className": "SourcePackage",
+            "wireIdHex": "060a2b340101010501010f10130000000a3c58b312559006fb8546fc807fda72",
+            "normalizedIdHex": "060a2b340101010501010f1013000000b3583c0a55120690fb8546fc807fda72",
+            "projectAttributes": [
+              {
+                "key": "_PJ",
+                "nesting": [],
+                "group": "GenericPackage.MobAttributeList",
+                "attributeOffset": 132057,
+                "valueType": "AvidAAFIndirectStringLE",
+                "text": "zTeßt_1080i_59.94",
+                "valueHex": "4c0002100100000000060e2b34010401017a0054006500df0074005f00310030003800300069005f00350039002e00390034000000",
+                "valueRange": [
+                  132106,
+                  53
+                ],
+                "nameHex": "005f0050004a0000"
+              }
+            ]
+          }
+        ]
+      },
+      "pmrProject": "zTeßt_1080i_59.94",
+      "pmrProjectHex": "7a5465a7745f31303830695f35392e3934",
+      "mdbProject": {
+        "fileObject": 75154,
+        "masterObject": 75336,
+        "fileAttributes": [
+          {
+            "key": "_PJ",
+            "nesting": [],
+            "kind": 2,
+            "text": "zTeßt_1080i_59.94",
+            "attributeObject": 75130,
+            "valueHex": "7a5465a7745f31303830695f35392e393400",
+            "ranges": [
+              [
+                193018,
+                18
+              ]
+            ]
+          }
+        ],
+        "masterAttributes": [],
+        "immediateSources": [
+          {
+            "object": 75052,
+            "normalizedIdHex": "060a2b340101010501010f1013000000b3583c0a55120690fb8546fc807fda72",
+            "attributes": [
+              {
+                "key": "_PJ",
+                "nesting": [],
+                "kind": 2,
+                "text": "zTeßt_1080i_59.94",
+                "attributeObject": 75009,
+                "valueHex": "7a5465a7745f31303830695f35392e393400",
+                "ranges": [
+                  [
+                    189882,
+                    18
+                  ]
+                ]
+              }
+            ],
+            "ownerLocalProject": {
+              "state": "usable",
+              "text": "zTeßt_1080i_59.94"
+            }
+          }
+        ],
+        "effectiveAgreedMdbProject": {
+          "state": "usable",
+          "text": "zTeßt_1080i_59.94",
+          "origin": "file"
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/Untitled Sequence.175B1728V.mxf",
+      "headerRange": [
+        256,
+        261920
+      ],
+      "headerSha256": "0d324bb99c9183d04541c75b00944e5808410cee4d72eae603c322eaf6994a62",
+      "stableImmediate": true,
+      "selection": "existing ten initial-header sample",
+      "fileNormalizedHex": "060a2b340101010501010f101300000028175b1761120690badf46fc807fda72",
+      "masterNormalizedHex": "060a2b340101010501010f101300000019175b17611206901ff746fc807fda72",
+      "projectData": {
+        "prefaceProject": [
+          {
+            "hex": "007a0054006500df0074005f00310030003800300070005f00320039002e003900370000",
+            "range": [
+              89277,
+              36
+            ],
+            "type": "MXF_UTF16STRING_TYPE",
+            "text": "zTeßt_1080p_29.97"
+          }
+        ],
+        "file": {
+          "offset": 123290,
+          "className": "SourcePackage",
+          "wireIdHex": "060a2b340101010501010f1013000000175b172812619006badf46fc807fda72",
+          "normalizedIdHex": "060a2b340101010501010f101300000028175b1761120690badf46fc807fda72",
+          "projectAttributes": [
+            {
+              "key": "_PJ",
+              "nesting": [],
+              "group": "GenericPackage.MobAttributeList",
+              "attributeOffset": 123559,
+              "valueType": "AvidAAFIndirectStringLE",
+              "text": "zTeßt_1080p_29.97",
+              "valueHex": "4c0002100100000000060e2b34010401017a0054006500df0074005f00310030003800300070005f00320039002e00390037000000",
+              "valueRange": [
+                123608,
+                53
+              ],
+              "nameHex": "005f0050004a0000"
+            }
+          ]
+        },
+        "master": {
+          "offset": 122637,
+          "className": "MaterialPackage",
+          "wireIdHex": "060a2b340101010501010f1013000000175b1719126190061ff746fc807fda72",
+          "normalizedIdHex": "060a2b340101010501010f101300000019175b17611206901ff746fc807fda72",
+          "projectAttributes": []
+        },
+        "immediateSources": [
+          {
+            "offset": 121712,
+            "className": "SourcePackage",
+            "wireIdHex": "060a2b340101010101010f0013000000be0dd6386dfb3b168e40da9649f531f4",
+            "normalizedIdHex": "060a2b340101010101010f001300000038d60dbefb6d163b8e40da9649f531f4",
+            "projectAttributes": []
+          }
+        ]
+      },
+      "pmrProject": "zTeßt_1080p_29.97",
+      "pmrProjectHex": "7a5465a7745f31303830705f32392e3937",
+      "mdbProject": {
+        "fileObject": 73992,
+        "masterObject": 74031,
+        "fileAttributes": [
+          {
+            "key": "_PJ",
+            "nesting": [],
+            "kind": 2,
+            "text": "zTeßt_1080p_29.97",
+            "attributeObject": 73976,
+            "valueHex": "7a5465a7745f31303830705f32392e393700",
+            "ranges": [
+              [
+                161351,
+                18
+              ]
+            ]
+          }
+        ],
+        "masterAttributes": [],
+        "immediateSources": [
+          {
+            "object": 70288,
+            "normalizedIdHex": "060a2b340101010101010f001300000038d60dbefb6d163b8e40da9649f531f4",
+            "attributes": [],
+            "ownerLocalProject": {
+              "state": "unavailable",
+              "text": null
+            }
+          }
+        ],
+        "effectiveAgreedMdbProject": {
+          "state": "usable",
+          "text": "zTeßt_1080p_29.97",
+          "origin": "file"
+        }
+      }
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69684C0_1C5401C5406FAV.mxf",
+      "headerRange": [
+        256,
+        261920
+      ],
+      "headerSha256": "61d42c7317b051b4233a1b7724c5bc66914af5d30498e0ed7fadd6b73e7ca27b",
+      "stableImmediate": true,
+      "selection": "purposeful priorMDB owner 88016 knownsharp-s",
+      "fileNormalizedHex": "060a2b340101010501010f1013000000fa06541c55120690f7b846fc807fda72",
+      "masterNormalizedHex": "060a2b340101010501010f1013000000f006541c55120690f42a46fc807fda72",
+      "projectData": {
+        "prefaceProject": [
+          {
+            "hex": "007a0054006500df0074005f00310030003800300069005f00350039002e003900340000",
+            "range": [
+              92493,
+              36
+            ],
+            "type": "MXF_UTF16STRING_TYPE",
+            "text": "zTeßt_1080i_59.94"
+          }
+        ],
+        "file": {
+          "offset": 132989,
+          "className": "SourcePackage",
+          "wireIdHex": "060a2b340101010501010f10130000001c5406fa12559006f7b846fc807fda72",
+          "normalizedIdHex": "060a2b340101010501010f1013000000fa06541c55120690f7b846fc807fda72",
+          "projectAttributes": [
+            {
+              "key": "_PJ",
+              "nesting": [],
+              "group": "GenericPackage.MobAttributeList",
+              "attributeOffset": 133176,
+              "valueType": "AvidAAFIndirectStringLE",
+              "text": "zTeßt_1080i_59.94",
+              "valueHex": "4c0002100100000000060e2b34010401017a0054006500df0074005f00310030003800300069005f00350039002e00390034000000",
+              "valueRange": [
+                133225,
+                53
+              ],
+              "nameHex": "005f0050004a0000"
+            }
+          ]
+        },
+        "master": {
+          "offset": 129025,
+          "className": "MaterialPackage",
+          "wireIdHex": "060a2b340101010501010f10130000001c5406f012559006f42a46fc807fda72",
+          "normalizedIdHex": "060a2b340101010501010f1013000000f006541c55120690f42a46fc807fda72",
+          "projectAttributes": []
+        },
+        "immediateSources": [
+          {
+            "offset": 126901,
+            "className": "SourcePackage",
+            "wireIdHex": "060a2b340101010501010f10130000001c54071a125590069e2d46fc807fda72",
+            "normalizedIdHex": "060a2b340101010501010f10130000001a07541c551206909e2d46fc807fda72",
+            "projectAttributes": [
+              {
+                "key": "_PJ",
+                "nesting": [],
+                "group": "GenericPackage.MobAttributeList",
+                "attributeOffset": 127204,
+                "valueType": "AvidAAFIndirectStringLE",
+                "text": "zTeßt_1080i_59.94",
+                "valueHex": "4c0002100100000000060e2b34010401017a0054006500df0074005f00310030003800300069005f00350039002e00390034000000",
+                "valueRange": [
+                  127253,
+                  53
+                ],
+                "nameHex": "005f0050004a0000"
+              }
+            ]
+          }
+        ]
+      },
+      "pmrProject": "zTeßt_1080i_59.94",
+      "pmrProjectHex": "7a5465a7745f31303830695f35392e3934",
+      "mdbProject": {
+        "fileObject": 88016,
+        "masterObject": 88069,
+        "fileAttributes": [
+          {
+            "key": "_PJ",
+            "nesting": [],
+            "kind": 2,
+            "text": "zTeßt_1080i_59.94",
+            "attributeObject": 87999,
+            "valueHex": "7a5465a7745f31303830695f35392e393400",
+            "ranges": [
+              [
+                541874,
+                18
+              ]
+            ]
+          }
+        ],
+        "masterAttributes": [],
+        "immediateSources": [
+          {
+            "object": 87949,
+            "normalizedIdHex": "060a2b340101010501010f10130000001a07541c551206909e2d46fc807fda72",
+            "attributes": [
+              {
+                "key": "_PJ",
+                "nesting": [],
+                "kind": 2,
+                "text": "zTeßt_1080i_59.94",
+                "attributeObject": 87906,
+                "valueHex": "7a5465a7745f31303830695f35392e393400",
+                "ranges": [
+                  [
+                    539436,
+                    18
+                  ]
+                ]
+              }
+            ],
+            "ownerLocalProject": {
+              "state": "usable",
+              "text": "zTeßt_1080i_59.94"
+            }
+          }
+        ],
+        "effectiveAgreedMdbProject": {
+          "state": "usable",
+          "text": "zTeßt_1080i_59.94",
+          "origin": "file"
+        }
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_78D9V02.22180610.586550.mxf",
+      "headerRange": [
+        256,
+        261920
+      ],
+      "headerSha256": "a38155c6b34a9f570b7648fb69751b822e9a1818da0ca5be7ec975d03d9098f5",
+      "stableImmediate": true,
+      "selection": "purposeful priorMDB owner 93780 ownProjectabsent",
+      "fileNormalizedHex": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64",
+      "masterNormalizedHex": "060a2b340101010501010f1013000000d97717225586059099ba34363bcdaf64",
+      "projectData": {
+        "prefaceProject": [
+          {
+            "hex": "0046004900580049004e0047005f004a0041004d00450053005f004b0049004e00470053004c004500590000",
+            "range": [
+              89505,
+              44
+            ],
+            "type": "MXF_UTF16STRING_TYPE",
+            "text": "FIXING_JAMES_KINGSLEY"
+          }
+        ],
+        "file": {
+          "offset": 118833,
+          "className": "SourcePackage",
+          "wireIdHex": "060a2b340101010501010f10130000002218061086559005475534363bcdaf64",
+          "normalizedIdHex": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64",
+          "projectAttributes": []
+        },
+        "master": {
+          "offset": 119797,
+          "className": "MaterialPackage",
+          "wireIdHex": "060a2b340101010501010f1013000000221777d98655900599ba34363bcdaf64",
+          "normalizedIdHex": "060a2b340101010501010f1013000000d97717225586059099ba34363bcdaf64",
+          "projectAttributes": []
+        },
+        "immediateSources": [
+          {
+            "offset": 122597,
+            "className": "SourcePackage",
+            "wireIdHex": "060a2b340101010501010f1013000000221777e886559005e7c834363bcdaf64",
+            "normalizedIdHex": "060a2b340101010501010f1013000000e877172255860590e7c834363bcdaf64",
+            "projectAttributes": [
+              {
+                "key": "_PJ",
+                "nesting": [],
+                "group": "GenericPackage.MobAttributeList",
+                "attributeOffset": 122828,
+                "valueType": "AvidAAFIndirectStringLE",
+                "text": "FIXING_JAMES_KINGSLEY",
+                "valueHex": "4c0002100100000000060e2b340104010146004900580049004e0047005f004a0041004d00450053005f004b0049004e00470053004c00450059000000",
+                "valueRange": [
+                  122877,
+                  61
+                ],
+                "nameHex": "005f0050004a0000"
+              }
+            ]
+          }
+        ]
+      },
+      "pmrProject": "FIXING_JAMES_KINGSLEY",
+      "pmrProjectHex": "464958494e475f4a414d45535f4b494e47534c4559",
+      "mdbProject": {
+        "fileObject": 93780,
+        "masterObject": 93810,
+        "fileAttributes": [],
+        "masterAttributes": [],
+        "immediateSources": [
+          {
+            "object": 93827,
+            "normalizedIdHex": "060a2b340101010501010f1013000000e877172255860590e7c834363bcdaf64",
+            "attributes": [
+              {
+                "key": "_PJ",
+                "nesting": [],
+                "kind": 2,
+                "text": "FIXING_JAMES_KINGSLEY",
+                "attributeObject": 93817,
+                "valueHex": "464958494e475f4a414d45535f4b494e47534c455900",
+                "ranges": [
+                  [
+                    1396171,
+                    22
+                  ]
+                ]
+              }
+            ],
+            "ownerLocalProject": {
+              "state": "usable",
+              "text": "FIXING_JAMES_KINGSLEY"
+            }
+          }
+        ],
+        "effectiveAgreedMdbProject": {
+          "state": "usable",
+          "text": "FIXING_JAMES_KINGSLEY",
+          "origin": "immediatesource"
+        }
+      }
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041582_152D2152D2556V.mxf",
+      "headerRange": [
+        256,
+        261920
+      ],
+      "headerSha256": "f0ce781201559fa7494cb139a75b149b7a94fe0d43281428073afed0f8ca7685",
+      "stableImmediate": true,
+      "selection": "purposeful priorMDB owner 164530 fileversussourcedisagreement",
+      "fileNormalizedHex": "060a2b340101010501010f101300000056252d15731106965e367c57583610fa",
+      "masterNormalizedHex": "060a2b340101010501010f101300000036642b1573110696a3167c57583610fa",
+      "projectData": {
+        "prefaceProject": [
+          {
+            "hex": "0042004c004f0043004b005f0031003700320039005f00500053005f004400470000",
+            "range": [
+              89733,
+              34
+            ],
+            "type": "MXF_UTF16STRING_TYPE",
+            "text": "BLOCK_1729_PS_DG"
+          }
+        ],
+        "file": {
+          "offset": 126550,
+          "className": "SourcePackage",
+          "wireIdHex": "060a2b340101010501010f1013000000152d2556117396065e367c57583610fa",
+          "normalizedIdHex": "060a2b340101010501010f101300000056252d15731106965e367c57583610fa",
+          "projectAttributes": [
+            {
+              "key": "_PJ",
+              "nesting": [],
+              "group": "GenericPackage.MobAttributeList",
+              "attributeOffset": 126737,
+              "valueType": "AvidAAFIndirectStringLE",
+              "text": "BLOCK_1729_PS_DG",
+              "valueHex": "4c0002100100000000060e2b340104010142004c004f0043004b005f0031003700320039005f00500053005f00440047000000",
+              "valueRange": [
+                126786,
+                51
+              ],
+              "nameHex": "005f0050004a0000"
+            }
+          ]
+        },
+        "master": {
+          "offset": 123657,
+          "className": "MaterialPackage",
+          "wireIdHex": "060a2b340101010501010f1013000000152b643611739606a3167c57583610fa",
+          "normalizedIdHex": "060a2b340101010501010f101300000036642b1573110696a3167c57583610fa",
+          "projectAttributes": []
+        },
+        "immediateSources": [
+          {
+            "offset": 122265,
+            "className": "SourcePackage",
+            "wireIdHex": "060a2b340101010001010f001300000051ea646c37a27fa71e9c87e58e14f4bb",
+            "normalizedIdHex": "060a2b340101010001010f00130000006c64ea51a237a77f1e9c87e58e14f4bb",
+            "projectAttributes": [
+              {
+                "key": "_PJ",
+                "nesting": [],
+                "group": "GenericPackage.MobAttributeList",
+                "attributeOffset": 122526,
+                "valueType": "AvidAAFIndirectStringLE",
+                "text": "HAA_STOCKS",
+                "valueHex": "4c0002100100000000060e2b34010401014800410041005f00530054004f0043004b0053000000",
+                "valueRange": [
+                  122575,
+                  39
+                ],
+                "nameHex": "005f0050004a0000"
+              }
+            ]
+          }
+        ]
+      },
+      "pmrProject": "BLOCK_1729_PS_DG",
+      "pmrProjectHex": "424c4f434b5f313732395f50535f4447",
+      "mdbProject": {
+        "fileObject": 164530,
+        "masterObject": 155964,
+        "fileAttributes": [
+          {
+            "key": "_PJ",
+            "nesting": [],
+            "kind": 2,
+            "text": "BLOCK_1729_PS_DG",
+            "attributeObject": 164511,
+            "valueHex": "424c4f434b5f313732395f50535f444700",
+            "ranges": [
+              [
+                2602432,
+                17
+              ]
+            ]
+          }
+        ],
+        "masterAttributes": [],
+        "immediateSources": [
+          {
+            "object": 128348,
+            "normalizedIdHex": "060a2b340101010001010f00130000006c64ea51a237a77f1e9c87e58e14f4bb",
+            "attributes": [
+              {
+                "key": "_PJ",
+                "nesting": [],
+                "kind": 2,
+                "text": "HAA_STOCKS",
+                "attributeObject": 128322,
+                "valueHex": "4841415f53544f434b5300",
+                "ranges": [
+                  [
+                    1614942,
+                    11
+                  ]
+                ]
+              }
+            ],
+            "ownerLocalProject": {
+              "state": "usable",
+              "text": "HAA_STOCKS"
+            }
+          }
+        ],
+        "effectiveAgreedMdbProject": {
+          "state": "usable",
+          "text": "BLOCK_1729_PS_DG",
+          "origin": "file"
+        }
+      }
+    }
+  ],
+  "recommendedBella": {
+    "sourceOrderWithinMxf": [
+      "Usable active Preface.ProjectName",
+      "Usable qualified physical file SourcePackage project attributes"
+    ],
+    "withinAttributeOwner": [
+      "Exact _PJ",
+      "Exact PROJNAME",
+      "Exact _PJ in explicitly recorded supported _USER list"
+    ],
+    "encoding": "Header ProjectName and TaggedValue names: UTF16BE. Known AvidAAFIndirectString carries recognized17byte type/order prefix then UTF16BE/LE payload. No guessed UTF8/MacRoman or integercoercion. Reuse planned small boundedUTF16 helper, QtEndian and ownedQString.",
+    "usable": "Missing/empty/whitespaceonly/individually unreadable header/filecandidate can advance ifframing andowner trustworthy. Preservenonblank spelling,case,Unicode andspacing. Contradictoryusableduplicatesatsamepriority withholdfield ratherthanhideconflictusinglowerkey/source. No master/sourceProject recovery.",
+    "retention": "Stop onceusable; retain one QString and compact necessaryavailability/source context; release raw bytes, tags/packageindexes and alternatives. No mandatory runtime crosschecks, permanent project-ancestry graph or genericnestedattribute flattening.",
+    "absence": "No usableheader/ownfileProject leaves unavailable/blank on database-unavailableMXFfallback; retainphysicalrow andindependentfacts. Projectavailableonlyonmaster/source canremainblank. No path/currentapp/filename guesses.",
+    "scope": "MXF sourcecapability andlocalheader->ownfileorder only. ApprovedMDBProjectsourcefallback unchanged. Overallcross-sourcepriority/headeropening remain deferred; no master/sourceProjectsearch or extraDMS1graph."
+  },
+  "designLimits": [
+    "All13Prefacevaluesusable, so remainingheader-to-ownfilefallback remains Belladesign, not everywriter/nativeprecedence proof.",
+    "Native/master/source/PROJNAME/_USER research remains preserved; revisedproposal excludesmaster/sourceProject recovery. No actualPROJNAME or_USER._PJ occurred in13samples.",
+    "Native DMS1 productionProject route retained as research without claiming semantic equivalence or enabling it.",
+    "OldScanner active until explicitcutover, BinFilter unchanged; requirements review precedes implementation."
+  ],
+  "publicPrimaryEvidence": [
+    {
+      "url": "https://pub.smpte.org/latest/st377-1/st377-1-2019.pdf",
+      "scope": "Sections4.3/6.4.2 boundedbigendianString rules, not definition of privateAvidProject property or its indirectvalue variants."
+    }
+  ],
+  "researchReceipts": [
+    {
+      "path": "/private/tmp/bella-mxf-project-mc-audit-20261022.json",
+      "sha256": "0078e7ba05d2a90d0dce5b8e591225f1cb5bc09eb8ebf9fdfd5e7d4047c2f6fe"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/findings.json",
+      "sha256": "591a7e56c9c5dadeceee002f91a664fd302a35a71a68fbbd41cc16de5f454c04"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-current-20261022.json",
+      "sha256": "1eff981bbae91409f08f30b4d153db898b509d4ead7648797863b3a1c0da8f59"
+    }
+  ],
+  "verifiedInputAndArtifactCount": 47,
+  "verifiedInputsAndArtifacts": [
+    {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mc-20261022/AddPropertiesToHeader.txt",
+      "sha256": "69dbc8febb82e2a424d55fbd0c4d34edfa9b5b6090f56b95a0d56dce58de71f0"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mc-20261022/GetPMRPropertiesFromAAFHeader.txt",
+      "sha256": "ab524f2445d72d808d9a86c1a43429914638a1e0dc9890b64ad3b50c99b3dc24"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mc-20261022/ScanDMS1File.txt",
+      "sha256": "f1de1a2ac18655e9f2ab334018c4bbb40f36d50b8e50245122d44e807f9cd77f"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mc-20261022/ScanDMS1ForProject.txt",
+      "sha256": "2a0c175af84260c5f45dba3709f36c46cceb810b1300949cb6ade49485c91492"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mc-20261022/GetAttributeList.txt",
+      "sha256": "d9a6e472474400b8d57fbe4130cf0b0ef93276ad07eb5ba06a87840bbfa2c60b"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mc-20261022/ConvertAttributesFromAAF.txt",
+      "sha256": "e3e7643dec33f1f7d23162c9343be26a05e02f8dbb74735f15e5085110a83631"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mc-20261022/GetStringPropFromObject.txt",
+      "sha256": "ec349092b3c3f203ceb6ff6009f55675917fe2d80052eedd43913cd95cfa1a89"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mc-20261022/disassembly.json",
+      "sha256": "24d5d0486a30a8e8229a87c15ed317767bd7493b323e14371023ac2465955d41"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mc-20261022/ConvertCompositionFromAAF.txt",
+      "sha256": "f47a3ccd53bb33a00ee88c873caeb592f842a97f92d3eb767965b304289f69c9"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mc-20261022/ConvertUnicodeToInternal.txt",
+      "sha256": "2a6ccbc4fb0383d0e1911c3bee616586452d19b9d5f39edc1790e2f4a8c28045"
+    },
+    {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/MDVxMXF_addInfoToItem.txt",
+      "sha256": "dc301ea36bb309f688f90c1d49772b25d65e39ff06ada813251040b61f7ffa7a"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/MDVxMXF_openFile_withIndicator.txt",
+      "sha256": "9554517696367587b89f43f755bc123f5bbf0308c6c733489a3e808f71117af8"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/ami_read_info.txt",
+      "sha256": "7f7e2ff52992ffb6def9dca758949b79cc969ced37deeac652b29f8a7ec4e344"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/convert_string.txt",
+      "sha256": "ac22d234818be8b0e29e384cf551c0afb4c85fe7cb01f377d4da829a066330e3"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/get_indirect_int32.txt",
+      "sha256": "0fc24f78d9d9df196a515236504501a1294b1c205e85ef8f7053ae4d4502b848"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/get_indirect_string.txt",
+      "sha256": "405d4cc6a9a925f87f924ac6564d0ceba0fdca307fcbc01fa5cc7656b43f077a"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/get_string_value.txt",
+      "sha256": "29bb7654d4b73e14de817ee847b36e23bcd7c4fc39139fcdd240a3ba731ffc68"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/mxf_avid_get_mob_attribute.txt",
+      "sha256": "0103d101ea6f859f34bdc23113ca398151da05a62493539bb27353de7fbbbb9e"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/mxf_avid_is_string_tagged_value.txt",
+      "sha256": "b68f203ed4e794bcfa6c1e4e208d5ce43b3aa8cb154d44f4edcaac5b04d4b491"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/mxf_avid_read_string_mob_attributes.txt",
+      "sha256": "bbd6c6b08835b803bbe777e4e99e20a27a24e7eaffcbc75048768ca116b2282c"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/mxf_avid_read_string_tagged_value.txt",
+      "sha256": "54c1069f270200cc34cfffa8f54f870cb8e812f06fa0ed858c3e01e633a116be"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/mxf_avid_read_string_tagged_values.txt",
+      "sha256": "62e9e7537a855fc22d7f7e7ff23303fdb0d58e4476aebb3885a4bd77bf9ff23a"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/mxf_get_utf16string_item.txt",
+      "sha256": "aebb0530dd90ab3645f905969776dbefa15992b29bf716759497b523b369190a"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/mxf_utf16_to_utf8.txt",
+      "sha256": "29f01191246da25d7c7b363ece639d7b51b76358fd5e17dd1c40c15576da87ec"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/pj-search-constant.json",
+      "sha256": "6efd4006ba1250188aca963b39fca744fc3b7672db316ae6758b5b3b6045ec9d"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+      "sha256": "c8c68e78db5f3efaa62235f55624c5478e89a0adc37581a922af050f931cad55"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+      "sha256": "379a31643b62b945e3e1ed83245e5f3a7be8df4ebeec73aea31327c1d915b374"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+      "sha256": "6d67b2300f380cd63a50547595154ee27d8ab69f36b6d87e83e81fd3a33ff75c"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+      "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+      "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+      "sha256": "c85f1d11bcb15eddcfbba7c9cbbc57c8fdafdb8cac8c4af6b575d62c1575c746"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+      "sha256": "f9f633bc0022e5f681b210d58a95cf472b04db0b6189ead78f9d22b7e8618a22"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginemxf.cpp",
+      "sha256": "4b7e38b030383277be0e59cf0fc2346fd21cfccf8453e27252d746bca8904299"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-18-bella-mdb/project.md",
+      "sha256": "56f7e1364c7789dd0e7cbbe3e2d6f9ab8c24a513240311031a28dda856d73df2"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-current-20261022/probe.py",
+      "sha256": "0c36b7fceb2b6e5993e8b3fc698604cc04c2742641055770af8ad6d3c5077c33"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-current-20261022/observations.json",
+      "sha256": "6e8419b8fdb7cc61788694fd0fd187da7390202e38065065be4530da301ab930"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-current-20261021/probe.py",
+      "sha256": "be835507f34f9014b4f04209047691af861541c128c24b0b25f4509ae0a3d50b"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-headers-20261021/probe.py",
+      "sha256": "6f53252e43e9168def57e4ca9ab89853c2b64d690630a8fad285fb54a097f7e3"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-03-format-audit/evidence/mxf_baseline_data_model.h",
+      "sha256": "cd1a1b26a680da57a90d35992266e9840b9799fc6b9a22e65f3b9c4220e276b1"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-03-format-audit/evidence/mxf_extensions_data_model.h",
+      "sha256": "1cd3304ae1560ee1663a38daa9aad849c3849fb3ce0162409a0a0e27298ad7e3"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/Project Canon/evidence/fresh-mxf-avid-data-model-2026-10-04.h",
+      "sha256": "e653e27e6cdbbef3baf18799a80803cdfe700016f76e40fbd08a4271f0d49927"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-project-values-20261019/file-project-rows.json",
+      "sha256": "0534f594348d7a7ffeff265ab60964fb245368dab8207ccba13280ad0faa5e3d"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mc-audit-20261022.json",
+      "sha256": "0078e7ba05d2a90d0dce5b8e591225f1cb5bc09eb8ebf9fdfd5e7d4047c2f6fe"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-mdvx-20261022/findings.json",
+      "sha256": "591a7e56c9c5dadeceee002f91a664fd302a35a71a68fbbd41cc16de5f454c04"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-project-current-20261022.json",
+      "sha256": "1eff981bbae91409f08f30b4d153db898b509d4ead7648797863b3a1c0da8f59"
+    }
+  ],
+  "validation": {
+    "productionCodeChanged": false,
+    "appOrPrivateApiRun": false,
+    "buildsOrParserTestsRun": false,
+    "actualHeaderAndDatabaseComparison": true,
+    "essenceRead": false,
+    "wholeMediaHash": false,
+    "oldScannerActive": true,
+    "binFilterChanged": false
+  },
+  "proposalRevision": {
+    "date": "2026-10-22",
+    "receipt": "mxf-project-simplification-2026-10-22.json",
+    "userSteering": "What is order 3 and 4? Do we need them? They seem a bit too much effort to me.\nHow far left in planning the new Bella code?",
+    "approvalStatus": "Revised proposal only; preceding identities/ClipName remainapproved."
+  },
+  "proposalHistory": {
+    "initialOrder": [
+      "Usable active Preface.ProjectName",
+      "Qualified physical file SourcePackage project attributes",
+      "Same selected MaterialPackage project attributes; no other master search",
+      "Immediately linked source records of the file only, supported local component paths and fullIDs; no deeperancestry/othermediaopens"
+    ],
+    "note": "Initial four-source recommendation preserved as history; revised two-source proposal governs current recommendation."
+  },
+  "approvedBy": {
+    "date": "2026-10-22",
+    "timezone": "Australia/Sydney",
+    "receipt": "Project Bella/evidence/mxf-project-plan-2026-10-22.json",
+    "scope": "Only the simplified header/file-owned/blank Project rule and its presented local-key, Unicode, availability and compact-retention details. No master/source Project recovery. Kind is the next unapproved review.",
+    "historicalStatus": "This file recorded research or a proposal revision before explicit approval. The approval receipt supersedes its pending status; earlier four-source proposals and native/corpus observations remain historical, not newly approved."
+  }
+}

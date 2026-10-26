@@ -1,0 +1,5322 @@
+{
+  "date": "2026-10-20",
+  "timezone": "Australia/Sydney",
+  "purpose": "MDB Bit Depth requirements review: native format-specific sources, actual own-descriptor typed bytes, MDVx ordinary scan/store/display and proposed compact Bella numeric retention.",
+  "status": "User approved carrying over verified Bit Depth interpretation rules and useful tests into small new Bella helpers, retaining numeric depth and necessary format information with labels generated at display, on 20 October 2026. Uncommon coverage choices marked in the review remain pending. No Bella runtime implementation; OldScanner active, Bin Filter unchanged.",
+  "mediaComposer": {
+    "scope": "Read-only static review of the installed Media Composer engine for MDB Bit Depth requirements. No application execution, private API execution, production code edits, media writes, or claim to trace every UI display.",
+    "binary": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "version": "26.8.0.58987",
+      "build": "26.8.0",
+      "architecture": "arm64",
+      "bytes": 73527536,
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+      "uuid": "D55FFCED-FD76-3667-99B8-C9A84180173E"
+    },
+    "ownership": "Use the already qualified physical file mob own OMFI:MOBJ:PhysicalMedia descriptor, rather than master or timeline track metadata.",
+    "nativeSources": [
+      {
+        "family": "PCMA",
+        "property": "OMFI:MDAU:BitsPerSample",
+        "dictionaryOffset": "0xde0",
+        "storedType": "omfi:Ushort in the actual MDB corpus; native typed reader and writer use UInt16, not Int32.",
+        "get": [
+          "PCMAudioDescriptor::Get 0x3e8c78 loads the property; 0x3e8c80..88 calls stream +0x230 ReadUInt16; 0x3e8c94..9c invokes SetBitsPerSample(int).",
+          "AudioMediaDesc::GetBitsPerSample 0x360a30 reads unsigned halfword at descriptor +0x27e. The int return type does not change the wire type."
+        ],
+        "put": [
+          "PCMAudioDescriptor::Put 0x3e8760 loads the property; 0x3e8764 reads descriptor halfword +0x27e; 0x3e876c..74 invokes stream +0x150 WriteUInt16."
+        ],
+        "units": "Bits per audio sample, independently of the number of channels.",
+        "byteOrder": "Native ReadUInt16 0xb7248..90 requires a two-byte value and swaps for a nonzero byte-order marker other than II; II reads little endian. Missing or wrong-sized values yield zero in this helper. Bella should retain missing/unusable status instead of treating that as a valid depth."
+      },
+      {
+        "family": "AIFD, translated by native MDB reader to AIFCDescriptor",
+        "property": "OMFI:AIFD:Summary",
+        "storedType": "Embedded binary AIFF/AIFC FORM header summary, not text.",
+        "field": "COMM sampleSize, two bytes at COMM payload offset 6, big endian.",
+        "get": [
+          "AIFCDescriptor::ReadCommChunk 0x365868..74 loads and byte-swaps the 16-bit sampleSize into parsed structure +0x14.",
+          "AIFCDescriptor::GetMetaData 0x3652ec sign-extends that parsed 16-bit field; 0x3652f4..fc invokes descriptor SetBitsPerSample."
+        ],
+        "put": [
+          "AIFCDescriptor::PutMetaData 0x366394..3a8 writes the named sampwidth field through the stream 16-bit writer."
+        ],
+        "limits": "The stored compression and numeric representation remain separate from sampleSize. Do not infer floating point or valid PCM precision merely from the width."
+      },
+      {
+        "family": "WAVD, translated by native MDB reader to WAVEDescriptor",
+        "property": "OMFI:WAVD:Summary",
+        "storedType": "Embedded binary RIFF/WAVE header summary, not text.",
+        "field": "fmt wBitsPerSample, unsigned two-byte integer at fmt payload offset 14, little endian.",
+        "get": [
+          "WAVEDescriptor::ReadFmtChunk 0x3fa6ac..c4 reads named SampleWidth into parsed structure +0x2a.",
+          "WAVEDescriptor::ReadWAVEMetaData 0x3fa0ec loads that unsigned halfword; 0x3fa0f4..100 calls SetBitsPerSample."
+        ],
+        "put": [
+          "WAVEDescriptor::InitWaveStream 0x3f8e88..9c writes the named sampwidth as a 16-bit value."
+        ],
+        "limits": "For WAVE_FORMAT_EXTENSIBLE, ReadFmtChunk 0x3fa6c8..710 checks the extension and skips eight bytes before reading the subformat. This traced path does not read validBitsPerSample separately; its getter reports the base wBitsPerSample width. Distinguish container width from valid PCM bits in any Bella policy, with a separately qualified extension interpretation."
+      },
+      {
+        "family": "CDCI",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "dictionaryOffset": "0x1458",
+        "storedType": "Native signed Int32 accessor. Actual corpus type and four-byte width are separately checked by the raw inventory agent.",
+        "get": [
+          "CDCIDescriptor::Get 0x340820 loads the property; 0x340828..30 invokes stream +0x238 ReadInt32; 0x340834 stores raw value at descriptor +0x3f8.",
+          "CDCIDescriptor::GetComponentWidth 0x341ad4 directly returns that 32-bit raw field."
+        ],
+        "put": [
+          "CDCIDescriptor::Put 0x340464..78 loads the raw field and writes it through stream +0x158 WriteInt32."
+        ],
+        "meaning": "A declared component-width code. Ordinary supported integer widths describe one component, not bits per pixel. Special codes require qualified representation interpretation."
+      },
+      {
+        "family": "MPGI",
+        "property": "Inherited OMFI:CDCI:ComponentWidth",
+        "get": [
+          "MPGIDescriptor::Get 0x3cccfc calls CDCIDescriptor::Get at 0x3ccd20 before handling MPEG-specific fields."
+        ],
+        "meaning": "The same component-width source for this known descriptor family; do not derive depth from bitrate, frame size, filename or a master track."
+      },
+      {
+        "family": "RGBA",
+        "properties": [
+          "OMFI:RGBA:PixelLayout",
+          "OMFI:RGBA:PixelLayoutSize",
+          "OMFI:RGBA:PixelStructure",
+          "OMFI:RGBA:PixelStructureSize"
+        ],
+        "dictionaryOffsets": [
+          "0x14a8",
+          "0x14b0",
+          "0x14b8",
+          "0x14c0"
+        ],
+        "storedRepresentation": "Legacy MDB uses two parallel byte arrays: PixelLayout component codes and PixelStructure numeric width codes. These are not interleaved AAF/MXF code-and-width pairs, and widths are not ASCII digits.",
+        "get": [
+          "RGBADescriptor::Get 0x3e3938 reads separate sizes, component codes at 0x3e3ac0..d4 and width bytes at 0x3e3bc8..dc.",
+          "0x3e3a54..58 and 0x3e3b64..68 require each size <9 in this traced reader, so at most eight raw array bytes. It allocates/appends its own terminators; raw MDB array termination is not required.",
+          "For the alternate domain-5 path, it obtains actual property lengths instead of using the separately stored size fields."
+        ],
+        "put": [
+          "RGBADescriptor::Put 0x3e34fc writes the separate PixelLayout and PixelStructure arrays and their separate size fields."
+        ],
+        "derivedNativeValue": [
+          "CalcPixelWidthComponentFormat 0x3e2e84, loop 0x3e2f18..3c, sums component width bytes and stores a total pixel width at +0x414; GetPixelWidth 0x3e42a4 returns that total. This is not a per-component Bit Depth value.",
+          "The calculator also performs component-format table lookup and has default/repair paths which can replace unsupported input with eight-bit RGB. Bella should not copy those guesses."
+        ],
+        "limits": "Component roles, padding, alpha-only and mixed-width layouts require deliberate interpretation. Exhaustive component-code meanings and the complete native UI policy were not traced. Do not ignore an unknown code merely because it resembles padding."
+      }
+    ],
+    "specialVideoWidthCodes": {
+      "nativeEvidence": [
+        "DIDDescriptor::IsComponentFloat 0x37f678 compares the byte code with 252 and returns true for values above it.",
+        "CDCIDescriptor::GetBitsPerPixel 0x341b28..50 maps raw 253 to 16, 254 to 32, and 255 to 64 before its pixel/subsampling calculation. This generic helper is not a universal representation decoder.",
+        "CDCIDescriptor::GetComponentFormat 0x3419ec first consults the dynamic compression/VCID format information before its fallback width handling."
+      ],
+      "qualifiedDNxUncompressedReference": {
+        "primaryURL": "https://pub.smpte.org/pub/rdd50/rdd50-2019.pdf",
+        "document": "SMPTE RDD 50:2019, Avid-authored DNxUncompressed specification, sections 9 and 10, Tables 5, 7 and 8. Parent separately verifies the downloaded primary PDF.",
+        "rule": "Use the full known picture coding UL and raw width together; suffixes below only identify variants within already recognized full DNxUncompressed ULs. Never classify arbitrary ULs by suffix alone.",
+        "variant1Suffix03070100": [
+          "253 means 16-bit half float.",
+          "254 means 32-bit float.",
+          "8, 10, 12 and 16 are integer cases in this variant."
+        ],
+        "variant2Suffix03070200": [
+          "254 means 16-bit S2.14 fixed point, not 32-bit float.",
+          "10.6 and 12.4 fixed point use 16-bit words; signal precision and storage word width are distinct."
+        ],
+        "conclusion": "Raw 253/254/255 are not literal 253/254/255-bit depths. Raw 254 alone cannot distinguish 32-bit float from DNxUncompressed S2.14. Preserve the raw code and sufficient codec/representation context; leave unsupported interpretations unavailable."
+      }
+    },
+    "bellaRecommendationNotYetUserApproval": [
+      "Keep one qualified source per known descriptor family: PCMA own MDAU:BitsPerSample, AIFD own Summary COMM, WAVD own Summary fmt, CDCI/MPGI own ComponentWidth, RGBA own parallel component-code and width arrays.",
+      "Treat the column as audio sample precision / video component precision, and keep numeric representation separate from packed storage width, bitrate, total pixel width and channel count.",
+      "Use a compact qualified interpretation for supported special codes and representations. Do not emit sentinel numbers as literal depths or use unqualified float assumptions.",
+      "For RGBA, a uniform supported width across relevant RGB/alpha components can yield one displayed depth, including a supported alpha-only case. Mixed or unsupported layouts can remain blank while retaining compact raw arrays. Exact code-role handling is a Bella policy, not established here as the complete native UI rule.",
+      "Missing, malformed, conflicting or unsupported values leave Bit Depth unavailable while retaining the physical file. Do not substitute a native repair/default value or hunt other masters for a convenient width.",
+      "Keep existing Duration and Sample Rate contracts unchanged. No new media-header opening policy is decided by this read-only MDB field review."
+    ],
+    "limits": [
+      "No claim that all Media Composer Bit Depth UI display paths use these same getters.",
+      "No exhaustive supported codec survey or new Bela runtime implementation.",
+      "WAVE extensible valid bits versus container width, and DNx fixed-point signal precision versus storage-word labels, must remain explicit and qualified; existing numeric getters alone do not settle every display label."
+    ],
+    "receipts": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/Project Canon/dnx-codec-evidence.md",
+        "bytes": 27383,
+        "sha256": "58947494bc8c90165639b6fca02f8af26457ed0e7a62de41064b4f8fdedf5883",
+        "source": "verified existing research receipt or primary document"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/AIFCDescriptor-GetMetaData.txt",
+        "bytes": 14951,
+        "sha256": "88fce5b805c81ce10aa747d2aa109cc75b50979ba1f146fb2a246059d4c62d03",
+        "source": "verified existing research receipt or primary document"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/AIFCDescriptor-PutMetaData.txt",
+        "bytes": 19734,
+        "sha256": "a9de33ae3104d571046575950546d56f340e48f5db33fb843825d26be18f6582",
+        "source": "verified existing research receipt or primary document"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/AIFCDescriptor-ReadCommChunk.txt",
+        "bytes": 13389,
+        "sha256": "7ab4ca5725714109b67e6d3411680190d1f773b9fa8885c7c4bb5b43e549ab20",
+        "source": "verified existing research receipt or primary document"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/PCMAudioDescriptor-Put.txt",
+        "bytes": 12157,
+        "sha256": "8e2cb1b58d6f42c2217cb55ee37fe1f421295a72d99595ae03ec20a138945ce2",
+        "source": "verified existing research receipt or primary document"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/WAVEDescriptor-InitWaveStream.txt",
+        "bytes": 12201,
+        "sha256": "d5aae1158848b2bfb940bd59006bf6ef9da8f3ca26dfc352341f9e1037c9bd5b",
+        "source": "verified existing research receipt or primary document"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/WAVEDescriptor-ReadFmtChunk.txt",
+        "bytes": 13207,
+        "sha256": "e34859635f0a484fce779f540c253fe49dfcdfd61a9d45d84d7d552eaf23a5a5",
+        "source": "verified existing research receipt or primary document"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/WAVEDescriptor-ReadWAVEMetaData.txt",
+        "bytes": 21276,
+        "sha256": "24cef3e0fe7267abae0b3baad1b31a1648f0d29235c33da235138f81cdc3231c",
+        "source": "verified existing research receipt or primary document"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/AudioMediaDesc-GetBitsPerSample.txt",
+        "bytes": 228,
+        "sha256": "39bf6c19e5e8cbec76c952635fe41767bcb4e9964ee738de68f67321c26ab53b",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/AudioMediaDesc-SetBitsPerSample.txt",
+        "bytes": 341,
+        "sha256": "f85343ce1a138c8aa70685f86f12ef28417365ba80561b467e052eb9b186c737",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/CDCI-GetComponentFormat.txt",
+        "bytes": 2708,
+        "sha256": "d78a4041b5cd1cbda469d0b4ed9c9218476626f61837db44f97fe738670d21c6",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/CDCI-GetComponentWidth.txt",
+        "bytes": 228,
+        "sha256": "f08039f60b6fc7f3b88ea4942b07b1420c801e5d84c3d6882b3ee89d5317679b",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/CDCIDescriptor-Get.txt",
+        "bytes": 10653,
+        "sha256": "96dc956797b0524ff4a44ebc669d031cf02029e54e62268bf1b3c4237b8ca1ec",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/CDCIDescriptor-GetBitsPerPixel.txt",
+        "bytes": 5222,
+        "sha256": "a63cfab6672b06c286ddfbfbae19c56c7b5496e7e4e8cd003e26691fd8b93f16",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/CDCIDescriptor-Put.txt",
+        "bytes": 5553,
+        "sha256": "f33b04ab1297eaf04450cb7d3599dc229a6347d7c48b6d34c98adb55cf995c2b",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/DIDDescriptor-IsComponentFloat.txt",
+        "bytes": 253,
+        "sha256": "40eadfa206fce134f5c3a6ff36a051e949ef6c50bbb9f6a74e43102d0f1ba584",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/MPGIDescriptor-Get.txt",
+        "bytes": 8492,
+        "sha256": "b24d8cd0f33d85573541180f94794b8ed55201539caa33a0067c9ec65fa07263",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/PCMAudioDescriptor-SetBitsPerSample.txt",
+        "bytes": 638,
+        "sha256": "853a9e1114e87d7dd4bac658b370fa0e119d3e43031b23839b4e1d73e6a66ebc",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/RGBADescriptor-CalcPixelWidthComponentFormat.txt",
+        "bytes": 11696,
+        "sha256": "785e441cb5f5e2e16be814fe5747118b34d67b663cacd4d0fa6c42fb0699292b",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/RGBADescriptor-Get.txt",
+        "bytes": 18968,
+        "sha256": "f04d885e4c372c796264f86a15ce0b71b326a1fa1aef346f5351509361e82fda",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/RGBADescriptor-GetPixelWidth.txt",
+        "bytes": 224,
+        "sha256": "8176b8f228ca5f08d3a463740c260a7fcbc5fc57fd48bdaba2e5390186dbf4b7",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/RGBADescriptor-Put.txt",
+        "bytes": 9672,
+        "sha256": "ff0a037e6f4824c5f407b6305a8d2efd2df2c6e721d2b9953418694b1b4993b0",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/omfiDualStream-ReadInt32.txt",
+        "bytes": 3820,
+        "sha256": "4f957eaee0f590c5d7ea4459e7bcbd8d8bd863c1cc4444e0d3469676ddbb982c",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/omfiDualStream-ReadUInt16.txt",
+        "bytes": 1962,
+        "sha256": "6a82f065fbcf987078e20b79ffd7753add4fca8a9a86c051bb64ab212e624ab2",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/omfiDualStream-WriteInt32.txt",
+        "bytes": 5227,
+        "sha256": "735384a8ccf4658099e283833a43d9ce6b67454fdd5d3752f51bb19e711e1bf0",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/omfiDualStream-WriteUInt16.txt",
+        "bytes": 3371,
+        "sha256": "4e324f619022ce86d99ed9d64d71b863cb680b99cdf6c35bafd45be071ab49f1",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/stream-vtable.json",
+        "bytes": 800,
+        "sha256": "864573e251f3b461e24bad1e239a1e0ad1cd0e3ae2c68219305d770b72324561",
+        "source": "fresh static disassembly / vtable extraction"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-primary/rdd50-2019.pdf",
+        "bytes": 803379,
+        "sha256": "4959054284e49621c4ddf228cae8797feff7842fd313982cf92e84a9d31d0108",
+        "source": "verified existing research receipt or primary document"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/PCMAudioDescriptor-Get.txt",
+        "bytes": 21995,
+        "sha256": "d2a7e4fd7f35865f12ed4e2ed39ee8b2b93ed7ff4d099bb0f5a03e9c52a6e3a2",
+        "source": "verified existing research receipt or primary document"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/native-property-offsets-prior.json",
+        "bytes": 27054,
+        "sha256": "fcd42e31b206ecb79c37072d1eced4bcb46e81df4fd2c1027224e9341f5632f8",
+        "source": "verified existing research receipt or primary document"
+      }
+    ]
+  },
+  "mdvx": {
+    "date": "2026-10-20",
+    "timezone": "Australia/Sydney",
+    "purpose": "Bounded static audit of installed MDVx ordinary MDB Bit Depth acquisition, row storage, table and CSV formatting; distinguish raw scalar load width from the actual MDB property type.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "bytes": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "CFBundleShortVersionString": "0.2",
+      "CFBundleVersion": "4073",
+      "architectureAudited": "arm64",
+      "freshHashMatchesPriorAuditedBinary": true
+    },
+    "method": "Fresh installed SHA256 and direct CFString decoding. Re-read exact function disassembly previously captured for this identical binary. Independently re-read one actual PCMA property and reference as two bounded raw MDB ranges supplied by the corpus agent. No app launch, live scan/export, private API invocation, production edits or media writes.",
+    "mainFinding": "Ordinary MDVx copies an audio BitsPerSample or conditional non-audio ComponentWidth scalar into one unsigned32 row value. It does not retain a typed or multi-component bit-depth structure. Nonzero values format as an unsigned number plus bit; zero is explicitly empty in both table and CSV.",
+    "owner": {
+      "ordinaryEntry": "-[MDVxOMFI addInfoToItem:] at 0x100064794.",
+      "fileAssociation": "PMR file ID bytes16..23 feed the SourceMobs tree and local TOC lookup at 0x100064854..8bc. This is MDVx eight-byte excerpt association, not Bella approved full-ID matching.",
+      "descriptor": "The matched FILE TOC index is passed at 0x100064ae4 to getCompression_data:forObjAt: 0x100064b60. That helper resolves MOBJ:PhysicalMedia property0x10333 to a local descriptor at 0x100064b9c..bc4. No master or project supplies the depth."
+    },
+    "audioPropertyBranch": {
+      "selection": "Descriptor PCMA:AudioSamplingRate property0x1074d presence selects _AUD at 0x100064bd4..bf4. Only if absent, AIFD:Summary0x1022f presence together with MDFL:SampleRate0x1031a presence selects the same branch at 0x100064c34..60.",
+      "qualification": "This is property-presence logic, not a check that the descriptor class is one of the approved Bella audio families. A missing/short/unreadable selected rate payload still proceeds to the audio bit-depth lookup.",
+      "property": "OMFI:MDAU:BitsPerSample, dictionary property0x10749, queried at 0x100064d6c..7c.",
+      "read": "pDataFor at 0x100064d88; if nonnull, ldr w9,[x0] at 0x100064d94 reads FOUR bytes, followed by optional full32-bit rev when _isII is false at 0x100064d98..da0. The value is stored in helper output+0x10 at 0x100064da4.",
+      "summary": "AIFD Summary bytes are not decoded for depth here. No WAVD Summary depth parser is called by this helper; extension-based audio marking does not supply a bit depth.",
+      "missing": "Missing property or null pointer leaves the helper bits scalar zero and returns success for the recognized audio branch. No alternate component-depth or summary-depth fallback follows."
+    },
+    "nonAudioPropertyBranch": {
+      "entry": "Only if neither audio property branch matches, DIDD:Compression0x108d9 must be present at 0x100064c64..74. The helper may then read DIDD:DIDResolutionID0x108f7 separately.",
+      "guards": [
+        "DIDD:FrameSampleSize0x108ed must be present at 0x100064cc8..d04.",
+        "MDFL:SampleRate0x1031a must be present.",
+        "The selected FrameSampleSize data pointers must be nonnull. The rate pair is not read in this branch."
+      ],
+      "property": "OMFI:CDCI:ComponentWidth, dictionary property0x10919, queried at 0x100064d3c..4c, then the same scalar-loading tail at 0x100064d80..da4.",
+      "missing": "Absent FrameSampleSize, absent MDFL rate, unusable intermediate data, absent ComponentWidth or null ComponentWidth pointer leaves zero. Thus this helper does not simply read a present ComponentWidth independently of unrelated fields.",
+      "noInference": "No codec FourCC or DIDResolutionID lookup determines the bits value. No RGBA PixelLayout/PixelStructure component parser or MPEG-class fixed-depth fallback is invoked here. DIDResolutionID influences a neighboring Sample Rate/bitrate display branch, not the Bits column.",
+      "scope": "These are actual control-flow branches, not an assertion that MDVx validates PCMA/AIFD/WAVD/CDCI/RGBA/MPGI classes. A property-matching descriptor can take a branch regardless of its class."
+    },
+    "widthAndValidation": {
+      "MDVxLoad": "32-bit load at 0x100064d94 for both selected audio BitsPerSample and non-audio ComponentWidth.",
+      "localChecks": "This tail checks the data pointer, not declared type, width>=4, positivity, allowed depth values, per-component interpretation or duplicate-property consistency.",
+      "pDataFor": "0x100061eac checks a nonempty declared property and extent when storage word equals1; that external case returns mapped file base+offset at 0x100061f58..60. Other storage cases return TOC entry+0x0c at 0x100061f48..54. It does not allocate a new zero-padded scalar buffer.",
+      "actualTypedWidth": "One independently read actual PCMA MDAU:BitsPerSample is omfi:Ushort with TWO declared bytes. Do not treat MDVx32-bit instruction width as the property schema.",
+      "actualRepresentative": {
+        "scope": "Bounded read-only actual representative supplied by corpus agent, no app execution. Tests static load prediction, not a live MDVx row.",
+        "mdbPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "mdbExpectedFullSHA256FromOtherAgent": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "hashQualification": "This check reads only two cited ranges; whole MDB hash verification is held by corpus agent/parent.",
+        "fileMobObject": 92287,
+        "descriptorObject": 92286,
+        "fileMobId": "060a2b340101010501010f1013000000782a3120258505911bcb34363bcdaf64",
+        "property": "OMFI:MDAU:BitsPerSample",
+        "declaredType": "omfi:Ushort",
+        "declaredLength": 2,
+        "declaredRange": [
+          4865332,
+          2
+        ],
+        "declaredHex": "1800",
+        "declaredU16Value": 24,
+        "tocEntryRange": [
+          4865320,
+          24
+        ],
+        "tocEntryHex": "7e68010049070100b3000100180000000200000001000100",
+        "tocSixU32Words": [
+          92286,
+          67401,
+          65715,
+          24,
+          2,
+          65537
+        ],
+        "pDataForPointer": "The last TOC word is not equal to1; traced pDataFor immediate branch returns in-memory TOC entry+12. This maps to the recorded four-byte immediate value word, not a standalone two-byte heap allocation.",
+        "loadedWordRange": [
+          4865332,
+          4
+        ],
+        "loadedWordHex": "18000000",
+        "predictedMDVxLittleEndianU32Value": 24,
+        "physicalMediaReferenceRange": [
+          1341155,
+          8
+        ],
+        "physicalMediaReferenceHex": "7e68010000000000",
+        "readRangeHashes": [
+          {
+            "offset": 4865320,
+            "length": 24,
+            "sha256": "db22913651ea0bf5e40a4c1dfdfac5f472f5145d196bb9ee760913da043a8eb9"
+          },
+          {
+            "offset": 1341155,
+            "length": 8,
+            "sha256": "d055ad1813dc58dad52bf075b43f8f19da0404b3db2990a75ad4ef2c7b4af02a"
+          }
+        ],
+        "conclusion": "For this representative immediate2-byte Ushort property, the unused upper two bytes are zero, so MDVx32-bit load predicts the same depth24. This is not evidence of a wrong depth in this file; the implementation still fails to honor declared16-bit width and unobserved layouts are not validated.",
+        "limits": [
+          "No full corpus claim from this representative.",
+          "No big-endian, external2-byte, nonzero-padding, damaged or duplicate-depth fixture exercised."
+        ]
+      },
+      "boundedConclusion": "The representative immediate value word has zero upper bytes, so the MDVx32-bit load predicts correct24 despite the declared16-bit width. No actual wrong depth is demonstrated. External2-byte, different padding, big-endian and damaged variants are not tested here.",
+      "duplicates": "lookForProperty:At: 0x100063bb0 scans the object TOC and returns its first matching property identifier; this helper does not collect or reconcile duplicate depth claims."
+    },
+    "rowStorage": {
+      "assignment": "Successful helper result is copied by addInfoToItem at 0x100064b14..b1c via setDB_bits:.",
+      "setter": "-[MDVxDatabaseItem setDB_bits:]0x100031624 performs str w2,[x0,#0x6c].",
+      "getter": "-[MDVxDatabaseItem DB_bits]0x10003161c performs ldr w0,[x0,#0x6c].",
+      "type": "Objective-C metadata says TI,V_DB_bits and I for the four-byte ivar: unsigned32 scalar.",
+      "missingAndZero": "The helper initializes its output to zero at 0x100064b94..98. The row has no separate depth-availability/type/source status here; absent/unreadable/recorded-zero are represented by the same scalar zero.",
+      "otherPathsChecked": "The inspected PMR setup, unreferenced-file setup and scanner main contain no independent bit-depth setter. MDVxMXF addInfoToItem0x1000326b4 copies names/Project/IDs only, not bits. This bounds the ordinary row fallback and does not claim the embedded MXF parser lacks bit-depth capabilities."
+    },
+    "presentation": {
+      "table": "tableView:viewForTableColumn:row:0x100050304, BitsCellID branch0x100050958..9a4. DB_bits is read at0x100050970 and0x10005098c.",
+      "nonzero": "String format at0x100050994 is exactly %u bit; it consumes the unsigned32 scalar. Examples8,10,16,24,32 become8 bit,10 bit,16 bit,24 bit,32 bit. No depth-specific dictionary or codec inference is called.",
+      "zero": "At0x100050a38 the branch selects a nonnil EMPTY literal, so the Bits cell stays blank. It does not use the common ... placeholder.",
+      "csvString": "tableView:NSStringValueForTableColumn:row:0x100050ce4, BitsCellID0x100051200..24c: same nonzero %u bit; zero explicitly selects empty literal0x1000512e8.",
+      "export": "ExportMenu genCsv0x100067bc0 calls the string method at0x100067e24, so this branch contributes the same nonzero depth text or empty field.",
+      "kindAndRanges": "No Audio/Video gate, allowed-depth range check, floating-point/compound-depth interpretation or type validation occurs in the Bits table/CSV branches. Static unsigned formatting can show an invalid raw pattern as a large positive integer; no malformed live fixture was run.",
+      "qualification": "Fresh binary CFString data and static control flow, not an observed MDVx UI/CSV run."
+    },
+    "BellaBuildingBlocksNotApprovedPolicy": [
+      "Use the already approved exact physical-file identity and own descriptor; do not copy MDVx eight-byte association or broaden Bella six approved Kind families.",
+      "Preserve the schema-typed scalar width. The actual Ushort audio property calls for a16-bit unsigned decode, not a blind32-bit load; a proven32-bit property should use its corresponding fixed-width type. Qt6.5.3 qFromLittleEndian/qFromBigEndian can decode these after complete typed-range validation.",
+      "Keep a small numeric value with common availability information; C++17 std::optional is sufficient when there is no existing status mechanism. Do not fabricate0-bit or permanently store the presentation string as the only value.",
+      "If the field review establishes multiple RGBA component sizes or a defined floating-point sentinel, retain enough compact structured meaning to represent it; do not sum color components, assume one scalar covers every format, or infer depth merely from a codec name.",
+      "Generate the readable label at presentation with QString. Neither a retained duplicate raw evidence graph nor a general codec-guessing engine is required solely to hold a small known depth value.",
+      "The native/corpus evidence must establish each approved descriptor family property and any fallback/formatting contract. MDVx omissions and odd guard dependencies are not Bella requirements.",
+      "Do not change approved Duration, Sample Rate or Kind choices from this report. Bit Depth source/fallback/header-read policy remains its own requirements decision."
+    ],
+    "limits": [
+      "Reused exact-function disassembly is tied to the freshly unchanged installed SHA256. No new live decompilation/runtime test, UI or CSV export was performed.",
+      "The only new actual MDB reads are two cited ranges for the Ushort-width representative; full MDB hash/owner/type proof comes from the corpus agent/parent, with the declared bytes and reference independently re-read here.",
+      "This is ordinary scan enrichment and row presentation, not raw database-browser interpretation.",
+      "No whole-app impossibility or universal corrupt-value behavior is claimed. No bit-depth completeness rate is inferred from one representative.",
+      "Pinned C++17/Qt6.5.3 building blocks are design advice, not a runtime implementation or an expansion of approved formats."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/ExportMenu_genCsv_.txt",
+        "bytes": 10241,
+        "sha256": "92959f72f5c4beb7005030925cceed4fbd0f29ed05383c0524a8fb50f2f4f522"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt",
+        "bytes": 16441,
+        "sha256": "be932b1a1d04bf4539a0f4fe6b8fadb68d4d4170387b8613806c5c6af8b0fee1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt",
+        "bytes": 25206,
+        "sha256": "e9f502df3ddc289f84c65be937ec441a847c638c8b17d1df97c3b1f0655644cb"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/MDVxDatabaseItem_DB_bits.txt",
+        "bytes": 58,
+        "sha256": "37a90d79be605dbf4d17f20ecd62c382b0d154d632015fa1121340de4efa0038"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/MDVxDatabaseItem_init.txt",
+        "bytes": 944,
+        "sha256": "48b45d98fcefc1a40e3914b71ec60c221b0445939045d08846500e3c9652d8fd"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/MDVxDatabaseItem_objc_metadata.txt",
+        "bytes": 24581,
+        "sha256": "99ee84dd15386551c5a986e99eb6ddd750e6aee6275a6914a9306a9a381e34dc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/MDVxDatabaseItem_setDB_bits_.txt",
+        "bytes": 58,
+        "sha256": "808feb2eca6212025605c048d371f2e49ccb722dd29b7d66baf7fd1443353037"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/MDVxMXF_addInfoToItem_.txt",
+        "bytes": 3747,
+        "sha256": "18281f5391667e37e8e3b5884b1a498e680ac0ccc0a99fcf8f470c42101ea1d0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/MDVxOMFI_addInfoToItem_.txt",
+        "bytes": 9423,
+        "sha256": "20211e8a6dbcd33b0e034f3885504d5af7a54cffd3a05b5d776446549e0f6829"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/MDVxOMFI_getCompression_data_forObjAt_.txt",
+        "bytes": 5492,
+        "sha256": "56eb914605cab3b729d4dd8de955f3e18298097b96c2c1f546c00a32f1cbe0ef"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/MDVxOMFI_lookForProperty_At_.txt",
+        "bytes": 558,
+        "sha256": "45d90b8ad42f2fd572629bbf6a2035c5e66a2ef56f890bc749f05e698cca9862"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/MDVxOMFI_pDataFor_.txt",
+        "bytes": 1649,
+        "sha256": "95d648555a588984e388bb21c7ca3f931d179322eb3ee542e951f2c1b6afccd1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/actual-ushort-width-check.json",
+        "bytes": 2234,
+        "sha256": "130cefb7e6ee6e4a3f1aaac852aec39f0d793631352bbe90d74013bb1ae8b63f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/binary-receipt.json",
+        "bytes": 307,
+        "sha256": "8c774f66c5c07de8d10b5d92c6b6858f5cb9c44ce98a6723d45183c54995a2a3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/fresh-bit-depth-literals.json",
+        "bytes": 746,
+        "sha256": "f4510c9ac2118b16bb1c527077bbe4afa4de994d78f1f3a6d4e775775df0bd58"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/prior-property-map-findings.json",
+        "bytes": 16441,
+        "sha256": "264ebe5c1c8aa04f93a067d844113f43ec0c7ec2ef6c6bf0b2bd6ce5795d898b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-disassembly.txt",
+        "bytes": 4552262,
+        "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074",
+        "role": "Complete previously captured arm64 disassembly for the identical freshly hashed installed binary."
+      }
+    ]
+  },
+  "actualDatabases": {
+    "method": [
+      "Fresh hashes of all six MDBs, six PMRs and six raw value indexes match prior evidence and are stable during each read.",
+      "Retained identity, catalogue, descriptor-reference, exact class and relevant bit-depth/context properties are reconstructed from actual MDB byte ranges and compared byte-for-byte to cached raw-value entries.",
+      "Complete normalized PMR FileMobId selects its unique MOBJ in SourceMobs and ObjectSpine with PhysicalMedia. The full paired MasterMobId is checked independently in the composition catalogue. Only the file own PhysicalMedia target supplies the descriptor.",
+      "PCMA own MDAU:BitsPerSample is inventoried with concrete type and declared width. CDCI:ComponentWidth is independently inventoried wherever present, including MPGI. No DIDD:ComponentWidth alias is invented.",
+      "Legacy RGBA PixelLayout and PixelStructure are separate byte arrays. Component code and stored bit width are paired by matching array index; trailing code/width zeros are recorded. Component identities, alpha-only layouts and mixed widths are preserved rather than collapsed into an unqualified RGB depth.",
+      "Own WAVD RIFF/WAVE fmt wBitsPerSample and own AIFD FORM/AIFF-or-AIFC COMM sampleSize are independently decoded with Python stdlib struct. WAVE extensible valid bits are decoded separately if that format tag occurs. Summary bytes are inside the MDB; no physical media file is opened.",
+      "Native resolution ID, compression tag/GUID, audio alignment and reference ranges are recorded as context only. No codec label or bit-depth derivation from these values is made.",
+      "For own scalar bit fields, TOC storage flags, declared range and actual four bytes at the raw value pointer are preserved. These storage-word observations are not permission to read beyond declared field width in Bella.",
+      "Counts are per PMR physical-file row. Descriptor objects are checked unique within each MDB. Entire-MDB property counts remain separate from selected own-descriptor source counts."
+    ],
+    "coverageQualification": "Fresh owner/field logic rechecks actual raw MDB ranges using established hashed Bento indexes; not a newly independent parse of every TOC entry.",
+    "relevantRetainedPropertyRowsVerified": 432690,
+    "countsPerPmrFile": {
+      "pmrRows": 2412,
+      "descriptorClass:RGBA": 18,
+      "RGBA:ownMDAUBitsPerSample:absent": 18,
+      "RGBA:ownCDCIComponentWidth:absent": 18,
+      "RGBA:ownRGBAParallelArrays:decodedParallelArrays": 18,
+      "RGBA:ownEmbeddedSummary:absent": 18,
+      "RGBA:fewerThanTwoIndependentOwnDepthSources": 18,
+      "descriptorClass:PCMA": 1511,
+      "PCMA:ownMDAUBitsPerSample:positive": 1511,
+      "PCMA:ownCDCIComponentWidth:absent": 1511,
+      "PCMA:ownRGBAParallelArrays:absent": 1511,
+      "PCMA:ownEmbeddedSummary:absent": 1511,
+      "PCMA:fewerThanTwoIndependentOwnDepthSources": 1511,
+      "descriptorClass:CDCI": 873,
+      "CDCI:ownMDAUBitsPerSample:absent": 873,
+      "CDCI:ownCDCIComponentWidth:positive": 873,
+      "CDCI:ownRGBAParallelArrays:absent": 873,
+      "CDCI:ownEmbeddedSummary:absent": 873,
+      "CDCI:fewerThanTwoIndependentOwnDepthSources": 873,
+      "descriptorClass:MPGI": 8,
+      "MPGI:ownMDAUBitsPerSample:absent": 8,
+      "MPGI:ownCDCIComponentWidth:positive": 8,
+      "MPGI:ownRGBAParallelArrays:absent": 8,
+      "MPGI:ownEmbeddedSummary:absent": 8,
+      "MPGI:fewerThanTwoIndependentOwnDepthSources": 8,
+      "descriptorClass:WAVD": 1,
+      "WAVD:ownMDAUBitsPerSample:absent": 1,
+      "WAVD:ownCDCIComponentWidth:absent": 1,
+      "WAVD:ownRGBAParallelArrays:absent": 1,
+      "WAVD:ownEmbeddedSummary:decoded": 1,
+      "WAVD:fewerThanTwoIndependentOwnDepthSources": 1,
+      "descriptorClass:AIFD": 1,
+      "AIFD:ownMDAUBitsPerSample:absent": 1,
+      "AIFD:ownCDCIComponentWidth:absent": 1,
+      "AIFD:ownRGBAParallelArrays:absent": 1,
+      "AIFD:ownEmbeddedSummary:decoded": 1,
+      "AIFD:fewerThanTwoIndependentOwnDepthSources": 1
+    },
+    "ownDepthPropertyPresence": [
+      {
+        "descriptorClass": "AIFD",
+        "property": "OMFI:AIFD:Summary",
+        "state": "present",
+        "count": 1
+      },
+      {
+        "descriptorClass": "AIFD",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "state": "absent",
+        "count": 1
+      },
+      {
+        "descriptorClass": "AIFD",
+        "property": "OMFI:DIDD:ComponentWidth",
+        "state": "absent",
+        "count": 1
+      },
+      {
+        "descriptorClass": "AIFD",
+        "property": "OMFI:MDAU:BitsPerSample",
+        "state": "absent",
+        "count": 1
+      },
+      {
+        "descriptorClass": "AIFD",
+        "property": "OMFI:RGBA:PixelLayout",
+        "state": "absent",
+        "count": 1
+      },
+      {
+        "descriptorClass": "AIFD",
+        "property": "OMFI:RGBA:PixelStructure",
+        "state": "absent",
+        "count": 1
+      },
+      {
+        "descriptorClass": "AIFD",
+        "property": "OMFI:WAVD:Summary",
+        "state": "absent",
+        "count": 1
+      },
+      {
+        "descriptorClass": "CDCI",
+        "property": "OMFI:AIFD:Summary",
+        "state": "absent",
+        "count": 873
+      },
+      {
+        "descriptorClass": "CDCI",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "state": "present",
+        "count": 873
+      },
+      {
+        "descriptorClass": "CDCI",
+        "property": "OMFI:DIDD:ComponentWidth",
+        "state": "absent",
+        "count": 873
+      },
+      {
+        "descriptorClass": "CDCI",
+        "property": "OMFI:MDAU:BitsPerSample",
+        "state": "absent",
+        "count": 873
+      },
+      {
+        "descriptorClass": "CDCI",
+        "property": "OMFI:RGBA:PixelLayout",
+        "state": "absent",
+        "count": 873
+      },
+      {
+        "descriptorClass": "CDCI",
+        "property": "OMFI:RGBA:PixelStructure",
+        "state": "absent",
+        "count": 873
+      },
+      {
+        "descriptorClass": "CDCI",
+        "property": "OMFI:WAVD:Summary",
+        "state": "absent",
+        "count": 873
+      },
+      {
+        "descriptorClass": "MPGI",
+        "property": "OMFI:AIFD:Summary",
+        "state": "absent",
+        "count": 8
+      },
+      {
+        "descriptorClass": "MPGI",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "state": "present",
+        "count": 8
+      },
+      {
+        "descriptorClass": "MPGI",
+        "property": "OMFI:DIDD:ComponentWidth",
+        "state": "absent",
+        "count": 8
+      },
+      {
+        "descriptorClass": "MPGI",
+        "property": "OMFI:MDAU:BitsPerSample",
+        "state": "absent",
+        "count": 8
+      },
+      {
+        "descriptorClass": "MPGI",
+        "property": "OMFI:RGBA:PixelLayout",
+        "state": "absent",
+        "count": 8
+      },
+      {
+        "descriptorClass": "MPGI",
+        "property": "OMFI:RGBA:PixelStructure",
+        "state": "absent",
+        "count": 8
+      },
+      {
+        "descriptorClass": "MPGI",
+        "property": "OMFI:WAVD:Summary",
+        "state": "absent",
+        "count": 8
+      },
+      {
+        "descriptorClass": "PCMA",
+        "property": "OMFI:AIFD:Summary",
+        "state": "absent",
+        "count": 1511
+      },
+      {
+        "descriptorClass": "PCMA",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "state": "absent",
+        "count": 1511
+      },
+      {
+        "descriptorClass": "PCMA",
+        "property": "OMFI:DIDD:ComponentWidth",
+        "state": "absent",
+        "count": 1511
+      },
+      {
+        "descriptorClass": "PCMA",
+        "property": "OMFI:MDAU:BitsPerSample",
+        "state": "present",
+        "count": 1511
+      },
+      {
+        "descriptorClass": "PCMA",
+        "property": "OMFI:RGBA:PixelLayout",
+        "state": "absent",
+        "count": 1511
+      },
+      {
+        "descriptorClass": "PCMA",
+        "property": "OMFI:RGBA:PixelStructure",
+        "state": "absent",
+        "count": 1511
+      },
+      {
+        "descriptorClass": "PCMA",
+        "property": "OMFI:WAVD:Summary",
+        "state": "absent",
+        "count": 1511
+      },
+      {
+        "descriptorClass": "RGBA",
+        "property": "OMFI:AIFD:Summary",
+        "state": "absent",
+        "count": 18
+      },
+      {
+        "descriptorClass": "RGBA",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "state": "absent",
+        "count": 18
+      },
+      {
+        "descriptorClass": "RGBA",
+        "property": "OMFI:DIDD:ComponentWidth",
+        "state": "absent",
+        "count": 18
+      },
+      {
+        "descriptorClass": "RGBA",
+        "property": "OMFI:MDAU:BitsPerSample",
+        "state": "absent",
+        "count": 18
+      },
+      {
+        "descriptorClass": "RGBA",
+        "property": "OMFI:RGBA:PixelLayout",
+        "state": "present",
+        "count": 18
+      },
+      {
+        "descriptorClass": "RGBA",
+        "property": "OMFI:RGBA:PixelStructure",
+        "state": "present",
+        "count": 18
+      },
+      {
+        "descriptorClass": "RGBA",
+        "property": "OMFI:WAVD:Summary",
+        "state": "absent",
+        "count": 18
+      },
+      {
+        "descriptorClass": "WAVD",
+        "property": "OMFI:AIFD:Summary",
+        "state": "absent",
+        "count": 1
+      },
+      {
+        "descriptorClass": "WAVD",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "state": "absent",
+        "count": 1
+      },
+      {
+        "descriptorClass": "WAVD",
+        "property": "OMFI:DIDD:ComponentWidth",
+        "state": "absent",
+        "count": 1
+      },
+      {
+        "descriptorClass": "WAVD",
+        "property": "OMFI:MDAU:BitsPerSample",
+        "state": "absent",
+        "count": 1
+      },
+      {
+        "descriptorClass": "WAVD",
+        "property": "OMFI:RGBA:PixelLayout",
+        "state": "absent",
+        "count": 1
+      },
+      {
+        "descriptorClass": "WAVD",
+        "property": "OMFI:RGBA:PixelStructure",
+        "state": "absent",
+        "count": 1
+      },
+      {
+        "descriptorClass": "WAVD",
+        "property": "OMFI:WAVD:Summary",
+        "state": "present",
+        "count": 1
+      }
+    ],
+    "ownDepthPropertyValueHistogram": [
+      {
+        "descriptorClass": "CDCI",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "type": "omfi:Long",
+        "bytes": 4,
+        "hex": "08000000",
+        "decodedValue": 8,
+        "count": 124
+      },
+      {
+        "descriptorClass": "CDCI",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "type": "omfi:Long",
+        "bytes": 4,
+        "hex": "0a000000",
+        "decodedValue": 10,
+        "count": 737
+      },
+      {
+        "descriptorClass": "CDCI",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "type": "omfi:Long",
+        "bytes": 4,
+        "hex": "0c000000",
+        "decodedValue": 12,
+        "count": 4
+      },
+      {
+        "descriptorClass": "CDCI",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "type": "omfi:Long",
+        "bytes": 4,
+        "hex": "fe000000",
+        "decodedValue": 254,
+        "count": 8
+      },
+      {
+        "descriptorClass": "MPGI",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "type": "omfi:Long",
+        "bytes": 4,
+        "hex": "08000000",
+        "decodedValue": 8,
+        "count": 8
+      },
+      {
+        "descriptorClass": "PCMA",
+        "property": "OMFI:MDAU:BitsPerSample",
+        "type": "omfi:Ushort",
+        "bytes": 2,
+        "hex": "1000",
+        "decodedValue": 16,
+        "count": 237
+      },
+      {
+        "descriptorClass": "PCMA",
+        "property": "OMFI:MDAU:BitsPerSample",
+        "type": "omfi:Ushort",
+        "bytes": 2,
+        "hex": "1800",
+        "decodedValue": 24,
+        "count": 1274
+      },
+      {
+        "descriptorClass": "RGBA",
+        "property": "OMFI:RGBA:PixelLayout",
+        "type": "omfi:VarLenBytes",
+        "bytes": 1,
+        "hex": "41",
+        "decodedValue": "41",
+        "count": 3
+      },
+      {
+        "descriptorClass": "RGBA",
+        "property": "OMFI:RGBA:PixelLayout",
+        "type": "omfi:VarLenBytes",
+        "bytes": 2,
+        "hex": "4100",
+        "decodedValue": "4100",
+        "count": 15
+      },
+      {
+        "descriptorClass": "RGBA",
+        "property": "OMFI:RGBA:PixelStructure",
+        "type": "omfi:VarLenBytes",
+        "bytes": 1,
+        "hex": "08",
+        "decodedValue": "08",
+        "count": 3
+      },
+      {
+        "descriptorClass": "RGBA",
+        "property": "OMFI:RGBA:PixelStructure",
+        "type": "omfi:VarLenBytes",
+        "bytes": 2,
+        "hex": "0800",
+        "decodedValue": "0800",
+        "count": 7
+      },
+      {
+        "descriptorClass": "RGBA",
+        "property": "OMFI:RGBA:PixelStructure",
+        "type": "omfi:VarLenBytes",
+        "bytes": 2,
+        "hex": "1000",
+        "decodedValue": "1000",
+        "count": 8
+      }
+    ],
+    "ownDepthSourceValueHistogram": [
+      {
+        "descriptorClass": "AIFD",
+        "source": "embedded Summary stored sample bits",
+        "storedBits": 24,
+        "count": 1
+      },
+      {
+        "descriptorClass": "CDCI",
+        "source": "CDCI:ComponentWidth",
+        "storedBits": 8,
+        "count": 124
+      },
+      {
+        "descriptorClass": "CDCI",
+        "source": "CDCI:ComponentWidth",
+        "storedBits": 10,
+        "count": 737
+      },
+      {
+        "descriptorClass": "CDCI",
+        "source": "CDCI:ComponentWidth",
+        "storedBits": 12,
+        "count": 4
+      },
+      {
+        "descriptorClass": "CDCI",
+        "source": "CDCI:ComponentWidth",
+        "storedBits": 254,
+        "count": 8
+      },
+      {
+        "descriptorClass": "MPGI",
+        "source": "CDCI:ComponentWidth",
+        "storedBits": 8,
+        "count": 8
+      },
+      {
+        "descriptorClass": "PCMA",
+        "source": "MDAU:BitsPerSample",
+        "storedBits": 16,
+        "count": 237
+      },
+      {
+        "descriptorClass": "PCMA",
+        "source": "MDAU:BitsPerSample",
+        "storedBits": 24,
+        "count": 1274
+      },
+      {
+        "descriptorClass": "RGBA",
+        "source": "RGBA:PixelLayout+PixelStructure uniform stored width",
+        "storedBits": 8,
+        "count": 10
+      },
+      {
+        "descriptorClass": "RGBA",
+        "source": "RGBA:PixelLayout+PixelStructure uniform stored width",
+        "storedBits": 16,
+        "count": 8
+      },
+      {
+        "descriptorClass": "WAVD",
+        "source": "embedded Summary stored sample bits",
+        "storedBits": 24,
+        "count": 1
+      }
+    ],
+    "ownScalarBitFieldStorageHistogram": [
+      {
+        "descriptorClass": "CDCI",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "declaredType": "omfi:Long",
+        "declaredBytes": 4,
+        "storage": "immediate TOC value word",
+        "declaredHex": "08000000",
+        "firstFourBytesAtValuePointerHex": "08000000",
+        "count": 124
+      },
+      {
+        "descriptorClass": "CDCI",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "declaredType": "omfi:Long",
+        "declaredBytes": 4,
+        "storage": "immediate TOC value word",
+        "declaredHex": "0a000000",
+        "firstFourBytesAtValuePointerHex": "0a000000",
+        "count": 737
+      },
+      {
+        "descriptorClass": "CDCI",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "declaredType": "omfi:Long",
+        "declaredBytes": 4,
+        "storage": "immediate TOC value word",
+        "declaredHex": "0c000000",
+        "firstFourBytesAtValuePointerHex": "0c000000",
+        "count": 4
+      },
+      {
+        "descriptorClass": "CDCI",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "declaredType": "omfi:Long",
+        "declaredBytes": 4,
+        "storage": "immediate TOC value word",
+        "declaredHex": "fe000000",
+        "firstFourBytesAtValuePointerHex": "fe000000",
+        "count": 8
+      },
+      {
+        "descriptorClass": "MPGI",
+        "property": "OMFI:CDCI:ComponentWidth",
+        "declaredType": "omfi:Long",
+        "declaredBytes": 4,
+        "storage": "immediate TOC value word",
+        "declaredHex": "08000000",
+        "firstFourBytesAtValuePointerHex": "08000000",
+        "count": 8
+      },
+      {
+        "descriptorClass": "PCMA",
+        "property": "OMFI:MDAU:BitsPerSample",
+        "declaredType": "omfi:Ushort",
+        "declaredBytes": 2,
+        "storage": "immediate TOC value word",
+        "declaredHex": "1000",
+        "firstFourBytesAtValuePointerHex": "10000000",
+        "count": 237
+      },
+      {
+        "descriptorClass": "PCMA",
+        "property": "OMFI:MDAU:BitsPerSample",
+        "declaredType": "omfi:Ushort",
+        "declaredBytes": 2,
+        "storage": "immediate TOC value word",
+        "declaredHex": "1800",
+        "firstFourBytesAtValuePointerHex": "18000000",
+        "count": 1274
+      }
+    ],
+    "specialCode254Groups": [
+      {
+        "descriptorClass": "CDCI",
+        "ownDepthSignature": {
+          "audioBits": null,
+          "componentBits": 254,
+          "rgbaLayout": null,
+          "rgbaStructure": null,
+          "summaryBits": null,
+          "waveExtensibleValidBits": null
+        },
+        "ownCodecContext": {
+          "OMFI:DIDD:Compression": [
+            "RI00"
+          ],
+          "OMFI:DIDD:DIDCompressMethod": [
+            "RI00"
+          ],
+          "OMFI:DIDD:DIDResolutionID": [
+            0
+          ],
+          "OMFI:DIDD:EssenceCompression": [
+            "0202010407030001060e2b340401010d"
+          ]
+        },
+        "count": 4
+      },
+      {
+        "descriptorClass": "CDCI",
+        "ownDepthSignature": {
+          "audioBits": null,
+          "componentBits": 254,
+          "rgbaLayout": null,
+          "rgbaStructure": null,
+          "summaryBits": null,
+          "waveExtensibleValidBits": null
+        },
+        "ownCodecContext": {
+          "OMFI:DIDD:Compression": [
+            "RI00"
+          ],
+          "OMFI:DIDD:DIDCompressMethod": [
+            "RI00"
+          ],
+          "OMFI:DIDD:DIDResolutionID": [
+            0
+          ],
+          "OMFI:DIDD:EssenceCompression": [
+            "0202010407030002060e2b340401010d"
+          ]
+        },
+        "count": 4
+      }
+    ],
+    "discoveredBitRelatedPropertyNamesEntireCorpus": [
+      "OMFI:CDCI:ComponentWidth",
+      "OMFI:MDAU:BitsPerSample",
+      "OMFI:RGBA:PixelLayout",
+      "OMFI:RGBA:PixelStructure"
+    ],
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "mdbSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+        "rawValueIndexSha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "mdbByteOrder": "little",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 29942,
+        "countsPerPmrFile": {
+          "pmrRows": 389,
+          "descriptorClass:RGBA": 10,
+          "RGBA:ownMDAUBitsPerSample:absent": 10,
+          "RGBA:ownCDCIComponentWidth:absent": 10,
+          "RGBA:ownRGBAParallelArrays:decodedParallelArrays": 10,
+          "RGBA:ownEmbeddedSummary:absent": 10,
+          "RGBA:fewerThanTwoIndependentOwnDepthSources": 10,
+          "descriptorClass:PCMA": 286,
+          "PCMA:ownMDAUBitsPerSample:positive": 286,
+          "PCMA:ownCDCIComponentWidth:absent": 286,
+          "PCMA:ownRGBAParallelArrays:absent": 286,
+          "PCMA:ownEmbeddedSummary:absent": 286,
+          "PCMA:fewerThanTwoIndependentOwnDepthSources": 286,
+          "descriptorClass:CDCI": 93,
+          "CDCI:ownMDAUBitsPerSample:absent": 93,
+          "CDCI:ownCDCIComponentWidth:positive": 93,
+          "CDCI:ownRGBAParallelArrays:absent": 93,
+          "CDCI:ownEmbeddedSummary:absent": 93,
+          "CDCI:fewerThanTwoIndependentOwnDepthSources": 93
+        },
+        "distinctOwnDescriptorObjects": 389
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "mdbSha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+        "rawValueIndexSha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "mdbByteOrder": "little",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 156745,
+        "countsPerPmrFile": {
+          "pmrRows": 686,
+          "descriptorClass:CDCI": 271,
+          "CDCI:ownMDAUBitsPerSample:absent": 271,
+          "CDCI:ownCDCIComponentWidth:positive": 271,
+          "CDCI:ownRGBAParallelArrays:absent": 271,
+          "CDCI:ownEmbeddedSummary:absent": 271,
+          "CDCI:fewerThanTwoIndependentOwnDepthSources": 271,
+          "descriptorClass:PCMA": 407,
+          "PCMA:ownMDAUBitsPerSample:positive": 407,
+          "PCMA:ownCDCIComponentWidth:absent": 407,
+          "PCMA:ownRGBAParallelArrays:absent": 407,
+          "PCMA:ownEmbeddedSummary:absent": 407,
+          "PCMA:fewerThanTwoIndependentOwnDepthSources": 407,
+          "descriptorClass:RGBA": 8,
+          "RGBA:ownMDAUBitsPerSample:absent": 8,
+          "RGBA:ownCDCIComponentWidth:absent": 8,
+          "RGBA:ownRGBAParallelArrays:decodedParallelArrays": 8,
+          "RGBA:ownEmbeddedSummary:absent": 8,
+          "RGBA:fewerThanTwoIndependentOwnDepthSources": 8
+        },
+        "distinctOwnDescriptorObjects": 686
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "mdbSha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+        "rawValueIndexSha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "mdbByteOrder": "little",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 113887,
+        "countsPerPmrFile": {
+          "pmrRows": 513,
+          "descriptorClass:CDCI": 193,
+          "CDCI:ownMDAUBitsPerSample:absent": 193,
+          "CDCI:ownCDCIComponentWidth:positive": 193,
+          "CDCI:ownRGBAParallelArrays:absent": 193,
+          "CDCI:ownEmbeddedSummary:absent": 193,
+          "CDCI:fewerThanTwoIndependentOwnDepthSources": 193,
+          "descriptorClass:PCMA": 320,
+          "PCMA:ownMDAUBitsPerSample:positive": 320,
+          "PCMA:ownCDCIComponentWidth:absent": 320,
+          "PCMA:ownRGBAParallelArrays:absent": 320,
+          "PCMA:ownEmbeddedSummary:absent": 320,
+          "PCMA:fewerThanTwoIndependentOwnDepthSources": 320
+        },
+        "distinctOwnDescriptorObjects": 513
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "mdbSha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+        "rawValueIndexSha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "mdbByteOrder": "little",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 107921,
+        "countsPerPmrFile": {
+          "pmrRows": 463,
+          "descriptorClass:CDCI": 205,
+          "CDCI:ownMDAUBitsPerSample:absent": 205,
+          "CDCI:ownCDCIComponentWidth:positive": 205,
+          "CDCI:ownRGBAParallelArrays:absent": 205,
+          "CDCI:ownEmbeddedSummary:absent": 205,
+          "CDCI:fewerThanTwoIndependentOwnDepthSources": 205,
+          "descriptorClass:PCMA": 258,
+          "PCMA:ownMDAUBitsPerSample:positive": 258,
+          "PCMA:ownCDCIComponentWidth:absent": 258,
+          "PCMA:ownRGBAParallelArrays:absent": 258,
+          "PCMA:ownEmbeddedSummary:absent": 258,
+          "PCMA:fewerThanTwoIndependentOwnDepthSources": 258
+        },
+        "distinctOwnDescriptorObjects": 463
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "mdbSha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+        "rawValueIndexSha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "mdbByteOrder": "little",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 24062,
+        "countsPerPmrFile": {
+          "pmrRows": 359,
+          "descriptorClass:CDCI": 111,
+          "CDCI:ownMDAUBitsPerSample:absent": 111,
+          "CDCI:ownCDCIComponentWidth:positive": 111,
+          "CDCI:ownRGBAParallelArrays:absent": 111,
+          "CDCI:ownEmbeddedSummary:absent": 111,
+          "CDCI:fewerThanTwoIndependentOwnDepthSources": 111,
+          "descriptorClass:PCMA": 240,
+          "PCMA:ownMDAUBitsPerSample:positive": 240,
+          "PCMA:ownCDCIComponentWidth:absent": 240,
+          "PCMA:ownRGBAParallelArrays:absent": 240,
+          "PCMA:ownEmbeddedSummary:absent": 240,
+          "PCMA:fewerThanTwoIndependentOwnDepthSources": 240,
+          "descriptorClass:MPGI": 8,
+          "MPGI:ownMDAUBitsPerSample:absent": 8,
+          "MPGI:ownCDCIComponentWidth:positive": 8,
+          "MPGI:ownRGBAParallelArrays:absent": 8,
+          "MPGI:ownEmbeddedSummary:absent": 8,
+          "MPGI:fewerThanTwoIndependentOwnDepthSources": 8
+        },
+        "distinctOwnDescriptorObjects": 359
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "mdbSha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/shared-OMFI MediaFiles-values.json",
+        "rawValueIndexSha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "mdbByteOrder": "little",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 133,
+        "countsPerPmrFile": {
+          "pmrRows": 2,
+          "descriptorClass:WAVD": 1,
+          "WAVD:ownMDAUBitsPerSample:absent": 1,
+          "WAVD:ownCDCIComponentWidth:absent": 1,
+          "WAVD:ownRGBAParallelArrays:absent": 1,
+          "WAVD:ownEmbeddedSummary:decoded": 1,
+          "WAVD:fewerThanTwoIndependentOwnDepthSources": 1,
+          "descriptorClass:AIFD": 1,
+          "AIFD:ownMDAUBitsPerSample:absent": 1,
+          "AIFD:ownCDCIComponentWidth:absent": 1,
+          "AIFD:ownRGBAParallelArrays:absent": 1,
+          "AIFD:ownEmbeddedSummary:decoded": 1,
+          "AIFD:fewerThanTwoIndependentOwnDepthSources": 1
+        },
+        "distinctOwnDescriptorObjects": 2
+      }
+    ],
+    "representatives": [
+      {
+        "fileMobId": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64",
+        "masterMobId": "060a2b340101010501010f1013000000d97717225586059099ba34363bcdaf64",
+        "fileObject": 93780,
+        "masterObject": 93810,
+        "descriptorObject": 93779,
+        "descriptorClass": "RGBA",
+        "pmrRecordByteRange": [
+          48246,
+          126
+        ],
+        "pmrVersion": 16,
+        "ownDepthSources": {
+          "ownMDAUBitsPerSample": {
+            "state": "absent"
+          },
+          "ownCDCIComponentWidth": {
+            "state": "absent"
+          },
+          "ownRGBAParallelArrays": {
+            "state": "decodedParallelArrays",
+            "layoutHex": "4100",
+            "structureHex": "0800",
+            "entries": [
+              {
+                "componentCode": 65,
+                "componentCharacter": "A",
+                "storedBits": 8
+              }
+            ],
+            "zeroTerminated": true,
+            "uniformStoredComponentBits": 8,
+            "alphaOnlyLayout": true
+          },
+          "ownEmbeddedSummary": {
+            "state": "absent"
+          }
+        },
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "mdbSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "fileMobIdProperties": [
+          {
+            "object": 93780,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                1394461,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                5130688,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64"
+          },
+          {
+            "object": 93780,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                1394506,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                5130808,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64"
+          }
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 93780,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                1394498,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                5130760,
+                24
+              ]
+            ],
+            "hex": "536e010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 93779,
+            "propertyName": "OMFI:DIDD:DIDCompressMethod",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                5129236,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                5129224,
+                24
+              ]
+            ],
+            "hex": "4e4f4e45",
+            "decodedValueForContext": "NONE"
+          },
+          {
+            "object": 93779,
+            "propertyName": "OMFI:DIDD:DIDResolutionID",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                5129260,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                5129248,
+                24
+              ]
+            ],
+            "hex": "51080000",
+            "decodedValueForContext": 2129
+          },
+          {
+            "object": 93779,
+            "propertyName": "OMFI:DIDD:Compression",
+            "typeName": "omfi:String",
+            "length": 5,
+            "ranges": [
+              [
+                1394352,
+                5
+              ]
+            ],
+            "tocRanges": [
+              [
+                5129296,
+                24
+              ]
+            ],
+            "hex": "4e4f4e4500",
+            "decodedValueForContext": "NONE"
+          },
+          {
+            "object": 93779,
+            "propertyName": "OMFI:RGBA:PixelLayout",
+            "typeName": "omfi:VarLenBytes",
+            "length": 2,
+            "ranges": [
+              [
+                5130172,
+                2
+              ]
+            ],
+            "tocRanges": [
+              [
+                5130160,
+                24
+              ]
+            ],
+            "hex": "4100",
+            "decodedValueForContext": "4100"
+          },
+          {
+            "object": 93779,
+            "propertyName": "OMFI:RGBA:PixelStructure",
+            "typeName": "omfi:VarLenBytes",
+            "length": 2,
+            "ranges": [
+              [
+                5130196,
+                2
+              ]
+            ],
+            "tocRanges": [
+              [
+                5130184,
+                24
+              ]
+            ],
+            "hex": "0800",
+            "decodedValueForContext": "0800"
+          }
+        ]
+      },
+      {
+        "fileMobId": "060a2b340101010501010f1013000000782a3120258505911bcb34363bcdaf64",
+        "masterMobId": "060a2b340101010501010f1013000000702a312025850591436534363bcdaf64",
+        "fileObject": 92287,
+        "masterObject": 92211,
+        "descriptorObject": 92286,
+        "descriptorClass": "PCMA",
+        "pmrRecordByteRange": [
+          48372,
+          126
+        ],
+        "pmrVersion": 16,
+        "ownDepthSources": {
+          "ownMDAUBitsPerSample": {
+            "state": "positive",
+            "value": 24,
+            "byteOrder": "little"
+          },
+          "ownCDCIComponentWidth": {
+            "state": "absent"
+          },
+          "ownRGBAParallelArrays": {
+            "state": "absent"
+          },
+          "ownEmbeddedSummary": {
+            "state": "absent"
+          }
+        },
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "mdbSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "fileMobIdProperties": [
+          {
+            "object": 92287,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                1341118,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                4866088,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000782a3120258505911bcb34363bcdaf64"
+          },
+          {
+            "object": 92287,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                1341163,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                4866208,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000782a3120258505911bcb34363bcdaf64"
+          }
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 92287,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                1341155,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                4866160,
+                24
+              ]
+            ],
+            "hex": "7e68010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 92286,
+            "propertyName": "OMFI:MDAU:BitsPerSample",
+            "typeName": "omfi:Ushort",
+            "length": 2,
+            "ranges": [
+              [
+                4865332,
+                2
+              ]
+            ],
+            "tocRanges": [
+              [
+                4865320,
+                24
+              ]
+            ],
+            "hex": "1800",
+            "decodedValueForContext": 24,
+            "storageContext": [
+              {
+                "storage": "immediate TOC value word",
+                "tocByteRange": [
+                  4865320,
+                  24
+                ],
+                "tocHex": "7e68010049070100b3000100180000000200000001000100",
+                "flags": 1,
+                "declaredValueByteRange": [
+                  4865332,
+                  2
+                ],
+                "firstFourBytesAtValuePointerHex": "18000000",
+                "firstFourBytesUnsignedLE32": 24
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "fileMobId": "060a2b340101010101010f0013000000a8fcc55bf3e3a805060e2b347f7f2a80",
+        "masterMobId": "060a2b340101010101010f0013000000a8fcc55bf2e3a805060e2b347f7f2a80",
+        "fileObject": 81352,
+        "masterObject": 81330,
+        "descriptorObject": 81351,
+        "descriptorClass": "CDCI",
+        "pmrRecordByteRange": [
+          49632,
+          126
+        ],
+        "pmrVersion": 16,
+        "ownDepthSources": {
+          "ownMDAUBitsPerSample": {
+            "state": "absent"
+          },
+          "ownCDCIComponentWidth": {
+            "state": "positive",
+            "value": 8,
+            "byteOrder": "little"
+          },
+          "ownRGBAParallelArrays": {
+            "state": "absent"
+          },
+          "ownEmbeddedSummary": {
+            "state": "absent"
+          }
+        },
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "mdbSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "fileMobIdProperties": [
+          {
+            "object": 81352,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 12,
+            "ranges": [
+              [
+                837531,
+                12
+              ]
+            ],
+            "tocRanges": [
+              [
+                3278392,
+                24
+              ]
+            ],
+            "hex": "2a000000a8fcc55bf3e3a805"
+          },
+          {
+            "object": 81352,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 12,
+            "ranges": [
+              [
+                837556,
+                12
+              ]
+            ],
+            "tocRanges": [
+              [
+                3278512,
+                24
+              ]
+            ],
+            "hex": "2a000000a8fcc55bf3e3a805"
+          }
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 81352,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                837548,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                3278464,
+                24
+              ]
+            ],
+            "hex": "c73d010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 81351,
+            "propertyName": "OMFI:DIDD:DIDCompressMethod",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                3276748,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                3276736,
+                24
+              ]
+            ],
+            "hex": "41564844",
+            "decodedValueForContext": "AVHD"
+          },
+          {
+            "object": 81351,
+            "propertyName": "OMFI:DIDD:DIDResolutionID",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                3276772,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                3276760,
+                24
+              ]
+            ],
+            "hex": "e5040000",
+            "decodedValueForContext": 1253
+          },
+          {
+            "object": 81351,
+            "propertyName": "OMFI:DIDD:Compression",
+            "typeName": "omfi:String",
+            "length": 5,
+            "ranges": [
+              [
+                837466,
+                5
+              ]
+            ],
+            "tocRanges": [
+              [
+                3276808,
+                24
+              ]
+            ],
+            "hex": "4156484400",
+            "decodedValueForContext": "AVHD"
+          },
+          {
+            "object": 81351,
+            "propertyName": "OMFI:CDCI:ComponentWidth",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                3277900,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                3277888,
+                24
+              ]
+            ],
+            "hex": "08000000",
+            "decodedValueForContext": 8,
+            "storageContext": [
+              {
+                "storage": "immediate TOC value word",
+                "tocByteRange": [
+                  3277888,
+                  24
+                ],
+                "tocHex": "c73d01001909010068000100080000000400000001000100",
+                "flags": 1,
+                "declaredValueByteRange": [
+                  3277900,
+                  4
+                ],
+                "firstFourBytesAtValuePointerHex": "08000000",
+                "firstFourBytesUnsignedLE32": 8
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "fileMobId": "060a2b340101010101010f0013000000653a555b1e5c6e0a060e2b347f7f2a80",
+        "masterMobId": "060a2b340101010101010f0013000000653a555b1a5c6e0a060e2b347f7f2a80",
+        "fileObject": 74253,
+        "masterObject": 74236,
+        "descriptorObject": 74252,
+        "descriptorClass": "PCMA",
+        "pmrRecordByteRange": [
+          60594,
+          124
+        ],
+        "pmrVersion": 16,
+        "ownDepthSources": {
+          "ownMDAUBitsPerSample": {
+            "state": "positive",
+            "value": 16,
+            "byteOrder": "little"
+          },
+          "ownCDCIComponentWidth": {
+            "state": "absent"
+          },
+          "ownRGBAParallelArrays": {
+            "state": "absent"
+          },
+          "ownEmbeddedSummary": {
+            "state": "absent"
+          }
+        },
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "mdbSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "fileMobIdProperties": [
+          {
+            "object": 74253,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 12,
+            "ranges": [
+              [
+                466208,
+                12
+              ]
+            ],
+            "tocRanges": [
+              [
+                2281504,
+                24
+              ]
+            ],
+            "hex": "2a000000653a555b1e5c6e0a"
+          },
+          {
+            "object": 74253,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 12,
+            "ranges": [
+              [
+                466233,
+                12
+              ]
+            ],
+            "tocRanges": [
+              [
+                2281624,
+                24
+              ]
+            ],
+            "hex": "2a000000653a555b1e5c6e0a"
+          }
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 74253,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                466225,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                2281576,
+                24
+              ]
+            ],
+            "hex": "0c22010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 74252,
+            "propertyName": "OMFI:MDAU:BitsPerSample",
+            "typeName": "omfi:Ushort",
+            "length": 2,
+            "ranges": [
+              [
+                2280748,
+                2
+              ]
+            ],
+            "tocRanges": [
+              [
+                2280736,
+                24
+              ]
+            ],
+            "hex": "1000",
+            "decodedValueForContext": 16,
+            "storageContext": [
+              {
+                "storage": "immediate TOC value word",
+                "tocByteRange": [
+                  2280736,
+                  24
+                ],
+                "tocHex": "0c22010049070100b3000100100000000200000001000100",
+                "flags": 1,
+                "declaredValueByteRange": [
+                  2280748,
+                  2
+                ],
+                "firstFourBytesAtValuePointerHex": "10000000",
+                "firstFourBytesUnsignedLE32": 16
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "fileMobId": "060a2b340101010501010f1013000000aa9dea19258505912ac134363bcdaf64",
+        "masterMobId": "060a2b340101010501010f10130000008d18ea192585059178c034363bcdaf64",
+        "fileObject": 92811,
+        "masterObject": 92509,
+        "descriptorObject": 92810,
+        "descriptorClass": "RGBA",
+        "pmrRecordByteRange": [
+          77473,
+          125
+        ],
+        "pmrVersion": 16,
+        "ownDepthSources": {
+          "ownMDAUBitsPerSample": {
+            "state": "absent"
+          },
+          "ownCDCIComponentWidth": {
+            "state": "absent"
+          },
+          "ownRGBAParallelArrays": {
+            "state": "decodedParallelArrays",
+            "layoutHex": "41",
+            "structureHex": "08",
+            "entries": [
+              {
+                "componentCode": 65,
+                "componentCharacter": "A",
+                "storedBits": 8
+              }
+            ],
+            "zeroTerminated": false,
+            "uniformStoredComponentBits": 8,
+            "alphaOnlyLayout": true
+          },
+          "ownEmbeddedSummary": {
+            "state": "absent"
+          }
+        },
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "mdbSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "fileMobIdProperties": [
+          {
+            "object": 92811,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                1362988,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                4968160,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000aa9dea19258505912ac134363bcdaf64"
+          },
+          {
+            "object": 92811,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                1363033,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                4968280,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000aa9dea19258505912ac134363bcdaf64"
+          }
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 92811,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                1363025,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                4968232,
+                24
+              ]
+            ],
+            "hex": "8a6a010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 92810,
+            "propertyName": "OMFI:DIDD:DIDCompressMethod",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                4966708,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                4966696,
+                24
+              ]
+            ],
+            "hex": "4e4f4e45",
+            "decodedValueForContext": "NONE"
+          },
+          {
+            "object": 92810,
+            "propertyName": "OMFI:DIDD:DIDResolutionID",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                4966732,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                4966720,
+                24
+              ]
+            ],
+            "hex": "51080000",
+            "decodedValueForContext": 2129
+          },
+          {
+            "object": 92810,
+            "propertyName": "OMFI:DIDD:Compression",
+            "typeName": "omfi:String",
+            "length": 5,
+            "ranges": [
+              [
+                1362880,
+                5
+              ]
+            ],
+            "tocRanges": [
+              [
+                4966768,
+                24
+              ]
+            ],
+            "hex": "4e4f4e4500",
+            "decodedValueForContext": "NONE"
+          },
+          {
+            "object": 92810,
+            "propertyName": "OMFI:RGBA:PixelLayout",
+            "typeName": "omfi:VarLenBytes",
+            "length": 1,
+            "ranges": [
+              [
+                4967644,
+                1
+              ]
+            ],
+            "tocRanges": [
+              [
+                4967632,
+                24
+              ]
+            ],
+            "hex": "41",
+            "decodedValueForContext": "41"
+          },
+          {
+            "object": 92810,
+            "propertyName": "OMFI:RGBA:PixelStructure",
+            "typeName": "omfi:VarLenBytes",
+            "length": 1,
+            "ranges": [
+              [
+                4967668,
+                1
+              ]
+            ],
+            "tocRanges": [
+              [
+                4967656,
+                24
+              ]
+            ],
+            "hex": "08",
+            "decodedValueForContext": "08"
+          }
+        ]
+      },
+      {
+        "fileMobId": "060a2b340101010501010f1013000000f17c57157311069695617c57583610fa",
+        "masterMobId": "060a2b340101010501010f10130000005d6b2b157311069622b57c57583610fa",
+        "fileObject": 199790,
+        "masterObject": 166574,
+        "descriptorObject": 199789,
+        "descriptorClass": "CDCI",
+        "pmrRecordByteRange": [
+          81654,
+          121
+        ],
+        "pmrVersion": 16,
+        "ownDepthSources": {
+          "ownMDAUBitsPerSample": {
+            "state": "absent"
+          },
+          "ownCDCIComponentWidth": {
+            "state": "positive",
+            "value": 10,
+            "byteOrder": "little"
+          },
+          "ownRGBAParallelArrays": {
+            "state": "absent"
+          },
+          "ownEmbeddedSummary": {
+            "state": "absent"
+          }
+        },
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "mdbSha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "fileMobIdProperties": [
+          {
+            "object": 199790,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                3708121,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                21679776,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000f17c57157311069695617c57583610fa"
+          },
+          {
+            "object": 199790,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                3708166,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                21679896,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000f17c57157311069695617c57583610fa"
+          }
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 199790,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                3708158,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                21679848,
+                24
+              ]
+            ],
+            "hex": "6d0c030000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 199789,
+            "propertyName": "OMFI:DIDD:DIDCompressMethod",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                21678276,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                21678264,
+                24
+              ]
+            ],
+            "hex": "41564844",
+            "decodedValueForContext": "AVHD"
+          },
+          {
+            "object": 199789,
+            "propertyName": "OMFI:DIDD:DIDResolutionID",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                21678300,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                21678288,
+                24
+              ]
+            ],
+            "hex": "d3040000",
+            "decodedValueForContext": 1235
+          },
+          {
+            "object": 199789,
+            "propertyName": "OMFI:DIDD:Compression",
+            "typeName": "omfi:String",
+            "length": 5,
+            "ranges": [
+              [
+                3707996,
+                5
+              ]
+            ],
+            "tocRanges": [
+              [
+                21678336,
+                24
+              ]
+            ],
+            "hex": "4156484400",
+            "decodedValueForContext": "AVHD"
+          },
+          {
+            "object": 199789,
+            "propertyName": "OMFI:CDCI:ComponentWidth",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                21679284,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                21679272,
+                24
+              ]
+            ],
+            "hex": "0a000000",
+            "decodedValueForContext": 10,
+            "storageContext": [
+              {
+                "storage": "immediate TOC value word",
+                "tocByteRange": [
+                  21679272,
+                  24
+                ],
+                "tocHex": "6d0c030019090100680001000a0000000400000001000100",
+                "flags": 1,
+                "declaredValueByteRange": [
+                  21679284,
+                  4
+                ],
+                "firstFourBytesAtValuePointerHex": "0a000000",
+                "firstFourBytesUnsignedLE32": 10
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "fileMobId": "060a2b340101010501010f1013000000dc16621573110696f5657c57583610fa",
+        "masterMobId": "060a2b340101010501010f10130000007b6c2b1573110696dc687c57583610fa",
+        "fileObject": 196046,
+        "masterObject": 174035,
+        "descriptorObject": 196045,
+        "descriptorClass": "RGBA",
+        "pmrRecordByteRange": [
+          84921,
+          121
+        ],
+        "pmrVersion": 16,
+        "ownDepthSources": {
+          "ownMDAUBitsPerSample": {
+            "state": "absent"
+          },
+          "ownCDCIComponentWidth": {
+            "state": "absent"
+          },
+          "ownRGBAParallelArrays": {
+            "state": "decodedParallelArrays",
+            "layoutHex": "4100",
+            "structureHex": "1000",
+            "entries": [
+              {
+                "componentCode": 65,
+                "componentCharacter": "A",
+                "storedBits": 16
+              }
+            ],
+            "zeroTerminated": true,
+            "uniformStoredComponentBits": 16,
+            "alphaOnlyLayout": true
+          },
+          "ownEmbeddedSummary": {
+            "state": "absent"
+          }
+        },
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "mdbSha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "fileMobIdProperties": [
+          {
+            "object": 196046,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                3591416,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                21200472,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000dc16621573110696f5657c57583610fa"
+          },
+          {
+            "object": 196046,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                3591461,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                21200592,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000dc16621573110696f5657c57583610fa"
+          }
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 196046,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                3591453,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                21200544,
+                24
+              ]
+            ],
+            "hex": "cdfd020000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 196045,
+            "propertyName": "OMFI:DIDD:DIDCompressMethod",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                21199068,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                21199056,
+                24
+              ]
+            ],
+            "hex": "43524c45",
+            "decodedValueForContext": "CRLE"
+          },
+          {
+            "object": 196045,
+            "propertyName": "OMFI:DIDD:DIDResolutionID",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                21199092,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                21199080,
+                24
+              ]
+            ],
+            "hex": "00000000",
+            "decodedValueForContext": 0
+          },
+          {
+            "object": 196045,
+            "propertyName": "OMFI:DIDD:Compression",
+            "typeName": "omfi:String",
+            "length": 5,
+            "ranges": [
+              [
+                3591291,
+                5
+              ]
+            ],
+            "tocRanges": [
+              [
+                21199128,
+                24
+              ]
+            ],
+            "hex": "43524c4500",
+            "decodedValueForContext": "CRLE"
+          },
+          {
+            "object": 196045,
+            "propertyName": "OMFI:DIDD:EssenceCompression",
+            "typeName": "omfi:GUID",
+            "length": 16,
+            "ranges": [
+              [
+                3591328,
+                16
+              ]
+            ],
+            "tocRanges": [
+              [
+                21199920,
+                24
+              ]
+            ],
+            "hex": "0202010407030001060e2b340401010d",
+            "decodedValueForContext": "0202010407030001060e2b340401010d"
+          },
+          {
+            "object": 196045,
+            "propertyName": "OMFI:RGBA:PixelLayout",
+            "typeName": "omfi:VarLenBytes",
+            "length": 2,
+            "ranges": [
+              [
+                21200004,
+                2
+              ]
+            ],
+            "tocRanges": [
+              [
+                21199992,
+                24
+              ]
+            ],
+            "hex": "4100",
+            "decodedValueForContext": "4100"
+          },
+          {
+            "object": 196045,
+            "propertyName": "OMFI:RGBA:PixelStructure",
+            "typeName": "omfi:VarLenBytes",
+            "length": 2,
+            "ranges": [
+              [
+                21200028,
+                2
+              ]
+            ],
+            "tocRanges": [
+              [
+                21200016,
+                24
+              ]
+            ],
+            "hex": "1000",
+            "decodedValueForContext": "1000"
+          }
+        ]
+      },
+      {
+        "fileMobId": "060a2b340101010501010f1013000000baaa99ce601206903c1346fc807fda72",
+        "masterMobId": "060a2b340101010501010f1013000000b2aa99ce60120690f08e46fc807fda72",
+        "fileObject": 79284,
+        "masterObject": 79204,
+        "descriptorObject": 79283,
+        "descriptorClass": "CDCI",
+        "pmrRecordByteRange": [
+          44366,
+          122
+        ],
+        "pmrVersion": 16,
+        "ownDepthSources": {
+          "ownMDAUBitsPerSample": {
+            "state": "absent"
+          },
+          "ownCDCIComponentWidth": {
+            "state": "positive",
+            "value": 254,
+            "byteOrder": "little"
+          },
+          "ownRGBAParallelArrays": {
+            "state": "absent"
+          },
+          "ownEmbeddedSummary": {
+            "state": "absent"
+          }
+        },
+        "database": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "mdbSha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "fileMobIdProperties": [
+          {
+            "object": 79284,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                305756,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                2312528,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000baaa99ce601206903c1346fc807fda72"
+          },
+          {
+            "object": 79284,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                305801,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                2312648,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000baaa99ce601206903c1346fc807fda72"
+          }
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 79284,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                305793,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                2312600,
+                24
+              ]
+            ],
+            "hex": "b335010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 79283,
+            "propertyName": "OMFI:DIDD:DIDCompressMethod",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                2311028,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2311016,
+                24
+              ]
+            ],
+            "hex": "52493030",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 79283,
+            "propertyName": "OMFI:DIDD:DIDResolutionID",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                2311052,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2311040,
+                24
+              ]
+            ],
+            "hex": "00000000",
+            "decodedValueForContext": 0
+          },
+          {
+            "object": 79283,
+            "propertyName": "OMFI:DIDD:Compression",
+            "typeName": "omfi:String",
+            "length": 5,
+            "ranges": [
+              [
+                305659,
+                5
+              ]
+            ],
+            "tocRanges": [
+              [
+                2311088,
+                24
+              ]
+            ],
+            "hex": "5249303000",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 79283,
+            "propertyName": "OMFI:DIDD:EssenceCompression",
+            "typeName": "omfi:GUID",
+            "length": 16,
+            "ranges": [
+              [
+                305696,
+                16
+              ]
+            ],
+            "tocRanges": [
+              [
+                2311904,
+                24
+              ]
+            ],
+            "hex": "0202010407030002060e2b340401010d",
+            "decodedValueForContext": "0202010407030002060e2b340401010d"
+          },
+          {
+            "object": 79283,
+            "propertyName": "OMFI:CDCI:ComponentWidth",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                2312036,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2312024,
+                24
+              ]
+            ],
+            "hex": "fe000000",
+            "decodedValueForContext": 254,
+            "storageContext": [
+              {
+                "storage": "immediate TOC value word",
+                "tocByteRange": [
+                  2312024,
+                  24
+                ],
+                "tocHex": "b33501001909010068000100fe0000000400000001000100",
+                "flags": 1,
+                "declaredValueByteRange": [
+                  2312036,
+                  4
+                ],
+                "firstFourBytesAtValuePointerHex": "fe000000",
+                "firstFourBytesUnsignedLE32": 254
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "fileMobId": "060a2b340101010501010f1013000000fd06cd19591206905a1846fc807fda72",
+        "masterMobId": "060a2b340101010501010f1013000000f606cd1959120690a51846fc807fda72",
+        "fileObject": 75356,
+        "masterObject": 75434,
+        "descriptorObject": 75355,
+        "descriptorClass": "MPGI",
+        "pmrRecordByteRange": [
+          56659,
+          122
+        ],
+        "pmrVersion": 16,
+        "ownDepthSources": {
+          "ownMDAUBitsPerSample": {
+            "state": "absent"
+          },
+          "ownCDCIComponentWidth": {
+            "state": "positive",
+            "value": 8,
+            "byteOrder": "little"
+          },
+          "ownRGBAParallelArrays": {
+            "state": "absent"
+          },
+          "ownEmbeddedSummary": {
+            "state": "absent"
+          }
+        },
+        "database": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "mdbSha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "fileMobIdProperties": [
+          {
+            "object": 75356,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                199269,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                1708256,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000fd06cd19591206905a1846fc807fda72"
+          },
+          {
+            "object": 75356,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                199314,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                1708376,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000fd06cd19591206905a1846fc807fda72"
+          }
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 75356,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                199306,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                1708328,
+                24
+              ]
+            ],
+            "hex": "5b26010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 75355,
+            "propertyName": "OMFI:DIDD:DIDCompressMethod",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                1706516,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                1706504,
+                24
+              ]
+            ],
+            "hex": "4d504732",
+            "decodedValueForContext": "MPG2"
+          },
+          {
+            "object": 75355,
+            "propertyName": "OMFI:DIDD:DIDResolutionID",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                1706540,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                1706528,
+                24
+              ]
+            ],
+            "hex": "eb0f0000",
+            "decodedValueForContext": 4075
+          },
+          {
+            "object": 75355,
+            "propertyName": "OMFI:DIDD:Compression",
+            "typeName": "omfi:String",
+            "length": 5,
+            "ranges": [
+              [
+                199164,
+                5
+              ]
+            ],
+            "tocRanges": [
+              [
+                1706576,
+                24
+              ]
+            ],
+            "hex": "4d50473200",
+            "decodedValueForContext": "MPG2"
+          },
+          {
+            "object": 75355,
+            "propertyName": "OMFI:DIDD:EssenceCompression",
+            "typeName": "omfi:GUID",
+            "length": 16,
+            "ranges": [
+              [
+                199201,
+                16
+              ]
+            ],
+            "tocRanges": [
+              [
+                1707368,
+                24
+              ]
+            ],
+            "hex": "0202010404010003060e2b3404010103",
+            "decodedValueForContext": "0202010404010003060e2b3404010103"
+          },
+          {
+            "object": 75355,
+            "propertyName": "OMFI:CDCI:ComponentWidth",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                1707500,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                1707488,
+                24
+              ]
+            ],
+            "hex": "08000000",
+            "decodedValueForContext": 8,
+            "storageContext": [
+              {
+                "storage": "immediate TOC value word",
+                "tocByteRange": [
+                  1707488,
+                  24
+                ],
+                "tocHex": "5b2601001909010068000100080000000400000001000100",
+                "flags": 1,
+                "declaredValueByteRange": [
+                  1707500,
+                  4
+                ],
+                "firstFourBytesAtValuePointerHex": "08000000",
+                "firstFourBytesUnsignedLE32": 8
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "fileMobId": "060a2b340101010501010f101300000013a4a61c55120690661946fc807fda72",
+        "masterMobId": "060a2b340101010501010f101300000000a4a61c55120690eca746fc807fda72",
+        "fileObject": 82108,
+        "masterObject": 82258,
+        "descriptorObject": 82107,
+        "descriptorClass": "CDCI",
+        "pmrRecordByteRange": [
+          65571,
+          122
+        ],
+        "pmrVersion": 16,
+        "ownDepthSources": {
+          "ownMDAUBitsPerSample": {
+            "state": "absent"
+          },
+          "ownCDCIComponentWidth": {
+            "state": "positive",
+            "value": 12,
+            "byteOrder": "little"
+          },
+          "ownRGBAParallelArrays": {
+            "state": "absent"
+          },
+          "ownEmbeddedSummary": {
+            "state": "absent"
+          }
+        },
+        "database": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "mdbSha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "fileMobIdProperties": [
+          {
+            "object": 82108,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                382624,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                2749160,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f101300000013a4a61c55120690661946fc807fda72"
+          },
+          {
+            "object": 82108,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                382669,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                2749280,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f101300000013a4a61c55120690661946fc807fda72"
+          }
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 82108,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                382661,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                2749232,
+                24
+              ]
+            ],
+            "hex": "bb40010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 82107,
+            "propertyName": "OMFI:DIDD:DIDCompressMethod",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                2747660,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2747648,
+                24
+              ]
+            ],
+            "hex": "52493030",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 82107,
+            "propertyName": "OMFI:DIDD:DIDResolutionID",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                2747684,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2747672,
+                24
+              ]
+            ],
+            "hex": "00000000",
+            "decodedValueForContext": 0
+          },
+          {
+            "object": 82107,
+            "propertyName": "OMFI:DIDD:Compression",
+            "typeName": "omfi:String",
+            "length": 5,
+            "ranges": [
+              [
+                382527,
+                5
+              ]
+            ],
+            "tocRanges": [
+              [
+                2747720,
+                24
+              ]
+            ],
+            "hex": "5249303000",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 82107,
+            "propertyName": "OMFI:DIDD:EssenceCompression",
+            "typeName": "omfi:GUID",
+            "length": 16,
+            "ranges": [
+              [
+                382564,
+                16
+              ]
+            ],
+            "tocRanges": [
+              [
+                2748536,
+                24
+              ]
+            ],
+            "hex": "0202010407030001060e2b340401010d",
+            "decodedValueForContext": "0202010407030001060e2b340401010d"
+          },
+          {
+            "object": 82107,
+            "propertyName": "OMFI:CDCI:ComponentWidth",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                2748668,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2748656,
+                24
+              ]
+            ],
+            "hex": "0c000000",
+            "decodedValueForContext": 12,
+            "storageContext": [
+              {
+                "storage": "immediate TOC value word",
+                "tocByteRange": [
+                  2748656,
+                  24
+                ],
+                "tocHex": "bb40010019090100680001000c0000000400000001000100",
+                "flags": 1,
+                "declaredValueByteRange": [
+                  2748668,
+                  4
+                ],
+                "firstFourBytesAtValuePointerHex": "0c000000",
+                "firstFourBytesUnsignedLE32": 12
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "fileMobId": "060a2b340101010101010f00130000007429976a70397047060e2b347f7f2a80",
+        "masterMobId": "060a2b340101010101010f00130000007429976a4e397047060e2b347f7f2a80",
+        "fileObject": 68071,
+        "masterObject": 68062,
+        "descriptorObject": 68070,
+        "descriptorClass": "WAVD",
+        "pmrRecordByteRange": [
+          156,
+          118
+        ],
+        "pmrVersion": 16,
+        "ownDepthSources": {
+          "ownMDAUBitsPerSample": {
+            "state": "absent"
+          },
+          "ownCDCIComponentWidth": {
+            "state": "absent"
+          },
+          "ownRGBAParallelArrays": {
+            "state": "absent"
+          },
+          "ownEmbeddedSummary": {
+            "state": "decoded",
+            "container": "RIFF",
+            "formType": "WAVE",
+            "byteOrder": "little",
+            "summaryBytes": 4152,
+            "chunksVisitedThroughDepth": [
+              {
+                "tag": "bext",
+                "summaryOffset": 12,
+                "declaredPayloadBytes": 604
+              },
+              {
+                "tag": "fill",
+                "summaryOffset": 624,
+                "declaredPayloadBytes": 3432
+              },
+              {
+                "tag": "fmt ",
+                "summaryOffset": 4064,
+                "declaredPayloadBytes": 16
+              }
+            ],
+            "depthChunkSummaryByteRange": [
+              4064,
+              24
+            ],
+            "depthChunkMdbByteRanges": [
+              [
+                9166,
+                24
+              ]
+            ],
+            "depthChunkHex": "666d7420100000000100010080bb00008032020003001800",
+            "bitsFieldSummaryByteRange": [
+              4086,
+              2
+            ],
+            "bitsFieldMdbByteRanges": [
+              [
+                9188,
+                2
+              ]
+            ],
+            "bitsFieldHex": "1800",
+            "storedBits": 24,
+            "formatTag": 1,
+            "channels": 1,
+            "sampleRateHzForContextOnly": 48000,
+            "averageBytesPerSecond": 144000,
+            "blockAlignment": 3,
+            "containerBitsPerSample": 24,
+            "waveFormatExtensible": false,
+            "validBitsPerSample": null
+          }
+        },
+        "database": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "mdbSha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "fileMobIdProperties": [
+          {
+            "object": 68071,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 12,
+            "ranges": [
+              [
+                9280,
+                12
+              ]
+            ],
+            "tocRanges": [
+              [
+                53096,
+                24
+              ]
+            ],
+            "hex": "2a0000007429976a70397047"
+          },
+          {
+            "object": 68071,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 12,
+            "ranges": [
+              [
+                9305,
+                12
+              ]
+            ],
+            "tocRanges": [
+              [
+                53216,
+                24
+              ]
+            ],
+            "hex": "2a0000007429976a70397047"
+          }
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 68071,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                9297,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                53168,
+                24
+              ]
+            ],
+            "hex": "e609010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 68070,
+            "propertyName": "OMFI:WAVD:Summary",
+            "typeName": "omfi:VarLenBytes",
+            "length": 4152,
+            "ranges": [
+              [
+                5102,
+                4152
+              ]
+            ],
+            "tocRanges": [
+              [
+                52784,
+                24
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "fileMobId": "060a2b340101010101010f00130000009729976a3ec57047060e2b347f7f2a80",
+        "masterMobId": "060a2b340101010101010f00130000009729976a3dc57047060e2b347f7f2a80",
+        "fileObject": 68128,
+        "masterObject": 68119,
+        "descriptorObject": 68127,
+        "descriptorClass": "AIFD",
+        "pmrRecordByteRange": [
+          274,
+          118
+        ],
+        "pmrVersion": 16,
+        "ownDepthSources": {
+          "ownMDAUBitsPerSample": {
+            "state": "absent"
+          },
+          "ownCDCIComponentWidth": {
+            "state": "absent"
+          },
+          "ownRGBAParallelArrays": {
+            "state": "absent"
+          },
+          "ownEmbeddedSummary": {
+            "state": "decoded",
+            "container": "FORM",
+            "formType": "AIFC",
+            "byteOrder": "big",
+            "summaryBytes": 726,
+            "chunksVisitedThroughDepth": [
+              {
+                "tag": "bext",
+                "summaryOffset": 12,
+                "declaredPayloadBytes": 604
+              },
+              {
+                "tag": "COMM",
+                "summaryOffset": 624,
+                "declaredPayloadBytes": 38
+              }
+            ],
+            "depthChunkSummaryByteRange": [
+              624,
+              46
+            ],
+            "depthChunkMdbByteRanges": [
+              [
+                10492,
+                46
+              ]
+            ],
+            "depthChunkHex": "434f4d4d000000260001002bf2020018400ebb80000000000000696e32340e32342d62697420496e746567657200",
+            "bitsFieldSummaryByteRange": [
+              638,
+              2
+            ],
+            "bitsFieldMdbByteRanges": [
+              [
+                10506,
+                2
+              ]
+            ],
+            "bitsFieldHex": "0018",
+            "storedBits": 24,
+            "channels": 1,
+            "sampleFramesForContextOnly": 2880002,
+            "commSampleSize": 24,
+            "compressionTag": "in24"
+          }
+        },
+        "database": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "mdbSha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "fileMobIdProperties": [
+          {
+            "object": 68128,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 12,
+            "ranges": [
+              [
+                10620,
+                12
+              ]
+            ],
+            "tocRanges": [
+              [
+                57272,
+                24
+              ]
+            ],
+            "hex": "2a0000009729976a3ec57047"
+          },
+          {
+            "object": 68128,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 12,
+            "ranges": [
+              [
+                10645,
+                12
+              ]
+            ],
+            "tocRanges": [
+              [
+                57392,
+                24
+              ]
+            ],
+            "hex": "2a0000009729976a3ec57047"
+          }
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 68128,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                10637,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                57344,
+                24
+              ]
+            ],
+            "hex": "1f0a010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 68127,
+            "propertyName": "OMFI:AIFD:Summary",
+            "typeName": "omfi:VarLenBytes",
+            "length": 726,
+            "ranges": [
+              [
+                9868,
+                726
+              ]
+            ],
+            "tocRanges": [
+              [
+                56912,
+                24
+              ]
+            ]
+          }
+        ]
+      }
+    ],
+    "allEightOwnRaw254ComponentWidthRows": [
+      {
+        "mdbPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobId": "060a2b340101010501010f1013000000baaa99ce601206903c1346fc807fda72",
+        "masterMobId": "060a2b340101010501010f1013000000b2aa99ce60120690f08e46fc807fda72",
+        "fileObject": 79284,
+        "masterObject": 79204,
+        "descriptorObject": 79283,
+        "descriptorClass": "CDCI",
+        "pmrFilenameAsciiAfterObservedTwoZeroPrefix": "V01.E69CB5C6_CE99ACE99AABAV.mxf",
+        "pmrFilenameFieldPrefixHex": "0000",
+        "pmrFilenameFieldHex": "00005630312e45363943423543365f43453939414345393941414241562e6d7866",
+        "pmrFilenameFieldByteRange": [
+          44400,
+          33
+        ],
+        "pmrRecordByteRange": [
+          44366,
+          122
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 79284,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                305793,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                2312600,
+                24
+              ]
+            ],
+            "hex": "b335010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 79283,
+            "propertyName": "OMFI:CDCI:ComponentWidth",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                2312036,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2312024,
+                24
+              ]
+            ],
+            "hex": "fe000000",
+            "decodedValueForContext": 254,
+            "storageContext": [
+              {
+                "storage": "immediate TOC value word",
+                "tocByteRange": [
+                  2312024,
+                  24
+                ],
+                "tocHex": "b33501001909010068000100fe0000000400000001000100",
+                "flags": 1,
+                "declaredValueByteRange": [
+                  2312036,
+                  4
+                ],
+                "firstFourBytesAtValuePointerHex": "fe000000",
+                "firstFourBytesUnsignedLE32": 254
+              }
+            ]
+          },
+          {
+            "object": 79283,
+            "propertyName": "OMFI:DIDD:DIDResolutionID",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                2311052,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2311040,
+                24
+              ]
+            ],
+            "hex": "00000000",
+            "decodedValueForContext": 0
+          },
+          {
+            "object": 79283,
+            "propertyName": "OMFI:DIDD:DIDCompressMethod",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                2311028,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2311016,
+                24
+              ]
+            ],
+            "hex": "52493030",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 79283,
+            "propertyName": "OMFI:DIDD:Compression",
+            "typeName": "omfi:String",
+            "length": 5,
+            "ranges": [
+              [
+                305659,
+                5
+              ]
+            ],
+            "tocRanges": [
+              [
+                2311088,
+                24
+              ]
+            ],
+            "hex": "5249303000",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 79283,
+            "propertyName": "OMFI:DIDD:EssenceCompression",
+            "typeName": "omfi:GUID",
+            "length": 16,
+            "ranges": [
+              [
+                305696,
+                16
+              ]
+            ],
+            "tocRanges": [
+              [
+                2311904,
+                24
+              ]
+            ],
+            "hex": "0202010407030002060e2b340401010d",
+            "decodedValueForContext": "0202010407030002060e2b340401010d",
+            "guidNormalization": {
+              "rawPropertyBytesHex": "0202010407030002060e2b340401010d",
+              "guidCanonicalBytesHex": "0401020203070200060e2b340401010d",
+              "guidCanonicalText": "04010202-0307-0200-060e-2b340401010d",
+              "method": "Decode GUID Data1, Data2 and Data3 as little-endian numeric fields; preserve Data4. For a Data4 SMPTE UL prefix, place Data4 before the canonical first eight bytes.",
+              "normalizedSmpteUlHex": "060e2b340401010d0401020203070200"
+            }
+          }
+        ]
+      },
+      {
+        "mdbPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobId": "060a2b340101010501010f10130000002e28c41c55120690dac246fc807fda72",
+        "masterMobId": "060a2b340101010501010f10130000002328c41c55120690da4c46fc807fda72",
+        "fileObject": 79930,
+        "masterObject": 80008,
+        "descriptorObject": 79929,
+        "descriptorClass": "CDCI",
+        "pmrFilenameAsciiAfterObservedTwoZeroPrefix": "V01.E6968554_1CC421CC4282EV.mxf",
+        "pmrFilenameFieldPrefixHex": "0000",
+        "pmrFilenameFieldHex": "00005630312e45363936383535345f31434334323143433432383245562e6d7866",
+        "pmrFilenameFieldByteRange": [
+          47569,
+          33
+        ],
+        "pmrRecordByteRange": [
+          47535,
+          122
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 79930,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                323386,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                2411936,
+                24
+              ]
+            ],
+            "hex": "3938010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 79929,
+            "propertyName": "OMFI:CDCI:ComponentWidth",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                2411372,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2411360,
+                24
+              ]
+            ],
+            "hex": "fe000000",
+            "decodedValueForContext": 254,
+            "storageContext": [
+              {
+                "storage": "immediate TOC value word",
+                "tocByteRange": [
+                  2411360,
+                  24
+                ],
+                "tocHex": "393801001909010068000100fe0000000400000001000100",
+                "flags": 1,
+                "declaredValueByteRange": [
+                  2411372,
+                  4
+                ],
+                "firstFourBytesAtValuePointerHex": "fe000000",
+                "firstFourBytesUnsignedLE32": 254
+              }
+            ]
+          },
+          {
+            "object": 79929,
+            "propertyName": "OMFI:DIDD:DIDResolutionID",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                2410388,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2410376,
+                24
+              ]
+            ],
+            "hex": "00000000",
+            "decodedValueForContext": 0
+          },
+          {
+            "object": 79929,
+            "propertyName": "OMFI:DIDD:DIDCompressMethod",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                2410364,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2410352,
+                24
+              ]
+            ],
+            "hex": "52493030",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 79929,
+            "propertyName": "OMFI:DIDD:Compression",
+            "typeName": "omfi:String",
+            "length": 5,
+            "ranges": [
+              [
+                323252,
+                5
+              ]
+            ],
+            "tocRanges": [
+              [
+                2410424,
+                24
+              ]
+            ],
+            "hex": "5249303000",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 79929,
+            "propertyName": "OMFI:DIDD:EssenceCompression",
+            "typeName": "omfi:GUID",
+            "length": 16,
+            "ranges": [
+              [
+                323289,
+                16
+              ]
+            ],
+            "tocRanges": [
+              [
+                2411240,
+                24
+              ]
+            ],
+            "hex": "0202010407030001060e2b340401010d",
+            "decodedValueForContext": "0202010407030001060e2b340401010d",
+            "guidNormalization": {
+              "rawPropertyBytesHex": "0202010407030001060e2b340401010d",
+              "guidCanonicalBytesHex": "0401020203070100060e2b340401010d",
+              "guidCanonicalText": "04010202-0307-0100-060e-2b340401010d",
+              "method": "Decode GUID Data1, Data2 and Data3 as little-endian numeric fields; preserve Data4. For a Data4 SMPTE UL prefix, place Data4 before the canonical first eight bytes.",
+              "normalizedSmpteUlHex": "060e2b340401010d0401020203070100"
+            }
+          }
+        ]
+      },
+      {
+        "mdbPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobId": "060a2b340101010501010f1013000000bb52ce2555120690decb46fc807fda72",
+        "masterMobId": "060a2b340101010501010f1013000000b252ce25551206907f8a46fc807fda72",
+        "fileObject": 81873,
+        "masterObject": 81926,
+        "descriptorObject": 81872,
+        "descriptorClass": "CDCI",
+        "pmrFilenameAsciiAfterObservedTwoZeroPrefix": "V01.E696913E_25CE525CE52BBV.mxf",
+        "pmrFilenameFieldPrefixHex": "0000",
+        "pmrFilenameFieldHex": "00005630312e45363936393133455f32354345353235434535324242562e6d7866",
+        "pmrFilenameFieldByteRange": [
+          51565,
+          33
+        ],
+        "pmrRecordByteRange": [
+          51531,
+          123
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 81873,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                376013,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                2712392,
+                24
+              ]
+            ],
+            "hex": "d03f010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 81872,
+            "propertyName": "OMFI:CDCI:ComponentWidth",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                2711828,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2711816,
+                24
+              ]
+            ],
+            "hex": "fe000000",
+            "decodedValueForContext": 254,
+            "storageContext": [
+              {
+                "storage": "immediate TOC value word",
+                "tocByteRange": [
+                  2711816,
+                  24
+                ],
+                "tocHex": "d03f01001909010068000100fe0000000400000001000100",
+                "flags": 1,
+                "declaredValueByteRange": [
+                  2711828,
+                  4
+                ],
+                "firstFourBytesAtValuePointerHex": "fe000000",
+                "firstFourBytesUnsignedLE32": 254
+              }
+            ]
+          },
+          {
+            "object": 81872,
+            "propertyName": "OMFI:DIDD:DIDResolutionID",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                2710844,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2710832,
+                24
+              ]
+            ],
+            "hex": "00000000",
+            "decodedValueForContext": 0
+          },
+          {
+            "object": 81872,
+            "propertyName": "OMFI:DIDD:DIDCompressMethod",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                2710820,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2710808,
+                24
+              ]
+            ],
+            "hex": "52493030",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 81872,
+            "propertyName": "OMFI:DIDD:Compression",
+            "typeName": "omfi:String",
+            "length": 5,
+            "ranges": [
+              [
+                375879,
+                5
+              ]
+            ],
+            "tocRanges": [
+              [
+                2710880,
+                24
+              ]
+            ],
+            "hex": "5249303000",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 81872,
+            "propertyName": "OMFI:DIDD:EssenceCompression",
+            "typeName": "omfi:GUID",
+            "length": 16,
+            "ranges": [
+              [
+                375916,
+                16
+              ]
+            ],
+            "tocRanges": [
+              [
+                2711696,
+                24
+              ]
+            ],
+            "hex": "0202010407030001060e2b340401010d",
+            "decodedValueForContext": "0202010407030001060e2b340401010d",
+            "guidNormalization": {
+              "rawPropertyBytesHex": "0202010407030001060e2b340401010d",
+              "guidCanonicalBytesHex": "0401020203070100060e2b340401010d",
+              "guidCanonicalText": "04010202-0307-0100-060e-2b340401010d",
+              "method": "Decode GUID Data1, Data2 and Data3 as little-endian numeric fields; preserve Data4. For a Data4 SMPTE UL prefix, place Data4 before the canonical first eight bytes.",
+              "normalizedSmpteUlHex": "060e2b340401010d0401020203070100"
+            }
+          }
+        ]
+      },
+      {
+        "mdbPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobId": "060a2b340101010501010f10130000006d5fd82555120690581646fc807fda72",
+        "masterMobId": "060a2b340101010501010f1013000000665fd82555120690b86d46fc807fda72",
+        "fileObject": 71512,
+        "masterObject": 71565,
+        "descriptorObject": 71511,
+        "descriptorClass": "CDCI",
+        "pmrFilenameAsciiAfterObservedTwoZeroPrefix": "V01.E696914C_25D8525D85F6DV.mxf",
+        "pmrFilenameFieldPrefixHex": "0000",
+        "pmrFilenameFieldHex": "00005630312e45363936393134435f32354438353235443835463644562e6d7866",
+        "pmrFilenameFieldByteRange": [
+          54861,
+          33
+        ],
+        "pmrRecordByteRange": [
+          54827,
+          123
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 71512,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                94955,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                1114688,
+                24
+              ]
+            ],
+            "hex": "5717010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 71511,
+            "propertyName": "OMFI:CDCI:ComponentWidth",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                1114124,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                1114112,
+                24
+              ]
+            ],
+            "hex": "fe000000",
+            "decodedValueForContext": 254,
+            "storageContext": [
+              {
+                "storage": "immediate TOC value word",
+                "tocByteRange": [
+                  1114112,
+                  24
+                ],
+                "tocHex": "571701001909010068000100fe0000000400000001000100",
+                "flags": 1,
+                "declaredValueByteRange": [
+                  1114124,
+                  4
+                ],
+                "firstFourBytesAtValuePointerHex": "fe000000",
+                "firstFourBytesUnsignedLE32": 254
+              }
+            ]
+          },
+          {
+            "object": 71511,
+            "propertyName": "OMFI:DIDD:DIDResolutionID",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                1113140,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                1113128,
+                24
+              ]
+            ],
+            "hex": "00000000",
+            "decodedValueForContext": 0
+          },
+          {
+            "object": 71511,
+            "propertyName": "OMFI:DIDD:DIDCompressMethod",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                1113116,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                1113104,
+                24
+              ]
+            ],
+            "hex": "52493030",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 71511,
+            "propertyName": "OMFI:DIDD:Compression",
+            "typeName": "omfi:String",
+            "length": 5,
+            "ranges": [
+              [
+                94821,
+                5
+              ]
+            ],
+            "tocRanges": [
+              [
+                1113176,
+                24
+              ]
+            ],
+            "hex": "5249303000",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 71511,
+            "propertyName": "OMFI:DIDD:EssenceCompression",
+            "typeName": "omfi:GUID",
+            "length": 16,
+            "ranges": [
+              [
+                94858,
+                16
+              ]
+            ],
+            "tocRanges": [
+              [
+                1113992,
+                24
+              ]
+            ],
+            "hex": "0202010407030002060e2b340401010d",
+            "decodedValueForContext": "0202010407030002060e2b340401010d",
+            "guidNormalization": {
+              "rawPropertyBytesHex": "0202010407030002060e2b340401010d",
+              "guidCanonicalBytesHex": "0401020203070200060e2b340401010d",
+              "guidCanonicalText": "04010202-0307-0200-060e-2b340401010d",
+              "method": "Decode GUID Data1, Data2 and Data3 as little-endian numeric fields; preserve Data4. For a Data4 SMPTE UL prefix, place Data4 before the canonical first eight bytes.",
+              "normalizedSmpteUlHex": "060e2b340401010d0401020203070200"
+            }
+          }
+        ]
+      },
+      {
+        "mdbPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobId": "060a2b340101010501010f1013000000ed8584ce60120690756a46fc807fda72",
+        "masterMobId": "060a2b340101010501010f1013000000e58584ce60120690c51246fc807fda72",
+        "fileObject": 72803,
+        "masterObject": 72741,
+        "descriptorObject": 72802,
+        "descriptorClass": "CDCI",
+        "pmrFilenameAsciiAfterObservedTwoZeroPrefix": "V01.E69CB5AB_CE848CE8485EDV.mxf",
+        "pmrFilenameFieldPrefixHex": "0000",
+        "pmrFilenameFieldHex": "00005630312e45363943423541425f43453834384345383438354544562e6d7866",
+        "pmrFilenameFieldByteRange": [
+          71207,
+          33
+        ],
+        "pmrRecordByteRange": [
+          71173,
+          122
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 72803,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                129725,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                1311272,
+                24
+              ]
+            ],
+            "hex": "621c010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 72802,
+            "propertyName": "OMFI:CDCI:ComponentWidth",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                1310708,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                1310696,
+                24
+              ]
+            ],
+            "hex": "fe000000",
+            "decodedValueForContext": 254,
+            "storageContext": [
+              {
+                "storage": "immediate TOC value word",
+                "tocByteRange": [
+                  1310696,
+                  24
+                ],
+                "tocHex": "621c01001909010068000100fe0000000400000001000100",
+                "flags": 1,
+                "declaredValueByteRange": [
+                  1310708,
+                  4
+                ],
+                "firstFourBytesAtValuePointerHex": "fe000000",
+                "firstFourBytesUnsignedLE32": 254
+              }
+            ]
+          },
+          {
+            "object": 72802,
+            "propertyName": "OMFI:DIDD:DIDResolutionID",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                1309724,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                1309712,
+                24
+              ]
+            ],
+            "hex": "00000000",
+            "decodedValueForContext": 0
+          },
+          {
+            "object": 72802,
+            "propertyName": "OMFI:DIDD:DIDCompressMethod",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                1309700,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                1309688,
+                24
+              ]
+            ],
+            "hex": "52493030",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 72802,
+            "propertyName": "OMFI:DIDD:Compression",
+            "typeName": "omfi:String",
+            "length": 5,
+            "ranges": [
+              [
+                129591,
+                5
+              ]
+            ],
+            "tocRanges": [
+              [
+                1309760,
+                24
+              ]
+            ],
+            "hex": "5249303000",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 72802,
+            "propertyName": "OMFI:DIDD:EssenceCompression",
+            "typeName": "omfi:GUID",
+            "length": 16,
+            "ranges": [
+              [
+                129628,
+                16
+              ]
+            ],
+            "tocRanges": [
+              [
+                1310576,
+                24
+              ]
+            ],
+            "hex": "0202010407030001060e2b340401010d",
+            "decodedValueForContext": "0202010407030001060e2b340401010d",
+            "guidNormalization": {
+              "rawPropertyBytesHex": "0202010407030001060e2b340401010d",
+              "guidCanonicalBytesHex": "0401020203070100060e2b340401010d",
+              "guidCanonicalText": "04010202-0307-0100-060e-2b340401010d",
+              "method": "Decode GUID Data1, Data2 and Data3 as little-endian numeric fields; preserve Data4. For a Data4 SMPTE UL prefix, place Data4 before the canonical first eight bytes.",
+              "normalizedSmpteUlHex": "060e2b340401010d0401020203070100"
+            }
+          }
+        ]
+      },
+      {
+        "mdbPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobId": "060a2b340101010501010f10130000004217391b59120690d13546fc807fda72",
+        "masterMobId": "060a2b340101010501010f10130000003a17391b591206907f1d46fc807fda72",
+        "fileObject": 83714,
+        "masterObject": 83767,
+        "descriptorObject": 83713,
+        "descriptorClass": "CDCI",
+        "pmrFilenameAsciiAfterObservedTwoZeroPrefix": "V01.E69BC94B_1B3911B391742V.mxf",
+        "pmrFilenameFieldPrefixHex": "0000",
+        "pmrFilenameFieldHex": "00005630312e45363942433934425f31423339313142333931373432562e6d7866",
+        "pmrFilenameFieldByteRange": [
+          73030,
+          33
+        ],
+        "pmrRecordByteRange": [
+          72996,
+          122
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 83714,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                426020,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                2996024,
+                24
+              ]
+            ],
+            "hex": "0147010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 83713,
+            "propertyName": "OMFI:CDCI:ComponentWidth",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                2995460,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2995448,
+                24
+              ]
+            ],
+            "hex": "fe000000",
+            "decodedValueForContext": 254,
+            "storageContext": [
+              {
+                "storage": "immediate TOC value word",
+                "tocByteRange": [
+                  2995448,
+                  24
+                ],
+                "tocHex": "014701001909010068000100fe0000000400000001000100",
+                "flags": 1,
+                "declaredValueByteRange": [
+                  2995460,
+                  4
+                ],
+                "firstFourBytesAtValuePointerHex": "fe000000",
+                "firstFourBytesUnsignedLE32": 254
+              }
+            ]
+          },
+          {
+            "object": 83713,
+            "propertyName": "OMFI:DIDD:DIDResolutionID",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                2994476,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2994464,
+                24
+              ]
+            ],
+            "hex": "00000000",
+            "decodedValueForContext": 0
+          },
+          {
+            "object": 83713,
+            "propertyName": "OMFI:DIDD:DIDCompressMethod",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                2994452,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2994440,
+                24
+              ]
+            ],
+            "hex": "52493030",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 83713,
+            "propertyName": "OMFI:DIDD:Compression",
+            "typeName": "omfi:String",
+            "length": 5,
+            "ranges": [
+              [
+                425886,
+                5
+              ]
+            ],
+            "tocRanges": [
+              [
+                2994512,
+                24
+              ]
+            ],
+            "hex": "5249303000",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 83713,
+            "propertyName": "OMFI:DIDD:EssenceCompression",
+            "typeName": "omfi:GUID",
+            "length": 16,
+            "ranges": [
+              [
+                425923,
+                16
+              ]
+            ],
+            "tocRanges": [
+              [
+                2995328,
+                24
+              ]
+            ],
+            "hex": "0202010407030002060e2b340401010d",
+            "decodedValueForContext": "0202010407030002060e2b340401010d",
+            "guidNormalization": {
+              "rawPropertyBytesHex": "0202010407030002060e2b340401010d",
+              "guidCanonicalBytesHex": "0401020203070200060e2b340401010d",
+              "guidCanonicalText": "04010202-0307-0200-060e-2b340401010d",
+              "method": "Decode GUID Data1, Data2 and Data3 as little-endian numeric fields; preserve Data4. For a Data4 SMPTE UL prefix, place Data4 before the canonical first eight bytes.",
+              "normalizedSmpteUlHex": "060e2b340401010d0401020203070200"
+            }
+          }
+        ]
+      },
+      {
+        "mdbPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobId": "060a2b340101010501010f10130000005f56281b59120690d40b46fc807fda72",
+        "masterMobId": "060a2b340101010501010f10130000005856281b5912069029fc46fc807fda72",
+        "fileObject": 75617,
+        "masterObject": 75670,
+        "descriptorObject": 75616,
+        "descriptorClass": "CDCI",
+        "pmrFilenameAsciiAfterObservedTwoZeroPrefix": "V01.E69BC935_1B2851B28565FV.mxf",
+        "pmrFilenameFieldPrefixHex": "0000",
+        "pmrFilenameFieldHex": "00005630312e45363942433933355f31423238353142323835363546562e6d7866",
+        "pmrFilenameFieldByteRange": [
+          75349,
+          33
+        ],
+        "pmrRecordByteRange": [
+          75315,
+          122
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 75617,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                206317,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                1748408,
+                24
+              ]
+            ],
+            "hex": "6027010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 75616,
+            "propertyName": "OMFI:CDCI:ComponentWidth",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                1747844,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                1747832,
+                24
+              ]
+            ],
+            "hex": "fe000000",
+            "decodedValueForContext": 254,
+            "storageContext": [
+              {
+                "storage": "immediate TOC value word",
+                "tocByteRange": [
+                  1747832,
+                  24
+                ],
+                "tocHex": "602701001909010068000100fe0000000400000001000100",
+                "flags": 1,
+                "declaredValueByteRange": [
+                  1747844,
+                  4
+                ],
+                "firstFourBytesAtValuePointerHex": "fe000000",
+                "firstFourBytesUnsignedLE32": 254
+              }
+            ]
+          },
+          {
+            "object": 75616,
+            "propertyName": "OMFI:DIDD:DIDResolutionID",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                1746860,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                1746848,
+                24
+              ]
+            ],
+            "hex": "00000000",
+            "decodedValueForContext": 0
+          },
+          {
+            "object": 75616,
+            "propertyName": "OMFI:DIDD:DIDCompressMethod",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                1746836,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                1746824,
+                24
+              ]
+            ],
+            "hex": "52493030",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 75616,
+            "propertyName": "OMFI:DIDD:Compression",
+            "typeName": "omfi:String",
+            "length": 5,
+            "ranges": [
+              [
+                206183,
+                5
+              ]
+            ],
+            "tocRanges": [
+              [
+                1746896,
+                24
+              ]
+            ],
+            "hex": "5249303000",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 75616,
+            "propertyName": "OMFI:DIDD:EssenceCompression",
+            "typeName": "omfi:GUID",
+            "length": 16,
+            "ranges": [
+              [
+                206220,
+                16
+              ]
+            ],
+            "tocRanges": [
+              [
+                1747712,
+                24
+              ]
+            ],
+            "hex": "0202010407030001060e2b340401010d",
+            "decodedValueForContext": "0202010407030001060e2b340401010d",
+            "guidNormalization": {
+              "rawPropertyBytesHex": "0202010407030001060e2b340401010d",
+              "guidCanonicalBytesHex": "0401020203070100060e2b340401010d",
+              "guidCanonicalText": "04010202-0307-0100-060e-2b340401010d",
+              "method": "Decode GUID Data1, Data2 and Data3 as little-endian numeric fields; preserve Data4. For a Data4 SMPTE UL prefix, place Data4 before the canonical first eight bytes.",
+              "normalizedSmpteUlHex": "060e2b340401010d0401020203070100"
+            }
+          }
+        ]
+      },
+      {
+        "mdbPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobId": "060a2b340101010501010f101300000088d6dd1c55120690813746fc807fda72",
+        "masterMobId": "060a2b340101010501010f10130000007ed6dd1c5512069024da46fc807fda72",
+        "fileObject": 82841,
+        "masterObject": 82944,
+        "descriptorObject": 82840,
+        "descriptorClass": "CDCI",
+        "pmrFilenameAsciiAfterObservedTwoZeroPrefix": "V01.E6968575_1CDDD1CDDD688V.mxf",
+        "pmrFilenameFieldPrefixHex": "0000",
+        "pmrFilenameFieldHex": "00005630312e45363936383537355f31434444443143444444363838562e6d7866",
+        "pmrFilenameFieldByteRange": [
+          84596,
+          33
+        ],
+        "pmrRecordByteRange": [
+          84562,
+          122
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 82841,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                401995,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                2861168,
+                24
+              ]
+            ],
+            "hex": "9843010000000000"
+          }
+        ],
+        "ownProperties": [
+          {
+            "object": 82840,
+            "propertyName": "OMFI:CDCI:ComponentWidth",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                2860604,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2860592,
+                24
+              ]
+            ],
+            "hex": "fe000000",
+            "decodedValueForContext": 254,
+            "storageContext": [
+              {
+                "storage": "immediate TOC value word",
+                "tocByteRange": [
+                  2860592,
+                  24
+                ],
+                "tocHex": "984301001909010068000100fe0000000400000001000100",
+                "flags": 1,
+                "declaredValueByteRange": [
+                  2860604,
+                  4
+                ],
+                "firstFourBytesAtValuePointerHex": "fe000000",
+                "firstFourBytesUnsignedLE32": 254
+              }
+            ]
+          },
+          {
+            "object": 82840,
+            "propertyName": "OMFI:DIDD:DIDResolutionID",
+            "typeName": "omfi:Long",
+            "length": 4,
+            "ranges": [
+              [
+                2859620,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2859608,
+                24
+              ]
+            ],
+            "hex": "00000000",
+            "decodedValueForContext": 0
+          },
+          {
+            "object": 82840,
+            "propertyName": "OMFI:DIDD:DIDCompressMethod",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                2859596,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2859584,
+                24
+              ]
+            ],
+            "hex": "52493030",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 82840,
+            "propertyName": "OMFI:DIDD:Compression",
+            "typeName": "omfi:String",
+            "length": 5,
+            "ranges": [
+              [
+                401861,
+                5
+              ]
+            ],
+            "tocRanges": [
+              [
+                2859656,
+                24
+              ]
+            ],
+            "hex": "5249303000",
+            "decodedValueForContext": "RI00"
+          },
+          {
+            "object": 82840,
+            "propertyName": "OMFI:DIDD:EssenceCompression",
+            "typeName": "omfi:GUID",
+            "length": 16,
+            "ranges": [
+              [
+                401898,
+                16
+              ]
+            ],
+            "tocRanges": [
+              [
+                2860472,
+                24
+              ]
+            ],
+            "hex": "0202010407030002060e2b340401010d",
+            "decodedValueForContext": "0202010407030002060e2b340401010d",
+            "guidNormalization": {
+              "rawPropertyBytesHex": "0202010407030002060e2b340401010d",
+              "guidCanonicalBytesHex": "0401020203070200060e2b340401010d",
+              "guidCanonicalText": "04010202-0307-0200-060e-2b340401010d",
+              "method": "Decode GUID Data1, Data2 and Data3 as little-endian numeric fields; preserve Data4. For a Data4 SMPTE UL prefix, place Data4 before the canonical first eight bytes.",
+              "normalizedSmpteUlHex": "060e2b340401010d0401020203070200"
+            }
+          }
+        ]
+      }
+    ],
+    "filenameQualification": "Special-row filename strings are context extracted after the explicitly retained two-zero prefix in the probe field range; full typed IDs and file ownership establish joins. This review does not redefine the PMR parser.",
+    "sourceHashReceipts": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "matchesPriorAudioReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 5159032,
+        "mtime_ns": 1561096331000000000,
+        "inode": 469151
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544",
+        "matchesPriorAudioReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 97250,
+        "mtime_ns": 1561095049000000000,
+        "inode": 469152
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "matchesPriorAudioReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 22745976,
+        "mtime_ns": 1785052712000000000,
+        "inode": 1081262
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79",
+        "matchesPriorAudioReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 164660,
+        "mtime_ns": 1785052993000000000,
+        "inode": 1081385
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "matchesPriorAudioReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 16616336,
+        "mtime_ns": 1778753153000000000,
+        "inode": 1081897
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7",
+        "matchesPriorAudioReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 123140,
+        "mtime_ns": 1790763274000000000,
+        "inode": 1082005
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "matchesPriorAudioReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 15703416,
+        "mtime_ns": 1778753179000000000,
+        "inode": 1082384
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524",
+        "matchesPriorAudioReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 111140,
+        "mtime_ns": 1785052993000000000,
+        "inode": 1082472
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "matchesPriorAudioReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 3668720,
+        "mtime_ns": 1788291273218255487,
+        "inode": 6813558
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a",
+        "matchesPriorAudioReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 86754,
+        "mtime_ns": 1790740372078265906,
+        "inode": 6813560
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "matchesPriorAudioReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 60680,
+        "mtime_ns": 1788291495301754724,
+        "inode": 14769208
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+        "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928",
+        "matchesPriorAudioReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 392,
+        "mtime_ns": 1788291482553506886,
+        "inode": 14769210
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+        "sha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "matchesPriorAudioIndexHash": true,
+        "stableDuringRead": true,
+        "bytes": 57405807,
+        "mtime_ns": 1792312028319751444,
+        "inode": 33683657
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+        "sha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "matchesPriorAudioIndexHash": true,
+        "stableDuringRead": true,
+        "bytes": 277457615,
+        "mtime_ns": 1792312034034888261,
+        "inode": 33683660
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+        "sha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "matchesPriorAudioIndexHash": true,
+        "stableDuringRead": true,
+        "bytes": 202174044,
+        "mtime_ns": 1792312038378265481,
+        "inode": 33683661
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+        "sha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "matchesPriorAudioIndexHash": true,
+        "stableDuringRead": true,
+        "bytes": 191199626,
+        "mtime_ns": 1792312042557915572,
+        "inode": 33683671
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+        "sha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "matchesPriorAudioIndexHash": true,
+        "stableDuringRead": true,
+        "bytes": 45335148,
+        "mtime_ns": 1792312043581951973,
+        "inode": 33683676
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-OMFI MediaFiles-values.json",
+        "sha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "matchesPriorAudioIndexHash": true,
+        "stableDuringRead": true,
+        "bytes": 535484,
+        "mtime_ns": 1792312043637477450,
+        "inode": 33683677
+      }
+    ],
+    "limits": [
+      "This is a bounded genuine-corpus observation, not approval of source precedence or fallback policy.",
+      "All six MDBs use the established little-endian legacy Bento layout. Other layouts, missing/damaged/conflicting values, unknown component codes and arbitrary array layouts remain unexercised.",
+      "A single available own source offers no independent agreement test. Missing independent depth sources and comparison availability are counted explicitly.",
+      "Stored component/sample width, valid audio bits, alpha depth, codec capability and decoded/source precision are distinct concepts. Metadata context does not by itself establish a displayed generic bit depth.",
+      "RGBA observations do not establish RGB colour depth when the layout describes alpha only.",
+      "No OldScanner output, production parser, media header or full essence is used. No app, repo, media or input file is written. New probes and evidence remain under this /private/tmp directory.",
+      "No Duration, Sample Rate, frame-rate, DF or display policy is changed by this audit."
+    ]
+  },
+  "qualifiedInterpretation": {
+    "audioCounts": {
+      "16": 237,
+      "24": 1276,
+      "total": 1513
+    },
+    "special254": [
+      {
+        "fullCodingUl": "060e2b340401010d0401020203070100",
+        "rawComponentWidth": 254,
+        "meaning": "32-bit float",
+        "count": 4
+      },
+      {
+        "fullCodingUl": "060e2b340401010d0401020203070200",
+        "rawComponentWidth": 254,
+        "meaning": "16-bit S2.14 fixed point",
+        "count": 4
+      }
+    ],
+    "nativeLimit": "Native generic ComponentWidth floating-code and bits-per-pixel helpers alone do not prove all codec-specific UI column choices.",
+    "primaryRule": "RDD 50 pages 30-32, full exact coding UL plus depth code. Standard variant 253 half float uses 16 bits. Do not map an arbitrary code or suffix without its known format.",
+    "pendingFixedPointDetails": "10.6 and 12.4 use 16-bit storage with signaled depths 10 and 12. Unobserved here; generic Bit Depth label coverage remains a separate qualified presentation choice with compression/representation review.",
+    "rgba": "All 18 actual descriptors are alpha-only. Their own 8/16 component widths do not establish RGB depth of a separate colour file.",
+    "waveExtensible": "Propose validated wValidBitsPerSample for supported PCM/IEEE-float extensible subtypes, distinct from container wBitsPerSample; unsupported/unreadable subtype or precision is unavailable. Native traced getter reads the base width. No actual extensible-WAVE summary fixture exists here."
+  },
+  "proposedBellaRule": {
+    "status": "Verified-rule/test reuse and numeric storage/display boundary approved on 20 October 2026. Remaining detailed coverage proposals remain as marked in the report.",
+    "sources": {
+      "PCMA": "Own MDAU:BitsPerSample.",
+      "AIFD": "Own AIFD Summary COMM.sampleSize.",
+      "WAVD": "Own WAVD Summary qualified fmt sample precision.",
+      "CDCI/MPGI": "Own CDCI:ComponentWidth with exact necessary coding interpretation.",
+      "RGBA": "Own parallel PixelLayout/PixelStructure component-code and width arrays."
+    },
+    "retention": "Small numeric values, compact source/availability and representation context; preserve raw special code and necessary coding ID, WAV storage versus valid precision and small RGBA arrays. No raw database/object graph or only-formatted-string retention.",
+    "rgbaSingleValue": "Known non-fill direct components with one common interpreted width, including alpha-only -> common per-component depth. Mixed/palette-only/unknown meaning -> unavailable generic cell, compact raw arrays retained. No component sum as Bit Depth.",
+    "validation": "Declared field type and exact width, complete bounds, byte order, recognized Summary chunks and known component roles. No universal four-byte scalar load, standard default or codec-capability guess.",
+    "display": "Format supported value at presentation as 24-bit, for example; missing/damaged/unsupported source is blank at MDB stage, keep physical file.",
+    "separate": "No new visible sample-format or alpha column, no master/file borrowing or comparison graph, no Duration/Kind/Sample Rate change. Other-source/header-read policy remains later review.",
+    "buildingBlocks": "Independent C++17 small value records and enum class; pinned Qt 6.5.3 fixed-width integer/endian readers after bounds/type validation; small qualified read-only interpretation table."
+  },
+  "primarySources": [
+    {
+      "title": "SMPTE RDD 50:2019",
+      "url": "https://pub.smpte.org/pub/rdd50/rdd50-2019.pdf",
+      "reviewedPages": [
+        30,
+        31,
+        32
+      ],
+      "receipt": {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-primary/rdd50-2019.pdf",
+        "bytes": 803379,
+        "sha256": "4959054284e49621c4ddf228cae8797feff7842fd313982cf92e84a9d31d0108"
+      },
+      "scope": "Full DNxUncompressed coding variants and component depth signaling, not a claim of universal arbitrary MDB class semantics."
+    },
+    {
+      "title": "Microsoft WAVEFORMATEXTENSIBLE",
+      "url": "https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ksmedia/ns-ksmedia-waveformatextensible",
+      "scope": "Storage width, qualified valid precision and Samples union subtype meaning."
+    },
+    {
+      "title": "Apple Extended Common Chunk",
+      "url": "https://developer.apple.com/library/archive/documentation/mac/Sound/Sound-83.html",
+      "scope": "AIFF-C sampleSize, compression type and name are distinct fields."
+    },
+    {
+      "title": "OMF Interchange Specification 2.1",
+      "url": "https://www.cubase.it/wp/wp-content/uploads/2014/12/omfspec21.pdf",
+      "printedPages": [
+        121,
+        188
+      ],
+      "pdfPages": [
+        133,
+        200
+      ],
+      "receipt": {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-03-format-audit/evidence/omfspec21.pdf",
+        "bytes": 1081300,
+        "sha256": "62dd18226aee3fda27c4ac25cf50ab1764b7776d4a42eac8f00d3e5b07909794"
+      },
+      "scope": "CDCI ComponentWidth and separate RGBA component-code/width arrays. Actual private MDB types and later special values are independently observed."
+    }
+  ],
+  "guidance": {
+    "attachedCpp17": {
+      "path": "/Users/martymclean/Downloads/CPP SKILL.md",
+      "bytes": 22279,
+      "sha256": "70919980c635f66db649b7eb1e426fb2098754ed6c9db22f1a7eee0935227d35"
+    },
+    "pinnedQtEndian": {
+      "path": "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers/qendian.h",
+      "bytes": 13070,
+      "sha256": "04dc4bb41bb7e4150c062f1861eac1c385f22432af3762e53858f31f459bce0f"
+    }
+  },
+  "temporaryReceipts": {
+    "mc": {
+      "path": "/private/tmp/bella-mdb-bit-depth-20261020-mc/findings.json",
+      "bytes": 18868,
+      "sha256": "1b5d377ad8bec74980a44d73e6785ddd8341eab6382fc5a411a94de6a6be7257"
+    },
+    "mdvx": {
+      "path": "/private/tmp/bella-mdb-bit-depth-20261020-mdvx/findings.json",
+      "bytes": 16587,
+      "sha256": "10b7cedce2278515148b31926400afde031ab9bafd7fbdfaed956120d9c63ead"
+    },
+    "drives": {
+      "path": "/private/tmp/bella-mdb-bit-depth-20261020-drives/findings.json",
+      "bytes": 348246,
+      "sha256": "82ed39e794a083fb7904f9744fd4aa6c82b850872dff251da5152ae3655939a6"
+    },
+    "driveProbe": {
+      "path": "/private/tmp/bella-mdb-bit-depth-20261020-drives/probe.py",
+      "bytes": 29031,
+      "sha256": "b2cc4ac80672057f895c71e2b61c375784ba12680828d0a1c9acc13f8a413013"
+    },
+    "driveSourceHashes": {
+      "path": "/private/tmp/bella-mdb-bit-depth-20261020-drives/source-hash-receipts.json",
+      "bytes": 5621,
+      "sha256": "bf75ce0e3288e2983814c78dbce60aa15fd370105f79f1ed6ee056cf101a4187"
+    },
+    "primaryPdfExcerpt": {
+      "path": "/private/tmp/bella-mdb-bit-depth-20261020-primary/rdd50-2019.excerpt.txt",
+      "bytes": 24023,
+      "sha256": "e3646e716006ec1850275dca7c5c4d8574eb5ca1af38fb2d4ac0c65aa562ee7b"
+    }
+  },
+  "limits": [
+    "Research-only documents/evidence; no Bella runtime code or current app behavior changed.",
+    "No live Media Composer/MDVx scan or table/CSV export was executed, and no comparative performance benchmark was run.",
+    "No physical media header or essence was read for this field review.",
+    "MDB layout/damage policy, missing references and other-source/header-read rules remain separate requirements."
+  ],
+  "currentMediaMusterSourceReview": {
+    "date": "2026-10-20",
+    "scope": "Current checkout OldScanner MDB parse/interpretation -> selection -> app row -> table/CSV/sort. Source inspection; no new scanner run or tests executed.",
+    "parsing": "Type- and width-aware 16/32-bit numeric reads; own audio/scalar/Summary and parallel RGBA source interpretation. Raw original values remain in observation evidence.",
+    "knownGoodRules": "Full recognized DNx UL plus code 253 -> 16 half float; standard 254 -> 32 float; fixed 254 -> 16 S2.14. WAV valid precision and AIFF sampleSize; common non-fill RGBA width, including alpha-only.",
+    "selection": "If an eligible header was read, Mxf/Omf header observations have priority over Mdb. Equal-rank conflicting top candidates can clear selection. Missing Bit Depth is one header-read trigger; a complete usable database match can skip it.",
+    "rowStorage": "QString bitDepth, usually an already formatted interpreted N-bit label; missing selection -> empty string. The raw source facts also exist in evidence, not solely in the visible row string.",
+    "presentation": "Table and CSV consume the same row string. Sorting extracts a positive N from N-bit; blanks precede numeric values, then other labels.",
+    "detailsToReview": [
+      "Current fixed-format raw 10/12 displays 16-bit storage width; Bella generic precision label remains pending.",
+      "Current RGBA P is allowed and its palette-index width can populate Bit Depth; proposed Bella leaves palette-only unavailable.",
+      "Current RGBA coded widths above 64 stay blank; qualified special-code handling is not implemented in that MDB RGBA branch."
+    ],
+    "limits": [
+      "No new measured speed/memory improvement established.",
+      "Source behavior for corpus combinations is supported by code inspection, not a new complete app rerun.",
+      "No runtime code changed. Verified-rule reuse/numeric storage is now approved; uncommon detailed coverage and scanner/header policies remain separately under review."
+    ],
+    "sourceReceipts": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbobjects_p.cpp",
+        "line": 611,
+        "bytes": 25678,
+        "sha256": "21a013b4de7a3e346553e2f4bef73404e9d3c63551f6653aa9403a7128244814"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbprojection.cpp",
+        "line": 1051,
+        "bytes": 65892,
+        "sha256": "75757ff663c541992768c502fa7b0887c4f31a02d23b7ec9e7b28532b160be5f"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbaudiosummary_p.cpp",
+        "line": 120,
+        "bytes": 14737,
+        "sha256": "cf3c4018bc9ebf83bc5bdd3ae1476f5df0cf791744d73bb97f5e3692856bffa2"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+        "line": 70,
+        "bytes": 10189,
+        "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+        "line": 109,
+        "bytes": 10816,
+        "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+        "line": 141,
+        "bytes": 36110,
+        "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+        "line": 47,
+        "bytes": 5202,
+        "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+        "line": 627,
+        "bytes": 25170,
+        "sha256": "c85f1d11bcb15eddcfbba7c9cbbc57c8fdafdb8cac8c4af6b575d62c1575c746"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+        "line": 52,
+        "bytes": 12788,
+        "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+        "line": 240,
+        "bytes": 12214,
+        "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp",
+        "line": 60,
+        "bytes": 3609,
+        "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafilterproxy.cpp",
+        "line": 66,
+        "bytes": 11470,
+        "sha256": "2c10657c82a6d3456815966664c62ab0b77a29d02a6e514fd865510fe7349e0c"
+      }
+    ],
+    "reuseAssessment": "User subsequently approved the verified interpretation-rule/useful-test reuse strategy in small new helpers, numeric depth and necessary format information with display-time labels. Whole OldScanner machinery and unreviewed coverage choices are not implicitly adopted."
+  },
+  "approvedBellaDecision": {
+    "date": "2026-10-20",
+    "reuse": "Carry over verified interpretation rules and useful test cases into small new Bella helpers.",
+    "storage": "Keep depth as a number with necessary format information.",
+    "presentation": "Generate the label when displayed.",
+    "boundary": "Independent C++17/Qt 6.5.3 Bella implementation; no wholesale import of OldScanner projection/evidence machinery.",
+    "remainingCoverage": "Palette/mixed/unsupported RGBA and uncommon fixed-point label details remain as marked for review; the approval does not silently settle every previously proposed edge case.",
+    "compression": "Separate user decision on the same turn preserves the current Compression system; see mdb-compression-2026-10-20.json."
+  }
+}

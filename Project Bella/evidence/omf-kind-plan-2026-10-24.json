@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-24",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF Kind descriptor/lookup/unavailable/retention rules. Duration and remaining OMF fields under review.",
+  "authorization": {
+    "source": "Direct human reply",
+    "statement": "OK, let's lock those Kind rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Duration from OMF, and what should Bella read and keep?",
+    "scope": "Accepts preceding proposed qualified-own-descriptor OMF Kind mapping including the existing contextual WAVE compatibility branch, unknown/independence policy, compact typed result and no additional read merely for Kind. Begins OMF Duration research. No runtime implementation/cutover, MDB lookup expansion, Bin Filter change, final source priority or new header-opening trigger."
+  },
+  "agreedBellaRules": {
+    "scope": "Kind only inside an already-read supported OMF. Existing release-one version/identity/text decisions, MDB six-class lookup and Bin Filter unchanged. Native WAV/AIFF precedence, final source priorities and header opening remain separate.",
+    "authority": "Safely resolved own descriptor of the class-qualified physical file owner, using established full-ID ownership. No selected-master-track vote or raw MediaData-class shortcut.",
+    "Audio": [
+      "PCMA",
+      "MPGA",
+      "AIFD",
+      "WAVD"
+    ],
+    "audioCompatibility": "Preserve existing WAVE only in the checked own descriptor slot. No genuine WAVE-as-descriptor fixture was verified; this retains current compatibility behavior, not newly proven native/standard coverage. A root WAVE data object alone is insufficient.",
+    "Video": [
+      "CDCI",
+      "MPGI",
+      "RGBA",
+      "JPED",
+      "TIFD"
+    ],
+    "unavailable": "Missing/unreadable/unsupported class, unsafe ownership or contradictory required class/owner facts gives no OMF Kind. Preserve inventory and independent valid metadata; unrelated damaged numeric/codec fields do not erase a known independently valid class. Display lowercase unknown if no eligible source supplies Kind.",
+    "representation": "Four-byte structured class tags need no UTF8/MacRoman conversion. One small fixed C++17 helper returns a strongly typed Audio/Video/Unknown value. Generate display text as needed; no per-row duplicate class string or hierarchy solely for Kind.",
+    "reading": "Do not read codec/summary/recording data or master track graph merely to confirm a known own descriptor. No extra file open approved here.",
+    "noScopeExpansion": "No generic DIDD or new aliases added merely from native inheritance. Preserve current JPED/TIFD OMF coverage rather than narrowing to MDB list.",
+    "engineeringAssessment": "Current Kind already uses a small lookup. No demonstrated Kind-specific speed or accuracy improvement. Whole Bella design requires required-output, scan-time and peak-memory comparisons after implementation."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-kind-2026-10-24.json",
+    "sha256": "450de1c5e24ab96ac35346293700603257c1e51cf5822a95c42f4d68f92cf82d"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/kind.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "newBuildsOrTests": false,
+    "appCutover": false,
+    "performanceMeasured": false
+  }
+}

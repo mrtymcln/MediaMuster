@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "Record explicit approval of Bella's simplified MXF Project reading, local fallback, Unicode and compact retention rules.",
+  "status": "Approved requirements; no Bella runtime implementation, cutover or Bin Filter change.",
+  "authorization": {
+    "source": "Direct human approval in the current conversation",
+    "statement": "OK, let's lock in header Project → file-owned Project → blank. Next, how do Media Composer and MDVX read Kind from MXF, and what should Bella read and keep? How does that compare with the current MediaMuster implementation?",
+    "scope": "Approves the simplified Project rule and its previously presented text/availability/retention details. The request to review Kind does not approve new Kind rules or other MXF field/navigation proposals."
+  },
+  "agreedBellaRules": {
+    "sourceOrderWithinMxf": [
+      "Usable active Preface.ProjectName",
+      "Usable Project attributes on the qualified physical file SourcePackage",
+      "Unavailable; blank on database-unavailable MXF fallback if neither is usable"
+    ],
+    "fileOwnedKeys": "Within the qualified file owner, use exact _PJ, then exact PROJNAME, then _PJ within an explicitly recorded supported _USER list. Follow only those known paths. Do not use key prefixes, arbitrary strings, UserComments, generic recursive flattening, master/source Project recovery or a synthesized DMS1 Project attribute.",
+    "unicode": "Decode header ProjectName and attribute names as their known UTF-16BE types. Supported Avid/AAF indirect String values identify their type and B/L byte order before UTF-16BE/LE text. Reuse the planned bounded UTF-16 helper with checked code units/surrogates, QtEndian and one owned QString. Stop at a bounded zero terminator when present; otherwise complete valid text may end at its declared boundary. No guessed UTF-8/MacRoman, numeric coercion or lossy replacement.",
+    "availabilityAndConflicts": "Missing, empty, whitespace-only or individually unreadable candidates can advance while framing and ownership remain trustworthy. Preserve spelling, case, Unicode and all spacing in a nonblank value. Conflicting usable duplicates at the same priority leave Project unavailable rather than hiding the conflict behind a lower key/source. No usable header/file-owned value leaves MXF Project unavailable and blank on database-unavailable fallback, retaining the physical row and independent facts. Never infer Project from a path, filename or open application.",
+    "retention": "Stop after a usable preferred value. Retain only the selected Unicode text and necessary compact availability/source context. Release temporary bytes, tag/package indexes and unused alternatives. No routine lower-candidate comparison, permanent Project ancestry graph or extra media open."
+  },
+  "unchanged": [
+    "Already approved MDB Project source fallback remains unchanged; this simplified order is within an MXF read.",
+    "MXF identity and Clip Name requirements remain agreed.",
+    "Existing Duration/Original Bin and other approved source-opening rules remain authoritative.",
+    "OldScanner remains active until explicit cutover approval; Bin Filter remains outside this work."
+  ],
+  "tradeoff": "Project available only on a master or earlier source may remain blank. The thirteen inspected headers all had usable header Project, so the simpler rule covers those examples without demonstrating universal writer coverage or a measured speed improvement.",
+  "remaining": [
+    "Kind is the next focused review and its new MXF rules remain unapproved.",
+    "Overall PMR/MDB/MXF source precedence and header-opening triggers remain for the final priority review.",
+    "Other formats, MXF navigation/scheduling, malformed cases, third-party variants and fresh implementation verification remain separate work."
+  ],
+  "supersedes": "The pending status of the simplified two-source Project proposal in the focused review, research receipt and simplification record. The earlier four-source proposal remains historical research and is not approved. Native/corpus findings and artifact hashes remain unchanged.",
+  "references": {
+    "focusedReview": "docs/reviews/2026-10-21-bella-mxf/project.md",
+    "researchEvidence": "Project Bella/evidence/mxf-project-2026-10-22.json",
+    "simplificationRecord": "Project Bella/evidence/mxf-project-simplification-2026-10-22.json",
+    "bellaPlan": "Project Bella/README.md#mxf-project-agreed-rules"
+  },
+  "validation": {
+    "kind": "Requirements approval record and documentation consistency checks only",
+    "runtimeImplementation": false,
+    "productionTestsExecuted": false,
+    "nativeOrMediaResearchRepeated": false,
+    "rawResearchHashReceiptsChanged": false
+  }
+}

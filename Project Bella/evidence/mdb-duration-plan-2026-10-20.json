@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-20",
+  "timezone": "Australia/Sydney",
+  "purpose": "Approval of Bella Duration maths, correctly linked DF and genuine-absence/damage display policy.",
+  "status": "Approved requirements; independent implementation, format/edge coverage and cutover are still future work.",
+  "authorization": "OK, let's lock this in for Bella: keep the verified Duration maths, use the correctly linked drop-frame flag, use NDF if genuinely missing, and leave Duration blank if damaged. What's next?",
+  "agreedBellaRule": {
+    "maths": "Carry verified count/rate preservation and integer/fraction calculation rules and useful test cases into fresh small Bella helpers; do not patch OldScanner into Bella.",
+    "durationSource": "Own MDB descriptor Length and SampleRate remain paired and preserved; no header read or header repair for Duration, including its numbering.",
+    "audioDisplay": "Use the discussed qualified own-file MDB editing clock for audio frame presentation. Preserve samples and original fractions; convert with checked exact arithmetic and round only the final frame quotient, nearest with positive halves upward.",
+    "rateMeaning": "Use the discussed source-aware supported Avid editing-rate interpretation without changing original source values or aliasing audio sampling frequency; native video conversion proof does not claim the complete native audio UI path.",
+    "format": "HH:MM:SS:FF with colons; explicit supported nominal base only for numbering. Audio visible Frame Rate stays blank.",
+    "dfAssociation": "Use only correctly linked applicable timecode, including an explicitly associated source record when required, with source-track/kind/position/span and compatible clock qualification. Do not sweep all reachable TCCPs.",
+    "dfLayout": "Legacy supported Flags bit0; separately typed OMF2 Boolean Drop. Do not reject a valid legacy word solely because higher bits exist.",
+    "dfMode": "Use compatible recorded DF/NDF; do not infer DF from29.97/59.94. Supported NDF-only clocks need no DF lookup.",
+    "genuinelyMissing": "After complete supported lookup, use NDF as explicit fallback while preserving absence distinct from recorded false.",
+    "damaged": "Required damaged/contradictory/unsafe timing or applicable numbering leaves formatted Duration blank, retaining independently valid exact data and physical file.",
+    "applicability": "Clearly unrelated different-clock source timecode cannot override or blank a known NDF-only Duration. Broken references do not establish genuine absence.",
+    "zeroAndLong": "Established zero displays00:00:00:00, valid positive durations rounded tozero also displayzero while preserving samples; hours can exceed24. Unknown required values do not become numeric zero.",
+    "notStartTimecode": "Do not add StartTC or replace physical Length with editorial/source/master lengths.",
+    "runtimeDesign": "Compact selected values and availability/reason status, scoped temporary parsing, no permanent comparison graph solely for Duration."
+  },
+  "supersedes": [
+    "Earlier proposed/pending status for the discussed audio display design, verified rounding and detailed linked DF/absence/damage policy in historical evidence and reports."
+  ],
+  "remaining": {
+    "nextReview": "General MDB structural damage/missing-reference handling, then supported layouts/versions.",
+    "coverage": "Safe supported CPNT/MSLT/reference/span layouts, uncommon rates, checked overflow, zero/missing and malformed fixtures are implementation verification work; no automatic claim of support for unobserved forms.",
+    "presentation": "Duration sorting and CSV details remain separate presentation work.",
+    "later": "Review media-header capabilities, then consolidate the full priority table at the end as requested before implementation/design completion."
+  },
+  "references": [
+    {
+      "path": "Project Bella/evidence/mdb-duration-2026-10-19.json",
+      "sha256": "306c5bd8c567323c2d930218bbff42d2eedcd6465deb122a3bb7bb694f7cd194"
+    },
+    {
+      "path": "Project Bella/evidence/mdb-duration-clock-2026-10-19.json",
+      "sha256": "a29d66698d82e09e4c102372113c9000761733c8beea2aa92bbe54e901372bf0"
+    },
+    {
+      "path": "Project Bella/evidence/mdb-audio-duration-display-2026-10-20.json",
+      "sha256": "99ef37b90801a0b23ca888781c11f3e3d7a6124c18353c0d40b434f8a56a529d"
+    },
+    {
+      "path": "Project Bella/evidence/mdb-drop-frame-2026-10-20.json",
+      "sha256": "82c4971c73c6f139c4d1b2a0154fdbdb906635d31bf52d13e8fce639867ddc9b"
+    },
+    {
+      "path": "Project Bella/README.md",
+      "sha256": "ed3211589a381b74f6400cf9519db8b70e9cfe4619392ea778a6025946134447"
+    },
+    {
+      "path": "docs/reviews/2026-10-18-bella-mdb/duration-clock.md",
+      "sha256": "e03d0ada76265b7fa1c22f2537c7ae7bbf19603fc832cebc306e3ffd0cd49419"
+    },
+    {
+      "path": "docs/reviews/2026-10-18-bella-mdb/drop-frame.md",
+      "sha256": "37c7d7b950bde2316bf4abfeb6349bdb5e6de923230228fd73044060e5cfbce2"
+    }
+  ],
+  "validation": {
+    "scope": "Approval/requirements documentation and JSON only; existing raw/native/corpus research receipts preserved.",
+    "productionCodeChanged": false,
+    "newBinaryOrMediaReads": false,
+    "newBuildsOrTests": false,
+    "appRun": false,
+    "binFilterChanged": false,
+    "oldScannerActive": true,
+    "performanceOrFullAccuracyGuarantee": false
+  },
+  "supersededInPartBy": {
+    "date": "2026-10-21",
+    "receipt": "mxf-fallback-fields-2026-10-21.json",
+    "scope": "Only the blanket MDB-only Duration source restriction is superseded by the approved database-unavailable MXF fallback. Original authorization, findings and other rules remain historical and unchanged."
+  }
+}

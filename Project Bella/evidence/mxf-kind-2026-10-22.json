@@ -1,0 +1,800 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "MXF Kind: installed Media Composer and MDVx paths, current MediaMuster behavior, actual owned descriptors and a small explicit Bella class-mapping proposal.",
+  "request": "OK, let's lock in header Project → file-owned Project → blank. Next, how do Media Composer and MDVX read Kind from MXF, and what should Bella read and keep? How does that compare with the current MediaMuster implementation?",
+  "status": "The focused MXF Kind rules were approved on 2026-10-22; requirements remain unimplemented. Earlier proposal wording within the research body is historical and superseded by the separate approval receipt. Native/source/corpus findings are unchanged.",
+  "precedingProjectApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-project-plan-2026-10-22.json",
+    "sha256": "816a740567e4f4fdc24ee3bd0ce51ee509e0c505cf207f8635aa2e867887892e",
+    "bytes": 4822
+  },
+  "rawReceipts": [
+    {
+      "path": "/private/tmp/bella-mxf-kind-mc-20261022/findings.json",
+      "sha256": "dc591369c598c495e999c94d9fe97a509fed8c1f4ebbc31d432064e27680fb5f",
+      "bytes": 11970
+    },
+    {
+      "path": "/private/tmp/bella-mxf-kind-mdvx-20261022/findings.json",
+      "sha256": "0f096940b775f7eda12b2cd324ac619e70189419a0ccfe4a087c89f160a6d5fb",
+      "bytes": 9886
+    },
+    {
+      "path": "/private/tmp/bella-mxf-kind-current-20261022.json",
+      "sha256": "3ba1e4ecf1ffb8d817c009be75d27667eda7f6293cb9de3f5eafc6864246bef8",
+      "bytes": 51747
+    }
+  ],
+  "mediaComposer": {
+    "date": "2026-10-22",
+    "timezone": "Australia/Sydney",
+    "purpose": "Connect the ordinary Media Composer MXF import path to its own source-mob descriptor factory and audio/video descriptor families, separately from track DataDefinition.",
+    "method": "Read-only selective arm64 disassembly, installed symbol inventory, Mach-O data-map extraction and non-bind chained-vtable target decoding. No app, private API, parser, media read or repository edit.",
+    "findings": [
+      {
+        "topic": "Ordinary scanner connection",
+        "evidence": "The previously verified scanner domain CopyOut slot resolves to AAFDomain::CopyOut 0x4a184 and its composition import slot resolves to AComposition::ConvertCompositionFromAAF 0x193658. In that conversion, the role-3 source-mob branch queries IAAFSourceMob at 0x193a64..0x193a88, obtains that source mob's own EssenceDescriptor at 0x193aa4, then calls AAFDomain::CreateDescriptor at 0x193ab4. The resulting descriptor receives a virtual ConvertDescriptorFromAAF call at slot 0x190, 0x193afc. This is linked to ordinary typed MXF import, not an unrelated MDB-only track-type helper."
+      },
+      {
+        "topic": "Native descriptor factory",
+        "anchors": [
+          "CreateDescriptor 0x2ff64",
+          "private-class map 0x1219c98",
+          "AAF exact-class map 0x1219c58",
+          "AAF interface map 0x1219b88",
+          "NewByClassID call 0x30428"
+        ],
+        "evidence": "CreateDescriptor inspects exact private/class IDs and then supported descriptor interfaces. The decoded map includes IAAFPCMDescriptor and IAAFSoundDescriptor to internal PCMA, IAAFWAVEDescriptor to WAVE, IAAFAIFCDescriptor to AIFC, IAAFCDCIDescriptor to CDCI, IAAFRGBADescriptor to RGBA, and private Avid MPGIDescriptor to MPGI. It calls NewByClassID with the selected internal class. Codec-specific branches can adjust a CDCI mapping to another supported video class. MultipleDescriptor and additional unrelated classes are also present; these are not new Bella coverage requirements."
+      },
+      {
+        "topic": "Own descriptor import and family",
+        "evidence": "The same descriptor class vtables used for import resolve slot 0x190 to their ConvertDescriptorFromAAF overrides, including PCM 0x3ea754, WAVE 0x3fb280, AIFC 0x3677c8, CDCI 0x3434a4 and RGBA 0x3e5e50. At the common GetTrackType slot 0x238, PCM, WAVE, AIFC, MPEG-audio and AES3-PCM descriptor vtables resolve to AudioMediaDesc::GetTrackType 0x363dcc, which returns 2. CDCI, RGBA and DID/video vtables resolve to VideoMediaDesc::GetTrackType 0x343950, which returns 1. This independently connects typed imported media descriptors to native sound/picture families."
+      },
+      {
+        "topic": "Object construction cross-check",
+        "evidence": "Fresh RegNew constructor extractions show PCMAudioDescriptor::RegNew calls the AudioMediaDesc base constructor and installs the PCMAudioDescriptor vtable, while CDCIDescriptor::RegNew constructs DIDDescriptor and installs the CDCIDescriptor vtable. Other selected WAVE/AIFC/RGBA constructors provide corresponding class-specific vtable installation evidence. The audit does not reconstruct every global class-registry registration."
+      },
+      {
+        "topic": "Descriptor family differs from track DataDefinition",
+        "evidence": "These classification facts come from the imported source mob's own EssenceDescriptor and its concrete class/interface. Track DataDefinition is a separate route, with separate aafGetTrackTypeFromDDEF/GetTrackTypeFromDDEF symbols. This audit does not select a track's picture/sound definition as a fallback for Bella's physical-file Kind."
+      },
+      {
+        "topic": "Other native families and limits",
+        "evidence": "AMediaDesc::GetTrackType 0x17df74 returns 0; DataEssenceDescriptor::GetTrackType 0xae2734 returns 16. These show other native internal values exist but do not establish a universal Media Composer Kind column, the complete MXF data factory route or a Bella Data label. Exact new seven-class Bella lookup rules remain a separate design proposal."
+      }
+    ],
+    "limits": [
+      "Selected installed managed-media import and descriptor-family paths, not every Media Composer UI, playback, AMA, export or malformed-input path.",
+      "No proof that Media Composer itself implements Bella's proposed exact seven-class lookup, source priority or unknown-value display. Native factory is broader and uses interface/class and codec-specific logic.",
+      "GenericPictureEssenceDescriptor, new subclasses and arbitrary MultipleDescriptor alternatives are not all individually demonstrated by the selected native constructor traces. Do not extend Bella's supported release scope from native machinery alone.",
+      "Track GetTrackType family methods are connected to descriptor classes in the import path; this is not a fully traced native GUI Kind-cell getter.",
+      "No new Bella approval, scanner implementation, runtime test or measured speed/memory claim."
+    ],
+    "binary": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+    },
+    "priorPathEvidence": [
+      {
+        "path": "/private/tmp/bella-mxf-clipname-mc-20261022/CopyOut.txt",
+        "sha256": "8d8e3b5d98065844e96b952ac335a0cf43bb9a0ee7727ba5bbd7162504ce2aca",
+        "bytes": 10255
+      },
+      {
+        "path": "/private/tmp/bella-mxf-clipname-mc-20261022/ConvertCompositionFromAAF.txt",
+        "sha256": "f47a3ccd53bb33a00ee88c873caeb592f842a97f92d3eb767965b304289f69c9",
+        "bytes": 109879
+      },
+      {
+        "path": "/private/tmp/bella-mxf-clipname-mc-20261022/vtable-slots.json",
+        "sha256": "6de6e4b2a4b4a6dc4ccdb212e896c2c55acab5c7b7c6b54a4c11c03f932a06f1",
+        "bytes": 2063
+      },
+      {
+        "path": "/private/tmp/bella-mxf-native-20261021/LocalMDB-ScanMXF.txt",
+        "sha256": "d13af51c72b5b144a49a8fd14606201eeeee71f143880366b8c53890d5c4fd2f",
+        "bytes": 55242
+      },
+      {
+        "path": "/private/tmp/bella-mxf-native-20261021/MSMDB-ScanMXF.txt",
+        "sha256": "fbfd816b70edc479839cb730df023c771122f81300d6051e614b840feb1cb589",
+        "bytes": 33761
+      }
+    ]
+  },
+  "mdvx": {
+    "date": "2026-10-22",
+    "method": "Read-only arm64 static disassembly; bounded functions extracted from fresh22Oct capture for identical installed binary. Native usage-label jump table freshly read from Mach-O. No app/private API/UI/media execution or repo writes.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "size": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+    },
+    "ordinaryMxfProjection": {
+      "fields": "MDVxMXF.openFile constructs only clipname/project/fileUID/matUID dictionary; addInfoToItem0x1000326b4..0x100032804 copies exactly those four fields. No picture/sound/Kind/isVideo/usage setter in this wrapper.",
+      "getType": "MDVxMXF.getType0x100032204 returns constant4 for every MXF. MDVxMediafile.openFile uses this reader-category code at0x100043b04..0x100043b1c after selecting MXF byextension. It is container-type, not Audio orVideo.",
+      "kindColumn": "MDVxCore tableView:viewForTableColumn KindCellID0x100050a00..0x100050a40 reads DB_usageCode, converts1..15 through labels at0x1000e94d0. 1=PRECOMP,7=empty,15=IMPORTED; outofrangeempty. String-value path repeats same lookup0x1000512a8..0x1000512f0. This Kind is Avid usage/type, notBella Audio/VideoKind.",
+      "bareFallback": "DatabaseItem.init and PMRsetup/unreferencedsetup do notwrite usageCode; setter exists butMXFwrapper doesnotcallit. Thus bare noMDB MXFfallback leaves NSObjectzero-initialized usageCode0, which staticKindcolumnroute displays empty. No UI executionclaim.",
+      "audioExtensionShortcut": "checkForAudioTypeByExtension0x100030c34 recognises aif/wav/sd2/lrc, stamps internal FourCC0x4455415f (_AUD bytes) and CompressionString Audio. Doesnotrecognise mxfsuffix. This affects compression/audio filtering, not a MXF Kind projection."
+    },
+    "libraryDescriptorClassification": {
+      "owner": "Qualified file SourcePackage.Descriptor selected through established ECD->LinkedPackageUID package path; required descriptor strongref read0x100010180..0x100010194.",
+      "picture": "ami_read_info0x100010198..0x1000101ac tests descriptor subclass GenericPictureEssenceDescriptor. Iftrue reads optional picturegeometry/layout/aspect/coding fields.",
+      "sound": "Ifnotpicture,0x1000108a8..0x1000108bc tests subclass GenericSoundEssenceDescriptor; iftrue reads optional audiosamplingrate/quantization/channelcount.",
+      "unknown": "Neitherclass falls through0x100010944 to trackprocessing. No automatic Unknown string emitted here. Descriptorclassification doesnotitself set info.isVideo.",
+      "damage": "Missing required descriptorlink or failedpresenttypedfield can abort ami. No descriptor-versus-track contradiction check identified in reviewedroute."
+    },
+    "libraryTrackClassification": {
+      "owner": "The alreadyselected singular MaterialPackage tracks, not arbitraryfile/physicaltracks, loop0x100010944..0x1000109ec.",
+      "dataDefinition": "mxf_uu_get_track_datadef0x100065b84 follows GenericTrack.Sequence strongref then reads StructuralComponent.DataDefinition UL. mxf_is_picture0x100031c14 and mxf_is_sound0x100031c88 each compare standard andlegacy16-byte labels.",
+      "avidIndirection": "If directlabelnotrecognised as picture/sound/timecode, ami0x1000109ac..0x1000109bc calls mxf_avid_get_data_def0x1000171e8, dereferences Aviddefinition reference and reads DefinitionObject.Identification, then tests picture/sound again.",
+      "unknownAndOtherTracks": "Only picture/sound tracks proceed through tracknumber/duration/linkwork. Timecode/directother and unresolved/unrecognisedDataDefinition are skipped in thisloop; malformed requiredsequence/DataDefinition get failure aborts ami at0x100010984->0x100010f78.",
+      "counts": "Countsallacceptedmaterialpicturetracks atinfo+0x64 andsoundtracks atinfo+0x68; these counters are later printed bydiagnosticami_print_info, notordinaryrow.",
+      "isVideo": "When material SourceClip.SourcePackageID (direct, Sequencecomponent or EssenceGroupchoice) matches full32-byte selectedFileUID,0x100010b88..0x100010b9c calls mxf_is_picture and storesboolean intoinfo+0x7c, beside tracknumber at+0x78.",
+      "ambiguity": "Loopcontinues; latermatchingmaterialtrackcanoverwritetheselectedtrack/isVideofacts. No conflictingpicture/sound matchrejection identified. Thisisnotverifiedsafegraphselectionrule forBella.",
+      "noUnknownValidity": "info initializedzero; isVideo is aboolean withoutseparateUnknownvalidity in tracedstruct. ami_print_info0x1000127c4..0x1000127ec printsVideoiftrue,Audiootherwise. Diagnosticfalse labeldoesnotestablishvalidAudioKind when nomatchingtrackwasfound."
+    },
+    "plainSummary": "BundledlibMXF can recognise picture/sound descriptors and qualified trackDataDefinition labels. OrdinaryMDVx doesnotcopythatclassificationintothemediaitem; itsKindcolumnmeansusage/type. ItsconstantMXFgetType4onlymeansMXFcontainerreader.",
+    "bellaImplications": [
+      "Borrow descriptor-type recognition with qualified ownership; do not assume MDVx ordinary Kind isAudio/Video.",
+      "Use explicit Audio/Video/unknown result rather than interpreting unsetisVideo=false asAudio.",
+      "Do not inherit lastmatchingtrack wins or descriptor/track disagreement silence.",
+      "Thiscomparison doesnotchooseBella metadata priority/headeropeningpolicy orchangeMDBfixed6classrules."
+    ],
+    "limits": [
+      "Installedbinary only; staticrouteaudit notruntimebehavior/benchmark.",
+      "No claimallMXFproducerclasses coveredbylinkedliborordinaryMDVx.",
+      "No exhaustivefilter/iconpathaudit; audioextensionshortcut is scopedtocapturedmethod.",
+      "Exactstandard/legacyULbytevalues derivablefromcapturedmxf_is_picture/sound butnotrequiredtoconcludeordinaryprojectionabsence."
+    ]
+  },
+  "currentMediaMuster": {
+    "sourceInputs": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+        "sha256": "c8c68e78db5f3efaa62235f55624c5478e89a0adc37581a922af050f931cad55",
+        "bytes": 63597
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+        "sha256": "379a31643b62b945e3e1ed83245e5f3a7be8df4ebeec73aea31327c1d915b374",
+        "bytes": 23401
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+        "sha256": "6d67b2300f380cd63a50547595154ee27d8ab69f36b6d87e83e81fd3a33ff75c",
+        "bytes": 54490
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+        "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6",
+        "bytes": 10816
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+        "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935",
+        "bytes": 5202
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+        "sha256": "c85f1d11bcb15eddcfbba7c9cbbc57c8fdafdb8cac8c4af6b575d62c1575c746",
+        "bytes": 25170
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+        "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3",
+        "bytes": 12788
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+        "sha256": "f9f633bc0022e5f681b210d58a95cf472b04db0b6189ead78f9d22b7e8618a22",
+        "bytes": 60904
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-18-bella-mdb/kind.md",
+        "sha256": "906961295783f979df79ca56809cdd3bcc6090495e001743bd77728731bf36ab",
+        "bytes": 16933
+      }
+    ],
+    "findings": [
+      "The selected physical file SourcePackage owns its Descriptor reference; reference completeness and uniqueness are required.",
+      "Known GenericSound or GenericPicture ancestry supplies Audio or Video. In addition, registered AudioSamplingRate or SoundEssenceCompression presence can imply Audio; PictureEssenceCoding presence can imply Video, including on an unknown class. Presence does not require a successfully decoded value.",
+      "Both audio and video evidence on one descriptor leaves its Kind/technical projection unresolved. MultipleDescriptor children are traversed with reference and cycle checks; Kind does not select by LinkedTrackID. Competing Kind observations are withheld by central selection, not resolved by child order.",
+      "Existing unavailable Kind displays blank. Bella already approved lowercase unknown. Current header-before-MDB source priority is not approval of Bella source precedence.",
+      "Inspected tests cover known WaveAudio, unknown-class sound-property inference, bad ownership and incomplete MultipleDescriptor references. A stricter Bella class table intentionally changes the unknown-class inference case; these tests were not executed."
+    ],
+    "importantSourceLocations": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+        "lines": "510-552, 654-668, 742-763, 1045-1075"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+        "lines": "289-301, 327"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+        "lines": "224-236"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+        "lines": "338-354, 519-538, 755-784"
+      }
+    ]
+  },
+  "actualHeaders": {
+    "method": "Independent fresh read of thirteen already-qualified initial header metadata ranges, checked against prior header hashes with immediate size/mtime/inode stability. No essence or full-media hashes.",
+    "count": 13,
+    "descriptorCounts": {
+      "WaveAudioDescriptor": 5,
+      "CDCIEssenceDescriptor": 7,
+      "RGBAEssenceDescriptor": 1
+    },
+    "audio": 5,
+    "video": 8,
+    "ownTrackResearchAgreement": "13/13; does not become runtime Kind voting or a required extra track walk.",
+    "linkedTrackId": "Absent in all thirteen. Own TrackID is not always 1; one is 3.",
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1001.WAVA01.D8875D202DA97BA.mxf",
+        "fileBytes": 10403042,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "f8475c6079b53ff1aefaa33c7306a48538c43ffba8c3e3b189da14617d3cef44",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f10130000007ba92d202585059152bc34363bcdaf64",
+        "ownDescriptor": {
+          "offset": 122972,
+          "className": "WaveAudioDescriptor",
+          "setKeyHex": "060e2b34025301010d01010101014800",
+          "instanceUIDHex": "4d9b6089b6a23b4ba29c5518f62d610c",
+          "linkedTrackIdFields": [],
+          "audioSamplingRate": [
+            {
+              "hex": "0000bb8000000001",
+              "range": [
+                123068,
+                8
+              ],
+              "type": "MXF_RATIONAL_TYPE"
+            }
+          ],
+          "soundCoding": [],
+          "pictureCoding": [],
+          "multipleChildren": []
+        },
+        "kindByProposedMapping": "Audio",
+        "ownTrackId": 1,
+        "ownTrackDataDefinitionResearchCrossCheck": [
+          "Sound"
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/A001_C001_V01.D7EB5BC5323BV.mxf",
+        "fileBytes": 490865249,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "7bf7822774ef479d0425f2b1756ef96242cfc40e68b5aebe2c83b6d21ead4770",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010101010f00130000003b32c55b39229202060e2b347f7f2a80",
+        "ownDescriptor": {
+          "offset": 143987,
+          "className": "CDCIEssenceDescriptor",
+          "setKeyHex": "060e2b34025301010d01010101012800",
+          "instanceUIDHex": "686d4ad6f8671c4fa1ca5224ee1cc311",
+          "linkedTrackIdFields": [],
+          "audioSamplingRate": [],
+          "soundCoding": [],
+          "pictureCoding": [
+            {
+              "hex": "060e2b340401010a0401020271130000",
+              "range": [
+                144402,
+                16
+              ],
+              "type": "MXF_UL_TYPE"
+            }
+          ],
+          "multipleChildren": []
+        },
+        "kindByProposedMapping": "Video",
+        "ownTrackId": 3,
+        "ownTrackDataDefinitionResearchCrossCheck": [
+          "Picture"
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/5511410TA01.6A041816BE45ECA.mxf",
+        "fileBytes": 2134625,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "050a663a4f9d5a77abfea1df9581b2943205234cb7277e95e3aebded19dbf032",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ec45be167311069643cb7c57583610fa",
+        "ownDescriptor": {
+          "offset": 135501,
+          "className": "WaveAudioDescriptor",
+          "setKeyHex": "060e2b34025301010d01010101014800",
+          "instanceUIDHex": "f9f7c0b455ff47a7938606da1647e75a",
+          "linkedTrackIdFields": [],
+          "audioSamplingRate": [
+            {
+              "hex": "0000bb8000000001",
+              "range": [
+                135597,
+                8
+              ],
+              "type": "MXF_RATIONAL_TYPE"
+            }
+          ],
+          "soundCoding": [],
+          "pictureCoding": [],
+          "multipleChildren": []
+        },
+        "kindByProposedMapping": "Audio",
+        "ownTrackId": 1,
+        "ownTrackDataDefinitionResearchCrossCheck": [
+          "Sound"
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041581_152C6152C6FCEV.mxf",
+        "fileBytes": 276741217,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "41d6454ebd62894de5c876116d8da15f95663bcbc4753729ef14341937360244",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ce6f2c1573110696ab807c57583610fa",
+        "ownDescriptor": {
+          "offset": 126733,
+          "className": "CDCIEssenceDescriptor",
+          "setKeyHex": "060e2b34025301010d01010101012800",
+          "instanceUIDHex": "1674ed19fc71470e9ca4d0b236c6fad6",
+          "linkedTrackIdFields": [],
+          "audioSamplingRate": [],
+          "soundCoding": [],
+          "pictureCoding": [
+            {
+              "hex": "060e2b340401010a0401020271010000",
+              "range": [
+                127148,
+                16
+              ],
+              "type": "MXF_UL_TYPE"
+            }
+          ],
+          "multipleChildren": []
+        },
+        "kindByProposedMapping": "Video",
+        "ownTrackId": 1,
+        "ownTrackDataDefinitionResearchCrossCheck": [
+          "Picture"
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7280108SMA01.6A04F087D5405A.mxf",
+        "fileBytes": 2163297,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "7250a5396f79cd9b932e1af16fd33402f436ce0f4f11de7f51d80a0efc8fac70",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f101300000005547d087311069613b27c57583610fa",
+        "ownDescriptor": {
+          "offset": 126951,
+          "className": "WaveAudioDescriptor",
+          "setKeyHex": "060e2b34025301010d01010101014800",
+          "instanceUIDHex": "72f271b89b6e473398e7f63f2badc26c",
+          "linkedTrackIdFields": [],
+          "audioSamplingRate": [
+            {
+              "hex": "0000bb8000000001",
+              "range": [
+                127047,
+                8
+              ],
+              "type": "MXF_RATIONAL_TYPE"
+            }
+          ],
+          "soundCoding": [],
+          "pictureCoding": [],
+          "multipleChildren": []
+        },
+        "kindByProposedMapping": "Audio",
+        "ownTrackId": 1,
+        "ownTrackDataDefinitionResearchCrossCheck": [
+          "Sound"
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/1730_8646_submastede88816cv.mxf",
+        "fileBytes": 31637089,
+        "headerRange": [
+          256,
+          524064
+        ],
+        "headerSha256": "ae8cf0aff0369ca65ed2f11e9ab0873c57eae9292228d9123455ae748b757711",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f10130000006c8188de27100696dc0d30138b72a179",
+        "ownDescriptor": {
+          "offset": 120992,
+          "className": "CDCIEssenceDescriptor",
+          "setKeyHex": "060e2b34025301010d01010101012800",
+          "instanceUIDHex": "a38bbc74b97c4fa084b30d57a02d9308",
+          "linkedTrackIdFields": [],
+          "audioSamplingRate": [],
+          "soundCoding": [],
+          "pictureCoding": [
+            {
+              "hex": "060e2b340401010a0401020271010000",
+              "range": [
+                121407,
+                16
+              ],
+              "type": "MXF_UL_TYPE"
+            }
+          ],
+          "multipleChildren": []
+        },
+        "kindByProposedMapping": "Video",
+        "ownTrackId": 1,
+        "ownTrackDataDefinitionResearchCrossCheck": [
+          "Picture"
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7293007LMA01.6A0500C57EA1CA.mxf",
+        "fileBytes": 2568801,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "3fd75b378276e469f6799026f3e68db865f2e5e1317666c721dd3e50db540a52",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f10130000001cea570c73110696a5e97c57583610fa",
+        "ownDescriptor": {
+          "offset": 127394,
+          "className": "WaveAudioDescriptor",
+          "setKeyHex": "060e2b34025301010d01010101014800",
+          "instanceUIDHex": "0ef1d8e6f03549aabad52eca750c6e37",
+          "linkedTrackIdFields": [],
+          "audioSamplingRate": [
+            {
+              "hex": "0000bb8000000001",
+              "range": [
+                127490,
+                8
+              ],
+              "type": "MXF_RATIONAL_TYPE"
+            }
+          ],
+          "soundCoding": [],
+          "pictureCoding": [],
+          "multipleChildren": []
+        },
+        "kindByProposedMapping": "Audio",
+        "ownTrackId": 1,
+        "ownTrackDataDefinitionResearchCrossCheck": [
+          "Sound"
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/V01.6A050275_B95B90B95B9CCV.mxf",
+        "fileBytes": 46431841,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "2fdd3de7e4ad0db8c93ed7dad92be469eaf0424c61da09716802d21f0bab8499",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ccb9950b7311069637c77c57583610fa",
+        "ownDescriptor": {
+          "offset": 126426,
+          "className": "CDCIEssenceDescriptor",
+          "setKeyHex": "060e2b34025301010d01010101012800",
+          "instanceUIDHex": "22ef8ec047054aadbf32020165b9c279",
+          "linkedTrackIdFields": [],
+          "audioSamplingRate": [],
+          "soundCoding": [],
+          "pictureCoding": [
+            {
+              "hex": "060e2b340401010a0401020271010000",
+              "range": [
+                126821,
+                16
+              ],
+              "type": "MXF_UL_TYPE"
+            }
+          ],
+          "multipleChildren": []
+        },
+        "kindByProposedMapping": "Video",
+        "ownTrackId": 1,
+        "ownTrackDataDefinitionResearchCrossCheck": [
+          "Picture"
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf",
+        "fileBytes": 3207777,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "4e1ea26a6459f3e1d07e3c361986602f1c28e8a9d31d0de4ff7ef5ed80676b38",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f10130000009a583c0a5512069048e346fc807fda72",
+        "ownDescriptor": {
+          "offset": 131287,
+          "className": "WaveAudioDescriptor",
+          "setKeyHex": "060e2b34025301010d01010101014800",
+          "instanceUIDHex": "e21985ff2af7ae4fa91f3963c00c7f18",
+          "linkedTrackIdFields": [],
+          "audioSamplingRate": [
+            {
+              "hex": "0000bb8000000001",
+              "range": [
+                131383,
+                8
+              ],
+              "type": "MXF_RATIONAL_TYPE"
+            }
+          ],
+          "soundCoding": [],
+          "pictureCoding": [],
+          "multipleChildren": []
+        },
+        "kindByProposedMapping": "Audio",
+        "ownTrackId": 1,
+        "ownTrackDataDefinitionResearchCrossCheck": [
+          "Sound"
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/Untitled Sequence.175B1728V.mxf",
+        "fileBytes": 11119016545,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "0d324bb99c9183d04541c75b00944e5808410cee4d72eae603c322eaf6994a62",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f101300000028175b1761120690badf46fc807fda72",
+        "ownDescriptor": {
+          "offset": 123673,
+          "className": "CDCIEssenceDescriptor",
+          "setKeyHex": "060e2b34025301010d01010101012800",
+          "instanceUIDHex": "c52b84f5709c8e4f80e458ae41375e12",
+          "linkedTrackIdFields": [],
+          "audioSamplingRate": [],
+          "soundCoding": [],
+          "pictureCoding": [
+            {
+              "hex": "060e2b340401010a0401020271030000",
+              "range": [
+                124088,
+                16
+              ],
+              "type": "MXF_UL_TYPE"
+            }
+          ],
+          "multipleChildren": []
+        },
+        "kindByProposedMapping": "Video",
+        "ownTrackId": 1,
+        "ownTrackDataDefinitionResearchCrossCheck": [
+          "Picture"
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69684C0_1C5401C5406FAV.mxf",
+        "fileBytes": 4754399329,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "61d42c7317b051b4233a1b7724c5bc66914af5d30498e0ed7fadd6b73e7ca27b",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f1013000000fa06541c55120690f7b846fc807fda72",
+        "ownDescriptor": {
+          "offset": 133290,
+          "className": "CDCIEssenceDescriptor",
+          "setKeyHex": "060e2b34025301010d01010101012800",
+          "instanceUIDHex": "42cf438d62804f4f8a2c8212f7a13b87",
+          "linkedTrackIdFields": [],
+          "audioSamplingRate": [],
+          "soundCoding": [],
+          "pictureCoding": [
+            {
+              "hex": "060e2b340401010d0401020203070100",
+              "range": [
+                133661,
+                16
+              ],
+              "type": "MXF_UL_TYPE"
+            }
+          ],
+          "multipleChildren": []
+        },
+        "kindByProposedMapping": "Video",
+        "ownTrackId": 1,
+        "ownTrackDataDefinitionResearchCrossCheck": [
+          "Picture"
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_78D9V02.22180610.586550.mxf",
+        "fileBytes": 2490977,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "a38155c6b34a9f570b7648fb69751b822e9a1818da0ca5be7ec975d03d9098f5",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64",
+        "ownDescriptor": {
+          "offset": 119014,
+          "className": "RGBAEssenceDescriptor",
+          "setKeyHex": "060e2b34025301010d01010101012900",
+          "instanceUIDHex": "6f45e868593fab438eb8d91b163d23bf",
+          "linkedTrackIdFields": [],
+          "audioSamplingRate": [],
+          "soundCoding": [],
+          "pictureCoding": [],
+          "multipleChildren": []
+        },
+        "kindByProposedMapping": "Video",
+        "ownTrackId": 1,
+        "ownTrackDataDefinitionResearchCrossCheck": [
+          "Picture"
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041582_152D2152D2556V.mxf",
+        "fileBytes": 316171873,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "f0ce781201559fa7494cb139a75b149b7a94fe0d43281428073afed0f8ca7685",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f101300000056252d15731106965e367c57583610fa",
+        "ownDescriptor": {
+          "offset": 126849,
+          "className": "CDCIEssenceDescriptor",
+          "setKeyHex": "060e2b34025301010d01010101012800",
+          "instanceUIDHex": "65035e439b344933aafbf254b48603be",
+          "linkedTrackIdFields": [],
+          "audioSamplingRate": [],
+          "soundCoding": [],
+          "pictureCoding": [
+            {
+              "hex": "060e2b340401010a0401020271010000",
+              "range": [
+                127264,
+                16
+              ],
+              "type": "MXF_UL_TYPE"
+            }
+          ],
+          "multipleChildren": []
+        },
+        "kindByProposedMapping": "Video",
+        "ownTrackId": 1,
+        "ownTrackDataDefinitionResearchCrossCheck": [
+          "Picture"
+        ]
+      }
+    ],
+    "unobserved": [
+      "AES3AudioDescriptor",
+      "MPEGVideoDescriptor",
+      "GenericSoundEssenceDescriptor alone",
+      "GenericPictureEssenceDescriptor alone",
+      "GenericDescriptor/FileDescriptor alone",
+      "data",
+      "MultipleDescriptor",
+      "unknown class",
+      "conflicting class/ownership"
+    ]
+  },
+  "proposal": {
+    "status": "Not approved; not implemented.",
+    "authority": "Already qualified physical file SourcePackage, its own uniquely usable descriptor class. Binary typed class identity, not UTF-8 or MacRoman text.",
+    "supportTable": [
+      {
+        "parent": "FileDescriptor",
+        "name": "GenericSoundEssenceDescriptor",
+        "keyHex": "060e2b34025301010d01010101014200",
+        "kind": "Audio",
+        "status": "Proposed MXF release-one class mapping, not approved."
+      },
+      {
+        "parent": "GenericSoundEssenceDescriptor",
+        "name": "WaveAudioDescriptor",
+        "keyHex": "060e2b34025301010d01010101014800",
+        "kind": "Audio",
+        "status": "Proposed MXF release-one class mapping, not approved."
+      },
+      {
+        "parent": "WaveAudioDescriptor",
+        "name": "AES3AudioDescriptor",
+        "keyHex": "060e2b34025301010d01010101014700",
+        "kind": "Audio",
+        "status": "Proposed MXF release-one class mapping, not approved."
+      },
+      {
+        "parent": "FileDescriptor",
+        "name": "GenericPictureEssenceDescriptor",
+        "keyHex": "060e2b34025301010d01010101012700",
+        "kind": "Video",
+        "status": "Proposed MXF release-one class mapping, not approved."
+      },
+      {
+        "parent": "GenericPictureEssenceDescriptor",
+        "name": "CDCIEssenceDescriptor",
+        "keyHex": "060e2b34025301010d01010101012800",
+        "kind": "Video",
+        "status": "Proposed MXF release-one class mapping, not approved."
+      },
+      {
+        "parent": "CDCIEssenceDescriptor",
+        "name": "MPEGVideoDescriptor",
+        "keyHex": "060e2b34025301010d01010101015100",
+        "kind": "Video",
+        "status": "Proposed MXF release-one class mapping, not approved."
+      },
+      {
+        "parent": "GenericPictureEssenceDescriptor",
+        "name": "RGBAEssenceDescriptor",
+        "keyHex": "060e2b34025301010d01010101012900",
+        "kind": "Video",
+        "status": "Proposed MXF release-one class mapping, not approved."
+      }
+    ],
+    "unknown": "Nonspecific, data, unsupported or unavailable descriptor supplies no MXF Audio/Video Kind. Display lowercase unknown if no other eligible source supplies Kind; source precedence is deferred.",
+    "propertyInference": "Omit current registered-property-presence inference for unknown classes. Deliberately verify/add future exact classes; this can reduce new-producer coverage relative to OldScanner.",
+    "ownershipAndDamage": "Untrustworthy ownership or ambiguous/unusable descriptor selection withholds MXF Kind. An unrelated numeric/text property failure does not erase a valid known descriptor class or physical row.",
+    "multipleDescriptor": "Wrapper itself is not Kind. Only classify an already uniquely qualified applicable owned child in a supported compatibility layout; otherwise unavailable. Do not choose first child, vote across children or expand to general interleaved MXF. This unobserved layout requires focused implementation verification.",
+    "retention": "One compact enum and necessary availability state; display labels generated later; release temporary class/reference/header structures. C++17 enum class and fixed std::array suffice; no new dependency.",
+    "readBoundary": "No additional essence, codec decoding or master-track walk for Kind. Other required metadata may still need DataDefinition/track links. New header-open triggers and the full source-priority table remain deferred.",
+    "performance": "No speed or memory comparison was measured."
+  },
+  "primaryFormatSource": {
+    "url": "https://pub.smpte.org/latest/st377-1/st377-1-2019.pdf",
+    "sections": [
+      "F.3 Multiple Descriptor",
+      "F.4 Picture Essence Descriptors",
+      "F.5 Generic Sound Essence Descriptor",
+      "F.6 Generic Data Essence Descriptor"
+    ],
+    "use": "Class/family semantics only; not evidence of a particular app runtime or a Bella support expansion."
+  },
+  "validation": {
+    "rawReceiptsVerified": true,
+    "distinctReferencedArtifactHashesVerified": 57,
+    "jsonParsed": true,
+    "productionTestsRun": false,
+    "appOrPrivateApiExecuted": false,
+    "metadataRead": true,
+    "essenceRead": false,
+    "runtimeImplemented": false,
+    "performanceMeasured": false
+  },
+  "approvedBy": {
+    "date": "2026-10-22",
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-kind-plan-2026-10-22.json",
+    "statement": "OK, let's lock those Kind rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Duration from MXF, and what should Bella read and keep?"
+  }
+}

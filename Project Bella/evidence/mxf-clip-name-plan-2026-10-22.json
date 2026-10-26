@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "Record explicit user approval of Bella's five MXF Clip Name owner, text, availability and retention rules.",
+  "status": "Approved requirements; no Bella runtime implementation, cutover or Bin Filter change.",
+  "authorization": {
+    "source": "Direct human approval in the current conversation",
+    "statement": "OK, let's lock those Clip Name rules in for Bella. Next, how do Media Composer and MDVX read Project from MXF, and what should Bella read and keep?",
+    "scope": "Approves the five previously proposed Clip Name rules in the focused MXF review. The request to review Project does not approve new Project rules or other MXF field/navigation proposals."
+  },
+  "agreedBellaRules": {
+    "owner": "Read GenericPackage.Name from the exact MaterialPackage already selected by the approved MXF identity rules. Read the name after selecting the master; an empty name does not authorize a different master.",
+    "textAndBoundary": "Decode the bounded value as UTF-16BE into owned QString with small checked C++17/Qt 6.5.3 helpers and QtEndian. Preserve characters, spelling, case, punctuation and whitespace. Validate complete code units and surrogate pairs. Stop at the first U+0000 terminator if present; accept otherwise complete valid text ending at the declared boundary without a terminator.",
+    "noGuessedRecovery": "Do not retry UTF-8 or MacRoman, invent a legacy counterpart, apply lossy replacement or trim the name. Odd byte counts and malformed text leave it unreadable. Contradictory Name values do not establish a usable name.",
+    "availability": "Missing, empty or unreadable Name, or no uniquely selected master, supplies no MXF Clip Name. Keep the physical file and independently valid IDs/technical facts. On the database-unavailable MXF fallback, show the Clip Name cell blank instead of Filename, file-source Name or a track name.",
+    "retention": "Retain one selected owned QString and only necessary availability state. Release raw name bytes, temporary references and header storage. Keep no second legacy string, name-comparison graph or separate per-row formatting string. Reuse the same selected master for its other fields."
+  },
+  "unchanged": [
+    "The preceding MXF FileMobId/MasterMobId requirements remain approved.",
+    "The database-unavailable MXF Duration fallback and blank Original Bin rule remain authoritative.",
+    "OldScanner stays active until explicit cutover approval; Bin Filter remains outside this work."
+  ],
+  "remaining": [
+    "MXF Project is the next focused review and its new rules remain unapproved.",
+    "MDB-versus-MXF Clip Name priority remains part of the deferred source-priority discussion.",
+    "This approval creates no new header-opening reason or scan of other physical headers to obtain a different name.",
+    "Other MXF field/navigation choices, abnormal layouts, third-party coverage, malformed fixtures and fresh implementation verification remain separate work."
+  ],
+  "supersedes": "The proposed/not-yet-approved status of the five Clip Name rules in the 22 October focused review and research receipt. Historical native, MDVx, current-source and ten-header observations and their limitations remain unchanged.",
+  "references": {
+    "focusedReview": "docs/reviews/2026-10-21-bella-mxf/clip-name.md",
+    "researchEvidence": "Project Bella/evidence/mxf-clip-name-2026-10-22.json",
+    "bellaPlan": "Project Bella/README.md#mxf-clip-name-agreed-rules",
+    "precedingIdentityApproval": "Project Bella/evidence/mxf-identities-plan-2026-10-22.json",
+    "fallbackRevision": "docs/reviews/2026-10-21-bella-mxf/fallback-fields.md"
+  },
+  "validation": {
+    "kind": "Requirements approval record and documentation consistency checks only",
+    "runtimeImplementation": false,
+    "productionTestsExecuted": false,
+    "nativeOrMediaResearchRepeated": false,
+    "rawResearchHashReceiptsChanged": false
+  }
+}

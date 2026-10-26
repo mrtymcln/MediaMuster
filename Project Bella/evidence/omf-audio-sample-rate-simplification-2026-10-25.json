@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-25",
+  "timezone": "Australia/Sydney",
+  "status": "Proposed implementation simplification; OMF audio Sample Rate source/precision rules remain awaiting approval.",
+  "request": {
+    "source": "Direct human reply",
+    "statement": "Sounds good - but is there anything we can clean-up/simplify/make more elegant? before we lock it in and move on",
+    "scope": "Review/refine the pending Sample Rate plan, without treating the question as approval or starting implementation."
+  },
+  "originalResearch": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-audio-sample-rate-2026-10-24.json",
+    "sha256": "448040cb35039d38c8a25b521943dcb2e0e950cc50afde08f598e2fe772a7e2e"
+  },
+  "refinements": [
+    "One small class switch and ordinary helper functions; no per-column parser/class, registry or configurable fallback framework.",
+    "Share bounded WAV/AIFF summary-field decoders between MDB and OMF; decode each required owned summary once and reuse compact facts for already-approved fields. Native audio container framing remains for its later review.",
+    "Preserve independent field availability; validate ownership/ranges/framing at input and individual field constraints where needed.",
+    "One exact supported frequency representation with compact availability/source context; original words or necessary AIFF bits are part of that representation, not a second permanent backup. No redundant normalized pair, cached double, whole-Hz copy, label, raw Summary or candidate history solely for this column.",
+    "Pass already decoded summary frequency to the accepted Duration recovery only when its MDFL clock is unusable. No repeated summary decode, reversed fallback into Sample Rate or change to either field source policy.",
+    "No pre-parsing unapproved future fields, arbitrary-precision dependency or new representability/label-precision decision. Final function names/signatures/file placement remain for implementation design."
+  ],
+  "basis": {
+    "existingProposals": "Single class-specific authority, compact exact values, late labels and independent fields were already in the pending proposal. This makes their small implementation shape explicit.",
+    "currentCode": "Existing audio-format facts already feed multiple observations. This useful sharing can carry into fresh helpers; no duplicated summary parsing in every OldScanner column is alleged.",
+    "independentReview": "A focused design review by the current-source audit agent recommended the same small switch, shared summary functions, exact compact value and unchanged Duration recovery. No new format research was necessary."
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/audio-sample-rate.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "nativeBinaryOrMediaResearchRepeated": false,
+    "newBuildsOrTests": false,
+    "performanceMeasured": false,
+    "appCutover": false,
+    "approved": false,
+    "localMarkdownLinksChecked": 148,
+    "originalResearchUnchanged": true,
+    "runtimeAndTestsUnchanged": true,
+    "gitDiffCheckPassed": true
+  }
+}

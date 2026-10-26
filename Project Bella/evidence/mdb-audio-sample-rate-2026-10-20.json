@@ -1,0 +1,1839 @@
+{
+  "date": "2026-10-20",
+  "timezone": "Australia/Sydney",
+  "purpose": "Review MDB audio Sample Rate sources and numeric retention for Bella, using the installed Media Composer and MDVx binaries plus six real MDBs and paired PMRs.",
+  "status": "Per-class concrete source, exact supported numeric retention, blank unavailable MDB values and no MDFL repair approved by the user on 20 October 2026. Not yet implemented. Audio-only Sample Rate in kHz and blank video Sample Rate remain agreed; OldScanner remains active and Bin Filter unchanged.",
+  "agreedBoundary": {
+    "duration": "Keep the independently approved own MDFL:Length / MDFL:SampleRate pair and scoped AvidDurationInterpreter. No header reads for Duration. This review does not change that source contract.",
+    "audioDisplayClock": "An EditRate for HH:MM:SS:FF and qualified DF ownership remain separate requirements; audio Hz does not provide those facts.",
+    "newCode": "No Bella runtime implementation in this review; requirements first, independent C++17 / Qt 6.5.3 code later, explicit approval before app cutover."
+  },
+  "mediaComposer": {
+    "binary": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "version": "26.8.0.58987",
+      "architecture": "arm64",
+      "uuid": "D55FFCED-FD76-3667-99B8-C9A84180173E",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+      "freshInstalledHashVerified": true
+    },
+    "method": "Static read-only arm64 disassembly and manual reconstruction of descriptor read/write/getter routes. No private API execution or live UI scan.",
+    "owner": "Complete FileMobId -> qualified file catalogue owner -> its own MOBJ:PhysicalMedia descriptor.",
+    "PCMA": {
+      "property": "OMFI:PCMA:AudioSamplingRate",
+      "wireType": "omfi:ExactEditRate",
+      "bytes": 8,
+      "encoding": "Signed32 numerator followed by signed32 denominator in object byte order.",
+      "read": "PCMAudioDescriptor::Get 0x3e8cb0..bc -> Read_ExactEditRate -> descriptor+0x450.",
+      "write": "PCMAudioDescriptor::Put 0x3e8788..94 -> Write_ExactEditRate.",
+      "getters": "AudioMediaDesc::GetAudioSamplingRate 0x360a54; PCMA GetRate 0x3e9428 and GetExactEditRate 0x3e9444 use concrete frequency. GetEditRate 0x3e9484 uses the base descriptor clock.",
+      "missing": "The observed Get stores the typed reader result unconditionally, with no local fallback to MDFL. Missing typed read yields zero.",
+      "precision": "Native typed reading can pass nondecimal denominators through floating point. Bella should retain the original exact pair."
+    },
+    "AIFD": {
+      "property": "OMFI:AIFD:Summary",
+      "nativeClass": "AIFCDescriptor",
+      "source": "COMM payload sampleRate at offset 8, ten bytes, big-endian extended80.",
+      "read": [
+        "Get 0x364d44 reads embedded Summary.",
+        "GetMetaData 0x364f18 scans FORM/COMM; ReadCommChunk at 0x36529c.",
+        "ConvertFromIeeeExtended 0x36604c decodes the value. Native 0x365884..90 adds 0.5 and truncates to whole Hz.",
+        "SetRate at 0x3652a8..bc updates native descriptor clocks."
+      ],
+      "write": "PutMetaData 0x3663ac..e0 obtains the rate, calls ConvertToIeeeExtended at 0x3663c4 and writes ten bytes into Summary.",
+      "precision": "Native whole-Hz rounding is proven; exact supported retention is Bella design, not a native precision claim."
+    },
+    "WAVD": {
+      "property": "OMFI:WAVD:Summary",
+      "nativeClass": "WAVEDescriptor",
+      "source": "Standard RIFF/WAVE fmt payload nSamplesPerSec at offset 4, unsigned LE32 integer Hz.",
+      "read": [
+        "Get 0x3f9500 reads embedded Summary.",
+        "ReadWAVEMetaData 0x3f9b08 calls ReadFmtChunk; integer rate read at 0x3fa658..670.",
+        "Parsed integer Hz is supplied to SetRate at 0x3fa084..a4."
+      ],
+      "write": "PutMetaData 0x3f9680 delegates InitWaveStream; GetRate at 0x3f8da4..b0 and sample-rate write at 0x3f8e30..48."
+    },
+    "summaryOverridesBase": "UAFDescriptor::SetRate 0x402760 updates base AFile rate and AudioSamplingRate. AIFD/WAVD concrete Summary decoding overwrites rates loaded earlier from MDFL.",
+    "fallbackLimit": "No guaranteed valid field-local fallback from missing/bad concrete frequency to MDFL was established. Residual base state after an error does not establish successful parsing.",
+    "noPhysicalMediaRead": "These frequency reads consume Summary bytes already embedded in MDB. They do not require a physical WAV/AIFF file open.",
+    "limits": [
+      "Concrete descriptor read/write priority was traced, not all UI call paths.",
+      "Only the approved PCMA/AIFD/WAVD audio classes are reviewed.",
+      "No universal missing-Summary success or Get-failure contract was established."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/WAVEDescriptor-ReadWAVEMetaData.txt",
+        "bytes": 21276,
+        "sha256": "24cef3e0fe7267abae0b3baad1b31a1648f0d29235c33da235138f81cdc3231c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/WAVEDescriptor-PutMetaData.txt",
+        "bytes": 1450,
+        "sha256": "dce71564600d44534cbb509aa2d3acf036c9ff476562cd252d5e941b3abec07a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/ConvertFromIeeeExtended.txt",
+        "bytes": 2125,
+        "sha256": "7105bdf3717f1d440f3079e31eabda6352cd958f068da3fb128f989aa9df9852"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/WAVEDescriptor-ReadFmtChunk.txt",
+        "bytes": 13207,
+        "sha256": "e34859635f0a484fce779f540c253fe49dfcdfd61a9d45d84d7d552eaf23a5a5"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/WAVEDescriptor-GetMetaData.txt",
+        "bytes": 1532,
+        "sha256": "6749ff51d435ff68a05ce043ee41d737cbf87ed769bfb94526f2aab9a05c2d82"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/WAVEDescriptor-Put.txt",
+        "bytes": 3093,
+        "sha256": "677cd66985eabc56cde1bc4348626eff5edfe69909462c8a2401df769a31b8fd"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/AIFCDescriptor-ReadCommChunk.txt",
+        "bytes": 13389,
+        "sha256": "7ab4ca5725714109b67e6d3411680190d1f773b9fa8885c7c4bb5b43e549ab20"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/AIFCDescriptor-GetMetaData.txt",
+        "bytes": 14951,
+        "sha256": "88fce5b805c81ce10aa747d2aa109cc75b50979ba1f146fb2a246059d4c62d03"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/AudioMediaDesc-SetAudioSamplingRate.txt",
+        "bytes": 247,
+        "sha256": "d030cc61168a4fc16a3152fd2a8c9a7d3e9be7e1fefba630797247a9539d9744"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/UAFDescriptor-SetRate.txt",
+        "bytes": 713,
+        "sha256": "1a9f53baf64a5d9860012b0be63f4d4f0d0fca04e355032ae9c75cfd83f03f72"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/WAVEDescriptor-InitWaveStream.txt",
+        "bytes": 12201,
+        "sha256": "d5aae1158848b2bfb940bd59006bf6ef9da8f3ca26dfc352341f9e1037c9bd5b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/AIFCDescriptor-Put.txt",
+        "bytes": 3999,
+        "sha256": "cb0d802b21e93f8ce76e5402d0e979df00135e5d209de171386225df94a724cf"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/sample-rate-dictionary.txt",
+        "bytes": 1623,
+        "sha256": "7153960e192e4fb7514b7357b49b42a744ec7e8f41a0564cc6a50399ad9d279f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/WAVEDescriptor-Get.txt",
+        "bytes": 5744,
+        "sha256": "38b5aedb3615703817dba7b7ccfdd42db1d7fb23c3009f4c319e9f30ee1e5226"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/AIFCDescriptor-PutMetaData.txt",
+        "bytes": 19734,
+        "sha256": "a9de33ae3104d571046575950546d56f340e48f5db33fb843825d26be18f6582"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/AIFCDescriptor-Get.txt",
+        "bytes": 7548,
+        "sha256": "ea2f9cc3496338b6b5bf246c1a97e12c120af848d5850e5d64a12261cde67c41"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/PCMAudioDescriptor-Put.txt",
+        "bytes": 12157,
+        "sha256": "8e2cb1b58d6f42c2217cb55ee37fe1f421295a72d99595ae03ec20a138945ce2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/audio-sample-rate-vtables.json",
+        "bytes": 3019,
+        "sha256": "cc6fdb40169b15c6f5db065f58f8ff8fa69cb27a44e1493e40254fba3afc81fa"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/PCMAudioDescriptor-Get.txt",
+        "bytes": 21995,
+        "sha256": "d2a7e4fd7f35865f12ed4e2ed39ee8b2b93ed7ff4d099bb0f5a03e9c52a6e3a2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/PCMAudioDescriptor-rate-getters.txt",
+        "bytes": 3123,
+        "sha256": "b3423c79f59f2cd39db8a8050818c9a5a267fcfd98086d5fda8765b16124c64e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/omfi-ReadExactEditRate.txt",
+        "bytes": 6436,
+        "sha256": "b07e0c94bc84c58f00d6fa16233b5ed028e39248059a6fec45c82087fd7bbfce"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AFileMediaDesc-Get.txt",
+        "bytes": 5904,
+        "sha256": "00d4e8a4eae621ab204fcc0ba7c610bdfac06e7833ad3d4535c0cdb48df3ce66"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AudioSamplingRate-getter.txt",
+        "bytes": 1474,
+        "sha256": "37a34d40dd17f0461f33e80f42a4f99254c08af26d790589db99de14d95559ae"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/omfi-WriteExactEditRate.txt",
+        "bytes": 6187,
+        "sha256": "c3ddff4e579c8377ac91cdfb35e52b4ce2d73a3cb0a4bec65cd324ca64f68ac4"
+      }
+    ]
+  },
+  "mdvx": {
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "bytes": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "CFBundleShortVersionString": "0.2",
+      "CFBundleVersion": "4073",
+      "architectureAudited": "arm64",
+      "freshHashMatchesPriorAuditedBinary": true
+    },
+    "method": "Fresh installed binary SHA256 and direct arm64 CFString decoding; re-read bounded previously captured exact-function disassembly for the identical binary. No new app launch, scan, export, private API execution or media read/write. Numeric examples are static predictions.",
+    "sourceFunction": "-[MDVxOMFI getCompression_data:forObjAt:] 0x100064b60, matched file own descriptor. Existing identity lookup uses eight-byte excerpts, unlike Bella.",
+    "sourcePriority": [
+      "Presence of PCMA:AudioSamplingRate selects that payload; reads first two scalar32 words if at least eight bytes.",
+      "Only when PCMA property is absent, AIFD:Summary presence plus MDFL:SampleRate presence selects the separate MDFL pair. Summary bytes are not decoded here."
+    ],
+    "damagedPresentPcma": "No MDFL fallback for an unreadable/short present PCMA property; initialized zero pair remains.",
+    "wavdLimit": "No explicit WAVD:Summary branch in this helper. This is not a claim about every MDVx reader.",
+    "rawRetention": {
+      "assignment": "-[MDVxOMFI addInfoToItem:]0x100064794 calls file-descriptor helper0x100064ae4. Success copies helper rate words at0x100064b08..b10 via setSampleRateNumerator:denominator:.",
+      "setter": "0x100031098 stores both raw32-bit words atrow+0xd0/+0xd4.",
+      "getter": "DB_samplerate0x1000315e8 copies eight bytes via objc_copyStruct. On arm64 returned x0 contains numerator low32 and denominator high32.",
+      "precision": "Source32-bit pair is retained exactly after per-scalar endian conversion; rational precision is not reduced to an integer frequency. Presentation uses a double later.",
+      "default": "Helper output is zero-initialized at0x100064b94..98; fresh row initialization does not invent a sample frequency.",
+      "headerProjectionLimit": "Inspected MDVxMXF addInfoToItem0x1000326b4 copies names/Project/IDs only, not a Sample Rate setter. This limits the ordinary row fallback, not the embedded parser capabilities."
+    },
+    "audioLabels": [
+      {
+        "frequencyHz": 22050,
+        "text": "22.05 kHz"
+      },
+      {
+        "frequencyHz": 32000,
+        "text": "32 kHz"
+      },
+      {
+        "frequencyHz": 44100,
+        "text": "44.1 kHz"
+      },
+      {
+        "frequencyHz": 48000,
+        "text": "48 kHz"
+      },
+      {
+        "frequencyHz": 96000,
+        "text": "96 kHz"
+      },
+      {
+        "frequencyHz": 192000,
+        "text": "192 kHz"
+      }
+    ],
+    "display": "Non-DNx Sample Rate table/CSV branches divide raw pair as unsigned doubles; denominator zero is substituted with one. Shared label dictionary only, no generic numeric fallback. Table miss is ..., CSV miss is empty.",
+    "presentationAnchors": {
+      "table": "0x100050918..9fc",
+      "csv": "0x1000511c0..2a4",
+      "dictionary": "initFrameratesDictionary 0x1000523ec"
+    },
+    "mixedSemantics": "Shared storage/column also carries DIDD:FrameSampleSize or DNx bitrate text; not universally audio sampling Hz.",
+    "limits": [
+      "Static bounded ordinary-inventory trace of exact installed hash; not a whole-app raw-browser/parser audit.",
+      "No new media/header/database files read or written; no live app/CSV or malformed fixtures exercised.",
+      "This receipt does not establish all legacy MDB layouts, pulled-audio interpretation, field-source fallback or Audio frequency vs physical-duration clock policy.",
+      "Native Media Composer and actual MDB frequency-source analysis is owned by other agents."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/ExportMenu_genCsv_.txt",
+        "bytes": 10241,
+        "sha256": "92959f72f5c4beb7005030925cceed4fbd0f29ed05383c0524a8fb50f2f4f522",
+        "copiedFrom": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/ExportMenu_genCsv_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/MDVxCore_getBitrateTextForItem_.txt",
+        "bytes": 2903,
+        "sha256": "46a0ce0d6f191b714d534501608575b5e5782111bd4782e31db1867257096878",
+        "copiedFrom": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_getBitrateTextForItem_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/MDVxCore_init.txt",
+        "bytes": 3590,
+        "sha256": "19d42fca6a3121e13b805150e71ec7b13350e06eaf601f97c4556d730e8e97d9",
+        "copiedFrom": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_init.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/MDVxCore_initFrameratesDictionary.txt",
+        "bytes": 9399,
+        "sha256": "0f74bc3262eb800f1c83f394b8e64f2664f91c0b3648f4a54fdb2273fad8b348",
+        "copiedFrom": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_initFrameratesDictionary.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt",
+        "bytes": 16441,
+        "sha256": "be932b1a1d04bf4539a0f4fe6b8fadb68d4d4170387b8613806c5c6af8b0fee1",
+        "copiedFrom": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt",
+        "bytes": 25206,
+        "sha256": "e9f502df3ddc289f84c65be937ec441a847c638c8b17d1df97c3b1f0655644cb",
+        "copiedFrom": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/MDVxDatabaseItem_DB_samplerate.txt",
+        "bytes": 511,
+        "sha256": "720bc76af3d2361517898382763f9fc6103d2fb95d977fb7aeee0df7acbdac3b",
+        "copiedFrom": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_DB_samplerate.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/MDVxDatabaseItem_init.txt",
+        "bytes": 944,
+        "sha256": "48b45d98fcefc1a40e3914b71ec60c221b0445939045d08846500e3c9652d8fd",
+        "copiedFrom": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_init.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/MDVxDatabaseItem_setSampleRateNumerator_denominator_.txt",
+        "bytes": 119,
+        "sha256": "a12eee7289f58d15da646fc4ecf72bb4b6524118d86c325e2091420dab6369d1",
+        "copiedFrom": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_setSampleRateNumerator_denominator_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/MDVxMXF_addInfoToItem_.txt",
+        "bytes": 3747,
+        "sha256": "18281f5391667e37e8e3b5884b1a498e680ac0ccc0a99fcf8f470c42101ea1d0",
+        "copiedFrom": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxMXF_addInfoToItem_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/MDVxOMFI_addInfoToItem_.txt",
+        "bytes": 9423,
+        "sha256": "20211e8a6dbcd33b0e034f3885504d5af7a54cffd3a05b5d776446549e0f6829",
+        "copiedFrom": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxOMFI_addInfoToItem_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/MDVxOMFI_getCompression_data_forObjAt_.txt",
+        "bytes": 5492,
+        "sha256": "56eb914605cab3b729d4dd8de955f3e18298097b96c2c1f546c00a32f1cbe0ef",
+        "copiedFrom": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxOMFI_getCompression_data_forObjAt_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/binary-receipt.json",
+        "bytes": 307,
+        "sha256": "8c774f66c5c07de8d10b5d92c6b6858f5cb9c44ce98a6723d45183c54995a2a3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/decoded-dictionary-and-format-prior.json",
+        "bytes": 3788,
+        "sha256": "f629d3180f230578eee5c5759b149ae90ec5afb0409bec206d7dceb0fc985dd4",
+        "copiedFrom": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/decoded-dictionary-and-format.json"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/fresh-literals.json",
+        "bytes": 879,
+        "sha256": "f70ab9378772794817ba7c38145471bf029026442e318acc3bf780d7b49fd7ae"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/prior-property-map-findings.json",
+        "bytes": 16441,
+        "sha256": "264ebe5c1c8aa04f93a067d844113f43ec0c7ec2ef6c6bf0b2bd6ce5795d898b",
+        "copiedFrom": "/private/tmp/bella-mdb-20261018-mdvx/findings.json"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/static-presentation-examples.json",
+        "bytes": 1394,
+        "sha256": "aa6f1013ad5f8eb0517bd7e3d6795a1ff4da6bf60700c6b19ae5d764e6f046bc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-disassembly.txt",
+        "bytes": 4552262,
+        "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074",
+        "role": "Previously captured complete disassembly; installed binary hash rechecked unchanged."
+      }
+    ]
+  },
+  "actualDatabases": {
+    "method": [
+      "All six actual MDB and six PMR hashes freshly match prior frame-rate receipts. All six raw-value index hashes freshly match prior duration findings. Inputs are stable during each read.",
+      "Every retained identity, catalogue, descriptor-reference, class and audio-frequency/summary property is reconstructed from its raw MDB byte ranges and compared byte-for-byte to its cached index entry before interpretation.",
+      "The complete normalized PMR FileMobId selects a unique MOBJ in both SourceMobs and ObjectSpine with PhysicalMedia. PMR MasterMobId independently selects its unique composition catalogue owner. Only the physical FileMob own PhysicalMedia reference selects the descriptor.",
+      "ExactEditRate fields use concrete omfi:ExactEditRate type, eight bytes, two signed little-endian 32-bit numerator/denominator values. Both components must be positive. All rates use exact Fraction arithmetic.",
+      "An independent stdlib-only chunk decoder reads the selected own WAVD RIFF/WAVE fmt sample-rate integer or selected own AIFD FORM/AIFF-or-AIFC COMM extended80 sample rate. These bytes are embedded in MDB Summary properties. It does not read physical media headers or essence.",
+      "Only sample frequency is compared. Embedded frame counts and other fmt/COMM values are contextual and do not alter any Duration policy. Audio edit rates and drop-frame are not inferred from frequency.",
+      "Counts are per PMR physical-file row. Descriptor objects are also checked for uniqueness within each MDB. All-property occurrences are separate from own-descriptor counts."
+    ],
+    "coverageQualification": "Fresh owner/rate logic reads current actual byte ranges, using the established hashed Bento value indexes. This is not a new independent parser of every table-of-contents entry.",
+    "relevantRetainedPropertyRowsVerified": 413830,
+    "countsPerPmrFile": {
+      "pmrRows": 2412,
+      "descriptorClass:RGBA": 18,
+      "nonAudioRowsExcludedFromSampleRate": 899,
+      "descriptorClass:PCMA": 1511,
+      "audioRows": 1513,
+      "PCMA:MDFL:positiveRate": 1511,
+      "PCMA:PCMA:positiveRate": 1511,
+      "PCMA:PCMAEqualsMDFL": 1511,
+      "PCMA:PCMADiffersMDFL": 0,
+      "descriptorClass:CDCI": 873,
+      "descriptorClass:MPGI": 8,
+      "descriptorClass:WAVD": 1,
+      "WAVD:MDFL:positiveRate": 1,
+      "WAVD:PCMA:absent": 1,
+      "WAVD:summaryEqualsMDFL": 1,
+      "WAVD:summaryDiffersMDFL": 0,
+      "descriptorClass:AIFD": 1,
+      "AIFD:MDFL:positiveRate": 1,
+      "AIFD:PCMA:absent": 1,
+      "AIFD:summaryEqualsMDFL": 1,
+      "AIFD:summaryDiffersMDFL": 0
+    },
+    "ownAudioRates": [
+      {
+        "descriptorClass": "AIFD",
+        "source": "MDFL:SampleRate",
+        "numerator": 48000,
+        "denominator": 1,
+        "count": 1
+      },
+      {
+        "descriptorClass": "AIFD",
+        "source": "ownEmbeddedSummary",
+        "numerator": 48000,
+        "denominator": 1,
+        "count": 1
+      },
+      {
+        "descriptorClass": "PCMA",
+        "source": "MDFL:SampleRate",
+        "numerator": 48000,
+        "denominator": 1,
+        "count": 1511
+      },
+      {
+        "descriptorClass": "PCMA",
+        "source": "PCMA:AudioSamplingRate",
+        "numerator": 48000,
+        "denominator": 1,
+        "count": 1511
+      },
+      {
+        "descriptorClass": "WAVD",
+        "source": "MDFL:SampleRate",
+        "numerator": 48000,
+        "denominator": 1,
+        "count": 1
+      },
+      {
+        "descriptorClass": "WAVD",
+        "source": "ownEmbeddedSummary",
+        "numerator": 48000,
+        "denominator": 1,
+        "count": 1
+      }
+    ],
+    "ownAudioRawExactEditRatePairs": [
+      {
+        "descriptorClass": "AIFD",
+        "source": "MDFL:SampleRate",
+        "rawSigned32Numerator": 48000,
+        "rawSigned32Denominator": 1,
+        "byteOrder": "little",
+        "count": 1
+      },
+      {
+        "descriptorClass": "PCMA",
+        "source": "MDFL:SampleRate",
+        "rawSigned32Numerator": 48000,
+        "rawSigned32Denominator": 1,
+        "byteOrder": "little",
+        "count": 1511
+      },
+      {
+        "descriptorClass": "PCMA",
+        "source": "PCMA:AudioSamplingRate",
+        "rawSigned32Numerator": 48000,
+        "rawSigned32Denominator": 1,
+        "byteOrder": "little",
+        "count": 1511
+      },
+      {
+        "descriptorClass": "WAVD",
+        "source": "MDFL:SampleRate",
+        "rawSigned32Numerator": 48000,
+        "rawSigned32Denominator": 1,
+        "byteOrder": "little",
+        "count": 1
+      }
+    ],
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "mdbSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+        "rawValueIndexSha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "mdbByteOrder": "little",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 28309,
+        "countsPerPmrFile": {
+          "pmrRows": 389,
+          "descriptorClass:RGBA": 10,
+          "nonAudioRowsExcludedFromSampleRate": 103,
+          "descriptorClass:PCMA": 286,
+          "audioRows": 286,
+          "PCMA:MDFL:positiveRate": 286,
+          "PCMA:PCMA:positiveRate": 286,
+          "PCMA:PCMAEqualsMDFL": 286,
+          "PCMA:PCMADiffersMDFL": 0,
+          "descriptorClass:CDCI": 93
+        },
+        "distinctOwnDescriptorObjects": 389,
+        "ownAudioDescriptorPropertyPresencePerPmrFile": {
+          "PCMA": {
+            "OMFI:AIFD:Summary:absent": 286,
+            "OMFI:MDFL:SampleRate:present": 286,
+            "OMFI:PCMA:AudioSamplingRate:present": 286,
+            "OMFI:WAVD:Summary:absent": 286
+          }
+        },
+        "ownAudioPropertyShapes": [
+          {
+            "descriptorClass": "PCMA",
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 286
+          },
+          {
+            "descriptorClass": "PCMA",
+            "property": "OMFI:PCMA:AudioSamplingRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 286
+          }
+        ],
+        "ownAudioRates": [
+          {
+            "descriptorClass": "PCMA",
+            "source": "MDFL:SampleRate",
+            "numerator": 48000,
+            "denominator": 1,
+            "count": 286
+          },
+          {
+            "descriptorClass": "PCMA",
+            "source": "PCMA:AudioSamplingRate",
+            "numerator": 48000,
+            "denominator": 1,
+            "count": 286
+          }
+        ],
+        "entireMdbRawPropertyOccurrencesOnly": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 392
+          },
+          {
+            "property": "OMFI:PCMA:AudioSamplingRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 286
+          }
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "mdbSha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+        "rawValueIndexSha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "mdbByteOrder": "little",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 150358,
+        "countsPerPmrFile": {
+          "pmrRows": 686,
+          "descriptorClass:CDCI": 271,
+          "nonAudioRowsExcludedFromSampleRate": 279,
+          "descriptorClass:PCMA": 407,
+          "audioRows": 407,
+          "PCMA:MDFL:positiveRate": 407,
+          "PCMA:PCMA:positiveRate": 407,
+          "PCMA:PCMAEqualsMDFL": 407,
+          "PCMA:PCMADiffersMDFL": 0,
+          "descriptorClass:RGBA": 8
+        },
+        "distinctOwnDescriptorObjects": 686,
+        "ownAudioDescriptorPropertyPresencePerPmrFile": {
+          "PCMA": {
+            "OMFI:AIFD:Summary:absent": 407,
+            "OMFI:MDFL:SampleRate:present": 407,
+            "OMFI:PCMA:AudioSamplingRate:present": 407,
+            "OMFI:WAVD:Summary:absent": 407
+          }
+        },
+        "ownAudioPropertyShapes": [
+          {
+            "descriptorClass": "PCMA",
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 407
+          },
+          {
+            "descriptorClass": "PCMA",
+            "property": "OMFI:PCMA:AudioSamplingRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 407
+          }
+        ],
+        "ownAudioRates": [
+          {
+            "descriptorClass": "PCMA",
+            "source": "MDFL:SampleRate",
+            "numerator": 48000,
+            "denominator": 1,
+            "count": 407
+          },
+          {
+            "descriptorClass": "PCMA",
+            "source": "PCMA:AudioSamplingRate",
+            "numerator": 48000,
+            "denominator": 1,
+            "count": 407
+          }
+        ],
+        "entireMdbRawPropertyOccurrencesOnly": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 1373
+          },
+          {
+            "property": "OMFI:PCMA:AudioSamplingRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 814
+          }
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "mdbSha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+        "rawValueIndexSha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "mdbByteOrder": "little",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 109183,
+        "countsPerPmrFile": {
+          "pmrRows": 513,
+          "descriptorClass:CDCI": 193,
+          "nonAudioRowsExcludedFromSampleRate": 193,
+          "descriptorClass:PCMA": 320,
+          "audioRows": 320,
+          "PCMA:MDFL:positiveRate": 320,
+          "PCMA:PCMA:positiveRate": 320,
+          "PCMA:PCMAEqualsMDFL": 320,
+          "PCMA:PCMADiffersMDFL": 0
+        },
+        "distinctOwnDescriptorObjects": 513,
+        "ownAudioDescriptorPropertyPresencePerPmrFile": {
+          "PCMA": {
+            "OMFI:AIFD:Summary:absent": 320,
+            "OMFI:MDFL:SampleRate:present": 320,
+            "OMFI:PCMA:AudioSamplingRate:present": 320,
+            "OMFI:WAVD:Summary:absent": 320
+          }
+        },
+        "ownAudioPropertyShapes": [
+          {
+            "descriptorClass": "PCMA",
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 320
+          },
+          {
+            "descriptorClass": "PCMA",
+            "property": "OMFI:PCMA:AudioSamplingRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 320
+          }
+        ],
+        "ownAudioRates": [
+          {
+            "descriptorClass": "PCMA",
+            "source": "MDFL:SampleRate",
+            "numerator": 48000,
+            "denominator": 1,
+            "count": 320
+          },
+          {
+            "descriptorClass": "PCMA",
+            "source": "PCMA:AudioSamplingRate",
+            "numerator": 48000,
+            "denominator": 1,
+            "count": 320
+          }
+        ],
+        "entireMdbRawPropertyOccurrencesOnly": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 1036
+          },
+          {
+            "property": "OMFI:PCMA:AudioSamplingRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 640
+          }
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "mdbSha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+        "rawValueIndexSha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "mdbByteOrder": "little",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 103439,
+        "countsPerPmrFile": {
+          "pmrRows": 463,
+          "descriptorClass:CDCI": 205,
+          "nonAudioRowsExcludedFromSampleRate": 205,
+          "descriptorClass:PCMA": 258,
+          "audioRows": 258,
+          "PCMA:MDFL:positiveRate": 258,
+          "PCMA:PCMA:positiveRate": 258,
+          "PCMA:PCMAEqualsMDFL": 258,
+          "PCMA:PCMADiffersMDFL": 0
+        },
+        "distinctOwnDescriptorObjects": 463,
+        "ownAudioDescriptorPropertyPresencePerPmrFile": {
+          "PCMA": {
+            "OMFI:AIFD:Summary:absent": 258,
+            "OMFI:MDFL:SampleRate:present": 258,
+            "OMFI:PCMA:AudioSamplingRate:present": 258,
+            "OMFI:WAVD:Summary:absent": 258
+          }
+        },
+        "ownAudioPropertyShapes": [
+          {
+            "descriptorClass": "PCMA",
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 258
+          },
+          {
+            "descriptorClass": "PCMA",
+            "property": "OMFI:PCMA:AudioSamplingRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 258
+          }
+        ],
+        "ownAudioRates": [
+          {
+            "descriptorClass": "PCMA",
+            "source": "MDFL:SampleRate",
+            "numerator": 48000,
+            "denominator": 1,
+            "count": 258
+          },
+          {
+            "descriptorClass": "PCMA",
+            "source": "PCMA:AudioSamplingRate",
+            "numerator": 48000,
+            "denominator": 1,
+            "count": 258
+          }
+        ],
+        "entireMdbRawPropertyOccurrencesOnly": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 934
+          },
+          {
+            "property": "OMFI:PCMA:AudioSamplingRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 516
+          }
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "mdbSha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+        "rawValueIndexSha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "mdbByteOrder": "little",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 22405,
+        "countsPerPmrFile": {
+          "pmrRows": 359,
+          "descriptorClass:CDCI": 111,
+          "nonAudioRowsExcludedFromSampleRate": 119,
+          "descriptorClass:PCMA": 240,
+          "audioRows": 240,
+          "PCMA:MDFL:positiveRate": 240,
+          "PCMA:PCMA:positiveRate": 240,
+          "PCMA:PCMAEqualsMDFL": 240,
+          "PCMA:PCMADiffersMDFL": 0,
+          "descriptorClass:MPGI": 8
+        },
+        "distinctOwnDescriptorObjects": 359,
+        "ownAudioDescriptorPropertyPresencePerPmrFile": {
+          "PCMA": {
+            "OMFI:AIFD:Summary:absent": 240,
+            "OMFI:MDFL:SampleRate:present": 240,
+            "OMFI:PCMA:AudioSamplingRate:present": 240,
+            "OMFI:WAVD:Summary:absent": 240
+          }
+        },
+        "ownAudioPropertyShapes": [
+          {
+            "descriptorClass": "PCMA",
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 240
+          },
+          {
+            "descriptorClass": "PCMA",
+            "property": "OMFI:PCMA:AudioSamplingRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 240
+          }
+        ],
+        "ownAudioRates": [
+          {
+            "descriptorClass": "PCMA",
+            "source": "MDFL:SampleRate",
+            "numerator": 48000,
+            "denominator": 1,
+            "count": 240
+          },
+          {
+            "descriptorClass": "PCMA",
+            "source": "PCMA:AudioSamplingRate",
+            "numerator": 48000,
+            "denominator": 1,
+            "count": 240
+          }
+        ],
+        "entireMdbRawPropertyOccurrencesOnly": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 359
+          },
+          {
+            "property": "OMFI:PCMA:AudioSamplingRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 240
+          }
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "mdbSha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/shared-OMFI MediaFiles-values.json",
+        "rawValueIndexSha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "mdbByteOrder": "little",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 136,
+        "countsPerPmrFile": {
+          "pmrRows": 2,
+          "descriptorClass:WAVD": 1,
+          "audioRows": 2,
+          "WAVD:MDFL:positiveRate": 1,
+          "WAVD:PCMA:absent": 1,
+          "WAVD:summaryEqualsMDFL": 1,
+          "WAVD:summaryDiffersMDFL": 0,
+          "descriptorClass:AIFD": 1,
+          "AIFD:MDFL:positiveRate": 1,
+          "AIFD:PCMA:absent": 1,
+          "AIFD:summaryEqualsMDFL": 1,
+          "AIFD:summaryDiffersMDFL": 0
+        },
+        "distinctOwnDescriptorObjects": 2,
+        "ownAudioDescriptorPropertyPresencePerPmrFile": {
+          "WAVD": {
+            "OMFI:AIFD:Summary:absent": 1,
+            "OMFI:MDFL:SampleRate:present": 1,
+            "OMFI:PCMA:AudioSamplingRate:absent": 1,
+            "OMFI:WAVD:Summary:present": 1
+          },
+          "AIFD": {
+            "OMFI:AIFD:Summary:present": 1,
+            "OMFI:MDFL:SampleRate:present": 1,
+            "OMFI:PCMA:AudioSamplingRate:absent": 1,
+            "OMFI:WAVD:Summary:absent": 1
+          }
+        },
+        "ownAudioPropertyShapes": [
+          {
+            "descriptorClass": "AIFD",
+            "property": "OMFI:AIFD:Summary",
+            "type": "omfi:VarLenBytes",
+            "bytes": 726,
+            "count": 1
+          },
+          {
+            "descriptorClass": "AIFD",
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 1
+          },
+          {
+            "descriptorClass": "WAVD",
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 1
+          },
+          {
+            "descriptorClass": "WAVD",
+            "property": "OMFI:WAVD:Summary",
+            "type": "omfi:VarLenBytes",
+            "bytes": 4152,
+            "count": 1
+          }
+        ],
+        "ownAudioRates": [
+          {
+            "descriptorClass": "AIFD",
+            "source": "MDFL:SampleRate",
+            "numerator": 48000,
+            "denominator": 1,
+            "count": 1
+          },
+          {
+            "descriptorClass": "AIFD",
+            "source": "ownEmbeddedSummary",
+            "numerator": 48000,
+            "denominator": 1,
+            "count": 1
+          },
+          {
+            "descriptorClass": "WAVD",
+            "source": "MDFL:SampleRate",
+            "numerator": 48000,
+            "denominator": 1,
+            "count": 1
+          },
+          {
+            "descriptorClass": "WAVD",
+            "source": "ownEmbeddedSummary",
+            "numerator": 48000,
+            "denominator": 1,
+            "count": 1
+          }
+        ],
+        "entireMdbRawPropertyOccurrencesOnly": [
+          {
+            "property": "OMFI:AIFD:Summary",
+            "type": "omfi:VarLenBytes",
+            "bytes": 726,
+            "count": 1
+          },
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "bytes": 8,
+            "count": 3
+          },
+          {
+            "property": "OMFI:WAVD:Summary",
+            "type": "omfi:VarLenBytes",
+            "bytes": 4152,
+            "count": 2
+          }
+        ]
+      }
+    ],
+    "representatives": [
+      {
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "mdbSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "fileMobId": "060a2b340101010501010f1013000000782a3120258505911bcb34363bcdaf64",
+        "masterMobId": "060a2b340101010501010f1013000000702a312025850591436534363bcdaf64",
+        "fileObject": 92287,
+        "masterObject": 92211,
+        "descriptorObject": 92286,
+        "descriptorClass": "PCMA",
+        "pmrRecordByteRange": [
+          48372,
+          126
+        ],
+        "pmrVersion": 16,
+        "fileMobIdProperties": [
+          {
+            "object": 92287,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                1341118,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                4866088,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000782a3120258505911bcb34363bcdaf64"
+          },
+          {
+            "object": 92287,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                1341163,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                4866208,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000782a3120258505911bcb34363bcdaf64"
+          }
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 92287,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                1341155,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                4866160,
+                24
+              ]
+            ],
+            "hex": "7e68010000000000"
+          }
+        ],
+        "descriptorClassProperty": [
+          {
+            "object": 92286,
+            "propertyName": "OMFI:ObjID",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                4865068,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                4865056,
+                24
+              ]
+            ],
+            "hex": "50434d41"
+          }
+        ],
+        "mdflSampleRate": {
+          "decoded": {
+            "state": "positiveRate",
+            "rawPair": [
+              48000,
+              1
+            ],
+            "byteOrder": "little",
+            "componentType": "signed32",
+            "exactHz": {
+              "numerator": 48000,
+              "denominator": 1
+            }
+          },
+          "properties": [
+            {
+              "object": 92286,
+              "propertyName": "OMFI:MDFL:SampleRate",
+              "typeName": "omfi:ExactEditRate",
+              "length": 8,
+              "ranges": [
+                [
+                  1341059,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  4865176,
+                  24
+                ]
+              ],
+              "hex": "80bb000001000000"
+            }
+          ]
+        },
+        "pcmaAudioSamplingRate": {
+          "decoded": {
+            "state": "positiveRate",
+            "rawPair": [
+              48000,
+              1
+            ],
+            "byteOrder": "little",
+            "componentType": "signed32",
+            "exactHz": {
+              "numerator": 48000,
+              "denominator": 1
+            }
+          },
+          "properties": [
+            {
+              "object": 92286,
+              "propertyName": "OMFI:PCMA:AudioSamplingRate",
+              "typeName": "omfi:ExactEditRate",
+              "length": 8,
+              "ranges": [
+                [
+                  1341067,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  4865344,
+                  24
+                ]
+              ],
+              "hex": "80bb000001000000"
+            }
+          ]
+        },
+        "ownEmbeddedSummary": null,
+        "summaryProperties": []
+      },
+      {
+        "database": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "mdbSha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "fileMobId": "060a2b340101010101010f00130000007429976a70397047060e2b347f7f2a80",
+        "masterMobId": "060a2b340101010101010f00130000007429976a4e397047060e2b347f7f2a80",
+        "fileObject": 68071,
+        "masterObject": 68062,
+        "descriptorObject": 68070,
+        "descriptorClass": "WAVD",
+        "pmrRecordByteRange": [
+          156,
+          118
+        ],
+        "pmrVersion": 16,
+        "fileMobIdProperties": [
+          {
+            "object": 68071,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 12,
+            "ranges": [
+              [
+                9280,
+                12
+              ]
+            ],
+            "tocRanges": [
+              [
+                53096,
+                24
+              ]
+            ],
+            "hex": "2a0000007429976a70397047"
+          },
+          {
+            "object": 68071,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 12,
+            "ranges": [
+              [
+                9305,
+                12
+              ]
+            ],
+            "tocRanges": [
+              [
+                53216,
+                24
+              ]
+            ],
+            "hex": "2a0000007429976a70397047"
+          }
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 68071,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                9297,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                53168,
+                24
+              ]
+            ],
+            "hex": "e609010000000000"
+          }
+        ],
+        "descriptorClassProperty": [
+          {
+            "object": 68070,
+            "propertyName": "OMFI:ObjID",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                52556,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                52544,
+                24
+              ]
+            ],
+            "hex": "57415644"
+          }
+        ],
+        "mdflSampleRate": {
+          "decoded": {
+            "state": "positiveRate",
+            "rawPair": [
+              48000,
+              1
+            ],
+            "byteOrder": "little",
+            "componentType": "signed32",
+            "exactHz": {
+              "numerator": 48000,
+              "denominator": 1
+            }
+          },
+          "properties": [
+            {
+              "object": 68070,
+              "propertyName": "OMFI:MDFL:SampleRate",
+              "typeName": "omfi:ExactEditRate",
+              "length": 8,
+              "ranges": [
+                [
+                  5094,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  52664,
+                  24
+                ]
+              ],
+              "hex": "80bb000001000000"
+            }
+          ]
+        },
+        "pcmaAudioSamplingRate": {
+          "decoded": {
+            "state": "absent"
+          },
+          "properties": []
+        },
+        "ownEmbeddedSummary": {
+          "container": "RIFF",
+          "formType": "WAVE",
+          "containerByteOrder": "little",
+          "containerDeclaredPayloadBytes": 4144,
+          "summaryBytes": 4152,
+          "chunksVisitedThroughRate": [
+            {
+              "tag": "bext",
+              "summaryOffset": 12,
+              "declaredPayloadBytes": 604
+            },
+            {
+              "tag": "fill",
+              "summaryOffset": 624,
+              "declaredPayloadBytes": 3432
+            },
+            {
+              "tag": "fmt ",
+              "summaryOffset": 4064,
+              "declaredPayloadBytes": 16
+            }
+          ],
+          "rateChunkSummaryByteRange": [
+            4064,
+            24
+          ],
+          "rateChunkMdbByteRanges": [
+            [
+              9166,
+              24
+            ]
+          ],
+          "rateChunkHex": "666d7420100000000100010080bb00008032020003001800",
+          "sampleRateSummaryByteRange": [
+            4076,
+            4
+          ],
+          "sampleRateMdbByteRanges": [
+            [
+              9178,
+              4
+            ]
+          ],
+          "sampleRateHex": "80bb0000",
+          "exactHz": {
+            "numerator": 48000,
+            "denominator": 1
+          },
+          "formatTag": 1,
+          "channels": 1,
+          "bytesPerSecond": 144000,
+          "blockAlignment": 3,
+          "bitsPerSample": 24,
+          "sampleRateEncoding": "unsigned LE32 integer hertz"
+        },
+        "summaryProperties": [
+          {
+            "object": 68070,
+            "propertyName": "OMFI:WAVD:Summary",
+            "typeName": "omfi:VarLenBytes",
+            "length": 4152,
+            "ranges": [
+              [
+                5102,
+                4152
+              ]
+            ],
+            "tocRanges": [
+              [
+                52784,
+                24
+              ]
+            ],
+            "sha256": "e056fd306d7e4165794c69837993f4d3e6d36d4a9926fb0faedf004651021301"
+          }
+        ]
+      },
+      {
+        "database": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "mdbSha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "fileMobId": "060a2b340101010101010f00130000009729976a3ec57047060e2b347f7f2a80",
+        "masterMobId": "060a2b340101010101010f00130000009729976a3dc57047060e2b347f7f2a80",
+        "fileObject": 68128,
+        "masterObject": 68119,
+        "descriptorObject": 68127,
+        "descriptorClass": "AIFD",
+        "pmrRecordByteRange": [
+          274,
+          118
+        ],
+        "pmrVersion": 16,
+        "fileMobIdProperties": [
+          {
+            "object": 68128,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 12,
+            "ranges": [
+              [
+                10620,
+                12
+              ]
+            ],
+            "tocRanges": [
+              [
+                57272,
+                24
+              ]
+            ],
+            "hex": "2a0000009729976a3ec57047"
+          },
+          {
+            "object": 68128,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 12,
+            "ranges": [
+              [
+                10645,
+                12
+              ]
+            ],
+            "tocRanges": [
+              [
+                57392,
+                24
+              ]
+            ],
+            "hex": "2a0000009729976a3ec57047"
+          }
+        ],
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 68128,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                10637,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                57344,
+                24
+              ]
+            ],
+            "hex": "1f0a010000000000"
+          }
+        ],
+        "descriptorClassProperty": [
+          {
+            "object": 68127,
+            "propertyName": "OMFI:ObjID",
+            "typeName": "omfi:ObjectTag",
+            "length": 4,
+            "ranges": [
+              [
+                56684,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                56672,
+                24
+              ]
+            ],
+            "hex": "41494644"
+          }
+        ],
+        "mdflSampleRate": {
+          "decoded": {
+            "state": "positiveRate",
+            "rawPair": [
+              48000,
+              1
+            ],
+            "byteOrder": "little",
+            "componentType": "signed32",
+            "exactHz": {
+              "numerator": 48000,
+              "denominator": 1
+            }
+          },
+          "properties": [
+            {
+              "object": 68127,
+              "propertyName": "OMFI:MDFL:SampleRate",
+              "typeName": "omfi:ExactEditRate",
+              "length": 8,
+              "ranges": [
+                [
+                  9860,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  56792,
+                  24
+                ]
+              ],
+              "hex": "80bb000001000000"
+            }
+          ]
+        },
+        "pcmaAudioSamplingRate": {
+          "decoded": {
+            "state": "absent"
+          },
+          "properties": []
+        },
+        "ownEmbeddedSummary": {
+          "container": "FORM",
+          "formType": "AIFC",
+          "containerByteOrder": "big",
+          "containerDeclaredPayloadBytes": 718,
+          "summaryBytes": 726,
+          "chunksVisitedThroughRate": [
+            {
+              "tag": "bext",
+              "summaryOffset": 12,
+              "declaredPayloadBytes": 604
+            },
+            {
+              "tag": "COMM",
+              "summaryOffset": 624,
+              "declaredPayloadBytes": 38
+            }
+          ],
+          "rateChunkSummaryByteRange": [
+            624,
+            46
+          ],
+          "rateChunkMdbByteRanges": [
+            [
+              10492,
+              46
+            ]
+          ],
+          "rateChunkHex": "434f4d4d000000260001002bf2020018400ebb80000000000000696e32340e32342d62697420496e746567657200",
+          "sampleRateSummaryByteRange": [
+            640,
+            10
+          ],
+          "sampleRateMdbByteRanges": [
+            [
+              10508,
+              10
+            ]
+          ],
+          "sampleRateHex": "400ebb80000000000000",
+          "exactHz": {
+            "numerator": 48000,
+            "denominator": 1
+          },
+          "channels": 1,
+          "embeddedSampleFramesForContextOnly": 2880002,
+          "bitsPerSample": 24,
+          "sampleRateEncoding": "big-endian IEEE extended80",
+          "extended80": {
+            "sign": 1,
+            "biasedExponent": 16398,
+            "significand": 13510798882111488000,
+            "binaryExponentAppliedToIntegerSignificand": -48
+          },
+          "compressionTag": "in24"
+        },
+        "summaryProperties": [
+          {
+            "object": 68127,
+            "propertyName": "OMFI:AIFD:Summary",
+            "typeName": "omfi:VarLenBytes",
+            "length": 726,
+            "ranges": [
+              [
+                9868,
+                726
+              ]
+            ],
+            "tocRanges": [
+              [
+                56912,
+                24
+              ]
+            ],
+            "sha256": "0879958223727b2679172a33efed338659985c474d81d49d8e5f8f2113b200a3"
+          }
+        ]
+      }
+    ],
+    "sourceHashReceipts": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "matchesPriorFrameRateReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 5159032,
+        "mtime_ns": 1561096331000000000,
+        "inode": 469151
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544",
+        "matchesPriorFrameRateReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 97250,
+        "mtime_ns": 1561095049000000000,
+        "inode": 469152
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "matchesPriorFrameRateReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 22745976,
+        "mtime_ns": 1785052712000000000,
+        "inode": 1081262
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79",
+        "matchesPriorFrameRateReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 164660,
+        "mtime_ns": 1785052993000000000,
+        "inode": 1081385
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "matchesPriorFrameRateReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 16616336,
+        "mtime_ns": 1778753153000000000,
+        "inode": 1081897
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7",
+        "matchesPriorFrameRateReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 123140,
+        "mtime_ns": 1790763274000000000,
+        "inode": 1082005
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "matchesPriorFrameRateReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 15703416,
+        "mtime_ns": 1778753179000000000,
+        "inode": 1082384
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524",
+        "matchesPriorFrameRateReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 111140,
+        "mtime_ns": 1785052993000000000,
+        "inode": 1082472
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "matchesPriorFrameRateReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 3668720,
+        "mtime_ns": 1788291273218255487,
+        "inode": 6813558
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a",
+        "matchesPriorFrameRateReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 86754,
+        "mtime_ns": 1790740372078265906,
+        "inode": 6813560
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "matchesPriorFrameRateReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 60680,
+        "mtime_ns": 1788291495301754724,
+        "inode": 14769208
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+        "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928",
+        "matchesPriorFrameRateReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 392,
+        "mtime_ns": 1788291482553506886,
+        "inode": 14769210
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+        "sha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "matchesPriorDurationCacheHash": true,
+        "stableDuringRead": true,
+        "bytes": 57405807,
+        "mtime_ns": 1792312028319751444,
+        "inode": 33683657
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+        "sha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "matchesPriorDurationCacheHash": true,
+        "stableDuringRead": true,
+        "bytes": 277457615,
+        "mtime_ns": 1792312034034888261,
+        "inode": 33683660
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+        "sha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "matchesPriorDurationCacheHash": true,
+        "stableDuringRead": true,
+        "bytes": 202174044,
+        "mtime_ns": 1792312038378265481,
+        "inode": 33683661
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+        "sha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "matchesPriorDurationCacheHash": true,
+        "stableDuringRead": true,
+        "bytes": 191199626,
+        "mtime_ns": 1792312042557915572,
+        "inode": 33683671
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+        "sha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "matchesPriorDurationCacheHash": true,
+        "stableDuringRead": true,
+        "bytes": 45335148,
+        "mtime_ns": 1792312043581951973,
+        "inode": 33683676
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-OMFI MediaFiles-values.json",
+        "sha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "matchesPriorDurationCacheHash": true,
+        "stableDuringRead": true,
+        "bytes": 535484,
+        "mtime_ns": 1792312043637477450,
+        "inode": 33683677
+      }
+    ],
+    "limits": [
+      "This bounded corpus contains only 48000 Hz audio. It cannot distinguish precedence where valid own descriptor sources disagree, nor exercise 44.1/96 kHz or fractional sample frequencies.",
+      "All six MDBs are established little-endian legacy layouts. This is not approval of unobserved MDB64, other-endian, unknown descriptor, malformed, missing, duplicate, conflicting, nonpositive or unsupported typed input.",
+      "AIFD and WAVD own concrete AudioSamplingRate absence is established on the selected own descriptor objects, not inferred from unrelated-object property occurrence totals.",
+      "No OldScanner output, production parser, physical media header or full audio essence is used. No app, repo, media or input files are written. New evidence is written only under this /private/tmp directory.",
+      "Frequency evidence does not approve a fallback/priority rule or change Duration, frame-rate, DF or final display formatting policy."
+    ]
+  },
+  "cpp17Qt653": {
+    "buildingBlocks": "Small value records, qint32/quint32/quint64, pinned QtEndian readers after bounds validation. Small specific extended80 decoder. std::gcd for derived fraction reduction; std::ratio is compile-time, not a runtime container.",
+    "guidanceFile": {
+      "path": "/Users/martymclean/Downloads/CPP SKILL.md",
+      "bytes": 22279,
+      "sha256": "70919980c635f66db649b7eb1e426fb2098754ed6c9db22f1a7eee0935227d35"
+    },
+    "pinnedEndianHeader": {
+      "path": "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers/qendian.h",
+      "bytes": 13070,
+      "sha256": "04dc4bb41bb7e4150c062f1861eac1c385f22432af3762e53858f31f459bce0f"
+    }
+  },
+  "publicPrimarySources": [
+    {
+      "title": "Apple Inside Macintosh Sound: Extended Common Chunks",
+      "url": "https://developer.apple.com/library/archive/documentation/mac/Sound/Sound-83.html",
+      "supports": "COMM sampleRate Extended field and sample frames per second; channels separate."
+    },
+    {
+      "title": "Microsoft WAVEFORMATEX",
+      "url": "https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-waveformatex",
+      "supports": "nSamplesPerSec integer audio sampling frequency in samples per second."
+    },
+    {
+      "title": "OMF Interchange Specification 2.1",
+      "url": "https://www.cubase.it/wp/wp-content/uploads/2014/12/omfspec21.pdf",
+      "pages": "Printed 113 and 217, PDF 125 and 229.",
+      "supports": "AIFD/WAVD Summary contains format summary without sound data."
+    },
+    {
+      "title": "Qt 6.5 endian conversion functions",
+      "url": "https://doc.qt.io/qt-6.5/qtendian.html",
+      "supports": "Integer endian conversion building blocks, not container bounds validation."
+    }
+  ],
+  "temporaryReceipts": {
+    "mc": {
+      "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mc/findings.json",
+      "bytes": 12922,
+      "sha256": "6a12d6581e6703563e9803e200086cef78f2a8ee570d618bacc9152ee9e3c723"
+    },
+    "mdvx": {
+      "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-mdvx/findings.json",
+      "bytes": 14136,
+      "sha256": "03de30111b8c5b4dadb9c0eb06b8db1589b02284599e32c254ca421d9d248730"
+    },
+    "drives": {
+      "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-drives/findings.json",
+      "bytes": 56496,
+      "sha256": "4bf2b86b6424ae601d0520592696c4723bd38b21511851e328507fe7c9e68b67"
+    },
+    "driveProbe": {
+      "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-drives/probe.py",
+      "bytes": 20275,
+      "sha256": "e45cdf99ff021115ca13a0323336ae034a4938666827e20a8e6c45921dbaba01"
+    },
+    "driveHashes": {
+      "path": "/private/tmp/bella-mdb-audio-sample-rate-20261020-drives/source-hash-receipts.json",
+      "bytes": 5687,
+      "sha256": "a2c44774d339556b5c2b23e8348e5a6837c0264bb5dc11da69af05d5e4644a4f"
+    }
+  },
+  "verificationLimits": [
+    "All sampled audio is 48 kHz; source precedence for disagreement follows native class semantics, not an observed corpus conflict.",
+    "No live Media Composer or MDVx scan/table/export run, no physical media read for this review, no performance benchmark.",
+    "Research-only documents and curated evidence; no runtime code or active app behavior changed."
+  ],
+  "agreedBellaRule": {
+    "status": "Approved by the user on 20 October 2026; not yet implemented.",
+    "singleAuthority": {
+      "PCMA": "Own PCMA:AudioSamplingRate.",
+      "AIFD": "Own AIFD:Summary COMM sampleRate.",
+      "WAVD": "Own WAVD:Summary fmt nSamplesPerSec."
+    },
+    "missing": "Missing, damaged, unsupported or unrepresentable chosen source -> unavailable/blank at MDB stage, keep physical row; no MDFL repair.",
+    "retention": "Exact supported numeric frequency with compact source/availability context; retain original PCMA pair, WAV integer or necessary AIFF ten-byte value. Bounded exact AIFF support remains implementation work; no sole approximate-double storage.",
+    "validation": [
+      "Qualified own descriptor and exact known property/type.",
+      "Complete checked numeric payload; supported Summary signature/chunk bounds and padding.",
+      "Positive finite rate; valid nonzero denominator for a fraction.",
+      "A header Summary may intentionally omit sound payload. Do not require a full physical audio file inside it."
+    ],
+    "display": "Hz / 1000, e.g. 48 kHz, 44.1 kHz, 96 kHz. Numeric formatting at presentation; uncommon supported frequencies retained rather than dictionary-only labels.",
+    "avoid": [
+      "No guessed 48 kHz default, frequency whitelist, denominator-zero repair or per-row source consistency graph.",
+      "No video NTSC rate aliases or project/display frame clock substituted for audio Hz.",
+      "No generic whole-Hz rounding of retained frequencies."
+    ],
+    "laterReview": [
+      "Cross-source/header-read conditions for Sample Rate.",
+      "Exact supported AIFF extended80 representability and other typed/container layouts.",
+      "Generic display precision for unusual fractional rates.",
+      "General MDB structural damage, conflicts and missing-reference handling."
+    ]
+  }
+}

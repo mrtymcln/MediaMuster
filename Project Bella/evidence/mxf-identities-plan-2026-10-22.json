@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "Record explicit user approval of Bella's six MXF FileMobId and MasterMobId reading, selection, normalization and retention rules.",
+  "status": "Approved requirements; no Bella runtime implementation, cutover or Bin Filter change.",
+  "authorization": {
+    "source": "Direct human approval in the current conversation",
+    "statement": "OK, let's lock those FileMobId and MasterMobId rules in for Bella. Next, how do Media Composer and MDVX read Clip Name from MXF, and what should Bella read and keep?",
+    "scope": "Approves the six previously proposed identity rules in the focused MXF identity review. The request to review Clip Name does not approve its new MXF rules or other field/navigation proposals."
+  },
+  "agreedBellaRules": {
+    "fileIdentity": "Follow supported typed header metadata, active Preface/ContentStorage membership, EssenceContainerData's LinkedPackageUID and the internal-essence relationship to one unambiguous file SourcePackage with its own file descriptor. Read the complete 32-byte PackageUID; do not select by filename, raw object order or Preface.PrimaryPackage alone.",
+    "masterIdentity": "Select one distinct qualified associated MaterialPackage whose own supported track/component SourceClip refers to the exact file package and target track. Repeated links to the same master are one candidate. Do not infer a master from arbitrary source ancestry or use object order to break ambiguity. Keep a valid file identity and physical row if the master is unavailable.",
+    "normalization": "Apply the already agreed shared source-aware Bella normalizer design to the full MXF identities. Convert the documented material fields at offsets 16, 20 and 22 as a 32-bit value and two 16-bit values; preserve label/instance bytes and the remaining tail. Do not reverse the entire ID, skip required conversion by prefix, try byte orders until a match appears or truncate identity. InstanceUID remains a separate 16-byte object-reference role.",
+    "ownedStorage": "Retain complete normalized FileMobId and available MasterMobId as small owned binary values, with the approved C++17 std::array/QtEndian design and QHash/full equality. Two modern ID payloads total 64 bytes before availability/container overhead. Generate hexadecimal text only when needed; QUuid alone cannot hold the complete MobID.",
+    "summaryCopies": "Once linked package identities are established, do not retain redundant Avid header summary ID copies or require routine runtime comparison. The agreed baseline uses package relationships rather than summary-only rescue. A proven compatibility variant needing another route requires its own evidence.",
+    "temporaryDataAndAvailability": "Release object/package indexes, relationship data and header storage after extraction. Retain no complete graph, raw header, second spelling or per-byte evidence solely for IDs. Missing, wrong-width, zero or ambiguous own identities stay unavailable, without fabricated IDs or removal of the physical file. A zero SourceClip reference can normally terminate source ancestry and is not by itself corruption."
+  },
+  "unchanged": [
+    "Use full normalized equality for PMR/MDB/MXF observations.",
+    "Preserve approved KelpieId/duplicate rules: same full path plus same complete FileMobId is a repeated inventory entry; different paths sharing an ID keep distinct rows and KelpieIds. A shared MasterMobId does not merge rows.",
+    "Keep OldScanner active until explicit cutover approval; Bin Filter remains outside this work.",
+    "The approved database-unavailable MXF Duration fallback and blank Original Bin rule remain authoritative."
+  ],
+  "remaining": [
+    "Clip Name is the next focused MXF review; its new rules are not approved by this identity decision.",
+    "Other MXF field, extraction and navigation proposals remain under review.",
+    "Cross-source disagreement priorities, new header-open triggers and MXF concurrency remain separate decisions.",
+    "Damaged/ambiguous fixtures, third-party variants, abnormal layout coverage and fresh implementation verification remain engineering work."
+  ],
+  "supersedes": "The proposed/not-yet-approved status of the six identity rules in the 21 October MXF identity review and its research receipt. Historical native, MDVx, current-source and actual-header observations and their limits are not rewritten by approval.",
+  "references": {
+    "focusedReview": "docs/reviews/2026-10-21-bella-mxf/identities.md",
+    "researchEvidence": "Project Bella/evidence/mxf-identities-2026-10-21.json",
+    "bellaPlan": "Project Bella/README.md#mxf-filemobid-and-mastermobid-agreed-rules",
+    "fallbackRevision": "docs/reviews/2026-10-21-bella-mxf/fallback-fields.md"
+  },
+  "validation": {
+    "kind": "Requirements approval record and documentation consistency checks only",
+    "runtimeImplementation": false,
+    "productionTestsExecuted": false,
+    "nativeOrMediaResearchRepeated": false,
+    "rawResearchHashReceiptsChanged": false
+  }
+}

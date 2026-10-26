@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "Record explicit approval of Bella MXF audio Sample Rate rules before reviewing Bit Depth.",
+  "status": "Approved requirements; no runtime implementation or cutover.",
+  "authorization": {
+    "source": "Direct human approval in the current conversation",
+    "statement": "OK, let's lock those audio Sample Rate rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Bit Depth from MXF, and what should Bella read and keep?",
+    "scope": "Approves the preceding focused audio Sample Rate rules. New Bit Depth mappings/coverage and audio source priorities remain separate work."
+  },
+  "agreedBellaRules": {
+    "source": "Qualified physical file own supported sound descriptor GenericSoundEssenceDescriptor.AudioSamplingRate, inherited by supported modern WaveAudio/AES3Audio. Preserve Avid property name AudioSamplingRate internally; Sample Rate is the audio table heading.",
+    "encoding": "Complete known eight-byte big-endian rational, original positive signed32 numerator/denominator. Preserve legitimate uncommon fractions; no Unicode decoding.",
+    "unavailable": "Missing, damaged, conflicting, unsupported, unsafe ownership or distinguished0/1 supplies no MXF audio frequency. Keep physical file/independent facts; blank if no eligible source supplies it. No guessed48k, whitelist or replacement clock.",
+    "separateMeaning": "Do not substitute Duration unit rate, Track.EditRate or Preface.ProjectEditRate, multiply by channel count or apply the MDB video NTSC interpreter. Keep video Sample Rate and audio Frame Rate blank.",
+    "retention": "One exact numeric record and necessary availability, using small new C++17/Qt helpers. Generate any compatibility integer at its boundary, release temporary bytes/reference structures; no permanent duplicate whole-Hz source fact.",
+    "displayAndSort": "Late familiar kHz labels, including48kHz/44.1kHz/96kHz, and numeric sorting. Shared exact fraction comparison is suitable; uncommon fractional label precision remains the existing presentation follow-up.",
+    "readBoundary": "Extract during independently required header parsing. No new dependency, essence decode or frequency-only consistency graph. Audio source precedence/read triggers remain for final priority-table review."
+  },
+  "evidenceBoundary": "Five reused WaveAudio48000/1 observations. No claim of actual AES3/non48k/damaged-value coverage or native GUI parity. Native internal publication alternatives are not raw-property recovery rules.",
+  "unchanged": [
+    "Approved Frame Rate and Duration including DF semicolons/NDF colons.",
+    "Independent new Bella implementation; OldScanner remains active until explicit cutover approval.",
+    "Bin Filter unchanged; current Compression behavior preserved.",
+    "Uncommon coverage, remaining headers, priority/read triggers and scanner coordination still require their planned review/verification."
+  ],
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-audio-sample-rate-2026-10-22.json",
+    "sha256BeforeApprovalMetadata": "522b981e42c454b735ad2e523f90be506e6dfdc7d1bb7a369d5cf1d3f40fcdfc"
+  },
+  "supersedes": "Earlier pending/proposed status of the focused MXF audio Sample Rate rules. Raw/native/source/corpus findings and hashes remain unchanged.",
+  "references": {
+    "focusedReview": "docs/reviews/2026-10-21-bella-mxf/audio-sample-rate.md",
+    "researchEvidence": "Project Bella/evidence/mxf-audio-sample-rate-2026-10-22.json",
+    "bellaPlan": "Project Bella/README.md#mxf-audio-sample-rate-agreed-rules"
+  },
+  "validation": {
+    "runtimeImplemented": false,
+    "productionTestsRun": false,
+    "rawReceiptsChanged": false,
+    "nativeOrMediaResearchRepeatedForApproval": false
+  }
+}

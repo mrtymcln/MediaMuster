@@ -1,0 +1,133 @@
+{
+  "date": "2026-10-20",
+  "timezone": "Australia/Sydney",
+  "purpose": "Focused Effect display review: preserve the current user-liked output contract and use the already agreed simpler shared Bella integration.",
+  "status": "User accepted preserving current Effect display rules on 20 October 2026, with the already agreed simpler shared Bella integration. Not yet implemented; no product code change, OldScanner active and Bin Filter unchanged. Effect Sequence remains next.",
+  "input": "Final selected decoded Clip Name on a row already confirmed as Precompute. MDB supplies the agreed qualified associated master name; general cross-source priority remains a separate review.",
+  "currentOutputContract": [
+    {
+      "condition": "Catalogue hit",
+      "effect": "First indexed canonical English display name; retain localized and explicit compatibility aliases."
+    },
+    {
+      "condition": "Nonempty unrecognised extracted token",
+      "effect": "Token verbatim, preserving its case, underscores and spelling."
+    },
+    {
+      "condition": "Empty/unavailable Effect on a Precompute",
+      "effect": "Lowercase unknown at table/CSV/filter presentation."
+    },
+    {
+      "condition": "Non-Precompute",
+      "effect": "Blank."
+    }
+  ],
+  "sourceAnchors": [
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.cpp",
+      "lines": "965-1048",
+      "meaning": "Existing combined parser/lookup; miss returns token, hit uses first canonical name."
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+      "lines": "194-199",
+      "meaning": "Effect display is blank for non-Precompute and lowercase unknown for empty stored text."
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+      "lines": "157-183",
+      "meaning": "Current selected Type/Clip Name drive a single combined lookup for all three labels."
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_avideffects.cpp",
+      "lines": "28-282",
+      "meaning": "Existing expected cases for catalogue/localized names, custom text, comma/plus suffixes, malformed/overflow inputs and ambiguity; inspected, not freshly executed."
+    }
+  ],
+  "priorEvidence": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mdb-effect-category-2026-10-20.json",
+    "bytes": 127056,
+    "sha256": "86ada4f16283726b26d49a48562d06be8c0fbe3403d66f67cc93ec94f0717a6f"
+  },
+  "priorEvidenceUse": "Reuses the preceding native registration/MDVx omission and live six-pair MDB owner/name audit. No new binary or drive audit is claimed here. Prior independent source-model results are not execution of the production C++ resolver.",
+  "sources": [
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.h",
+      "bytes": 1797,
+      "sha256": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.cpp",
+      "bytes": 69548,
+      "sha256": "0989aeb6b02bf4a254b01e5d5881a82997205797de7d448336b5f4a0d0535d35"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+      "bytes": 12788,
+      "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+      "bytes": 10189,
+      "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+      "bytes": 10816,
+      "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+      "bytes": 5202,
+      "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+      "bytes": 12214,
+      "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp",
+      "bytes": 3609,
+      "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_avideffects.cpp",
+      "bytes": 11104,
+      "sha256": "f278d23e14b05130c616d7be64989020b185d6ee2862e93d6437cfbd48664fc0"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediatablemodel.cpp",
+      "bytes": 38162,
+      "sha256": "91a861a72f0c369d8259e4242d63d96510d784fdbdf2a5ef9a384140a0fdd5df"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediacsv.cpp",
+      "bytes": 21349,
+      "sha256": "4f14378fcd87ad7acf4b903de30c7d93e208a26c679068bff4c5dc5a70b582b8"
+    }
+  ],
+  "guidance": {
+    "path": "/Users/martymclean/Downloads/CPP SKILL.md",
+    "bytes": 22279,
+    "sha256": "70919980c635f66db649b7eb1e426fb2098754ed6c9db22f1a7eee0935227d35"
+  },
+  "verification": {
+    "method": "Read-only current source/design review and comparison with prior hashed catalogue/source receipts. A peer independently checked the output contract and suffix-parser precedence.",
+    "currentSourcesMatchingPriorHashedEvidence": 9,
+    "newBuildsOrRuntimeTests": 0,
+    "productCodeChanges": 0,
+    "newBinaryOrDriveReads": 0,
+    "performance": "No speed or memory gain is measured.",
+    "priorRuntimeLimit": "The preceding Qt6.5.3 CLI compiled but aborted before main after denied CPU-feature queries. No resolver record comparison passed; no rerun or workaround attempted for this field review."
+  },
+  "agreedBellaRule": {
+    "status": "Accepted by the user on 20 October 2026; not yet implemented. Preserve current Effect behaviour with the already agreed shared lookup integration. Effect Sequence detailed rules remain open.",
+    "keep": "Preserve current catalogue, suffix parsing and name output exactly. Do not humanize unknown tokens or replace first-name selection with a new heuristic.",
+    "integration": "Use the existing standalone Qt Core/C++17 AvidEffects::lookup. Its Hit.name supplies Effect from the same call that supplies Category/Sequence. Derive after final selected Type/Clip Name and temporarily reuse within the same selected master/name scope; recompute if selected inputs change.",
+    "retention": "Keep needed owned QString result values and compact required context. Normal Qt implicit sharing permits associated-row reuse without retaining the MDB read buffer or full per-label source histories.",
+    "noExtraRead": "No separate Effect decoder, additional MDB graph walk or header read solely for this name-derived label.",
+    "optionalRefactor": "A private parse-name helper could separate token/sequence/instance extraction if future formats require it. Preserve exact comma/plus precedence and range handling; this is not required work, a new parser design or a measured speed gain.",
+    "separate": "Effect Sequence detailed rules remain open. Matching does not establish Type, Precompute Category, actual effect identity or timeline membership."
+  }
+}

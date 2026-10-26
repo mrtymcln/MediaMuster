@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-23",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted release-one OMF version and text rules; identity/ownership and remaining fields are under review.",
+  "authorization": {
+    "source": "Direct human reply",
+    "statement": "OK, let's lock those OMF version and text encoding rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read FileMobId and MasterMobId from OMF, and what should Bella read and keep?",
+    "scope": "Accepts the proposed OMF version/text baseline and the subsequent plain-language clarification. Begins identity/ownership review; no runtime implementation or app cutover."
+  },
+  "agreedBellaRules": {
+    "status": "Proposed, awaiting user approval.",
+    "versionBaseline": "Release-one evidenced Avid OMF media: Bento1.0 plus known OMF1 records; canonical0100 and qualified observedlegacy0001. Record and container versions independent.",
+    "numericOrder": "Support recognized II/MM typed numeric forms, with no text-codec inference from order. Conflicting/unproved overrides unavailable. Real opposite-order coverage remains verification.",
+    "deferred": "Bento2/OMF2 and mixed import variants, extended labels/legacy40bit/update overlays and unknown layouts. Deliberate reduction from current broader capability, not invalidation of those formats.",
+    "unicode": "Strict bounded explicitly identified UTF8 properties and established marked Unicode text attributes for required known text fields; kind4 alone is not text.",
+    "legacy": "MacRoman for ordinary unlabelled legacy strings within agreed Mac-focused scope; no UTF8-validity first guess.",
+    "fallback": "Use a usable separately recorded legacy counterpart for the same field/owner when Unicode is missing, empty or damaged. No same-byte reinterpretation or invented sibling; kind2/kind4 normally alternative forms.",
+    "retention": "Owned compact QString/status results, preserved spelling/whitespace; release temporary buffers/indexes, no general detector, runtime locale probe or raw-value history.",
+    "unsupported": "Keep physical row and independently eligible database/native-audio/filesystem facts. Detailed OMF damage and owner/source rules continue separately.",
+    "scope": "No Windows/universal-producer encoding claim, source priority, extra-read reason, runtime implementation or app cutover.",
+    "performance": "No measured speed/memory improvement; dropping a decoder branch alone is not a benchmark."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-versions-and-text-2026-10-23.json",
+    "sha256": "3468e96ef23abe675a7309e67b2036150427565a12fcfe3986573f9906022f7c"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/versions-and-text.md",
+    "plan": "Project Bella/README.md",
+    "readingApproval": "Project Bella/evidence/omf-reading-plan-2026-10-23.json"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "newBuildsOrTests": false,
+    "appCutover": false,
+    "performanceMeasured": false
+  }
+}

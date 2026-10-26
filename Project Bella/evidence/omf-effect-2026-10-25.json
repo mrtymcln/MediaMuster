@@ -1,0 +1,1642 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-25",
+  "timezone": "Australia/Sydney",
+  "status": "OMF Effect integration recommendations awaiting approval. Effect Category accepted; no runtime implementation or cutover.",
+  "currentHead": "c8541868b10334ad0fddd5928a960202008768c9",
+  "effectCategoryApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-effect-category-plan-2026-10-25.json",
+    "bytes": 4496,
+    "sha256": "30fe33fc4e7ae5f218c90a213a257967d94892b6209681f788cb60dfd7d3b642"
+  },
+  "proposedBellaRules": {
+    "status": "OMF Effect integration recommendations awaiting approval. Effect Category accepted; no runtime implementation or cutover.",
+    "input": "Final selected confirmed Precompute Type and qualified selected-master Clip Name after matching/source selection. Existing OMF ownership/text rules; no additional Effect property or alternative owner chosen for a catalogue match.",
+    "known": "Use existing combined AvidEffects::lookup result Hit.name: first matching canonical English display name, preserving known localized spellings and explicit aliases.",
+    "unrecognized": "Keep a nonempty extracted token verbatim. Do not globally trim, rewrite underscores, title-case, case-fold, fuzzy-match or substitute unrelated fields.",
+    "unavailable": "Empty/unavailable Effect on confirmed Precompute displays lowercase unknown; ordinary Media and unknown Type display blank. Unknown Effect Category does not erase a nonempty Effect; parent Precompute Category success is not required.",
+    "syntax": "Preserve both existing validated suffix forms, numeric/rename-chain bounds, precedence, commas in sequence prefix and malformed/overflow handling. No generic split/rewrite.",
+    "integration": "Common source-independent derivation outside the byte parser, when optional effect details requested. One combined lookup for selected inputs, reuse across associated rows, rederive if selected Type/name changes. Current resolver/index are already shared; current projection has no internal optional guard and may run multiple passes.",
+    "retention": "Owned QString Effect and Category plus necessary compact context, using normal Qt value sharing. No permanent every-name cache, token/instance/matched-state retention, custom interner, new catalogue IDs or per-column history/class.",
+    "sequence": "Discard separate Sequence output from stored rows/export, while retaining selected Clip Name and suffix-boundary parsing required for Effect.",
+    "readScope": "No extra OMF field, component/effect graph, import-settings body, plug-in/registry query or media open solely for Effect. General OMF damage and final source-priority/opening/scheduling remain separate.",
+    "identityBoundary": "Names are inferred from editable Clip Name. They do not establish actual generating effect, Type, parent category, plug-in variant or timeline membership. Native ID/library/registered names use different inputs.",
+    "evidenceBoundary": "Five reused selected masters are ordinary Media and inapplicable. No genuine physical OMF Precompute name sample, fresh runtime lookup/test/parser execution, live GUI comparison or measured performance gain is claimed."
+  },
+  "review": {
+    "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-23-bella-omf/effect.md",
+    "bytes": 6688,
+    "sha256": "075528f908a1038f6aaa46c6eee5f09a84db0b81b2a16ee9192a6b92d5777f78"
+  },
+  "receiptFiles": {
+    "current": {
+      "path": "/private/tmp/bella-omf-effect-current-20261025/findings.json",
+      "bytes": 27222,
+      "sha256": "8da9ae31ebd92c27faf697afeedd78949e2aa3e690aebf910fc50a001f2236c1"
+    },
+    "mc": {
+      "path": "/private/tmp/bella-omf-effect-mc-20261025/findings.json",
+      "bytes": 16282,
+      "sha256": "da94a4833b395a1fbff2861b25e6c6a0a1b83b29ebecd9f2d6d8e09983f71fa8"
+    },
+    "mdvx": {
+      "path": "/private/tmp/bella-omf-effect-mdvx-20261025/findings.json",
+      "bytes": 28507,
+      "sha256": "e7a8bd486a2fd43c41c975f512c8bade982e713682bde11e8739e2769b6150c7"
+    }
+  },
+  "nativeAndCurrentReceipts": {
+    "current": {
+      "date": "2026-10-25",
+      "timezone": "Australia/Sydney",
+      "head": "c8541868b10334ad0fddd5928a960202008768c9",
+      "scope": "Companion Effect output contract, reusing completed OMF Effect Category source audit and accepted MDB/MXF Effect research. No duplicate binary/drive/catalogue survey, runtime lookup, parser/app/privateAPI, build/test or benchmark. No repository edits.",
+      "reusedSourceReceipt": {
+        "path": "/private/tmp/bella-omf-effect-category-current-20261025/findings.json",
+        "bytes": 46670,
+        "sha256": "23e7af82c0bd291c3893082ece5ddfa20bb30897d7276284dcf9f9b4122d4b9c"
+      },
+      "sourceInputs": [
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.h",
+          "sha256": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1",
+          "bytes": 1797,
+          "sameAsHead": true
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.cpp",
+          "sha256": "0989aeb6b02bf4a254b01e5d5881a82997205797de7d448336b5f4a0d0535d35",
+          "bytes": 69548,
+          "sameAsHead": true
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+          "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce",
+          "bytes": 10189,
+          "sameAsHead": true
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+          "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935",
+          "bytes": 5202,
+          "sameAsHead": true
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+          "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3",
+          "bytes": 12788,
+          "sameAsHead": true
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+          "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56",
+          "bytes": 12214,
+          "sameAsHead": true
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp",
+          "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442",
+          "bytes": 3609,
+          "sameAsHead": true
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_avideffects.cpp",
+          "sha256": "f278d23e14b05130c616d7be64989020b185d6ee2862e93d6437cfbd48664fc0",
+          "bytes": 11104,
+          "sameAsHead": true
+        }
+      ],
+      "sourceAnchors": [
+        {
+          "name": "shared-effect-hit-contract",
+          "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.h",
+          "startLine": 7,
+          "endLine": 34,
+          "sha256": "918f189f6212c63171c226e16feb4c8f80d51538d7712f6a4ae68206fb2b006c",
+          "text": "/// Names a rendered effect from its precompute's clip name.\n///\n/// Observed names include `<sequence>,<Effect>+<N>` and\n/// `<sequence>,<Effect>,<N>[.new.<N>...]`. Exact known display spellings use\n/// spaces/colons as underscores; sequence names can contain commas.\n/// This lookup labels rows already classified as precomputes by metadata.\n/// A clip name is editable, so a match is a label, not proof of effect identity.\n///\n/// Names/categories come from the installed Media Composer 26.8.0.58987 ARM64\n/// registrations and shipped resources. Distinct AlphaFlex variants and\n/// ambiguous categories are retained. See docs/avid-effects-catalogue.md.\nnamespace AvidEffects\n{\n\tstruct Hit\n\t{\n\t\tQString name;\t  ///< Avid's display name (\"Color Correction\"), or the raw token when unknown.\n\t\tQString category; ///< Avid category/group (\"Image\", \"Timewarp\"...), \"A / B\" when ambiguous,\n\t\t\t\t\t\t  ///< \"unknown\" when unknown (a user-typed title,\n\t\t\t\t\t\t  ///< an unregistered plug-in, or a renamed template).\n\t\tQString sequence; ///< The text preceding the effect token, as Avid wrote it (mangled).\n\t\tint instance = 0; ///< The +N or comma-N instance; 0 when absent or invalid.\n\t\tbool matched = false;\n\t};\n\n\t/// Parse a precompute clip name and look the effect up. An unrecognised\n\t/// effect token is returned verbatim, unmatched. Malformed or out-of-range\n\t/// numeric suffixes remain in the token rather than being silently lost.\n\t[[nodiscard]] Hit lookup(const QString &clipName);\n"
+        },
+        {
+          "name": "existing-lazy-shared-index-and-explicit-alias",
+          "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.cpp",
+          "startLine": 916,
+          "endLine": 949,
+          "sha256": "7016a536a3b159c7dc203ba23331b83ef23c14517fea46d8b09a5af5c67c7a23",
+          "text": "\tstruct Table\n\t{\n\t\tQVector<Row> rows;\n\t\tQHash<QString, QVector<int>> byKey; ///< mangled name (any language) → rows\n\t};\n\n\t/// Build the name index once from the compiled-in catalogue.\n\tconst Table &table()\n\t{\n\t\tstatic const Table t = []\n\t\t{\n\t\t\tTable out;\n\t\t\tout.rows.reserve(std::size(kEffects));\n\t\t\tfor (const Entry &e : kEffects)\n\t\t\t{\n\t\t\t\tconst int idx = out.rows.size();\n\t\t\t\tout.rows.append({QString::fromUtf8(e.name), QString::fromUtf8(e.category)});\n\t\t\t\t// English name, then every localised spelling Avid ships.\n\t\t\t\tQSet<QString> keys{AvidEffects::mangle(out.rows[idx].name)};\n\t\t\t\tfor (const char *localised : e.localised)\n\t\t\t\t\tif (localised && *localised)\n\t\t\t\t\t\tkeys.insert(AvidEffects::mangle(QString::fromUtf8(localised)));\n\t\t\t\tfor (const QString &k : keys)\n\t\t\t\t\tout.byKey[k].append(idx);\n\t\t\t}\n\t\t\t// Observed render spelling, corroborated by the current 3D Warp\n\t\t\t// registration and 2026 Effects Guide. This explicit compatibility\n\t\t\t// alias does not identify the producer's AlphaFlex execution variant.\n\t\t\tout.byKey.insert(QStringLiteral(\"3DWarp\"),\n\t\t\t\t\t\t\t out.byKey.value(QStringLiteral(\"3D_Warp\")));\n\t\t\treturn out;\n\t\t}();\n\t\treturn t;\n\t}\n"
+        },
+        {
+          "name": "preserved-suffix-parser",
+          "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.cpp",
+          "startLine": 965,
+          "endLine": 1029,
+          "sha256": "830214d460da951f81e925d058ff0768a85982dbbeb21a635e60f4ebb886a9a1",
+          "text": "AvidEffects::Hit AvidEffects::lookup(const QString &clipName)\n{\n\t// Effect names and categories come only from the clip name, not an effect ID.\n\t// If a rename removes the effect name, this lookup cannot recover it:\n\t// unmatched text is kept with category \"unknown\". A name that\n\t// happens to match another effect can also give a misleading label.\n\t// This does not change the media type established separately from metadata.\n\tHit hit;\n\t// Both observed render names keep the effect at the right-hand end:\n\t// `<sequence>,<Effect>+<N>` and `<sequence>,<Effect>,<N>[.new.<N>...]`.\n\t// Validate the latter's entire numeric suffix before using the preceding\n\t// comma; earlier commas still belong to the sequence.\n\tQString token = clipName;\n\tconst int comma = clipName.lastIndexOf(QLatin1Char(','));\n\tif (comma >= 0)\n\t{\n\t\thit.sequence = clipName.left(comma);\n\t\ttoken = clipName.mid(comma + 1);\n\t}\n\tbool commaInstance = false;\n\tstatic const QRegularExpression kCommaInstance(QStringLiteral(\"\\\\A[0-9]+(?:\\\\.new\\\\.[0-9]+)*\\\\z\"));\n\tif (comma > 0 && kCommaInstance.match(token).hasMatch())\n\t{\n\t\tconst int effectComma = clipName.lastIndexOf(QLatin1Char(','), comma - 1);\n\t\tif (effectComma >= 0 && effectComma + 1 < comma)\n\t\t{\n\t\t\tconst QStringList numbers = token.split(QStringLiteral(\".new.\"));\n\t\t\tbool valid = true;\n\t\t\tint instance = 0;\n\t\t\tfor (qsizetype i = 0; i < numbers.size(); ++i)\n\t\t\t{\n\t\t\t\tbool ok = false;\n\t\t\t\tconst int value = numbers[i].toInt(&ok);\n\t\t\t\tif (!ok)\n\t\t\t\t{\n\t\t\t\t\tvalid = false;\n\t\t\t\t\tbreak;\n\t\t\t\t}\n\t\t\t\tif (i == 0)\n\t\t\t\t\tinstance = value;\n\t\t\t}\n\t\t\tif (valid)\n\t\t\t{\n\t\t\t\thit.sequence = clipName.left(effectComma);\n\t\t\t\ttoken = clipName.mid(effectComma + 1, comma - effectComma - 1);\n\t\t\t\thit.instance = instance;\n\t\t\t\tcommaInstance = true;\n\t\t\t}\n\t\t}\n\t}\n\tif (!commaInstance)\n\t{\n\t\tstatic const QRegularExpression kInstance(QStringLiteral(\"\\\\+([0-9]+)\\\\z\"));\n\t\tconst QRegularExpressionMatch m = kInstance.match(token);\n\t\tif (m.hasMatch() && m.capturedStart(0) > 0)\n\t\t{\n\t\t\tbool ok = false;\n\t\t\tconst int instance = m.captured(1).toInt(&ok);\n\t\t\tif (ok)\n\t\t\t{\n\t\t\t\thit.instance = instance;\n\t\t\t\ttoken.chop(m.capturedLength(0));\n\t\t\t}\n\t\t}\n\t}\n"
+        },
+        {
+          "name": "exact-lookup-unknown-and-ordered-ambiguity",
+          "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.cpp",
+          "startLine": 1031,
+          "endLine": 1049,
+          "sha256": "6a9247358da1770cf1204d7197104f54e9c6836bbeb8424d30e6cc70ec2819f8",
+          "text": "\tconst Table &t = table();\n\tconst auto it = t.byKey.constFind(token);\n\tif (it == t.byKey.constEnd() || it->isEmpty())\n\t{\n\t\thit.name = token;\n\t\thit.category = QStringLiteral(\"unknown\");\n\t\treturn hit;\n\t}\n\thit.matched = true;\n\thit.name = t.rows[it->first()].name;\n\t// One name can live in several palette groups (\"Bottom to Top\" is a\n\t// Conceal, a Peel, a Push and a Squeeze); say all of them, in file order.\n\tQStringList categories;\n\tfor (int idx : *it)\n\t\tif (!categories.contains(t.rows[idx].category))\n\t\t\tcategories << t.rows[idx].category;\n\thit.category = categories.join(QStringLiteral(\" / \"));\n\treturn hit;\n}\n"
+        },
+        {
+          "name": "derive-from-selected-precompute-name",
+          "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+          "startLine": 157,
+          "endLine": 182,
+          "sha256": "0d892f7df7f5ee135bf84d7bc9216ae68e4e781728d0bfee386dc83982921ebd",
+          "text": "\tvoid selectEffectMetadata(MediaEvidence &evidence)\n\t{\n\t\tconst auto fields = {MediaProperty::Effect, MediaProperty::EffectCategory, MediaProperty::EffectSequence};\n\t\tconst QString locator = QStringLiteral(\"MediaEngine.EffectFromClipName\");\n\t\tfor (const auto field : fields)\n\t\t\tevidence.excludeInterpretation(field, locator);\n\t\tconst auto name = evidence.selected(MediaProperty::ClipName);\n\t\tconst auto type = evidence.selected(MediaProperty::Type);\n\t\tconst auto &names = evidence.observations(MediaProperty::ClipName);\n\t\tif (type.value.isValid() && type.value.toInt() == int(MediaType::Precompute) &&\n\t\t\tname.selectedObservation >= 0 && name.selectedObservation < names.size())\n\t\t{\n\t\t\tconst auto hit = AvidEffects::lookup(name.value.toString());\n\t\t\tfor (const auto field : fields)\n\t\t\t{\n\t\t\t\tauto item = names[name.selectedObservation];\n\t\t\t\titem.property = locator;\n\t\t\t\titem.value = field == MediaProperty::Effect ? hit.name : field == MediaProperty::EffectCategory ? hit.category\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t: hit.sequence;\n\t\t\t\titem.basis = EvidenceBasis::Derived;\n\t\t\t\titem.explanation = QStringLiteral(\"Inferred from the selected precompute clip name using the Avid effect-name catalogue; editable names do not prove effect identity. Source property: %1\").arg(names[name.selectedObservation].property);\n\t\t\t\tevidence.observe(field, std::move(item));\n\t\t\t}\n\t\t}\n\t\tfor (const auto field : fields)\n\t\t\tevidence.select(field, resolveProperty(evidence, propertyPolicy(field)));\n"
+        },
+        {
+          "name": "owned-row-strings",
+          "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+          "startLine": 64,
+          "endLine": 66,
+          "sha256": "62e70133abe000eb59fc07d992b329410e036568bff3df4bcbd516785c5525ac",
+          "text": "\tassign(row.effect, value(MediaProperty::Effect).toString());\n\tassign(row.effectCategory, value(MediaProperty::EffectCategory).toString());\n\tassign(row.effectSequence, value(MediaProperty::EffectSequence).toString());\n"
+        },
+        {
+          "name": "current-precompute-only-unknown-labels",
+          "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+          "startLine": 194,
+          "endLine": 206,
+          "sha256": "d7100775e4fa6eed33d61df6c4bed27328a3acb19a10840d2274cb1c0f03f728",
+          "text": "\tQString effectDisplay() const\n\t{\n\t\tif (type != Type::Precompute)\n\t\t\treturn {};\n\t\treturn effect.isEmpty() ? QStringLiteral(\"unknown\") : effect;\n\t}\n\n\tQString effectCategoryDisplay() const\n\t{\n\t\tif (type != Type::Precompute)\n\t\t\treturn {};\n\t\treturn effectCategory.isEmpty() ? QStringLiteral(\"unknown\") : effectCategory;\n\t}\n"
+        },
+        {
+          "name": "table-shared-labels",
+          "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+          "startLine": 264,
+          "endLine": 269,
+          "sha256": "67d07e45c19aebc405eed8b8232e44b23ecf3a14be44d9e383dd5b3d59fbb113",
+          "text": "\t\tcase Column::EffectCategory:\n\t\t\treturn f.effectCategoryDisplay();\n\t\tcase Column::Effect:\n\t\t\treturn f.effectDisplay();\n\t\tcase Column::EffectSequence:\n\t\t\treturn f.type == MediaFile::Type::Precompute ? f.effectSequence : QString();\n"
+        },
+        {
+          "name": "csv-shared-labels",
+          "path": "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp",
+          "startLine": 61,
+          "endLine": 67,
+          "sha256": "ef8b2b60f08565a9ee90025c31527c6a20f839cde61fea5bb43e8fa5052541be",
+          "text": "\t\tif (options.includePrecomputeDetails)\n\t\t{\n\t\t\tconst bool precompute = f.type == MediaFile::Type::Precompute;\n\t\t\tout << CsvUtil::quoted(f.precomputeCategoryDisplay()) << ','\n\t\t\t\t<< CsvUtil::quoted(f.effectCategoryDisplay()) << ','\n\t\t\t\t<< CsvUtil::quoted(f.effectDisplay()) << ','\n\t\t\t\t<< CsvUtil::quoted(precompute ? f.effectSequence : QString()) << ',';\n"
+        },
+        {
+          "name": "lookup-case-and-nonguess-tests",
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_avideffects.cpp",
+          "startLine": 98,
+          "endLine": 121,
+          "sha256": "e3bbce43a52d6797a24a7cca9e3245c5cab2111b3875112935f49a49af6810fa",
+          "text": "void TestAvidEffects::aliases_do_not_guess_arbitrary_names()\n{\n\tfor (const QString &token : {QStringLiteral(\"TITLE\"), QStringLiteral(\"SLATE\"),\n\t\t\t\t\t\t\t\t QStringLiteral(\"3dwarp\"), QStringLiteral(\"AudioDissolve\"),\n\t\t\t\t\t\t\t\t QStringLiteral(\"MotionEffect\"), QStringLiteral(\"DVerb\"),\n\t\t\t\t\t\t\t\t QStringLiteral(\"3DWarp_custom\"), QStringLiteral(\"FXBaseProxyRegistration\")})\n\t{\n\t\tconst auto hit = AvidEffects::lookup(QStringLiteral(\"Seq,\") + token + QStringLiteral(\"+2\"));\n\t\tQVERIFY2(!hit.matched, qPrintable(token));\n\t\tQCOMPARE(hit.name, token);\n\t\tQCOMPARE(hit.category, QStringLiteral(\"unknown\"));\n\t}\n}\n\nvoid TestAvidEffects::user_typed_title_is_not_a_standard_effect()\n{\n\t// Recorded title text is not a catalogue effect name.\n\tconst AvidEffects::Hit h = AvidEffects::lookup(QString::fromUtf8(\"zT_\\xc3\\x9ft_1080i_50_seq,10101010+3\"));\n\tQVERIFY(!h.matched);\n\tQCOMPARE(h.name, QStringLiteral(\"10101010\"));\n\tQCOMPARE(h.category, QStringLiteral(\"unknown\"));\n\tQCOMPARE(h.sequence, QString::fromUtf8(\"zT_\\xc3\\x9ft_1080i_50_seq\"));\n\tQCOMPARE(h.instance, 3);\n}\n"
+        },
+        {
+          "name": "suffix-and-overflow-test-expectations",
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_avideffects.cpp",
+          "startLine": 206,
+          "endLine": 245,
+          "sha256": "efa81a90e52803a8a2c5a38c46c1b62f282a8110309570ea3497bbb3af3ad814",
+          "text": "void TestAvidEffects::invalid_suffixes_stay_visible_data()\n{\n\tQTest::addColumn<QString>(\"clip\");\n\tQTest::addColumn<QString>(\"name\");\n\tQTest::addColumn<QString>(\"sequence\");\n\tfor (const QString &suffix : {\n\t\t\t QStringLiteral(\"4.new.\"), QStringLiteral(\"4.new.one\"),\n\t\t\t QStringLiteral(\"4.new.01.extra\"), QStringLiteral(\"4.new.01.02\"),\n\t\t\t QStringLiteral(\"4.NEW.01\"), QStringLiteral(\"-4\"), QStringLiteral(\"+4\"),\n\t\t\t QStringLiteral(\"4.0\"), QStringLiteral(\"4 \"), QStringLiteral(\"4\\n\"),\n\t\t\t QStringLiteral(\"2147483648\"), QStringLiteral(\"4.new.2147483648\"),\n\t\t\t QStringLiteral(\"999999999999999999999999999999999999\")})\n\t{\n\t\tQTest::newRow(qPrintable(QStringLiteral(\"comma-\") + suffix))\n\t\t\t<< QStringLiteral(\"Act_1,_Scene_2,Title,\") + suffix\n\t\t\t<< suffix << QStringLiteral(\"Act_1,_Scene_2,Title\");\n\t}\n\tQTest::newRow(\"missing-effect\")\n\t\t<< QStringLiteral(\"Seq,,4\") << QStringLiteral(\"4\") << QStringLiteral(\"Seq,\");\n\tQTest::newRow(\"only-one-comma\")\n\t\t<< QStringLiteral(\"Seq,4.new.01\") << QStringLiteral(\"4.new.01\") << QStringLiteral(\"Seq\");\n\tQTest::newRow(\"plus-overflow\")\n\t\t<< QStringLiteral(\"Act_1,_Scene_2,Dissolve+2147483648\")\n\t\t<< QStringLiteral(\"Dissolve+2147483648\") << QStringLiteral(\"Act_1,_Scene_2\");\n\tQTest::newRow(\"plus-malformed\")\n\t\t<< QStringLiteral(\"Act_1,_Scene_2,Dissolve+one\")\n\t\t<< QStringLiteral(\"Dissolve+one\") << QStringLiteral(\"Act_1,_Scene_2\");\n}\n\nvoid TestAvidEffects::invalid_suffixes_stay_visible()\n{\n\tQFETCH(QString, clip);\n\tQFETCH(QString, name);\n\tQFETCH(QString, sequence);\n\tconst AvidEffects::Hit hit = AvidEffects::lookup(clip);\n\tQCOMPARE(hit.name, name);\n\tQCOMPARE(hit.sequence, sequence);\n\tQCOMPARE(hit.instance, 0);\n\tQVERIFY(!hit.matched);\n\tQCOMPARE(hit.category, QStringLiteral(\"unknown\"));\n"
+        },
+        {
+          "name": "ambiguity-and-localized-test-expectations",
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_avideffects.cpp",
+          "startLine": 248,
+          "endLine": 276,
+          "sha256": "66f2a2da1d4d421e5384fdb8ab511b0b48c63811de52b6aa70103d0e87a48014",
+          "text": "void TestAvidEffects::mangle_turns_spaces_and_colons_into_underscores()\n{\n\tQCOMPARE(AvidEffects::mangle(QStringLiteral(\"14:9 Letterbox\")), QStringLiteral(\"14_9_Letterbox\"));\n\tQCOMPARE(AvidEffects::mangle(QStringLiteral(\"1.85 Mask\")), QStringLiteral(\"1.85_Mask\")); // the dot survives\n\tQCOMPARE(AvidEffects::mangle(QStringLiteral(\"AniMatte\")), QStringLiteral(\"AniMatte\"));\n}\n\nvoid TestAvidEffects::ambiguous_names_report_every_category()\n{\n\tconst AvidEffects::Hit h = AvidEffects::lookup(QStringLiteral(\"seq,Bottom_to_Top+1\"));\n\tQVERIFY(h.matched);\n\tQCOMPARE(h.name, QStringLiteral(\"Bottom to Top\"));\n\tQVERIFY2(h.category.contains(QStringLiteral(\"Conceal\")), qPrintable(h.category));\n\tQVERIFY2(h.category.contains(QStringLiteral(\"Push\")), qPrintable(h.category));\n\tQVERIFY2(h.category.contains(QStringLiteral(\" / \")), qPrintable(h.category));\n}\n\nvoid TestAvidEffects::localised_spellings_resolve_to_the_english_name()\n{\n\t// A German Media Composer writes \"Blende\" for Dissolve; the catalogue\n\t// keys every shipped language so the count stays one effect, not five.\n\tconst AvidEffects::Hit de = AvidEffects::lookup(QStringLiteral(\"Sequenz_1,Blende+2\"));\n\tQVERIFY(de.matched);\n\tQCOMPARE(de.name, QStringLiteral(\"Dissolve\"));\n\tQCOMPARE(de.category, QStringLiteral(\"Blend\"));\n\tconst AvidEffects::Hit fr = AvidEffects::lookup(QStringLiteral(\"Seq,Correction_colorimétrique+1\"));\n\tQVERIFY(fr.matched);\n\tQCOMPARE(fr.name, QStringLiteral(\"Color Correction\"));\n}\n"
+        }
+      ],
+      "priorAcceptedContracts": [
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-18-bella-mdb/effect.md",
+          "bytes": 5687,
+          "sha256": "f7a81c9dd47ec5d59781d93a9ee85221c032f6b0e0ecc5f70cb6a3f34a2cd4b8"
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-21-bella-mxf/effect.md",
+          "bytes": 6080,
+          "sha256": "3ac394dde7d11e8a7f83b451ccefdfd957aa385d51ba66615690561931a5306b"
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-23-bella-omf/effect-category.md",
+          "bytes": 8288,
+          "sha256": "da85ab68a2d78508cdf52d13772722815424100be26731c693d5c93b9a08fa56"
+        }
+      ],
+      "currentContract": [
+        "Effect is Hit.name from the same existing combined AvidEffects::lookup as Effect Category. Shared post-selection code is gated by selected Precompute Type and an available selected Clip Name observation. OMF supplies already-agreed selected-master name/Type facts; there is no second Effect property or parser.",
+        "A recognised token yields the first indexed canonical English display name. Known localized spellings and the explicit3DWarp alias select the same English name. Exact case, catalogue spellings and aliases are preserved; a category ambiguity does not replace that existing first-name rule.",
+        "An unrecognised nonempty extracted token is retained verbatim, including case, underscores, whitespace and spelling. It is the parsed token, not an invented filename or alternate master/source name. No global underscore replacement, title-casing, trimming or fuzzy match is applied.",
+        "For confirmed Precompute, empty/unavailable Effect is displayed/exported as lowercaseunknown. Ordinary Media and unknownType areblank. An unavailable Effect Category or parent Precompute Category does not discard valid Effect text; name recognition does not establish Type or either category.",
+        "Both existing suffix forms and their precedence stay unchanged: complete valid commaN[.new.N...] chain determines preceding effect boundary first; otherwise terminal+N is tried. Every decimal component must fit signedint range; zero is allowed. Malformed/overflowing suffixes remain in the extracted token. Commas inside preceding sequence name remain meaningful boundary context.",
+        "The existing resolver already uses anchored static regular expressions and one lazy shared catalogue index. Current matching may derive more than once as selected Type/name changes; one lookup supplies all companion outputs per pass, not necessarily once per current scan.",
+        "Current row owns QString Effect and table/CSV/Search/filter use shared display labels. Optional presentation controls do not mean current derivation has an internal feature guard; proposed request gating/lifetimes are integration choices, not demonstrated savings.",
+        "The legacy helper temporarily returns sequence/instance/matched fields. Bella can ignore/discard them after the shared call, retaining only agreed Effect/Effect Category and necessary derived context. No Effect Sequence row/result/CSV field is reintroduced."
+      ],
+      "minimumBellaUse": [
+        "Use the same approved final selected Type/name derivation outside OMF byte parsing, with existing catalogue/resolver unchanged. One shared lookup for requested Precompute details supplies Effect and Effect Category; no new Effect-only lookup/index, suffix parser or source graph.",
+        "Keep Hit.name as an ownedQString, reuse the combined result for rows sharing selected master/name while processing, and derive again when final selected inputs change. Normal Qt implicit sharing suffices; no permanent every-name cache or interner.",
+        "Preserve canonical English first-match, localized/compatibility aliases, raw unmatched token, lowercaseunknown for empty/unavailable Precompute and blank for otherTypes. Category/Type independence remains unchanged.",
+        "Discard transient legacy Sequence/instance/matched outputs after use. Preserve suffix-boundary behavior without retaining Sequence as metadata. No registry/plugin/effect-parameter load or media open is needed.",
+        "No new ownership/text rule, sourcepriority/opening/scheduling policy, Type/Precompute Category/Compression behavior, visible column or BinFilter change. No measured speed/memory/reliability gain claimed."
+      ],
+      "nativeAndMdvxBoundary": "Reuse prior accepted native identifier/registration effect-name route and ordinary MDVx omission; these are different from editable-name inference. This focused source review performs no new native/MDVx trace and claims no universal native GUI/original-effect parity.",
+      "reusedActualMetadata": {
+        "examples": [
+          {
+            "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/TONE_100A01.6A972974.039700.wav",
+            "masterObject": 68006,
+            "selectedMasterUsage": 7,
+            "effectCategoryApplicable": false,
+            "categoryDisplayUnderCurrentRule": "",
+            "note": "Usage7Media; no effect-name lookup/result is established or needed."
+          },
+          {
+            "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/TONE_100A01.6A972997.0C53E0.aif",
+            "masterObject": 68006,
+            "selectedMasterUsage": 7,
+            "effectCategoryApplicable": false,
+            "categoryDisplayUnderCurrentRule": "",
+            "note": "Usage7Media; no effect-name lookup/result is established or needed."
+          },
+          {
+            "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/FORMAT_288x243x1_JFIF15m.omf",
+            "masterObject": 68017,
+            "selectedMasterUsage": 7,
+            "effectCategoryApplicable": false,
+            "categoryDisplayUnderCurrentRule": "",
+            "note": "Usage7Media; no effect-name lookup/result is established or needed."
+          },
+          {
+            "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/FORMAT_1920X540X2_AVHD.omf",
+            "masterObject": 68017,
+            "selectedMasterUsage": 7,
+            "effectCategoryApplicable": false,
+            "categoryDisplayUnderCurrentRule": "",
+            "note": "Usage7Media; no effect-name lookup/result is established or needed."
+          },
+          {
+            "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/FORMAT_720x576x1_MPEG50.omf",
+            "masterObject": 68016,
+            "selectedMasterUsage": 7,
+            "effectCategoryApplicable": false,
+            "categoryDisplayUnderCurrentRule": "",
+            "note": "Usage7Media; no effect-name lookup/result is established or needed."
+          }
+        ],
+        "boundary": "Five saved own selected masters are usage7 ordinaryMedia, so Effect is inapplicable/blank. They are not physical OMF Precompute name examples; no recognition count, source-derived Effect result or new production lookup is claimed."
+      },
+      "inspectedTestsOnly": [
+        {
+          "test": "TestAvidEffects",
+          "route": "Pure catalogue/parser calls; some inputs originate MXF/MDB names, not OMF parsing",
+          "checks": "Canonical/localized/3DWarp, custom TITLE text, malformed/overflow numeric suffixes, sequence commas, ambiguity. Existing expected values inspected, not run."
+        },
+        {
+          "test": "prepared_metadata_reaches_table_cells",
+          "route": "Reused prior source receipt: authored prepared evidence/model, not OmfReader",
+          "checks": "Hit.name and category replace stale labels; current legacySequence assertion is not Bella retention approval."
+        },
+        {
+          "test": "precompute_row_gets_effect_fields",
+          "route": "Reused prior source receipt: genuine MXF header scanner, not physicalOMF",
+          "checks": "1.85Mask Effect/FilmCategory and empty ordinaryMedia fields; inspectednotrun."
+        }
+      ],
+      "verification": {
+        "sourceInputsMatchHead": true,
+        "sourceInputCount": 8,
+        "reusedAnchorHashesRechecked": 12,
+        "repoEdits": false,
+        "testsOrBuildRun": false,
+        "binaryOrMediaRead": false,
+        "runtimeLookupOrParserExecuted": false,
+        "appOrPrivateApiExecuted": false,
+        "performanceMeasured": false
+      }
+    },
+    "mc": {
+      "date": "2026-10-25",
+      "scope": "Compact native OMF Effect companion review. Reuse established saved component identity/effect-library/registration display-name boundaries and current approved shared ClipName inference. No fresh disassembly or new generating-effect association; no graph/GUI/provider/essence work.",
+      "binaryFreshHash": {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "bytes": 73527536,
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+      },
+      "method": {
+        "freshDisassembly": false,
+        "freshNamedFunctions": [],
+        "freshRawBinarySlots": false,
+        "whyReuseOnly": "Immediately preceding OMF EffectCategory receipt establishes legacy component/library/registration separation. Earlier MXF Effect setter/getter trace separately proves registered name storage. These same unchanged native methods resolve the companion-field question."
+      },
+      "reusedInputs": [
+        {
+          "path": "/private/tmp/bella-omf-effect-category-mc-20261025/findings.json",
+          "bytes": 28585,
+          "sha256": "08328c91d65cded60c27f38afd299f38a34e61e7290196bfa01451af2c9fc7d8"
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-effect-category-plan-2026-10-25.json",
+          "bytes": 4496,
+          "sha256": "30fe33fc4e7ae5f218c90a213a257967d94892b6209681f788cb60dfd7d3b642"
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mdb-effect-2026-10-20.json",
+          "bytes": 7356,
+          "sha256": "01948fde70490a80a91e390526e5f6b014d96231beed6c27d406a3b9d8f6a6fd"
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-effect-2026-10-22.json",
+          "bytes": 66095,
+          "sha256": "5479c304352a0fd3b46e7f25daa85f60bf4a30722778396ab761b76d1f30ad7f"
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-effect-plan-2026-10-23.json",
+          "bytes": 3298,
+          "sha256": "935cd5d60fa1d29d12af1addd158a7cba6604f3b9673e78cabb7fee442f49430"
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-clip-name-plan-2026-10-24.json",
+          "bytes": 3038,
+          "sha256": "aa7ea55998dee3eccdefeb668eaffb1dec068e3d05bf28fd5276cb002dedf206"
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-type-plan-2026-10-25.json",
+          "bytes": 3682,
+          "sha256": "951da83c8468211fc3f65f853022f4c48fe3e333e28e0aae8e6f2c1b1be05792"
+        }
+      ],
+      "extantRawFreshlyHashed": [
+        {
+          "path": "/private/tmp/bella-mxf-effect-mc-20261022/SetFundementals.txt",
+          "bytes": 9327,
+          "sha256": "ede751aeac6d88c28d01dc92c411cda900c3322405183fba7481314ef22242ec"
+        },
+        {
+          "path": "/private/tmp/bella-mxf-effect-mc-20261022/SetName.txt",
+          "bytes": 1547,
+          "sha256": "50fc2aacfafaf6f2667991e8f418d84fa223735790019f5ccbe5861d522911f7"
+        },
+        {
+          "path": "/private/tmp/bella-mxf-effect-mc-20261022/GetNameBuffer.txt",
+          "bytes": 976,
+          "sha256": "45e372b803c13dc7c74555e095ffc9a88945240541a18ad8f8acdae85aecfd0a"
+        },
+        {
+          "path": "/private/tmp/bella-mxf-effect-mc-20261022/GetNameString.txt",
+          "bytes": 538,
+          "sha256": "ce27895e0e0ad9aba44250f64473c12c1f8aee6f4296dafd837a835b7a8d22e4"
+        },
+        {
+          "path": "/private/tmp/bella-mxf-effect-mc-20261022/name-vtable.json",
+          "bytes": 722,
+          "sha256": "c2be3943285c23f62a0ae985ef26043a286fe1461902cf5356724f65ea8a137a"
+        },
+        {
+          "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectGetEffect.txt",
+          "bytes": 4450,
+          "sha256": "e90711791bbe1fee124ac8979bd9060afbcbc4b32dfd7e56b81b48b2be7606d6"
+        }
+      ],
+      "nativeContract": {
+        "savedIDNotClipName": "Supported legacy OMF AComponent::Get restores CPNT:EffectID on the component; ATrackEffect::Get/GetEffect obtains that identity and calls AEffectLibrary::FindEffect. This is a structural effect-object route, not parsing a rendered master editable ClipName. Existing prior ordinary OMF restoration connection and same-binary exact methods are reused.",
+        "registeredReadableName": "AEffect::SetEffectInfoFromIdentifier0x7467e0 includes representative3D Warp/3D Warp Legacy registration dependent on a feature setting. It supplies separate EFF_SBLEND identity and localized display-name argument to SetFundementals0x7464fc.",
+        "nameAndIDSeparated": "Reused SetFundementals0x746528..0x746558 and0x746734..0x746754 dispatch separate setters. Prior raw AEffect addresspoint0x137ebc8 slots+0x6d0->SetEffectID0x75b934 and+0x6f8->SetName0x75bb94. The name is not the effect ID or palette ClassName.",
+        "nameStorageAndGetters": "Reused SetName0x75bbac..0x75bbfc localizes/copies registered display name into handle+0x98. GetName(buffer)0x75ba6c and GetName(string)0x75bac0 read that storage. These are registered effect-object name getters, not a selected physical OMF master original-effect field.",
+        "noGeneratingLinkEstablished": "No new own selected OMF precompute-master generating-effect identity/name association is established. An editable known-looking ClipName or some EffectID elsewhere in the file does not prove the original generating effect, live plug-in variant or sequence. This bounded result is not a global absence proof across all private OMF layouts.",
+        "GUIAndCatalogueLimits": "Representative registration/gate/name storage and prior resource provenance are verified. No live feature state, enabled/licensed/executable plug-in inventory, exhaustive display-name dictionary or complete GUI/render-name construction policy is established. Earlier effect catalogue/registration counts are reused dated provenance, not freshly reconstructed.",
+        "upstreamNativeReceipt": {
+          "path": "/private/tmp/bella-omf-effect-category-mc-20261025/findings.json",
+          "use": "Full identifier/library/registeredCategory and historical artifact boundaries; no new broader native source is introduced by this companion field."
+        }
+      },
+      "simplestBellaProposal": {
+        "status": "Focused OMF companion integration proposal; preserve current already-approved shared Effect behavior, no runtime change.",
+        "input": "Final selected decoded ClipName and independently established TypePrecompute, using the same approved OMF master/text qualification and common post-selection stage as EffectCategory. No fallback to CPNT EffectID/source graph or preferred name solely for a catalogue match.",
+        "known": "Current first matching canonical English Effect name from the unchanged catalogue/resolver, including its already-supported localized and compatibility aliases.",
+        "unrecognized": "Preserve the nonempty extracted token verbatim, with its case, underscores, whitespace and spelling. Unknown category does not erase Effect text; do not humanize or invent a nicer effect name.",
+        "unavailable": "Precompute empty/unavailable Effect displays lowercase unknown. Media/unknown Type blank. Matching never changes Type or PrecomputeCategory.",
+        "parser": "Keep exact existing case/suffix validation, comma/plus precedence, sequence-prefix token boundaries, malformed/overflow text behavior and first-name selection. No new suffix parser or per-format name recognizer.",
+        "combinedLookup": "Use the same existing AvidEffects::Hit lookup serving EffectCategory; retain owned Effect/name and Category results in the selected master/name processing scope, share for associated rows and recompute after selected inputs change. No separate decoder, permanent name cache, copied graph or observation-history framework.",
+        "noSequence": "Effect Sequence stays excluded from columns/results/filters/CSV/storage. Existing token-boundary parsing may remain necessary, but its legacy Sequence output is discarded. Older20October then-open Sequence wording is historical and superseded by later user decisions.",
+        "noExtraIO": "No new header/media open, provider/plugin/privateAPI call, registry/resource scan, import-settings body, effect-component graph or native GUI query solely to fill Effect.",
+        "unchanged": "Keep current table/CSV/filter/search/sort naming behavior as parent current-source review verifies. No new source-priority/read-trigger, native label parity, coding/timing/format support or BinFilter change.",
+        "performance": "Existing resolver and shared immutable index are already small. C++17/Qt QString value semantics and a small fresh adapter suffice; no measured speed/RAM/reliability gain claimed."
+      },
+      "sharedOutputContract": [
+        {
+          "condition": "Catalogue hit",
+          "effect": "First indexed canonical English display name; retain localized and explicit compatibility aliases."
+        },
+        {
+          "condition": "Nonempty unrecognised extracted token",
+          "effect": "Token verbatim, preserving its case, underscores and spelling."
+        },
+        {
+          "condition": "Empty/unavailable Effect on a Precompute",
+          "effect": "Lowercase unknown at table/CSV/filter presentation."
+        },
+        {
+          "condition": "Non-Precompute",
+          "effect": "Blank."
+        }
+      ],
+      "currentMXFSharedRules": {
+        "inputs": "Final selected independently established Precompute Type and decoded Clip Name from the agreed qualified master. Supported MXF Name decoding already agreed as UTF-16BE.",
+        "known": "First matching canonical English Effect name from existing shared AvidEffects::lookup, including recognized localized or explicit compatibility aliases.",
+        "unrecognized": "Nonempty extracted token preserved verbatim, including case, underscores, whitespace and spelling. Unknown Effect Category does not erase Effect text.",
+        "unavailable": "Empty/unavailable Effect on Precompute displays lowercase unknown. Ordinary Media/unknown Type blank. No change to independent Type or Precompute Category.",
+        "parserContract": "Preserve exact suffix validation and precedence, sequence commas, malformed/overflow suffix text, case rules, aliases and existing first-name selection for category ambiguity.",
+        "retention": "Keep owned QString Effect and Effect Category results from the same combined lookup. Reuse associated master/name results during processing, derive again after selected inputs change. Do not retain Effect Sequence or a permanent all-name cache.",
+        "readScope": "No separate Effect decoder, effect graph, plug-in load or additional source/header read solely for this value. Cross-source priorities remain separate.",
+        "identityLimit": "Editable-name recognition does not establish the original generating effect identity or live plug-in variant. Native registered names use actual effect-object identifiers.",
+        "implementation": "Small fresh adapter around existing standalone catalogue/resolver and C++17/Qt6.5.3 values; no measured performance improvement or new framework."
+      },
+      "historicalRawStatus": [
+        {
+          "recordedPath": "/private/tmp/bella-mxf-effect-mc-20261022/SetFundementals.txt",
+          "recordedSha256": "ede751aeac6d88c28d01dc92c411cda900c3322405183fba7481314ef22242ec",
+          "status": "extant-freshly-rehashed",
+          "current": {
+            "path": "/private/tmp/bella-mxf-effect-mc-20261022/SetFundementals.txt",
+            "bytes": 9327,
+            "sha256": "ede751aeac6d88c28d01dc92c411cda900c3322405183fba7481314ef22242ec"
+          }
+        },
+        {
+          "recordedPath": "/private/tmp/bella-mxf-effect-mc-20261022/SetName.txt",
+          "recordedSha256": "50fc2aacfafaf6f2667991e8f418d84fa223735790019f5ccbe5861d522911f7",
+          "status": "extant-freshly-rehashed",
+          "current": {
+            "path": "/private/tmp/bella-mxf-effect-mc-20261022/SetName.txt",
+            "bytes": 1547,
+            "sha256": "50fc2aacfafaf6f2667991e8f418d84fa223735790019f5ccbe5861d522911f7"
+          }
+        },
+        {
+          "recordedPath": "/private/tmp/bella-mxf-effect-mc-20261022/GetNameBuffer.txt",
+          "recordedSha256": "45e372b803c13dc7c74555e095ffc9a88945240541a18ad8f8acdae85aecfd0a",
+          "status": "extant-freshly-rehashed",
+          "current": {
+            "path": "/private/tmp/bella-mxf-effect-mc-20261022/GetNameBuffer.txt",
+            "bytes": 976,
+            "sha256": "45e372b803c13dc7c74555e095ffc9a88945240541a18ad8f8acdae85aecfd0a"
+          }
+        },
+        {
+          "recordedPath": "/private/tmp/bella-mxf-effect-mc-20261022/GetNameString.txt",
+          "recordedSha256": "ce27895e0e0ad9aba44250f64473c12c1f8aee6f4296dafd837a835b7a8d22e4",
+          "status": "extant-freshly-rehashed",
+          "current": {
+            "path": "/private/tmp/bella-mxf-effect-mc-20261022/GetNameString.txt",
+            "bytes": 538,
+            "sha256": "ce27895e0e0ad9aba44250f64473c12c1f8aee6f4296dafd837a835b7a8d22e4"
+          }
+        },
+        {
+          "recordedPath": "/private/tmp/bella-mxf-effect-category-mc-20261022/GetMCEffectID.txt",
+          "recordedSha256": "d8de9de55afb778bed26be79f423949a7d6440c87b09333559d4714d3483515d",
+          "status": "extant-freshly-rehashed",
+          "current": {
+            "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/GetMCEffectID.txt",
+            "bytes": 13293,
+            "sha256": "d8de9de55afb778bed26be79f423949a7d6440c87b09333559d4714d3483515d"
+          }
+        },
+        {
+          "recordedPath": "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectConvertFromAAF7.txt",
+          "recordedSha256": "98c609de8f69149ae68dee4a2259482863382c5fcc849777545b2fd0afbd8818",
+          "status": "extant-freshly-rehashed",
+          "current": {
+            "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectConvertFromAAF7.txt",
+            "bytes": 27137,
+            "sha256": "98c609de8f69149ae68dee4a2259482863382c5fcc849777545b2fd0afbd8818"
+          }
+        },
+        {
+          "recordedPath": "/private/tmp/bella-mxf-effect-category-mc-20261022/AEffectSetInfo.txt",
+          "recordedSha256": "8eebdff2935cae6847e4f6dffda2a0e0692a716e28bd2de69d4d61f26c99d1b2",
+          "status": "extant-freshly-rehashed",
+          "current": {
+            "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/AEffectSetInfo.txt",
+            "bytes": 136707,
+            "sha256": "8eebdff2935cae6847e4f6dffda2a0e0692a716e28bd2de69d4d61f26c99d1b2"
+          }
+        },
+        {
+          "recordedPath": "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectSetEffectID.txt",
+          "recordedSha256": "99c0e94bd3c5280f71c268e673bf6e76e7d1611c1d93a32a19f7afd257c372d1",
+          "status": "extant-freshly-rehashed",
+          "current": {
+            "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectSetEffectID.txt",
+            "bytes": 602,
+            "sha256": "99c0e94bd3c5280f71c268e673bf6e76e7d1611c1d93a32a19f7afd257c372d1"
+          }
+        },
+        {
+          "recordedPath": "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectGetEffect.txt",
+          "recordedSha256": "e90711791bbe1fee124ac8979bd9060afbcbc4b32dfd7e56b81b48b2be7606d6",
+          "status": "extant-freshly-rehashed",
+          "current": {
+            "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectGetEffect.txt",
+            "bytes": 4450,
+            "sha256": "e90711791bbe1fee124ac8979bd9060afbcbc4b32dfd7e56b81b48b2be7606d6"
+          }
+        }
+      ],
+      "actualEvidenceBoundary": "No media read or actual physical OMF Precompute/Effect output/native UI cell example comes from this subtask. Parent saved examples and source controls remain independently identified; no synthetic name example is relabelled a file or executed resolver result.",
+      "limits": [
+        "No fresh native disassembly, graph reconstruction or generating-effect link on selected OMF master.",
+        "No complete GUI/variant/live plugin naming parity or proof every OMF private field lacks effect information.",
+        "No media/essence, app/privateAPI/production parser, tests/builds, repository/media edits, runtime/cutover or benchmark."
+      ],
+      "validation": {
+        "freshNativeFunctions": 0,
+        "freshDisassembly": false,
+        "installedEngineHashVerified": true,
+        "reusedInputs": 7,
+        "extantRawFreshHashes": 6,
+        "historicalRawAvailabilityExplicit": true,
+        "mediaRead": false,
+        "runtimeExecuted": false,
+        "repositoryEdited": false
+      },
+      "artifacts": [
+        {
+          "path": "/private/tmp/bella-omf-effect-mc-20261025/curate.py",
+          "bytes": 8460,
+          "sha256": "19da7c3e2eee2c47092a46213ab24421758899209653ace9b56149303e42f1b9"
+        }
+      ]
+    },
+    "mdvx": {
+      "title": "MDVx generic OMFI inventory: no separate interpreted Effect-name output in the reviewed route",
+      "date": "2026-10-25",
+      "timezone": "Australia/Sydney",
+      "status": "Read-only companion-field requirements comparison; no Bella implementation or new approval",
+      "binary": {
+        "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+        "bytes": 3204640,
+        "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+        "architecture": "arm64",
+        "slice": {
+          "offset": 1638400,
+          "bytes": 1566240
+        }
+      },
+      "acquisition": {
+        "method": "Reuse only: re-read the complete generic OMFI inventory/model/projection and generic string/browser findings; refresh installed binary, all exact method ranges, artifacts, native usage-label pointer table and strings. No new native extraction or broad audit.",
+        "originalDisassemblyCaptureDate": "2026-10-24",
+        "noAppsOrPrivateApis": true,
+        "noMediaRead": true,
+        "noTestsBuildOrProductionParser": true,
+        "noRepoOrMediaEdits": true,
+        "noPerformanceMeasurement": true
+      },
+      "findings": [
+        {
+          "id": "MDVX-OMF-EFFECT-01",
+          "claim": "The completely inspected generic OMFI inventory route has no separate interpreted Effect-name result, catalogue lookup, row storage or column.",
+          "anchors": [
+            "addInfoToItem: 0x100064794..64b60 projects master Clip Name, UsageCode, EditRate and import-name overwrite, then file-owned Project and format facts. It invokes no effect-token-to-name catalogue or effect-identifier resolver.",
+            "The complete declared MDVxDatabaseItem model has 29 ivars and 26 properties, with no separate Effect result.",
+            "The complete table and string-return column projections have no Effect column/branch.",
+            "The traced Project and Compression helper routes project their own named metadata, not Effect names."
+          ],
+          "limit": "Bounded ordinary inventory result, not proof that no private app, raw browser or bundled library can show or parse effect-related data."
+        },
+        {
+          "id": "MDVX-OMF-EFFECT-02",
+          "claim": "Generic acceptance or exposure of CPNT:EffectID is not an interpreted Effect-name output.",
+          "anchors": [
+            "Inventory Clip Name calls GetStringForObjectAt: at 0x1000648d4 and stores the returned string in DB_NameInBin at 0x1000648ec.",
+            "GetStringForObjectAt: 0x100063a58..63bb0 accepts the first matching property in TOC order; CPNT:EffectID 0x10298 is in that accepted set alongside CPNT:Name and other fields.",
+            "The selected value is converted as generic text without an effect-ID-to-display-name lookup; any such text in this call becomes DB_NameInBin, not a separate Effect field.",
+            "GetNameForObjectAt: and StringForTocIndexItem: describe generic objects/properties for the browser. Such representation does not establish semantic inventory Effect ownership or labels."
+          ],
+          "limit": "No actual normal Clip Name row selecting EffectID or live browser Effect output was observed; do not turn a generic capability into an inventory feature claim."
+        },
+        {
+          "id": "MDVX-OMF-EFFECT-03",
+          "claim": "Private Kind usage labels and synthetic IMPORTED are separate from actual Effect names.",
+          "anchors": [
+            "Master MOBJ:UsageCode is loaded at 0x1000648f8..64930 and directly projected by KindCellID at 0x100050a00..50a30 and 0x1000512a8..512dc.",
+            "UC_EFFECT is the label for usage 3, UC_MOTION for 6, PRECOMP for 1 and UC_PRECOMPUTE_FILE for 9. Those strings identify scalar usage codes, not the generating effect display name.",
+            "The 14-byte _IMPORTSETTING name-prefix match at 0x100064a78..64a8c unconditionally changes usage to synthetic 15 at 0x100064a90..64a98; the label is IMPORTED, with no effect-content or effect-name resolution."
+          ],
+          "limit": "Neither UC_EFFECT nor IMPORTED proves an effect identifier, effect display name, variant or category."
+        },
+        {
+          "id": "MDVX-OMF-EFFECT-04",
+          "claim": "Ordinary standalone physical OMF header Effect fallback remains unestablished.",
+          "anchors": [
+            "PMRScanner main 0x10003a8b4..3a8c0 enriches through the companion MDB generic OMFI reader.",
+            "The no-reader existing-file missing-Clip-Name branch 0x10003a8f4..3a920 calls addinfoToItemFromCorrespondingFile.",
+            "That complete corresponding-file helper 0x10003092c..30a14 gates physical opening on MXF."
+          ],
+          "limit": "No new scanner, app, generic-browser or bundled-library route was broadened by this companion-field review."
+        }
+      ],
+      "rowModel": {
+        "metadataSource": "/private/tmp/bella-omf-clip-name-mdvx-20261024/arm64-objc-metadata.txt",
+        "metadataSourceSha256": "7477f70e70144bd55e1b60ed75ba1614ca51a8e5d869e0184fa4666749cecc69",
+        "firstLine": 4683,
+        "lastLine": 5089,
+        "classBlockPath": "/private/tmp/bella-omf-original-bin-mdvx-20261024/MDVxDatabaseItem-objc-class.txt",
+        "classBlockSha256": "25ced90676f5a01421bc0aa487c989395d0e1347abae9bba3dac191bd973c210",
+        "ivarNames": [
+          "filePackageUID",
+          "materialPackageUID",
+          "_CompressionFourCC",
+          "_DB_Date_String",
+          "_DB_isValid_initial",
+          "_DB_isValid",
+          "_DB_isAMA",
+          "_DB_isUME",
+          "_DB_isGoodUUID",
+          "_DB_isPortableFilename",
+          "_DB_isReferenced",
+          "_DB_FileExists",
+          "_DB_SizeofUID",
+          "_DB_usageCode",
+          "_DB_DIDResolutionID",
+          "_DB_bits",
+          "_DB_pmrField",
+          "_DB_ClipName",
+          "_DB_ProjectName",
+          "_DB_itemPath",
+          "_DB_filesize",
+          "_DB_filePackageUID",
+          "_DB_materialPackageUID",
+          "_DB_NameInBin",
+          "_DB_Date",
+          "_DB_CompressionString",
+          "_DB_CompressionFourCC",
+          "_DB_framerate",
+          "_DB_samplerate"
+        ],
+        "propertyNames": [
+          "DB_isValid_initial",
+          "DB_isValid",
+          "DB_isAMA",
+          "DB_isUME",
+          "DB_isGoodUUID",
+          "DB_isPortableFilename",
+          "DB_isReferenced",
+          "DB_SizeofUID",
+          "DB_pmrField",
+          "DB_ClipName",
+          "DB_ProjectName",
+          "DB_itemPath",
+          "DB_FileExists",
+          "DB_filesize",
+          "DB_filePackageUID",
+          "DB_materialPackageUID",
+          "DB_NameInBin",
+          "DB_usageCode",
+          "DB_Date",
+          "DB_Date_String",
+          "DB_CompressionString",
+          "DB_CompressionFourCC",
+          "DB_DIDResolutionID",
+          "DB_framerate",
+          "DB_samplerate",
+          "DB_bits"
+        ]
+      },
+      "columnIdentifiers": {
+        "-[MDVxCore tableView:viewForTableColumn:row:]": [
+          "BitsCellID",
+          "CheckCellID",
+          "ClipnameCellID",
+          "CompressionCellID",
+          "CountCellID",
+          "DateCellID",
+          "ExistsCellID",
+          "FilenameCellID",
+          "FramerateCellID",
+          "IconCellID",
+          "KindCellID",
+          "PathCellID",
+          "ProjectCellID",
+          "SamplerateCellID",
+          "SizeCellID"
+        ],
+        "-[MDVxCore tableView:NSStringValueForTableColumn:row:]": [
+          "BitsCellID",
+          "ClipnameCellID",
+          "CompressionCellID",
+          "CountCellID",
+          "DateCellID",
+          "ExistsCellID",
+          "FilenameCellID",
+          "FramerateCellID",
+          "KindCellID",
+          "PathCellID",
+          "ProjectCellID",
+          "SamplerateCellID",
+          "SizeCellID"
+        ]
+      },
+      "reusedFunctions": [
+        {
+          "symbol": "-[MDVxDatabaseItem DB_usageCode]",
+          "start": "0x10003156c",
+          "endExclusive": "0x100031574",
+          "binaryOffset": 1840492,
+          "codeBytes": 8,
+          "codeSha256": "15f7e9f92c93a746952838a0895674ee6102000cee12d75420cefa887e5db792",
+          "artifact": "/private/tmp/bella-omf-type-mdvx-20261025/-_MDVxDatabaseItem_DB_usageCode.txt",
+          "artifactSha256": "f9ce466f514460519ee2a2e96efe5cc4c1c176b4feb2aa47ff6724817d1b0622",
+          "resolvedArtifact": "/private/tmp/bella-omf-type-mdvx-20261025/-_MDVxDatabaseItem_DB_usageCode-resolved.txt",
+          "resolvedArtifactSha256": "f9ce466f514460519ee2a2e96efe5cc4c1c176b4feb2aa47ff6724817d1b0622",
+          "sourceReceipt": "/private/tmp/bella-omf-type-mdvx-20261025/findings.json",
+          "verificationDate": "2026-10-25"
+        },
+        {
+          "symbol": "-[MDVxDatabaseItem setDB_usageCode:]",
+          "start": "0x100031574",
+          "endExclusive": "0x10003157c",
+          "binaryOffset": 1840500,
+          "codeBytes": 8,
+          "codeSha256": "b5738fbad7f3c2223577cd67bd047ae61d3b7376eb3db7b5bda69612e44cfebf",
+          "artifact": "/private/tmp/bella-omf-type-mdvx-20261025/-_MDVxDatabaseItem_setDB_usageCode.txt",
+          "artifactSha256": "7160d1f40a8b15fef0a0077dc87140899d486e9f31f8f2a09ff5ac015cc1c957",
+          "resolvedArtifact": "/private/tmp/bella-omf-type-mdvx-20261025/-_MDVxDatabaseItem_setDB_usageCode-resolved.txt",
+          "resolvedArtifactSha256": "7160d1f40a8b15fef0a0077dc87140899d486e9f31f8f2a09ff5ac015cc1c957",
+          "sourceReceipt": "/private/tmp/bella-omf-type-mdvx-20261025/findings.json",
+          "verificationDate": "2026-10-25"
+        },
+        {
+          "symbol": "-[MDVxOMFI addInfoToItem:]",
+          "start": "0x100064794",
+          "endExclusive": "0x100064b60",
+          "binaryOffset": 2049940,
+          "codeBytes": 972,
+          "codeSha256": "4b31597de7386a3e8283c564eab7ab858d436c9b1a7a3e06e4d95b27bdf2146c",
+          "artifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_addInfoToItem.txt",
+          "artifactSha256": "c1097f5a0d8ab935e22379d9737a89b4a7e0f0676ed2959d827684f241978b3a",
+          "resolvedArtifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_addInfoToItem-resolved.txt",
+          "resolvedArtifactSha256": "c1097f5a0d8ab935e22379d9737a89b4a7e0f0676ed2959d827684f241978b3a",
+          "sourceReceipt": "/private/tmp/bella-omf-type-mdvx-20261025/findings.json",
+          "verificationDate": "2026-10-25"
+        },
+        {
+          "symbol": "-[MDVxDatabaseItem init]",
+          "start": "0x1000300e0",
+          "endExclusive": "0x100030140",
+          "binaryOffset": 1835232,
+          "codeBytes": 96,
+          "codeSha256": "cf903f63df1dab80a9c9e706110bd4bf79d76ff62e3109e22ce72af989b60d08",
+          "artifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxDatabaseItem_init.txt",
+          "artifactSha256": "48b45d98fcefc1a40e3914b71ec60c221b0445939045d08846500e3c9652d8fd",
+          "resolvedArtifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxDatabaseItem_init-resolved.txt",
+          "resolvedArtifactSha256": "48b45d98fcefc1a40e3914b71ec60c221b0445939045d08846500e3c9652d8fd",
+          "sourceReceipt": "/private/tmp/bella-omf-type-mdvx-20261025/findings.json",
+          "verificationDate": "2026-10-25"
+        },
+        {
+          "symbol": "-[MDVxDatabaseItem addinfoToItemFromCorrespondingFile]",
+          "start": "0x10003092c",
+          "endExclusive": "0x100030a14",
+          "binaryOffset": 1837356,
+          "codeBytes": 232,
+          "codeSha256": "ea86f5a07a79d1b1837a64533e8c570dcf43674418c3fceeac19f9309a3f2951",
+          "artifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxDatabaseItem_addinfoToItemFromCorrespondingFile.txt",
+          "artifactSha256": "2f6f281cfe8f9709a41e780146bf3d0e98e7f0c1f859dda0a85883d76a447b0a",
+          "resolvedArtifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxDatabaseItem_addinfoToItemFromCorrespondingFile-resolved.txt",
+          "resolvedArtifactSha256": "3d3fe24e992e940109d507dc9e5443ed635ad88ecb015518ef2203a225ed6e0e",
+          "sourceReceipt": "/private/tmp/bella-omf-type-mdvx-20261025/findings.json",
+          "verificationDate": "2026-10-25"
+        },
+        {
+          "symbol": "-[MDVxPMRScannerOperation main]",
+          "start": "0x10003a1c0",
+          "endExclusive": "0x10003b204",
+          "binaryOffset": 1876416,
+          "codeBytes": 4164,
+          "codeSha256": "78ac1af4235780fe47c23012154aa9e15508c524e0c396dca017bd7e296b1bcf",
+          "artifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxPMRScannerOperation_main.txt",
+          "artifactSha256": "8fe130b7ce11347c17412389b4eb320ffd7dd21ff3aade72d8353e6b0162710f",
+          "resolvedArtifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxPMRScannerOperation_main-resolved.txt",
+          "resolvedArtifactSha256": "90d4f5522005c2304b5b8043f9678a7db75e9d6aebd85445f787567b011586ff",
+          "sourceReceipt": "/private/tmp/bella-omf-type-mdvx-20261025/findings.json",
+          "verificationDate": "2026-10-25"
+        },
+        {
+          "symbol": "-[MDVxCore tableView:viewForTableColumn:row:]",
+          "start": "0x100050304",
+          "endExclusive": "0x100050c40",
+          "binaryOffset": 1966852,
+          "codeBytes": 2364,
+          "codeSha256": "b4d37bcbf15ba568c053b2023e48f032e427ebe17fbf392be08e0a2eca369030",
+          "artifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxCore_tableView_viewForTableColumn_row.txt",
+          "artifactSha256": "4420594fa134a9888f3c9eb3ca70e6f025b0b267c10190b988db096e4db0636c",
+          "resolvedArtifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxCore_tableView_viewForTableColumn_row-resolved.txt",
+          "resolvedArtifactSha256": "507042ca8c1d41ac55187d59d4275acfa77d292172a43ffbb64ac750c22e3232",
+          "sourceReceipt": "/private/tmp/bella-omf-type-mdvx-20261025/findings.json",
+          "verificationDate": "2026-10-25"
+        },
+        {
+          "symbol": "-[MDVxCore tableView:NSStringValueForTableColumn:row:]",
+          "start": "0x100050ce4",
+          "endExclusive": "0x1000512f4",
+          "binaryOffset": 1969380,
+          "codeBytes": 1552,
+          "codeSha256": "3c260707db18d1d925824dd0d531b71d448d87d41a97d36562698d6a9b3bfbb6",
+          "artifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxCore_tableView_NSStringValueForTableColumn_row.txt",
+          "artifactSha256": "eeeb5583811e833610fbcecb52101c48f624310fa680cbb8ccda60a4cf04ea6c",
+          "resolvedArtifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxCore_tableView_NSStringValueForTableColumn_row-resolved.txt",
+          "resolvedArtifactSha256": "2e995908611f7d117d86795b8c0b838fb91349a6997c6bbd3e99c8deaeaede3e",
+          "sourceReceipt": "/private/tmp/bella-omf-type-mdvx-20261025/findings.json",
+          "verificationDate": "2026-10-25"
+        },
+        {
+          "symbol": "-[MDVxOMFI getProjectNameForObjAt:]",
+          "start": "0x100064dc4",
+          "endExclusive": "0x1000651dc",
+          "binaryOffset": 2051524,
+          "codeBytes": 1048,
+          "codeSha256": "a1f8eaf564fa97a663b49a16278c2f47c21790f13fe9c8948a29da3cf3ea3b62",
+          "artifact": "/private/tmp/bella-omf-project-mdvx-20261024/-_MDVxOMFI_getProjectNameForObjAt.txt",
+          "artifactSha256": "a07afd55a76b9fc076f99135b6abff37bf155b393bd35ea8ad7d120d783e604a",
+          "resolvedArtifact": "/private/tmp/bella-omf-project-mdvx-20261024/-_MDVxOMFI_getProjectNameForObjAt-resolved.txt",
+          "resolvedArtifactSha256": "ef3c68d69aae47836666842f6f4d6211de14e28a7fc65423d9ab611b2780fdba",
+          "sourceReceipt": "/private/tmp/bella-omf-original-bin-mdvx-20261024/findings.json",
+          "verificationDate": "2026-10-25"
+        },
+        {
+          "symbol": "-[MDVxOMFI getProjectAttributeForObjectAt:]",
+          "start": "0x1000651dc",
+          "endExclusive": "0x100065344",
+          "binaryOffset": 2052572,
+          "codeBytes": 360,
+          "codeSha256": "5688b6fa1dce0889f5eaa243124a22ff90a6da6ae3aa12fc47bddf1e96725340",
+          "artifact": "/private/tmp/bella-omf-project-mdvx-20261024/-_MDVxOMFI_getProjectAttributeForObjectAt.txt",
+          "artifactSha256": "2dbb0e44652d9a237b5a2fd6f65c163fd527e87996d203abb48db2cc09ac2f6f",
+          "resolvedArtifact": "/private/tmp/bella-omf-project-mdvx-20261024/-_MDVxOMFI_getProjectAttributeForObjectAt-resolved.txt",
+          "resolvedArtifactSha256": "2dbb0e44652d9a237b5a2fd6f65c163fd527e87996d203abb48db2cc09ac2f6f",
+          "sourceReceipt": "/private/tmp/bella-omf-original-bin-mdvx-20261024/findings.json",
+          "verificationDate": "2026-10-25"
+        },
+        {
+          "symbol": "-[MDVxOMFI getCompression_data:forObjAt:]",
+          "start": "0x100064b60",
+          "endExclusive": "0x100064dc4",
+          "binaryOffset": 2050912,
+          "codeBytes": 612,
+          "codeSha256": "a9e57c7941c43f007da9b0bd6ff14d4d05be952f93160d782775ba362e429254",
+          "artifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getCompression_data_forObjAt.txt",
+          "artifactSha256": "9ce588c5093400d37b9276d1689742616bb591da98f7a419e893471b0046a2e3",
+          "resolvedArtifact": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getCompression_data_forObjAt-resolved.txt",
+          "resolvedArtifactSha256": "9ce588c5093400d37b9276d1689742616bb591da98f7a419e893471b0046a2e3",
+          "sourceReceipt": "/private/tmp/bella-omf-original-bin-mdvx-20261024/findings.json",
+          "verificationDate": "2026-10-25"
+        },
+        {
+          "symbol": "-[MDVxOMFI GetStringForObjectAt:]",
+          "start": "0x100063a58",
+          "endExclusive": "0x100063bb0",
+          "binaryOffset": 2046552,
+          "codeBytes": 344,
+          "codeSha256": "1e08bbc84de70e48b3526b6af033449d89fcd5b4748f4b13390f794e210bbe7b",
+          "artifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_GetStringForObjectAt.txt",
+          "artifactSha256": "0c0a905402cf8e8a111c74781c8aaa7af858cac9bd5e44213465d5d558807e02",
+          "resolvedArtifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_GetStringForObjectAt-resolved.txt",
+          "resolvedArtifactSha256": "ad472b0e5c9441c46f0646376397d7daebdc077a728673be4225805b686e496e",
+          "sourceReceipt": "/private/tmp/bella-omf-clip-name-mdvx-20261024/findings.json",
+          "verificationDate": "2026-10-25"
+        },
+        {
+          "symbol": "-[MDVxOMFI GetNameForObjectAt:]",
+          "start": "0x1000637b0",
+          "endExclusive": "0x100063a58",
+          "binaryOffset": 2045872,
+          "codeBytes": 680,
+          "codeSha256": "d1b8f5960b9e33cb55c4e160417dbb56742877c2477dca4492fb859ee2dafcd8",
+          "artifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_GetNameForObjectAt.txt",
+          "artifactSha256": "852e4ddcbce1491e32b107ff34442f96e981504128bef38be5f8805ee8e6718f",
+          "resolvedArtifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_GetNameForObjectAt-resolved.txt",
+          "resolvedArtifactSha256": "b67b9fb577458527b644b3426b4bf7182eaf0747fc88449fdf3fb12bb994f796",
+          "sourceReceipt": "/private/tmp/bella-omf-clip-name-mdvx-20261024/findings.json",
+          "verificationDate": "2026-10-25"
+        },
+        {
+          "symbol": "-[MDVxOMFI StringForTocIndexItem:]",
+          "start": "0x1000631bc",
+          "endExclusive": "0x10006368c",
+          "binaryOffset": 2044348,
+          "codeBytes": 1232,
+          "codeSha256": "cb2d76408f5db844e10f25cf624a6435ecc4112a15c51a461882aa0ac0c65b29",
+          "artifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_StringForTocIndexItem.txt",
+          "artifactSha256": "ee8dc5f1153b19d8b94d026df075395905963b02c5c20a8867e66fd2d7b5f4c7",
+          "resolvedArtifact": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_StringForTocIndexItem-resolved.txt",
+          "resolvedArtifactSha256": "058db92d768b8994c8e6e07010fccb25fac82f53df8e0779f8461cb171a25d9f",
+          "sourceReceipt": "/private/tmp/bella-omf-clip-name-mdvx-20261024/findings.json",
+          "verificationDate": "2026-10-25"
+        }
+      ],
+      "reverifiedUsageData": {
+        "tableAddress": "0x1000e94d0",
+        "tableFileOffset": 2594000,
+        "bytes": 120,
+        "sha256": "60f936b23b60af8f95406befa370090242ffd18f469ead628f5cbd2b9035d7bc",
+        "labels": [
+          {
+            "usageCode": 1,
+            "text": "PRECOMP",
+            "cfStringAddress": "0x1000eb3f8",
+            "cfStringFileOffset": 2601976,
+            "cfStringBytesSha256": "a6c4ecd38f89f229abaca78bdea3a2b22a1f20b475d950d412e5d0c7dbf92c00",
+            "charactersFileOffset": 2425578,
+            "charactersBytes": 7,
+            "charactersSha256": "b268ded720fe8783d618b965f48d89736338875ebdcd0334940120e8966ff130"
+          },
+          {
+            "usageCode": 2,
+            "text": "UC_SUBCLIP",
+            "cfStringAddress": "0x1000eb418",
+            "cfStringFileOffset": 2602008,
+            "cfStringBytesSha256": "598ee7f3500c0fa0bdaae142e5a3b19954892cb25efdb96bf3d901708964d3f0",
+            "charactersFileOffset": 2425586,
+            "charactersBytes": 10,
+            "charactersSha256": "572fe8fc306e015136ac174caafad1141b47a2d6d50d41a2858c9a6e2914444a"
+          },
+          {
+            "usageCode": 3,
+            "text": "UC_EFFECT",
+            "cfStringAddress": "0x1000eb438",
+            "cfStringFileOffset": 2602040,
+            "cfStringBytesSha256": "445b408245f5718e8c2c6b22ce0fbf86e05efd033931011ef56e2642f5380cca",
+            "charactersFileOffset": 2425597,
+            "charactersBytes": 9,
+            "charactersSha256": "78e20ccd8384a0936c5a262c1422fbfaaccbe8c2442a985f43f6d42e51f58bda"
+          },
+          {
+            "usageCode": 4,
+            "text": "UC_GROUP",
+            "cfStringAddress": "0x1000eb458",
+            "cfStringFileOffset": 2602072,
+            "cfStringBytesSha256": "70713ec13d758ee6310a3f3ab90bd26ed4e3f824d6da58b3eb96f4d0dfff683a",
+            "charactersFileOffset": 2425607,
+            "charactersBytes": 8,
+            "charactersSha256": "90bf52bae5a0107babc2989c30e0ef4882ead4567a4ef0e22ad92bbfa04a4403"
+          },
+          {
+            "usageCode": 5,
+            "text": "UC_GROUPOOFTER",
+            "cfStringAddress": "0x1000eb478",
+            "cfStringFileOffset": 2602104,
+            "cfStringBytesSha256": "9e1fc3dc3b518965b7696f36e760d0f9264571138fa6b71ebea3a6084423678b",
+            "charactersFileOffset": 2425616,
+            "charactersBytes": 14,
+            "charactersSha256": "877f8343bd13f7892842303ac0576fa84c0c5c65547e23a4f0f29fa7f4ee311b"
+          },
+          {
+            "usageCode": 6,
+            "text": "UC_MOTION",
+            "cfStringAddress": "0x1000eb498",
+            "cfStringFileOffset": 2602136,
+            "cfStringBytesSha256": "cb19ed8d3310f2e845811ca52ef02ed17589e9e06a31e58619021e72d217b00e",
+            "charactersFileOffset": 2425631,
+            "charactersBytes": 9,
+            "charactersSha256": "08e1a3f82f0159238ed6c257ab36b5c5176f28512deeeed8b7a07b3a8578e312"
+          },
+          {
+            "usageCode": 7,
+            "text": "",
+            "cfStringAddress": "0x1000e9fd8",
+            "cfStringFileOffset": 2596824,
+            "cfStringBytesSha256": "04e47c8276d8b181414b33ae9eaf23dbad596c8b45758ad1d5947e54700d8bbd",
+            "charactersFileOffset": 2127838,
+            "charactersBytes": 0,
+            "charactersSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "usageCode": 8,
+            "text": "UC_8",
+            "cfStringAddress": "0x1000eb4b8",
+            "cfStringFileOffset": 2602168,
+            "cfStringBytesSha256": "73029b9295dc9b0483d76ed1777096bb3b7ff159f9742c944bd78f14098cafcc",
+            "charactersFileOffset": 2425641,
+            "charactersBytes": 4,
+            "charactersSha256": "ea2a220ad212994ebc49d5c37765358255b430c43ac8da7fb1101723ca42ea8c"
+          },
+          {
+            "usageCode": 9,
+            "text": "UC_PRECOMPUTE_FILE",
+            "cfStringAddress": "0x1000eb4d8",
+            "cfStringFileOffset": 2602200,
+            "cfStringBytesSha256": "37621617594103ec9b2b988b1bd17583070a1f06c35562808306bc2779dec71a",
+            "charactersFileOffset": 2425646,
+            "charactersBytes": 18,
+            "charactersSha256": "22eefa6328726b27c78404b5ed7233ded15264cdc63eb5c4910afcbf2fc83759"
+          },
+          {
+            "usageCode": 10,
+            "text": "",
+            "cfStringAddress": "0x1000e9fd8",
+            "cfStringFileOffset": 2596824,
+            "cfStringBytesSha256": "04e47c8276d8b181414b33ae9eaf23dbad596c8b45758ad1d5947e54700d8bbd",
+            "charactersFileOffset": 2127838,
+            "charactersBytes": 0,
+            "charactersSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "usageCode": 11,
+            "text": "",
+            "cfStringAddress": "0x1000e9fd8",
+            "cfStringFileOffset": 2596824,
+            "cfStringBytesSha256": "04e47c8276d8b181414b33ae9eaf23dbad596c8b45758ad1d5947e54700d8bbd",
+            "charactersFileOffset": 2127838,
+            "charactersBytes": 0,
+            "charactersSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "usageCode": 12,
+            "text": "",
+            "cfStringAddress": "0x1000e9fd8",
+            "cfStringFileOffset": 2596824,
+            "cfStringBytesSha256": "04e47c8276d8b181414b33ae9eaf23dbad596c8b45758ad1d5947e54700d8bbd",
+            "charactersFileOffset": 2127838,
+            "charactersBytes": 0,
+            "charactersSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "usageCode": 13,
+            "text": "",
+            "cfStringAddress": "0x1000e9fd8",
+            "cfStringFileOffset": 2596824,
+            "cfStringBytesSha256": "04e47c8276d8b181414b33ae9eaf23dbad596c8b45758ad1d5947e54700d8bbd",
+            "charactersFileOffset": 2127838,
+            "charactersBytes": 0,
+            "charactersSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "usageCode": 14,
+            "text": "",
+            "cfStringAddress": "0x1000e9fd8",
+            "cfStringFileOffset": 2596824,
+            "cfStringBytesSha256": "04e47c8276d8b181414b33ae9eaf23dbad596c8b45758ad1d5947e54700d8bbd",
+            "charactersFileOffset": 2127838,
+            "charactersBytes": 0,
+            "charactersSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "usageCode": 15,
+            "text": "IMPORTED",
+            "cfStringAddress": "0x1000eb4f8",
+            "cfStringFileOffset": 2602232,
+            "cfStringBytesSha256": "db5c6896f46506f58ce87ca4598b02be7942e10eb6bf9955fb07bc8303e95ddc",
+            "charactersFileOffset": 2425665,
+            "charactersBytes": 8,
+            "charactersSha256": "8ff5c8b0200d27e83905f1a60d540a5d9c1f1c6659d7a76a5865f06280540db5"
+          }
+        ]
+      },
+      "sourceReceipts": [
+        {
+          "path": "/private/tmp/bella-omf-effect-category-mdvx-20261025/findings.json",
+          "sha256": "907b72f7219236dccdcbe928d9afe813f8ba45af2e9486916b8c2a23aa9c917e",
+          "scope": "Same-day full generic OMFI inventory, model, string-helper and usage-label review; all reused ranges and data refreshed again."
+        },
+        {
+          "path": "/private/tmp/bella-omf-precompute-category-mdvx-20261025/findings.json",
+          "sha256": "f50d7ffc77d2492e084e74c6a18fb3864cbb58b217a29ce158de805728af26fc",
+          "scope": "25 October bounded complete inventory model, projection and usage-label audit."
+        },
+        {
+          "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/findings.json",
+          "sha256": "a18f0f29f290f0adb16d38b2b39559628eaba0afc7b553bc84aeb3f304e44035",
+          "scope": "24 October generic inventory string helper versus browser descriptions; all used exact methods reverified against current bytes."
+        }
+      ],
+      "reusedArtifacts": [
+        {
+          "path": "/private/tmp/bella-omf-original-bin-mdvx-20261024/MDVxDatabaseItem-objc-class.txt",
+          "bytes": 23288,
+          "sha256": "25ced90676f5a01421bc0aa487c989395d0e1347abae9bba3dac191bd973c210",
+          "role": "Complete declared inventory row class"
+        },
+        {
+          "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/arm64-objc-metadata.txt",
+          "bytes": 801388,
+          "sha256": "7477f70e70144bd55e1b60ed75ba1614ca51a8e5d869e0184fa4666749cecc69",
+          "role": "24 October Objective-C metadata capture"
+        },
+        {
+          "path": "/private/tmp/bella-omf-duration-mdvx-20261024/table-identifiers.json",
+          "bytes": 695,
+          "sha256": "6ab001271a3c6cb8c48ca6ae57b98fafd00e7d30f8b64a0434e8b57be7f7ad0d",
+          "role": "Column identifiers decoded from both complete inventory projection methods"
+        },
+        {
+          "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/arm64-disassembly.txt",
+          "bytes": 4552262,
+          "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074",
+          "role": "24 October arm64 disassembly capture"
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/private/tmp/bella-omf-effect-mdvx-20261025/summarize.py",
+          "bytes": 8334,
+          "sha256": "782ae229affcf158e500c229edaeea224e3bf1636c6839383a41eac76182d095"
+        }
+      ],
+      "recommendationBoundary": "MDVx supplies no separate interpreted Effect-name algorithm to copy from this inspected inventory route. Bella should retain the approved MediaMuster companion Effect/Effect Category derivation from independently qualified selected Type and Clip Name, using its existing shared resolver and naming behavior. That retained name-derived result is inference, not native generating-effect identity. Do not substitute generic EffectID text, usage-label spelling or import-prefix logic, and do not reintroduce Effect Sequence.",
+      "limits": [
+        "Installed arm64 ordinary inventory path only; x86_64 was not independently reconstructed.",
+        "No actual OMF Effect/precompute specimen or new live UI/browser/export result.",
+        "No media reads/writes, native apps, private APIs, production parsers, tests/builds, repo edits or runtime cutover.",
+        "No whole-application/bundled-library absence claim or measured performance improvement."
+      ]
+    }
+  },
+  "reusedOwnMetadata": {
+    "typeResearch": {
+      "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-type-2026-10-25.json",
+      "bytes": 649777,
+      "sha256": "644a4c4ff3f2b87612c82960b3ce6a96293e23bc33258e966fe9227f6be2a606"
+    },
+    "examples": [
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/TONE_100A01.6A972974.039700.wav",
+        "masterObject": 68006,
+        "selectedMasterUsage": 7,
+        "effectCategoryApplicable": false,
+        "categoryDisplayUnderCurrentRule": "",
+        "note": "Usage7Media; no effect-name lookup/result is established or needed."
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/TONE_100A01.6A972997.0C53E0.aif",
+        "masterObject": 68006,
+        "selectedMasterUsage": 7,
+        "effectCategoryApplicable": false,
+        "categoryDisplayUnderCurrentRule": "",
+        "note": "Usage7Media; no effect-name lookup/result is established or needed."
+      },
+      {
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/FORMAT_288x243x1_JFIF15m.omf",
+        "masterObject": 68017,
+        "selectedMasterUsage": 7,
+        "effectCategoryApplicable": false,
+        "categoryDisplayUnderCurrentRule": "",
+        "note": "Usage7Media; no effect-name lookup/result is established or needed."
+      },
+      {
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/FORMAT_1920X540X2_AVHD.omf",
+        "masterObject": 68017,
+        "selectedMasterUsage": 7,
+        "effectCategoryApplicable": false,
+        "categoryDisplayUnderCurrentRule": "",
+        "note": "Usage7Media; no effect-name lookup/result is established or needed."
+      },
+      {
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/FORMAT_720x576x1_MPEG50.omf",
+        "masterObject": 68016,
+        "selectedMasterUsage": 7,
+        "effectCategoryApplicable": false,
+        "categoryDisplayUnderCurrentRule": "",
+        "note": "Usage7Media; no effect-name lookup/result is established or needed."
+      }
+    ],
+    "genuinePhysicalOmfPrecomputeEffectSpecimens": 0,
+    "boundary": "Five saved own selected masters are usage7 ordinaryMedia, so Effect is inapplicable/blank. They are not physical OMF Precompute name examples; no recognition count, source-derived Effect result or new production lookup is claimed."
+  },
+  "sourceCatalogueExamplesNotExecuted": [
+    {
+      "clipName": "Sequence,Color_Correction+1",
+      "effect": "Color Correction"
+    },
+    {
+      "clipName": "Sequence,3DWarp+1",
+      "effect": "3D Warp"
+    },
+    {
+      "clipName": "Sequence,Blende+2",
+      "effect": "Dissolve"
+    },
+    {
+      "clipName": "Sequence,MY_CUSTOM_TITLE+1",
+      "effect": "MY_CUSTOM_TITLE"
+    },
+    {
+      "clipName": "Sequence,TITLE+1",
+      "effect": "TITLE"
+    }
+  ],
+  "publicPrimaryEvidence": [
+    {
+      "title": "Qt 6.5 implicit sharing",
+      "url": "https://doc.qt.io/qt-6.5/implicit-sharing.html",
+      "checked": "2026-10-25",
+      "scope": "Owned QString value sharing is provided by Qt; no app performance result implied."
+    }
+  ],
+  "rootCurationProgram": {
+    "path": "/private/tmp/bella-omf-effect-curate-20261025.py",
+    "bytes": 11410,
+    "sha256": "73b09d40f95216a0aec56ba3c36970e7ffce1b403c19b8a26def1d3a434d7e3b",
+    "source": "\"\"\"Curate the OMF Effect companion review; no media or runtime execution.\"\"\"\nfrom pathlib import Path\nimport hashlib\nimport json\nimport subprocess\n\nROOT = Path('/Users/martymclean/Developer/MediaMuster')\nCACHE, VERIFIED, MISSING = {}, {}, []\n\n\ndef digest(path):\n    p = Path(path)\n    if str(p) not in CACHE:\n        h = hashlib.sha256()\n        with p.open('rb') as stream:\n            for block in iter(lambda: stream.read(1024 * 1024), b''):\n                h.update(block)\n        CACHE[str(p)] = h.hexdigest()\n    return CACHE[str(p)]\n\n\ndef record(path):\n    p = Path(path)\n    return {'path': str(p), 'bytes': p.stat().st_size, 'sha256': digest(p)}\n\n\ndef check(path, expected, context):\n    p = Path(path)\n    if not p.is_absolute():\n        p = ROOT / p\n    if not p.is_file():\n        MISSING.append({'path': str(p), 'expectedSha256': expected, 'context': context})\n        return\n    assert digest(p) == expected, (context, str(p))\n    VERIFIED[str(p)] = record(p)\n\n\ndef walk(value, context):\n    if isinstance(value, dict):\n        for pk, hk in [('path', 'sha256'), ('artifact', 'artifactSha256'),\n                       ('resolvedArtifact', 'resolvedArtifactSha256'),\n                       ('metadataSource', 'metadataSourceSha256'),\n                       ('classBlockPath', 'classBlockSha256')]:\n            if isinstance(value.get(pk), str) and isinstance(value.get(hk), str):\n                check(value[pk], value[hk], context)\n        for key, child in value.items():\n            if context == 'current' and key == 'sourceAnchors':\n                continue  # These hashes cover excerpts, not the whole file.\n            walk(child, context + '/' + str(key))\n    elif isinstance(value, list):\n        for i, child in enumerate(value):\n            walk(child, context + '/' + str(i))\n\n\nexpected = {\n    'current': '8da9ae31ebd92c27faf697afeedd78949e2aa3e690aebf910fc50a001f2236c1',\n    'mc': 'da94a4833b395a1fbff2861b25e6c6a0a1b83b29ebecd9f2d6d8e09983f71fa8',\n    'mdvx': 'e7a8bd486a2fd43c41c975f512c8bade982e713682bde11e8739e2769b6150c7',\n}\nreceipts, receipt_files = {}, {}\nfor who, expected_hash in expected.items():\n    p = Path(f'/private/tmp/bella-omf-effect-{who}-20261025/findings.json')\n    assert digest(p) == expected_hash\n    receipt_files[who] = record(p)\n    receipts[who] = json.loads(p.read_text())\n    walk(receipts[who], who)\nassert not MISSING, MISSING\n\ncurrent = receipts['current']\nassert len(current['sourceInputs']) == 8 and len(current['sourceAnchors']) == 12\nfor item in current['sourceInputs']:\n    p = Path(item['path'])\n    relative = str(p.relative_to(ROOT))\n    assert subprocess.check_output(['git', 'show', 'HEAD:' + relative], cwd=ROOT) == p.read_bytes()\nfor anchor in current['sourceAnchors']:\n    excerpt = ''.join(Path(anchor['path']).read_text().splitlines(keepends=True)[anchor['startLine']-1:anchor['endLine']])\n    assert excerpt == anchor['text']\n    assert hashlib.sha256(excerpt.encode()).hexdigest() == anchor['sha256']\n\nmdvx = receipts['mdvx']\nwith Path(mdvx['binary']['path']).open('rb') as stream:\n    for method in mdvx['reusedFunctions']:\n        stream.seek(method['binaryOffset'])\n        raw = stream.read(method['codeBytes'])\n        assert len(raw) == method['codeBytes']\n        assert hashlib.sha256(raw).hexdigest() == method['codeSha256']\n    table = mdvx['reverifiedUsageData']\n    stream.seek(table['tableFileOffset'])\n    assert hashlib.sha256(stream.read(table['bytes'])).hexdigest() == table['sha256']\n    for label in table['labels']:\n        stream.seek(label['cfStringFileOffset'])\n        assert hashlib.sha256(stream.read(32)).hexdigest() == label['cfStringBytesSha256']\n        stream.seek(label['charactersFileOffset'])\n        raw = stream.read(label['charactersBytes'])\n        assert raw == label['text'].encode('ascii')\n        assert hashlib.sha256(raw).hexdigest() == label['charactersSha256']\nassert len(mdvx['reusedFunctions']) == 14 and len(table['labels']) == 15\nassert receipts['mc']['method']['freshDisassembly'] is False\nassert len(receipts['mc']['extantRawFreshlyHashed']) == 6\n\napproval_path = ROOT / 'Project Bella/evidence/omf-effect-category-plan-2026-10-25.json'\napproval = json.loads(approval_path.read_text())\nresearch = approval['researchAtApproval']\ncheck(research['path'], research['sha256'], 'effectCategoryApproval/research')\ntype_path = ROOT / 'Project Bella/evidence/omf-type-2026-10-25.json'\ntypes = json.loads(type_path.read_text())\nexamples = current['reusedActualMetadata']['examples']\nassert len(examples) == 5\nfor example in examples:\n    assert example['selectedMasterUsage'] == 7 and example['effectCategoryApplicable'] is False\n    previous = next(e for e in types['reusedOwnMetadata']['examples'] if e['path'] == example['path'])\n    assert previous['masterUsage'] == 7 and previous['selectedMasterObject'] == example['masterObject']\n\ndraft_path = ROOT / 'docs/reviews/2026-10-23-bella-omf/effect.md'\ndraft_hash = '075528f908a1038f6aaa46c6eee5f09a84db0b81b2a16ee9192a6b92d5777f78'\nassert digest(draft_path) == draft_hash\nrules = {\n    'status': 'OMF Effect integration recommendations awaiting approval. Effect Category accepted; no runtime implementation or cutover.',\n    'input': 'Final selected confirmed Precompute Type and qualified selected-master Clip Name after matching/source selection. Existing OMF ownership/text rules; no additional Effect property or alternative owner chosen for a catalogue match.',\n    'known': 'Use existing combined AvidEffects::lookup result Hit.name: first matching canonical English display name, preserving known localized spellings and explicit aliases.',\n    'unrecognized': 'Keep a nonempty extracted token verbatim. Do not globally trim, rewrite underscores, title-case, case-fold, fuzzy-match or substitute unrelated fields.',\n    'unavailable': 'Empty/unavailable Effect on confirmed Precompute displays lowercase unknown; ordinary Media and unknown Type display blank. Unknown Effect Category does not erase a nonempty Effect; parent Precompute Category success is not required.',\n    'syntax': 'Preserve both existing validated suffix forms, numeric/rename-chain bounds, precedence, commas in sequence prefix and malformed/overflow handling. No generic split/rewrite.',\n    'integration': 'Common source-independent derivation outside the byte parser, when optional effect details requested. One combined lookup for selected inputs, reuse across associated rows, rederive if selected Type/name changes. Current resolver/index are already shared; current projection has no internal optional guard and may run multiple passes.',\n    'retention': 'Owned QString Effect and Category plus necessary compact context, using normal Qt value sharing. No permanent every-name cache, token/instance/matched-state retention, custom interner, new catalogue IDs or per-column history/class.',\n    'sequence': 'Discard separate Sequence output from stored rows/export, while retaining selected Clip Name and suffix-boundary parsing required for Effect.',\n    'readScope': 'No extra OMF field, component/effect graph, import-settings body, plug-in/registry query or media open solely for Effect. General OMF damage and final source-priority/opening/scheduling remain separate.',\n    'identityBoundary': 'Names are inferred from editable Clip Name. They do not establish actual generating effect, Type, parent category, plug-in variant or timeline membership. Native ID/library/registered names use different inputs.',\n    'evidenceBoundary': 'Five reused selected masters are ordinary Media and inapplicable. No genuine physical OMF Precompute name sample, fresh runtime lookup/test/parser execution, live GUI comparison or measured performance gain is claimed.',\n}\nout = {\n    'schemaVersion': 1, 'date': '2026-10-25', 'timezone': 'Australia/Sydney',\n    'status': rules['status'],\n    'currentHead': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),\n    'effectCategoryApproval': record(approval_path), 'proposedBellaRules': rules,\n    'review': record(draft_path), 'receiptFiles': receipt_files,\n    'nativeAndCurrentReceipts': receipts,\n    'reusedOwnMetadata': {'typeResearch': record(type_path), 'examples': examples,\n                         'genuinePhysicalOmfPrecomputeEffectSpecimens': 0,\n                         'boundary': current['reusedActualMetadata']['boundary']},\n    'sourceCatalogueExamplesNotExecuted': [\n        {'clipName': 'Sequence,Color_Correction+1', 'effect': 'Color Correction'},\n        {'clipName': 'Sequence,3DWarp+1', 'effect': '3D Warp'},\n        {'clipName': 'Sequence,Blende+2', 'effect': 'Dissolve'},\n        {'clipName': 'Sequence,MY_CUSTOM_TITLE+1', 'effect': 'MY_CUSTOM_TITLE'},\n        {'clipName': 'Sequence,TITLE+1', 'effect': 'TITLE'},\n    ],\n    'publicPrimaryEvidence': [{'title': 'Qt 6.5 implicit sharing',\n        'url': 'https://doc.qt.io/qt-6.5/implicit-sharing.html', 'checked': '2026-10-25',\n        'scope': 'Owned QString value sharing is provided by Qt; no app performance result implied.'}],\n    'rootCurationProgram': {**record(__file__), 'source': Path(__file__).read_text()},\n    'rootVerification': {'referencedFilesRehashed': VERIFIED, 'unavailableFreshInputs': MISSING,\n        'currentSourceFilesEqualHead': 8, 'currentSourceAnchorsVerified': 12,\n        'mdvxCodeRangesRehashed': 14, 'mdvxUsageLabelsRechecked': 15,\n        'nativeExtantRawArtifactsRehashed': 6, 'freshNativeDisassembly': False,\n        'freshPhysicalMediaReads': 0, 'genuinePhysicalOmfPrecomputeEffectSpecimens': 0,\n        'runtimeOrPrivateApiExecuted': False, 'testsOrBuildsExecuted': False,\n        'runtimeCodeChanged': False, 'performanceMeasured': False},\n    'independentDraftReviews': {\n        'currentSource': {'passed': True, 'draftSha256': draft_hash,\n            'result': 'Exact output, suffix rules, category independence, optional shared integration, Sequence exclusion and coverage limits pass.'},\n        'native': {'passed': True, 'draftSha256': draft_hash,\n            'result': 'Registered name/ID/owner boundaries and limited OMF evidence pass.'},\n        'mdvx': {'passed': True, 'draftSha256': draft_hash,\n            'result': 'Generic first-match EffectID text vs interpreted Effect output and standalone fallback limits pass.'},\n    },\n    'limits': ['Reuse-only companion native/inventory evidence; no broad new decompilation or all-plugin/GUI proof.',\n               'No selected OMF master generating-effect identity/name association established; not universal absence of every effect property.',\n               'Source/catalogue examples and previously authored tests inspected; no fresh execution or physical OMF Precompute corpus.',\n               'Existing resolver/index already compact and shared; proposed integration/lifetimes/optional demand remain unmeasured.',\n               'Documentation only. No media write/read, runtime implementation/cutover, Bin Filter change or final source policy decision.'],\n}\ndestination = ROOT / 'Project Bella/evidence/omf-effect-2026-10-25.json'\nassert not destination.exists(), destination\ndestination.write_text(json.dumps(out, ensure_ascii=False, indent=2) + '\\n')\nprint(json.dumps({'evidence': str(destination), 'bytes': destination.stat().st_size,\n    'referencedFilesRehashed': len(VERIFIED), 'sourceInputs': 8, 'anchors': 12,\n    'freshMediaReads': 0, 'freshMissing': MISSING, 'status': rules['status']}))\n"
+  },
+  "rootVerification": {
+    "referencedFilesRehashed": {
+      "/private/tmp/bella-omf-effect-category-current-20261025/findings.json": {
+        "path": "/private/tmp/bella-omf-effect-category-current-20261025/findings.json",
+        "bytes": 46670,
+        "sha256": "23e7af82c0bd291c3893082ece5ddfa20bb30897d7276284dcf9f9b4122d4b9c"
+      },
+      "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.h": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.h",
+        "bytes": 1797,
+        "sha256": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1"
+      },
+      "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.cpp": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.cpp",
+        "bytes": 69548,
+        "sha256": "0989aeb6b02bf4a254b01e5d5881a82997205797de7d448336b5f4a0d0535d35"
+      },
+      "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+        "bytes": 10189,
+        "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce"
+      },
+      "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+        "bytes": 5202,
+        "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935"
+      },
+      "/Users/martymclean/Developer/MediaMuster/src/mediafile.h": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+        "bytes": 12788,
+        "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3"
+      },
+      "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+        "bytes": 12214,
+        "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56"
+      },
+      "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp": {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp",
+        "bytes": 3609,
+        "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442"
+      },
+      "/Users/martymclean/Developer/MediaMuster/tests/tst_avideffects.cpp": {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_avideffects.cpp",
+        "bytes": 11104,
+        "sha256": "f278d23e14b05130c616d7be64989020b185d6ee2862e93d6437cfbd48664fc0"
+      },
+      "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-18-bella-mdb/effect.md": {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-18-bella-mdb/effect.md",
+        "bytes": 5687,
+        "sha256": "f7a81c9dd47ec5d59781d93a9ee85221c032f6b0e0ecc5f70cb6a3f34a2cd4b8"
+      },
+      "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-21-bella-mxf/effect.md": {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-21-bella-mxf/effect.md",
+        "bytes": 6080,
+        "sha256": "3ac394dde7d11e8a7f83b451ccefdfd957aa385d51ba66615690561931a5306b"
+      },
+      "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-23-bella-omf/effect-category.md": {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-23-bella-omf/effect-category.md",
+        "bytes": 8288,
+        "sha256": "da85ab68a2d78508cdf52d13772722815424100be26731c693d5c93b9a08fa56"
+      },
+      "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib": {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "bytes": 73527536,
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+      },
+      "/private/tmp/bella-omf-effect-category-mc-20261025/findings.json": {
+        "path": "/private/tmp/bella-omf-effect-category-mc-20261025/findings.json",
+        "bytes": 28585,
+        "sha256": "08328c91d65cded60c27f38afd299f38a34e61e7290196bfa01451af2c9fc7d8"
+      },
+      "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-effect-category-plan-2026-10-25.json": {
+        "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-effect-category-plan-2026-10-25.json",
+        "bytes": 4496,
+        "sha256": "30fe33fc4e7ae5f218c90a213a257967d94892b6209681f788cb60dfd7d3b642"
+      },
+      "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mdb-effect-2026-10-20.json": {
+        "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mdb-effect-2026-10-20.json",
+        "bytes": 7356,
+        "sha256": "01948fde70490a80a91e390526e5f6b014d96231beed6c27d406a3b9d8f6a6fd"
+      },
+      "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-effect-2026-10-22.json": {
+        "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-effect-2026-10-22.json",
+        "bytes": 66095,
+        "sha256": "5479c304352a0fd3b46e7f25daa85f60bf4a30722778396ab761b76d1f30ad7f"
+      },
+      "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-effect-plan-2026-10-23.json": {
+        "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-effect-plan-2026-10-23.json",
+        "bytes": 3298,
+        "sha256": "935cd5d60fa1d29d12af1addd158a7cba6604f3b9673e78cabb7fee442f49430"
+      },
+      "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-clip-name-plan-2026-10-24.json": {
+        "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-clip-name-plan-2026-10-24.json",
+        "bytes": 3038,
+        "sha256": "aa7ea55998dee3eccdefeb668eaffb1dec068e3d05bf28fd5276cb002dedf206"
+      },
+      "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-type-plan-2026-10-25.json": {
+        "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-type-plan-2026-10-25.json",
+        "bytes": 3682,
+        "sha256": "951da83c8468211fc3f65f853022f4c48fe3e333e28e0aae8e6f2c1b1be05792"
+      },
+      "/private/tmp/bella-mxf-effect-mc-20261022/SetFundementals.txt": {
+        "path": "/private/tmp/bella-mxf-effect-mc-20261022/SetFundementals.txt",
+        "bytes": 9327,
+        "sha256": "ede751aeac6d88c28d01dc92c411cda900c3322405183fba7481314ef22242ec"
+      },
+      "/private/tmp/bella-mxf-effect-mc-20261022/SetName.txt": {
+        "path": "/private/tmp/bella-mxf-effect-mc-20261022/SetName.txt",
+        "bytes": 1547,
+        "sha256": "50fc2aacfafaf6f2667991e8f418d84fa223735790019f5ccbe5861d522911f7"
+      },
+      "/private/tmp/bella-mxf-effect-mc-20261022/GetNameBuffer.txt": {
+        "path": "/private/tmp/bella-mxf-effect-mc-20261022/GetNameBuffer.txt",
+        "bytes": 976,
+        "sha256": "45e372b803c13dc7c74555e095ffc9a88945240541a18ad8f8acdae85aecfd0a"
+      },
+      "/private/tmp/bella-mxf-effect-mc-20261022/GetNameString.txt": {
+        "path": "/private/tmp/bella-mxf-effect-mc-20261022/GetNameString.txt",
+        "bytes": 538,
+        "sha256": "ce27895e0e0ad9aba44250f64473c12c1f8aee6f4296dafd837a835b7a8d22e4"
+      },
+      "/private/tmp/bella-mxf-effect-mc-20261022/name-vtable.json": {
+        "path": "/private/tmp/bella-mxf-effect-mc-20261022/name-vtable.json",
+        "bytes": 722,
+        "sha256": "c2be3943285c23f62a0ae985ef26043a286fe1461902cf5356724f65ea8a137a"
+      },
+      "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectGetEffect.txt": {
+        "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectGetEffect.txt",
+        "bytes": 4450,
+        "sha256": "e90711791bbe1fee124ac8979bd9060afbcbc4b32dfd7e56b81b48b2be7606d6"
+      },
+      "/private/tmp/bella-mxf-effect-category-mc-20261022/GetMCEffectID.txt": {
+        "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/GetMCEffectID.txt",
+        "bytes": 13293,
+        "sha256": "d8de9de55afb778bed26be79f423949a7d6440c87b09333559d4714d3483515d"
+      },
+      "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectConvertFromAAF7.txt": {
+        "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectConvertFromAAF7.txt",
+        "bytes": 27137,
+        "sha256": "98c609de8f69149ae68dee4a2259482863382c5fcc849777545b2fd0afbd8818"
+      },
+      "/private/tmp/bella-mxf-effect-category-mc-20261022/AEffectSetInfo.txt": {
+        "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/AEffectSetInfo.txt",
+        "bytes": 136707,
+        "sha256": "8eebdff2935cae6847e4f6dffda2a0e0692a716e28bd2de69d4d61f26c99d1b2"
+      },
+      "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectSetEffectID.txt": {
+        "path": "/private/tmp/bella-mxf-effect-category-mc-20261022/ATrackEffectSetEffectID.txt",
+        "bytes": 602,
+        "sha256": "99c0e94bd3c5280f71c268e673bf6e76e7d1611c1d93a32a19f7afd257c372d1"
+      },
+      "/private/tmp/bella-omf-effect-mc-20261025/curate.py": {
+        "path": "/private/tmp/bella-omf-effect-mc-20261025/curate.py",
+        "bytes": 8460,
+        "sha256": "19da7c3e2eee2c47092a46213ab24421758899209653ace9b56149303e42f1b9"
+      },
+      "/Applications/MDVx.app/Contents/MacOS/MDVx": {
+        "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+        "bytes": 3204640,
+        "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/arm64-objc-metadata.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/arm64-objc-metadata.txt",
+        "bytes": 801388,
+        "sha256": "7477f70e70144bd55e1b60ed75ba1614ca51a8e5d869e0184fa4666749cecc69"
+      },
+      "/private/tmp/bella-omf-original-bin-mdvx-20261024/MDVxDatabaseItem-objc-class.txt": {
+        "path": "/private/tmp/bella-omf-original-bin-mdvx-20261024/MDVxDatabaseItem-objc-class.txt",
+        "bytes": 23288,
+        "sha256": "25ced90676f5a01421bc0aa487c989395d0e1347abae9bba3dac191bd973c210"
+      },
+      "/private/tmp/bella-omf-type-mdvx-20261025/-_MDVxDatabaseItem_DB_usageCode.txt": {
+        "path": "/private/tmp/bella-omf-type-mdvx-20261025/-_MDVxDatabaseItem_DB_usageCode.txt",
+        "bytes": 92,
+        "sha256": "f9ce466f514460519ee2a2e96efe5cc4c1c176b4feb2aa47ff6724817d1b0622"
+      },
+      "/private/tmp/bella-omf-type-mdvx-20261025/-_MDVxDatabaseItem_DB_usageCode-resolved.txt": {
+        "path": "/private/tmp/bella-omf-type-mdvx-20261025/-_MDVxDatabaseItem_DB_usageCode-resolved.txt",
+        "bytes": 92,
+        "sha256": "f9ce466f514460519ee2a2e96efe5cc4c1c176b4feb2aa47ff6724817d1b0622"
+      },
+      "/private/tmp/bella-omf-type-mdvx-20261025/-_MDVxDatabaseItem_setDB_usageCode.txt": {
+        "path": "/private/tmp/bella-omf-type-mdvx-20261025/-_MDVxDatabaseItem_setDB_usageCode.txt",
+        "bytes": 96,
+        "sha256": "7160d1f40a8b15fef0a0077dc87140899d486e9f31f8f2a09ff5ac015cc1c957"
+      },
+      "/private/tmp/bella-omf-type-mdvx-20261025/-_MDVxDatabaseItem_setDB_usageCode-resolved.txt": {
+        "path": "/private/tmp/bella-omf-type-mdvx-20261025/-_MDVxDatabaseItem_setDB_usageCode-resolved.txt",
+        "bytes": 96,
+        "sha256": "7160d1f40a8b15fef0a0077dc87140899d486e9f31f8f2a09ff5ac015cc1c957"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_addInfoToItem.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_addInfoToItem.txt",
+        "bytes": 9424,
+        "sha256": "c1097f5a0d8ab935e22379d9737a89b4a7e0f0676ed2959d827684f241978b3a"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_addInfoToItem-resolved.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_addInfoToItem-resolved.txt",
+        "bytes": 9424,
+        "sha256": "c1097f5a0d8ab935e22379d9737a89b4a7e0f0676ed2959d827684f241978b3a"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxDatabaseItem_init.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxDatabaseItem_init.txt",
+        "bytes": 944,
+        "sha256": "48b45d98fcefc1a40e3914b71ec60c221b0445939045d08846500e3c9652d8fd"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxDatabaseItem_init-resolved.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxDatabaseItem_init-resolved.txt",
+        "bytes": 944,
+        "sha256": "48b45d98fcefc1a40e3914b71ec60c221b0445939045d08846500e3c9652d8fd"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxDatabaseItem_addinfoToItemFromCorrespondingFile.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxDatabaseItem_addinfoToItemFromCorrespondingFile.txt",
+        "bytes": 2521,
+        "sha256": "2f6f281cfe8f9709a41e780146bf3d0e98e7f0c1f859dda0a85883d76a447b0a"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxDatabaseItem_addinfoToItemFromCorrespondingFile-resolved.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxDatabaseItem_addinfoToItemFromCorrespondingFile-resolved.txt",
+        "bytes": 2559,
+        "sha256": "3d3fe24e992e940109d507dc9e5443ed635ad88ecb015518ef2203a225ed6e0e"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxPMRScannerOperation_main.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxPMRScannerOperation_main.txt",
+        "bytes": 46076,
+        "sha256": "8fe130b7ce11347c17412389b4eb320ffd7dd21ff3aade72d8353e6b0162710f"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxPMRScannerOperation_main-resolved.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxPMRScannerOperation_main-resolved.txt",
+        "bytes": 46717,
+        "sha256": "90d4f5522005c2304b5b8043f9678a7db75e9d6aebd85445f787567b011586ff"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxCore_tableView_viewForTableColumn_row.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxCore_tableView_viewForTableColumn_row.txt",
+        "bytes": 25207,
+        "sha256": "4420594fa134a9888f3c9eb3ca70e6f025b0b267c10190b988db096e4db0636c"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxCore_tableView_viewForTableColumn_row-resolved.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxCore_tableView_viewForTableColumn_row-resolved.txt",
+        "bytes": 26268,
+        "sha256": "507042ca8c1d41ac55187d59d4275acfa77d292172a43ffbb64ac750c22e3232"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxCore_tableView_NSStringValueForTableColumn_row.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxCore_tableView_NSStringValueForTableColumn_row.txt",
+        "bytes": 16442,
+        "sha256": "eeeb5583811e833610fbcecb52101c48f624310fa680cbb8ccda60a4cf04ea6c"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxCore_tableView_NSStringValueForTableColumn_row-resolved.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxCore_tableView_NSStringValueForTableColumn_row-resolved.txt",
+        "bytes": 17077,
+        "sha256": "2e995908611f7d117d86795b8c0b838fb91349a6997c6bbd3e99c8deaeaede3e"
+      },
+      "/private/tmp/bella-omf-project-mdvx-20261024/-_MDVxOMFI_getProjectNameForObjAt.txt": {
+        "path": "/private/tmp/bella-omf-project-mdvx-20261024/-_MDVxOMFI_getProjectNameForObjAt.txt",
+        "bytes": 10709,
+        "sha256": "a07afd55a76b9fc076f99135b6abff37bf155b393bd35ea8ad7d120d783e604a"
+      },
+      "/private/tmp/bella-omf-project-mdvx-20261024/-_MDVxOMFI_getProjectNameForObjAt-resolved.txt": {
+        "path": "/private/tmp/bella-omf-project-mdvx-20261024/-_MDVxOMFI_getProjectNameForObjAt-resolved.txt",
+        "bytes": 10806,
+        "sha256": "ef3c68d69aae47836666842f6f4d6211de14e28a7fc65423d9ab611b2780fdba"
+      },
+      "/private/tmp/bella-omf-project-mdvx-20261024/-_MDVxOMFI_getProjectAttributeForObjectAt.txt": {
+        "path": "/private/tmp/bella-omf-project-mdvx-20261024/-_MDVxOMFI_getProjectAttributeForObjectAt.txt",
+        "bytes": 3401,
+        "sha256": "2dbb0e44652d9a237b5a2fd6f65c163fd527e87996d203abb48db2cc09ac2f6f"
+      },
+      "/private/tmp/bella-omf-project-mdvx-20261024/-_MDVxOMFI_getProjectAttributeForObjectAt-resolved.txt": {
+        "path": "/private/tmp/bella-omf-project-mdvx-20261024/-_MDVxOMFI_getProjectAttributeForObjectAt-resolved.txt",
+        "bytes": 3401,
+        "sha256": "2dbb0e44652d9a237b5a2fd6f65c163fd527e87996d203abb48db2cc09ac2f6f"
+      },
+      "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getCompression_data_forObjAt.txt": {
+        "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getCompression_data_forObjAt.txt",
+        "bytes": 5493,
+        "sha256": "9ce588c5093400d37b9276d1689742616bb591da98f7a419e893471b0046a2e3"
+      },
+      "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getCompression_data_forObjAt-resolved.txt": {
+        "path": "/private/tmp/bella-omf-versions-text-mdvx-20261023/-_MDVxOMFI_getCompression_data_forObjAt-resolved.txt",
+        "bytes": 5493,
+        "sha256": "9ce588c5093400d37b9276d1689742616bb591da98f7a419e893471b0046a2e3"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_GetStringForObjectAt.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_GetStringForObjectAt.txt",
+        "bytes": 3469,
+        "sha256": "0c0a905402cf8e8a111c74781c8aaa7af858cac9bd5e44213465d5d558807e02"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_GetStringForObjectAt-resolved.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_GetStringForObjectAt-resolved.txt",
+        "bytes": 3489,
+        "sha256": "ad472b0e5c9441c46f0646376397d7daebdc077a728673be4225805b686e496e"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_GetNameForObjectAt.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_GetNameForObjectAt.txt",
+        "bytes": 6441,
+        "sha256": "852e4ddcbce1491e32b107ff34442f96e981504128bef38be5f8805ee8e6718f"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_GetNameForObjectAt-resolved.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_GetNameForObjectAt-resolved.txt",
+        "bytes": 6466,
+        "sha256": "b67b9fb577458527b644b3426b4bf7182eaf0747fc88449fdf3fb12bb994f796"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_StringForTocIndexItem.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_StringForTocIndexItem.txt",
+        "bytes": 12680,
+        "sha256": "ee8dc5f1153b19d8b94d026df075395905963b02c5c20a8867e66fd2d7b5f4c7"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_StringForTocIndexItem-resolved.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/-_MDVxOMFI_StringForTocIndexItem-resolved.txt",
+        "bytes": 13138,
+        "sha256": "058db92d768b8994c8e6e07010fccb25fac82f53df8e0779f8461cb171a25d9f"
+      },
+      "/private/tmp/bella-omf-effect-category-mdvx-20261025/findings.json": {
+        "path": "/private/tmp/bella-omf-effect-category-mdvx-20261025/findings.json",
+        "bytes": 28186,
+        "sha256": "907b72f7219236dccdcbe928d9afe813f8ba45af2e9486916b8c2a23aa9c917e"
+      },
+      "/private/tmp/bella-omf-precompute-category-mdvx-20261025/findings.json": {
+        "path": "/private/tmp/bella-omf-precompute-category-mdvx-20261025/findings.json",
+        "bytes": 26669,
+        "sha256": "f50d7ffc77d2492e084e74c6a18fb3864cbb58b217a29ce158de805728af26fc"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/findings.json": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/findings.json",
+        "bytes": 77108,
+        "sha256": "a18f0f29f290f0adb16d38b2b39559628eaba0afc7b553bc84aeb3f304e44035"
+      },
+      "/private/tmp/bella-omf-duration-mdvx-20261024/table-identifiers.json": {
+        "path": "/private/tmp/bella-omf-duration-mdvx-20261024/table-identifiers.json",
+        "bytes": 695,
+        "sha256": "6ab001271a3c6cb8c48ca6ae57b98fafd00e7d30f8b64a0434e8b57be7f7ad0d"
+      },
+      "/private/tmp/bella-omf-clip-name-mdvx-20261024/arm64-disassembly.txt": {
+        "path": "/private/tmp/bella-omf-clip-name-mdvx-20261024/arm64-disassembly.txt",
+        "bytes": 4552262,
+        "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074"
+      },
+      "/private/tmp/bella-omf-effect-mdvx-20261025/summarize.py": {
+        "path": "/private/tmp/bella-omf-effect-mdvx-20261025/summarize.py",
+        "bytes": 8334,
+        "sha256": "782ae229affcf158e500c229edaeea224e3bf1636c6839383a41eac76182d095"
+      },
+      "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-effect-category-2026-10-25.json": {
+        "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-effect-category-2026-10-25.json",
+        "bytes": 674467,
+        "sha256": "c0e29097eef7703d5cbaf161a028679b859b9f9d235d5d49a1ddf68c9254ff4b"
+      }
+    },
+    "unavailableFreshInputs": [],
+    "currentSourceFilesEqualHead": 8,
+    "currentSourceAnchorsVerified": 12,
+    "mdvxCodeRangesRehashed": 14,
+    "mdvxUsageLabelsRechecked": 15,
+    "nativeExtantRawArtifactsRehashed": 6,
+    "freshNativeDisassembly": false,
+    "freshPhysicalMediaReads": 0,
+    "genuinePhysicalOmfPrecomputeEffectSpecimens": 0,
+    "runtimeOrPrivateApiExecuted": false,
+    "testsOrBuildsExecuted": false,
+    "runtimeCodeChanged": false,
+    "performanceMeasured": false
+  },
+  "independentDraftReviews": {
+    "currentSource": {
+      "passed": true,
+      "draftSha256": "075528f908a1038f6aaa46c6eee5f09a84db0b81b2a16ee9192a6b92d5777f78",
+      "result": "Exact output, suffix rules, category independence, optional shared integration, Sequence exclusion and coverage limits pass."
+    },
+    "native": {
+      "passed": true,
+      "draftSha256": "075528f908a1038f6aaa46c6eee5f09a84db0b81b2a16ee9192a6b92d5777f78",
+      "result": "Registered name/ID/owner boundaries and limited OMF evidence pass."
+    },
+    "mdvx": {
+      "passed": true,
+      "draftSha256": "075528f908a1038f6aaa46c6eee5f09a84db0b81b2a16ee9192a6b92d5777f78",
+      "result": "Generic first-match EffectID text vs interpreted Effect output and standalone fallback limits pass."
+    }
+  },
+  "limits": [
+    "Reuse-only companion native/inventory evidence; no broad new decompilation or all-plugin/GUI proof.",
+    "No selected OMF master generating-effect identity/name association established; not universal absence of every effect property.",
+    "Source/catalogue examples and previously authored tests inspected; no fresh execution or physical OMF Precompute corpus.",
+    "Existing resolver/index already compact and shared; proposed integration/lifetimes/optional demand remain unmeasured.",
+    "Documentation only. No media write/read, runtime implementation/cutover, Bin Filter change or final source policy decision."
+  ],
+  "finalDocumentationValidation": {
+    "date": "2026-10-25",
+    "gitDiffCheck": "passed",
+    "localMarkdownLinksChecked": 379,
+    "missingLocalLinks": 0,
+    "effectCategoryApprovedResearchHashUnchanged": true,
+    "runtimeDiffPaths": [
+      "src/bella/README.md"
+    ],
+    "runtimeDiffBoundary": "Pre-existing planning README only; no scanner/parser/test/CMake changes.",
+    "untrackedRuntimeFiles": [],
+    "testsOrBuildsExecuted": false,
+    "allThreeCompanionDraftReviewsPassed": true,
+    "effectIntegrationStatus": "awaiting approval"
+  }
+}

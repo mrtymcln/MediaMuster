@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-24",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF Original Bin owner/name/blank/retention rules. Kind and remaining OMF fields under review.",
+  "authorization": {
+    "source": "Direct human reply immediately following the Original Bin proposal",
+    "statement": "Sounds ok! Are you sure all this work we're doing for new scanner & parsers is genuinely GOOD work?",
+    "interpretation": "The opening assent accepts the preceding Original Bin proposal. The following quality question and subsequent clarification establish the engineering objective; they do not introduce new Original Bin behavior.",
+    "scope": "Selected master own _ORG_BIN reference, usable binNameUTF8 first, separate legacy MacRoman fallback, blank without usable association/name, compact selected-name retention and no stored bin ID. No runtime implementation/cutover, Bin Filter change, final cross-source priorities or new header-opening trigger."
+  },
+  "agreedBellaRules": {
+    "scope": "Name-only Original Bin from an already-read supported legacy OMF. No runtime code/cutover, Bin Filter change, final source priority or new header-open trigger. MXF Original Bin fallback remains blank.",
+    "owner": "Use the same selected master as Clip Name/full-ID association; its Clip Name text may be empty. Read only its own exact _ORG_BIN Kind3 object reference, safely resolved to an MCBR bin record.",
+    "names": "Prefer usable exact binNameUTF8 as strict known UTF-8. Missing/empty/individually unreadable modern name permits the separate binName decoded as MacRoman. Never reinterpret damaged modern bytes as legacy. Preserve characters/spelling/case/punctuation/whitespace with bounded supported string framing.",
+    "validation": "Require supported reference, owner, target class and string type/representation. Equal repetitions can agree; conflicting usable same-priority values or ambiguous bin references give no usable field. A usable Unicode name outranks a different legacy spelling. General OMF damage boundaries remain later.",
+    "unavailable": "Keep OMF contribution unavailable and OMF-only table blank when no usable association/name; preserve physical row, master and independent facts. No file/source/nested-import/other-master/loaded-bin/filesystem substitute.",
+    "retention": "One owned selected QString and necessary compact availability/selected-owner context. Skip stored bin-ID words for this display requirement; release temporary name/reference data. No permanent raw bin object, second spelling, Bin ID or alternate-bin history."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-original-bin-2026-10-24.json",
+    "bytes": 231738,
+    "sha256": "f96a8aa4f5b9a4f07b0b2cf069b064deebb0d1f287b7621732bda82ff787526f"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/original-bin.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "newBuildsOrTests": false,
+    "appCutover": false,
+    "performanceMeasured": false
+  }
+}

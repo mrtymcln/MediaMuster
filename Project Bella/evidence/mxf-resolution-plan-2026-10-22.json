@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "status": "Approved requirements; not implemented or cut over.",
+  "authorization": {
+    "source": "Direct human request in current conversation",
+    "statement": "OK, let's lock those Resolution rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Type from MXF, and what should Bella read and keep?\n\nAre we making genuine improvements here? Be honest do not invent answers just to please me.",
+    "scope": "Approves preceding MXF Resolution rules only; Type and honest improvement assessment remain research/proposal."
+  },
+  "agreedBellaRules": {
+    "scope": "Same approved physical/visiblepixelraster meaning as MDB; fresh small C++17/Qt6.5.3 helper and MXF adapter. Full source priority/header opening review remains separate.",
+    "ownership": "Qualified selected supportedheader active ownphysicalfileSourcePackage and ownsupportedpicturedescriptor, fullFileMobId. Notmaster/unrelateddescriptor.",
+    "facts": "Stored/Sampled/DisplayWidth/Height, fourSampled/Displayoffsets, FrameLayout; exactcoding+ResolutionIDwhenneededforverifiedproxyqualification. Preserve necessary separateCompressioninputs.",
+    "defaults": "Only genuinelyabsentoptionalvaluesaftercomplete relevantobjectread: Sampled dims->Stored; Displaydims->Sampled; offsets->0. Presentdamaged/conflicting/unknownnotabsence. MDB/OMF differs; no universalpreference ladder.",
+    "validation": "PositivecompleteStored; nonnegativeoffsets; SampledwithinStored andDisplaywithinSampled; checkedintegerbounds andheightmultiplication. No guessedstandardcrop.",
+    "layout": "MXF1SeparateFieldsheightx2; MXF0/2/3/4noheightdoublingforphysicalcolumn. MDB/OMFlegacy3hasseparatequalifiedinterpretation. Nofilename/ratebasedguess.",
+    "proxy": "Preserve7exact knownconfigurations/eightfiles withfullcodinglabel,ResolutionID,all3sizes,layout,zerooffsets. SelectactualsmallStored. Noautomaticinferencefromsmallraster,H264alone,missing/damagedcrop.",
+    "retention": "Selected numericwidth,height, compactorigin/availability. Format1920x1080atdisplay/export, numericpairforsort. TemporaryothergeometryreleasedafterCompression/otherconsumers; nopermanentoldgraph/duplicateformattedstring.",
+    "unavailable": "Audioinapplicableblank. Invalid/damaged/unsupportedpicturegeometry suppliesnoResolutionatthissource; retainphysicalrowandotherusablemetadata. Eligibleother-sourcefallbackremainsseparate.",
+    "noNewReads": "UsesmetadatafromalreadyauthorisedMXFheaderread; proposaldoesnotestablishnewsourcepriorityoropeningpolicy."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-resolution-2026-10-22.json",
+    "sha256BeforeApprovalMetadata": "5352a53def41900eff25e7baf09a9fb19360337f03617cb28e1e3c63fa18677d"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-21-bella-mxf/resolution.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeImplemented": false,
+    "productionTestsRun": false,
+    "rawResearchChanged": false
+  }
+}

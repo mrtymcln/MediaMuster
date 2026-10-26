@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-24",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF FileMobId/MasterMobId owner and association rules; Clip Name and remaining OMF fields under review.",
+  "authorization": {
+    "source": "Direct human reply",
+    "statement": "OK, let's lock those FileMobId and MasterMobId rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Clip Name from OMF, and what should Bella read and keep?",
+    "scope": "Accepts the prior detailed OMF identity/ownership proposal and plain-language explanation. Begins Clip Name research. No runtime implementation, app cutover, Bin Filter change or final source-priority/header-open decision."
+  },
+  "agreedBellaRules": {
+    "scope": "Supported release-one Bento1/legacyOMF1; new selective parser, not runtime adaptation/cutover. No Bin Filter or additional header-open/source-priority decision.",
+    "fileOwner": "Read active class-qualified MediaData ID and match complete normalized identity to active file mob with supported physical descriptor. Read actual owner MOBJ:MobID; no first/longest/only-candidate guess absent positive physical match.",
+    "masterOwner": "Qualified active legacy master role (no physical descriptor, usage1/7), complete supported track/component/SourceID relationship to selected file; read own complete MOBJ:MobID. One unambiguously resolved distinct master or unavailable; no mixed metadata from unresolved candidates.",
+    "value": "Exact supported typed12or32byteID, valid bounds and known required metadata order. Shared approved source-aware normalization. TwelvebyteUID preserves all3words; organization42 known wrapper; unfamiliar organization preserved distinctly. Full32 representation preserves label/instance/material/tail with required4/2/2 field order conversion. No general8byte/partial/nativecompatibility equality.",
+    "index": "Catalogue UID and local objectref navigate membership; a shortened indexUID is not actual modern full identity. Follow recorded objectref; do not create false equivalence.",
+    "availability": "Usable file ID survives missing/ambiguous master. Bad required identity or ownership blanks affected OMF contribution while physical inventory and independent eligible facts remain. Equal repeated claims acceptable; contradictory required claims not firstwins. General OMF damage review later. Existing samepath/conflictingID assumption unchanged.",
+    "retention": "Compact owned binary identities plus necessary availability/relationship context. Existing std::array/QtEndian/QHash full equality approach; release TOC/index/link buffers. No permanent raw graph/header/evidencehistory. Nativeaudio umid not automatically OMFMobID; nativeaudio review later.",
+    "kelpieId": "Existing samefullpath+samefullFileMobId duplicate ignored; differentpath keepsuniqueKelpieId. Shared MasterMobId nevermergesrows; BinFilterunchanged."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-identities-2026-10-23.json",
+    "sha256": "81f922bbc9566f69559929c2d31f4614aae89478bab25856abd1f188533842b5"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/identities.md",
+    "plan": "Project Bella/README.md",
+    "versionTextApproval": "Project Bella/evidence/omf-versions-and-text-plan-2026-10-23.json"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "newBuildsOrTests": false,
+    "appCutover": false,
+    "performanceMeasured": false
+  }
+}

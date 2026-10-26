@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "Record the approved drop-frame semicolon clarification for Duration across every Bella metadata source.",
+  "status": "Approved separator correction; requirements only, no runtime implementation or new MXF field/source approval.",
+  "authorization": {
+    "source": "Direct human instruction in the current conversation",
+    "statement": "DF should format as per DF rules - semicolon separators."
+  },
+  "agreedFormat": {
+    "nonDropFrame": "HH:MM:SS:FF",
+    "dropFrame": "HH;MM;SS;FF",
+    "nonDropZero": "00:00:00:00",
+    "dropZero": "00;00;00;00",
+    "selection": "Use the already qualified numbering mode; this separator correction does not infer or change the DF flag."
+  },
+  "supersedes": "The earlier interpretation that Bella must use colons for both DF and NDF, including that assertion in existing Duration planning text and historical arithmetic illustrations. Preserve the numerical results and replace separators according to the qualified mode.",
+  "unchanged": [
+    "Exact integer/fraction arithmetic and audio precision.",
+    "Recorded qualified DF rules, NDF for genuine applicable absence, blank for unusable required timing/numbering.",
+    "Known zero stays visible; unavailable stays blank; hours may exceed24.",
+    "MDB-first and the approved coherent database-unavailable MXF fallback; no extra Duration-only header opens.",
+    "Pending detailed MXF pair/clock/recovery proposals are not approved merely by correcting separators.",
+    "Fresh Bella implementation, OldScanner activation and Bin Filter boundaries remain unchanged."
+  ],
+  "primaryNotationReference": {
+    "url": "https://resources.avid.com/SupportFiles/attach/Media_Composer_Editing_Guide_2024.x.pdf",
+    "section": "Entering Additional Timecodes",
+    "meaning": "Avid illustrates DF with semicolons between all four fields, consistent with the current OldScanner convention the user endorsed."
+  },
+  "researchBeforeClarification": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-duration-2026-10-22.json",
+    "sha256": "293c14a9b48b6eb24dd5872ef476a3c8eea6ece67411cc6dfdcbbed7b878709f"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "numericalResultsChanged": false,
+    "rawReceiptsChanged": false,
+    "productionTestsRun": false
+  }
+}

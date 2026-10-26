@@ -1,0 +1,1456 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "MXF Bit Depth: own class-specific scalars/layout, coded precision, native-supported RGBA ASCII-zero padding, current-reader limitations and compact numeric Bella proposal.",
+  "request": "OK, let's lock those audio Sample Rate rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Bit Depth from MXF, and what should Bella read and keep?",
+  "status": "Focused MXF Bit Depth source, complete common-width, known-padding and unavailable rules approved on22October2026; unimplemented. Global verified-rule reuse/numeric depth/late labels remain agreed. Source priorities and uncommon fixed-point labels remain separate. Approval supersedes earlier proposal-status wording below without changing research findings.",
+  "precedingAudioRateApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-audio-sample-rate-plan-2026-10-22.json",
+    "sha256": "3248ce8fa5deb1ea4f35a150c1bd33b4b3c28abcbb47debe685f51a3e4ba470c",
+    "bytes": 3856
+  },
+  "rawReceipts": [
+    {
+      "path": "/private/tmp/bella-mxf-bitdepth-mc-20261022/findings.json",
+      "sha256": "d3bdaf7d9d6c9e404adba61308743aff6588ee2daaed3598dbf352080dd5d2c6",
+      "bytes": 24619
+    },
+    {
+      "path": "/private/tmp/bella-mxf-bitdepth-mdvx-20261022/findings.json",
+      "sha256": "25679544c7287204905c05eeceaeb063ac379603cb61fdf7d106556f860204f5",
+      "bytes": 5869
+    },
+    {
+      "path": "/private/tmp/bella-mxf-bitdepth-current-20261022.json",
+      "sha256": "4ec82751264b8c14dcd8aa68e37547b067e7e29264afa085b9dc8aaa9ab2eb3e",
+      "bytes": 50053
+    }
+  ],
+  "mediaComposer": {
+    "date": "2026-10-22",
+    "timezone": "Australia/Sydney",
+    "purpose": "Bounded installed Media Composer own MXF descriptor Bit Depth import/publication audit, separating audio quantization bits, picture component width, RGBA roles/widths, total pixel size and numeric representation.",
+    "method": "Read-only static arm64 named disassembly; previously connected ordinary MXF scanner to own physical SourceMob EssenceDescriptor/CreateDescriptor/ConvertDescriptorFromAAF; typed toolkit vtables and numeric/string constants checked. No app/private API/media execution.",
+    "findings": [
+      {
+        "topic": "Audio quantization bits are imported independently of frequency and coding",
+        "anchors": [
+          "AudioMediaDesc::GetAAFProperties 0x362aac",
+          "typed sound GetQuantizationBits slot 0x90 call 0x362bb8",
+          "SetBitsPerSample slot 0x388 call 0x362bf8",
+          "CAAFSoundDescriptor::GetQuantizationBits 0x5ab40",
+          "AudioMediaDesc::SetBitsPerSample 0x360a84",
+          "own sound coding import 0x362d58/0x362d88"
+        ],
+        "evidence": "The own descriptor sound importer obtains unsigned 32-bit QuantizationBits through its typed interface, then calls the descriptor BitsPerSample setter. It separately imports AudioSamplingRate and sound essence coding. QuantizationBits is an audio bit count, not the picture special-code enumeration or a combined width multiplied by channels. The engine setter stores an unsigned halfword at this+0x27e and a nonzero-known flag at +0x280; that native internal 16-bit limit is not the wire type and need not be copied into Bella."
+      },
+      {
+        "topic": "Audio metadata publishes quantization bits separately",
+        "anchors": [
+          "AudioMediaDesc::FillMetadataSet getter slot 0x338 call 0x363718",
+          "AMAFI::Metadata::QuantizationBits at 0x14ef9f8 set 0x363730",
+          "AudioMediaDesc::GetBitsPerSample 0x360a30",
+          "PCM GetSampleFormat 0x3e9948"
+        ],
+        "evidence": "The audio publisher obtains BitsPerSample from the same descriptor and emits QuantizationBits as numeric metadata. PCM GetSampleFormat separately branches on internal AudioCodingFormat and, for some cases, width/known flags. A numeric 32-bit audio width does not alone establish integer versus floating-point representation. The native coding converter and sample-format branch are recorded as context; this audit does not claim a complete codec dictionary or universal GUI label."
+      },
+      {
+        "topic": "Picture CDCI imports and publishes raw component width",
+        "anchors": [
+          "CDCIDescriptor::GetAAFProperties 0x342cb4",
+          "typed GetComponentWidth slot 0x28 call 0x342d50",
+          "raw component state this+0x3f8",
+          "DID base property import 0x342d98",
+          "CDCIDescriptor::FillMetadataSet raw component value 0x342674",
+          "AMAFI::Metadata::ComponentDepth at 0x14ef718 set 0x34268c"
+        ],
+        "evidence": "The own CDCI descriptor importer reads ComponentWidth through its typed toolkit interface and retains the raw 32-bit component code. Native AAF interface spelling is ComponentWidth; corresponding MXF metadata publication is ComponentDepth. This describes one picture component, not packed bits per pixel, bitrate, sampled raster size or a master property. The toolkit getter uses an int output; this alone does not redefine the MXF wire property declared type. MPEG-family inheritance is established in the preceding descriptor audits, not a newly invented per-codec field guess."
+      },
+      {
+        "topic": "Alpha depth is a separate picture fact",
+        "anchors": [
+          "CDCI additional interface getter call 0x3431b8",
+          "separate stored state this+0x404 at 0x3431c4",
+          "CDCI FillMetadataSet reads +0x404 at 0x342768",
+          "AMAFI::Metadata::AlphaSampleDepth at 0x14ef7f8 set 0x342780"
+        ],
+        "evidence": "Native CDCI metadata publishes AlphaSampleDepth independently from ComponentDepth. Do not let an alpha precision override the colour component width. RGBA component role A is likewise a distinct recorded role; a physical alpha-only RGBA file can describe its own alpha precision without proving RGB precision of a separate colour file. The complete native UI policy for mixed/alpha-only layouts is not traced."
+      },
+      {
+        "topic": "RGBA typed layout becomes separate native arrays, not MDB wire arrays",
+        "anchors": [
+          "RGBADescriptor::GetAAFProperties 0x3e508c",
+          "typed CountPixelLayoutElements call 0x3e5118",
+          "typed GetPixelLayout call 0x3e5174",
+          "aafGetLayoutArray 0x3e4bc0 call 0x3e5194",
+          "SetPixelLayout call 0x3e51a8",
+          "width-byte extraction 0x3e51c8",
+          "SetPixelStructure call 0x3e51e4"
+        ],
+        "evidence": "The own typed RGBA importer obtains component records and separates component codes from their paired size bytes into native layout/structure arrays. Its aligned toolkit records stride eight bytes with the size at offset four; that is an in-memory ABI layout after typed decoding, not raw MXF wire layout. Native aafGetLayoutArray explicitly handles roles including R/G/B/A, F, P, null and further code values, and reports unsupported codes. The MDB parallel arrays and raw MXF interleaved layout must not be conflated."
+      },
+      {
+        "topic": "Toolkit supports null and ASCII-zero unused RGBA components; counting is not a simple terminator walk",
+        "anchors": [
+          "ImplAAFRGBADescriptor::CountPixelLayoutElements 0x13c95c",
+          "all-eight code checks 0x13c98c..0x13ca38",
+          "ImplAAFRGBADescriptor::GetPixelLayout 0x13ca54",
+          "prefix record copy 0x13cab4..0x13cac4",
+          "ImplAAFRGBADescriptor::SetPixelLayout 0x13c834",
+          "unused records assigned code0x30/size0 at 0x13c8bc..0x13c914",
+          "impl vtable offsets0x380/0x388 resolve to count/get functions"
+        ],
+        "evidence": "The toolkit count method examines all eight aligned component code fields, counting values other than numeric0 and ASCII zero(0x30). It does not stop at the first null and does not validate trailing widths in this method. GetPixelLayout copies the first requested count records, rather than compacting all meaningful records. SetPixelLayout explicitly fills unused records with component code0x30 and width0. Thus native itself supports ASCII-zero/zero padding; rejecting every nonzero byte after a null component can lose compatible data.",
+        "specificExample": {
+          "hexSuppliedByParent": "41080000300030003000300030003000",
+          "interpretation": "A8, then null/0, then six ASCII-zero/0 pairs. Applying the statically traced code-count rule gives1 and the selected engine receives first A8 only. This is a manual inference from supplied bytes plus native instructions, not executed MC or an independently re-read media sample."
+        },
+        "bellaBoundary": "Bella stopping at a valid0/0 terminator within a complete bounded16-byte PixelLayout is a separate simpler compatibility design, not an identical copy of the toolkit all-eight counting method. Known ASCII-zero/0 unused padding is directly corroborated by the native setter. Arbitrary meaningful data, invalid widths or holes elsewhere are not universally validated or safely recovered by this native trace."
+      },
+      {
+        "topic": "Native RGBA publisher rebuilds interleaved component-size bytes",
+        "anchors": [
+          "RGBADescriptor::FillMetadataSet 0x3e73dc",
+          "BuildLayout call 0x3e74f8",
+          "BuildLayout helper 0x3e7940",
+          "pad/truncate to16 bytes 0x3e7534..0x3e7564",
+          "AMAFI::Metadata::PixelLayout at 0x14f0400 set 0x3e75bc"
+        ],
+        "evidence": "The publisher takes the separate native code and size arrays, builds alternating one-byte code and one-byte size values, and enforces a 16-byte metadata layout. This independently connects representation publication, but does not make native in-memory structs identical to the wire or establish that a per-component depth column should sum every component."
+      },
+      {
+        "topic": "Special picture codes and codec context must remain qualified",
+        "anchors": [
+          "DIDDescriptor::IsComponentFloat 0x37f678",
+          "CDCIDescriptor::GetBitsPerPixel 0x341adc",
+          "raw253/254/255 handling 0x341b28..0x341b50/0x341be0",
+          "CDCIDescriptor::GetComponentFormat 0x3419ec",
+          "RGBA CalcPixelWidthComponentFormat 0x3e2e84"
+        ],
+        "evidence": "The existing verified native generic pixel-width helper maps picture component codes 253,254,255 to storage widths16,32,64 before pixel/subsampling arithmetic; a separate component-format getter first consults dynamic codec context. Native RGBA calculation also uses component-format lookup and repair/default paths. Neither helper is a universal Bit Depth GUI decoder. The separately verified Avid DNxUncompressed RDD50 context can give raw254 a16-bit S2.14 meaning rather than generic32-bit float, so preserve complete known coding UL plus raw code where required. Never emit 254-bit from the sentinel, apply picture sentinels to audio QuantizationBits, infer float from audio32 alone, or silently copy native RGB8 repair defaults."
+      },
+      {
+        "topic": "Failure behavior does not define a universal native availability contract",
+        "anchors": [
+          "audio zeroed QuantizationBits temp 0x362ba4",
+          "audio HRESULT/assertion branch 0x362bbc..0x362be4",
+          "CDCI GetComponentWidth result not checked immediately after 0x342d50",
+          "RGBA count/get result consumption 0x3e5118..0x3e5174",
+          "RGBA CalcPixelWidthComponentFormat fallback/repair paths in prior receipt"
+        ],
+        "evidence": "The native audio getter failure enters assertion/debug machinery and can continue with initialized output; selected CDCI and RGBA getter calls have their own result/default handling rather than one clean blank policy. Zero or an unrecognized code is not thereby a valid display depth. Bella missing/damaged/unsupported-to-unavailable rules are explicit design decisions; no uniform malformed guarantee or native blank GUI parity is proved."
+      }
+    ],
+    "settledBellaBoundary": "The user approved verified interpretation rules and useful tests re-expressed in small fresh numeric helpers with necessary format context and late labels; the newly detailed MXF source/layout/coverage rules remain proposed until separately approved. Existing Compression behavior and source/header-opening policy remain separate; no new read trigger or architecture/runtime change is introduced.",
+    "limits": [
+      "No complete Media Composer Bit Depth table-cell source, mixed-component reduction/formatting/default policy or GUI parity is established.",
+      "Native typed import and own descriptor publication are connected for inspected Audio/CDCI/RGBA routes. Typed aligned ABI structs, legacy MDB arrays and raw MXF bytes are distinct representations.",
+      "No exhaustive codec, integer/float/fixed-point audio label dictionary, malformed property, palette, mixed RGBA width or unsupported layout guarantee is established.",
+      "Generic native 253/254/255 pixel-storage helpers and codec-specific DNx contexts must not be promoted to unqualified global display mappings.",
+      "No media read/write, app/private API execution, repository edit, production test or benchmark was performed."
+    ],
+    "binaries": [
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libcom-api.dylib",
+        "sha256": "9bef7c474afa461af413cde63dcbc0b048aeabe2a685bc3fd487cb4647447728"
+      }
+    ]
+  },
+  "mdvx": {
+    "date": "2026-10-22",
+    "method": "Focused read-only installed MDVx arm64 trace, bounded function extraction from matching22Oct disassembly. No app/private API/UI or probe execution, media/database or repository writes.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "size": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+    },
+    "amiAudioDepth": {
+      "owner": "Selected own file SourcePackage.Descriptor, established by ECD.LinkedPackageUID/fullPackageUID ownership path.",
+      "classGuard": "ami checks GenericPicture first; whenfalse checks GenericSoundEssenceDescriptor subclass at0x1000108a8..0x1000108bc. No separateWave/AES3depthbranch; registeredGenericSounddescendantsfollowthisbranch.",
+      "field": "Optional GenericSoundEssenceDescriptor.QuantizationBits, mxf_have_item0x1000108ec..0x1000108fc; mxf_get_uint32_item0x100010900..0x100010914, storesinfo.quantizationBits at+0x114.",
+      "type": "Unsigned32, exactly4bytes, bigendian decode. mxf_get_uint32_item0x10004911c checksitemlength4, copies/byteswapsword.",
+      "interpretation": "Retainsnumberwithoutdepthcode translation, trimming, rounding ornumericformatlabelgeneration. Nofloat-vs-integer audio label semantics established fromthisroute.",
+      "missing": "Info zero-initialized; missingproperty leaves0, no otherdepthfallback. Present0readsstill0; readerdoesnotdistinguishmissing/zerohere.",
+      "damaged": "Wrongwidth/missinggetteritem/readfailure returnsfalse andami aborts via0x100010914->0x1000113b8. Noexplicitbitdepthvaluerangevalidationinthisbranch; rightwidthaloneisnotsemanticvalidity.",
+      "diagnostic": "ami_print_info0x100012ab8..0x100012ac4 prints Quantization bits = %d frominfo+0x114. Thisislinkeddiagnosticoutput, notordinaryappvalue."
+    },
+    "amiVideoDepth": {
+      "result": "No CDCIEssenceDescriptor.ComponentDepth, RGBAEssenceDescriptor.PixelLayout orotherdedicatedvideobitdepth read identified inami_read_info.",
+      "limits": "Linkeddata model contains ComponentDepth andPixelLayout keys, butami onlyreadspictureaspect/layout/stored/displaygeometry/ResolutionID/codinglabelanddoesnotmakevideodepthfact. NoRGBAcomponentcode/specialdepthinterpretationprovidedbythisroute.",
+      "notUniversal": "ThisdoesnotproveeverylinkedlibMXFfeatureorotherMDVxreader lacksdepthcapability."
+    },
+    "ordinaryMxfProjection": {
+      "wrapper": "MDVxMXF.openFile/addInfoToItem produceonlyclipname/project/fileUID/matUID, thenfreeamiinfo; no bitdepthkey/setDB_bits call. OrdinaryMXFscanthereforedoesnotretainlibraryQuantizationBits.",
+      "item": "DB_bits0x10003161c returnsitem+0x6c; setDB_bits0x100031624 writesit. No scalarretentionfromMXFwrapper.",
+      "table": "BitsCellID0x100050958..0x1000509a4 readsDB_bits:0->empty, otherwise unsignedformat%u bit. Stringvaluepath0x100051200..0x10005124c same. Nofloat/video-specific labelinthisformattingpath.",
+      "bareFallback": "Withnoothermetadataenrichment,MXFwrapperdoesnotfillDB_bitsandzero-initializeditemdepthhasnostatictablevalue. NoobservedUIclaim."
+    },
+    "plainSummary": "MDVXlibraryreadsaudioQuantizationBitsfromownsounddescriptorasraw32-bitnumberbutdoesnotreadvideobitdepthinami. OrdinaryMXFrowprojectionkeepsneither. ItsBitscolumndisplayspreviouslystoredDB_bitswithsimplebitlabel.",
+    "bellaScope": "NewBitDepthmappingremainsrequirementsdecision. ThisauditdoesnotchangeapprovedaudioSampleRate/FrameRate/Durationrules orheader-openingpriorities.",
+    "limits": [
+      "Staticinstalledbinaryonly;noobservedruntime100%behaviororbenchmark.",
+      "Nocodechanges.",
+      "NoRGBAcomponentcodeinterpretationorPCMfloatrepresentationestablishedbyMDVxMXFroute.",
+      "Donotconfuseavailablelibmodelkeyswithordinaryfieldprojection."
+    ]
+  },
+  "currentMediaMuster": {
+    "sourceInputs": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+        "sha256": "c8c68e78db5f3efaa62235f55624c5478e89a0adc37581a922af050f931cad55",
+        "bytes": 63597
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+        "sha256": "379a31643b62b945e3e1ed83245e5f3a7be8df4ebeec73aea31327c1d915b374",
+        "bytes": 23401
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+        "sha256": "6d67b2300f380cd63a50547595154ee27d8ab69f36b6d87e83e81fd3a33ff75c",
+        "bytes": 54490
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+        "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce",
+        "bytes": 10189
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+        "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6",
+        "bytes": 10816
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+        "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e",
+        "bytes": 36110
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+        "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935",
+        "bytes": 5202
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaduration.h",
+        "sha256": "c59928f0d6f4ac92c93ad7a258bbcaf60516da2fd9fed616293b63bb839fafb6",
+        "bytes": 3071
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+        "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3",
+        "bytes": 12788
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+        "sha256": "c85f1d11bcb15eddcfbba7c9cbbc57c8fdafdb8cac8c4af6b575d62c1575c746",
+        "bytes": 25170
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+        "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56",
+        "bytes": 12214
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafilterproxy.cpp",
+        "sha256": "2c10657c82a6d3456815966664c62ab0b77a29d02a6e514fd865510fe7349e0c",
+        "bytes": 11470
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp",
+        "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442",
+        "bytes": 3609
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+        "sha256": "f9f633bc0022e5f681b210d58a95cf472b04db0b6189ead78f9d22b7e8618a22",
+        "bytes": 60904
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp",
+        "sha256": "111291a8f3b4b737852cdf12e9801a7397cc0cf9e2550e8292247ab87831a72c",
+        "bytes": 62711
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediacsv.cpp",
+        "sha256": "4f14378fcd87ad7acf4b903de30c7d93e208a26c679068bff4c5dc5a70b582b8",
+        "bytes": 21349
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-18-bella-mdb/bit-depth.md",
+        "sha256": "f72e140480215ecf4112d1e8476cb4361cee7cc16ce0763e8bd3d2abb0f40dc4",
+        "bytes": 14601
+      }
+    ],
+    "sourceFindings": [
+      {
+        "topic": "Own sources and exact wire",
+        "detail": "Current essence-qualified physical SourcePackage owns its descriptor. Audio depth uses GenericSoundEssenceDescriptor.QuantizationBits; CDCI/MPEG uses inherited CDCIEssenceDescriptor.ComponentDepth; both are complete unsigned big-endian32 properties. RGBA uses16-byte PixelLayout, eight fixed interleaved one-byte Code/Depth pairs. Legacy MDB parallel PixelLayout/PixelStructure arrays are a different representation. No UTF8/MacRoman decoding or summed bits-per-pixel is needed for per-component depth.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              240,
+              283
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              510,
+              553
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              811,
+              826
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": [
+              167,
+              168
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": [
+              219,
+              219
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": [
+              228,
+              228
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": [
+              478,
+              484
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": [
+              503,
+              511
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+            "lines": [
+              282,
+              367
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Current numeric format lookup",
+        "detail": "numericFormat emits strings early. With exact standard DNxUncompressed coding060e2b340401010d0401020203070100,253=>16-bit Half float,254=>32-bit Float,8/10/12/16=>same-width Integer,other codes unavailable. Exact fixed variant...03070200 accepts254=>16-bit S2.14,10=>16-bit10.6,12=>16-bit12.4;other codes unavailable. These known-label branches precede generic handling. Otherwise generic picture253/254/255=>16-half/32-float/64-float,ordinary1..32=>same-width Integer; audio1..64=>same-width depth without inferring representation merely from QuantizationBits. Audio253/254/255 are not picture float enumerations.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              161,
+              200
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Separate representation and alpha",
+        "detail": "Current projector records raw ComponentDepth/QuantizationBits observation then derived BitDepth/SampleFormat strings. A complete Wave/AES3 descriptor with absent sound coding establishes PCM Integer through a separate codec branch. A missing depth does not turn into24-bit or a codec-advertised maximum. CDCIAlphaSampleDepth separately records alpha presence for nonnegative decoded values; it is not substituted for the colour depth. RGBA A/a marks alpha presence separately, including alpha-only media. Necessary representation affects existing Compression naming but no new visible format/alpha column is required.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              811,
+              845
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              881,
+              899
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              1027,
+              1029
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "RGBA current validation and mixed widths",
+        "detail": "Current RGBA loop requires eight decoded pairs, recognized codes, positive depth for each nonzero code and zero depth for zero code. Code0 starts termination; any later nonzero code/depth rejects the whole derived RGBA projection. F is ignored for colour/alpha precision. Palette P rejects generic depth projection rather than reporting index width. Interpretable common widths collapse to one N-bit string; mixed interpreted widths retain per-component strings rather than blank. That is current behavior, not Bella adopting mixed strings.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              850,
+              918
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "RGBA partial interpretation source limit",
+        "detail": "A recognized positive-depth component increments activeComponents, but an unsupported numericFormat result is simply omitted from depth/format lists; other interpreted components can still produce a derived label. Thus structural completeness alone does not guarantee every meaningful component was interpreted. This is a static potential partial-depth claim, not an observed erroneous result in the sampledfiles. Bella proposed commonwidth handling should require every relevant component usable before agreement.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              875,
+              918
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Unusable values and associations",
+        "detail": "unique rejects unreadable/invalid or conflicting repeated values. Bad bounds/types and unusable ownership cannot become chosen depth. Unsupported scalar codes retain raw ComponentDepth but no interpreted BitDepth; coverage distinguishes unsupported interpretation from actual absence. Multiple owned descriptor child observations may conflict at equal priority; current resolver blanks incompatible selected labels. Retain physical row and independently valid fields.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              24,
+              36
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              784,
+              787
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              811,
+              826
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+            "lines": [
+              594,
+              650
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": [
+              1213,
+              1224
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Projection, row, display and sort",
+        "detail": "Current numericFormat produces depth and representation QStrings in the projector; evidence retains raw coded numeric facts and format context alongside derived strings. Adapter stores selected BitDepth QString; numeric variants are converted to N-bit there. MediaFile row keeps QString bitDepth. Table/CSV reuse it. Sort extracts number only from a simple positive N-bit label, then text tiebreak; mixed component strings sort in other-label group. Bella already chose numericdepth+neededformat and late labels; copying current value graphs/string storage is unnecessary.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              161,
+              200
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              811,
+              826
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+            "lines": [
+              47,
+              50
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+            "lines": [
+              52,
+              52
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+            "lines": [
+              240,
+              241
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp",
+            "lines": [
+              60,
+              60
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediafilterproxy.cpp",
+            "lines": [
+              65,
+              75
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediafilterproxy.cpp",
+            "lines": [
+              322,
+              328
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Current policy is not Bella final priority",
+        "detail": "Current global preference is header BitDepth before MDB, and missing BitDepth can schedule a header read. Bella full BitDepth source/read priorities remain deferred. Already approved FrameRate-specific source rule must not be silently copied here; interpretation/source capability can be agreed separately from extra-I/O scheduling.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+            "lines": [
+              108,
+              110
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+            "lines": [
+              141,
+              143
+            ]
+          }
+        ]
+      }
+    ],
+    "plainSummary": "Own sound QuantizationBits, CDCI ComponentDepth and RGBA PixelLayout feed existing format-aware interpretation. Scalar/known special-code rules are useful; labels are generated early and final row stores string. Current RGBA rejects nonzero post-null padding, emits mixed strings, and can omit an unsupported component while publishing supported portions. These are source-derived findings, not observed app/UI results.",
+    "reviewedTestsNotRun": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+        "lines": [
+          1015,
+          1037
+        ],
+        "fact": "Exactstandard/fixedlabel254differentwidth/formats; cleanzero-paddedalpha-onlyA16. Doesnotcoveractualnonzerotail."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+        "lines": [
+          1213,
+          1224
+        ],
+        "fact": "Unsupportedcode252 retainsrawinputswithoutclaimingpropertyabsence."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+        "lines": [
+          755,
+          775
+        ],
+        "fact": "Wave24bit numericdepthcontext and separatedaudiofrequency/durationunits."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp",
+        "lines": [
+          333,
+          355
+        ],
+        "fact": "Depthnumber vsotherlabel sorting; doesnotprovepercomponentnumericretention."
+      }
+    ],
+    "earlierMdbDecisionBoundary": [
+      "Alreadyapproved:verifiedrules/usefultests into smallnewhelpers,numericdepth,necessaryrepresentation,codedsourcecontext and late display. Compressionbehaviorpreserved.",
+      "MDBRGBAusesseparateparallelarrays; modernMXFhasinterleavedpairs. Reusesmallinterpretationhelperaftercorrectformatreader,notonewiredecoderforboth.",
+      "PriorMDBreviewleftmixedRGBA,palette/unknownandfixed10/12 labelchoicesascoverageproposals. ThisMXFresearchmustnotclaimthosealreadyapproved orsilentlybroadenCompressionbehavior.",
+      "Genericpicture253/254/255semanticsareapplicableMXFpropertymeanings; exactRDD50codingvariantmayoverridewithinitsownallowedtable. Keeprawcodedvalueandinterpretedwidth/representationdistinct."
+    ]
+  },
+  "actualEvidence": {
+    "date": "2026-10-22",
+    "scope": "13existingphysicalfiles:10cachedrawdepthfacts,1freshrepositorysamehashmetadata-prefix(DNxU),2freshknownactualinitialmetadataonly(RGBAand25pcontrol). Two additional existing interlaced repository controls reread onlywithinmetadatafornewdepthfacts. No essence or wholemediahash.",
+    "inputs": [
+      {
+        "path": "/private/tmp/bella-mxf-duration-current-20261022/observations.json",
+        "sha256": "b581d7793cc56ddb5098b74d24a6bb3c4db675eee4be2c1dcdedef82283b624c"
+      },
+      {
+        "path": "/private/tmp/bella-mxf-kind-current-20261022/observations.json",
+        "sha256": "4e0c796a6d4371b4a7db0093dde53503a91cc4991ebe7bd49ea1d163bf144d3b"
+      },
+      {
+        "path": "/private/tmp/bella-mxf-headers-20261021/inventory.json",
+        "sha256": "0ab1e522dd3d7eb15f3ee7eee7c01004f4fa42674610a9caabcf677db092843d"
+      },
+      {
+        "path": "/private/tmp/bella-mxf-ids-current-20261021/probe.py",
+        "sha256": "be835507f34f9014b4f04209047691af861541c128c24b0b25f4509ae0a3d50b"
+      }
+    ],
+    "modelInputs": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-03-format-audit/evidence/mxf_baseline_data_model.h",
+        "sha256": "cd1a1b26a680da57a90d35992266e9840b9799fc6b9a22e65f3b9c4220e276b1"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-03-format-audit/evidence/mxf_extensions_data_model.h",
+        "sha256": "1cd3304ae1560ee1663a38daa9aad849c3849fb3ce0162409a0a0e27298ad7e3"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/Project Canon/evidence/fresh-mxf-avid-data-model-2026-10-04.h",
+        "sha256": "e653e27e6cdbbef3baf18799a80803cdfe700016f76e40fbd08a4271f0d49927"
+      }
+    ],
+    "summary": {
+      "physicalSampleCount": 13,
+      "cachedDepthFacts": 10,
+      "freshRepositoryPrefixForOriginalSample": 1,
+      "freshAttachedDriveMetadataForOriginalSample": 2,
+      "freshAdditionalRepositoryControlMetadata": 2,
+      "rawDepthCounts": {
+        "AudioQuantizationBits24": 4,
+        "CDCIComponentDepthCode8": 2,
+        "CDCIComponentDepthCode10": 5,
+        "AudioQuantizationBits16": 1,
+        "RGBAEssenceDescriptor": 1
+      }
+    },
+    "original13": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1001.WAVA01.D8875D202DA97BA.mxf",
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1001.WAVA01.D8875D202DA97BA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "f8475c6079b53ff1aefaa33c7306a48538c43ffba8c3e3b189da14617d3cef44",
+        "fileNormalizedHex": "060a2b340101010501010f10130000007ba92d202585059152bc34363bcdaf64",
+        "readThisFollowup": false,
+        "method": "Cached21Octoberrawdepthfield, joinedto22Octoberown-descriptor/fullID/samehashfacts. Cachedselectedpropertyhasdescriptoroffsetbutnoindividualvaluerange.",
+        "descriptorOffset": 122972,
+        "descriptorClass": "WaveAudioDescriptor",
+        "depthFields": [
+          {
+            "property": "GenericSoundEssenceDescriptor.QuantizationBits",
+            "type": "MXF_UINT32_TYPE",
+            "hex": "00000018",
+            "number": 24
+          }
+        ],
+        "pictureCoding": [],
+        "soundCoding": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/A001_C001_V01.D7EB5BC5323BV.mxf",
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/A001_C001_V01.D7EB5BC5323BV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "7bf7822774ef479d0425f2b1756ef96242cfc40e68b5aebe2c83b6d21ead4770",
+        "fileNormalizedHex": "060a2b340101010101010f00130000003b32c55b39229202060e2b347f7f2a80",
+        "readThisFollowup": false,
+        "method": "Cached21Octoberrawdepthfield, joinedto22Octoberown-descriptor/fullID/samehashfacts. Cachedselectedpropertyhasdescriptoroffsetbutnoindividualvaluerange.",
+        "descriptorOffset": 143987,
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "depthFields": [
+          {
+            "property": "CDCIEssenceDescriptor.ComponentDepth",
+            "type": "MXF_UINT32_TYPE",
+            "hex": "00000008",
+            "number": 8
+          }
+        ],
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010a0401020271130000",
+            "range": [
+              144402,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "soundCoding": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/5511410TA01.6A041816BE45ECA.mxf",
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/5511410TA01.6A041816BE45ECA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "050a663a4f9d5a77abfea1df9581b2943205234cb7277e95e3aebded19dbf032",
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ec45be167311069643cb7c57583610fa",
+        "readThisFollowup": false,
+        "method": "Cached21Octoberrawdepthfield, joinedto22Octoberown-descriptor/fullID/samehashfacts. Cachedselectedpropertyhasdescriptoroffsetbutnoindividualvaluerange.",
+        "descriptorOffset": 135501,
+        "descriptorClass": "WaveAudioDescriptor",
+        "depthFields": [
+          {
+            "property": "GenericSoundEssenceDescriptor.QuantizationBits",
+            "type": "MXF_UINT32_TYPE",
+            "hex": "00000018",
+            "number": 24
+          }
+        ],
+        "pictureCoding": [],
+        "soundCoding": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041581_152C6152C6FCEV.mxf",
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041581_152C6152C6FCEV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "41d6454ebd62894de5c876116d8da15f95663bcbc4753729ef14341937360244",
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ce6f2c1573110696ab807c57583610fa",
+        "readThisFollowup": false,
+        "method": "Cached21Octoberrawdepthfield, joinedto22Octoberown-descriptor/fullID/samehashfacts. Cachedselectedpropertyhasdescriptoroffsetbutnoindividualvaluerange.",
+        "descriptorOffset": 126733,
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "depthFields": [
+          {
+            "property": "CDCIEssenceDescriptor.ComponentDepth",
+            "type": "MXF_UINT32_TYPE",
+            "hex": "0000000a",
+            "number": 10
+          }
+        ],
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010a0401020271010000",
+            "range": [
+              127148,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "soundCoding": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7280108SMA01.6A04F087D5405A.mxf",
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7280108SMA01.6A04F087D5405A.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "7250a5396f79cd9b932e1af16fd33402f436ce0f4f11de7f51d80a0efc8fac70",
+        "fileNormalizedHex": "060a2b340101010501010f101300000005547d087311069613b27c57583610fa",
+        "readThisFollowup": false,
+        "method": "Cached21Octoberrawdepthfield, joinedto22Octoberown-descriptor/fullID/samehashfacts. Cachedselectedpropertyhasdescriptoroffsetbutnoindividualvaluerange.",
+        "descriptorOffset": 126951,
+        "descriptorClass": "WaveAudioDescriptor",
+        "depthFields": [
+          {
+            "property": "GenericSoundEssenceDescriptor.QuantizationBits",
+            "type": "MXF_UINT32_TYPE",
+            "hex": "00000018",
+            "number": 24
+          }
+        ],
+        "pictureCoding": [],
+        "soundCoding": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/1730_8646_submastede88816cv.mxf",
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/1730_8646_submastede88816cv.mxf",
+        "headerRange": [
+          256,
+          524064
+        ],
+        "headerSha256": "ae8cf0aff0369ca65ed2f11e9ab0873c57eae9292228d9123455ae748b757711",
+        "fileNormalizedHex": "060a2b340101010501010f10130000006c8188de27100696dc0d30138b72a179",
+        "readThisFollowup": false,
+        "method": "Cached21Octoberrawdepthfield, joinedto22Octoberown-descriptor/fullID/samehashfacts. Cachedselectedpropertyhasdescriptoroffsetbutnoindividualvaluerange.",
+        "descriptorOffset": 120992,
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "depthFields": [
+          {
+            "property": "CDCIEssenceDescriptor.ComponentDepth",
+            "type": "MXF_UINT32_TYPE",
+            "hex": "0000000a",
+            "number": 10
+          }
+        ],
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010a0401020271010000",
+            "range": [
+              121407,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "soundCoding": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7293007LMA01.6A0500C57EA1CA.mxf",
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7293007LMA01.6A0500C57EA1CA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "3fd75b378276e469f6799026f3e68db865f2e5e1317666c721dd3e50db540a52",
+        "fileNormalizedHex": "060a2b340101010501010f10130000001cea570c73110696a5e97c57583610fa",
+        "readThisFollowup": false,
+        "method": "Cached21Octoberrawdepthfield, joinedto22Octoberown-descriptor/fullID/samehashfacts. Cachedselectedpropertyhasdescriptoroffsetbutnoindividualvaluerange.",
+        "descriptorOffset": 127394,
+        "descriptorClass": "WaveAudioDescriptor",
+        "depthFields": [
+          {
+            "property": "GenericSoundEssenceDescriptor.QuantizationBits",
+            "type": "MXF_UINT32_TYPE",
+            "hex": "00000018",
+            "number": 24
+          }
+        ],
+        "pictureCoding": [],
+        "soundCoding": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/V01.6A050275_B95B90B95B9CCV.mxf",
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/V01.6A050275_B95B90B95B9CCV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "2fdd3de7e4ad0db8c93ed7dad92be469eaf0424c61da09716802d21f0bab8499",
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ccb9950b7311069637c77c57583610fa",
+        "readThisFollowup": false,
+        "method": "Cached21Octoberrawdepthfield, joinedto22Octoberown-descriptor/fullID/samehashfacts. Cachedselectedpropertyhasdescriptoroffsetbutnoindividualvaluerange.",
+        "descriptorOffset": 126426,
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "depthFields": [
+          {
+            "property": "CDCIEssenceDescriptor.ComponentDepth",
+            "type": "MXF_UINT32_TYPE",
+            "hex": "0000000a",
+            "number": 10
+          }
+        ],
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010a0401020271010000",
+            "range": [
+              126821,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "soundCoding": []
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf",
+        "physicalPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "4e1ea26a6459f3e1d07e3c361986602f1c28e8a9d31d0de4ff7ef5ed80676b38",
+        "fileNormalizedHex": "060a2b340101010501010f10130000009a583c0a5512069048e346fc807fda72",
+        "readThisFollowup": false,
+        "method": "Cached21Octoberrawdepthfield, joinedto22Octoberown-descriptor/fullID/samehashfacts. Cachedselectedpropertyhasdescriptoroffsetbutnoindividualvaluerange.",
+        "descriptorOffset": 131287,
+        "descriptorClass": "WaveAudioDescriptor",
+        "depthFields": [
+          {
+            "property": "GenericSoundEssenceDescriptor.QuantizationBits",
+            "type": "MXF_UINT32_TYPE",
+            "hex": "00000010",
+            "number": 16
+          }
+        ],
+        "pictureCoding": [],
+        "soundCoding": []
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/Untitled Sequence.175B1728V.mxf",
+        "physicalPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/Untitled Sequence.175B1728V.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "0d324bb99c9183d04541c75b00944e5808410cee4d72eae603c322eaf6994a62",
+        "fileNormalizedHex": "060a2b340101010501010f101300000028175b1761120690badf46fc807fda72",
+        "readThisFollowup": false,
+        "method": "Cached21Octoberrawdepthfield, joinedto22Octoberown-descriptor/fullID/samehashfacts. Cachedselectedpropertyhasdescriptoroffsetbutnoindividualvaluerange.",
+        "descriptorOffset": 123673,
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "depthFields": [
+          {
+            "property": "CDCIEssenceDescriptor.ComponentDepth",
+            "type": "MXF_UINT32_TYPE",
+            "hex": "00000008",
+            "number": 8
+          }
+        ],
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010a0401020271030000",
+            "range": [
+              124088,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "soundCoding": []
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/V01.E69684C0_1C5401C5406FAV.mxf",
+        "physicalPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69684C0_1C5401C5406FAV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "61d42c7317b051b4233a1b7724c5bc66914af5d30498e0ed7fadd6b73e7ca27b",
+        "fileNormalizedHex": "060a2b340101010501010f1013000000fa06541c55120690f7b846fc807fda72",
+        "readThisFollowup": true,
+        "readLocation": "ExistingRepositoryMetadataPrefix",
+        "method": "Freshboundedinitialmetadataonly,priorhashandbefore/afterstatstabilityverified;ownidentity/descriptorrequalified.",
+        "descriptorOffset": 133290,
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "bitDepthData": [
+          {
+            "offset": 133290,
+            "className": "CDCIEssenceDescriptor",
+            "fields": {
+              "GenericSoundEssenceDescriptor.QuantizationBits": [],
+              "CDCIEssenceDescriptor.ComponentDepth": [
+                {
+                  "property": "CDCIEssenceDescriptor.ComponentDepth",
+                  "type": "MXF_UINT32_TYPE",
+                  "range": [
+                    133508,
+                    4
+                  ],
+                  "hex": "0000000a",
+                  "value": 10
+                }
+              ],
+              "RGBAEssenceDescriptor.PixelLayout": [],
+              "RGBAEssenceDescriptor.PaletteLayout": [],
+              "CDCIEssenceDescriptor.AlphaSampleDepth": [],
+              "GenericSoundEssenceDescriptor.SoundEssenceCompression": [],
+              "GenericPictureEssenceDescriptor.PictureEssenceCoding": [
+                {
+                  "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+                  "type": "MXF_UL_TYPE",
+                  "range": [
+                    133661,
+                    16
+                  ],
+                  "hex": "060e2b340401010d0401020203070100",
+                  "value": "060e2b340401010d0401020203070100"
+                }
+              ],
+              "FileDescriptor.EssenceContainer": [
+                {
+                  "property": "FileDescriptor.EssenceContainer",
+                  "type": "MXF_UL_TYPE",
+                  "range": [
+                    133681,
+                    16
+                  ],
+                  "hex": "060e2b340401010d0d010301021e0200",
+                  "value": "060e2b340401010d0d010301021e0200"
+                }
+              ],
+              "GenericPictureEssenceDescriptor.FrameLayout": [
+                {
+                  "property": "GenericPictureEssenceDescriptor.FrameLayout",
+                  "type": "MXF_UINT8_TYPE",
+                  "range": [
+                    133576,
+                    1
+                  ],
+                  "hex": "03",
+                  "value": 3
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_78D9V02.22180610.586550.mxf",
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_78D9V02.22180610.586550.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "a38155c6b34a9f570b7648fb69751b822e9a1818da0ca5be7ec975d03d9098f5",
+        "fileNormalizedHex": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64",
+        "readThisFollowup": true,
+        "readLocation": "KnownAttachedDriveInitialMetadataRange",
+        "method": "Freshboundedinitialmetadataonly,priorhashandbefore/afterstatstabilityverified;ownidentity/descriptorrequalified.",
+        "descriptorOffset": 119014,
+        "descriptorClass": "RGBAEssenceDescriptor",
+        "bitDepthData": [
+          {
+            "offset": 119014,
+            "className": "RGBAEssenceDescriptor",
+            "fields": {
+              "GenericSoundEssenceDescriptor.QuantizationBits": [],
+              "CDCIEssenceDescriptor.ComponentDepth": [],
+              "RGBAEssenceDescriptor.PixelLayout": [
+                {
+                  "property": "RGBAEssenceDescriptor.PixelLayout",
+                  "type": "MXF_RGBALAYOUT_TYPE",
+                  "range": [
+                    119203,
+                    16
+                  ],
+                  "hex": "41080000300030003000300030003000",
+                  "value": [
+                    {
+                      "code": 65,
+                      "codeText": "A",
+                      "depth": 8
+                    },
+                    {
+                      "code": 0,
+                      "codeText": null,
+                      "depth": 0
+                    },
+                    {
+                      "code": 48,
+                      "codeText": "0",
+                      "depth": 0
+                    },
+                    {
+                      "code": 48,
+                      "codeText": "0",
+                      "depth": 0
+                    },
+                    {
+                      "code": 48,
+                      "codeText": "0",
+                      "depth": 0
+                    },
+                    {
+                      "code": 48,
+                      "codeText": "0",
+                      "depth": 0
+                    },
+                    {
+                      "code": 48,
+                      "codeText": "0",
+                      "depth": 0
+                    },
+                    {
+                      "code": 48,
+                      "codeText": "0",
+                      "depth": 0
+                    }
+                  ]
+                }
+              ],
+              "RGBAEssenceDescriptor.PaletteLayout": [],
+              "CDCIEssenceDescriptor.AlphaSampleDepth": [],
+              "GenericSoundEssenceDescriptor.SoundEssenceCompression": [],
+              "GenericPictureEssenceDescriptor.PictureEssenceCoding": [],
+              "FileDescriptor.EssenceContainer": [
+                {
+                  "property": "FileDescriptor.EssenceContainer",
+                  "type": "MXF_UL_TYPE",
+                  "range": [
+                    119408,
+                    16
+                  ],
+                  "hex": "060e2b34010101ff4b464141000d4d4f",
+                  "value": "060e2b34010101ff4b464141000d4d4f"
+                }
+              ],
+              "GenericPictureEssenceDescriptor.FrameLayout": [
+                {
+                  "property": "GenericPictureEssenceDescriptor.FrameLayout",
+                  "type": "MXF_UINT8_TYPE",
+                  "range": [
+                    119323,
+                    1
+                  ],
+                  "hex": "00",
+                  "value": 0
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041582_152D2152D2556V.mxf",
+        "physicalPath": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041582_152D2152D2556V.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "f0ce781201559fa7494cb139a75b149b7a94fe0d43281428073afed0f8ca7685",
+        "fileNormalizedHex": "060a2b340101010501010f101300000056252d15731106965e367c57583610fa",
+        "readThisFollowup": true,
+        "readLocation": "KnownAttachedDriveInitialMetadataRange",
+        "method": "Freshboundedinitialmetadataonly,priorhashandbefore/afterstatstabilityverified;ownidentity/descriptorrequalified.",
+        "descriptorOffset": 126849,
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "bitDepthData": [
+          {
+            "offset": 126849,
+            "className": "CDCIEssenceDescriptor",
+            "fields": {
+              "GenericSoundEssenceDescriptor.QuantizationBits": [],
+              "CDCIEssenceDescriptor.ComponentDepth": [
+                {
+                  "property": "CDCIEssenceDescriptor.ComponentDepth",
+                  "type": "MXF_UINT32_TYPE",
+                  "range": [
+                    127075,
+                    4
+                  ],
+                  "hex": "0000000a",
+                  "value": 10
+                }
+              ],
+              "RGBAEssenceDescriptor.PixelLayout": [],
+              "RGBAEssenceDescriptor.PaletteLayout": [],
+              "CDCIEssenceDescriptor.AlphaSampleDepth": [],
+              "GenericSoundEssenceDescriptor.SoundEssenceCompression": [],
+              "GenericPictureEssenceDescriptor.PictureEssenceCoding": [
+                {
+                  "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+                  "type": "MXF_UL_TYPE",
+                  "range": [
+                    127264,
+                    16
+                  ],
+                  "hex": "060e2b340401010a0401020271010000",
+                  "value": "060e2b340401010a0401020271010000"
+                }
+              ],
+              "FileDescriptor.EssenceContainer": [
+                {
+                  "property": "FileDescriptor.EssenceContainer",
+                  "type": "MXF_UL_TYPE",
+                  "range": [
+                    127284,
+                    16
+                  ],
+                  "hex": "060e2b340401010a0d01030102110200",
+                  "value": "060e2b340401010a0d01030102110200"
+                }
+              ],
+              "GenericPictureEssenceDescriptor.FrameLayout": [
+                {
+                  "property": "GenericPictureEssenceDescriptor.FrameLayout",
+                  "type": "MXF_UINT8_TYPE",
+                  "range": [
+                    127179,
+                    1
+                  ],
+                  "hex": "00",
+                  "value": 0
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "interlacedRepositoryControls": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/zT_ßt_1080i_50_seqDD866C6BV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "2361d540b43c800156d3d20787030e82550a688dbe34319209a597089c4152a5",
+        "fileNormalizedHex": "060a2b340101010501010f10130000006b6c86dd5112069027e4c22704e88b34",
+        "readThisFollowup": true,
+        "readLocation": "ExistingRepositoryMetadataPrefix",
+        "bitDepthData": [
+          {
+            "offset": 122100,
+            "className": "CDCIEssenceDescriptor",
+            "fields": {
+              "GenericSoundEssenceDescriptor.QuantizationBits": [],
+              "CDCIEssenceDescriptor.ComponentDepth": [
+                {
+                  "property": "CDCIEssenceDescriptor.ComponentDepth",
+                  "type": "MXF_UINT32_TYPE",
+                  "range": [
+                    122326,
+                    4
+                  ],
+                  "hex": "0000000a",
+                  "value": 10
+                }
+              ],
+              "RGBAEssenceDescriptor.PixelLayout": [],
+              "RGBAEssenceDescriptor.PaletteLayout": [],
+              "CDCIEssenceDescriptor.AlphaSampleDepth": [],
+              "GenericSoundEssenceDescriptor.SoundEssenceCompression": [],
+              "GenericPictureEssenceDescriptor.PictureEssenceCoding": [
+                {
+                  "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+                  "type": "MXF_UL_TYPE",
+                  "range": [
+                    122519,
+                    16
+                  ],
+                  "hex": "060e2b34040101010401020202020600",
+                  "value": "060e2b34040101010401020202020600"
+                }
+              ],
+              "FileDescriptor.EssenceContainer": [
+                {
+                  "property": "FileDescriptor.EssenceContainer",
+                  "type": "MXF_UL_TYPE",
+                  "range": [
+                    122539,
+                    16
+                  ],
+                  "hex": "060e2b34010101ff4b464141000d4d4f",
+                  "value": "060e2b34010101ff4b464141000d4d4f"
+                }
+              ],
+              "GenericPictureEssenceDescriptor.FrameLayout": [
+                {
+                  "property": "GenericPictureEssenceDescriptor.FrameLayout",
+                  "type": "MXF_UINT8_TYPE",
+                  "range": [
+                    122434,
+                    1
+                  ],
+                  "hex": "01",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/zT_ßt_1080i_50_seqDD91EF60V.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "57415a1a26cebf101c12711a772b47b03c1324b98b186c69ac498bfa0d359e51",
+        "fileNormalizedHex": "060a2b340101010501010f101300000060ef91dd511206902af2c22704e88b34",
+        "readThisFollowup": true,
+        "readLocation": "ExistingRepositoryMetadataPrefix",
+        "bitDepthData": [
+          {
+            "offset": 122082,
+            "className": "CDCIEssenceDescriptor",
+            "fields": {
+              "GenericSoundEssenceDescriptor.QuantizationBits": [],
+              "CDCIEssenceDescriptor.ComponentDepth": [
+                {
+                  "property": "CDCIEssenceDescriptor.ComponentDepth",
+                  "type": "MXF_UINT32_TYPE",
+                  "range": [
+                    122308,
+                    4
+                  ],
+                  "hex": "00000008",
+                  "value": 8
+                }
+              ],
+              "RGBAEssenceDescriptor.PixelLayout": [],
+              "RGBAEssenceDescriptor.PaletteLayout": [],
+              "CDCIEssenceDescriptor.AlphaSampleDepth": [],
+              "GenericSoundEssenceDescriptor.SoundEssenceCompression": [],
+              "GenericPictureEssenceDescriptor.PictureEssenceCoding": [
+                {
+                  "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+                  "type": "MXF_UL_TYPE",
+                  "range": [
+                    122501,
+                    16
+                  ],
+                  "hex": "060e2b340401010a0401020271080000",
+                  "value": "060e2b340401010a0401020271080000"
+                }
+              ],
+              "FileDescriptor.EssenceContainer": [
+                {
+                  "property": "FileDescriptor.EssenceContainer",
+                  "type": "MXF_UL_TYPE",
+                  "range": [
+                    122521,
+                    16
+                  ],
+                  "hex": "060e2b340401010a0d01030102110200",
+                  "value": "060e2b340401010a0d01030102110200"
+                }
+              ],
+              "GenericPictureEssenceDescriptor.FrameLayout": [
+                {
+                  "property": "GenericPictureEssenceDescriptor.FrameLayout",
+                  "type": "MXF_UINT8_TYPE",
+                  "range": [
+                    122416,
+                    1
+                  ],
+                  "hex": "01",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "limits": [
+      "Cached10depthfactsreusehistoricalrawfieldsjoinedbyown-descriptoroffsetandidenticalboundedheaderhash. No newclaimthatthose10werejustreadagain.",
+      "Freshattachedmediareadsareonlytwoalreadyknownheaderextents,notbroaderdriveinventory. Repositoryreadsareonlythreeknownmetadata-prefixfixtures.",
+      "No malformed,mixedRGBA,palette,AES3,float-audio,generic255orRDD50fixed10/12actualcasecampaign."
+    ]
+  },
+  "actualInterpretationSummary": {
+    "audio": "Five WaveAudio:four QuantizationBits24,one16,completeUInt32. No float-audio/AES3 sample.",
+    "video": "SevenCDCI:twoComponentDepth8,five10(includingstandardDNxUncompressedcode10). OneRGBA has firstmeaningfulcomponentA8 but nonzero postterminator padding. Noactual13code253/254/255orRDD50fixedvariant.",
+    "interlacedRepositoryControls": "Twooutsideoriginal13:DV108050iComponentDepth10; DNxHDinterlacedSQComponentDepth8. Bothverifiedsameboundedmetadatahashaspriorcontrols.",
+    "rgbaCritical": {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_78D9V02.22180610.586550.mxf",
+      "headerSha256": "a38155c6b34a9f570b7648fb69751b822e9a1818da0ca5be7ec975d03d9098f5",
+      "range": [
+        119203,
+        16
+      ],
+      "hex": "41080000300030003000300030003000",
+      "parsedPairs": "A/8,0/0 then six ASCII0/depth0 pairs.",
+      "currentSourceOutcome": "CurrentprojectPixelLayout rejects laternonzero code aftertermination, so no ownRGBA BitDepth/Alpha observation fromthisfield. Thisis sourcederivation,notexecutedscanner/UIclaim.",
+      "usefulMeaning": "A8beforefirst00/00is meaningful alpha-only prefix; whetherBellaacceptsthatwithnonzeroignoredtailmustbeexplicitlyqualifiedagainstnative/primaryterminatorsemantics. Do not silentlycallthecurrentheaderresult8-bit orassumecleanzero-filledlayout."
+    }
+  },
+  "nativePaddingQualification": {
+    "actualLayout": "41080000300030003000300030003000",
+    "actualMeaningfulPrefix": "A8 followed by00/00 and six ASCII0/zero padding pairs.",
+    "nativeProof": "Toolkit SetPixelLayout explicitly pads unused aligned records with code0x30,width0. CountPixelLayoutElements ignores numeric0 and ASCII0 codes; GetPixelLayout copies the requested prefix. This sample counts1 and imports firstA8. Raw native receipt contains exact code/vtable anchors.",
+    "currentSourceResult": "Current strict post-null-zero validation withholds the own MXF BitDepth/Alpha observation; no actual table-blank assertion, because another source may supply values.",
+    "proposedBellaResult": "8-bit numeric depth for this supported alpha-only prefix, after accepting only known zero-width padding forms within the16-byte bound.",
+    "scope": "Bella prefix/padding validation is a bounded compatibility design, not a copy of native all-slot counting or arbitrary-tail tolerance. Source evidence from current subtask predates this independent native qualification and is retained unchanged."
+  },
+  "proposal": {
+    "status": "Proposed focused MXF rules; no runtime implementation.",
+    "sources": [
+      {
+        "descriptor": "Supported sound/WaveAudio/AES3Audio",
+        "property": "QuantizationBits",
+        "wire": "UInt32 big-endian4bytes",
+        "meaning": "Supported audio quantization count; zero unavailable, no picture float-code mapping."
+      },
+      {
+        "descriptor": "CDCI/supported MPEGVideo",
+        "property": "ComponentDepth",
+        "wire": "UInt32 big-endian4bytes",
+        "meaning": "Picture component precision/code with necessary full coding/representation context; separate alpha depth is not a replacement."
+      },
+      {
+        "descriptor": "RGBA",
+        "property": "PixelLayout",
+        "wire": "Fixed16bytes,eightinterleavedUInt8code/depthpairs",
+        "meaning": "Component-wise layout, unlike legacyMDBparallelarrays or toolkit aligned native structs."
+      }
+    ],
+    "ownership": "Already qualified physical file own descriptor with checked type, width, byte order and boundaries. No master/other-file borrowing or essence decode.",
+    "specialCodes": "Carry verified standard picture253/254/255 half/32float/64float and full-coding-qualified DNxUncompressed rules into small helpers. Standard254→32float; exact fixed variant254→16S2.14. Preserve raw code and needed representation/coding ID. Do not print raw254-bit or infer from a codec headline/maximum. Existing unresolved10.6/12.4 generic labels stay separate.",
+    "rgbaPadding": "Require interpretable meaningful prefix; numeric00/00 or nativeASCII30/00 starts end/padding and all remaining pairs must be these known forms. Reject nonpadding tails and preserve16bytebound. Do not reproduce native non-prefix count/copy quirks.",
+    "rgbaNumericPolicy": "Every meaningful non-fill component must be supported/interpreted. Common interpreted width gives one numeric depth, including alpha-only files. No sum/first-component/partial-result shortcut. Mixed widths, palette/unsupported component meanings or unverified LSB merges supply no single depth; retain only needed compact layout/context.",
+    "missingDamaged": "Unavailable selected source supplies no MXF Bit Depth; keep physical file and independently usable facts. No guessed default, codec capability substitution or consistency graph.",
+    "storageAndDisplay": "One interpreted numeric depth with necessary source/rawcode/layout/representation/availability; labels generated later and numeric sorting. No new visible alpha/sample-format column or permanent depth label as source truth.",
+    "lifetimeAndPriority": "New small C++17/Qt fixed-width/endian helpers and at most8 component slots. Extract wanted facts during independently required header read and release temporary header/reference structures. Preserve current Compression contract. Full source priorities/extra-read triggers remain deferred."
+  },
+  "primarySources": [
+    {
+      "url": "https://pub.smpte.org/latest/st377-1/st377-1-2019.pdf",
+      "sections": [
+        "F.5 QuantizationBits",
+        "G.2.25 Picture coding precedence",
+        "G.2.26 ComponentDepth",
+        "G.2.40 PixelLayout"
+      ],
+      "use": "Scalar/layout formats and picture code meanings; not native GUI behavior."
+    },
+    {
+      "url": "https://pub.smpte.org/pub/rdd50/rdd50-2019.pdf",
+      "sections": [
+        "9 coding variants",
+        "10.2 CDCI depth",
+        "10.3 RGBA depth"
+      ],
+      "localPrimary": {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-primary/rdd50-2019.pdf",
+        "sha256": "4959054284e49621c4ddf228cae8797feff7842fd313982cf92e84a9d31d0108",
+        "bytes": 803379
+      },
+      "localExcerpt": {
+        "path": "/private/tmp/bella-mdb-bit-depth-20261020-primary/rdd50-2019.excerpt.txt",
+        "sha256": "e3646e716006ec1850275dca7c5c4d8574eb5ca1af38fb2d4ac0c65aa562ee7b",
+        "bytes": 24023
+      },
+      "verifiedAgainstPriorEvidence": {
+        "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mdb-bit-depth-2026-10-20.json",
+        "sha256": "132eea11bcb01772992401d33a0309f7e293eefc607ab09aad161ac9895f4871",
+        "bytes": 182643
+      },
+      "use": "Cached primary PDF/excerpt hashes verified against earlier evidence because current web fetch timed out. Full qualified DNxUncompressed variant meanings; no source observation changed."
+    }
+  ],
+  "validation": {
+    "rawReceiptsVerified": true,
+    "distinctReferencedHashesVerified": 79,
+    "cachedPrimaryHashesVerified": true,
+    "jsonParsed": true,
+    "freshActualMetadataRanges": 2,
+    "freshRepositoryMetadataPrefixes": 3,
+    "essenceRead": false,
+    "wholeMediaHashes": false,
+    "productionTestsRun": false,
+    "appOrPrivateApiRun": false,
+    "runtimeCodeChanged": false,
+    "performanceMeasured": false
+  },
+  "additionalControlInterpretationNote": {
+    "scope": "Additional repository DV1001080/50 control, outside original13.",
+    "recordedComponentDepth": 10,
+    "codingUl": "060e2b34040101010401020202020600",
+    "interpretation": "Preserve recorded metadata/context. Encoded/decoded precision was not independently established; no codec-wide8-bit clamp is justified by the bounded evidence.",
+    "primaryReference": "https://pub.smpte.org/pub/st370/st0370-2013.pdf",
+    "section": "4.1.1.3"
+  },
+  "approvedBy": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-bit-depth-plan-2026-10-22.json",
+    "date": "2026-10-22",
+    "statement": "Lets do those recommendations - good catch!"
+  }
+}

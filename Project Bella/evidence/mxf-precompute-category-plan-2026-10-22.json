@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "status": "Approved requirements; not implemented or cut over.",
+  "authorization": {
+    "source": "Direct human request in current conversation",
+    "statement": "OK, let's lock those Precompute Category rules in for Bella.",
+    "scope": "Approves the preceding MXF Precompute Category rules only. Effect Category from MXF remains the next research/proposal."
+  },
+  "agreedBellaRules": {
+    "gate": "Same qualified selected associated master already established Precompute by approved Type rules. OrdinaryMedia categoryblank. No alternativeowner/prefix/name/codec/filecountguess.",
+    "predicate": [
+      {
+        "qualifiedImportObject": "ConfirmedAbsent",
+        "directPictureTracks": "NotRequired",
+        "category": "RenderedEffects"
+      },
+      {
+        "qualifiedImportObject": "Present",
+        "directPictureTracks": ">=2",
+        "category": "TitlesAndMatteKeys"
+      },
+      {
+        "qualifiedImportObject": "Present",
+        "directPictureTracks": "0or1",
+        "category": "RenderedEffects"
+      },
+      {
+        "qualifiedImportObject": "Unknown/conflicting/unsupported or required tracksunusable",
+        "category": "Unknown atthissource; preserveindependentPrecomputeType"
+      }
+    ],
+    "mxfWrapper": "Own directMobAttributeList,exactTaggedValue.Name_IMPORTSETTING, supportedtypedIndirectString__AttributeList andvalidouterTaggedValueAttributeList referencearray/targets. Marker aloneinsufficient. Validcount0arraycanqualify; missing/brokennotempty. No recursiveimportsettingsbodysemanticssolelyforcategory.",
+    "encoding": "NamesUnicode; ValueIndirectmustrespectrecordedtype/byteorder; references/trackDataDefinitionsusequalifiedMXFschema/Primer andsupportedidentifierforms. NoUTF8/MacRomandecodingofcategoryenum.",
+    "unsupportedForms": "PreservecurrentconservativeUnknownforunsupportedscalar/PortableObjectforms; nativenumericwrongkindhandlingdiffers, noactualspecimenorexpansionapproved.",
+    "tracks": "Allimmediateownmastertracks;validtypedtrack/segmentDataDefinition andnecessaryreferences; picturedirectcountnotjustphysicalfilelinkedtracks,notnestedcomponents/notothermasters. Noadditionalphysicalfileopen.",
+    "retention": "Smallcategoryenum plusnecessaryorigin/availability, labelsatdisplay/export, temporarydirectfactssharedthenreleased. Noformattedlabel/importbodygraphsolelyforcategory. Existinghelper/enum/masterreusealreadycompact.",
+    "unknownPresentation": "Blanktable/exportforunavailableandordinaryMedia; explicitUnknownoptionalfilterchoice preserved,distinctfromemptywildcard. IndependentlyprovenType retained.",
+    "scope": "Optionalcategory/effectfeaturesretained; EffectSequenceexcluded. Sourcepriority/newheader-openpolicyremainsseparate. No measuredgain or runtimechange."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-precompute-category-2026-10-22.json",
+    "sha256BeforeApprovalMetadata": "f80469319eb76272f66f67294ed9cce2e99000f456fcfe4d4151e86b13ad892d"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-21-bella-mxf/precompute-category.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeImplemented": false,
+    "productionTestsRun": false,
+    "rawResearchChanged": false
+  }
+}

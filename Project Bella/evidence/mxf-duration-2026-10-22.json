@@ -1,0 +1,3036 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "MXF physical-file Duration: exact own descriptor pair, source-aware audio/video display clocks and qualified numbering, compared with installed Media Composer, MDVx and current MediaMuster.",
+  "request": "OK, let's lock those Kind rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Duration from MXF, and what should Bella read and keep?",
+  "status": "Focused MXF Duration requirements approved2026-10-22, including corrected DF semicolons/NDF colons; unimplemented. Earlier pending proposal wording in the research body is historical and superseded by the approval receipt. Native/source/corpus findings and raw receipt hashes remain unchanged.",
+  "precedingKindApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-kind-plan-2026-10-22.json",
+    "sha256": "848d56063049ff0f031293b3c4fa00bc90d586145065691ad9f7a0bd3444d7fe",
+    "bytes": 4148
+  },
+  "rawReceipts": [
+    {
+      "path": "/private/tmp/bella-mxf-duration-mc-20261022/findings.json",
+      "sha256": "b8b787d4d8923d05de026b5778b6a5ff27b4789f098a63bfd6ffb5d5c7e7f644",
+      "bytes": 24546
+    },
+    {
+      "path": "/private/tmp/bella-mxf-duration-mdvx-20261022/findings.json",
+      "sha256": "118db90b5eba058882fbf75535451f5ac77c7003468402960d443d72404ae0e6",
+      "bytes": 9669
+    },
+    {
+      "path": "/private/tmp/bella-mxf-duration-current-20261022.json",
+      "sha256": "f9732756680eea087fce57c5258a8d2e5916a945a75fc2f320f5dfa250325b77",
+      "bytes": 650781
+    },
+    {
+      "path": "/private/tmp/bella-mxf-df-independent-20261022/findings.json",
+      "sha256": "b4ecf39231513fe4179248c9341484e46b9162c87ce3e1675680f1604577c137",
+      "bytes": 6375
+    }
+  ],
+  "mediaComposer": {
+    "date": "2026-10-22",
+    "timezone": "Australia/Sydney",
+    "purpose": "Bounded native Media Composer MXF count/rate import audit, distinguishing physical descriptor timing, audio sampling and editing/timecode clocks.",
+    "method": "Read-only fresh selective arm64 disassembly, existing scanner/descriptor path proof, typed toolkit getter/vtable resolution and comparison with prior native rate audit. No app/private API, parser, media writes or repository edits.",
+    "findings": [
+      {
+        "topic": "Actual own physical-descriptor import path",
+        "evidence": "Prior native Kind proof connects ordinary LocalMDB/MSMDB MXF scan to AAFDomain::CopyOut, AComposition::ConvertCompositionFromAAF and the source mob's own EssenceDescriptor/CreateDescriptor. The created descriptor receives ConvertDescriptorFromAAF. Fresh clock slots resolve PCMA, DID and CDCI import/property methods; PCM GetAAFProperties calls AudioMediaDesc::GetAAFProperties at 0x3ea24c and the latter calls AFileMediaDesc::GetAAFProperties at 0x362b28. DID GetAAFProperties calls the same base at 0x381e30. Thus the count/rate getters are in the actual typed MXF physical import route."
+      },
+      {
+        "topic": "File descriptor count and rate are a pair",
+        "anchors": [
+          "AFileMediaDesc::GetAAFProperties 0x17c930",
+          "IAAFFileDescriptor GetLength call 0x17c9e0",
+          "SetLength call 0x17c9f8",
+          "GetSampleRate call 0x17ca38",
+          "ConvertAAFEditRate 0x17ca48",
+          "SetRate call 0x17ca5c"
+        ],
+        "evidence": "The method queries IAAFFileDescriptor on the supplied own descriptor, obtains its Length and rational SampleRate, and sets the internal descriptor length and rate. The ordinary video DID/CDCI setters resolve to the base file-descriptor state. It does not substitute master/clip Length here. The toolkit's named GetLength/GetSampleRate targets are independently resolved; their corresponding MXF fields are ContainerDuration/SampleRate, rather than a text duration or wall-clock timestamp.",
+        "widthLimit": "The toolkit GetLength interface takes a signed 64-bit output, but this selected engine caller loads w1 from the temporary result and calls SetLength(int). Native internal count truncation/32-bit storage is not a Bella requirement and does not replace Bella's approved checked 64-bit count retention."
+      },
+      {
+        "topic": "Missing descriptor pair is detected, but native subclasses propagate failure differently",
+        "anchors": [
+          "GetLength failure branch 0x17c9e4 to 0x17ca0c",
+          "GetSampleRate failure branch 0x17ca3c to 0x17ca64",
+          "base boolean return 0x17cc38",
+          "DID tests base result 0x381e34",
+          "Audio base call 0x362b28"
+        ],
+        "evidence": "The base property importer checks the HRESULT before consuming each temporary output. A failed GetLength emits \"Missing length on fileDescriptor.\", marks its result false, and continues to try SampleRate. Failed GetSampleRate emits \"Missing sampleRate on fileDescriptor.\" and also marks its result false. The Length temporary is not explicitly initialized to zero in this function; zero is not proved to mean absent. DID tests the base result and exits on false. Audio calls the base importer without checking its boolean before importing sound properties. PCM separately logs a zero length but continues. Therefore these blocks do not establish universal native rejection, blank display or recovery for all missing/damaged descriptors.",
+        "fallbackLimit": "No own file-track fallback is present in the base count/rate block, and the separately inspected source/component span routes do not prove exact physical container coverage. Bella leaving an unusable own count/rate pair unavailable, without source/master duration recovery, is a proposed first-release design boundary rather than a claimed universal Media Composer fallback rule."
+      },
+      {
+        "topic": "Native rational import has explicit aliases",
+        "anchors": [
+          "AAFDomain::ConvertAAFEditRate 0x4ecc8"
+        ],
+        "evidence": "Denominator 1 produces a native integer ExactEditRate. Exact 30000/1001 or 2997/100 uses Avid's 29.97 form; 24000/1001 uses its 23.976 form. Additional finite exact cases include 48000/1001, 60000/1001, 120000/1001 and 240000/1001. Other inputs divide numerator by denominator as double and call ExactEditRateFromFloat. This is a native internal representation boundary, not a reason to decimalise a precise MXF rational in Bella. Prior physical metadata/export paths convert supported native video conventions back to rational essence rate."
+      },
+      {
+        "topic": "Audio sampling rate is a distinct property",
+        "anchors": [
+          "AudioMediaDesc::GetAAFProperties 0x362aac",
+          "IAAFSoundDescriptor query 0x362b44",
+          "GetAudioSamplingRate call 0x362c30",
+          "ConvertAAFEditRate call 0x362c68",
+          "sampling setter call 0x362c7c",
+          "GetAudioSamplingRate 0x360a54"
+        ],
+        "evidence": "After the base file descriptor import, audio imports the SoundDescriptor's separate rational AudioSamplingRate and stores it as the audio frequency. The internal getter returns state at this+0x450. The existence of this property does not show that every recorded ContainerDuration uses audio-sample units; the physical count's own descriptor SampleRate supplies its unit clock. Matching 48000 rates in ordinary OP-Atom examples can make the clocks numerically equal without making them universally interchangeable."
+      },
+      {
+        "topic": "PCM public rate getters have extra coupling",
+        "anchors": [
+          "PCMAudioDescriptor::SetRate 0x3e9450",
+          "PCMAudioDescriptor::GetExactEditRate 0x3e9444",
+          "PCMAudioDescriptor::SetAudioSamplingRate 0x3e948c"
+        ],
+        "evidence": "PCM SetRate first sets the base descriptor rate, then initializes audio sampling rate through its virtual setter. Later AudioSamplingRate import can replace that audio frequency. PCM GetExactEditRate forwards to GetAudioSamplingRate, while AudioMediaDesc's conditional rate conversion explicitly calls AFileMediaDesc::GetExactEditRate to obtain the separate original descriptor clock. Function names alone therefore do not establish one universal timing clock. Bella need not copy this object/getter architecture."
+      },
+      {
+        "topic": "Conditional audio unit conversion is not a universal rule",
+        "anchors": [
+          "container-prefix comparison 0x363008..0x363034",
+          "base rate getter 0x363140",
+          "audio rate getter 0x363158",
+          "ConvertEUs call 0x363198",
+          "SetLength call 0x3631ac",
+          "ConvertEUs 0x257b84"
+        ],
+        "evidence": "A specific essence-container prefix gate precedes this branch. Only inside it, when descriptor rate and audio sampling rate differ, native code converts the current Length from TrueNTSCEditRate(descriptorRate) to AudioSamplingRate and replaces internal Length. ConvertEUs computes count * destinationRate / sourceRate in double and rounds to an integer with a signed half adjustment. The compared wire-label prefix is 060e2b34010401010d0103010201; the last two bytes are not part of that compared prefix. This does not authorise all audio-MXF count conversion or Bella's blind use of AudioSamplingRate as ContainerDuration's divisor."
+      },
+      {
+        "topic": "Track/source spans are separately imported editing facts",
+        "anchors": [
+          "aafFindAudioTrackEditRateAndDuration 0x26fa8",
+          "audio DataDefinition filter 0x27120..0x27128",
+          "slot rate import 0x27170..0x2717c",
+          "component-length accumulation 0x27288..0x272a0",
+          "composition ConvertSlots 0x194860"
+        ],
+        "evidence": "The composition rate fallback helper finds an audio track using DataDefinition, obtains its slot EditRate, and can accumulate segment/component lengths. These are component counts in their editing clock, a separate route from the own file descriptor Length/SampleRate. The selected import code does not establish that this clip span must replace physical ContainerDuration whenever the two differ."
+      },
+      {
+        "topic": "Optional source-sample length does not replace the physical pair by default",
+        "anchors": [
+          "timecode-rate override gate 0x194878..0x194880",
+          "source clip/slot lookup 0x194908/0x194930",
+          "ConvertEUsFloor call 0x1949d4",
+          "SetSourceLength call 0x1949e8",
+          "AudioMediaDesc::SetSourceLength 0x361398",
+          "GetSourceLength 0x36144c"
+        ],
+        "evidence": "A separate composition branch, gated by a file descriptor and IsTimecodeRateOverrideEnabled, finds the corresponding SourceClip/slot and converts its count from slot EditRate into the audio sampling clock when different. It then sets a separate signed 64-bit SourceLength and _AMD_SOURCE_LENGTH attribute. GetSourceLength returns that separate value if available and otherwise falls back to the internal file Length. This optional editing/import machinery does not establish a general physical-duration source for Bella or justify storing master/source spans merely for Duration."
+      },
+      {
+        "topic": "Recorded timecode supplies numbering, not physical length",
+        "anchors": [
+          "ATimecodeClip::ConvertComponentFromAAF5 0x21dfd8",
+          "IAAFTimecode GetTimecode call 0x21e074",
+          "toolkit CAAFTimecode::GetTimecode 0x64a50",
+          "TCCreateDesc call 0x21e1b4",
+          "explicit rate-override branch 0x21e1d4..0x21e1f0"
+        ],
+        "evidence": "The typed timecode importer reads an AAF timecode structure containing start, drop and nominal FPS, then constructs an internal timecode descriptor. Native optional import overrides can alter numbering/rates. This is separate from physical file Length and does not prove Bella should add StartTimecode, apply the first encountered drop flag or copy current-project override settings. The precise physical Duration UI ownership/default/error path is not fully traced."
+      }
+    ],
+    "settledBellaBoundary": "Preserve approved exact integer/fraction maths, audio precision, HH:MM:SS:FF and qualified numbering. MDB stays first; MXF Duration is permitted on the already agreed database-unavailable MXF fallback. A header rate alone does not repair MDB timing. This audit neither changes those requirements nor approves new detailed MXF field selection, scope or runtime implementation.",
+    "limits": [
+      "No complete native GUI Duration-cell selection/display path, universal descriptor-to-track fallback or malformed-input guarantee is established.",
+      "No claim that all audio ContainerDuration counts sample frames, or that FileDescriptor.SampleRate always equals AudioSamplingRate or EditRate.",
+      "Native code contains finite special cases, decimal/double conversion, 32-bit internal length and optional project/import overrides. Bella's approved exact representation is deliberately a separate design.",
+      "Known ordinary Avid-compatible OP-Atom remains the release scope. Other wrapping/container and rare pulled-audio conversions are not newly approved from this evidence.",
+      "No new media read, app/private API execution, production test, benchmark or repository edit."
+    ],
+    "binaries": [
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libcom-api.dylib",
+        "sha256": "9bef7c474afa461af413cde63dcbc0b048aeabe2a685bc3fd487cb4647447728"
+      }
+    ]
+  },
+  "mdvx": {
+    "date": "2026-10-22",
+    "method": "Read-only installed MDVx arm64 native disassembly; bounded relevant functions extracted from fresh22Oct capture and exact ADR references resolved against matching binary symbols/CFStrings. No app/privateAPI/UI or corruptfixture execution, media/database writes, or repo edits.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "size": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+    },
+    "ordinaryProjection": {
+      "result": "Ordinary MDVxMXF.openFile/addInfoToItem retain names/project/fileID/materialID only. None of ami duration/rate/timecode facts are copied to ordinary item.",
+      "evidence": "MDVxMXF.openFile0x100032410..0x100032668 buildsfourvalue dictionary andfreesamiinfo. addInfoToItem0x1000326b4..0x100032804 calls NameInBin,ProjectName,FileUID,MaterialUID setters only.",
+      "tableLimit": "No Duration itemproperty/DurationCellID mapping identified in inspected ordinary MDVxDatabaseItem symbols and captured full table view/stringvalue methods. Do notdescribe MDVXordinaryscan as displayingDuration fromMDBorMXF merelybecause linkedlibrary has durationfunctions."
+    },
+    "amiClipDuration": {
+      "owners": "Selected single MaterialPackage picture/sound tracks. Not selected file SourcePackage trackduration andnot FileDescriptor.ContainerDuration.",
+      "count": "mxf_uu_get_track_duration0x1000659fc follows GenericTrack.Sequence strongref and reads StructuralComponent.Duration exact8bytes; ami callsat0x100010a94.",
+      "rate": "ami reads same MaterialPackage track EditRate using8byte2xBE32 rational at0x100010a84. This expresses the durationcount clock. GenericSoundEssenceDescriptor.AudioSamplingRate is read elsewhereat0x1000108e4 as technical fact, not used toconvert thisduration.",
+      "projectClock": "Optional Preface.ProjectEditRate loadsinfo+0x18 at0x10001003c. Ifthatpair remainsallzero, first accepted picture materialtrack suppliesinfo+0x18 at0x100010ae0..0x100010af8. No qualified audio-only defaultprojectclock established.",
+      "maximumTrack": "Materialtrackloopinitialises bestCount=0,bestRate25/1;0x100010a9c..0x100010adc converts eachnewtrackcountto currentbestrate using integerproducts ->doubledivision ->+0.5 ->truncate, then chooses longer/equalcandidate andstoresits originalcount/rate. Not exactfractioncomparison.",
+      "finalConversion": "0x100010e2c..0x100010e5c computes info.clipDuration=truncate(double(bestCount * bestRate.den * projectRate.num) / (projectRate.den * bestRate.num) +0.5). Storedcountis inselectedprojectclockunits.",
+      "notPhysical": "Longestmaterialtrack duration maydescribeclip/master extent acrossseveral physicalfiles. It cannotbeassumedtheentirelength ofthisphysicalMXF."
+    },
+    "amiSelectedTrackAndSegment": {
+      "selection": "Within each accepted materialtrack, ami traversesSourceClip/directSequencecomponents/EssenceGroupchoices and compares full32-byte SourceClip.SourcePackageID withselected FilePackageUID at0x100010b80,0x100010cd8,0x100010d30.",
+      "retained": "Onmatch0x100010b88..0x100010ba8 stores materialtrack EditRate(info+0x80), fullmaterialtrackDuration(+0x88), matchingmaterialcomponentDuration(+0x90), accumulatedmaterialsegmentoffset(+0x98), tracknumber(+0x78) andisVideo(+0x7c).",
+      "units": "TrackDuration and matchingSegmentDuration are materialstructuralcomponentcounts, interpreted atthatmaterialtrackEditRate; theyare not sourcedfromselected filedescriptor count.",
+      "ambiguity": "Loopcontinues andlatermatchingmaterialtrack canoverwrite matchedtrack facts. No unique/conflictingmatch ruleidentified.",
+      "ContainerDurationAndSampleRate": "No FileDescriptor.ContainerDuration or FileDescriptor.SampleRate access identified inami_read_info. Linkedlibdatamodeldefineskeys elsewhere; capabilitydoesnotmeanthisreaderusesthem."
+    },
+    "timecodeAndDropFrame": {
+      "ownTimecode": "Afterdurationwork,0x100011140..0x100011268 traverses selectedfile SourcePackage picture/soundtracks andgets single SourceClip, its EditRate, StartPosition andonwardSourcePackageID. It follows nonnull onwardreference, then searches referencedpackage Timecodetrack. It doesnot directlyreadselectedfilepackageTimecodetrackasDuration source.",
+      "referenceTimecode": "0x100011270..0x100011348 resolves onwardpackage, finds Timecodecomponent, reads StartTimecode and RoundedTimecodeBase. NonzeroTCstartis added whenbase==roundedfiletrackrate, doubledwhenroundedfiletrackrate==2*base, otherwiseloggedandignored0x100011354..0x100011918.",
+      "conversion": "0x100011918..0x10001194c converts sourceclipstart/tc into selectedmaterialtrackEditRate usingfloatingdivision,+0.5,truncation andstoresinfo.startTimecode(+0xa0). Thisis starttimecodework, not durationcount.",
+      "dropFrame": "No TimecodeComponent.DropFrame getter identified inami_read_info. Capturednormaldiagnosticprint_timecode0x100012d64 roundsrationalto nominalbase usingdouble+0.5 thenintegerdividesHH/MM/SS/FF, printscolons. No DFnumbering logic.",
+      "scope": "ami_print_info is linked diagnosticcode, not ordinary rowprojection or observedappUI."
+    },
+    "numbersAndDamage": {
+      "typedRead": "Lengthgetter0x10004a0e0 requires8bytes; rationalgetter0x10004a17c requires8bytes andreads2BE32words. Widthvalidationdoesnotvalidatepositivecount ornonzerodenominator.",
+      "failure": "Failedrequiredmaterialtrack rate/duration getter abortsami viaerrorcleanup. Unknown/unresolvedDataDefinition can skiptracks; no usablematch leaveszero-initialized selectedtrackfacts.",
+      "mathLimits": "Floatingrounding,uncheckedintegerproductsand no explicitnonzerodenominator/negativecount checks inrevieweddurationloopmeanthisisnot evidence of100%correct/exactphysicaltiming.",
+      "wrapperCaution": "ExistingFILEopen-vs-parsesuccesswrappercaution applies. Nofault/crash/incorrectUI reproduced."
+    },
+    "plainSummary": "MDVXslinkedlibraryreadsclip/mastertracktimingandmatchingsegmentsusingEditRate, performsfloatingconversionandnominalNDFdiagnosticformatting. ItsordinaryMXFwrapperdoesnotretainDuration. Do notcopythisasBella physical-filedurationalgorithm.",
+    "bellaScope": "No proposedchange toagreedMDB-onlyDuration orfutureheaderopening/sourcepriorityrules. Thisreceiptcomparescapabilities only.",
+    "limits": [
+      "Installedbinary/staticcode only, no runtimeorbenchmark.",
+      "No entireMediaComposercomparison madehere.",
+      "NoabsenceclaimaboutallMDVXfeatures beyondcapturedordinaryscan/item/tablepaths.",
+      "NoexhaustiveMXFtiming/DFspecificationaudit."
+    ]
+  },
+  "currentMediaMuster": {
+    "sourceInputs": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+        "sha256": "c8c68e78db5f3efaa62235f55624c5478e89a0adc37581a922af050f931cad55",
+        "bytes": 63597
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+        "sha256": "379a31643b62b945e3e1ed83245e5f3a7be8df4ebeec73aea31327c1d915b374",
+        "bytes": 23401
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+        "sha256": "6d67b2300f380cd63a50547595154ee27d8ab69f36b6d87e83e81fd3a33ff75c",
+        "bytes": 54490
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+        "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6",
+        "bytes": 10816
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+        "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e",
+        "bytes": 36110
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+        "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce",
+        "bytes": 10189
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+        "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935",
+        "bytes": 5202
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+        "sha256": "c85f1d11bcb15eddcfbba7c9cbbc57c8fdafdb8cac8c4af6b575d62c1575c746",
+        "bytes": 25170
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaduration.h",
+        "sha256": "c59928f0d6f4ac92c93ad7a258bbcaf60516da2fd9fed616293b63bb839fafb6",
+        "bytes": 3071
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+        "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3",
+        "bytes": 12788
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+        "sha256": "f9f633bc0022e5f681b210d58a95cf472b04db0b6189ead78f9d22b7e8618a22",
+        "bytes": 60904
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginescan.cpp",
+        "sha256": "3a349703d4932ac7cdfa568fbd6053c1d45fc12f22606dffbb5cce1b3cfe5c68",
+        "bytes": 132761
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp",
+        "sha256": "111291a8f3b4b737852cdf12e9801a7397cc0cf9e2550e8292247ab87831a72c",
+        "bytes": 62711
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_readerregressions.cpp",
+        "sha256": "32c1b55e4803bd9c2b025c4df0d5d6e97dc23547fcc49522b54178da133fd14b",
+        "bytes": 13590
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-18-bella-mdb/duration.md",
+        "sha256": "c04beae5e0201b94d453d551ec4700ca0c74fa6ece13367a284bbd09ddc0bb63",
+        "bytes": 19250
+      }
+    ],
+    "findings": [
+      "Reads qualified own descriptor ContainerDuration and same-descriptor SampleRate; signed 64-bit count and exact positive rational. AudioSamplingRate is separate. Video currently uses descriptor rate for display; audio uses recorded same-header Preface.ProjectEditRate.",
+      "Only a genuinely absent ContainerDuration permits its own identified file-track sequence Duration/EditRate fallback. Present-but-damaged count is not repaired. Observed track spans differ from physical descriptor counts in two samples, so they are not universally interchangeable.",
+      "Exact limb-based integer/fraction maths and final half-up audio frame rounding are useful verified rules/test cases for new helpers. Current positive-only known/display checks suppress known zero and positive audio rounded to zero. Current DF semicolons match Bella’s separator clarification approved22October; the separator itself needs no correction.",
+      "Current DF ownership searches file and linked-master timecode; all thirteen observed file/master graphs lack timecode, while immediate linked sources carry it. Three fractional-clock cases have explicitly qualified zero-start/origin source spans; one records true DF.",
+      "Boolean decoding delegates to UInt8, implicitly constructing numeric QVariant(int) in Qt 6.5.3, while projectDropFrame requires exact Bool. No coercion between decoder and projector was found. Compile-only LLVM output independently corroborates the constructor. Existing projection tests inject bool and bypass byte decoding.",
+      "Later missing/conflicting Boolean-toBool conversion can default to false. This does not implement Bella genuine-absence NDF versus damaged relevant numbering blank. Current global header-first Duration/DF priority is not Bella approval.",
+      "Source gaps and arithmetic illustrations are not observed incorrect application results. No production test suite or app was run."
+    ],
+    "sourceFindingsAndLocations": [
+      {
+        "topic": "Ownphysicalpairandunits",
+        "fact": "CurrentMXFprojector pairs signed64ContainerDuration with same descriptorFileDescriptor.SampleRate rational. Nonnegativecountandpositivevalidclock eligible. AudioSamplingRate isseparate anddoesnotreplacedurationunitclock. Generalunitsemanticsmaybefields/audio codingblocks, notuniversallyframes/samples. Inactual5WavePCM samples countis48000unitclockmatchingAudioSamplingRate;8videoshaveownTrack.EditRateequaldescriptorclock. Do notrunlegacyMDBExactEditRatealiasconversiononexplicitMXFrationalsorhalveclockfromFrameLayoutalone.",
+        "refs": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "764-774"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "781-782"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "830-836"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": "417-426"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": "439-440"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": "506"
+          }
+        ]
+      },
+      {
+        "topic": "Currentowntrackfallback",
+        "fact": "OnlywhenContainerDurationpropertyabsent,currentcodecallsprojectTrackDuration. ItrequirescompletefileTracks,validLinkedTrackIDifpresent; withoutLinkedTrackIDexactlyoneowntrack; followsmatchingtrackcompletecomponentgraph andusesrootsegmentDurationwithsameTrack.EditRate. ItdoesnotrepairpresentdamagedContainerDurationwithtracklength. ThiscurrentfallbackisnotrequiredinnewBella directpairproposal. ActualRGBAcount1versustrack2880andoneaudiodescriptor1468800versustrack1470269showwhytracksareeditorialspans,notbetterphysicalcounts.",
+        "refs": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "830-836"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "1045-1075"
+          }
+        ]
+      },
+      {
+        "topic": "Audioformattingclock",
+        "fact": "CurrentaudioDuration.displayRateusesownrootPreface.ProjectEditRate;video usesdescriptorSampleRate. CurrentprojectRateonlyreadsrecordedtypedPrefaceProjectEditRate,notcurrentappsetting. All5actualaudiohaveunit/audioSampling/ownfileTrack/linkedmasterTrack48000,soTrack.EditRatecannotbeusedasframe-numberingFPSforthem. RecordedPrefaceclock24/25/30000over1001matchesqualifiedMDBownfileCPNTEditRateafterthealreadyapprovedtypedMDBdecimalinterpretation;immediatesourceTCclockscorroborate. Missing/damagedaudioheaderdisplayclockcanleaveformattedDurationblankwithoutinvented25orothermasterguess.",
+        "refs": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "623-626"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "764-773"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": "755-774"
+          }
+        ]
+      },
+      {
+        "topic": "CurrentDFownershipgap",
+        "fact": "projectDropFrameonlyreadsTimecodecomponentsinthefileSourcePackageandqualifiedMaterialPackageowntrack/componentgraphs. ItdoesnotfollowthefileSourceClipintoitsimmediateSourcePackageforDF. All13actualfile/masterTCcount0;13TCcomponentsacross12immediatesources,includingoneDFtrueonfractionalvideo. ExistingprojectiontestmanuallyattachesTimecodetofile/masterandmissesthisrealroute. Source/clock/spansqualificationinactualthreefractionalzero-startcasesfindsonecompatiblecandidateeach,twoNDFandoneDF. NoobservedapplicationUIclaim.",
+        "refs": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "1078-1109"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "1172-1175"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": "728-752"
+          }
+        ]
+      },
+      {
+        "topic": "CurrentDFtypedvaluegap",
+        "fact": "SchemaBoolean isInterpretedUInt8;genericinterpreteddecoderdelegatestoUInt8returningnumericvalue(noBoolean-specificconversion). projectDropFramerequiresQMetaType::Bool,sonumericactualdecodedBooleanwillnotpass. DonotcallitspecificallyUChar:quint8canpromotetoQVariantint;thematerialmismatchisnumericversusBool. SyntheticGraphproperty(...true)createstheBooldirectly. Thisissource-derivedvalidationgap,noproductionruntimefaulttestexecuted. Bella shouldvalidateonebyte0/1andconstructexplicitbool+availabilityratherthangeneralcoercion.",
+        "refs": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": "234"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+            "lines": "301-315"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "1095-1104"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": "735-745"
+          }
+        ]
+      },
+      {
+        "topic": "Currenttimingselection",
+        "fact": "CurrentglobalDuration/DFpolicyheaderfirstthenMDB;notnewBellaapproval. FileDurationequalityneedssamecountandmathematicallysameunitrate;displayclocksreconcileonlyobservationswithsamecountandrate,soconflictingdurationscannotrepaironeanother. DisplayRateisindependentclock,andDFselectionremainsseparateglobalBoolean;correctnewDFmustbescope-qualifiedtoselectedsource/clock. BellaapprovedMDBfirstandcoherentownMXFfallbackwhenusableDBunavailable,sonewFrameRate-alonefallbackmustnotrepairmismatchedMDBpair.",
+        "refs": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+            "lines": "72-74"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+            "lines": "204-206"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+            "lines": "574-593"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+            "lines": "627-650"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+            "lines": "184-217"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginescan.cpp",
+            "lines": "1954-2015"
+          }
+        ]
+      },
+      {
+        "topic": "Exactintegerarithmeticworthpreserving",
+        "fact": "MediaRate retainsoriginalsigned32positivefractionandcross-multipliesusing64bitexactequality. MediaDurationretainsqint64count/unitrate/displayrate/source. displayFramesmultipliescount*unitden*displaynumwithfour32bitlimbs,dividesbyunitnum*displaydenandroundshalvesupatpresentationwithoverflowguards;nodoubleorper-channelcountdivision. Sourceprecisionremainsunchanged. C++17portabilityavoidsrequiringuint128.",
+        "refs": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediaduration.h",
+            "lines": "7-99"
+          }
+        ]
+      },
+      {
+        "topic": "CurrentformatterdiffersapprovedBella",
+        "fact": "known()requiresunits>0;durationTimecoderejectsdisplayFrames<=0,thereforeknownzeroandpositiveaudioamountsroundingtozerodisplayblanktoday. ExistingDFformatterusessemicolonsforallseparators;BellarequiresHH:MM:SS:FFcolons. CurrentnominalbasecancomefromqRounddoubleRateorFrameRateparseddecimalfallback;Bellashouldderivequalifiednominalnumberingfromexactclockandretainnumericstates. Currenthoursdonotwrap24. MissingdamagedBooleanisconvertedtofalsebyadaptertoBool;BellaneedsgenuinemissingNDFversusdamagedblankdistinction.",
+        "refs": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediaduration.h",
+            "lines": "39-48"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+            "lines": "284-355"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+            "lines": "51-60"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp",
+            "lines": "566-617"
+          }
+        ]
+      },
+      {
+        "topic": "Testsreadnotrun",
+        "fact": "Usefulsourcecasescoveraudio96000units/48000clock+24display→48frames,qualifiedlinkedTCownership,ambiguousmasterpreservingphysicalduration,coherentdisplayclocksselection,reduced-equivalentfractionsandnonmatchingdurationrejection,DF60-minuteformatting/sorting,andknownheadersregression. TheydonotproveactualBooleanimport/sourceTCroutecorrect;oldblankzero/semicolonexpectationsmustnotoverrideBellaapprovals.",
+        "refs": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": "640-664"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": "728-774"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginescan.cpp",
+            "lines": "1954-2015"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp",
+            "lines": "566-617"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_readerregressions.cpp",
+            "lines": "240-258"
+          }
+        ]
+      }
+    ],
+    "historicalFormatNote": "Detailed sourceFindingsAndLocations retain the preceding audit wording where it referred to the former all-colon interpretation. The approved separator clarification supersedes that interpretation; source/numerical observations are unchanged."
+  },
+  "independentDfCheck": {
+    "date": "2026-10-22",
+    "method": "Independent source-level path audit, successful temporary Qt6.5.3 decoder-probe compilation, and compile-to-LLVM verification of QVariant scalar conversion. No production edits, app/UI or media/database execution.",
+    "finding": "Registered MXF TimecodeComponent.DropFrame decodes through Boolean->Uint8; implicit QVariant conversion promotes quint8 to int with installed Qt6.5.3. projectDropFrame requires exact Bool and therefore doesnotobserve this numericdecodedvalue.",
+    "evidence": [
+      {
+        "file": "src/oldscanner/mediaengine/mxfcatalogue_p.h",
+        "lines": [
+          234,
+          426
+        ],
+        "finding": "Boolean is Interpreted baseUint8; DropFrame is declaredBoolean."
+      },
+      {
+        "file": "src/oldscanner/mediaengine/mxfobjects_p.cpp",
+        "lines": [
+          301,
+          302,
+          312,
+          315,
+          488,
+          489
+        ],
+        "finding": "Uint8 case returns scalarquint8; interpretedtypes withoutfixedsize delegatebase; result assigneddirectly toRawProperty.decoded."
+      },
+      {
+        "file": "src/oldscanner/mediaengine/mxfreader.cpp",
+        "lines": [
+          605,
+          614
+        ],
+        "finding": "MxfReader calls interpreter then storagecompaction; noBoolcoercion."
+      },
+      {
+        "file": "src/oldscanner/mediaengine/mxfsource.cpp",
+        "lines": [
+          27,
+          31
+        ],
+        "finding": "prepareMxf callsreader thenprojectMxf withparsedresult; noBoolcoercion."
+      },
+      {
+        "file": "src/oldscanner/mediaengine/mxfprojection.cpp",
+        "lines": [
+          1095,
+          1099,
+          1102
+        ],
+        "finding": "projectDropFrame observesonlyexactQMetaType::Bool."
+      },
+      {
+        "file": "src/mediaengine/sourcestorage_p.h",
+        "lines": [
+          11,
+          19
+        ],
+        "finding": "Compaction onlysqueezescontainers; no decodedvalueconversion."
+      },
+      {
+        "file": "tests/tst_mediaengine_mxfprojection.cpp",
+        "lines": [
+          62,
+          68,
+          647
+        ],
+        "finding": "Graph.property helper directlyassignsQVariant; DFprojectiontestsuppliedliteraltrue bypassesrealBooleanwiredecode."
+      }
+    ],
+    "numericTypePrecision": "Do not call resultingQVariant UChar solelyfromstatic_cast<quint8>expression. Qt6.5.3 QVariant hasint/uint/boolconstructorsbutnoucharconstructor; compileIR helper zeroextendsi8toi32 andcalls_ZN8QVariantC1Ei. It is numericInt, notBool.",
+    "probe": {
+      "source": "/private/tmp/bella-mxf-df-independent-20261022/probe.cpp",
+      "compile": "Successful clang++ C++17 arm64 build with actual productionmxfobjects_p.cpp and installedQt6.5.3Core. Synthetic TimecodeComponent with registeredDropFrameUL and byte01; final assertionexpectsInt.",
+      "execution": "Initial compiledprobe aborted before JSONoutput: Incompatible processor. This Qt build requires the following features: neon. Exit134. Corrected finalsource/probebinarywasrebuilt successfully butnotrerun.",
+      "scope": "No end-to-end parser/projector or userUI wrongduration observed. Source mismatch corroborated; runtimeprobe didnotcomplete.",
+      "escalation": "No optional runtimeescalation requested because source+compileIR establishesrequestedbounded mismatch."
+    },
+    "compileIR": {
+      "source": "/private/tmp/bella-mxf-df-independent-20261022/variant-conversion.cpp",
+      "output": "/private/tmp/bella-mxf-df-independent-20261022/variant-conversion.ll",
+      "decisiveLines": [
+        22,
+        23
+      ],
+      "call": "%6 = zext i8 %5 to i32; call ptr @_ZN8QVariantC1Ei(... i32 %6)"
+    },
+    "conclusionWording": "Current source has a decoder/projector type mismatch that can discard a recorded MXF drop-frame flag. Existing graph-only projection tests do not cover the raw-byte decoding path. This is independently source/compile confirmed, not an observed incorrect app display."
+  },
+  "actualHeaders": {
+    "method": "Freshindependent13samehashinitialheaders,exactdescriptorcount/rateandaudio/video/TCclockownerfacts;fullIDqualifiedpriorMDBownerswithfreshcurrentMDBhashandrelevantscalarbytesverified. Noapp/privateAPI,productionparser/tests,essence/mediafullhash/repositorywrites.",
+    "summary": {
+      "headers": 13,
+      "usableOwnDescriptorPair": 13,
+      "literalCountEqualsMDB": 13,
+      "literalRateEqualsMDB": 11,
+      "fileTimecodeCount": 0,
+      "masterTimecodeCount": 0,
+      "sourceTimecodeCount": 13,
+      "audioCount": 5,
+      "audioSampleRateAndOwnAndLinkedMasterTrack48000": 5,
+      "audioPrefaceClockMatchesMdbAfterApprovedTypedInterpretation": 5,
+      "fractionalClockRowsWithQualifiedImmediateSourceTc": 3,
+      "qualifiedDfTrueRows": 1,
+      "videoOwnTrackEqualsDescriptorRate": 8
+    },
+    "allThirteenDurationsAgreeMdbAfterApprovedTypedInterpretation": true,
+    "audioDisplayClocks": [
+      [
+        24,
+        1
+      ],
+      [
+        25,
+        1
+      ],
+      [
+        25,
+        1
+      ],
+      [
+        25,
+        1
+      ],
+      [
+        30000,
+        1001
+      ]
+    ],
+    "trackSpanDifferences": [
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf",
+        "count": 1468800,
+        "unitRate": [
+          48000,
+          1
+        ],
+        "displayRate": [
+          30000,
+          1001
+        ],
+        "unroundedDisplayFrames": [
+          918000,
+          1001
+        ],
+        "roundedDisplayFrames": 917,
+        "nominalBase": 30,
+        "qualifiedDf": false,
+        "proposedColonDuration": "00:00:30:17",
+        "counterfactualNdf": "00:00:30:17",
+        "ownTrackCount": 1470269,
+        "ownTrackRate": [
+          48000,
+          1
+        ],
+        "ownTrackSpanDiffersFromDescriptor": true,
+        "countAgreesMdb": true,
+        "durationAgreesMdbAfterApprovedTypedInterpretation": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_78D9V02.22180610.586550.mxf",
+        "count": 1,
+        "unitRate": [
+          24,
+          1
+        ],
+        "displayRate": [
+          24,
+          1
+        ],
+        "unroundedDisplayFrames": [
+          1,
+          1
+        ],
+        "roundedDisplayFrames": 1,
+        "nominalBase": 24,
+        "qualifiedDf": false,
+        "proposedColonDuration": "00:00:00:01",
+        "counterfactualNdf": "00:00:00:01",
+        "ownTrackCount": 2880,
+        "ownTrackRate": [
+          24,
+          1
+        ],
+        "ownTrackSpanDiffersFromDescriptor": true,
+        "countAgreesMdb": true,
+        "durationAgreesMdbAfterApprovedTypedInterpretation": true
+      }
+    ],
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1001.WAVA01.D8875D202DA97BA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "f8475c6079b53ff1aefaa33c7306a48538c43ffba8c3e3b189da14617d3cef44",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f10130000007ba92d202585059152bc34363bcdaf64",
+        "mdbFileObject": 92343,
+        "mdbDuration": {
+          "descriptorObject": 92342,
+          "descriptorClass": "PCMA",
+          "length": [
+            {
+              "property": "OMFI:MDFL:Length",
+              "type": "omfi:Long",
+              "hex": "20933300",
+              "ranges": [
+                [
+                  4876084,
+                  4
+                ]
+              ],
+              "value": 3380000
+            }
+          ],
+          "sampleRate": [
+            {
+              "property": "OMFI:MDFL:SampleRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "80bb000001000000",
+              "ranges": [
+                [
+                  1343423,
+                  8
+                ]
+              ],
+              "value": [
+                48000,
+                1
+              ]
+            }
+          ],
+          "audioSamplingRate": [
+            {
+              "property": "OMFI:PCMA:AudioSamplingRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "80bb000001000000",
+              "ranges": [
+                [
+                  1343431,
+                  8
+                ]
+              ],
+              "value": [
+                48000,
+                1
+              ]
+            }
+          ],
+          "fileEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1800000001000000",
+              "ranges": [
+                [
+                  1343447,
+                  8
+                ]
+              ],
+              "value": [
+                24,
+                1
+              ]
+            }
+          ],
+          "fileGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "9a060000",
+              "ranges": [
+                [
+                  4876876,
+                  4
+                ]
+              ],
+              "value": 1690
+            }
+          ],
+          "masterEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1800000001000000",
+              "ranges": [
+                [
+                  1311152,
+                  8
+                ]
+              ],
+              "value": [
+                24,
+                1
+              ]
+            }
+          ],
+          "masterGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "9a060000",
+              "ranges": [
+                [
+                  4729108,
+                  4
+                ]
+              ],
+              "value": 1690
+            }
+          ]
+        },
+        "exactHeaderSeconds": [
+          845,
+          12
+        ],
+        "audioPrefaceVsMdbFileEditRate": {
+          "literalEqual": true,
+          "mdbRaw": [
+            24,
+            1
+          ],
+          "sameUnderPreviouslyApprovedTypedMdbMapping": true
+        },
+        "fractionalDfQualification": {
+          "state": "notRequiredForRecordedNonDropClock",
+          "candidates": []
+        },
+        "independentArithmeticIllustration": {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1001.WAVA01.D8875D202DA97BA.mxf",
+          "count": 3380000,
+          "unitRate": [
+            48000,
+            1
+          ],
+          "displayRate": [
+            24,
+            1
+          ],
+          "unroundedDisplayFrames": [
+            1690,
+            1
+          ],
+          "roundedDisplayFrames": 1690,
+          "nominalBase": 24,
+          "qualifiedDf": false,
+          "proposedColonDuration": "00:01:10:10",
+          "counterfactualNdf": "00:01:10:10",
+          "ownTrackCount": 3380000,
+          "ownTrackRate": [
+            48000,
+            1
+          ],
+          "ownTrackSpanDiffersFromDescriptor": false,
+          "countAgreesMdb": true,
+          "durationAgreesMdbAfterApprovedTypedInterpretation": true
+        },
+        "currentModeFormattedIllustration": {
+          "mode": "NDF",
+          "value": "00:01:10:10",
+          "method": "Same previously calculated integer result, with separators clarified by the user22October. No live application output is claimed."
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/A001_C001_V01.D7EB5BC5323BV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "7bf7822774ef479d0425f2b1756ef96242cfc40e68b5aebe2c83b6d21ead4770",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010101010f00130000003b32c55b39229202060e2b347f7f2a80",
+        "mdbFileObject": 72570,
+        "mdbDuration": {
+          "descriptorObject": 72569,
+          "descriptorClass": "CDCI",
+          "length": [
+            {
+              "property": "OMFI:MDFL:Length",
+              "type": "omfi:Long",
+              "hex": "2b0a0000",
+              "ranges": [
+                [
+                  2055748,
+                  4
+                ]
+              ],
+              "value": 2603
+            }
+          ],
+          "sampleRate": [
+            {
+              "property": "OMFI:MDFL:SampleRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1800000001000000",
+              "ranges": [
+                [
+                  343738,
+                  8
+                ]
+              ],
+              "value": [
+                24,
+                1
+              ]
+            }
+          ],
+          "audioSamplingRate": [],
+          "fileEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1800000001000000",
+              "ranges": [
+                [
+                  343809,
+                  8
+                ]
+              ],
+              "value": [
+                24,
+                1
+              ]
+            }
+          ],
+          "fileGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "2b0a0000",
+              "ranges": [
+                [
+                  2057860,
+                  4
+                ]
+              ],
+              "value": 2603
+            }
+          ],
+          "masterEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1800000001000000",
+              "ranges": [
+                [
+                  343295,
+                  8
+                ]
+              ],
+              "value": [
+                24,
+                1
+              ]
+            }
+          ],
+          "masterGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "2b0a0000",
+              "ranges": [
+                [
+                  2053156,
+                  4
+                ]
+              ],
+              "value": 2603
+            }
+          ]
+        },
+        "exactHeaderSeconds": [
+          2603,
+          24
+        ],
+        "audioPrefaceVsMdbFileEditRate": null,
+        "fractionalDfQualification": {
+          "state": "notRequiredForRecordedNonDropClock",
+          "candidates": []
+        },
+        "independentArithmeticIllustration": {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/A001_C001_V01.D7EB5BC5323BV.mxf",
+          "count": 2603,
+          "unitRate": [
+            24,
+            1
+          ],
+          "displayRate": [
+            24,
+            1
+          ],
+          "unroundedDisplayFrames": [
+            2603,
+            1
+          ],
+          "roundedDisplayFrames": 2603,
+          "nominalBase": 24,
+          "qualifiedDf": false,
+          "proposedColonDuration": "00:01:48:11",
+          "counterfactualNdf": "00:01:48:11",
+          "ownTrackCount": 2603,
+          "ownTrackRate": [
+            24,
+            1
+          ],
+          "ownTrackSpanDiffersFromDescriptor": false,
+          "countAgreesMdb": true,
+          "durationAgreesMdbAfterApprovedTypedInterpretation": true
+        },
+        "currentModeFormattedIllustration": {
+          "mode": "NDF",
+          "value": "00:01:48:11",
+          "method": "Same previously calculated integer result, with separators clarified by the user22October. No live application output is claimed."
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/5511410TA01.6A041816BE45ECA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "050a663a4f9d5a77abfea1df9581b2943205234cb7277e95e3aebded19dbf032",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ec45be167311069643cb7c57583610fa",
+        "mdbFileObject": 199348,
+        "mdbDuration": {
+          "descriptorObject": 199347,
+          "descriptorClass": "PCMA",
+          "length": [
+            {
+              "property": "OMFI:MDFL:Length",
+              "type": "omfi:Long",
+              "hex": "007e0900",
+              "ranges": [
+                [
+                  21611676,
+                  4
+                ]
+              ],
+              "value": 622080
+            }
+          ],
+          "sampleRate": [
+            {
+              "property": "OMFI:MDFL:SampleRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "80bb000001000000",
+              "ranges": [
+                [
+                  3693524,
+                  8
+                ]
+              ],
+              "value": [
+                48000,
+                1
+              ]
+            }
+          ],
+          "audioSamplingRate": [
+            {
+              "property": "OMFI:PCMA:AudioSamplingRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "80bb000001000000",
+              "ranges": [
+                [
+                  3693532,
+                  8
+                ]
+              ],
+              "value": [
+                48000,
+                1
+              ]
+            }
+          ],
+          "fileEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  3693548,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "fileGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "44010000",
+              "ranges": [
+                [
+                  21612468,
+                  4
+                ]
+              ],
+              "value": 324
+            }
+          ],
+          "masterEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  3050411,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "masterGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "44010000",
+              "ranges": [
+                [
+                  19056156,
+                  4
+                ]
+              ],
+              "value": 324
+            }
+          ]
+        },
+        "exactHeaderSeconds": [
+          324,
+          25
+        ],
+        "audioPrefaceVsMdbFileEditRate": {
+          "literalEqual": true,
+          "mdbRaw": [
+            25,
+            1
+          ],
+          "sameUnderPreviouslyApprovedTypedMdbMapping": true
+        },
+        "fractionalDfQualification": {
+          "state": "notRequiredForRecordedNonDropClock",
+          "candidates": []
+        },
+        "independentArithmeticIllustration": {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/5511410TA01.6A041816BE45ECA.mxf",
+          "count": 622080,
+          "unitRate": [
+            48000,
+            1
+          ],
+          "displayRate": [
+            25,
+            1
+          ],
+          "unroundedDisplayFrames": [
+            324,
+            1
+          ],
+          "roundedDisplayFrames": 324,
+          "nominalBase": 25,
+          "qualifiedDf": false,
+          "proposedColonDuration": "00:00:12:24",
+          "counterfactualNdf": "00:00:12:24",
+          "ownTrackCount": 622080,
+          "ownTrackRate": [
+            48000,
+            1
+          ],
+          "ownTrackSpanDiffersFromDescriptor": false,
+          "countAgreesMdb": true,
+          "durationAgreesMdbAfterApprovedTypedInterpretation": true
+        },
+        "currentModeFormattedIllustration": {
+          "mode": "NDF",
+          "value": "00:00:12:24",
+          "method": "Same previously calculated integer result, with separators clarified by the user22October. No live application output is claimed."
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041581_152C6152C6FCEV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "41d6454ebd62894de5c876116d8da15f95663bcbc4753729ef14341937360244",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ce6f2c1573110696ab807c57583610fa",
+        "mdbFileObject": 193426,
+        "mdbDuration": {
+          "descriptorObject": 193425,
+          "descriptorClass": "CDCI",
+          "length": [
+            {
+              "property": "OMFI:MDFL:Length",
+              "type": "omfi:Long",
+              "hex": "2d010000",
+              "ranges": [
+                [
+                  20859780,
+                  4
+                ]
+              ],
+              "value": 301
+            }
+          ],
+          "sampleRate": [
+            {
+              "property": "OMFI:MDFL:SampleRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  3509683,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "audioSamplingRate": [],
+          "fileEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  3509770,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "fileGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "2d010000",
+              "ranges": [
+                [
+                  20861676,
+                  4
+                ]
+              ],
+              "value": 301
+            }
+          ],
+          "masterEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  2098445,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "masterGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "2d010000",
+              "ranges": [
+                [
+                  15284004,
+                  4
+                ]
+              ],
+              "value": 301
+            }
+          ]
+        },
+        "exactHeaderSeconds": [
+          301,
+          25
+        ],
+        "audioPrefaceVsMdbFileEditRate": null,
+        "fractionalDfQualification": {
+          "state": "notRequiredForRecordedNonDropClock",
+          "candidates": []
+        },
+        "independentArithmeticIllustration": {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041581_152C6152C6FCEV.mxf",
+          "count": 301,
+          "unitRate": [
+            25,
+            1
+          ],
+          "displayRate": [
+            25,
+            1
+          ],
+          "unroundedDisplayFrames": [
+            301,
+            1
+          ],
+          "roundedDisplayFrames": 301,
+          "nominalBase": 25,
+          "qualifiedDf": false,
+          "proposedColonDuration": "00:00:12:01",
+          "counterfactualNdf": "00:00:12:01",
+          "ownTrackCount": 301,
+          "ownTrackRate": [
+            25,
+            1
+          ],
+          "ownTrackSpanDiffersFromDescriptor": false,
+          "countAgreesMdb": true,
+          "durationAgreesMdbAfterApprovedTypedInterpretation": true
+        },
+        "currentModeFormattedIllustration": {
+          "mode": "NDF",
+          "value": "00:00:12:01",
+          "method": "Same previously calculated integer result, with separators clarified by the user22October. No live application output is claimed."
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7280108SMA01.6A04F087D5405A.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "7250a5396f79cd9b932e1af16fd33402f436ce0f4f11de7f51d80a0efc8fac70",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f101300000005547d087311069613b27c57583610fa",
+        "mdbFileObject": 124591,
+        "mdbDuration": {
+          "descriptorObject": 124590,
+          "descriptorClass": "PCMA",
+          "length": [
+            {
+              "property": "OMFI:MDFL:Length",
+              "type": "omfi:Long",
+              "hex": "80a30900",
+              "ranges": [
+                [
+                  11009900,
+                  4
+                ]
+              ],
+              "value": 631680
+            }
+          ],
+          "sampleRate": [
+            {
+              "property": "OMFI:MDFL:SampleRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "80bb000001000000",
+              "ranges": [
+                [
+                  1477092,
+                  8
+                ]
+              ],
+              "value": [
+                48000,
+                1
+              ]
+            }
+          ],
+          "audioSamplingRate": [
+            {
+              "property": "OMFI:PCMA:AudioSamplingRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "80bb000001000000",
+              "ranges": [
+                [
+                  1477100,
+                  8
+                ]
+              ],
+              "value": [
+                48000,
+                1
+              ]
+            }
+          ],
+          "fileEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  1477116,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "fileGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "49010000",
+              "ranges": [
+                [
+                  11010692,
+                  4
+                ]
+              ],
+              "value": 329
+            }
+          ],
+          "masterEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  2101424,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "masterGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "49010000",
+              "ranges": [
+                [
+                  13496468,
+                  4
+                ]
+              ],
+              "value": 329
+            }
+          ]
+        },
+        "exactHeaderSeconds": [
+          329,
+          25
+        ],
+        "audioPrefaceVsMdbFileEditRate": {
+          "literalEqual": true,
+          "mdbRaw": [
+            25,
+            1
+          ],
+          "sameUnderPreviouslyApprovedTypedMdbMapping": true
+        },
+        "fractionalDfQualification": {
+          "state": "notRequiredForRecordedNonDropClock",
+          "candidates": []
+        },
+        "independentArithmeticIllustration": {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7280108SMA01.6A04F087D5405A.mxf",
+          "count": 631680,
+          "unitRate": [
+            48000,
+            1
+          ],
+          "displayRate": [
+            25,
+            1
+          ],
+          "unroundedDisplayFrames": [
+            329,
+            1
+          ],
+          "roundedDisplayFrames": 329,
+          "nominalBase": 25,
+          "qualifiedDf": false,
+          "proposedColonDuration": "00:00:13:04",
+          "counterfactualNdf": "00:00:13:04",
+          "ownTrackCount": 631680,
+          "ownTrackRate": [
+            48000,
+            1
+          ],
+          "ownTrackSpanDiffersFromDescriptor": false,
+          "countAgreesMdb": true,
+          "durationAgreesMdbAfterApprovedTypedInterpretation": true
+        },
+        "currentModeFormattedIllustration": {
+          "mode": "NDF",
+          "value": "00:00:13:04",
+          "method": "Same previously calculated integer result, with separators clarified by the user22October. No live application output is claimed."
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/1730_8646_submastede88816cv.mxf",
+        "headerRange": [
+          256,
+          524064
+        ],
+        "headerSha256": "ae8cf0aff0369ca65ed2f11e9ab0873c57eae9292228d9123455ae748b757711",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f10130000006c8188de27100696dc0d30138b72a179",
+        "mdbFileObject": 142451,
+        "mdbDuration": {
+          "descriptorObject": 142450,
+          "descriptorClass": "CDCI",
+          "length": [
+            {
+              "property": "OMFI:MDFL:Length",
+              "type": "omfi:Long",
+              "hex": "21000000",
+              "ranges": [
+                [
+                  13286996,
+                  4
+                ]
+              ],
+              "value": 33
+            }
+          ],
+          "sampleRate": [
+            {
+              "property": "OMFI:MDFL:SampleRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  2050430,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "audioSamplingRate": [],
+          "fileEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  2050517,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "fileGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "21000000",
+              "ranges": [
+                [
+                  13288892,
+                  4
+                ]
+              ],
+              "value": 33
+            }
+          ],
+          "masterEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  2046062,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "masterGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "21000000",
+              "ranges": [
+                [
+                  13267652,
+                  4
+                ]
+              ],
+              "value": 33
+            }
+          ]
+        },
+        "exactHeaderSeconds": [
+          33,
+          25
+        ],
+        "audioPrefaceVsMdbFileEditRate": null,
+        "fractionalDfQualification": {
+          "state": "notRequiredForRecordedNonDropClock",
+          "candidates": []
+        },
+        "independentArithmeticIllustration": {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/1730_8646_submastede88816cv.mxf",
+          "count": 33,
+          "unitRate": [
+            25,
+            1
+          ],
+          "displayRate": [
+            25,
+            1
+          ],
+          "unroundedDisplayFrames": [
+            33,
+            1
+          ],
+          "roundedDisplayFrames": 33,
+          "nominalBase": 25,
+          "qualifiedDf": false,
+          "proposedColonDuration": "00:00:01:08",
+          "counterfactualNdf": "00:00:01:08",
+          "ownTrackCount": 33,
+          "ownTrackRate": [
+            25,
+            1
+          ],
+          "ownTrackSpanDiffersFromDescriptor": false,
+          "countAgreesMdb": true,
+          "durationAgreesMdbAfterApprovedTypedInterpretation": true
+        },
+        "currentModeFormattedIllustration": {
+          "mode": "NDF",
+          "value": "00:00:01:08",
+          "method": "Same previously calculated integer result, with separators clarified by the user22October. No live application output is claimed."
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7293007LMA01.6A0500C57EA1CA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "3fd75b378276e469f6799026f3e68db865f2e5e1317666c721dd3e50db540a52",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f10130000001cea570c73110696a5e97c57583610fa",
+        "mdbFileObject": 125847,
+        "mdbDuration": {
+          "descriptorObject": 125846,
+          "descriptorClass": "PCMA",
+          "length": [
+            {
+              "property": "OMFI:MDFL:Length",
+              "type": "omfi:Long",
+              "hex": "80b00b00",
+              "ranges": [
+                [
+                  10899684,
+                  4
+                ]
+              ],
+              "value": 766080
+            }
+          ],
+          "sampleRate": [
+            {
+              "property": "OMFI:MDFL:SampleRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "80bb000001000000",
+              "ranges": [
+                [
+                  1508901,
+                  8
+                ]
+              ],
+              "value": [
+                48000,
+                1
+              ]
+            }
+          ],
+          "audioSamplingRate": [
+            {
+              "property": "OMFI:PCMA:AudioSamplingRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "80bb000001000000",
+              "ranges": [
+                [
+                  1508909,
+                  8
+                ]
+              ],
+              "value": [
+                48000,
+                1
+              ]
+            }
+          ],
+          "fileEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  1508925,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "fileGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "8f010000",
+              "ranges": [
+                [
+                  10900476,
+                  4
+                ]
+              ],
+              "value": 399
+            }
+          ],
+          "masterEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  2369290,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "masterGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "8f010000",
+              "ranges": [
+                [
+                  14279964,
+                  4
+                ]
+              ],
+              "value": 399
+            }
+          ]
+        },
+        "exactHeaderSeconds": [
+          399,
+          25
+        ],
+        "audioPrefaceVsMdbFileEditRate": {
+          "literalEqual": true,
+          "mdbRaw": [
+            25,
+            1
+          ],
+          "sameUnderPreviouslyApprovedTypedMdbMapping": true
+        },
+        "fractionalDfQualification": {
+          "state": "notRequiredForRecordedNonDropClock",
+          "candidates": []
+        },
+        "independentArithmeticIllustration": {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7293007LMA01.6A0500C57EA1CA.mxf",
+          "count": 766080,
+          "unitRate": [
+            48000,
+            1
+          ],
+          "displayRate": [
+            25,
+            1
+          ],
+          "unroundedDisplayFrames": [
+            399,
+            1
+          ],
+          "roundedDisplayFrames": 399,
+          "nominalBase": 25,
+          "qualifiedDf": false,
+          "proposedColonDuration": "00:00:15:24",
+          "counterfactualNdf": "00:00:15:24",
+          "ownTrackCount": 766080,
+          "ownTrackRate": [
+            48000,
+            1
+          ],
+          "ownTrackSpanDiffersFromDescriptor": false,
+          "countAgreesMdb": true,
+          "durationAgreesMdbAfterApprovedTypedInterpretation": true
+        },
+        "currentModeFormattedIllustration": {
+          "mode": "NDF",
+          "value": "00:00:15:24",
+          "method": "Same previously calculated integer result, with separators clarified by the user22October. No live application output is claimed."
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/V01.6A050275_B95B90B95B9CCV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "2fdd3de7e4ad0db8c93ed7dad92be469eaf0424c61da09716802d21f0bab8499",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ccb9950b7311069637c77c57583610fa",
+        "mdbFileObject": 155596,
+        "mdbDuration": {
+          "descriptorObject": 155595,
+          "descriptorClass": "CDCI",
+          "length": [
+            {
+              "property": "OMFI:MDFL:Length",
+              "type": "omfi:Long",
+              "hex": "32000000",
+              "ranges": [
+                [
+                  14621100,
+                  4
+                ]
+              ],
+              "value": 50
+            }
+          ],
+          "sampleRate": [
+            {
+              "property": "OMFI:MDFL:SampleRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  2457857,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "audioSamplingRate": [],
+          "fileEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  2457927,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "fileGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "32000000",
+              "ranges": [
+                [
+                  14622972,
+                  4
+                ]
+              ],
+              "value": 50
+            }
+          ],
+          "masterEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  1362273,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "masterGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "32000000",
+              "ranges": [
+                [
+                  10306620,
+                  4
+                ]
+              ],
+              "value": 50
+            }
+          ]
+        },
+        "exactHeaderSeconds": [
+          2,
+          1
+        ],
+        "audioPrefaceVsMdbFileEditRate": null,
+        "fractionalDfQualification": {
+          "state": "notRequiredForRecordedNonDropClock",
+          "candidates": []
+        },
+        "independentArithmeticIllustration": {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/V01.6A050275_B95B90B95B9CCV.mxf",
+          "count": 50,
+          "unitRate": [
+            25,
+            1
+          ],
+          "displayRate": [
+            25,
+            1
+          ],
+          "unroundedDisplayFrames": [
+            50,
+            1
+          ],
+          "roundedDisplayFrames": 50,
+          "nominalBase": 25,
+          "qualifiedDf": false,
+          "proposedColonDuration": "00:00:02:00",
+          "counterfactualNdf": "00:00:02:00",
+          "ownTrackCount": 50,
+          "ownTrackRate": [
+            25,
+            1
+          ],
+          "ownTrackSpanDiffersFromDescriptor": false,
+          "countAgreesMdb": true,
+          "durationAgreesMdbAfterApprovedTypedInterpretation": true
+        },
+        "currentModeFormattedIllustration": {
+          "mode": "NDF",
+          "value": "00:00:02:00",
+          "method": "Same previously calculated integer result, with separators clarified by the user22October. No live application output is claimed."
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "4e1ea26a6459f3e1d07e3c361986602f1c28e8a9d31d0de4ff7ef5ed80676b38",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f10130000009a583c0a5512069048e346fc807fda72",
+        "mdbFileObject": 75154,
+        "mdbDuration": {
+          "descriptorObject": 75153,
+          "descriptorClass": "PCMA",
+          "length": [
+            {
+              "property": "OMFI:MDFL:Length",
+              "type": "omfi:Long",
+              "hex": "80691600",
+              "ranges": [
+                [
+                  1672508,
+                  4
+                ]
+              ],
+              "value": 1468800
+            }
+          ],
+          "sampleRate": [
+            {
+              "property": "OMFI:MDFL:SampleRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "80bb000001000000",
+              "ranges": [
+                [
+                  193612,
+                  8
+                ]
+              ],
+              "value": [
+                48000,
+                1
+              ]
+            }
+          ],
+          "audioSamplingRate": [
+            {
+              "property": "OMFI:PCMA:AudioSamplingRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "80bb000001000000",
+              "ranges": [
+                [
+                  193620,
+                  8
+                ]
+              ],
+              "value": [
+                48000,
+                1
+              ]
+            }
+          ],
+          "fileEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "b50b000064000000",
+              "ranges": [
+                [
+                  193636,
+                  8
+                ]
+              ],
+              "value": [
+                2997,
+                100
+              ]
+            }
+          ],
+          "fileGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "96030000",
+              "ranges": [
+                [
+                  1673300,
+                  4
+                ]
+              ],
+              "value": 918
+            }
+          ],
+          "masterEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "b50b000064000000",
+              "ranges": [
+                [
+                  198590,
+                  8
+                ]
+              ],
+              "value": [
+                2997,
+                100
+              ]
+            }
+          ],
+          "masterGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "95030000",
+              "ranges": [
+                [
+                  1703228,
+                  4
+                ]
+              ],
+              "value": 917
+            }
+          ]
+        },
+        "exactHeaderSeconds": [
+          153,
+          5
+        ],
+        "audioPrefaceVsMdbFileEditRate": {
+          "literalEqual": false,
+          "mdbRaw": [
+            2997,
+            100
+          ],
+          "sameUnderPreviouslyApprovedTypedMdbMapping": true
+        },
+        "fractionalDfQualification": {
+          "state": "oneCompatibleQualifiedCandidate",
+          "candidates": [
+            {
+              "fileTrackOffset": 131443,
+              "fileSourceClipOffset": 131659,
+              "sourcePackageId": "060a2b340101010501010f1013000000b3583c0a55120690fb8546fc807fda72",
+              "sourceTrackID": 3,
+              "targetSourceTrackOffset": 133138,
+              "targetSourceTrackEditRate": [
+                30000,
+                1001
+              ],
+              "sourceClipStartPosition": 0,
+              "fileTrackOrigin": 0,
+              "targetTrackOrigin": 0,
+              "physicalRangeSeconds": [
+                [
+                  0,
+                  1
+                ],
+                [
+                  153,
+                  5
+                ]
+              ],
+              "timecodeTrackOffset": 132822,
+              "timecodeComponentOffset": 133038,
+              "timecodeTrackOrigin": 0,
+              "timecodeRangeSeconds": [
+                [
+                  0,
+                  1
+                ],
+                [
+                  432432,
+                  1
+                ]
+              ],
+              "timecodeEditRate": [
+                30000,
+                1001
+              ],
+              "roundedBase": 30,
+              "dropFrame": false,
+              "flagField": {
+                "property": "TimecodeComponent.DropFrame",
+                "type": "MXF_BOOLEAN_TYPE",
+                "hex": "00",
+                "range": [
+                  133087,
+                  1
+                ],
+                "value": 0
+              },
+              "baseField": {
+                "property": "TimecodeComponent.RoundedTimecodeBase",
+                "type": "MXF_UINT16_TYPE",
+                "hex": "001e",
+                "range": [
+                  133092,
+                  2
+                ],
+                "value": 30
+              },
+              "proofScope": "Explicit fullSourcePackageID+SourceTrackID match; actual StartPosition and all involved origins0; sole timecodecomponent starts0, matching displayrate/base and covering physicaldescriptor duration. No nonzero cross-ratepositionconversion inferred."
+            }
+          ]
+        },
+        "independentArithmeticIllustration": {
+          "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf",
+          "count": 1468800,
+          "unitRate": [
+            48000,
+            1
+          ],
+          "displayRate": [
+            30000,
+            1001
+          ],
+          "unroundedDisplayFrames": [
+            918000,
+            1001
+          ],
+          "roundedDisplayFrames": 917,
+          "nominalBase": 30,
+          "qualifiedDf": false,
+          "proposedColonDuration": "00:00:30:17",
+          "counterfactualNdf": "00:00:30:17",
+          "ownTrackCount": 1470269,
+          "ownTrackRate": [
+            48000,
+            1
+          ],
+          "ownTrackSpanDiffersFromDescriptor": true,
+          "countAgreesMdb": true,
+          "durationAgreesMdbAfterApprovedTypedInterpretation": true
+        },
+        "currentModeFormattedIllustration": {
+          "mode": "NDF",
+          "value": "00:00:30:17",
+          "method": "Same previously calculated integer result, with separators clarified by the user22October. No live application output is claimed."
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/Untitled Sequence.175B1728V.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "0d324bb99c9183d04541c75b00944e5808410cee4d72eae603c322eaf6994a62",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f101300000028175b1761120690badf46fc807fda72",
+        "mdbFileObject": 73992,
+        "mdbDuration": {
+          "descriptorObject": 73991,
+          "descriptorClass": "CDCI",
+          "length": [
+            {
+              "property": "OMFI:MDFL:Length",
+              "type": "omfi:Long",
+              "hex": "a4470000",
+              "ranges": [
+                [
+                  1495172,
+                  4
+                ]
+              ],
+              "value": 18340
+            }
+          ],
+          "sampleRate": [
+            {
+              "property": "OMFI:MDFL:SampleRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "b50b000064000000",
+              "ranges": [
+                [
+                  161723,
+                  8
+                ]
+              ],
+              "value": [
+                2997,
+                100
+              ]
+            }
+          ],
+          "audioSamplingRate": [],
+          "fileEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "b50b000064000000",
+              "ranges": [
+                [
+                  161810,
+                  8
+                ]
+              ],
+              "value": [
+                2997,
+                100
+              ]
+            }
+          ],
+          "fileGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "a4470000",
+              "ranges": [
+                [
+                  1497068,
+                  4
+                ]
+              ],
+              "value": 18340
+            }
+          ],
+          "masterEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "b50b000064000000",
+              "ranges": [
+                [
+                  162939,
+                  8
+                ]
+              ],
+              "value": [
+                2997,
+                100
+              ]
+            }
+          ],
+          "masterGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "a4470000",
+              "ranges": [
+                [
+                  1504412,
+                  4
+                ]
+              ],
+              "value": 18340
+            }
+          ]
+        },
+        "exactHeaderSeconds": [
+          917917,
+          1500
+        ],
+        "audioPrefaceVsMdbFileEditRate": null,
+        "fractionalDfQualification": {
+          "state": "oneCompatibleQualifiedCandidate",
+          "candidates": [
+            {
+              "fileTrackOffset": 124148,
+              "fileSourceClipOffset": 124364,
+              "sourcePackageId": "060a2b340101010101010f001300000038d60dbefb6d163b8e40da9649f531f4",
+              "sourceTrackID": 1,
+              "targetSourceTrackOffset": 121972,
+              "targetSourceTrackEditRate": [
+                30000,
+                1001
+              ],
+              "sourceClipStartPosition": 0,
+              "fileTrackOrigin": 0,
+              "targetTrackOrigin": 0,
+              "physicalRangeSeconds": [
+                [
+                  0,
+                  1
+                ],
+                [
+                  917917,
+                  1500
+                ]
+              ],
+              "timecodeTrackOffset": 122321,
+              "timecodeComponentOffset": 122537,
+              "timecodeTrackOrigin": 0,
+              "timecodeRangeSeconds": [
+                [
+                  0,
+                  1
+                ],
+                [
+                  917917,
+                  1500
+                ]
+              ],
+              "timecodeEditRate": [
+                30000,
+                1001
+              ],
+              "roundedBase": 30,
+              "dropFrame": true,
+              "flagField": {
+                "property": "TimecodeComponent.DropFrame",
+                "type": "MXF_BOOLEAN_TYPE",
+                "hex": "01",
+                "range": [
+                  122586,
+                  1
+                ],
+                "value": 1
+              },
+              "baseField": {
+                "property": "TimecodeComponent.RoundedTimecodeBase",
+                "type": "MXF_UINT16_TYPE",
+                "hex": "001e",
+                "range": [
+                  122591,
+                  2
+                ],
+                "value": 30
+              },
+              "proofScope": "Explicit fullSourcePackageID+SourceTrackID match; actual StartPosition and all involved origins0; sole timecodecomponent starts0, matching displayrate/base and covering physicaldescriptor duration. No nonzero cross-ratepositionconversion inferred."
+            }
+          ]
+        },
+        "independentArithmeticIllustration": {
+          "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/Untitled Sequence.175B1728V.mxf",
+          "count": 18340,
+          "unitRate": [
+            30000,
+            1001
+          ],
+          "displayRate": [
+            30000,
+            1001
+          ],
+          "unroundedDisplayFrames": [
+            18340,
+            1
+          ],
+          "roundedDisplayFrames": 18340,
+          "nominalBase": 30,
+          "qualifiedDf": true,
+          "proposedColonDuration": "00:10:11:28",
+          "counterfactualNdf": "00:10:11:10",
+          "ownTrackCount": 18340,
+          "ownTrackRate": [
+            30000,
+            1001
+          ],
+          "ownTrackSpanDiffersFromDescriptor": false,
+          "countAgreesMdb": true,
+          "durationAgreesMdbAfterApprovedTypedInterpretation": true
+        },
+        "currentModeFormattedIllustration": {
+          "mode": "DF",
+          "value": "00;10;11;28",
+          "method": "Same previously calculated integer result, with separators clarified by the user22October. No live application output is claimed."
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69684C0_1C5401C5406FAV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "61d42c7317b051b4233a1b7724c5bc66914af5d30498e0ed7fadd6b73e7ca27b",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f1013000000fa06541c55120690f7b846fc807fda72",
+        "mdbFileObject": 88016,
+        "mdbDuration": {
+          "descriptorObject": 88015,
+          "descriptorClass": "CDCI",
+          "length": [
+            {
+              "property": "OMFI:MDFL:Length",
+              "type": "omfi:Long",
+              "hex": "95030000",
+              "ranges": [
+                [
+                  3657620,
+                  4
+                ]
+              ],
+              "value": 917
+            }
+          ],
+          "sampleRate": [
+            {
+              "property": "OMFI:MDFL:SampleRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "b50b000064000000",
+              "ranges": [
+                [
+                  542267,
+                  8
+                ]
+              ],
+              "value": [
+                2997,
+                100
+              ]
+            }
+          ],
+          "audioSamplingRate": [],
+          "fileEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "b50b000064000000",
+              "ranges": [
+                [
+                  542354,
+                  8
+                ]
+              ],
+              "value": [
+                2997,
+                100
+              ]
+            }
+          ],
+          "fileGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "95030000",
+              "ranges": [
+                [
+                  3659540,
+                  4
+                ]
+              ],
+              "value": 917
+            }
+          ],
+          "masterEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "b50b000064000000",
+              "ranges": [
+                [
+                  543873,
+                  8
+                ]
+              ],
+              "value": [
+                2997,
+                100
+              ]
+            }
+          ],
+          "masterGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "95030000",
+              "ranges": [
+                [
+                  3666476,
+                  4
+                ]
+              ],
+              "value": 917
+            }
+          ]
+        },
+        "exactHeaderSeconds": [
+          917917,
+          30000
+        ],
+        "audioPrefaceVsMdbFileEditRate": null,
+        "fractionalDfQualification": {
+          "state": "oneCompatibleQualifiedCandidate",
+          "candidates": [
+            {
+              "fileTrackOffset": 133721,
+              "fileSourceClipOffset": 133937,
+              "sourcePackageId": "060a2b340101010501010f10130000001a07541c551206909e2d46fc807fda72",
+              "sourceTrackID": 1,
+              "targetSourceTrackOffset": 127662,
+              "targetSourceTrackEditRate": [
+                30000,
+                1001
+              ],
+              "sourceClipStartPosition": 0,
+              "fileTrackOrigin": 0,
+              "targetTrackOrigin": 0,
+              "physicalRangeSeconds": [
+                [
+                  0,
+                  1
+                ],
+                [
+                  917917,
+                  30000
+                ]
+              ],
+              "timecodeTrackOffset": 128011,
+              "timecodeComponentOffset": 128227,
+              "timecodeTrackOrigin": 0,
+              "timecodeRangeSeconds": [
+                [
+                  0,
+                  1
+                ],
+                [
+                  432432,
+                  1
+                ]
+              ],
+              "timecodeEditRate": [
+                30000,
+                1001
+              ],
+              "roundedBase": 30,
+              "dropFrame": false,
+              "flagField": {
+                "property": "TimecodeComponent.DropFrame",
+                "type": "MXF_BOOLEAN_TYPE",
+                "hex": "00",
+                "range": [
+                  128276,
+                  1
+                ],
+                "value": 0
+              },
+              "baseField": {
+                "property": "TimecodeComponent.RoundedTimecodeBase",
+                "type": "MXF_UINT16_TYPE",
+                "hex": "001e",
+                "range": [
+                  128281,
+                  2
+                ],
+                "value": 30
+              },
+              "proofScope": "Explicit fullSourcePackageID+SourceTrackID match; actual StartPosition and all involved origins0; sole timecodecomponent starts0, matching displayrate/base and covering physicaldescriptor duration. No nonzero cross-ratepositionconversion inferred."
+            }
+          ]
+        },
+        "independentArithmeticIllustration": {
+          "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69684C0_1C5401C5406FAV.mxf",
+          "count": 917,
+          "unitRate": [
+            30000,
+            1001
+          ],
+          "displayRate": [
+            30000,
+            1001
+          ],
+          "unroundedDisplayFrames": [
+            917,
+            1
+          ],
+          "roundedDisplayFrames": 917,
+          "nominalBase": 30,
+          "qualifiedDf": false,
+          "proposedColonDuration": "00:00:30:17",
+          "counterfactualNdf": "00:00:30:17",
+          "ownTrackCount": 917,
+          "ownTrackRate": [
+            30000,
+            1001
+          ],
+          "ownTrackSpanDiffersFromDescriptor": false,
+          "countAgreesMdb": true,
+          "durationAgreesMdbAfterApprovedTypedInterpretation": true
+        },
+        "currentModeFormattedIllustration": {
+          "mode": "NDF",
+          "value": "00:00:30:17",
+          "method": "Same previously calculated integer result, with separators clarified by the user22October. No live application output is claimed."
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_78D9V02.22180610.586550.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "a38155c6b34a9f570b7648fb69751b822e9a1818da0ca5be7ec975d03d9098f5",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64",
+        "mdbFileObject": 93780,
+        "mdbDuration": {
+          "descriptorObject": 93779,
+          "descriptorClass": "RGBA",
+          "length": [
+            {
+              "property": "OMFI:MDFL:Length",
+              "type": "omfi:Long",
+              "hex": "01000000",
+              "ranges": [
+                [
+                  5128732,
+                  4
+                ]
+              ],
+              "value": 1
+            }
+          ],
+          "sampleRate": [
+            {
+              "property": "OMFI:MDFL:SampleRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1800000001000000",
+              "ranges": [
+                [
+                  1394336,
+                  8
+                ]
+              ],
+              "value": [
+                24,
+                1
+              ]
+            }
+          ],
+          "audioSamplingRate": [],
+          "fileEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1800000001000000",
+              "ranges": [
+                [
+                  1394423,
+                  8
+                ]
+              ],
+              "value": [
+                24,
+                1
+              ]
+            }
+          ],
+          "fileGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "400b0000",
+              "ranges": [
+                [
+                  5130604,
+                  4
+                ]
+              ],
+              "value": 2880
+            }
+          ],
+          "masterEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1800000001000000",
+              "ranges": [
+                [
+                  1395695,
+                  8
+                ]
+              ],
+              "value": [
+                24,
+                1
+              ]
+            }
+          ],
+          "masterGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "400b0000",
+              "ranges": [
+                [
+                  5137204,
+                  4
+                ]
+              ],
+              "value": 2880
+            }
+          ]
+        },
+        "exactHeaderSeconds": [
+          1,
+          24
+        ],
+        "audioPrefaceVsMdbFileEditRate": null,
+        "fractionalDfQualification": {
+          "state": "notRequiredForRecordedNonDropClock",
+          "candidates": []
+        },
+        "independentArithmeticIllustration": {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_78D9V02.22180610.586550.mxf",
+          "count": 1,
+          "unitRate": [
+            24,
+            1
+          ],
+          "displayRate": [
+            24,
+            1
+          ],
+          "unroundedDisplayFrames": [
+            1,
+            1
+          ],
+          "roundedDisplayFrames": 1,
+          "nominalBase": 24,
+          "qualifiedDf": false,
+          "proposedColonDuration": "00:00:00:01",
+          "counterfactualNdf": "00:00:00:01",
+          "ownTrackCount": 2880,
+          "ownTrackRate": [
+            24,
+            1
+          ],
+          "ownTrackSpanDiffersFromDescriptor": true,
+          "countAgreesMdb": true,
+          "durationAgreesMdbAfterApprovedTypedInterpretation": true
+        },
+        "currentModeFormattedIllustration": {
+          "mode": "NDF",
+          "value": "00:00:00:01",
+          "method": "Same previously calculated integer result, with separators clarified by the user22October. No live application output is claimed."
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041582_152D2152D2556V.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "f0ce781201559fa7494cb139a75b149b7a94fe0d43281428073afed0f8ca7685",
+        "stableImmediate": true,
+        "fileNormalizedHex": "060a2b340101010501010f101300000056252d15731106965e367c57583610fa",
+        "mdbFileObject": 164530,
+        "mdbDuration": {
+          "descriptorObject": 164529,
+          "descriptorClass": "CDCI",
+          "length": [
+            {
+              "property": "OMFI:MDFL:Length",
+              "type": "omfi:Long",
+              "hex": "58010000",
+              "ranges": [
+                [
+                  17289348,
+                  4
+                ]
+              ],
+              "value": 344
+            }
+          ],
+          "sampleRate": [
+            {
+              "property": "OMFI:MDFL:SampleRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  2603009,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "audioSamplingRate": [],
+          "fileEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  2603096,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "fileGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "58010000",
+              "ranges": [
+                [
+                  17291244,
+                  4
+                ]
+              ],
+              "value": 344
+            }
+          ],
+          "masterEditRate": [
+            {
+              "property": "OMFI:CPNT:EditRate",
+              "type": "omfi:ExactEditRate",
+              "hex": "1900000001000000",
+              "ranges": [
+                [
+                  2331589,
+                  8
+                ]
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "masterGroupLength": [
+            {
+              "property": "OMFI:TRKG:GroupLength",
+              "type": "omfi:Long",
+              "hex": "58010000",
+              "ranges": [
+                [
+                  16203396,
+                  4
+                ]
+              ],
+              "value": 344
+            }
+          ]
+        },
+        "exactHeaderSeconds": [
+          344,
+          25
+        ],
+        "audioPrefaceVsMdbFileEditRate": null,
+        "fractionalDfQualification": {
+          "state": "notRequiredForRecordedNonDropClock",
+          "candidates": []
+        },
+        "independentArithmeticIllustration": {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041582_152D2152D2556V.mxf",
+          "count": 344,
+          "unitRate": [
+            25,
+            1
+          ],
+          "displayRate": [
+            25,
+            1
+          ],
+          "unroundedDisplayFrames": [
+            344,
+            1
+          ],
+          "roundedDisplayFrames": 344,
+          "nominalBase": 25,
+          "qualifiedDf": false,
+          "proposedColonDuration": "00:00:13:19",
+          "counterfactualNdf": "00:00:13:19",
+          "ownTrackCount": 344,
+          "ownTrackRate": [
+            25,
+            1
+          ],
+          "ownTrackSpanDiffersFromDescriptor": false,
+          "countAgreesMdb": true,
+          "durationAgreesMdbAfterApprovedTypedInterpretation": true
+        },
+        "currentModeFormattedIllustration": {
+          "mode": "NDF",
+          "value": "00:00:13:19",
+          "method": "Same previously calculated integer result, with separators clarified by the user22October. No live application output is claimed."
+        }
+      }
+    ],
+    "qualificationLimits": [
+      "Thirteenpurposefulsamplesnotfullcorpus;all13descriptorContainerDurationpresent,sofallbackmissing/damagedcasesnotobserved.",
+      "Typedrationalheader valuesnotrunthroughAvidlegacyMDBExactEditRateconverter;rawMDBdecimalaliasescomparedasraw,notcalledcorruption.",
+      "RecordedPrefaceProjectEditRateisaspecificheaderfield,notcurrentappsetting. Whetheritistheapprovedaudioformattingclockremainsexplicitdesign/nativequalificationdecision.",
+      "Timecodeowner/clocksreportedforfile,selectedmaster,immediatesourceindependently; presencealoneisnotqualifiedDFdecision.",
+      "Nozero/negative/unavailable/contradictoryclockorDFdamagecampaignexecuted.",
+      "Exactsource-rangeDFqualificationdoneonlyforactual3fractional-clockzero-start/zero-origin cases. Otherobservedsourceshaveclock-compatibleTCbutnonzeroaudioStartPositioncross-ratehandlingwasnotgeneralized;24/25recordedclocksneednoDFlookup."
+    ],
+    "generalLimits": [
+      "Thirteenselectedfiles,nogeneralproducerorallformatcoverage.",
+      "Directpairpresent13/13;nogenuinemissing/damagedContainerDuration,invalidrate,zero,lengthoverfloworunusablePrefaceclockcaseobserved.",
+      "ExactDFsource-spanqualificationonlythreefractionalclockactualzero-start/origincases.OtherNDF-only24/25casesdonotrequirethislookup;nonzeroaudioStartPositioncross-rateunitsnotgeneralized.",
+      "Currentcodegapsarenativesourceauditfindings,notclaimsofanobservedUIerror,crashornewproductiontestrun.",
+      "NoSMPTEfield/blockconversionruleinferredfromtheseequalclockcontrols;unitsemanticsmustfollowlayout,andexplicitMXFrationalsarenotAvidMDBdecimalaliases.",
+      "Proposedcolonrenderingsarepuredeterministicarithmeticillustrationsusingobservedqualifiedfacts,notscreenshotsorliveappoutputs.",
+      "Noactualperformancegainmeasured,noruntimecodechanged."
+    ]
+  },
+  "proposal": {
+    "status": "Proposed, not approved or implemented.",
+    "physicalPair": "The already qualified essence-linked physical file descriptor ContainerDuration + its own SampleRate. Preserve nonnegative signed64 count and exact rational with numerator>0 and denominator>0. No master/source segment count or mixed-source repair.",
+    "missingDamagedPair": "Leave MXF Duration unavailable and keep physical row/independent facts. No new file-track recovery proposed in release one; retain existing fallback as research until physical-container equivalence is established.",
+    "unitSemantics": "Preserve the recorded count unit. General MXF can use frames, fields or coding blocks. Preserve exact PCM samples where the supported representation counts them, otherwise exact native units; do not universally substitute AudioSamplingRate or halve interlaced rates.",
+    "videoDisplayClock": "Use the supported own frame/editing clock with known sample-unit interpretation. All eight sampled own video Track.EditRate values equal the descriptor rate. Unobserved variants require verification.",
+    "audioDisplayClock": "Use usable recorded Preface.ProjectEditRate from the same active physical header. The five sampled rates match interpreted MDB own-file editing clocks. Do not use 48kHz as FPS, guess current application/project or borrow another master. Missing/damaged required display timing leaves formatted Duration blank.",
+    "numbering": "Apply existing qualified recorded DF/NDF-on-proven-absence/blank-on-damaged-relevant-numbering policy to correctly decoded one-byte0/1 Boolean plus RoundedTimecodeBase, track EditRate and range. Follow relevant explicit file-source references with full-ID/track/offset/range validation. No unrelated first flag or StartTimecode addition. Known NDF-only clocks need no DF lookup.",
+    "rangeEvidenceBoundary": "Three actual fractional-clock cases have explicit full SourcePackageID/SourceTrackID, zero starts/origins and same-rate timecode covering physical duration. Other nonzero cross-rate audio source positions are not fully generalized; their supported24/25 NDF-only display clocks need no DF lookup.",
+    "interpretationAndMath": "Use explicit MXF rationals directly; legacy MDB alias interpreter remains source-specific. Share the agreed exact integer/fraction formatter after interpretation, retain precise audio/native count, round only final audio display frames nearest with half-up. No float/decimal rate-string detour.",
+    "display": "Approved format clarification: NDF HH:MM:SS:FF; DF HH;MM;SS;FF. Known zero and positive audio legitimately rounded to zero use the selected mode separators; unavailable required timing stays blank; hours exceed24 without wrap. Audio visible Frame Rate remains blank. Other new detailed MXF field/clock/recovery proposals remain unapproved.",
+    "retention": "Only selected count/rate, required display clock, qualified mode and compact availability. Share needed AudioSamplingRate/wrapping facts with other fields; release raw/header/reference/candidate structures. New small C++17/Qt6.5 helpers, no runtime implementation selected here.",
+    "sourceBoundary": "Keep usable MDB Duration first. MXF Duration only on already agreed database-unavailable fallback; no Duration-only header open or count/rate/clock/DF hybrid. Full source-priority table and extra-read triggers stay deferred."
+  },
+  "primaryFormatSource": {
+    "url": "https://pub.smpte.org/latest/st377-1/st377-1-2019.pdf",
+    "sections": [
+      "F.2 File Descriptor",
+      "G.2.2 Sample Rate and Edit Rate",
+      "B.17 Timecode Component"
+    ],
+    "use": "Property/unit semantics; not application GUI parity or a new support-scope requirement."
+  },
+  "validation": {
+    "rawReceiptsVerified": true,
+    "distinctReferencedHashesVerified": 86,
+    "jsonParsed": true,
+    "metadataRead": true,
+    "essenceRead": false,
+    "fullMediaHashes": false,
+    "productionTestsRun": false,
+    "appOrPrivateApiRun": false,
+    "temporaryDecoderProbe": "Compiled; initial execution aborted in Qt CPU-feature detection, so no completed runtime decoder assertion. Source tracing and compile-only LLVM corroboration are retained separately.",
+    "runtimeCodeChanged": false,
+    "performanceMeasured": false
+  },
+  "formatRevision": {
+    "date": "2026-10-22",
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-duration-format-revision-2026-10-22.json",
+    "sha256": "72dc93d95038da36e87bb908d05e80b3d6b6617019a973a906403e98ed273d6b",
+    "status": "Approved across Bella: NDF colons; DF semicolons. Earlier forced-colon wording and colon-only DF illustrations in historical research are superseded without changing their numerical results or native observations."
+  },
+  "approvedBy": {
+    "date": "2026-10-22",
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-duration-plan-2026-10-22.json",
+    "statement": "OK, let's lock those Duration rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Frame Rate from MXF, and what should Bella read and keep?"
+  }
+}

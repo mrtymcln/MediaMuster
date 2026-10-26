@@ -1,0 +1,1137 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "MXF Clip Name owner/text reading comparison and compact-retention recommendation for Bella.",
+  "request": "OK, let's lock those FileMobId and MasterMobId rules in for Bella. Next, how do Media Composer and MDVX read Clip Name from MXF, and what should Bella read and keep?",
+  "status": "MXF identity rules and the five focused Clip Name rules were approved separately on 2026-10-22. Clip Name requirements remain unimplemented; historical research findings and limits are unchanged.",
+  "precedingIdentityApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-identities-plan-2026-10-22.json",
+    "sha256": "3762a87244ca4c7be334dca3c3e6e9465f2cc831b808d87035f5ea228a1b8c66"
+  },
+  "mediaComposer": {
+    "binary": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+    },
+    "toolkitBinary": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libcom-api.dylib",
+      "sha256": "9bef7c474afa461af413cde63dcbc0b048aeabe2a685bc3fd487cb4647447728"
+    },
+    "date": "2026-10-22",
+    "timezone": "Australia/Sydney",
+    "method": "Read-only selective installed arm64 disassembly, vtable slot resolution and manual reconstruction of the managed MXF mob-to-name import path. No app/privateAPI/parser execution or media reads.",
+    "findings": [
+      {
+        "topic": "Actual managed-media path",
+        "anchors": [
+          "LocalMDB::ScanMXFFileToMobManager 0x41b924",
+          "MSMDBMediaStreamMgr::ScanMXFFileToCache 0x44e184",
+          "AAFDomain::CopyOut 0x4a184",
+          "AComposition::ConvertCompositionFromAAF 0x193658"
+        ],
+        "evidence": "Both scanner paths enumerate and classify master/file mobs then call domain virtual slot0x1f8 (e.g. LocalMDB0x41bdf8 and MSMDB0x44e70c). The inspected MXFDomain/AAFDomain vtables map this to CopyOut. CopyOut qualifies the mob role, creates a composition and calls virtualslot0xbe8 at0x4a374. AComposition vtable maps that to ConvertCompositionFromAAF. This connects the selected name import block to ordinary scanner mob import rather than an unrelated legacy string helper."
+      },
+      {
+        "topic": "Exact name getter",
+        "anchors": [
+          "ConvertCompositionFromAAF name block 0x1942b4..0x1943d8",
+          "CAAFMob::GetName 0x3c75c",
+          "CAAFMob::GetNameBufLen 0x3c828"
+        ],
+        "evidence": "Name block starts with countzero0x1942b4, calls IAAFMob GetNameBufLen via0x38 at0x1942cc, allocates a widebuffer if countnonzero, calls GetName via0x30 at0x194308. Successful GetName passes wide name to ConvertUnicodeToInternal at0x194318 and AComposition virtualname setter0x2a8 at0x194334, resolving to AComponent::SetNameCopy0x1494e8. No physicalfilename fallback or SourcePackage.Name lookup appears in this local name block; master import gets the name of its supplied master."
+      },
+      {
+        "topic": "Toolkit name property presence and bounds",
+        "anchors": [
+          "ImplAAFMob::GetName 0x113e80",
+          "ImplAAFMob::GetNameBufLen 0x113f1c"
+        ],
+        "evidence": "Both methods access the name property at this+0x118 and check presence. GetName checks recorded size against supplied destination size, then copies typed stored text. Getter names/vtable establish these calls are Name, not project or trackname. This is after typed toolkit decoding, not direct raw UTF16 byte interpretation."
+      },
+      {
+        "topic": "Internal Unicode conversion is not lossless proof",
+        "anchors": [
+          "AAFDomain::ConvertUnicodeToInternal 0x4e47c"
+        ],
+        "evidence": "If domain flag+0x2b2 equals1, conversion calls TrimBadUnicodeToAsci then wcstombs. Otherwise uses AvText with systemencoding constants then copies resulting charstring. This does not make wireName MacRoman/UTF8, prove lossless everyUnicode character or require Bella to use the same locale/intermediate encoding. Raw MXFName UTF16BE is established separately by schema and ST377-1."
+      },
+      {
+        "topic": "Missing/empty/error qualification",
+        "anchors": [
+          "0x1942b4..0x1943d8",
+          "0x113e80..0x113f84"
+        ],
+        "evidence": "Caller ignores lengthgetter HRESULT but initializedcountzero. Zero count enters role-dependent missingname handling; some roles emit Missing clip name, physicaldescriptor conditions can omit warning. Failed GetName skips converter/setter, bypassing warningblock. Normally stored emptyterminated text with nonzero storage can follow normalconversion. No universal UIplaceholder, allerrortransactionality or filenamefallback asserted."
+      }
+    ],
+    "limits": [
+      "Selected installed managed-media import paths, not every MediaComposer UI/editor/export workflow.",
+      "No malformedfixture execution, Unicodeconformance test or scanbenchmark.",
+      "Native internalconversion is not a losslessUnicode preservation guarantee. Bella recommendation may retain decodedQString directly.",
+      "New ClipName owner/text/blank/retention rules remain proposals; MXFidentity rules were approved22October."
+    ]
+  },
+  "mdvx": {
+    "date": "2026-10-22",
+    "method": "Fresh read-only arm64 otool disassembly of installed MDVx. Bounded relevant functions extracted; ADR names resolved against prior nm/CFString map for the identical binary. No app, private API, corrupt-fixture, UI or media writes.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "size": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+    },
+    "ownerAndSelection": {
+      "owner": "GenericPackage.Name on the singular exact MaterialPackage selected by ami_read_info.",
+      "evidence": "0x100010044..0x100010058 finds singular MaterialPackage class,0x100010074..0x1000100a0 checks GenericPackage.Name and get_string_value with output info+0x0 (clipName).",
+      "optional": "mxf_have_item false skips directly to0x1000100a4; info.clipName was zero-initialized, so missing Name does not itself fail ami_read_info.",
+      "multipleMasters": "mxf_find_singular_set_by_key0x100044aa8 requires exactlyone match. Zero/multiple exact MaterialPackage sets cause ami failure before Name selection; does not choose firstmaster or linkedmaster here.",
+      "sourceName": "Later GenericPackage.Name read at0x10001180c..0x100011838 outputs info+0x118 for physical source details. It does not write clipName at info+0x0. No FileSourcePackage.Name fallback to clipName identified in this ordinary route.",
+      "independentOfFilename": "MXF material Name is not derived by stripping extension from filename."
+    },
+    "textPipeline": {
+      "wire": "UTF16BE field bytes; mxf_get_utf16string_item0x10004993c swaps each2-byte BE codeunit to host mxfUTF16Char (4-byte slots in this build).",
+      "path": "get_string_value0x100011b08 -> mxf_get_utf16string_item_size0x1000498bc -> malloc -> mxf_get_utf16string_item -> convert_string0x100011c7c -> mxf_utf16_to_utf8 twice(size/allocation then conversion) -> MDVxMXF.openFile NSString.stringWithUTF8String at0x100032440.",
+      "surrogates": "mxf_utf16_to_utf8 0x100013958 checks high-surrogate followedby low-surrogate, emits4-byte UTF8; malformed isolatedsurrogates return(size_t)-1. convert_string propagates failure, get_string_value propagates failure, ami clipNameread aborts at0x1000100a0->0x100010638.",
+      "terminator": "Getter stops at first zeroUTF16 codeunit. If none within complete property codeunits, it appends a hostterminator; no mandatory trailing-wire-NUL check. EmbeddedNUL truncates subsequent content.",
+      "oddByteLength": "Getter uses length>>1; no paritycheck is visible in this bounded path. Trailing odd byte is not consumed as text. Length0/1 becomes empty hoststring.",
+      "empty": "A presentemptyorleadingNULvalue becomes allocatedempty UTF8 then NSString empty; it is not considered missing by the name path.",
+      "noCleanupIdentified": "No whitespace trimming, casefolding, NFC/NFD normalization, BOM stripping or MacRoman fallback call appears in traced normalName path.",
+      "doNotCopyTolerance": "Missingterminator, oddtrailingbyte and veryshortvalue tolerances are tracedbehavior, not recommendations for Bella."
+    },
+    "projectionAndDisplayCode": {
+      "wrapper": "On successful ami parse, MDVxMXF.openFile0x100032434..0x1000324cc adds nonnull info.clipName to dictionary keyclipname. If NSString UTF8 conversion returnsnil, logs failedconversion and stores literal emptyNSString. If info.clipName null, no dictionary entry.",
+      "setter": "MDVxMXF.addInfoToItem0x1000326f4..0x100032720 reads dictionaryclipname and callssetDB_NameInBin; setter0x100031564 is directatomicpropertysetter, nofallback/trim.",
+      "table": "Static table view0x100050554..0x100050578 maps ClipnameCellID toDB_NameInBin. FilenameCellID mapsDB_ClipName at0x1000504f0..0x100050514. Separate string-value routine has same mapping0x100050f14..0x100050f60. Thus MDVxinternalDB_ClipName is confusingly filename, and extractedMXFName drivesClipnamecolumn throughDB_NameInBin.",
+      "absence": "Nil columnvalue reaches shared tableplaceholder at0x100050b84..0x100050b90, not filenamefallback. This boundedreviewdidnottrace that placeholder initialization, so donotclaim exactvisibleglyph. EmptyNSString remains empty.",
+      "parseFailure": "PresentinvalidUTF16that failsconversion causes wholeami parsefailure rather than fieldlocalunavailable. Wrappererrorhandling maystillreportsfileopensuccess; previousreviewcautionstillapplies. Do not infer actualruntimecrash or observedblankrow."
+    },
+    "plainSummary": "MDVx reads Clip Name from MaterialPackage.Name, decodes UTF16BE through UTF8, puts it into Clipname column, keeps Filename separate. MissingName remainsunavailable; emptyremains empty; no sourcepackagenamefallback. It assumes exactlyone MaterialPackage and has texttolerances/damagehandling Bellashouldnotcopyblindly.",
+    "limits": [
+      "Staticcodeinspection only; no observed UI/workload behavior asserted.",
+      "Installedbinary only, narrowOPAtomordinarypath.",
+      "No genericMXFsourcepriority/headeropeningpolicy decided.",
+      "No exhaustivemalformedmetadata orunicodeconformanceaudit."
+    ]
+  },
+  "currentMediaMuster": {
+    "sourceFindings": [
+      {
+        "topic": "Ownership",
+        "finding": "MXF ClipName comes only from qualified linked MaterialPackage.GenericPackage.Name in temporarymastergroup; not SourcePackage.Name, trackName, arbitrarystring or filesystemFilename. Masterchosenbyapprovedidentityrules before nameavailability. SameID alone doesnotauthorize borrowing anotherphysicalheaders name: currentassociation includes source/objectidentity.",
+        "refs": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "1107-1178"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+            "lines": "214-230"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginescan.cpp",
+            "lines": "1003-1050"
+          }
+        ]
+      },
+      {
+        "topic": "Encoding",
+        "finding": "Catalogue maps GenericPackage.Name UL060e2b34010101010103030201000000 to Utf16String. This dispatches decoder bigEndian=true. No blanketUTF8/MacRoman/platformguess or separatelegacybackup for thisknownMXFproperty. Decoder rejects oddpayloadbytes and unpairedsurrogates, emitsQChar units preserving BMP/surrogatepair content, stopsfirstU+0000. Bytesafterterminator retained onlyasraw; no textnormalization/casefolding/trimming. Current implementation accepts bounded evenlengthvalidUTF16 without anexplicitNULterminator; thisiscurrentbehavior, not universalformatpermission or proposedstrictnesschoice.",
+        "refs": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": "406-407"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+            "lines": "154-191"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+            "lines": "220-227"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+            "lines": "475-509"
+          }
+        ]
+      },
+      {
+        "topic": "Missing/damage/empty/repetition",
+        "finding": "copy collects exactNameproperties after masterqualification. MissingName yields noobservedname, invalidUTF16 becomesUnreadable and doesnotfillfield. Centralresolver ignores explicitlyemptyQString asdisplaycandidate but retainsstatus; whitespace-onlystring isnotempty and preserved/selectable. Same-rank differentusableNameobservations conflict; identicalvalues agree. Emptyname doesnotsearchdifferentmaster orfallbacktofilename. Currentcrosssourcepolicy preferseligibleMXF/OMF overMDB, with fallbackfromempty/unreadable underexistingselectionpolicy; Bella priorities/headeropening remain deferred.",
+        "refs": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "555-562"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": "1160-1177"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+            "lines": "596-644"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+            "lines": "55-58"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+            "lines": "265-268"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_metadataselectionpolicy.cpp",
+            "lines": "129-168"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaevidence.cpp",
+            "lines": "127-139"
+          }
+        ]
+      },
+      {
+        "topic": "Display",
+        "finding": "Adapter copiesselectedClipName verbatim. MediaFile.clipNameDisplay returns clipName directly; table calls it; Filename assignedseparatelyfromQFileInfo. No filenamefallback/ellipsisplaceholder.",
+        "refs": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+            "lines": "30-35"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+            "lines": "75-81"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+            "lines": "34-39"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+            "lines": "266-269"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+            "lines": "216-221"
+          }
+        ]
+      },
+      {
+        "topic": "Existingtests inspected notrun",
+        "finding": "SynthetictextAndRationalHaveExplicitEncodings uses Nön English — 你好 漢 and asserts exactQString+Utf16BE. Ownershiptests rejectmissing/ambiguousmasterlinks, retainseparatemastergroups and distinguishrepeatedpartitions. Evidence/selectiontests preserveemptyasPresent but fallbackforcurrentpolicy. No focusedreal-filemalformedUTF16/whitespace-only/emptyClipName observedin this10sample and no newtestsexecuted.",
+        "refs": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginemxf.cpp",
+            "lines": "322-338"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": "484-515"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": "612-688"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_metadataselectionpolicy.cpp",
+            "lines": "149-168"
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaevidence.cpp",
+            "lines": "127-139"
+          }
+        ]
+      }
+    ],
+    "limits": [
+      "ActualtennamesallASCII, nonempty, noedgewhitespace; theyestablishstoredUTF16BE layoutandownership butnotallUnicodeproducercoverage. SyntheticUnicode testsource suppliesseparatecapabilityevidence.",
+      "All10MXFmaster namesexactlyequal activecorrespondingMDBmasterCPNTName; only1equalsSourcePackage.Name and0equalsphysicalfilename. Thiscorpusdoesnotestablishforeveragreementorcrosssourcepriority.",
+      "Currentdecoderwithoutrequiredterminator describedexactly; stricterterminator/paddingresourcepolicyneedsformatqualification ratherthan inferreduniversalrepair.",
+      "No claim ofMediaComposer/MDVx behaviorfromthissource-onlyaudit; roottracesnativeapps separately."
+    ]
+  },
+  "actualComparisonSummary": {
+    "headerCount": 10,
+    "activeMdbNamesEqual": 10,
+    "sameAsSourcePackageName": 1,
+    "sameAsPhysicalFilename": 0,
+    "nonAsciiNames": 0,
+    "emptyNames": 0,
+    "edgeWhitespaceNames": 0
+  },
+  "actualEvidence": {
+    "date": "2026-10-22",
+    "scope": "Read-only freshsamehash initialMXF metadata + selected exactMDB masterName property matches for10previouslyidentityqualified samples. No app,essence,productiontests,mediafullhash or userfilewrites.",
+    "probeBase": {
+      "path": "/private/tmp/bella-mxf-ids-current-20261021/probe.py",
+      "sha256": "be835507f34f9014b4f04209047691af861541c128c24b0b25f4509ae0a3d50b",
+      "reuse": "Same independentheader graph qualification with Name source ranges added; loops/source parsing only, no productionparser."
+    },
+    "priorObservations": {
+      "path": "/private/tmp/bella-mxf-ids-current-20261021/observations.json",
+      "sha256": "061cb597e5d95497d19f523049be26b78fb72a8ae7c206aff367bc978eb3b5ef"
+    },
+    "databaseInputs": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 5159032,
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+        "rawValueIndexSHA256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "bytes": 22745976,
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+        "rawValueIndexSHA256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "bytes": 16616336,
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+        "rawValueIndexSHA256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "bytes": 15703416,
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+        "rawValueIndexSHA256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 3668720,
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+        "rawValueIndexSHA256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657"
+      }
+    ],
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1001.WAVA01.D8875D202DA97BA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "f8475c6079b53ff1aefaa33c7306a48538c43ffba8c3e3b189da14617d3cef44",
+        "stableImmediate": true,
+        "pmrFilename": "1001.WAVA01.D8875D202DA97BA.mxf",
+        "fileNormalizedHex": "060a2b340101010501010f10130000007ba92d202585059152bc34363bcdaf64",
+        "masterNormalizedHex": "060a2b340101010501010f10130000002f3626202585059179ee34363bcdaf64",
+        "filePackageName": "1001.WAV",
+        "masterPackageName": "1001.WAV",
+        "masterNameSourceRanges": [
+          {
+            "hex": "0031003000300031002e0057004100560000",
+            "range": [
+              120062,
+              18
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "fileNameSourceRanges": [
+          {
+            "hex": "0031003000300031002e0057004100560000",
+            "range": [
+              122796,
+              18
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "mdbMasterObject": 91576,
+        "mdbName": {
+          "property": "OMFI:CPNT:Name",
+          "type": "omfi:String",
+          "hex": "313030312e57415600",
+          "ranges": [
+            [
+              1311160,
+              9
+            ]
+          ],
+          "text": "1001.WAV"
+        },
+        "mdbMxfNamesEqual": true,
+        "mxfMasterNameIsNonAscii": false,
+        "mxfMasterNameEmpty": false,
+        "mxfMasterNameHasEdgeWhitespace": false,
+        "mxfMasterNameEqualsSourceName": true,
+        "mxfMasterNameEqualsFilename": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/A001_C001_V01.D7EB5BC5323BV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "7bf7822774ef479d0425f2b1756ef96242cfc40e68b5aebe2c83b6d21ead4770",
+        "stableImmediate": true,
+        "pmrFilename": "A001_C001_V01.D7EB5BC5323BV.mxf",
+        "fileNormalizedHex": "060a2b340101010101010f00130000003b32c55b39229202060e2b347f7f2a80",
+        "masterNormalizedHex": "060a2b340101010101010f00130000003b32c55b38229202060e2b347f7f2a80",
+        "filePackageName": "A001_C001_01019M",
+        "masterPackageName": "A001_C001_01019M.new.01",
+        "masterNameSourceRanges": [
+          {
+            "hex": "0041003000300031005f0043003000300031005f00300031003000310039004d002e006e00650077002e003000310000",
+            "range": [
+              125387,
+              48
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "fileNameSourceRanges": [
+          {
+            "hex": "0041003000300031005f0043003000300031005f00300031003000310039004d0000",
+            "range": [
+              143795,
+              34
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "mdbMasterObject": 72552,
+        "mdbName": {
+          "property": "OMFI:CPNT:Name",
+          "type": "omfi:String",
+          "hex": "413030315f433030315f30313031394d2e6e65772e303100",
+          "ranges": [
+            [
+              343303,
+              24
+            ]
+          ],
+          "text": "A001_C001_01019M.new.01"
+        },
+        "mdbMxfNamesEqual": true,
+        "mxfMasterNameIsNonAscii": false,
+        "mxfMasterNameEmpty": false,
+        "mxfMasterNameHasEdgeWhitespace": false,
+        "mxfMasterNameEqualsSourceName": false,
+        "mxfMasterNameEqualsFilename": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/5511410TA01.6A041816BE45ECA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "050a663a4f9d5a77abfea1df9581b2943205234cb7277e95e3aebded19dbf032",
+        "stableImmediate": true,
+        "pmrFilename": "5511410TA01.6A041816BE45ECA.mxf",
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ec45be167311069643cb7c57583610fa",
+        "masterNormalizedHex": "060a2b340101010501010f10130000008f942b1573110696b3ba7c57583610fa",
+        "filePackageName": "",
+        "masterPackageName": "155/2.new.01",
+        "masterNameSourceRanges": [
+          {
+            "hex": "003100350035002f0032002e006e00650077002e003000310000",
+            "range": [
+              131969,
+              26
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "fileNameSourceRanges": [
+          {
+            "hex": "0000",
+            "range": [
+              135041,
+              2
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "mdbMasterObject": 178614,
+        "mdbName": {
+          "property": "OMFI:CPNT:Name",
+          "type": "omfi:String",
+          "hex": "3135352f322e6e65772e303100",
+          "ranges": [
+            [
+              3050419,
+              13
+            ]
+          ],
+          "text": "155/2.new.01"
+        },
+        "mdbMxfNamesEqual": true,
+        "mxfMasterNameIsNonAscii": false,
+        "mxfMasterNameEmpty": false,
+        "mxfMasterNameHasEdgeWhitespace": false,
+        "mxfMasterNameEqualsSourceName": false,
+        "mxfMasterNameEqualsFilename": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041581_152C6152C6FCEV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "41d6454ebd62894de5c876116d8da15f95663bcbc4753729ef14341937360244",
+        "stableImmediate": true,
+        "pmrFilename": "V01.6A041581_152C6152C6FCEV.mxf",
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ce6f2c1573110696ab807c57583610fa",
+        "masterNormalizedHex": "060a2b340101010501010f101300000016642b157311069627027c57583610fa",
+        "filePackageName": "",
+        "masterPackageName": "06-T95-01D-DRONE.new.01",
+        "masterNameSourceRanges": [
+          {
+            "hex": "00300036002d005400390035002d003000310044002d00440052004f004e0045002e006e00650077002e003000310000",
+            "range": [
+              123831,
+              48
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "fileNameSourceRanges": [
+          {
+            "hex": "0000",
+            "range": [
+              126583,
+              2
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "mdbMasterObject": 148544,
+        "mdbName": {
+          "property": "OMFI:CPNT:Name",
+          "type": "omfi:String",
+          "hex": "30362d5439352d3031442d44524f4e452e6e65772e303100",
+          "ranges": [
+            [
+              2098453,
+              24
+            ]
+          ],
+          "text": "06-T95-01D-DRONE.new.01"
+        },
+        "mdbMxfNamesEqual": true,
+        "mxfMasterNameIsNonAscii": false,
+        "mxfMasterNameEmpty": false,
+        "mxfMasterNameHasEdgeWhitespace": false,
+        "mxfMasterNameEqualsSourceName": false,
+        "mxfMasterNameEqualsFilename": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7280108SMA01.6A04F087D5405A.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "7250a5396f79cd9b932e1af16fd33402f436ce0f4f11de7f51d80a0efc8fac70",
+        "stableImmediate": true,
+        "pmrFilename": "7280108SMA01.6A04F087D5405A.mxf",
+        "fileNormalizedHex": "060a2b340101010501010f101300000005547d087311069613b27c57583610fa",
+        "masterNormalizedHex": "060a2b340101010501010f1013000000777d7a08731106962c307c57583610fa",
+        "filePackageName": "",
+        "masterPackageName": "104/2.new.01",
+        "masterNameSourceRanges": [
+          {
+            "hex": "003100300034002f0032002e006e00650077002e003000310000",
+            "range": [
+              127746,
+              26
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "fileNameSourceRanges": [
+          {
+            "hex": "0000",
+            "range": [
+              126551,
+              2
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "mdbMasterObject": 144032,
+        "mdbName": {
+          "property": "OMFI:CPNT:Name",
+          "type": "omfi:String",
+          "hex": "3130342f322e6e65772e303100",
+          "ranges": [
+            [
+              2101432,
+              13
+            ]
+          ],
+          "text": "104/2.new.01"
+        },
+        "mdbMxfNamesEqual": true,
+        "mxfMasterNameIsNonAscii": false,
+        "mxfMasterNameEmpty": false,
+        "mxfMasterNameHasEdgeWhitespace": false,
+        "mxfMasterNameEqualsSourceName": false,
+        "mxfMasterNameEqualsFilename": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/1730_8646_submastede88816cv.mxf",
+        "headerRange": [
+          256,
+          524064
+        ],
+        "headerSha256": "ae8cf0aff0369ca65ed2f11e9ab0873c57eae9292228d9123455ae748b757711",
+        "stableImmediate": true,
+        "pmrFilename": "1730_8646_submastede88816cv.mxf",
+        "fileNormalizedHex": "060a2b340101010501010f10130000006c8188de27100696dc0d30138b72a179",
+        "masterNormalizedHex": "060a2b340101010501010f10130000006b8188de2710069613a130138b72a179",
+        "filePackageName": "",
+        "masterPackageName": "1730_8646_SUBMASTER,Stabilize,181",
+        "masterNameSourceRanges": [
+          {
+            "hex": "0031003700330030005f0038003600340036005f005300550042004d00410053005400450052002c00530074006100620069006c0069007a0065002c0031003800310000",
+            "range": [
+              120232,
+              68
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "fileNameSourceRanges": [
+          {
+            "hex": "0000",
+            "range": [
+              120842,
+              2
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "mdbMasterObject": 142305,
+        "mdbName": {
+          "property": "OMFI:CPNT:Name",
+          "type": "omfi:String",
+          "hex": "313733305f383634365f5355424d41535445522c53746162696c697a652c31383100",
+          "ranges": [
+            [
+              2046070,
+              34
+            ]
+          ],
+          "text": "1730_8646_SUBMASTER,Stabilize,181"
+        },
+        "mdbMxfNamesEqual": true,
+        "mxfMasterNameIsNonAscii": false,
+        "mxfMasterNameEmpty": false,
+        "mxfMasterNameHasEdgeWhitespace": false,
+        "mxfMasterNameEqualsSourceName": false,
+        "mxfMasterNameEqualsFilename": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7293007LMA01.6A0500C57EA1CA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "3fd75b378276e469f6799026f3e68db865f2e5e1317666c721dd3e50db540a52",
+        "stableImmediate": true,
+        "pmrFilename": "7293007LMA01.6A0500C57EA1CA.mxf",
+        "fileNormalizedHex": "060a2b340101010501010f10130000001cea570c73110696a5e97c57583610fa",
+        "masterNormalizedHex": "060a2b340101010501010f1013000000bded940b7311069657a37c57583610fa",
+        "filePackageName": "",
+        "masterPackageName": "106/2.new.01",
+        "masterNameSourceRanges": [
+          {
+            "hex": "003100300036002f0032002e006e00650077002e003000310000",
+            "range": [
+              128221,
+              26
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "fileNameSourceRanges": [
+          {
+            "hex": "0000",
+            "range": [
+              126934,
+              2
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "mdbMasterObject": 152833,
+        "mdbName": {
+          "property": "OMFI:CPNT:Name",
+          "type": "omfi:String",
+          "hex": "3130362f322e6e65772e303100",
+          "ranges": [
+            [
+              2369298,
+              13
+            ]
+          ],
+          "text": "106/2.new.01"
+        },
+        "mdbMxfNamesEqual": true,
+        "mxfMasterNameIsNonAscii": false,
+        "mxfMasterNameEmpty": false,
+        "mxfMasterNameHasEdgeWhitespace": false,
+        "mxfMasterNameEqualsSourceName": false,
+        "mxfMasterNameEqualsFilename": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/V01.6A050275_B95B90B95B9CCV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "2fdd3de7e4ad0db8c93ed7dad92be469eaf0424c61da09716802d21f0bab8499",
+        "stableImmediate": true,
+        "pmrFilename": "V01.6A050275_B95B90B95B9CCV.mxf",
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ccb9950b7311069637c77c57583610fa",
+        "masterNormalizedHex": "060a2b340101010501010f101300000002dd940b731106969cd47c57583610fa",
+        "filePackageName": "",
+        "masterPackageName": "Ident_2sec.new.01",
+        "masterNameSourceRanges": [
+          {
+            "hex": "004900640065006e0074005f0032007300650063002e006e00650077002e003000310000",
+            "range": [
+              123668,
+              36
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "fileNameSourceRanges": [
+          {
+            "hex": "0000",
+            "range": [
+              126276,
+              2
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "mdbMasterObject": 121171,
+        "mdbName": {
+          "property": "OMFI:CPNT:Name",
+          "type": "omfi:String",
+          "hex": "4964656e745f327365632e6e65772e303100",
+          "ranges": [
+            [
+              1362281,
+              18
+            ]
+          ],
+          "text": "Ident_2sec.new.01"
+        },
+        "mdbMxfNamesEqual": true,
+        "mxfMasterNameIsNonAscii": false,
+        "mxfMasterNameEmpty": false,
+        "mxfMasterNameHasEdgeWhitespace": false,
+        "mxfMasterNameEqualsSourceName": false,
+        "mxfMasterNameEqualsFilename": false
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "4e1ea26a6459f3e1d07e3c361986602f1c28e8a9d31d0de4ff7ef5ed80676b38",
+        "stableImmediate": true,
+        "pmrFilename": "A01.E6966CE6_A3C580A3C589AA.mxf",
+        "fileNormalizedHex": "060a2b340101010501010f10130000009a583c0a5512069048e346fc807fda72",
+        "masterNormalizedHex": "060a2b340101010501010f101300000086583c0a55120690c09946fc807fda72",
+        "filePackageName": "",
+        "masterPackageName": "Avid DNx SQ",
+        "masterNameSourceRanges": [
+          {
+            "hex": "004100760069006400200044004e00780020005300510000",
+            "range": [
+              127024,
+              24
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "fileNameSourceRanges": [
+          {
+            "hex": "0000",
+            "range": [
+              130825,
+              2
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "mdbMasterObject": 75336,
+        "mdbName": {
+          "property": "OMFI:CPNT:Name",
+          "type": "omfi:String",
+          "hex": "4176696420444e7820535100",
+          "ranges": [
+            [
+              198598,
+              12
+            ]
+          ],
+          "text": "Avid DNx SQ"
+        },
+        "mdbMxfNamesEqual": true,
+        "mxfMasterNameIsNonAscii": false,
+        "mxfMasterNameEmpty": false,
+        "mxfMasterNameHasEdgeWhitespace": false,
+        "mxfMasterNameEqualsSourceName": false,
+        "mxfMasterNameEqualsFilename": false
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/Untitled Sequence.175B1728V.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "0d324bb99c9183d04541c75b00944e5808410cee4d72eae603c322eaf6994a62",
+        "stableImmediate": true,
+        "pmrFilename": "Untitled Sequence.175B1728V.mxf",
+        "fileNormalizedHex": "060a2b340101010501010f101300000028175b1761120690badf46fc807fda72",
+        "masterNormalizedHex": "060a2b340101010501010f101300000019175b17611206901ff746fc807fda72",
+        "filePackageName": "Untitled Sequence.05,Video Mixdown,1.PHYS",
+        "masterPackageName": "Untitled Sequence.05,Video Mixdown,1",
+        "masterNameSourceRanges": [
+          {
+            "hex": "0055006e007400690074006c00650064002000530065007100750065006e00630065002e00300035002c0056006900640065006f0020004d006900780064006f0077006e002c00310000",
+            "range": [
+              122743,
+              74
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "fileNameSourceRanges": [
+          {
+            "hex": "0055006e007400690074006c00650064002000530065007100750065006e00630065002e00300035002c0056006900640065006f0020004d006900780064006f0077006e002c0031002e00500048005900530000",
+            "range": [
+              123439,
+              84
+            ],
+            "type": "MXF_UTF16STRING_TYPE"
+          }
+        ],
+        "mdbMasterObject": 74031,
+        "mdbName": {
+          "property": "OMFI:CPNT:Name",
+          "type": "omfi:String",
+          "hex": "556e7469746c65642053657175656e63652e30352c566964656f204d6978646f776e2c3100",
+          "ranges": [
+            [
+              162947,
+              37
+            ]
+          ],
+          "text": "Untitled Sequence.05,Video Mixdown,1"
+        },
+        "mdbMxfNamesEqual": true,
+        "mxfMasterNameIsNonAscii": false,
+        "mxfMasterNameEmpty": false,
+        "mxfMasterNameHasEdgeWhitespace": false,
+        "mxfMasterNameEqualsSourceName": false,
+        "mxfMasterNameEqualsFilename": false
+      }
+    ],
+    "summary": {
+      "headers": 10,
+      "equalMdbNames": 10,
+      "nonAsciiNames": 0,
+      "emptyNames": 0,
+      "edgeWhitespaceNames": 0,
+      "sameAsSourcePackageName": 1,
+      "sameAsFilename": 0
+    },
+    "limits": [
+      "Tenfilename-selected audio/videoheaders, not everymediafile; all10master namesASCII doesnotrestrict Unicodecapability.",
+      "MXFUTF16BE valuesdecoded strictly including record terminator in rawreceipt; MDBlegacyCPNTName follows separatelyagreed MacRomanlayout, not anMXFfallback.",
+      "StableimmediateMXFsize/mtime/inode and priorrangehash equality; currentfullMDBhash and relevantoriginalnamebytes/indexhash verified, not atomiccapture.",
+      "Masterassociation rerunthrough existingindependentprobe; no fullproductionbehavior/performance/parityclaim.",
+      "Missing/damaged/blank/ambiguousnames not observedin tenfiles, so those rules remainsourceinspection/proposal evidence."
+    ]
+  },
+  "recommendedBella": {
+    "owner": "Read exact GenericPackage.Name on the MaterialPackage already selected by approved identityrules. Name availability does not change selected master. Use same master consistently for its other fields.",
+    "encoding": "Known UTF16BE, bounded by property value. Resolve property through Primer/UL and type. No UTF8/MacRoman retry or invented legacy counterpart; preserve characters, case, punctuation and whitespace.",
+    "boundary": "Reject odd byte count and malformed text/surrogates within text; stop first U+0000 if present. Accept complete valid text with no terminator at declared boundary, as ST377-1section4.3 permits. No reading beyond bounds.",
+    "absence": "Missing/empty/unreadable/conflictingName or unavailable master supplies no MXF ClipName. Database-unavailable MXF fallback displays blank; valid identities/othermetadata and physicalrow survive. No filename,sourcepackagename,trackname or othermaster substitution.",
+    "retention": "One owned QString and necessary availability context, small checked new C++17/Qt6.5.3 helpers with QtEndian and QString. Release raw text/header/temporaryreferences; no retained alternatives or name-comparison graph.",
+    "priority": "Crosssource priority/opening triggers remain deferred. This source-capability review does not authorize an extra media open or discard a valid MDB name."
+  },
+  "publicPrimaryEvidence": [
+    {
+      "url": "https://pub.smpte.org/latest/st377-1/st377-1-2019.pdf",
+      "scope": "AnnexB.1optionalNameUTF16;4.3KLV-boundedbigendianstrings and optionalterminator;6.4.2byteorder."
+    }
+  ],
+  "researchReceipts": [
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mc-20261022/findings.json",
+      "sha256": "252e40db675565e1df058e682632c5060823142a985b40d75855b888d9d9c60b"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/findings.json",
+      "sha256": "3c7a850854b3c59e677a9bed1f29f621ab995cc5887925bbd087e627c701ccc4"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-current-20261022.json",
+      "sha256": "0f38b06decc423e518c5d46bb9f8261cfd0f1a9b2209d656e65a4d89c1fdb3b5"
+    }
+  ],
+  "verifiedInputAndArtifactCount": 56,
+  "verifiedInputsAndArtifacts": [
+    {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mc-20261022/ConvertCompositionFromAAF.txt",
+      "sha256": "f47a3ccd53bb33a00ee88c873caeb592f842a97f92d3eb767965b304289f69c9"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mc-20261022/GetStringPropFromObject.txt",
+      "sha256": "ec349092b3c3f203ceb6ff6009f55675917fe2d80052eedd43913cd95cfa1a89"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mc-20261022/GetAAFComponentProps.txt",
+      "sha256": "010081b30751a4f00ac0633d9d277fba1b7c34b6ba4ffdc1f0c69b362549d283"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mc-20261022/CreateAAFMob.txt",
+      "sha256": "617d9b264e1fc8b981af83bd0633d3b1e98a102a57b845dc588bfa6a5a8cab09"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mc-20261022/ConvertUnicodeToInternal.txt",
+      "sha256": "2a6ccbc4fb0383d0e1911c3bee616586452d19b9d5f39edc1790e2f4a8c28045"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mc-20261022/SetNameCopy.txt",
+      "sha256": "9d9e60f633f357d359504e8f9dede4acd1b1746e17ea0d4f2a219e9a0b36a7d7"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mc-20261022/CAAFMob-GetName.txt",
+      "sha256": "4fa4076c391dbcd3c5b3d82d55f1c3f5505127ba924322f45d8e51a1116eba7b"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mc-20261022/CAAFMob-GetNameBufLen.txt",
+      "sha256": "da46af855a622918c37f438c8dc463d81b76f96c4bc9ef0870c6b2fdf961e3c4"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mc-20261022/ImplAAFMob-GetName.txt",
+      "sha256": "5ac49d3492ddc3ee793bd2b3c73ab1049775c0377a00bbc5508d1f69bb50749c"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mc-20261022/ImplAAFMob-GetNameBufLen.txt",
+      "sha256": "84d9ecbe8e49bb17aa50a5af5683db4b99f676bc54d376f016b58a16b7da7348"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mc-20261022/CopyOut.txt",
+      "sha256": "8d8e3b5d98065844e96b952ac335a0cf43bb9a0ee7727ba5bbd7162504ce2aca"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mc-20261022/vtable-slots.json",
+      "sha256": "6de6e4b2a4b4a6dc4ccdb212e896c2c55acab5c7b7c6b54a4c11c03f932a06f1"
+    },
+    {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libcom-api.dylib",
+      "sha256": "9bef7c474afa461af413cde63dcbc0b048aeabe2a685bc3fd487cb4647447728"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-native-20261021/LocalMDB-ScanMXF.txt",
+      "sha256": "d13af51c72b5b144a49a8fd14606201eeeee71f143880366b8c53890d5c4fd2f"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-native-20261021/MSMDB-ScanMXF.txt",
+      "sha256": "fbfd816b70edc479839cb730df023c771122f81300d6051e614b840feb1cb589"
+    },
+    {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/MDVxCore_tableView_NSStringValueForTableColumn_row.txt",
+      "sha256": "bc8725acda5ef699af7278cd83f2a289d07160f6ce18594268e7f2da390e0d17"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/MDVxCore_tableView_viewForTableColumn_row.txt",
+      "sha256": "87865e16af2ed60cd67d4765b3b90d0154e025d57dc11460409ad05e28d9bd69"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/MDVxDatabaseItem_DB_ClipName.txt",
+      "sha256": "ac68db904a9a918a0bb67a3efcf0091242e83a1f8a61774a8cc2c02f4d085c97"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/MDVxDatabaseItem_DB_NameInBin.txt",
+      "sha256": "99f9eb5a78ad9dcbad32324a94dd833b3bb864a8969bcbaf67373c40c23a4577"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/MDVxDatabaseItem_setDB_NameInBin.txt",
+      "sha256": "19be6ea96bd2556a46c87e3feff4450f65160ffbe6b526c2425f37ef73d45c30"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/MDVxDatabaseItem_setupWithUnrefFile_clipname.txt",
+      "sha256": "261f23881b3ba94a60a88c90f0f798c6cbf41f10725aef0b4bb15825c821b715"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/MDVxMXF_addInfoToItem.txt",
+      "sha256": "dc301ea36bb309f688f90c1d49772b25d65e39ff06ada813251040b61f7ffa7a"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/MDVxMXF_openFile_withIndicator.txt",
+      "sha256": "9554517696367587b89f43f755bc123f5bbf0308c6c733489a3e808f71117af8"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/ami_read_info.txt",
+      "sha256": "7f7e2ff52992ffb6def9dca758949b79cc969ced37deeac652b29f8a7ec4e344"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/arm64-all.txt",
+      "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/convert_string.txt",
+      "sha256": "ac22d234818be8b0e29e384cf551c0afb4c85fe7cb01f377d4da829a066330e3"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/get_string_value.txt",
+      "sha256": "29bb7654d4b73e14de817ee847b36e23bcd7c4fc39139fcdd240a3ba731ffc68"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/mxf_find_set_by_key.txt",
+      "sha256": "d326311180b0357a426e7c230f637ebbe86e2a73d2241cb0124b8c19ce042dda"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/mxf_find_singular_set_by_key.txt",
+      "sha256": "3fbf8e014935e16854c1d5a96684d6d2fcab7b42151c794193e79174933f4ea5"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/mxf_get_utf16string_item.txt",
+      "sha256": "aebb0530dd90ab3645f905969776dbefa15992b29bf716759497b523b369190a"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/mxf_get_utf16string_item_size.txt",
+      "sha256": "62c9e9e80348e36b98b90cb2d40a75012c0c61ed7562b0c02ac3416c2395fc21"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/mxf_get_utf16string_size.txt",
+      "sha256": "cea9296b932f6aa207a87a1c954b45698e8ea95d6795be8b474fa8b7ff6d973c"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/mxf_utf16_to_utf8.txt",
+      "sha256": "29f01191246da25d7c7b363ece639d7b51b76358fd5e17dd1c40c15576da87ec"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+      "sha256": "c8c68e78db5f3efaa62235f55624c5478e89a0adc37581a922af050f931cad55"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+      "sha256": "379a31643b62b945e3e1ed83245e5f3a7be8df4ebeec73aea31327c1d915b374"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+      "sha256": "6d67b2300f380cd63a50547595154ee27d8ab69f36b6d87e83e81fd3a33ff75c"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+      "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+      "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+      "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+      "sha256": "c85f1d11bcb15eddcfbba7c9cbbc57c8fdafdb8cac8c4af6b575d62c1575c746"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+      "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+      "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginemxf.cpp",
+      "sha256": "4b7e38b030383277be0e59cf0fc2346fd21cfccf8453e27252d746bca8904299"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+      "sha256": "f9f633bc0022e5f681b210d58a95cf472b04db0b6189ead78f9d22b7e8618a22"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginescan.cpp",
+      "sha256": "3a349703d4932ac7cdfa568fbd6053c1d45fc12f22606dffbb5cce1b3cfe5c68"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_metadataselectionpolicy.cpp",
+      "sha256": "dec9d935f493ca9e3563f7ac10367b751198a4a6dd73c9b9e01fcc9b1be79292"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaevidence.cpp",
+      "sha256": "622feee192fefb3eda3633dfc0fe9c967edf559e510c250f19fe069aecdc470a"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-current-20261022/probe.py",
+      "sha256": "85d84871a53d58c6a3c191f502a9fa7ac64011aecccd64bc2bfcff34dd20529c"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-current-20261022/observations.json",
+      "sha256": "94eeb1834e7994cbf973e289d903f3dfe0246cf72f95022167c66591a0609446"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-current-20261021/probe.py",
+      "sha256": "be835507f34f9014b4f04209047691af861541c128c24b0b25f4509ae0a3d50b"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-ids-current-20261021/observations.json",
+      "sha256": "061cb597e5d95497d19f523049be26b78fb72a8ae7c206aff367bc978eb3b5ef"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mc-20261022/findings.json",
+      "sha256": "252e40db675565e1df058e682632c5060823142a985b40d75855b888d9d9c60b"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-mdvx-20261022/findings.json",
+      "sha256": "3c7a850854b3c59e677a9bed1f29f621ab995cc5887925bbd087e627c701ccc4"
+    },
+    {
+      "path": "/private/tmp/bella-mxf-clipname-current-20261022.json",
+      "sha256": "0f38b06decc423e518c5d46bb9f8261cfd0f1a9b2209d656e65a4d89c1fdb3b5"
+    }
+  ],
+  "limits": [
+    "TenactualASCII names prove their sampledstoredlayout and masterownership, not everyUnicodeproducer, missing/damagedexample, or universalMXF/MDBagreement.",
+    "Nativeimportinternalencoding is not proof oflosslesseveryUnicode; no completeMCUIplaceholdertrace.",
+    "No runtimeparser/application/corruptiontest or scanbenchmark.",
+    "Requirements only: OldScanner active until explicitcutover; BinFilter unchanged."
+  ],
+  "validation": {
+    "productionCodeChanged": false,
+    "appOrPrivateApiRun": false,
+    "buildsOrParserTestsRun": false,
+    "actualMetadataCompared": true,
+    "essenceRead": false,
+    "wholeMediaHash": false,
+    "oldScannerActive": true,
+    "binFilterChanged": false
+  },
+  "approvedBy": {
+    "date": "2026-10-22",
+    "timezone": "Australia/Sydney",
+    "receipt": "Project Bella/evidence/mxf-clip-name-plan-2026-10-22.json",
+    "scope": "All five focused Clip Name owner, UTF-16BE/boundary, no-guessed-recovery, availability and compact-retention rules. Project remains the next unapproved field review.",
+    "historicalStatus": "This research file originally recorded proposed Clip Name requirements. The approval receipt supersedes only that proposal status; recommendedBella remains the historical research wording."
+  }
+}

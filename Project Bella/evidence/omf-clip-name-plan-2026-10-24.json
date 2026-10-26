@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-24",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF Clip Name rules; Project and remaining OMF fields under review.",
+  "authorization": {
+    "source": "Direct human reply",
+    "statement": "OK, let's lock those Clip Name rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Project from OMF, and what should Bella read and keep?",
+    "scope": "Accepts exact selected-master CPNT:Name, legacy MacRoman decoding, preservation/framing, blank unavailable values, no substitute name, compact retention. Begins OMF Project review; no runtime implementation/cutover, Bin Filter change, final source priority or new header-opening reason."
+  },
+  "agreedBellaRules": {
+    "scope": "Supported legacy OMF1/Bento1, fresh reader requirements only. Identity/ownership and text rules already agreed. No runtime implementation, cutover, Bin Filter change, final source priority or new header-opening reason.",
+    "owner": "Use the associated master selected by agreed full-ID/role/source-link rules before reading its name; keep that master for its other fields. A missing/empty name does not select another master.",
+    "field": "Read the exact legacy OMFI:CPNT:Name with omfi:String type. OMF2 MOBJ:Name is a deferred schema mapping, not a Unicode backup. No separate UTF-8 component-name counterpart was established; marked Unicode attributes do not invent one.",
+    "text": "Apply the already agreed Mac-focused MacRoman legacy rule with checked bounded reading. Preserve spelling, punctuation, case and whitespace. Stop at the first NUL or declared value end; a complete bounded string need not store a terminator. No UTF-8 validity guessing, trimming or Unicode normalization.",
+    "unavailable": "No uniquely qualified master, missing/empty/unusable name or contradictory required Name values gives no OMF Clip Name. Equal repeated values may describe one name. Keep physical row, valid IDs and independent technical facts.",
+    "display": "Keep physical Filename separate. No replacement from Filename, file mob, track or onward original-source names. Blank for an OMF-only fallback without a usable name; final cross-source priorities remain later.",
+    "retention": "Owned selected QString and necessary availability only; release raw name and temporary owner/index storage with OMF job. Small C++17/Qt6.5.3 helper, no per-field class or permanent alternate-name graph."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-clip-name-2026-10-24.json",
+    "sha256": "2fc45ffaeaca99351b242a21d56c526cce2ac63861d72fb9fa9194383ac7a503"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/clip-name.md",
+    "plan": "Project Bella/README.md",
+    "identityApproval": "Project Bella/evidence/omf-identities-plan-2026-10-24.json"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "newBuildsOrTests": false,
+    "appCutover": false,
+    "performanceMeasured": false
+  }
+}

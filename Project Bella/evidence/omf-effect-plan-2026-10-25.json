@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-25",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF Effect integration; OMF damage review follows. No implementation/cutover.",
+  "authorization": {
+    "source": "Direct human user instruction",
+    "statement": "OK, let's lock those Effect rules in for Bella. Next, let's look at OMF damage handling. How do Media Composer, MDVX and MediaMuster handle it, and what should Bella do? Look for the simplest accurate approach.",
+    "scope": "Accepts the proposed common Type/Clip Name combined Effect/Category lookup and preserved name/unknown/blank behavior, compact values and discarded Sequence. No new property/read, Bin Filter change or runtime/cutover authorization."
+  },
+  "agreedBellaRules": {
+    "input": "Final selected confirmed Precompute Type and qualified selected-master Clip Name after matching/source selection. Existing OMF ownership/text rules; no additional Effect property or alternative owner chosen for a catalogue match.",
+    "known": "Use existing combined AvidEffects::lookup result Hit.name: first matching canonical English display name, preserving known localized spellings and explicit aliases.",
+    "unrecognized": "Keep a nonempty extracted token verbatim. Do not globally trim, rewrite underscores, title-case, case-fold, fuzzy-match or substitute unrelated fields.",
+    "unavailable": "Empty/unavailable Effect on confirmed Precompute displays lowercase unknown; ordinary Media and unknown Type display blank. Unknown Effect Category does not erase a nonempty Effect; parent Precompute Category success is not required.",
+    "syntax": "Preserve both existing validated suffix forms, numeric/rename-chain bounds, precedence, commas in sequence prefix and malformed/overflow handling. No generic split/rewrite.",
+    "integration": "Common source-independent derivation outside the byte parser, when optional effect details requested. One combined lookup for selected inputs, reuse across associated rows, rederive if selected Type/name changes. Current resolver/index are already shared; current projection has no internal optional guard and may run multiple passes.",
+    "retention": "Owned QString Effect and Category plus necessary compact context, using normal Qt value sharing. No permanent every-name cache, token/instance/matched-state retention, custom interner, new catalogue IDs or per-column history/class.",
+    "sequence": "Discard separate Sequence output from stored rows/export, while retaining selected Clip Name and suffix-boundary parsing required for Effect.",
+    "readScope": "No extra OMF field, component/effect graph, import-settings body, plug-in/registry query or media open solely for Effect. General OMF damage and final source-priority/opening/scheduling remain separate.",
+    "identityBoundary": "Names are inferred from editable Clip Name. They do not establish actual generating effect, Type, parent category, plug-in variant or timeline membership. Native ID/library/registered names use different inputs.",
+    "evidenceBoundary": "Five reused selected masters are ordinary Media and inapplicable. No genuine physical OMF Precompute name sample, fresh runtime lookup/test/parser execution, live GUI comparison or measured performance gain is claimed."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-effect-2026-10-25.json",
+    "bytes": 119411,
+    "sha256": "01ff6cbe0a97dd1d5794c56281a9dc034397eb664e46de2844bec2152a306445"
+  }
+}

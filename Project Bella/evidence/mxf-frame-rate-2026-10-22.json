@@ -1,0 +1,2325 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "MXF physical video Frame Rate: own exact descriptor rate, native codec-boundary distinctions, MDVx ordinary omission, OldScanner behavior and compact Bella reuse proposal.",
+  "request": "OK, let's lock those Duration rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Frame Rate from MXF, and what should Bella read and keep?",
+  "status": "Focused MXF Frame Rate requirements approved2026-10-22; unimplemented. Earlier pending wording within the research body is historical and superseded by the separate approval receipt. Native/source/corpus facts and raw receipt hashes remain unchanged.",
+  "precedingDurationApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-duration-plan-2026-10-22.json",
+    "sha256": "dec4252002fc86b6852f8bfbbd0b9fe56a8784100caddbbf16423a7005e8040b",
+    "bytes": 5310
+  },
+  "rawReceipts": [
+    {
+      "path": "/private/tmp/bella-mxf-framerate-mc-20261022/findings.json",
+      "sha256": "c2ed6c9b4dbe8abc45d3ef3f1710819f3abb403a917ea6cfa0b541ea907900eb",
+      "bytes": 22331
+    },
+    {
+      "path": "/private/tmp/bella-mxf-framerate-mdvx-20261022/findings.json",
+      "sha256": "61628b025361f24756fc9a5d1b1967b5756fc4b6bd6cb907f5e4faa268444791",
+      "bytes": 6482
+    },
+    {
+      "path": "/private/tmp/bella-mxf-framerate-current-20261022.json",
+      "sha256": "0506b0cc76745f28f23e58fc7d4a4c5040716aeb8149340234b9077306423034",
+      "bytes": 88219
+    }
+  ],
+  "mediaComposer": {
+    "date": "2026-10-22",
+    "timezone": "Australia/Sydney",
+    "purpose": "Bounded installed Media Composer ordinary MXF video-rate import/publication audit, separating physical descriptor rate, track EditRate, codec field/sample conventions and audio/display clocks.",
+    "method": "Static arm64 named-function disassembly; prior own-descriptor scanner/import proof; typed toolkit getter/vtable confirmation; bounded direct B/BL target scan with selected candidate disassemblies. No app, private API or media execution.",
+    "findings": [
+      {
+        "topic": "Ordinary MXF imports the own physical file descriptor SampleRate",
+        "anchors": [
+          "own SourceMob descriptor/CreateDescriptor/ConvertDescriptorFromAAF: prior native Kind receipt",
+          "DIDDescriptor::GetAAFProperties base call 0x381e30",
+          "AFileMediaDesc::GetAAFProperties 0x17c930",
+          "typed GetSampleRate call 0x17ca38",
+          "ConvertAAFEditRate 0x17ca48",
+          "virtual SetRate 0x17ca5c"
+        ],
+        "evidence": "The ordinary managed MXF route creates/imports the selected physical SourceMob own EssenceDescriptor. Picture DID property import calls the file-descriptor base, which gets typed SampleRate on that descriptor and stores its internal rate. Verified DID/CDCI vtables resolve SetRate/GetExactEditRate to base file-descriptor state. No universal interlace halving, project-rate substitution or timecode nominal-base substitution occurs in this selected rate block."
+      },
+      {
+        "topic": "Native internal aliases differ from explicit wire rationals",
+        "anchors": [
+          "AAFDomain::ConvertAAFEditRate 0x4ecc8",
+          "AFileMediaDesc::GetExactEditRate 0x17c26c",
+          "AFileMediaDesc::GetRate 0x17c260"
+        ],
+        "evidence": "The importer preserves denominator-1 input as an internal integer and recognizes finite exact rational aliases (including 30000/1001, 24000/1001, 60000/1001); remaining input takes signed numerator/denominator double division into ExactEditRateFromFloat. GetExactEditRate returns stored internal state; GetRate calls the literal-decimal EditRateFromExactEditRate. An internal getter name alone does not establish literal versus effective NTSC timing. Bella should retain a valid explicit raw MXF rational directly, while the separately approved MDB legacy interpreter stays at its own adapter boundary. No universal exact import/export bijection is claimed."
+      },
+      {
+        "topic": "Physical video metadata publication uses own rate explicitly",
+        "anchors": [
+          "DIDDescriptor::FillMetadataSet base call 0x38aebc",
+          "AFileMediaDesc::FillMetadataSet 0x17d958",
+          "own GetExactEditRate slot 0x278 call 0x17d998",
+          "RationalFromExactEditRate call 0x17d9a8",
+          "AMAFI::Metadata::SampleRate property at 0x14ebe00 set 0x17d9c4",
+          "own GetLength slot 0x280 call 0x17d9d4"
+        ],
+        "evidence": "The picture metadata publisher calls the base publisher, obtains the same own physical descriptor internal rate, converts it with RationalFromExactEditRate and publishes rational SampleRate alongside own EssenceLength. This connects a physical metadata boundary, not an app table Frame Rate selection or a guarantee that every supported wrapping sample is one complete picture frame."
+      },
+      {
+        "topic": "FrameLayout is imported and retained separately",
+        "anchors": [
+          "DID typed digital-image descriptor FrameLayout getter 0x3823e4",
+          "CAAFDigitalImageDescriptor::GetFrameLayout 0x1d428",
+          "toolkit getter slot 0x2e4960 on interface point 0x2e4900, method offset 0x60",
+          "DID stored layout at this+0x2a0 around 0x382524",
+          "GetAMEFrameLayout 0x37aee8"
+        ],
+        "evidence": "DID import obtains typed FrameLayout separately from base file SampleRate and uses layout, raster and codec context for picture geometry. Layout and codec-specific compatibility branches exist; observed geometry halving must not be confused with a rate-halving instruction. FrameLayout, raw descriptor rate, physical unit coverage and codec-wrapper rate belong to distinct contexts."
+      },
+      {
+        "topic": "A separate codec sample-to-frame conversion exists, with different enum numbering",
+        "anchors": [
+          "FormatDescriptor::Helpers::sampleRateToFrameRate 0x8e3134",
+          "DynamicCompression SampleRateAccessor::GetField 0x499e34",
+          "GetFrameLayout/GetSampleRateAsRational calls 0x499e48/0x499e54",
+          "sampleRateToFrameRate call 0x499e64",
+          "DF_FrameLayout GetEnumString SeparateFields branch 0xa90e78..0xa90e88",
+          "ConvertDFFrameLayoutToFrameLayout 0x85d4c0"
+        ],
+        "evidence": "The codec helper halves the signed numerator (integer divide by two, denominator unchanged) only for internal DF_FrameLayout_t value 2. The binary names that internal value FL_SeparateFields. The DynamicCompression accessor supplies a codec-wrapper layout and codec-wrapper rational; another direct caller initializes target-format globals from a target VCID. A separate enum converter maps internal DF layout 2 to the CM-style layout value 1. Therefore internal value 2 is not the same as raw MXF FrameLayout value 2, and the helper is not evidence to halve every raw interlaced MXF descriptor SampleRate. The direct call scan does not exclude indirect calls elsewhere."
+      },
+      {
+        "topic": "Video wrapper construction is codec/raster context, not raw rate guessing",
+        "anchors": [
+          "FormatDescriptor::Helpers::fdWrapperFromVideoMediaDesc 0x8e2870",
+          "own GetRate virtual call 0x8e2928",
+          "ExactEditRateFromFloat 0x8e292c",
+          "RationalFromExactEditRate 0x8e293c",
+          "fdWrapperFromVcid call 0x8e2964"
+        ],
+        "evidence": "Video format wrapper construction obtains a rate through the media descriptor, reconstructs internal exact state and publishes its rational to a VCID/format wrapper. Later geometry/layout and codec logic is separate. This supports keeping native rate conversion boundaries explicit; it does not establish a universal raw-MXF-rate-to-Frame-Rate GUI mapping or justify copying floating-point detours into Bella."
+      },
+      {
+        "topic": "Track EditRate and composition editing rate are separately imported",
+        "anchors": [
+          "aafFindVideoEditRate 0x26010",
+          "aafGetVideoRateFromMobSlots 0x25ab0",
+          "track DataDefinition type 1 filter 0x25c60",
+          "typed slot GetEditRate call 0x25cdc",
+          "ConvertAAFEditRate call 0x25ce8",
+          "toolkit CAAFTimelineMobSlot::GetEditRate 0x666c8",
+          "composition aafFindVideoEditRate call 0x193fac",
+          "composition initialization rate 0x194278"
+        ],
+        "evidence": "The composition importer separately selects an editing rate, and its mob-slot helper obtains a picture track EditRate through the typed TimelineMobSlot interface. The helper has additional header/physical-mob and import-context routes. These component/composition clock paths must not be silently substituted for the own file descriptor rate; no universal precedence between every native composition clock and the GUI Frame Rate column is established."
+      },
+      {
+        "topic": "Audio and timecode clocks do not fill a physical-video Frame Rate",
+        "evidence": "The preceding native Duration audit proves that audio imports separate AudioSamplingRate and can keep additional source/editing/timecode clocks with container/override-specific transformations. Preface.ProjectEditRate is separately recorded header editing metadata, and a timecode nominal base plus drop mode controls numbering. None is established as a universal physical-video frame-rate substitute. Bella audio Frame Rate remains blank under the existing agreement; this audit does not reopen display-duration or source-priority rules."
+      }
+    ],
+    "settledBellaBoundary": "MDB Frame Rate remains first; an independently required header read may supply an otherwise unavailable rate under the existing agreed source boundary, without a Frame-Rate-only media open. Exact numeric/rational retention, separate audio Sample Rate and audio Frame Rate blank remain agreed. New detailed MXF Frame Rate interpretation rules are research/proposal only until user approval. No unrelated Duration/DF formatting changes.",
+    "limits": [
+      "No complete Media Composer GUI Frame Rate-column source, native UI formatting/default path or universal all-format parity trace is established.",
+      "The ordinary own descriptor import/publication boundary is proved. Codec-wrapper SeparateFields conversion is separately proved; it is not a universal raw MXF FrameLayout rule.",
+      "No evidence here expands Bella beyond the selected ordinary Avid-compatible OP-Atom release scope or establishes malformed, missing, conflicting, MultipleDescriptor or rare sample-unit recovery behavior.",
+      "No new media files were read or written, no app/private APIs executed, no repository/production source edited and no production tests/benchmark run."
+    ],
+    "binaries": [
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libcom-api.dylib",
+        "sha256": "9bef7c474afa461af413cde63dcbc0b048aeabe2a685bc3fd487cb4647447728"
+      }
+    ]
+  },
+  "mdvx": {
+    "date": "2026-10-22",
+    "method": "Bounded read-only installed arm64 MDVx static trace reusing exact previously captured22Oct disassembly for unchanged binary; no app/UI/privateAPI execution or repo/media writes.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "size": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+    },
+    "ratesReadByBundledAmi": [
+      {
+        "name": "Preface.ProjectEditRate",
+        "owner": "singularPreface",
+        "storage": "info.projectEditRate at+0x18",
+        "evidence": "ami0x100010018..0x100010040",
+        "meaning": "Project/master clipclock; optional Prefacefield. Used forclip-duration conversion andsomecodec interpretation, not independentlyqualifiedphysicalframe-rateauthority."
+      },
+      {
+        "name": "Track.EditRate",
+        "owner": "eachpicture/soundtrack ofselectedsingularMaterialPackage",
+        "storage": "localpair, selectedmatchedmaterialtrack pairinfo+0x80",
+        "evidence": "ami0x100010a74..0x100010a88; matchedcopy0x100010b88..0x100010ba8",
+        "meaning": "Material/mastertrack editunitspersecond. Full32-byte SourceClip.SourcePackageID matchingselectedFileUID chooseswhichtrack/segmentfacts retained. Latermatchingtrackcanoverwrite; notselectedownfiledescriptorSampleRate."
+      },
+      {
+        "name": "Track.EditRate fallback toprojectEditRate",
+        "owner": "firstacceptedpictureMaterialPackage trackifprojectpairallzero",
+        "storage": "info+0x18",
+        "evidence": "ami0x100010ae0..0x100010af8",
+        "meaning": "Fallbackprojectclock only; no genericFrameRatefallback to25 established. 25/1 elsewhereinitialiseslongest-trackdurationcomparison."
+      },
+      {
+        "name": "Track.EditRate",
+        "owner": "selectedfileSourcePackagepicture/soundtrack",
+        "storage": "localfilePackageEditRate pairsp+0x60",
+        "evidence": "ami0x100011140..0x10001121c",
+        "meaning": "Used whilefollowingSourceCliponwardsource/timecode toconvertstartposition; notretainedasFrameRateorprojectEditRate."
+      },
+      {
+        "name": "GenericSoundEssenceDescriptor.AudioSamplingRate",
+        "owner": "selectedfiledescriptorifGenericsoundsubclass",
+        "storage": "info+0x108",
+        "evidence": "ami0x1000108c0..0x1000108e8",
+        "meaning": "Separatetechnicalaudiosampleclock; notvideoFrameRateorprojectclock."
+      }
+    ],
+    "notReadForRate": "No FileDescriptor.SampleRate propertyaccess identified inami_read_info. Keyexistsinlinkedgenericdatamodel, butpresenceofmodelentrydoesnotmeanamiusesit. No ownphysicaldescriptorFrameRate projectedbyordinaryMDVxMXF.",
+    "normalRationalDecode": "mxf_get_rational_item0x10004a17c requires8bytesandreadstwoBE32wordswithbyteswap;doesnotapplyMDBExactEditRatelegacywordconversion. Widthcheckdoesnotrequirepositive/nonzerovalues.",
+    "fieldVsFrame": "FrameLayout isreadasoptionalpicturedescriptortechnicalmetadata. No explicit field/frame-rate doubling/halving isappliedtoretainedproject/materialeditratepairs inreviewedpaths. Separate source-start-timecode codeallowsa2:1nominalbasecombination; thatisnofaithfulFrameRateconversionrule.",
+    "durationSeparation": "ami selectsmaximumMaterialPackage durationusingeachmaterialtrackEditRate, thenfloatingroundsthatcountintoProjectEditRate. Thoseunits/ownerfactsareseparatefromphysicalvideoFrameRate; donotdescribethatdurationclockasdefinitivefilefps.",
+    "ordinaryProjection": {
+      "mxf": "MDVxMXF.openFile builds dictionary clipname/project/fileUID/matUID; addInfoToItem copies thosefouronly0x1000326b4..0x100032804. Noframe-rategetter/setter ordictionaryentry.",
+      "item": "setFrameRateNumerator:denominator:0x100031090 writespairatitem+0xc8. DB_framerate0x1000315b4 returnsstored8bytes. MXFwrapperdoesnotcallsetter.",
+      "table": "FramerateCellID0x100050890..0x100050914 getsDB_framerate, checksdenominatornonzero, dividespairasdoubleforlabeldictionary; fallbackformatsthenumeratorasunsigned. Stringvaluepath0x100051130..0x1000511bcdoesmatchinglookup. Thisistableformattingofpreviouslystoredpair,notMXFparsing.",
+      "noMdb": "ForbareMXFfallbackitemwithoutotherrateenrichment,MXFwrapperdoesnotfillFrameRateandzero-initializeddenominatorfailsstatictablegate. NoappUIobservationasserted."
+    },
+    "plainSummary": "MDVXlinkedAMIreadsknownproject/material/filetrackeditclocks,butordinaryMXFscanretainsnoneasFrameRate. Itsretainedmatchedratebelongstomaterialtrack;ownfiletrackrateisusedonlyforsourcestart-timecodework;physicaldescriptorSampleRateisnotreadhere.",
+    "limits": [
+      "Staticinstalledbinaryonly;no100%runtimeclaimsorbenchmark.",
+      "NotalllinkedlibMXFcapabilitiesorproducerscovered.",
+      "NoBellaFrameRatepolicyapprovedbythisaudit.",
+      "ApprovedDurationpolicyisnotchangedbythisreceipt."
+    ]
+  },
+  "currentMediaMuster": {
+    "sourceInputs": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+        "sha256": "c8c68e78db5f3efaa62235f55624c5478e89a0adc37581a922af050f931cad55",
+        "bytes": 63597
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+        "sha256": "379a31643b62b945e3e1ed83245e5f3a7be8df4ebeec73aea31327c1d915b374",
+        "bytes": 23401
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+        "sha256": "6d67b2300f380cd63a50547595154ee27d8ab69f36b6d87e83e81fd3a33ff75c",
+        "bytes": 54490
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+        "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce",
+        "bytes": 10189
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+        "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6",
+        "bytes": 10816
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+        "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e",
+        "bytes": 36110
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+        "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935",
+        "bytes": 5202
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaduration.h",
+        "sha256": "c59928f0d6f4ac92c93ad7a258bbcaf60516da2fd9fed616293b63bb839fafb6",
+        "bytes": 3071
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+        "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3",
+        "bytes": 12788
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+        "sha256": "c85f1d11bcb15eddcfbba7c9cbbc57c8fdafdb8cac8c4af6b575d62c1575c746",
+        "bytes": 25170
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+        "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56",
+        "bytes": 12214
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafilterproxy.cpp",
+        "sha256": "2c10657c82a6d3456815966664c62ab0b77a29d02a6e514fd865510fe7349e0c",
+        "bytes": 11470
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp",
+        "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442",
+        "bytes": 3609
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/compressionnames_p.cpp",
+        "sha256": "fe5a52e5c1f932330f30e41e5d14465f75777959ad66fa4845133dde52945a82",
+        "bytes": 18766
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/dnxnames_p.h",
+        "sha256": "9cd7f0d2f2dbfdd7a8a16bd9186f7e4158ebceb506acd5441a44afdd898b44c6",
+        "bytes": 4448
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginemxf.cpp",
+        "sha256": "4b7e38b030383277be0e59cf0fc2346fd21cfccf8453e27252d746bca8904299",
+        "bytes": 33071
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+        "sha256": "f9f633bc0022e5f681b210d58a95cf472b04db0b6189ead78f9d22b7e8618a22",
+        "bytes": 60904
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediafilterproxy.cpp",
+        "sha256": "111291a8f3b4b737852cdf12e9801a7397cc0cf9e2550e8292247ab87831a72c",
+        "bytes": 62711
+      }
+    ],
+    "sourceFindings": [
+      {
+        "topic": "Wire format",
+        "detail": "Primer/schema identifies FileDescriptor.SampleRate and Track.EditRate separately as Rational. Rational is an eight-byte compound of signed big-endian Int32 numerator followed by denominator, decoded exactly; complete fixed size is checked. FrameLayout is a separate Uint8.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": [
+              148,
+              150
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": [
+              224,
+              224
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": [
+              417,
+              417
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfcatalogue_p.h",
+            "lines": [
+              438,
+              444
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfobjects_p.cpp",
+            "lines": [
+              282,
+              332
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Physical owner and descriptor",
+        "detail": "Current projector requires a unique active ContentStorage ECD -> full-ID SourcePackage match within its partition, then a complete descriptor relationship. It recursively traverses MultipleDescriptor children and projects each supported technical descriptor. It does not filter FrameRate descriptors by LinkedTrackID; the latter is consulted in the separate missing-ContainerDuration file-track fallback.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              240,
+              283
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              510,
+              553
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              654,
+              670
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              1048,
+              1075
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Actual FrameRate source",
+        "detail": "Video is identified by current registered picture ancestry OR PictureEssenceCoding property presence. If audio and video meanings coexist the technical projection returns unresolved. Otherwise FrameRate is exactly the same descriptor FileDescriptor.SampleRate when its positive numerator/denominator are usable. No Track.EditRate comparison, no field-to-frame conversion, no FrameLayout-based halving, no Avid MDB decimal alias conversion, no master/project/nominal timecode fallback for this column.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              742,
+              803
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              89,
+              92
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+            "lines": [
+              138,
+              145
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediaduration.h",
+            "lines": [
+              7,
+              19
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Unusable or ambiguous",
+        "detail": "unique rejects an unreadable/invalid property or conflicting repeated decoded values. Positive rational validation gates the FrameRate observation. All MultipleDescriptor branches can contribute; equal-rank incompatible fractions resolve to unavailable, rather than first descriptor wins. Equivalent positive fractions compare by exact Int64 cross-products. Descriptor/property absence or damage does not drop the physical row.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              24,
+              36
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              764,
+              768
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+            "lines": [
+              565,
+              650
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Current preference and I/O differ from Bella",
+        "detail": "Current selection prefers MXF/OMF FrameRate over MDB. Missing required video FrameRate is one scheduling reason to open a media header. Bella has already chosen usable MDB first and already-read own header only if MDB is unusable; FrameRate alone must not trigger that header read.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+            "lines": [
+              100,
+              106
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+            "lines": [
+              131,
+              157
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Audio scope",
+        "detail": "MXF audio projects concrete AudioSamplingRate to SampleRate and produces no FrameRate observation. Its internal Preface editing/display clock is only Duration context, not visible audio FrameRate. Current adapter itself does not apply a Kind-based blanking guard: it labels any selected FrameRate, so the source projection and selection normally keep audio blank. Bella already requires blank audio Frame Rate.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              764,
+              774
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+            "lines": [
+              39,
+              46
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+            "lines": [
+              60,
+              60
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": [
+              755,
+              775
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Retained exact numeric value",
+        "detail": "MediaRate stores signed 32-bit numerator and denominator without forcing reduction. Valid means both positive. Rational equivalence is exact Int64 cross-product. Adapter keeps selected numerator/denominator as row.frameRateRatio; this is distinct from the eagerly formatted label.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediaduration.h",
+            "lines": [
+              7,
+              20
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+            "lines": [
+              20,
+              24
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+            "lines": [
+              39,
+              42
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+            "lines": [
+              50,
+              51
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "Display, CSV and sorting",
+        "detail": "Adapter converts retained ratio to double, formats three fractional digits, removes trailing zeroes and decimal point. Table and CSV reuse the stored label. Sort converts that rounded string back to double, then uses text as a tie breaker; it does not sort from frameRateRatio. It can collapse distinct fine-grained rates to one label/sort key. This is an implementation fact, not evidence the usual 23.976/25/29.97 labels are wrong.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+            "lines": [
+              39,
+              42
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+            "lines": [
+              236,
+              237
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp",
+            "lines": [
+              59,
+              59
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediafilterproxy.cpp",
+            "lines": [
+              57,
+              63
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/mediafilterproxy.cpp",
+            "lines": [
+              312,
+              318
+            ]
+          }
+        ]
+      },
+      {
+        "topic": "FrameLayout and codec uses are separate",
+        "detail": "FrameLayout participates in geometry/visible-raster handling and compression naming. Current rate observation is emitted before those helpers and remains unchanged. Resolution doubles height for layout 1; that is not a rate-halving rule. Historical DNx tests include interlaced 1080i59.94 using explicit rational 30000/1001 with layout1 and half-height stored geometry.",
+        "sources": [
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              921,
+              933
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+            "lines": [
+              1001,
+              1010
+            ]
+          },
+          {
+            "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+            "lines": [
+              1039,
+              1083
+            ]
+          }
+        ]
+      }
+    ],
+    "plainSummary": "Current video projector reads own FileDescriptor.SampleRate directly and records no audio FrameRate. Exact fraction survives as a fact; adapter stores a three-decimal label and later sorting parses that rounded label. No Track.EditRate/FrameLayout conversion occurs here. Current global source priority is header-first, unlike Bella agreed MDB-first policy.",
+    "existingTestsReviewedNotRun": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginemxf.cpp",
+        "lines": [
+          322,
+          338
+        ],
+        "fact": "Explicit UTF16 and24000/1001 rational wire decoding; source read only, not run."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+        "lines": [
+          755,
+          775
+        ],
+        "fact": "Audio keeps sample units and no invented visible video rate; source read only, not run."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_mxfprojection.cpp",
+        "lines": [
+          1039,
+          1083
+        ],
+        "fact": "Compression operating points include rational interlaced clock; not a general FrameRate normalization test and not run."
+      }
+    ]
+  },
+  "actualEvidence": {
+    "reusedHeaderSummary": {
+      "headers": 13,
+      "audio": 5,
+      "video": 8,
+      "videoDescriptorTrackRatesEqual": 8,
+      "videoFrameLayout0": 7,
+      "videoFrameLayout3": 1
+    },
+    "reusedHeaderObservations": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1001.WAVA01.D8875D202DA97BA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "f8475c6079b53ff1aefaa33c7306a48538c43ffba8c3e3b189da14617d3cef44",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f10130000007ba92d202585059152bc34363bcdaf64",
+        "sampleKind": "Audio",
+        "descriptor": {
+          "className": "WaveAudioDescriptor",
+          "offset": 122972,
+          "sampleRate": [
+            {
+              "property": "FileDescriptor.SampleRate",
+              "type": "MXF_RATIONAL_TYPE",
+              "hex": "0000bb8000000001",
+              "range": [
+                123120,
+                8
+              ],
+              "value": [
+                48000,
+                1
+              ]
+            }
+          ],
+          "frameLayout": [],
+          "essenceContainer": [
+            {
+              "property": "FileDescriptor.EssenceContainer",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b34010101ff4b464141000d4d4f",
+              "range": [
+                123088,
+                16
+              ],
+              "value": "060e2b34010101ff4b464141000d4d4f"
+            }
+          ],
+          "pictureCoding": [],
+          "linkedTrackId": []
+        },
+        "descriptorSetKeyHex": "060e2b34025301010d01010101014800",
+        "pictureCoding": [],
+        "ownTracks": [
+          {
+            "offset": 123128,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  123229,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000bb8000000001",
+                "range": [
+                  123189,
+                  8
+                ],
+                "value": [
+                  48000,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "mdbSampleRate": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "80bb000001000000",
+            "ranges": [
+              [
+                1343423,
+                8
+              ]
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ],
+        "mdbDescriptorClass": "PCMA"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/A001_C001_V01.D7EB5BC5323BV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "7bf7822774ef479d0425f2b1756ef96242cfc40e68b5aebe2c83b6d21ead4770",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010101010f00130000003b32c55b39229202060e2b347f7f2a80",
+        "sampleKind": "Video",
+        "descriptor": {
+          "className": "CDCIEssenceDescriptor",
+          "offset": 143987,
+          "sampleRate": [
+            {
+              "property": "FileDescriptor.SampleRate",
+              "type": "MXF_RATIONAL_TYPE",
+              "hex": "0000001800000001",
+              "range": [
+                144454,
+                8
+              ],
+              "value": [
+                24,
+                1
+              ]
+            }
+          ],
+          "frameLayout": [
+            {
+              "property": "GenericPictureEssenceDescriptor.FrameLayout",
+              "type": "MXF_UINT8_TYPE",
+              "hex": "00",
+              "range": [
+                144317,
+                1
+              ],
+              "value": 0
+            }
+          ],
+          "essenceContainer": [
+            {
+              "property": "FileDescriptor.EssenceContainer",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b34010101ff4b464141000d4d4f",
+              "range": [
+                144422,
+                16
+              ],
+              "value": "060e2b34010101ff4b464141000d4d4f"
+            }
+          ],
+          "pictureCoding": [],
+          "linkedTrackId": []
+        },
+        "descriptorSetKeyHex": "060e2b34025301010d01010101012800",
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010a0401020271130000",
+            "range": [
+              144402,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "ownTracks": [
+          {
+            "offset": 144568,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000003",
+                "range": [
+                  144669,
+                  4
+                ],
+                "value": 3
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000001800000001",
+                "range": [
+                  144629,
+                  8
+                ],
+                "value": [
+                  24,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "mdbSampleRate": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "1800000001000000",
+            "ranges": [
+              [
+                343738,
+                8
+              ]
+            ],
+            "value": [
+              24,
+              1
+            ]
+          }
+        ],
+        "mdbDescriptorClass": "CDCI"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/5511410TA01.6A041816BE45ECA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "050a663a4f9d5a77abfea1df9581b2943205234cb7277e95e3aebded19dbf032",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ec45be167311069643cb7c57583610fa",
+        "sampleKind": "Audio",
+        "descriptor": {
+          "className": "WaveAudioDescriptor",
+          "offset": 135501,
+          "sampleRate": [
+            {
+              "property": "FileDescriptor.SampleRate",
+              "type": "MXF_RATIONAL_TYPE",
+              "hex": "0000bb8000000001",
+              "range": [
+                135649,
+                8
+              ],
+              "value": [
+                48000,
+                1
+              ]
+            }
+          ],
+          "frameLayout": [],
+          "essenceContainer": [
+            {
+              "property": "FileDescriptor.EssenceContainer",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b34010101ff4b464141000d4d4f",
+              "range": [
+                135617,
+                16
+              ],
+              "value": "060e2b34010101ff4b464141000d4d4f"
+            }
+          ],
+          "pictureCoding": [],
+          "linkedTrackId": []
+        },
+        "descriptorSetKeyHex": "060e2b34025301010d01010101014800",
+        "pictureCoding": [],
+        "ownTracks": [
+          {
+            "offset": 135657,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  135758,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000bb8000000001",
+                "range": [
+                  135718,
+                  8
+                ],
+                "value": [
+                  48000,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "mdbSampleRate": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "80bb000001000000",
+            "ranges": [
+              [
+                3693524,
+                8
+              ]
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ],
+        "mdbDescriptorClass": "PCMA"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041581_152C6152C6FCEV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "41d6454ebd62894de5c876116d8da15f95663bcbc4753729ef14341937360244",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ce6f2c1573110696ab807c57583610fa",
+        "sampleKind": "Video",
+        "descriptor": {
+          "className": "CDCIEssenceDescriptor",
+          "offset": 126733,
+          "sampleRate": [
+            {
+              "property": "FileDescriptor.SampleRate",
+              "type": "MXF_RATIONAL_TYPE",
+              "hex": "0000001900000001",
+              "range": [
+                127200,
+                8
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "frameLayout": [
+            {
+              "property": "GenericPictureEssenceDescriptor.FrameLayout",
+              "type": "MXF_UINT8_TYPE",
+              "hex": "00",
+              "range": [
+                127063,
+                1
+              ],
+              "value": 0
+            }
+          ],
+          "essenceContainer": [
+            {
+              "property": "FileDescriptor.EssenceContainer",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b340401010a0d01030102110200",
+              "range": [
+                127168,
+                16
+              ],
+              "value": "060e2b340401010a0d01030102110200"
+            }
+          ],
+          "pictureCoding": [],
+          "linkedTrackId": []
+        },
+        "descriptorSetKeyHex": "060e2b34025301010d01010101012800",
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010a0401020271010000",
+            "range": [
+              127148,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "ownTracks": [
+          {
+            "offset": 127208,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  127309,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000001900000001",
+                "range": [
+                  127269,
+                  8
+                ],
+                "value": [
+                  25,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "mdbSampleRate": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "1900000001000000",
+            "ranges": [
+              [
+                3509683,
+                8
+              ]
+            ],
+            "value": [
+              25,
+              1
+            ]
+          }
+        ],
+        "mdbDescriptorClass": "CDCI"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7280108SMA01.6A04F087D5405A.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "7250a5396f79cd9b932e1af16fd33402f436ce0f4f11de7f51d80a0efc8fac70",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f101300000005547d087311069613b27c57583610fa",
+        "sampleKind": "Audio",
+        "descriptor": {
+          "className": "WaveAudioDescriptor",
+          "offset": 126951,
+          "sampleRate": [
+            {
+              "property": "FileDescriptor.SampleRate",
+              "type": "MXF_RATIONAL_TYPE",
+              "hex": "0000bb8000000001",
+              "range": [
+                127099,
+                8
+              ],
+              "value": [
+                48000,
+                1
+              ]
+            }
+          ],
+          "frameLayout": [],
+          "essenceContainer": [
+            {
+              "property": "FileDescriptor.EssenceContainer",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b34010101ff4b464141000d4d4f",
+              "range": [
+                127067,
+                16
+              ],
+              "value": "060e2b34010101ff4b464141000d4d4f"
+            }
+          ],
+          "pictureCoding": [],
+          "linkedTrackId": []
+        },
+        "descriptorSetKeyHex": "060e2b34025301010d01010101014800",
+        "pictureCoding": [],
+        "ownTracks": [
+          {
+            "offset": 127107,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  127208,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000bb8000000001",
+                "range": [
+                  127168,
+                  8
+                ],
+                "value": [
+                  48000,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "mdbSampleRate": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "80bb000001000000",
+            "ranges": [
+              [
+                1477092,
+                8
+              ]
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ],
+        "mdbDescriptorClass": "PCMA"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/1730_8646_submastede88816cv.mxf",
+        "headerRange": [
+          256,
+          524064
+        ],
+        "headerSha256": "ae8cf0aff0369ca65ed2f11e9ab0873c57eae9292228d9123455ae748b757711",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f10130000006c8188de27100696dc0d30138b72a179",
+        "sampleKind": "Video",
+        "descriptor": {
+          "className": "CDCIEssenceDescriptor",
+          "offset": 120992,
+          "sampleRate": [
+            {
+              "property": "FileDescriptor.SampleRate",
+              "type": "MXF_RATIONAL_TYPE",
+              "hex": "0000001900000001",
+              "range": [
+                121459,
+                8
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "frameLayout": [
+            {
+              "property": "GenericPictureEssenceDescriptor.FrameLayout",
+              "type": "MXF_UINT8_TYPE",
+              "hex": "00",
+              "range": [
+                121322,
+                1
+              ],
+              "value": 0
+            }
+          ],
+          "essenceContainer": [
+            {
+              "property": "FileDescriptor.EssenceContainer",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b340401010a0d01030102110200",
+              "range": [
+                121427,
+                16
+              ],
+              "value": "060e2b340401010a0d01030102110200"
+            }
+          ],
+          "pictureCoding": [],
+          "linkedTrackId": []
+        },
+        "descriptorSetKeyHex": "060e2b34025301010d01010101012800",
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010a0401020271010000",
+            "range": [
+              121407,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "ownTracks": [
+          {
+            "offset": 121467,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  121568,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000001900000001",
+                "range": [
+                  121528,
+                  8
+                ],
+                "value": [
+                  25,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "mdbSampleRate": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "1900000001000000",
+            "ranges": [
+              [
+                2050430,
+                8
+              ]
+            ],
+            "value": [
+              25,
+              1
+            ]
+          }
+        ],
+        "mdbDescriptorClass": "CDCI"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7293007LMA01.6A0500C57EA1CA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "3fd75b378276e469f6799026f3e68db865f2e5e1317666c721dd3e50db540a52",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f10130000001cea570c73110696a5e97c57583610fa",
+        "sampleKind": "Audio",
+        "descriptor": {
+          "className": "WaveAudioDescriptor",
+          "offset": 127394,
+          "sampleRate": [
+            {
+              "property": "FileDescriptor.SampleRate",
+              "type": "MXF_RATIONAL_TYPE",
+              "hex": "0000bb8000000001",
+              "range": [
+                127542,
+                8
+              ],
+              "value": [
+                48000,
+                1
+              ]
+            }
+          ],
+          "frameLayout": [],
+          "essenceContainer": [
+            {
+              "property": "FileDescriptor.EssenceContainer",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b34010101ff4b464141000d4d4f",
+              "range": [
+                127510,
+                16
+              ],
+              "value": "060e2b34010101ff4b464141000d4d4f"
+            }
+          ],
+          "pictureCoding": [],
+          "linkedTrackId": []
+        },
+        "descriptorSetKeyHex": "060e2b34025301010d01010101014800",
+        "pictureCoding": [],
+        "ownTracks": [
+          {
+            "offset": 127550,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  127651,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000bb8000000001",
+                "range": [
+                  127611,
+                  8
+                ],
+                "value": [
+                  48000,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "mdbSampleRate": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "80bb000001000000",
+            "ranges": [
+              [
+                1508901,
+                8
+              ]
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ],
+        "mdbDescriptorClass": "PCMA"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/V01.6A050275_B95B90B95B9CCV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "2fdd3de7e4ad0db8c93ed7dad92be469eaf0424c61da09716802d21f0bab8499",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ccb9950b7311069637c77c57583610fa",
+        "sampleKind": "Video",
+        "descriptor": {
+          "className": "CDCIEssenceDescriptor",
+          "offset": 126426,
+          "sampleRate": [
+            {
+              "property": "FileDescriptor.SampleRate",
+              "type": "MXF_RATIONAL_TYPE",
+              "hex": "0000001900000001",
+              "range": [
+                126873,
+                8
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "frameLayout": [
+            {
+              "property": "GenericPictureEssenceDescriptor.FrameLayout",
+              "type": "MXF_UINT8_TYPE",
+              "hex": "00",
+              "range": [
+                126736,
+                1
+              ],
+              "value": 0
+            }
+          ],
+          "essenceContainer": [
+            {
+              "property": "FileDescriptor.EssenceContainer",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b340401010a0d01030102110200",
+              "range": [
+                126841,
+                16
+              ],
+              "value": "060e2b340401010a0d01030102110200"
+            }
+          ],
+          "pictureCoding": [],
+          "linkedTrackId": []
+        },
+        "descriptorSetKeyHex": "060e2b34025301010d01010101012800",
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010a0401020271010000",
+            "range": [
+              126821,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "ownTracks": [
+          {
+            "offset": 126881,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  126982,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000001900000001",
+                "range": [
+                  126942,
+                  8
+                ],
+                "value": [
+                  25,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "mdbSampleRate": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "1900000001000000",
+            "ranges": [
+              [
+                2457857,
+                8
+              ]
+            ],
+            "value": [
+              25,
+              1
+            ]
+          }
+        ],
+        "mdbDescriptorClass": "CDCI"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "4e1ea26a6459f3e1d07e3c361986602f1c28e8a9d31d0de4ff7ef5ed80676b38",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f10130000009a583c0a5512069048e346fc807fda72",
+        "sampleKind": "Audio",
+        "descriptor": {
+          "className": "WaveAudioDescriptor",
+          "offset": 131287,
+          "sampleRate": [
+            {
+              "property": "FileDescriptor.SampleRate",
+              "type": "MXF_RATIONAL_TYPE",
+              "hex": "0000bb8000000001",
+              "range": [
+                131435,
+                8
+              ],
+              "value": [
+                48000,
+                1
+              ]
+            }
+          ],
+          "frameLayout": [],
+          "essenceContainer": [
+            {
+              "property": "FileDescriptor.EssenceContainer",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b34010101ff4b464141000d4d4f",
+              "range": [
+                131403,
+                16
+              ],
+              "value": "060e2b34010101ff4b464141000d4d4f"
+            }
+          ],
+          "pictureCoding": [],
+          "linkedTrackId": []
+        },
+        "descriptorSetKeyHex": "060e2b34025301010d01010101014800",
+        "pictureCoding": [],
+        "ownTracks": [
+          {
+            "offset": 131443,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  131544,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000bb8000000001",
+                "range": [
+                  131504,
+                  8
+                ],
+                "value": [
+                  48000,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "mdbSampleRate": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "80bb000001000000",
+            "ranges": [
+              [
+                193612,
+                8
+              ]
+            ],
+            "value": [
+              48000,
+              1
+            ]
+          }
+        ],
+        "mdbDescriptorClass": "PCMA"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/Untitled Sequence.175B1728V.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "0d324bb99c9183d04541c75b00944e5808410cee4d72eae603c322eaf6994a62",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f101300000028175b1761120690badf46fc807fda72",
+        "sampleKind": "Video",
+        "descriptor": {
+          "className": "CDCIEssenceDescriptor",
+          "offset": 123673,
+          "sampleRate": [
+            {
+              "property": "FileDescriptor.SampleRate",
+              "type": "MXF_RATIONAL_TYPE",
+              "hex": "00007530000003e9",
+              "range": [
+                124140,
+                8
+              ],
+              "value": [
+                30000,
+                1001
+              ]
+            }
+          ],
+          "frameLayout": [
+            {
+              "property": "GenericPictureEssenceDescriptor.FrameLayout",
+              "type": "MXF_UINT8_TYPE",
+              "hex": "00",
+              "range": [
+                124003,
+                1
+              ],
+              "value": 0
+            }
+          ],
+          "essenceContainer": [
+            {
+              "property": "FileDescriptor.EssenceContainer",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b340401010a0d01030102110200",
+              "range": [
+                124108,
+                16
+              ],
+              "value": "060e2b340401010a0d01030102110200"
+            }
+          ],
+          "pictureCoding": [],
+          "linkedTrackId": []
+        },
+        "descriptorSetKeyHex": "060e2b34025301010d01010101012800",
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010a0401020271030000",
+            "range": [
+              124088,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "ownTracks": [
+          {
+            "offset": 124148,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  124249,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "00007530000003e9",
+                "range": [
+                  124209,
+                  8
+                ],
+                "value": [
+                  30000,
+                  1001
+                ]
+              }
+            ]
+          }
+        ],
+        "mdbSampleRate": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "b50b000064000000",
+            "ranges": [
+              [
+                161723,
+                8
+              ]
+            ],
+            "value": [
+              2997,
+              100
+            ]
+          }
+        ],
+        "mdbDescriptorClass": "CDCI"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/V01.E69684C0_1C5401C5406FAV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "61d42c7317b051b4233a1b7724c5bc66914af5d30498e0ed7fadd6b73e7ca27b",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f1013000000fa06541c55120690f7b846fc807fda72",
+        "sampleKind": "Video",
+        "descriptor": {
+          "className": "CDCIEssenceDescriptor",
+          "offset": 133290,
+          "sampleRate": [
+            {
+              "property": "FileDescriptor.SampleRate",
+              "type": "MXF_RATIONAL_TYPE",
+              "hex": "00007530000003e9",
+              "range": [
+                133713,
+                8
+              ],
+              "value": [
+                30000,
+                1001
+              ]
+            }
+          ],
+          "frameLayout": [
+            {
+              "property": "GenericPictureEssenceDescriptor.FrameLayout",
+              "type": "MXF_UINT8_TYPE",
+              "hex": "03",
+              "range": [
+                133576,
+                1
+              ],
+              "value": 3
+            }
+          ],
+          "essenceContainer": [
+            {
+              "property": "FileDescriptor.EssenceContainer",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b340401010d0d010301021e0200",
+              "range": [
+                133681,
+                16
+              ],
+              "value": "060e2b340401010d0d010301021e0200"
+            }
+          ],
+          "pictureCoding": [],
+          "linkedTrackId": []
+        },
+        "descriptorSetKeyHex": "060e2b34025301010d01010101012800",
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010d0401020203070100",
+            "range": [
+              133661,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "ownTracks": [
+          {
+            "offset": 133721,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  133822,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "00007530000003e9",
+                "range": [
+                  133782,
+                  8
+                ],
+                "value": [
+                  30000,
+                  1001
+                ]
+              }
+            ]
+          }
+        ],
+        "mdbSampleRate": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "b50b000064000000",
+            "ranges": [
+              [
+                542267,
+                8
+              ]
+            ],
+            "value": [
+              2997,
+              100
+            ]
+          }
+        ],
+        "mdbDescriptorClass": "CDCI"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_78D9V02.22180610.586550.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "a38155c6b34a9f570b7648fb69751b822e9a1818da0ca5be7ec975d03d9098f5",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64",
+        "sampleKind": "Video",
+        "descriptor": {
+          "className": "RGBAEssenceDescriptor",
+          "offset": 119014,
+          "sampleRate": [
+            {
+              "property": "FileDescriptor.SampleRate",
+              "type": "MXF_RATIONAL_TYPE",
+              "hex": "0000001800000001",
+              "range": [
+                119440,
+                8
+              ],
+              "value": [
+                24,
+                1
+              ]
+            }
+          ],
+          "frameLayout": [
+            {
+              "property": "GenericPictureEssenceDescriptor.FrameLayout",
+              "type": "MXF_UINT8_TYPE",
+              "hex": "00",
+              "range": [
+                119323,
+                1
+              ],
+              "value": 0
+            }
+          ],
+          "essenceContainer": [
+            {
+              "property": "FileDescriptor.EssenceContainer",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b34010101ff4b464141000d4d4f",
+              "range": [
+                119408,
+                16
+              ],
+              "value": "060e2b34010101ff4b464141000d4d4f"
+            }
+          ],
+          "pictureCoding": [],
+          "linkedTrackId": []
+        },
+        "descriptorSetKeyHex": "060e2b34025301010d01010101012900",
+        "pictureCoding": [],
+        "ownTracks": [
+          {
+            "offset": 119448,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  119549,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000001800000001",
+                "range": [
+                  119509,
+                  8
+                ],
+                "value": [
+                  24,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "mdbSampleRate": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "1800000001000000",
+            "ranges": [
+              [
+                1394336,
+                8
+              ]
+            ],
+            "value": [
+              24,
+              1
+            ]
+          }
+        ],
+        "mdbDescriptorClass": "RGBA"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041582_152D2152D2556V.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "f0ce781201559fa7494cb139a75b149b7a94fe0d43281428073afed0f8ca7685",
+        "readThisFollowup": false,
+        "fileNormalizedHex": "060a2b340101010501010f101300000056252d15731106965e367c57583610fa",
+        "sampleKind": "Video",
+        "descriptor": {
+          "className": "CDCIEssenceDescriptor",
+          "offset": 126849,
+          "sampleRate": [
+            {
+              "property": "FileDescriptor.SampleRate",
+              "type": "MXF_RATIONAL_TYPE",
+              "hex": "0000001900000001",
+              "range": [
+                127316,
+                8
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "frameLayout": [
+            {
+              "property": "GenericPictureEssenceDescriptor.FrameLayout",
+              "type": "MXF_UINT8_TYPE",
+              "hex": "00",
+              "range": [
+                127179,
+                1
+              ],
+              "value": 0
+            }
+          ],
+          "essenceContainer": [
+            {
+              "property": "FileDescriptor.EssenceContainer",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b340401010a0d01030102110200",
+              "range": [
+                127284,
+                16
+              ],
+              "value": "060e2b340401010a0d01030102110200"
+            }
+          ],
+          "pictureCoding": [],
+          "linkedTrackId": []
+        },
+        "descriptorSetKeyHex": "060e2b34025301010d01010101012800",
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010a0401020271010000",
+            "range": [
+              127264,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "ownTracks": [
+          {
+            "offset": 127324,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  127425,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000001900000001",
+                "range": [
+                  127385,
+                  8
+                ],
+                "value": [
+                  25,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "mdbSampleRate": [
+          {
+            "property": "OMFI:MDFL:SampleRate",
+            "type": "omfi:ExactEditRate",
+            "hex": "1900000001000000",
+            "ranges": [
+              [
+                2603009,
+                8
+              ]
+            ],
+            "value": [
+              25,
+              1
+            ]
+          }
+        ],
+        "mdbDescriptorClass": "CDCI"
+      }
+    ],
+    "reusedVideoRateCounts": [
+      {
+        "rate": [
+          24,
+          1
+        ],
+        "files": 2
+      },
+      {
+        "rate": [
+          25,
+          1
+        ],
+        "files": 4
+      },
+      {
+        "rate": [
+          30000,
+          1001
+        ],
+        "files": 2
+      }
+    ],
+    "freshRepositoryHeaderControls": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/zT_ßt_1080i_50_seqDD866C6BV.mxf",
+        "fileBytes": 524288,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "2361d540b43c800156d3d20787030e82550a688dbe34319209a597089c4152a5",
+        "stableImmediate": true,
+        "readThisFollowup": true,
+        "scope": "Existing repository header fixture, metadata only; not a new attached-drive specimen.",
+        "fileNormalizedHex": "060a2b340101010501010f10130000006b6c86dd5112069027e4c22704e88b34",
+        "descriptor": {
+          "className": "CDCIEssenceDescriptor",
+          "offset": 122100,
+          "sampleRate": [
+            {
+              "property": "FileDescriptor.SampleRate",
+              "type": "MXF_RATIONAL_TYPE",
+              "hex": "0000001900000001",
+              "range": [
+                122571,
+                8
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "frameLayout": [
+            {
+              "property": "GenericPictureEssenceDescriptor.FrameLayout",
+              "type": "MXF_UINT8_TYPE",
+              "hex": "01",
+              "range": [
+                122434,
+                1
+              ],
+              "value": 1
+            }
+          ],
+          "essenceContainer": [
+            {
+              "property": "FileDescriptor.EssenceContainer",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b34010101ff4b464141000d4d4f",
+              "range": [
+                122539,
+                16
+              ],
+              "value": "060e2b34010101ff4b464141000d4d4f"
+            }
+          ],
+          "pictureCoding": [
+            {
+              "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b34040101010401020202020600",
+              "range": [
+                122519,
+                16
+              ],
+              "value": "060e2b34040101010401020202020600"
+            }
+          ],
+          "linkedTrackId": []
+        },
+        "ownTracks": [
+          {
+            "offset": 122579,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  122680,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000001900000001",
+                "range": [
+                  122640,
+                  8
+                ],
+                "value": [
+                  25,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "result": "25/1 already counts frames for this exercised interlaced form; universal halving would incorrectly produce12.5."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/zT_ßt_1080i_50_seqDD91EF60V.mxf",
+        "fileBytes": 524288,
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "57415a1a26cebf101c12711a772b47b03c1324b98b186c69ac498bfa0d359e51",
+        "stableImmediate": true,
+        "readThisFollowup": true,
+        "scope": "Existing repository header fixture, metadata only; not a new attached-drive specimen.",
+        "fileNormalizedHex": "060a2b340101010501010f101300000060ef91dd511206902af2c22704e88b34",
+        "descriptor": {
+          "className": "CDCIEssenceDescriptor",
+          "offset": 122082,
+          "sampleRate": [
+            {
+              "property": "FileDescriptor.SampleRate",
+              "type": "MXF_RATIONAL_TYPE",
+              "hex": "0000001900000001",
+              "range": [
+                122553,
+                8
+              ],
+              "value": [
+                25,
+                1
+              ]
+            }
+          ],
+          "frameLayout": [
+            {
+              "property": "GenericPictureEssenceDescriptor.FrameLayout",
+              "type": "MXF_UINT8_TYPE",
+              "hex": "01",
+              "range": [
+                122416,
+                1
+              ],
+              "value": 1
+            }
+          ],
+          "essenceContainer": [
+            {
+              "property": "FileDescriptor.EssenceContainer",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b340401010a0d01030102110200",
+              "range": [
+                122521,
+                16
+              ],
+              "value": "060e2b340401010a0d01030102110200"
+            }
+          ],
+          "pictureCoding": [
+            {
+              "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+              "type": "MXF_UL_TYPE",
+              "hex": "060e2b340401010a0401020271080000",
+              "range": [
+                122501,
+                16
+              ],
+              "value": "060e2b340401010a0401020271080000"
+            }
+          ],
+          "linkedTrackId": []
+        },
+        "ownTracks": [
+          {
+            "offset": 122561,
+            "trackId": [
+              {
+                "property": "GenericTrack.TrackID",
+                "type": "MXF_UINT32_TYPE",
+                "hex": "00000001",
+                "range": [
+                  122662,
+                  4
+                ],
+                "value": 1
+              }
+            ],
+            "editRate": [
+              {
+                "property": "Track.EditRate",
+                "type": "MXF_RATIONAL_TYPE",
+                "hex": "0000001900000001",
+                "range": [
+                  122622,
+                  8
+                ],
+                "value": [
+                  25,
+                  1
+                ]
+              }
+            ]
+          }
+        ],
+        "result": "25/1 already counts frames for this exercised interlaced form; universal halving would incorrectly produce12.5."
+      }
+    ],
+    "findings": [
+      "Eight own video descriptor rates all equal their one own file-track EditRate: two 24/1, four 25/1, two 30000/1001. Seven FrameLayout0, one FrameLayout3. Five audio descriptor and file-track rates are 48000/1 and must not populate Frame Rate.",
+      "Both additional 1080i50 metadata controls have FrameLayout1 and descriptor SampleRate25/1 equal to own Track.EditRate25/1. One coding label maps in current verified Compression catalogue to DV1080 50i; the other is the explicit DNxHD SQ interlaced1080 profile. These are recorded25, not50, so blindly halving because interlaced would create12.5fps.",
+      "The 13-header FrameLayout3 fractional sample is V01.E69684C0_1C5401C5406FAV.mxf with 30000/1001 in both places and DNxUncompressed coding060e2b340401010d0401020203070100. Layout alone does not imply its rational needs division by2.",
+      "These exercised descriptor/track agreements do not prove every FileDescriptor.SampleRate is universally video frames. ST377 field/coding-unit caveat remains; no sample here exercises a field-rate descriptor different from track frame clock."
+    ],
+    "limits": [
+      "13 samples and two explicitly selected fixture controls are not a census or proof of every Avid-compatible wrapping.",
+      "Existing 13 observations are reused and rehashed as artifacts; physical media was not reopened for this follow-up.",
+      "No field-rate=2x-track-rate case is assumed from FrameLayout or filename. Actual values must decide each exercised case.",
+      "No claim that track rate universally substitutes for descriptor SampleRate in every MXF or that arbitrary unknown wrappers are supported.",
+      "No MediaComposer or MDVx reverse engineering was performed in this subtask; root handles native comparisons.",
+      "No production tests, app, essence read, whole-media hash, repository writes or runtime implementation."
+    ]
+  },
+  "proposal": {
+    "status": "New MXF source mapping/coverage proposed, not approved or implemented.",
+    "source": "Already qualified physical video descriptor FileDescriptor.SampleRate, known complete eight-byte big-endian Rational. Preserve original signed32 numerator/denominator, both positive; source property name SampleRate, video display heading Frame Rate.",
+    "frameUnitMeaning": "Use exact rate directly for supported frame-based Avid-compatible forms, including exercised interlaced controls. No universal interlace/FrameLayout halving. An unestablished field-sampled form supplies no FrameRate until a specific supported unit conversion is verified; this does not expand scope or impose a generic global conformance gate.",
+    "otherClocks": "Do not substitute master/project/audio/timecode clock or infer FPS from DF mode. Own-track context can support a verified specific unit mapping where needed, not a universal alternate rate source or mandatory corroboration walk.",
+    "independence": "Usable Frame Rate survives missing ContainerDuration. Preserve raw Duration unit clock unchanged if a verified variant needs a distinct frame conversion. A header rate alone does not repair MDB Duration.",
+    "sharedRepresentation": "Share already-read exact descriptor fraction with Duration when units are frames; one small C++17 rate record/availability, Qt fixed-width integers and checked QtEndian reads. No permanent duplicate pair/string or new dependency solely for Frame Rate.",
+    "displayAndSort": "Keep agreed late familiar labels and exact numeric sorting. Examples24/1→24,25/1→25,24000/1001→23.976,30000/1001→29.97,50/1→50,60000/1001→59.94. Uncommon label precision remains prior presentation follow-up. Never reconstruct source rate by parsing label.",
+    "audio": "Visible Frame Rate stays blank, even when audio Duration has an internal display clock. AudioSamplingRate remains separate.",
+    "missingDamaged": "No usable qualified supported MXF video rate means no MXF contribution; retain physical file and independent usable metadata. No invented0FPS or unrelated rate replacement.",
+    "sourcePriority": "Keep usable MDB first. Only if MDB rate is unusable may a usable independently already-read own-file header contribute. Otherwise blank; no FrameRate-only media open. Overall priority/header-trigger discussion stays deferred.",
+    "retention": "Release temporary bytes, ownership references and layout/coding context after extracting wanted compact facts. DF/NDF changes Duration numbering/separators, not FrameRate."
+  },
+  "primaryFormatSource": {
+    "url": "https://pub.smpte.org/latest/st377-1/st377-1-2019.pdf",
+    "sections": [
+      "F.2 File Descriptor",
+      "G.2.1 Frame Layout",
+      "G.2.2 Sample Rate and Edit Rate"
+    ],
+    "use": "Property/unit semantics, not complete native GUI parity or permission to expand format coverage."
+  },
+  "validation": {
+    "rawReceiptsVerified": true,
+    "distinctReferencedHashesVerified": 69,
+    "jsonParsed": true,
+    "freshAttachedDriveRead": false,
+    "freshRepositoryMetadataControls": 2,
+    "essenceRead": false,
+    "fullMediaHashes": false,
+    "productionTestsRun": false,
+    "appOrPrivateApiRun": false,
+    "runtimeCodeChanged": false,
+    "performanceMeasured": false
+  },
+  "approvedBy": {
+    "date": "2026-10-22",
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-frame-rate-plan-2026-10-22.json",
+    "statement": "OK, let's lock those Frame Rate rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read audio Sample Rate from MXF, and what should Bella read and keep?\nAnd how far % are we from finishing?"
+  }
+}

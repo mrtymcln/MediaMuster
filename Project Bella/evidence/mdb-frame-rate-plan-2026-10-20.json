@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-20",
+  "timezone": "Australia/Sydney",
+  "purpose": "Approved Bella Frame Rate shared numeric design and MDB-first priority with only independently read header fallback.",
+  "status": "Approved requirements; no runtime implementation or OldScanner cutover.",
+  "authorization": {
+    "planApproval": "Great - note this down as the plan.",
+    "headerReadInstruction": "read from MDB only - do not fall back to opening media header (unless we're reading the media header anyway.",
+    "clarifyingQuestion": "When a media header is already being read for another reason and supplies a usable Frame Rate, should Bella keep a usable MDB rate or prefer the header rate?",
+    "selectedAnswer": "Keep MDB first; use the header only if MDB is unusable (recommended)",
+    "scope": "Frame Rate. Duration retains its earlier strictly MDB-only rule. Other fields header policies are not changed by this approval."
+  },
+  "agreedBellaRule": {
+    "mdbOwner": "Exact physical video file own MDB descriptor OMFI:MDFL:SampleRate, with complete identity/reference and typed-value qualification.",
+    "storage": "Preserve original numerator/denominator and necessary source/type meaning in a small numeric value. Reuse this MDB SampleRate with own Length for Duration; no separate permanent duplicate rate or rounded label solely for Frame Rate.",
+    "interpretation": "Apply the already approved scoped exact Avid video-rate interpretation for qualified MDB ExactEditRate values, preserving original words. Generic/header Rational values retain their own supported semantics.",
+    "presentation": "Generate familiar labels at table/CSV presentation; sort using numeric interpreted rates rather than reparsing rounded text. Audio Frame Rate is blank.",
+    "priority": [
+      {
+        "rank": 1,
+        "source": "MDB",
+        "condition": "Usable physical file own video descriptor SampleRate."
+      },
+      {
+        "rank": 2,
+        "source": "Already independently read same-file media header",
+        "condition": "MDB rate is unusable AND the header read is independently required AND it supplies a usable own-file video rate."
+      }
+    ],
+    "headerReadTrigger": false,
+    "usableMdbWins": "A usable MDB rate remains selected regardless of a header rate availability or disagreement. Do not read/collect an alternative solely for comparison.",
+    "unavailable": "Blank if no eligible usable rate; retain physical file. Frame Rate cannot itself trigger a header read.",
+    "completionOrder": "Selection follows fixed priority independent of task completion order; a later usable MDB result supersedes a provisional header fallback.",
+    "durationBoundary": "Header fallback affects Frame Rate only. It must not repair or override Duration, replace its MDB count/rate, or provide a missing Duration clock. Duration remains MDB-only even if header data exists.",
+    "independentAvailability": "Usable MDB SampleRate can supply Frame Rate even if own Length is unavailable and Duration is blank.",
+    "audioBoundary": "Class-specific audio Sample Rate source and interpretation remain unchanged; an internal audio Duration display clock does not populate visible Frame Rate.",
+    "timecodeBoundary": "Nominal numbering bases and drop-frame flags affect Duration numbering, not actual FPS or Frame Rate labels.",
+    "sourceOpeningBoundary": "A fallback source being second in priority never authorizes opening it. Only a separate already-authorized scan reason can cause header read."
+  },
+  "priorityTable": [
+    {
+      "field": "Video Frame Rate",
+      "first": "Own usable MDB SampleRate",
+      "fallback": "Own usable header rate only from independent header read and only when MDB unusable",
+      "openHeaderForThisField": false,
+      "ifUnavailable": "Blank; retain file"
+    },
+    {
+      "field": "Duration",
+      "first": "Own MDB Length/SampleRate with agreed interpretation",
+      "fallback": null,
+      "openHeaderForThisField": false,
+      "ifUnavailable": "Blank; known zero 00:00:00:00"
+    },
+    {
+      "field": "Audio Frame Rate",
+      "first": "Blank by agreed applicability",
+      "fallback": null,
+      "openHeaderForThisField": false,
+      "ifUnavailable": "Blank"
+    }
+  ],
+  "remaining": [
+    "Final shared-interpreter naming; AvidVideoRateInterpreter is a possible working name.",
+    "Generic/uncommon-rate display precision and supported wire/header layout coverage.",
+    "Duration audio display-clock and qualified drop-frame owner/fallback decisions.",
+    "Other fields source/read policies remain governed by their own decisions and reviews."
+  ],
+  "supersedes": [
+    "Earlier pending/proposed Frame Rate approval wording in the referenced historical Frame Rate evidence.",
+    "Earlier deferral of Frame Rate header-read trigger and source priority.",
+    "Any interpretation that sharing a rate permits an already-read header to repair MDB-only Duration."
+  ],
+  "references": [
+    {
+      "path": "Project Bella/README.md",
+      "sha256": "df9b24eb7969fe2438b0c547c0a72c6180689ae3d27b11804ef43683ec4885d1"
+    },
+    {
+      "path": "docs/reviews/2026-10-18-bella-mdb/frame-rate.md",
+      "sha256": "349ff1de95a79eaaeeebd01badccea9f9707a405e91a40c8033dcc3e91036fe2"
+    },
+    {
+      "path": "Project Bella/evidence/mdb-frame-rate-2026-10-19.json",
+      "sha256": "7933b7c352e569a2a28c6dd09a669823126a8ed646a1e3bf18e0bd71fbfc9344"
+    },
+    {
+      "path": "Project Bella/evidence/mdb-frame-rate-current-2026-10-20.json",
+      "sha256": "c8d0ff88ca9228f6c71b06a13def32f2df934ead765ec563e5a60c8658e389e0"
+    },
+    {
+      "path": "Project Bella/evidence/mdb-duration-clock-2026-10-19.json",
+      "sha256": "a29d66698d82e09e4c102372113c9000761733c8beea2aa92bbe54e901372bf0"
+    },
+    {
+      "path": "Project Bella/evidence/mdb-audio-sample-rate-2026-10-20.json",
+      "sha256": "8d07d21eefcc7f33e49a359d715fef0c5fb4157766dfdaf3874f157ab8dfd2b7"
+    }
+  ],
+  "validation": {
+    "scope": "Requirements documentation and JSON only. Source checks from previous review remain in referenced evidence.",
+    "productionCodeChanged": false,
+    "newMediaReads": false,
+    "newBinaryAnalysis": false,
+    "testsRun": false,
+    "buildsRun": false,
+    "appRun": false,
+    "binFilterChanged": false,
+    "oldScannerActive": true,
+    "performanceMeasured": false
+  },
+  "supersededInPartBy": {
+    "date": "2026-10-21",
+    "receipt": "mxf-fallback-fields-2026-10-21.json",
+    "scope": "Only the blanket MDB-only Duration source restriction is superseded by the approved database-unavailable MXF fallback. Original authorization, findings and other rules remain historical and unchanged."
+  }
+}

@@ -163,9 +163,12 @@ it does not URI-decode a second search value. The retained path does not prove
 the original source still exists.
 
 Before this migration, a separate filename was derived before selection.
-In the genuine EDIT MDB example, object 93868 records volume-qualified
-`Mojave/Users/.../FEB_79-00b01a6d.PICT` and POSIX
-`/Users/.../FEB_79-00b01a6d.PICT` spellings. They yield the same selected filename;
+In the genuine EDIT MDB example, object 93868 records a volume-qualified legacy
+`FL:PathName` spelling `Mojave/Users/.../FEB_79-00b01a6d.PICT`; its
+`FL:PathNameUTF8` and `FL:POSIXPathName` both contain the identical
+`/Users/.../FEB_79-00b01a6d.PICT` spelling. The
+[19 October raw follow-up](../docs/reviews/2026-10-18-bella-mdb/source-path.md)
+confirms that property distinction. They yield the same selected filename;
 the full path remains unresolved under exact-value selection. The old agreeing
 basename is historical evidence, not a retained fallback. These spellings do not
 demonstrate incompatible import origins. See

@@ -1,0 +1,2337 @@
+{
+  "date": "2026-10-18",
+  "purpose": "MDB source-capability and encoding research before Bella implementation",
+  "policyStatus": "Research and recommendations, not newly approved MDB rules. Existing retained result fields and fresh Bella/OldScanner separation remain approved. No Bella runtime code changed.",
+  "mediaComposer": {
+    "date": "2026-10-18",
+    "applicationVersion": "26.8.0.58987",
+    "scope": "Read-only static arm64 disassembly and manual control/data-flow reconstruction of installed Media Composer; no launch, private API execution, write to media, or Bella implementation.",
+    "binaries": [
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+        "arm64Uuid": "D55FFCED-FD76-3667-99B8-C9A84180173E"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+        "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+        "arm64Uuid": "EDC22A12-1101-3C73-A57C-4256A82633F9"
+      }
+    ],
+    "format": {
+      "loadPath": {
+        "function": "LocalMDB::LoadMobsFromMDB",
+        "address": "0x413718",
+        "evidence": [
+          "0x413930 calls MSMOpenStreamMDB",
+          "0x413950 calls omfiHPDomain::New",
+          "0x413f3c calls LocalMDB::ScanOMFFileToMobManager, which calls omfiHPDomain::New at 0x415094"
+        ],
+        "meaning": "MDB uses OMF objects in a Bento container. PMR v8/v16 set selection is not an MDB structure."
+      },
+      "dictionary": {
+        "function": "initOMFIStrings",
+        "address": "0xb8a98",
+        "evidence": "Native dictionary explicitly names OMF classes, properties and UTF8 counterparts; definitions are property-specific, not a single encoding for the whole MDB."
+      }
+    },
+    "encoding": [
+      {
+        "field": "OMFI:CPNT:Name / legacy component name",
+        "functions": [
+          {
+            "name": "AComponent::Get",
+            "address": "0x148104",
+            "steps": [
+              "0x1482b4 selects native dictionary slot 0x190 = OMFI:CPNT:Name",
+              "0x1482bc..0x1482c8 invokes stream ReadStringHandle slot0x290",
+              "0x1485cc..0x1485f8 registers raw handle as component name alias"
+            ]
+          },
+          {
+            "name": "omfiDualStream::ReadStringHandle",
+            "address": "0xb79bc",
+            "steps": [
+              "Gets declared value length, reads bytes without character conversion, appends NUL",
+              "EffectID-specific translation exists for property49; this does not make CPNT Name UTF8"
+            ]
+          },
+          {
+            "name": "AComponent::GetNameCopyUTF16",
+            "address": "0x14943c",
+            "steps": [
+              "Obtains legacy name bytes",
+              "0x1494a8 explicitly calls CurrentMacMBCSEncodingToUTF16"
+            ]
+          }
+        ],
+        "conclusion": "The traced legacy component-name route uses current-Mac decoding. It does not inspect a UTF8 prefix or OMFI:CharacterSet. This proves that route, not that all historical MDB names are universally MacRoman. No named CPNT:NameUTF8 counterpart found in native dictionary."
+      },
+      {
+        "field": "OMFI:MCBR:MC:binNameUTF8 with legacy binName fallback",
+        "functions": [
+          {
+            "name": "AMCBinRef::Get",
+            "address": "0x2d5b48",
+            "steps": [
+              "0x2d5c54 reads legacy binName via ReadStringHandle slot0x290",
+              "0x2d5ce8 reads explicit binNameUTF8 via ReadUTF8StringAndConvertToUTF16 slot0x2a8",
+              "0x2d5d4c..0x2d5d68 falls back to legacy bytes only if Unicode bin name empty and uses CurrentMacMBCSEncodingToUnicodeString"
+            ]
+          }
+        ],
+        "conclusion": "Prefer named Unicode bin-name property when available. This is recorded Original Bin metadata, unrelated to changing the Bin Filter."
+      },
+      {
+        "field": "Named UTF8 locator fields",
+        "propertyNames": [
+          "OMFI:FL:PathNameUTF8",
+          "OMFI:DL:PathNameUTF8",
+          "OMFI:MSML:LastKnownVolumeUTF8"
+        ],
+        "functions": [
+          {
+            "name": "AMacDirLocator::Get",
+            "address": "0xa09b0"
+          },
+          {
+            "name": "MSMLocator::Get",
+            "address": "0x3cb1d0"
+          },
+          {
+            "name": "omfiDualStream::ReadUTF8String",
+            "address": "0xb815c",
+            "steps": [
+              "Delegates to raw ReadString slot0x288; named field itself conveys the UTF8 meaning"
+            ]
+          },
+          {
+            "name": "omfiDualStream::ReadUTF8StringAndConvertToUTF16",
+            "address": "0xb8168",
+            "steps": [
+              "Reads named bytes via UTF8 read slot0x2a0",
+              "0xb8240 calls UTF8ToUTF16",
+              "0xb8250 reports STRM_UNICODE_CONVERSION_ERROR on unsuccessful conversion"
+            ]
+          }
+        ],
+        "conclusion": "These are UTF8 by named schema/native reader; not PMR counted strings, no mandatory PMR two-byte prefix should be imposed on them."
+      },
+      {
+        "field": "Attribute names/values including Project",
+        "functions": [
+          {
+            "name": "AAttrList::GetOMFI",
+            "address": "0x176294",
+            "steps": [
+              "0x176424 reads ATTB Kind",
+              "0x176454 reads ATTB Name",
+              "Kind2 branch0x176490 reads StringAttribute with ReadStringPtr",
+              "Kind4 branch0x1764e8 reads BobSize, allocates that size and reads BobData bytes",
+              "Kind1 reads IntAttribute, Kind3 ObjAttribute"
+            ]
+          },
+          {
+            "name": "CMGetProjectName",
+            "address": "0x282b9c",
+            "steps": [
+              "0x282bdc tests attribute _PJ via FindString",
+              "0x282c04 falls back to PROJNAME via same method"
+            ]
+          },
+          {
+            "name": "CoreAttrList::FindString",
+            "library": "AvidCore",
+            "address": "0x6dd10",
+            "steps": [
+              "Accepts Kind2 legacy string",
+              "Kind4 branch0x6dda0..0x6dddc obtains UTF8 bytes and converts through UTF8ToCurrentMacMBCSEncoding"
+            ]
+          }
+        ],
+        "conclusion": "Project is not categorically legacy text: known typed UTF8 attribute representations also exist. Read only schema-established text attributes, retain hierarchy and type; do not decode arbitrary BobData as text."
+      },
+      {
+        "field": "Avid UTF8 attribute representation",
+        "functions": [
+          {
+            "name": "CoreAttrList::AddUTF8String",
+            "library": "AvidCore",
+            "address": "0x6d740",
+            "steps": [
+              "Allocates strlen+3",
+              "Zeroes buffer, copies UTF8 bytes starting at +2",
+              "Inserts attribute as Kind4 at0x6d820"
+            ]
+          },
+          {
+            "name": "CoreAttrList::FindUTF8StringOnly",
+            "library": "AvidCore",
+            "address": "0x6e0fc",
+            "steps": [
+              "Retrieves Kind4",
+              "0x6e15c..0x6e168 checks BOTH first two bytes zero, otherwise ATTR_NOT_UTF8_STRING",
+              "0x6e1e0 obtains bytes after+2"
+            ]
+          },
+          {
+            "name": "CoreAttrList::FindUTF8StringAsUTF16",
+            "library": "AvidCore",
+            "address": "0x6e220",
+            "steps": [
+              "Obtains UTF8 representation",
+              "0x6e2fc converts UTF8ToUnicodeString"
+            ]
+          }
+        ],
+        "conclusion": "Known Unicode attributes can store two-zero-byte marker plus UTF8 in Kind4 blob; Kind4 alone and zero prefix alone are not enough to interpret arbitrary binary properties. Actual Name under PreservedBinData is archived column data; not proved a direct ClipName replacement."
+      }
+    ],
+    "identity": {
+      "function": "omfiDualStream::ReadUID",
+      "address": "0xb66e8",
+      "steps": [
+        "Reads up to32bytes (0xb6740)",
+        "Accepts exactly32 at0xb6744 or12 at0xb674c",
+        "12-byte UID: swaps each of three32-bit words according to metadata byte order and calls ConvertFromOmfiUid at0xb67f8",
+        "32-byte MobID: preserves full32 and swaps only material Data1(4 bytes at16),Data2(2 at20),Data3(2 at22), not wholeID; tailbytes/prefix remain",
+        "Unrecognized width leaves NullMobID in native routine"
+      ],
+      "conclusion": "Bella needs complete IDs and structural normalization appropriate to12 vs32 bytes; do not reduce modern identities to an8byte excerpt or reverse entire ID."
+    },
+    "numericFields": {
+      "functions": [
+        {
+          "name": "AFileMediaDesc::Get",
+          "address": "0x17c018",
+          "steps": [
+            "0x17c080 uses dictionary0x2b0 OMFI:MDFL:SampleRate, calls Read_ExactEditRate at0x17c088",
+            "0x17c0a4 uses dictionary0x2a8 OMFI:MDFL:Length, reads integer",
+            "Separate tags handle extended stored values"
+          ]
+        },
+        {
+          "name": "omfiDualStream::ReadRational",
+          "address": "0xb84e4",
+          "steps": [
+            "Reads8bytes",
+            "Loads two32bitwords numerator/denominator",
+            "Byte swaps each scalar when metadata byte order is notII/unspecified"
+          ]
+        }
+      ],
+      "conclusion": "Rates, lengths, dimensions, compression identifiers and references are typed binary data, not UTF8 or MacRoman. Descriptor rate and physical descriptor length belong together; composition/track duration need not describe the full physical file."
+    },
+    "limits": [
+      "No new executable or private-reader run; this is static code evidence.",
+      "No universal producer encoding established for all legacy MDB text, especially Windows. Current-Mac byte decoding is proven only on traced routes.",
+      "OMFI:CharacterSet is present in native dictionaries but no use establishing an originating legacy codepage was observed on traced name/project routes; a complete global use audit was not performed.",
+      "No primary native evidence promotes PreservedBinData/Name to current master ClipName; keep hierarchy.",
+      "Legacy/modern OMF schema and Bento container revision are separate; six current genuine files are audited independently by parent/team.",
+      "A fresh Bella parser implementation must wait for remaining source requirements; this report makes proposals, not runtime changes."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/read-rational.txt",
+        "bytes": 1570,
+        "sha256": "847a480b7979ec2b7e0d55cc3ca00f1811a9a213dcb3022a976daf984ea997e0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/domain-main.txt",
+        "bytes": 1348,
+        "sha256": "251ef2cc35f9774f011dbeae0c999791cf47459fe2a385b48921249df667850d"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/component-namecopyutf16.txt",
+        "bytes": 1970,
+        "sha256": "f4e30b0acf9dc8defc1496bb433f5406a346db131fe3123a2da9fa8d03fd2c19"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/composition-get.txt",
+        "bytes": 52170,
+        "sha256": "6c3a5051f7861742b371f98846805327e0a41c6bd36e40ba138bc6d71d1f0129"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/msm-locator-get.txt",
+        "bytes": 9020,
+        "sha256": "c9d730b22464263c8e253e783de85954b34a64786ac65275b955c56d4b35bdc2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/read-stringptr.txt",
+        "bytes": 4404,
+        "sha256": "2221d4891dc806421a5905d77b3f0c8698a0289d6e4362d4b1155aa4316f207f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/write-string.txt",
+        "bytes": 17934,
+        "sha256": "123e10a9b062dfdb51c6b5f58934feba5e9e815336acd685815d6556b7ef88da"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/read-utf8-utf16.txt",
+        "bytes": 4404,
+        "sha256": "9b085573f9f541ca3d1d351b3bf6b53838ae0245bca4ba37e3c9e4d42f865cad"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/attr-getomfi.txt",
+        "bytes": 17968,
+        "sha256": "26c326797a11487aa0899c43b59dbb5378b2cd96f951b0332978e80e9be4ef1b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/omf-domain-init.txt",
+        "bytes": 4687,
+        "sha256": "060e9314899fbd9809006e663b69bf1be7765a843d5dae311a1226d5e1518f00"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/core-findstring.txt",
+        "bytes": 2965,
+        "sha256": "d4d0a713df04486d6157e52be2ef1b63a9919f83a9f66014d619ba6f4555f680"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/domain-old.txt",
+        "bytes": 28530,
+        "sha256": "7f89a0db52972060421e8c70f8a8d788933d039fbcbc87a7324303f6832bad39"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/composition-put.txt",
+        "bytes": 27742,
+        "sha256": "4a1c8cff536eceeedc73dcdfd733555f9cd4f5a3d2314b576cf6d2571212965a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/read-string.txt",
+        "bytes": 4134,
+        "sha256": "9d17f1b28a72a50a398c393f765a106441d8922d820661a2ae71a3bc2b4ef47a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/component-setnameutf16.txt",
+        "bytes": 1603,
+        "sha256": "36672f18cead8324e2de7b221479318f498f1084f2879363af6b33b325b86867"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/core-addutf8.txt",
+        "bytes": 3306,
+        "sha256": "d9706d4a0a7453fcad36911f4665a01150a9ea8b68f5a2b1f2a06e6c74f05dae"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/avidcore-nm.txt",
+        "bytes": 2179532,
+        "sha256": "70f5d91b433f7c43dc590969680a87b8fa211889ddc4f53a56c0693e18df5bde"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/component-get.txt",
+        "bytes": 14810,
+        "sha256": "a089fb7ac0abbc70867f9b281ecb86ef0fb64a5f27e9d4cc182a5327245067bc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/trackgroup-getomfi.txt",
+        "bytes": 22002,
+        "sha256": "9367731de6729c62529866bc89cc1030754c3e3da65016e096948de3b4534a3f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/libame-nm.txt",
+        "bytes": 14662267,
+        "sha256": "de3cf7e5cf7739adac9a1a08c414ada8b91fb170410a4d9b82da0aa6a9c8d203"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/core-findmbcsto16.txt",
+        "bytes": 7285,
+        "sha256": "5d01a8050bbc517759a4a8bf6b6ad9a0299831aaeae2d3e72be3e40fc3994c5c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/core-findutf8only.txt",
+        "bytes": 3157,
+        "sha256": "38c29aebaaa0efe1d34caa77a7d7fc5941dc63479fed1b29bc4023994b35596b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/find-utf8-attr.txt",
+        "bytes": 313,
+        "sha256": "ba356fe5e1fefbab7451c7b6e15f2d0b476bbfe49fab4ec0c31f53fb2fd13660"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/filedescriptor-get.txt",
+        "bytes": 4831,
+        "sha256": "20dc0c781e5ea6a4c42a3ad7ff40fa1882037ab3f1b20d67fe03ec2002d8f679"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/project-get.txt",
+        "bytes": 1847,
+        "sha256": "58c38f8ab168ebb1c996a5e56652315eeabf9acbbc72e3c56e93d87f118e77f2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/add-utf8-attr.txt",
+        "bytes": 910,
+        "sha256": "dd4debdd0f832fd92117a1da95094348c850aeaf69a559f0cf56d074c70a8b28"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/relevant-symbols.txt",
+        "bytes": 45545,
+        "sha256": "99d7112b3ff4ea5d5a7d10a422cb606f4d7a3847c372da325f865f63ddc73e83"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/binref-put.txt",
+        "bytes": 5051,
+        "sha256": "ae91b744e3bc3e58edb992d96f1328c582a3b743b57845ab50c516b3cc6003e2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/core-findutf8.txt",
+        "bytes": 2971,
+        "sha256": "b9520a0bf4cff7e47c6a89e5eecd5c149bc7e44598c0e0d7815d5320afb799a8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/trackgroup-get.txt",
+        "bytes": 25902,
+        "sha256": "46d05883ff50df0fb89cd4f598c153ebfd0f5a028fbe7141817b9bdb977545eb"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/component-put.txt",
+        "bytes": 10420,
+        "sha256": "546090126d2eeaad995229cfbc57e69c177af53b08e33ee3930c354a9b8654dd"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/core-findutf8to16.txt",
+        "bytes": 7426,
+        "sha256": "2893e9c4e3cbfafbbea570b217c54313585e37edf2c2685bdd5194b693ea12bf"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/read-utf8-mac.txt",
+        "bytes": 6745,
+        "sha256": "129c092941b57d272fe9c9f7d5ff0aace579078b0d0bface944b3dfa7fe81191"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/read-string-handle.txt",
+        "bytes": 4753,
+        "sha256": "c91850e873b52b76c9725dfa092b67f174db82c19f8c6d42576dce9f35ae7fa9"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/component-nameutf16.txt",
+        "bytes": 2416,
+        "sha256": "17bde7dbc5dbadde1c875dedba652be2a6528489cf6428450d60cec5545589ed"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/load-mdb.txt",
+        "bytes": 54191,
+        "sha256": "128693af9c3151dfbce83b2ad392b587cea7c7f0650eb410139c978ae8cb606f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/mac-dir-get.txt",
+        "bytes": 16563,
+        "sha256": "33fddd0b38e4d1ffb8a07210e27d6c57c6dcc8b93f8ebaeb3b5a3160aadee5ca"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/read-uid.txt",
+        "bytes": 4403,
+        "sha256": "bebb739fab82403bef8304652bb4c8a9002cdda19b65811ce10ed1888bf30f32"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/binref-get.txt",
+        "bytes": 7257,
+        "sha256": "50bf6c85a1489e39e40f4345e7045a2df20f0beb2848ad0c86c7fbb99e504d84"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/init-omfi.txt",
+        "bytes": 131238,
+        "sha256": "cf0bad578d0df9b56fa1b67b7fa67b5dde40d206921cd107ca342330bf7e463f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/scan-omf.txt",
+        "bytes": 47762,
+        "sha256": "a6958c8426bcdc3b214850d91469db7e6cec5748cd1f08f14a3e17aa78523392"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mc/read-utf8-raw.txt",
+        "bytes": 267,
+        "sha256": "92aafa729e0bc7c0d2fd3fe285df1d0a9ac0263689d1d7969ca48b9389d108e2"
+      }
+    ]
+  },
+  "mdvx": {
+    "date": "2026-10-18",
+    "purpose": "Read-only installed MDVx MDB scanner/enrichment audit for Bella requirements. No production or media files changed; no MDVx app scan or UI launched.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "version": "0.2",
+      "build": "4073",
+      "architecture": "arm64"
+    },
+    "method": "Fresh nm/otool static instruction tracing, Objective-C metadata and manual control/data-flow reconstruction, plus independent actual MDB TOC/property inspection and a minimal Foundation converter program using the traced NSString API. This audit does not claim new Hopper decompiler output.",
+    "functions": {
+      "openFile:withIndicator:": "0x100061c10",
+      "OMFiTOCReader02": "0x100061e48",
+      "pDataFor:": "0x100061eac",
+      "OMFiTOCReader01": "0x100061fc0",
+      "StringForTocIndexItem:": "0x1000631bc",
+      "GetNameForObjectAt:": "0x1000637b0",
+      "GetStringForObjectAt:": "0x100063a58",
+      "lookForProperty:At:": "0x100063bb0",
+      "addInfoToItem:": "0x100064794",
+      "getCompression_data:forObjAt:": "0x100064b60",
+      "getProjectNameForObjAt:": "0x100064dc4",
+      "getProjectAttributeForObjectAt:": "0x1000651dc",
+      "UIDtoBentoObj initWithUID:": "0x10006163c",
+      "MDVxDatabaseItem setFrameRateNumerator:denominator:": "0x100031090",
+      "MDVxDatabaseItem setSampleRateNumerator:denominator:": "0x100031098"
+    },
+    "container": {
+      "fileRead": "openFile obtains complete NSData dataWithContentsOfURL and retains its bytes. Rejects files shorter than128bytes or with wrong final24byte Bento magic a4434da5486472d7.",
+      "formatImplemented": "The actual parser implements a flat24byte Bento1 TOC. Header major==2 selects OMFiTOCReader02, which logs OMF2not supported and returns; no Bento2TOC decoding.",
+      "versionQualification": "openFile explicitly rejects major2, but does not explicitly demand major1 before flat-TOC fallback. This is not evidence of genuine support for unknown Bento majors. Bento container version must not be equated with OMF schema revision.",
+      "byteOrder": "Sets _isII by comparing label bytes+0xa with0x4949. Numeric property payloads generally use that flag to choose direct32bit values or reversed32bit values. FlatTOC fields themselves are accessed by direct native little-endian loads.",
+      "indexing": "Builds objectID-to-firstTOC-index tree and separate CompositionMobs, MediaDataMobs and SourceMobs trees from head arrays. Index entries retain8byte UID excerpt plus Bento objectID.",
+      "propertyAccess": "pDataFor returns bounded external payload pointer or immediate TOC value pointer; lookForProperty scans contiguous same-object entries and returns first matching property from supplied startindex. No duplicate-property ambiguity rejection was found in this routine.",
+      "safetyQualification": "Do not copy these bounds checks as a safety specification: observed code assumes well-formed flatTOC/object grouping and has incomplete validation of the completeTOC extent and array payload counts."
+    },
+    "ordinaryEnrichment": {
+      "masterLookup": "PMR material/master ID bytes16..23 → CompositionMobs tree → Bento object firstTOC index.",
+      "fileLookup": "PMR file ID bytes16..23 → SourceMobs tree → Bento object firstTOC index.",
+      "masterRetained": [
+        {
+          "field": "NameInBin (clip name)",
+          "property": "Generic GetStringForObjectAt scans object for first accepted string property; normally OMFI:CPNT:Name"
+        },
+        {
+          "field": "Usage code",
+          "property": "OMFI:MOBJ:UsageCode0x1033d,32bit numeric"
+        },
+        {
+          "field": "Frame-rate numerator/denominator",
+          "property": "OMFI:CPNT:EditRate0x10293, pair of32bit numerics"
+        },
+        {
+          "field": "Import classification",
+          "property": "CPNT:Attributes→ATTR:AttrRefs; if an attribute name begins _IMPORTSETTING, force usageCode15"
+        }
+      ],
+      "fileRetained": [
+        {
+          "field": "Project",
+          "property": "_PJ string attribute directly or via referenced source mob"
+        },
+        {
+          "field": "Compression FourCC",
+          "property": "MOBJ:PhysicalMedia descriptor→DIDD:Compression; special _AUD marker for recognised audio path"
+        },
+        {
+          "field": "DID resolution ID",
+          "property": "Descriptor DIDD:DIDResolutionID"
+        },
+        {
+          "field": "Sample-rate numerator/denominator",
+          "property": "PCMA:AudioSamplingRate; AIFD:Summary presence plus MDFL:SampleRate fallback; see numeric caveat"
+        },
+        {
+          "field": "Bits",
+          "property": "MDAU:BitsPerSample for recognised audio; CDCI:ComponentWidth on relevant video path"
+        }
+      ],
+      "notReadByThisRoutine": [
+        "Physical duration/descriptor length",
+        "Stored or sampled image width/height",
+        "Original Bin",
+        "Source path/locator text",
+        "Creation date",
+        "Essence payload",
+        "Optional effect sequence/category graph beyond usageCode and import marker"
+      ],
+      "numericCaveat": "For the non-audio descriptor branch, if DIDD:FrameSampleSize0x108ed and MDFL:SampleRate exist, getCompression_data reads FrameSampleSize into the returned sample-rate numerator slot and sets denominator1; addInfoToItem passes that slot to setSampleRateNumerator:denominator:, which stores bothwords. This is an observed stored intermediate, not a claim about final UI display or that FrameSampleSize is semantically an audio sampling rate."
+    },
+    "text": {
+      "scanGenericFunction": "GetStringForObjectAt0x100063a58",
+      "scanAcceptedPropertyIds": {
+        "0x10261": "OMFI:ATTB:StringAttribute",
+        "0x1027f": "OMFI:CLSD:ClassID",
+        "0x10298": "OMFI:CPNT:EffectID",
+        "0x1029d": "OMFI:CPNT:Name",
+        "0x102e1": "OMFI:FL:PathName",
+        "0x10257": "OMFI:ATTB:Name"
+      },
+      "scanEncoding": "0x100063b30..3b40 selects NSString encoding1 when _isII istrue, encoding30 otherwise, then trims NUL characters. SDK defines1=NSASCIIStringEncoding and30=NSMacOSRomanStringEncoding. No UTF8 property/kind dispatch occurs here.",
+      "projectPath": "getProjectAttributeForObjectAt follows CPNT:Attributes→ATTR:AttrRefs, loops references in storedorder, compares first3 Namebytes to_PJ, calls GetStringForObjectAt starting at NameTOCindex+1. Thus next StringAttribute is accepted. Last matching_PJ reference replaces earlier string; no uniqueness check.",
+      "projectFallback": "getProjectNameForObjAt first tries direct_PJ, else TRKG:Tracks→TRAK:TrackComponent→SEQU:Sequence→SCLP:SourceID, supporting32byte SourceID+16 excerpt or12byte SourceID+4 excerpt, then searches SourceMobs for source_PJ.",
+      "browserDifference": "StringForTocIndexItem0x1000631bc, used for database browsing, separately recognises OMFI:FL:PathNameUTF8 property0x102e0 and uses encoding4=UTF8 at0x1000634a4..34dc. This is not the generic string routine called by ordinary scan enrichment.",
+      "actualProjectExamples": [
+        {
+          "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+          "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+          "header": {
+            "extra": "0x4949",
+            "bentoMajor": 1,
+            "bentoMinor": 0
+          },
+          "pjCount": 477,
+          "highBytePjCount": 477,
+          "highByteExamples": [
+            {
+              "objectId": "0x109d5",
+              "nameBytes": "5f504a00",
+              "selectedByGetString": {
+                "tocIndex": 533,
+                "propertyId": "0x10261",
+                "propertyName": "OMFI:ATTB:StringAttribute",
+                "typeId": "0x10090",
+                "bytes": "7a5465a7745f373230705f32332e39373600"
+              }
+            },
+            {
+              "objectId": "0x109e9",
+              "nameBytes": "5f504a00",
+              "selectedByGetString": {
+                "tocIndex": 740,
+                "propertyId": "0x10261",
+                "propertyName": "OMFI:ATTB:StringAttribute",
+                "typeId": "0x10090",
+                "bytes": "7a5465a7745f373230705f32332e39373600"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+          "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+          "header": {
+            "extra": "0x4949",
+            "bentoMajor": 1,
+            "bentoMinor": 0
+          },
+          "pjCount": 3,
+          "highBytePjCount": 3,
+          "highByteExamples": [
+            {
+              "objectId": "0x109a6",
+              "nameBytes": "5f504a00",
+              "selectedByGetString": {
+                "tocIndex": 832,
+                "propertyId": "0x10261",
+                "propertyName": "OMFI:ATTB:StringAttribute",
+                "typeId": "0x10090",
+                "bytes": "7a5465a7745f50414c5f32357000"
+              }
+            },
+            {
+              "objectId": "0x109df",
+              "nameBytes": "5f504a00",
+              "selectedByGetString": {
+                "tocIndex": 996,
+                "propertyId": "0x10261",
+                "propertyName": "OMFI:ATTB:StringAttribute",
+                "typeId": "0x10090",
+                "bytes": "7a5465a7745f50414c5f32357000"
+              }
+            }
+          ]
+        }
+      ],
+      "actual720pConverterOutput": [
+        "encoding=1 value=zTe§t_720p_23.976",
+        "encoding=30 value=zTeßt_720p_23.976",
+        "encoding=4 value=nil"
+      ],
+      "actualPALConverterOutput": [
+        "encoding=1 value=zTe§t_PAL_25p",
+        "encoding=30 value=zTeßt_PAL_25p",
+        "encoding=4 value=nil"
+      ],
+      "converterConclusion": "On this Mac the encoding1 NSString initializer permissively maps actual0xa7 to§; encoding30 maps it to the user-confirmedß. Thus the traced MDVx scanner converter can misdecode this actual legacy Project value. This conclusion combines static converter selection with measured Foundation conversion, not a live MDVx scan result."
+    },
+    "actualFilePropertyMap": {
+      "0x101e9": "OMFI:CompositionMobs",
+      "0x10202": "OMFI:MediaData",
+      "0x10216": "OMFI:SourceMobs",
+      "0x10257": "OMFI:ATTB:Name",
+      "0x1028e": "OMFI:CPNT:Attributes",
+      "0x1026b": "OMFI:ATTR:AttrRefs",
+      "0x10293": "OMFI:CPNT:EditRate",
+      "0x1033d": "OMFI:MOBJ:UsageCode",
+      "0x10333": "OMFI:MOBJ:PhysicalMedia",
+      "0x1074d": "OMFI:PCMA:AudioSamplingRate",
+      "0x1022f": "OMFI:AIFD:Summary",
+      "0x1031a": "OMFI:MDFL:SampleRate",
+      "0x10749": "OMFI:MDAU:BitsPerSample",
+      "0x108d9": "OMFI:DIDD:Compression",
+      "0x108f7": "OMFI:DIDD:DIDResolutionID",
+      "0x108ed": "OMFI:DIDD:FrameSampleSize",
+      "0x10919": "OMFI:CDCI:ComponentWidth",
+      "0x1040f": "OMFI:TRKG:Tracks",
+      "0x103f6": "OMFI:TRAK:TrackComponent",
+      "0x10374": "OMFI:SEQU:Sequence",
+      "0x10356": "OMFI:SCLP:SourceID",
+      "0x102e0": "OMFI:FL:PathNameUTF8"
+    },
+    "bellaImplicationsNotApprovedRequirements": [
+      "Use the actual named/type-aware property structure and correct text variant rules established from Media Composer; do not copy MDVx ASCII/byteorder heuristic as an encoding specification.",
+      "Retain complete identities and join correct file/master roles under already approved Bella policy rather than adopting MDVx8byte comparisons.",
+      "Select the metadata required by MediaMuster fields, including dimensions/physicalduration/OriginalBin/sourcepath where MDB actually supplies it, even if this MDVx enrichment routine omits it.",
+      "MDB remains metadata assistance; Bella physical inventory must remain independent of PMR/MDB membership."
+    ],
+    "limits": [
+      "No MDVx runtime scan, final UI display comparison, timing or memory benchmark.",
+      "Ordinary scanner/enrichment path inspected; database browser/private unrelated workflows are only inspected where needed to distinguish text decoding.",
+      "No claim that MDVx cannot display UTF8 anywhere: its browser has a UTF8 path property branch and unrelated readers may support Unicode.",
+      "No malformed-input experiment against MDVx app; static safety observations are not an exhaustive vulnerability audit.",
+      "All genuine files inspected in this task are Bento1.0 with IIextra marker; no independently generated big-endian MDB corpus tested.",
+      "Bento major/version behavior does not settle every OMF schema-version feature."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-disassembly.txt",
+        "bytes": 4552262,
+        "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-objc.txt",
+        "bytes": 801388,
+        "sha256": "7477f70e70144bd55e1b60ed75ba1614ca51a8e5d869e0184fa4666749cecc69"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-symbols.txt",
+        "bytes": 225054,
+        "sha256": "8f9e9b167d1e664ca06ece700263817f6459f21520a4afdd406ce10056813ee7"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVxOMFI-all.txt",
+        "bytes": 149310,
+        "sha256": "27a8c35691140cfbe08ec8f053cc17ea25f4f6fdda354b34188cb9c3aa0e0852"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/openFile_withIndicator_.txt",
+        "bytes": 5747,
+        "sha256": "9e39a835a301d7740e9e47a51e7d63f7a146b5ec1df4b6dad4a9378d5e805fe8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/GetStringForObjectAt_.txt",
+        "bytes": 3468,
+        "sha256": "bab9dc9340d24802b7f984fcb1d0aca837cdfa7882e3179b3e3a4335464ba2a3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/getProjectNameForObjAt_.txt",
+        "bytes": 10708,
+        "sha256": "05c52440ac65ed3ecb191d63fd85f501e1b89365f632ef58c2138eef76a86882"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/getProjectAttributeForObjectAt_.txt",
+        "bytes": 3400,
+        "sha256": "9f7786010a44e0bfd4e45bcf7ac9dd14f7b504b1aa81101502cbcf3810d93633"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/addInfoToItem_.txt",
+        "bytes": 9423,
+        "sha256": "20211e8a6dbcd33b0e034f3885504d5af7a54cffd3a05b5d776446549e0f6829"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/getCompression_data_forObjAt_.txt",
+        "bytes": 5492,
+        "sha256": "56eb914605cab3b729d4dd8de955f3e18298097b96c2c1f546c00a32f1cbe0ef"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/lookForProperty_At_.txt",
+        "bytes": 558,
+        "sha256": "45d90b8ad42f2fd572629bbf6a2035c5e66a2ef56f890bc749f05e698cca9862"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/StringForTocIndexItem_.txt",
+        "bytes": 12679,
+        "sha256": "de2eb249c006828d24186c8c2021d9e18de8560087bec1c1c55143e7bf7111fd"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/sample-dictionary.json",
+        "bytes": 778,
+        "sha256": "379ab6b3b350866a31184f09824d857ec2332160ef32baf042c6ff0f89c0e457"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/actual-pj-path.json",
+        "bytes": 1984,
+        "sha256": "be4fff358000f584e5fee017e9be51085bbb00d30db84b2ff0b36ccb796cf17f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/check_actual_nsstring.m",
+        "bytes": 539,
+        "sha256": "c282f82c0f0f546f700b5793787f3f887a60e2fe9712fe0d34a906adb4118ff4"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/check_actual_nsstring",
+        "bytes": 51896,
+        "sha256": "e4f36e4255186eed67d4334b84a740ba5c83080cb333a289a9000c0cfa31f506"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/Foundation-actual-pj-720p.txt",
+        "bytes": 94,
+        "sha256": "90ff25e2fcba02922021799873f851194b35a23cc5fb24428b9541721a30dd08"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/Foundation-actual-pj.txt",
+        "bytes": 86,
+        "sha256": "5b1a2e4e5222f4284c09de518e0c519b6722185b56ef5bbade8d882cd6824177"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/actual-pj-720p-value.bin",
+        "bytes": 18,
+        "sha256": "fcc4eb3b02603ea9c842410e38739205e643d4bee1acfea8d62a726dd73cccba"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/sample_project_shared.py",
+        "bytes": 1759,
+        "sha256": "8bd0c380437892d02b4d01d08ff3586d16832aacd454428ab197c9059e9879d7"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/check_nsstring.m",
+        "bytes": 543,
+        "sha256": "7e30d93e55158e13c5df7635c90d672f23e45d91057c53fa8db48e3852ce6ba6"
+      }
+    ]
+  },
+  "actualDatabases": {
+    "purpose": "Independent read-only observation of six actual sibling MDBs; no code implementation and no native API execution. OldScanner framing guided a separate Python raw-value reader, and direct bytes/ranges are retained.",
+    "scopeRoots": [
+      "/Volumes/EDIT/Avid MediaFiles/MXF",
+      "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF",
+      "/Users/Shared/AvidMediaComposer/OMFI MediaFiles"
+    ],
+    "totals": {
+      "files": 6,
+      "bytes": 63954160,
+      "storedValues": 2174762,
+      "objectsIncludingDictionaries": 386450,
+      "nonAsciiLegacyStringValues": 480,
+      "explicitUtf8PropertyValues": 8944,
+      "nonAsciiMarkedBobTranscriptionValues": 4
+    },
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "size": 5159032,
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "stableImmediate": true,
+        "labelHex": "a4434da5486472d7000049490100000040e7150020d13800",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 1435456,
+        "tocLength": 3723552,
+        "valueCount": 155148,
+        "objectCount": 26434,
+        "typeDictionaryCount": 37,
+        "propertyDictionaryCount": 716,
+        "headerValues": [
+          {
+            "propertyName": "OMFI:Version",
+            "typeName": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                1435660,
+                2
+              ]
+            ]
+          },
+          {
+            "propertyName": "OMFI:ByteOrder",
+            "typeName": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                1435684,
+                2
+              ]
+            ]
+          }
+        ],
+        "mobIdentityWidths": {
+          "12": 816,
+          "32": 584
+        },
+        "dictionaries": {
+          "types": {
+            "definedIds": 37,
+            "definitionValues": 37,
+            "repeatedIds": 0,
+            "conflictingIds": 0
+          },
+          "properties": {
+            "definedIds": 716,
+            "definitionValues": 718,
+            "repeatedIds": 2,
+            "conflictingIds": 2
+          }
+        },
+        "idPropertyObjects": 700,
+        "sameObjectDifferentIdClaims": 0,
+        "pmrExactByteMatch": {
+          "baseVersion": 8,
+          "fileIds": 389,
+          "fileIdsDirectFullMatch": 112,
+          "masterIds": 389,
+          "masterIdsDirectFullMatch": 112,
+          "qualification": "Exact recorded-byte comparison, no truncation or legacy normalization. Counts are base PMR records; the base sets here have matching counterparts in v16."
+        },
+        "characterSetValueCount": 0,
+        "encodingDictionaries": {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+          "types": [
+            {
+              "id": 65615,
+              "hex": "0x1004f",
+              "name": "omfi:CharSetType",
+              "actualValueCount": 0
+            }
+          ],
+          "properties": [
+            {
+              "id": 66015,
+              "hex": "0x101df",
+              "name": "OMFI:CharacterSet",
+              "actualValueCount": 0
+            },
+            {
+              "id": 66272,
+              "hex": "0x102e0",
+              "name": "OMFI:FL:PathNameUTF8",
+              "actualValueCount": 235
+            },
+            {
+              "id": 66286,
+              "hex": "0x102ee",
+              "name": "OMFI:DL:PathNameUTF8",
+              "actualValueCount": 0
+            },
+            {
+              "id": 66367,
+              "hex": "0x1033f",
+              "name": "OMFI:MSML:LastKnownVolumeUTF8",
+              "actualValueCount": 392
+            },
+            {
+              "id": 66701,
+              "hex": "0x1048d",
+              "name": "OMFI:MCBR:MC:binNameUTF8",
+              "actualValueCount": 91
+            }
+          ]
+        },
+        "projectLegacyExamples": [
+          {
+            "attribute": "_PJ",
+            "object": 68168,
+            "property": "OMFI:ATTB:StringAttribute",
+            "type": "omfi:String",
+            "hex": "464958494e475f4a414d45535f4b494e47534c455900",
+            "ranges": [
+              [
+                16842,
+                22
+              ]
+            ],
+            "macRoman": "FIXING_JAMES_KINGSLEY",
+            "utf8": "FIXING_JAMES_KINGSLEY",
+            "utf8Valid": true
+          }
+        ],
+        "attributeKinds": {
+          "4": 72,
+          "2": 8215,
+          "3": 898,
+          "1": 4885
+        },
+        "nameBob": null,
+        "markedBobNonAsciiSummary": [],
+        "legacy12FirstWordBridgeVerified": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "size": 22745976,
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "stableImmediate": true,
+        "labelHex": "a4434da5486472d70000494901000000401f3d0020f41d01",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 4005696,
+        "tocLength": 18740256,
+        "valueCount": 780844,
+        "objectCount": 140448,
+        "typeDictionaryCount": 37,
+        "propertyDictionaryCount": 720,
+        "headerValues": [
+          {
+            "propertyName": "OMFI:Version",
+            "typeName": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                4005900,
+                2
+              ]
+            ]
+          },
+          {
+            "propertyName": "OMFI:ByteOrder",
+            "typeName": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                4005924,
+                2
+              ]
+            ]
+          }
+        ],
+        "mobIdentityWidths": {
+          "32": 5708,
+          "12": 20
+        },
+        "dictionaries": {
+          "types": {
+            "definedIds": 37,
+            "definitionValues": 37,
+            "repeatedIds": 0,
+            "conflictingIds": 0
+          },
+          "properties": {
+            "definedIds": 720,
+            "definitionValues": 722,
+            "repeatedIds": 2,
+            "conflictingIds": 2
+          }
+        },
+        "idPropertyObjects": 2864,
+        "sameObjectDifferentIdClaims": 0,
+        "pmrExactByteMatch": {
+          "baseVersion": 8,
+          "fileIds": 686,
+          "fileIdsDirectFullMatch": 686,
+          "masterIds": 686,
+          "masterIdsDirectFullMatch": 686,
+          "qualification": "Exact recorded-byte comparison, no truncation or legacy normalization. Counts are base PMR records; the base sets here have matching counterparts in v16."
+        },
+        "characterSetValueCount": 0,
+        "encodingDictionaries": {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+          "types": [
+            {
+              "id": 65615,
+              "hex": "0x1004f",
+              "name": "omfi:CharSetType",
+              "actualValueCount": 0
+            }
+          ],
+          "properties": [
+            {
+              "id": 66015,
+              "hex": "0x101df",
+              "name": "OMFI:CharacterSet",
+              "actualValueCount": 0
+            },
+            {
+              "id": 66272,
+              "hex": "0x102e0",
+              "name": "OMFI:FL:PathNameUTF8",
+              "actualValueCount": 1358
+            },
+            {
+              "id": 66286,
+              "hex": "0x102ee",
+              "name": "OMFI:DL:PathNameUTF8",
+              "actualValueCount": 0
+            },
+            {
+              "id": 66367,
+              "hex": "0x1033f",
+              "name": "OMFI:MSML:LastKnownVolumeUTF8",
+              "actualValueCount": 1373
+            },
+            {
+              "id": 66701,
+              "hex": "0x1048d",
+              "name": "OMFI:MCBR:MC:binNameUTF8",
+              "actualValueCount": 380
+            }
+          ]
+        },
+        "projectLegacyExamples": [
+          {
+            "attribute": "_PJ",
+            "object": 68000,
+            "property": "OMFI:ATTB:StringAttribute",
+            "type": "omfi:String",
+            "hex": "424c4f434b5f313732395f50535f444700",
+            "ranges": [
+              [
+                0,
+                17
+              ]
+            ],
+            "macRoman": "BLOCK_1729_PS_DG",
+            "utf8": "BLOCK_1729_PS_DG",
+            "utf8Valid": true
+          }
+        ],
+        "attributeKinds": {
+          "2": 34353,
+          "1": 30939,
+          "3": 6882,
+          "4": 9384
+        },
+        "nameBob": {
+          "bobValues": 814,
+          "marked00Values": 814,
+          "endsNul": 814,
+          "strictUtf8Valid": 814
+        },
+        "markedBobNonAsciiSummary": [
+          {
+            "attribute": "Unsynchronised lyric/text transc",
+            "object": 84087,
+            "byteLength": 993,
+            "ranges": [
+              [
+                432494,
+                993
+              ]
+            ],
+            "prefixHex": "0000",
+            "unicodeEvidence": "Payload contains UTF-8 curly apostrophe e2 80 99; strict UTF-8 valid. No full lyrics reproduced."
+          },
+          {
+            "attribute": "Unsynchronised lyric/text transc",
+            "object": 84230,
+            "byteLength": 993,
+            "ranges": [
+              [
+                437704,
+                993
+              ]
+            ],
+            "prefixHex": "0000",
+            "unicodeEvidence": "Payload contains UTF-8 curly apostrophe e2 80 99; strict UTF-8 valid. No full lyrics reproduced."
+          },
+          {
+            "attribute": "Unsynchronised lyric/text transc",
+            "object": 203138,
+            "byteLength": 993,
+            "ranges": [
+              [
+                3803574,
+                993
+              ]
+            ],
+            "prefixHex": "0000",
+            "unicodeEvidence": "Payload contains UTF-8 curly apostrophe e2 80 99; strict UTF-8 valid. No full lyrics reproduced."
+          },
+          {
+            "attribute": "Unsynchronised lyric/text transc",
+            "object": 203364,
+            "byteLength": 993,
+            "ranges": [
+              [
+                3811982,
+                993
+              ]
+            ],
+            "prefixHex": "0000",
+            "unicodeEvidence": "Payload contains UTF-8 curly apostrophe e2 80 99; strict UTF-8 valid. No full lyrics reproduced."
+          }
+        ],
+        "legacy12FirstWordBridgeVerified": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "size": 16616336,
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "stableImmediate": true,
+        "labelHex": "a4434da5486472d70000494901000000a0102d00d87ad000",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 2953376,
+        "tocLength": 13662936,
+        "valueCount": 569289,
+        "objectCount": 101546,
+        "typeDictionaryCount": 37,
+        "propertyDictionaryCount": 720,
+        "headerValues": [
+          {
+            "propertyName": "OMFI:Version",
+            "typeName": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                2953580,
+                2
+              ]
+            ]
+          },
+          {
+            "propertyName": "OMFI:ByteOrder",
+            "typeName": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                2953604,
+                2
+              ]
+            ]
+          }
+        ],
+        "mobIdentityWidths": {
+          "32": 4576
+        },
+        "dictionaries": {
+          "types": {
+            "definedIds": 37,
+            "definitionValues": 37,
+            "repeatedIds": 0,
+            "conflictingIds": 0
+          },
+          "properties": {
+            "definedIds": 720,
+            "definitionValues": 722,
+            "repeatedIds": 2,
+            "conflictingIds": 2
+          }
+        },
+        "idPropertyObjects": 2288,
+        "sameObjectDifferentIdClaims": 0,
+        "pmrExactByteMatch": {
+          "baseVersion": 8,
+          "fileIds": 513,
+          "fileIdsDirectFullMatch": 513,
+          "masterIds": 513,
+          "masterIdsDirectFullMatch": 513,
+          "qualification": "Exact recorded-byte comparison, no truncation or legacy normalization. Counts are base PMR records; the base sets here have matching counterparts in v16."
+        },
+        "characterSetValueCount": 0,
+        "encodingDictionaries": {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+          "types": [
+            {
+              "id": 65615,
+              "hex": "0x1004f",
+              "name": "omfi:CharSetType",
+              "actualValueCount": 0
+            }
+          ],
+          "properties": [
+            {
+              "id": 66015,
+              "hex": "0x101df",
+              "name": "OMFI:CharacterSet",
+              "actualValueCount": 0
+            },
+            {
+              "id": 66272,
+              "hex": "0x102e0",
+              "name": "OMFI:FL:PathNameUTF8",
+              "actualValueCount": 1042
+            },
+            {
+              "id": 66286,
+              "hex": "0x102ee",
+              "name": "OMFI:DL:PathNameUTF8",
+              "actualValueCount": 0
+            },
+            {
+              "id": 66367,
+              "hex": "0x1033f",
+              "name": "OMFI:MSML:LastKnownVolumeUTF8",
+              "actualValueCount": 1024
+            },
+            {
+              "id": 66701,
+              "hex": "0x1048d",
+              "name": "OMFI:MCBR:MC:binNameUTF8",
+              "actualValueCount": 279
+            }
+          ]
+        },
+        "projectLegacyExamples": [
+          {
+            "attribute": "_PJ",
+            "object": 68072,
+            "property": "OMFI:ATTB:StringAttribute",
+            "type": "omfi:String",
+            "hex": "424c4f434b5f313733305f50425f504100",
+            "ranges": [
+              [
+                2204,
+                17
+              ]
+            ],
+            "macRoman": "BLOCK_1730_PB_PA",
+            "utf8": "BLOCK_1730_PB_PA",
+            "utf8Valid": true
+          }
+        ],
+        "attributeKinds": {
+          "1": 22636,
+          "2": 24449,
+          "3": 4690,
+          "4": 5864
+        },
+        "nameBob": {
+          "bobValues": 546,
+          "marked00Values": 546,
+          "endsNul": 546,
+          "strictUtf8Valid": 546
+        },
+        "markedBobNonAsciiSummary": [],
+        "legacy12FirstWordBridgeVerified": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "size": 15703416,
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "stableImmediate": true,
+        "labelHex": "a4434da5486472d7000049490100000090482a00d054c500",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 2771088,
+        "tocLength": 12932304,
+        "valueCount": 538846,
+        "objectCount": 96835,
+        "typeDictionaryCount": 37,
+        "propertyDictionaryCount": 720,
+        "headerValues": [
+          {
+            "propertyName": "OMFI:Version",
+            "typeName": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                2771292,
+                2
+              ]
+            ]
+          },
+          {
+            "propertyName": "OMFI:ByteOrder",
+            "typeName": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                2771316,
+                2
+              ]
+            ]
+          }
+        ],
+        "mobIdentityWidths": {
+          "32": 3988,
+          "12": 4
+        },
+        "dictionaries": {
+          "types": {
+            "definedIds": 37,
+            "definitionValues": 37,
+            "repeatedIds": 0,
+            "conflictingIds": 0
+          },
+          "properties": {
+            "definedIds": 720,
+            "definitionValues": 722,
+            "repeatedIds": 2,
+            "conflictingIds": 2
+          }
+        },
+        "idPropertyObjects": 1996,
+        "sameObjectDifferentIdClaims": 0,
+        "pmrExactByteMatch": {
+          "baseVersion": 8,
+          "fileIds": 463,
+          "fileIdsDirectFullMatch": 463,
+          "masterIds": 463,
+          "masterIdsDirectFullMatch": 463,
+          "qualification": "Exact recorded-byte comparison, no truncation or legacy normalization. Counts are base PMR records; the base sets here have matching counterparts in v16."
+        },
+        "characterSetValueCount": 0,
+        "encodingDictionaries": {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+          "types": [
+            {
+              "id": 65615,
+              "hex": "0x1004f",
+              "name": "omfi:CharSetType",
+              "actualValueCount": 0
+            }
+          ],
+          "properties": [
+            {
+              "id": 66015,
+              "hex": "0x101df",
+              "name": "OMFI:CharacterSet",
+              "actualValueCount": 0
+            },
+            {
+              "id": 66272,
+              "hex": "0x102e0",
+              "name": "OMFI:FL:PathNameUTF8",
+              "actualValueCount": 967
+            },
+            {
+              "id": 66286,
+              "hex": "0x102ee",
+              "name": "OMFI:DL:PathNameUTF8",
+              "actualValueCount": 0
+            },
+            {
+              "id": 66367,
+              "hex": "0x1033f",
+              "name": "OMFI:MSML:LastKnownVolumeUTF8",
+              "actualValueCount": 926
+            },
+            {
+              "id": 66701,
+              "hex": "0x1048d",
+              "name": "OMFI:MCBR:MC:binNameUTF8",
+              "actualValueCount": 277
+            }
+          ]
+        },
+        "projectLegacyExamples": [
+          {
+            "attribute": "_PJ",
+            "object": 68000,
+            "property": "OMFI:ATTB:StringAttribute",
+            "type": "omfi:String",
+            "hex": "424c4f434b5f313733305f50425f504100",
+            "ranges": [
+              [
+                0,
+                17
+              ]
+            ],
+            "macRoman": "BLOCK_1730_PB_PA",
+            "utf8": "BLOCK_1730_PB_PA",
+            "utf8Valid": true
+          }
+        ],
+        "attributeKinds": {
+          "2": 24359,
+          "3": 4742,
+          "1": 21304,
+          "4": 5470
+        },
+        "nameBob": {
+          "bobValues": 512,
+          "marked00Values": 512,
+          "endsNul": 512,
+          "strictUtf8Valid": 512
+        },
+        "markedBobNonAsciiSummary": [],
+        "legacy12FirstWordBridgeVerified": false
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "size": 3668720,
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "stableImmediate": true,
+        "labelHex": "a4434da5486472d7000049490100000010a40800c8562f00",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 566288,
+        "tocLength": 3102408,
+        "valueCount": 129267,
+        "objectCount": 20328,
+        "typeDictionaryCount": 37,
+        "propertyDictionaryCount": 186,
+        "headerValues": [
+          {
+            "propertyName": "OMFI:Version",
+            "typeName": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                566492,
+                2
+              ]
+            ]
+          },
+          {
+            "propertyName": "OMFI:ByteOrder",
+            "typeName": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                566516,
+                2
+              ]
+            ]
+          }
+        ],
+        "mobIdentityWidths": {
+          "32": 1214
+        },
+        "dictionaries": {
+          "types": {
+            "definedIds": 37,
+            "definitionValues": 37,
+            "repeatedIds": 0,
+            "conflictingIds": 0
+          },
+          "properties": {
+            "definedIds": 186,
+            "definitionValues": 186,
+            "repeatedIds": 0,
+            "conflictingIds": 0
+          }
+        },
+        "idPropertyObjects": 607,
+        "sameObjectDifferentIdClaims": 0,
+        "pmrExactByteMatch": {
+          "baseVersion": 8,
+          "fileIds": 359,
+          "fileIdsDirectFullMatch": 359,
+          "masterIds": 359,
+          "masterIdsDirectFullMatch": 359,
+          "qualification": "Exact recorded-byte comparison, no truncation or legacy normalization. Counts are base PMR records; the base sets here have matching counterparts in v16."
+        },
+        "characterSetValueCount": 0,
+        "encodingDictionaries": {
+          "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+          "types": [
+            {
+              "id": 65615,
+              "hex": "0x1004f",
+              "name": "omfi:CharSetType",
+              "actualValueCount": 0
+            }
+          ],
+          "properties": [
+            {
+              "id": 66272,
+              "hex": "0x102e0",
+              "name": "OMFI:FL:PathNameUTF8",
+              "actualValueCount": 236
+            },
+            {
+              "id": 66367,
+              "hex": "0x1033f",
+              "name": "OMFI:MSML:LastKnownVolumeUTF8",
+              "actualValueCount": 359
+            }
+          ]
+        },
+        "projectLegacyExamples": [
+          {
+            "attribute": "_PJ",
+            "object": 68858,
+            "property": "OMFI:ATTB:StringAttribute",
+            "type": "omfi:String",
+            "hex": "7a5465a7745f31303830695f35392e393400",
+            "ranges": [
+              [
+                22945,
+                18
+              ]
+            ],
+            "macRoman": "zTeßt_1080i_59.94",
+            "utf8Valid": false
+          }
+        ],
+        "attributeKinds": {
+          "1": 4986,
+          "2": 949,
+          "3": 1359,
+          "4": 362
+        },
+        "nameBob": {
+          "bobValues": 240,
+          "marked00Values": 240,
+          "endsNul": 240,
+          "strictUtf8Valid": 240
+        },
+        "markedBobNonAsciiSummary": [],
+        "legacy12FirstWordBridgeVerified": false
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "size": 60680,
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "stableImmediate": true,
+        "labelHex": "a4434da5486472d70000494901000000b06c000040800000",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 27824,
+        "tocLength": 32832,
+        "valueCount": 1368,
+        "objectCount": 859,
+        "typeDictionaryCount": 37,
+        "propertyDictionaryCount": 720,
+        "headerValues": [
+          {
+            "propertyName": "OMFI:Version",
+            "typeName": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                28028,
+                2
+              ]
+            ]
+          },
+          {
+            "propertyName": "OMFI:ByteOrder",
+            "typeName": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                28052,
+                2
+              ]
+            ]
+          }
+        ],
+        "mobIdentityWidths": {
+          "32": 6,
+          "12": 12
+        },
+        "dictionaries": {
+          "types": {
+            "definedIds": 37,
+            "definitionValues": 37,
+            "repeatedIds": 0,
+            "conflictingIds": 0
+          },
+          "properties": {
+            "definedIds": 720,
+            "definitionValues": 722,
+            "repeatedIds": 2,
+            "conflictingIds": 2
+          }
+        },
+        "idPropertyObjects": 9,
+        "sameObjectDifferentIdClaims": 0,
+        "pmrExactByteMatch": {
+          "baseVersion": 2,
+          "fileIds": 2,
+          "fileIdsDirectFullMatch": 0,
+          "masterIds": 2,
+          "masterIdsDirectFullMatch": 0,
+          "qualification": "Exact recorded-byte comparison, no truncation or legacy normalization. Counts are base PMR records; the base sets here have matching counterparts in v16."
+        },
+        "characterSetValueCount": 0,
+        "encodingDictionaries": {
+          "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+          "types": [
+            {
+              "id": 65615,
+              "hex": "0x1004f",
+              "name": "omfi:CharSetType",
+              "actualValueCount": 0
+            }
+          ],
+          "properties": [
+            {
+              "id": 66015,
+              "hex": "0x101df",
+              "name": "OMFI:CharacterSet",
+              "actualValueCount": 0
+            },
+            {
+              "id": 66272,
+              "hex": "0x102e0",
+              "name": "OMFI:FL:PathNameUTF8",
+              "actualValueCount": 0
+            },
+            {
+              "id": 66286,
+              "hex": "0x102ee",
+              "name": "OMFI:DL:PathNameUTF8",
+              "actualValueCount": 0
+            },
+            {
+              "id": 66367,
+              "hex": "0x1033f",
+              "name": "OMFI:MSML:LastKnownVolumeUTF8",
+              "actualValueCount": 3
+            },
+            {
+              "id": 66701,
+              "hex": "0x1048d",
+              "name": "OMFI:MCBR:MC:binNameUTF8",
+              "actualValueCount": 2
+            }
+          ]
+        },
+        "projectLegacyExamples": [
+          {
+            "attribute": "_PJ",
+            "object": 68006,
+            "property": "OMFI:ATTB:StringAttribute",
+            "type": "omfi:String",
+            "hex": "7a5465a7745f50414c5f32357000",
+            "ranges": [
+              [
+                162,
+                14
+              ]
+            ],
+            "macRoman": "zTeßt_PAL_25p",
+            "utf8Valid": false
+          }
+        ],
+        "attributeKinds": {
+          "2": 3,
+          "3": 8
+        },
+        "nameBob": null,
+        "markedBobNonAsciiSummary": [],
+        "legacy12FirstWordBridgeVerified": true
+      }
+    ],
+    "qualifications": [
+      "These six samples are Bento1.0 little endian; they do not exercise Bento2, big endian or damaged inputs.",
+      "Dictionary names and exact value bytes are observations; broader legacy codepage and native reader rules require separate static tracing.",
+      "Raw object/value totals include attributes, dictionaries, relationships, classes and repeated identical properties, not physical media counts.",
+      "Selected core dictionaries have unambiguous names, but five older MDB dictionaries declare private propertyIDs67988/67989 under conflicting ASPI/FXPS names.",
+      "No arbitrary binary Bob value is assumed to be text solely from kind4 or prefix resemblance.",
+      "Known legacy12byte UID bridge and complete8byte PMR bridge were applied separately; all2412 PMR records now match complete file and master IDs present in their siblingMDB."
+    ],
+    "legacyIdentityBridge": {
+      "legacyBridgeRule": {
+        "prefixHex": "060a2b340101010101010f0013000000",
+        "suffixHex": "060e2b347f7f2a80",
+        "mdb12Condition": "First32bit word equals42 in littleendian; keep bytes4..11 as8byte legacyID core",
+        "pmr8": "Use complete8byte ID core under same wrapper"
+      },
+      "checks": [
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+          "legacy12FirstWordCounts": {
+            "42": 816
+          },
+          "pmrRecordCount": 389,
+          "normalizedFileMatches": 389,
+          "normalizedMasterMatches": 389,
+          "remainingMismatches": []
+        },
+        {
+          "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+          "legacy12FirstWordCounts": {
+            "42": 12
+          },
+          "pmrRecordCount": 2,
+          "normalizedFileMatches": 2,
+          "normalizedMasterMatches": 2,
+          "remainingMismatches": []
+        }
+      ],
+      "nameBobOwnerExample": {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "startAttributeObject": 68081,
+        "nodes": [
+          {
+            "object": 68081,
+            "depth": 0,
+            "facts": [
+              {
+                "propertyName": "OMFI:ObjID",
+                "typeName": "omfi:ObjectTag",
+                "hex": "41545442",
+                "ranges": [
+                  [
+                    584684,
+                    4
+                  ]
+                ]
+              },
+              {
+                "propertyName": "OMFI:ATTB:Kind",
+                "typeName": "omfi:AttrKind",
+                "hex": "0400",
+                "ranges": [
+                  [
+                    584708,
+                    2
+                  ]
+                ]
+              },
+              {
+                "propertyName": "OMFI:ATTB:Name",
+                "typeName": "omfi:String",
+                "hex": "4e616d6500",
+                "ranges": [
+                  [
+                    2260,
+                    5
+                  ]
+                ]
+              },
+              {
+                "propertyName": "OMFI:ATTB:BobData",
+                "typeName": "omfi:VarLenBytes",
+                "hex": "0000584443414d20455820333500",
+                "ranges": [
+                  [
+                    2265,
+                    14
+                  ]
+                ]
+              }
+            ]
+          },
+          {
+            "object": 68083,
+            "depth": 1,
+            "facts": [
+              {
+                "propertyName": "OMFI:ObjID",
+                "typeName": "omfi:ObjectTag",
+                "hex": "41545452",
+                "ranges": [
+                  [
+                    584924,
+                    4
+                  ]
+                ]
+              }
+            ]
+          },
+          {
+            "object": 68084,
+            "depth": 2,
+            "facts": [
+              {
+                "propertyName": "OMFI:ObjID",
+                "typeName": "omfi:ObjectTag",
+                "hex": "41545442",
+                "ranges": [
+                  [
+                    584996,
+                    4
+                  ]
+                ]
+              },
+              {
+                "propertyName": "OMFI:ATTB:Kind",
+                "typeName": "omfi:AttrKind",
+                "hex": "0300",
+                "ranges": [
+                  [
+                    585020,
+                    2
+                  ]
+                ]
+              },
+              {
+                "propertyName": "OMFI:ATTB:Name",
+                "typeName": "omfi:String",
+                "hex": "50726573657276656442696e4461746100",
+                "ranges": [
+                  [
+                    2325,
+                    17
+                  ]
+                ]
+              }
+            ]
+          },
+          {
+            "object": 68085,
+            "depth": 3,
+            "facts": [
+              {
+                "propertyName": "OMFI:ObjID",
+                "typeName": "omfi:ObjectTag",
+                "hex": "41545452",
+                "ranges": [
+                  [
+                    585092,
+                    4
+                  ]
+                ]
+              }
+            ]
+          },
+          {
+            "object": 68097,
+            "depth": 4,
+            "facts": [
+              {
+                "propertyName": "OMFI:ObjID",
+                "typeName": "omfi:ObjectTag",
+                "hex": "4d4f424a",
+                "ranges": [
+                  [
+                    587420,
+                    4
+                  ]
+                ]
+              },
+              {
+                "propertyName": "OMFI:CPNT:Name",
+                "typeName": "omfi:String",
+                "hex": "00",
+                "ranges": [
+                  [
+                    587492,
+                    1
+                  ]
+                ]
+              },
+              {
+                "propertyName": "OMFI:MOBJ:MobID",
+                "typeName": "omfi:UID",
+                "hex": "060a2b340101010501010f101300000032065ace60120690693546fc807fda72",
+                "ranges": [
+                  [
+                    2759,
+                    32
+                  ]
+                ]
+              },
+              {
+                "propertyName": "OMFI:MOBJ:UsageCode",
+                "typeName": "omfi:UsageCodeType",
+                "hex": "00000000",
+                "ranges": [
+                  [
+                    587756,
+                    4
+                  ]
+                ]
+              },
+              {
+                "propertyName": "OMFI:MOBJ:MobID",
+                "typeName": "omfi:UID",
+                "hex": "060a2b340101010501010f101300000032065ace60120690693546fc807fda72",
+                "ranges": [
+                  [
+                    2804,
+                    32
+                  ]
+                ]
+              }
+            ]
+          }
+        ],
+        "reverseReferenceEdges": [
+          {
+            "source": 68083,
+            "property": "OMFI:ATTR:AttrRefs",
+            "target": 68081,
+            "recordedHex": "f109010000000000",
+            "valueRanges": [
+              [
+                2307,
+                18
+              ]
+            ]
+          },
+          {
+            "source": 68084,
+            "property": "OMFI:ATTB:ObjAttribute",
+            "target": 68083,
+            "recordedHex": "f309010000000000",
+            "valueRanges": [
+              [
+                2342,
+                8
+              ]
+            ]
+          },
+          {
+            "source": 68085,
+            "property": "OMFI:ATTR:AttrRefs",
+            "target": 68084,
+            "recordedHex": "f409010000000000",
+            "valueRanges": [
+              [
+                2350,
+                50
+              ]
+            ]
+          },
+          {
+            "source": 68097,
+            "property": "OMFI:CPNT:Attributes",
+            "target": 68085,
+            "recordedHex": "f509010000000000",
+            "valueRanges": [
+              [
+                2741,
+                8
+              ]
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "currentOldScannerObserver": {
+    "scope": "Current OldScanner interpretation only; independently raw-parsed stored-value counts are in actualDatabases. Not Bella policy, a conformance certificate, or a timing/memory benchmark. 24 derived audio-summary subfields account for the stored-value count difference.",
+    "files": [
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "size": 3668720,
+        "sha256Before": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "sha256After": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "stable": true,
+        "scope": "Read-only observation through OldScanner; selection is current app policy, not Bella policy or an independent format validator",
+        "outcome": 1,
+        "omfRevision": 1,
+        "objects": 20328,
+        "propertyValues": 129267,
+        "relationships": 20726,
+        "uidWidths": {
+          "32": 1214
+        },
+        "projectedFiles": 359,
+        "projectedMasters": 124,
+        "fileReferencesComplete": false,
+        "currentSelectedFieldCounts": {
+          "Bit Depth": 359,
+          "Channels": 240,
+          "Clip Name": 359,
+          "Component Depth": 359,
+          "Compression": 359,
+          "Compression Label": 119,
+          "Drop Frame": 359,
+          "File Duration": 359,
+          "FileMobId": 359,
+          "Frame Rate": 119,
+          "Imported": 353,
+          "Kind": 359,
+          "MasterMobId": 359,
+          "NewDnx": 15,
+          "OldDnx": 15,
+          "Project": 359,
+          "ReallyOldDnx": 15,
+          "Resolution": 119,
+          "Sample Format": 260,
+          "Sample Rate": 240,
+          "Source Container": 353,
+          "Source Path": 353,
+          "Type": 359
+        },
+        "diagnostics": [],
+        "projectionDiagnostics": [
+          "OMFI:SourceMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.",
+          "OMFI:CompositionMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.",
+          "MDB file-reference coverage is incomplete: a required root, source-file role, identity or media-descriptor interpretation is not established; absence cannot be determined."
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "size": 60680,
+        "sha256Before": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "sha256After": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "stable": true,
+        "scope": "Read-only observation through OldScanner; selection is current app policy, not Bella policy or an independent format validator",
+        "outcome": 1,
+        "omfRevision": 1,
+        "objects": 859,
+        "propertyValues": 1392,
+        "relationships": 119,
+        "uidWidths": {
+          "12": 12,
+          "32": 6
+        },
+        "projectedFiles": 2,
+        "projectedMasters": 2,
+        "fileReferencesComplete": false,
+        "currentSelectedFieldCounts": {
+          "Bit Depth": 2,
+          "Channels": 2,
+          "Clip Name": 2,
+          "Compression": 2,
+          "Drop Frame": 2,
+          "File Duration": 2,
+          "FileMobId": 2,
+          "Kind": 2,
+          "MasterMobId": 2,
+          "Original Bin": 2,
+          "Project": 2,
+          "Sample Format": 2,
+          "Sample Rate": 2,
+          "Type": 2
+        },
+        "diagnostics": [
+          "2 dictionary IDs have ambiguous definitions; all definitions are retained without choosing a name."
+        ],
+        "projectionDiagnostics": [
+          "OMFI:SourceMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.",
+          "MDB file-reference coverage is incomplete: a required root, source-file role, identity or media-descriptor interpretation is not established; absence cannot be determined."
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "size": 5159032,
+        "sha256Before": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "sha256After": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "stable": true,
+        "scope": "Read-only observation through OldScanner; selection is current app policy, not Bella policy or an independent format validator",
+        "outcome": 1,
+        "omfRevision": 1,
+        "objects": 26434,
+        "propertyValues": 155148,
+        "relationships": 26393,
+        "uidWidths": {
+          "12": 816,
+          "32": 584
+        },
+        "projectedFiles": 392,
+        "projectedMasters": 153,
+        "fileReferencesComplete": false,
+        "currentSelectedFieldCounts": {
+          "Alpha": 11,
+          "Bit Depth": 392,
+          "Channels": 286,
+          "Clip Name": 389,
+          "Component Depth": 381,
+          "Compression": 392,
+          "Compression Label": 95,
+          "Drop Frame": 392,
+          "Effect": 30,
+          "Effect Category": 30,
+          "File Duration": 392,
+          "FileMobId": 392,
+          "Frame Rate": 106,
+          "Imported": 389,
+          "Kind": 392,
+          "MasterMobId": 389,
+          "NewDnx": 95,
+          "OldDnx": 95,
+          "Original Bin": 232,
+          "Pixel Layout": 11,
+          "Precompute Category": 30,
+          "Project": 392,
+          "ReallyOldDnx": 95,
+          "Resolution": 106,
+          "Sample Format": 286,
+          "Sample Rate": 286,
+          "Source Container": 219,
+          "Type": 389
+        },
+        "diagnostics": [
+          "2 dictionary IDs have ambiguous definitions; all definitions are retained without choosing a name."
+        ],
+        "projectionDiagnostics": [
+          "OMFI:SourceMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.",
+          "OMFI:CompositionMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.",
+          "MDB file-reference coverage is incomplete: a required root, source-file role, identity or media-descriptor interpretation is not established; absence cannot be determined."
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "size": 22745976,
+        "sha256Before": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "sha256After": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "stable": true,
+        "scope": "Read-only observation through OldScanner; selection is current app policy, not Bella policy or an independent format validator",
+        "outcome": 1,
+        "omfRevision": 1,
+        "objects": 140448,
+        "propertyValues": 780844,
+        "relationships": 139719,
+        "uidWidths": {
+          "12": 20,
+          "32": 5708
+        },
+        "projectedFiles": 686,
+        "projectedMasters": 415,
+        "fileReferencesComplete": false,
+        "currentSelectedFieldCounts": {
+          "Alpha": 8,
+          "Bit Depth": 686,
+          "Channels": 407,
+          "Clip Name": 686,
+          "Component Depth": 678,
+          "Compression": 686,
+          "Compression Label": 279,
+          "Drop Frame": 659,
+          "Effect": 51,
+          "Effect Category": 51,
+          "Effect Sequence": 27,
+          "File Duration": 686,
+          "FileMobId": 686,
+          "Frame Rate": 279,
+          "Imported": 659,
+          "Kind": 686,
+          "MasterMobId": 686,
+          "NewDnx": 271,
+          "OldDnx": 271,
+          "Original Bin": 634,
+          "Pixel Layout": 8,
+          "Precompute Category": 51,
+          "Project": 652,
+          "ReallyOldDnx": 271,
+          "Resolution": 279,
+          "Sample Format": 407,
+          "Sample Rate": 407,
+          "Source Container": 6,
+          "Source Path": 26,
+          "Type": 686
+        },
+        "diagnostics": [
+          "2 dictionary IDs have ambiguous definitions; all definitions are retained without choosing a name."
+        ],
+        "projectionDiagnostics": [
+          "OMFI:SourceMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.",
+          "OMFI:CompositionMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.",
+          "MDB file-reference coverage is incomplete: a required root, source-file role, identity or media-descriptor interpretation is not established; absence cannot be determined."
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "size": 16616336,
+        "sha256Before": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "sha256After": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "stable": true,
+        "scope": "Read-only observation through OldScanner; selection is current app policy, not Bella policy or an independent format validator",
+        "outcome": 1,
+        "omfRevision": 1,
+        "objects": 101546,
+        "propertyValues": 569289,
+        "relationships": 100887,
+        "uidWidths": {
+          "32": 4576
+        },
+        "projectedFiles": 525,
+        "projectedMasters": 353,
+        "fileReferencesComplete": false,
+        "currentSelectedFieldCounts": {
+          "Alpha": 6,
+          "Bit Depth": 525,
+          "Channels": 320,
+          "Clip Name": 525,
+          "Component Depth": 519,
+          "Compression": 525,
+          "Compression Label": 205,
+          "Drop Frame": 457,
+          "Effect": 86,
+          "Effect Category": 86,
+          "Effect Sequence": 68,
+          "File Duration": 525,
+          "FileMobId": 525,
+          "Frame Rate": 205,
+          "Imported": 457,
+          "Kind": 525,
+          "MasterMobId": 525,
+          "NewDnx": 199,
+          "OldDnx": 199,
+          "Original Bin": 439,
+          "Pixel Layout": 6,
+          "Precompute Category": 86,
+          "Project": 501,
+          "ReallyOldDnx": 199,
+          "Resolution": 205,
+          "Sample Format": 320,
+          "Sample Rate": 320,
+          "Source Container": 1,
+          "Source Path": 18,
+          "Type": 525
+        },
+        "diagnostics": [
+          "2 dictionary IDs have ambiguous definitions; all definitions are retained without choosing a name."
+        ],
+        "projectionDiagnostics": [
+          "OMFI:SourceMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.",
+          "OMFI:CompositionMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.",
+          "MDB file-reference coverage is incomplete: a required root, source-file role, identity or media-descriptor interpretation is not established; absence cannot be determined."
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "size": 15703416,
+        "sha256Before": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "sha256After": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "stable": true,
+        "scope": "Read-only observation through OldScanner; selection is current app policy, not Bella policy or an independent format validator",
+        "outcome": 1,
+        "omfRevision": 1,
+        "objects": 96835,
+        "propertyValues": 538846,
+        "relationships": 96112,
+        "uidWidths": {
+          "12": 4,
+          "32": 3988
+        },
+        "projectedFiles": 471,
+        "projectedMasters": 293,
+        "fileReferencesComplete": false,
+        "currentSelectedFieldCounts": {
+          "Alpha": 4,
+          "Bit Depth": 471,
+          "Channels": 258,
+          "Clip Name": 471,
+          "Component Depth": 467,
+          "Compression": 471,
+          "Compression Label": 213,
+          "Drop Frame": 458,
+          "Effect": 24,
+          "Effect Category": 24,
+          "Effect Sequence": 12,
+          "File Duration": 471,
+          "FileMobId": 471,
+          "Frame Rate": 213,
+          "Imported": 458,
+          "Kind": 471,
+          "MasterMobId": 471,
+          "NewDnx": 209,
+          "OldDnx": 209,
+          "Original Bin": 447,
+          "Pixel Layout": 4,
+          "Precompute Category": 24,
+          "Project": 446,
+          "ReallyOldDnx": 209,
+          "Resolution": 213,
+          "Sample Format": 258,
+          "Sample Rate": 258,
+          "Source Container": 2,
+          "Source Path": 14,
+          "Type": 471
+        },
+        "diagnostics": [
+          "2 dictionary IDs have ambiguous definitions; all definitions are retained without choosing a name."
+        ],
+        "projectionDiagnostics": [
+          "OMFI:SourceMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.",
+          "OMFI:CompositionMobs contains 12-byte index UIDs referencing 32-byte Avid MobIDs. Their identity comparison is not established; recorded object references establish membership and both encodings are retained.",
+          "MDB file-reference coverage is incomplete: a required root, source-file role, identity or media-descriptor interpretation is not established; absence cannot be determined."
+        ]
+      }
+    ],
+    "probeCppSha256": "1104af70012389f1d020f7e275ef02d2a78a19dd8c4321ec2697a570a19225fa",
+    "probeCMakeSha256": "3afcb1fde9b39804ec18cb3f289d781465a8052f9b63d58b9f2573defcbfe811",
+    "probeBinarySha256": "9482452d270b6e8abc56f352fdc134d42ff67089cfd1aa1c5c04738b23517247",
+    "bytePreviewValidation": "All captured previews were bounded to min(96, value size) and compared with their exact stored file ranges after the final probe run."
+  },
+  "primaryDocumentation": [
+    {
+      "title": "Avid Media Database files",
+      "url": "https://kb.avid.com/pkb/articles/en_US/Knowledge/en262645",
+      "scope": "Purpose of PMR/MDB, Media Tool and relinking; not a binary encoding specification"
+    },
+    {
+      "title": "OMF Interchange Specification Version 2.1",
+      "url": "https://www.cubase.it/wp/wp-content/uploads/2014/12/omfspec21.pdf",
+      "scope": "Object roles, typed binary fields, rational/UID/string definitions. Avid extensions and legacy layouts require native/sample evidence."
+    }
+  ],
+  "rawSummaryReceipts": [
+    {
+      "path": "/private/tmp/bella-mdb-20261018-drives/final-summary.json",
+      "sha256": "4719799f52fed66d914f60cde806a7c59bfbee5debc8a3d25931d90779b1c3f8"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-mc/findings.json",
+      "sha256": "17c50adc85e32c5b80ad64a5ef6feb5df8c1ec7787fc73326c8930c031ca233e"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-mdvx/findings.json",
+      "sha256": "264ebe5c1c8aa04f93a067d844113f43ec0c7ec2ef6c6bf0b2bd6ce5795d898b"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-projection/report.jsonl",
+      "sha256": "14332447ced488601d5da4fd952f1a5dd436e73b3c888cf9ecf42c2b2a9755ef"
+    }
+  ],
+  "limits": [
+    "No Media Composer or MDVx UI scan, performance comparison or Bella parser implementation.",
+    "Six current actual MDBs are Bento1.0 little-endian; Bento2, big-endian and malformed-input behavior need separate verification.",
+    "Windows legacy text encoding and global CharacterSet use are not established.",
+    "No transcription/lyric content is included; only encoding statistics, object IDs and byte ranges.",
+    "MDB damage, Unicode preference/fallback, supported baseline, source precedence and job scheduling are not approved by these findings."
+  ]
+}

@@ -1,0 +1,4217 @@
+{
+  "date": "2026-10-19",
+  "timezone": "Australia/Sydney",
+  "purpose": "MDB physical-file Duration review: native Media Composer count/rate and PCM distinctions, bounded MDVx omission, independent actual-file availability/comparisons, proposed compact exact retention.",
+  "status": "MDB-only, rawLength/SampleRate andnativevideo interpreter agreed19October; HH:MM:SS:FF, recordedDFwhenavailable andsixformatteraccuracy/zero/blank/long-durationrules agreed20October2026. Remaining metadata source/layout andsort/CSV details underreview; no runtime implementation.",
+  "mediaComposer": {
+    "date": "2026-10-19",
+    "scope": "Bounded read-only static native review of MDB physical-file duration. No app/API execution, media writes, production edits, or BinFilter changes. All Bella behavior below remains recommendation.",
+    "binary": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "version": "26.8.0.58987",
+      "architecture": "arm64",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+      "freshInstalledHashVerified": true
+    },
+    "ownership": {
+      "route": "Physical file Mob identified by its full FileMobId -> own OMFI:MOBJ:PhysicalMedia descriptor. Separate from selected master/sequence and source timeline components.",
+      "priorNativeAnchors": "AComposition::Get0x181598..5b0 resolves MOBJ:PhysicalMedia dictionary+0x2e0 into+0x170; GetMediaDesc0x180948 returns+0x170. Prior finalized kind receipt covers exact instructions."
+    },
+    "basePhysicalDuration": {
+      "count": {
+        "property": "OMFI:MDFL:Length",
+        "dictionaryOffset": "0x2a8",
+        "reader": "AFileMediaDesc::Get0x17c018",
+        "anchors": [
+          "0x17c0a4 loads property;+0x238 virtual ReadInt32 at0x17c0ac..b4",
+          "0x17c0b8 signextends w0 and0x17c0bc stores64bit internal+0x250",
+          "AFileMediaDesc::GetLength0x17c278 loads32bit w0 from+0x250; setter0x17c22c takes int and signextends at0x17c24c"
+        ],
+        "wireInterpretation": "The observed legacy MDB type omfi:Long is signed32; native32 reader requires4bytes and byte-swaps scalar according to object byte order. Do not parse as text or milliseconds.",
+        "extendedQualification": "AFileMediaDesc::Put0x17bd94..c0 detects values outside signed32; writes INT_MAX placeholders plus extended tag1 and Read/WriteInt64 path. Get0x17c140..1bc supports tag1; however returned ReadInt64 result is visibly sxtw at0x17c188 before storage and public GetLength returns32. This bounded audit therefore does not endorse native public getters as lossless64-bit specification or establish every possible MDB extended wire type. Preserve typed full counts when explicitly supported instead of copying truncation."
+      },
+      "rate": {
+        "property": "OMFI:MDFL:SampleRate",
+        "dictionaryOffset": "0x2b0",
+        "anchors": [
+          "AFileMediaDesc::Get0x17c080..90 reads via Read_ExactEditRate0x257af0 and storesnativeinternal+0x244",
+          "AFileMediaDesc::GetExactEditRate0x17c26c returnsinternal+0x244",
+          "AFileMediaDesc::GetRate0x17c260 returnsfloatconversionofsameinternalvalue"
+        ],
+        "wireInterpretation": "omfiDualStream::ReadExactEditRate0xb696c requests8bytes, loads signed32 numerator and denominator; each32bit word follows object byte order. It transforms these to native decimal ExactEditRate representation. Bella should retain original rational pair rather than reproduce conversion to double.",
+        "anchorsBinary": [
+          "0xb6998 requests8 bytes",
+          "0xb69a4..fc applies II/native versus swapped scalar reads",
+          "0xb6a00..38 special-cases denominator10/100/1000",
+          "0xb6a3c..48 signed scvtf numerator/denominator, divides, callsExactEditRateFromFloat for other denominators"
+        ],
+        "badRead": "Missing/untranslated property or no data returnszero internalrate0xb69c0..cc. Native routine only checks nonzero read count, not exact8; Bella should validate complete typed payload independently."
+      },
+      "meaning": "Descriptor Length count and its recorded SampleRate clock describe physical-file duration. Duration seconds = count * rateDenominator / rateNumerator. This pairing is also specified in the Avid OMF primary documentation independently reviewed by parent, not derived solely from getter names."
+    },
+    "audioRateDistinction": {
+      "property": "OMFI:PCMA:AudioSamplingRate",
+      "dictionaryOffset": "0xe18",
+      "reader": "PCMAudioDescriptor::Get0x3e8cb0..bc -> Read_ExactEditRate ->internal+0x450",
+      "getter": "AudioMediaDesc::GetAudioSamplingRate0x360a54 loadsinternal+0x450",
+      "PCMAOverrides": [
+        "GetRate0x3e9428 callsvirtual+0x358 (GetAudioSamplingRate) then EditRateFromExactEditRate",
+        "GetExactEditRate0x3e9444 tailcallsvirtual+0x358",
+        "GetEditRate0x3e9484 explicitlytailcallsbaseAFileMediaDesc::GetRate0x17c260",
+        "SetEditRate0x3e9488 explicitlytailcallsbaseSetRate; PCMASetRate0x3e9450 updatesbaseandvirtualSetAudioSamplingRate"
+      ],
+      "vtable": "PCMAaddresspoint0x129c368: +0x270 GetRate3e9428; +0x278 GetExactEditRate3e9444; +0x280 baseGetLength17c278; +0x358 GetAudioSamplingRate360a54. AFile/CDCI base rate slots differ as saved in duration-vtable.json.",
+      "nativeConsumer": {
+        "function": "AudioStreamReader::GetMediaLengthInDestRate(double)",
+        "address": "0xa32628",
+        "steps": [
+          "0xa32640..4c gets pointed descriptor/count via virtual+0x280 GetLength",
+          "0xa32654..60 obtainsrate via virtual+0x270 GetRate",
+          "0xa32684..94 computes signedcount/rate * destinationrate +0.5 and rounds/truncates to result"
+        ],
+        "qualification": "This is native audio playback/resampling duration conversion, not proof that every MediaComposer UI column or every MDB descriptor uses AudioSamplingRate as universal duration rate."
+      },
+      "missingOrBadPCMARate": [
+        "AudioMediaDesc constructor0x360858..85c initiallycopiesbaseExactRateintoaudiorate+0x450",
+        "PCMAGet0x3e8cb8..bc unconditionallyoverwrites+0x450 with concretepropertyreadresult",
+        "Concretegetter containsnobasefallback; entirePCMAGetthrough0x3e92dc inspected, noobservedlocalpositive-ratevalidationorrepairwithbasefield",
+        "Missingconcretepropertythereforeloadszeroalongthispath; invalidrationalmayundergo native floatconversion. No native guarantee of fallbacktoMDFLrateisasserted."
+      ],
+      "BellaPolicyImplication": "Use one explicitly chosen count/rate pair. MDFL Length/SampleRate is the documented descriptor pair. Retain PCMA AudioSamplingRate separately for Sample Rate field; do not silently replace duration clock or substitute CPNT EditRate if fields differ. Any deliberate PCMA-specific preference/recovery would be Bella policy and should be agreed."
+    },
+    "optionalAudioSourceLength": {
+      "key": "_AMD_SOURCE_LENGTH",
+      "keyCStringAddress": "0xfefad2",
+      "read": "AudioMediaDesc::Get0x361fbc..fd0 reads known attribute as8 rawbytes intodescriptor+0x4a0",
+      "default": "AudioMediaDesc constructor0x3607e4..e8 initializes-1",
+      "getter": "GetSourceLength0x36144c uses64bitvaluewhen>=0; negativefallbackcallsvirtual+0x280GetLength0x36145c..68",
+      "setter": "SetSourceLength0x361398 stores64bitandupdatesdescriptorattributeasraw8BOBwhen>=0; removesattributewhennegative.",
+      "limits": "Specificattributeunits, producercontract, cross-platformBOBbyteorderandapplicabilitytophysicalMDBdurationwerenotestablished. NativeAudioStreamReaderconsumertracedaboveusesGetLength, notGetSourceLength. Do notpromotethistoagenericdurationoverrideorinterpretarbitrary8BOBascount."
+    },
+    "editorialLengthSeparate": {
+      "clip": "AClip::Get0x167ea4 reads OMFI:CLIP:Length dictionary+0x140 via ReadInt32 at0x167f04..18; GetLength0x167f2c returnscomponent+0x70",
+      "rate": "AComponent::Get reads CPNT:EditRate (dictionary+0x180) separately from descriptor. GetExactEditRate0x14747c returnscomponentclock.",
+      "trackGroup": "OMFI:TRKG:GroupLength is a different propertydictionary+0x508; do not use mastergroup/sequence duration as physical file extent.",
+      "implication": "File Mob ownsourceclip maydescribeexpressedspaninitseditclock; matching elapsedseconds is usefulcorroborationbut doesnotlicensecombiningitscountwithdescriptorclock. Master may include trims, multipletracks, precomputes, sequences."
+    },
+    "byteOrderAndValidation": {
+      "scalarRules": "ReadInt32 reads4bytes and swap32 when object byteorder is neitherII norunspecifiednativearm64. ReadExactEditRate/ReadRational swaps numerator anddenominatorseparately. Fullscalar64 follows itsdefinedintegerencoding; no whole-object reversal.",
+      "rational": "ReadRational0xb84e4 requiresatleast8 bytes, returns pair of32 scalars. Itsbitloadsalone do notestablishsignedness; signedinterpretationconfirmedbyReadExactEditRate scvtf instructionsandparentprimaryspec.",
+      "proposedBellaChecks": [
+        "Recognized typed complete count; nonnegative. Storein64bitsinternally without rounding.",
+        "Complete8byte recognized rate with positive numerator and denominator; denominator0unusable.",
+        "Retain rawcount+exactrationalrate (or reducedequivalent), units/source and compactavailabilitystatus. Compute/formatdurationlater.",
+        "Distinguishmissing/damagedfromgenuinestoredzero. NativeReadInt32missingreturns0; Bella shouldnotcopythatloss ofstatus.",
+        "Do notdiscardphysicalfile ifdurationunavailable; leavefieldunavailable andconsider agreedheaderfallbacklater.",
+        "No dropframeflag isreadbytheseMDFLcount/rateloads. Timecodeformattingandstarttimestampareseparatefromthephysicalelapsedcount."
+      ]
+    },
+    "recommendationPlain": "Keep how many physical samples/frames the descriptor records and the exact speed of that clock. Calculate elapsed duration from those two. A clip or timeline length and audio sample-rate column are separate facts. Missing or invalid clock/count doesnotbecomezerooraguessedprojectduration.",
+    "limits": [
+      "No app launch/private reader/native API execution; static disassemblyandmanualreconstructiononly.",
+      "No universal audit of allUI durationcolumns, new mediaformatsor growing/partialEWCmedia.",
+      "Actual sixMDB corpuscounts/values andMDVx behavior are handled independently byotheragents; do not conflate them withnativebehavior.",
+      "64-bit extendeddurationwirecoverageand_AMD_SOURCE_LENGTHunitsremainexplicitlimits.",
+      "Fresh Bella runtime implementationmustwaitforremainingrequirements; thisreceiptchangesnothingintheapp."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AFileMediaDesc-Get.txt",
+        "bytes": 5904,
+        "sha256": "00d4e8a4eae621ab204fcc0ba7c610bdfac06e7833ad3d4535c0cdb48df3ce66"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AFileMediaDesc-getters.txt",
+        "bytes": 2096,
+        "sha256": "18fa2fe8b2e9839ddfe616f7c94685dd7192351810c0b76d6b96f610531ad83c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AFileMediaDesc-Put.txt",
+        "bytes": 8287,
+        "sha256": "88f09f291396e771a3613976900d518e1d54ad07be6064f5ba07737b2d9bc987"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AudioMediaDesc-Get.txt",
+        "bytes": 16194,
+        "sha256": "4ace141f8a3db18a2a5bf8adcff18afde77044a5ac34910cf0250a5ec43e261d"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AudioMediaDesc-SourceLength.txt",
+        "bytes": 3127,
+        "sha256": "84ccbdcf95782abd16947e9646db26ee66246034eec80e210c07b4fdf1f1d3d0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/PCMAudioDescriptor-Get.txt",
+        "bytes": 21995,
+        "sha256": "d2a7e4fd7f35865f12ed4e2ed39ee8b2b93ed7ff4d099bb0f5a03e9c52a6e3a2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/PCMAudioDescriptor-rate-getters.txt",
+        "bytes": 3123,
+        "sha256": "b3423c79f59f2cd39db8a8050818c9a5a267fcfd98086d5fda8765b16124c64e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/ReadExactEditRate.txt",
+        "bytes": 1790,
+        "sha256": "6deca2a84bd9ab3a2db6ab382c99089b414ff4ef1f746e5e5a1483cf45381bd1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/ReadRational.txt",
+        "bytes": 4308,
+        "sha256": "f479a6695f8a129cf8b7a3a766c10366d831cac8f37f196c6a2a7cf44d8428c3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/ReadInt32.txt",
+        "bytes": 6409,
+        "sha256": "b78db8c2d4cc58f07c1fb51f0ab899138cd06d5fff8af1f12fe93b0506490bda"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/ReadInt64.txt",
+        "bytes": 6665,
+        "sha256": "31181671090f223c2e92c6ee3392e784d0c6001b76e1a5684af749831e66cbb8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/ReadSpecialType.txt",
+        "bytes": 11641,
+        "sha256": "76433dd87bab5a0cd72de85de4c0e855ba878a9a39b76385c0cdfd3bdb71fd32"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/omfi-ReadExactEditRate.txt",
+        "bytes": 6436,
+        "sha256": "b07e0c94bc84c58f00d6fa16233b5ed028e39248059a6fec45c82087fd7bbfce"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AudioStreamReader-GetMediaLengthInDestRate.txt",
+        "bytes": 1652,
+        "sha256": "444fd9be0bd3a7fb9871f8d977df63e9bf872d09ce4b80b66964b27bba76f6f1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AudioSamplingRate-getter.txt",
+        "bytes": 1474,
+        "sha256": "37a34d40dd17f0461f33e80f42a4f99254c08af26d790589db99de14d95559ae"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AClip-Get.txt",
+        "bytes": 2476,
+        "sha256": "e0645b988b12bf9cfaaaf51ab8040298939fa5f46c2d814eba976a5ce521bcdc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AComponent-rate-getters.txt",
+        "bytes": 893,
+        "sha256": "1b9232f192320e5c41c18748b1fe59866aac7b9f2438b7530dcdd00a7e25eb88"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AudioMediaDesc-constructor.txt",
+        "bytes": 4325,
+        "sha256": "8b875ede098be808dfbe48149813ae525738da6ef1a099cddcde18c7f9ed843d"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/PCMAudioDescriptor-initializer.txt",
+        "bytes": 4361,
+        "sha256": "14c1fd4dcba9eb14792c48a7ac6d66f984c002c5919c66927791188029125ef0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/duration-vtable.json",
+        "bytes": 3245,
+        "sha256": "5aa6825f2d4b612afb015333a67b46db694eafe386d3f7ef5d078c4b5f9d86b6"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/duration-property-dictionary.txt",
+        "bytes": 2279,
+        "sha256": "ea5f0c6a6fdaecf7e7d5c54de03f9d5eaf1d2c426beb6176bb7ec221e8ee7d6c"
+      }
+    ]
+  },
+  "mdvx": {
+    "date": "2026-10-19",
+    "timezone": "Australia/Sydney",
+    "purpose": "New bounded read-only MDVx ordinary PMR/MDB Duration audit for Bella. No app launch, media writes, production code/docs edits or Bin Filter work.",
+    "binary": {
+      "date": "2026-10-19",
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "bytes": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "version": "0.2",
+      "build": "4073",
+      "auditedArchitecture": "arm64",
+      "universalArchitectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "priorFullDisassembly": {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-disassembly.txt",
+        "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074"
+      }
+    },
+    "method": "Fresh installed binary hash and arm64 row/projection symbols; manual reinspection of matching-hash complete ordinary MDB enrichment/descriptor helper, PMR scanner, MXF row enrichment, row metadata, table and string-export branches. No broad new native/library audit or original-source recovery claim.",
+    "conclusion": {
+      "ordinaryInventory": "The inspected ordinary MDVx inventory does not project or retain a physical-file Duration. MDB enrichment omits duration/length reads, row model has no count-plus-clock/duration field, and table/string export has no Duration branch.",
+      "MDBDurationOwnerAndRule": "Not applicable: no physical descriptor-length, file component-length or master clip-length selection for Duration exists in this traced enrichment route. MDVx supplies no duration-priority or missing-value formatting rule to copy.",
+      "ratesNotDuration": "Its stored frame-rate/sample-rate pairs are rates or previously noted numeric intermediates, not durations. No retained duration count is divided by them to produce a Duration cell in these paths.",
+      "datesNotDuration": "DB_Date and DB_Date_String are NSDate/date-time formatting. They are not file duration or SMPTE timecode.",
+      "scope": "Bounded to the inspected ordinary PMR/MDB inventory, row model/table/string-export and fallback row enrichment. Not a claim that embedded MXF libraries or every raw browser/private workflow cannot read a length or timecode."
+    },
+    "MDB": {
+      "function": "-[MDVxOMFI addInfoToItem:]",
+      "address": "0x100064794",
+      "masterReads": "Master PMR excerpt\u2192CompositionMobs\u2192TOC. Generic name\u2192NameInBin, MOBJ:UsageCode0x1033d, CPNT:EditRate0x10293 and import-setting marker; no master length or Duration read.",
+      "fileReads": "File PMR excerpt\u2192SourceMobs\u2192TOC. File Project helper plus getCompression_data:forObjAt: at0x100064ae4. Successful helper writes compression FourCC/resolution ID/sample-rate pair/bits at0x100064aec..0x100064b1c; no duration assignment.",
+      "technicalHelper": {
+        "function": "-[MDVxOMFI getCompression_data:forObjAt:]",
+        "address": "0x100064b60",
+        "reads": [
+          "MOBJ:PhysicalMedia0x10333 reference",
+          "PCMA:AudioSamplingRate0x1074d pair, or AIFD:Summary0x1022f marker plus MDFL:SampleRate0x1031a pair",
+          "MDAU:BitsPerSample0x10749",
+          "DIDD:Compression0x108d9",
+          "DIDD:DIDResolutionID0x108f7",
+          "DIDD:FrameSampleSize0x108ed plus MDFL:SampleRate presence",
+          "CDCI:ComponentWidth0x10919"
+        ],
+        "durationOmitted": "No descriptor duration/length property, CPNT component length, duration sample count or physical track total is read by this complete helper.",
+        "numericCaution": "Non-audio FrameSampleSize branch reads that numeric into a returned slot later passed to setSampleRateNumerator:denominator: with denominator1 (see prior technical evidence). This is a stored intermediate, not duration, seconds, or proof of final user-visible audio rate."
+      }
+    },
+    "rowAndPresentation": {
+      "metadata": "Complete MDVxDatabaseItem Objective-C metadata has29 ivars/26 properties including dates, two rate pairs, compression, IDs, filename/path and usage. No Duration, duration count, duration clock or timecode row field.",
+      "rateStorage": [
+        "setFrameRateNumerator:denominator:0x100031090 stores two32bit words atrow+0xc8.",
+        "setSampleRateNumerator:denominator:0x100031098 stores two32bit words atrow+0xd0.",
+        "DB_framerate0x1000315b4 / DB_samplerate0x1000315e8 copy those rate structs; they do not construct a duration."
+      ],
+      "table": "-[MDVxCore tableView:viewForTableColumn:row:]0x100050304 and -[MDVxCore tableView:NSStringValueForTableColumn:row:]0x100050ce4 have FrameRate/SampleRate/date branches, but no Duration column/read/render branch. Decoded complete field identifiers retained as receipt.",
+      "date": "DB_Date_String0x100030864 uses NSDateFormatter, short date/time styles and currentLocale, then stringFromDate(row.DB_Date) at0x1000308e8. ConvertTimeToCanonical0x10003143c / FromCanonical0x100031454 are32bit epoch-offset helpers, not duration/timecode renderers.",
+      "formatAvailability": "No inventory Duration formatting/zero/unknown/missing/blank fallback behavior is established because this field is not projected there.",
+      "rateDisplayHelper": "getBitrateTextForItem:0x100050150 uses frame-rate rational to form an NSNumber and indexes DIDResolutionID/frame-rate dictionaries. No duration count, file-length read or duration calculation occurs in this called table helper."
+    },
+    "ordinaryHeaderFallback": {
+      "scanner": "-[MDVxPMRScannerOperation main]0x10003a1c0: uses MDB reader when nonnil; otherwise physical-header helper only for existing file with missing Clip Name at0x10003a8f4..0x10003a924.",
+      "gateway": "-[MDVxDatabaseItem addinfoToItemFromCorrespondingFile]0x10003092c gates corresponding MXF reader; no duration assignment itself.",
+      "MXFRowProjection": "-[MDVxMXF addInfoToItem:]0x1000326b4 copies dictionary clipname\u2192NameInBin0x100032718, project\u2192Project0x100032748, fileUID\u2192file ID0x100032790 and matUID\u2192master ID0x1000327e0. It does not pass any MXF duration/timecode/rate result into inventory Duration.",
+      "qualification": "Embedded MXF code contains duration/timecode functions and property keys. Their existence does not establish a retained inventory Duration, and this report does not assert that those library capabilities are absent."
+    },
+    "BellaImplicationsNotApproval": [
+      "MDVx omission must not determine Bella Duration semantics; MediaMuster explicitly retains physical-file Duration and needs its own native/actual-data owner/count/clock evidence.",
+      "Do not substitute master clip length, a timecode start, PMR modification/date word, frame-rate label, sample-rate value or FrameSampleSize for physical duration.",
+      "No Bella Duration owner, fallback, display precision, clock or header-read rule is approved merely by this MDVx audit."
+    ],
+    "limits": [
+      "No runtime MDVx scan, UI rendering experiment, generated fixture or duration-output comparison.",
+      "No exhaustive audit of all MDB/browser/export/import paths or embedded libMXF functions; ordinary inventory branches are the bounded negative evidence.",
+      "Arm64 only, hash matched; x86_64 behavior not separately reconstructed.",
+      "No performance, memory or malformed-input benchmark.",
+      "Existing PMR DTM ignore, exact-six Kind lookup, identity, Project/Original Bin, physical-path-only and Bin Filter decisions are unchanged."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt",
+        "bytes": 16441,
+        "sha256": "be932b1a1d04bf4539a0f4fe6b8fadb68d4d4170387b8613806c5c6af8b0fee1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt",
+        "bytes": 25206,
+        "sha256": "e9f502df3ddc289f84c65be937ec441a847c638c8b17d1df97c3b1f0655644cb"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem-objc-excerpt.txt",
+        "bytes": 24581,
+        "sha256": "99ee84dd15386551c5a986e99eb6ddd750e6aee6275a6914a9306a9a381e34dc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_ConvertTimeFromCanonical_.txt",
+        "bytes": 236,
+        "sha256": "351a9160079e250dd4b2b024b083a087d57107d88a69377975ba9ffbbc15c39f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_ConvertTimeToCanonical_.txt",
+        "bytes": 234,
+        "sha256": "1a7e8c23b2e98ef9e6eb5913200192f224963994c81ab8a901854d3f1630dcc7"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_DB_Date_String.txt",
+        "bytes": 2186,
+        "sha256": "16907e2f502593ef74c6ac6bfb080d00a1735f4f4d39cc1086bfd99fe4fd5712"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_DB_framerate.txt",
+        "bytes": 510,
+        "sha256": "8d85a33ec9b29747de24310040e20a6b19e58d4f1989a8fbc61e272e9e533aa3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_DB_samplerate.txt",
+        "bytes": 511,
+        "sha256": "720bc76af3d2361517898382763f9fc6103d2fb95d977fb7aeee0df7acbdac3b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_addinfoToItemFromCorrespondingFile.txt",
+        "bytes": 2520,
+        "sha256": "aa67805e2bf40d384e2ed142e4f8f64f4bcffb57ce2454c0948a8291c45228b4"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_setFrameRateNumerator_denominator_.txt",
+        "bytes": 118,
+        "sha256": "9ed02d790c489787f22e4389aab3fa0a24956f1c9a119eb57463052690f593b2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_setSampleRateNumerator_denominator_.txt",
+        "bytes": 119,
+        "sha256": "a12eee7289f58d15da646fc4ecf72bb4b6524118d86c325e2091420dab6369d1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_setupWithPmrBytes_length_PMRVersion_usebyteswap_.txt",
+        "bytes": 6841,
+        "sha256": "1f2b786849a8ffd5d41a93e7f4a7b285018b56a74b5d1ea7f6855c1cfdab5e61"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_setupWithUnrefFile_clipname_.txt",
+        "bytes": 6083,
+        "sha256": "6d572855139d4f8e45bf5a449e993da62851964cf74eea1873a1839dc83dfb5b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxMXF_addInfoToItem_.txt",
+        "bytes": 3747,
+        "sha256": "18281f5391667e37e8e3b5884b1a498e680ac0ccc0a99fcf8f470c42101ea1d0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxOMFI_addInfoToItem_.txt",
+        "bytes": 9423,
+        "sha256": "20211e8a6dbcd33b0e034f3885504d5af7a54cffd3a05b5d776446549e0f6829"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxOMFI_getCompression_data_forObjAt_.txt",
+        "bytes": 5492,
+        "sha256": "56eb914605cab3b729d4dd8de955f3e18298097b96c2c1f546c00a32f1cbe0ef"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxPMRScannerOperation_main.txt",
+        "bytes": 53423,
+        "sha256": "3eeb0753fa8ace9baa58c04efa2bf9345553e74d265102be7d4739b877cabff8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/binary-receipt.json",
+        "bytes": 510,
+        "sha256": "3ad49d32205d2a6230c919a12c6c058e5932839981e2990388f509a7612ed9e2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/decoded-table-field-identifiers.json",
+        "bytes": 3219,
+        "sha256": "6cda569ba1af5c686cd281686b1a93bc83474b6d80db586669c02aa802a51cac"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/fresh-row-and-projection-symbols.txt",
+        "bytes": 6433,
+        "sha256": "5ff53613a590f6767a531903c052646d08a167e725337ddf06fead4502d6a692"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxCore_getBitrateTextForItem_.txt",
+        "bytes": 2903,
+        "sha256": "46a0ce0d6f191b714d534501608575b5e5782111bd4782e31db1867257096878"
+      }
+    ]
+  },
+  "actualDatabases": {
+    "purpose": "Independent read-only physical-file duration audit of six live MDBs and paired PMRs. No OldScanner output or media-header parsing used.",
+    "method": [
+      "Current hashes are checked for six MDBs, six paired PMRs, six raw value indexes and the reused identity/PMR helper before interpretation.",
+      "Full normalized PMR FileMobId and MasterMobId select unique catalogue-qualified owners. Only exact file-owner PhysicalMedia target supplies the physical descriptor.",
+      "MDFL:Length is read as signed LE32 omfi:Long in these files, MDFL:SampleRate and PCMA:AudioSamplingRate as signed numerator/denominator LE32 ExactEditRate pairs. Raw count/rate and byte ranges are retained in examples.",
+      "Descriptor seconds are computed using exact Fraction(count * denominator, numerator) after nonnegative count and strictly positive numerator/denominator checks. Zero counts are reported separately, not silently treated as damage or missing.",
+      "PCMA base descriptor and AudioSamplingRate are compared separately. Channel count is recorded for context and never multiplies or divides duration.",
+      "Own file GroupLength/EditRate, own SCLP ClipLength/EditRate, selected-master GroupLength/EditRate and its SCLPs targeting the exact physical FileMobId are separate comparisons, never duration authorities. Component traversal stays within the owner and known wrappers; it does not follow SourceID into other mobs.",
+      "All reference-array/MobIndex counts must exactly equal parsed entries. Missing/unsupported/conflicting scalar fields and malformed refs are reported.",
+      "AIFD/WAVD summary presence is counted without parsing payloads because descriptor Length/SampleRate supplies a complete pair. Exact optional _AMD_SOURCE_LENGTH name occurrence is checked across the entire MDB.",
+      "No source path/filename/private text is copied into findings and no media essence/header is opened."
+    ],
+    "limits": [
+      "Observed files are the six established littleendian legacy Bento/OMF layouts. No general MDB64/other-endian layout approval follows from this audit.",
+      "Matching database duration values establish internal consistency, not independent validation against physical essence. Header capabilities and source precedence remain separate decisions.",
+      "Zero/negative counts, invalid/nonpositive rates, missing descriptors, unsupported extended lengths, and source-length override may be unexercised; absence in this corpus does not define their Bella handling.",
+      "Selected-master counts are scoped by MDB and owner, not globally deduplicated MasterMobIds.",
+      "No runtime traversal, extra header-read trigger, display rounding or source-priority rule is approved by this research."
+    ],
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "cacheSha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "countsPerPmrFile": {
+          "pmrRows": 389,
+          "descriptorClass_RGBA": 10,
+          "rowsWithNonnegativeDescriptorCountAndPositiveRate": 389,
+          "rowsOneOwnSourceClipAndFileGroupDurationEqual": 389,
+          "rowsOneMasterTargetSourceClipAndFileGroupDurationEqual": 389,
+          "rowsMasterGroupEqualsFileGroupDuration": 389,
+          "rowsMasterGroupDiffersFileGroupDuration": 0,
+          "rowsDescriptorDiffersFileGroupWithDescriptorCountOne": 30,
+          "rowsMasterGroupDiffersDescriptorWhileFileGroupEqualsDescriptor": 0,
+          "rowsFileGroupDiffersDescriptorWhileMasterGroupEqualsDescriptor": 0,
+          "descriptorClass_PCMA": 286,
+          "pcmaBaseRateEqualsAudioSamplingRate": 286,
+          "pcmaBaseRateDiffersAudioSamplingRate": 0,
+          "descriptorClass_CDCI": 93
+        },
+        "distinctDescriptorObjects": 389,
+        "distinctSelectedMasterRecords": 153,
+        "descriptorClasses": {
+          "RGBA": {
+            "rows": 10,
+            "descriptorDurationAvailable": 10
+          },
+          "PCMA": {
+            "rows": 286,
+            "descriptorDurationAvailable": 286
+          },
+          "CDCI": {
+            "rows": 93,
+            "descriptorDurationAvailable": 93
+          }
+        },
+        "fieldStatesPerFile": {
+          "RGBA:descriptorLength": {
+            "positiveCount": 10
+          },
+          "RGBA:descriptorRate": {
+            "positiveRate": 10
+          },
+          "RGBA:fileGroupLength": {
+            "positiveCount": 10
+          },
+          "RGBA:fileEditRate": {
+            "positiveRate": 10
+          },
+          "RGBA:masterGroupLength": {
+            "positiveCount": 10
+          },
+          "RGBA:masterEditRate": {
+            "positiveRate": 10
+          },
+          "RGBA:audioSamplingRate": {
+            "absent": 10
+          },
+          "RGBA:channels": {
+            "absent": 10
+          },
+          "RGBA:bitsPerSample": {
+            "absent": 10
+          },
+          "PCMA:descriptorLength": {
+            "positiveCount": 286
+          },
+          "PCMA:descriptorRate": {
+            "positiveRate": 286
+          },
+          "PCMA:fileGroupLength": {
+            "positiveCount": 286
+          },
+          "PCMA:fileEditRate": {
+            "positiveRate": 286
+          },
+          "PCMA:masterGroupLength": {
+            "positiveCount": 286
+          },
+          "PCMA:masterEditRate": {
+            "positiveRate": 286
+          },
+          "PCMA:audioSamplingRate": {
+            "positiveRate": 286
+          },
+          "PCMA:channels": {
+            "positiveCount": 286
+          },
+          "PCMA:bitsPerSample": {
+            "positiveCount": 286
+          },
+          "CDCI:descriptorLength": {
+            "positiveCount": 93
+          },
+          "CDCI:descriptorRate": {
+            "positiveRate": 93
+          },
+          "CDCI:fileGroupLength": {
+            "positiveCount": 93
+          },
+          "CDCI:fileEditRate": {
+            "positiveRate": 93
+          },
+          "CDCI:masterGroupLength": {
+            "positiveCount": 93
+          },
+          "CDCI:masterEditRate": {
+            "positiveRate": 93
+          },
+          "CDCI:audioSamplingRate": {
+            "absent": 93
+          },
+          "CDCI:channels": {
+            "absent": 93
+          },
+          "CDCI:bitsPerSample": {
+            "absent": 93
+          }
+        },
+        "typedFieldsPerFile": {
+          "('RGBA', 'descriptorLength', 'omfi:Long', 4)": 10,
+          "('RGBA', 'descriptorRate', 'omfi:ExactEditRate', 8)": 10,
+          "('RGBA', 'fileGroupLength', 'omfi:Long', 4)": 10,
+          "('RGBA', 'fileEditRate', 'omfi:ExactEditRate', 8)": 10,
+          "('RGBA', 'masterGroupLength', 'omfi:Long', 4)": 10,
+          "('RGBA', 'masterEditRate', 'omfi:ExactEditRate', 8)": 10,
+          "('PCMA', 'descriptorLength', 'omfi:Long', 4)": 286,
+          "('PCMA', 'descriptorRate', 'omfi:ExactEditRate', 8)": 286,
+          "('PCMA', 'fileGroupLength', 'omfi:Long', 4)": 286,
+          "('PCMA', 'fileEditRate', 'omfi:ExactEditRate', 8)": 286,
+          "('PCMA', 'masterGroupLength', 'omfi:Long', 4)": 286,
+          "('PCMA', 'masterEditRate', 'omfi:ExactEditRate', 8)": 286,
+          "('PCMA', 'audioSamplingRate', 'omfi:ExactEditRate', 8)": 286,
+          "('PCMA', 'channels', 'omfi:Ushort', 2)": 286,
+          "('PCMA', 'bitsPerSample', 'omfi:Ushort', 2)": 286,
+          "('CDCI', 'descriptorLength', 'omfi:Long', 4)": 93,
+          "('CDCI', 'descriptorRate', 'omfi:ExactEditRate', 8)": 93,
+          "('CDCI', 'fileGroupLength', 'omfi:Long', 4)": 93,
+          "('CDCI', 'fileEditRate', 'omfi:ExactEditRate', 8)": 93,
+          "('CDCI', 'masterGroupLength', 'omfi:Long', 4)": 93,
+          "('CDCI', 'masterEditRate', 'omfi:ExactEditRate', 8)": 93
+        },
+        "descriptorSampleRatesPerFile": {
+          "('RGBA', 24, 1)": 10,
+          "('PCMA', 48000, 1)": 286,
+          "('CDCI', 24, 1)": 93
+        },
+        "audioSamplingRatesPerFile": {
+          "('PCMA', 48000, 1)": 286
+        },
+        "fileEditRatesPerFile": {
+          "('RGBA', 24, 1)": 10,
+          "('PCMA', 24, 1)": 286,
+          "('CDCI', 24, 1)": 93
+        },
+        "masterEditRatesPerFile": {
+          "('RGBA', 24, 1)": 10,
+          "('PCMA', 24, 1)": 286,
+          "('CDCI', 24, 1)": 93
+        },
+        "audioChannelCountsPerFile": {
+          "('PCMA', 1)": 286
+        },
+        "fileOwnSourceClipCountPerFile": {
+          "1": 389
+        },
+        "selectedMasterDirectTargetSourceClipCountPerFile": {
+          "1": 389
+        },
+        "durationComparisons": {
+          "RGBA:fileGroup": {
+            "differentBeyondOneComparedEditUnit": 10
+          },
+          "RGBA:selectedMasterGroup": {
+            "differentBeyondOneComparedEditUnit": 10
+          },
+          "RGBA:fileOwnSourceClip": {
+            "differentBeyondOneComparedEditUnit": 10
+          },
+          "RGBA:selectedMasterDirectSourceClip": {
+            "differentBeyondOneComparedEditUnit": 10
+          },
+          "PCMA:fileGroup": {
+            "exact": 286
+          },
+          "PCMA:selectedMasterGroup": {
+            "exact": 286
+          },
+          "PCMA:fileOwnSourceClip": {
+            "exact": 286
+          },
+          "PCMA:selectedMasterDirectSourceClip": {
+            "exact": 286
+          },
+          "CDCI:fileGroup": {
+            "exact": 73,
+            "differentBeyondOneComparedEditUnit": 20
+          },
+          "CDCI:selectedMasterGroup": {
+            "exact": 73,
+            "differentBeyondOneComparedEditUnit": 20
+          },
+          "CDCI:fileOwnSourceClip": {
+            "exact": 73,
+            "differentBeyondOneComparedEditUnit": 20
+          },
+          "CDCI:selectedMasterDirectSourceClip": {
+            "exact": 73,
+            "differentBeyondOneComparedEditUnit": 20
+          }
+        },
+        "durationDifferenceBounds": {
+          "RGBA:fileGroup": {
+            "observations": 10,
+            "minimum": {
+              "numerator": 2879,
+              "denominator": 24
+            },
+            "maximum": {
+              "numerator": 2879,
+              "denominator": 24
+            },
+            "positive": 10,
+            "negative": 0,
+            "zero": 0
+          },
+          "RGBA:selectedMasterGroup": {
+            "observations": 10,
+            "minimum": {
+              "numerator": 2879,
+              "denominator": 24
+            },
+            "maximum": {
+              "numerator": 2879,
+              "denominator": 24
+            },
+            "positive": 10,
+            "negative": 0,
+            "zero": 0
+          },
+          "RGBA:fileOwnSourceClip": {
+            "observations": 10,
+            "minimum": {
+              "numerator": 2879,
+              "denominator": 24
+            },
+            "maximum": {
+              "numerator": 2879,
+              "denominator": 24
+            },
+            "positive": 10,
+            "negative": 0,
+            "zero": 0
+          },
+          "RGBA:selectedMasterDirectSourceClip": {
+            "observations": 10,
+            "minimum": {
+              "numerator": 2879,
+              "denominator": 24
+            },
+            "maximum": {
+              "numerator": 2879,
+              "denominator": 24
+            },
+            "positive": 10,
+            "negative": 0,
+            "zero": 0
+          },
+          "CDCI:fileGroup": {
+            "observations": 20,
+            "minimum": {
+              "numerator": 2879,
+              "denominator": 24
+            },
+            "maximum": {
+              "numerator": 2879,
+              "denominator": 24
+            },
+            "positive": 20,
+            "negative": 0,
+            "zero": 0
+          },
+          "CDCI:selectedMasterGroup": {
+            "observations": 20,
+            "minimum": {
+              "numerator": 2879,
+              "denominator": 24
+            },
+            "maximum": {
+              "numerator": 2879,
+              "denominator": 24
+            },
+            "positive": 20,
+            "negative": 0,
+            "zero": 0
+          },
+          "CDCI:fileOwnSourceClip": {
+            "observations": 20,
+            "minimum": {
+              "numerator": 2879,
+              "denominator": 24
+            },
+            "maximum": {
+              "numerator": 2879,
+              "denominator": 24
+            },
+            "positive": 20,
+            "negative": 0,
+            "zero": 0
+          },
+          "CDCI:selectedMasterDirectSourceClip": {
+            "observations": 20,
+            "minimum": {
+              "numerator": 2879,
+              "denominator": 24
+            },
+            "maximum": {
+              "numerator": 2879,
+              "denominator": 24
+            },
+            "positive": 20,
+            "negative": 0,
+            "zero": 0
+          }
+        },
+        "descriptorCountAndSecondsBounds": {
+          "RGBA:descriptorSeconds": {
+            "minimum": {
+              "numerator": 1,
+              "denominator": 24
+            },
+            "maximum": {
+              "numerator": 1,
+              "denominator": 24
+            }
+          },
+          "RGBA:descriptorCount": {
+            "minimum": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "maximum": {
+              "numerator": 1,
+              "denominator": 1
+            }
+          },
+          "PCMA:descriptorSeconds": {
+            "minimum": {
+              "numerator": 13,
+              "denominator": 12
+            },
+            "maximum": {
+              "numerator": 4793,
+              "denominator": 6
+            }
+          },
+          "PCMA:descriptorCount": {
+            "minimum": {
+              "numerator": 52000,
+              "denominator": 1
+            },
+            "maximum": {
+              "numerator": 38344000,
+              "denominator": 1
+            }
+          },
+          "CDCI:descriptorSeconds": {
+            "minimum": {
+              "numerator": 1,
+              "denominator": 24
+            },
+            "maximum": {
+              "numerator": 1691,
+              "denominator": 8
+            }
+          },
+          "CDCI:descriptorCount": {
+            "minimum": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "maximum": {
+              "numerator": 5073,
+              "denominator": 1
+            }
+          }
+        },
+        "allRawDurationPropertyOccurrences": {
+          "OMFI:CPNT:EditRate": 5497,
+          "OMFI:CLIP:Length": 3769,
+          "OMFI:TRKG:GroupLength": 722,
+          "OMFI:MDFL:SampleRate": 392,
+          "OMFI:MDFL:Length": 392,
+          "OMFI:MDAU:NumChannels": 286,
+          "OMFI:MDAU:BitsPerSample": 286,
+          "OMFI:PCMA:AudioSamplingRate": 286
+        },
+        "amdSourceLengthAttributeOccurrencesEntireMdb": 0,
+        "summaryPropertyPresenceEntireMdb": {},
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 1117,
+          "omfi:ObjRef:observed": 1187
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "cacheSha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "countsPerPmrFile": {
+          "pmrRows": 686,
+          "descriptorClass_CDCI": 271,
+          "rowsWithNonnegativeDescriptorCountAndPositiveRate": 686,
+          "rowsOneOwnSourceClipAndFileGroupDurationEqual": 686,
+          "rowsOneMasterTargetSourceClipAndFileGroupDurationEqual": 686,
+          "rowsMasterGroupEqualsFileGroupDuration": 686,
+          "rowsMasterGroupDiffersFileGroupDuration": 0,
+          "rowsDescriptorDiffersFileGroupWithDescriptorCountOne": 24,
+          "rowsMasterGroupDiffersDescriptorWhileFileGroupEqualsDescriptor": 0,
+          "rowsFileGroupDiffersDescriptorWhileMasterGroupEqualsDescriptor": 0,
+          "descriptorClass_PCMA": 407,
+          "pcmaBaseRateEqualsAudioSamplingRate": 407,
+          "pcmaBaseRateDiffersAudioSamplingRate": 0,
+          "descriptorClass_RGBA": 8
+        },
+        "distinctDescriptorObjects": 686,
+        "distinctSelectedMasterRecords": 415,
+        "descriptorClasses": {
+          "CDCI": {
+            "rows": 271,
+            "descriptorDurationAvailable": 271
+          },
+          "PCMA": {
+            "rows": 407,
+            "descriptorDurationAvailable": 407
+          },
+          "RGBA": {
+            "rows": 8,
+            "descriptorDurationAvailable": 8
+          }
+        },
+        "fieldStatesPerFile": {
+          "CDCI:descriptorLength": {
+            "positiveCount": 271
+          },
+          "CDCI:descriptorRate": {
+            "positiveRate": 271
+          },
+          "CDCI:fileGroupLength": {
+            "positiveCount": 271
+          },
+          "CDCI:fileEditRate": {
+            "positiveRate": 271
+          },
+          "CDCI:masterGroupLength": {
+            "positiveCount": 271
+          },
+          "CDCI:masterEditRate": {
+            "positiveRate": 271
+          },
+          "CDCI:audioSamplingRate": {
+            "absent": 271
+          },
+          "CDCI:channels": {
+            "absent": 271
+          },
+          "CDCI:bitsPerSample": {
+            "absent": 271
+          },
+          "PCMA:descriptorLength": {
+            "positiveCount": 407
+          },
+          "PCMA:descriptorRate": {
+            "positiveRate": 407
+          },
+          "PCMA:fileGroupLength": {
+            "positiveCount": 407
+          },
+          "PCMA:fileEditRate": {
+            "positiveRate": 407
+          },
+          "PCMA:masterGroupLength": {
+            "positiveCount": 407
+          },
+          "PCMA:masterEditRate": {
+            "positiveRate": 407
+          },
+          "PCMA:audioSamplingRate": {
+            "positiveRate": 407
+          },
+          "PCMA:channels": {
+            "positiveCount": 407
+          },
+          "PCMA:bitsPerSample": {
+            "positiveCount": 407
+          },
+          "RGBA:descriptorLength": {
+            "positiveCount": 8
+          },
+          "RGBA:descriptorRate": {
+            "positiveRate": 8
+          },
+          "RGBA:fileGroupLength": {
+            "positiveCount": 8
+          },
+          "RGBA:fileEditRate": {
+            "positiveRate": 8
+          },
+          "RGBA:masterGroupLength": {
+            "positiveCount": 8
+          },
+          "RGBA:masterEditRate": {
+            "positiveRate": 8
+          },
+          "RGBA:audioSamplingRate": {
+            "absent": 8
+          },
+          "RGBA:channels": {
+            "absent": 8
+          },
+          "RGBA:bitsPerSample": {
+            "absent": 8
+          }
+        },
+        "typedFieldsPerFile": {
+          "('CDCI', 'descriptorLength', 'omfi:Long', 4)": 271,
+          "('CDCI', 'descriptorRate', 'omfi:ExactEditRate', 8)": 271,
+          "('CDCI', 'fileGroupLength', 'omfi:Long', 4)": 271,
+          "('CDCI', 'fileEditRate', 'omfi:ExactEditRate', 8)": 271,
+          "('CDCI', 'masterGroupLength', 'omfi:Long', 4)": 271,
+          "('CDCI', 'masterEditRate', 'omfi:ExactEditRate', 8)": 271,
+          "('PCMA', 'descriptorLength', 'omfi:Long', 4)": 407,
+          "('PCMA', 'descriptorRate', 'omfi:ExactEditRate', 8)": 407,
+          "('PCMA', 'fileGroupLength', 'omfi:Long', 4)": 407,
+          "('PCMA', 'fileEditRate', 'omfi:ExactEditRate', 8)": 407,
+          "('PCMA', 'masterGroupLength', 'omfi:Long', 4)": 407,
+          "('PCMA', 'masterEditRate', 'omfi:ExactEditRate', 8)": 407,
+          "('PCMA', 'audioSamplingRate', 'omfi:ExactEditRate', 8)": 407,
+          "('PCMA', 'channels', 'omfi:Ushort', 2)": 407,
+          "('PCMA', 'bitsPerSample', 'omfi:Ushort', 2)": 407,
+          "('RGBA', 'descriptorLength', 'omfi:Long', 4)": 8,
+          "('RGBA', 'descriptorRate', 'omfi:ExactEditRate', 8)": 8,
+          "('RGBA', 'fileGroupLength', 'omfi:Long', 4)": 8,
+          "('RGBA', 'fileEditRate', 'omfi:ExactEditRate', 8)": 8,
+          "('RGBA', 'masterGroupLength', 'omfi:Long', 4)": 8,
+          "('RGBA', 'masterEditRate', 'omfi:ExactEditRate', 8)": 8
+        },
+        "descriptorSampleRatesPerFile": {
+          "('CDCI', 25, 1)": 271,
+          "('PCMA', 48000, 1)": 407,
+          "('RGBA', 25, 1)": 8
+        },
+        "audioSamplingRatesPerFile": {
+          "('PCMA', 48000, 1)": 407
+        },
+        "fileEditRatesPerFile": {
+          "('CDCI', 25, 1)": 271,
+          "('PCMA', 25, 1)": 407,
+          "('RGBA', 25, 1)": 8
+        },
+        "masterEditRatesPerFile": {
+          "('CDCI', 25, 1)": 271,
+          "('PCMA', 25, 1)": 407,
+          "('RGBA', 25, 1)": 8
+        },
+        "audioChannelCountsPerFile": {
+          "('PCMA', 1)": 407
+        },
+        "fileOwnSourceClipCountPerFile": {
+          "1": 686
+        },
+        "selectedMasterDirectTargetSourceClipCountPerFile": {
+          "1": 686
+        },
+        "durationComparisons": {
+          "CDCI:fileGroup": {
+            "exact": 255,
+            "differentBeyondOneComparedEditUnit": 16
+          },
+          "CDCI:selectedMasterGroup": {
+            "exact": 255,
+            "differentBeyondOneComparedEditUnit": 16
+          },
+          "CDCI:fileOwnSourceClip": {
+            "exact": 255,
+            "differentBeyondOneComparedEditUnit": 16
+          },
+          "CDCI:selectedMasterDirectSourceClip": {
+            "exact": 255,
+            "differentBeyondOneComparedEditUnit": 16
+          },
+          "PCMA:fileGroup": {
+            "exact": 407
+          },
+          "PCMA:selectedMasterGroup": {
+            "exact": 407
+          },
+          "PCMA:fileOwnSourceClip": {
+            "exact": 407
+          },
+          "PCMA:selectedMasterDirectSourceClip": {
+            "exact": 407
+          },
+          "RGBA:fileGroup": {
+            "differentBeyondOneComparedEditUnit": 8
+          },
+          "RGBA:selectedMasterGroup": {
+            "differentBeyondOneComparedEditUnit": 8
+          },
+          "RGBA:fileOwnSourceClip": {
+            "differentBeyondOneComparedEditUnit": 8
+          },
+          "RGBA:selectedMasterDirectSourceClip": {
+            "differentBeyondOneComparedEditUnit": 8
+          }
+        },
+        "durationDifferenceBounds": {
+          "CDCI:fileGroup": {
+            "observations": 16,
+            "minimum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "positive": 16,
+            "negative": 0,
+            "zero": 0
+          },
+          "CDCI:selectedMasterGroup": {
+            "observations": 16,
+            "minimum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "positive": 16,
+            "negative": 0,
+            "zero": 0
+          },
+          "CDCI:fileOwnSourceClip": {
+            "observations": 16,
+            "minimum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "positive": 16,
+            "negative": 0,
+            "zero": 0
+          },
+          "CDCI:selectedMasterDirectSourceClip": {
+            "observations": 16,
+            "minimum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "positive": 16,
+            "negative": 0,
+            "zero": 0
+          },
+          "RGBA:fileGroup": {
+            "observations": 8,
+            "minimum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "positive": 8,
+            "negative": 0,
+            "zero": 0
+          },
+          "RGBA:selectedMasterGroup": {
+            "observations": 8,
+            "minimum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "positive": 8,
+            "negative": 0,
+            "zero": 0
+          },
+          "RGBA:fileOwnSourceClip": {
+            "observations": 8,
+            "minimum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "positive": 8,
+            "negative": 0,
+            "zero": 0
+          },
+          "RGBA:selectedMasterDirectSourceClip": {
+            "observations": 8,
+            "minimum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "positive": 8,
+            "negative": 0,
+            "zero": 0
+          }
+        },
+        "descriptorCountAndSecondsBounds": {
+          "CDCI:descriptorSeconds": {
+            "minimum": {
+              "numerator": 1,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 481,
+              "denominator": 5
+            }
+          },
+          "CDCI:descriptorCount": {
+            "minimum": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "maximum": {
+              "numerator": 2405,
+              "denominator": 1
+            }
+          },
+          "PCMA:descriptorSeconds": {
+            "minimum": {
+              "numerator": 37,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 1482,
+              "denominator": 25
+            }
+          },
+          "PCMA:descriptorCount": {
+            "minimum": {
+              "numerator": 71040,
+              "denominator": 1
+            },
+            "maximum": {
+              "numerator": 2845440,
+              "denominator": 1
+            }
+          },
+          "RGBA:descriptorSeconds": {
+            "minimum": {
+              "numerator": 1,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 1,
+              "denominator": 25
+            }
+          },
+          "RGBA:descriptorCount": {
+            "minimum": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "maximum": {
+              "numerator": 1,
+              "denominator": 1
+            }
+          }
+        },
+        "allRawDurationPropertyOccurrences": {
+          "OMFI:CPNT:EditRate": 24964,
+          "OMFI:CLIP:Length": 17210,
+          "OMFI:MDFL:SampleRate": 1373,
+          "OMFI:MDFL:Length": 1373,
+          "OMFI:MDAU:NumChannels": 814,
+          "OMFI:MDAU:BitsPerSample": 814,
+          "OMFI:PCMA:AudioSamplingRate": 814,
+          "OMFI:TRKG:GroupLength": 2912
+        },
+        "amdSourceLengthAttributeOccurrencesEntireMdb": 0,
+        "summaryPropertyPresenceEntireMdb": {},
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 1794,
+          "omfi:ObjRef:observed": 2090
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "cacheSha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "countsPerPmrFile": {
+          "pmrRows": 513,
+          "descriptorClass_CDCI": 193,
+          "rowsWithNonnegativeDescriptorCountAndPositiveRate": 513,
+          "rowsOneOwnSourceClipAndFileGroupDurationEqual": 513,
+          "rowsOneMasterTargetSourceClipAndFileGroupDurationEqual": 513,
+          "rowsMasterGroupEqualsFileGroupDuration": 513,
+          "rowsMasterGroupDiffersFileGroupDuration": 0,
+          "rowsDescriptorDiffersFileGroupWithDescriptorCountOne": 6,
+          "rowsMasterGroupDiffersDescriptorWhileFileGroupEqualsDescriptor": 0,
+          "rowsFileGroupDiffersDescriptorWhileMasterGroupEqualsDescriptor": 0,
+          "descriptorClass_PCMA": 320,
+          "pcmaBaseRateEqualsAudioSamplingRate": 320,
+          "pcmaBaseRateDiffersAudioSamplingRate": 0
+        },
+        "distinctDescriptorObjects": 513,
+        "distinctSelectedMasterRecords": 353,
+        "descriptorClasses": {
+          "CDCI": {
+            "rows": 193,
+            "descriptorDurationAvailable": 193
+          },
+          "PCMA": {
+            "rows": 320,
+            "descriptorDurationAvailable": 320
+          }
+        },
+        "fieldStatesPerFile": {
+          "CDCI:descriptorLength": {
+            "positiveCount": 193
+          },
+          "CDCI:descriptorRate": {
+            "positiveRate": 193
+          },
+          "CDCI:fileGroupLength": {
+            "positiveCount": 193
+          },
+          "CDCI:fileEditRate": {
+            "positiveRate": 193
+          },
+          "CDCI:masterGroupLength": {
+            "positiveCount": 193
+          },
+          "CDCI:masterEditRate": {
+            "positiveRate": 193
+          },
+          "CDCI:audioSamplingRate": {
+            "absent": 193
+          },
+          "CDCI:channels": {
+            "absent": 193
+          },
+          "CDCI:bitsPerSample": {
+            "absent": 193
+          },
+          "PCMA:descriptorLength": {
+            "positiveCount": 320
+          },
+          "PCMA:descriptorRate": {
+            "positiveRate": 320
+          },
+          "PCMA:fileGroupLength": {
+            "positiveCount": 320
+          },
+          "PCMA:fileEditRate": {
+            "positiveRate": 320
+          },
+          "PCMA:masterGroupLength": {
+            "positiveCount": 320
+          },
+          "PCMA:masterEditRate": {
+            "positiveRate": 320
+          },
+          "PCMA:audioSamplingRate": {
+            "positiveRate": 320
+          },
+          "PCMA:channels": {
+            "positiveCount": 320
+          },
+          "PCMA:bitsPerSample": {
+            "positiveCount": 320
+          }
+        },
+        "typedFieldsPerFile": {
+          "('CDCI', 'descriptorLength', 'omfi:Long', 4)": 193,
+          "('CDCI', 'descriptorRate', 'omfi:ExactEditRate', 8)": 193,
+          "('CDCI', 'fileGroupLength', 'omfi:Long', 4)": 193,
+          "('CDCI', 'fileEditRate', 'omfi:ExactEditRate', 8)": 193,
+          "('CDCI', 'masterGroupLength', 'omfi:Long', 4)": 193,
+          "('CDCI', 'masterEditRate', 'omfi:ExactEditRate', 8)": 193,
+          "('PCMA', 'descriptorLength', 'omfi:Long', 4)": 320,
+          "('PCMA', 'descriptorRate', 'omfi:ExactEditRate', 8)": 320,
+          "('PCMA', 'fileGroupLength', 'omfi:Long', 4)": 320,
+          "('PCMA', 'fileEditRate', 'omfi:ExactEditRate', 8)": 320,
+          "('PCMA', 'masterGroupLength', 'omfi:Long', 4)": 320,
+          "('PCMA', 'masterEditRate', 'omfi:ExactEditRate', 8)": 320,
+          "('PCMA', 'audioSamplingRate', 'omfi:ExactEditRate', 8)": 320,
+          "('PCMA', 'channels', 'omfi:Ushort', 2)": 320,
+          "('PCMA', 'bitsPerSample', 'omfi:Ushort', 2)": 320
+        },
+        "descriptorSampleRatesPerFile": {
+          "('CDCI', 25, 1)": 193,
+          "('PCMA', 48000, 1)": 320
+        },
+        "audioSamplingRatesPerFile": {
+          "('PCMA', 48000, 1)": 320
+        },
+        "fileEditRatesPerFile": {
+          "('CDCI', 25, 1)": 193,
+          "('PCMA', 25, 1)": 320
+        },
+        "masterEditRatesPerFile": {
+          "('CDCI', 25, 1)": 193,
+          "('PCMA', 25, 1)": 320
+        },
+        "audioChannelCountsPerFile": {
+          "('PCMA', 1)": 320
+        },
+        "fileOwnSourceClipCountPerFile": {
+          "1": 513
+        },
+        "selectedMasterDirectTargetSourceClipCountPerFile": {
+          "1": 513
+        },
+        "durationComparisons": {
+          "CDCI:fileGroup": {
+            "exact": 187,
+            "differentBeyondOneComparedEditUnit": 6
+          },
+          "CDCI:selectedMasterGroup": {
+            "exact": 187,
+            "differentBeyondOneComparedEditUnit": 6
+          },
+          "CDCI:fileOwnSourceClip": {
+            "exact": 187,
+            "differentBeyondOneComparedEditUnit": 6
+          },
+          "CDCI:selectedMasterDirectSourceClip": {
+            "exact": 187,
+            "differentBeyondOneComparedEditUnit": 6
+          },
+          "PCMA:fileGroup": {
+            "exact": 320
+          },
+          "PCMA:selectedMasterGroup": {
+            "exact": 320
+          },
+          "PCMA:fileOwnSourceClip": {
+            "exact": 320
+          },
+          "PCMA:selectedMasterDirectSourceClip": {
+            "exact": 320
+          }
+        },
+        "durationDifferenceBounds": {
+          "CDCI:fileGroup": {
+            "observations": 6,
+            "minimum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "positive": 6,
+            "negative": 0,
+            "zero": 0
+          },
+          "CDCI:selectedMasterGroup": {
+            "observations": 6,
+            "minimum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "positive": 6,
+            "negative": 0,
+            "zero": 0
+          },
+          "CDCI:fileOwnSourceClip": {
+            "observations": 6,
+            "minimum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "positive": 6,
+            "negative": 0,
+            "zero": 0
+          },
+          "CDCI:selectedMasterDirectSourceClip": {
+            "observations": 6,
+            "minimum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "positive": 6,
+            "negative": 0,
+            "zero": 0
+          }
+        },
+        "descriptorCountAndSecondsBounds": {
+          "CDCI:descriptorSeconds": {
+            "minimum": {
+              "numerator": 1,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 1687,
+              "denominator": 25
+            }
+          },
+          "CDCI:descriptorCount": {
+            "minimum": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "maximum": {
+              "numerator": 1687,
+              "denominator": 1
+            }
+          },
+          "PCMA:descriptorSeconds": {
+            "minimum": {
+              "numerator": 1,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 71,
+              "denominator": 1
+            }
+          },
+          "PCMA:descriptorCount": {
+            "minimum": {
+              "numerator": 1920,
+              "denominator": 1
+            },
+            "maximum": {
+              "numerator": 3408000,
+              "denominator": 1
+            }
+          }
+        },
+        "allRawDurationPropertyOccurrences": {
+          "OMFI:CPNT:EditRate": 18598,
+          "OMFI:CLIP:Length": 12724,
+          "OMFI:TRKG:GroupLength": 2331,
+          "OMFI:MDFL:SampleRate": 1036,
+          "OMFI:MDFL:Length": 1036,
+          "OMFI:MDAU:NumChannels": 640,
+          "OMFI:MDAU:BitsPerSample": 640,
+          "OMFI:PCMA:AudioSamplingRate": 640
+        },
+        "amdSourceLengthAttributeOccurrencesEntireMdb": 0,
+        "summaryPropertyPresenceEntireMdb": {},
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 1359,
+          "omfi:ObjRef:observed": 1582
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "cacheSha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "countsPerPmrFile": {
+          "pmrRows": 463,
+          "descriptorClass_CDCI": 205,
+          "rowsWithNonnegativeDescriptorCountAndPositiveRate": 463,
+          "rowsOneOwnSourceClipAndFileGroupDurationEqual": 463,
+          "rowsOneMasterTargetSourceClipAndFileGroupDurationEqual": 463,
+          "rowsMasterGroupEqualsFileGroupDuration": 423,
+          "rowsMasterGroupDiffersFileGroupDuration": 40,
+          "rowsDescriptorDiffersFileGroupWithDescriptorCountOne": 4,
+          "rowsMasterGroupDiffersDescriptorWhileFileGroupEqualsDescriptor": 40,
+          "rowsFileGroupDiffersDescriptorWhileMasterGroupEqualsDescriptor": 0,
+          "descriptorClass_PCMA": 258,
+          "pcmaBaseRateEqualsAudioSamplingRate": 258,
+          "pcmaBaseRateDiffersAudioSamplingRate": 0
+        },
+        "distinctDescriptorObjects": 463,
+        "distinctSelectedMasterRecords": 293,
+        "descriptorClasses": {
+          "CDCI": {
+            "rows": 205,
+            "descriptorDurationAvailable": 205
+          },
+          "PCMA": {
+            "rows": 258,
+            "descriptorDurationAvailable": 258
+          }
+        },
+        "fieldStatesPerFile": {
+          "CDCI:descriptorLength": {
+            "positiveCount": 205
+          },
+          "CDCI:descriptorRate": {
+            "positiveRate": 205
+          },
+          "CDCI:fileGroupLength": {
+            "positiveCount": 205
+          },
+          "CDCI:fileEditRate": {
+            "positiveRate": 205
+          },
+          "CDCI:masterGroupLength": {
+            "positiveCount": 205
+          },
+          "CDCI:masterEditRate": {
+            "positiveRate": 205
+          },
+          "CDCI:audioSamplingRate": {
+            "absent": 205
+          },
+          "CDCI:channels": {
+            "absent": 205
+          },
+          "CDCI:bitsPerSample": {
+            "absent": 205
+          },
+          "PCMA:descriptorLength": {
+            "positiveCount": 258
+          },
+          "PCMA:descriptorRate": {
+            "positiveRate": 258
+          },
+          "PCMA:fileGroupLength": {
+            "positiveCount": 258
+          },
+          "PCMA:fileEditRate": {
+            "positiveRate": 258
+          },
+          "PCMA:masterGroupLength": {
+            "positiveCount": 258
+          },
+          "PCMA:masterEditRate": {
+            "positiveRate": 258
+          },
+          "PCMA:audioSamplingRate": {
+            "positiveRate": 258
+          },
+          "PCMA:channels": {
+            "positiveCount": 258
+          },
+          "PCMA:bitsPerSample": {
+            "positiveCount": 258
+          }
+        },
+        "typedFieldsPerFile": {
+          "('CDCI', 'descriptorLength', 'omfi:Long', 4)": 205,
+          "('CDCI', 'descriptorRate', 'omfi:ExactEditRate', 8)": 205,
+          "('CDCI', 'fileGroupLength', 'omfi:Long', 4)": 205,
+          "('CDCI', 'fileEditRate', 'omfi:ExactEditRate', 8)": 205,
+          "('CDCI', 'masterGroupLength', 'omfi:Long', 4)": 205,
+          "('CDCI', 'masterEditRate', 'omfi:ExactEditRate', 8)": 205,
+          "('PCMA', 'descriptorLength', 'omfi:Long', 4)": 258,
+          "('PCMA', 'descriptorRate', 'omfi:ExactEditRate', 8)": 258,
+          "('PCMA', 'fileGroupLength', 'omfi:Long', 4)": 258,
+          "('PCMA', 'fileEditRate', 'omfi:ExactEditRate', 8)": 258,
+          "('PCMA', 'masterGroupLength', 'omfi:Long', 4)": 258,
+          "('PCMA', 'masterEditRate', 'omfi:ExactEditRate', 8)": 258,
+          "('PCMA', 'audioSamplingRate', 'omfi:ExactEditRate', 8)": 258,
+          "('PCMA', 'channels', 'omfi:Ushort', 2)": 258,
+          "('PCMA', 'bitsPerSample', 'omfi:Ushort', 2)": 258
+        },
+        "descriptorSampleRatesPerFile": {
+          "('CDCI', 25, 1)": 205,
+          "('PCMA', 48000, 1)": 258
+        },
+        "audioSamplingRatesPerFile": {
+          "('PCMA', 48000, 1)": 258
+        },
+        "fileEditRatesPerFile": {
+          "('CDCI', 25, 1)": 205,
+          "('PCMA', 25, 1)": 258
+        },
+        "masterEditRatesPerFile": {
+          "('CDCI', 25, 1)": 205,
+          "('PCMA', 25, 1)": 258
+        },
+        "audioChannelCountsPerFile": {
+          "('PCMA', 1)": 258
+        },
+        "fileOwnSourceClipCountPerFile": {
+          "1": 463
+        },
+        "selectedMasterDirectTargetSourceClipCountPerFile": {
+          "1": 463
+        },
+        "durationComparisons": {
+          "CDCI:fileGroup": {
+            "exact": 201,
+            "differentBeyondOneComparedEditUnit": 4
+          },
+          "CDCI:selectedMasterGroup": {
+            "exact": 167,
+            "differentBeyondOneComparedEditUnit": 38
+          },
+          "CDCI:fileOwnSourceClip": {
+            "exact": 201,
+            "differentBeyondOneComparedEditUnit": 4
+          },
+          "CDCI:selectedMasterDirectSourceClip": {
+            "exact": 201,
+            "differentBeyondOneComparedEditUnit": 4
+          },
+          "PCMA:fileGroup": {
+            "exact": 258
+          },
+          "PCMA:selectedMasterGroup": {
+            "exact": 252,
+            "differentBeyondOneComparedEditUnit": 6
+          },
+          "PCMA:fileOwnSourceClip": {
+            "exact": 258
+          },
+          "PCMA:selectedMasterDirectSourceClip": {
+            "exact": 258
+          }
+        },
+        "durationDifferenceBounds": {
+          "CDCI:selectedMasterGroup": {
+            "observations": 38,
+            "minimum": {
+              "numerator": 4,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "positive": 38,
+            "negative": 0,
+            "zero": 0
+          },
+          "PCMA:selectedMasterGroup": {
+            "observations": 6,
+            "minimum": {
+              "numerator": 88,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 363,
+              "denominator": 25
+            },
+            "positive": 6,
+            "negative": 0,
+            "zero": 0
+          },
+          "CDCI:fileGroup": {
+            "observations": 4,
+            "minimum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "positive": 4,
+            "negative": 0,
+            "zero": 0
+          },
+          "CDCI:fileOwnSourceClip": {
+            "observations": 4,
+            "minimum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "positive": 4,
+            "negative": 0,
+            "zero": 0
+          },
+          "CDCI:selectedMasterDirectSourceClip": {
+            "observations": 4,
+            "minimum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 2999,
+              "denominator": 25
+            },
+            "positive": 4,
+            "negative": 0,
+            "zero": 0
+          }
+        },
+        "descriptorCountAndSecondsBounds": {
+          "CDCI:descriptorSeconds": {
+            "minimum": {
+              "numerator": 1,
+              "denominator": 25
+            },
+            "maximum": {
+              "numerator": 1438,
+              "denominator": 25
+            }
+          },
+          "CDCI:descriptorCount": {
+            "minimum": {
+              "numerator": 1,
+              "denominator": 1
+            },
+            "maximum": {
+              "numerator": 1438,
+              "denominator": 1
+            }
+          },
+          "PCMA:descriptorSeconds": {
+            "minimum": {
+              "numerator": 4,
+              "denominator": 5
+            },
+            "maximum": {
+              "numerator": 1756,
+              "denominator": 25
+            }
+          },
+          "PCMA:descriptorCount": {
+            "minimum": {
+              "numerator": 38400,
+              "denominator": 1
+            },
+            "maximum": {
+              "numerator": 3371520,
+              "denominator": 1
+            }
+          }
+        },
+        "allRawDurationPropertyOccurrences": {
+          "OMFI:CPNT:EditRate": 17373,
+          "OMFI:CLIP:Length": 11999,
+          "OMFI:TRKG:GroupLength": 2024,
+          "OMFI:MDFL:SampleRate": 934,
+          "OMFI:MDFL:Length": 934,
+          "OMFI:MDAU:NumChannels": 516,
+          "OMFI:MDAU:BitsPerSample": 516,
+          "OMFI:PCMA:AudioSamplingRate": 516
+        },
+        "amdSourceLengthAttributeOccurrencesEntireMdb": 0,
+        "summaryPropertyPresenceEntireMdb": {},
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 1211,
+          "omfi:ObjRef:observed": 1393
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "cacheSha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "countsPerPmrFile": {
+          "pmrRows": 359,
+          "descriptorClass_CDCI": 111,
+          "rowsWithNonnegativeDescriptorCountAndPositiveRate": 359,
+          "rowsOneOwnSourceClipAndFileGroupDurationEqual": 359,
+          "rowsOneMasterTargetSourceClipAndFileGroupDurationEqual": 228,
+          "rowsMasterGroupEqualsFileGroupDuration": 228,
+          "rowsMasterGroupDiffersFileGroupDuration": 131,
+          "rowsDescriptorDiffersFileGroupWithDescriptorCountOne": 0,
+          "rowsMasterGroupDiffersDescriptorWhileFileGroupEqualsDescriptor": 0,
+          "rowsFileGroupDiffersDescriptorWhileMasterGroupEqualsDescriptor": 0,
+          "descriptorClass_PCMA": 240,
+          "pcmaBaseRateEqualsAudioSamplingRate": 240,
+          "pcmaBaseRateDiffersAudioSamplingRate": 0,
+          "descriptorClass_MPGI": 8
+        },
+        "distinctDescriptorObjects": 359,
+        "distinctSelectedMasterRecords": 124,
+        "descriptorClasses": {
+          "CDCI": {
+            "rows": 111,
+            "descriptorDurationAvailable": 111
+          },
+          "PCMA": {
+            "rows": 240,
+            "descriptorDurationAvailable": 240
+          },
+          "MPGI": {
+            "rows": 8,
+            "descriptorDurationAvailable": 8
+          }
+        },
+        "fieldStatesPerFile": {
+          "CDCI:descriptorLength": {
+            "positiveCount": 111
+          },
+          "CDCI:descriptorRate": {
+            "positiveRate": 111
+          },
+          "CDCI:fileGroupLength": {
+            "positiveCount": 111
+          },
+          "CDCI:fileEditRate": {
+            "positiveRate": 111
+          },
+          "CDCI:masterGroupLength": {
+            "positiveCount": 111
+          },
+          "CDCI:masterEditRate": {
+            "positiveRate": 111
+          },
+          "CDCI:audioSamplingRate": {
+            "absent": 111
+          },
+          "CDCI:channels": {
+            "absent": 111
+          },
+          "CDCI:bitsPerSample": {
+            "absent": 111
+          },
+          "PCMA:descriptorLength": {
+            "positiveCount": 240
+          },
+          "PCMA:descriptorRate": {
+            "positiveRate": 240
+          },
+          "PCMA:fileGroupLength": {
+            "positiveCount": 240
+          },
+          "PCMA:fileEditRate": {
+            "positiveRate": 240
+          },
+          "PCMA:masterGroupLength": {
+            "positiveCount": 240
+          },
+          "PCMA:masterEditRate": {
+            "positiveRate": 240
+          },
+          "PCMA:audioSamplingRate": {
+            "positiveRate": 240
+          },
+          "PCMA:channels": {
+            "positiveCount": 240
+          },
+          "PCMA:bitsPerSample": {
+            "positiveCount": 240
+          },
+          "MPGI:descriptorLength": {
+            "positiveCount": 8
+          },
+          "MPGI:descriptorRate": {
+            "positiveRate": 8
+          },
+          "MPGI:fileGroupLength": {
+            "positiveCount": 8
+          },
+          "MPGI:fileEditRate": {
+            "positiveRate": 8
+          },
+          "MPGI:masterGroupLength": {
+            "positiveCount": 8
+          },
+          "MPGI:masterEditRate": {
+            "positiveRate": 8
+          },
+          "MPGI:audioSamplingRate": {
+            "absent": 8
+          },
+          "MPGI:channels": {
+            "absent": 8
+          },
+          "MPGI:bitsPerSample": {
+            "absent": 8
+          }
+        },
+        "typedFieldsPerFile": {
+          "('CDCI', 'descriptorLength', 'omfi:Long', 4)": 111,
+          "('CDCI', 'descriptorRate', 'omfi:ExactEditRate', 8)": 111,
+          "('CDCI', 'fileGroupLength', 'omfi:Long', 4)": 111,
+          "('CDCI', 'fileEditRate', 'omfi:ExactEditRate', 8)": 111,
+          "('CDCI', 'masterGroupLength', 'omfi:Long', 4)": 111,
+          "('CDCI', 'masterEditRate', 'omfi:ExactEditRate', 8)": 111,
+          "('PCMA', 'descriptorLength', 'omfi:Long', 4)": 240,
+          "('PCMA', 'descriptorRate', 'omfi:ExactEditRate', 8)": 240,
+          "('PCMA', 'fileGroupLength', 'omfi:Long', 4)": 240,
+          "('PCMA', 'fileEditRate', 'omfi:ExactEditRate', 8)": 240,
+          "('PCMA', 'masterGroupLength', 'omfi:Long', 4)": 240,
+          "('PCMA', 'masterEditRate', 'omfi:ExactEditRate', 8)": 240,
+          "('PCMA', 'audioSamplingRate', 'omfi:ExactEditRate', 8)": 240,
+          "('PCMA', 'channels', 'omfi:Ushort', 2)": 240,
+          "('PCMA', 'bitsPerSample', 'omfi:Ushort', 2)": 240,
+          "('MPGI', 'descriptorLength', 'omfi:Long', 4)": 8,
+          "('MPGI', 'descriptorRate', 'omfi:ExactEditRate', 8)": 8,
+          "('MPGI', 'fileGroupLength', 'omfi:Long', 4)": 8,
+          "('MPGI', 'fileEditRate', 'omfi:ExactEditRate', 8)": 8,
+          "('MPGI', 'masterGroupLength', 'omfi:Long', 4)": 8,
+          "('MPGI', 'masterEditRate', 'omfi:ExactEditRate', 8)": 8
+        },
+        "descriptorSampleRatesPerFile": {
+          "('CDCI', 2997, 100)": 63,
+          "('PCMA', 48000, 1)": 240,
+          "('CDCI', 23976, 1000)": 42,
+          "('CDCI', 25, 1)": 6,
+          "('MPGI', 2997, 100)": 4,
+          "('MPGI', 23976, 1000)": 4
+        },
+        "audioSamplingRatesPerFile": {
+          "('PCMA', 48000, 1)": 240
+        },
+        "fileEditRatesPerFile": {
+          "('CDCI', 2997, 100)": 63,
+          "('PCMA', 23976, 1000)": 94,
+          "('CDCI', 23976, 1000)": 42,
+          "('PCMA', 2997, 100)": 133,
+          "('CDCI', 25, 1)": 6,
+          "('PCMA', 25, 1)": 13,
+          "('MPGI', 2997, 100)": 4,
+          "('MPGI', 23976, 1000)": 4
+        },
+        "masterEditRatesPerFile": {
+          "('CDCI', 2997, 100)": 63,
+          "('PCMA', 23976, 1000)": 94,
+          "('CDCI', 23976, 1000)": 42,
+          "('PCMA', 2997, 100)": 133,
+          "('CDCI', 25, 1)": 6,
+          "('PCMA', 25, 1)": 13,
+          "('MPGI', 2997, 100)": 4,
+          "('MPGI', 23976, 1000)": 4
+        },
+        "audioChannelCountsPerFile": {
+          "('PCMA', 1)": 240
+        },
+        "fileOwnSourceClipCountPerFile": {
+          "1": 359
+        },
+        "selectedMasterDirectTargetSourceClipCountPerFile": {
+          "1": 359
+        },
+        "durationComparisons": {
+          "CDCI:fileGroup": {
+            "exact": 111
+          },
+          "CDCI:selectedMasterGroup": {
+            "exact": 111
+          },
+          "CDCI:fileOwnSourceClip": {
+            "exact": 111
+          },
+          "CDCI:selectedMasterDirectSourceClip": {
+            "exact": 111
+          },
+          "PCMA:fileGroup": {
+            "differentWithinOneComparedEditUnit": 228,
+            "exact": 12
+          },
+          "PCMA:selectedMasterGroup": {
+            "differentWithinOneComparedEditUnit": 228,
+            "exact": 12
+          },
+          "PCMA:fileOwnSourceClip": {
+            "differentWithinOneComparedEditUnit": 228,
+            "exact": 12
+          },
+          "PCMA:selectedMasterDirectSourceClip": {
+            "differentWithinOneComparedEditUnit": 228,
+            "exact": 12
+          },
+          "MPGI:fileGroup": {
+            "exact": 8
+          },
+          "MPGI:selectedMasterGroup": {
+            "exact": 8
+          },
+          "MPGI:fileOwnSourceClip": {
+            "exact": 8
+          },
+          "MPGI:selectedMasterDirectSourceClip": {
+            "exact": 8
+          }
+        },
+        "durationDifferenceBounds": {
+          "PCMA:fileGroup": {
+            "observations": 228,
+            "minimum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "maximum": {
+              "numerator": 17,
+              "denominator": 555
+            },
+            "positive": 227,
+            "negative": 1,
+            "zero": 0
+          },
+          "PCMA:selectedMasterGroup": {
+            "observations": 228,
+            "minimum": {
+              "numerator": -41,
+              "denominator": 14985
+            },
+            "maximum": {
+              "numerator": 733,
+              "denominator": 23976000
+            },
+            "positive": 96,
+            "negative": 132,
+            "zero": 0
+          },
+          "PCMA:fileOwnSourceClip": {
+            "observations": 228,
+            "minimum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "maximum": {
+              "numerator": 17,
+              "denominator": 555
+            },
+            "positive": 227,
+            "negative": 1,
+            "zero": 0
+          },
+          "PCMA:selectedMasterDirectSourceClip": {
+            "observations": 228,
+            "minimum": {
+              "numerator": -41,
+              "denominator": 14985
+            },
+            "maximum": {
+              "numerator": 733,
+              "denominator": 23976000
+            },
+            "positive": 96,
+            "negative": 132,
+            "zero": 0
+          }
+        },
+        "descriptorCountAndSecondsBounds": {
+          "CDCI:descriptorSeconds": {
+            "minimum": {
+              "numerator": 91625,
+              "denominator": 2997
+            },
+            "maximum": {
+              "numerator": 1834000,
+              "denominator": 2997
+            }
+          },
+          "CDCI:descriptorCount": {
+            "minimum": {
+              "numerator": 733,
+              "denominator": 1
+            },
+            "maximum": {
+              "numerator": 18340,
+              "denominator": 1
+            }
+          },
+          "PCMA:descriptorSeconds": {
+            "minimum": {
+              "numerator": 733733,
+              "denominator": 24000
+            },
+            "maximum": {
+              "numerator": 1441441,
+              "denominator": 24000
+            }
+          },
+          "PCMA:descriptorCount": {
+            "minimum": {
+              "numerator": 1467466,
+              "denominator": 1
+            },
+            "maximum": {
+              "numerator": 2882882,
+              "denominator": 1
+            }
+          },
+          "MPGI:descriptorSeconds": {
+            "minimum": {
+              "numerator": 91625,
+              "denominator": 2997
+            },
+            "maximum": {
+              "numerator": 91700,
+              "denominator": 2997
+            }
+          },
+          "MPGI:descriptorCount": {
+            "minimum": {
+              "numerator": 733,
+              "denominator": 1
+            },
+            "maximum": {
+              "numerator": 917,
+              "denominator": 1
+            }
+          }
+        },
+        "allRawDurationPropertyOccurrences": {
+          "OMFI:CPNT:EditRate": 5794,
+          "OMFI:CLIP:Length": 3966,
+          "OMFI:TRKG:GroupLength": 625,
+          "OMFI:MDFL:SampleRate": 359,
+          "OMFI:MDFL:Length": 359,
+          "OMFI:MDAU:NumChannels": 240,
+          "OMFI:MDAU:BitsPerSample": 240,
+          "OMFI:PCMA:AudioSamplingRate": 240
+        },
+        "amdSourceLengthAttributeOccurrencesEntireMdb": 0,
+        "summaryPropertyPresenceEntireMdb": {},
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 1203,
+          "omfi:ObjRef:observed": 1078
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "cacheSha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "countsPerPmrFile": {
+          "pmrRows": 2,
+          "descriptorClass_WAVD": 1,
+          "rowsWithNonnegativeDescriptorCountAndPositiveRate": 2,
+          "rowsOneOwnSourceClipAndFileGroupDurationEqual": 2,
+          "rowsOneMasterTargetSourceClipAndFileGroupDurationEqual": 2,
+          "rowsMasterGroupEqualsFileGroupDuration": 2,
+          "rowsMasterGroupDiffersFileGroupDuration": 0,
+          "rowsDescriptorDiffersFileGroupWithDescriptorCountOne": 0,
+          "rowsMasterGroupDiffersDescriptorWhileFileGroupEqualsDescriptor": 0,
+          "rowsFileGroupDiffersDescriptorWhileMasterGroupEqualsDescriptor": 0,
+          "descriptorClass_AIFD": 1
+        },
+        "distinctDescriptorObjects": 2,
+        "distinctSelectedMasterRecords": 2,
+        "descriptorClasses": {
+          "WAVD": {
+            "rows": 1,
+            "descriptorDurationAvailable": 1
+          },
+          "AIFD": {
+            "rows": 1,
+            "descriptorDurationAvailable": 1
+          }
+        },
+        "fieldStatesPerFile": {
+          "WAVD:descriptorLength": {
+            "positiveCount": 1
+          },
+          "WAVD:descriptorRate": {
+            "positiveRate": 1
+          },
+          "WAVD:fileGroupLength": {
+            "positiveCount": 1
+          },
+          "WAVD:fileEditRate": {
+            "positiveRate": 1
+          },
+          "WAVD:masterGroupLength": {
+            "positiveCount": 1
+          },
+          "WAVD:masterEditRate": {
+            "positiveRate": 1
+          },
+          "WAVD:audioSamplingRate": {
+            "absent": 1
+          },
+          "WAVD:channels": {
+            "absent": 1
+          },
+          "WAVD:bitsPerSample": {
+            "absent": 1
+          },
+          "AIFD:descriptorLength": {
+            "positiveCount": 1
+          },
+          "AIFD:descriptorRate": {
+            "positiveRate": 1
+          },
+          "AIFD:fileGroupLength": {
+            "positiveCount": 1
+          },
+          "AIFD:fileEditRate": {
+            "positiveRate": 1
+          },
+          "AIFD:masterGroupLength": {
+            "positiveCount": 1
+          },
+          "AIFD:masterEditRate": {
+            "positiveRate": 1
+          },
+          "AIFD:audioSamplingRate": {
+            "absent": 1
+          },
+          "AIFD:channels": {
+            "absent": 1
+          },
+          "AIFD:bitsPerSample": {
+            "absent": 1
+          }
+        },
+        "typedFieldsPerFile": {
+          "('WAVD', 'descriptorLength', 'omfi:Long', 4)": 1,
+          "('WAVD', 'descriptorRate', 'omfi:ExactEditRate', 8)": 1,
+          "('WAVD', 'fileGroupLength', 'omfi:Long', 4)": 1,
+          "('WAVD', 'fileEditRate', 'omfi:ExactEditRate', 8)": 1,
+          "('WAVD', 'masterGroupLength', 'omfi:Long', 4)": 1,
+          "('WAVD', 'masterEditRate', 'omfi:ExactEditRate', 8)": 1,
+          "('AIFD', 'descriptorLength', 'omfi:Long', 4)": 1,
+          "('AIFD', 'descriptorRate', 'omfi:ExactEditRate', 8)": 1,
+          "('AIFD', 'fileGroupLength', 'omfi:Long', 4)": 1,
+          "('AIFD', 'fileEditRate', 'omfi:ExactEditRate', 8)": 1,
+          "('AIFD', 'masterGroupLength', 'omfi:Long', 4)": 1,
+          "('AIFD', 'masterEditRate', 'omfi:ExactEditRate', 8)": 1
+        },
+        "descriptorSampleRatesPerFile": {
+          "('WAVD', 48000, 1)": 1,
+          "('AIFD', 48000, 1)": 1
+        },
+        "audioSamplingRatesPerFile": {},
+        "fileEditRatesPerFile": {
+          "('WAVD', 25, 1)": 1,
+          "('AIFD', 25, 1)": 1
+        },
+        "masterEditRatesPerFile": {
+          "('WAVD', 25, 1)": 1,
+          "('AIFD', 25, 1)": 1
+        },
+        "audioChannelCountsPerFile": {},
+        "fileOwnSourceClipCountPerFile": {
+          "1": 2
+        },
+        "selectedMasterDirectTargetSourceClipCountPerFile": {
+          "1": 2
+        },
+        "durationComparisons": {
+          "WAVD:fileGroup": {
+            "differentWithinOneComparedEditUnit": 1
+          },
+          "WAVD:selectedMasterGroup": {
+            "differentWithinOneComparedEditUnit": 1
+          },
+          "WAVD:fileOwnSourceClip": {
+            "differentWithinOneComparedEditUnit": 1
+          },
+          "WAVD:selectedMasterDirectSourceClip": {
+            "differentWithinOneComparedEditUnit": 1
+          },
+          "AIFD:fileGroup": {
+            "differentWithinOneComparedEditUnit": 1
+          },
+          "AIFD:selectedMasterGroup": {
+            "differentWithinOneComparedEditUnit": 1
+          },
+          "AIFD:fileOwnSourceClip": {
+            "differentWithinOneComparedEditUnit": 1
+          },
+          "AIFD:selectedMasterDirectSourceClip": {
+            "differentWithinOneComparedEditUnit": 1
+          }
+        },
+        "durationDifferenceBounds": {
+          "WAVD:fileGroup": {
+            "observations": 1,
+            "minimum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "maximum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "positive": 0,
+            "negative": 1,
+            "zero": 0
+          },
+          "WAVD:selectedMasterGroup": {
+            "observations": 1,
+            "minimum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "maximum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "positive": 0,
+            "negative": 1,
+            "zero": 0
+          },
+          "WAVD:fileOwnSourceClip": {
+            "observations": 1,
+            "minimum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "maximum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "positive": 0,
+            "negative": 1,
+            "zero": 0
+          },
+          "WAVD:selectedMasterDirectSourceClip": {
+            "observations": 1,
+            "minimum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "maximum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "positive": 0,
+            "negative": 1,
+            "zero": 0
+          },
+          "AIFD:fileGroup": {
+            "observations": 1,
+            "minimum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "maximum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "positive": 0,
+            "negative": 1,
+            "zero": 0
+          },
+          "AIFD:selectedMasterGroup": {
+            "observations": 1,
+            "minimum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "maximum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "positive": 0,
+            "negative": 1,
+            "zero": 0
+          },
+          "AIFD:fileOwnSourceClip": {
+            "observations": 1,
+            "minimum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "maximum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "positive": 0,
+            "negative": 1,
+            "zero": 0
+          },
+          "AIFD:selectedMasterDirectSourceClip": {
+            "observations": 1,
+            "minimum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "maximum": {
+              "numerator": -1,
+              "denominator": 24000
+            },
+            "positive": 0,
+            "negative": 1,
+            "zero": 0
+          }
+        },
+        "descriptorCountAndSecondsBounds": {
+          "WAVD:descriptorSeconds": {
+            "minimum": {
+              "numerator": 1440001,
+              "denominator": 24000
+            },
+            "maximum": {
+              "numerator": 1440001,
+              "denominator": 24000
+            }
+          },
+          "WAVD:descriptorCount": {
+            "minimum": {
+              "numerator": 2880002,
+              "denominator": 1
+            },
+            "maximum": {
+              "numerator": 2880002,
+              "denominator": 1
+            }
+          },
+          "AIFD:descriptorSeconds": {
+            "minimum": {
+              "numerator": 1440001,
+              "denominator": 24000
+            },
+            "maximum": {
+              "numerator": 1440001,
+              "denominator": 24000
+            }
+          },
+          "AIFD:descriptorCount": {
+            "minimum": {
+              "numerator": 2880002,
+              "denominator": 1
+            },
+            "maximum": {
+              "numerator": 2880002,
+              "denominator": 1
+            }
+          }
+        },
+        "allRawDurationPropertyOccurrences": {
+          "OMFI:CPNT:EditRate": 21,
+          "OMFI:CLIP:Length": 12,
+          "OMFI:TRKG:GroupLength": 9,
+          "OMFI:MDFL:SampleRate": 3,
+          "OMFI:MDFL:Length": 3
+        },
+        "amdSourceLengthAttributeOccurrencesEntireMdb": 0,
+        "summaryPropertyPresenceEntireMdb": {
+          "('OMFI:WAVD:Summary', 'omfi:VarLenBytes', 4152)": 2,
+          "('OMFI:AIFD:Summary', 'omfi:VarLenBytes', 726)": 1
+        },
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 5,
+          "omfi:ObjRef:observed": 6
+        }
+      }
+    ],
+    "curationScope": "All per-database counts, types, rates and bounds retained. Replace bulk repeated raw examples with six representative owner-qualified examples; original full findings/probe are hashed outside repository."
+  },
+  "representativeActualExamples": [
+    {
+      "databasePath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "databaseSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "comparisonKey": "RGBA:fileGroup",
+      "example": {
+        "fileMobId": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64",
+        "masterMobId": "060a2b340101010501010f1013000000d97717225586059099ba34363bcdaf64",
+        "fileObject": 93780,
+        "masterObject": 93810,
+        "descriptorObject": 93779,
+        "descriptorClass": "RGBA",
+        "descriptor": {
+          "ownerObject": 93779,
+          "count": {
+            "state": "positiveCount",
+            "property": "OMFI:MDFL:Length",
+            "rows": [
+              {
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    5128732,
+                    4
+                  ]
+                ],
+                "hex": "01000000"
+              }
+            ],
+            "rawValue": 1
+          },
+          "rate": {
+            "state": "positiveRate",
+            "property": "OMFI:MDFL:SampleRate",
+            "rows": [
+              {
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    1394336,
+                    8
+                  ]
+                ],
+                "hex": "1800000001000000"
+              }
+            ],
+            "rawValue": [
+              24,
+              1
+            ],
+            "reducedRate": {
+              "numerator": 24,
+              "denominator": 1
+            }
+          },
+          "exactSeconds": {
+            "numerator": 1,
+            "denominator": 24
+          }
+        },
+        "comparedOwnerRole": "fileGroup",
+        "compared": {
+          "ownerObject": 93780,
+          "count": {
+            "state": "positiveCount",
+            "property": "OMFI:TRKG:GroupLength",
+            "rows": [
+              {
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    5130604,
+                    4
+                  ]
+                ],
+                "hex": "400b0000"
+              }
+            ],
+            "rawValue": 2880
+          },
+          "rate": {
+            "state": "positiveRate",
+            "property": "OMFI:CPNT:EditRate",
+            "rows": [
+              {
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    1394423,
+                    8
+                  ]
+                ],
+                "hex": "1800000001000000"
+              }
+            ],
+            "rawValue": [
+              24,
+              1
+            ],
+            "reducedRate": {
+              "numerator": 24,
+              "denominator": 1
+            }
+          },
+          "exactSeconds": {
+            "numerator": 120,
+            "denominator": 1
+          }
+        },
+        "deltaSecondsComparedMinusDescriptor": {
+          "numerator": 2879,
+          "denominator": 24
+        }
+      }
+    },
+    {
+      "databasePath": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "databaseSha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "comparisonKey": "CDCI:fileOwnSourceClip",
+      "example": {
+        "fileMobId": "060a2b340101010501010f10130000009f16621573110696083a7c57583610fa",
+        "masterMobId": "060a2b340101010501010f10130000007b6c2b1573110696dc687c57583610fa",
+        "fileObject": 182938,
+        "masterObject": 174035,
+        "descriptorObject": 182937,
+        "descriptorClass": "CDCI",
+        "descriptor": {
+          "ownerObject": 182937,
+          "count": {
+            "state": "positiveCount",
+            "property": "OMFI:MDFL:Length",
+            "rows": [
+              {
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    19572948,
+                    4
+                  ]
+                ],
+                "hex": "01000000"
+              }
+            ],
+            "rawValue": 1
+          },
+          "rate": {
+            "state": "positiveRate",
+            "property": "OMFI:MDFL:SampleRate",
+            "rows": [
+              {
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    3182520,
+                    8
+                  ]
+                ],
+                "hex": "1900000001000000"
+              }
+            ],
+            "rawValue": [
+              25,
+              1
+            ],
+            "reducedRate": {
+              "numerator": 25,
+              "denominator": 1
+            }
+          },
+          "exactSeconds": {
+            "numerator": 1,
+            "denominator": 25
+          }
+        },
+        "comparedOwnerRole": "fileOwnSourceClip",
+        "compared": {
+          "ownerObject": 182931,
+          "count": {
+            "state": "positiveCount",
+            "property": "OMFI:CLIP:Length",
+            "rows": [
+              {
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    19571796,
+                    4
+                  ]
+                ],
+                "hex": "b80b0000"
+              }
+            ],
+            "rawValue": 3000
+          },
+          "rate": {
+            "state": "positiveRate",
+            "property": "OMFI:CPNT:EditRate",
+            "rows": [
+              {
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    3182173,
+                    8
+                  ]
+                ],
+                "hex": "1900000001000000"
+              }
+            ],
+            "rawValue": [
+              25,
+              1
+            ],
+            "reducedRate": {
+              "numerator": 25,
+              "denominator": 1
+            }
+          },
+          "exactSeconds": {
+            "numerator": 120,
+            "denominator": 1
+          }
+        },
+        "deltaSecondsComparedMinusDescriptor": {
+          "numerator": 2999,
+          "denominator": 25
+        }
+      }
+    },
+    {
+      "databasePath": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "databaseSha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "comparisonKey": "CDCI:selectedMasterGroup",
+      "example": {
+        "fileMobId": "060a2b340101010501010f1013000000a3139a0b73110696c4af7c57583610fa",
+        "masterMobId": "060a2b340101010501010f10130000006add940b73110696d72c7c57583610fa",
+        "fileObject": 148422,
+        "masterObject": 138436,
+        "descriptorObject": 148421,
+        "descriptorClass": "CDCI",
+        "descriptor": {
+          "ownerObject": 148421,
+          "count": {
+            "state": "positiveCount",
+            "property": "OMFI:MDFL:Length",
+            "rows": [
+              {
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    13740804,
+                    4
+                  ]
+                ],
+                "hex": "40010000"
+              }
+            ],
+            "rawValue": 320
+          },
+          "rate": {
+            "state": "positiveRate",
+            "property": "OMFI:MDFL:SampleRate",
+            "rows": [
+              {
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    2230126,
+                    8
+                  ]
+                ],
+                "hex": "1900000001000000"
+              }
+            ],
+            "rawValue": [
+              25,
+              1
+            ],
+            "reducedRate": {
+              "numerator": 25,
+              "denominator": 1
+            }
+          },
+          "exactSeconds": {
+            "numerator": 64,
+            "denominator": 5
+          }
+        },
+        "comparedOwnerRole": "selectedMasterGroup",
+        "compared": {
+          "ownerObject": 138436,
+          "count": {
+            "state": "positiveCount",
+            "property": "OMFI:TRKG:GroupLength",
+            "rows": [
+              {
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    12510060,
+                    4
+                  ]
+                ],
+                "hex": "c1010000"
+              }
+            ],
+            "rawValue": 449
+          },
+          "rate": {
+            "state": "positiveRate",
+            "property": "OMFI:CPNT:EditRate",
+            "rows": [
+              {
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    1911300,
+                    8
+                  ]
+                ],
+                "hex": "1900000001000000"
+              }
+            ],
+            "rawValue": [
+              25,
+              1
+            ],
+            "reducedRate": {
+              "numerator": 25,
+              "denominator": 1
+            }
+          },
+          "exactSeconds": {
+            "numerator": 449,
+            "denominator": 25
+          }
+        },
+        "deltaSecondsComparedMinusDescriptor": {
+          "numerator": 129,
+          "denominator": 25
+        }
+      }
+    },
+    {
+      "databasePath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "databaseSha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "comparisonKey": "PCMA:fileGroup",
+      "example": {
+        "fileMobId": "060a2b340101010501010f10130000007b9161ce601206909ffb46fc807fda72",
+        "masterMobId": "060a2b340101010501010f10130000006a9161ce60120690aab246fc807fda72",
+        "fileObject": 87722,
+        "masterObject": 87534,
+        "descriptorObject": 87721,
+        "descriptorClass": "PCMA",
+        "descriptor": {
+          "ownerObject": 87721,
+          "count": {
+            "state": "positiveCount",
+            "property": "OMFI:MDFL:Length",
+            "rows": [
+              {
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    3611996,
+                    4
+                  ]
+                ],
+                "hex": "4a641600"
+              }
+            ],
+            "rawValue": 1467466
+          },
+          "rate": {
+            "state": "positiveRate",
+            "property": "OMFI:MDFL:SampleRate",
+            "rows": [
+              {
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    534353,
+                    8
+                  ]
+                ],
+                "hex": "80bb000001000000"
+              }
+            ],
+            "rawValue": [
+              48000,
+              1
+            ],
+            "reducedRate": {
+              "numerator": 48000,
+              "denominator": 1
+            }
+          },
+          "exactSeconds": {
+            "numerator": 733733,
+            "denominator": 24000
+          }
+        },
+        "comparedOwnerRole": "fileGroup",
+        "compared": {
+          "ownerObject": 87722,
+          "count": {
+            "state": "positiveCount",
+            "property": "OMFI:TRKG:GroupLength",
+            "rows": [
+              {
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    3612788,
+                    4
+                  ]
+                ],
+                "hex": "dd020000"
+              }
+            ],
+            "rawValue": 733
+          },
+          "rate": {
+            "state": "positiveRate",
+            "property": "OMFI:CPNT:EditRate",
+            "rows": [
+              {
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    534377,
+                    8
+                  ]
+                ],
+                "hex": "a85d0000e8030000"
+              }
+            ],
+            "rawValue": [
+              23976,
+              1000
+            ],
+            "reducedRate": {
+              "numerator": 2997,
+              "denominator": 125
+            }
+          },
+          "exactSeconds": {
+            "numerator": 91625,
+            "denominator": 2997
+          }
+        },
+        "deltaSecondsComparedMinusDescriptor": {
+          "numerator": 733,
+          "denominator": 23976000
+        }
+      }
+    },
+    {
+      "databasePath": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "databaseSha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "comparisonKey": "WAVD:fileGroup",
+      "example": {
+        "fileMobId": "060a2b340101010101010f00130000007429976a70397047060e2b347f7f2a80",
+        "masterMobId": "060a2b340101010101010f00130000007429976a4e397047060e2b347f7f2a80",
+        "fileObject": 68071,
+        "masterObject": 68062,
+        "descriptorObject": 68070,
+        "descriptorClass": "WAVD",
+        "descriptor": {
+          "ownerObject": 68070,
+          "count": {
+            "state": "positiveCount",
+            "property": "OMFI:MDFL:Length",
+            "rows": [
+              {
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    52700,
+                    4
+                  ]
+                ],
+                "hex": "02f22b00"
+              }
+            ],
+            "rawValue": 2880002
+          },
+          "rate": {
+            "state": "positiveRate",
+            "property": "OMFI:MDFL:SampleRate",
+            "rows": [
+              {
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    5094,
+                    8
+                  ]
+                ],
+                "hex": "80bb000001000000"
+              }
+            ],
+            "rawValue": [
+              48000,
+              1
+            ],
+            "reducedRate": {
+              "numerator": 48000,
+              "denominator": 1
+            }
+          },
+          "exactSeconds": {
+            "numerator": 1440001,
+            "denominator": 24000
+          }
+        },
+        "comparedOwnerRole": "fileGroup",
+        "compared": {
+          "ownerObject": 68071,
+          "count": {
+            "state": "positiveCount",
+            "property": "OMFI:TRKG:GroupLength",
+            "rows": [
+              {
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    53012,
+                    4
+                  ]
+                ],
+                "hex": "dc050000"
+              }
+            ],
+            "rawValue": 1500
+          },
+          "rate": {
+            "state": "positiveRate",
+            "property": "OMFI:CPNT:EditRate",
+            "rows": [
+              {
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    9254,
+                    8
+                  ]
+                ],
+                "hex": "1900000001000000"
+              }
+            ],
+            "rawValue": [
+              25,
+              1
+            ],
+            "reducedRate": {
+              "numerator": 25,
+              "denominator": 1
+            }
+          },
+          "exactSeconds": {
+            "numerator": 60,
+            "denominator": 1
+          }
+        },
+        "deltaSecondsComparedMinusDescriptor": {
+          "numerator": -1,
+          "denominator": 24000
+        }
+      }
+    },
+    {
+      "databasePath": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "databaseSha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "comparisonKey": "AIFD:fileGroup",
+      "example": {
+        "fileMobId": "060a2b340101010101010f00130000009729976a3ec57047060e2b347f7f2a80",
+        "masterMobId": "060a2b340101010101010f00130000009729976a3dc57047060e2b347f7f2a80",
+        "fileObject": 68128,
+        "masterObject": 68119,
+        "descriptorObject": 68127,
+        "descriptorClass": "AIFD",
+        "descriptor": {
+          "ownerObject": 68127,
+          "count": {
+            "state": "positiveCount",
+            "property": "OMFI:MDFL:Length",
+            "rows": [
+              {
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    56828,
+                    4
+                  ]
+                ],
+                "hex": "02f22b00"
+              }
+            ],
+            "rawValue": 2880002
+          },
+          "rate": {
+            "state": "positiveRate",
+            "property": "OMFI:MDFL:SampleRate",
+            "rows": [
+              {
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    9860,
+                    8
+                  ]
+                ],
+                "hex": "80bb000001000000"
+              }
+            ],
+            "rawValue": [
+              48000,
+              1
+            ],
+            "reducedRate": {
+              "numerator": 48000,
+              "denominator": 1
+            }
+          },
+          "exactSeconds": {
+            "numerator": 1440001,
+            "denominator": 24000
+          }
+        },
+        "comparedOwnerRole": "fileGroup",
+        "compared": {
+          "ownerObject": 68128,
+          "count": {
+            "state": "positiveCount",
+            "property": "OMFI:TRKG:GroupLength",
+            "rows": [
+              {
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    57188,
+                    4
+                  ]
+                ],
+                "hex": "dc050000"
+              }
+            ],
+            "rawValue": 1500
+          },
+          "rate": {
+            "state": "positiveRate",
+            "property": "OMFI:CPNT:EditRate",
+            "rows": [
+              {
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    10594,
+                    8
+                  ]
+                ],
+                "hex": "1900000001000000"
+              }
+            ],
+            "rawValue": [
+              25,
+              1
+            ],
+            "reducedRate": {
+              "numerator": 25,
+              "denominator": 1
+            }
+          },
+          "exactSeconds": {
+            "numerator": 60,
+            "denominator": 1
+          }
+        },
+        "deltaSecondsComparedMinusDescriptor": {
+          "numerator": -1,
+          "denominator": 24000
+        }
+      }
+    }
+  ],
+  "aggregateCounts": {
+    "physicalFileRows": 2412,
+    "usableDescriptorPairs": 2412,
+    "allDescriptorCountsStrictlyPositive": true,
+    "allDescriptorRateNumeratorsAndDenominatorsStrictlyPositive": true,
+    "legacyLengthType": "omfi:Long, signed32, four-byte payload",
+    "legacyRateType": "omfi:ExactEditRate, two signed32 integers, eight-byte payload",
+    "pcmaMatchingBaseAndAudioSamplingRate": 1511,
+    "pcmaDisagreeingBaseAndAudioSamplingRate": 0,
+    "descriptorRatesPerClass": [
+      {
+        "descriptorClass": "RGBA",
+        "numerator": 24,
+        "denominator": 1,
+        "physicalFileRows": 10
+      },
+      {
+        "descriptorClass": "PCMA",
+        "numerator": 48000,
+        "denominator": 1,
+        "physicalFileRows": 1511
+      },
+      {
+        "descriptorClass": "CDCI",
+        "numerator": 24,
+        "denominator": 1,
+        "physicalFileRows": 93
+      },
+      {
+        "descriptorClass": "CDCI",
+        "numerator": 25,
+        "denominator": 1,
+        "physicalFileRows": 675
+      },
+      {
+        "descriptorClass": "RGBA",
+        "numerator": 25,
+        "denominator": 1,
+        "physicalFileRows": 8
+      },
+      {
+        "descriptorClass": "CDCI",
+        "numerator": 2997,
+        "denominator": 100,
+        "physicalFileRows": 63
+      },
+      {
+        "descriptorClass": "CDCI",
+        "numerator": 23976,
+        "denominator": 1000,
+        "physicalFileRows": 42
+      },
+      {
+        "descriptorClass": "MPGI",
+        "numerator": 2997,
+        "denominator": 100,
+        "physicalFileRows": 4
+      },
+      {
+        "descriptorClass": "MPGI",
+        "numerator": 23976,
+        "denominator": 1000,
+        "physicalFileRows": 4
+      },
+      {
+        "descriptorClass": "WAVD",
+        "numerator": 48000,
+        "denominator": 1,
+        "physicalFileRows": 1
+      },
+      {
+        "descriptorClass": "AIFD",
+        "numerator": 48000,
+        "denominator": 1,
+        "physicalFileRows": 1
+      }
+    ],
+    "allCountsPerFile": {
+      "pmrRows": 2412,
+      "descriptorClass_RGBA": 18,
+      "rowsWithNonnegativeDescriptorCountAndPositiveRate": 2412,
+      "rowsOneOwnSourceClipAndFileGroupDurationEqual": 2412,
+      "rowsOneMasterTargetSourceClipAndFileGroupDurationEqual": 2281,
+      "rowsMasterGroupEqualsFileGroupDuration": 2241,
+      "rowsMasterGroupDiffersFileGroupDuration": 171,
+      "rowsDescriptorDiffersFileGroupWithDescriptorCountOne": 64,
+      "rowsMasterGroupDiffersDescriptorWhileFileGroupEqualsDescriptor": 40,
+      "rowsFileGroupDiffersDescriptorWhileMasterGroupEqualsDescriptor": 0,
+      "descriptorClass_PCMA": 1511,
+      "pcmaBaseRateEqualsAudioSamplingRate": 1511,
+      "pcmaBaseRateDiffersAudioSamplingRate": 0,
+      "descriptorClass_CDCI": 873,
+      "descriptorClass_MPGI": 8,
+      "descriptorClass_WAVD": 1,
+      "descriptorClass_AIFD": 1
+    },
+    "comparisonCounts": {
+      "fileGroup": {
+        "differentBeyondOneComparedEditUnit": 64,
+        "exact": 2118,
+        "differentWithinOneComparedEditUnit": 230
+      },
+      "selectedMasterGroup": {
+        "differentBeyondOneComparedEditUnit": 104,
+        "exact": 2078,
+        "differentWithinOneComparedEditUnit": 230
+      },
+      "fileOwnSourceClip": {
+        "differentBeyondOneComparedEditUnit": 64,
+        "exact": 2118,
+        "differentWithinOneComparedEditUnit": 230
+      },
+      "selectedMasterDirectSourceClip": {
+        "differentBeyondOneComparedEditUnit": 64,
+        "exact": 2118,
+        "differentWithinOneComparedEditUnit": 230
+      }
+    },
+    "oneFrameDescriptorRowsWithLongerFileClipSpan": 64,
+    "ownFileClipVsDescriptorDifferentAudioWithinOneClipUnit": 230,
+    "ownFileClipVsDescriptorDifferentTotal": 294,
+    "masterGroupVsDescriptorDifferentTotal": 334,
+    "additionalMasterGroupMismatches": 40,
+    "amdSourceLengthAttributeOccurrencesInAllSixDatabases": 0,
+    "comparisonsAreResearchOnly": true,
+    "physicalMediaHeadersOpened": false
+  },
+  "primaryDocumentation": {
+    "sourceTitle": "OMF Interchange Specification Version 2.1",
+    "author": "Avid Technology, Inc.",
+    "publicationDate": "1997-09-18",
+    "sourceURL": "https://www.cubase.it/wp/wp-content/uploads/2014/12/omfspec21.pdf",
+    "localPdfReceipt": {
+      "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-03-format-audit/evidence/omfspec21.pdf",
+      "bytes": 1081300,
+      "sha256": "62dd18226aee3fda27c4ac25cf50ab1764b7776d4a42eac8f00d3e5b07909794"
+    },
+    "selectedPages": [
+      {
+        "printed": 26,
+        "pdfOneBased": 38
+      },
+      {
+        "printed": 113,
+        "pdfOneBased": 125
+      },
+      {
+        "printed": 167,
+        "pdfOneBased": 179
+      },
+      {
+        "printed": 168,
+        "pdfOneBased": 180
+      },
+      {
+        "printed": 217,
+        "pdfOneBased": 229
+      },
+      {
+        "printed": 221,
+        "pdfOneBased": 233
+      },
+      {
+        "printed": 222,
+        "pdfOneBased": 234
+      }
+    ],
+    "textReceipt": {
+      "path": "/private/tmp/bella-mdb-duration-20261019-primary/omf21-duration-selected-pages.txt",
+      "bytes": 12097,
+      "sha256": "be9b695f8e74b13111056a6a3947d441f1ccae2618b5baa78055e4d8f48e5afd"
+    },
+    "scope": "Published OMF2 field semantics and types corroborate native/actual legacy MDB research; do not substitute OMF2 layout/types for observed legacy typed values."
+  },
+  "proposedBellaRule": {
+    "status": "Source/valuepreservation, nativevideo interpreter andsixformatteraccuracy/displayrules agreed. Metadata qualification/layout andotherremainingdetails underreview; no runtimecode.",
+    "source": "Exact full-ID, catalogue-qualified physical file -> own safely resolved descriptor -> paired OMFI:MDFL:Length and OMFI:MDFL:SampleRate.",
+    "count": "Retain full source count in signed64 internal integer. Parse only explicitly supported typed wire forms; general extended-layout coverage remains to be established.",
+    "rate": "Retain original positive signed32 numerator and denominator and typed owner meaning. Approved interpreter derives the timing fraction via the exact scoped native mappings without overwriting source words.",
+    "elapsedSeconds": "Length * effective timing denominator / effective timing numerator after the approved scoped Avid video interpretation. Raw stored-fraction comparisons remain historical arithmetic, not the final timing rule for recognised aliases.",
+    "zero": "A correctly storedzero is known and displays00:00:00:00. Do not use zero as missing/unreadable default. No zero fixture occurred in the original corpus.",
+    "unavailable": "Agreed blankDurationcell forunavailable; retainphysicalrow. Kindunknown label remains a separatefieldrule.",
+    "notOtherLengths": "No master/group/clip/source ancestry length substitutes or cross-check graph merely for physical Duration. Do not reject full-ID matches because spans differ.",
+    "concreteAudioRate": "Separate Sample Rate field; the proposed duration divisor remains the recorded MDFL clock. Native PCMA playback preference for concrete audio rate is documented separately and is not a claimed native fallback rule.",
+    "unverifiedAttribute": "_AMD_SOURCE_LENGTH remains research, not a proposed release-one duration source.",
+    "retention": "Selected exact count/rate, source/unit meaning and compact availability. No retained raw descriptor, master length candidates, comparison graph or per-row formatted string solely for Duration.",
+    "presentation": "RequiredHH:MM:SS:FF, exactarithmetic, nominalbasesonlyfornumbering, qualifiedrecordedDF, preservedaudiosamples, zero/blank andno24hwrap agreed. Audio displayclocksource/nativeinterpretation andqualifiedDFbinding/fallback remainunderreview.",
+    "deferred": "MDB/extended64 layouts, generaldamage, audio display-clocksource/interpretation, qualifiedDFownerpath/fallback, sorting andCSV. Otherfields header policiesremainpending; DurationstaysMDB-only.",
+    "unchanged": "Exact six-tag Kind lookup, prior ID/Project/Original Bin/physical-path rules, requirements-first staging and Bin Filter remain unchanged."
+  },
+  "receipts": {
+    "rawSummaryReceipts": [
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/findings.json",
+        "bytes": 14190,
+        "sha256": "7d349c5d5916387666a2258e067d8e8a54af84e444a094eaef86def5fa9dbf64",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/findings.json",
+        "bytes": 12056,
+        "sha256": "8a0d3634a613d702105c1e7ca053c8fb67b8a81daf546d0674e1cbd0089e78c1",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-drives/findings.json",
+        "bytes": 418482,
+        "sha256": "7dd65d531eb8d3c3321a2c2fa0cd51fde60092e047ad38738ea62d25abe96c22",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-primary/findings.json",
+        "bytes": 1306,
+        "sha256": "c4ede294c2a7d30908caeced4e7ef58af053546d6140c7fc5814ef6b69ba2741",
+        "stableDuringVerification": true
+      }
+    ],
+    "currentBinaryMdbPmrInputs": [
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "bytes": 73527536,
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+        "bytes": 3204640,
+        "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 5159032,
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "bytes": 97250,
+        "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "bytes": 22745976,
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "bytes": 164660,
+        "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "bytes": 16616336,
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "bytes": 123140,
+        "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "bytes": 15703416,
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "bytes": 111140,
+        "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 3668720,
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "bytes": 86754,
+        "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "bytes": 60680,
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+        "bytes": 392,
+        "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928",
+        "stableDuringVerification": true
+      }
+    ],
+    "rawValueIndexes": [
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+        "bytes": 57405807,
+        "sha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+        "bytes": 277457615,
+        "sha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+        "bytes": 202174044,
+        "sha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+        "bytes": 191199626,
+        "sha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+        "bytes": 45335148,
+        "sha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-OMFI MediaFiles-values.json",
+        "bytes": 535484,
+        "sha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "stableDuringVerification": true
+      }
+    ],
+    "nativeArtifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AFileMediaDesc-Get.txt",
+        "bytes": 5904,
+        "sha256": "00d4e8a4eae621ab204fcc0ba7c610bdfac06e7833ad3d4535c0cdb48df3ce66",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AFileMediaDesc-getters.txt",
+        "bytes": 2096,
+        "sha256": "18fa2fe8b2e9839ddfe616f7c94685dd7192351810c0b76d6b96f610531ad83c",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AFileMediaDesc-Put.txt",
+        "bytes": 8287,
+        "sha256": "88f09f291396e771a3613976900d518e1d54ad07be6064f5ba07737b2d9bc987",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AudioMediaDesc-Get.txt",
+        "bytes": 16194,
+        "sha256": "4ace141f8a3db18a2a5bf8adcff18afde77044a5ac34910cf0250a5ec43e261d",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AudioMediaDesc-SourceLength.txt",
+        "bytes": 3127,
+        "sha256": "84ccbdcf95782abd16947e9646db26ee66246034eec80e210c07b4fdf1f1d3d0",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/PCMAudioDescriptor-Get.txt",
+        "bytes": 21995,
+        "sha256": "d2a7e4fd7f35865f12ed4e2ed39ee8b2b93ed7ff4d099bb0f5a03e9c52a6e3a2",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/PCMAudioDescriptor-rate-getters.txt",
+        "bytes": 3123,
+        "sha256": "b3423c79f59f2cd39db8a8050818c9a5a267fcfd98086d5fda8765b16124c64e",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/ReadExactEditRate.txt",
+        "bytes": 1790,
+        "sha256": "6deca2a84bd9ab3a2db6ab382c99089b414ff4ef1f746e5e5a1483cf45381bd1",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/ReadRational.txt",
+        "bytes": 4308,
+        "sha256": "f479a6695f8a129cf8b7a3a766c10366d831cac8f37f196c6a2a7cf44d8428c3",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/ReadInt32.txt",
+        "bytes": 6409,
+        "sha256": "b78db8c2d4cc58f07c1fb51f0ab899138cd06d5fff8af1f12fe93b0506490bda",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/ReadInt64.txt",
+        "bytes": 6665,
+        "sha256": "31181671090f223c2e92c6ee3392e784d0c6001b76e1a5684af749831e66cbb8",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/ReadSpecialType.txt",
+        "bytes": 11641,
+        "sha256": "76433dd87bab5a0cd72de85de4c0e855ba878a9a39b76385c0cdfd3bdb71fd32",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/omfi-ReadExactEditRate.txt",
+        "bytes": 6436,
+        "sha256": "b07e0c94bc84c58f00d6fa16233b5ed028e39248059a6fec45c82087fd7bbfce",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AudioStreamReader-GetMediaLengthInDestRate.txt",
+        "bytes": 1652,
+        "sha256": "444fd9be0bd3a7fb9871f8d977df63e9bf872d09ce4b80b66964b27bba76f6f1",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AudioSamplingRate-getter.txt",
+        "bytes": 1474,
+        "sha256": "37a34d40dd17f0461f33e80f42a4f99254c08af26d790589db99de14d95559ae",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AClip-Get.txt",
+        "bytes": 2476,
+        "sha256": "e0645b988b12bf9cfaaaf51ab8040298939fa5f46c2d814eba976a5ce521bcdc",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AComponent-rate-getters.txt",
+        "bytes": 893,
+        "sha256": "1b9232f192320e5c41c18748b1fe59866aac7b9f2438b7530dcdd00a7e25eb88",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AudioMediaDesc-constructor.txt",
+        "bytes": 4325,
+        "sha256": "8b875ede098be808dfbe48149813ae525738da6ef1a099cddcde18c7f9ed843d",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/PCMAudioDescriptor-initializer.txt",
+        "bytes": 4361,
+        "sha256": "14c1fd4dcba9eb14792c48a7ac6d66f984c002c5919c66927791188029125ef0",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/duration-vtable.json",
+        "bytes": 3245,
+        "sha256": "5aa6825f2d4b612afb015333a67b46db694eafe386d3f7ef5d078c4b5f9d86b6",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/duration-property-dictionary.txt",
+        "bytes": 2279,
+        "sha256": "ea5f0c6a6fdaecf7e7d5c54de03f9d5eaf1d2c426beb6176bb7ec221e8ee7d6c",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt",
+        "bytes": 16441,
+        "sha256": "be932b1a1d04bf4539a0f4fe6b8fadb68d4d4170387b8613806c5c6af8b0fee1",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt",
+        "bytes": 25206,
+        "sha256": "e9f502df3ddc289f84c65be937ec441a847c638c8b17d1df97c3b1f0655644cb",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem-objc-excerpt.txt",
+        "bytes": 24581,
+        "sha256": "99ee84dd15386551c5a986e99eb6ddd750e6aee6275a6914a9306a9a381e34dc",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_ConvertTimeFromCanonical_.txt",
+        "bytes": 236,
+        "sha256": "351a9160079e250dd4b2b024b083a087d57107d88a69377975ba9ffbbc15c39f",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_ConvertTimeToCanonical_.txt",
+        "bytes": 234,
+        "sha256": "1a7e8c23b2e98ef9e6eb5913200192f224963994c81ab8a901854d3f1630dcc7",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_DB_Date_String.txt",
+        "bytes": 2186,
+        "sha256": "16907e2f502593ef74c6ac6bfb080d00a1735f4f4d39cc1086bfd99fe4fd5712",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_DB_framerate.txt",
+        "bytes": 510,
+        "sha256": "8d85a33ec9b29747de24310040e20a6b19e58d4f1989a8fbc61e272e9e533aa3",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_DB_samplerate.txt",
+        "bytes": 511,
+        "sha256": "720bc76af3d2361517898382763f9fc6103d2fb95d977fb7aeee0df7acbdac3b",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_addinfoToItemFromCorrespondingFile.txt",
+        "bytes": 2520,
+        "sha256": "aa67805e2bf40d384e2ed142e4f8f64f4bcffb57ce2454c0948a8291c45228b4",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_setFrameRateNumerator_denominator_.txt",
+        "bytes": 118,
+        "sha256": "9ed02d790c489787f22e4389aab3fa0a24956f1c9a119eb57463052690f593b2",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_setSampleRateNumerator_denominator_.txt",
+        "bytes": 119,
+        "sha256": "a12eee7289f58d15da646fc4ecf72bb4b6524118d86c325e2091420dab6369d1",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_setupWithPmrBytes_length_PMRVersion_usebyteswap_.txt",
+        "bytes": 6841,
+        "sha256": "1f2b786849a8ffd5d41a93e7f4a7b285018b56a74b5d1ea7f6855c1cfdab5e61",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxDatabaseItem_setupWithUnrefFile_clipname_.txt",
+        "bytes": 6083,
+        "sha256": "6d572855139d4f8e45bf5a449e993da62851964cf74eea1873a1839dc83dfb5b",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxMXF_addInfoToItem_.txt",
+        "bytes": 3747,
+        "sha256": "18281f5391667e37e8e3b5884b1a498e680ac0ccc0a99fcf8f470c42101ea1d0",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxOMFI_addInfoToItem_.txt",
+        "bytes": 9423,
+        "sha256": "20211e8a6dbcd33b0e034f3885504d5af7a54cffd3a05b5d776446549e0f6829",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxOMFI_getCompression_data_forObjAt_.txt",
+        "bytes": 5492,
+        "sha256": "56eb914605cab3b729d4dd8de955f3e18298097b96c2c1f546c00a32f1cbe0ef",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxPMRScannerOperation_main.txt",
+        "bytes": 53423,
+        "sha256": "3eeb0753fa8ace9baa58c04efa2bf9345553e74d265102be7d4739b877cabff8",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/binary-receipt.json",
+        "bytes": 510,
+        "sha256": "3ad49d32205d2a6230c919a12c6c058e5932839981e2990388f509a7612ed9e2",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/decoded-table-field-identifiers.json",
+        "bytes": 3219,
+        "sha256": "6cda569ba1af5c686cd281686b1a93bc83474b6d80db586669c02aa802a51cac",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/fresh-row-and-projection-symbols.txt",
+        "bytes": 6433,
+        "sha256": "5ff53613a590f6767a531903c052646d08a167e725337ddf06fead4502d6a692",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxCore_getBitrateTextForItem_.txt",
+        "bytes": 2903,
+        "sha256": "46a0ce0d6f191b714d534501608575b5e5782111bd4782e31db1867257096878",
+        "stableDuringVerification": true
+      }
+    ],
+    "probeAndHelperReceipts": [
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-drives/probe.py",
+        "bytes": 18361,
+        "sha256": "133d4703bd17ecec61ba628855b47a903021249c2497ec6eb8b3217c9710925e",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-drives/findings.json",
+        "bytes": 418482,
+        "sha256": "7dd65d531eb8d3c3321a2c2fa0cd51fde60092e047ad38738ea62d25abe96c22",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-drives/source-hash-receipts.json",
+        "bytes": 3552,
+        "sha256": "4cbaaa68ec1d0db156c6b0031a7108ce40ced24f6fa4cbe429a5a2a3edcb0809",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-drives/check.py",
+        "bytes": 14085,
+        "sha256": "184dbbf28d7b0fdbdd8b6a02d9791c233ac1b2c27ce4a5d7bc6cbc016d2419ec",
+        "stableDuringVerification": true
+      }
+    ],
+    "probeHashIndexReceipt": {
+      "path": "/private/tmp/bella-mdb-duration-20261019-drives/artifact-hashes.json",
+      "bytes": 406,
+      "sha256": "bfb3c23414443f6724f07a0d09b9eedfef0ac0f938bf3ddbe6ec3e69e6ac2cdd",
+      "stableDuringVerification": true
+    },
+    "primaryDocumentAndExtraction": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-03-format-audit/evidence/omfspec21.pdf",
+        "bytes": 1081300,
+        "sha256": "62dd18226aee3fda27c4ac25cf50ab1764b7776d4a42eac8f00d3e5b07909794",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-primary/omf21-duration-selected-pages.txt",
+        "bytes": 12097,
+        "sha256": "be9b695f8e74b13111056a6a3947d441f1ccae2618b5baa78055e4d8f48e5afd",
+        "stableDuringVerification": true
+      }
+    ]
+  },
+  "limits": [
+    "Static installed arm64 inspection; no native API or live app Duration UI test.",
+    "All six MDBs use legacy little-endian layout with positive32-bit lengths and positive rate pairs. Zero, missing, negative, unsupported, contradictory-rate and extended64 fixtures were not exercised.",
+    "Descriptor/clip/master counts are database observations, not media-header/essence verification or corruption diagnoses.",
+    "The documented MDFL pair is the proposed Bella policy; native PCMA playback rate overrides and private audio source-length attributes have separate qualifications.",
+    "No timecode display format/drop-frame rule or extra header-read policy is approved by this review.",
+    "No runtime implementation, app cutover, Bin Filter change, media write or performance/memory benchmark."
+  ],
+  "ratePresentationClarification20261019": {
+    "status": "User confirmed separate rate columns and blank cells for inapplicable audio/video rate columns, and prefers internal names match Avid properties as much as possible, on 19 October 2026. Full Duration/rate-source rules remain under review.",
+    "internally": "Keep full Length and exact SampleRate in physical file-descriptor/MDFL context, matching MDFL:Length and MDFL:SampleRate. Preserve owner/type context and exact source-property names where practical; concrete C++ organisation/style remains later design.",
+    "columns": {
+      "Frame Rate": "Video frames per second; blank for an identified audio-only file.",
+      "Sample Rate": "Audio sampling frequency displayed in kHz; blank for an identified video-only file.",
+      "Duration": "Calculated physical-file duration; display-clock/format choices remain under review."
+    },
+    "existingColumns": true,
+    "rateDistinction": "Duration unit clock is distinct in meaning from the audio Sample Rate result; shared numeric values in the actual MDBs do not establish a universal cross-format equality.",
+    "deferred": "Field-specific rate sources, cross-source priorities, full Duration validation/fallback and exact display choices.",
+    "runtimeChange": false,
+    "internalAvidPropertyNames": {
+      "Length": "OMFI:MDFL:Length",
+      "SampleRate": "OMFI:MDFL:SampleRate",
+      "otherProperties": "For example, PCMA:AudioSamplingRate retains AudioSamplingRate in its own descriptor context when read; do not conflate different source properties."
+    },
+    "namingPreferenceScope": "General Bella parsed-value naming preference: match Avid properties as much as practical; UI labels may describe their presentation meaning."
+  },
+  "frameRateInterpretationFollowUp20261019": {
+    "effect": "Clarifies earlier unapproved Duration arithmetic: a raw2997/100 or23976/1000 pair preserves metadata, but does not prove literal actual essence clock. Typed ExactEditRate interpretation must be agreed.",
+    "nativeMapping": [
+      "exact native23976*10^-3 ->24000/1001",
+      "exact native2997*10^-2 ->30000/1001",
+      "multiples1..10, integer decimal equivalence tests, not arbitrary approximate snapping"
+    ],
+    "boundedConsumer": "ameAMAFI::GetTrackEssenceDuration converts supplied composition rate; not universal physicalMDB/UI normalization evidence.",
+    "retainedFacts": "Integer-clock examples and original raw database comparisons remain valid as recorded-clock observations. No header/essence clock was measured."
+  },
+  "rateNotationTerminologyClarification20261019": {
+    "chronology": "No evidence here establishes a simple older/newer rate-notation switchover. The current installed Media Composer contains both typed readers/writers and conversions in both directions.",
+    "exactEditRateWire": "Actual MDB payload remains an8byte numerator/denominator pair. Mantissa plus decimal exponent is native in-memory representation, not the rawMDBpayload.",
+    "rosettaStone": "Avids typed conversion functions explicitly connect particular decimal ExactEditRate forms with NTSC rational clocks. Source pairs are not mathematically identical; this is not general rational reduction or approximate nearest-rate guessing.",
+    "scope": "No second newer rate value/set to prefer in the inspected video descriptor. Preserve the recorded type/pair; timing-context applicability remains a separate rule, not a media-age decision.",
+    "wholeNumberExamples": {
+      "24": "24/1",
+      "25": "25/1"
+    }
+  },
+  "sourceDecision20261019": {
+    "date": "2026-10-19",
+    "userInstruction": "Stick with the MDB - not reading the header.",
+    "scope": "Physical Duration only. Other fields may still need headers under their separately agreed future policies.",
+    "source": "MDB only; owned physical descriptor remains proposed detailed field route.",
+    "headerReadsForDuration": false,
+    "headerDurationOverridesMdb": false,
+    "headerFallbackForMissingMdbDuration": false,
+    "conversionApprovedByThisDecision": false,
+    "remaining": "Exact Avid video-rate interpretation, audio display-clock/source details, zero/missing presentation, timecode formatting, sorting and wire-layout/damage coverage remain requirements work.",
+    "runtimeChanged": false
+  },
+  "currentMediaMusterComparison20261019": {
+    "date": "2026-10-19",
+    "scope": "Read-only inspection of current workspace OldScanner and UI. No runtime benchmark or tests executed.",
+    "recommendation": "Bella proposed typed interpretation is preferable for MDB-backed elapsed Duration; preserve the current design strengths of original count/fraction, separate display clock and rounding only at presentation.",
+    "currentMethod": {
+      "mdb": "Own descriptor Length and literal SampleRate fraction; no semantic decimal-to-NTSC timing conversion.",
+      "sourcePriority": "Usable media-header duration ahead of MDB when available; complete database match can avoid opening header. Bella user now chose a different MDB-only Duration source policy.",
+      "store": "MediaDuration carries signed64 units, original signed32 rate pair, separate displayRate pair and source.",
+      "display": "Frame timecode HH:MM:SS:FF from original count and clocks, shared table/CSV formatter. Positive results rounded half-up to display frames. Explicitzero is currently blank.",
+      "sort": "Displayed timecode tuple, not exact elapsed seconds; future Bella sort choice remains separate."
+    },
+    "practicalEffect": "Fractional clock interpretation differs by about1ppm for the two base aliases. Frame timecode can remain unchanged because physical count and nominal frame base can be identical.",
+    "performance": "No measured conversion speed/memory benefit. Header avoidance is a separate I/O policy, already sometimes present in OldScanner.",
+    "sourceCodeReceipts": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbobjects_p.cpp",
+        "bytes": 25678,
+        "sha256": "21a013b4de7a3e346553e2f4bef73404e9d3c63551f6653aa9403a7128244814"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbprojection.cpp",
+        "bytes": 65892,
+        "sha256": "75757ff663c541992768c502fa7b0887c4f31a02d23b7ec9e7b28532b160be5f"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+        "bytes": 63597,
+        "sha256": "c8c68e78db5f3efaa62235f55624c5478e89a0adc37581a922af050f931cad55"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+        "bytes": 10816,
+        "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+        "bytes": 36110,
+        "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+        "bytes": 5202,
+        "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaduration.h",
+        "bytes": 3071,
+        "sha256": "c59928f0d6f4ac92c93ad7a258bbcaf60516da2fd9fed616293b63bb839fafb6"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+        "bytes": 12788,
+        "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+        "bytes": 12214,
+        "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp",
+        "bytes": 3609,
+        "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafilterproxy.cpp",
+        "bytes": 11470,
+        "sha256": "2c10657c82a6d3456815966664c62ab0b77a29d02a6e514fd865510fe7349e0c"
+      }
+    ]
+  },
+  "durationInterpreterDecision20261019": {
+    "date": "2026-10-19",
+    "approvedByUser": true,
+    "userInstruction": "Keep the Length and SampleRate, and use a seperate AvidDurationInterpreter (better name to be finalised?) which copies the exact rules from the Media Composer binary.",
+    "provisionalName": "AvidDurationInterpreter",
+    "finalNameDeferred": true,
+    "organisation": "Separate interpreter boundary; final C++ file/class/function organisation remains design work. No runtime code yet.",
+    "source": "Already agreed MDB-only Duration, exact physical-file-owned descriptor Length and typed SampleRate. No media-header read for Duration.",
+    "retention": "Preserve Length and original SampleRate numerator/denominator unchanged. Derive the effective timing rate separately and transiently.",
+    "nativeContract": {
+      "function": "RationalFromExactEditRate",
+      "address": "0x258148",
+      "engineVersion": "26.8.0.58987",
+      "engineSha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+      "typedScope": "Known MDB OMFI:MDFL:SampleRate ExactEditRate on a qualified physical video descriptor, paired with its own Length.",
+      "exactFamilies": [
+        {
+          "baseAvidFraction": [
+            23976,
+            1000
+          ],
+          "baseTimingFraction": [
+            24000,
+            1001
+          ],
+          "integerMultiplierMinimum": 1,
+          "integerMultiplierMaximum": 10
+        },
+        {
+          "baseAvidFraction": [
+            2997,
+            100
+          ],
+          "baseTimingFraction": [
+            30000,
+            1001
+          ],
+          "integerMultiplierMinimum": 1,
+          "integerMultiplierMaximum": 10
+        }
+      ],
+      "matching": "Exact recognised decimal forms, including equivalent trailing-zero spellings per EqualExactEditRate; no epsilon/nearest-rate match. Overlapping family cases yield equal rationals.",
+      "otherUsableRates": "Keep original positive fraction when not a supported alias. Preserve integer rates.",
+      "excludedNativePaths": [
+        "Different finite ConvertCMEditRate export table",
+        "Approximate TrueNTSCEditRate and pulled-audio ranges",
+        "Wire reader floating-point round trip for other denominators",
+        "Display frame-doubling flags and generic Rational aliasing"
+      ],
+      "actualFileCoverage": "121 matched headers,113 fractional base cases; not every native integer multiple has an actual-file fixture."
+    },
+    "calculation": "Elapsed Duration = Length * effective rate denominator / effective rate numerator, with checked arithmetic. Preserve exact source data; presentation rounding is separate.",
+    "pending": [
+      "Table formatting and sorting",
+      "Zero/missing presentation and structural/layout coverage",
+      "Concrete/pulled audio rate conventions and audio display clock if timecode retained",
+      "Final interpreter name and C++ organisation"
+    ],
+    "implemented": false
+  },
+  "tableDisplayProposal20261019": {
+    "date": "2026-10-19",
+    "approvedByUser": false,
+    "scope": "Bella table Duration presentation; current retained timecode remains active until approval. CSV representation not decided here.",
+    "format": "HH:MM:SS.mmm",
+    "meaning": "Elapsed hours, minutes, seconds and milliseconds; hours can exceed24 and two digits.",
+    "rounding": "Nearest millisecond, positive halves upward, label only. Keep exact count/rate internally.",
+    "sort": "Proposed exact interpreted elapsed Duration before display rounding, instead of current displayed timecode tuple.",
+    "knownZero": "00:00:00.000",
+    "unavailable": "Blank",
+    "veryShortPositive": "Positive values below0.5ms can also display00:00:00.000 while remaining exact positive durations internally.",
+    "benefit": "Comparable across audio and video rates; no separate editing/display frame clock solely for this cell.",
+    "timecodeAlternative": "Current HH:MM:SS:FF matches editorial frame-count workflows; one24fps frame is00:00:00:01 versus00:00:00.042 in the elapsed proposal.",
+    "runtimeChanged": false,
+    "status": "Rejected by user20October2026; superseded by mandatoryHH:MM:SS:FF and recordedDFnumberingwhenavailable.",
+    "rejectedOn": "2026-10-20"
+  },
+  "tableDisplayDecision20261020": {
+    "date": "2026-10-20",
+    "approvedByUser": true,
+    "userInstruction": "No we need HH:MM:SS:FF this is non negotiable. How should we do this elegantly ensuring accuracy?",
+    "format": "HH:MM:SS:FF",
+    "elapsedMillisecondProposalRejected": true,
+    "numberingChoice": {
+      "userAnswer": "Follow the file\u2019s recorded drop-frame numbering when available",
+      "followUsableRecordedDropFrame": true,
+      "inferDropFrameFromFrameRate": false,
+      "separators": "Keep the requested colon layout; numbering mode is separate.",
+      "missingFlagFallbackApproved": false
+    },
+    "unchanged": "Keep approved MDB-only source, raw Length/SampleRate and separate native-rule interpreter; no media-header read for Duration.",
+    "notApprovedByThisDecision": [
+      "Audio display-clock source/interpretation details",
+      "Recorded DF flag exact MDB owner/track qualification",
+      "Missing/conflicting/incompatible DF fallback",
+      "Rounding and zero/missing presentation details",
+      "Sorting or CSV changes"
+    ],
+    "runtimeChanged": false
+  },
+  "frameTimecodeFormatterProposal20261020": {
+    "date": "2026-10-20",
+    "purpose": "Small pure DurationFormatter after the agreed AvidDurationInterpreter; requirements proposal only.",
+    "inputs": "Exact preserved duration facts plus a qualified display frame clock and explicit numbering mode.",
+    "video": "Length already counts video frames. Keep that integer count; use interpreted SampleRate as frame clock and a supported nominal base for labels.",
+    "audio": "Preserve selected MDFL Length/SampleRate as audio duration. Proposed display clock is own-file CPNT:EditRate, or supported own-slot MSLT:EditRate where applicable; never invent25fps or use48kHz asfps.",
+    "audioRateInterpretation": "Applying native ExactEditRate convention to the audio display EditRate is an additional proposed typed use; existing approved interpreter scope was physical-video MDFL SampleRate.",
+    "frameConversion": "Length * unitRateDenominator * displayRateNumerator / (unitRateNumerator * displayRateDenominator), with checked integer/rational arithmetic. Round only final audio display-frame count, nearest positive half-up proposed.",
+    "nominalBase": "Supported explicit mapping (e.g.24000/1001->24,30000/1001->30,60000/1001->60). Do not parse rounded Frame Rate strings or divide to elapsed seconds then appendFF.",
+    "dropFrameSource": "Propose own-file explicitly linked applicable timecode component and supported0/1TCCP flag, tied to compatible selected clock. Broader ancestor qualification remains unverified; no recursive sweep merely because reachable.",
+    "dropFrameFallback": "Proposed NDF when usable recorded flag absent, with absence distinguished from recordedfalse. Invalid/conflicting/incompatible flag handling remains undecided.",
+    "precision": "Preserve original count and fractions. Audio display can round to a frame without changing source samples. No extra saved formatted string or header read.",
+    "knownZero": "Agreed00:00:00:00; source-known zero distinct from unavailable.",
+    "unavailable": "Agreedblank when Duration is unavailable.",
+    "largeDurations": "Agreedno24-hourwrap. Preserve safe padding; unsupported/custom/high-rate coverage remains tovalidate.",
+    "examples": [
+      {
+        "kind": "Video",
+        "Length": 250,
+        "unitRate": [
+          25,
+          1
+        ],
+        "displayRate": [
+          25,
+          1
+        ],
+        "mode": "NDF",
+        "display": "00:00:10:00"
+      },
+      {
+        "kind": "Video",
+        "Length": 1,
+        "unitRate": [
+          24,
+          1
+        ],
+        "displayRate": [
+          24,
+          1
+        ],
+        "mode": "NDF",
+        "display": "00:00:00:01"
+      },
+      {
+        "kind": "Video",
+        "Length": 24000,
+        "unitRate": [
+          24000,
+          1001
+        ],
+        "displayRate": [
+          24000,
+          1001
+        ],
+        "mode": "NDF",
+        "display": "00:16:40:00",
+        "elapsedSeconds": 1001
+      },
+      {
+        "kind": "Audio",
+        "Length": 2880002,
+        "unitRate": [
+          48000,
+          1
+        ],
+        "displayRate": [
+          25,
+          1
+        ],
+        "mode": "NDF",
+        "rounding": "nearestframe",
+        "display": "00:01:00:00"
+      },
+      {
+        "kind": "Video",
+        "Length": 107892,
+        "unitRate": [
+          30000,
+          1001
+        ],
+        "displayRate": [
+          30000,
+          1001
+        ],
+        "mode": "DF",
+        "display": "01:00:00:00"
+      }
+    ],
+    "claimsLimit": "No actual-file DF availability count or universal Media Composer Duration-cell DF policy established. Layout and following recorded numbering are user choices. No app change.",
+    "approvalStatus": "Partially approved20October2026: sixaccuracy/displayrules andseparateformatterboundaryaccepted. Remaining metadata source qualification/fallback andsort/CSV choices notapproved.",
+    "acceptedRules": [
+      "Use exact integer/fraction calculations throughout.",
+      "Keep fractional timing precise; use nominal bases such as24or30 only for frame numbering.",
+      "Apply the qualified recorded drop-frame flag.",
+      "Preserve audio samples internally despite display rounding.",
+      "Show knownzero as00:00:00:00; leave unavailable values blank.",
+      "Allow durations beyond24hours."
+    ],
+    "acceptedFormatterDesign": true,
+    "remainingDetails": [
+      "Qualified audio display-clock source/interpretation",
+      "Exact MDB owner/track binding of DF flag",
+      "Missing/unreadable/conflicting/incompatible DF fallback",
+      "Unsupported wire/rate/layout coverage",
+      "Sorting andCSV policy"
+    ]
+  },
+  "durationFormatterAccuracyDecision20261020": {
+    "date": "2026-10-20",
+    "approvedByUser": true,
+    "userInstruction": "Nevermind - your proposal is good.",
+    "approvedRules": [
+      "Use exact integer/fraction calculations throughout.",
+      "Keep fractional timing precise; use nominal bases such as24or30 only for frame numbering.",
+      "Apply the qualified recorded drop-frame flag.",
+      "Preserve audio samples internally despite display rounding.",
+      "Show knownzero as00:00:00:00; leave unavailable values blank.",
+      "Allow durations beyond24hours."
+    ],
+    "format": "HH:MM:SS:FF",
+    "retention": "Original Length/SampleRate remain unchanged; display conversion and rounding do not change stored audio samples.",
+    "organisation": "Accept separate small interpreter and formatter boundaries. Final names/organisation remain design work.",
+    "roundingScope": "Audio rounding occurs only at display. The prior nearest-frame proposal is accepted in that context; exact tie handling is an implementation detail, not loss of source precision.",
+    "nativeFidelity": "Bella formatter is accepted as its own design; no requirement to prove a complete identical MediaComposer Duration-cell pipeline. Verified native interpreter mappings remain the chosen rule.",
+    "pendingMetadataAndOtherPolicies": [
+      "Qualified audio display-clock source/interpretation",
+      "Exact MDB owner/track binding of DF flag",
+      "Missing/unreadable/conflicting/incompatible DF fallback",
+      "Unsupported wire/rate/layout coverage",
+      "Sorting andCSV policy"
+    ],
+    "runtimeChanged": false
+  }
+}

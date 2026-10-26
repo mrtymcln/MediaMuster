@@ -1,0 +1,4533 @@
+{
+  "date": "2026-10-19",
+  "timezone": "Australia/Sydney",
+  "purpose": "Kind MDB field review: physical-file descriptor families, native Media Composer model, MDVx usage/audio distinction and independent actual database checks.",
+  "status": "Exact six-tag descriptor-only MDB Kind lookup approved by user on 19 October 2026; requirements only, not implemented. Missing or unmapped class displays lowercase unknown. Header source priority and extra reads remain deferred.",
+  "mediaComposer": {
+    "date": "2026-10-19",
+    "scope": "Bounded static Media Composer investigation of physical media Audio/Video Kind in MDB. No app launch, private native API execution, media writes, repo edits, scanner cutover or Bin Filter changes.",
+    "method": "Reuse matching installed binary identities and read earlier MDB overview; freshly disassemble physical descriptor ownership, class family methods/OMFI alias translator and TrackKind loader. Verify exact function addresses against native symbols. Class IDs reconstructed from immediate constants in saved functions; inheritance verified from native IsInstanceOf calls. This is not a global media support or live UI audit.",
+    "application": {
+      "version": "26.8.0.58987",
+      "binaries": [
+        {
+          "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+          "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+          "bytes": 73527536,
+          "uuid": "UUID: 9CC3CF45-9F28-380C-949C-C7B321D0858A (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib\nUUID: D55FFCED-FD76-3667-99B8-C9A84180173E (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        },
+        {
+          "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+          "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+          "bytes": 14340208,
+          "uuid": "UUID: F10B2E1F-07ED-31AC-8DDD-C2122C7B4405 (x86_64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore\nUUID: EDC22A12-1101-3C73-A57C-4256A82633F9 (arm64) /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore"
+        }
+      ]
+    },
+    "plainMeaning": [
+      "For Bella, Kind asks whether this physical media file represents audio or video. It is distinct from the master clip’s editorial classification or its mix of tracks.",
+      "Media Composer has native audio and video descriptor families. Their GetTrackType methods return audio2 and video1; the generic base returns0, so unknown is not automatically video.",
+      "The physical file’s exact MDB mob owns its media descriptor. Use that descriptor’s recognized family, not a similarly named unrelated object or the master’s name/usage.",
+      "Known class IDs, structural property names and numeric track types are not human text requiring UTF8-versus-MacRoman decoding.",
+      "No full media header, audio summary or codec-name parsing is required merely to recognize a supported audio/video descriptor family."
+    ],
+    "physicalOwner": {
+      "route": "Full FileMobId/catalogue-qualified file mob → its own OMFI:MOBJ:PhysicalMedia object reference → authoritative descriptor.",
+      "nativeRead": "AComposition::Get0x181420 selects dictionary+0x2e0=OMFI:MOBJ:PhysicalMedia at0x181598, reads object0x1815a0..ac, stores pointerobject+0x1700x1815b0. GetMediaDesc0x180948 returns that pointer directly.",
+      "meaning": "This is file-owned media metadata. Selected-master association remains the ClipName/OriginalBin rule; it need not exist for an independently qualified physical-file Kind."
+    },
+    "nativeFamilyTypes": {
+      "audio": {
+        "function": "AudioMediaDesc::GetTrackType()const",
+        "address": "0x363dcc",
+        "returns": 2,
+        "evidence": "mov w0,#2;ret"
+      },
+      "video": {
+        "function": "VideoMediaDesc::GetTrackType()const",
+        "address": "0x343950",
+        "returns": 1,
+        "evidence": "mov w0,#1;ret"
+      },
+      "generic": {
+        "function": "AMediaDesc::GetTrackType()const",
+        "address": "0x17df74",
+        "returns": 0,
+        "evidence": "mov w0,#0;ret"
+      },
+      "audioBase": "AudioMediaDesc::IsInstanceOf0x3606d8 recognizes literal AudioMediaDesc then delegates AFileMediaDesc0x360704.",
+      "videoBase": "VideoMediaDesc::IsInstanceOf0x3fb994 recognizes literal VideoMediaDesc then delegates AFileMediaDesc0x3fb9c0.",
+      "virtualSlot": "Verified AMediaDesc/AFileMediaDesc/PCMAudioDescriptor/CDCIDescriptor vtable+0x238: generic0/audio2/video1 targets. See vtable-tracktypes.json."
+    },
+    "provenDescriptorFamilies": [
+      {
+        "class": "PCMAudioDescriptor",
+        "GetClassIDAddress": "3e8170",
+        "nativeFourCC": "PCMA",
+        "classIdHex": "0x50434d41",
+        "IsInstanceOfAddress": "3e8124",
+        "baseCalls": [
+          "__ZN14AudioMediaDesc12IsInstanceOfEPKc"
+        ],
+        "provenOmfiDescriptorClass": "PCMA",
+        "family": "Audio"
+      },
+      {
+        "class": "MPEGAudioDescriptor",
+        "GetClassIDAddress": "3d7a04",
+        "nativeFourCC": "MPGA",
+        "classIdHex": "0x4d504741",
+        "IsInstanceOfAddress": "3d79b8",
+        "baseCalls": [
+          "__ZN14AudioMediaDesc12IsInstanceOfEPKc"
+        ],
+        "provenOmfiDescriptorClass": "MPGA",
+        "family": "Audio"
+      },
+      {
+        "class": "WAVEDescriptor",
+        "GetClassIDAddress": "3f8728",
+        "nativeFourCC": "WAVE",
+        "classIdHex": "0x57415645",
+        "IsInstanceOfAddress": "3f86dc",
+        "baseCalls": [
+          "__ZN14AudioMediaDesc12IsInstanceOfEPKc"
+        ],
+        "provenOmfiDescriptorClass": "WAVD",
+        "family": "Audio"
+      },
+      {
+        "class": "AIFCDescriptor",
+        "GetClassIDAddress": "364680",
+        "nativeFourCC": "AIFC",
+        "classIdHex": "0x41494643",
+        "IsInstanceOfAddress": "364634",
+        "baseCalls": [
+          "__ZN14AudioMediaDesc12IsInstanceOfEPKc"
+        ],
+        "provenOmfiDescriptorClass": "AIFD",
+        "family": "Audio"
+      },
+      {
+        "class": "CDCIDescriptor",
+        "GetClassIDAddress": "33fd90",
+        "nativeFourCC": "CDCI",
+        "classIdHex": "0x43444349",
+        "IsInstanceOfAddress": "33fd44",
+        "baseCalls": [
+          "__ZN13DIDDescriptor12IsInstanceOfEPKc"
+        ],
+        "provenOmfiDescriptorClass": "CDCI",
+        "family": "Video"
+      },
+      {
+        "class": "RGBADescriptor",
+        "GetClassIDAddress": "3e2498",
+        "nativeFourCC": "RGBA",
+        "classIdHex": "0x52474241",
+        "IsInstanceOfAddress": "3e244c",
+        "baseCalls": [
+          "__ZN13DIDDescriptor12IsInstanceOfEPKc"
+        ],
+        "provenOmfiDescriptorClass": "RGBA",
+        "family": "Video"
+      },
+      {
+        "class": "JPEGDescriptor",
+        "GetClassIDAddress": "3c2ed4",
+        "nativeFourCC": "JPED",
+        "classIdHex": "0x4a504544",
+        "IsInstanceOfAddress": "3c2e88",
+        "baseCalls": [
+          "__ZN14CDCIDescriptor12IsInstanceOfEPKc"
+        ],
+        "provenOmfiDescriptorClass": "JPED",
+        "family": "Video"
+      },
+      {
+        "class": "MPGIDescriptor",
+        "GetClassIDAddress": "3cc094",
+        "nativeFourCC": "MPGI",
+        "classIdHex": "0x4d504749",
+        "IsInstanceOfAddress": "3cc048",
+        "baseCalls": [
+          "__ZN14CDCIDescriptor12IsInstanceOfEPKc"
+        ],
+        "provenOmfiDescriptorClass": "MPGI",
+        "family": "Video"
+      },
+      {
+        "class": "TIFFDescriptor",
+        "GetClassIDAddress": "40b518",
+        "nativeFourCC": "TIFF",
+        "classIdHex": "0x54494646",
+        "IsInstanceOfAddress": "40b4cc",
+        "baseCalls": [
+          "__ZN14VideoMediaDesc12IsInstanceOfEPKc"
+        ],
+        "provenOmfiDescriptorClass": "TIFD",
+        "family": "Video"
+      },
+      {
+        "class": "DIDDescriptor",
+        "GetClassIDAddress": "37b248",
+        "nativeFourCC": "DIDD",
+        "classIdHex": "0x44494444",
+        "IsInstanceOfAddress": "37b32c",
+        "baseCalls": [
+          "__ZN14VideoMediaDesc12IsInstanceOfEPKc"
+        ],
+        "provenOmfiDescriptorClass": "DIDD",
+        "family": "Video"
+      }
+    ],
+    "wireClassTranslation": {
+      "loader": "omfiHPDomain::GetObjectByID0xe370c reads objectclass(dict+0x68=OMFI:ObjID) at0xe3798..a4, translates tag at0xe37b8, then NewByClassID0xe3834 and native descriptor Get0xe3878.",
+      "translator": "omfiHPDomain::TranslateTag0xdf764",
+      "aliases": [
+        {
+          "storedOmfiDescriptorClass": "AIFD",
+          "nativeConstructedClass": "AIFCDescriptor",
+          "nativeClassMark": "AIFC",
+          "anchors": "CompareAIFD0xdf7c4..d0; setAIFC0xdf9b8..c0; nativeAIFC IsInstanceOf→AudioMediaDesc0x364634."
+        },
+        {
+          "storedOmfiDescriptorClass": "WAVD",
+          "nativeConstructedClass": "WAVEDescriptor",
+          "nativeClassMark": "WAVE",
+          "anchors": "CompareWAVD0xdf970..7c; ORbit1 changes WAVD→WAVE0xdf980; WAVEDescriptor IsInstanceOf→AudioMediaDesc0x3f86dc."
+        },
+        {
+          "storedOmfiDescriptorClass": "TIFD",
+          "nativeConstructedClass": "TIFFDescriptor",
+          "nativeClassMark": "TIFF",
+          "anchors": "CompareTIFD0xdf91c..28; ORbit2 producesTIFF0xdf92c; TIFFDescriptor IsInstanceOf→VideoMediaDesc0x40b4cc."
+        }
+      ],
+      "importantQualification": "Internal C++ classmark IDs WAVE/AIFC/TIFF are not permission to label arbitrary raw media-data objects with those same tags as descriptors. Apply the supported schema’s owner/reference and wire-class mapping. Actual OMF essence/data objects can use WAVE/AIFC names for a different role.",
+      "classDictionaryScope": "Native compiled inheritance exists even when no per-file CLSD extension entry is present. Explicit dynamic class-parent chains can add evidence when safely resolved, but this bounded receipt does not define arbitrary unknown-subclass support or malformed/cyclic class dictionary policy."
+    },
+    "separateTrackEvidence": {
+      "storedProperty": "OMFI:CPNT:TrackKind",
+      "nativeRead": "AComponent::Get0x148104 loads dictionary+0x1a0 at0x148250, calls Read_TrackType0x148258, stores16bitmember+0x600x14825c. Read_TrackType0x2555c0 delegates stream16bitreader slot0x228.",
+      "values": "Native descriptor family methods establish tracktype1=picture/video and2=sound/audio. Components’ own TrackKind records their track semantics in this numeric type space.",
+      "meaning": "A file mob’s own applicable component/track value can corroborate the physical descriptor. Master tracks can include both picture and sound across several physical files and are not a file Kind substitute.",
+      "encoding": "Typed numeric field respecting supported object byte order. Do not decode numeric TrackKind as a UTF8/MacRoman string or assume a missing value means video.",
+      "policyLimit": "Native base/type mappings are established; Bella choosing whether unknown-descriptor fallback may use a track, and how contradictions affect field availability, remains a design decision.",
+      "byteOrderRead": {
+        "function": "omfiDualStream::ReadInt16(char const*)",
+        "address": "0xb7148",
+        "anchors": [
+          "Vtable+0x228 target verified0xb7148, then requests2bytes through GetValueData0xb717c..80.",
+          "For2bytes checks object byteorder stream+0x1e0; II(0x4949) or0 uses native arm64 littleendian0xb718c..a4; otherorder swaps16bits0xb71d0..d8.",
+          "TrackKind is not special propertycode0x54; missing/incorrect-length ordinary property returns0at0xb71b8."
+        ],
+        "qualification": "Bella must apply supported declared object/HEAD byteorder rules; do not blindly assume every MDB is littleendian. Zero/missing is not Audio or Video."
+      }
+    },
+    "doNotConfuse": [
+      {
+        "value": "Bella Audio/Video Kind",
+        "meaning": "Essence family of this physical media file, from its qualified descriptor."
+      },
+      {
+        "value": "__OMFI:MOBJ:MobType",
+        "meaning": "Mob role such as master2/source3; source3 alone does not mean audio or video."
+      },
+      {
+        "value": "OMFI:MDES:MobKind / GetPhysMobType",
+        "meaning": "Physical-source role such as managed file1/tape2/source-file5; both audio and video can have managed-file role1."
+      },
+      {
+        "value": "OMFI:ATTB:Kind",
+        "meaning": "Attribute storage type (integer/string/object/blob), unrelated to media Audio/Video."
+      },
+      {
+        "value": "Master usage, import/effect/precompute categories",
+        "meaning": "Editorial Type/classification, distinct from physical Audio/Video Kind."
+      },
+      {
+        "value": "Codec/compression identifier",
+        "meaning": "The encoding of audio/video essence, unnecessary to derive a known family’s Kind. No dedicated JP2K wire descriptor class was established here; JPEG2000 codec support is a separate detail."
+      }
+    ],
+    "bellaRecommendationNotApproval": {
+      "primary": "Use the full-ID-matched physical file mob’s own safely resolved supported media descriptor. Map only recognized audio/video family or separately validated supported class ancestry.",
+      "retention": "One small Audio/Video/Unavailable result plus compact status. Do not retain full descriptor/raw summaries merely for Kind; those may independently serve other approved technical fields.",
+      "corroboration": "If inspecting already-needed own file-component TrackKind, keep owner context and detect genuine contradictions; do not combine master-track mixtures into this row.",
+      "unknown": "An unsupported, generic, missing or safely unresolved descriptor does not become Video by exclusion. Leave MDB Kind unavailable; retain the physical file. Later header-source preference remains separate.",
+      "conflicts": "Multiple relevant descriptors or supported contradictory audio/video facts need an explicit rule. A conservative first release can leave Kind unavailable instead of choosing object order or unrelated master data.",
+      "deferred": "Fallback to own TrackKind when descriptor is unknown, mixed-essence labeling, cross-source header precedence and generalized unknown-subclass support are not decided by this research."
+    },
+    "limits": [
+      "These class family facts cover concrete inspected installed-Mac native classes; not an exhaustive historical/Windows/MXF/AAF descriptor catalogue.",
+      "No live Media Composer display or private API execution confirmed; this is static descriptor/type behavior.",
+      "No universal native conflict/unknown handling policy is inferred. Native base0 is evidence against unknown-is-video, not proof of a particular UI blank label.",
+      "No file extension, filename, sample-rate existence or codec-name heuristic is promoted to Kind authority.",
+      "Parent/data agent independently verifies actual MDB owner/class/TrackKind consistency and raw class inheritance; no actual counts asserted in this receipt."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AComponent-Get.txt",
+        "bytes": 14810,
+        "sha256": "a089fb7ac0abbc70867f9b281ecb86ef0fb64a5f27e9d4cc182a5327245067bc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AComposition-Get.txt",
+        "bytes": 52170,
+        "sha256": "6c3a5051f7861742b371f98846805327e0a41c6bd36e40ba138bc6d71d1f0129"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AComposition-GetMediaDesc.txt",
+        "bytes": 222,
+        "sha256": "9b3cdfb01bace6c1663b3559d8ea4f85244b30751374e4daa60d681c1c338618"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AIFCDescriptor-GetClassID.txt",
+        "bytes": 265,
+        "sha256": "2f03eb28c5382a51ce777d1d22ce67efcfa93f31c07c5d3ff2450755229dd735"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AIFCDescriptor-IsInstanceOf.txt",
+        "bytes": 979,
+        "sha256": "35c0ad485e58bdcc2d2a555e0429f9538622ed79f52bcaa97cc7183f0336b325"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AMediaDesc-GetTrackType.txt",
+        "bytes": 212,
+        "sha256": "7977048d31781d7cc9d721a31b92c6103a3502eaaea731d60e287af06e74bac5"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AudioMediaDesc-GetTrackType.txt",
+        "bytes": 216,
+        "sha256": "be336d5836cbba19b61e36948168f9b071ae77c185327d21fbbd2d36a6c96ef8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AudioMediaDesc-IsInstanceOf.txt",
+        "bytes": 979,
+        "sha256": "b22f4e012f416ea332a248b76db29b0d7c26e065fe3de82d95eb01b853074567"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/CDCIDescriptor-GetClassID.txt",
+        "bytes": 265,
+        "sha256": "949532022f15b5afce241bb0b69578b2b86ae9c81e79fb982a71255db6295a1e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/CDCIDescriptor-IsInstanceOf.txt",
+        "bytes": 978,
+        "sha256": "434ef140aff82e0eea2cfbbba6834e64f9ef3edfa5a9a2d52681c656f613b93c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/DIDDescriptor-GetClassID.txt",
+        "bytes": 264,
+        "sha256": "14cf002e46f32caac92e6a3ac41f1ad5035fd97e0eaa245223d8f2c9b28a24e8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/DIDDescriptor-IsInstanceOf.txt",
+        "bytes": 977,
+        "sha256": "7db940c0898f93103d2d4a0a37ca2c6600f24eeb485af3642e0bf64e2403a78b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/JPEGDescriptor-GetClassID.txt",
+        "bytes": 265,
+        "sha256": "9fabb4e0d1e8525546695caad9904999da4f869adb7fb94df06556666aec683c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/JPEGDescriptor-IsInstanceOf.txt",
+        "bytes": 979,
+        "sha256": "8b6fd1cdcff6869e1a11dbe79cedcd2c9b09d54cf9c52df8a8162eb1b0ccaf27"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/MPEGAudioDescriptor-GetClassID.txt",
+        "bytes": 270,
+        "sha256": "0c6883c3878c25811eb77e081669e96981a493fd7398d09b213e081f0591b805"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/MPEGAudioDescriptor-IsInstanceOf.txt",
+        "bytes": 989,
+        "sha256": "cc72b9b391b806ac6f17f102ef01d271a163b4b93ad8a49eea8edd9b8b195750"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/MPGIDescriptor-GetClassID.txt",
+        "bytes": 265,
+        "sha256": "0b1f3dc4072b3ae3395d5c203ba4d6370fcfa7f9d14eadc5d38ab8294c36775c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/MPGIDescriptor-IsInstanceOf.txt",
+        "bytes": 979,
+        "sha256": "49f1b0781adcda777f0800f2a5590d63ff3e3e87c413d4b52427e8378b8dd56f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/PCMAudioDescriptor-GetClassID.txt",
+        "bytes": 269,
+        "sha256": "2988459d564dffa4462ea72584227b6059036ab798f4c338d23b5cf7ee141327"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/PCMAudioDescriptor-IsInstanceOf.txt",
+        "bytes": 987,
+        "sha256": "530e620721dcb0a6b28dd3a3fb118281924875009e480b845cd6941240512020"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/RGBADescriptor-GetClassID.txt",
+        "bytes": 265,
+        "sha256": "60c313bd601270b72fe8227d698c4ce9ef4a5d218f90fd49869862327af0c96b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/RGBADescriptor-IsInstanceOf.txt",
+        "bytes": 978,
+        "sha256": "3880495ff3ed52c882ea5bedadc2b91017a0e8b0870588d70f5a26f9d312db83"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/Read_TrackType.txt",
+        "bytes": 255,
+        "sha256": "6dd21ad4432bfdb845ea46946a61f7b875b996b294b88821d0933fded63ba050"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/TIFFDescriptor-GetClassID.txt",
+        "bytes": 265,
+        "sha256": "72a984209cd46156e684a83b66550eb6b5d6e3fc2f69e50c82e127e078933493"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/TIFFDescriptor-IsInstanceOf.txt",
+        "bytes": 980,
+        "sha256": "784a33b653cd05f000d78214b857889763bc362635c592388c65d85809dc6404"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/VideoMediaDesc-GetTrackType.txt",
+        "bytes": 216,
+        "sha256": "df7b9eb6aae667400e995d23ad69cf01a66cfc5c7f4a4403b8d9bfaf7431dc15"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/VideoMediaDesc-IsInstanceOf.txt",
+        "bytes": 979,
+        "sha256": "49ad9e5964f905d4d376defa2ef434c0af80b37eeb788ea9c8c3fff19069311a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/WAVEDescriptor-GetClassID.txt",
+        "bytes": 265,
+        "sha256": "2571ce6450a6b9c74745900770169ebba7f919543758fa6ed48bcdd576ad9319"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/WAVEDescriptor-IsInstanceOf.txt",
+        "bytes": 979,
+        "sha256": "a0317bbb5fde31fcbc95ef4f47da3731bbe27ae68cc45d00f2914dc0953bb1f1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/descriptor-class-mapping.json",
+        "bytes": 3088,
+        "sha256": "7f2ed009ecb0e8abc83c6324c3c188800bd4178288596f9185909d890f2c4a6d"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/engine-identity.json",
+        "bytes": 1187,
+        "sha256": "a8e3a9411ad0924e0435bef362de8d7fc53166b50f35752b8aed68ccb8fe7044"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/native-property-offsets-prior.json",
+        "bytes": 27054,
+        "sha256": "fcd42e31b206ecb79c37072d1eced4bcb46e81df4fd2c1027224e9341f5632f8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/omfiHPDomain-GetObjectByID.txt",
+        "bytes": 13903,
+        "sha256": "9ac9395e04e1d687c1bda8d08d88b6134615ef3182966d549449f16f00affa06"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/omfiHPDomain-TranslateTag.txt",
+        "bytes": 15949,
+        "sha256": "6f2b0e3f17474c2f131c7dbcb14310ea8bb3f00e4d5cf5bc42205e2efaacc0b4"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/vtable-tracktypes.json",
+        "bytes": 2964,
+        "sha256": "0238b4af798bd24de9ada52491236eb5610f420ee6440a863a0a510dff24fb02"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/trackkind-stream-vtable.json",
+        "bytes": 152,
+        "sha256": "24f36adbd40f147b9db184ceb195b4adde2d4e634c4511601122115b5650dcb0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/omfiDualStream-trackkind-Read16.txt",
+        "bytes": 1663,
+        "sha256": "d11dff9a748aaeed4fe7d7ee095496e9e83c8382f7062078c33127cd93706d0c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/MSMDBMediaStreamMgr-ComputeMediaStart.txt",
+        "bytes": 26176,
+        "sha256": "245fb1ddc34010f64e4fc2ff13711075b02adf1d31b312a7338de048977e7b0f"
+      }
+    ],
+    "boundedNativeProcessingCaller": {
+      "function": "MSMDBMediaStreamMgr::ComputeMediaStart",
+      "address": "0x4524ac",
+      "anchors": [
+        "Uses supplied fileMob parameter and its GetMediaDesc0x4525c8..cc in a media-domain-specific branch; dynamiccasts descriptor0x4525d4..e8.",
+        "Descriptor virtual+0x2e0 at0x452668 is IsOffsetToFrameIndexesValid; +0x208 at0x45267c is IsAncMediaDesc, as separately resolved in vtable-tracktypes.json."
+      ],
+      "meaning": "Confirms descriptor consumption in physical-file processing, but this body is not evidence of an Audio/Video Kind display: the cited calls concern offsets/ancillary data, not GetTrackType. Do not describe it as the Kind classifier. Native family GetTrackType methods and verified vtable targets independently establish audio/video classification."
+    }
+  },
+  "mdvx": {
+    "date": "2026-10-19",
+    "timezone": "Australia/Sydney",
+    "purpose": "Read-only MDVx ordinary PMR/MDB audio/picture evidence and misleading visible Kind classification audit for Bella. No app launch, media writes, repository edits or Bin Filter changes.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "bytes": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "version": "0.2",
+      "build": "4073",
+      "analysisArchitecture": "arm64",
+      "date": "2026-10-19",
+      "priorDisassembly": {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-disassembly.txt",
+        "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074"
+      }
+    },
+    "method": "Fresh universal hash and arm64 symbols; bounded manual static trace of full ordinary scanner, MDB enrichment, metadata helper, row model, filter and table branches; direct arm64 pointer-table decoding. No original source or live displayed-output claim.",
+    "mainFinding": "MDVx has no independent inventory row Kind enum for audio versus video. Its visible KindCellID displays master usage classification (PRECOMP/IMPORTED/etc), while audio recognition uses a private _AUD sentinel in CompressionFourCC and the Compression text Audio. Do not equate MDVx Kind with Bella audio/video Kind.",
+    "visibleKind": {
+      "source": "Selected PMR-associated master via MDVx eight-byte identity excerpt → CompositionMobs → MOBJ:UsageCode 0x1033d. The file descriptor audio marker is independent.",
+      "read": "-[MDVxOMFI addInfoToItem:] 0x100064794; master usage property query0x1000648f8..0x100064904, byte-order conversion and setDB_usageCode0x10006491c..0x100064930.",
+      "importOverride": "Master CPNT:Attributes→ATTR:AttrRefs name prefix _IMPORTSETTING at0x100064a78..0x100064a8c forces usage15 at0x100064a98; no content validation needed for that override.",
+      "storage": "DB_usageCode getter0x10003156c / setter0x100031574, 32-bit word at row+0x64.",
+      "table": "KindCellID0x100050a00 → DB_usageCode0x100050a18 → subtract1/range0..14 → pointer table0x1000e94d0 at0x100050a28..0x100050a30. Other values use empty literal. Export/string branch0x1000512a8..0x1000512d8 reads the same table.",
+      "labels": {
+        "1": "PRECOMP",
+        "2": "UC_SUBCLIP",
+        "3": "UC_EFFECT",
+        "4": "UC_GROUP",
+        "5": "UC_GROUPOOFTER",
+        "6": "UC_MOTION",
+        "7": "",
+        "8": "UC_8",
+        "9": "UC_PRECOMPUTE_FILE",
+        "10": "",
+        "11": "",
+        "12": "",
+        "13": "",
+        "14": "",
+        "15": "IMPORTED"
+      },
+      "noAudioPictureInference": "These labels distinguish master usage/precompute/import status, not an audio/picture essence definition. Ordinary media with usage0 has blank Kind; a sound precompute could independently have usage1 and _AUD.",
+      "icons": "IconCellID branch0x100050a44..0x100050ab0 loads global _videoIcon at0x1000feb78 unconditionally for that column. The inspected table branch does not select a sound icon per row. Global initialized with imageNamed at0x10005c688..0x10005c6a4; see raw literal receipt."
+    },
+    "audioFromMDB": {
+      "function": "-[MDVxOMFI getCompression_data:forObjAt:] 0x100064b60",
+      "owner": "Matched FILE SourceMob TOC, not master or source ancestry. addInfoToItem0x100064ae4 passes matched file index.",
+      "descriptor": "MOBJ:PhysicalMedia0x10333 ref lookup0x100064b9c..0x100064bc4 resolves local descriptor TOC. No descriptor class-tag or Picture/Sound data-definition check occurs in this helper.",
+      "firstTest": "Descriptor PCMA:AudioSamplingRate0x1074d property present (query0x100064bd4..0x100064be8) → write literal bytes _AUD to returned CompressionFourCC at0x100064bec..0x100064bf4.",
+      "secondTest": "Otherwise descriptor AIFD:Summary0x1022f presence plus MDFL:SampleRate0x1031a presence (0x100064c34..0x100064c60) selects the same _AUD branch.",
+      "payloadValidationLimit": "_AUD is written before rate payload readability and minimum8byte check0x100064c00..0x100064c1c. A missing/short rate payload can still leave _AUD and return through bit-depth lookup. Thus this marker is property-presence classification, not proof that all audio metadata decoded correctly.",
+      "otherFields": "Reads rate numeric pair and MDAU:BitsPerSample0x10749 where available; earlier technical report covers numeric details. No string codec is involved in the marker.",
+      "assignment": "Successful helper causes addInfoToItem0x100064aec..0x100064b1c to copy returned FourCC and technical values into row.",
+      "scannerFormatting": "Main0x10003a8c8..0x10003a8ec compares raw FourCC to _AUD and assigns CompressionString Audio. Unreferenced-file pass has the corresponding branch0x10003ae74..0x10003ae98.",
+      "audioFilter": "-[MDVxFilter itemPassFilter:]0x10000c0b0; audio inclusion test at0x10000c130..0x10000c144 compares raw CompressionFourCC with _AUD. Does not test visible Kind text or usage-code labels for audio."
+    },
+    "otherDescriptorPath": {
+      "result": "Without either recognised audio-property route, helper requires DIDD:Compression0x108d9. Reads FourCC, optional DIDResolutionID, frame-size/rate and component width. It does not assign an explicit Video/Picture Kind.",
+      "compressionFormatting": "setCompressionStringForItem:0x10003b494 tries resolutionIDDictionary using DIDResolutionID. If no string and first FourCC byte nonzero, formats four raw chars plus ID with %c%c%c%c ID:%u at0x10003b5c8. This is compression display, not an independently validated audio/video class.",
+      "stillAndUnknown": "No separate still-image Kind or unknown-essence enum is established by this path. A non-_AUD result is not by itself proven video. A descriptor lacking the recognised audio properties and DIDD:Compression returnsfalse, leaving existing row FourCC/default state.",
+      "safetyLimit": "Some optional numeric branches dereference pDataFor results without checking null/width. Do not reproduce these incomplete bounds checks or treat helper success as complete descriptor validation."
+    },
+    "extensionAndNoMDB": {
+      "function": "-[MDVxDatabaseItem checkForAudioTypeByExtension] 0x100030c34",
+      "extensions": [
+        "aif",
+        "wav",
+        "sd2",
+        "lrc"
+      ],
+      "behavior": "Case-insensitive physical filename extension test sets FourCC _AUD and CompressionString Audio (0x100030c64..0x100030cd8). If extension not listed but FourCC already equals _AUD, it still sets text Audio. No file header is opened by this function.",
+      "callers": [
+        "PMR item setup at0x1000306f8",
+        "Unreferenced physical-file item setup at0x100030ad0"
+      ],
+      "precedence": "Extension recognition happens before MDB enrichment. A successful MDB technical helper can replace the FourCC; failed MDB technical lookup leaves earlier extension marker. No general conflict or unknown state is recorded.",
+      "noMDBMXF": "Ordinary no-MDB branch only invokes physical header fallback when file exists and Clip Name is nil. Inspected MDVxMXF addInfoToItem:0x1000326b4 copies clipname/project/fileUID/matUID, not audio/video or compression technical fields. Thus this particular header-to-row route does not establish audio classification for a generic .mxf filename.",
+      "qualification": "Filename extension is a heuristic independent of contents. Absence of _AUD is not a proof of picture essence; this statement is bounded to ordinary inspected row projection, not all parser capabilities."
+    },
+    "BellaImplicationsNotApproval": [
+      "Keep Bella audio/video Kind separate from master usage/Type/precompute classification. MDVx visible Kind is a different concept.",
+      "Prefer correctly associated typed format evidence established by native and actual MDB research rather than copying _AUD/property-presence/extension shortcuts as a format specification.",
+      "Retain unknown/unavailable explicitly when evidence is unsupported or unreadable; do not infer video merely by exclusion of an audio marker. This is design advice, not new approved Bella requirements."
+    ],
+    "limits": [
+      "Static arm64 trace tied to refreshed installed binary hash; no x86_64 control-flow audit or live fixture/UI scan.",
+      "No malformed-file experiment; unsafe/misclassification possibilities are inferred from concrete control flow and not claimed as measured actual corpus failures.",
+      "No comparative performance or memory benchmark.",
+      "No universal MDVx entire-app media-classification claim beyond inspected ordinary inventory/filter/table paths.",
+      "No Bella source precedence, header-read policy or field rule approved by this evidence."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt",
+        "bytes": 16441,
+        "sha256": "be932b1a1d04bf4539a0f4fe6b8fadb68d4d4170387b8613806c5c6af8b0fee1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt",
+        "bytes": 25206,
+        "sha256": "e9f502df3ddc289f84c65be937ec441a847c638c8b17d1df97c3b1f0655644cb"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem-objc-excerpt.txt",
+        "bytes": 24581,
+        "sha256": "99ee84dd15386551c5a986e99eb6ddd750e6aee6275a6914a9306a9a381e34dc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_DB_CompressionFourCC.txt",
+        "bytes": 100,
+        "sha256": "44c596d42e5c34e1186b986c84ee43c215de829f9a8aabbe2a94d8cda8e0d409"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_DB_CompressionString.txt",
+        "bytes": 171,
+        "sha256": "ac30248783f31e7fefe5184a5b1999cadb4dae00444a14c7de1336f87147cedc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_DB_usageCode.txt",
+        "bytes": 92,
+        "sha256": "f9ce466f514460519ee2a2e96efe5cc4c1c176b4feb2aa47ff6724817d1b0622"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_addinfoToItemFromCorrespondingFile.txt",
+        "bytes": 2520,
+        "sha256": "aa67805e2bf40d384e2ed142e4f8f64f4bcffb57ce2454c0948a8291c45228b4"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_checkForAudioTypeByExtension.txt",
+        "bytes": 2095,
+        "sha256": "b326f10d14b76e28a87055e2134cce377351254338607ca48f71a9b80c527ef5"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_init.txt",
+        "bytes": 944,
+        "sha256": "48b45d98fcefc1a40e3914b71ec60c221b0445939045d08846500e3c9652d8fd"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_setDB_usageCode_.txt",
+        "bytes": 96,
+        "sha256": "7160d1f40a8b15fef0a0077dc87140899d486e9f31f8f2a09ff5ac015cc1c957"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_setupWithPmrBytes_length_PMRVersion_usebyteswap_.txt",
+        "bytes": 6841,
+        "sha256": "1f2b786849a8ffd5d41a93e7f4a7b285018b56a74b5d1ea7f6855c1cfdab5e61"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_setupWithUnrefFile_clipname_.txt",
+        "bytes": 6083,
+        "sha256": "6d572855139d4f8e45bf5a449e993da62851964cf74eea1873a1839dc83dfb5b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxFilter_itemPassFilter_.txt",
+        "bytes": 5120,
+        "sha256": "1de5a1774c33d6552ea127292a53676f9e8e703aec7dea063cd76e37f730e101"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxMXF_addInfoToItem_.txt",
+        "bytes": 3747,
+        "sha256": "18281f5391667e37e8e3b5884b1a498e680ac0ccc0a99fcf8f470c42101ea1d0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxOMFI_addInfoToItem_.txt",
+        "bytes": 9423,
+        "sha256": "20211e8a6dbcd33b0e034f3885504d5af7a54cffd3a05b5d776446549e0f6829"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxOMFI_getCompression_data_forObjAt_.txt",
+        "bytes": 5492,
+        "sha256": "56eb914605cab3b729d4dd8de955f3e18298097b96c2c1f546c00a32f1cbe0ef"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxPMRScannerOperation_main.txt",
+        "bytes": 53423,
+        "sha256": "3eeb0753fa8ace9baa58c04efa2bf9345553e74d265102be7d4739b877cabff8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxPMRScannerOperation_setCompressionStringForItem_.txt",
+        "bytes": 4207,
+        "sha256": "bb8add3848cdbdedd371ece9155dd4a6a91605f7f2df95e5599d08480ac641b8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/binary-receipt.json",
+        "bytes": 446,
+        "sha256": "cabad9dd6296aa3c480601407625f69f47a9fff8193e3364a611a6febf14c9c1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/decoded-kind-and-audio-literals.json",
+        "bytes": 2675,
+        "sha256": "4dfcc7668fbb8ef984206e9b9f7aa6ea9b5a141ac48d1af7672f38e74b7be0d5"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/symbols-current-arm64.txt",
+        "bytes": 225054,
+        "sha256": "2d00e21aac7d5cf927d18e2ff40d14f2a8399ddb076ffa48ed89f3dc70b0adb9"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/videoIcon-global-init-excerpt.txt",
+        "bytes": 568,
+        "sha256": "8423dff37fd3d210b14afe8cce6c33a63fd2c535b4d6c6760091290ebe078cc6"
+      }
+    ]
+  },
+  "actualDatabases": {
+    "purpose": "Independent read-only physical-file Kind audit of six live MDBs and paired PMRs; no filename, codec-label, Source Path, OldScanner or master-level Audio/Video label inference.",
+    "method": [
+      "Current source and raw cache hashes are checked before interpretation. Full PMR FileMobId and MasterMobId find unique catalogue-qualified owners.",
+      "The physical file owner MOBJ:PhysicalMedia reference selects its descriptor. ObjID must be typed ObjectTag of exactly four bytes.",
+      "Actual descriptor classes and property type/width presence are recorded. Audio/Video class semantics are established by the separately traced native MC registration and class ancestry: PCMA/AIFD/WAVD audio; CDCI/RGBA/MPGI video. AIFD/WAVD translate to native AIFC/WAVE before construction.",
+      "Own-file and selected-master structural component graphs are inspected without following SourceID into another mob. Only own SCLP TrackKind values and selected-master SCLPs targeting the exact physical FileMobId enter cross-checks.",
+      "Reference array and MobIndex declared counts must exactly equal parsed entries. Unsupported widths, missing targets, conflicting kinds and missing physical descriptors are counted explicitly.",
+      "MDES:MobKind is recorded separately; source/file role is not Audio/Video Kind.",
+      "No media headers or essence are opened. No source-file paths or filenames are used to classify Kind."
+    ],
+    "limits": [
+      "All six actual MDBs use the established littleendian legacy Bento/OMF layout. No OMF2 DataKind/DDEF occurrence or unknown descriptor case is established by this corpus.",
+      "Missing/corrupt/unsupported Kind inputs may be unexercised; zero observations do not prove those cases impossible.",
+      "Dynamic CLSD records extend built-in classes and do not enumerate every built-in descriptor. No missing CLSD entry is called corruption.",
+      "Known component wrapper routes are bounded; this is not a universal traversal of arbitrary Avid effect/precompute graphs.",
+      "No Bella fallback priority, cross-source precedence or extra header-read trigger is approved by this probe."
+    ],
+    "nativeKindMappingEvidence": {
+      "AudioMediaDescGetTrackType": "0x363dcc returns 2",
+      "VideoMediaDescGetTrackType": "0x343950 returns 1",
+      "classAncestry": [
+        "PCMAudioDescriptor(PCMA) IsInstanceOf 0x3e8124 -> AudioMediaDesc",
+        "RGBADescriptor(RGBA) 0x3e244c -> DIDDescriptor 0x37b32c -> VideoMediaDesc",
+        "CDCIDescriptor 0x33fd44 -> DIDDescriptor",
+        "MPGI 0x3cc048 -> CDCIDescriptor",
+        "Native AIFC and WAVE descriptors derive AudioMediaDesc"
+      ],
+      "legacyTagTranslation": "GetObjectByID reads ObjID then TranslateTag at 0xe37b8 before NewByClassID 0xe3834; TranslateTag 0xdf764 maps raw AIFD -> AIFC (0xdf7c4..d0 / 0xdf9b8..c0) and raw WAVD -> WAVE (0xdf970..84).",
+      "trackKindRead": "AComponent::Get reads dictslot0x1a0=CPNT:TrackKind via Read_TrackType 0x148250..58; Read_TrackType 0x2555c0 delegates 16-bit reader."
+    },
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "cacheSha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "countsPerPmrRow": {
+          "pmrRows": 389,
+          "rowsWithExactlyOneDescriptor": 389,
+          "rowsWithSeveralDescriptors": 0,
+          "rowsWithNoDescriptor": 0,
+          "descriptorFamily_Video": 103,
+          "rowsDescriptorAndOwnSourceClipTrackKindAgree": 389,
+          "rowsDescriptorAndMasterDirectFileTrackKindAgree": 389,
+          "rowsDescriptorVsOwnTrackKindConflict": 0,
+          "rowsDescriptorVsMasterDirectTrackKindConflict": 0,
+          "rowsMasterHasPictureAndSoundSourceClips": 219,
+          "descriptorFamily_Audio": 286
+        },
+        "distinctFileOwners": 389,
+        "distinctDescriptorObjects": 389,
+        "distinctSelectedMasters": 153,
+        "descriptorClassesPerFile": {
+          "RGBA": 10,
+          "PCMA": 286,
+          "CDCI": 93
+        },
+        "descriptorMobKindPerFile": {
+          "('RGBA', 1)": 10,
+          "('PCMA', 1)": 286,
+          "('CDCI', 1)": 93
+        },
+        "ownFileSourceClipTrackKindSetsPerFile": {
+          "1": 103,
+          "2": 286
+        },
+        "selectedMasterSourceClipTrackKindSetsPerFile": {
+          "1": 30,
+          "2": 140,
+          "1,2": 219
+        },
+        "selectedMasterDirectTargetFileTrackKindSetsPerFile": {
+          "1": 103,
+          "2": 286
+        },
+        "descriptorVsOwnAndMasterTargetTrackKindSetsPerFile": {
+          "('Video', '1', '1')": 103,
+          "('Audio', '2', '2')": 286
+        },
+        "distinctMasterSourceClipTrackKindSets": {
+          "1,2": 73,
+          "2": 70,
+          "1": 10
+        },
+        "distinctMasterPhysicalFileFamilies": {
+          "Audio,Video": 73,
+          "Audio": 70,
+          "Video": 10
+        },
+        "kindRelevantDescriptorPropertyTypeWidthsPerFile": {
+          "('RGBA', 'OMFI:DIDD:StoredHeight', 'omfi:Long', 4)": 10,
+          "('RGBA', 'OMFI:DIDD:StoredWidth', 'omfi:Long', 4)": 10,
+          "('PCMA', 'OMFI:PCMA:AudioSamplingRate', 'omfi:ExactEditRate', 8)": 286,
+          "('CDCI', 'OMFI:DIDD:StoredHeight', 'omfi:Long', 4)": 93,
+          "('CDCI', 'OMFI:DIDD:StoredWidth', 'omfi:Long', 4)": 93
+        },
+        "kindRelevantPropertyStatesPerFile": {
+          "RGBA:OMFI:DIDD:StoredHeight:nonempty": 10,
+          "RGBA:OMFI:DIDD:StoredWidth:nonempty": 10,
+          "PCMA:OMFI:PCMA:AudioSamplingRate:nonempty": 286,
+          "CDCI:OMFI:DIDD:StoredHeight:nonempty": 93,
+          "CDCI:OMFI:DIDD:StoredWidth:nonempty": 93
+        },
+        "dynamicClassDictionaryCorroboration": [
+          {
+            "object": 93973,
+            "classId": "MDFL",
+            "parentClassIds": [],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    5158276,
+                    4
+                  ]
+                ],
+                "hex": "4d44464c"
+              }
+            ]
+          },
+          {
+            "object": 93974,
+            "classId": "DIDD",
+            "parentClassIds": [
+              "MDFL"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    5158324,
+                    4
+                  ]
+                ],
+                "hex": "44494444"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    1399218,
+                    8
+                  ]
+                ],
+                "hex": "156f010000000000"
+              }
+            ]
+          },
+          {
+            "object": 93975,
+            "classId": "CDCI",
+            "parentClassIds": [
+              "DIDD"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    5158396,
+                    4
+                  ]
+                ],
+                "hex": "43444349"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    1399226,
+                    8
+                  ]
+                ],
+                "hex": "166f010000000000"
+              }
+            ]
+          },
+          {
+            "object": 93976,
+            "classId": "JPED",
+            "parentClassIds": [
+              "CDCI"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    5158468,
+                    4
+                  ]
+                ],
+                "hex": "4a504544"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    1399234,
+                    8
+                  ]
+                ],
+                "hex": "176f010000000000"
+              }
+            ]
+          },
+          {
+            "object": 93977,
+            "classId": "MPGI",
+            "parentClassIds": [
+              "CDCI"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    5158540,
+                    4
+                  ]
+                ],
+                "hex": "4d504749"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    1399242,
+                    8
+                  ]
+                ],
+                "hex": "176f010000000000"
+              }
+            ]
+          }
+        ],
+        "examplesByDescriptorClass": {
+          "RGBA": {
+            "fileMobId": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64",
+            "masterMobId": "060a2b340101010501010f1013000000d97717225586059099ba34363bcdaf64",
+            "fileObject": 93780,
+            "masterObject": 93810,
+            "physicalMediaReferences": [
+              {
+                "type": "omfi:ObjRef",
+                "hex": "536e010000000000",
+                "ranges": [
+                  [
+                    1394498,
+                    8
+                  ]
+                ]
+              }
+            ],
+            "descriptorObject": 93779,
+            "descriptorClass": "RGBA",
+            "descriptorClassRanges": [
+              [
+                [
+                  5128540,
+                  4
+                ]
+              ]
+            ],
+            "kindRelevantProperties": [
+              {
+                "property": "OMFI:DIDD:StoredHeight",
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    5128828,
+                    4
+                  ]
+                ],
+                "summaryPrefixHex": null
+              },
+              {
+                "property": "OMFI:DIDD:StoredWidth",
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    5128852,
+                    4
+                  ]
+                ],
+                "summaryPrefixHex": null
+              }
+            ],
+            "ownFileGraph": {
+              "kinds": {
+                "0": 1,
+                "1": 1
+              },
+              "sclpKinds": {
+                "1": 1
+              },
+              "classes": {
+                "MOBJ": 1,
+                "TRAK": 1,
+                "SCLP": 1
+              },
+              "errors": {},
+              "examples": [
+                {
+                  "componentObject": 93773,
+                  "trackKindValues": [
+                    1
+                  ],
+                  "trackKindRanges": [
+                    [
+                      [
+                        5127676,
+                        2
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            },
+            "masterDirectFileTrackKinds": [
+              1
+            ]
+          },
+          "PCMA": {
+            "fileMobId": "060a2b340101010501010f1013000000782a3120258505911bcb34363bcdaf64",
+            "masterMobId": "060a2b340101010501010f1013000000702a312025850591436534363bcdaf64",
+            "fileObject": 92287,
+            "masterObject": 92211,
+            "physicalMediaReferences": [
+              {
+                "type": "omfi:ObjRef",
+                "hex": "7e68010000000000",
+                "ranges": [
+                  [
+                    1341155,
+                    8
+                  ]
+                ]
+              }
+            ],
+            "descriptorObject": 92286,
+            "descriptorClass": "PCMA",
+            "descriptorClassRanges": [
+              [
+                [
+                  4865068,
+                  4
+                ]
+              ]
+            ],
+            "kindRelevantProperties": [
+              {
+                "property": "OMFI:PCMA:AudioSamplingRate",
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    1341067,
+                    8
+                  ]
+                ],
+                "summaryPrefixHex": null
+              }
+            ],
+            "ownFileGraph": {
+              "kinds": {
+                "0": 1,
+                "2": 1
+              },
+              "sclpKinds": {
+                "2": 1
+              },
+              "classes": {
+                "MOBJ": 1,
+                "TRAK": 1,
+                "SCLP": 1
+              },
+              "errors": {},
+              "examples": [
+                {
+                  "componentObject": 92283,
+                  "trackKindValues": [
+                    2
+                  ],
+                  "trackKindRanges": [
+                    [
+                      [
+                        4864516,
+                        2
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            },
+            "masterDirectFileTrackKinds": [
+              2
+            ]
+          },
+          "CDCI": {
+            "fileMobId": "060a2b340101010101010f0013000000a8fcc55bf3e3a805060e2b347f7f2a80",
+            "masterMobId": "060a2b340101010101010f0013000000a8fcc55bf2e3a805060e2b347f7f2a80",
+            "fileObject": 81352,
+            "masterObject": 81330,
+            "physicalMediaReferences": [
+              {
+                "type": "omfi:ObjRef",
+                "hex": "c73d010000000000",
+                "ranges": [
+                  [
+                    837548,
+                    8
+                  ]
+                ]
+              }
+            ],
+            "descriptorObject": 81351,
+            "descriptorClass": "CDCI",
+            "descriptorClassRanges": [
+              [
+                [
+                  3276100,
+                  4
+                ]
+              ]
+            ],
+            "kindRelevantProperties": [
+              {
+                "property": "OMFI:DIDD:StoredHeight",
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    3276340,
+                    4
+                  ]
+                ],
+                "summaryPrefixHex": null
+              },
+              {
+                "property": "OMFI:DIDD:StoredWidth",
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    3276364,
+                    4
+                  ]
+                ],
+                "summaryPrefixHex": null
+              }
+            ],
+            "ownFileGraph": {
+              "kinds": {
+                "0": 1,
+                "1": 4
+              },
+              "sclpKinds": {
+                "1": 1
+              },
+              "classes": {
+                "MOBJ": 1,
+                "TRAK": 1,
+                "SEQU": 1,
+                "FILL": 2,
+                "SCLP": 1
+              },
+              "errors": {},
+              "examples": [
+                {
+                  "componentObject": 81345,
+                  "trackKindValues": [
+                    1
+                  ],
+                  "trackKindRanges": [
+                    [
+                      [
+                        3274852,
+                        2
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            },
+            "masterDirectFileTrackKinds": [
+              1
+            ]
+          }
+        },
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 1117,
+          "omfi:ObjRef:observed": 1202
+        },
+        "kindStoragePropertyOccurrences": {
+          "OMFI:CPNT:TrackKind": 5497
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "cacheSha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "countsPerPmrRow": {
+          "pmrRows": 686,
+          "rowsWithExactlyOneDescriptor": 686,
+          "rowsWithSeveralDescriptors": 0,
+          "rowsWithNoDescriptor": 0,
+          "descriptorFamily_Video": 279,
+          "rowsDescriptorAndOwnSourceClipTrackKindAgree": 686,
+          "rowsDescriptorAndMasterDirectFileTrackKindAgree": 686,
+          "rowsDescriptorVsOwnTrackKindConflict": 0,
+          "rowsDescriptorVsMasterDirectTrackKindConflict": 0,
+          "rowsMasterHasPictureAndSoundSourceClips": 0,
+          "descriptorFamily_Audio": 407
+        },
+        "distinctFileOwners": 686,
+        "distinctDescriptorObjects": 686,
+        "distinctSelectedMasters": 415,
+        "descriptorClassesPerFile": {
+          "CDCI": 271,
+          "PCMA": 407,
+          "RGBA": 8
+        },
+        "descriptorMobKindPerFile": {
+          "('CDCI', 1)": 271,
+          "('PCMA', 1)": 407,
+          "('RGBA', 1)": 8
+        },
+        "ownFileSourceClipTrackKindSetsPerFile": {
+          "1": 279,
+          "2": 407
+        },
+        "selectedMasterSourceClipTrackKindSetsPerFile": {
+          "1": 279,
+          "2": 407
+        },
+        "selectedMasterDirectTargetFileTrackKindSetsPerFile": {
+          "1": 279,
+          "2": 407
+        },
+        "descriptorVsOwnAndMasterTargetTrackKindSetsPerFile": {
+          "('Video', '1', '1')": 279,
+          "('Audio', '2', '2')": 407
+        },
+        "distinctMasterSourceClipTrackKindSets": {
+          "2": 152,
+          "1": 263
+        },
+        "distinctMasterPhysicalFileFamilies": {
+          "Audio": 152,
+          "Video": 263
+        },
+        "kindRelevantDescriptorPropertyTypeWidthsPerFile": {
+          "('CDCI', 'OMFI:DIDD:StoredHeight', 'omfi:Long', 4)": 271,
+          "('CDCI', 'OMFI:DIDD:StoredWidth', 'omfi:Long', 4)": 271,
+          "('PCMA', 'OMFI:PCMA:AudioSamplingRate', 'omfi:ExactEditRate', 8)": 407,
+          "('RGBA', 'OMFI:DIDD:StoredHeight', 'omfi:Long', 4)": 8,
+          "('RGBA', 'OMFI:DIDD:StoredWidth', 'omfi:Long', 4)": 8
+        },
+        "kindRelevantPropertyStatesPerFile": {
+          "CDCI:OMFI:DIDD:StoredHeight:nonempty": 271,
+          "CDCI:OMFI:DIDD:StoredWidth:nonempty": 271,
+          "PCMA:OMFI:PCMA:AudioSamplingRate:nonempty": 407,
+          "RGBA:OMFI:DIDD:StoredHeight:nonempty": 8,
+          "RGBA:OMFI:DIDD:StoredWidth:nonempty": 8
+        },
+        "dynamicClassDictionaryCorroboration": [
+          {
+            "object": 207779,
+            "classId": "MDFL",
+            "parentClassIds": [],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    22745220,
+                    4
+                  ]
+                ],
+                "hex": "4d44464c"
+              }
+            ]
+          },
+          {
+            "object": 207780,
+            "classId": "DIDD",
+            "parentClassIds": [
+              "MDFL"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    22745268,
+                    4
+                  ]
+                ],
+                "hex": "44494444"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    3948632,
+                    8
+                  ]
+                ],
+                "hex": "a32b030000000000"
+              }
+            ]
+          },
+          {
+            "object": 207781,
+            "classId": "CDCI",
+            "parentClassIds": [
+              "DIDD"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    22745340,
+                    4
+                  ]
+                ],
+                "hex": "43444349"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    3948640,
+                    8
+                  ]
+                ],
+                "hex": "a42b030000000000"
+              }
+            ]
+          },
+          {
+            "object": 207782,
+            "classId": "JPED",
+            "parentClassIds": [
+              "CDCI"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    22745412,
+                    4
+                  ]
+                ],
+                "hex": "4a504544"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    3948648,
+                    8
+                  ]
+                ],
+                "hex": "a52b030000000000"
+              }
+            ]
+          },
+          {
+            "object": 207783,
+            "classId": "MPGI",
+            "parentClassIds": [
+              "CDCI"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    22745484,
+                    4
+                  ]
+                ],
+                "hex": "4d504749"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    3948656,
+                    8
+                  ]
+                ],
+                "hex": "a52b030000000000"
+              }
+            ]
+          }
+        ],
+        "examplesByDescriptorClass": {
+          "CDCI": {
+            "fileMobId": "060a2b340101010501010f1013000000f17c57157311069695617c57583610fa",
+            "masterMobId": "060a2b340101010501010f10130000005d6b2b157311069622b57c57583610fa",
+            "fileObject": 199790,
+            "masterObject": 166574,
+            "physicalMediaReferences": [
+              {
+                "type": "omfi:ObjRef",
+                "hex": "6d0c030000000000",
+                "ranges": [
+                  [
+                    3708158,
+                    8
+                  ]
+                ]
+              }
+            ],
+            "descriptorObject": 199789,
+            "descriptorClass": "CDCI",
+            "descriptorClassRanges": [
+              [
+                [
+                  21677628,
+                  4
+                ]
+              ]
+            ],
+            "kindRelevantProperties": [
+              {
+                "property": "OMFI:DIDD:StoredHeight",
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    21677892,
+                    4
+                  ]
+                ],
+                "summaryPrefixHex": null
+              },
+              {
+                "property": "OMFI:DIDD:StoredWidth",
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    21677916,
+                    4
+                  ]
+                ],
+                "summaryPrefixHex": null
+              }
+            ],
+            "ownFileGraph": {
+              "kinds": {
+                "0": 1,
+                "1": 1
+              },
+              "sclpKinds": {
+                "1": 1
+              },
+              "classes": {
+                "MOBJ": 1,
+                "TRAK": 1,
+                "SCLP": 1
+              },
+              "errors": {},
+              "examples": [
+                {
+                  "componentObject": 199783,
+                  "trackKindValues": [
+                    1
+                  ],
+                  "trackKindRanges": [
+                    [
+                      [
+                        21676524,
+                        2
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            },
+            "masterDirectFileTrackKinds": [
+              1
+            ]
+          },
+          "PCMA": {
+            "fileMobId": "060a2b340101010501010f101300000037a271167311069610e87c57583610fa",
+            "masterMobId": "060a2b340101010501010f10130000003e8d2b15731106969e6b7c57583610fa",
+            "fileObject": 156331,
+            "masterObject": 158238,
+            "physicalMediaReferences": [
+              {
+                "type": "omfi:ObjRef",
+                "hex": "aa62020000000000",
+                "ranges": [
+                  [
+                    2343512,
+                    8
+                  ]
+                ]
+              }
+            ],
+            "descriptorObject": 156330,
+            "descriptorClass": "PCMA",
+            "descriptorClassRanges": [
+              [
+                [
+                  16257972,
+                  4
+                ]
+              ]
+            ],
+            "kindRelevantProperties": [
+              {
+                "property": "OMFI:PCMA:AudioSamplingRate",
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    2343405,
+                    8
+                  ]
+                ],
+                "summaryPrefixHex": null
+              }
+            ],
+            "ownFileGraph": {
+              "kinds": {
+                "0": 1,
+                "2": 1
+              },
+              "sclpKinds": {
+                "2": 1
+              },
+              "classes": {
+                "MOBJ": 1,
+                "TRAK": 1,
+                "SCLP": 1
+              },
+              "errors": {},
+              "examples": [
+                {
+                  "componentObject": 156325,
+                  "trackKindValues": [
+                    2
+                  ],
+                  "trackKindRanges": [
+                    [
+                      [
+                        16257132,
+                        2
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            },
+            "masterDirectFileTrackKinds": [
+              2
+            ]
+          },
+          "RGBA": {
+            "fileMobId": "060a2b340101010501010f1013000000dc16621573110696f5657c57583610fa",
+            "masterMobId": "060a2b340101010501010f10130000007b6c2b1573110696dc687c57583610fa",
+            "fileObject": 196046,
+            "masterObject": 174035,
+            "physicalMediaReferences": [
+              {
+                "type": "omfi:ObjRef",
+                "hex": "cdfd020000000000",
+                "ranges": [
+                  [
+                    3591453,
+                    8
+                  ]
+                ]
+              }
+            ],
+            "descriptorObject": 196045,
+            "descriptorClass": "RGBA",
+            "descriptorClassRanges": [
+              [
+                [
+                  21198372,
+                  4
+                ]
+              ]
+            ],
+            "kindRelevantProperties": [
+              {
+                "property": "OMFI:DIDD:StoredHeight",
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    21198684,
+                    4
+                  ]
+                ],
+                "summaryPrefixHex": null
+              },
+              {
+                "property": "OMFI:DIDD:StoredWidth",
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    21198708,
+                    4
+                  ]
+                ],
+                "summaryPrefixHex": null
+              }
+            ],
+            "ownFileGraph": {
+              "kinds": {
+                "0": 1,
+                "1": 1
+              },
+              "sclpKinds": {
+                "1": 1
+              },
+              "classes": {
+                "MOBJ": 1,
+                "TRAK": 1,
+                "SCLP": 1
+              },
+              "errors": {},
+              "examples": [
+                {
+                  "componentObject": 196036,
+                  "trackKindValues": [
+                    1
+                  ],
+                  "trackKindRanges": [
+                    [
+                      [
+                        21196956,
+                        2
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            },
+            "masterDirectFileTrackKinds": [
+              1
+            ]
+          }
+        },
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 1794,
+          "omfi:ObjRef:observed": 2105
+        },
+        "kindStoragePropertyOccurrences": {
+          "OMFI:CPNT:TrackKind": 24964
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "cacheSha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "countsPerPmrRow": {
+          "pmrRows": 513,
+          "rowsWithExactlyOneDescriptor": 513,
+          "rowsWithSeveralDescriptors": 0,
+          "rowsWithNoDescriptor": 0,
+          "descriptorFamily_Video": 193,
+          "rowsDescriptorAndOwnSourceClipTrackKindAgree": 513,
+          "rowsDescriptorAndMasterDirectFileTrackKindAgree": 513,
+          "rowsDescriptorVsOwnTrackKindConflict": 0,
+          "rowsDescriptorVsMasterDirectTrackKindConflict": 0,
+          "rowsMasterHasPictureAndSoundSourceClips": 0,
+          "descriptorFamily_Audio": 320
+        },
+        "distinctFileOwners": 513,
+        "distinctDescriptorObjects": 513,
+        "distinctSelectedMasters": 353,
+        "descriptorClassesPerFile": {
+          "CDCI": 193,
+          "PCMA": 320
+        },
+        "descriptorMobKindPerFile": {
+          "('CDCI', 1)": 193,
+          "('PCMA', 1)": 320
+        },
+        "ownFileSourceClipTrackKindSetsPerFile": {
+          "1": 193,
+          "2": 320
+        },
+        "selectedMasterSourceClipTrackKindSetsPerFile": {
+          "1": 193,
+          "2": 320
+        },
+        "selectedMasterDirectTargetFileTrackKindSetsPerFile": {
+          "1": 193,
+          "2": 320
+        },
+        "descriptorVsOwnAndMasterTargetTrackKindSetsPerFile": {
+          "('Video', '1', '1')": 193,
+          "('Audio', '2', '2')": 320
+        },
+        "distinctMasterSourceClipTrackKindSets": {
+          "2": 160,
+          "1": 193
+        },
+        "distinctMasterPhysicalFileFamilies": {
+          "Audio": 160,
+          "Video": 193
+        },
+        "kindRelevantDescriptorPropertyTypeWidthsPerFile": {
+          "('CDCI', 'OMFI:DIDD:StoredHeight', 'omfi:Long', 4)": 193,
+          "('CDCI', 'OMFI:DIDD:StoredWidth', 'omfi:Long', 4)": 193,
+          "('PCMA', 'OMFI:PCMA:AudioSamplingRate', 'omfi:ExactEditRate', 8)": 320
+        },
+        "kindRelevantPropertyStatesPerFile": {
+          "CDCI:OMFI:DIDD:StoredHeight:nonempty": 193,
+          "CDCI:OMFI:DIDD:StoredWidth:nonempty": 193,
+          "PCMA:OMFI:PCMA:AudioSamplingRate:nonempty": 320
+        },
+        "dynamicClassDictionaryCorroboration": [
+          {
+            "object": 168809,
+            "classId": "MDFL",
+            "parentClassIds": [],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    16615580,
+                    4
+                  ]
+                ],
+                "hex": "4d44464c"
+              }
+            ]
+          },
+          {
+            "object": 168810,
+            "classId": "DIDD",
+            "parentClassIds": [
+              "MDFL"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    16615628,
+                    4
+                  ]
+                ],
+                "hex": "44494444"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    2903404,
+                    8
+                  ]
+                ],
+                "hex": "6993020000000000"
+              }
+            ]
+          },
+          {
+            "object": 168811,
+            "classId": "CDCI",
+            "parentClassIds": [
+              "DIDD"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    16615700,
+                    4
+                  ]
+                ],
+                "hex": "43444349"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    2903412,
+                    8
+                  ]
+                ],
+                "hex": "6a93020000000000"
+              }
+            ]
+          },
+          {
+            "object": 168812,
+            "classId": "JPED",
+            "parentClassIds": [
+              "CDCI"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    16615772,
+                    4
+                  ]
+                ],
+                "hex": "4a504544"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    2903420,
+                    8
+                  ]
+                ],
+                "hex": "6b93020000000000"
+              }
+            ]
+          },
+          {
+            "object": 168813,
+            "classId": "MPGI",
+            "parentClassIds": [
+              "CDCI"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    16615844,
+                    4
+                  ]
+                ],
+                "hex": "4d504749"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    2903428,
+                    8
+                  ]
+                ],
+                "hex": "6b93020000000000"
+              }
+            ]
+          }
+        ],
+        "examplesByDescriptorClass": {
+          "CDCI": {
+            "fileMobId": "060a2b340101010501010f1013000000ec470b09731106963c3a7c57583610fa",
+            "masterMobId": "060a2b340101010501010f1013000000442aa70873110696bc8a7c57583610fa",
+            "fileObject": 164668,
+            "masterObject": 135368,
+            "physicalMediaReferences": [
+              {
+                "type": "omfi:ObjRef",
+                "hex": "3b83020000000000",
+                "ranges": [
+                  [
+                    2771399,
+                    8
+                  ]
+                ]
+              }
+            ],
+            "descriptorObject": 164667,
+            "descriptorClass": "CDCI",
+            "descriptorClassRanges": [
+              [
+                [
+                  16113236,
+                  4
+                ]
+              ]
+            ],
+            "kindRelevantProperties": [
+              {
+                "property": "OMFI:DIDD:StoredHeight",
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    16113500,
+                    4
+                  ]
+                ],
+                "summaryPrefixHex": null
+              },
+              {
+                "property": "OMFI:DIDD:StoredWidth",
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    16113524,
+                    4
+                  ]
+                ],
+                "summaryPrefixHex": null
+              }
+            ],
+            "ownFileGraph": {
+              "kinds": {
+                "0": 1,
+                "1": 1
+              },
+              "sclpKinds": {
+                "1": 1
+              },
+              "classes": {
+                "MOBJ": 1,
+                "TRAK": 1,
+                "SCLP": 1
+              },
+              "errors": {},
+              "examples": [
+                {
+                  "componentObject": 164661,
+                  "trackKindValues": [
+                    1
+                  ],
+                  "trackKindRanges": [
+                    [
+                      [
+                        16112132,
+                        2
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            },
+            "masterDirectFileTrackKinds": [
+              1
+            ]
+          },
+          "PCMA": {
+            "fileMobId": "060a2b340101010501010f1013000000febd9c08731106961d587c57583610fa",
+            "masterMobId": "060a2b340101010501010f10130000000c887a08731106968bb77c57583610fa",
+            "fileObject": 168650,
+            "masterObject": 125983,
+            "physicalMediaReferences": [
+              {
+                "type": "omfi:ObjRef",
+                "hex": "c992020000000000",
+                "ranges": [
+                  [
+                    2898938,
+                    8
+                  ]
+                ]
+              }
+            ],
+            "descriptorObject": 168649,
+            "descriptorClass": "PCMA",
+            "descriptorClassRanges": [
+              [
+                [
+                  16595780,
+                  4
+                ]
+              ]
+            ],
+            "kindRelevantProperties": [
+              {
+                "property": "OMFI:PCMA:AudioSamplingRate",
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    2898831,
+                    8
+                  ]
+                ],
+                "summaryPrefixHex": null
+              }
+            ],
+            "ownFileGraph": {
+              "kinds": {
+                "0": 1,
+                "2": 1
+              },
+              "sclpKinds": {
+                "2": 1
+              },
+              "classes": {
+                "MOBJ": 1,
+                "TRAK": 1,
+                "SCLP": 1
+              },
+              "errors": {},
+              "examples": [
+                {
+                  "componentObject": 168644,
+                  "trackKindValues": [
+                    2
+                  ],
+                  "trackKindRanges": [
+                    [
+                      [
+                        16594940,
+                        2
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            },
+            "masterDirectFileTrackKinds": [
+              2
+            ]
+          }
+        },
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 1359,
+          "omfi:ObjRef:observed": 1597
+        },
+        "kindStoragePropertyOccurrences": {
+          "OMFI:CPNT:TrackKind": 18598
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "cacheSha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "countsPerPmrRow": {
+          "pmrRows": 463,
+          "rowsWithExactlyOneDescriptor": 463,
+          "rowsWithSeveralDescriptors": 0,
+          "rowsWithNoDescriptor": 0,
+          "descriptorFamily_Video": 205,
+          "rowsDescriptorAndOwnSourceClipTrackKindAgree": 463,
+          "rowsDescriptorAndMasterDirectFileTrackKindAgree": 463,
+          "rowsDescriptorVsOwnTrackKindConflict": 0,
+          "rowsDescriptorVsMasterDirectTrackKindConflict": 0,
+          "rowsMasterHasPictureAndSoundSourceClips": 0,
+          "descriptorFamily_Audio": 258
+        },
+        "distinctFileOwners": 463,
+        "distinctDescriptorObjects": 463,
+        "distinctSelectedMasters": 293,
+        "descriptorClassesPerFile": {
+          "CDCI": 205,
+          "PCMA": 258
+        },
+        "descriptorMobKindPerFile": {
+          "('CDCI', 1)": 205,
+          "('PCMA', 1)": 258
+        },
+        "ownFileSourceClipTrackKindSetsPerFile": {
+          "1": 205,
+          "2": 258
+        },
+        "selectedMasterSourceClipTrackKindSetsPerFile": {
+          "1": 205,
+          "2": 258
+        },
+        "selectedMasterDirectTargetFileTrackKindSetsPerFile": {
+          "1": 205,
+          "2": 258
+        },
+        "descriptorVsOwnAndMasterTargetTrackKindSetsPerFile": {
+          "('Video', '1', '1')": 205,
+          "('Audio', '2', '2')": 258
+        },
+        "distinctMasterSourceClipTrackKindSets": {
+          "2": 109,
+          "1": 184
+        },
+        "distinctMasterPhysicalFileFamilies": {
+          "Audio": 109,
+          "Video": 184
+        },
+        "kindRelevantDescriptorPropertyTypeWidthsPerFile": {
+          "('CDCI', 'OMFI:DIDD:StoredHeight', 'omfi:Long', 4)": 205,
+          "('CDCI', 'OMFI:DIDD:StoredWidth', 'omfi:Long', 4)": 205,
+          "('PCMA', 'OMFI:PCMA:AudioSamplingRate', 'omfi:ExactEditRate', 8)": 258
+        },
+        "kindRelevantPropertyStatesPerFile": {
+          "CDCI:OMFI:DIDD:StoredHeight:nonempty": 205,
+          "CDCI:OMFI:DIDD:StoredWidth:nonempty": 205,
+          "PCMA:OMFI:PCMA:AudioSamplingRate:nonempty": 258
+        },
+        "dynamicClassDictionaryCorroboration": [
+          {
+            "object": 164098,
+            "classId": "MDFL",
+            "parentClassIds": [],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    15702660,
+                    4
+                  ]
+                ],
+                "hex": "4d44464c"
+              }
+            ]
+          },
+          {
+            "object": 164099,
+            "classId": "DIDD",
+            "parentClassIds": [
+              "MDFL"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    15702708,
+                    4
+                  ]
+                ],
+                "hex": "44494444"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    2726095,
+                    8
+                  ]
+                ],
+                "hex": "0281020000000000"
+              }
+            ]
+          },
+          {
+            "object": 164100,
+            "classId": "CDCI",
+            "parentClassIds": [
+              "DIDD"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    15702780,
+                    4
+                  ]
+                ],
+                "hex": "43444349"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    2726103,
+                    8
+                  ]
+                ],
+                "hex": "0381020000000000"
+              }
+            ]
+          },
+          {
+            "object": 164101,
+            "classId": "JPED",
+            "parentClassIds": [
+              "CDCI"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    15702852,
+                    4
+                  ]
+                ],
+                "hex": "4a504544"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    2726111,
+                    8
+                  ]
+                ],
+                "hex": "0481020000000000"
+              }
+            ]
+          },
+          {
+            "object": 164102,
+            "classId": "MPGI",
+            "parentClassIds": [
+              "CDCI"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    15702924,
+                    4
+                  ]
+                ],
+                "hex": "4d504749"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    2726119,
+                    8
+                  ]
+                ],
+                "hex": "0481020000000000"
+              }
+            ]
+          }
+        ],
+        "examplesByDescriptorClass": {
+          "CDCI": {
+            "fileMobId": "060a2b340101010501010f10130000009156f20b7311069649d87c57583610fa",
+            "masterMobId": "060a2b340101010501010f1013000000d0e4940b7311069687eb7c57583610fa",
+            "fileObject": 144350,
+            "masterObject": 156570,
+            "physicalMediaReferences": [
+              {
+                "type": "omfi:ObjRef",
+                "hex": "dd33020000000000",
+                "ranges": [
+                  [
+                    2098971,
+                    8
+                  ]
+                ]
+              }
+            ],
+            "descriptorObject": 144349,
+            "descriptorClass": "CDCI",
+            "descriptorClassRanges": [
+              [
+                [
+                  13257204,
+                  4
+                ]
+              ]
+            ],
+            "kindRelevantProperties": [
+              {
+                "property": "OMFI:DIDD:StoredHeight",
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    13257468,
+                    4
+                  ]
+                ],
+                "summaryPrefixHex": null
+              },
+              {
+                "property": "OMFI:DIDD:StoredWidth",
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    13257492,
+                    4
+                  ]
+                ],
+                "summaryPrefixHex": null
+              }
+            ],
+            "ownFileGraph": {
+              "kinds": {
+                "0": 1,
+                "1": 1
+              },
+              "sclpKinds": {
+                "1": 1
+              },
+              "classes": {
+                "MOBJ": 1,
+                "TRAK": 1,
+                "SCLP": 1
+              },
+              "errors": {},
+              "examples": [
+                {
+                  "componentObject": 144343,
+                  "trackKindValues": [
+                    1
+                  ],
+                  "trackKindRanges": [
+                    [
+                      [
+                        13256100,
+                        2
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            },
+            "masterDirectFileTrackKinds": [
+              1
+            ]
+          },
+          "PCMA": {
+            "fileMobId": "060a2b340101010501010f10130000009d38e80b73110696a0197c57583610fa",
+            "masterMobId": "060a2b340101010501010f1013000000ace3940b73110696792e7c57583610fa",
+            "fileObject": 147254,
+            "masterObject": 149800,
+            "physicalMediaReferences": [
+              {
+                "type": "omfi:ObjRef",
+                "hex": "353f020000000000",
+                "ranges": [
+                  [
+                    2192733,
+                    8
+                  ]
+                ]
+              }
+            ],
+            "descriptorObject": 147253,
+            "descriptorClass": "PCMA",
+            "descriptorClassRanges": [
+              [
+                [
+                  13598556,
+                  4
+                ]
+              ]
+            ],
+            "kindRelevantProperties": [
+              {
+                "property": "OMFI:PCMA:AudioSamplingRate",
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    2192626,
+                    8
+                  ]
+                ],
+                "summaryPrefixHex": null
+              }
+            ],
+            "ownFileGraph": {
+              "kinds": {
+                "0": 1,
+                "2": 1
+              },
+              "sclpKinds": {
+                "2": 1
+              },
+              "classes": {
+                "MOBJ": 1,
+                "TRAK": 1,
+                "SCLP": 1
+              },
+              "errors": {},
+              "examples": [
+                {
+                  "componentObject": 147248,
+                  "trackKindValues": [
+                    2
+                  ],
+                  "trackKindRanges": [
+                    [
+                      [
+                        13597716,
+                        2
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            },
+            "masterDirectFileTrackKinds": [
+              2
+            ]
+          }
+        },
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 1211,
+          "omfi:ObjRef:observed": 1408
+        },
+        "kindStoragePropertyOccurrences": {
+          "OMFI:CPNT:TrackKind": 17373
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "cacheSha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "countsPerPmrRow": {
+          "pmrRows": 359,
+          "rowsWithExactlyOneDescriptor": 359,
+          "rowsWithSeveralDescriptors": 0,
+          "rowsWithNoDescriptor": 0,
+          "descriptorFamily_Video": 119,
+          "rowsDescriptorAndOwnSourceClipTrackKindAgree": 359,
+          "rowsDescriptorAndMasterDirectFileTrackKindAgree": 359,
+          "rowsDescriptorVsOwnTrackKindConflict": 0,
+          "rowsDescriptorVsMasterDirectTrackKindConflict": 0,
+          "rowsMasterHasPictureAndSoundSourceClips": 353,
+          "descriptorFamily_Audio": 240
+        },
+        "distinctFileOwners": 359,
+        "distinctDescriptorObjects": 359,
+        "distinctSelectedMasters": 124,
+        "descriptorClassesPerFile": {
+          "CDCI": 111,
+          "PCMA": 240,
+          "MPGI": 8
+        },
+        "descriptorMobKindPerFile": {
+          "('CDCI', 1)": 111,
+          "('PCMA', 1)": 240,
+          "('MPGI', 1)": 8
+        },
+        "ownFileSourceClipTrackKindSetsPerFile": {
+          "1": 119,
+          "2": 240
+        },
+        "selectedMasterSourceClipTrackKindSetsPerFile": {
+          "1,2": 353,
+          "2": 5,
+          "1": 1
+        },
+        "selectedMasterDirectTargetFileTrackKindSetsPerFile": {
+          "1": 119,
+          "2": 240
+        },
+        "descriptorVsOwnAndMasterTargetTrackKindSetsPerFile": {
+          "('Video', '1', '1')": 119,
+          "('Audio', '2', '2')": 240
+        },
+        "distinctMasterSourceClipTrackKindSets": {
+          "1,2": 118,
+          "2": 5,
+          "1": 1
+        },
+        "distinctMasterPhysicalFileFamilies": {
+          "Audio,Video": 118,
+          "Audio": 5,
+          "Video": 1
+        },
+        "kindRelevantDescriptorPropertyTypeWidthsPerFile": {
+          "('CDCI', 'OMFI:DIDD:StoredHeight', 'omfi:Long', 4)": 111,
+          "('CDCI', 'OMFI:DIDD:StoredWidth', 'omfi:Long', 4)": 111,
+          "('PCMA', 'OMFI:PCMA:AudioSamplingRate', 'omfi:ExactEditRate', 8)": 240,
+          "('MPGI', 'OMFI:DIDD:StoredHeight', 'omfi:Long', 4)": 8,
+          "('MPGI', 'OMFI:DIDD:StoredWidth', 'omfi:Long', 4)": 8
+        },
+        "kindRelevantPropertyStatesPerFile": {
+          "CDCI:OMFI:DIDD:StoredHeight:nonempty": 111,
+          "CDCI:OMFI:DIDD:StoredWidth:nonempty": 111,
+          "PCMA:OMFI:PCMA:AudioSamplingRate:nonempty": 240,
+          "MPGI:OMFI:DIDD:StoredHeight:nonempty": 8,
+          "MPGI:OMFI:DIDD:StoredWidth:nonempty": 8
+        },
+        "dynamicClassDictionaryCorroboration": [
+          {
+            "object": 88091,
+            "classId": "MDFL",
+            "parentClassIds": [],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    3667964,
+                    4
+                  ]
+                ],
+                "hex": "4d44464c"
+              }
+            ]
+          },
+          {
+            "object": 88092,
+            "classId": "DIDD",
+            "parentClassIds": [
+              "MDFL"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    3668012,
+                    4
+                  ]
+                ],
+                "hex": "44494444"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    544087,
+                    8
+                  ]
+                ],
+                "hex": "1b58010000000000"
+              }
+            ]
+          },
+          {
+            "object": 88093,
+            "classId": "CDCI",
+            "parentClassIds": [
+              "DIDD"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    3668084,
+                    4
+                  ]
+                ],
+                "hex": "43444349"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    544095,
+                    8
+                  ]
+                ],
+                "hex": "1c58010000000000"
+              }
+            ]
+          },
+          {
+            "object": 88094,
+            "classId": "JPED",
+            "parentClassIds": [
+              "CDCI"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    3668156,
+                    4
+                  ]
+                ],
+                "hex": "4a504544"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    544103,
+                    8
+                  ]
+                ],
+                "hex": "1d58010000000000"
+              }
+            ]
+          },
+          {
+            "object": 88095,
+            "classId": "MPGI",
+            "parentClassIds": [
+              "CDCI"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    3668228,
+                    4
+                  ]
+                ],
+                "hex": "4d504749"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    544111,
+                    8
+                  ]
+                ],
+                "hex": "1d58010000000000"
+              }
+            ]
+          }
+        ],
+        "examplesByDescriptorClass": {
+          "CDCI": {
+            "fileMobId": "060a2b340101010501010f1013000000fa06541c55120690f7b846fc807fda72",
+            "masterMobId": "060a2b340101010501010f1013000000f006541c55120690f42a46fc807fda72",
+            "fileObject": 88016,
+            "masterObject": 88069,
+            "physicalMediaReferences": [
+              {
+                "type": "omfi:ObjRef",
+                "hex": "cf57010000000000",
+                "ranges": [
+                  [
+                    542417,
+                    8
+                  ]
+                ]
+              }
+            ],
+            "descriptorObject": 88015,
+            "descriptorClass": "CDCI",
+            "descriptorClassRanges": [
+              [
+                [
+                  3657476,
+                  4
+                ]
+              ]
+            ],
+            "kindRelevantProperties": [
+              {
+                "property": "OMFI:DIDD:StoredHeight",
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    3657716,
+                    4
+                  ]
+                ],
+                "summaryPrefixHex": null
+              },
+              {
+                "property": "OMFI:DIDD:StoredWidth",
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    3657740,
+                    4
+                  ]
+                ],
+                "summaryPrefixHex": null
+              }
+            ],
+            "ownFileGraph": {
+              "kinds": {
+                "0": 1,
+                "1": 4
+              },
+              "sclpKinds": {
+                "1": 1
+              },
+              "classes": {
+                "MOBJ": 1,
+                "TRAK": 1,
+                "SEQU": 1,
+                "FILL": 2,
+                "SCLP": 1
+              },
+              "errors": {},
+              "examples": [
+                {
+                  "componentObject": 88009,
+                  "trackKindValues": [
+                    1
+                  ],
+                  "trackKindRanges": [
+                    [
+                      [
+                        3656252,
+                        2
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            },
+            "masterDirectFileTrackKinds": [
+              1
+            ]
+          },
+          "PCMA": {
+            "fileMobId": "060a2b340101010501010f10130000007b9161ce601206909ffb46fc807fda72",
+            "masterMobId": "060a2b340101010501010f10130000006a9161ce60120690aab246fc807fda72",
+            "fileObject": 87722,
+            "masterObject": 87534,
+            "physicalMediaReferences": [
+              {
+                "type": "omfi:ObjRef",
+                "hex": "a956010000000000",
+                "ranges": [
+                  [
+                    534440,
+                    8
+                  ]
+                ]
+              }
+            ],
+            "descriptorObject": 87721,
+            "descriptorClass": "PCMA",
+            "descriptorClassRanges": [
+              [
+                [
+                  3611852,
+                  4
+                ]
+              ]
+            ],
+            "kindRelevantProperties": [
+              {
+                "property": "OMFI:PCMA:AudioSamplingRate",
+                "type": "omfi:ExactEditRate",
+                "length": 8,
+                "ranges": [
+                  [
+                    534361,
+                    8
+                  ]
+                ],
+                "summaryPrefixHex": null
+              }
+            ],
+            "ownFileGraph": {
+              "kinds": {
+                "0": 1,
+                "2": 4
+              },
+              "sclpKinds": {
+                "2": 1
+              },
+              "classes": {
+                "MOBJ": 1,
+                "TRAK": 1,
+                "SEQU": 1,
+                "FILL": 2,
+                "SCLP": 1
+              },
+              "errors": {},
+              "examples": [
+                {
+                  "componentObject": 87716,
+                  "trackKindValues": [
+                    2
+                  ],
+                  "trackKindRanges": [
+                    [
+                      [
+                        3610892,
+                        2
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            },
+            "masterDirectFileTrackKinds": [
+              2
+            ]
+          },
+          "MPGI": {
+            "fileMobId": "060a2b340101010501010f1013000000fd06cd19591206905a1846fc807fda72",
+            "masterMobId": "060a2b340101010501010f1013000000f606cd1959120690a51846fc807fda72",
+            "fileObject": 75356,
+            "masterObject": 75434,
+            "physicalMediaReferences": [
+              {
+                "type": "omfi:ObjRef",
+                "hex": "5b26010000000000",
+                "ranges": [
+                  [
+                    199306,
+                    8
+                  ]
+                ]
+              }
+            ],
+            "descriptorObject": 75355,
+            "descriptorClass": "MPGI",
+            "descriptorClassRanges": [
+              [
+                [
+                  1705820,
+                  4
+                ]
+              ]
+            ],
+            "kindRelevantProperties": [
+              {
+                "property": "OMFI:DIDD:StoredHeight",
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    1706108,
+                    4
+                  ]
+                ],
+                "summaryPrefixHex": null
+              },
+              {
+                "property": "OMFI:DIDD:StoredWidth",
+                "type": "omfi:Long",
+                "length": 4,
+                "ranges": [
+                  [
+                    1706132,
+                    4
+                  ]
+                ],
+                "summaryPrefixHex": null
+              }
+            ],
+            "ownFileGraph": {
+              "kinds": {
+                "0": 1,
+                "1": 4
+              },
+              "sclpKinds": {
+                "1": 1
+              },
+              "classes": {
+                "MOBJ": 1,
+                "TRAK": 1,
+                "SEQU": 1,
+                "FILL": 2,
+                "SCLP": 1
+              },
+              "errors": {},
+              "examples": [
+                {
+                  "componentObject": 75347,
+                  "trackKindValues": [
+                    1
+                  ],
+                  "trackKindRanges": [
+                    [
+                      [
+                        1704428,
+                        2
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            },
+            "masterDirectFileTrackKinds": [
+              1
+            ]
+          }
+        },
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 1203,
+          "omfi:ObjRef:observed": 1093
+        },
+        "kindStoragePropertyOccurrences": {
+          "OMFI:CPNT:TrackKind": 5794
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "cacheSha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "countsPerPmrRow": {
+          "pmrRows": 2,
+          "rowsWithExactlyOneDescriptor": 2,
+          "rowsWithSeveralDescriptors": 0,
+          "rowsWithNoDescriptor": 0,
+          "descriptorFamily_Audio": 2,
+          "rowsDescriptorAndOwnSourceClipTrackKindAgree": 2,
+          "rowsDescriptorAndMasterDirectFileTrackKindAgree": 2,
+          "rowsDescriptorVsOwnTrackKindConflict": 0,
+          "rowsDescriptorVsMasterDirectTrackKindConflict": 0,
+          "rowsMasterHasPictureAndSoundSourceClips": 0
+        },
+        "distinctFileOwners": 2,
+        "distinctDescriptorObjects": 2,
+        "distinctSelectedMasters": 2,
+        "descriptorClassesPerFile": {
+          "WAVD": 1,
+          "AIFD": 1
+        },
+        "descriptorMobKindPerFile": {
+          "('WAVD', 1)": 1,
+          "('AIFD', 1)": 1
+        },
+        "ownFileSourceClipTrackKindSetsPerFile": {
+          "2": 2
+        },
+        "selectedMasterSourceClipTrackKindSetsPerFile": {
+          "2": 2
+        },
+        "selectedMasterDirectTargetFileTrackKindSetsPerFile": {
+          "2": 2
+        },
+        "descriptorVsOwnAndMasterTargetTrackKindSetsPerFile": {
+          "('Audio', '2', '2')": 2
+        },
+        "distinctMasterSourceClipTrackKindSets": {
+          "2": 2
+        },
+        "distinctMasterPhysicalFileFamilies": {
+          "Audio": 2
+        },
+        "kindRelevantDescriptorPropertyTypeWidthsPerFile": {
+          "('WAVD', 'OMFI:WAVD:Summary', 'omfi:VarLenBytes', 4152)": 1,
+          "('AIFD', 'OMFI:AIFD:Summary', 'omfi:VarLenBytes', 726)": 1
+        },
+        "kindRelevantPropertyStatesPerFile": {
+          "WAVD:OMFI:WAVD:Summary:nonempty": 1,
+          "AIFD:OMFI:AIFD:Summary:nonempty": 1
+        },
+        "dynamicClassDictionaryCorroboration": [
+          {
+            "object": 68190,
+            "classId": "MDFL",
+            "parentClassIds": [],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    59924,
+                    4
+                  ]
+                ],
+                "hex": "4d44464c"
+              }
+            ]
+          },
+          {
+            "object": 68191,
+            "classId": "DIDD",
+            "parentClassIds": [
+              "MDFL"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    59972,
+                    4
+                  ]
+                ],
+                "hex": "44494444"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    10891,
+                    8
+                  ]
+                ],
+                "hex": "5e0a010000000000"
+              }
+            ]
+          },
+          {
+            "object": 68192,
+            "classId": "CDCI",
+            "parentClassIds": [
+              "DIDD"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    60044,
+                    4
+                  ]
+                ],
+                "hex": "43444349"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    10899,
+                    8
+                  ]
+                ],
+                "hex": "5f0a010000000000"
+              }
+            ]
+          },
+          {
+            "object": 68193,
+            "classId": "JPED",
+            "parentClassIds": [
+              "CDCI"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    60116,
+                    4
+                  ]
+                ],
+                "hex": "4a504544"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    10907,
+                    8
+                  ]
+                ],
+                "hex": "600a010000000000"
+              }
+            ]
+          },
+          {
+            "object": 68194,
+            "classId": "MPGI",
+            "parentClassIds": [
+              "CDCI"
+            ],
+            "propertyRanges": [
+              {
+                "propertyName": "OMFI:CLSD:ClassID",
+                "typeName": "omfi:ObjectTag",
+                "ranges": [
+                  [
+                    60188,
+                    4
+                  ]
+                ],
+                "hex": "4d504749"
+              },
+              {
+                "propertyName": "OMFI:CLSD:ParentClass",
+                "typeName": "omfi:ObjRef",
+                "ranges": [
+                  [
+                    10915,
+                    8
+                  ]
+                ],
+                "hex": "600a010000000000"
+              }
+            ]
+          }
+        ],
+        "examplesByDescriptorClass": {
+          "WAVD": {
+            "fileMobId": "060a2b340101010101010f00130000007429976a70397047060e2b347f7f2a80",
+            "masterMobId": "060a2b340101010101010f00130000007429976a4e397047060e2b347f7f2a80",
+            "fileObject": 68071,
+            "masterObject": 68062,
+            "physicalMediaReferences": [
+              {
+                "type": "omfi:ObjRef",
+                "hex": "e609010000000000",
+                "ranges": [
+                  [
+                    9297,
+                    8
+                  ]
+                ]
+              }
+            ],
+            "descriptorObject": 68070,
+            "descriptorClass": "WAVD",
+            "descriptorClassRanges": [
+              [
+                [
+                  52556,
+                  4
+                ]
+              ]
+            ],
+            "kindRelevantProperties": [
+              {
+                "property": "OMFI:WAVD:Summary",
+                "type": "omfi:VarLenBytes",
+                "length": 4152,
+                "ranges": [
+                  [
+                    5102,
+                    4152
+                  ]
+                ],
+                "summaryPrefixHex": "524946463010000057415645"
+              }
+            ],
+            "ownFileGraph": {
+              "kinds": {
+                "0": 1,
+                "2": 1
+              },
+              "sclpKinds": {
+                "2": 1
+              },
+              "classes": {
+                "MOBJ": 1,
+                "TRAK": 1,
+                "SCLP": 1
+              },
+              "errors": {},
+              "examples": [
+                {
+                  "componentObject": 68067,
+                  "trackKindValues": [
+                    2
+                  ],
+                  "trackKindRanges": [
+                    [
+                      [
+                        52004,
+                        2
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            },
+            "masterDirectFileTrackKinds": [
+              2
+            ]
+          },
+          "AIFD": {
+            "fileMobId": "060a2b340101010101010f00130000009729976a3ec57047060e2b347f7f2a80",
+            "masterMobId": "060a2b340101010101010f00130000009729976a3dc57047060e2b347f7f2a80",
+            "fileObject": 68128,
+            "masterObject": 68119,
+            "physicalMediaReferences": [
+              {
+                "type": "omfi:ObjRef",
+                "hex": "1f0a010000000000",
+                "ranges": [
+                  [
+                    10637,
+                    8
+                  ]
+                ]
+              }
+            ],
+            "descriptorObject": 68127,
+            "descriptorClass": "AIFD",
+            "descriptorClassRanges": [
+              [
+                [
+                  56684,
+                  4
+                ]
+              ]
+            ],
+            "kindRelevantProperties": [
+              {
+                "property": "OMFI:AIFD:Summary",
+                "type": "omfi:VarLenBytes",
+                "length": 726,
+                "ranges": [
+                  [
+                    9868,
+                    726
+                  ]
+                ],
+                "summaryPrefixHex": "464f524d000002ce41494643"
+              }
+            ],
+            "ownFileGraph": {
+              "kinds": {
+                "0": 1,
+                "2": 1
+              },
+              "sclpKinds": {
+                "2": 1
+              },
+              "classes": {
+                "MOBJ": 1,
+                "TRAK": 1,
+                "SCLP": 1
+              },
+              "errors": {},
+              "examples": [
+                {
+                  "componentObject": 68124,
+                  "trackKindValues": [
+                    2
+                  ],
+                  "trackKindRanges": [
+                    [
+                      [
+                        56132,
+                        2
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            },
+            "masterDirectFileTrackKinds": [
+              2
+            ]
+          }
+        },
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 5,
+          "omfi:ObjRef:observed": 21
+        },
+        "kindStoragePropertyOccurrences": {
+          "OMFI:CPNT:TrackKind": 21
+        }
+      }
+    ]
+  },
+  "aggregateCounts": {
+    "physicalFileRows": 2412,
+    "audio": 1513,
+    "video": 899,
+    "unknownInObservedCorpus": 0,
+    "descriptorClassesPerPhysicalFile": {
+      "RGBA": 18,
+      "PCMA": 1511,
+      "CDCI": 873,
+      "MPGI": 8,
+      "WAVD": 1,
+      "AIFD": 1
+    },
+    "allCountsPerPmrRow": {
+      "pmrRows": 2412,
+      "rowsWithExactlyOneDescriptor": 2412,
+      "rowsWithSeveralDescriptors": 0,
+      "rowsWithNoDescriptor": 0,
+      "descriptorFamily_Video": 899,
+      "rowsDescriptorAndOwnSourceClipTrackKindAgree": 2412,
+      "rowsDescriptorAndMasterDirectFileTrackKindAgree": 2412,
+      "rowsDescriptorVsOwnTrackKindConflict": 0,
+      "rowsDescriptorVsMasterDirectTrackKindConflict": 0,
+      "rowsMasterHasPictureAndSoundSourceClips": 572,
+      "descriptorFamily_Audio": 1513
+    },
+    "scopedSelectedMasterSourceClipTrackKindSets": {
+      "1,2": 191,
+      "2": 498,
+      "1": 651
+    },
+    "scopedSelectedMastersWithPictureAndSound": 191,
+    "physicalRowsAssociatedWithThoseMasters": 572,
+    "masterCountScope": "Distinct selected master owners within each MDB, summed across the six database scopes; not a global deduplication of MasterMobIds.",
+    "crossChecksAreResearchOnly": true,
+    "dataInObservedCorpus": 0
+  },
+  "receipts": {
+    "rawSummaryReceipts": [
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/findings.json",
+        "bytes": 22945,
+        "sha256": "6d10610c6d93286b454e4e4b4231c94e97ea431eb47e55c3da8e38b6279dc018",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/findings.json",
+        "bytes": 13416,
+        "sha256": "a486d732f1632b349db3202d9aae626675b489e258cbd8a65c9ceac547935b40",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-drives/findings.json",
+        "bytes": 71468,
+        "sha256": "b9d93338324f510426a9e0de0dae033f8cda2e77b515c7d42f62500ff29738bf",
+        "stableDuringVerification": true
+      }
+    ],
+    "sourceInputReceipts": [
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "bytes": 73527536,
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+        "bytes": 14340208,
+        "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+        "bytes": 3204640,
+        "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 5159032,
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "bytes": 97250,
+        "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "bytes": 22745976,
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "bytes": 164660,
+        "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "bytes": 16616336,
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "bytes": 123140,
+        "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "bytes": 15703416,
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "bytes": 111140,
+        "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 3668720,
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "bytes": 86754,
+        "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "bytes": 60680,
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+        "bytes": 392,
+        "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928",
+        "stableDuringVerification": true
+      }
+    ],
+    "rawIndexInputReceipts": [
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+        "bytes": 57405807,
+        "sha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+        "bytes": 277457615,
+        "sha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+        "bytes": 202174044,
+        "sha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+        "bytes": 191199626,
+        "sha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+        "bytes": 45335148,
+        "sha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-OMFI MediaFiles-values.json",
+        "bytes": 535484,
+        "sha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "stableDuringVerification": true
+      }
+    ],
+    "validatedNativeRawArtifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AComponent-Get.txt",
+        "bytes": 14810,
+        "sha256": "a089fb7ac0abbc70867f9b281ecb86ef0fb64a5f27e9d4cc182a5327245067bc",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AComposition-Get.txt",
+        "bytes": 52170,
+        "sha256": "6c3a5051f7861742b371f98846805327e0a41c6bd36e40ba138bc6d71d1f0129",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AComposition-GetMediaDesc.txt",
+        "bytes": 222,
+        "sha256": "9b3cdfb01bace6c1663b3559d8ea4f85244b30751374e4daa60d681c1c338618",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AIFCDescriptor-GetClassID.txt",
+        "bytes": 265,
+        "sha256": "2f03eb28c5382a51ce777d1d22ce67efcfa93f31c07c5d3ff2450755229dd735",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AIFCDescriptor-IsInstanceOf.txt",
+        "bytes": 979,
+        "sha256": "35c0ad485e58bdcc2d2a555e0429f9538622ed79f52bcaa97cc7183f0336b325",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AMediaDesc-GetTrackType.txt",
+        "bytes": 212,
+        "sha256": "7977048d31781d7cc9d721a31b92c6103a3502eaaea731d60e287af06e74bac5",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AudioMediaDesc-GetTrackType.txt",
+        "bytes": 216,
+        "sha256": "be336d5836cbba19b61e36948168f9b071ae77c185327d21fbbd2d36a6c96ef8",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AudioMediaDesc-IsInstanceOf.txt",
+        "bytes": 979,
+        "sha256": "b22f4e012f416ea332a248b76db29b0d7c26e065fe3de82d95eb01b853074567",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/CDCIDescriptor-GetClassID.txt",
+        "bytes": 265,
+        "sha256": "949532022f15b5afce241bb0b69578b2b86ae9c81e79fb982a71255db6295a1e",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/CDCIDescriptor-IsInstanceOf.txt",
+        "bytes": 978,
+        "sha256": "434ef140aff82e0eea2cfbbba6834e64f9ef3edfa5a9a2d52681c656f613b93c",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/DIDDescriptor-GetClassID.txt",
+        "bytes": 264,
+        "sha256": "14cf002e46f32caac92e6a3ac41f1ad5035fd97e0eaa245223d8f2c9b28a24e8",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/DIDDescriptor-IsInstanceOf.txt",
+        "bytes": 977,
+        "sha256": "7db940c0898f93103d2d4a0a37ca2c6600f24eeb485af3642e0bf64e2403a78b",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/JPEGDescriptor-GetClassID.txt",
+        "bytes": 265,
+        "sha256": "9fabb4e0d1e8525546695caad9904999da4f869adb7fb94df06556666aec683c",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/JPEGDescriptor-IsInstanceOf.txt",
+        "bytes": 979,
+        "sha256": "8b6fd1cdcff6869e1a11dbe79cedcd2c9b09d54cf9c52df8a8162eb1b0ccaf27",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/MPEGAudioDescriptor-GetClassID.txt",
+        "bytes": 270,
+        "sha256": "0c6883c3878c25811eb77e081669e96981a493fd7398d09b213e081f0591b805",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/MPEGAudioDescriptor-IsInstanceOf.txt",
+        "bytes": 989,
+        "sha256": "cc72b9b391b806ac6f17f102ef01d271a163b4b93ad8a49eea8edd9b8b195750",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/MPGIDescriptor-GetClassID.txt",
+        "bytes": 265,
+        "sha256": "0b1f3dc4072b3ae3395d5c203ba4d6370fcfa7f9d14eadc5d38ab8294c36775c",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/MPGIDescriptor-IsInstanceOf.txt",
+        "bytes": 979,
+        "sha256": "49f1b0781adcda777f0800f2a5590d63ff3e3e87c413d4b52427e8378b8dd56f",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/PCMAudioDescriptor-GetClassID.txt",
+        "bytes": 269,
+        "sha256": "2988459d564dffa4462ea72584227b6059036ab798f4c338d23b5cf7ee141327",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/PCMAudioDescriptor-IsInstanceOf.txt",
+        "bytes": 987,
+        "sha256": "530e620721dcb0a6b28dd3a3fb118281924875009e480b845cd6941240512020",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/RGBADescriptor-GetClassID.txt",
+        "bytes": 265,
+        "sha256": "60c313bd601270b72fe8227d698c4ce9ef4a5d218f90fd49869862327af0c96b",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/RGBADescriptor-IsInstanceOf.txt",
+        "bytes": 978,
+        "sha256": "3880495ff3ed52c882ea5bedadc2b91017a0e8b0870588d70f5a26f9d312db83",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/Read_TrackType.txt",
+        "bytes": 255,
+        "sha256": "6dd21ad4432bfdb845ea46946a61f7b875b996b294b88821d0933fded63ba050",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/TIFFDescriptor-GetClassID.txt",
+        "bytes": 265,
+        "sha256": "72a984209cd46156e684a83b66550eb6b5d6e3fc2f69e50c82e127e078933493",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/TIFFDescriptor-IsInstanceOf.txt",
+        "bytes": 980,
+        "sha256": "784a33b653cd05f000d78214b857889763bc362635c592388c65d85809dc6404",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/VideoMediaDesc-GetTrackType.txt",
+        "bytes": 216,
+        "sha256": "df7b9eb6aae667400e995d23ad69cf01a66cfc5c7f4a4403b8d9bfaf7431dc15",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/VideoMediaDesc-IsInstanceOf.txt",
+        "bytes": 979,
+        "sha256": "49ad9e5964f905d4d376defa2ef434c0af80b37eeb788ea9c8c3fff19069311a",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/WAVEDescriptor-GetClassID.txt",
+        "bytes": 265,
+        "sha256": "2571ce6450a6b9c74745900770169ebba7f919543758fa6ed48bcdd576ad9319",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/WAVEDescriptor-IsInstanceOf.txt",
+        "bytes": 979,
+        "sha256": "a0317bbb5fde31fcbc95ef4f47da3731bbe27ae68cc45d00f2914dc0953bb1f1",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/descriptor-class-mapping.json",
+        "bytes": 3088,
+        "sha256": "7f2ed009ecb0e8abc83c6324c3c188800bd4178288596f9185909d890f2c4a6d",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/engine-identity.json",
+        "bytes": 1187,
+        "sha256": "a8e3a9411ad0924e0435bef362de8d7fc53166b50f35752b8aed68ccb8fe7044",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/native-property-offsets-prior.json",
+        "bytes": 27054,
+        "sha256": "fcd42e31b206ecb79c37072d1eced4bcb46e81df4fd2c1027224e9341f5632f8",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/omfiHPDomain-GetObjectByID.txt",
+        "bytes": 13903,
+        "sha256": "9ac9395e04e1d687c1bda8d08d88b6134615ef3182966d549449f16f00affa06",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/omfiHPDomain-TranslateTag.txt",
+        "bytes": 15949,
+        "sha256": "6f2b0e3f17474c2f131c7dbcb14310ea8bb3f00e4d5cf5bc42205e2efaacc0b4",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/vtable-tracktypes.json",
+        "bytes": 2964,
+        "sha256": "0238b4af798bd24de9ada52491236eb5610f420ee6440a863a0a510dff24fb02",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/trackkind-stream-vtable.json",
+        "bytes": 152,
+        "sha256": "24f36adbd40f147b9db184ceb195b4adde2d4e634c4511601122115b5650dcb0",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/omfiDualStream-trackkind-Read16.txt",
+        "bytes": 1663,
+        "sha256": "d11dff9a748aaeed4fe7d7ee095496e9e83c8382f7062078c33127cd93706d0c",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/MSMDBMediaStreamMgr-ComputeMediaStart.txt",
+        "bytes": 26176,
+        "sha256": "245fb1ddc34010f64e4fc2ff13711075b02adf1d31b312a7338de048977e7b0f",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt",
+        "bytes": 16441,
+        "sha256": "be932b1a1d04bf4539a0f4fe6b8fadb68d4d4170387b8613806c5c6af8b0fee1",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt",
+        "bytes": 25206,
+        "sha256": "e9f502df3ddc289f84c65be937ec441a847c638c8b17d1df97c3b1f0655644cb",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem-objc-excerpt.txt",
+        "bytes": 24581,
+        "sha256": "99ee84dd15386551c5a986e99eb6ddd750e6aee6275a6914a9306a9a381e34dc",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_DB_CompressionFourCC.txt",
+        "bytes": 100,
+        "sha256": "44c596d42e5c34e1186b986c84ee43c215de829f9a8aabbe2a94d8cda8e0d409",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_DB_CompressionString.txt",
+        "bytes": 171,
+        "sha256": "ac30248783f31e7fefe5184a5b1999cadb4dae00444a14c7de1336f87147cedc",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_DB_usageCode.txt",
+        "bytes": 92,
+        "sha256": "f9ce466f514460519ee2a2e96efe5cc4c1c176b4feb2aa47ff6724817d1b0622",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_addinfoToItemFromCorrespondingFile.txt",
+        "bytes": 2520,
+        "sha256": "aa67805e2bf40d384e2ed142e4f8f64f4bcffb57ce2454c0948a8291c45228b4",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_checkForAudioTypeByExtension.txt",
+        "bytes": 2095,
+        "sha256": "b326f10d14b76e28a87055e2134cce377351254338607ca48f71a9b80c527ef5",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_init.txt",
+        "bytes": 944,
+        "sha256": "48b45d98fcefc1a40e3914b71ec60c221b0445939045d08846500e3c9652d8fd",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_setDB_usageCode_.txt",
+        "bytes": 96,
+        "sha256": "7160d1f40a8b15fef0a0077dc87140899d486e9f31f8f2a09ff5ac015cc1c957",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_setupWithPmrBytes_length_PMRVersion_usebyteswap_.txt",
+        "bytes": 6841,
+        "sha256": "1f2b786849a8ffd5d41a93e7f4a7b285018b56a74b5d1ea7f6855c1cfdab5e61",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_setupWithUnrefFile_clipname_.txt",
+        "bytes": 6083,
+        "sha256": "6d572855139d4f8e45bf5a449e993da62851964cf74eea1873a1839dc83dfb5b",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxFilter_itemPassFilter_.txt",
+        "bytes": 5120,
+        "sha256": "1de5a1774c33d6552ea127292a53676f9e8e703aec7dea063cd76e37f730e101",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxMXF_addInfoToItem_.txt",
+        "bytes": 3747,
+        "sha256": "18281f5391667e37e8e3b5884b1a498e680ac0ccc0a99fcf8f470c42101ea1d0",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxOMFI_addInfoToItem_.txt",
+        "bytes": 9423,
+        "sha256": "20211e8a6dbcd33b0e034f3885504d5af7a54cffd3a05b5d776446549e0f6829",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxOMFI_getCompression_data_forObjAt_.txt",
+        "bytes": 5492,
+        "sha256": "56eb914605cab3b729d4dd8de955f3e18298097b96c2c1f546c00a32f1cbe0ef",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxPMRScannerOperation_main.txt",
+        "bytes": 53423,
+        "sha256": "3eeb0753fa8ace9baa58c04efa2bf9345553e74d265102be7d4739b877cabff8",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxPMRScannerOperation_setCompressionStringForItem_.txt",
+        "bytes": 4207,
+        "sha256": "bb8add3848cdbdedd371ece9155dd4a6a91605f7f2df95e5599d08480ac641b8",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/binary-receipt.json",
+        "bytes": 446,
+        "sha256": "cabad9dd6296aa3c480601407625f69f47a9fff8193e3364a611a6febf14c9c1",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/decoded-kind-and-audio-literals.json",
+        "bytes": 2675,
+        "sha256": "4dfcc7668fbb8ef984206e9b9f7aa6ea9b5a141ac48d1af7672f38e74b7be0d5",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/symbols-current-arm64.txt",
+        "bytes": 225054,
+        "sha256": "2d00e21aac7d5cf927d18e2ff40d14f2a8399ddb076ffa48ed89f3dc70b0adb9",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mdvx/videoIcon-global-init-excerpt.txt",
+        "bytes": 568,
+        "sha256": "8423dff37fd3d210b14afe8cce6c33a63fd2c535b4d6c6760091290ebe078cc6",
+        "stableDuringVerification": true
+      }
+    ],
+    "probeReceipts": [
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-drives/probe.py",
+        "bytes": 16137,
+        "sha256": "3784188f9471a4bfbf01184b385624ea2fb915012eac42108755d860a5cd432b",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-drives/findings.json",
+        "bytes": 71468,
+        "sha256": "b9d93338324f510426a9e0de0dae033f8cda2e77b515c7d42f62500ff29738bf",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-drives/source-hash-receipts.json",
+        "bytes": 3552,
+        "sha256": "4cbaaa68ec1d0db156c6b0031a7108ce40ced24f6fa4cbe429a5a2a3edcb0809",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-drives/check.py",
+        "bytes": 14085,
+        "sha256": "184dbbf28d7b0fdbdd8b6a02d9791c233ac1b2c27ce4a5d7bc6cbc016d2419ec",
+        "stableDuringVerification": true
+      }
+    ],
+    "probeHashIndexReceipt": {
+      "path": "/private/tmp/bella-mdb-kind-20261019-drives/artifact-hashes.json",
+      "bytes": 406,
+      "sha256": "ffd7221e413e6fd991acf60ccb7a568a43008580272820e3fe10daead3153f1e",
+      "stableDuringVerification": true
+    },
+    "priorMdvxDisassemblyReceipt": {
+      "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-disassembly.txt",
+      "bytes": 4552262,
+      "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074",
+      "stableDuringVerification": true
+    },
+    "trackTypeMeaningSupplementRaw": {
+      "path": "/private/tmp/bella-mdb-kind-20261019-mc/tracktype-number-meaning-supplement.json",
+      "bytes": 6261,
+      "sha256": "5eeeb7bb028101181eb75e4fe9d8ff99559d56540999e8e99c5791ceac906d37"
+    },
+    "trackTypeMeaningSupplementArtifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/supplement-TrackTypeToPrefix.txt",
+        "bytes": 558,
+        "sha256": "b2fba0905d6dc87afe633046e5537fefb529b794d8e47b5176df49f6a8283974"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/supplement-PrefixToTrackType.txt",
+        "bytes": 7061,
+        "sha256": "b9b192b71e96ba8d24e4c325063e6b39997a721293bb7b04130104c4bd2da5c9"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AudioMediaDesc-GetTrackType.txt",
+        "bytes": 216,
+        "sha256": "be336d5836cbba19b61e36948168f9b071ae77c185327d21fbbd2d36a6c96ef8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/VideoMediaDesc-GetTrackType.txt",
+        "bytes": 216,
+        "sha256": "df7b9eb6aae667400e995d23ad69cf01a66cfc5c7f4a4403b8d9bfaf7431dc15"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AMediaDesc-GetTrackType.txt",
+        "bytes": 212,
+        "sha256": "7977048d31781d7cc9d721a31b92c6103a3502eaaea731d60e287af06e74bac5"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/vtable-tracktypes.json",
+        "bytes": 2964,
+        "sha256": "0238b4af798bd24de9ada52491236eb5610f420ee6440a863a0a510dff24fb02"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/PCMAudioDescriptor-IsInstanceOf.txt",
+        "bytes": 987,
+        "sha256": "530e620721dcb0a6b28dd3a3fb118281924875009e480b845cd6941240512020"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/CDCIDescriptor-IsInstanceOf.txt",
+        "bytes": 978,
+        "sha256": "434ef140aff82e0eea2cfbbba6834e64f9ef3edfa5a9a2d52681c656f613b93c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/DIDDescriptor-IsInstanceOf.txt",
+        "bytes": 977,
+        "sha256": "7db940c0898f93103d2d4a0a37ca2c6600f24eeb485af3642e0bf64e2403a78b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/VideoMediaDesc-IsInstanceOf.txt",
+        "bytes": 979,
+        "sha256": "49ad9e5964f905d4d376defa2ef434c0af80b37eeb788ea9c8c3fff19069311a"
+      }
+    ],
+    "trackTypeCatalogueRaw": {
+      "path": "/private/tmp/bella-mdb-kind-20261019-mc/tracktype-catalogue.json",
+      "bytes": 12236,
+      "sha256": "475229fdb7f5882113d129f05101624d2bcac2c76fa665f2fe32dc99bd2bb84f"
+    },
+    "trackTypeCatalogueArtifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/tracktype-catalogue-table-raw.json",
+        "bytes": 2796,
+        "sha256": "38ccc85af7c151472f4a976471976e6984010ea801fe4b94fbcbe32bd14a3c24"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/supplement-TrackTypeToPrefix.txt",
+        "bytes": 558,
+        "sha256": "b2fba0905d6dc87afe633046e5537fefb529b794d8e47b5176df49f6a8283974"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/supplement-PrefixToTrackType.txt",
+        "bytes": 7061,
+        "sha256": "b9b192b71e96ba8d24e4c325063e6b39997a721293bb7b04130104c4bd2da5c9"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/catalogue-Timecode-init.txt",
+        "bytes": 984,
+        "sha256": "6a1454dbad25beab21c26790bb0b8be46cb2d92c8606777c9373b27410c0c2a8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/catalogue-Edgecode-init.txt",
+        "bytes": 928,
+        "sha256": "4911770008fc724b189327e81c6696ebf069bf6fb8746cdbf31ef5918e4194a9"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/catalogue-DataEssence-GetTrackType.txt",
+        "bytes": 272,
+        "sha256": "284f2db28ecff790edfb775f7a9caad2401594efdea5c28e7f061c11d32f91f5"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/catalogue-DataEssence-family.txt",
+        "bytes": 1549,
+        "sha256": "a69ec7fd0252d1822a6fe07b8a17c8f4f3fcb23f9d694ca058f4021f38a65d44"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/catalogue-ANCData-family.txt",
+        "bytes": 1536,
+        "sha256": "e6eaaf2374614bb25af7d70573d40920e663c998a54e58f869b876d569955888"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/catalogue-IClip-kind.txt",
+        "bytes": 1806,
+        "sha256": "3e4c56f101cc735b369958cbe5f75df5a829fb1f4810875ae94ea803b4da0483"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/catalogue-IsMediaTrackType.txt",
+        "bytes": 1053,
+        "sha256": "aeb6689e1e6616405a934cc7227951592114105ca8f0349ce87a44246e864ebc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AudioMediaDesc-GetTrackType.txt",
+        "bytes": 216,
+        "sha256": "be336d5836cbba19b61e36948168f9b071ae77c185327d21fbbd2d36a6c96ef8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/VideoMediaDesc-GetTrackType.txt",
+        "bytes": 216,
+        "sha256": "df7b9eb6aae667400e995d23ad69cf01a66cfc5c7f4a4403b8d9bfaf7431dc15"
+      }
+    ]
+  },
+  "limits": [
+    "Static native arm64 reconstruction, no live Media Composer/MDVx display or private API execution.",
+    "Six observed MDBs use legacy little-endian layout. Counts establish this corpus, not every historical/foreign producer, unknown class or malformed fixture.",
+    "No universal native UI or conflict policy inferred from base descriptor return values.",
+    "No app runtime changes, scan cutover, Bin Filter changes, media writes, performance or memory benchmark.",
+    "Temporary raw indexes, disassembly, probes and binary slices remain outside the repository."
+  ],
+  "trackTypeMeaningSupplement": {
+    "date": "2026-10-19",
+    "purpose": "Narrow supplemental proof of native tracktype1=video/picture and2=audio/sound; keep finalized findings.json unchanged.",
+    "method": "Read-only fresh installed arm64 symbol/disassembly and firsttwo compiled prefix table entries; no native app/API execution.",
+    "binary": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+    },
+    "propertyDictionary": {
+      "addressOffset": "0x1a0",
+      "property": "OMFI:CPNT:TrackKind",
+      "meaning": "Identifies which stored field is the typed TrackKind. The property-name dictionary is not itself the numerical1/2 semantic definition."
+    },
+    "directNativeSemanticProof": [
+      {
+        "function": "AudioMediaDesc::GetTrackType()const",
+        "symbol": "__ZNK14AudioMediaDesc12GetTrackTypeEv",
+        "lines": [
+          "363dcc: 40 00 80 52 mov w0, #0x2",
+          "363dd0: c0 03 5f d6 ret"
+        ],
+        "meaning": "The explicitly named native audio descriptor returns tracktype2."
+      },
+      {
+        "function": "VideoMediaDesc::GetTrackType()const",
+        "symbol": "__ZNK14VideoMediaDesc12GetTrackTypeEv",
+        "lines": [
+          "343950: 20 00 80 52 mov w0, #0x1",
+          "343954: c0 03 5f d6 ret"
+        ],
+        "meaning": "The explicitly named native video descriptor returns tracktype1."
+      },
+      {
+        "function": "AMediaDesc::GetTrackType()const",
+        "symbol": "__ZNK10AMediaDesc12GetTrackTypeEv",
+        "lines": [
+          "17df74: 00 00 80 52 mov w0, #0x0",
+          "17df78: c0 03 5f d6 ret"
+        ],
+        "meaning": "Generic descriptor returns0, not automatically video."
+      }
+    ],
+    "virtualDispatch": {
+      "slot": "0x238",
+      "proof": "Saved vtable-tracktypes.json resolves actual compiled PCMAudioDescriptor toAudioMediaDesc0x363dcc, CDCIDescriptor toVideoMediaDesc0x343950 and generic AMediaDesc/AFileMediaDesc to0x17df74. This is an implementation mapping, not merely suggestive string names."
+    },
+    "familyProof": {
+      "audio": "PCMAudioDescriptor::IsInstanceOf0x3e8124 delegatesAudioMediaDesc; storedAIFD/WAVD translations are separately verified in finalized findings.",
+      "video": "CDCIDescriptor::IsInstanceOf0x33fd44 delegatesDIDDescriptor0x37b32c, thenVideoMediaDesc0x3fb994; RGBA,JPED,MPGI related paths saved in finalized findings."
+    },
+    "compiledPrefixTable": {
+      "function": "TrackTypeToPrefix(short)",
+      "symbol": "__Z17TrackTypeToPrefixs",
+      "address": "0x2557f8",
+      "tableAddress": "0x1246bd8",
+      "instructions": [
+        "0x2557f8 sub w8,w0,#1",
+        "0x255800 cmp w9,#0xf; outofrange returnsnull",
+        "0x25580c adrp x9,0x1246000",
+        "0x255810 add x9,x9,#0xbd8",
+        "0x255814 ldr x0,[x9,x8,lsl#3]"
+      ],
+      "firstTwoEntries": [
+        {
+          "trackType": 1,
+          "entryAddress": "0x1246bd8",
+          "rawChainedPointer": "0x10000000fc83c3",
+          "target": "0xfc83c3",
+          "prefix": "V"
+        },
+        {
+          "trackType": 2,
+          "entryAddress": "0x1246be0",
+          "rawChainedPointer": "0x10000000fc83c5",
+          "target": "0xfc83c5",
+          "prefix": "A"
+        }
+      ],
+      "meaning": "An actual sixteen-entry compiled lookup table supplies track prefixes. This proves1→V and2→A, independently corroborating descriptor methods. It is not a discovered universal English enum dictionary in every MDB."
+    },
+    "reversePrefixFunction": {
+      "function": "PrefixToTrackType(string const&)",
+      "address": "0x255824",
+      "anchors": [
+        "Compare literalV at0x255850..68; equalbranch0x25586c→0x2559cc mov w0,#1.",
+        "Compare literalA at0x255890..a8; equalbranch0x2558ac→0x2559d4 mov w0,#2."
+      ],
+      "meaning": "Bidirectional compiled mapping corroborates firsttwo table entries."
+    },
+    "enumNameLimit": "No source-level enumeration declaration or universal external dictionary naming valuesPicture/Sound is asserted. NamesAudioMediaDesc/VideoMediaDesc and compiled V/A mapping are the proof; picture/sound are media terminology for these video/audio tracks.",
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/supplement-TrackTypeToPrefix.txt",
+        "bytes": 558,
+        "sha256": "b2fba0905d6dc87afe633046e5537fefb529b794d8e47b5176df49f6a8283974"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/supplement-PrefixToTrackType.txt",
+        "bytes": 7061,
+        "sha256": "b9b192b71e96ba8d24e4c325063e6b39997a721293bb7b04130104c4bd2da5c9"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AudioMediaDesc-GetTrackType.txt",
+        "bytes": 216,
+        "sha256": "be336d5836cbba19b61e36948168f9b071ae77c185327d21fbbd2d36a6c96ef8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/VideoMediaDesc-GetTrackType.txt",
+        "bytes": 216,
+        "sha256": "df7b9eb6aae667400e995d23ad69cf01a66cfc5c7f4a4403b8d9bfaf7431dc15"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AMediaDesc-GetTrackType.txt",
+        "bytes": 212,
+        "sha256": "7977048d31781d7cc9d721a31b92c6103a3502eaaea731d60e287af06e74bac5"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/vtable-tracktypes.json",
+        "bytes": 2964,
+        "sha256": "0238b4af798bd24de9ada52491236eb5610f420ee6440a863a0a510dff24fb02"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/PCMAudioDescriptor-IsInstanceOf.txt",
+        "bytes": 987,
+        "sha256": "530e620721dcb0a6b28dd3a3fb118281924875009e480b845cd6941240512020"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/CDCIDescriptor-IsInstanceOf.txt",
+        "bytes": 978,
+        "sha256": "434ef140aff82e0eea2cfbbba6834e64f9ef3edfa5a9a2d52681c656f613b93c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/DIDDescriptor-IsInstanceOf.txt",
+        "bytes": 977,
+        "sha256": "7db940c0898f93103d2d4a0a37ca2c6600f24eeb485af3642e0bf64e2403a78b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/VideoMediaDesc-IsInstanceOf.txt",
+        "bytes": 979,
+        "sha256": "49ad9e5964f905d4d376defa2ef434c0af80b37eeb788ea9c8c3fff19069311a"
+      }
+    ],
+    "curationNote": "Omit the raw report nearest-preceding nm symbol, which is unrelated to the prefix table and does not name it. Preserve exact lookup/table addresses, literal targets and reverse-function proof."
+  },
+  "userDirection20261019": "Use one authoritative physical-file descriptor class and the exact six-tag fixed C++ lookup approved by user. Display Audio, Video or lowercase unknown.",
+  "trackTypeCatalogue": {
+    "date": "2026-10-19",
+    "purpose": "Complete native track-prefix catalogue and distinction between track kinds and physical media descriptor families. Read-only static inspection; no app/API execution, media writes or production changes.",
+    "binary": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+    },
+    "compiledPrefixTable": {
+      "function": "TrackTypeToPrefix(short)",
+      "symbol": "__Z17TrackTypeToPrefixs",
+      "address": "0x2557f8",
+      "tableAddress": "0x1246bd8",
+      "exactTableSymbol": null,
+      "indexRule": "trackType-1; bound check1..16; out-of-range returns null. Chained rebase target uses low36 bits.",
+      "entries": [
+        {
+          "trackType": 1,
+          "entryAddress": "0x1246bd8",
+          "rawChainedPointer": "0x10000000fc83c3",
+          "target": "0xfc83c3",
+          "prefix": "V",
+          "establishedMeaning": "Video/picture"
+        },
+        {
+          "trackType": 2,
+          "entryAddress": "0x1246be0",
+          "rawChainedPointer": "0x10000000fc83c5",
+          "target": "0xfc83c5",
+          "prefix": "A",
+          "establishedMeaning": "Audio/sound"
+        },
+        {
+          "trackType": 3,
+          "entryAddress": "0x1246be8",
+          "rawChainedPointer": "0x10000000fdd0ca",
+          "target": "0xfdd0ca",
+          "prefix": "TC",
+          "establishedMeaning": "Timecode"
+        },
+        {
+          "trackType": 4,
+          "entryAddress": "0x1246bf0",
+          "rawChainedPointer": "0x30000000fdd0cd",
+          "target": "0xfdd0cd",
+          "prefix": "EC",
+          "establishedMeaning": "Edgecode"
+        },
+        {
+          "trackType": 5,
+          "entryAddress": "0x1246bf8",
+          "rawChainedPointer": "0x0",
+          "target": "0x0",
+          "prefix": null,
+          "establishedMeaning": null,
+          "qualification": "Null prefix table entry; not proof that integer is universally illegal or unused."
+        },
+        {
+          "trackType": 6,
+          "entryAddress": "0x1246c00",
+          "rawChainedPointer": "0x0",
+          "target": "0x0",
+          "prefix": null,
+          "establishedMeaning": null,
+          "qualification": "Null prefix table entry; not proof that integer is universally illegal or unused."
+        },
+        {
+          "trackType": 7,
+          "entryAddress": "0x1246c08",
+          "rawChainedPointer": "0x30000000fdea5a",
+          "target": "0xfdea5a",
+          "prefix": "M",
+          "establishedMeaning": null,
+          "qualification": "Exact prefix only; abbreviation not expanded by this bounded audit."
+        },
+        {
+          "trackType": 8,
+          "entryAddress": "0x1246c10",
+          "rawChainedPointer": "0x0",
+          "target": "0x0",
+          "prefix": null,
+          "establishedMeaning": null,
+          "qualification": "Null prefix table entry; not proof that integer is universally illegal or unused."
+        },
+        {
+          "trackType": 9,
+          "entryAddress": "0x1246c18",
+          "rawChainedPointer": "0x0",
+          "target": "0x0",
+          "prefix": null,
+          "establishedMeaning": null,
+          "qualification": "Null prefix table entry; not proof that integer is universally illegal or unused."
+        },
+        {
+          "trackType": 10,
+          "entryAddress": "0x1246c20",
+          "rawChainedPointer": "0x20000000fb084c",
+          "target": "0xfb084c",
+          "prefix": "C",
+          "establishedMeaning": null,
+          "qualification": "Exact prefix only; abbreviation not expanded by this bounded audit."
+        },
+        {
+          "trackType": 11,
+          "entryAddress": "0x1246c28",
+          "rawChainedPointer": "0x0",
+          "target": "0x0",
+          "prefix": null,
+          "establishedMeaning": null,
+          "qualification": "Null prefix table entry; not proof that integer is universally illegal or unused."
+        },
+        {
+          "trackType": 12,
+          "entryAddress": "0x1246c30",
+          "rawChainedPointer": "0x10000000fdea55",
+          "target": "0xfdea55",
+          "prefix": "MIDI",
+          "establishedMeaning": null,
+          "qualification": "Exact prefix only; abbreviation not expanded by this bounded audit."
+        },
+        {
+          "trackType": 13,
+          "entryAddress": "0x1246c38",
+          "rawChainedPointer": "0x10000000fdca3a",
+          "target": "0xfdca3a",
+          "prefix": "META",
+          "establishedMeaning": null,
+          "qualification": "Exact prefix only; abbreviation not expanded by this bounded audit."
+        },
+        {
+          "trackType": 14,
+          "entryAddress": "0x1246c40",
+          "rawChainedPointer": "0x20000000fdea5c",
+          "target": "0xfdea5c",
+          "prefix": "Dolby",
+          "establishedMeaning": null,
+          "qualification": "Exact prefix only; abbreviation not expanded by this bounded audit."
+        },
+        {
+          "trackType": 15,
+          "entryAddress": "0x1246c48",
+          "rawChainedPointer": "0x0",
+          "target": "0x0",
+          "prefix": null,
+          "establishedMeaning": null,
+          "qualification": "Null prefix table entry; not proof that integer is universally illegal or unused."
+        },
+        {
+          "trackType": 16,
+          "entryAddress": "0x1246c50",
+          "rawChainedPointer": "0x10000000fdea62",
+          "target": "0xfdea62",
+          "prefix": "D",
+          "establishedMeaning": "Data essence"
+        }
+      ]
+    },
+    "reverse": {
+      "function": "PrefixToTrackType(string const&)",
+      "address": "0x255824",
+      "exactCaseSensitiveMappings": [
+        {
+          "prefix": "V",
+          "trackType": 1,
+          "returnInstruction": "0x2559cc"
+        },
+        {
+          "prefix": "A",
+          "trackType": 2,
+          "returnInstruction": "0x2559d4"
+        },
+        {
+          "prefix": "TC",
+          "trackType": 3,
+          "returnInstruction": "0x2559f8"
+        },
+        {
+          "prefix": "EC",
+          "trackType": 4,
+          "returnInstruction": "0x255a00"
+        },
+        {
+          "prefix": "M",
+          "trackType": 7,
+          "returnInstruction": "0x2559c4"
+        },
+        {
+          "prefix": "C",
+          "trackType": 10,
+          "returnInstruction": "0x255a08"
+        },
+        {
+          "prefix": "MIDI",
+          "trackType": 12,
+          "returnInstruction": "0x255a2c"
+        },
+        {
+          "prefix": "META",
+          "trackType": 13,
+          "returnInstruction": "0x2559f0"
+        },
+        {
+          "prefix": "Dolby",
+          "trackType": 14,
+          "returnInstruction": "0x255a44..0x255a4c"
+        },
+        {
+          "prefix": "D",
+          "trackType": 16,
+          "returnInstruction": "0x255a24"
+        }
+      ],
+      "unmatchedResult": 0,
+      "unmatchedAnchor": "0x255a34..0x255a4c compares Dolby, selects14 if equal else0"
+    },
+    "nativeSemanticProof": [
+      {
+        "meaning": "Video/picture1",
+        "function": "VideoMediaDesc::GetTrackType()const",
+        "address": "0x343950",
+        "instructions": "mov w0,#1; ret"
+      },
+      {
+        "meaning": "Audio/sound2",
+        "function": "AudioMediaDesc::GetTrackType()const",
+        "address": "0x363dcc",
+        "instructions": "mov w0,#2; ret"
+      },
+      {
+        "meaning": "Timecode3",
+        "function": "ATimecodeClip::ITimecodeClip(ExactEditRate_t,int,timecode_t)",
+        "address": "0x21d604",
+        "instructions": "0x21d628 mov w1,#3;0x21d62c bl AClip::IClip(short,ExactEditRate_t,int)0x167d98"
+      },
+      {
+        "meaning": "Edgecode4",
+        "function": "AEdgecodeClip::IEdgecodeClip(ExactEditRate_t,int,edgecode_t)",
+        "address": "0x1500ec",
+        "instructions": "0x150108 mov w1,#4;0x15010c bl AClip::IClip(short,ExactEditRate_t,int)0x167d98"
+      },
+      {
+        "meaning": "Data essence16",
+        "function": "DataEssenceDescriptor::GetTrackType()const",
+        "address": "0xae2734",
+        "instructions": "0xae2734 mov w0,#16;0xae2738 ret"
+      },
+      {
+        "meaning": "Data essence is a genuine native media track family, not all values>2 are bookkeeping",
+        "function": "IsMediaTrackType(short)",
+        "address": "0x255584",
+        "instructions": "0x255598..0x2555a4 builds mask0x10006 and tests bit(trackType), accepting only1,2,16"
+      }
+    ],
+    "dataFamily": {
+      "DataEssenceDescriptor": {
+        "IsInstanceOf": "0xae1da8 delegates AFileMediaDesc::IsInstanceOf0x17b8dc at0xae1dd4",
+        "GetClassID": "0xae1df4 returns native fourcc0x44415444 (DATD)",
+        "ClassNameCStringAddress": "0x10118a5"
+      },
+      "ANCDataDescriptor": {
+        "IsInstanceOf": "0xb4def4 delegates DataEssenceDescriptor::IsInstanceOf0xae1da8 at0xb4df20",
+        "GetClassID": "0xb4df40 returns native fourcc0x414e4344 (ANCD)",
+        "ClassNameCStringAddress": "0x1001788"
+      },
+      "limits": "Native family/class marks established. No actual DATD/ANCD media objects were reported in the six inspected MDBs. OMF property registration for the native data class marks was not audited here; no raw MDB wire-tag claim is made."
+    },
+    "BellaImplication": "A single physical-file descriptor source remains feasible. Its known families include Audio, Video and Data; unknown/unsupported descriptors must remain Unknown rather than defaulting to Video. Timecode/edgecode component tracks do not make an audio/video physical file a third essence kind. Which extra families to display is a product decision, not implemented by this audit.",
+    "limits": [
+      "The compiled table is not an MDB property dictionary or a complete public enumeration declaration.",
+      "Null prefix slots5,6,8,9,11,15 are not assigned invented meanings.",
+      "M,C,MIDI,META,Dolby are literal prefixes; this audit does not expand ambiguous labels.",
+      "This new receipt gives no table symbol because no exact symbol was established. The earlier supplemental tableSymbol nearest-symbol association was unrelated and must not be cited as this table name. Earlier receipt left unchanged as instructed."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/tracktype-catalogue-table-raw.json",
+        "bytes": 2796,
+        "sha256": "38ccc85af7c151472f4a976471976e6984010ea801fe4b94fbcbe32bd14a3c24"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/supplement-TrackTypeToPrefix.txt",
+        "bytes": 558,
+        "sha256": "b2fba0905d6dc87afe633046e5537fefb529b794d8e47b5176df49f6a8283974"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/supplement-PrefixToTrackType.txt",
+        "bytes": 7061,
+        "sha256": "b9b192b71e96ba8d24e4c325063e6b39997a721293bb7b04130104c4bd2da5c9"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/catalogue-Timecode-init.txt",
+        "bytes": 984,
+        "sha256": "6a1454dbad25beab21c26790bb0b8be46cb2d92c8606777c9373b27410c0c2a8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/catalogue-Edgecode-init.txt",
+        "bytes": 928,
+        "sha256": "4911770008fc724b189327e81c6696ebf069bf6fb8746cdbf31ef5918e4194a9"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/catalogue-DataEssence-GetTrackType.txt",
+        "bytes": 272,
+        "sha256": "284f2db28ecff790edfb775f7a9caad2401594efdea5c28e7f061c11d32f91f5"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/catalogue-DataEssence-family.txt",
+        "bytes": 1549,
+        "sha256": "a69ec7fd0252d1822a6fe07b8a17c8f4f3fcb23f9d694ca058f4021f38a65d44"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/catalogue-ANCData-family.txt",
+        "bytes": 1536,
+        "sha256": "e6eaaf2374614bb25af7d70573d40920e663c998a54e58f869b876d569955888"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/catalogue-IClip-kind.txt",
+        "bytes": 1806,
+        "sha256": "3e4c56f101cc735b369958cbe5f75df5a829fb1f4810875ae94ea803b4da0483"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/catalogue-IsMediaTrackType.txt",
+        "bytes": 1053,
+        "sha256": "aeb6689e1e6616405a934cc7227951592114105ca8f0349ce87a44246e864ebc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AudioMediaDesc-GetTrackType.txt",
+        "bytes": 216,
+        "sha256": "be336d5836cbba19b61e36948168f9b071ae77c185327d21fbbd2d36a6c96ef8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/VideoMediaDesc-GetTrackType.txt",
+        "bytes": 216,
+        "sha256": "df7b9eb6aae667400e995d23ad69cf01a66cfc5c7f4a4403b8d9bfaf7431dc15"
+      }
+    ]
+  },
+  "pcmaCdciOnlyComparison": {
+    "coveredPhysicalFiles": 2384,
+    "totalPhysicalFiles": 2412,
+    "knownFilesLeftUnclassified": 28,
+    "otherObservedClasses": {
+      "RGBA": 18,
+      "MPGI": 8,
+      "WAVD": 1,
+      "AIFD": 1
+    },
+    "conclusion": "PCMA/CDCI alone would leave 28 known files unclassified. User approved exactly the six observed tags: PCMA/AIFD/WAVD -> Audio; CDCI/RGBA/MPGI -> Video; every missing/other class -> lowercase unknown."
+  },
+  "approvalDate": "2026-10-19",
+  "supersededBellaProposal": {
+    "status": "Superseded historical proposal: broader-family classification and blank unavailable display were replaced by the exact six-tag lookup and lowercase unknown display approved 19 October 2026.",
+    "owner": "Exact full-normalized-FileMobId, catalogue-qualified physical-file owner, then its own safely resolved MOBJ:PhysicalMedia descriptor.",
+    "classification": "Known supported native-proven audio/picture descriptor families and explicit legacy wire aliases. Unknown is not video by exclusion.",
+    "retention": "Compact Audio/Video/Unknown enum and common compact availability information. App supplies display labels, no text decoding fallback for Kind.",
+    "unknownDisplay": "Blank cell; retain physical file.",
+    "missingUnsupportedAmbiguousConflicting": "Leave MDB-derived Kind unavailable. Do not guess by filename, extension, codec text, master usage, unrelated owners or object order.",
+    "numericMetadataIndependent": "A separately unavailable rate/depth/size does not erase a safely established known descriptor family.",
+    "pictureCategory": "Supported picture families, including still-picture descriptors, use existing Video category; no new Still result category proposed.",
+    "trackGraph": "Research cross-checks only. The revised one-authority MDB proposal uses only the exact physical-file descriptor: do not query, combine, use TrackKind as fallback, or let it veto descriptor-derived Kind merely for this field.",
+    "notApplicable": "Unknown Kind does not establish that other technical fields are inapplicable.",
+    "separateType": "Master usage/media/precompute classification stays separate from physical-file Kind; MDVx visible Kind is that different usage concept.",
+    "deferred": "MDB layout/general structural damage coverage, arbitrary unknown-subclass support, media-header capability/source priority and conditions for extra reads.",
+    "dataFamilyDecision": "Native Media Composer DataEssenceDescriptor returns16 and native IsMediaTrackType accepts1/2/16. No Data descriptors observed in six actual MDBs; exact MDB wire mapping and a visible Data result remain undecided. Do not classify unsupported descriptors as Video."
+  },
+  "agreedBellaRule": {
+    "status": "Approved by user on 19 October 2026; requirements only, no runtime implementation.",
+    "owner": "Exact full-normalized-FileMobId, catalogue-qualified physical-file owner, then its own safely resolved MOBJ:PhysicalMedia descriptor class.",
+    "lookup": {
+      "PCMA": "Audio",
+      "AIFD": "Audio",
+      "WAVD": "Audio",
+      "CDCI": "Video",
+      "RGBA": "Video",
+      "MPGI": "Video"
+    },
+    "missingOrAnyOtherClass": {
+      "internal": "Unknown",
+      "display": "unknown",
+      "retainPhysicalFile": true
+    },
+    "scope": "Exactly these six raw descriptor tags for release one. Wider native-known families, aliases, subclasses and Data marks are not silently added.",
+    "singleAuthority": "Use only the physical-file descriptor class. No TrackKind/master-track queries, cross-checks, fallback, voting or veto solely for Kind. No extension, filename or compression-label guesses.",
+    "retention": "Small strongly typed Audio/Video/Unknown enum; UI supplies display labels. No duplicate per-row label string, raw descriptor, dynamic mapping or retained graph solely for Kind.",
+    "futureCpp17Shape": "Small fixed constexpr lookup or equivalent pure function after the requirements review; this approval does not begin runtime implementation.",
+    "structuredValue": "Exact typed four-byte class tag from supported owner/reference/schema; not a raw text search and no UTF-8/MacRoman fallback.",
+    "unusableRead": "When no usable class can safely be obtained, return Unknown and keep the physical file. General MDB structural damage treatment remains deferred to the layout review.",
+    "independentNumericMetadata": "Missing sample rate, bit depth or another independent numeric property does not change a known class lookup result.",
+    "otherNativeTypes": "No separate Data, Still, Timecode or other display result is added; missing/unmapped descriptor classes display unknown.",
+    "notApplicable": "Unknown Kind does not prove other technical fields inapplicable.",
+    "deferred": "MDB layouts/general structural-damage coverage, media-header capabilities, cross-source priority and whether missing MDB Kind justifies another read."
+  },
+  "researchPolicySeparation": "Embedded native/MDVx recommendations and supersededBellaProposal are historical research, not current Bella rules. agreedBellaRule is authoritative for this field."
+}

@@ -1,0 +1,689 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "timezone": "Australia/Sydney",
+  "purpose": "Compare current OldScanner and installed MDVx PMR buffering/retention and recommend the explicit Bella PMR memory lifetime.",
+  "userRequest": "Are PMR files stored in memory, read once, etc - the same way? How does MediaMuster do it? how does mdvx do it? how SHOULD we do it?",
+  "status": "PMR read-once/extract/release memory workflow approved by the user on 2026-10-21. Research remains bounded static evidence, not runtime implementation or a measured performance result.",
+  "approval": {
+    "date": "2026-10-21",
+    "timezone": "Australia/Sydney",
+    "userStatement": "OK, let's lock that in for Bella: read each PMR once into memory, extract only what we need, and release the buffer. What's next?",
+    "decision": "Adopt recommendedBellaWorkflow below as the explicit PMR single-capture and temporary-memory lifetime, preserving approved PMR set selection/fallback, encodings, full identities and four-job maximum.",
+    "scope": "Requirements approval. Separate four-MDB maximum and approved MDB memory workflow remain unchanged. The narrower MDB-version baseline is still proposed. OldScanner stays active and implementation follows the remaining requirements review."
+  },
+  "historicalPolicyStatusNote": "Embedded source/native receipts remain research snapshots, including their recommendation wording. The top-level approval supersedes pending status for recommendedBellaWorkflow only; research limits and future verification remain unchanged.",
+  "mediaMuster": {
+    "audit": "Current active OldScanner PMR disk and RAM lifecycle",
+    "date": "2026-10-21 Australia/Sydney",
+    "method": "Read-only source audit, no builds, app execution or media writes.",
+    "sourceFiles": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/oldscanner.cpp",
+        "sha256": "9c8d0cb547dc8e8916f928c9988d6cf51a18364e2696143620b1e0bf068f02bb"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+        "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scanengine.cpp",
+        "sha256": "11b4748216ea54910f8c3aa29ea2b1d363b18be304fe98d003159f0192823866"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+        "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/databaseimage.cpp",
+        "sha256": "4f0d4c9e6c2e06909f63ee8ade22c90d566bc876ccaaa1c7afcf7d126909e662"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/databaseimage.h",
+        "sha256": "115df5eb949bf5fa0dcc1863373f922d83589861a615eb710e53f87887c0ddd5"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/databasesource.cpp",
+        "sha256": "fe4235c24e024ffd31431c68e01a40626188e1e8ed46d1212f6adad40b84f6b8"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/databasesource.h",
+        "sha256": "50869818aec8f7f0a226fca54fa08ba929656a785c951c6d949e1778e79f70e4"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/pmrreader.cpp",
+        "sha256": "98c0f389daa5bc8a83003d4cc4af31fc72350754d3675a9ba32cdbda98347171"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/pmrprojection.cpp",
+        "sha256": "f49dbf19829150ac46bcb783a3f044c35c4bfe1cf203eedaa398f6810f33c1a8"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+        "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/scanmodel.h",
+        "sha256": "004f3dfe373e14cd2640521958fb2bfc589f41c23bcc515365ea27c5f1f24187"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+        "sha256": "c85f1d11bcb15eddcfbba7c9cbbc57c8fdafdb8cac8c4af6b575d62c1575c746"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+        "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3"
+      }
+    ],
+    "findings": [
+      {
+        "claim": "Active app delegates to ScanEngine and ScanCoordinator; database candidates handled sequentially in normal loop, not four concurrent.",
+        "refs": [
+          "src/oldscanner/oldscanner.cpp:438",
+          "src/oldscanner/mediaengine/scanengine.cpp:7-10",
+          "src/oldscanner/mediaengine/scancoordinator.cpp:308-331",
+          "src/oldscanner/mediaengine/scancoordinator.cpp:364-401"
+        ]
+      },
+      {
+        "claim": "For each scheduled PMR, QFile opens once and DatabaseImage captures complete file bytes from start in bounded <=1MiB reads. One content capture pass per candidate, not a single read syscall. Final extent check. No PMR reread loop in normal scan.",
+        "refs": [
+          "src/oldscanner/mediaengine/databasesource.cpp:63-91",
+          "src/oldscanner/mediaengine/databaseimage.cpp:11-97"
+        ]
+      },
+      {
+        "claim": "QBuffer shares image QByteArray without duplicating full bytes, parser reads from RAM device.",
+        "refs": [
+          "src/oldscanner/mediaengine/databasesource.cpp:42-59"
+        ]
+      },
+      {
+        "claim": "Parser walks legacy then extension in physical order; both sets produce raw per-field properties/objects/relationships. Per-field encoding bytes copied from RAM buffer and decoded fields retained. This is one grammar invocation plus a projection pass, not duplicate full PMR parse or more disk reads.",
+        "refs": [
+          "src/oldscanner/mediaengine/pmrreader.cpp:52-78",
+          "src/oldscanner/mediaengine/pmrreader.cpp:163-189",
+          "src/oldscanner/mediaengine/pmrreader.cpp:253-306",
+          "src/oldscanner/mediaengine/pmrreader.cpp:326-360",
+          "src/oldscanner/mediaengine/pmrprojection.cpp:8-100"
+        ]
+      },
+      {
+        "claim": "SourceReceipt keeps only outcome/readreason/snapshot/container/diagnostics. Full RAM image and ParsedSource objects released when prepareDatabase returns. Qt shared bytearrays mean aliases are not necessarily duplicate allocations.",
+        "refs": [
+          "src/mediaengine/scanmodel.h:204-218",
+          "src/oldscanner/mediaengine/databasesource.cpp:63-91",
+          "src/oldscanner/mediaengine/projection.cpp:70-92"
+        ]
+      },
+      {
+        "claim": "Projected per-field rawValue encoding survives into match evidence, with source/property/object/read/encoding explanations. Both old/new sets have separate projected entries. PMR-name lookup built per source after preparation. These projections/indexes live until coordinator returns.",
+        "refs": [
+          "src/oldscanner/mediaengine/pmrprojection.cpp:13-20",
+          "src/oldscanner/mediaengine/pmrprojection.cpp:21-100",
+          "src/oldscanner/mediaengine/projection.cpp:70-92",
+          "src/oldscanner/mediaengine/scancoordinator.cpp:248-258",
+          "src/oldscanner/mediaengine/scancoordinator.cpp:377-385",
+          "src/oldscanner/mediaengine/scancoordinator.cpp:79-82",
+          "src/oldscanner/mediaengine/scancoordinator.cpp:512-520"
+        ]
+      },
+      {
+        "claim": "ScanResult evidence incl selected PMR per-field rawValue exists through final matching and OldScanner row formatting. doScan returns compact UI rows/reconciliationissues/cancelled/time only; no ScanResult owner, wholePMR or MediaEvidence is stored in final UI rows.",
+        "refs": [
+          "src/oldscanner/mediaengine/scancoordinator.cpp:748-799",
+          "src/oldscanner/oldscanner.cpp:438-475",
+          "src/oldscanner/mediaengineadapter.cpp:70-107",
+          "src/mediafile.h:21-139"
+        ]
+      }
+    ],
+    "limits": [
+      "No performance or allocation measurements performed; source ownership proves lifecycle, not measured peak RSS.",
+      "Normal single scan and unique discovered candidates inspected. OS caching and physical disk transport not observable from this audit. A new user scan rereads its databases; no persistent PMR byte cache found on this path.",
+      "Postread source QFileInfo checks are metadata checks, not PMR byte rereads.",
+      "Same backing QByteArray can be implicitly shared, so do not claim every rawValue alias allocates another byte copy."
+    ]
+  },
+  "mdvx": {
+    "date": "2026-10-21",
+    "purpose": "Read-only installed MDVx PMR acquisition, parsing, retention and cleanup audit for Bella requirements.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "bytes": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "architecture": "arm64",
+      "CFBundleShortVersionString": "0.2",
+      "CFBundleVersion": "4073"
+    },
+    "method": {
+      "native": "Fresh bounded disassembly with xcrun llvm-objdump --macho --arch=arm64 --disassemble --dis-symname; native symbols from nm. No executable or private parser invocation.",
+      "applicationExecuted": false,
+      "workloadBenchmarked": false,
+      "userDatabaseOrMediaRead": false,
+      "userDatabaseOrMediaWritten": false,
+      "repositoryEdited": false
+    },
+    "facts": [
+      {
+        "finding": "One whole PMR content acquisition per PMRFile dataWithContentsOfURL invocation; retained NSData input with borrowed byte pointer.",
+        "routine": "-[PMRFile dataWithContentsOfURL:]",
+        "instructions": [
+          "0x100039d34..39d54: NSData dataWithContentsOfURL retain/stored at object+8",
+          "0x100039db4..39dbc: filedata bytes stored at object+0x10",
+          "0x10003a460..3a478: operation allocates PMRFile and invokes dataWithContentsOfURL once"
+        ],
+        "limits": "One logical Foundation whole-file read, not proof of exactly one kernel read or physical disk access. NSData storage implementation is Foundation owned."
+      },
+      {
+        "finding": "FillItem advances a position cursor through base records and, if the equal-count version16 resynchronization succeeds, through appended records from the same input buffer. This is not a second file read.",
+        "routine": "-[PMRFile FillItem:]",
+        "instructions": [
+          "0x100039e68..39e74: position starts at12",
+          "0x100039e88..39ed0: after base item count inspect appended version/count",
+          "0x100039f88..39f98: change parser state to16 and reset current item, advance past extension header",
+          "0x10003a154..3a168: pass record bytes/length/version to item initializer"
+        ],
+        "limits": "Both sets materialize item objects in this path; Bella approved whole-set preference is different."
+      },
+      {
+        "finding": "Every PMR item copies record bytes into an independently owned mutable data object before field extraction. Names/project become separate NSString fields. Modern IDs are additionally copied into fixed32-byte fields.",
+        "routine": "-[MDVxDatabaseItem setupWithPmrBytes:length:PMRVersion:usebyteswap:]",
+        "instructions": [
+          "0x1000304ac..304c8: NSMutableData dataWithBytes:length stored at item+0x70",
+          "0x1000304cc..304dc: bytes and mutableBytes from copied data",
+          "0x100030534..30540: first32-byte identity copy",
+          "0x1000305c4..305d4: decoded filename retained at+0x78",
+          "0x100030688..30698: decoded project retained at+0x80",
+          "0x1000306d4..306e0: second32-byte identity copy"
+        ],
+        "limits": "The stored mutable bytes may be byte-swapped in place; this is a retained copy, not necessarily bit-for-bit untouched input."
+      },
+      {
+        "finding": "The operation retains its PMRFile throughout directory work then relinquishes it at cleanup; PMRFile destructor releases the whole NSData and saved currentpath. Items do not depend on that whole buffer.",
+        "routine": "-[MDVxPMRScannerOperation main] / -[PMRFile .cxx_destruct]",
+        "instructions": [
+          "0x10003b15c..3b160: load/release local PMRFile",
+          "0x10003a19c..3a1bc: storeStrong(nil) for currentpath+0x28 and filedata+8"
+        ],
+        "limits": "ARC/Foundation ownership release is established; no runtime RSS measurement or precise allocator page-return timing was tested."
+      },
+      {
+        "finding": "Copied record buffers and item decoded strings remain owned by each output item until that item is released; item destructor clears strong reference to+0x70.",
+        "routine": "-[MDVxDatabaseItem .cxx_destruct]",
+        "instructions": [
+          "0x100031678..31698: clear project+0x80, filename+0x78 and copied record+0x70"
+        ]
+      },
+      {
+        "finding": "Folder operation gathers output items, appends batch under core lock, then releases its local output array.",
+        "routine": "-[MDVxPMRScannerOperation main]",
+        "instructions": [
+          "0x10003a938..3a940: add item to local array",
+          "0x10003aeec..3af20: lock and AddItemsFromArray",
+          "0x10003af6c..3af88: release local array and unlock"
+        ]
+      },
+      {
+        "finding": "Ordinary all-scan path deduplicates after operation queue completion.",
+        "routine": "___31-[AppDelegate continueAllScan:]_block_invoke / -[MDVxCore makeUnique]",
+        "instructions": [
+          "0x10005ec20: waitUntilAllOperationsAreFinished",
+          "0x10005ec50: makeUnique",
+          "0x10004ba2c..4ba6c: insert output items into tree",
+          "0x10004ba7c..4baa4: replace output array with nonequal tree data array"
+        ],
+        "limits": "Does not establish exact duplicate winner here. Existing identity review documents comparator binding separately."
+      },
+      {
+        "finding": "Configured queue maximum6 is used by ordinary PMR jobs.",
+        "routine": "+[MDVxStatusViewController MDVxMAXThreads] / -[AppDelegate applicationDidFinishLaunching:] / -[MDVxCore AddFile_TypeSelector:]",
+        "instructions": [
+          "0x10000c4c0: returns6",
+          "0x10005c640..5c64c: feeds maximum into setMaxConcurrentOperationCount",
+          "0x10004b0cc..4b10c: constructs MDVxPMRScannerOperation and adds operation"
+        ],
+        "limits": "Six concurrent operations permitted, not guaranteed six active OS threads/CPUs; MDB work may be inside same operation when enabled."
+      }
+    ],
+    "recommendationForBella": {
+      "status": "Recommendation; preserve existing approved four-job limit and whole-set/text/identity rules.",
+      "workflow": [
+        "Acquire a PMR once into one scoped owned QByteArray using checked QFile reads.",
+        "Traverse bounded framing in memory; locate appended v16 through old variable-length records without creating two complete decoded result sets.",
+        "Decode/materialize only the usable chosen whole set: prefer v16, fallback to complete older set if missing/unusable.",
+        "Keep owned selected filename/project values and full normalized IDs; no borrowed view may escape input lifetime.",
+        "Do not retain a separate raw record-byte copy per result or unused DTM.",
+        "Drop PMR input buffer and framing temporaries immediately after independent PMR results are produced, without keeping them until MDB/header/table work finishes.",
+        "Max4 simultaneous PMR acquisitions/parses; independent MDB cap4 as separately approved."
+      ],
+      "qualification": "A logical read-once acquisition can require multiple read calls/partial reads. In-memory framing and validation may require more than one cursor pass. No performance guarantee or benchmark result."
+    },
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/AppDelegate_applicationDidFinishLaunching.txt",
+        "bytes": 37974,
+        "sha256": "5d9cd0fec3c518db02f74008aec06dafa4e3b1b2942f8126a5bfd7bb3594e2c3"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/AppDelegate_beginAllScan_block.txt",
+        "bytes": 4475,
+        "sha256": "deaa7280ca2192f55f1d1d8b79cf918c2a4baf0aa1ce0a19af4b72f61ef48a9d"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/AppDelegate_continueAllScan_block.txt",
+        "bytes": 16052,
+        "sha256": "8798a5f5b99e4e87bcb0c80f794434e8256090225f7aead7bc9c104322a08064"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/AppDelegate_continueAllScan_block2.txt",
+        "bytes": 4395,
+        "sha256": "95ed5111b1fa1378c1ce74a0db9686ac803e322b7325eb201a6d49f063af6ecf"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/MDVxCore_AddFile_TypeSelector.txt",
+        "bytes": 5185,
+        "sha256": "2be8065cb7d002dfeb7cc1e9c6ee82750eec43e607ff6ae84a3d299d737a3886"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/MDVxCore_makeUnique.txt",
+        "bytes": 4445,
+        "sha256": "74fa538fc12d71ee24ba530657f9b84a2549bbe0dbf7538eb6ba6b26d2884b98"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/MDVxDatabaseItem_destruct.txt",
+        "bytes": 1753,
+        "sha256": "2a5728edfc42ac7b2463f80bc067b1ec97425f2f3fd5147f4a3370abd70c5197"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/MDVxDatabaseItem_setupWithPmrBytes.txt",
+        "bytes": 8014,
+        "sha256": "235f9184af3b0e65e1936e33078cd5220a7d8d31e2a85cb99fad82fe70a90716"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/MDVxPMRScannerOperation_main.txt",
+        "bytes": 52431,
+        "sha256": "d526ddb4a3ed69e088c8c622d0aa9087722c03e8536f6e5f1ee45c56d284a848"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/MDVxStatusViewController_MDVxMAXThreads.txt",
+        "bytes": 175,
+        "sha256": "553bc67a4d31b91b28f8417157edf437283e4ee6b5520a3a43a6b931db11f223"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/PMRFile_FillItem.txt",
+        "bytes": 9816,
+        "sha256": "0455c9896d0cae54716da202d7dc18823698b6b727de3832d5bb14045c0ae003"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/PMRFile_dataWithContentsOfURL.txt",
+        "bytes": 3442,
+        "sha256": "51857c969e7696435e93a8a154d26daf6015ae84592af04d07e4667f99c5cf5c"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/PMRFile_destruct.txt",
+        "bytes": 672,
+        "sha256": "8fc1be13cdb5541806d99ee4d64fe3f0345247ca24fa3a8bb2ac42ebd27d49ee"
+      },
+      {
+        "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/symbols.txt",
+        "bytes": 396685,
+        "sha256": "efb660b84eb648598d675ef6499eba58055a5d4d04bf0d98f29cbe2cb185d759"
+      }
+    ]
+  },
+  "sizes": {
+    "date": "2026-10-21",
+    "timezone": "Australia/Sydney",
+    "scope": "Fresh size observations for the six previously studied live PMR paths; no parser/app run or file change.",
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "bytes": 97250,
+        "mtimeNs": 1561095049000000000,
+        "method": "stat only; no new content read in this subtask"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "bytes": 164660,
+        "mtimeNs": 1785052993000000000,
+        "method": "stat only; no new content read in this subtask"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "bytes": 123140,
+        "mtimeNs": 1790763274000000000,
+        "method": "stat only; no new content read in this subtask"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "bytes": 111140,
+        "mtimeNs": 1785052993000000000,
+        "method": "stat only; no new content read in this subtask"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "bytes": 86754,
+        "mtimeNs": 1790740372078265906,
+        "method": "stat only; no new content read in this subtask"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+        "bytes": 392,
+        "mtimeNs": 1788291482553506886,
+        "method": "stat only; no new content read in this subtask"
+      }
+    ],
+    "totalBytes": 583336,
+    "largestBytes": 164660,
+    "limits": [
+      "Sizes observed at stat time only; no new full-file hash or semantic validation in this subtask.",
+      "Six-path corpus is not a universal PMR size bound."
+    ]
+  },
+  "cppGuidance": {
+    "path": "/Users/martymclean/Downloads/CPP SKILL.md",
+    "sha256": "70919980c635f66db649b7eb1e426fb2098754ed6c9db22f1a7eee0935227d35",
+    "appliedPrinciples": [
+      "RAII/scoped ownership",
+      "Immutable input",
+      "Small owned value records",
+      "Checked bounds and arithmetic",
+      "Task-local state",
+      "No views outliving source",
+      "No C++20/23 features",
+      "No unmeasured performance promises"
+    ]
+  },
+  "recommendedBellaWorkflow": {
+    "status": "Explicit PMR single-capture lifetime approved on 2026-10-21. Existing PMR set/field/validation/identity rules and four-job maximum remain approved; MDB memory workflow/four-job maximum remain approved.",
+    "capture": "One complete immutable job-owned PMR capture per ordinary unchanged source; close source after capture. One capture is not necessarily one operating-system read call.",
+    "locate": "Follow known older-set framing safely in memory to find v16. No older-string decoding/materialization solely to locate the extension and no raw-byte hunting.",
+    "selectedSet": "Stage compact v16 results privately and publish only after the entire set passes. If absent/unusable, discard rejected staging and try older set from the same capture. Do not mix sets or keep both decoded result sets.",
+    "retained": "Owned Filename/Project strings under approved encodings; complete binary file/master identities via approved normalization; necessary compact status. Ignore DTM beyond checked skipping.",
+    "lifetime": "Release PMR image, bounded views and parsing temporaries when selected compact results own required data. No per-item raw PMR copies; no borrowed pointers/views/hash keys may escape.",
+    "languageAndTools": "Fresh C++17/Qt6.5.3 small value types, scoped ownership/RAII, checked bounds/counts and task-local state. No C++20/23 features required.",
+    "concurrency": "Keep existing approved maxima fourPMR/fourMDB. Separate source-type maxima can overlap, so combined peak memory/storage contention need measurement. No whole-scan fixed RAM guarantee.",
+    "physicalInventory": "PMR usability does not determine whether physical media are listed. Existing MDB read and media-header rules remain unchanged.",
+    "performance": "Reduce avoidable per-field materialization/copies and double-set interpretation; neither compared ordinary path repeatedly opens PMR per physical row. No measured performance advantage claimed."
+  },
+  "researchReceipts": [
+    {
+      "path": "/private/tmp/bella-pmr-memory-current-20261021.json",
+      "sha256": "5836cb003f36ce847ce66b7f26565a6e1225c4c5389f3d50e6f316d6255d0479",
+      "role": "mediaMuster"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/findings.json",
+      "sha256": "c124b749cc20b59ac87466427da1b3cc2c49aa1b6314400e360fd71ff5689995",
+      "role": "mdvx"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021/sizes.json",
+      "sha256": "c2c9ca52f0a432d1318a1b3ca51a61e85731b19e1ba8ea623ca7b55de617c761",
+      "role": "sizes"
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021/cpp-guidance.json",
+      "sha256": "0e9d6b2bea400177aed500055118fc09acb61e5b96a00b22df6cd8c152906555",
+      "role": "cppGuidance"
+    }
+  ],
+  "verifiedInputAndArtifactCount": 34,
+  "verifiedInputsAndArtifacts": [
+    {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediaengine/scanmodel.h",
+      "sha256": "004f3dfe373e14cd2640521958fb2bfc589f41c23bcc515365ea27c5f1f24187",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediaevidence.h",
+      "sha256": "c85f1d11bcb15eddcfbba7c9cbbc57c8fdafdb8cac8c4af6b575d62c1575c746",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+      "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/databaseimage.cpp",
+      "sha256": "4f0d4c9e6c2e06909f63ee8ade22c90d566bc876ccaaa1c7afcf7d126909e662",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/databaseimage.h",
+      "sha256": "115df5eb949bf5fa0dcc1863373f922d83589861a615eb710e53f87887c0ddd5",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/databasesource.cpp",
+      "sha256": "fe4235c24e024ffd31431c68e01a40626188e1e8ed46d1212f6adad40b84f6b8",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/databasesource.h",
+      "sha256": "50869818aec8f7f0a226fca54fa08ba929656a785c951c6d949e1778e79f70e4",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/pmrprojection.cpp",
+      "sha256": "f49dbf19829150ac46bcb783a3f044c35c4bfe1cf203eedaa398f6810f33c1a8",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/pmrreader.cpp",
+      "sha256": "98c0f389daa5bc8a83003d4cc4af31fc72350754d3675a9ba32cdbda98347171",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+      "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+      "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scanengine.cpp",
+      "sha256": "11b4748216ea54910f8c3aa29ea2b1d363b18be304fe98d003159f0192823866",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+      "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/oldscanner.cpp",
+      "sha256": "9c8d0cb547dc8e8916f928c9988d6cf51a18364e2696143620b1e0bf068f02bb",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Downloads/CPP SKILL.md",
+      "sha256": "70919980c635f66db649b7eb1e426fb2098754ed6c9db22f1a7eee0935227d35",
+      "roles": [
+        "cppGuidance"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/AppDelegate_applicationDidFinishLaunching.txt",
+      "sha256": "5d9cd0fec3c518db02f74008aec06dafa4e3b1b2942f8126a5bfd7bb3594e2c3",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/AppDelegate_beginAllScan_block.txt",
+      "sha256": "deaa7280ca2192f55f1d1d8b79cf918c2a4baf0aa1ce0a19af4b72f61ef48a9d",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/AppDelegate_continueAllScan_block.txt",
+      "sha256": "8798a5f5b99e4e87bcb0c80f794434e8256090225f7aead7bc9c104322a08064",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/AppDelegate_continueAllScan_block2.txt",
+      "sha256": "95ed5111b1fa1378c1ce74a0db9686ac803e322b7325eb201a6d49f063af6ecf",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/MDVxCore_AddFile_TypeSelector.txt",
+      "sha256": "2be8065cb7d002dfeb7cc1e9c6ee82750eec43e607ff6ae84a3d299d737a3886",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/MDVxCore_makeUnique.txt",
+      "sha256": "74fa538fc12d71ee24ba530657f9b84a2549bbe0dbf7538eb6ba6b26d2884b98",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/MDVxDatabaseItem_destruct.txt",
+      "sha256": "2a5728edfc42ac7b2463f80bc067b1ec97425f2f3fd5147f4a3370abd70c5197",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/MDVxDatabaseItem_setupWithPmrBytes.txt",
+      "sha256": "235f9184af3b0e65e1936e33078cd5220a7d8d31e2a85cb99fad82fe70a90716",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/MDVxPMRScannerOperation_main.txt",
+      "sha256": "d526ddb4a3ed69e088c8c622d0aa9087722c03e8536f6e5f1ee45c56d284a848",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/MDVxStatusViewController_MDVxMAXThreads.txt",
+      "sha256": "553bc67a4d31b91b28f8417157edf437283e4ee6b5520a3a43a6b931db11f223",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/PMRFile_FillItem.txt",
+      "sha256": "0455c9896d0cae54716da202d7dc18823698b6b727de3832d5bb14045c0ae003",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/PMRFile_dataWithContentsOfURL.txt",
+      "sha256": "51857c969e7696435e93a8a154d26daf6015ae84592af04d07e4667f99c5cf5c",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/PMRFile_destruct.txt",
+      "sha256": "8fc1be13cdb5541806d99ee4d64fe3f0345247ca24fa3a8bb2ac42ebd27d49ee",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/findings.json",
+      "sha256": "c124b749cc20b59ac87466427da1b3cc2c49aa1b6314400e360fd71ff5689995",
+      "roles": [
+        "researchReceipt"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021-mdvx/symbols.txt",
+      "sha256": "efb660b84eb648598d675ef6499eba58055a5d4d04bf0d98f29cbe2cb185d759",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021/cpp-guidance.json",
+      "sha256": "0e9d6b2bea400177aed500055118fc09acb61e5b96a00b22df6cd8c152906555",
+      "roles": [
+        "researchReceipt"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-20261021/sizes.json",
+      "sha256": "c2c9ca52f0a432d1318a1b3ca51a61e85731b19e1ba8ea623ca7b55de617c761",
+      "roles": [
+        "researchReceipt"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-pmr-memory-current-20261021.json",
+      "sha256": "5836cb003f36ce847ce66b7f26565a6e1225c4c5389f3d50e6f316d6255d0479",
+      "roles": [
+        "researchReceipt"
+      ]
+    }
+  ],
+  "limits": [
+    "Native/source lifetimes establish ownership behavior, not allocator RSS or measured scan performance.",
+    "Fresh size observations are stat-only for six known paths; no new PMR content hashes or parsing in this subtask.",
+    "Current bytearray aliases can share backing storage; do not assume every assignment is another allocation.",
+    "MDVx one Foundation acquisition is not proof of one kernel read or disk access.",
+    "No app/private API, parser test suite, malformed-input execution or live media write performed."
+  ],
+  "validation": {
+    "productionCodeChanged": false,
+    "buildsOrTestsRun": false,
+    "appRun": false,
+    "userDatabaseContentRead": false,
+    "userDatabaseSizesObserved": true,
+    "binFilterChanged": false,
+    "oldScannerActive": true
+  }
+}

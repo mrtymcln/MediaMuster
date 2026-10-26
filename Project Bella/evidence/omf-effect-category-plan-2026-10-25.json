@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-25",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF Effect Category integration; Effect review follows. No implementation/cutover.",
+  "authorization": {
+    "source": "Direct human user instruction",
+    "statement": "OK, let's lock those Effect Category rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Effect from OMF, and what should Bella read and keep? Look for the simplest accurate approach.",
+    "scope": "Accepts common selected-Type/name combined catalogue lookup, preserved category behaviour, optional demand/compact shared values and discarded Sequence. No extra OMF field/graph/open, new source-priority decision, Bin Filter change or runtime/cutover approval."
+  },
+  "agreedBellaRules": {
+    "scope": "Effect Category Image/Blend/etc is separate from Type and parentPrecomputeCategory. Keep approved MediaMuster name-derived label; no original-effect-ID reconstruction, Bin Filter change or source-specific new effect parser.",
+    "inputs": "Existing OMF selected qualified master Type/ClipName facts with agreed text/ownership; common derivation uses final selected confirmedPrecompute Type/name after matching/source selection. No additional OMF category property, encoding guess, replacement owner or name chosen for convenient match. Renaming can lose/acquire coincidental matches.",
+    "nativeBoundary": "Saved CPNT:EffectID/component->effectlibrary route and registered ClassName categories are distinct from name inference. No own selectedOMFprecompute-master direct category/generating-effect association established, no universal property absence or liveGUI equality claimed. No scan-time plugin/registry/body/componentgraph lookup.",
+    "lookup": "Reuse unchanged catalogue/resolver single lazy shared index. One combined lookup yields retained Effect+EffectCategory; preserve exact case, known localized spellings, mangle keys, explicit3DWarp alias, both suffix forms/full numeric validation and malformed/overflow text.",
+    "ambiguity": "Keep every distinct matching category in existing catalogue order joined by / with existing spaces. Preserve current English first-match Effect naming and raw unknown token behaviour, without new approximate normalization.",
+    "display": "ConfirmedPrecompute unknown/unavailable EffectCategory remains lowercaseunknown at table/export/search/filter. Media/unknownType blank. Accepted blank Type/PrecomputeCategory rules do not silently alter this field. Known Type/name need no successful parent category; inferred category never establishes Type/parent.",
+    "minimalIntegration": "Common source-independent value derivation outside OMF byte parser when optional effect details requested. Current common function has no internal optional guard and can run more than once during matching; do not call gating or one-index a measured new gain. Reuse per selected master/name input during processing, rederive if selectedType/name changes, no permanent every-name cache.",
+    "retention": "Owned QString EffectCategory and companion Effect plus necessary compact derived context; normalQt sharing. No full category enum/interner/separate output histories/sourcegraph/newdependency/class-per-column. Legacy Hit.sequence can be transient but is discarded from Bella stored rows/export; suffix-boundary rules remain.",
+    "otherDecisions": "No extra media read, header opening or new source priority/scheduling decision. PrecomputeCategory/Type/Compression and excludedEffectSequence remain intact. Final priorities/readtriggers/general OMF damage later; no measured speed/memory/reliability gain.",
+    "evidenceBoundary": "Five saved ordinaryMedia masters7 are inapplicable; zero genuinephysicalOMFPrecompute EffectCategory specimen claimed. Source/catalogue examples and pure/model/MXF authored controls inspected only, no new lookup execution or liveapp comparison."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-effect-category-2026-10-25.json",
+    "sha256": "c0e29097eef7703d5cbaf161a028679b859b9f9d235d5d49a1ddf68c9254ff4b"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/effect-category.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "newBinaryOrMediaResearchForApproval": false,
+    "newBuildsOrTestsForApproval": false,
+    "appCutover": false,
+    "performanceMeasured": false
+  }
+}

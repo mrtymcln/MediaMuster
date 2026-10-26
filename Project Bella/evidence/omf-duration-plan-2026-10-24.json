@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-24",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF Duration count/rate/interpretation/audio-display/DF/retention rules. Frame Rate and remaining OMF fields under review.",
+  "authorization": {
+    "source": "Direct human reply",
+    "statement": "OK, let's lock those Duration rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Frame Rate from OMF, and what should Bella read and keep?",
+    "scope": "Accepts preceding OMF Duration proposal including safely owned typed Length/SampleRate, bounded same-owner summary frequency recovery with Length unchanged, shared exact interpreter/formatter, own audio display clock, qualified DF, zero/blank/long-duration behavior and compact retention. Starts Frame Rate research. No runtime implementation/cutover, Bin Filter change, new header-opening trigger or final cross-source priority table."
+  },
+  "agreedBellaRules": {
+    "scope": "OMF Duration contribution in an already-read supported header. Kind accepted; no runtime implementation/cutover, Bin Filter change, final priority table, new Duration-only header open or routine database/header comparison.",
+    "ownerAndCount": "Qualified full-ID physical file owner, safely resolved own supported descriptor, exact typed Length and SampleRate. Nonnegative count and positive rate; no clip/master/source GroupLength or other-source count/clock substitution. Preserve independently valid data and inventory on field failure.",
+    "wireAndValues": "Known legacy Long signed32 Length and ExactEditRate two signed32 words/eight bytes in established numeric order. Preserve Avid field names and valid original source words. Internal64 count is not extended64 wire approval. Unsupported/damaged/negative/sentinel/ambiguous required timing is unavailable, not zero.",
+    "interpretation": "Share approved pure source-qualified AvidDurationInterpreter: exact23.976*k ->24000*k/1001 and29.97*k->30000*k/1001, k1..10, including exact equivalent fractions. Apply to known video ExactEditRate and qualified audio display EditRate; not audio frequency or arbitrary Rational; no approximate snapping. Semantic conversion precedes exact common arithmetic.",
+    "boundedAudioRateRecovery": "Usable ownMDFL pair first. When MDFL rate is unusable, permit valid unambiguous already-decoded same-owned supported WAVD:Summary.fmt /AIFD:Summary.COMM frequency, including accepted contextual WAVE descriptor compatibility. Retain raw rate availability and compact selected recovery origin/status. Never substitute summary frame count or outer native chunk count for OMF Length or conceal contradictory required timing. Audio summary/native decoder details continue in subsequent field review.",
+    "audioDisplayClock": "Same qualified file mob own typed CPNT:EditRate only; interpreted exact display clock is separate from audio frequency and does not fill audio Frame Rate column. Missing/damaged/ambiguous positive-audio display clock leaves label blank while exact sample duration survives. No master/project/other-source clock guess.",
+    "mathsAndDisplay": "Share DurationFormatter and verified checked integer/fraction maths. Video physical frames at interpreted clock; audio exact sample duration converts to display frames with a single final nearest/positive-half-up rounding. Nominal base only for numbering. Retain samples, show genuine0 and valid rounded0, permit hours>24, no StartTC/inclusive-end addition. Existing established-zero exception and mode separators apply.",
+    "numbering": "Qualified applicable file/source full ID, essence track/kind, mapped position/span, compatible exact clock and nominal FPS. Legacy Flags full numeric32 word bit0. Agreed simple direct/immediate-source scope; DF initially30000/1001/base30 or60000/1001/base60. Complete proven absence=>NDF; damaged/broken/ambiguous/mixed/unsupported applicable mode=>blank label. NDF-only clock needs no unrelated flag walk. DFHH;MM;SS;FF, NDFHH:MM:SS:FF.",
+    "retention": "Compact exact count/rate/source context, necessary own audio display clock and numbering/availability state. Keep no permanent raw object graph, summary copy or formatted label solely for Duration. Scoped temporary lifetimes, QtEndian and C++17 fixed-width values with checked/wide or factor-cancelled integer operations.",
+    "nativeDifference": "Do not automatically copy native AIFD/WAVD summary frequency overrides or zero-Length summary count fill. Bella deliberately preserves selected OMF Length and genuine-zero principle. Native metadata reader behavior does not establish universal GUI Duration behavior.",
+    "sourceBoundary": "Preserve agreed MDB-first principle. This OMF field review defines no new header-open trigger or final cross-source eligibility/priority and introduces no hybrid timing."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-duration-2026-10-24.json",
+    "sha256": "3f1cced1c64d993514419086f128a81045f3d612cf9ea64e1764feadd286802d"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/duration.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "newBuildsOrTests": false,
+    "appCutover": false,
+    "performanceMeasured": false
+  }
+}

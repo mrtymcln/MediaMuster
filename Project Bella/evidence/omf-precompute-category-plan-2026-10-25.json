@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-25",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF Precompute Category rules; Effect Category review follows. No implementation/cutover.",
+  "authorization": {
+    "source": "Direct human user instruction",
+    "statement": "OK, let's lock those Precompute Category rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Effect Category from OMF, and what should Bella read and keep? Look for the simplest accurate approach.",
+    "scope": "Accepts exact direct object/immediate picture-track predicate, required-input handling, shared small helper/enum, selective optional decoding, no import-body traversal, blank unavailable cells and separate filterUnknown. Type remains independent. No extra opens, Bin Filter change, final source-priority decision or implementation/cutover approval."
+  },
+  "agreedBellaRules": {
+    "scope": "Derived RenderedEffects/TitlesAndMatteKeys group on same selected qualified Usage1 Precompute master, within accepted legacy OMF/Bento1. Media/unknownType have no applicable category. No Bin Filter or source policy change.",
+    "predicate": {
+      "confirmedAbsentExactDirectObjectAttribute": "Rendered Effects; no category track count.",
+      "presentObjectAndUsableImmediatePictureTrackCountAtLeast2": "Titles and Matte Keys.",
+      "presentObjectAndCompleteUsableRelevantTrackEvidenceEstablishesFewerThan2": "Rendered Effects.",
+      "requiredUnknownDamagedConflictingUnsupportedFacts": "Unavailable category, independently valid Precompute Type retained."
+    },
+    "attribute": "Same master own CPNT:Attributes -> direct ATTR:AttrRefs -> supported ATTB:Name/Kind. Exact _IMPORTSETTING objectKind3, no prefix/nested/other-owner lookup. Names-first can skip irrelevant Kind decoding only for safely readable different names. Required unreadable names/list or ambiguous relevant claims cannot establish absence. Supported readable wrongkind is not an object match.",
+    "wireTypes": "Known legacy AttrKind2-byte and TrackType2-byte representations in established object numeric order; supported typed reference framing. Native Int32-returning Kind API does not imply4-byte Kind wire. Exact ASCII key needs no codec guess within supported name framing.",
+    "payload": "Native found flag independent of object pointer; null payload can count as presence. No import-settings body/value semantics, source paths or recursive ancestry graph needed. This does not waive required outer/list/ref/type safety.",
+    "tracks": "Only when object present, master immediate TRKG:Tracks -> each TRAK:TrackComponent -> own CPNT:TrackKind, picture1. Not nested children, only file-linked subset, related masters or physical-file count. No other media opens. Threshold sufficient for compact result, no persistent count and no new early-exit corruption rule.",
+    "implementation": "Existing small pure category helper/equivalent ordinary function with fresh checked legacy adapter. Reuse direct master facts with Original Bin/other retained consumers, classify once per selected source master and share across linked physical rows. Current already master-once and small; no invented new caching gain.",
+    "optionalDemand": "Request category-only decoding when optional precompute details needed and TypePrecompute. Current OMF classifier has no internal feature guard; columns/controls/missing-detail scheduling elsewhere are separate. Proposed selective consumer request does not settle extra opening/config plumbing/final scheduling.",
+    "retentionAndDisplay": "Small RenderedEffects/TitlesAndMatteKeys/Unknown enum and necessary availability; late existing labels at display/export. Inapplicable/unavailable blank. Explicit filterUnknown remains distinct from blankcell or all-descendants empty-string selection. Release temporary list/track bytes/lookup data after consumers finish; no persistent settingsbody/rawgraph/formatted category.",
+    "otherFields": "Keep independently valid Type, retained EffectCategory/Effect requirements and excluded EffectSequence. No filename/effect-name/codec/file-usage/import-prefix guesses, new category framework/class/parser/dependency or extra header opening.",
+    "evidenceBoundary": "Five saved OMF masters are usage7 and inapplicable; zero genuine physicalOMF category specimens claimed. Prior MDB/MXF category observations and MDB+PMR scanner controls remain separate. No measured time/memory/reliability gain."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-precompute-category-2026-10-25.json",
+    "sha256": "2689939ae66db0cb0da5a165ffa35cb1c28a7729625a6d7ad83833802291f9db"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/precompute-category.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "newBinaryOrMediaResearchForApproval": false,
+    "newBuildsOrTestsForApproval": false,
+    "appCutover": false,
+    "performanceMeasured": false
+  }
+}

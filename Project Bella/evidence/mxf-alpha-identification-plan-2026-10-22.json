@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "status": "Approved requirements; not implemented or cut over.",
+  "authorization": {
+    "source": "Direct human request in current conversation",
+    "statement": "OK, let's lock those alpha rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Resolution from MXF, and what should Bella read and keep?",
+    "scope": "Approves the narrow supported header-identification rule in the preceding alpha follow-up. Resolution research remains separate."
+  },
+  "agreedBellaRules": {
+    "scope": "Observed supported unambiguous single-container OPAtom header form; never a general rule that noPEC or A8 implies uncompressed.",
+    "positiveMarker": "Exact16byteHeaderPartition EssenceContainer060e2b34040101010e04030102080100; structurally validmatchingPreface containerbatch; selected supportedheader and active own file/ECD/descriptor association qualified.",
+    "ownFormat": "Supported ownRGBA descriptor, solemeaningfulA8 and approved boundedzero/ASCIIzero padding. No automatic10bit/otherlayout expansion.",
+    "absenceAndConflict": "PictureEssenceCoding genuinelyabsent; no contradictory explicitcodec/coding or inconsistentownership/containerlists. Presentdamaged/conflicting/unknowncoding is notabsence.",
+    "semanticOutput": "Established uncompressedalpha8 namingfact ->existing1:1Alpha8bit label. ExpectedMDBequivalence for10measuredcases; modifiedreader/adapter notexecuted.",
+    "namingBoundary": "Keep cataloguespellings/currentnames. A small explicitsemanticinput/adapterbranch may be needed because currentMXFcaller does not supplypositivecontainerproof. Do not fabricate recordedPEC/legacyNONE/ResolutionID or claim existinghelper has alreadyproducedthe newresult.",
+    "compressedCases": "Keep supportedpositiveRLEcoding mappings separate; nativeRLEkeytype09 and PEC...02090500 differfromobservedRGBAkeytype08. No physicalRLEcontrolobserved, no universalcompressedalpha classifierclaimed.",
+    "lifetimeAndReads": "Use already-required initialheader metadata; no essencepayloadread, extraheaderopen, retainedoldobjectgraph or sourceprioritychange. Packetkey/frame-sizefacts onlycorroborate; notneededbyproposedrule."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-alpha-identification-2026-10-22.json",
+    "sha256BeforeApprovalMetadata": "390b4a6d4e51fcd00c56b100b866375a916e5d1b1353a28a881fe9e9922f7833"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-21-bella-mxf/alpha-identification.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeImplemented": false,
+    "productionTestsRun": false,
+    "rawResearchChanged": false
+  }
+}

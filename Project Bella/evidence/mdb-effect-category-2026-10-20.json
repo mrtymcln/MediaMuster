@@ -1,0 +1,3104 @@
+{
+  "date": "2026-10-20",
+  "timezone": "Australia/Sydney",
+  "purpose": "Effect Category requirements: native registered identifier/category boundary, MDVx ordinary omission, current name-derived behaviour and a simpler Bella adapter preserving the existing resolver.",
+  "status": "User agreed on 20 October 2026 to preserving current Effect Category behaviour with the simpler Bella integration: retain the existing catalogue/resolver, derive once after final Type/Clip Name selection and reuse within the same selected master/name processing scope. Not implemented; OldScanner active, Bin Filter unchanged. Effect and Effect Sequence detailed field reviews remain open. Original native/observer receipts retain their pre-approval wording; agreedBellaRule records the final decision.",
+  "mediaComposer": {
+    "scope": "Bounded read-only static Media Composer effect-registration/resource review for Bella Effect Category. Distinguish the existing name-derived label, recorded MDB component effect identifiers, and a live effects palette. No plugin loading/execution, application launch, private API invocation, media writes or production edits.",
+    "application": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app",
+      "version": "26.8.0.58987",
+      "build": "26.8.0"
+    },
+    "inspectedArtifacts": {
+      "engine": {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "bytes": 73527536,
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+      },
+      "plugin": {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/SharedSupport/AVX2_Plug-ins/MCEffects.avx/Contents/MacOS/MCEffects",
+        "bytes": 2794752,
+        "sha256": "4afe7684bd808a4bea1b690d763557a7324468193333dc76b2941780e5b2cd74"
+      },
+      "externalRegistry": {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Resources/Default_ExternalDynamicAVX2.xml",
+        "bytes": 100377,
+        "sha256": "1b5b5d7696b4810307f93af4e119704840c52c3325d8d94cf87d3dcac830024a"
+      }
+    },
+    "plainMeaning": [
+      "Precompute Category separates Rendered Effects from Titles and Matte Keys. Effect Category names a catalogue group such as Blend, Timewarp, Image or Sapphire Transitions. These are different fields.",
+      "Media Composer knows category/group information through its effect registrations and shipped registry. That knowledge is associated with an effect identifier/name in the application; it is not proof that a selected MDB precompute master directly records its original producer category.",
+      "Current MediaMuster extracts an effect-looking token from the selected precompute Clip Name and looks it up in a compiled catalogue. This is useful inferred naming because Clip Names are editable. It is not equivalent to reading a verified recorded effect ID from the MDB."
+    ],
+    "nativeBuiltinRegistration": {
+      "function": "AEffect::SetEffectInfoFromIdentifier(int,int)",
+      "address": "0x7467e0 in engine",
+      "anchors": [
+        "0x746808..14 queries the AlphaFlex feature setting before dispatching registered numeric identifiers.",
+        "The branch0x746890..8b8 selects display name 3D Warp and category Blend when the toggle result is zero, or 3D Warp Legacy and Legacy when nonzero. It passes the internal identifier string EFF_SBLEND and display name to SetFundementals at0x7468cc..8d8.",
+        "The common category path at0x748b58..70 or0x749240..58 localizes a category string then invokes virtual+0x6f0. The AEffect vtable address point0x137ebc8 resolves that slot to AEffect::SetClassName0x75b76c.",
+        "SetClassName stores/copies the registered category name into the AEffect in-memory handle member+0xa0; it performs localization and string allocation/copy, not an MDB property read.",
+        "SetEffectInfo has other feature/version-dependent registration branches and an Unknown Effect/Unknown fallback. This review verifies the representative route; it does not freshly model every identifier/gate combination."
+      ],
+      "terminology": "AEffect ClassName here is an effect registry/palette group string. It is not an OMFI four-character object class, file Kind, Precompute Category or Mob identity.",
+      "livePaletteLimit": "Compiled registrations can include legacy/debug/hidden variants. Finding an entry does not establish that it is visible, enabled, licensed or executable in the current live session."
+    },
+    "nativePluginRegistration": {
+      "artifact": "MCEffects.avx/Contents/MacOS/MCEffects",
+      "initializer": "0x411e0 __GLOBAL__sub_I_MCEffects.cpp",
+      "anchors": [
+        "0x411fc..218 reads the MCFirst setting;0x41224..234 reads AlphaFlex. Static registration output can depend on those gates.",
+        "0x4128c..412c0 writes a registration record for BLEND_SUPER/EFF2_BLEND_SUPER with public name Superimpose and class/category Blend.0x412d4..412fc writes BLEND_DISSOLVE/EFF2_BLEND_DISSOLVE with public name Dissolve and the same group.",
+        "The sampled public name/category pointers refer to little-endian UTF-32 wide string constants, independently decoded as Superimpose, Dissolve and Blend; this does not prescribe MDB text encoding.",
+        "Placeholder FXBaseProxyRegistration entries occur at the start of the initializer. The current catalogue documentation excludes these internal placeholder names."
+      ],
+      "limit": "No plugin code was invoked. The historical 162-record/two-AlphaFlex-state extraction and 47-added-pair contribution remain prior catalogue provenance, not a freshly reconstructed full plugin registration model in this bounded pass."
+    },
+    "externalRegistry": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Resources/Default_ExternalDynamicAVX2.xml",
+      "encoding": "Declared UTF-8 XML",
+      "recordShape": [
+        "DynamicAVX2.ClassName is the category/group label.",
+        "DynamicAVX2.Name is the effect display name.",
+        "DynamicAVX2.EffectID is a separate effect identifier, commonly GUID-shaped; it is not a FileMobId or MasterMobId."
+      ],
+      "freshCounts": {
+        "records": 667,
+        "distinctNameCategoryPairs": 659
+      },
+      "freshComparison": "All 659 distinct external registry name/category pairs are present in the current compiled MediaMuster catalogue. The source contains 887 distinct pairs, 861 distinct English names and 1106 nonempty localized alias values. 228 source pairs are additional to the external registry.",
+      "scope": "This installed default registry is recognition knowledge, not a live inventory of installed/licensed/enabled external plugins. No external plugin presence or availability is inferred from it."
+    },
+    "recordedMDBIdentityVersusCatalogueGroup": {
+      "knownIdentityProperties": [
+        "OMFI:CPNT:EffectID, dictionary offset+0x188.",
+        "OMFI:FXPS:attrEffectID and OMFI:FXPS:attrEffectIDLen, offsets+0x1658/+0x1660. These are effect identity/property payload routes, not a proven selected-master palette category field."
+      ],
+      "boundedNativeComponentRoute": [
+        "The verified AComponent::Get path0x1482e8..308 reads CPNT:EffectID into the component optional effect-ID storage through its string reader and SetEffectIDHdl.",
+        "ATrackEffect::Get at0x1ef700..720 obtains its component effect-ID through virtual+0x2f0 and passes the identifier string to AEffectLibrary::FindEffect. ATrackEffect::GetEffect at0x1f3aac..acc has the same identifier-based lookup boundary.",
+        "The ATrackEffect vtable slot+0x2f0 resolves to ATrackGroup::GetEffectID0x1eb97c, which forwards to AComponent::GetEffectID0x1492f8. This is an identifier lookup route, not a call to parse a precompute Clip Name."
+      ],
+      "ownershipLimit": "An effect ID found on an RSET, FXCP, FXPS, source component or unrelated object may describe that structural component rather than establish the selected precompute original rendering effect. Owner/relationship and meaning must be proven before using such an ID. The raw selected-master audit is handled independently by the data agent.",
+      "categoryPropertyLimit": "No explicit selected-master MDB palette-category property has been established for this result field. The property-name dictionary and bounded native routes do not prove a global absence from every private MDB layout or arbitrary attribute blob. Current MediaMuster does not read a direct category property; it deliberately uses the Clip Name catalogue inference."
+    },
+    "currentLookupPreservation": {
+      "entryPoint": "AvidEffects::lookup(const QString& clipName), src/effectcatalogue.cpp:965 at review time.",
+      "contract": [
+        "It is called for metadata-proven precomputes and returns recognized effect name, category/group(s), sequence text, instance and matched flag.",
+        "The shared table is built once from compiled UTF-8 strings. Names and localized aliases are indexed by the existing space/colon-to-underscore spelling convention.",
+        "The explicit 3DWarp compatibility alias is preserved; general space removal, case folding and approximate/fuzzy matching are not introduced.",
+        "One spelling can legitimately map to several groups; current lookup joins distinct matching categories with slash separators rather than arbitrarily choosing a group.",
+        "Unrecognized tokens preserve their text and unknown category. A renamed/custom title/template can remain unrecognized; an accidental known-name match can still be misleading because the original Clip Name is editable."
+      ],
+      "approvalBoundary": "The user likes current Effect Category behavior and asks for an elegant equivalent. Preserve the verified catalogue and current matching semantics; do not replace this with a new arbitrary component-graph effect-identity search or live application/plugin query."
+    },
+    "bellaRecommendationForParent": [
+      "Reuse the existing immutable catalogue and exact name-recognition logic. Run the lookup from the selected decoded Clip Name after Type is established as Precompute, once per distinct required master/name context where possible.",
+      "Preserve original Clip Name and inferred/matched/ambiguous status. Keep the category/effect/sequence result together so the same name is not repeatedly parsed for three columns.",
+      "A small shared catalogue index/handle can represent matched categories if future profiling justifies it; do not redesign the already compact pure lookup or claim speed/memory gains without measurement.",
+      "Do not read import-settings bodies, every effect component, plugin registry files or application binaries during a Bella media scan solely to produce the current inferred Effect Category column.",
+      "Keep unavailable/unmatched presentation policy explicit and separate from the approved Precompute Category blank rule. This review does not silently change current unknown labeling, infer a verified effect ID, remove optional precompute features, or settle future source/header scheduling."
+    ],
+    "limits": [
+      "Fresh source/registry pair counts and representative built-in/plugin category paths are verified, while the earlier full 887-pair registration and localization provenance remains historical.",
+      "No full live palette reconstruction, universal MDB absence proof, executable-plugin check or exact Media Composer UI clone.",
+      "No new runtime code, app cutover, tests or benchmarks performed."
+    ],
+    "receipts": [
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "bytes": 73527536,
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+        "source": "fresh static extract / resource comparison"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Resources/Default_ExternalDynamicAVX2.xml",
+        "bytes": 100377,
+        "sha256": "1b5b5d7696b4810307f93af4e119704840c52c3325d8d94cf87d3dcac830024a",
+        "source": "fresh static extract / resource comparison"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/SharedSupport/AVX2_Plug-ins/MCEffects.avx/Contents/MacOS/MCEffects",
+        "bytes": 2794752,
+        "sha256": "4afe7684bd808a4bea1b690d763557a7324468193333dc76b2941780e5b2cd74",
+        "source": "fresh static extract / resource comparison"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/avid-effects-catalogue.md",
+        "bytes": 5699,
+        "sha256": "e5cf7d3adc5c9cbc5635aeb6bf174d59e81a8c02c40451bab391c4aae80aa520",
+        "source": "verified existing native receipt or current source/document"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.cpp",
+        "bytes": 69548,
+        "sha256": "0989aeb6b02bf4a254b01e5d5881a82997205797de7d448336b5f4a0d0535d35",
+        "source": "verified existing native receipt or current source/document"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.h",
+        "bytes": 1797,
+        "sha256": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1",
+        "source": "verified existing native receipt or current source/document"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mc/AComponent-GetEffectID.txt",
+        "bytes": 983,
+        "sha256": "3a2baa90de5b1b9ab834403ef4810b099c556a7f69b706349f7613afee91a507",
+        "source": "fresh static extract / resource comparison"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mc/AComponent-GetEffectIDStr.txt",
+        "bytes": 206,
+        "sha256": "93cd563687c0f8883908c41bf6d6e1ea8399cd91874a4b7e015f22d59db7539a",
+        "source": "fresh static extract / resource comparison"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mc/AEffect-SetClassName.txt",
+        "bytes": 1553,
+        "sha256": "f37b1890f31b1f2e23890fc0fc1aee6f0c30f0447767b93bb82d26e83fe54efe",
+        "source": "fresh static extract / resource comparison"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mc/AEffect-SetEffectInfoFromIdentifier.txt",
+        "bytes": 136707,
+        "sha256": "8eebdff2935cae6847e4f6dffda2a0e0692a716e28bd2de69d4d61f26c99d1b2",
+        "source": "fresh static extract / resource comparison"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mc/AEffect-SetFundementals.txt",
+        "bytes": 9327,
+        "sha256": "ede751aeac6d88c28d01dc92c411cda900c3322405183fba7481314ef22242ec",
+        "source": "fresh static extract / resource comparison"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mc/ATrackEffect-Get.txt",
+        "bytes": 13894,
+        "sha256": "ab22b76c63af3d6a1eebbc02d47ae701c417d6b6d6692d2baa3a42a3aaa73131",
+        "source": "fresh static extract / resource comparison"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mc/ATrackEffect-GetEffect.txt",
+        "bytes": 4450,
+        "sha256": "e90711791bbe1fee124ac8979bd9060afbcbc4b32dfd7e56b81b48b2be7606d6",
+        "source": "fresh static extract / resource comparison"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mc/ATrackEffect-SetEffectID.txt",
+        "bytes": 602,
+        "sha256": "99c0e94bd3c5280f71c268e673bf6e76e7d1611c1d93a32a19f7afd257c372d1",
+        "source": "fresh static extract / resource comparison"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mc/MCEffects-registration-initializer.txt",
+        "bytes": 126069,
+        "sha256": "d37e7e92fa0b97255d473c984ea7108f23a09c39a267b752096419a5c3bf5870",
+        "source": "fresh static extract / resource comparison"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mc/catalogue-source-comparison.json",
+        "bytes": 614,
+        "sha256": "b3a88b400ce3de1733dca16fd2b9656b4734ef1a64cf633f8c9ef854ff41487a",
+        "source": "fresh static extract / resource comparison"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mc/effect-vtables.json",
+        "bytes": 757,
+        "sha256": "84964052fdfc3bc2e3aee4bef842f5ba130fdc98420d72f5cc9f5f427e3f4bd1",
+        "source": "fresh static extract / resource comparison"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mc/external-registry-summary.json",
+        "bytes": 94493,
+        "sha256": "4384934969732a8aa7b4877d82825c966e248c08bbe216c68e85e8dbade5487b",
+        "source": "fresh static extract / resource comparison"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mc/plugin-registration-string-samples.json",
+        "bytes": 1282,
+        "sha256": "3432277836335915f323978ca5263d01c54a051f4b8ebf15004dc73f7ac0e798",
+        "source": "fresh static extract / resource comparison"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AComponent-Get.txt",
+        "bytes": 14810,
+        "sha256": "a089fb7ac0abbc70867f9b281ecb86ef0fb64a5f27e9d4cc182a5327245067bc",
+        "source": "verified existing native receipt or current source/document"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/native-property-offsets-prior.json",
+        "bytes": 27054,
+        "sha256": "fcd42e31b206ecb79c37072d1eced4bcb46e81df4fd2c1027224e9341f5632f8",
+        "source": "verified existing native receipt or current source/document"
+      }
+    ]
+  },
+  "mdvx": {
+    "date": "2026-10-20",
+    "timezone": "Australia/Sydney",
+    "purpose": "Bounded ordinary MDVx Effect Category omission audit, with current MediaMuster catalogue-lookup behavior supplied as separate source context.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "bytes": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "version": "0.2",
+      "build": "4073",
+      "architectureAudited": "arm64",
+      "freshHashMatchesPriorAuditedBinary": true
+    },
+    "method": "Fresh installed MDVx SHA256; bounded rereading of retained exact functions for that identical hash. Current application source/doc inspection and a textual catalogue-entry count. No live app/scan/export/filter, private API, new media/MDB read, production edit or new test/build.",
+    "mainFinding": "Ordinary MDVx does not derive or retain a separate effect token, palette category or catalogue lookup result in its matched-file scan-to-row-to-table/CSV/filter path. Current MediaMuster derives these labels from an already selected precompute Clip Name and its bundled catalogue; this is inference from editable text, not an MDB effect identity.",
+    "ordinaryMDVx": {
+      "entry": "-[MDVxOMFI addInfoToItem:] 0x100064794. Selected PMR-associated master is found through the eight-byte ID excerpt/CompositionMobs lookup.",
+      "name": "At 0x1000648d4..8ec, GetStringForObjectAt supplies the master text copied to DB_NameInBin. There is no effect-token suffix parser, category lookup or catalogue interpretation in this ordinary block.",
+      "usage": "MOBJ:UsageCode is retained, with _IMPORTSETTING name-prefix override to synthetic15. Neither usage3 label UC_EFFECT nor usage15 label IMPORTED identifies a palette group such as Image, Timewarp or a plug-in group.",
+      "row": "Complete row metadata has no independent effect name/token/category/sequence field. The retained raw Clip Name can contain such text, but it is not parsed into this field.",
+      "tableAndCSV": "Complete ordinary table and string-export methods have no Effect Category or effect-token branch. KindCellID uses raw usage-label table at 0x1000e94d0. ExportMenu genCsv calls the ordinary string method at 0x100067e24; it does not add a separate catalogue field.",
+      "filter": "MDVxFilter itemPassFilter at 0x10000c0b0 uses precompute/imported/audio gates and text checks against names/Project/path. It has no independent effect-category equality or catalogue lookup stage.",
+      "headerRowFallback": "Inspected MDVxMXF addInfoToItem at 0x1000326b4 copies Clip Name, Project and UIDs only, not derived effect fields.",
+      "wholeAppLimit": "Embedded AAF dictionary symbols include OperationDefinition.OperationCategory and PluginDefinition.PluginCategory. Their presence is not an ordinary palette-label projection. This receipt does not assert raw browsers or every embedded library cannot inspect effects."
+    },
+    "currentMediaMusterContext": {
+      "notNativeProof": "These observations are from the current repository source. Existing catalogue documentation attributes its data to prior Media Composer registration/resource research; this task does not freshly verify that native extraction.",
+      "sourceBoundary": "projection.cpp selectEffectMetadata at lines157..183 runs only after selected Type is Precompute and a selected Clip Name observation exists. It calls AvidEffects::lookup once for all three outputs Effect, EffectCategory and EffectSequence. It labels derived observations as inference, retaining the selected name source context.",
+      "catalogue": {
+        "method": "Read-only textual count of compiled Entry initializers, not a new C++ runtime execution or native registration audit.",
+        "entries": 887,
+        "distinctNameCategoryPairs": 887,
+        "distinctEnglishNames": 861,
+        "distinctCategoryStrings": 54
+      },
+      "index": "effectcatalogue.cpp lines910..948 build one lazy function-static Table: a row vector and QHash from exact mangled English/localized name keys to all matching catalogue rows. It does not reopen Media Composer or read MDB/media files per lookup.",
+      "keyRules": "mangle at lines952..957 replaces space and colon with underscore. Lookup at lines1031..1037 uses exact case-sensitive QString keys. Seven shipped-language aliases and the explicit 3DWarp compatibility alias are retained. No generic case folding, approximate matching or arbitrary whitespace removal.",
+      "tokenParser": "lookup lines965..1029 recognizes the right-hand effect token in sequence,Effect+N or sequence,Effect,N[.new.N...] conventions. It validates anchored numeric suffixes and integer range; malformed/overflow suffixes are not silently accepted as valid instances. Sequence commas/spelling are retained in the returned text.",
+      "ambiguity": "At lines1039..1047, a matched key uses the first matching English display name and joins every distinct category in catalogue order with / separators. Category ambiguity is not collapsed to an arbitrary single group.",
+      "unknown": "Unmatched token remains raw as Hit.name with category unknown. Renamed clips or coincidental known tokens can miss or misleadingly match; this is not proof of actual producer/effect identity.",
+      "row": "mediaengineadapter.cpp lines64..66 copies the three strings to MediaFile effect/effectCategory/effectSequence. Type is established independently and does not change because the name matches.",
+      "display": "MediaFile::effectCategoryDisplay at mediafile.h lines201..205 is blank for non-precomputes and otherwise uses the stored category or lowercase unknown. Table and enabled detail CSV call this shared function.",
+      "sortAndSearch": "Optional precompute detail columns are feature gated. Search includes the same visible category/effect labels on precomputes; category sorting is case-insensitive display text. These are current behavior facts, not a newly approved Bella policy.",
+      "ioBoundary": "The pure lookup itself performs no source I/O. Current coordinator lines171..178 do not request a header merely because effect/category/sequence are absent; only an unresolved recorded conflict among these can contribute a request. Other fields can independently require headers.",
+      "limits": "Current source header comments and existing test/doc claims are not fresh native proof or a new passing test run."
+    },
+    "BellaAdviceNotNewApproval": [
+      "Retain useful exact token parsing, complete catalogue/localized aliases, ambiguity and unknown behavior if preserving the user-requested current behavior. Do not replace them with a Type/import-name shortcut.",
+      "The current lookup already returns all three related values and shares its immutable index; it is not inherently a new per-row filesystem or plug-in scan.",
+      "A simpler Bella integration can derive once after the selected master Type/Clip Name is final, reuse the result for associated rows and avoid separate graph walks or repeated source reconciliation solely for a name-derived label. No measured speed or memory improvement is claimed.",
+      "Keep derived-from-name meaning explicit. Do not silently treat an unmatched category as evidence that the file is Media, trigger a new media read solely to recover the label, or rename the category to a newly approved policy without user direction.",
+      "The agreed Type blank-unknown behavior does not automatically alter current Effect Category lowercase unknown. Effect, EffectSequence and Precompute Category remain distinct fields."
+    ],
+    "limits": [
+      "Bounded static ordinary-inventory MDVx omission; not a whole-app effects-capability audit.",
+      "No new Media Composer native registration trace or actual MDB effect-token coverage count in this task; other team work owns those facts.",
+      "No live UI/CSV, new test/build, benchmark, repository edit or media write."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/ExportMenu_genCsv_.txt",
+        "bytes": 10241,
+        "sha256": "92959f72f5c4beb7005030925cceed4fbd0f29ed05383c0524a8fb50f2f4f522",
+        "copiedFrom": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/ExportMenu_genCsv_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt",
+        "bytes": 16441,
+        "sha256": "be932b1a1d04bf4539a0f4fe6b8fadb68d4d4170387b8613806c5c6af8b0fee1",
+        "copiedFrom": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt",
+        "bytes": 25206,
+        "sha256": "e9f502df3ddc289f84c65be937ec441a847c638c8b17d1df97c3b1f0655644cb",
+        "copiedFrom": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/MDVxDatabaseItem_objc_metadata.txt",
+        "bytes": 24581,
+        "sha256": "99ee84dd15386551c5a986e99eb6ddd750e6aee6275a6914a9306a9a381e34dc",
+        "copiedFrom": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem-objc-excerpt.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/MDVxFilter_itemPassFilter_.txt",
+        "bytes": 5120,
+        "sha256": "1de5a1774c33d6552ea127292a53676f9e8e703aec7dea063cd76e37f730e101",
+        "copiedFrom": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxFilter_itemPassFilter_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/MDVxMXF_addInfoToItem_.txt",
+        "bytes": 3747,
+        "sha256": "18281f5391667e37e8e3b5884b1a498e680ac0ccc0a99fcf8f470c42101ea1d0",
+        "copiedFrom": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxMXF_addInfoToItem_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/MDVxOMFI_GetStringForObjectAt_.txt",
+        "bytes": 3468,
+        "sha256": "bab9dc9340d24802b7f984fcb1d0aca837cdfa7882e3179b3e3a4335464ba2a3",
+        "copiedFrom": "/private/tmp/bella-mdb-20261018-mdvx/GetStringForObjectAt_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/MDVxOMFI_addInfoToItem_.txt",
+        "bytes": 9423,
+        "sha256": "20211e8a6dbcd33b0e034f3885504d5af7a54cffd3a05b5d776446549e0f6829",
+        "copiedFrom": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxOMFI_addInfoToItem_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/binary-receipt.json",
+        "bytes": 278,
+        "sha256": "459d647e822d887a6c3cf25889938d1ecbdf772880e2642ccde74677340f80ef"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/current-catalogue-source-counts.json",
+        "bytes": 254,
+        "sha256": "8ca87ef93dbebe2316f78a13f136cb4cde226f16d3180c41e4f69a095a149e2e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/current-effect-catalogue-doc.md",
+        "bytes": 5699,
+        "sha256": "e5cf7d3adc5c9cbc5635aeb6bf174d59e81a8c02c40451bab391c4aae80aa520",
+        "copiedFrom": "/Users/martymclean/Developer/MediaMuster/docs/avid-effects-catalogue.md"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/current-effectcatalogue.cpp",
+        "bytes": 69548,
+        "sha256": "0989aeb6b02bf4a254b01e5d5881a82997205797de7d448336b5f4a0d0535d35",
+        "copiedFrom": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.cpp"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/current-effectcatalogue.h",
+        "bytes": 1797,
+        "sha256": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1",
+        "copiedFrom": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.h"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/current-projection.cpp",
+        "bytes": 10189,
+        "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce",
+        "copiedFrom": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/ordinary-row-field-check.json",
+        "bytes": 2801,
+        "sha256": "90717461f7af4c225ec09279239dd9749f304b2447bba4c4587d0bda2db18c20"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/prior-type-usage-label-table.json",
+        "bytes": 2403,
+        "sha256": "4c7a6c0491cea056320a50bb7936088eb651f17b6337a2333f9f5b9746ddbc8b",
+        "copiedFrom": "/private/tmp/bella-mdb-type-20261020-mdvx/fresh-usage-label-table.json"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/relevant-symbols.txt",
+        "bytes": 244,
+        "sha256": "a0c4fba3bbd421f6a28971292ca0a42daaf009bd487774521c743b51d6e143e0"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+        "bytes": 12788,
+        "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3",
+        "role": "Read-only current MediaMuster source context, not native proof."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+        "bytes": 5202,
+        "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935",
+        "role": "Read-only current MediaMuster source context, not native proof."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+        "bytes": 10816,
+        "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6",
+        "role": "Read-only current MediaMuster source context, not native proof."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+        "bytes": 12214,
+        "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56",
+        "role": "Read-only current MediaMuster source context, not native proof."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp",
+        "bytes": 3609,
+        "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442",
+        "role": "Read-only current MediaMuster source context, not native proof."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/mediafilterproxy.cpp",
+        "bytes": 11470,
+        "sha256": "2c10657c82a6d3456815966664c62ab0b77a29d02a6e514fd865510fe7349e0c",
+        "role": "Read-only current MediaMuster source context, not native proof."
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+        "bytes": 36110,
+        "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e",
+        "role": "Read-only current MediaMuster source context, not native proof."
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-disassembly.txt",
+        "bytes": 4552262,
+        "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074",
+        "role": "Retained complete arm64 disassembly, fresh installed hash unchanged."
+      }
+    ]
+  },
+  "actualDatabasesLive": {
+    "status": "freshCurrentSixPairMasterNameAuditComplete",
+    "purpose": "Freshly qualify the current 135 selected usage-1 master names and compare their editable-name-derived current catalogue outputs, preserving the earlier unavailable-drive report as historical evidence.",
+    "historicalSnapshotFindings": {
+      "path": "/private/tmp/bella-mdb-effect-category-20261020-drives/findings.json",
+      "sha256": "b7749c1db4b47fb25b46b8f797a25fac0e72e26098d57baa1affc821742951fb",
+      "preservedWithoutModification": true
+    },
+    "method": [
+      "All six currently mounted MDBs, six paired PMRs and six retained indexes are freshly hashed, stable during reading and equal their earlier verified receipts before interpretation.",
+      "Only exact class/ID/catalogue/physical-descriptor-reference/usage/name fields are retained and checked byte-for-byte against current MDB byte ranges. No effect-component or attribute graph walk is performed.",
+      "Each current full PMR FileMobId selects a unique MOBJ in SourceMobs and ObjectSpine with PhysicalMedia. Each current full paired MasterMobId independently selects its unique nonphysical MOBJ in CompositionMobs and ObjectSpine.",
+      "Selected master own UsageCode1 gates this comparison. Own CPNT Name is read as the concrete legacy String under the approved MacRoman rule, with one representative full current PMR owner match per distinct master retained.",
+      "The independent source-derived name observer is unchanged and pins current effectcatalogue.cpp data and parser behavior. It is not execution of the production C++/Qt resolver or proof of native effect identity.",
+      "Only distinct-master lookup counts are produced. Current PMR row counts describe owner coverage and never recognition weighting."
+    ],
+    "summary": {
+      "currentPmrPhysicalRowsQualified": 2412,
+      "currentPmrQualifiedUsage1Masters": 135,
+      "ownNamePropertyRowsOnTheseMasters": 135,
+      "matchedUnambiguousMasters": 107,
+      "unmatchedMasters": 28,
+      "ambiguousCategoryMasters": 0,
+      "currentRawPropertyRowsVerified": 427161,
+      "currentRawByteRangePiecesVerified": 427161,
+      "all135NamesAndObserverOutputsUnchangedFromHistoricalSnapshot": true,
+      "currentMasterSetEqualsHistoricalSnapshotMasterSet": true,
+      "noPhysicalRowRecognitionWeighting": true
+    },
+    "counts": {
+      "currentRawPropertyRowsVerified": 427161,
+      "currentRawByteRangePiecesVerified": 427161,
+      "currentPmrPhysicalRowsQualified": 2412,
+      "currentPmrUsage1AssociationVisitsNoRecognitionWeighting": 171,
+      "ownClipNameState:decoded:distinctMasters": 135,
+      "ownClipNamePropertyRowsOnDistinctMasters": 135,
+      "ownModernMOBJNamePropertiesOnDistinctMasters": 0,
+      "currentNameDerivedComparison:unmatched:distinctMasters": 28,
+      "sameRawNameAsHistoricalSnapshot": 135,
+      "sameObserverResultAsHistoricalSnapshot": 135,
+      "distinctCurrentPmrQualifiedUsage1Masters": 135,
+      "currentNameDerivedComparison:matchedUnambiguous:distinctMasters": 107
+    },
+    "currentCategoryStringsOnDistinctMasters": [
+      {
+        "exactCategoryString": "AudioSuite",
+        "count": 5
+      },
+      {
+        "exactCategoryString": "Blend",
+        "count": 56
+      },
+      {
+        "exactCategoryString": "Image",
+        "count": 23
+      },
+      {
+        "exactCategoryString": "Reformat",
+        "count": 2
+      },
+      {
+        "exactCategoryString": "Sapphire Lighting",
+        "count": 6
+      },
+      {
+        "exactCategoryString": "Timewarp",
+        "count": 1
+      },
+      {
+        "exactCategoryString": "Title",
+        "count": 14
+      },
+      {
+        "exactCategoryString": "unknown",
+        "count": 28
+      }
+    ],
+    "currentNameDerivedComparisonOnDistinctMasters": [
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "02_ADR REMi.new.01",
+        "displayName": "02_ADR REMi.new.01",
+        "exactCategoryString": "unknown",
+        "count": 1
+      },
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "ADR TEMPLATE.15.new.01",
+        "displayName": "ADR TEMPLATE.15.new.01",
+        "exactCategoryString": "unknown",
+        "count": 1
+      },
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "AFC NO TEASER.new.01",
+        "displayName": "AFC NO TEASER.new.01",
+        "exactCategoryString": "unknown",
+        "count": 3
+      },
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "Doctor.new.01",
+        "displayName": "Doctor.new.01",
+        "exactCategoryString": "unknown",
+        "count": 1
+      },
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "FEB_79",
+        "displayName": "FEB_79",
+        "exactCategoryString": "unknown",
+        "count": 2
+      },
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "FEB_79.01",
+        "displayName": "FEB_79.01",
+        "exactCategoryString": "unknown",
+        "count": 1
+      },
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "FF CREDITS.new.01",
+        "displayName": "FF CREDITS.new.01",
+        "exactCategoryString": "unknown",
+        "count": 3
+      },
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "FF TEASER.new.01",
+        "displayName": "FF TEASER.new.01",
+        "exactCategoryString": "unknown",
+        "count": 3
+      },
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "ID_BOARD_TEMPLATE.15.new.01",
+        "displayName": "ID_BOARD_TEMPLATE.15.new.01",
+        "exactCategoryString": "unknown",
+        "count": 1
+      },
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "ID_BOARD_TEMPLATE.16.new.01",
+        "displayName": "ID_BOARD_TEMPLATE.16.new.01",
+        "exactCategoryString": "unknown",
+        "count": 2
+      },
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "NOV_78",
+        "displayName": "NOV_78",
+        "exactCategoryString": "unknown",
+        "count": 2
+      },
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "SLATE",
+        "displayName": "SLATE",
+        "exactCategoryString": "unknown",
+        "count": 2
+      },
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "SLATE.01",
+        "displayName": "SLATE.01",
+        "exactCategoryString": "unknown",
+        "count": 1
+      },
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "TEXTLESS OPENERS.new.01",
+        "displayName": "TEXTLESS OPENERS.new.01",
+        "exactCategoryString": "unknown",
+        "count": 1
+      },
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "TITLE",
+        "displayName": "TITLE",
+        "exactCategoryString": "unknown",
+        "count": 2
+      },
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "john.01.new.01",
+        "displayName": "john.01.new.01",
+        "exactCategoryString": "unknown",
+        "count": 1
+      },
+      {
+        "matched": false,
+        "categoryAmbiguous": false,
+        "token": "john.02.new.01",
+        "displayName": "john.02.new.01",
+        "exactCategoryString": "unknown",
+        "count": 1
+      },
+      {
+        "matched": true,
+        "categoryAmbiguous": false,
+        "token": "3DWarp",
+        "displayName": "3D Warp",
+        "exactCategoryString": "Blend",
+        "count": 1
+      },
+      {
+        "matched": true,
+        "categoryAmbiguous": false,
+        "token": "Audio_Dissolve",
+        "displayName": "Audio Dissolve",
+        "exactCategoryString": "Blend",
+        "count": 44
+      },
+      {
+        "matched": true,
+        "categoryAmbiguous": false,
+        "token": "D-Verb",
+        "displayName": "D-Verb",
+        "exactCategoryString": "AudioSuite",
+        "count": 5
+      },
+      {
+        "matched": true,
+        "categoryAmbiguous": false,
+        "token": "Dissolve",
+        "displayName": "Dissolve",
+        "exactCategoryString": "Blend",
+        "count": 11
+      },
+      {
+        "matched": true,
+        "categoryAmbiguous": false,
+        "token": "FrameFlex",
+        "displayName": "FrameFlex",
+        "exactCategoryString": "Reformat",
+        "count": 2
+      },
+      {
+        "matched": true,
+        "categoryAmbiguous": false,
+        "token": "Motion_Effect",
+        "displayName": "Motion Effect",
+        "exactCategoryString": "Timewarp",
+        "count": 1
+      },
+      {
+        "matched": true,
+        "categoryAmbiguous": false,
+        "token": "Resize",
+        "displayName": "Resize",
+        "exactCategoryString": "Image",
+        "count": 22
+      },
+      {
+        "matched": true,
+        "categoryAmbiguous": false,
+        "token": "S_LensFlare",
+        "displayName": "S_LensFlare",
+        "exactCategoryString": "Sapphire Lighting",
+        "count": 4
+      },
+      {
+        "matched": true,
+        "categoryAmbiguous": false,
+        "token": "S_LensFlareAutoTrack",
+        "displayName": "S_LensFlareAutoTrack",
+        "exactCategoryString": "Sapphire Lighting",
+        "count": 2
+      },
+      {
+        "matched": true,
+        "categoryAmbiguous": false,
+        "token": "Stabilize",
+        "displayName": "Stabilize",
+        "exactCategoryString": "Image",
+        "count": 1
+      },
+      {
+        "matched": true,
+        "categoryAmbiguous": false,
+        "token": "Title",
+        "displayName": "Title",
+        "exactCategoryString": "Title",
+        "count": 14
+      }
+    ],
+    "currentBehaviourCatalogue": {
+      "nameCategoryPairs": 887,
+      "distinctEnglishNames": 861,
+      "sourceReceipts": [
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.h",
+          "sha256": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1",
+          "expectedSnapshotSha256": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1",
+          "matchesSnapshot": true,
+          "stableDuringRead": true,
+          "bytes": 1797
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.cpp",
+          "sha256": "0989aeb6b02bf4a254b01e5d5881a82997205797de7d448336b5f4a0d0535d35",
+          "expectedSnapshotSha256": "0989aeb6b02bf4a254b01e5d5881a82997205797de7d448336b5f4a0d0535d35",
+          "matchesSnapshot": true,
+          "stableDuringRead": true,
+          "bytes": 69548
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/docs/avid-effects-catalogue.md",
+          "sha256": "e5cf7d3adc5c9cbc5635aeb6bf174d59e81a8c02c40451bab391c4aae80aa520",
+          "expectedSnapshotSha256": "e5cf7d3adc5c9cbc5635aeb6bf174d59e81a8c02c40451bab391c4aae80aa520",
+          "matchesSnapshot": true,
+          "stableDuringRead": true,
+          "bytes": 5699
+        }
+      ],
+      "observerOnlyNotProductionExecution": true
+    },
+    "limits": [
+      "This pass freshly replaces only the earlier unavailable-drive qualification for master-name/current-catalogue comparison. Earlier snapshot effect-field/location observations remain separately scoped historical research.",
+      "No physical-row recognition ledger or category weighting is produced. PMR association visit counts are owner-qualification coverage only.",
+      "Editable-name recognition is a label, not recorded effect identity, plug-in availability or a new category inference rule.",
+      "No product code, application, media header, media essence or input is written or executed. New probe and evidence stay in this separate /private/tmp directory."
+    ],
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "currentMdbSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+        "rawValueIndexSha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "currentSourceByteVerification": true,
+        "currentFullPmrIdOwnerQualification": true,
+        "counts": {
+          "currentRawPropertyRowsVerified": 29999,
+          "currentRawByteRangePiecesVerified": 29999,
+          "currentPmrPhysicalRowsQualified": 389,
+          "currentPmrUsage1AssociationVisitsNoRecognitionWeighting": 30,
+          "ownClipNameState:decoded:distinctMasters": 10,
+          "ownClipNamePropertyRowsOnDistinctMasters": 10,
+          "ownModernMOBJNamePropertiesOnDistinctMasters": 0,
+          "currentNameDerivedComparison:unmatched:distinctMasters": 10,
+          "sameRawNameAsHistoricalSnapshot": 10,
+          "sameObserverResultAsHistoricalSnapshot": 10,
+          "distinctCurrentPmrQualifiedUsage1Masters": 10
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "currentMdbSha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+        "rawValueIndexSha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "currentSourceByteVerification": true,
+        "currentFullPmrIdOwnerQualification": true,
+        "counts": {
+          "currentRawPropertyRowsVerified": 154748,
+          "currentRawByteRangePiecesVerified": 154748,
+          "currentPmrPhysicalRowsQualified": 686,
+          "currentPmrUsage1AssociationVisitsNoRecognitionWeighting": 51,
+          "ownClipNameState:decoded:distinctMasters": 35,
+          "ownClipNamePropertyRowsOnDistinctMasters": 35,
+          "ownModernMOBJNamePropertiesOnDistinctMasters": 0,
+          "currentNameDerivedComparison:unmatched:distinctMasters": 8,
+          "sameRawNameAsHistoricalSnapshot": 35,
+          "sameObserverResultAsHistoricalSnapshot": 35,
+          "currentNameDerivedComparison:matchedUnambiguous:distinctMasters": 27,
+          "distinctCurrentPmrQualifiedUsage1Masters": 35
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "currentMdbSha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+        "rawValueIndexSha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "currentSourceByteVerification": true,
+        "currentFullPmrIdOwnerQualification": true,
+        "counts": {
+          "currentRawPropertyRowsVerified": 112699,
+          "currentRawByteRangePiecesVerified": 112699,
+          "currentPmrPhysicalRowsQualified": 513,
+          "currentPmrUsage1AssociationVisitsNoRecognitionWeighting": 74,
+          "ownClipNameState:decoded:distinctMasters": 74,
+          "ownClipNamePropertyRowsOnDistinctMasters": 74,
+          "ownModernMOBJNamePropertiesOnDistinctMasters": 0,
+          "currentNameDerivedComparison:matchedUnambiguous:distinctMasters": 68,
+          "sameRawNameAsHistoricalSnapshot": 74,
+          "sameObserverResultAsHistoricalSnapshot": 74,
+          "currentNameDerivedComparison:unmatched:distinctMasters": 6,
+          "distinctCurrentPmrQualifiedUsage1Masters": 74
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "currentMdbSha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+        "rawValueIndexSha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "currentSourceByteVerification": true,
+        "currentFullPmrIdOwnerQualification": true,
+        "counts": {
+          "currentRawPropertyRowsVerified": 106549,
+          "currentRawByteRangePiecesVerified": 106549,
+          "currentPmrPhysicalRowsQualified": 463,
+          "currentPmrUsage1AssociationVisitsNoRecognitionWeighting": 16,
+          "ownClipNameState:decoded:distinctMasters": 16,
+          "ownClipNamePropertyRowsOnDistinctMasters": 16,
+          "ownModernMOBJNamePropertiesOnDistinctMasters": 0,
+          "currentNameDerivedComparison:matchedUnambiguous:distinctMasters": 12,
+          "sameRawNameAsHistoricalSnapshot": 16,
+          "sameObserverResultAsHistoricalSnapshot": 16,
+          "currentNameDerivedComparison:unmatched:distinctMasters": 4,
+          "distinctCurrentPmrQualifiedUsage1Masters": 16
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "currentMdbSha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+        "rawValueIndexSha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "currentSourceByteVerification": true,
+        "currentFullPmrIdOwnerQualification": true,
+        "counts": {
+          "currentRawPropertyRowsVerified": 23021,
+          "currentRawByteRangePiecesVerified": 23021,
+          "currentPmrPhysicalRowsQualified": 359,
+          "distinctCurrentPmrQualifiedUsage1Masters": 0
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "currentMdbSha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/shared-OMFI MediaFiles-values.json",
+        "rawValueIndexSha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "currentSourceByteVerification": true,
+        "currentFullPmrIdOwnerQualification": true,
+        "counts": {
+          "currentRawPropertyRowsVerified": 145,
+          "currentRawByteRangePiecesVerified": 145,
+          "currentPmrPhysicalRowsQualified": 2,
+          "distinctCurrentPmrQualifiedUsage1Masters": 0
+        }
+      }
+    ],
+    "representativeCurrentOwnerQualifiedNameValues": [
+      {
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "currentMdbSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "masterMobId": "060a2b340101010501010f1013000000d97717225586059099ba34363bcdaf64",
+        "masterObject": 93810,
+        "masterClass": "MOBJ",
+        "masterMobIdProperties": [
+          {
+            "object": 93810,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                1395736,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                5137288,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000d97717225586059099ba34363bcdaf64"
+          },
+          {
+            "object": 93810,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                1395773,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                5137384,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000d97717225586059099ba34363bcdaf64"
+          }
+        ],
+        "masterUsageProperties": [
+          {
+            "object": 93810,
+            "propertyName": "OMFI:MOBJ:UsageCode",
+            "typeName": "omfi:UsageCodeType",
+            "length": 4,
+            "ranges": [
+              [
+                5137348,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                5137336,
+                24
+              ]
+            ],
+            "hex": "01000000"
+          }
+        ],
+        "clipNameOwner": "Current full-PMR-ID qualified associated master own CPNT:Name",
+        "clipNameState": "decoded",
+        "clipNameMacRoman": "NOV_78",
+        "clipNameProperties": [
+          {
+            "object": 93810,
+            "propertyName": "OMFI:CPNT:Name",
+            "typeName": "omfi:String",
+            "length": 7,
+            "ranges": [
+              [
+                1395703,
+                7
+              ]
+            ],
+            "tocRanges": [
+              [
+                5137072,
+                24
+              ]
+            ],
+            "hex": "4e4f565f373800"
+          }
+        ],
+        "currentNameDerivedComparison": {
+          "source": "Separate nonproduction observation of current ClipName-token/catalogue behavior; not recorded effect identity.",
+          "token": "NOV_78",
+          "sequence": "",
+          "instance": 0,
+          "matched": false,
+          "name": "NOV_78",
+          "category": "unknown",
+          "candidateDisplayNames": [],
+          "candidateCategoriesInCatalogueOrder": [],
+          "categoryAmbiguous": false
+        },
+        "sameRawNameAsHistoricalSnapshot": true,
+        "sameObserverResultAsHistoricalSnapshot": true,
+        "oneCurrentPmrOwnerMatchRepresentative": {
+          "fileMobId": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64",
+          "fileObject": 93780,
+          "fileMobIdProperties": [
+            {
+              "object": 93780,
+              "propertyName": "OMFI:MOBJ:MobID",
+              "typeName": "omfi:UID",
+              "length": 32,
+              "ranges": [
+                [
+                  1394461,
+                  32
+                ]
+              ],
+              "tocRanges": [
+                [
+                  5130688,
+                  24
+                ]
+              ],
+              "hex": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64"
+            },
+            {
+              "object": 93780,
+              "propertyName": "OMFI:MOBJ:MobID",
+              "typeName": "omfi:UID",
+              "length": 32,
+              "ranges": [
+                [
+                  1394506,
+                  32
+                ]
+              ],
+              "tocRanges": [
+                [
+                  5130808,
+                  24
+                ]
+              ],
+              "hex": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64"
+            }
+          ],
+          "descriptorObject": 93779,
+          "descriptorClass": "RGBA",
+          "fileOwnPhysicalMediaReference": [
+            {
+              "object": 93780,
+              "propertyName": "OMFI:MOBJ:PhysicalMedia",
+              "typeName": "omfi:ObjRef",
+              "length": 8,
+              "ranges": [
+                [
+                  1394498,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  5130760,
+                  24
+                ]
+              ],
+              "hex": "536e010000000000"
+            }
+          ],
+          "currentPmrRecordByteRange": [
+            48246,
+            126
+          ],
+          "pmrVersion": 16
+        }
+      },
+      {
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "currentMdbSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "masterMobId": "060a2b340101010501010f1013000000e003d12155860590207934363bcdaf64",
+        "masterObject": 93641,
+        "masterClass": "MOBJ",
+        "masterMobIdProperties": [
+          {
+            "object": 93641,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                1391167,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                5109784,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000e003d12155860590207934363bcdaf64"
+          },
+          {
+            "object": 93641,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                1391204,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                5109880,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000e003d12155860590207934363bcdaf64"
+          }
+        ],
+        "masterUsageProperties": [
+          {
+            "object": 93641,
+            "propertyName": "OMFI:MOBJ:UsageCode",
+            "typeName": "omfi:UsageCodeType",
+            "length": 4,
+            "ranges": [
+              [
+                5109844,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                5109832,
+                24
+              ]
+            ],
+            "hex": "01000000"
+          }
+        ],
+        "clipNameOwner": "Current full-PMR-ID qualified associated master own CPNT:Name",
+        "clipNameState": "decoded",
+        "clipNameMacRoman": "TITLE",
+        "clipNameProperties": [
+          {
+            "object": 93641,
+            "propertyName": "OMFI:CPNT:Name",
+            "typeName": "omfi:String",
+            "length": 6,
+            "ranges": [
+              [
+                1391135,
+                6
+              ]
+            ],
+            "tocRanges": [
+              [
+                5109568,
+                24
+              ]
+            ],
+            "hex": "5449544c4500"
+          }
+        ],
+        "currentNameDerivedComparison": {
+          "source": "Separate nonproduction observation of current ClipName-token/catalogue behavior; not recorded effect identity.",
+          "token": "TITLE",
+          "sequence": "",
+          "instance": 0,
+          "matched": false,
+          "name": "TITLE",
+          "category": "unknown",
+          "candidateDisplayNames": [],
+          "candidateCategoriesInCatalogueOrder": [],
+          "categoryAmbiguous": false
+        },
+        "sameRawNameAsHistoricalSnapshot": true,
+        "sameObserverResultAsHistoricalSnapshot": true,
+        "oneCurrentPmrOwnerMatchRepresentative": {
+          "fileMobId": "060a2b340101010501010f10130000008f50d121558605900db134363bcdaf64",
+          "fileObject": 93617,
+          "fileMobIdProperties": [
+            {
+              "object": 93617,
+              "propertyName": "OMFI:MOBJ:MobID",
+              "typeName": "omfi:UID",
+              "length": 32,
+              "ranges": [
+                [
+                  1390265,
+                  32
+                ]
+              ],
+              "tocRanges": [
+                [
+                  5106136,
+                  24
+                ]
+              ],
+              "hex": "060a2b340101010501010f10130000008f50d121558605900db134363bcdaf64"
+            },
+            {
+              "object": 93617,
+              "propertyName": "OMFI:MOBJ:MobID",
+              "typeName": "omfi:UID",
+              "length": 32,
+              "ranges": [
+                [
+                  1390310,
+                  32
+                ]
+              ],
+              "tocRanges": [
+                [
+                  5106256,
+                  24
+                ]
+              ],
+              "hex": "060a2b340101010501010f10130000008f50d121558605900db134363bcdaf64"
+            }
+          ],
+          "descriptorObject": 93616,
+          "descriptorClass": "CDCI",
+          "fileOwnPhysicalMediaReference": [
+            {
+              "object": 93617,
+              "propertyName": "OMFI:MOBJ:PhysicalMedia",
+              "typeName": "omfi:ObjRef",
+              "length": 8,
+              "ranges": [
+                [
+                  1390302,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  5106208,
+                  24
+                ]
+              ],
+              "hex": "b06d010000000000"
+            }
+          ],
+          "currentPmrRecordByteRange": [
+            71050,
+            126
+          ],
+          "pmrVersion": 16
+        }
+      },
+      {
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "currentMdbSha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "masterMobId": "060a2b340101010501010f1013000000b3772b15731106961c0a7c57583610fa",
+        "masterObject": 187386,
+        "masterClass": "MOBJ",
+        "masterMobIdProperties": [
+          {
+            "object": 187386,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                3321725,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                20127456,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000b3772b15731106961c0a7c57583610fa"
+          },
+          {
+            "object": 187386,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                3321762,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                20127552,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000b3772b15731106961c0a7c57583610fa"
+          }
+        ],
+        "masterUsageProperties": [
+          {
+            "object": 187386,
+            "propertyName": "OMFI:MOBJ:UsageCode",
+            "typeName": "omfi:UsageCodeType",
+            "length": 4,
+            "ranges": [
+              [
+                20127516,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                20127504,
+                24
+              ]
+            ],
+            "hex": "01000000"
+          }
+        ],
+        "clipNameOwner": "Current full-PMR-ID qualified associated master own CPNT:Name",
+        "clipNameState": "decoded",
+        "clipNameMacRoman": "HAA_1729_8645_SUBMASTER,S_LensFlare,159.new.01",
+        "clipNameProperties": [
+          {
+            "object": 187386,
+            "propertyName": "OMFI:CPNT:Name",
+            "typeName": "omfi:String",
+            "length": 47,
+            "ranges": [
+              [
+                3321660,
+                47
+              ]
+            ],
+            "tocRanges": [
+              [
+                20127240,
+                24
+              ]
+            ],
+            "hex": "4841415f313732395f383634355f5355424d41535445522c535f4c656e73466c6172652c3135392e6e65772e303100"
+          }
+        ],
+        "currentNameDerivedComparison": {
+          "source": "Separate nonproduction observation of current ClipName-token/catalogue behavior; not recorded effect identity.",
+          "token": "S_LensFlare",
+          "sequence": "HAA_1729_8645_SUBMASTER",
+          "instance": 159,
+          "matched": true,
+          "name": "S_LensFlare",
+          "category": "Sapphire Lighting",
+          "candidateDisplayNames": [
+            "S_LensFlare"
+          ],
+          "candidateCategoriesInCatalogueOrder": [
+            "Sapphire Lighting"
+          ],
+          "categoryAmbiguous": false
+        },
+        "sameRawNameAsHistoricalSnapshot": true,
+        "sameObserverResultAsHistoricalSnapshot": true,
+        "oneCurrentPmrOwnerMatchRepresentative": {
+          "fileMobId": "060a2b340101010501010f10130000001c08b71573110696d1fa7c57583610fa",
+          "fileObject": 150014,
+          "fileMobIdProperties": [
+            {
+              "object": 150014,
+              "propertyName": "OMFI:MOBJ:MobID",
+              "typeName": "omfi:UID",
+              "length": 32,
+              "ranges": [
+                [
+                  2143310,
+                  32
+                ]
+              ],
+              "tocRanges": [
+                [
+                  15460152,
+                  24
+                ]
+              ],
+              "hex": "060a2b340101010501010f10130000001c08b71573110696d1fa7c57583610fa"
+            },
+            {
+              "object": 150014,
+              "propertyName": "OMFI:MOBJ:MobID",
+              "typeName": "omfi:UID",
+              "length": 32,
+              "ranges": [
+                [
+                  2143355,
+                  32
+                ]
+              ],
+              "tocRanges": [
+                [
+                  15460272,
+                  24
+                ]
+              ],
+              "hex": "060a2b340101010501010f10130000001c08b71573110696d1fa7c57583610fa"
+            }
+          ],
+          "descriptorObject": 150013,
+          "descriptorClass": "CDCI",
+          "fileOwnPhysicalMediaReference": [
+            {
+              "object": 150014,
+              "propertyName": "OMFI:MOBJ:PhysicalMedia",
+              "typeName": "omfi:ObjRef",
+              "length": 8,
+              "ranges": [
+                [
+                  2143347,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  15460224,
+                  24
+                ]
+              ],
+              "hex": "fd49020000000000"
+            }
+          ],
+          "currentPmrRecordByteRange": [
+            89035,
+            121
+          ],
+          "pmrVersion": 16
+        }
+      },
+      {
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "currentMdbSha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "masterMobId": "060a2b340101010501010f10130000006f6b2b15731106969b8f7c57583610fa",
+        "masterObject": 171212,
+        "masterClass": "MOBJ",
+        "masterMobIdProperties": [
+          {
+            "object": 171212,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                2814535,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                18110880,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f10130000006f6b2b15731106969b8f7c57583610fa"
+          },
+          {
+            "object": 171212,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                2814572,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                18110976,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f10130000006f6b2b15731106969b8f7c57583610fa"
+          }
+        ],
+        "masterUsageProperties": [
+          {
+            "object": 171212,
+            "propertyName": "OMFI:MOBJ:UsageCode",
+            "typeName": "omfi:UsageCodeType",
+            "length": 4,
+            "ranges": [
+              [
+                18110940,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                18110928,
+                24
+              ]
+            ],
+            "hex": "01000000"
+          }
+        ],
+        "clipNameOwner": "Current full-PMR-ID qualified associated master own CPNT:Name",
+        "clipNameState": "decoded",
+        "clipNameMacRoman": "HAA_1729_8645_SUBMASTER,Title,166.new.01",
+        "clipNameProperties": [
+          {
+            "object": 171212,
+            "propertyName": "OMFI:CPNT:Name",
+            "typeName": "omfi:String",
+            "length": 41,
+            "ranges": [
+              [
+                2814476,
+                41
+              ]
+            ],
+            "tocRanges": [
+              [
+                18110664,
+                24
+              ]
+            ],
+            "hex": "4841415f313732395f383634355f5355424d41535445522c5469746c652c3136362e6e65772e303100"
+          }
+        ],
+        "currentNameDerivedComparison": {
+          "source": "Separate nonproduction observation of current ClipName-token/catalogue behavior; not recorded effect identity.",
+          "token": "Title",
+          "sequence": "HAA_1729_8645_SUBMASTER",
+          "instance": 166,
+          "matched": true,
+          "name": "Title",
+          "category": "Title",
+          "candidateDisplayNames": [
+            "Title"
+          ],
+          "candidateCategoriesInCatalogueOrder": [
+            "Title"
+          ],
+          "categoryAmbiguous": false
+        },
+        "sameRawNameAsHistoricalSnapshot": true,
+        "sameObserverResultAsHistoricalSnapshot": true,
+        "oneCurrentPmrOwnerMatchRepresentative": {
+          "fileMobId": "060a2b340101010501010f101300000085145a157311069652747c57583610fa",
+          "fileObject": 176026,
+          "fileMobIdProperties": [
+            {
+              "object": 176026,
+              "propertyName": "OMFI:MOBJ:MobID",
+              "typeName": "omfi:UID",
+              "length": 32,
+              "ranges": [
+                [
+                  2967385,
+                  32
+                ]
+              ],
+              "tocRanges": [
+                [
+                  18738264,
+                  24
+                ]
+              ],
+              "hex": "060a2b340101010501010f101300000085145a157311069652747c57583610fa"
+            },
+            {
+              "object": 176026,
+              "propertyName": "OMFI:MOBJ:MobID",
+              "typeName": "omfi:UID",
+              "length": 32,
+              "ranges": [
+                [
+                  2967430,
+                  32
+                ]
+              ],
+              "tocRanges": [
+                [
+                  18738384,
+                  24
+                ]
+              ],
+              "hex": "060a2b340101010501010f101300000085145a157311069652747c57583610fa"
+            }
+          ],
+          "descriptorObject": 176025,
+          "descriptorClass": "CDCI",
+          "fileOwnPhysicalMediaReference": [
+            {
+              "object": 176026,
+              "propertyName": "OMFI:MOBJ:PhysicalMedia",
+              "typeName": "omfi:ObjRef",
+              "length": 8,
+              "ranges": [
+                [
+                  2967422,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  18738336,
+                  24
+                ]
+              ],
+              "hex": "99af020000000000"
+            }
+          ],
+          "currentPmrRecordByteRange": [
+            93149,
+            121
+          ],
+          "pmrVersion": 16
+        }
+      },
+      {
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "currentMdbSha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "masterMobId": "060a2b340101010501010f1013000000ea702b1573110696534b7c57583610fa",
+        "masterObject": 198962,
+        "masterClass": "MOBJ",
+        "masterMobIdProperties": [
+          {
+            "object": 198962,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                3681469,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                21564144,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000ea702b1573110696534b7c57583610fa"
+          },
+          {
+            "object": 198962,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                3681506,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                21564240,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000ea702b1573110696534b7c57583610fa"
+          }
+        ],
+        "masterUsageProperties": [
+          {
+            "object": 198962,
+            "propertyName": "OMFI:MOBJ:UsageCode",
+            "typeName": "omfi:UsageCodeType",
+            "length": 4,
+            "ranges": [
+              [
+                21564204,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                21564192,
+                24
+              ]
+            ],
+            "hex": "01000000"
+          }
+        ],
+        "clipNameOwner": "Current full-PMR-ID qualified associated master own CPNT:Name",
+        "clipNameState": "decoded",
+        "clipNameMacRoman": "HAA_1729_8645_SUBMASTER,Resize,154.new.01",
+        "clipNameProperties": [
+          {
+            "object": 198962,
+            "propertyName": "OMFI:CPNT:Name",
+            "typeName": "omfi:String",
+            "length": 42,
+            "ranges": [
+              [
+                3681409,
+                42
+              ]
+            ],
+            "tocRanges": [
+              [
+                21563928,
+                24
+              ]
+            ],
+            "hex": "4841415f313732395f383634355f5355424d41535445522c526573697a652c3135342e6e65772e303100"
+          }
+        ],
+        "currentNameDerivedComparison": {
+          "source": "Separate nonproduction observation of current ClipName-token/catalogue behavior; not recorded effect identity.",
+          "token": "Resize",
+          "sequence": "HAA_1729_8645_SUBMASTER",
+          "instance": 154,
+          "matched": true,
+          "name": "Resize",
+          "category": "Image",
+          "candidateDisplayNames": [
+            "Resize"
+          ],
+          "candidateCategoriesInCatalogueOrder": [
+            "Image"
+          ],
+          "categoryAmbiguous": false
+        },
+        "sameRawNameAsHistoricalSnapshot": true,
+        "sameObserverResultAsHistoricalSnapshot": true,
+        "oneCurrentPmrOwnerMatchRepresentative": {
+          "fileMobId": "060a2b340101010501010f1013000000c3a080157311069610e77c57583610fa",
+          "fileObject": 190997,
+          "fileMobIdProperties": [
+            {
+              "object": 190997,
+              "propertyName": "OMFI:MOBJ:MobID",
+              "typeName": "omfi:UID",
+              "length": 32,
+              "ranges": [
+                [
+                  3434478,
+                  32
+                ]
+              ],
+              "tocRanges": [
+                [
+                  20564880,
+                  24
+                ]
+              ],
+              "hex": "060a2b340101010501010f1013000000c3a080157311069610e77c57583610fa"
+            },
+            {
+              "object": 190997,
+              "propertyName": "OMFI:MOBJ:MobID",
+              "typeName": "omfi:UID",
+              "length": 32,
+              "ranges": [
+                [
+                  3434523,
+                  32
+                ]
+              ],
+              "tocRanges": [
+                [
+                  20565000,
+                  24
+                ]
+              ],
+              "hex": "060a2b340101010501010f1013000000c3a080157311069610e77c57583610fa"
+            }
+          ],
+          "descriptorObject": 190996,
+          "descriptorClass": "CDCI",
+          "fileOwnPhysicalMediaReference": [
+            {
+              "object": 190997,
+              "propertyName": "OMFI:MOBJ:PhysicalMedia",
+              "typeName": "omfi:ObjRef",
+              "length": 8,
+              "ranges": [
+                [
+                  3434515,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  20564952,
+                  24
+                ]
+              ],
+              "hex": "14ea020000000000"
+            }
+          ],
+          "currentPmrRecordByteRange": [
+            110815,
+            121
+          ],
+          "pmrVersion": 16
+        }
+      },
+      {
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "currentMdbSha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "masterMobId": "060a2b340101010501010f1013000000be8e2b1573110696d5af7c57583610fa",
+        "masterObject": 189936,
+        "masterClass": "MOBJ",
+        "masterMobIdProperties": [
+          {
+            "object": 189936,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                3402037,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                20434944,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000be8e2b1573110696d5af7c57583610fa"
+          },
+          {
+            "object": 189936,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                3402074,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                20435040,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000be8e2b1573110696d5af7c57583610fa"
+          }
+        ],
+        "masterUsageProperties": [
+          {
+            "object": 189936,
+            "propertyName": "OMFI:MOBJ:UsageCode",
+            "typeName": "omfi:UsageCodeType",
+            "length": 4,
+            "ranges": [
+              [
+                20435004,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                20434992,
+                24
+              ]
+            ],
+            "hex": "01000000"
+          }
+        ],
+        "clipNameOwner": "Current full-PMR-ID qualified associated master own CPNT:Name",
+        "clipNameState": "decoded",
+        "clipNameMacRoman": "HAA_1729_8645_SUBMASTER,3DWarp,177.new.01",
+        "clipNameProperties": [
+          {
+            "object": 189936,
+            "propertyName": "OMFI:CPNT:Name",
+            "typeName": "omfi:String",
+            "length": 42,
+            "ranges": [
+              [
+                3401977,
+                42
+              ]
+            ],
+            "tocRanges": [
+              [
+                20434728,
+                24
+              ]
+            ],
+            "hex": "4841415f313732395f383634355f5355424d41535445522c3344576172702c3137372e6e65772e303100"
+          }
+        ],
+        "currentNameDerivedComparison": {
+          "source": "Separate nonproduction observation of current ClipName-token/catalogue behavior; not recorded effect identity.",
+          "token": "3DWarp",
+          "sequence": "HAA_1729_8645_SUBMASTER",
+          "instance": 177,
+          "matched": true,
+          "name": "3D Warp",
+          "category": "Blend",
+          "candidateDisplayNames": [
+            "3D Warp"
+          ],
+          "candidateCategoriesInCatalogueOrder": [
+            "Blend"
+          ],
+          "categoryAmbiguous": false
+        },
+        "sameRawNameAsHistoricalSnapshot": true,
+        "sameObserverResultAsHistoricalSnapshot": true,
+        "oneCurrentPmrOwnerMatchRepresentative": {
+          "fileMobId": "060a2b340101010501010f1013000000eb3b811673110696b4b97c57583610fa",
+          "fileObject": 199106,
+          "fileMobIdProperties": [
+            {
+              "object": 199106,
+              "propertyName": "OMFI:MOBJ:MobID",
+              "typeName": "omfi:UID",
+              "length": 32,
+              "ranges": [
+                [
+                  3685794,
+                  32
+                ]
+              ],
+              "tocRanges": [
+                [
+                  21583752,
+                  24
+                ]
+              ],
+              "hex": "060a2b340101010501010f1013000000eb3b811673110696b4b97c57583610fa"
+            },
+            {
+              "object": 199106,
+              "propertyName": "OMFI:MOBJ:MobID",
+              "typeName": "omfi:UID",
+              "length": 32,
+              "ranges": [
+                [
+                  3685839,
+                  32
+                ]
+              ],
+              "tocRanges": [
+                [
+                  21583872,
+                  24
+                ]
+              ],
+              "hex": "060a2b340101010501010f1013000000eb3b811673110696b4b97c57583610fa"
+            }
+          ],
+          "descriptorObject": 199105,
+          "descriptorClass": "CDCI",
+          "fileOwnPhysicalMediaReference": [
+            {
+              "object": 199106,
+              "propertyName": "OMFI:MOBJ:PhysicalMedia",
+              "typeName": "omfi:ObjRef",
+              "length": 8,
+              "ranges": [
+                [
+                  3685831,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  21583824,
+                  24
+                ]
+              ],
+              "hex": "c109030000000000"
+            }
+          ],
+          "currentPmrRecordByteRange": [
+            163087,
+            121
+          ],
+          "pmrVersion": 16
+        }
+      },
+      {
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "currentMdbSha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "masterMobId": "060a2b340101010501010f1013000000a2817a0873110696faaf7c57583610fa",
+        "masterObject": 152143,
+        "masterClass": "MOBJ",
+        "masterMobIdProperties": [
+          {
+            "object": 152143,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                2365991,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                14521376,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000a2817a0873110696faaf7c57583610fa"
+          },
+          {
+            "object": 152143,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                2366028,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                14521472,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000a2817a0873110696faaf7c57583610fa"
+          }
+        ],
+        "masterUsageProperties": [
+          {
+            "object": 152143,
+            "propertyName": "OMFI:MOBJ:UsageCode",
+            "typeName": "omfi:UsageCodeType",
+            "length": 4,
+            "ranges": [
+              [
+                14521436,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                14521424,
+                24
+              ]
+            ],
+            "hex": "01000000"
+          }
+        ],
+        "clipNameOwner": "Current full-PMR-ID qualified associated master own CPNT:Name",
+        "clipNameState": "decoded",
+        "clipNameMacRoman": "8646-_Director,Audio_Dissolve,8.new.01",
+        "clipNameProperties": [
+          {
+            "object": 152143,
+            "propertyName": "OMFI:CPNT:Name",
+            "typeName": "omfi:String",
+            "length": 39,
+            "ranges": [
+              [
+                2365934,
+                39
+              ]
+            ],
+            "tocRanges": [
+              [
+                14521160,
+                24
+              ]
+            ],
+            "hex": "383634362d5f4469726563746f722c417564696f5f446973736f6c76652c382e6e65772e303100"
+          }
+        ],
+        "currentNameDerivedComparison": {
+          "source": "Separate nonproduction observation of current ClipName-token/catalogue behavior; not recorded effect identity.",
+          "token": "Audio_Dissolve",
+          "sequence": "8646-_Director",
+          "instance": 8,
+          "matched": true,
+          "name": "Audio Dissolve",
+          "category": "Blend",
+          "candidateDisplayNames": [
+            "Audio Dissolve"
+          ],
+          "candidateCategoriesInCatalogueOrder": [
+            "Blend"
+          ],
+          "categoryAmbiguous": false
+        },
+        "sameRawNameAsHistoricalSnapshot": true,
+        "sameObserverResultAsHistoricalSnapshot": true,
+        "oneCurrentPmrOwnerMatchRepresentative": {
+          "fileMobId": "060a2b340101010501010f1013000000894b860873110696afd77c57583610fa",
+          "fileObject": 147642,
+          "fileMobIdProperties": [
+            {
+              "object": 147642,
+              "propertyName": "OMFI:MOBJ:MobID",
+              "typeName": "omfi:UID",
+              "length": 32,
+              "ranges": [
+                [
+                  2219987,
+                  32
+                ]
+              ],
+              "tocRanges": [
+                [
+                  13960136,
+                  24
+                ]
+              ],
+              "hex": "060a2b340101010501010f1013000000894b860873110696afd77c57583610fa"
+            },
+            {
+              "object": 147642,
+              "propertyName": "OMFI:MOBJ:MobID",
+              "typeName": "omfi:UID",
+              "length": 32,
+              "ranges": [
+                [
+                  2220032,
+                  32
+                ]
+              ],
+              "tocRanges": [
+                [
+                  13960256,
+                  24
+                ]
+              ],
+              "hex": "060a2b340101010501010f1013000000894b860873110696afd77c57583610fa"
+            }
+          ],
+          "descriptorObject": 147641,
+          "descriptorClass": "PCMA",
+          "fileOwnPhysicalMediaReference": [
+            {
+              "object": 147642,
+              "propertyName": "OMFI:MOBJ:PhysicalMedia",
+              "typeName": "omfi:ObjRef",
+              "length": 8,
+              "ranges": [
+                [
+                  2220024,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  13960208,
+                  24
+                ]
+              ],
+              "hex": "b940020000000000"
+            }
+          ],
+          "currentPmrRecordByteRange": [
+            61672,
+            121
+          ],
+          "pmrVersion": 16
+        }
+      },
+      {
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "currentMdbSha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "masterMobId": "060a2b340101010501010f10130000008f807a087311069636aa7c57583610fa",
+        "masterObject": 148794,
+        "masterClass": "MOBJ",
+        "masterMobIdProperties": [
+          {
+            "object": 148794,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                2257334,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                14099912,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f10130000008f807a087311069636aa7c57583610fa"
+          },
+          {
+            "object": 148794,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                2257371,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                14100008,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f10130000008f807a087311069636aa7c57583610fa"
+          }
+        ],
+        "masterUsageProperties": [
+          {
+            "object": 148794,
+            "propertyName": "OMFI:MOBJ:UsageCode",
+            "typeName": "omfi:UsageCodeType",
+            "length": 4,
+            "ranges": [
+              [
+                14099972,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                14099960,
+                24
+              ]
+            ],
+            "hex": "01000000"
+          }
+        ],
+        "clipNameOwner": "Current full-PMR-ID qualified associated master own CPNT:Name",
+        "clipNameState": "decoded",
+        "clipNameMacRoman": "8646_SC02_pb_cut_3_New_VO,D-Verb,19.new.01",
+        "clipNameProperties": [
+          {
+            "object": 148794,
+            "propertyName": "OMFI:CPNT:Name",
+            "typeName": "omfi:String",
+            "length": 43,
+            "ranges": [
+              [
+                2257273,
+                43
+              ]
+            ],
+            "tocRanges": [
+              [
+                14099696,
+                24
+              ]
+            ],
+            "hex": "383634365f534330325f70625f6375745f335f4e65775f564f2c442d566572622c31392e6e65772e303100"
+          }
+        ],
+        "currentNameDerivedComparison": {
+          "source": "Separate nonproduction observation of current ClipName-token/catalogue behavior; not recorded effect identity.",
+          "token": "D-Verb",
+          "sequence": "8646_SC02_pb_cut_3_New_VO",
+          "instance": 19,
+          "matched": true,
+          "name": "D-Verb",
+          "category": "AudioSuite",
+          "candidateDisplayNames": [
+            "D-Verb"
+          ],
+          "candidateCategoriesInCatalogueOrder": [
+            "AudioSuite"
+          ],
+          "categoryAmbiguous": false
+        },
+        "sameRawNameAsHistoricalSnapshot": true,
+        "sameObserverResultAsHistoricalSnapshot": true,
+        "oneCurrentPmrOwnerMatchRepresentative": {
+          "fileMobId": "060a2b340101010501010f10130000009178830873110696c6b47c57583610fa",
+          "fileObject": 149551,
+          "fileMobIdProperties": [
+            {
+              "object": 149551,
+              "propertyName": "OMFI:MOBJ:MobID",
+              "typeName": "omfi:UID",
+              "length": 32,
+              "ranges": [
+                [
+                  2281515,
+                  32
+                ]
+              ],
+              "tocRanges": [
+                [
+                  14185376,
+                  24
+                ]
+              ],
+              "hex": "060a2b340101010501010f10130000009178830873110696c6b47c57583610fa"
+            },
+            {
+              "object": 149551,
+              "propertyName": "OMFI:MOBJ:MobID",
+              "typeName": "omfi:UID",
+              "length": 32,
+              "ranges": [
+                [
+                  2281560,
+                  32
+                ]
+              ],
+              "tocRanges": [
+                [
+                  14185496,
+                  24
+                ]
+              ],
+              "hex": "060a2b340101010501010f10130000009178830873110696c6b47c57583610fa"
+            }
+          ],
+          "descriptorObject": 149550,
+          "descriptorClass": "PCMA",
+          "fileOwnPhysicalMediaReference": [
+            {
+              "object": 149551,
+              "propertyName": "OMFI:MOBJ:PhysicalMedia",
+              "typeName": "omfi:ObjRef",
+              "length": 8,
+              "ranges": [
+                [
+                  2281552,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  14185448,
+                  24
+                ]
+              ],
+              "hex": "2e48020000000000"
+            }
+          ],
+          "currentPmrRecordByteRange": [
+            88292,
+            121
+          ],
+          "pmrVersion": 16
+        }
+      }
+    ],
+    "sourceHashReceipts": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "expectedPriorSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 5159032,
+        "mtime_ns": 1561096331000000000,
+        "inode": 469151
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544",
+        "expectedPriorSha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 97250,
+        "mtime_ns": 1561095049000000000,
+        "inode": 469152
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "expectedPriorSha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 22745976,
+        "mtime_ns": 1785052712000000000,
+        "inode": 1081262
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79",
+        "expectedPriorSha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 164660,
+        "mtime_ns": 1785052993000000000,
+        "inode": 1081385
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "expectedPriorSha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 16616336,
+        "mtime_ns": 1778753153000000000,
+        "inode": 1081897
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7",
+        "expectedPriorSha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 123140,
+        "mtime_ns": 1790763274000000000,
+        "inode": 1082005
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "expectedPriorSha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 15703416,
+        "mtime_ns": 1778753179000000000,
+        "inode": 1082384
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524",
+        "expectedPriorSha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 111140,
+        "mtime_ns": 1785052993000000000,
+        "inode": 1082472
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "expectedPriorSha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 3668720,
+        "mtime_ns": 1788291273218255487,
+        "inode": 6813558
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a",
+        "expectedPriorSha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 86754,
+        "mtime_ns": 1790740372078265906,
+        "inode": 6813560
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "expectedPriorSha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 60680,
+        "mtime_ns": 1788291495301754724,
+        "inode": 14769208
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+        "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928",
+        "expectedPriorSha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 392,
+        "mtime_ns": 1788291482553506886,
+        "inode": 14769210
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+        "sha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "expectedPriorSha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 57405807,
+        "mtime_ns": 1792312028319751444,
+        "inode": 33683657
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+        "sha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "expectedPriorSha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 277457615,
+        "mtime_ns": 1792312034034888261,
+        "inode": 33683660
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+        "sha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "expectedPriorSha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 202174044,
+        "mtime_ns": 1792312038378265481,
+        "inode": 33683661
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+        "sha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "expectedPriorSha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 191199626,
+        "mtime_ns": 1792312042557915572,
+        "inode": 33683671
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+        "sha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "expectedPriorSha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 45335148,
+        "mtime_ns": 1792312043581951973,
+        "inode": 33683676
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-OMFI MediaFiles-values.json",
+        "sha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "expectedPriorSha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "matchesPrior": true,
+        "stableDuringRead": true,
+        "bytes": 535484,
+        "mtime_ns": 1792312043637477450,
+        "inode": 33683677
+      }
+    ]
+  },
+  "initialIndexedPropertyLocationObservations": {
+    "purpose": "Own selected-precompute recorded name/effect-field inventory, with a separate nonproduction observation of current editable-name-derived Effect Category behavior.",
+    "counts": {
+      "ownClipNameState:decoded:distinctMasters": 135,
+      "ownClipNamePropertyRows:distinctMasters": 135,
+      "modernMOBJNamePropertyRows:distinctMasters": 0,
+      "distinctPrecomputeMasters": 135,
+      "distinctMastersWithOwnEffectLookingProperty": 0,
+      "distinctMastersWithLocalComponentEffectLookingProperty": 0,
+      "distinctMastersWithReachableEffectLookingAttribute": 0,
+      "currentNameDerivedComparison:unmatched:distinctMasters": 28,
+      "currentNameDerivedComparison:matchedUnambiguous:distinctMasters": 107,
+      "currentNameDerivedComparison:ambiguousCategory:distinctMasters": 0
+    },
+    "recordedEffectLookingPropertyLocationsEntireCorpus": [
+      {
+        "scope": "outsideSelectedPrecomputeComponentClosures",
+        "ownerClass": "MASK",
+        "property": "OMFI:CPNT:EffectID",
+        "type": "omfi:String",
+        "bytes": 26,
+        "rawTextOrHex": "EFF_TIMEWARP.CAPTURE_MASK",
+        "count": 18
+      },
+      {
+        "scope": "outsideSelectedPrecomputeComponentClosures",
+        "ownerClass": "PVOL",
+        "property": "OMFI:CPNT:EffectID",
+        "type": "omfi:String",
+        "bytes": 17,
+        "rawTextOrHex": "Audio Pan Volume",
+        "count": 47
+      },
+      {
+        "scope": "outsideSelectedPrecomputeComponentClosures",
+        "ownerClass": "PVOL",
+        "property": "OMFI:PVOL:MC:IsTrimGainEffect",
+        "type": "omfi:Long",
+        "bytes": 4,
+        "rawTextOrHex": "00000000",
+        "count": 47
+      },
+      {
+        "scope": "outsideSelectedPrecomputeComponentClosures",
+        "ownerClass": "PVOL",
+        "property": "OMFI:TKFX:AMEVersion",
+        "type": "omfi:VarLenBytes",
+        "bytes": 2,
+        "rawTextOrHex": "0602",
+        "count": 47
+      },
+      {
+        "scope": "outsideSelectedPrecomputeComponentClosures",
+        "ownerClass": "PVOL",
+        "property": "OMFI:TKFX:MC:LeftLength",
+        "type": "omfi:Long",
+        "bytes": 4,
+        "rawTextOrHex": "0f000000",
+        "count": 47
+      },
+      {
+        "scope": "outsideSelectedPrecomputeComponentClosures",
+        "ownerClass": "PVOL",
+        "property": "OMFI:TKFX:MC:NeverHardware",
+        "type": "omfi:Boolean",
+        "bytes": 1,
+        "rawTextOrHex": "00",
+        "count": 47
+      },
+      {
+        "scope": "outsideSelectedPrecomputeComponentClosures",
+        "ownerClass": "PVOL",
+        "property": "OMFI:TKFX:MC:RightLength",
+        "type": "omfi:Long",
+        "bytes": 4,
+        "rawTextOrHex": "0f000000",
+        "count": 47
+      },
+      {
+        "scope": "outsideSelectedPrecomputeComponentClosures",
+        "ownerClass": "PVOL",
+        "property": "OMFI:TNFX:MC:ForceSoftware",
+        "type": "omfi:Boolean",
+        "bytes": 1,
+        "rawTextOrHex": "00",
+        "count": 47
+      },
+      {
+        "scope": "outsideSelectedPrecomputeComponentClosures",
+        "ownerClass": "PVOL",
+        "property": "OMFI:TNFX:MC:GlobalInfo.aspectOn",
+        "type": "omfi:Boolean",
+        "bytes": 1,
+        "rawTextOrHex": "00",
+        "count": 47
+      },
+      {
+        "scope": "outsideSelectedPrecomputeComponentClosures",
+        "ownerClass": "PVOL",
+        "property": "OMFI:TNFX:MC:GlobalInfo.colorItem",
+        "type": "omfi:Short",
+        "bytes": 2,
+        "rawTextOrHex": "0100",
+        "count": 47
+      },
+      {
+        "scope": "outsideSelectedPrecomputeComponentClosures",
+        "ownerClass": "PVOL",
+        "property": "OMFI:TNFX:MC:GlobalInfo.isReversed",
+        "type": "omfi:Char",
+        "bytes": 1,
+        "rawTextOrHex": "00",
+        "count": 47
+      },
+      {
+        "scope": "outsideSelectedPrecomputeComponentClosures",
+        "ownerClass": "PVOL",
+        "property": "OMFI:TNFX:MC:GlobalInfo.kfCurrent",
+        "type": "omfi:Long",
+        "bytes": 4,
+        "rawTextOrHex": "00000000",
+        "count": 47
+      },
+      {
+        "scope": "outsideSelectedPrecomputeComponentClosures",
+        "ownerClass": "PVOL",
+        "property": "OMFI:TNFX:MC:GlobalInfo.kfSmooth",
+        "type": "omfi:Long",
+        "bytes": 4,
+        "rawTextOrHex": "00000000",
+        "count": 47
+      },
+      {
+        "scope": "outsideSelectedPrecomputeComponentClosures",
+        "ownerClass": "PVOL",
+        "property": "OMFI:TNFX:MC:GlobalInfo.quality",
+        "type": "omfi:Short",
+        "bytes": 2,
+        "rawTextOrHex": "0100",
+        "count": 47
+      },
+      {
+        "scope": "outsideSelectedPrecomputeComponentClosures",
+        "ownerClass": "PVOL",
+        "property": "OMFI:TNFX:MC:GlobalInfoVersion",
+        "type": "omfi:Short",
+        "bytes": 2,
+        "rawTextOrHex": "0200",
+        "count": 47
+      }
+    ],
+    "recordedEffectLookingAttributeLocationsEntireCorpus": [
+      {
+        "scope": "outsideSelectedPrecomputeAttributeClosures",
+        "name": "Category",
+        "kind": 2,
+        "count": 42
+      },
+      {
+        "scope": "outsideSelectedPrecomputeAttributeClosures",
+        "name": "GFX-Video Level",
+        "kind": 2,
+        "count": 18
+      }
+    ],
+    "localComponentClassesOnDistinctPrecomputeMasterTraversals": [
+      {
+        "class": "FILL",
+        "count": 112
+      },
+      {
+        "class": "MOBJ",
+        "count": 135
+      },
+      {
+        "class": "RSET",
+        "count": 56
+      },
+      {
+        "class": "SCLP",
+        "count": 191
+      },
+      {
+        "class": "SEQU",
+        "count": 56
+      },
+      {
+        "class": "TRAK",
+        "count": 247
+      }
+    ],
+    "limits": [
+      "EDIT is unavailable in this turn. All 135 precompute names are from the hash-matched retained EDIT snapshots, whose ranges and PMR ownership were fully verified earlier. Do not describe them as freshly read current-drive values. Shared live checks and snapshot checks have separate provenance.",
+      "Only the current bounded genuine corpus is audited. Absence of an effect/category field on these selected owners does not establish universal MDB incapability.",
+      "The local component/reference and nested ATTR scopes are explicit. Arbitrary unrelated objects, source-mob ancestry and opaque payloads are not searched as a substitute for selected owner evidence.",
+      "The separately pinned catalogue comparison establishes current labels for editable names, not authoritative recorded effect identity or a proposed new inference policy.",
+      "Unknown/malformed names and ambiguous catalogue labels remain distinct outcomes. No approximate, case-insensitive or generalized underscore removal matching is added.",
+      "No physical media header, essence, app execution, production parser output, repo/product code modification or runtime-policy change is used. New probes/evidence remain in this /private/tmp directory."
+    ],
+    "currentDriveAndSnapshotProvenance": {
+      "freshCurrentMdbPmrPairs": 2,
+      "unavailableEditMdbPmrPairs": 4,
+      "freshlyHashMatchedRetainedValueIndexes": 6,
+      "freshSharedRelevantMdbRowsByteVerified": 49714,
+      "precomputeMasterComparisonPrimaryUnit": "135 distinct selected master objects, summed within MDB scope, using unchanged retained EDIT snapshots",
+      "noNew171PhysicalRowRecognitionClaim": true
+    },
+    "physicalRowComparisonNotProduced": {
+      "reason": "Unavailable EDIT PMRs prevent a fresh selected physical ledger. Primary comparison uses distinct master names only; no reconstructed physical association supplies recognition weighting.",
+      "historicalFullPmrScopeOnly": {
+        "precomputePhysicalRows": 171,
+        "precomputeMasters": 135
+      },
+      "excludedExploratoryExtraCandidates": [
+        {
+          "database": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+          "excessLocalSourceReferenceCandidates": 12,
+          "excludedFromPhysicalWeightingAndSelectedMasterExpansion": true
+        },
+        {
+          "database": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+          "excessLocalSourceReferenceCandidates": 8,
+          "excludedFromPhysicalWeightingAndSelectedMasterExpansion": true
+        }
+      ]
+    },
+    "scope": "Initial bounded index observations; unavailable-drive provenance is historical. Final current-source status and selected-master names are established in actualDatabasesLive after EDIT reconnected. Current complete MDB/index hashes agree, so the indexed owner/property-location observations retain their bounded meaning. No new effect-graph traversal in the live qualification pass."
+  },
+  "currentCppExecutionAttempt": {
+    "purpose": "Bounded current-code effect catalogue comparison attempt; compile-only success, runtime comparison not completed.",
+    "status": "Compiled successfully; sandboxed execution aborted before main; no comparison pass.",
+    "builtSource": {
+      "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.cpp": "0989aeb6b02bf4a254b01e5d5881a82997205797de7d448336b5f4a0d0535d35",
+      "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.h": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1"
+    },
+    "sourceFilesUnchanged": true,
+    "configuration": {
+      "language": "C++17",
+      "compiler": "AppleClang 17.0.0.17000013",
+      "buildType": "Release",
+      "qtRequestedExactVersion": "6.5.3",
+      "qtPrefix": "/Users/martymclean/Qt/6.5.3/macos",
+      "binaryArchitecture": "arm64",
+      "linkedQtCoreArchitectures": [
+        "x86_64",
+        "arm64"
+      ],
+      "cmake": "/opt/homebrew/bin/cmake"
+    },
+    "input": {
+      "path": "/private/tmp/bella-mdb-effect-category-20261020-drives/findings.json",
+      "sha256": "b7749c1db4b47fb25b46b8f797a25fac0e72e26098d57baa1affc821742951fb",
+      "suppliedDistinctMasterNameRecords": 135,
+      "note": "Earlier-snapshot and fresh-Shared provenance remain those of the input findings; this attempt made no MDB or media read."
+    },
+    "build": {
+      "argv": [
+        "/opt/homebrew/bin/cmake",
+        "--build",
+        "/private/tmp/bella-mdb-effect-category-20261020-current-lookup/build",
+        "--config",
+        "Release",
+        "--parallel",
+        "2"
+      ],
+      "returncode": 0
+    },
+    "executionAttempt": {
+      "returnCode": -6,
+      "stdoutBytes": 0,
+      "stderr": "Incompatible processor. This Qt build requires the following features:\n    neon\n",
+      "reachedLookupComparison": false
+    },
+    "sandboxCauseEvidence": {
+      "queries": [
+        "hw.optional.neon",
+        "hw.optional.arm.FEAT_FP16"
+      ],
+      "result": "sysctl: sysctl fmt -1 1024 1: Operation not permitted"
+    },
+    "comparison": {
+      "corpusRecordsCompared": 0,
+      "successfulCurrentResolverExecutions": 0,
+      "fieldComparisonsCompleted": 0,
+      "mismatchCount": null,
+      "pass": false,
+      "separateSyntheticControlExecuted": false
+    },
+    "scopeLimits": [
+      "Compilation does not establish runtime equivalence.",
+      "The independent Python observer snapshot comparison is separate; none of its results are upgraded by this unsuccessful execution attempt.",
+      "No OldScanner or MediaMuster application was launched; no repository, application bundle, MDB or media files were edited.",
+      "No alternate architecture, feature override, escalation or CPU-query workaround was attempted.",
+      "The prepared compare.py script is retained but was not executed."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-current-lookup/CMakeLists.txt",
+        "bytes": 511,
+        "sha256": "3ed4d463c335e07cbb2ac90faa0cde8728c9b1ffffc59991a2a901ed96ab34e7"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-current-lookup/main.cpp",
+        "bytes": 1875,
+        "sha256": "513454dd4b52bc39c0d6d268f97830efdefbaceb4fe8615bbc1557cbf788aec6"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-current-lookup/corpus-input.json",
+        "bytes": 107237,
+        "sha256": "0efa7567f94e8655ca597ad6ed1466f595294937a34da8b1d52c2c5363ba7b9c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-current-lookup/source-before.json",
+        "bytes": 277,
+        "sha256": "0ceab1fff4a054a9d3e3dd02d35c7a963878c52df90ae35ab4a6c6d072b8e42f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-current-lookup/build-command.json",
+        "bytes": 218,
+        "sha256": "9d6cc8b74a8243e1771248d5bb49eab0bb831c4824e068c233c84175f674eeb3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-current-lookup/build-stdout.txt",
+        "bytes": 299,
+        "sha256": "aa9ff38dda8323d2d685f4ff04f3b1bc9a0b496ae0e14a5690dec707a74b8f43"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-current-lookup/build-stderr.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-current-lookup/run-command.json",
+        "bytes": 225,
+        "sha256": "f90739e46beec64354d7e8a8101e91a291b3433b68e29056bd678bc70b12cf87"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-current-lookup/run-stderr.txt",
+        "bytes": 80,
+        "sha256": "fe9cadde4d98b95a2457f94a38d07e2e94c712b5b8c7d7755bcfe3ec6c02a801"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-current-lookup/current-lookup-output.json",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-current-lookup/compare.py",
+        "bytes": 4313,
+        "sha256": "aadcbc09f9497f5d9c0b4a1d57d389da53709c5b05c07d0c3318360fd77e710d"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-current-lookup/build/current-effect-lookup",
+        "bytes": 178168,
+        "sha256": "525c28bd14dbf5e0966ac18cd4992fe191f89af699b1f557efe961d642e9607f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-current-lookup/build/CMakeCache.txt",
+        "bytes": 31867,
+        "sha256": "5238e9a8f3cdaad8feaa2c5401a2fdad159a743f22e16005f9c4153a406ee055"
+      }
+    ]
+  },
+  "currentImplementation": {
+    "context": "The current projection consumes final selected Clip Name, which can prefer an already-read MXF/OMF header over MDB. Bella MDB name ownership is separately agreed.",
+    "existingStrengths": "One lazy shared catalogue index; one lookup per derived pass returns Effect/Effect Category/Effect Sequence. These are current properties, not new measured Bella gains.",
+    "display": "Current Effect Category lowercase unknown for unrecognised/unavailable precompute; blank for non-precompute. This remains separate from approved blank Type/Precompute Category cells.",
+    "sources": [
+      {
+        "path": "src/effectcatalogue.h",
+        "bytes": 1797,
+        "sha256": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1"
+      },
+      {
+        "path": "src/effectcatalogue.cpp",
+        "bytes": 69548,
+        "sha256": "0989aeb6b02bf4a254b01e5d5881a82997205797de7d448336b5f4a0d0535d35"
+      },
+      {
+        "path": "src/mediafile.h",
+        "bytes": 12788,
+        "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3"
+      },
+      {
+        "path": "src/precomputefilter.h",
+        "bytes": 1649,
+        "sha256": "2303ece77ad98b02048978d8aa7e3c590e336e6519f6615f331abfef993d8f0d"
+      },
+      {
+        "path": "src/mediatablemodel.cpp",
+        "bytes": 12214,
+        "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56"
+      },
+      {
+        "path": "src/mediacsv.cpp",
+        "bytes": 3609,
+        "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442"
+      },
+      {
+        "path": "src/oldscanner/mediaengine/projection.cpp",
+        "bytes": 10189,
+        "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce"
+      },
+      {
+        "path": "src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+        "bytes": 10816,
+        "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6"
+      },
+      {
+        "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+        "bytes": 36110,
+        "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e"
+      },
+      {
+        "path": "src/oldscanner/mediaengineadapter.cpp",
+        "bytes": 5202,
+        "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935"
+      },
+      {
+        "path": "tests/tst_avideffects.cpp",
+        "bytes": 11104,
+        "sha256": "f278d23e14b05130c616d7be64989020b185d6ee2862e93d6437cfbd48664fc0"
+      }
+    ]
+  },
+  "primarySources": [
+    {
+      "title": "Avid2026.8 Effects and Color Correction Guide, page288",
+      "url": "https://resources.avid.com/SupportFiles/attach/Media_Composer/2026/Media_Composer_v2026.x_FX_Guide.pdf#page=288",
+      "checked": "2026-10-20",
+      "scope": "3D Warp in Blend; no proof of an editable precompute name's actual effect identity.",
+      "localReceipt": {
+        "url": "https://resources.avid.com/SupportFiles/attach/Media_Composer/2026/Media_Composer_v2026.x_FX_Guide.pdf#page=288",
+        "checked": "2026-10-20",
+        "path": "/private/tmp/bella-mdb-effect-category-20261020-guide.pdf",
+        "bytes": 40721790,
+        "sha256": "ec138edfe43ac5f67189842f8ba917f2c8791679adaaf398ed344e53b770d77e",
+        "pdfPages": 762,
+        "titleExcerpt": "AvidMediaComposer\nEffectsandColorCorrectionGuide\nVersion2026.8",
+        "findings": [
+          {
+            "pdfPage": 288,
+            "verifiedTextWithoutLayoutSpaces": "e3DWarpEffectAllthe3Deffectsfeaturesareaccessiblethroughthe3DWarpeffectintheBlendcategory.",
+            "finding": "3D Warp is in the Blend category."
+          }
+        ],
+        "extractionNote": "pypdf extracts this guide with most layout spaces absent; whitespace-normalized text on page288 was checked for the category statement.",
+        "scope": "Public guide confirms 3D Warp in Blend; this does not establish the current source of an editable precompute name or its effect identity."
+      }
+    },
+    {
+      "title": "Qt6.5 implicit-sharing overview",
+      "url": "https://doc.qt.io/qt-6.5/implicit-sharing.html",
+      "checked": "2026-10-20",
+      "scope": "QString and other Qt values can share data until modified. Version6.5 series documentation; app remains pinned to6.5.3."
+    }
+  ],
+  "guidance": {
+    "path": "/Users/martymclean/Downloads/CPP SKILL.md",
+    "bytes": 22279,
+    "sha256": "70919980c635f66db649b7eb1e426fb2098754ed6c9db22f1a7eee0935227d35"
+  },
+  "verification": {
+    "artifactChecks": [
+      {
+        "group": "mc",
+        "artifactHashesMatched": 21
+      },
+      {
+        "group": "mdvx",
+        "artifactHashesMatched": 25
+      },
+      {
+        "group": "cppAttempt",
+        "artifactHashesMatched": 13
+      },
+      {
+        "group": "current MDBs, current PMRs and retained indexes",
+        "artifactHashesMatched": 18
+      }
+    ],
+    "installedFilesFreshlyHashed": 4,
+    "currentSourceAndIndexHashesMatched": 18,
+    "currentPropertyRowsAndRangesVerified": 427161,
+    "masterOnlySourceDerivedComparison": {
+      "currentPmrPhysicalRowsQualified": 2412,
+      "currentPmrQualifiedUsage1Masters": 135,
+      "ownNamePropertyRowsOnTheseMasters": 135,
+      "matchedUnambiguousMasters": 107,
+      "unmatchedMasters": 28,
+      "ambiguousCategoryMasters": 0,
+      "currentRawPropertyRowsVerified": 427161,
+      "currentRawByteRangePiecesVerified": 427161,
+      "all135NamesAndObserverOutputsUnchangedFromHistoricalSnapshot": true,
+      "currentMasterSetEqualsHistoricalSnapshotMasterSet": true,
+      "noPhysicalRowRecognitionWeighting": true
+    },
+    "representativeNameExamplesRootCheckedAgainstCurrentMdbBytes": 8,
+    "representativePropertiesCheckedAgainstCurrentBytes": 56,
+    "currentCppLookupComparison": "Compilation succeeded with C++17 and exact Qt 6.5.3; runtime aborted before main after denied CPU-feature queries. 0 of 135 records compared; no runtime pass or benchmark. See separate failure receipt.",
+    "productionChanges": "None; research documentation only.",
+    "limits": [
+      "Final current drive verification supersedes the initial unavailable-EDIT limitation; the initial findings remain a historical input/location-audit receipt.",
+      "Live audit uses retained hashed Bento indexes plus fresh current raw ranges and complete PMR owner matches; not a separately rebuilt entire TOC decoder.",
+      "107 matched /28 unknown /zero ambiguous are per 135 selected masters from the independent source-derived observer, not a new 171-physical-row recognition ledger or execution of production lookup.",
+      "Full historical built-in/plugin feature-gate/alias extraction was not freshly repeated; native representative paths and all 659 current external registry pairs were checked.",
+      "Current-source C++ runtime comparison did not execute; no equivalence test pass or measured speed/memory improvement is claimed."
+    ]
+  },
+  "temporaryReceipts": [
+    {
+      "path": "/private/tmp/bella-mdb-effect-category-20261020-mc/findings.json",
+      "bytes": 16547,
+      "sha256": "ecf4bec0efabc2753a17d7683b08da4bf75eebfe889e112ad1b8c59d71239842"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-effect-category-20261020-mdvx/findings.json",
+      "bytes": 15166,
+      "sha256": "5348c0b118f70434eca2fc973c0a6e946c0fddaf66a4a68ccd2336e90f2773c4"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-effect-category-20261020-drives/findings.json",
+      "bytes": 553141,
+      "sha256": "b7749c1db4b47fb25b46b8f797a25fac0e72e26098d57baa1affc821742951fb"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-effect-category-20261020-drives-live/findings.json",
+      "bytes": 1396689,
+      "sha256": "47d70edf12f614eafbccf34aec4c3306c40bb03c2db92f1245be911fe057ee96"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-effect-category-20261020-current-lookup/findings.json",
+      "bytes": 5509,
+      "sha256": "235d29e56e25e12be7da0e6e9f400917358a05b6622eb1314afd93f9086a0bfd"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-effect-category-20261020-drives-live/probe.py",
+      "bytes": 20987,
+      "sha256": "b773a564f32ee3144e850632c2f4d0ee96ea531f5ecef2c8430cf00a75d070b1"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-effect-category-20261020-drives-live/source-hash-receipts.json",
+      "bytes": 7103,
+      "sha256": "0d76d8697b4ecf42e7fd1093d527faa037ac179ac81d4535c17a096a1af3b387"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-effect-category-20261020-guide-receipt.json",
+      "bytes": 985,
+      "sha256": "4d8b5eaa875c8b9456ba5250a17350a6099e34b18bc700b43df996727ed5c8dc"
+    }
+  ],
+  "agreedBellaRule": {
+    "status": "Approved by the user on 20 October 2026: preserve current Effect Category behaviour with the simpler integration; not yet implemented. Effect and Effect Sequence detailed reviews remain open.",
+    "input": "For a confirmed Precompute, use the final selected decoded Clip Name. MDB supplies the already qualified associated master own name under the agreed text/owner rules; later cross-source scheduling/priority remains separate.",
+    "preserve": [
+      "Current compiled catalogue and AvidEffects::lookup semantics, including all 887 distinct pairs, localized aliases and explicit 3DWarp compatibility alias.",
+      "Exact case-sensitive token matching and space/colon-to-underscore name keys.",
+      "Both valid numeric suffix forms, sequence commas, repeated lowercase .new suffixes, checked integer ranges and preserved malformed/overflow text.",
+      "Every distinct matching category in catalogue order joined with slash separators; existing first-match English display-name rule.",
+      "Current lowercase unknown for unmatched/unavailable Effect Category on a Precompute; blank for non-precomputes. Do not apply agreed Type/Precompute Category blank rules to this field.",
+      "Current table/CSV/filter/sorting/search label behaviour and optional feature. Matching does not decide Type or Precompute Category."
+    ],
+    "integration": "Keep the standalone Qt Core resolver/catalogue unchanged behind a fresh Bella adapter. Derive once after selected Type/Clip Name is final; reuse result in the same selected master/name processing scope. Recompute if selected inputs change. Return a compact value containing the existing related labels.",
+    "retention": "Keep needed result strings and compact derived context. QString implicit sharing can share selected values across associated rows. No additional MDB effect graph, live plugin/registry scan, header read solely for this label, permanent cache of every name or repeated full evidence histories for three labels.",
+    "buildingBlocks": "Existing C++17 AvidEffects::Hit value-return function; pinned Qt 6.5.3 QString and shared immutable QHash table. No large category enum or custom interner needed.",
+    "optionalRefinement": "Prejoined ambiguity categories per fixed key could be profiled later. No parser replacement or claimed measured gain is needed for this proposal.",
+    "separateReview": "Effect and Effect Sequence are retained but their detailed semantics, other fields source precedence and remaining scheduling remain to be reviewed. Bin Filter unchanged."
+  }
+}

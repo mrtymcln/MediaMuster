@@ -1,0 +1,308 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-20",
+  "purpose": "Current MediaMuster Frame Rate source-to-presentation review and whether Bella can share its agreed SampleRate/Duration value and interpreter.",
+  "status": "Research completed. Frame Rate source, numeric sorting, late formatting and shared-helper naming remain proposals, not approved runtime implementation.",
+  "scope": {
+    "method": "Fresh read-only source trace with two independent peer reviews; existing curated native/corpus evidence consulted.",
+    "productionCodeChanged": false,
+    "newBuilds": 0,
+    "testsExecuted": 0,
+    "newAppScans": 0,
+    "newNativeExecutions": 0,
+    "newBinaryDisassembly": false,
+    "newMediaReads": false,
+    "performanceMeasured": false,
+    "binFilterChanged": false,
+    "oldScannerRemainsActive": true
+  },
+  "currentBehavior": {
+    "mdbOwner": "Physical file mob own referenced descriptor; not selected master or project editing rate.",
+    "wire": "Complete eight-byte omfi:Rational or omfi:ExactEditRate; two signed32 words in established object byte order.",
+    "validation": "Readable unique property, positive numerator and denominator within signed32 range.",
+    "videoProjection": "Own MDFL:SampleRate supplies Frame Rate and is also paired with own MDFL:Length for Duration. The recorded fraction is used literally in current MDB timing.",
+    "compressionCaveat": "legacyDnxNamingRate has narrowly qualified naming-only aliases and explicitly leaves recorded Frame Rate/Duration unchanged. Preserve approved Compression system.",
+    "priority": "When available and eligible, current MXF/OMF tier is preferred over MDB Frame Rate.",
+    "headerScheduling": "Missing video Frame Rate is itself one missing required field that can cause a header read; complete usable database match can skip header.",
+    "rowStorage": "Original MediaRate numerator/denominator plus eager QString label; Duration retains its own rate copy.",
+    "label": "Fraction to double, fixed three decimal places, trailing zeros then trailing decimal point removed.",
+    "tableCsv": "Both use retained label.",
+    "sort": "Parse rounded label to double; use text tie breaker. Original exact fraction is not the Frame Rate sort key.",
+    "sourceAgreement": "Raw exact cross-product comparison recognizes unreduced equivalent fractions, but does not equate typed Avid decimal aliases with corresponding 1001-based rational."
+  },
+  "proposedBellaReuse": {
+    "alreadyApproved": "Preserve own Length and SampleRate, apply verified scoped Avid video interpretation before exact Duration arithmetic; concrete audio frequency sources stay separate; audio Frame Rate blank.",
+    "oneVideoRate": "Use same selected physical video descriptor SampleRate for Frame Rate and Duration; preserve original pair and typed meaning once, derive exact semantic rate as needed.",
+    "sharedInterpreter": "The existing provisional AvidDurationInterpreter conversion can be a shared pure video-rate helper; AvidVideoRateInterpreter is proposed clearer naming, not an implemented/native class.",
+    "formatting": "Generate familiar Frame Rate label at presentation without retaining only rounded text or parsing text back for calculations.",
+    "numericSort": "Compare interpreted numeric rates exactly within supported representation; keep raw metadata separately. Unusual-rate precision and unavailable placement require final presentation agreement.",
+    "examples": [
+      {
+        "typedMdbOriginal": [
+          2997,
+          100
+        ],
+        "interpretedVideoRate": [
+          30000,
+          1001
+        ],
+        "proposedFamiliarLabel": "29.97"
+      },
+      {
+        "typedMdbOriginal": [
+          23976,
+          1000
+        ],
+        "interpretedVideoRate": [
+          24000,
+          1001
+        ],
+        "proposedFamiliarLabel": "23.976"
+      },
+      {
+        "typedMdbOriginal": [
+          25,
+          1
+        ],
+        "interpretedVideoRate": [
+          25,
+          1
+        ],
+        "proposedFamiliarLabel": "25"
+      }
+    ],
+    "audio": "Share small numeric/availability/formatting building blocks as appropriate, but retain class-specific concrete sampling source and omit video NTSC aliases. Internal audio Duration frame clock does not populate visible Frame Rate.",
+    "timecode": "Nominal 24/30 bases and recorded drop-frame affect Duration numbering only, not FPS or Frame Rate label.",
+    "io": "Deriving video Frame Rate from already selected MDB rate needs no second rate lookup or media read solely for that label. This does not approve global MDB-only Frame Rate or header priorities.",
+    "noUnmeasuredClaims": "No measured scan-speed, memory, installed-app behavior or comparative benchmark claim."
+  },
+  "meaningfulExistingCases": [
+    "Original MDB/MXF word preservation; add semantic equivalence without deleting raw assertions.",
+    "Unreduced exact fractions and Length/rate pairing.",
+    "Audio Sample Rate precision and audio blank Frame Rate.",
+    "Known zero, long durations and DF boundaries follow Bella decisions, not blanket reuse of current formatter."
+  ],
+  "pending": [
+    "Frame Rate own-descriptor source and missing/unusable presentation approval.",
+    "Generic/unusual Frame Rate label precision and sorting presentation details.",
+    "Cross-source/header scheduling for Frame Rate; MDB-only Duration remains agreed.",
+    "Duration audio display-clock owner and qualified recorded DF binding/fallback."
+  ],
+  "currentSources": [
+    {
+      "path": "src/oldscanner/mediaengine/mdbobjects_p.cpp",
+      "sha256": "21a013b4de7a3e346553e2f4bef73404e9d3c63551f6653aa9403a7128244814",
+      "lines": {
+        "first": 600,
+        "last": 636
+      },
+      "role": "Typed numeric decoding; original ExactEditRate/Rational words and object byte order."
+    },
+    {
+      "path": "src/oldscanner/mediaengine/mdbprojection.cpp",
+      "sha256": "75757ff663c541992768c502fa7b0887c4f31a02d23b7ec9e7b28532b160be5f",
+      "lines": {
+        "first": 126,
+        "last": 137
+      },
+      "role": "Positive signed32 rate validation."
+    },
+    {
+      "path": "src/oldscanner/mediaengine/mdbprojection.cpp",
+      "sha256": "75757ff663c541992768c502fa7b0887c4f31a02d23b7ec9e7b28532b160be5f",
+      "lines": {
+        "first": 350,
+        "last": 371
+      },
+      "role": "Physical mob descriptor reference resolution."
+    },
+    {
+      "path": "src/oldscanner/mediaengine/mdbprojection.cpp",
+      "sha256": "75757ff663c541992768c502fa7b0887c4f31a02d23b7ec9e7b28532b160be5f",
+      "lines": {
+        "first": 1229,
+        "last": 1267
+      },
+      "role": "Own descriptor rate projected to Frame Rate and reused with Length for Duration."
+    },
+    {
+      "path": "src/oldscanner/mediaengine/mdbprojection.cpp",
+      "sha256": "75757ff663c541992768c502fa7b0887c4f31a02d23b7ec9e7b28532b160be5f",
+      "lines": {
+        "first": 202,
+        "last": 234
+      },
+      "role": "Narrow legacy DNx naming aliases preserve recorded rate and Duration."
+    },
+    {
+      "path": "src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+      "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6",
+      "lines": {
+        "first": 100,
+        "last": 106
+      },
+      "role": "Current MXF/OMF-over-MDB rate source priorities."
+    },
+    {
+      "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+      "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e",
+      "lines": {
+        "first": 149,
+        "last": 157
+      },
+      "role": "Missing video Frame Rate contributes to required metadata header-read gate."
+    },
+    {
+      "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+      "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e",
+      "lines": {
+        "first": 676,
+        "last": 692
+      },
+      "role": "Usable complete database match can skip header read."
+    },
+    {
+      "path": "src/oldscanner/mediaengineadapter.cpp",
+      "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935",
+      "lines": {
+        "first": 39,
+        "last": 45
+      },
+      "role": "Original fraction plus eager double-to-three-decimal string."
+    },
+    {
+      "path": "src/mediaduration.h",
+      "sha256": "c59928f0d6f4ac92c93ad7a258bbcaf60516da2fd9fed616293b63bb839fafb6",
+      "lines": {
+        "first": 8,
+        "last": 23
+      },
+      "role": "Small numeric rate record, unreduced pair and exact mathematical comparison."
+    },
+    {
+      "path": "src/mediafile.h",
+      "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3",
+      "lines": {
+        "first": 50,
+        "last": 63
+      },
+      "role": "Stored video fraction/string and independent Duration clock."
+    },
+    {
+      "path": "src/mediatablemodel.cpp",
+      "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56",
+      "lines": {
+        "first": 236,
+        "last": 239
+      },
+      "role": "Frame Rate table uses stored string."
+    },
+    {
+      "path": "src/mediacsv.cpp",
+      "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442",
+      "lines": {
+        "first": 51,
+        "last": 60
+      },
+      "role": "CSV uses same stored string."
+    },
+    {
+      "path": "src/mediafilterproxy.cpp",
+      "sha256": "2c10657c82a6d3456815966664c62ab0b77a29d02a6e514fd865510fe7349e0c",
+      "lines": {
+        "first": 57,
+        "last": 63
+      },
+      "role": "Sort parses Frame Rate string to double."
+    },
+    {
+      "path": "src/mediafilterproxy.cpp",
+      "sha256": "2c10657c82a6d3456815966664c62ab0b77a29d02a6e514fd865510fe7349e0c",
+      "lines": {
+        "first": 312,
+        "last": 318
+      },
+      "role": "Numeric string-derived sort with text tie breaker."
+    },
+    {
+      "path": "src/mediaevidence.h",
+      "sha256": "c85f1d11bcb15eddcfbba7c9cbbc57c8fdafdb8cac8c4af6b575d62c1575c746",
+      "lines": {
+        "first": 574,
+        "last": 592
+      },
+      "role": "Existing source comparison uses exact raw fractional equality, without typed NTSC alias."
+    },
+    {
+      "path": "src/oldscanner/mediaengine/mxfprojection.cpp",
+      "sha256": "c8c68e78db5f3efaa62235f55624c5478e89a0adc37581a922af050f931cad55",
+      "lines": {
+        "first": 764,
+        "last": 773
+      },
+      "role": "MXF video rate and concrete audio frequency are separately projected."
+    },
+    {
+      "path": "tests/tst_readerregressions.cpp",
+      "sha256": "32c1b55e4803bd9c2b025c4df0d5d6e97dc23547fcc49522b54178da133fd14b",
+      "lines": {
+        "first": 210,
+        "last": 219
+      },
+      "role": "Actual MDB/MXF raw pair distinctions and original-byte preservation assertions."
+    },
+    {
+      "path": "tests/tst_mediaengine_omfprojection.cpp",
+      "sha256": "fd8f664611e66782f1cf6b4ae09590664c42922940585fcf0f7e8eb859655877",
+      "lines": {
+        "first": 2133,
+        "last": 2143
+      },
+      "role": "Existing raw Frame Rate and Duration pair preservation assertions."
+    },
+    {
+      "path": "tests/tst_scanner.cpp",
+      "sha256": "6eb123f014a1eacd66442e3e1ce96a61631382f9ed1890b79dfc8c8d00e69426",
+      "lines": {
+        "first": 1837,
+        "last": 1888
+      },
+      "role": "Unreduced audio fraction and sample precision test case."
+    },
+    {
+      "path": "tests/tst_mediaengine_mxfprojection.cpp",
+      "sha256": "f9f633bc0022e5f681b210d58a95cf472b04db0b6189ead78f9d22b7e8618a22",
+      "lines": {
+        "first": 755,
+        "last": 788
+      },
+      "role": "Audio and video rate roles remain distinct in existing tests."
+    },
+    {
+      "path": "tests/tst_mediaenginescan.cpp",
+      "sha256": "3a349703d4932ac7cdfa568fbd6053c1d45fc12f22606dffbb5cce1b3cfe5c68",
+      "lines": {
+        "first": 1954,
+        "last": 1982
+      },
+      "role": "Exact equivalent raw rate comparison case."
+    }
+  ],
+  "priorEvidence": [
+    {
+      "path": "Project Bella/evidence/mdb-frame-rate-2026-10-19.json",
+      "sha256": "7933b7c352e569a2a28c6dd09a669823126a8ed646a1e3bf18e0bd71fbfc9344",
+      "use": "Existing curated evidence and agreed requirements; raw native and physical-file audits not repeated in this follow-up."
+    },
+    {
+      "path": "Project Bella/evidence/mdb-duration-clock-2026-10-19.json",
+      "sha256": "a29d66698d82e09e4c102372113c9000761733c8beea2aa92bbe54e901372bf0",
+      "use": "Existing curated evidence and agreed requirements; raw native and physical-file audits not repeated in this follow-up."
+    },
+    {
+      "path": "Project Bella/evidence/mdb-audio-sample-rate-2026-10-20.json",
+      "sha256": "8d07d21eefcc7f33e49a359d715fef0c5fb4157766dfdaf3874f157ab8dfd2b7",
+      "use": "Existing curated evidence and agreed requirements; raw native and physical-file audits not repeated in this follow-up."
+    }
+  ]
+}

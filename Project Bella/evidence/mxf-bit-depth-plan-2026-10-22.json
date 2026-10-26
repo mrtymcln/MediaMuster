@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "Record explicit approval of Bella MXF Bit Depth recommendations; requirements only.",
+  "status": "Approved requirements; no runtime implementation or cutover.",
+  "authorization": {
+    "source": "Direct human approval in the current conversation",
+    "statement": "Lets do those recommendations - good catch!",
+    "scope": "Approves the preceding focused MXF Bit Depth recommendations, including the demonstrated native-padding compatibility fix. Implementation remains after the requirements review."
+  },
+  "agreedBellaRules": {
+    "source": "Qualified physical file own supported descriptor: audio QuantizationBits or picture ComponentDepth as complete big-endian UInt32; RGBA PixelLayout as fixed16 bytes of eight interleaved code/depth pairs. Checked type, width, ownership and bounds; no text decoding or borrowed master/other-file value.",
+    "interpretation": "Carry verified format-aware rules and useful cases into small fresh C++17/Qt helpers. Preserve necessary raw coded value, full coding identifier and numeric representation; do not treat picture253/254/255 as literal bit counts or apply picture float codes to audio.",
+    "rgbaPadding": "Require an interpretable meaningful prefix followed only by numeric00/00 or nativeASCII30/00 end/padding forms within the16-byte bound. Reject arbitrary nonpadding tails; do not reproduce native all-slot count/copy quirks.",
+    "rgbaDepth": "Every meaningful non-fill component must be supported and interpreted. Use the common interpreted width only when all agree, including alpha-only files. Never sum widths, choose the first component, replace colour depth with separate alpha depth or publish a partial result.",
+    "unavailable": "Missing, damaged, unsupported, mixed-width, palette-only/unsupported meanings or unverified LSB combinations supply no single MXF Bit Depth. Keep the physical file and independent facts; no guessed default or codec-capability substitute.",
+    "retentionAndDisplay": "Keep one numeric interpreted depth and necessary format/source/availability context, with compact raw code/layout only where required. Generate labels when displayed and sort numerically. No new visible alpha/sample-format column.",
+    "lifetime": "At most eight component entries and small new fixed-width/endian helpers. Extract wanted facts during independently required header parsing, release temporary header/reference structures and preserve the current Compression contract."
+  },
+  "deferred": [
+    "MDB/MXF source priority and extra header-read triggers remain for the final priority-table review.",
+    "Existing uncommon fixed10.6/12.4 generic-label choices and unverified component interpretation remain unresolved; no guessed labels are approved.",
+    "Remaining header fields, scanner coordination and runtime implementation/cutover retain their existing review boundaries."
+  ],
+  "evidenceBoundary": "Thirteen qualified depth observations include the demonstrated A8/native-padding case. Native import/padding findings are bounded, not universal GUI parity or measured performance. No fresh native/media research is required to record this approval.",
+  "unchanged": [
+    "Approved Sample Rate, Frame Rate and Duration rules, including DF semicolons and NDF colons.",
+    "Independent new Bella implementation after requirements review; OldScanner stays active until explicit cutover approval.",
+    "Bin Filter unchanged; current Compression behavior preserved."
+  ],
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-bit-depth-2026-10-22.json",
+    "sha256BeforeApprovalMetadata": "b9b12c0f8bc8c146ca70d31d0cc0bbdd97ad030ab00886e48ca3274cc606c911"
+  },
+  "supersedes": "Earlier pending/proposed status of the focused MXF Bit Depth rules, including historical proposal wording in the research receipt. Raw/native/source/corpus findings and hashes remain unchanged.",
+  "references": {
+    "focusedReview": "docs/reviews/2026-10-21-bella-mxf/bit-depth.md",
+    "researchEvidence": "Project Bella/evidence/mxf-bit-depth-2026-10-22.json",
+    "bellaPlan": "Project Bella/README.md#mxf-bit-depth-agreed-rules"
+  },
+  "validation": {
+    "runtimeImplemented": false,
+    "productionTestsRun": false,
+    "rawReceiptsChanged": false,
+    "nativeOrMediaResearchRepeatedForApproval": false
+  }
+}

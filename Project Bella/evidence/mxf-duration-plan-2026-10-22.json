@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "Record explicit approval of Bella MXF Duration requirements, including the preceding DF separator clarification, before reviewing MXF Frame Rate.",
+  "status": "Approved requirements; unimplemented. No application cutover or Bin Filter change.",
+  "authorization": {
+    "source": "Direct human approval in the current conversation",
+    "statement": "OK, let's lock those Duration rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Frame Rate from MXF, and what should Bella read and keep?",
+    "scope": "Approves the focused MXF Duration field, clock, missing-value, numbering and retention rules, with DF semicolons/NDF colons as clarified immediately beforehand. New Frame Rate mappings and other pending field/navigation proposals are not approved by this request."
+  },
+  "agreedBellaRules": {
+    "physicalPair": "Already qualified essence-linked physical file descriptor ContainerDuration and same-descriptor SampleRate together. Preserve full signed64 nonnegative count and exact positive numerator/denominator; no master/source segment count substitution.",
+    "missingDamagedPair": "Leave MXF Duration unavailable when this pair is missing, damaged, conflicting or not safely owned; retain the physical file and independent facts. No own-track length recovery in this first-release rule.",
+    "unitMeaning": "Preserve exact recorded units, samples where supported units genuinely count samples and native units otherwise. AudioSamplingRate is separate; do not universally replace the physical divisor or halve interlaced rates.",
+    "displayClock": "Video uses its supported own frame/editing clock with known sample-unit interpretation. Audio uses usable recorded Preface.ProjectEditRate from the same active physical header. Missing/damaged required display timing leaves formatted Duration blank. Audio visible Frame Rate remains blank.",
+    "numbering": "Validate known MXF Boolean0/1, nominal timecode base, exact clock and applicable range. Follow relevant explicit file-source references with full-ID/track/range/boundary/cycle checks. Apply qualified recorded DF; NDF for proven applicable absence; blank for damaged/unresolved relevant numbering. Known NDF-only clocks need no DF search. Do not add StartTimecode.",
+    "maths": "Use exact MXF rationals directly, keeping the legacy MDB rate interpretation source-specific. Preserve precise count/sample values and use the agreed integer/fraction maths and final nearest/half-up audio display-frame rounding.",
+    "format": "NDF HH:MM:SS:FF; DF HH;MM;SS;FF. Known zero and legitimate positive audio rounded to zero use the selected mode separators. Unavailable required data stays blank; hours can exceed24 without wrap.",
+    "retention": "Only selected exact count/rate, necessary display clock, qualified numbering mode and compact availability. Share wanted audio/wrapping facts with other fields; release temporary bytes, candidates and relationship indexes. One shared formatter after source-aware interpretation, expressed in fresh small C++17/Qt6.5 helpers.",
+    "sourceBoundary": "Keep usable MDB Duration first. Coherent own MXF Duration is eligible only on the already agreed database-unavailable fallback. No Duration-only header open, routine MDB/header comparison or hybrid count/rate/clock/flag. Full source-priority/header-open review remains deferred."
+  },
+  "verificationBoundary": "The selected thirteen actual headers corroborate own count/rate, eight video clocks and five audio Preface display clocks. Three fractional zero-start/origin source-timecode ranges are qualified. Nonzero cross-rate audio source-position mapping and uncommon wrapping/layout/damage cases need implementation verification; approval is not universal native GUI parity or scope expansion.",
+  "unchanged": [
+    "Existing independent Bella implementation and explicit app cutover approval.",
+    "OldScanner stays active and Bin Filter remains outside this work.",
+    "Compression behavior and already approved identity/name/Project/Kind rules.",
+    "Other formats, MXF navigation/concurrency and new Frame Rate-specific capability rules remain separate work."
+  ],
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-duration-2026-10-22.json",
+    "sha256BeforeApprovalMetadata": "2780fb207af68dec7c5155d17d2eddd47b7d408aa978e148577f11ee52206153"
+  },
+  "separatorRevision": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-duration-format-revision-2026-10-22.json"
+  },
+  "supersedes": "Earlier pending/proposed status of the focused MXF Duration rules. Historical source findings and arithmetic illustrations remain unchanged, with the prior separator revision authoritative for rendered punctuation.",
+  "references": {
+    "focusedReview": "docs/reviews/2026-10-21-bella-mxf/duration.md",
+    "researchEvidence": "Project Bella/evidence/mxf-duration-2026-10-22.json",
+    "bellaPlan": "Project Bella/README.md#mxf-duration-agreed-rules"
+  },
+  "validation": {
+    "runtimeImplemented": false,
+    "productionTestsRun": false,
+    "nativeOrMediaResearchRepeatedForApproval": false,
+    "rawReceiptsChanged": false
+  }
+}

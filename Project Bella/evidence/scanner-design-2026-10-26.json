@@ -1,0 +1,323 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-26",
+  "timezone": "Australia/Sydney",
+  "status": "Result delivery and Cancel behaviour agreed 27 October 2026. Engineering design recorded; independent implementation next. No runtime or cutover.",
+  "userRequest": "Yep those are all good decisions. How do we do we ensure the app does that as elegantly and \"standard\" as possible? What other questions do you need answering? Leave no stone unturned.",
+  "currentHead": "c8541868b10334ad0fddd5928a960202008768c9",
+  "design": "docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md",
+  "requirements": {
+    "sourcePriorityApproval": "Project Bella/evidence/source-priorities-plan-2026-10-26.json",
+    "sourcePriorityApprovalSha256": "842030daa013a112fb82f9547a4c4becad253d7f2ccfc7b038e4e30384fb5402",
+    "unchangedResearch": "Project Bella/evidence/source-priorities-2026-10-25.json",
+    "unchangedResearchSha256": "4eeeda2879679e33079d2c8970101261f9f77f2c8f28fff9423e3598f2e15bd4",
+    "cppSkill": {
+      "path": "/Users/martymclean/Downloads/CPP SKILL.md",
+      "sha256": "70919980c635f66db649b7eb1e426fb2098754ed6c9db22f1a7eee0935227d35",
+      "application": "C++17 subset: scoped ownership, value records, const inputs, checked arithmetic, small functions, no unnecessary hierarchy."
+    },
+    "fixed": [
+      "Physical inventory independent of databases/headers.",
+      "Approved field priorities, format/text/damage rules, full IDs and coherent file/master/timing.",
+      "Maximum four PMR jobs and maximum four MDB jobs; read once/extract/release.",
+      "Fresh independent Bella, separate scanner and parser functions, OldScanner active, Bin Filter unchanged."
+    ]
+  },
+  "currentSourceAudit": {
+    "receiptSha256": "0e1883cd695ba0467f9331922d26e637aebb81629b9ea3bb33e731c8ecd84bf1",
+    "sources": [
+      {
+        "path": "src/oldscanner/oldscanner.h",
+        "bytes": 2706,
+        "sha256": "67311521c1a087998d22928b6043c029dacfc7ee97d0692e25a357c85846403c"
+      },
+      {
+        "path": "src/oldscanner/oldscanner.cpp",
+        "bytes": 18381,
+        "sha256": "9c8d0cb547dc8e8916f928c9988d6cf51a18364e2696143620b1e0bf068f02bb"
+      },
+      {
+        "path": "src/backgroundjob.h",
+        "bytes": 3062,
+        "sha256": "b4a3488d0ed3cdd917c474e47366a658def978471987df0ece9523d7274bd9c2"
+      },
+      {
+        "path": "src/mainwindow.cpp",
+        "bytes": 75685,
+        "sha256": "08da8be52c79f5670ddd8e4daa7a94d3c13dc0f93ee9fff747a8796c5d39f693"
+      },
+      {
+        "path": "src/mediaengine/scanmodel.h",
+        "bytes": 8066,
+        "sha256": "004f3dfe373e14cd2640521958fb2bfc589f41c23bcc515365ea27c5f1f24187"
+      },
+      {
+        "path": "src/oldscanner/mediaengine/scancoordinator.h",
+        "bytes": 1023,
+        "sha256": "dae53bbd9dadffe7571a7c62b792949bce444c11690fcc8d10c7c16e0eb8a2f7"
+      },
+      {
+        "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+        "bytes": 36110,
+        "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e"
+      },
+      {
+        "path": "src/oldscanner/mediaengine/discoveryengine.cpp",
+        "bytes": 8421,
+        "sha256": "e7a67b18dbdcf7b1f9bbb3830ed18ed1eb2cb2e77e145475f48b0e12c858df18"
+      },
+      {
+        "path": "src/oldscanner/mediaengineadapter.cpp",
+        "bytes": 5202,
+        "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935"
+      },
+      {
+        "path": "src/mediaevidence.h",
+        "bytes": 25170,
+        "sha256": "c85f1d11bcb15eddcfbba7c9cbbc57c8fdafdb8cac8c4af6b575d62c1575c746"
+      },
+      {
+        "path": "src/mediafile.h",
+        "bytes": 12788,
+        "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3"
+      },
+      {
+        "path": "src/mediatablemodel.cpp",
+        "bytes": 12214,
+        "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56"
+      },
+      {
+        "path": "src/mediaengine/sourcereader.h",
+        "bytes": 927,
+        "sha256": "7c5ce10960a02307108ce9b774791e6caed6e3e693565f730f99c69fe16170a0"
+      },
+      {
+        "path": "tests/tst_scanner.cpp",
+        "bytes": 185966,
+        "sha256": "6eb123f014a1eacd66442e3e1ce96a61631382f9ed1890b79dfc8c8d00e69426"
+      },
+      {
+        "path": "CMakeLists.txt",
+        "bytes": 11236,
+        "sha256": "28944c51f614824ef6d72416bd7800f6ecec69483e2d9b8766187dee8b788384"
+      },
+      {
+        "path": "src/mediacsv.cpp",
+        "bytes": 3609,
+        "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442"
+      },
+      {
+        "path": "src/mediaduration.h",
+        "bytes": 3071,
+        "sha256": "c59928f0d6f4ac92c93ad7a258bbcaf60516da2fd9fed616293b63bb839fafb6"
+      },
+      {
+        "path": "docs/CONTRIBUTING.md",
+        "bytes": 10457,
+        "sha256": "8c0ac0f333c5484bd2bd786497ea5d8c06af06c6c8aa18f332bace0f198ebee6"
+      }
+    ],
+    "anchors": [
+      {
+        "id": "facade-interface",
+        "path": "src/oldscanner/oldscanner.h",
+        "startLine": 24,
+        "endLine": 109,
+        "finding": "Location/options, QObject signals, scan states, compact completion, cancellation publication API."
+      },
+      {
+        "id": "worker-lifetime",
+        "path": "src/backgroundjob.h",
+        "startLine": 12,
+        "endLine": 94,
+        "finding": "QThread::create, atomic stop, cancel/join before resetting flag, no force kill, synchronous potentially blocking shutdown."
+      },
+      {
+        "id": "terminal-publication",
+        "path": "src/oldscanner/oldscanner.cpp",
+        "startLine": 136,
+        "endLine": 288,
+        "finding": "Single active scan; owner queued move of completion; failure handling; cancellation wins until owner acceptance, then Idle and rows/issues signals."
+      },
+      {
+        "id": "worker-result-and-logging",
+        "path": "src/oldscanner/oldscanner.cpp",
+        "startLine": 391,
+        "endLine": 475,
+        "finding": "Database/read progress callbacks, logs batched50 and headers10s, worker formats all discovered rows even after cancellation; session owners die before compact return."
+      },
+      {
+        "id": "queued-ui-boundary",
+        "path": "src/mainwindow.cpp",
+        "startLine": 707,
+        "endLine": 733,
+        "finding": "Queued scanner progress/log/result/failure/issues connections; finalising separate indeterminate phase."
+      },
+      {
+        "id": "ui-replacement-and-terminal-result",
+        "path": "src/mainwindow.cpp",
+        "startLine": 1353,
+        "endLine": 1442,
+        "finding": "Activity guard, old inventory/selection/filter reset at start, progress update, whole-result model replacement at finish, failure dialog/Idle."
+      },
+      {
+        "id": "request-outcome-cancellation",
+        "path": "src/mediaengine/scanmodel.h",
+        "startLine": 265,
+        "endLine": 303,
+        "finding": "Exact root request, separate discovery/parsing/reconciliation completeness and cancelled flag; owned local/borrowed external atomic cancellation."
+      },
+      {
+        "id": "physical-inventory",
+        "path": "src/oldscanner/mediaengine/discoveryengine.cpp",
+        "startLine": 69,
+        "endLine": 191,
+        "finding": "Synchronous managed-root discovery, supported suffixes, physical rows before metadata, scope issues, root dedup, folder cancellation, per-scan ID allocator."
+      },
+      {
+        "id": "coordinator-state",
+        "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+        "startLine": 232,
+        "endLine": 278,
+        "finding": "Per-call result, source/lookup projections local, cancellation preserves captured facts and positions align with candidates."
+      },
+      {
+        "id": "serial-source-qualification",
+        "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+        "startLine": 303,
+        "endLine": 379,
+        "finding": "Synchronous readCandidate and database loop; progress before work; cancellation drops unfinished projection before qualification; expected source issues via warning."
+      },
+      {
+        "id": "finalisation-and-partial-results",
+        "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+        "startLine": 695,
+        "endLine": 800,
+        "finding": "Synchronous media loop, bounded source-change pass, final matching from captures, separate completion flags and cancelled issues marked scope-incomplete."
+      },
+      {
+        "id": "session-row-identities",
+        "path": "src/mediaevidence.h",
+        "startLine": 24,
+        "endLine": 54,
+        "finding": "KelpieId quint64, coordinator-owned sequential allocator, exhausted throws, zero invalid, reset returns1; no folder-worker allocation."
+      },
+      {
+        "id": "csv-duration-display",
+        "path": "src/mediacsv.cpp",
+        "startLine": 60,
+        "endLine": 66,
+        "finding": "CSV uses MediaFile::durationDisplay(), the same label used by the table."
+      },
+      {
+        "id": "pinned-runtime",
+        "path": "CMakeLists.txt",
+        "startLine": 31,
+        "endLine": 85,
+        "finding": "C++17 and Qt6 6.5.3 EXACT."
+      }
+    ],
+    "currentBehaviour": [
+      "Clear previous inventory at scan start.",
+      "Progress during scan; one final vector installed at completion.",
+      "Cancel keeps captured physical rows and qualified completed facts with incomplete checks.",
+      "Source reads currently synchronous inside one background coordinator.",
+      "BackgroundJob currently joins synchronously; do not copy that GUI wait into Bella."
+    ],
+    "scope": "Read-only source/test inspection; no executed tests, binaries, media or benchmarks."
+  },
+  "officialQt65References": [
+    {
+      "url": "https://doc.qt.io/qt-6.5/qthreadpool.html",
+      "supports": "Reusable bounded worker pool; destructor waits; clearing queued tasks does not cancel running work."
+    },
+    {
+      "url": "https://doc.qt.io/qt-6.5/qthread.html",
+      "supports": "QThread::create synchronous function launch and object affinity/lifetime constraints."
+    },
+    {
+      "url": "https://doc.qt.io/qt-6.5/qwaitcondition.html",
+      "supports": "Mutex/condition wake and wait for bounded completions."
+    },
+    {
+      "url": "https://doc.qt.io/qt-6.5/qabstractitemmodel.html#thread-safety",
+      "supports": "GUI model API only in model thread; queued background-to-GUI updates."
+    },
+    {
+      "url": "https://doc.qt.io/qt-6.5/threads-qobject.html",
+      "supports": "QObject affinity and queued delivery."
+    },
+    {
+      "url": "https://doc.qt.io/qt-6.5/qfuturewatcher.html",
+      "supports": "Reviewed alternative: future cancellation does not necessarily stop arbitrary work; not required by the proposal."
+    }
+  ],
+  "engineeringRecommendations": {
+    "structure": "GUI QObject facade, single synchronous background coordinator outside pool, ordinary separate format parser functions.",
+    "concurrency": "Initial scanner-owned service-lifetime pool max4 source jobs total, PMR/MDB/header combined. One extra coordinator thread. Not four reserved CPUs or four of each simultaneously.",
+    "dispatch": "Count dispatched through consumed completion; at most4 outstanding. Every task terminal completion exactly once; mutex/condition predicate loop; cancel wakes coordinator.",
+    "memory": "Bound folder window and completed result store, release raw/index data then folder lookups after header rejoins. Account bytes as well as job count; internal admission budget measured; oversized valid job can run alone without arbitrary format cap.",
+    "ownership": "Owned results, scoped file/buffer lifetime, no expired views or UI/parser mutation across workers.",
+    "selection": "Coordinator-only matching/KelpieId allocation and source choice; deterministic row positions; no completion-order preference.",
+    "cancellation": "Fresh atomic/generation each run, stop dispatch/open, cooperative checks and wake. Coordinator drains actual pool execution/cleanup off GUI. Coordinator finished notification alone is insufficient: require successful join before final publication/reuse, using nonblocking wait(0) readiness/defer on GUI. No active blocking GUI join. GUI generation/cancel check remains effective until acceptance.",
+    "shutdown": "No GUI-thread join or pool destruction while active. Defer final close/service destruction until jobs end; OS-blocked network reads may delay completion.",
+    "progress": "Latest snapshot with at most one pending GUI notification; bounded batched diagnostics; truthful discovery/read/finalisation phases.",
+    "capture": "Cheap opened-file identity/size/change checks; reject detected changes, no atomic snapshot claim, no automatic retry/hash/lock/cache feature.",
+    "presentation": "Preserve current display/export except agreed corrections, exact duration/rate sorting, CSV exports duration display. Rare unsupported labels remain unavailable rather than fabricated.",
+    "verification": "Real output equivalence plus deliberate differences, parser corruption/bounds, task caps, reordered completion, cancellation/publication/lifetime, repeated scan memory, same-workload time/RSS/header-open/byte/GUI benchmarks.",
+    "conventions": "Repository naming/formatting and explicit CMake source lists; clean warnings, pinned macOS/Windows builds, focused tests and available sanitizers; release performance measurements."
+  },
+  "boundedFollowUps": "Uncommon rate-label precision and fixed10.6/12.4 generic depth wording are implementation checks; no additional metadata-source product blocker found. Preserve known labels and unsupported cases.",
+  "validation": {
+    "sourceHashesRechecked": 18,
+    "runtimeCodeChanged": false,
+    "testsOrBuildsExecuted": false,
+    "performanceMeasured": false,
+    "localLinksChecked": 364,
+    "missingLocalLinks": 0,
+    "sourcePriorityRecordsUnmodified": true,
+    "gitDiffCheck": "passed",
+    "runtimeDiffPaths": [
+      "src/bella/README.md"
+    ],
+    "runtimeDiffBoundary": "Planning README only; no implementation/test/CMake changes.",
+    "untrackedRuntimeFiles": [],
+    "bothUserChoicesAnswered": true,
+    "workflowApprovalDate": "2026-10-27",
+    "workflowRecordVerified": "2026-10-27: both direct answers recorded; no pending workflow markers in active design/indexes."
+  },
+  "independentReview": {
+    "currentSourceAndProductScope": "26 October review found current behavior and then-unanswered choices accurate, with no additional product gap. Corrected finished-notification versus successful-join distinction. User answered both choices on 27 October.",
+    "designCritique": "Concrete single coordinator/shared4 pool design sound; explicit cancel wake, owned completion/lifetime and byte-admission safeguards retained."
+  },
+  "updatedDate": "2026-10-27",
+  "agreedUserChoices": [
+    {
+      "id": "result_visibility",
+      "current": "Clear at start; install results at end.",
+      "recommendation": "Preserve current behaviour.",
+      "alternative": "Stream rows during scanning.",
+      "answerReceived": true,
+      "answer": "Keep today's behaviour (Recommended)",
+      "agreedBehaviour": "Clear previous inventory at scan start, show progress, install new rows when scan ends.",
+      "agreedDate": "2026-10-27"
+    },
+    {
+      "id": "cancel_partial_results",
+      "current": "Keep captured rows and qualified facts, mark incomplete.",
+      "recommendation": "Preserve current behaviour.",
+      "alternative": "Discard cancelled scan results.",
+      "answerReceived": true,
+      "answer": "Keep partial results, as today (Recommended)",
+      "agreedBehaviour": "Keep discovered physical files and usable completed metadata; report cancelled and mark incomplete checks.",
+      "agreedDate": "2026-10-27"
+    }
+  ],
+  "userDecision": {
+    "date": "2026-10-27",
+    "source": "Direct human answers to the two asynchronous scan-workflow questions.",
+    "scope": "Preserves current result timing and partial-result retention on cancellation. Does not approve app cutover or add streaming/background/retry features.",
+    "questionsRemaining": 0,
+    "nextStage": "Build and compare independent Bella under the existing staging rules; OldScanner remains active pending explicit cutover approval."
+  }
+}

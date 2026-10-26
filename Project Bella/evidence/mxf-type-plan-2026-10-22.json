@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "status": "Approved requirements; not implemented or cut over.",
+  "authorization": {
+    "source": "Direct human request in current conversation",
+    "statement": "Sounds good brother! , let's lock those Type rules in for Bella.",
+    "scope": "Approves preceding MXF Type rules only. Precompute Category was a separate research request at that point."
+  },
+  "agreedBellaRules": {
+    "owner": "Reuse already selected associated MaterialPackage/master via agreed fullidentity/track-to-file rules, not sourcepackage/descriptor/importsource or arbitrary composition.",
+    "encoding": "PrivateAppCode exact4byte signedbigendian Int32 a022006094eb75cb96c469924f6211d3; standardUsageCode exact16byteUID property060e2b34010101070501010800000000. Resolve selectedheaderPrimer; tagsnotfixed. Neithertextencoding.",
+    "knownForms": [
+      {
+        "appCode": 1,
+        "standardUsage": [
+          "Absent",
+          "LowerLevel"
+        ],
+        "classification": "Precompute"
+      },
+      {
+        "appCode": 7,
+        "standardUsage": [
+          "Absent",
+          "AdjustedClip"
+        ],
+        "classification": "Media"
+      },
+      {
+        "appCode": "GenuinelyAbsent",
+        "standardUsage": [
+          "GenuinelyAbsent"
+        ],
+        "classification": "Media only after qualified normal-master association and complete fully mapped relevant read"
+      }
+    ],
+    "unsupported": "Other/unknown/damaged/conflicting input suppliesnoType atthissource. ExplicitAppCode0 and AdjustedClipOnlynotexpandedbythisproposal; native broaderrole-qualifiedsupport documentedseparately. No nativebroadnegative-error/unknown->0copy.",
+    "presenceBoundary": "PresentUsageUIDmustbeexactly16bytes. Empty/truncatedpresentvalue isdamaged,neverAbsent. Keepreadstate apartfrombytes. No wholefilediscard; physicalrowandotherusablefactsretained.",
+    "retention": "CompactMedia/Precompute/Unknownenum plus necessaryorigin/availability; labels atdisplay/export;Unknownblank. ExistingOldScanneralreadyenum/permasterprojectionreuse. TemporaryAppCode/UIDfactsreleasedafterallretainedconsumersfinish; nopermanentpropertygraphsolelyforType.",
+    "scope": "BasicTypeindependentofKind,importattribute,filename,codec andfilecode9. Optionalcategory/effect features remainseparate. Nofinalpriority/header-openingdecisionornativeGUIparity."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-type-2026-10-22.json",
+    "sha256BeforeApprovalMetadata": "1d32bc200fa8e6d8b400099b2707b06904fb5339e0ce372d45c41fe110e9cb2d"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-21-bella-mxf/type.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeImplemented": false,
+    "productionTestsRun": false,
+    "rawResearchChanged": false
+  }
+}

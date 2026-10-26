@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "Record the user approval of Bella MXF Kind rules before reviewing MXF Duration.",
+  "status": "Approved requirements; no Bella runtime implementation or cutover.",
+  "authorization": {
+    "source": "Direct human approval in the current conversation",
+    "statement": "OK, let's lock those Kind rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Duration from MXF, and what should Bella read and keep?",
+    "scope": "Approves the preceding focused MXF Kind proposal. Requesting Duration research does not approve its new mappings or other pending MXF field/navigation choices."
+  },
+  "agreedBellaRules": {
+    "authority": "The already qualified essence-linked physical file SourcePackage and its own uniquely usable descriptor class; binary class identity with established MXF label/version handling.",
+    "audioClasses": [
+      "GenericSoundEssenceDescriptor",
+      "WaveAudioDescriptor",
+      "AES3AudioDescriptor"
+    ],
+    "videoClasses": [
+      "GenericPictureEssenceDescriptor",
+      "CDCIEssenceDescriptor",
+      "MPEGVideoDescriptor",
+      "RGBAEssenceDescriptor"
+    ],
+    "unknown": "Nonspecific, data, unsupported or unavailable descriptions supply no MXF Audio/Video Kind. Display lowercase unknown if no other eligible source supplies Kind.",
+    "singleAuthority": "No filename/extension, compression-label, overall master-track or separate DataDefinition vote. Do not carry over inference from audio/video property presence on an unrecognised class.",
+    "ownershipAndDamage": "Broken ownership or ambiguous/unusable descriptor selection withholds MXF Kind. An unrelated damaged numeric value need not erase a valid known class. Retain the physical file and independent usable facts.",
+    "multipleDescriptor": "The wrapper is not a Kind. In supported compatibility handling, classify only an already uniquely qualified applicable owned child; otherwise unavailable. Do not choose the first child or expand into general interleaved-MXF support.",
+    "retention": "One compact enum with necessary availability; generate Audio/Video/unknown labels later. Reuse then release temporary descriptor/header facts. C++17 enum class/fixed-array building blocks suffice; no new dependency."
+  },
+  "tradeoff": "An unfamiliar descriptor can remain unknown where OldScanner would infer Audio/Video from registered property presence. Add new known classes deliberately. No measured performance improvement or universal app parity is claimed.",
+  "unchanged": [
+    "The approved six-class MDB Kind mapping and Kind-versus-Type meanings.",
+    "Approved MXF identity, Clip Name, Project and Duration fallback boundaries.",
+    "Existing exact Duration/display decisions; the subsequent review concerns MXF source capabilities and qualification.",
+    "Overall source-priority table and new header-opening triggers are deferred.",
+    "OldScanner remains active until explicit cutover approval; Bin Filter is outside the replacement."
+  ],
+  "remaining": [
+    "MXF Duration count/rate, audio display-clock and numbering mapping is the next focused review.",
+    "Unobserved descriptor/layout/damage cases require implementation verification without silently expanding the approved scope."
+  ],
+  "supersedes": "Earlier pending/proposed status of the focused MXF Kind rules. Raw native/source/corpus evidence and the historical proposal body remain unchanged.",
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-kind-2026-10-22.json",
+    "sha256BeforeApprovalMetadata": "f967b9bcf7e1eb5843fd516819ee1a0627707a14847aa0a3eba66bfd63ba0f16"
+  },
+  "references": {
+    "focusedReview": "docs/reviews/2026-10-21-bella-mxf/kind.md",
+    "researchEvidence": "Project Bella/evidence/mxf-kind-2026-10-22.json",
+    "bellaPlan": "Project Bella/README.md#mxf-kind-agreed-rules"
+  },
+  "validation": {
+    "runtimeImplemented": false,
+    "productionTestsExecuted": false,
+    "nativeOrMediaResearchRepeatedForApproval": false,
+    "rawReceiptsChanged": false
+  }
+}

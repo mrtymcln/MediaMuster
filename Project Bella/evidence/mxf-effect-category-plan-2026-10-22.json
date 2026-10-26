@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "status": "Approved requirements; not implemented or cut over.",
+  "authorization": {
+    "source": "Direct human request in current conversation",
+    "statement": "OK, let's lock those Effect Category rules in for Bella.",
+    "scope": "Approves preceding MXF Effect Category rules and shared lookup integration. Effect from MXF remains the next focused review."
+  },
+  "agreedBellaRules": {
+    "inputs": "Already qualified MXF MaterialPackage Name and independently established Type; final selected Clip Name and Type after matching/source selection.",
+    "encoding": "MXF Name decoded as supported UTF-16BE. Output category comes from existing compiled catalogue, not a separate header category scalar or new legacy-text fallback.",
+    "lookup": "For a confirmed Precompute, reuse existing AvidEffects::lookup once for selected master/name during processing. Reuse Effect and Effect Category for associated rows; recompute after selected inputs change.",
+    "behaviour": "Keep exact case, validated numeric suffix forms, aliases/localized names, explicit 3DWarp alias and every distinct ambiguous category in catalogue order joined with /.",
+    "retention": "Owned QString Effect/Effect Category results with necessary compact derived context. Temporary same-master/name reuse; no permanent name cache or source-history framework.",
+    "unavailable": "Precompute unavailable/unrecognised category displays lowercase unknown. Media/unknown Type category blank. Does not modify independently proven Type or Precompute Category.",
+    "exclusions": "No additional media read, effect graph, plug-in/resource load or import-settings body solely for this label. No Effect Sequence retained in Bella rows/results/filters/CSV.",
+    "identityLimit": "Name-derived recognition does not prove the original generating effect ID or active plug-in. Native effect registration is a different input path.",
+    "scope": "No new cross-source priority/opening policy or measured performance improvement. Preserve the agreed catalogue through a small new adapter."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-effect-category-2026-10-22.json",
+    "sha256BeforeApprovalMetadata": "3c401895f26a0472895dc77e334296cbdddee7486ad86be7f068c2df598aedf1"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-21-bella-mxf/effect-category.md",
+    "plan": "Project Bella/README.md",
+    "approvedMdbContract": "docs/reviews/2026-10-18-bella-mdb/effect-category.md",
+    "precomputeCategoryApproval": "Project Bella/evidence/mxf-precompute-category-plan-2026-10-22.json"
+  },
+  "validation": {
+    "runtimeImplemented": false,
+    "productionTestsRun": false,
+    "rawResearchChanged": false
+  }
+}

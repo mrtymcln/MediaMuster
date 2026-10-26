@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-25",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF Resolution rules; Type review follows. No implementation/cutover.",
+  "authorization": {
+    "source": "Direct human user instruction",
+    "statement": "OK, let's lock those Resolution rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Type from OMF, and what should Bella read and keep? Look for the simplest accurate approach.",
+    "scope": "Accepts qualified own OMF geometry/default/layout/proxy rules, selective Sampled reading, numeric width/height/late labels and compact shared helper/adapter integration. Compression naming remains independent. No extra opens, Bin Filter change, final source-policy decision or runtime/cutover approval."
+  },
+  "agreedBellaRules": {
+    "scope": "Physical visible picture raster from qualified own supported descriptor within accepted legacy OMF/Bento1. Audio inapplicable. No composition/aspect/square-pixel conversion, filename/codec-name/resolutionID size substitute, new TIFF decoder or Bin Filter change.",
+    "inputs": "Known typed/order-aware own StoredWidth/Height, DisplayWidth/Height/XOffset/YOffset and FrameLayout. Captured legacy geometry Long signed32, LayoutType two-byte; not modern OMF2 unsigned dimensions or MXF wire layout. Coding/ID from accepted Compression context can qualify proxy candidacy.",
+    "defaults": "OMF Display and Sampled independent relative to Stored. Genuinely absent optional dimensions use Stored, offsets0; retain existing original-toolkit legacy per-field compatibility. Safely complete relevant descriptor/dictionary context must prove absence. Present zero/negative/unreadable/conflicting/bad values do not default.",
+    "geometry": "Positive sizes, nonnegative offsets and checked Stored-relative containment before height conversion. Ordinary Resolution needs no Sampled decoding; no generic Display-to-Sampled-to-Stored preference ladder or arbitrary standard-size whitelist.",
+    "layout": "Qualified legacy OMF1 layout1 and existing layout3 double selected per-field height with overflow checks. FullFrame0 and SingleField2 do not double; unknown unsupported. Native internal enum/coordinate normalization and MXF mixed/segmented rules are not transplanted.",
+    "proxy": "Preserve existing seven exact configurations only: complete coding, resolutionID, three sizes/layout and zero offsets. Read Sampled only when a candidate needs qualification; known ordinary valid Display survives independent Sampled damage. No blanket Stored fallback for an unexplained crop, small raster or H264 family.",
+    "retentionAndDisplay": "Selected numeric width/height with compact origin/availability as needed; current widthxheight late display/export and numeric pair sort. Audio and unavailable picture blank, physical row/independent valid fields retained. No duplicate formatted row label/raw property graph.",
+    "implementation": "Small fresh typed OMF adapter/shared ordinary checked geometry functions; explicit MDB/OMF vs MXF coordinate/default adapters. std::optional and fixed-width integers suffice, validated QSize only at int-compatible boundary with positive dimensions checked. No class/parser per column, hierarchy, floating-point/aspect scaling or new dependency.",
+    "compressionAndLifetime": "Approved Compression stored naming geometry/clock unchanged and separate from visible Resolution. Share needed temporary facts; release rectangles/indexes/bytes when all agreed consumers finish, keep only selected values/required compact context.",
+    "otherDecisions": "No new file opens, essence decode, source preference/cancel/scheduling decision, native GUI equivalence or measured gain. Final priority/opening rules and general OMF damage handling remain later."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-resolution-2026-10-25.json",
+    "sha256": "62e8252cea24179b1cb0a724a24034a3cac740d0d7f89803039f6aa8b4bf5789"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/resolution.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "newBinaryOrMediaResearchForApproval": false,
+    "newBuildsOrTestsForApproval": false,
+    "appCutover": false,
+    "performanceMeasured": false
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "date": "2026-10-20",
+  "timezone": "Australia/Sydney",
+  "purpose": "Explicit user decision to exclude Effect Sequence from Bella, superseding its earlier retained-field requirement.",
+  "status": "Approved by the user: no Effect Sequence column and no stored sequence information. Requirements only; not yet implemented. OldScanner remains active, Bin Filter unchanged.",
+  "decision": {
+    "excluded": [
+      "Effect Sequence table column",
+      "Separate Effect Sequence CSV field",
+      "Separately derived sequence-name values in Bella inventory rows, worker results, caches, evidence/status records and filter data"
+    ],
+    "retained": [
+      "Original complete Clip Name and ordinary search",
+      "Precompute Category, Effect Category and Effect under their agreed rules",
+      "Effect-token boundary parsing, numeric/rename suffix checks and useful sequence-comma regression cases"
+    ],
+    "implementationContract": "The current legacy helper may return a Sequence field for OldScanner. That is not a Bella retention requirement. The new adapter/helper retains only the agreed outputs and can avoid materialising a separate prefix string, while preserving the same Effect/Category results. No additional sequence read or graph is required.",
+    "supersedes": "Earlier inclusion of Effect Sequence among optional precompute details and older field reports/receipts referring to a three-field retained result. Historical source/native/data observations remain valid as research.",
+    "sourceBufferLifetime": "No separately derived sequence string is retained. Keeping original Clip Name does not imply a second parsed sequence value."
+  },
+  "currentDependencies": {
+    "consumers": "Table/CSV field, sorting, general search and current metadata bookkeeping.",
+    "search": "General search already includes Clip Name.",
+    "independentFeatures": "File operations, Bin Filter and the precompute category/effect filter do not require the separate Sequence value.",
+    "headerRead": "OldScanner checks derived-field conflicts generically; missing Effect Sequence alone never requests a header. This is not a Bella retention requirement."
+  },
+  "nextRequirements": [
+    "Settle the pending separate Frame Rate source/presentation proposal.",
+    "Then settle Duration audio display-clock and qualified recorded drop-frame source/fallback.",
+    "Keep already agreed Duration arithmetic/format/source rules settled; review general MDB layouts/damage and remaining headers/source scheduling before implementation."
+  ],
+  "sources": [
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediafile.h",
+      "bytes": 12788,
+      "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.h",
+      "bytes": 1797,
+      "sha256": "7e9ce3347b74f5bceedf97ee1ce5c60bf85b0afdc902a9248b13934ec21b63b1"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.cpp",
+      "bytes": 69548,
+      "sha256": "0989aeb6b02bf4a254b01e5d5881a82997205797de7d448336b5f4a0d0535d35"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+      "bytes": 12214,
+      "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp",
+      "bytes": 3609,
+      "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediafilterproxy.cpp",
+      "bytes": 11470,
+      "sha256": "2c10657c82a6d3456815966664c62ab0b77a29d02a6e514fd865510fe7349e0c"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/precomputefilter.h",
+      "bytes": 1649,
+      "sha256": "2303ece77ad98b02048978d8aa7e3c590e336e6519f6615f331abfef993d8f0d"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp",
+      "bytes": 10189,
+      "sha256": "efd43607ae69557feea2954ee7d5039c1f00052ac1a33cc90c580f44539df3ce"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/scancoordinator.cpp",
+      "bytes": 36110,
+      "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e"
+    }
+  ],
+  "verification": {
+    "method": "Read-only code consumer search and independent peer dependency check; requirements documentation update.",
+    "runtimeCodeChanged": false,
+    "newBuildsOrRuntimeTests": 0,
+    "performance": "Reduced retained data/bookkeeping and UI clutter are design consequences; no measured speed or memory improvement is claimed."
+  }
+}

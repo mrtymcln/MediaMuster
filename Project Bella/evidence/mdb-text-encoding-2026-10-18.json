@@ -1,0 +1,1301 @@
+{
+  "date": "2026-10-18",
+  "purpose": "MDB text encoding read/write evidence for Bella. The user approved the text rule on 2026-10-18, explicitly including recovery from damaged Unicode through a separate legacy value. No Bella code, OldScanner/BinFilter edits, app launch or media writes.",
+  "method": "Read-only installed arm64 native disassembly, symbols, call/control-flow reconstruction, independent raw MDB indexes, and existing committed fixture. Not a complete source recovery or Hopper export.",
+  "pairedNativeFields": {
+    "date": "2026-10-18",
+    "applicationVersion": "26.8.0.58987",
+    "method": "Fresh read-only static arm64 disassembly and manual control/data-flow reconstruction. No Media Composer launch, private Avid execution, database writes or Bella implementation.",
+    "binaries": [
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+        "size": 73527536
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+        "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+        "size": 14340208
+      }
+    ],
+    "conclusions": [
+      "Media Composer writes separate Unicode and legacy representations for these paired fields. It does not give every MDB field two representations.",
+      "The current Mac legacy writer uses the system codec and allows question-mark substitution for unrepresentable Unicode. Its legacy copy can be lossy while its UTF-8 copy remains complete.",
+      "Named UTF-8 properties contain plain UTF-8 plus a NUL terminator. They do not use PMR counted-string framing or the two-byte markers of known Unicode BOB attributes.",
+      "The native bin/directory/main-file-path readers prefer nonempty Unicode and can use the separate legacy representation if Unicode is absent or empty. Conversion failure enters a raised-error path before those local fallback checks.",
+      "LastKnownVolume differs: its writer omits an empty Unicode tag, but its reader does not test that a present Unicode tag is nonempty before replacing the earlier legacy value.",
+      "Bella can deliberately use a simpler per-field usable UTF-8 then separate MacRoman fallback policy, including unreadable Unicode. That is a policy choice, not exact replication of every Media Composer error path.",
+      "Path representations also differ in syntax and volume prefixes. Fallback includes the appropriate path reconstruction, not only a codec change."
+    ],
+    "pairedFields": [
+      {
+        "field": "Original Bin name",
+        "properties": [
+          "OMFI:MCBR:MC:binName",
+          "OMFI:MCBR:MC:binNameUTF8"
+        ],
+        "writer": {
+          "function": "AMCBinRef::Put",
+          "address": "0x2d5990",
+          "anchors": [
+            "0x2d5a84: converts original ICU UnicodeString using UnicodeStringToCurrentMacMBCSString, with no loss-report pointer.",
+            "0x2d5a98 and 0x2d5ab8: selects binName and writes the converted legacy bytes.",
+            "0x2d5ae0, 0x2d5ae8 and 0x2d5b00: selects binNameUTF8 and writes the original Unicode through WriteUTF16AsUTF8String."
+          ]
+        },
+        "reader": {
+          "function": "AMCBinRef::Get",
+          "address": "0x2d5b48",
+          "anchors": [
+            "0x2d5c54..0x2d5c68: reads the legacy handle without decoding.",
+            "0x2d5ce8..0x2d5d00: reads named UTF-8 through the UTF8-to-UTF16 helper.",
+            "0x2d5d4c..0x2d5d68: if Unicode is empty and a legacy handle exists, converts its bytes using CurrentMacMBCSEncodingToUnicodeString."
+          ]
+        },
+        "failure": "No local catch around the Unicode helper. A raised conversion error occurs before the legacy fallback check."
+      },
+      {
+        "field": "Directory locator path",
+        "properties": [
+          "OMFI:DL:PathName",
+          "OMFI:DL:PathNameUTF8"
+        ],
+        "writer": {
+          "function": "AMacDirLocator::Put",
+          "address": "0xa0618",
+          "anchors": [
+            "0xa06d4, 0xa072c and 0xa0764: converts POSIX Unicode to HFS Unicode and canonicalizes the legacy form.",
+            "0xa0778: converts that form using UTF16ToCurrentMacMBCSEncodingString with a loss-report pointer.",
+            "0xa077c..0xa07a8: logs conversion loss and continues.",
+            "0xa0800..0xa0824: writes DL:PathName legacy bytes.",
+            "0xa0828..0xa0880 and 0xa08d4..0xa08e8: obtains the original full canonical Unicode path and writes DL:PathNameUTF8."
+          ]
+        },
+        "reader": {
+          "function": "AMacDirLocator::Get",
+          "address": "0xa09b0",
+          "anchors": [
+            "0xa0be0..0xa0bf8: reads legacy path bytes.",
+            "0xa0c5c..0xa0c74: reads the Unicode counterpart.",
+            "0xa0ce4..0xa0ce8: tests Unicode length; empty Unicode branches to legacy reconstruction at 0xa0d28.",
+            "0xa0d30: CanonicalPathToHFS.",
+            "0xa0d58 and 0xa0db4: MacHFSMBCSToPosixUTF16Path, first for required size and then actual conversion."
+          ]
+        },
+        "failure": "No local field-level catch for conversion errors. Legacy fallback reconstructs a path as well as decoding text."
+      },
+      {
+        "field": "File locator path",
+        "properties": [
+          "OMFI:FL:PathName",
+          "OMFI:FL:PathNameUTF8",
+          "OMFI:FL:POSIXPathName"
+        ],
+        "writer": {
+          "function": "AMacFileLocator::Put",
+          "address": "0xa1814",
+          "anchors": [
+            "0xa18f4, 0xa194c and 0xa1984: converts POSIX Unicode to HFS Unicode and canonicalizes the legacy form.",
+            "0xa1998..0xa19d4: current-Mac conversion with loss report; logs loss and continues.",
+            "0xa1a2c..0xa1a50: writes FL:PathName. The empty branch at 0xa1a9c..0xa1aa8 writes an empty legacy value.",
+            "0xa1ba8..0xa1bbc: can also write FL:POSIXPathName.",
+            "0xa1bf4..0xa1c08: writes the full canonical Unicode path to FL:PathNameUTF8.",
+            "Further optional tag 3 writes an available UNC Unicode representation."
+          ]
+        },
+        "reader": {
+          "function": "AMacFileLocator::Get",
+          "address": "0xa1d40",
+          "anchors": [
+            "0xa1e88..0xa1e98: reads legacy PathName.",
+            "0xa22a4..0xa22bc: reads the canonical Unicode PathName in optional tag 2.",
+            "0xa20e0..0xa2148: reads and stores the UNC representation in optional tag 3.",
+            "0xa230c..0xa234c: uses a nonempty canonical Unicode path.",
+            "0xa2350..0xa2468: fallback uses CanonicalPathToHFS at 0xa2358 and MacHFSMBCSToPosixUTF16Path at 0xa2380/0xa23e8.",
+            "0xa2474 onward: additionally handles the UNC form when the main path is unavailable."
+          ]
+        },
+        "failure": "No local field-level catch around the shared Unicode helper. Canonical and UNC forms require distinct path interpretation."
+      },
+      {
+        "field": "Last-known volume",
+        "properties": [
+          "OMFI:MSML:LastKnownVolume",
+          "OMFI:MSML:LastKnownVolumeUTF8"
+        ],
+        "writer": {
+          "function": "MSMLocator::Put",
+          "address": "0x3cae94",
+          "anchors": [
+            "0x3cb00c: converts Unicode through the current-Mac codec with no loss-report pointer.",
+            "0x3cb04c..0x3cb05c: writes the legacy volume.",
+            "0x3cb0dc..0x3cb114: emits Unicode tag 3 only if the Unicode value is nonempty.",
+            "0x3cb128..0x3cb148: writes original Unicode to LastKnownVolumeUTF8."
+          ]
+        },
+        "reader": {
+          "function": "MSMLocator::Get",
+          "address": "0x3cb1d0",
+          "anchors": [
+            "0x3cb2f8..0x3cb334: reads, decodes and stores legacy volume.",
+            "0x3cb394..0x3cb3dc: Unicode tag 3 reads UTF-8 then calls SetLastKnownVolume without a nonempty test.",
+            "An absent Unicode tag preserves legacy. A present empty tag can replace it; the writer normally avoids emitting that tag."
+          ]
+        },
+        "failure": "No local field-level catch around Unicode conversion."
+      }
+    ],
+    "commonWriter": {
+      "utf16ToUtf8": {
+        "function": "omfiDualStream::WriteUTF16AsUTF8String",
+        "address": "0xb6300",
+        "anchors": [
+          "0xb6328: obtains UTF-16 length.",
+          "0xb633c..0xb6350: allocates 4 * UTF-16 units + 1 and zeroes the buffer.",
+          "0xb6370: ICU u_strToUTF8.",
+          "0xb6374..0xb6408: reports errors including STRM_UNICODE_INVALID_CHAR_FOUND and STRM_UNICODE_CONVERSION_ERROR.",
+          "0xb6410..0xb6420: passes plain UTF-8 bytes to WriteUTF8String."
+        ]
+      },
+      "storage": {
+        "functions": [
+          {
+            "name": "omfiDualStream::WriteUTF8String",
+            "address": "0xb62f4"
+          },
+          {
+            "name": "omfiDualStream::WriteString",
+            "address": "0xb5d34"
+          }
+        ],
+        "anchors": [
+          "WriteUTF8String delegates directly to WriteString; no marker is added.",
+          "0xb6214..0xb6218: strlen + 1 includes the terminating NUL.",
+          "Logical values up to four bytes use immediate table storage; larger values use external declared storage.",
+          "Empty string is one NUL byte. Unused physical immediate-slot padding is not string content."
+        ]
+      },
+      "legacyConversion": {
+        "functions": [
+          {
+            "name": "AvidCore::UnicodeStringToCurrentMacMBCSString",
+            "address": "0x12cdec"
+          },
+          {
+            "name": "AvidCore::UTF16ToEncoded",
+            "address": "0x12ba5c"
+          },
+          {
+            "name": "AvidCore::CFStringRefToEncoded",
+            "address": "0x12b7e8"
+          }
+        ],
+        "anchors": [
+          "0x12ce34: selects current-Mac ScriptEncoding 5.",
+          "0x12bae8: CFStringGetSystemEncoding chooses the codec.",
+          "0x12b840 and 0x12b8d8: CFStringGetBytes receives lossByte 0x3f, a question mark.",
+          "0x12b858..0x12b8a0: if a loss-report pointer is supplied, a second strict conversion with lossByte 0 determines whether the whole value is representable.",
+          "Substitution itself does not throw. Bin and volume writers ignore the loss flag; directory and file writers log it but still write the legacy result."
+        ]
+      }
+    },
+    "commonReader": {
+      "function": "omfiDualStream::ReadUTF8StringAndConvertToUTF16",
+      "address": "0xb8168",
+      "anchors": [
+        "0xb81f8..0xb8208: zeroes input/output buffers.",
+        "0xb8224..0xb8230: absent read returns null; empty input returns a zeroed output buffer.",
+        "0xb8240: UTF8ToUTF16.",
+        "0xb8248..0xb8260: a failed conversion constructs STRM_UNICODE_CONVERSION_ERROR and invokes the native raised-error operation.",
+        "Landing pads clean memory and unwind; they do not retry a separate legacy property."
+      ],
+      "converter": {
+        "function": "AvidCore::UTF8ToUTF16",
+        "address": "0x12ca0c",
+        "anchors": [
+          "0x12ca5c: ICU u_strFromUTF8 with NUL-terminated input.",
+          "0x12ca60..0x12ca6c: nonzero conversion status returns zero."
+        ]
+      },
+      "limit": "Native fixed output-buffer overflow can also cause conversion failure. Bella should not copy native buffer capacities as universal wire-format limits."
+    },
+    "bellaAssessment": {
+      "possible": true,
+      "proposedRule": "For each semantic field and owner, prefer a validated, explicitly UTF-8 representation. If absent or unusable, try the separately recorded legacy representation using the agreed MacRoman policy. If neither works, leave the value unavailable.",
+      "qualifications": [
+        "Do not reinterpret broken UTF-8 payload bytes as MacRoman.",
+        "A fallback must describe the same field and owner. An unrelated Name attribute is not a replacement.",
+        "A legacy fallback can legitimately contain question marks introduced by the native writer.",
+        "Interpret locator path syntax separately from text decoding.",
+        "This does not establish legacy encoding for every historical or Windows producer.",
+        "PMR whole-set selection remains unchanged; MDB structural damage and required-reference policy remain separate."
+      ]
+    },
+    "limits": [
+      "Static current-Mac code evidence, not a live Media Composer write experiment.",
+      "Known Unicode BOB attributes have a different marker layout from these paired named properties.",
+      "No exhaustive all-MDB-field encoding table or universal legacy producer encoding was established.",
+      "No Bella implementation, OldScanner change or media modification."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/bin-get.txt",
+        "bytes": 7257,
+        "sha256": "50bf6c85a1489e39e40f4345e7045a2df20f0beb2848ad0c86c7fbb99e504d84"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/bin-put.txt",
+        "bytes": 5051,
+        "sha256": "ae91b744e3bc3e58edb992d96f1328c582a3b743b57845ab50c516b3cc6003e2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/cfstring-to-encoded.txt",
+        "bytes": 3968,
+        "sha256": "3473f02ddafebbdf44ae53e86489bc828967466071ee97c6798a69d39870a42e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/dir-get.txt",
+        "bytes": 16563,
+        "sha256": "33fddd0b38e4d1ffb8a07210e27d6c57c6dcc8b93f8ebaeb3b5a3160aadee5ca"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/dir-put.txt",
+        "bytes": 11751,
+        "sha256": "48ea4ae7b1339316354d1f2eff64cbdf25faf1dee25313b6bc676626111d38c8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/file-get.txt",
+        "bytes": 26200,
+        "sha256": "922693364f3353f93747bd3b8ef2e8cc9bb63da4a80d38f6acfef1ec3b84d61a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/file-put.txt",
+        "bytes": 15874,
+        "sha256": "0e329aefce62c75f86dacda0d36aa347bf82104b7bb77620b87d9f2149ec2793"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/msm-get.txt",
+        "bytes": 9020,
+        "sha256": "c9d730b22464263c8e253e783de85954b34a64786ac65275b955c56d4b35bdc2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/msm-put.txt",
+        "bytes": 8953,
+        "sha256": "1a748a1a8fb8bc76108beefe9091f555df413e9ee9383cfb944d692fb8a582d5"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/read-utf8-utf16.txt",
+        "bytes": 4404,
+        "sha256": "9b085573f9f541ca3d1d351b3bf6b53838ae0245bca4ba37e3c9e4d42f865cad"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/unicode-to-macstr.txt",
+        "bytes": 1020,
+        "sha256": "3aa7aa70bff52a28118b8eb04a793c9b6a12995f81296d4582c03f9649001b4a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/utf16-to-encoded.txt",
+        "bytes": 2507,
+        "sha256": "eebabdc28c1d2bb46433c4d211bf85091e6ed322281453599b3a7f8c13234722"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/utf16-to-encodedstr-int.txt",
+        "bytes": 3408,
+        "sha256": "e2ef292c65743ee44c5beba7aa0b38a09818a81d69d60a5497fe2873b2ff02e0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/utf16-to-encodedstr.txt",
+        "bytes": 1297,
+        "sha256": "0fcb938a7b490306c37e3c7f79ecc1602923a71cc4e0a2e5387ad0c934bead20"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/utf16-to-macstr.txt",
+        "bytes": 344,
+        "sha256": "6528e9e60746df3b2c7ceacf4f450155396f288a581b28f9110c4a1ad49a357d"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/utf8-to-utf16.txt",
+        "bytes": 1807,
+        "sha256": "3c7c54807d6a109117cacddb44a872d6d6bd9c743b66f1aa76823f045983827a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/write-mac-utf8.txt",
+        "bytes": 2156,
+        "sha256": "efcb66befcf7b25b0ddfb2baaa9198925285d1b452f4fd3c1bac4e79bee1b414"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/write-string.txt",
+        "bytes": 17934,
+        "sha256": "123e10a9b062dfdb51c6b5f58934feba5e9e815336acd685815d6556b7ef88da"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/write-utf16-utf8.txt",
+        "bytes": 4941,
+        "sha256": "86481b84c47f7bffde92230c8102c4bc430d46ac53224ca8f75ec5bd937f7d81"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-mc/write-utf8-raw.txt",
+        "bytes": 268,
+        "sha256": "30d6efd2c9ad4bc2fdaf500a02b8716a2442d51fb3022f6aab7756ae260857b4"
+      }
+    ],
+    "publicSystemCodecProbeReference": {
+      "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/pmr-project-display-2026-10-18.json",
+      "key": "publicCoreFoundationProbe",
+      "result": {
+        "systemEncoding": 0,
+        "encodingName": "Western (Mac OS Roman)",
+        "macRomanConstant": 0,
+        "byteA7Unicode": 223,
+        "unicodeHex": "U+00DF",
+        "decodedCharacter": "ß",
+        "timestampUtc": "2026-10-18T04:01:31.798517+00:00",
+        "macOsVersion": "15.8.2",
+        "architecture": "arm64",
+        "sourceSha256": "de8f85339f01c574a6e0a92d18ba55ffd0ec892a925525cbc0261260b20826e9",
+        "scope": "Read-only public CoreFoundation API probe in a standalone process; no Media Composer private APIs executed and no language settings changed."
+      },
+      "scope": "Prior same-machine standalone public CoreFoundation probe. This is not an observation inside Media Composer and does not establish every historical producer encoding."
+    },
+    "raisedErrorConfirmationFromParent": {
+      "function": "operator+(XError const&)",
+      "address": "AvidCore 0xc840",
+      "anchors": [
+        "0xc998: __cxa_allocate_exception",
+        "0xc9bc: __cxa_throw"
+      ],
+      "path": "/private/tmp/bella-mdb-text-20261018-root/__ZpsRK6XError.txt",
+      "sha256": "053cc3e19ab77b81df2dcbaec805aab066d741f2a4dc833d0aa6c424cc2c068f",
+      "qualification": "Parent independently inspected this function. It confirms the shared Unicode helper error operation actually throws; local cleanup paths do not silently continue to legacy fallback."
+    }
+  },
+  "nativeAttributesAndProject": {
+    "date": "2026-10-18",
+    "applicationVersion": "26.8.0.58987",
+    "purpose": "Independent static Media Composer MDB text read/write follow-up. No media writes, app launch, private native reader execution, or production source edits.",
+    "method": "Fresh bounded arm64 llvm-objdump disassembly, nm and manual register/control-flow reconstruction, with direct CoreAttrList vtable slot verification. Existing read snippets copied into this receipt. Exact project-key ADRP/ADD candidates were scanned within libame and inspected by function; this is not a global executable xref audit or a new Hopper decompiler export.",
+    "binaries": [
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+        "arm64Uuid": "D55FFCED-FD76-3667-99B8-C9A84180173E"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+        "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+        "arm64Uuid": "EDC22A12-1101-3C73-A57C-4256A82633F9"
+      }
+    ],
+    "genericStringWirePath": {
+      "writer": {
+        "name": "omfiDualStream::WriteString",
+        "address": "0xb5d34",
+        "evidence": [
+          "TranslateProperty at0xb5d60 selects named property. Except the special EffectID path(property49), sourcecharbytes are passed unchanged.",
+          "0xb6214 strlen;0xb6218 adds terminatingNUL; up to4bytes writes immediateTOCentry, longer text writes raw bytes through OMFIString stream at0xb6278."
+        ],
+        "meaning": "Raw supplied 8bit string bytes, not automatic UTF8 and not proof that every producer uses MacRoman."
+      },
+      "handleWriter": {
+        "name": "WriteStringHandle",
+        "address": "0xb62e0",
+        "meaning": "Dereferences char** and delegates raw WriteString vtable slot0x1b8."
+      },
+      "utf8Writer": {
+        "name": "WriteUTF8String",
+        "address": "0xb62f4",
+        "meaning": "Delegates same raw string writer, without adding a PMR or attribute marker. The named property/caller supplies the UTF8 contract."
+      },
+      "utf16ToUtf8Writer": {
+        "name": "WriteUTF16AsUTF8String",
+        "address": "0xb6300",
+        "evidence": [
+          "Calls ICUu_strlen, allocates4*UTF16units+1;u_strToUTF8 at0xb6370.",
+          "Reports STRM_BUF_SMALL, STRM_UNICODE_INVALID_CHAR_FOUND or STRM_UNICODE_CONVERSION_ERROR on unsuccessful conversion.",
+          "Calls WriteUTF8String at0xb6420. No fallback to a legacy property occurs inside this helper."
+        ]
+      },
+      "macToUtf8Writer": {
+        "name": "WriteCurrentLocaleMacMBCSStringAsUTF8String",
+        "address": "0xb64a8",
+        "meaning": "Explicit CurrentMacMBCSEncodingToUTF8String conversion at0xb64d4, then WriteUTF8String. This conversion is performed because this named helper was chosen; generic WriteString does not do it."
+      },
+      "reader": {
+        "names": [
+          "omfiDualStream::ReadString",
+          "ReadStringHandle",
+          "ReadStringPtr"
+        ],
+        "addresses": [
+          "0xb7868",
+          "0xb79bc",
+          "0xb7fd8"
+        ],
+        "meaning": "Reads declared bytes into buffer/handle/pointer, adding termination as required; no generic codepage detection or UTF8 prefix removal. EffectID-specific compatibility translation is separate."
+      },
+      "utf8Reader": {
+        "name": "ReadUTF8StringAndConvertToUTF16",
+        "address": "0xb8168",
+        "meaning": "Reads raw named UTF8 property, invokes UTF8ToUTF16 and reports STRM_UNICODE_CONVERSION_ERROR on failure. No legacy-property retry inside helper."
+      },
+      "namingClarification": "No native omfiDualStream WriteStringPtr or WriteUTF8StringAndConvertFromUTF16 symbol was found in inspected nm list. The installed writer names are WriteStringHandle and WriteUTF16AsUTF8String; ReadStringPtr exists."
+    },
+    "componentName": {
+      "write": {
+        "name": "AComponent::Put",
+        "address": "0x147d18",
+        "meaning": "For OMF path uses dictionaryslot0x190=OMFI:CPNT:Name, component legacy charhandle at+0x38 and WriteStringHandle(slot0x1c0),0x147e90..0x147ea4. Does not automatically write a named UTF8 CPNT alternative."
+      },
+      "setFromUtf16": {
+        "name": "AComponent::SetNameCopyUTF16",
+        "address": "0x149524",
+        "meaning": "Calls UTF16ToCurrentMacMBCSEncodingString at0x149548 with conversion-status pointer null, then legacy SetNameCopy slot0x2a8. SetNameCopy0x1494e8 updates the charhandle through AvStrToSHdlUpdate. This proves conversion to current-Mac internal encoding; it does not establish fixed universal MacRoman for all MDB fields."
+      },
+      "readDisplay": {
+        "name": "AComponent::GetNameCopyUTF16",
+        "address": "0x14943c",
+        "meaning": "Legacy loaded name bytes are converted via CurrentMacMBCSEncodingToUTF16 at0x1494a8."
+      }
+    },
+    "typedAttributes": {
+      "serialization": {
+        "name": "AAttrList::PutOMFI_Pass1",
+        "address": "0x175964",
+        "meaning": "Writes ATTB Kind and raw Name. Kind2 writes StringAttribute through WriteString at0x175b24..0x175b44. Kind4 gets AvGetPtrSize, writes BobSize, then raw BobData at0x175b58..0x175bd4. The serializer preserves stored kind and bytes; it does not turn every blob into text or infer encoding."
+      },
+      "deserialization": {
+        "name": "AAttrList::GetOMFI",
+        "address": "0x176294",
+        "meaning": "Kind2 reads StringAttribute raw pointer; Kind4 reads BobSize/BobData raw; interpretation is later by a requested attribute helper."
+      },
+      "legacyAdd": {
+        "name": "CoreAttrList::AddString",
+        "address": "0x6d68c",
+        "meaning": "Copies supplied charbytes+NUL unchanged; removes existing string of either supportedstringkind through RemoveString, then adds Kind2."
+      },
+      "utf8Add": {
+        "name": "CoreAttrList::AddUTF8String",
+        "address": "0x6d740",
+        "meaning": "Allocates strlen+3, zeros buffer, copies UTF8 bytes at+2, removes existing string through RemoveUTF8String, then adds Kind4: 00 00 + UTF8 + NUL."
+      },
+      "compatibleAdd": {
+        "name": "CoreAttrList::AddUTF8StringCompatible",
+        "address": "0x6d718",
+        "meaning": "Scans signed bytes to firstnonpositive. If NUL reached with allbytesASCII, calls AddString0x6d68c; if a highbit byte is encountered, calls AddUTF8String0x6d740. Thus a valid ASCII Unicode input may be represented by Kind2, while nonASCII uses Kind4 in this explicit helper. It does not make arbitrary Kind2valuesUTF8."
+      },
+      "utf16Add": {
+        "name": "CoreAttrList::AddUTF8StringAsUTF16",
+        "address": "0x6d848",
+        "meaning": "Converts UnicodeString to UTF8 then calls AddUTF8String, preserving fullUnicode in marker-bearing Kind4."
+      },
+      "mbcsUtf16Add": {
+        "name": "CoreAttrList::AddMBCSStringAsUTF16",
+        "address": "0x6d98c",
+        "meaning": "Converts UTF16 to CurrentMacMBCSEncodingString then calls AddString; conversion-status pointer null."
+      },
+      "singleNameValue": {
+        "name": "CoreAttrList::AddAttr",
+        "address": "0x6cb30",
+        "meaning": "Its boost multi_index container has ordered_unique attrNameIndex. Normal AddString/AddUTF8String remove the existing same-name supported string, then add the replacement. Same-name Kind2andKind4 are not a normal paired-alternative writer representation. This does not specify Bella malformed duplicate handling."
+      },
+      "lookup": {
+        "name": "CoreAttrList::FindString",
+        "address": "0x6dd10",
+        "meaning": "InfoName(slot0x210) gets the one named attribute kind. Kind2 delegates FindStringOnly. Kind4 delegates FindUTF8StringOnly then UTF8ToCurrentMacMBCSEncoding with lossy/statuspointer null. This is type dispatch, not searching a preferredUTF8property then anolderlegacyproperty."
+      },
+      "lookupUtf8": {
+        "name": "CoreAttrList::FindUTF8String",
+        "address": "0x6dfe4",
+        "meaning": "Same kinddispatch in the other output direction: Kind4 markerUTF8 retrieved directly; Kind2 currentMac bytes converted toUTF8."
+      },
+      "markerCheck": {
+        "name": "CoreAttrList::FindUTF8StringOnly",
+        "address": "0x6e0fc",
+        "meaning": "Kind4 retrieval; requires both prefixbyteszero or reports ATTR_NOT_UTF8_STRING. Copies Bob allocationlengthminus2; buffer errors reported ATTR_BUF_TOO_SMALL. No alternateKind2same-name lookup here."
+      },
+      "unicodeOutput": {
+        "name": "CoreAttrList::FindUTF8StringAsUTF16",
+        "address": "0x6e220",
+        "meaning": "Uses UTF8 lookup, converts toUnicodeString/UTF16. Reports ATTR_CONVERSION_ERROR or ATTR_BUF_TOO_SMALL where checked; no older-value retry.",
+        "qualification": "This typed-attribute route differs from the strict named-property ReadUTF8StringAndConvertToUTF16 route. UTF8ToUnicodeString(unsigned char const*) at0x12bf18 constructs ICU StringPiece then directly calls ICU UnicodeString::fromUTF8 at0x12bf40. There is no explicit conversion-status check in this wrapper. FindUTF8StringOnly checks marker and size, not strict UTF8 validity. Do not claim malformed Project Kind4 always throws; exact malformed-value behavior is not demonstrated by an application execution.",
+        "converter": {
+          "name": "UTF8ToUnicodeString(unsigned char const*)",
+          "address": "0x12bf18",
+          "anchors": [
+            "0x12bf34: constructs ICU StringPiece from the NUL-terminated input.",
+            "0x12bf40: calls ICU UnicodeString::fromUTF8.",
+            "0x12bf44..0x12bf50: returns without explicit conversion-status check."
+          ],
+          "artifact": "/private/tmp/bella-mdb-text-20261018-attrs/review-__Z19UTF8ToUnicodeStringPKh.txt",
+          "sha256": "15cd523dcd9b6760db0a941817c7188e5cb9eef21bbf244d16cefa86968dc652"
+        }
+      },
+      "importantLimit": "Kind4 is a general binary/blob attribute kind. Only known attributes accessed as UTF8 strings under the typed contract are Unicode text. A zero prefix by itself is not a generic BobData text test."
+    },
+    "project": {
+      "read": {
+        "name": "CMGetProjectName",
+        "address": "0x282b9c",
+        "steps": [
+          "Obtains composition attribute list; clears output firstbyte.",
+          "Calls AAttrList::FindString for _PJ at0x282bf0.",
+          "Only if foundflagfalse calls same helper for PROJNAME at0x282c1c.",
+          "Existing empty _PJ still counts as found and prevents PROJNAME fallback.",
+          "Kind4 is interpreted by Coretypedstringlookup; malformedmarker/conversion does not branch toPROJNAME retry inside CMGetProjectName. No same-keylegacy alternative search."
+        ],
+        "qualification": "found flag controls fallback, not an explicit semantic-validity or nonempty check. Outer application exception/error handling was not exhaustively traced."
+      },
+      "set": {
+        "name": "CMSetProjectName",
+        "address": "0x282c44",
+        "steps": [
+          "Calls AAttrList::AddString(_PJ,suppliedcharbytes,true) at0x282c90.",
+          "AAttrList AddString0x1771b4 delegates Core AddString; supplied legacy bytes becomeKind2.",
+          "Does not call AddUTF8StringCompatible or create a paired Unicode_PJ in this setter."
+        ]
+      },
+      "propagate": {
+        "name": "AComposition::AddProjectNameToSourceMobsIfNeeded",
+        "address": "0x1877e0",
+        "meaning": "FindString(_PJ) on composition into256bytebuffer; iffound, writes same bytes with AddString(_PJ) to appropriate source mobs. TypedUnicode could therefore be converted tocurrentMac by FindString before this legacy propagation."
+      },
+      "importUnicode": {
+        "name": "MXFDomain::ScanDMS1ForProject",
+        "address": "0x47a14c",
+        "meaning": "Gets AAFUnicode project, calls AAFDomain::ConvertUnicodeToInternal0x4e47c, then legacy AddString(_PJ) at0x47a240. Converter implementation belongs to separate core conversion audit."
+      },
+      "sourceSearch": {
+        "name": "FindProjectName",
+        "address": "0x29e974",
+        "meaning": "Tries CMGetProjectName; ifabsent tries GetPropValue(_PJ); ifstillabsent traverses source tracks and asks CMGetProjectName on actual source compositions. This is sourcehierarchy fallback, separate from encodingfallback."
+      },
+      "projnameWriterLimit": "Bounded exact-key references in inspected libame found PROJNAME reads and removal via CMRemoveProjectName, but no direct PROJNAME writer. This is not proof that no producer/application module can write it."
+    },
+    "coexistingAlternatives": {
+      "example": "AMCBinRef::Put0x2d5990 writes legacy binName and explicit binNameUTF8 from same Unicode source in oneobject. Legacy conversion at0x2d5a84; UTF16AsUTF8 call at0x2d5b00. Reader AMCBinRef::Get prefers Unicode binNameUTF8 and falls back to currentMac legacy binName when Unicode result isempty.",
+      "qualification": "This does not imply everyMDBtextfield ispaired. CPNT:Name and projectattribute paths described above aredifferent. Bin metadata is OriginalBin data only; BinFilter remainsunchanged."
+    },
+    "limits": [
+      "Static installedMacbinary paths; no private APIinvocation, liveMediaComposerdisplay test, or mediawrite.",
+      "CurrentMacMBCS helper doesnot bynamealone prove fixedMacRoman or allproducer/platform encodings. Separate coreconversion/locale audit needed for fulllegacyrule.",
+      "XError error-path calls are identified; exact global exceptionrecovery/errorpolicy isnot established. Noautomaticlegacy retry appears inside inspectedhelpers.",
+      "No claim everyfieldhasbothvariants, or everyBobDatawith00prefixisUnicode.",
+      "Exact project-key xrefs are boundedlibameADRP/ADD references, notglobalbinary/modulecoverage.",
+      "No Bella implementation or policydecisionmade by thisresearch.",
+      "Named paired-property invalid-UTF8 throwing behavior must not be generalized to typed Kind4 Project attributes. Their UnicodeString::fromUTF8 path differs and has no explicit statuscheck in the inspected wrapper."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/AAttrList-PutOMFI_Pass1.txt",
+        "bytes": 8946,
+        "sha256": "805a5049ead25cefe33d4b92b6ef106128153c97edc88d7ebab0ea20b19cfa47"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/AAttrList-PutOMFI_Pass2.txt",
+        "bytes": 1314,
+        "sha256": "711380762149bc5f6aab158f295e2c3486767b34ca83486cfcf763e9b9886404"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/AComponent-SetNameCopy.txt",
+        "bytes": 751,
+        "sha256": "50cb9482ad6c91d5668ee2946ce5efe01ef796d567ad19492095686f7b55510a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/AComponent-SetNameCopyUTF16.txt",
+        "bytes": 1566,
+        "sha256": "bf8a0791cfb7eb99083c3b109fc5c92ecf11f2c030cc7d91bcd56237e390918a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/CMGetProjectName.txt",
+        "bytes": 1810,
+        "sha256": "f1997b5e9b3d1046032e0d8e2359761757ef77192698f206e7b2b312ab7a2b18"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/CMSetProjectName.txt",
+        "bytes": 1294,
+        "sha256": "6d16d975812928a6a855303ecdf8a84f5d863e2855f308c27faefe433a80800e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/CoreAttrList-AddMBCSStringAsUTF16.txt",
+        "bytes": 3325,
+        "sha256": "5397ecb97c08ba227b6701b4017430e1955c6dfba810ff409687e97d0fff6664"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/CoreAttrList-AddString.txt",
+        "bytes": 1545,
+        "sha256": "45e3f97cd05df786d0acd65b6ab3c3df7fb5a44bf642980230902c0e19139f6f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/CoreAttrList-AddStringIfNotNull.txt",
+        "bytes": 357,
+        "sha256": "998ae65f104795c897c3f7a6bf78da297866414f595d0c6945c9f5bd4b514c56"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/CoreAttrList-AddUTF8String.txt",
+        "bytes": 3306,
+        "sha256": "d9706d4a0a7453fcad36911f4665a01150a9ea8b68f5a2b1f2a06e6c74f05dae"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/CoreAttrList-AddUTF8StringAsUTF16.txt",
+        "bytes": 4284,
+        "sha256": "3c2b62e104c2bed6918cee8131937c2b6df7d80b7f281e0cd88736a4308ca6ab"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/CoreAttrList-AddUTF8StringCompatible.txt",
+        "bytes": 558,
+        "sha256": "01876b5f2ab6e728a8867e754fb8c1479ac84dd9cd6bff5815a3bfd214cb9a0c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/CoreAttrList-FindMBCSStringAsUTF16.txt",
+        "bytes": 7285,
+        "sha256": "5d01a8050bbc517759a4a8bf6b6ad9a0299831aaeae2d3e72be3e40fc3994c5c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/CoreAttrList-FindString.txt",
+        "bytes": 3906,
+        "sha256": "0560fc842574511a4ff5949cfcb44ca2a56433e17fdba0982a1b4fa89caad468"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/CoreAttrList-FindStringAlways.txt",
+        "bytes": 1602,
+        "sha256": "561e04227457bddcc6c18ab5548041974aebe1cb2dbe0fad186b526122a13edb"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/CoreAttrList-FindStringOnly.txt",
+        "bytes": 1358,
+        "sha256": "e4212e2532cd6b5cf2a7b4f371dac86cbaff11bc101720328e75fb4504b7ae5d"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/CoreAttrList-FindUTF8String.txt",
+        "bytes": 2971,
+        "sha256": "b9520a0bf4cff7e47c6a89e5eecd5c149bc7e44598c0e0d7815d5320afb799a8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/CoreAttrList-FindUTF8StringAsUTF16.txt",
+        "bytes": 7426,
+        "sha256": "2893e9c4e3cbfafbbea570b217c54313585e37edf2c2685bdd5194b693ea12bf"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/CoreAttrList-FindUTF8StringOnly.txt",
+        "bytes": 3157,
+        "sha256": "38c29aebaaa0efe1d34caa77a7d7fc5941dc63479fed1b29bc4023994b35596b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/__ZN12CoreAttrList12RemoveStringEPKcPcmPh.txt",
+        "bytes": 1608,
+        "sha256": "f6be396d39ad6a01efe624aeba21cef8be5eeb41069931c6cd438349449611f1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/__ZN12CoreAttrList16RemoveUTF8StringEPKcPhmS2_.txt",
+        "bytes": 1613,
+        "sha256": "6fd6186de4b91d47b55d51ceed2b3dcd4c3c7a05ff8ee590584610844a2517ff"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/__ZN12CoreAttrList7AddAttrEiPKcl.txt",
+        "bytes": 4565,
+        "sha256": "8ff613362fdee2150b0715ae19f1e700c26bb76e98e3fe5814c19976367b6e98"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/attr-getomfi.txt",
+        "bytes": 17968,
+        "sha256": "26c326797a11487aa0899c43b59dbb5378b2cd96f951b0332978e80e9be4ef1b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/binref-get.txt",
+        "bytes": 7257,
+        "sha256": "50bf6c85a1489e39e40f4345e7045a2df20f0beb2848ad0c86c7fbb99e504d84"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/binref-put.txt",
+        "bytes": 5051,
+        "sha256": "ae91b744e3bc3e58edb992d96f1328c582a3b743b57845ab50c516b3cc6003e2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/component-get.txt",
+        "bytes": 14810,
+        "sha256": "a089fb7ac0abbc70867f9b281ecb86ef0fb64a5f27e9d4cc182a5327245067bc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/component-namecopyutf16.txt",
+        "bytes": 1970,
+        "sha256": "f4e30b0acf9dc8defc1496bb433f5406a346db131fe3123a2da9fa8d03fd2c19"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/component-put.txt",
+        "bytes": 10420,
+        "sha256": "546090126d2eeaad995229cfbc57e69c177af53b08e33ee3930c354a9b8654dd"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/component-setnameutf16.txt",
+        "bytes": 1603,
+        "sha256": "36672f18cead8324e2de7b221479318f498f1084f2879363af6b33b325b86867"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/core-findstring.txt",
+        "bytes": 2965,
+        "sha256": "d4d0a713df04486d6157e52be2ef1b63a9919f83a9f66014d619ba6f4555f680"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/core-findutf8only.txt",
+        "bytes": 3157,
+        "sha256": "38c29aebaaa0efe1d34caa77a7d7fc5941dc63479fed1b29bc4023994b35596b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/core-selected-symbols.txt",
+        "bytes": 1684,
+        "sha256": "690817a24f5570d8a61f4bbe915a83292b413d9abb5960511360f49a8974dd54"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/libame-selected-symbols.txt",
+        "bytes": 1107,
+        "sha256": "8bfda0f826ce1acf466584b7c48b1591e1ef511ad355731739d71b53f9517a7d"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/omfiDualStream-WriteCurrentLocaleMacMBCSStringAsUTF8String.txt",
+        "bytes": 2119,
+        "sha256": "ee3442698bd0f482182c073f49a46b6260e3ff29a1f47ac016de62c46e51bc36"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/omfiDualStream-WriteString.txt",
+        "bytes": 17897,
+        "sha256": "0cd8ff61a6290f5c6114e7125ff9d111a577869c4a7d774cad4f82405dfd15a6"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/omfiDualStream-WriteStringHandle.txt",
+        "bytes": 306,
+        "sha256": "c4602f9a85e189e1f920b82db8f3ae63d8044e937a6e5e8e1f532c1f1ec6b7e5"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/omfiDualStream-WriteUTF16AsUTF8String.txt",
+        "bytes": 4904,
+        "sha256": "936be4cbba52be19158a56c0a08c4daa623aa6678e6be627ef411bbdf35e85d2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/omfiDualStream-WriteUTF8String.txt",
+        "bytes": 231,
+        "sha256": "155995e906de6744c2108ea7386bafc26da36ec40c65fa3a5bdcc7bca0102c60"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/read-string-handle.txt",
+        "bytes": 4753,
+        "sha256": "c91850e873b52b76c9725dfa092b67f174db82c19f8c6d42576dce9f35ae7fa9"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/read-string.txt",
+        "bytes": 4134,
+        "sha256": "9d17f1b28a72a50a398c393f765a106441d8922d820661a2ae71a3bc2b4ef47a"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/read-stringptr.txt",
+        "bytes": 4404,
+        "sha256": "2221d4891dc806421a5905d77b3f0c8698a0289d6e4362d4b1155aa4316f207f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/read-utf8-raw.txt",
+        "bytes": 267,
+        "sha256": "92aafa729e0bc7c0d2fd3fe285df1d0a9ac0263689d1d7969ca48b9389d108e2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/read-utf8-utf16.txt",
+        "bytes": 4404,
+        "sha256": "9b085573f9f541ca3d1d351b3bf6b53838ae0245bca4ba37e3c9e4d42f865cad"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/xref-__Z15FindProjectNameP12ACompositioniPcm.txt",
+        "bytes": 4034,
+        "sha256": "15d62d89929a9777e54f4388752149ec9358987e7d113f1d255158ff9bc572fa"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/xref-__Z16CMGetProjectNameP12ACompositionPcm.txt",
+        "bytes": 1810,
+        "sha256": "f1997b5e9b3d1046032e0d8e2359761757ef77192698f206e7b2b312ab7a2b18"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/xref-__Z16CMSetProjectNameP12ACompositionPc.txt",
+        "bytes": 1294,
+        "sha256": "6d16d975812928a6a855303ecdf8a84f5d863e2855f308c27faefe433a80800e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/xref-__Z19CMRemoveProjectNameP12AComposition.txt",
+        "bytes": 1653,
+        "sha256": "c66f6e954a1ea34c849f4289b37fa6eb8a9fd4216cb0501872742d02d480e964"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/xref-__ZN12AComposition13ConvertToOMF2EP10omf2Domain.txt",
+        "bytes": 45598,
+        "sha256": "ba5cb3df6942e48b2e8c8b837581b748d312826c39c1ab3f34fc582b29ac999e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/xref-__ZN12AComposition34AddProjectNameToSourceMobsIfNeededEv.txt",
+        "bytes": 4576,
+        "sha256": "8b2d9678555cef1fd29290d56a475e5bfc6d9c39f0409ec847150fb5686e1ddb"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/xref-__ZN9AAttrList13AddUTF8StringEPKcPKh.txt",
+        "bytes": 873,
+        "sha256": "4e298d46d8186424e6ec01bbd150743d00ea0c9c5e793e6aef735f3f39523f0d"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/xref-__ZN9AAttrList20AddUTF8StringAsUTF16EPKcPKDsb.txt",
+        "bytes": 956,
+        "sha256": "657f9f413b3d0f3293ced6d5ced58d055ebcb08bb1058ca38093b438217f27e6"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/xref-__ZN9AAttrList23AddUTF8StringCompatibleEPKcPKhb.txt",
+        "bytes": 958,
+        "sha256": "f7d774ddc9bf39c7c1604efbff596ce05fabf27a7c264b05be1b29a412e88ec5"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/xref-__ZN9AAttrList26ShouldAttributeExportToAAFEP9AAFDomainPc.txt",
+        "bytes": 19982,
+        "sha256": "cc798cd70a87d0a309d37c6e9b2a3fef3a0285d16f8ccba700ebf9559d0ea086"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/xref-__ZN9AAttrList9AddStringEPKcS1_b.txt",
+        "bytes": 943,
+        "sha256": "2fbf024dee6b5190bb8f726d84479949dbdfdb46bb0ca9fedc31cf4fbe7dd990"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/xref-__ZN9MXFDomain18ScanDMS1ForProjectEP10IAAFObjectP12AComposition.txt",
+        "bytes": 4896,
+        "sha256": "f0fe6c8ed62a3a6625e7640ac641581cbce2168570b8934166b12a3267e040c3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/xref-__ZNK8omf2ATTR11ConvertToCMERK15ExactEditRate_tPK8omf2OOBJi.txt",
+        "bytes": 24092,
+        "sha256": "782448d9b015297c371df8d8c6985485bf86603a009de51980ee6ed139209b4c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/core-vtable-slots.json",
+        "bytes": 2071,
+        "sha256": "a0bd963ee15c9bb9cad70ad45a64c665ce915ce36686e67d156d9912230dd410"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/project-key-xrefs.json",
+        "bytes": 3236,
+        "sha256": "ae2f6dd539b6fa7d8b156ae52363147fd66d92e6fd7bf998109720f75e1ef174"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-attrs/review-__Z19UTF8ToUnicodeStringPKh.txt",
+        "bytes": 884,
+        "sha256": "15cd523dcd9b6760db0a941817c7188e5cb9eef21bbf244d16cefa86968dc652"
+      }
+    ]
+  },
+  "nativeRaisedErrorVerification": {
+    "binary": "AvidCore",
+    "function": "operator+(XError const&)",
+    "address": "0xc840",
+    "anchors": [
+      "0xc864..0xc868 checks whether XError contains an error; nonempty proceeds to raise.",
+      "0xc998 calls __cxa_allocate_exception;0xc9a4 copies XError;0xc9bc calls __cxa_throw.",
+      "The libame UTF8 reader error construction and operator call are at0xb8248..0xb8260. This confirms an exception path, not silent fallback."
+    ],
+    "limit": "This establishes the helper throw and traced absence of local field fallback; it does not establish every outer application exception handler or UI outcome.",
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-root/__Z12xraisexerrorRK6XError.txt",
+        "bytes": 5214,
+        "sha256": "8002c1b8eea1b2422913e46fa3f1453c8d380ce5b425a3ff622a5b423b2e40f4"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-text-20261018-root/__ZpsRK6XError.txt",
+        "bytes": 5131,
+        "sha256": "053cc3e19ab77b81df2dcbaec805aab066d741f2a4dc833d0aa6c424cc2c068f"
+      }
+    ]
+  },
+  "legacyCodecEvidence": {
+    "source": "Project Bella/evidence/pmr-project-display-2026-10-18.json#publicCoreFoundationProbe",
+    "probe": {
+      "systemEncoding": 0,
+      "encodingName": "Western (Mac OS Roman)",
+      "macRomanConstant": 0,
+      "byteA7Unicode": 223,
+      "unicodeHex": "U+00DF",
+      "decodedCharacter": "ß",
+      "timestampUtc": "2026-10-18T04:01:31.798517+00:00",
+      "macOsVersion": "15.8.2",
+      "architecture": "arm64",
+      "sourceSha256": "de8f85339f01c574a6e0a92d18ba55ffd0ec892a925525cbc0261260b20826e9",
+      "scope": "Read-only public CoreFoundation API probe in a standalone process; no Media Composer private APIs executed and no language settings changed."
+    },
+    "qualification": "Native code selects the current Mac system codec. The public standalone probe returned MacRoman here; it does not prove every producer or process override. MacRoman is the approved Mac-focused Bella text rule for MDB."
+  },
+  "actualDatabases": {
+    "aggregate": {
+      "bin-name": {
+        "objectsWithEither": 1029,
+        "utf8Present": 1029,
+        "legacyPresent": 1029,
+        "utf8Empty": 0,
+        "utf8Invalid": 0,
+        "utf8NulTerminated": 1029,
+        "utf8PostNulNonzero": 0,
+        "legacyEmpty": 0,
+        "legacyNulTerminated": 1029,
+        "legacyPostNulNonzero": 0,
+        "bothPresent": 1029,
+        "rawBytesEqual": 1029,
+        "differentStorageRanges": 1029,
+        "decodedTextsEqual": 1029
+      },
+      "file-path": {
+        "objectsWithEither": 3838,
+        "utf8Present": 3838,
+        "legacyPresent": 3838,
+        "utf8Empty": 0,
+        "utf8Invalid": 0,
+        "utf8NulTerminated": 3838,
+        "utf8PostNulNonzero": 0,
+        "legacyEmpty": 3603,
+        "legacyNulTerminated": 3838,
+        "legacyPostNulNonzero": 0,
+        "bothPresent": 3838,
+        "rawBytesEqual": 0,
+        "differentStorageRanges": 3838,
+        "decodedTextsEqual": 0,
+        "nonemptyUtf8EmptyLegacy": 3603
+      },
+      "file-posix-path": {
+        "objectsWithEither": 3838,
+        "utf8Present": 3838,
+        "legacyPresent": 529,
+        "utf8Empty": 0,
+        "utf8Invalid": 0,
+        "utf8NulTerminated": 3838,
+        "utf8PostNulNonzero": 0,
+        "legacyEmpty": 0,
+        "legacyNulTerminated": 529,
+        "legacyPostNulNonzero": 0,
+        "bothPresent": 529,
+        "rawBytesEqual": 529,
+        "differentStorageRanges": 529,
+        "decodedTextsEqual": 529,
+        "legacyMissing": 3309
+      },
+      "directory-path": {},
+      "last-known-volume": {
+        "objectsWithEither": 4097,
+        "utf8Present": 4077,
+        "legacyPresent": 4097,
+        "utf8Empty": 0,
+        "utf8Invalid": 0,
+        "utf8NulTerminated": 4077,
+        "utf8PostNulNonzero": 0,
+        "legacyEmpty": 20,
+        "legacyNulTerminated": 4097,
+        "legacyPostNulNonzero": 0,
+        "bothPresent": 4077,
+        "rawBytesEqual": 4077,
+        "differentStorageRanges": 4077,
+        "decodedTextsEqual": 4077,
+        "utf8Missing": 20
+      }
+    },
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "pairs": [
+          {
+            "pair": "bin-name",
+            "objectsWithEither": 91
+          },
+          {
+            "pair": "file-path",
+            "objectsWithEither": 235
+          },
+          {
+            "pair": "file-posix-path",
+            "objectsWithEither": 235
+          },
+          {
+            "pair": "directory-path",
+            "objectsWithEither": 0
+          },
+          {
+            "pair": "last-known-volume",
+            "objectsWithEither": 392
+          }
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "pairs": [
+          {
+            "pair": "bin-name",
+            "objectsWithEither": 380
+          },
+          {
+            "pair": "file-path",
+            "objectsWithEither": 1358
+          },
+          {
+            "pair": "file-posix-path",
+            "objectsWithEither": 1358
+          },
+          {
+            "pair": "directory-path",
+            "objectsWithEither": 0
+          },
+          {
+            "pair": "last-known-volume",
+            "objectsWithEither": 1373
+          }
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "pairs": [
+          {
+            "pair": "bin-name",
+            "objectsWithEither": 279
+          },
+          {
+            "pair": "file-path",
+            "objectsWithEither": 1042
+          },
+          {
+            "pair": "file-posix-path",
+            "objectsWithEither": 1042
+          },
+          {
+            "pair": "directory-path",
+            "objectsWithEither": 0
+          },
+          {
+            "pair": "last-known-volume",
+            "objectsWithEither": 1036
+          }
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "pairs": [
+          {
+            "pair": "bin-name",
+            "objectsWithEither": 277
+          },
+          {
+            "pair": "file-path",
+            "objectsWithEither": 967
+          },
+          {
+            "pair": "file-posix-path",
+            "objectsWithEither": 967
+          },
+          {
+            "pair": "directory-path",
+            "objectsWithEither": 0
+          },
+          {
+            "pair": "last-known-volume",
+            "objectsWithEither": 934
+          }
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "pairs": [
+          {
+            "pair": "bin-name",
+            "objectsWithEither": 0
+          },
+          {
+            "pair": "file-path",
+            "objectsWithEither": 236
+          },
+          {
+            "pair": "file-posix-path",
+            "objectsWithEither": 236
+          },
+          {
+            "pair": "directory-path",
+            "objectsWithEither": 0
+          },
+          {
+            "pair": "last-known-volume",
+            "objectsWithEither": 359
+          }
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "pairs": [
+          {
+            "pair": "bin-name",
+            "objectsWithEither": 2
+          },
+          {
+            "pair": "file-path",
+            "objectsWithEither": 0
+          },
+          {
+            "pair": "file-posix-path",
+            "objectsWithEither": 0
+          },
+          {
+            "pair": "directory-path",
+            "objectsWithEither": 0
+          },
+          {
+            "pair": "last-known-volume",
+            "objectsWithEither": 3
+          }
+        ]
+      }
+    ],
+    "selectedAttributeKindCounts": {
+      "_PJ": {
+        "2": 4405
+      },
+      "PROJNAME": {},
+      "Name": {
+        "4": 2112,
+        "2": 2930
+      },
+      "Comments": {
+        "4": 210,
+        "2": 165
+      },
+      "_ORG_BIN": {
+        "3": 1029
+      },
+      "_SRCFILE": {
+        "3": 291
+      },
+      "_COLUMN_START": {
+        "4": 1637
+      }
+    },
+    "sameAttrListKeyWithBothKind2AndKind4": 0,
+    "qualifications": [
+      "Property pairs are separate stored values with distinct ranges, not two codecs applied to the same payload.",
+      "No empty, invalid UTF8 or nonzero post-NUL bytes observed among named UTF8 properties; behavior for those cases requires native tracing or an explicit Bella usability decision.",
+      "All named UTF8 property values in live files are ASCII; committed fixture separately demonstrates differing nonASCII UTF8 and legacy MacRoman bytes.",
+      "FL legacy and UTF8 path values can differ in path representation, not only text encoding; do not require decoded text equality.",
+      "FL:POSIXPathName is a separate property, not assumed to be the same fallback semantic contract merely because its observed payload matches UTF8.",
+      "No actual DL property pair occurred.",
+      "No two-kind same-key pair was found inside one recorded ATTR list. This does not prove such a source can never exist.",
+      "Kind4 includes arbitrary binary data; marker checks and known field context are needed for text.",
+      "No transcriptions, lyrics or arbitrary binary payloads copied into this compact summary."
+    ],
+    "legacyPathForms": {
+      "legacyEqualsUtf8WithoutVolumesPrefix": 213,
+      "legacyBootVolumeMOJAVEPrefix": 22,
+      "legacyContainsColon": 0
+    }
+  },
+  "committedFixture": {
+    "path": "tests/fixtures/msmMMOB_macroman.mdb",
+    "sha256": "23b6b7ec29483251d1c71f1c10a4e943028e923ea2479a0f8f1ba7a53a18e393",
+    "size": 515968,
+    "gitBlob": "82ccf1020f7d27878686bed7b9d4a7908d409ab6",
+    "scope": "committed fixture, separate from live corpus",
+    "binPairCounts": {
+      "objectsWithEither": 23,
+      "utf8Present": 23,
+      "legacyPresent": 23,
+      "utf8Empty": 0,
+      "utf8Invalid": 0,
+      "utf8NulTerminated": 23,
+      "utf8PostNulNonzero": 0,
+      "legacyEmpty": 0,
+      "legacyNulTerminated": 23,
+      "legacyPostNulNonzero": 0,
+      "bothPresent": 23,
+      "rawBytesEqual": 22,
+      "differentStorageRanges": 23,
+      "decodedTextsEqual": 23
+    },
+    "nonAsciiBinExample": {
+      "object": 71271,
+      "utf8": {
+        "bytes": 12,
+        "range": [
+          [
+            73156,
+            12
+          ]
+        ],
+        "type": "omfi:String",
+        "hex": "436166c3a92074c3ab737400",
+        "endsNul": true,
+        "emptyContent": false,
+        "firstNulOffset": 11,
+        "nonzeroAfterFirstNul": false,
+        "decoded": "Café tëst",
+        "decodeValid": true
+      },
+      "legacy": {
+        "bytes": 10,
+        "range": [
+          [
+            73146,
+            10
+          ]
+        ],
+        "type": "omfi:String",
+        "hex": "4361668e207491737400",
+        "endsNul": true,
+        "emptyContent": false,
+        "firstNulOffset": 9,
+        "nonzeroAfterFirstNul": false,
+        "decoded": "Café tëst",
+        "decodeValid": true
+      }
+    }
+  },
+  "proposedBellaRule": {
+    "status": "Approved requirement on 2026-10-18; not implemented. The key name is retained from the research proposal.",
+    "rule": "For each known field and correct owner, prefer a complete explicitly identified UTF8 value with valid expected layout and strict Unicode decoding; otherwise use a separate readable legacy counterpart as MacRoman, if one exists. Decode legacy-only values directly as MacRoman. Leave unavailable when no usable representation remains.",
+    "qualifications": [
+      "Do not retry malformed UTF8 bytes as MacRoman.",
+      "Known Kind4 Unicode text uses two zero markers then UTF8 thenNUL; arbitrary Kind4 BOB is not text.",
+      "Normal attributes have one value pername; Kind2 and Kind4 replace one another. Project is not automatically a paired property.",
+      "ClipName legacy component route has no established Unicode backup; a preserved Name attribute on a different owner is not such a backup.",
+      "Path syntax and field role must be interpreted separately from codec; healthy paired path strings need not match.",
+      "DamagedUnicode to separatelegacy fallback differs from native helper error behavior.",
+      "Native Project _PJ to PROJNAME is absent-only; extending it to blank/damaged keys is a separate, unapproved choice.",
+      "Native legacy substitution can lose characters permanently; encoding validity does not prove intended content.",
+      "Historical terminator acceptance, MDB structural damage policy, source precedence, header reads and scheduling remain separate.",
+      "PMR whole-set policy remains unchanged; Windows producer encoding remains deferred.",
+      "Typed attribute UTF8 validation is not uniform in native APIs; FindUTF8StringAsUTF16 reaches UnicodeString::fromUTF8 through UTF8ToUnicodeString, unlike the paired-property strict converter. No claim all malformed Project Kind4 values throw."
+    ]
+  },
+  "rawSummaryReceipts": [
+    {
+      "path": "/private/tmp/bella-mdb-text-20261018-mc/findings.json",
+      "bytes": 18106,
+      "sha256": "872f0532451b94718eb4e8e5b6f369b31c62a15512d56cefe68a108aa333b650"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-text-20261018-attrs/findings.json",
+      "bytes": 26399,
+      "sha256": "0b9af53c083bb0e56262b2e70949a537a9ff83dff46c74b05da32ad506c8bcae"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-text-20261018-drives/compact-summary.json",
+      "bytes": 24343,
+      "sha256": "ccb021c5788e13275fe76843621e7200113aec4de565c62b6e0bf559b1919eb6"
+    }
+  ],
+  "limits": [
+    "Actual namedUTF8 values offered no malformed/empty Unicode case; those conditions rely on native code analysis and explicit proposed Bella behavior.",
+    "Six livefiles were analyzed from independently recorded rawindexes; existing fixture was separately read. See overview evidence for original full raw read receipts.",
+    "No live MediaComposer write/display experiment; no universal encoding law for all MDBfields, historical versions or Windowsproducers.",
+    "Raw binaries, disassembly and full raw MDB value indexes remain outside repository."
+  ],
+  "userDecision": {
+    "date": "2026-10-18",
+    "approved": "Explicitly identified usable UTF8 per field/owner, otherwise a separate readable legacy counterpart as MacRoman where available; legacy-only text direct MacRoman, no reinterpretation of broken UTF8 bytes.",
+    "deliberateRecovery": "User explicitly confirmed recovery using the separate legacy value even where native paired-property readers raise an error.",
+    "unchangedScope": "No Bella implementation or BinFilter change. MDB structural damage, extra source reads and scheduling remain separate."
+  }
+}

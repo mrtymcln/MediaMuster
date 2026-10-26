@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-23",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted requirements; not implemented or cut over.",
+  "authorization": {
+    "source": "Direct human reply to the preceding MXF Effect recommendation",
+    "statement": "Great! What is next? :)",
+    "scope": "Accepts the preceding preserved MXF Effect output contract and asks for the next requirements-review topic. No new source priorities, parser implementation or cutover are approved."
+  },
+  "agreedBellaRules": {
+    "inputs": "Final selected independently established Precompute Type and decoded Clip Name from the agreed qualified master. Supported MXF Name decoding already agreed as UTF-16BE.",
+    "known": "First matching canonical English Effect name from existing shared AvidEffects::lookup, including recognized localized or explicit compatibility aliases.",
+    "unrecognized": "Nonempty extracted token preserved verbatim, including case, underscores, whitespace and spelling. Unknown Effect Category does not erase Effect text.",
+    "unavailable": "Empty/unavailable Effect on Precompute displays lowercase unknown. Ordinary Media/unknown Type blank. No change to independent Type or Precompute Category.",
+    "parserContract": "Preserve exact suffix validation and precedence, sequence commas, malformed/overflow suffix text, case rules, aliases and existing first-name selection for category ambiguity.",
+    "retention": "Keep owned QString Effect and Effect Category results from the same combined lookup. Reuse associated master/name results during processing, derive again after selected inputs change. Do not retain Effect Sequence or a permanent all-name cache.",
+    "readScope": "No separate Effect decoder, effect graph, plug-in load or additional source/header read solely for this value. Cross-source priorities remain separate.",
+    "identityLimit": "Editable-name recognition does not establish the original generating effect identity or live plug-in variant. Native registered names use actual effect-object identifiers.",
+    "implementation": "Small fresh adapter around existing standalone catalogue/resolver and C++17/Qt6.5.3 values; no measured performance improvement or new framework."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-effect-2026-10-22.json",
+    "sha256BeforeApprovalMetadata": "8f4ba798b578467404232ea591ec696af9fcaaad94a8a797f86068ffbdc9e822"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-21-bella-mxf/effect.md",
+    "plan": "Project Bella/README.md",
+    "approvedMdbEffect": "docs/reviews/2026-10-18-bella-mdb/effect.md",
+    "approvedMxfCategory": "Project Bella/evidence/mxf-effect-category-plan-2026-10-22.json",
+    "priorCapturedNameProof": {
+      "path": "/private/tmp/bella-mxf-effect-category-current-20261022/findings.json",
+      "sha256": "5d0c65474770cea3b819adf63c31a8bcb3d569d31528de90af1a2cdd75ab5bbe",
+      "use": "Previously verified own-master Name/Type inputs, exact copied-header field ranges and source-derived catalogue observer; current source hashes and 22 copied-header/object hashes rechecked."
+    }
+  },
+  "validation": {
+    "runtimeImplemented": false,
+    "productionTestsRun": false,
+    "rawResearchChanged": false
+  }
+}

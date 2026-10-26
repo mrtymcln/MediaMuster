@@ -1,0 +1,4512 @@
+{
+  "date": "2026-10-20",
+  "timezone": "Australia/Sydney",
+  "purpose": "MDB Precompute Category: own import-object and direct-picture-track native predicate, exact bin-display checkbox label bridge, actual selected-master input audit, MDVx ordinary omission and proposed compact Bella retention.",
+  "status": "User approved Precompute Category rules on 20 October 2026, including blank unreadable/unavailable display/export, compact storage and the verified direct-master predicate. Not yet implemented; OldScanner active and Bin Filter unchanged. Original raw findings retain their pre-approval wording; agreedBellaRule records the final decision.",
+  "mediaComposer": {
+    "scope": "Bounded read-only static research for Bella MDB Precompute Category. This is the native two-category bin-display classifier for an already qualified precompute master, not a stored category string, a complete UI clone, or a generic imported-media classifier. No app/private API execution, media writes, repository edits or runtime implementation.",
+    "application": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app",
+      "version": "26.8.0.58987",
+      "build": "26.8.0"
+    },
+    "binaries": {
+      "main": {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer",
+        "bytes": 215615984,
+        "sha256": "a4a1d1b41f2f8b509781c3b8a50286c0cd7c9746cf85e609ec5a7bcbf45a727a",
+        "architecture": "arm64"
+      },
+      "engine": {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "bytes": 73527536,
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+        "architecture": "arm64"
+      },
+      "core": {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+        "bytes": 14340208,
+        "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+        "architecture": "arm64"
+      }
+    },
+    "plainMeaning": [
+      "After Type is already Precompute, Avid puts the selected master into one of two broad bin-display groups: Rendered Effects, or Titles and Matte Keys.",
+      "It checks whether that same master has an exact direct object attribute named _IMPORTSETTING. If it does, it counts the master immediate picture tracks. At least two puts it in Titles and Matte Keys; otherwise it uses Rendered Effects.",
+      "The import attribute contents are not parsed for this category. The native test is typed presence, not a filename/clip-name/effect-name guess, a prefix match or a count of physical files.",
+      "There is no third Imported category in this two-category precompute predicate. Ordinary linked/imported master clips use other bin-display branches; they must not be promoted to Precompute by this attribute alone."
+    ],
+    "truthTableForAlreadyPrecompute": [
+      {
+        "directObjectAttribute": "Confirmed absent, including a readable exact-name attribute of a different kind",
+        "directPictureTrackCount": "Not needed",
+        "nativeCategory": "Rendered Effects",
+        "displayMaskBit": 6
+      },
+      {
+        "directObjectAttribute": "Present",
+        "directPictureTrackCount": "0 or1",
+        "nativeCategory": "Rendered Effects",
+        "displayMaskBit": 6
+      },
+      {
+        "directObjectAttribute": "Present",
+        "directPictureTrackCount": ">=2",
+        "nativeCategory": "Titles and Matte Keys",
+        "displayMaskBit": 11
+      },
+      {
+        "directObjectAttribute": "Unavailable/contradictory because required source evidence cannot be established",
+        "directPictureTrackCount": "Any",
+        "bellaRecommendation": "Unknown category; retain known Type and physical file. This recovery/status rule is Bella policy, not a separate native category bit."
+      }
+    ],
+    "nativeClassifier": {
+      "binary": "main",
+      "function": "brDisplayable(brRec*,objinfo**,bool*)",
+      "entry": "0x100db5f64",
+      "branch": "0x100db60c0..0x100db6160",
+      "anchors": [
+        "The bin-display path first distinguishes native MobType; the master-role branch is selected at0x100db6004..6008. The alternate precompute-only route checks master role at0x100db60a8..ac and AppCode1 at0x100db60b4..bc.",
+        "At0x100db60c4..cc, AppCode1 selects the precompute branch. This is not a substitute for Bella already approved Type/selected-owner qualification.",
+        "0x100db60dc calls GetImportSettingAttrList. A false return branches to0x100db6158, which selects bit6.",
+        "0x100db60e8 calls ATrackGroup::NumVideoTracks.0x100db60ec..f0 tests count>=2.0x100db60f4..fc selects bit11 only on success. Count<2 selects bit6 at0x100db6158..60.",
+        "This function subsequently applies name/display filtering. Bella is reproducing the category predicate, not the rest of bin display or Bin Filter behavior."
+      ]
+    },
+    "categoryLabelProof": {
+      "bitToControl": [
+        "BinSetDisplayDialog0x10023b2ac:0x10023b3cc extracts bit6 and0x10023b3dc binds it to PreComp_RenderedEffects_Chbx.0x10023b3f0 extracts bit11 and0x10023b3f8 binds it to PreComp_Other_Chbx.",
+        "The dialog save path0x10023b59c..b5b0 maps RenderedEffects checkbox to0x40;0x10023b5c0..b5d4 maps Other checkbox to0x800."
+      ],
+      "controlToVisibleLabel": [
+        "BinDisplayDlg::DialogDesignInit0x10023a974:0x10023ad6c loads Precompute Clips - Rendered Effects//Checkbox Caption and creates PreComp_RenderedEffects_Chbx at0x10023ad88..ada4.",
+        "0x10023adec loads Precompute Clips - Titles and Matte Keys//Checkbox Caption and creates PreComp_Other_Chbx at0x10023ae08..ae24."
+      ],
+      "meaningLimit": "These are Avid broad display/filter group labels. The rule is not forensic proof of a particular effect plug-in, title authoring tool, alpha encoding or timeline membership."
+    },
+    "attributeSearch": {
+      "entry": "GetImportSettingAttrList(AComposition*,AAttrList**) 0x2ab7c0 in engine",
+      "owner": [
+        "0x2ab7dc..e0 calls virtual+0x250. For AComposition this resolves to AComponent::GetAttrList0x1498f8, which directly returns member+self+0x40.",
+        "No _USER lookup, source/master ancestry, nested attribute traversal or global search occurs in this helper."
+      ],
+      "name": [
+        "0x2ab7f4 supplies the literal exact name _IMPORTSETTING to FindObject.",
+        "CoreAttrList::FindAttr0x6cc7c uses its ordered_unique attribute-name index; its find implementation0x6cd68 compares names with strcmp at0x6cd98/0x6cdc8. Matching is case-sensitive and exact; _IMPORTSETTING_suffix is not the same name."
+      ],
+      "kind": [
+        "AAttrList::FindObject0x1779f4 forwards to CoreAttrList::FindObject0x6e818.",
+        "Core FindObject0x6e828 supplies kind3 to FindAttr. FindAttr0x6ccc0..ccd8 checks the named entry kind and stores the found flag. A readable wrong-kind same-name entry yields false and null; no second search or recursive fallback occurs.",
+        "The native in-memory index is unique by name. It does not settle how Bella should repair contradictory duplicate entries in a damaged raw MDB; Bella should not choose by record order."
+      ],
+      "nullObjectPayload": [
+        "On kind/name match, FindAttr stores found=true at0x6cccc..ccd0 and then loads payload pointer at0x6ccf4. A null pointer can therefore accompany true.",
+        "GetImportSettingAttrList0x2ab804 returns the found flag, independently of the payload pointer it writes to the output parameter.",
+        "brDisplayable tests that flag and never reads the pointed object contents. Therefore null object payload does not make the native typed-presence test false. A missing/damaged raw reference and overall MDB structural handling remain separately defined parser concerns; this fact does not authorize inventing a valid nested import-setting object."
+      ],
+      "wireAndText": "For actual MDB storage, the logical route is selected master CPNT:Attributes→ATTR:AttrRefs→ATTB Name/Kind. The relevant exact name is ASCII, so its byte spelling is common to the already supported legacy text encoding and UTF-8. Kind3 is numeric object-attribute kind. The raw-file inventory independently verifies actual declared types/widths/byte order. No category string, UTF-8 payload or import-setting contents need to be decoded for this predicate."
+    },
+    "trackCount": {
+      "function": "ATrackGroup::NumVideoTracks() 0x2197f0 in engine",
+      "anchors": [
+        "0x219808..0c gets the immediate NumTracks through virtual+0x708. For AComposition that resolves to ATrackGroupSegment::NumTracks0xa1bc10.",
+        "0x219824..30 gets each immediate FindTrack(index) through virtual+0x728. This resolves to ATrackGroup::FindTrack0x213e60→FindTrackInfo0x21019c→TListGet0xa1bc84 through virtual+0x630. TListGet retrieves one immediate track-info record from the indexed list or inline array.",
+        "0x219834 calls AComponent::GetType0x14748c, which reads signed16 member+0x60.0x219838..3c increments only when type==1.",
+        "The verified AComponent::Get path0x148250..25c loads CPNT:TrackKind through Read_TrackType and stores that member."
+      ],
+      "notCounted": [
+        "No recursive sequence/subcomponent traversal in this direct-track count.",
+        "No file-descriptor Kind classification, audio channel count, underlying physical-file count, selected bin membership or nested effect graph count."
+      ],
+      "units": "Direct picture-track component count on the same selected master; TrackKind1 is the previously established native picture track type."
+    },
+    "bellaRecommendationPendingApproval": [
+      "Only compute this optional category for a row whose selected master Type is already proven Precompute. Ordinary Media and unknown Type do not get guessed precompute categories.",
+      "Read the selected master own exact-name typed object-attribute presence. A confirmed absence can classify Rendered Effects without reading tracks or decoding the object payload.",
+      "When it is present, inspect only required immediate track-component kind values. Once at least two readable picture tracks are established, the threshold is proven; where fewer than two are found, the relevant enumeration must be complete before asserting Rendered Effects. Early stopping is a Bella efficiency choice, not the traced native loop schedule.",
+      "Unreadable/conflicting necessary attribute-list or track information leaves category Unknown while keeping the already known Type, row and optional details feature behavior. Do not interpret a failed read as confirmed absence.",
+      "Keep a compact category enum and availability information, and format the existing Rendered Effects / Titles and Matte Keys labels at presentation. Do not retain a full nested import object or complete metadata graph solely for this category.",
+      "Keep Effect Category, Effect and Effect Sequence inference separate. This two-category predicate does not establish those names or timeline association, and does not alter Bin Filter."
+    ],
+    "limits": [
+      "The classifier and its exact two visible toggle identities are traced; no claim that every Media Composer UI uses the same complete path.",
+      "No new writer format for category exists in this finding: the category is derived from master usage/attributes/tracks rather than read as a stored category scalar.",
+      "Fresh binary facts are independent of current MediaMuster output. Raw-corpus counts and malformed/missing layout coverage are a separate data-agent review."
+    ],
+    "receipts": [
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/AComponent-Get.txt",
+        "bytes": 14810,
+        "sha256": "a089fb7ac0abbc70867f9b281ecb86ef0fb64a5f27e9d4cc182a5327245067bc",
+        "source": "verified existing receipt from the same installed binary hash"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/Read_TrackType.txt",
+        "bytes": 255,
+        "sha256": "6dd21ad4432bfdb845ea46946a61f7b875b996b294b88821d0933fded63ba050",
+        "source": "verified existing receipt from the same installed binary hash"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-kind-20261019-mc/native-property-offsets-prior.json",
+        "bytes": 27054,
+        "sha256": "fcd42e31b206ecb79c37072d1eced4bcb46e81df4fd2c1027224e9341f5632f8",
+        "source": "verified existing receipt from the same installed binary hash"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/AAttrList-FindObject.txt",
+        "bytes": 298,
+        "sha256": "6a7f7ef55a517ee3f322336239340d4dd60490e0800e1bb8cac97280e9dcae03",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/AComponent-GetType.txt",
+        "bytes": 215,
+        "sha256": "da0873fa776a75d58a64accf8b205fada722b0c7a07d20832b6400f1dfe98797",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/AComposition-slot-0x250.txt",
+        "bytes": 217,
+        "sha256": "3d07d2e2ab821cc54137cade688a14ffe0ed7b4c6ed54dd12dea2b73cfb94dc7",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/AComposition-slot-0x630.txt",
+        "bytes": 931,
+        "sha256": "59e5805af4a5e96c75fa98bcf46a3c1ad3afef4c419c14cd18962fedeb2b8520",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/AComposition-slot-0x708.txt",
+        "bytes": 412,
+        "sha256": "9f33856a1fff77751d148fe21c24f3a65b2a0de9046d75da94d685b435eb542f",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/AComposition-slot-0x728.txt",
+        "bytes": 530,
+        "sha256": "f80314f322a7c16a8bf32aa7199a7a0a1b667e680c0fff5b694438c45d28dd48",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/ATrackGroup-FindTrackInfo.txt",
+        "bytes": 2246,
+        "sha256": "4720074a208216239083d9f33a6d5678b59d74c0cfc4b8f32e9447f346ec3ce0",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/ATrackGroup-NumVideoTracks.txt",
+        "bytes": 1489,
+        "sha256": "16d33d6b100cef18d7bdc53d151a48221d35f712cccf889c04e5b598494a5b83",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/BinDisplayDlg-DialogDesignInit.txt",
+        "bytes": 27258,
+        "sha256": "e899e9e9ee6d83ec6ba28a0ac1a45a6f94e2798bb3c818f72f1fbdf17a018c30",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/BinSetDisplayDialog.txt",
+        "bytes": 11982,
+        "sha256": "4447e94f3c0f27746e939ae2fe841c2cc7ee574fd3381b13906375a36db11f80",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/CoreAttrList-FindAttr.txt",
+        "bytes": 3266,
+        "sha256": "25a630f8ab9f6c4bf0d9e4ca547328dcc02dc9232dce3044e06331a6e2ab7857",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/CoreAttrList-FindObject.txt",
+        "bytes": 385,
+        "sha256": "0a7ce7c204a754cbb937728d5d954cd3f89a94f8fad02ff47a8ff0563b6fe7cc",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/CoreAttrList-index-find.txt",
+        "bytes": 2132,
+        "sha256": "f05abb1b0c59dc63b2a8d6bd50cb92c659f0b5dbf9f02b393439e3e52dda70df",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/GetImportSettingAttrList.txt",
+        "bytes": 1196,
+        "sha256": "e784e948eec4c930ce7faf0350d363f7c7c1953b8cb8f8ed69c497204e9628f1",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/binSetDisplayable.txt",
+        "bytes": 2011,
+        "sha256": "4c086626f06fc01df9eeeebb31fe6324f8b5bcc0b2477fd230cf72ed01afb68e",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/brDisplayable.txt",
+        "bytes": 7962,
+        "sha256": "464b9afd5931d6216ae236d6397a8790c67749a07af39650913bfd2f1af11d87",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/composition-vtable.json",
+        "bytes": 784,
+        "sha256": "a38f887f7d1782fd583cddc236d38389e5ea3b5ade216e7b267c32bc06142074",
+        "source": "fresh static inspection"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-type-20261020-mc/AComposition-GetAppCode.txt",
+        "bytes": 219,
+        "sha256": "99da481e1ee2323e32260310bdaab54b443c55f11ec37fa6b796aa8a424af5b8",
+        "source": "verified existing receipt from the same installed binary hash"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-type-20261020-mc/CompIsAPrecomputeMasterClip.txt",
+        "bytes": 906,
+        "sha256": "0f37d65335ba3d4c5d4a19c4cb0b637a018ba933b7f53f5809912876fe958b85",
+        "source": "verified existing receipt from the same installed binary hash"
+      }
+    ]
+  },
+  "mdvx": {
+    "date": "2026-10-20",
+    "timezone": "Australia/Sydney",
+    "purpose": "Determine whether installed MDVx ordinary MDB inventory derives a separate precompute category such as Titles and Matte Keys versus Rendered Effects.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "bytes": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "CFBundleShortVersionString": "0.2",
+      "CFBundleVersion": "4073",
+      "architectureAudited": "arm64",
+      "freshHashMatchesPriorAuditedBinary": true
+    },
+    "method": "Fresh installed SHA256; bounded rereading of exact retained functions for that identical binary. Prior direct usage-label decoding is tied to the same hash. Current MediaMuster precompute.h was read only for terminology, not proof of native Media Composer code. No live app, UI, scanner, CSV, private API, new MDB/media read or production edit.",
+    "mainFinding": "No separate Precompute Category is projected in the traced ordinary scan-to-row-to-table/CSV/filter path. MDVx stores master UsageCode and may replace it with a name-prefix import override in the same scalar. That does not establish Titles/Matte Keys versus Rendered Effects.",
+    "currentTerminologyContextOnly": {
+      "file": "src/precompute.h, read on 20 October 2026.",
+      "categories": [
+        "Unknown",
+        "RenderedEffects",
+        "TitlesAndMatteKeys"
+      ],
+      "predicate": "Current MediaMuster calls its pure predicate only after proving a precompute master. Confirmed absent import object selects renders. Present import object with at least two direct video tracks selects titles/matte keys; other established counts select renders. Unknown/conflicting/incomplete facts remain unknown.",
+      "limit": "This is current source context. Its comment cites Media Composer brDisplayable, but the parent/native agent owns independent native verification."
+    },
+    "ordinaryMdVx": {
+      "function": "-[MDVxOMFI addInfoToItem:] at 0x100064794.",
+      "owner": "PMR-associated master via its ID bytes 16..23 and CompositionMobs tree at 0x100064800..84c. This is MDVx excerpt matching, not Bella full-ID qualification.",
+      "usage": "Reads MOBJ:UsageCode identifier 0x1033d as an immediate 32-bit TOC word at 0x10006491c; byte-order selection and setDB_usageCode follow at 0x100064920..930.",
+      "attributePath": "On the same master, CPNT:Attributes 0x1028e -> ATTR:AttrRefs 0x1026b -> ATTB:Name 0x10257.",
+      "importCheck": "At 0x100064a78..a8c, two overlapping eight-byte loads compare a 14-byte _IMPORTSETTING prefix; name termination immediately after that prefix is not required.",
+      "override": "At 0x100064a90..a98, a match writes synthetic usage 15 without requiring prior usage 1. It can overwrite recorded 1 or 7 as a static control-flow fact.",
+      "missingTitleMatteRequirements": [
+        "No precompute-usage precondition on this override.",
+        "No ATTB:Kind 3 object-attribute check.",
+        "No import object target/value validation.",
+        "No direct video-track count or TrackKind check in the override.",
+        "No separate category result or original-versus-overridden usage retention."
+      ],
+      "clipName": "Selected master Clip Name is copied as text through GetStringForObjectAt at 0x1000648d4. This block has no title/matte/render name-prefix, suffix or effect-name category rule.",
+      "graphScope": "Project helpers can traverse track/source references. This receipt does not assert that the entire scanner never reads tracks."
+    },
+    "rowStorage": {
+      "relatedValue": "DB_usageCode is one unsigned 32-bit scalar at row +0x64; getter 0x10003156c, setter 0x100031574.",
+      "absence": "Complete row metadata contains no separate category enum, title/matte flag, rendered-effect category, retained direct video-track count or import-object-kind evidence.",
+      "missing": "Missing master/usage leaves fresh code 0 unless the override can run on a found master. There is no independent precompute-category availability value."
+    },
+    "displayAndCsv": {
+      "column": "MDVx KindCellID displays usage labels, not Bella Audio/Video Kind or a separate Precompute Category.",
+      "relevantLabels": {
+        "1": "PRECOMP",
+        "3": "UC_EFFECT",
+        "7": "",
+        "9": "UC_PRECOMPUTE_FILE",
+        "15": "IMPORTED"
+      },
+      "meaning": "These literal usage labels do not establish title, matte or rendered-effect category.",
+      "table": "KindCellID branch 0x100050a00..a40 indexes usage label table 0x1000e94d0.",
+      "csv": "String branch 0x1000512a8..2dc uses that same table; ExportMenu genCsv calls the string method at 0x100067e24. No separate title/matte/render field is supplied in these ordinary branches.",
+      "nameRules": "No extra category naming-rule or regex calculation occurs in the table/CSV branch."
+    },
+    "inventoryFilter": {
+      "function": "-[MDVxFilter itemPassFilter:] at 0x10000c0b0.",
+      "precompute": "Enabled Precomputes checks usage == 1 at 0x10000c108..118. It does not distinguish rendered effects from titles/matte keys.",
+      "imported": "Enabled Imported checks usage == 15 at 0x10000c0f0..0fc; this is the same overwritten usage scalar, not an independent category.",
+      "audio": "Enabled Audio checks the separate _AUD compression marker.",
+      "combination": "Enabled Precomputes/Imported/Audio gates combine as OR before the remaining text/portability/ID/reference predicates. All three off imposes no such gate.",
+      "code9": "Code 9 has a precompute-file label but is not admitted by the Precomputes-only gate. This is a static supported-code discrepancy, not an actual selected-master code-9 corpus case.",
+      "notBinFilter": "This is MDVx inventory filtering, not MediaMuster AVB Bin Filter."
+    },
+    "ordinaryMxfFallback": "Inspected MDVxMXF addInfoToItem at 0x1000326b4 copies names, Project, file UID and material UID only; no category or usage result enters the ordinary row.",
+    "BellaImplicationsNotApproval": [
+      "MDVx supplies no ordinary TitlesAndMatteKeys/RenderedEffects classifier to copy. Do not substitute its IMPORTED label.",
+      "Bella basic Type is separately agreed: selected qualified master usage 1 -> Precompute, 7 -> Media, otherwise unknown with blank display. Optional Precompute Category remains a retained separate requirement.",
+      "A small category enum/pure predicate must follow independently established native/format semantics and complete qualified inputs. Do not inherit MDVx excerpt IDs, prefix-only import check or overwritten usage as category policy.",
+      "Bin Filter and optional effect/effect-sequence decisions remain untouched."
+    ],
+    "limits": [
+      "Bounded static ordinary-inventory finding, not a claim every raw browser or embedded AAF/MXF library lacks category/operation metadata.",
+      "No live scan/export/filter test, actual override count, or performance/memory benchmark.",
+      "No new native Media Composer category trace or actual MDB category count in this task; those are independent team work."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/ExportMenu_genCsv_.txt",
+        "bytes": 10241,
+        "sha256": "92959f72f5c4beb7005030925cceed4fbd0f29ed05383c0524a8fb50f2f4f522",
+        "copiedFrom": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/ExportMenu_genCsv_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt",
+        "bytes": 16441,
+        "sha256": "be932b1a1d04bf4539a0f4fe6b8fadb68d4d4170387b8613806c5c6af8b0fee1",
+        "copiedFrom": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt",
+        "bytes": 25206,
+        "sha256": "e9f502df3ddc289f84c65be937ec441a847c638c8b17d1df97c3b1f0655644cb",
+        "copiedFrom": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/MDVxDatabaseItem_DB_usageCode.txt",
+        "bytes": 92,
+        "sha256": "f9ce466f514460519ee2a2e96efe5cc4c1c176b4feb2aa47ff6724817d1b0622",
+        "copiedFrom": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_DB_usageCode.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/MDVxDatabaseItem_objc_metadata.txt",
+        "bytes": 24581,
+        "sha256": "99ee84dd15386551c5a986e99eb6ddd750e6aee6275a6914a9306a9a381e34dc",
+        "copiedFrom": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem-objc-excerpt.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/MDVxDatabaseItem_setDB_usageCode_.txt",
+        "bytes": 96,
+        "sha256": "7160d1f40a8b15fef0a0077dc87140899d486e9f31f8f2a09ff5ac015cc1c957",
+        "copiedFrom": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxDatabaseItem_setDB_usageCode_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/MDVxFilter_itemPassFilter_.txt",
+        "bytes": 5120,
+        "sha256": "1de5a1774c33d6552ea127292a53676f9e8e703aec7dea063cd76e37f730e101",
+        "copiedFrom": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxFilter_itemPassFilter_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/MDVxMXF_addInfoToItem_.txt",
+        "bytes": 3747,
+        "sha256": "18281f5391667e37e8e3b5884b1a498e680ac0ccc0a99fcf8f470c42101ea1d0",
+        "copiedFrom": "/private/tmp/bella-mdb-duration-20261019-mdvx/MDVxMXF_addInfoToItem_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/MDVxOMFI_GetStringForObjectAt_.txt",
+        "bytes": 3468,
+        "sha256": "bab9dc9340d24802b7f984fcb1d0aca837cdfa7882e3179b3e3a4335464ba2a3",
+        "copiedFrom": "/private/tmp/bella-mdb-20261018-mdvx/GetStringForObjectAt_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/MDVxOMFI_addInfoToItem_.txt",
+        "bytes": 9423,
+        "sha256": "20211e8a6dbcd33b0e034f3885504d5af7a54cffd3a05b5d776446549e0f6829",
+        "copiedFrom": "/private/tmp/bella-mdb-kind-20261019-mdvx/MDVxOMFI_addInfoToItem_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/MDVxOMFI_getProjectNameForObjAt_.txt",
+        "bytes": 10708,
+        "sha256": "05c52440ac65ed3ecb191d63fd85f501e1b89365f632ef58c2138eef76a86882",
+        "copiedFrom": "/private/tmp/bella-mdb-20261018-mdvx/getProjectNameForObjAt_.txt"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/binary-receipt.json",
+        "bytes": 307,
+        "sha256": "8c774f66c5c07de8d10b5d92c6b6858f5cb9c44ce98a6723d45183c54995a2a3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/bounded-absence-check.json",
+        "bytes": 3585,
+        "sha256": "d4b030cd62e1d69fe48328c4a7fe3cef16344f113eea6adaca84dda22ffd0393"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/current-precompute-context.h",
+        "bytes": 1175,
+        "sha256": "4ff0c7e52fd8cbd1cc0900bc3638283ee6b69d05d72121f425d91c34af3748cd",
+        "copiedFrom": "/Users/martymclean/Developer/MediaMuster/src/precompute.h"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/prior-type-findings.json",
+        "bytes": 17479,
+        "sha256": "bcb3856de05b609c984697f0ba3a5619285cc1aa1cca88308800b6d41bf71bde",
+        "copiedFrom": "/private/tmp/bella-mdb-type-20261020-mdvx/findings.json"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/prior-type-usage-label-table.json",
+        "bytes": 2403,
+        "sha256": "4c7a6c0491cea056320a50bb7936088eb651f17b6337a2333f9f5b9746ddbc8b",
+        "copiedFrom": "/private/tmp/bella-mdb-type-20261020-mdvx/fresh-usage-label-table.json"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-disassembly.txt",
+        "bytes": 4552262,
+        "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074",
+        "role": "Complete prior arm64 disassembly; installed hash freshly unchanged."
+      }
+    ]
+  },
+  "actualDatabases": {
+    "purpose": "Independent actual MDB selected-master input audit for proposed Precompute Category, without treating current production classification as an oracle.",
+    "method": [
+      "Fresh hashes of six current MDBs, six paired PMRs and six retained value indexes match the Type receipt, with stable stat identity during each read.",
+      "Every retained full-ID, catalogue, physical-descriptor reference, class, usage, attribute/reference/name/kind and direct track/component/kind property is reconstructed from actual MDB byte ranges and compared byte-for-byte with its cached value.",
+      "Complete normalized PMR file and master IDs select their unique catalogue-qualified physical FileMob and associated nonphysical master. The selected own master, its direct CPNT Attributes and direct TRKG Tracks are the only category input owners.",
+      "Attribute enumeration reads only master CPNT Attributes -> ATTR AttrRefs -> ATTB Name/Kind. Relevant exact _IMPORTSETTING entries and direct _AT-prefixed keys are recorded separately. No _USER, nested import-setting contents, ancestor, unrelated master or arbitrary recursive attributes supply an input.",
+      "Attribute Kind must be concrete omfi:AttrKind, two bytes. Object payload reference state, target existence/class, duplicate entries, different kinds and different targets are reported independently from exact name/kind matching.",
+      "Direct track order comes from concrete ObjRefArray count and eight-byte entries. Each TRAK own TrackComponent must resolve to exactly one component, whose own CPNT TrackKind must be concrete omfi:TrackType, two bytes. Value 1 is counted separately; all other observed raw kinds and component classes are retained. No deeper segment walk supplies direct track kind.",
+      "Physical-row and distinct-master combinations are separate. The 171 physical rows with usage 1 do not imply 171 distinct master objects. Usage 7 controls are audited independently.",
+      "Raw input combinations remain separate from the explicit native-predicate application summary. The latter applies the independently reported native rule for comparison, not approval of a Bella policy or an OldScanner classification output. Reading src/precompute.h and the current classifier scoped candidate inputs; their outputs were not read or treated as evidence.",
+      "No physical media header or essence is opened. No repo, app, media or input file is written."
+    ],
+    "counts": {
+      "physicalRows": 2412,
+      "usage:1:physicalRows": 171,
+      "usage:7:physicalRows": 2241,
+      "distinctSelectedMasters": 1340,
+      "usage:7:distinctSelectedMasters": 1205,
+      "usage:7:attributeState:complete:distinctMasters": 1205,
+      "usage:7:trackState:complete:distinctMasters": 1205,
+      "usage:7:exactNameKindConflict:distinctMasters": 0,
+      "usage:7:multipleExactKind3Entries:distinctMasters": 0,
+      "usage:1:distinctSelectedMasters": 135,
+      "usage:1:attributeState:complete:distinctMasters": 135,
+      "usage:1:trackState:complete:distinctMasters": 135,
+      "usage:1:exactNameKindConflict:distinctMasters": 0,
+      "usage:1:multipleExactKind3Entries:distinctMasters": 0
+    },
+    "inputCombinationsPerPhysicalRow": [
+      {
+        "masterUsage": 1,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "absent",
+        "objectPayloadState": "notApplicable",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 0,
+        "directTrackKindsJson": "[2]",
+        "count": 49
+      },
+      {
+        "masterUsage": 1,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "absent",
+        "objectPayloadState": "notApplicable",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 1,
+        "directTrackKindsJson": "[1]",
+        "count": 58
+      },
+      {
+        "masterUsage": 1,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 2,
+        "directTrackKindsJson": "[1, 1]",
+        "count": 64
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "absent",
+        "objectPayloadState": "notApplicable",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 0,
+        "directTrackKindsJson": "[2]",
+        "count": 7
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "absent",
+        "objectPayloadState": "notApplicable",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 1,
+        "directTrackKindsJson": "[1, 3]",
+        "count": 1
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "absent",
+        "objectPayloadState": "notApplicable",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 1,
+        "directTrackKindsJson": "[1]",
+        "count": 1
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 0,
+        "directTrackKindsJson": "[2, 2, 2, 2, 2, 2]",
+        "count": 12
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 0,
+        "directTrackKindsJson": "[2, 2, 2, 2, 2]",
+        "count": 35
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 0,
+        "directTrackKindsJson": "[2, 2, 2, 2]",
+        "count": 176
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 0,
+        "directTrackKindsJson": "[2, 2, 2]",
+        "count": 279
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 0,
+        "directTrackKindsJson": "[2, 2]",
+        "count": 552
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 0,
+        "directTrackKindsJson": "[2]",
+        "count": 22
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 1,
+        "directTrackKindsJson": "[1, 2, 2]",
+        "count": 572
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 1,
+        "directTrackKindsJson": "[1]",
+        "count": 584
+      }
+    ],
+    "inputCombinationsOnDistinctMastersSummedByMdb": [
+      {
+        "masterUsage": 1,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "absent",
+        "objectPayloadState": "notApplicable",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 0,
+        "directTrackKindsJson": "[2]",
+        "count": 49
+      },
+      {
+        "masterUsage": 1,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "absent",
+        "objectPayloadState": "notApplicable",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 1,
+        "directTrackKindsJson": "[1]",
+        "count": 58
+      },
+      {
+        "masterUsage": 1,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 2,
+        "directTrackKindsJson": "[1, 1]",
+        "count": 28
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "absent",
+        "objectPayloadState": "notApplicable",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 0,
+        "directTrackKindsJson": "[2]",
+        "count": 7
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "absent",
+        "objectPayloadState": "notApplicable",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 1,
+        "directTrackKindsJson": "[1, 3]",
+        "count": 1
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "absent",
+        "objectPayloadState": "notApplicable",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 1,
+        "directTrackKindsJson": "[1]",
+        "count": 1
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 0,
+        "directTrackKindsJson": "[2, 2, 2, 2, 2, 2]",
+        "count": 2
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 0,
+        "directTrackKindsJson": "[2, 2, 2, 2, 2]",
+        "count": 7
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 0,
+        "directTrackKindsJson": "[2, 2, 2, 2]",
+        "count": 44
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 0,
+        "directTrackKindsJson": "[2, 2, 2]",
+        "count": 93
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 0,
+        "directTrackKindsJson": "[2, 2]",
+        "count": 274
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 0,
+        "directTrackKindsJson": "[2]",
+        "count": 22
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 1,
+        "directTrackKindsJson": "[1, 2, 2]",
+        "count": 191
+      },
+      {
+        "masterUsage": 7,
+        "attributeEnumerationState": "complete",
+        "exactImportKind3State": "oneExactKind3Entry",
+        "objectPayloadState": "completeExistingTarget",
+        "trackEnumerationState": "complete",
+        "directVideoTrackCount": 1,
+        "directTrackKindsJson": "[1]",
+        "count": 563
+      }
+    ],
+    "relevantDirectAttributeEntriesPerPhysicalRow": [
+      {
+        "masterUsage": 1,
+        "attributeName": "_IMPORTSETTING",
+        "attributeKind": 3,
+        "count": 64
+      },
+      {
+        "masterUsage": 7,
+        "attributeName": "_IMPORTSETTING",
+        "attributeKind": 3,
+        "count": 2232
+      }
+    ],
+    "relevantDirectAttributeEntriesOnDistinctMastersSummedByMdb": [
+      {
+        "masterUsage": 1,
+        "attributeName": "_IMPORTSETTING",
+        "attributeKind": 3,
+        "count": 28
+      },
+      {
+        "masterUsage": 7,
+        "attributeName": "_IMPORTSETTING",
+        "attributeKind": 3,
+        "count": 1196
+      }
+    ],
+    "ownInputPropertyShapeOccurrencesOnDistinctMasterTraversals": [
+      {
+        "masterUsage": 1,
+        "property": "OMFI:ATTB:Kind",
+        "type": "omfi:AttrKind",
+        "bytes": 2,
+        "count": 28
+      },
+      {
+        "masterUsage": 1,
+        "property": "OMFI:ATTB:Name",
+        "type": "omfi:String",
+        "bytes": 15,
+        "count": 28
+      },
+      {
+        "masterUsage": 1,
+        "property": "OMFI:ATTB:ObjAttribute",
+        "type": "omfi:ObjRef",
+        "bytes": 8,
+        "count": 28
+      },
+      {
+        "masterUsage": 1,
+        "property": "OMFI:ATTR:AttrRefs",
+        "type": "omfi:ObjRefArray",
+        "bytes": 10,
+        "count": 12
+      },
+      {
+        "masterUsage": 1,
+        "property": "OMFI:ATTR:AttrRefs",
+        "type": "omfi:ObjRefArray",
+        "bytes": 50,
+        "count": 3
+      },
+      {
+        "masterUsage": 1,
+        "property": "OMFI:ATTR:AttrRefs",
+        "type": "omfi:ObjRefArray",
+        "bytes": 66,
+        "count": 53
+      },
+      {
+        "masterUsage": 1,
+        "property": "OMFI:ATTR:AttrRefs",
+        "type": "omfi:ObjRefArray",
+        "bytes": 74,
+        "count": 67
+      },
+      {
+        "masterUsage": 1,
+        "property": "OMFI:CPNT:Attributes",
+        "type": "omfi:ObjRef",
+        "bytes": 8,
+        "count": 278
+      },
+      {
+        "masterUsage": 1,
+        "property": "OMFI:CPNT:TrackKind",
+        "type": "omfi:TrackType",
+        "bytes": 2,
+        "count": 298
+      },
+      {
+        "masterUsage": 1,
+        "property": "OMFI:TRAK:TrackComponent",
+        "type": "omfi:ObjRef",
+        "bytes": 8,
+        "count": 163
+      },
+      {
+        "masterUsage": 1,
+        "property": "OMFI:TRKG:Tracks",
+        "type": "omfi:ObjRefArray",
+        "bytes": 10,
+        "count": 135
+      },
+      {
+        "masterUsage": 1,
+        "property": "OMFI:TRKG:Tracks",
+        "type": "omfi:ObjRefArray",
+        "bytes": 18,
+        "count": 56
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:ATTB:Kind",
+        "type": "omfi:AttrKind",
+        "bytes": 2,
+        "count": 1196
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:ATTB:Name",
+        "type": "omfi:String",
+        "bytes": 15,
+        "count": 1196
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:ATTB:ObjAttribute",
+        "type": "omfi:ObjRef",
+        "bytes": 8,
+        "count": 1196
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:ATTR:AttrRefs",
+        "type": "omfi:ObjRefArray",
+        "bytes": 18,
+        "count": 3
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:ATTR:AttrRefs",
+        "type": "omfi:ObjRefArray",
+        "bytes": 26,
+        "count": 46
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:ATTR:AttrRefs",
+        "type": "omfi:ObjRefArray",
+        "bytes": 34,
+        "count": 53
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:ATTR:AttrRefs",
+        "type": "omfi:ObjRefArray",
+        "bytes": 42,
+        "count": 118
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:ATTR:AttrRefs",
+        "type": "omfi:ObjRefArray",
+        "bytes": 98,
+        "count": 69
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:ATTR:AttrRefs",
+        "type": "omfi:ObjRefArray",
+        "bytes": 106,
+        "count": 263
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:ATTR:AttrRefs",
+        "type": "omfi:ObjRefArray",
+        "bytes": 114,
+        "count": 500
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:ATTR:AttrRefs",
+        "type": "omfi:ObjRefArray",
+        "bytes": 122,
+        "count": 115
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:ATTR:AttrRefs",
+        "type": "omfi:ObjRefArray",
+        "bytes": 130,
+        "count": 10
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:ATTR:AttrRefs",
+        "type": "omfi:ObjRefArray",
+        "bytes": 138,
+        "count": 13
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:ATTR:AttrRefs",
+        "type": "omfi:ObjRefArray",
+        "bytes": 146,
+        "count": 8
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:ATTR:AttrRefs",
+        "type": "omfi:ObjRefArray",
+        "bytes": 154,
+        "count": 7
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:CPNT:Attributes",
+        "type": "omfi:ObjRef",
+        "bytes": 8,
+        "count": 3339
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:CPNT:TrackKind",
+        "type": "omfi:TrackType",
+        "bytes": 2,
+        "count": 3423
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:TRAK:TrackComponent",
+        "type": "omfi:ObjRef",
+        "bytes": 8,
+        "count": 2218
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:TRKG:Tracks",
+        "type": "omfi:ObjRefArray",
+        "bytes": 10,
+        "count": 640
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:TRKG:Tracks",
+        "type": "omfi:ObjRefArray",
+        "bytes": 18,
+        "count": 275
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:TRKG:Tracks",
+        "type": "omfi:ObjRefArray",
+        "bytes": 26,
+        "count": 284
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:TRKG:Tracks",
+        "type": "omfi:ObjRefArray",
+        "bytes": 34,
+        "count": 44
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:TRKG:Tracks",
+        "type": "omfi:ObjRefArray",
+        "bytes": 42,
+        "count": 7
+      },
+      {
+        "masterUsage": 7,
+        "property": "OMFI:TRKG:Tracks",
+        "type": "omfi:ObjRefArray",
+        "bytes": 50,
+        "count": 2
+      }
+    ],
+    "directTrackKindOccurrencesOnDistinctMasterTraversals": [
+      {
+        "masterUsage": 1,
+        "componentClass": "RSET",
+        "rawTrackKind": 1,
+        "count": 56
+      },
+      {
+        "masterUsage": 1,
+        "componentClass": "SCLP",
+        "rawTrackKind": 1,
+        "count": 56
+      },
+      {
+        "masterUsage": 1,
+        "componentClass": "SCLP",
+        "rawTrackKind": 2,
+        "count": 49
+      },
+      {
+        "masterUsage": 1,
+        "componentClass": "SEQU",
+        "rawTrackKind": 1,
+        "count": 2
+      },
+      {
+        "masterUsage": 7,
+        "componentClass": "PVOL",
+        "rawTrackKind": 2,
+        "count": 47
+      },
+      {
+        "masterUsage": 7,
+        "componentClass": "SCLP",
+        "rawTrackKind": 2,
+        "count": 84
+      },
+      {
+        "masterUsage": 7,
+        "componentClass": "SEQU",
+        "rawTrackKind": 1,
+        "count": 756
+      },
+      {
+        "masterUsage": 7,
+        "componentClass": "SEQU",
+        "rawTrackKind": 2,
+        "count": 1330
+      },
+      {
+        "masterUsage": 7,
+        "componentClass": "TCCP",
+        "rawTrackKind": 3,
+        "count": 1
+      }
+    ],
+    "inputCombinationsByPhysicalDescriptorClassPerPhysicalRow": [
+      {
+        "masterUsage": 1,
+        "exactImportKind3State": "absent",
+        "directVideoTrackCount": 0,
+        "physicalDescriptorClass": "PCMA",
+        "count": 49
+      },
+      {
+        "masterUsage": 1,
+        "exactImportKind3State": "absent",
+        "directVideoTrackCount": 1,
+        "physicalDescriptorClass": "CDCI",
+        "count": 58
+      },
+      {
+        "masterUsage": 1,
+        "exactImportKind3State": "oneExactKind3Entry",
+        "directVideoTrackCount": 2,
+        "physicalDescriptorClass": "CDCI",
+        "count": 46
+      },
+      {
+        "masterUsage": 1,
+        "exactImportKind3State": "oneExactKind3Entry",
+        "directVideoTrackCount": 2,
+        "physicalDescriptorClass": "RGBA",
+        "count": 18
+      },
+      {
+        "masterUsage": 7,
+        "exactImportKind3State": "absent",
+        "directVideoTrackCount": 0,
+        "physicalDescriptorClass": "AIFD",
+        "count": 1
+      },
+      {
+        "masterUsage": 7,
+        "exactImportKind3State": "absent",
+        "directVideoTrackCount": 0,
+        "physicalDescriptorClass": "PCMA",
+        "count": 5
+      },
+      {
+        "masterUsage": 7,
+        "exactImportKind3State": "absent",
+        "directVideoTrackCount": 0,
+        "physicalDescriptorClass": "WAVD",
+        "count": 1
+      },
+      {
+        "masterUsage": 7,
+        "exactImportKind3State": "absent",
+        "directVideoTrackCount": 1,
+        "physicalDescriptorClass": "CDCI",
+        "count": 2
+      },
+      {
+        "masterUsage": 7,
+        "exactImportKind3State": "oneExactKind3Entry",
+        "directVideoTrackCount": 0,
+        "physicalDescriptorClass": "PCMA",
+        "count": 1076
+      },
+      {
+        "masterUsage": 7,
+        "exactImportKind3State": "oneExactKind3Entry",
+        "directVideoTrackCount": 1,
+        "physicalDescriptorClass": "CDCI",
+        "count": 767
+      },
+      {
+        "masterUsage": 7,
+        "exactImportKind3State": "oneExactKind3Entry",
+        "directVideoTrackCount": 1,
+        "physicalDescriptorClass": "MPGI",
+        "count": 8
+      },
+      {
+        "masterUsage": 7,
+        "exactImportKind3State": "oneExactKind3Entry",
+        "directVideoTrackCount": 1,
+        "physicalDescriptorClass": "PCMA",
+        "count": 381
+      }
+    ],
+    "limits": [
+      "This probe inventories current raw inputs and does not approve a Precompute Category rule or use an OldScanner output as an oracle.",
+      "Native found-flag semantics and null object payload handling have separate native proof. Exact name/kind presence and object payload validity remain separate raw observations.",
+      "A complete unrelated direct attribute does not become a category input. _AT-prefixed import/capture/CRM names are context only and do not participate in the independently established two-category native predicate.",
+      "Absence and complete/damaged/conflicting closures remain separate observations. Unexercised missing, duplicate, conflicting and invalid fields do not define runtime policy.",
+      "All observed inputs use established little-endian legacy MDB layouts; no other container, field representation or endianness is approved.",
+      "Counts of property shapes on distinct master traversals are owner-scoped visits; shared child objects can recur through different masters. Master counts themselves are deduplicated per MDB.",
+      "Already approved Type and unique absent-master recovery policies are unchanged."
+    ],
+    "nativePredicateApplicationNotBellaApproval": {
+      "status": "Application of separately established native predicate to verified raw inputs; proposed Bella rule remains unapproved.",
+      "predicate": "Only after selected master usage 1: exact direct _IMPORTSETTING Kind3 object-attribute found plus at least two direct component TrackKind1 slots selects Titles and Matte Keys; confirmed absence or fewer than two selects Rendered Effects. A null object payload still counts as found; object target contents are not read.",
+      "physicalRows": {
+        "Rendered Effects": 107,
+        "Titles and Matte Keys": 64
+      },
+      "distinctMasterObjectsSummedByMdb": {
+        "Rendered Effects": 107,
+        "Titles and Matte Keys": 28
+      },
+      "usage7ControlsWithExactImportObjectAndAtLeastTwoDirectVideoTracks": {
+        "physicalRows": 0,
+        "distinctMasterObjectsSummedByMdb": 0
+      },
+      "rawFactsRemainSeparate": true
+    },
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "mdbSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+        "rawValueIndexSha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 69522,
+        "counts": {
+          "physicalRows": 389,
+          "usage:1:physicalRows": 30,
+          "usage:7:physicalRows": 359,
+          "distinctSelectedMasters": 153,
+          "usage:7:distinctSelectedMasters": 143,
+          "usage:7:attributeState:complete:distinctMasters": 143,
+          "usage:7:trackState:complete:distinctMasters": 143,
+          "usage:7:exactNameKindConflict:distinctMasters": 0,
+          "usage:7:multipleExactKind3Entries:distinctMasters": 0,
+          "usage:1:distinctSelectedMasters": 10,
+          "usage:1:attributeState:complete:distinctMasters": 10,
+          "usage:1:trackState:complete:distinctMasters": 10,
+          "usage:1:exactNameKindConflict:distinctMasters": 0,
+          "usage:1:multipleExactKind3Entries:distinctMasters": 0
+        },
+        "inputCombinationsPerPhysicalRow": [
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 2,
+            "directTrackKindsJson": "[1, 1]",
+            "count": 30
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2]",
+            "count": 140
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1, 2, 2]",
+            "count": 219
+          }
+        ],
+        "inputCombinationsOnDistinctMasters": [
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 2,
+            "directTrackKindsJson": "[1, 1]",
+            "count": 10
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2]",
+            "count": 70
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1, 2, 2]",
+            "count": 73
+          }
+        ],
+        "relevantDirectAttributeEntriesOnDistinctMasters": [
+          {
+            "masterUsage": 1,
+            "attributeName": "_IMPORTSETTING",
+            "attributeKind": 3,
+            "count": 10
+          },
+          {
+            "masterUsage": 7,
+            "attributeName": "_IMPORTSETTING",
+            "attributeKind": 3,
+            "count": 143
+          }
+        ],
+        "entireMdbRelevantAttributeNamesOnly": {
+          "_IMPORTSETTING": 154,
+          "_ATN_IMPORT_AUD_BWF_MONO_GROUP": 82
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "mdbSha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+        "rawValueIndexSha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 380523,
+        "counts": {
+          "physicalRows": 686,
+          "usage:7:physicalRows": 635,
+          "usage:1:physicalRows": 51,
+          "distinctSelectedMasters": 415,
+          "usage:7:distinctSelectedMasters": 380,
+          "usage:7:attributeState:complete:distinctMasters": 380,
+          "usage:7:trackState:complete:distinctMasters": 380,
+          "usage:7:exactNameKindConflict:distinctMasters": 0,
+          "usage:7:multipleExactKind3Entries:distinctMasters": 0,
+          "usage:1:distinctSelectedMasters": 35,
+          "usage:1:attributeState:complete:distinctMasters": 35,
+          "usage:1:trackState:complete:distinctMasters": 35,
+          "usage:1:exactNameKindConflict:distinctMasters": 0,
+          "usage:1:multipleExactKind3Entries:distinctMasters": 0
+        },
+        "inputCombinationsPerPhysicalRow": [
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1]",
+            "count": 27
+          },
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 2,
+            "directTrackKindsJson": "[1, 1]",
+            "count": 24
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2, 2, 2, 2, 2]",
+            "count": 12
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2, 2, 2, 2]",
+            "count": 35
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2, 2, 2]",
+            "count": 88
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2, 2]",
+            "count": 129
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2]",
+            "count": 130
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2]",
+            "count": 13
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1]",
+            "count": 228
+          }
+        ],
+        "inputCombinationsOnDistinctMasters": [
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1]",
+            "count": 27
+          },
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 2,
+            "directTrackKindsJson": "[1, 1]",
+            "count": 8
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2, 2, 2, 2, 2]",
+            "count": 2
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2, 2, 2, 2]",
+            "count": 7
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2, 2, 2]",
+            "count": 22
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2, 2]",
+            "count": 43
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2]",
+            "count": 65
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2]",
+            "count": 13
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1]",
+            "count": 228
+          }
+        ],
+        "relevantDirectAttributeEntriesOnDistinctMasters": [
+          {
+            "masterUsage": 1,
+            "attributeName": "_IMPORTSETTING",
+            "attributeKind": 3,
+            "count": 8
+          },
+          {
+            "masterUsage": 7,
+            "attributeName": "_IMPORTSETTING",
+            "attributeKind": 3,
+            "count": 380
+          }
+        ],
+        "entireMdbRelevantAttributeNamesOnly": {
+          "_ATN_IMPORT_AUD_SAMPRATE_CVT": 747,
+          "_ATN_IMPORT_AUD_SAMPSIZE_CVT": 747,
+          "_ATN_IMPORT_AUD_USE_GAIN": 747,
+          "_ATN_IMPORT_AUD_GAIN": 747,
+          "_ATN_IMPORT_AUD_AUD_CD_ONLY": 747,
+          "_ATN_IMPORT_AUD_BWF_MONO_GROUP": 777,
+          "_IMPORTSETTING": 777,
+          "_ATN_CRM_USER": 2,
+          "_ATN_CRM_ID": 2,
+          "_ATN_CRM_LONG_MOD_DATE": 2,
+          "_ATN_CRM_COLOR_EXTENDED": 2,
+          "_ATN_CRM_COLOR": 2,
+          "_ATN_CRM_DATE": 2,
+          "_ATN_CRM_TIME": 2
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "mdbSha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+        "rawValueIndexSha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 273843,
+        "counts": {
+          "physicalRows": 513,
+          "usage:7:physicalRows": 439,
+          "usage:1:physicalRows": 74,
+          "distinctSelectedMasters": 353,
+          "usage:7:distinctSelectedMasters": 279,
+          "usage:7:attributeState:complete:distinctMasters": 279,
+          "usage:7:trackState:complete:distinctMasters": 279,
+          "usage:7:exactNameKindConflict:distinctMasters": 0,
+          "usage:7:multipleExactKind3Entries:distinctMasters": 0,
+          "usage:1:distinctSelectedMasters": 74,
+          "usage:1:attributeState:complete:distinctMasters": 74,
+          "usage:1:trackState:complete:distinctMasters": 74,
+          "usage:1:exactNameKindConflict:distinctMasters": 0,
+          "usage:1:multipleExactKind3Entries:distinctMasters": 0
+        },
+        "inputCombinationsPerPhysicalRow": [
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2]",
+            "count": 47
+          },
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1]",
+            "count": 21
+          },
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 2,
+            "directTrackKindsJson": "[1, 1]",
+            "count": 6
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2, 2, 2]",
+            "count": 60
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2, 2]",
+            "count": 72
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2]",
+            "count": 134
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2]",
+            "count": 7
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1]",
+            "count": 166
+          }
+        ],
+        "inputCombinationsOnDistinctMasters": [
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2]",
+            "count": 47
+          },
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1]",
+            "count": 21
+          },
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 2,
+            "directTrackKindsJson": "[1, 1]",
+            "count": 6
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2, 2, 2]",
+            "count": 15
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2, 2]",
+            "count": 24
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2]",
+            "count": 67
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2]",
+            "count": 7
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1]",
+            "count": 166
+          }
+        ],
+        "relevantDirectAttributeEntriesOnDistinctMasters": [
+          {
+            "masterUsage": 1,
+            "attributeName": "_IMPORTSETTING",
+            "attributeKind": 3,
+            "count": 6
+          },
+          {
+            "masterUsage": 7,
+            "attributeName": "_IMPORTSETTING",
+            "attributeKind": 3,
+            "count": 279
+          }
+        ],
+        "entireMdbRelevantAttributeNamesOnly": {
+          "_ATN_IMPORT_AUD_SAMPRATE_CVT": 556,
+          "_ATN_IMPORT_AUD_SAMPSIZE_CVT": 556,
+          "_ATN_IMPORT_AUD_USE_GAIN": 556,
+          "_ATN_IMPORT_AUD_GAIN": 556,
+          "_ATN_IMPORT_AUD_AUD_CD_ONLY": 556,
+          "_ATN_IMPORT_AUD_BWF_MONO_GROUP": 570,
+          "_IMPORTSETTING": 570,
+          "_ATN_CRM_USER": 1,
+          "_ATN_CRM_ID": 1,
+          "_ATN_CRM_LONG_MOD_DATE": 1,
+          "_ATN_CRM_COLOR_EXTENDED": 1,
+          "_ATN_CRM_COLOR": 1,
+          "_ATN_CRM_DATE": 1,
+          "_ATN_CRM_TIME": 1
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "mdbSha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+        "rawValueIndexSha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 261456,
+        "counts": {
+          "physicalRows": 463,
+          "usage:7:physicalRows": 447,
+          "usage:1:physicalRows": 16,
+          "distinctSelectedMasters": 293,
+          "usage:7:distinctSelectedMasters": 277,
+          "usage:7:attributeState:complete:distinctMasters": 277,
+          "usage:7:trackState:complete:distinctMasters": 277,
+          "usage:7:exactNameKindConflict:distinctMasters": 0,
+          "usage:7:multipleExactKind3Entries:distinctMasters": 0,
+          "usage:1:distinctSelectedMasters": 16,
+          "usage:1:attributeState:complete:distinctMasters": 16,
+          "usage:1:trackState:complete:distinctMasters": 16,
+          "usage:1:exactNameKindConflict:distinctMasters": 0,
+          "usage:1:multipleExactKind3Entries:distinctMasters": 0
+        },
+        "inputCombinationsPerPhysicalRow": [
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2]",
+            "count": 2
+          },
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1]",
+            "count": 10
+          },
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 2,
+            "directTrackKindsJson": "[1, 1]",
+            "count": 4
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1, 3]",
+            "count": 1
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2, 2, 2]",
+            "count": 28
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2, 2]",
+            "count": 78
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2]",
+            "count": 148
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2]",
+            "count": 2
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1]",
+            "count": 190
+          }
+        ],
+        "inputCombinationsOnDistinctMasters": [
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2]",
+            "count": 2
+          },
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1]",
+            "count": 10
+          },
+          {
+            "masterUsage": 1,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 2,
+            "directTrackKindsJson": "[1, 1]",
+            "count": 4
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1, 3]",
+            "count": 1
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2, 2, 2]",
+            "count": 7
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2, 2]",
+            "count": 26
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2, 2]",
+            "count": 72
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2]",
+            "count": 2
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1]",
+            "count": 169
+          }
+        ],
+        "relevantDirectAttributeEntriesOnDistinctMasters": [
+          {
+            "masterUsage": 1,
+            "attributeName": "_IMPORTSETTING",
+            "attributeKind": 3,
+            "count": 4
+          },
+          {
+            "masterUsage": 7,
+            "attributeName": "_IMPORTSETTING",
+            "attributeKind": 3,
+            "count": 276
+          }
+        ],
+        "entireMdbRelevantAttributeNamesOnly": {
+          "_ATN_IMPORT_AUD_SAMPRATE_CVT": 536,
+          "_ATN_IMPORT_AUD_SAMPSIZE_CVT": 536,
+          "_ATN_IMPORT_AUD_USE_GAIN": 536,
+          "_ATN_IMPORT_AUD_GAIN": 536,
+          "_ATN_IMPORT_AUD_AUD_CD_ONLY": 536,
+          "_ATN_IMPORT_AUD_BWF_MONO_GROUP": 560,
+          "_IMPORTSETTING": 560,
+          "_ATN_CRM_USER": 2,
+          "_ATN_CRM_ID": 2,
+          "_ATN_CRM_LONG_MOD_DATE": 2,
+          "_ATN_CRM_COLOR_EXTENDED": 2,
+          "_ATN_CRM_COLOR": 2,
+          "_ATN_CRM_DATE": 2,
+          "_ATN_CRM_TIME": 2
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "mdbSha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+        "rawValueIndexSha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 52021,
+        "counts": {
+          "physicalRows": 359,
+          "usage:7:physicalRows": 359,
+          "distinctSelectedMasters": 124,
+          "usage:7:distinctSelectedMasters": 124,
+          "usage:7:attributeState:complete:distinctMasters": 124,
+          "usage:7:trackState:complete:distinctMasters": 124,
+          "usage:7:exactNameKindConflict:distinctMasters": 0,
+          "usage:7:multipleExactKind3Entries:distinctMasters": 0
+        },
+        "inputCombinationsPerPhysicalRow": [
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2]",
+            "count": 5
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1]",
+            "count": 1
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1, 2, 2]",
+            "count": 353
+          }
+        ],
+        "inputCombinationsOnDistinctMasters": [
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2]",
+            "count": 5
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1]",
+            "count": 1
+          },
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "oneExactKind3Entry",
+            "objectPayloadState": "completeExistingTarget",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 1,
+            "directTrackKindsJson": "[1, 2, 2]",
+            "count": 118
+          }
+        ],
+        "relevantDirectAttributeEntriesOnDistinctMasters": [
+          {
+            "masterUsage": 7,
+            "attributeName": "_IMPORTSETTING",
+            "attributeKind": 3,
+            "count": 118
+          }
+        ],
+        "entireMdbRelevantAttributeNamesOnly": {
+          "_ATN_IMPORT_AUD_SAMPRATE_CVT": 118,
+          "_ATN_IMPORT_AUD_SAMPSIZE_CVT": 118,
+          "_ATN_IMPORT_AUD_USE_GAIN": 118,
+          "_ATN_IMPORT_AUD_GAIN": 118,
+          "_ATN_IMPORT_AUD_AUD_CD_ONLY": 118,
+          "_ATN_IMPORT_AUD_BWF_MONO_GROUP": 118,
+          "_IMPORTSETTING": 118,
+          "_ATN_CAPTURE_MASK_LENGTH": 18
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "mdbSha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "rawValueIndex": "/private/tmp/bella-mdb-20261018-drives/shared-OMFI MediaFiles-values.json",
+        "rawValueIndexSha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "retainedPropertyRowsVerifiedAgainstActualMdbRanges": 223,
+        "counts": {
+          "physicalRows": 2,
+          "usage:7:physicalRows": 2,
+          "distinctSelectedMasters": 2,
+          "usage:7:distinctSelectedMasters": 2,
+          "usage:7:attributeState:complete:distinctMasters": 2,
+          "usage:7:trackState:complete:distinctMasters": 2,
+          "usage:7:exactNameKindConflict:distinctMasters": 0,
+          "usage:7:multipleExactKind3Entries:distinctMasters": 0
+        },
+        "inputCombinationsPerPhysicalRow": [
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2]",
+            "count": 2
+          }
+        ],
+        "inputCombinationsOnDistinctMasters": [
+          {
+            "masterUsage": 7,
+            "attributeEnumerationState": "complete",
+            "exactImportKind3State": "absent",
+            "objectPayloadState": "notApplicable",
+            "trackEnumerationState": "complete",
+            "directVideoTrackCount": 0,
+            "directTrackKindsJson": "[2]",
+            "count": 2
+          }
+        ],
+        "relevantDirectAttributeEntriesOnDistinctMasters": [],
+        "entireMdbRelevantAttributeNamesOnly": {}
+      }
+    ],
+    "representativeOwnAttributeAndDirectTrackInputs": [
+      {
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "databaseSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "fileMobId": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64",
+        "masterMobId": "060a2b340101010501010f1013000000d97717225586059099ba34363bcdaf64",
+        "fileObject": 93780,
+        "masterObject": 93810,
+        "descriptorObject": 93779,
+        "descriptorClass": "RGBA",
+        "pmrRecordByteRange": [
+          48246,
+          126
+        ],
+        "pmrVersion": 16,
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 93780,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                1394498,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                5130760,
+                24
+              ]
+            ],
+            "hex": "536e010000000000"
+          }
+        ],
+        "masterMobIdProperties": [
+          {
+            "object": 93810,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                1395736,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                5137288,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000d97717225586059099ba34363bcdaf64"
+          },
+          {
+            "object": 93810,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                1395773,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                5137384,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000d97717225586059099ba34363bcdaf64"
+          }
+        ],
+        "masterUsageProperties": [
+          {
+            "object": 93810,
+            "propertyName": "OMFI:MOBJ:UsageCode",
+            "typeName": "omfi:UsageCodeType",
+            "length": 4,
+            "ranges": [
+              [
+                5137348,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                5137336,
+                24
+              ]
+            ],
+            "hex": "01000000"
+          }
+        ],
+        "ownFacts": {
+          "masterObject": 93810,
+          "masterMobId": "060a2b340101010501010f1013000000d97717225586059099ba34363bcdaf64",
+          "usageState": {
+            "property": "OMFI:MOBJ:UsageCode",
+            "propertyRows": 1,
+            "duplicatePropertyRows": 0,
+            "state": "decoded",
+            "rawUnsignedLE32": 1,
+            "allDuplicateRowsAgree": false
+          },
+          "usage": 1,
+          "attributeEnumerationState": "complete",
+          "attributeErrors": {},
+          "ownerAttributeReferenceProperties": [
+            {
+              "object": 93810,
+              "propertyName": "OMFI:CPNT:Attributes",
+              "typeName": "omfi:ObjRef",
+              "length": 8,
+              "ranges": [
+                [
+                  1395710,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  5137096,
+                  24
+                ]
+              ],
+              "hex": "676e010000000000"
+            }
+          ],
+          "directAttributeEnumeration": {
+            "ownerReferenceState": {
+              "propertyRows": 1,
+              "duplicatePropertyRows": 0,
+              "state": "complete",
+              "targetObjectsInStoredOrder": [
+                93799
+              ]
+            },
+            "lists": [
+              {
+                "object": 93799,
+                "referenceState": {
+                  "propertyRows": 1,
+                  "duplicatePropertyRows": 0,
+                  "state": "complete",
+                  "targetObjectsInStoredOrder": [
+                    93798
+                  ]
+                },
+                "referenceProperties": [
+                  {
+                    "object": 93799,
+                    "propertyName": "OMFI:ATTR:AttrRefs",
+                    "typeName": "omfi:ObjRefArray",
+                    "length": 10,
+                    "ranges": [
+                      [
+                        1395364,
+                        10
+                      ]
+                    ],
+                    "tocRanges": [
+                      [
+                        5135008,
+                        24
+                      ]
+                    ],
+                    "hex": "0100666e010000000000"
+                  }
+                ]
+              }
+            ]
+          },
+          "directAttributeEntryCount": 1,
+          "relevantDirectAttributes": [
+            {
+              "attributeObject": 93798,
+              "name": "_IMPORTSETTING",
+              "nameState": "decoded",
+              "kindState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "decoded",
+                "rawUnsignedValue": 3,
+                "byteOrder": "little"
+              },
+              "kind": 3,
+              "objectPayloadState": "completeExistingTarget",
+              "objectPayloadTargets": [
+                93797
+              ],
+              "objectPayloadTargetClasses": [
+                "ATTR"
+              ],
+              "nameProperties": [
+                {
+                  "object": 93798,
+                  "propertyName": "OMFI:ATTB:Name",
+                  "typeName": "omfi:String",
+                  "length": 15,
+                  "ranges": [
+                    [
+                      1395341,
+                      15
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      5134936,
+                      24
+                    ]
+                  ],
+                  "hex": "5f494d504f525453455454494e4700"
+                }
+              ],
+              "kindProperties": [
+                {
+                  "object": 93798,
+                  "propertyName": "OMFI:ATTB:Kind",
+                  "typeName": "omfi:AttrKind",
+                  "length": 2,
+                  "ranges": [
+                    [
+                      5134924,
+                      2
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      5134912,
+                      24
+                    ]
+                  ],
+                  "hex": "0300"
+                }
+              ],
+              "objectPayloadProperties": [
+                {
+                  "object": 93798,
+                  "propertyName": "OMFI:ATTB:ObjAttribute",
+                  "typeName": "omfi:ObjRef",
+                  "length": 8,
+                  "ranges": [
+                    [
+                      1395356,
+                      8
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      5134960,
+                      24
+                    ]
+                  ],
+                  "hex": "656e010000000000"
+                }
+              ]
+            }
+          ],
+          "exactImportSettingNameEntryCount": 1,
+          "exactImportSettingNameKindConflict": false,
+          "exactImportSettingKind3EntryCount": 1,
+          "exactImportSettingKind3State": "oneExactKind3Entry",
+          "importObjectPayloadState": "completeExistingTarget",
+          "distinctImportObjectPayloadTargets": [
+            93797
+          ],
+          "trackEnumerationState": "complete",
+          "trackErrors": {},
+          "ownerTrackReferenceProperties": [
+            {
+              "object": 93810,
+              "propertyName": "OMFI:TRKG:Tracks",
+              "typeName": "omfi:ObjRefArray",
+              "length": 18,
+              "ranges": [
+                [
+                  1395718,
+                  18
+                ]
+              ],
+              "tocRanges": [
+                [
+                  5137216,
+                  24
+                ]
+              ],
+              "hex": "02006b6e010000000000716e010000000000"
+            }
+          ],
+          "ownerTrackReferenceState": {
+            "propertyRows": 1,
+            "duplicatePropertyRows": 0,
+            "state": "complete",
+            "targetObjectsInStoredOrder": [
+              93803,
+              93809
+            ]
+          },
+          "directTrackSlotCount": 2,
+          "directTrackKindsInStoredOrder": [
+            1,
+            1
+          ],
+          "directVideoTrackCount": 2,
+          "directTracks": [
+            {
+              "storedTrackSlotIndex": 0,
+              "trackObject": 93803,
+              "trackClass": "TRAK",
+              "trackComponentReferenceState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "complete",
+                "targetObjectsInStoredOrder": [
+                  93802
+                ]
+              },
+              "componentObject": 93802,
+              "componentClass": "RSET",
+              "trackKindState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "decoded",
+                "rawUnsignedValue": 1,
+                "byteOrder": "little"
+              },
+              "trackKind": 1,
+              "trackComponentReferenceProperties": [
+                {
+                  "object": 93803,
+                  "propertyName": "OMFI:TRAK:TrackComponent",
+                  "typeName": "omfi:ObjRef",
+                  "length": 8,
+                  "ranges": [
+                    [
+                      1395479,
+                      8
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      5135776,
+                      24
+                    ]
+                  ],
+                  "hex": "6a6e010000000000"
+                }
+              ],
+              "componentTrackKindProperties": [
+                {
+                  "object": 93802,
+                  "propertyName": "OMFI:CPNT:TrackKind",
+                  "typeName": "omfi:TrackType",
+                  "length": 2,
+                  "ranges": [
+                    [
+                      5135500,
+                      2
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      5135488,
+                      24
+                    ]
+                  ],
+                  "hex": "0100"
+                }
+              ]
+            },
+            {
+              "storedTrackSlotIndex": 1,
+              "trackObject": 93809,
+              "trackClass": "TRAK",
+              "trackComponentReferenceState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "complete",
+                "targetObjectsInStoredOrder": [
+                  93808
+                ]
+              },
+              "componentObject": 93808,
+              "componentClass": "RSET",
+              "trackKindState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "decoded",
+                "rawUnsignedValue": 1,
+                "byteOrder": "little"
+              },
+              "trackKind": 1,
+              "trackComponentReferenceProperties": [
+                {
+                  "object": 93809,
+                  "propertyName": "OMFI:TRAK:TrackComponent",
+                  "typeName": "omfi:ObjRef",
+                  "length": 8,
+                  "ranges": [
+                    [
+                      1395687,
+                      8
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      5136952,
+                      24
+                    ]
+                  ],
+                  "hex": "706e010000000000"
+                }
+              ],
+              "componentTrackKindProperties": [
+                {
+                  "object": 93808,
+                  "propertyName": "OMFI:CPNT:TrackKind",
+                  "typeName": "omfi:TrackType",
+                  "length": 2,
+                  "ranges": [
+                    [
+                      5136676,
+                      2
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      5136664,
+                      24
+                    ]
+                  ],
+                  "hex": "0100"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "databaseSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "fileMobId": "060a2b340101010501010f1013000000782a3120258505911bcb34363bcdaf64",
+        "masterMobId": "060a2b340101010501010f1013000000702a312025850591436534363bcdaf64",
+        "fileObject": 92287,
+        "masterObject": 92211,
+        "descriptorObject": 92286,
+        "descriptorClass": "PCMA",
+        "pmrRecordByteRange": [
+          48372,
+          126
+        ],
+        "pmrVersion": 16,
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 92287,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                1341155,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                4866160,
+                24
+              ]
+            ],
+            "hex": "7e68010000000000"
+          }
+        ],
+        "masterMobIdProperties": [
+          {
+            "object": 92211,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                1337732,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                4848400,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000702a312025850591436534363bcdaf64"
+          },
+          {
+            "object": 92211,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                1337769,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                4848496,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000702a312025850591436534363bcdaf64"
+          }
+        ],
+        "masterUsageProperties": [
+          {
+            "object": 92211,
+            "propertyName": "OMFI:MOBJ:UsageCode",
+            "typeName": "omfi:UsageCodeType",
+            "length": 4,
+            "ranges": [
+              [
+                4848460,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                4848448,
+                24
+              ]
+            ],
+            "hex": "07000000"
+          }
+        ],
+        "ownFacts": {
+          "masterObject": 92211,
+          "masterMobId": "060a2b340101010501010f1013000000702a312025850591436534363bcdaf64",
+          "usageState": {
+            "property": "OMFI:MOBJ:UsageCode",
+            "propertyRows": 1,
+            "duplicatePropertyRows": 0,
+            "state": "decoded",
+            "rawUnsignedLE32": 7,
+            "allDuplicateRowsAgree": false
+          },
+          "usage": 7,
+          "attributeEnumerationState": "complete",
+          "attributeErrors": {},
+          "ownerAttributeReferenceProperties": [
+            {
+              "object": 92211,
+              "propertyName": "OMFI:CPNT:Attributes",
+              "typeName": "omfi:ObjRef",
+              "length": 8,
+              "ranges": [
+                [
+                  1337706,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  4848208,
+                  24
+                ]
+              ],
+              "hex": "2e68010000000000"
+            }
+          ],
+          "directAttributeEnumeration": {
+            "ownerReferenceState": {
+              "propertyRows": 1,
+              "duplicatePropertyRows": 0,
+              "state": "complete",
+              "targetObjectsInStoredOrder": [
+                92206
+              ]
+            },
+            "lists": [
+              {
+                "object": 92206,
+                "referenceState": {
+                  "propertyRows": 1,
+                  "duplicatePropertyRows": 0,
+                  "state": "complete",
+                  "targetObjectsInStoredOrder": [
+                    92192,
+                    92203,
+                    92205
+                  ]
+                },
+                "referenceProperties": [
+                  {
+                    "object": 92206,
+                    "propertyName": "OMFI:ATTR:AttrRefs",
+                    "typeName": "omfi:ObjRefArray",
+                    "length": 26,
+                    "ranges": [
+                      [
+                        1337485,
+                        26
+                      ]
+                    ],
+                    "tocRanges": [
+                      [
+                        4847248,
+                        24
+                      ]
+                    ],
+                    "hex": "030020680100000000002b680100000000002d68010000000000"
+                  }
+                ]
+              }
+            ]
+          },
+          "directAttributeEntryCount": 3,
+          "relevantDirectAttributes": [
+            {
+              "attributeObject": 92203,
+              "name": "_IMPORTSETTING",
+              "nameState": "decoded",
+              "kindState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "decoded",
+                "rawUnsignedValue": 3,
+                "byteOrder": "little"
+              },
+              "kind": 3,
+              "objectPayloadState": "completeExistingTarget",
+              "objectPayloadTargets": [
+                92202
+              ],
+              "objectPayloadTargetClasses": [
+                "ATTR"
+              ],
+              "nameProperties": [
+                {
+                  "object": 92203,
+                  "propertyName": "OMFI:ATTB:Name",
+                  "typeName": "omfi:String",
+                  "length": 15,
+                  "ranges": [
+                    [
+                      1337423,
+                      15
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      4846912,
+                      24
+                    ]
+                  ],
+                  "hex": "5f494d504f525453455454494e4700"
+                }
+              ],
+              "kindProperties": [
+                {
+                  "object": 92203,
+                  "propertyName": "OMFI:ATTB:Kind",
+                  "typeName": "omfi:AttrKind",
+                  "length": 2,
+                  "ranges": [
+                    [
+                      4846900,
+                      2
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      4846888,
+                      24
+                    ]
+                  ],
+                  "hex": "0300"
+                }
+              ],
+              "objectPayloadProperties": [
+                {
+                  "object": 92203,
+                  "propertyName": "OMFI:ATTB:ObjAttribute",
+                  "typeName": "omfi:ObjRef",
+                  "length": 8,
+                  "ranges": [
+                    [
+                      1337438,
+                      8
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      4846936,
+                      24
+                    ]
+                  ],
+                  "hex": "2a68010000000000"
+                }
+              ]
+            }
+          ],
+          "exactImportSettingNameEntryCount": 1,
+          "exactImportSettingNameKindConflict": false,
+          "exactImportSettingKind3EntryCount": 1,
+          "exactImportSettingKind3State": "oneExactKind3Entry",
+          "importObjectPayloadState": "completeExistingTarget",
+          "distinctImportObjectPayloadTargets": [
+            92202
+          ],
+          "trackEnumerationState": "complete",
+          "trackErrors": {},
+          "ownerTrackReferenceProperties": [
+            {
+              "object": 92211,
+              "propertyName": "OMFI:TRKG:Tracks",
+              "typeName": "omfi:ObjRefArray",
+              "length": 18,
+              "ranges": [
+                [
+                  1337714,
+                  18
+                ]
+              ],
+              "tocRanges": [
+                [
+                  4848328,
+                  24
+                ]
+              ],
+              "hex": "020030680100000000003268010000000000"
+            }
+          ],
+          "ownerTrackReferenceState": {
+            "propertyRows": 1,
+            "duplicatePropertyRows": 0,
+            "state": "complete",
+            "targetObjectsInStoredOrder": [
+              92208,
+              92210
+            ]
+          },
+          "directTrackSlotCount": 2,
+          "directTrackKindsInStoredOrder": [
+            2,
+            2
+          ],
+          "directVideoTrackCount": 0,
+          "directTracks": [
+            {
+              "storedTrackSlotIndex": 0,
+              "trackObject": 92208,
+              "trackClass": "TRAK",
+              "trackComponentReferenceState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "complete",
+                "targetObjectsInStoredOrder": [
+                  92207
+                ]
+              },
+              "componentObject": 92207,
+              "componentClass": "SCLP",
+              "trackKindState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "decoded",
+                "rawUnsignedValue": 2,
+                "byteOrder": "little"
+              },
+              "trackKind": 2,
+              "trackComponentReferenceProperties": [
+                {
+                  "object": 92208,
+                  "propertyName": "OMFI:TRAK:TrackComponent",
+                  "typeName": "omfi:ObjRef",
+                  "length": 8,
+                  "ranges": [
+                    [
+                      1337592,
+                      8
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      4847656,
+                      24
+                    ]
+                  ],
+                  "hex": "2f68010000000000"
+                }
+              ],
+              "componentTrackKindProperties": [
+                {
+                  "object": 92207,
+                  "propertyName": "OMFI:CPNT:TrackKind",
+                  "typeName": "omfi:TrackType",
+                  "length": 2,
+                  "ranges": [
+                    [
+                      4847332,
+                      2
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      4847320,
+                      24
+                    ]
+                  ],
+                  "hex": "0200"
+                }
+              ]
+            },
+            {
+              "storedTrackSlotIndex": 1,
+              "trackObject": 92210,
+              "trackClass": "TRAK",
+              "trackComponentReferenceState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "complete",
+                "targetObjectsInStoredOrder": [
+                  92209
+                ]
+              },
+              "componentObject": 92209,
+              "componentClass": "SCLP",
+              "trackKindState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "decoded",
+                "rawUnsignedValue": 2,
+                "byteOrder": "little"
+              },
+              "trackKind": 2,
+              "trackComponentReferenceProperties": [
+                {
+                  "object": 92210,
+                  "propertyName": "OMFI:TRAK:TrackComponent",
+                  "typeName": "omfi:ObjRef",
+                  "length": 8,
+                  "ranges": [
+                    [
+                      1337681,
+                      8
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      4848064,
+                      24
+                    ]
+                  ],
+                  "hex": "3168010000000000"
+                }
+              ],
+              "componentTrackKindProperties": [
+                {
+                  "object": 92209,
+                  "propertyName": "OMFI:CPNT:TrackKind",
+                  "typeName": "omfi:TrackType",
+                  "length": 2,
+                  "ranges": [
+                    [
+                      4847740,
+                      2
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      4847728,
+                      24
+                    ]
+                  ],
+                  "hex": "0200"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "databaseSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "fileMobId": "060a2b340101010101010f001300000069ffc55bd5a4b305060e2b347f7f2a80",
+        "masterMobId": "060a2b340101010101010f001300000069ffc55bd3a4b305060e2b347f7f2a80",
+        "fileObject": 74924,
+        "masterObject": 74881,
+        "descriptorObject": 74923,
+        "descriptorClass": "PCMA",
+        "pmrRecordByteRange": [
+          48876,
+          126
+        ],
+        "pmrVersion": 16,
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 74924,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                511445,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                2371528,
+                24
+              ]
+            ],
+            "hex": "ab24010000000000"
+          }
+        ],
+        "masterMobIdProperties": [
+          {
+            "object": 74881,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 12,
+            "ranges": [
+              [
+                510260,
+                12
+              ]
+            ],
+            "tocRanges": [
+              [
+                2362864,
+                24
+              ]
+            ],
+            "hex": "2a00000069ffc55bd3a4b305"
+          },
+          {
+            "object": 74881,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 12,
+            "ranges": [
+              [
+                510277,
+                12
+              ]
+            ],
+            "tocRanges": [
+              [
+                2362960,
+                24
+              ]
+            ],
+            "hex": "2a00000069ffc55bd3a4b305"
+          }
+        ],
+        "masterUsageProperties": [
+          {
+            "object": 74881,
+            "propertyName": "OMFI:MOBJ:UsageCode",
+            "typeName": "omfi:UsageCodeType",
+            "length": 4,
+            "ranges": [
+              [
+                2362924,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                2362912,
+                24
+              ]
+            ],
+            "hex": "07000000"
+          }
+        ],
+        "ownFacts": {
+          "masterObject": 74881,
+          "masterMobId": "060a2b340101010101010f001300000069ffc55bd3a4b305060e2b347f7f2a80",
+          "usageState": {
+            "property": "OMFI:MOBJ:UsageCode",
+            "propertyRows": 1,
+            "duplicatePropertyRows": 0,
+            "state": "decoded",
+            "rawUnsignedLE32": 7,
+            "allDuplicateRowsAgree": false
+          },
+          "usage": 7,
+          "attributeEnumerationState": "complete",
+          "attributeErrors": {},
+          "ownerAttributeReferenceProperties": [
+            {
+              "object": 74881,
+              "propertyName": "OMFI:CPNT:Attributes",
+              "typeName": "omfi:ObjRef",
+              "length": 8,
+              "ranges": [
+                [
+                  510226,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  2362672,
+                  24
+                ]
+              ],
+              "hex": "5a24010000000000"
+            }
+          ],
+          "directAttributeEnumeration": {
+            "ownerReferenceState": {
+              "propertyRows": 1,
+              "duplicatePropertyRows": 0,
+              "state": "complete",
+              "targetObjectsInStoredOrder": [
+                74842
+              ]
+            },
+            "lists": [
+              {
+                "object": 74842,
+                "referenceState": {
+                  "propertyRows": 1,
+                  "duplicatePropertyRows": 0,
+                  "state": "complete",
+                  "targetObjectsInStoredOrder": [
+                    74722,
+                    74824,
+                    74825,
+                    74829,
+                    74830,
+                    74831,
+                    74833,
+                    74834,
+                    74835,
+                    74836,
+                    74837,
+                    74838,
+                    74840,
+                    74841
+                  ]
+                },
+                "referenceProperties": [
+                  {
+                    "object": 74842,
+                    "propertyName": "OMFI:ATTR:AttrRefs",
+                    "typeName": "omfi:ObjRefArray",
+                    "length": 114,
+                    "ranges": [
+                      [
+                        509300,
+                        114
+                      ]
+                    ],
+                    "tocRanges": [
+                      [
+                        2357272,
+                        24
+                      ]
+                    ],
+                    "hex": "0e00e223010000000000482401000000000049240100000000004d240100000000004e240100000000004f2401000000000051240100000000005224010000000000532401000000000054240100000000005524010000000000562401000000000058240100000000005924010000000000"
+                  }
+                ]
+              }
+            ]
+          },
+          "directAttributeEntryCount": 14,
+          "relevantDirectAttributes": [
+            {
+              "attributeObject": 74829,
+              "name": "_IMPORTSETTING",
+              "nameState": "decoded",
+              "kindState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "decoded",
+                "rawUnsignedValue": 3,
+                "byteOrder": "little"
+              },
+              "kind": 3,
+              "objectPayloadState": "completeExistingTarget",
+              "objectPayloadTargets": [
+                74828
+              ],
+              "objectPayloadTargetClasses": [
+                "ATTR"
+              ],
+              "nameProperties": [
+                {
+                  "object": 74829,
+                  "propertyName": "OMFI:ATTB:Name",
+                  "typeName": "omfi:String",
+                  "length": 15,
+                  "ranges": [
+                    [
+                      509025,
+                      15
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      2355928,
+                      24
+                    ]
+                  ],
+                  "hex": "5f494d504f525453455454494e4700"
+                }
+              ],
+              "kindProperties": [
+                {
+                  "object": 74829,
+                  "propertyName": "OMFI:ATTB:Kind",
+                  "typeName": "omfi:AttrKind",
+                  "length": 2,
+                  "ranges": [
+                    [
+                      2355916,
+                      2
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      2355904,
+                      24
+                    ]
+                  ],
+                  "hex": "0300"
+                }
+              ],
+              "objectPayloadProperties": [
+                {
+                  "object": 74829,
+                  "propertyName": "OMFI:ATTB:ObjAttribute",
+                  "typeName": "omfi:ObjRef",
+                  "length": 8,
+                  "ranges": [
+                    [
+                      509040,
+                      8
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      2355952,
+                      24
+                    ]
+                  ],
+                  "hex": "4c24010000000000"
+                }
+              ]
+            }
+          ],
+          "exactImportSettingNameEntryCount": 1,
+          "exactImportSettingNameKindConflict": false,
+          "exactImportSettingKind3EntryCount": 1,
+          "exactImportSettingKind3State": "oneExactKind3Entry",
+          "importObjectPayloadState": "completeExistingTarget",
+          "distinctImportObjectPayloadTargets": [
+            74828
+          ],
+          "trackEnumerationState": "complete",
+          "trackErrors": {},
+          "ownerTrackReferenceProperties": [
+            {
+              "object": 74881,
+              "propertyName": "OMFI:TRKG:Tracks",
+              "typeName": "omfi:ObjRefArray",
+              "length": 26,
+              "ranges": [
+                [
+                  510234,
+                  26
+                ]
+              ],
+              "tocRanges": [
+                [
+                  2362792,
+                  24
+                ]
+              ],
+              "hex": "0300662401000000000073240100000000008024010000000000"
+            }
+          ],
+          "ownerTrackReferenceState": {
+            "propertyRows": 1,
+            "duplicatePropertyRows": 0,
+            "state": "complete",
+            "targetObjectsInStoredOrder": [
+              74854,
+              74867,
+              74880
+            ]
+          },
+          "directTrackSlotCount": 3,
+          "directTrackKindsInStoredOrder": [
+            1,
+            2,
+            2
+          ],
+          "directVideoTrackCount": 1,
+          "directTracks": [
+            {
+              "storedTrackSlotIndex": 0,
+              "trackObject": 74854,
+              "trackClass": "TRAK",
+              "trackComponentReferenceState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "complete",
+                "targetObjectsInStoredOrder": [
+                  74852
+                ]
+              },
+              "componentObject": 74852,
+              "componentClass": "SEQU",
+              "trackKindState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "decoded",
+                "rawUnsignedValue": 1,
+                "byteOrder": "little"
+              },
+              "trackKind": 1,
+              "trackComponentReferenceProperties": [
+                {
+                  "object": 74854,
+                  "propertyName": "OMFI:TRAK:TrackComponent",
+                  "typeName": "omfi:ObjRef",
+                  "length": 8,
+                  "ranges": [
+                    [
+                      509628,
+                      8
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      2359048,
+                      24
+                    ]
+                  ],
+                  "hex": "6424010000000000"
+                }
+              ],
+              "componentTrackKindProperties": [
+                {
+                  "object": 74852,
+                  "propertyName": "OMFI:CPNT:TrackKind",
+                  "typeName": "omfi:TrackType",
+                  "length": 2,
+                  "ranges": [
+                    [
+                      2358556,
+                      2
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      2358544,
+                      24
+                    ]
+                  ],
+                  "hex": "0100"
+                }
+              ]
+            },
+            {
+              "storedTrackSlotIndex": 1,
+              "trackObject": 74867,
+              "trackClass": "TRAK",
+              "trackComponentReferenceState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "complete",
+                "targetObjectsInStoredOrder": [
+                  74866
+                ]
+              },
+              "componentObject": 74866,
+              "componentClass": "SEQU",
+              "trackKindState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "decoded",
+                "rawUnsignedValue": 2,
+                "byteOrder": "little"
+              },
+              "trackKind": 2,
+              "trackComponentReferenceProperties": [
+                {
+                  "object": 74867,
+                  "propertyName": "OMFI:TRAK:TrackComponent",
+                  "typeName": "omfi:ObjRef",
+                  "length": 8,
+                  "ranges": [
+                    [
+                      509911,
+                      8
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      2360800,
+                      24
+                    ]
+                  ],
+                  "hex": "7224010000000000"
+                }
+              ],
+              "componentTrackKindProperties": [
+                {
+                  "object": 74866,
+                  "propertyName": "OMFI:CPNT:TrackKind",
+                  "typeName": "omfi:TrackType",
+                  "length": 2,
+                  "ranges": [
+                    [
+                      2360548,
+                      2
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      2360536,
+                      24
+                    ]
+                  ],
+                  "hex": "0200"
+                }
+              ]
+            },
+            {
+              "storedTrackSlotIndex": 2,
+              "trackObject": 74880,
+              "trackClass": "TRAK",
+              "trackComponentReferenceState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "complete",
+                "targetObjectsInStoredOrder": [
+                  74879
+                ]
+              },
+              "componentObject": 74879,
+              "componentClass": "SEQU",
+              "trackKindState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "decoded",
+                "rawUnsignedValue": 2,
+                "byteOrder": "little"
+              },
+              "trackKind": 2,
+              "trackComponentReferenceProperties": [
+                {
+                  "object": 74880,
+                  "propertyName": "OMFI:TRAK:TrackComponent",
+                  "typeName": "omfi:ObjRef",
+                  "length": 8,
+                  "ranges": [
+                    [
+                      510186,
+                      8
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      2362528,
+                      24
+                    ]
+                  ],
+                  "hex": "7f24010000000000"
+                }
+              ],
+              "componentTrackKindProperties": [
+                {
+                  "object": 74879,
+                  "propertyName": "OMFI:CPNT:TrackKind",
+                  "typeName": "omfi:TrackType",
+                  "length": 2,
+                  "ranges": [
+                    [
+                      2362276,
+                      2
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      2362264,
+                      24
+                    ]
+                  ],
+                  "hex": "0200"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "databaseSha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "fileMobId": "060a2b340101010501010f10130000001c08b71573110696d1fa7c57583610fa",
+        "masterMobId": "060a2b340101010501010f1013000000b3772b15731106961c0a7c57583610fa",
+        "fileObject": 150014,
+        "masterObject": 187386,
+        "descriptorObject": 150013,
+        "descriptorClass": "CDCI",
+        "pmrRecordByteRange": [
+          89035,
+          121
+        ],
+        "pmrVersion": 16,
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 150014,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                2143347,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                15460224,
+                24
+              ]
+            ],
+            "hex": "fd49020000000000"
+          }
+        ],
+        "masterMobIdProperties": [
+          {
+            "object": 187386,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                3321725,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                20127456,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000b3772b15731106961c0a7c57583610fa"
+          },
+          {
+            "object": 187386,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                3321762,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                20127552,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000b3772b15731106961c0a7c57583610fa"
+          }
+        ],
+        "masterUsageProperties": [
+          {
+            "object": 187386,
+            "propertyName": "OMFI:MOBJ:UsageCode",
+            "typeName": "omfi:UsageCodeType",
+            "length": 4,
+            "ranges": [
+              [
+                20127516,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                20127504,
+                24
+              ]
+            ],
+            "hex": "01000000"
+          }
+        ],
+        "ownFacts": {
+          "masterObject": 187386,
+          "masterMobId": "060a2b340101010501010f1013000000b3772b15731106961c0a7c57583610fa",
+          "usageState": {
+            "property": "OMFI:MOBJ:UsageCode",
+            "propertyRows": 1,
+            "duplicatePropertyRows": 0,
+            "state": "decoded",
+            "rawUnsignedLE32": 1,
+            "allDuplicateRowsAgree": false
+          },
+          "usage": 1,
+          "attributeEnumerationState": "complete",
+          "attributeErrors": {},
+          "ownerAttributeReferenceProperties": [
+            {
+              "object": 187386,
+              "propertyName": "OMFI:CPNT:Attributes",
+              "typeName": "omfi:ObjRef",
+              "length": 8,
+              "ranges": [
+                [
+                  3321707,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  20127264,
+                  24
+                ]
+              ],
+              "hex": "f1db020000000000"
+            }
+          ],
+          "directAttributeEnumeration": {
+            "ownerReferenceState": {
+              "propertyRows": 1,
+              "duplicatePropertyRows": 0,
+              "state": "complete",
+              "targetObjectsInStoredOrder": [
+                187377
+              ]
+            },
+            "lists": [
+              {
+                "object": 187377,
+                "referenceState": {
+                  "propertyRows": 1,
+                  "duplicatePropertyRows": 0,
+                  "state": "complete",
+                  "targetObjectsInStoredOrder": [
+                    187367,
+                    187368,
+                    187370,
+                    187371,
+                    187373,
+                    187374,
+                    187375,
+                    187376
+                  ]
+                },
+                "referenceProperties": [
+                  {
+                    "object": 187377,
+                    "propertyName": "OMFI:ATTR:AttrRefs",
+                    "typeName": "omfi:ObjRefArray",
+                    "length": 66,
+                    "ranges": [
+                      [
+                        3321392,
+                        66
+                      ]
+                    ],
+                    "tocRanges": [
+                      [
+                        20125992,
+                        24
+                      ]
+                    ],
+                    "hex": "0800e7db020000000000e8db020000000000eadb020000000000ebdb020000000000eddb020000000000eedb020000000000efdb020000000000f0db020000000000"
+                  }
+                ]
+              }
+            ]
+          },
+          "directAttributeEntryCount": 8,
+          "relevantDirectAttributes": [],
+          "exactImportSettingNameEntryCount": 0,
+          "exactImportSettingNameKindConflict": false,
+          "exactImportSettingKind3EntryCount": 0,
+          "exactImportSettingKind3State": "absent",
+          "importObjectPayloadState": "notApplicable",
+          "distinctImportObjectPayloadTargets": [],
+          "trackEnumerationState": "complete",
+          "trackErrors": {},
+          "ownerTrackReferenceProperties": [
+            {
+              "object": 187386,
+              "propertyName": "OMFI:TRKG:Tracks",
+              "typeName": "omfi:ObjRefArray",
+              "length": 10,
+              "ranges": [
+                [
+                  3321715,
+                  10
+                ]
+              ],
+              "tocRanges": [
+                [
+                  20127384,
+                  24
+                ]
+              ],
+              "hex": "0100f9db020000000000"
+            }
+          ],
+          "ownerTrackReferenceState": {
+            "propertyRows": 1,
+            "duplicatePropertyRows": 0,
+            "state": "complete",
+            "targetObjectsInStoredOrder": [
+              187385
+            ]
+          },
+          "directTrackSlotCount": 1,
+          "directTrackKindsInStoredOrder": [
+            1
+          ],
+          "directVideoTrackCount": 1,
+          "directTracks": [
+            {
+              "storedTrackSlotIndex": 0,
+              "trackObject": 187385,
+              "trackClass": "TRAK",
+              "trackComponentReferenceState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "complete",
+                "targetObjectsInStoredOrder": [
+                  187383
+                ]
+              },
+              "componentObject": 187383,
+              "componentClass": "SCLP",
+              "trackKindState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "decoded",
+                "rawUnsignedValue": 1,
+                "byteOrder": "little"
+              },
+              "trackKind": 1,
+              "trackComponentReferenceProperties": [
+                {
+                  "object": 187385,
+                  "propertyName": "OMFI:TRAK:TrackComponent",
+                  "typeName": "omfi:ObjRef",
+                  "length": 8,
+                  "ranges": [
+                    [
+                      3321636,
+                      8
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      20127096,
+                      24
+                    ]
+                  ],
+                  "hex": "f7db020000000000"
+                }
+              ],
+              "componentTrackKindProperties": [
+                {
+                  "object": 187383,
+                  "propertyName": "OMFI:CPNT:TrackKind",
+                  "typeName": "omfi:TrackType",
+                  "length": 2,
+                  "ranges": [
+                    [
+                      20126508,
+                      2
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      20126496,
+                      24
+                    ]
+                  ],
+                  "hex": "0100"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "databaseSha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "fileMobId": "060a2b340101010501010f1013000000894b860873110696afd77c57583610fa",
+        "masterMobId": "060a2b340101010501010f1013000000a2817a0873110696faaf7c57583610fa",
+        "fileObject": 147642,
+        "masterObject": 152143,
+        "descriptorObject": 147641,
+        "descriptorClass": "PCMA",
+        "pmrRecordByteRange": [
+          61672,
+          121
+        ],
+        "pmrVersion": 16,
+        "fileOwnPhysicalMediaReference": [
+          {
+            "object": 147642,
+            "propertyName": "OMFI:MOBJ:PhysicalMedia",
+            "typeName": "omfi:ObjRef",
+            "length": 8,
+            "ranges": [
+              [
+                2220024,
+                8
+              ]
+            ],
+            "tocRanges": [
+              [
+                13960208,
+                24
+              ]
+            ],
+            "hex": "b940020000000000"
+          }
+        ],
+        "masterMobIdProperties": [
+          {
+            "object": 152143,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                2365991,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                14521376,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000a2817a0873110696faaf7c57583610fa"
+          },
+          {
+            "object": 152143,
+            "propertyName": "OMFI:MOBJ:MobID",
+            "typeName": "omfi:UID",
+            "length": 32,
+            "ranges": [
+              [
+                2366028,
+                32
+              ]
+            ],
+            "tocRanges": [
+              [
+                14521472,
+                24
+              ]
+            ],
+            "hex": "060a2b340101010501010f1013000000a2817a0873110696faaf7c57583610fa"
+          }
+        ],
+        "masterUsageProperties": [
+          {
+            "object": 152143,
+            "propertyName": "OMFI:MOBJ:UsageCode",
+            "typeName": "omfi:UsageCodeType",
+            "length": 4,
+            "ranges": [
+              [
+                14521436,
+                4
+              ]
+            ],
+            "tocRanges": [
+              [
+                14521424,
+                24
+              ]
+            ],
+            "hex": "01000000"
+          }
+        ],
+        "ownFacts": {
+          "masterObject": 152143,
+          "masterMobId": "060a2b340101010501010f1013000000a2817a0873110696faaf7c57583610fa",
+          "usageState": {
+            "property": "OMFI:MOBJ:UsageCode",
+            "propertyRows": 1,
+            "duplicatePropertyRows": 0,
+            "state": "decoded",
+            "rawUnsignedLE32": 1,
+            "allDuplicateRowsAgree": false
+          },
+          "usage": 1,
+          "attributeEnumerationState": "complete",
+          "attributeErrors": {},
+          "ownerAttributeReferenceProperties": [
+            {
+              "object": 152143,
+              "propertyName": "OMFI:CPNT:Attributes",
+              "typeName": "omfi:ObjRef",
+              "length": 8,
+              "ranges": [
+                [
+                  2365973,
+                  8
+                ]
+              ],
+              "tocRanges": [
+                [
+                  14521184,
+                  24
+                ]
+              ],
+              "hex": "4752020000000000"
+            }
+          ],
+          "directAttributeEnumeration": {
+            "ownerReferenceState": {
+              "propertyRows": 1,
+              "duplicatePropertyRows": 0,
+              "state": "complete",
+              "targetObjectsInStoredOrder": [
+                152135
+              ]
+            },
+            "lists": [
+              {
+                "object": 152135,
+                "referenceState": {
+                  "propertyRows": 1,
+                  "duplicatePropertyRows": 0,
+                  "state": "complete",
+                  "targetObjectsInStoredOrder": [
+                    152124,
+                    152125,
+                    152127,
+                    152128,
+                    152130,
+                    152131,
+                    152132,
+                    152133,
+                    152134
+                  ]
+                },
+                "referenceProperties": [
+                  {
+                    "object": 152135,
+                    "propertyName": "OMFI:ATTR:AttrRefs",
+                    "typeName": "omfi:ObjRefArray",
+                    "length": 74,
+                    "ranges": [
+                      [
+                        2365674,
+                        74
+                      ]
+                    ],
+                    "tocRanges": [
+                      [
+                        14520176,
+                        24
+                      ]
+                    ],
+                    "hex": "09003c520200000000003d520200000000003f52020000000000405202000000000042520200000000004352020000000000445202000000000045520200000000004652020000000000"
+                  }
+                ]
+              }
+            ]
+          },
+          "directAttributeEntryCount": 9,
+          "relevantDirectAttributes": [],
+          "exactImportSettingNameEntryCount": 0,
+          "exactImportSettingNameKindConflict": false,
+          "exactImportSettingKind3EntryCount": 0,
+          "exactImportSettingKind3State": "absent",
+          "importObjectPayloadState": "notApplicable",
+          "distinctImportObjectPayloadTargets": [],
+          "trackEnumerationState": "complete",
+          "trackErrors": {},
+          "ownerTrackReferenceProperties": [
+            {
+              "object": 152143,
+              "propertyName": "OMFI:TRKG:Tracks",
+              "typeName": "omfi:ObjRefArray",
+              "length": 10,
+              "ranges": [
+                [
+                  2365981,
+                  10
+                ]
+              ],
+              "tocRanges": [
+                [
+                  14521304,
+                  24
+                ]
+              ],
+              "hex": "01004e52020000000000"
+            }
+          ],
+          "ownerTrackReferenceState": {
+            "propertyRows": 1,
+            "duplicatePropertyRows": 0,
+            "state": "complete",
+            "targetObjectsInStoredOrder": [
+              152142
+            ]
+          },
+          "directTrackSlotCount": 1,
+          "directTrackKindsInStoredOrder": [
+            2
+          ],
+          "directVideoTrackCount": 0,
+          "directTracks": [
+            {
+              "storedTrackSlotIndex": 0,
+              "trackObject": 152142,
+              "trackClass": "TRAK",
+              "trackComponentReferenceState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "complete",
+                "targetObjectsInStoredOrder": [
+                  152141
+                ]
+              },
+              "componentObject": 152141,
+              "componentClass": "SCLP",
+              "trackKindState": {
+                "propertyRows": 1,
+                "duplicatePropertyRows": 0,
+                "state": "decoded",
+                "rawUnsignedValue": 2,
+                "byteOrder": "little"
+              },
+              "trackKind": 2,
+              "trackComponentReferenceProperties": [
+                {
+                  "object": 152142,
+                  "propertyName": "OMFI:TRAK:TrackComponent",
+                  "typeName": "omfi:ObjRef",
+                  "length": 8,
+                  "ranges": [
+                    [
+                      2365918,
+                      8
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      14521040,
+                      24
+                    ]
+                  ],
+                  "hex": "4d52020000000000"
+                }
+              ],
+              "componentTrackKindProperties": [
+                {
+                  "object": 152141,
+                  "propertyName": "OMFI:CPNT:TrackKind",
+                  "typeName": "omfi:TrackType",
+                  "length": 2,
+                  "ranges": [
+                    [
+                      14520692,
+                      2
+                    ]
+                  ],
+                  "tocRanges": [
+                    [
+                      14520680,
+                      24
+                    ]
+                  ],
+                  "hex": "0200"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "sourceHashReceipts": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "matchesPriorTypeReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 5159032,
+        "mtime_ns": 1561096331000000000,
+        "inode": 469151
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544",
+        "matchesPriorTypeReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 97250,
+        "mtime_ns": 1561095049000000000,
+        "inode": 469152
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "matchesPriorTypeReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 22745976,
+        "mtime_ns": 1785052712000000000,
+        "inode": 1081262
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79",
+        "matchesPriorTypeReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 164660,
+        "mtime_ns": 1785052993000000000,
+        "inode": 1081385
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "matchesPriorTypeReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 16616336,
+        "mtime_ns": 1778753153000000000,
+        "inode": 1081897
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7",
+        "matchesPriorTypeReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 123140,
+        "mtime_ns": 1790763274000000000,
+        "inode": 1082005
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "matchesPriorTypeReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 15703416,
+        "mtime_ns": 1778753179000000000,
+        "inode": 1082384
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524",
+        "matchesPriorTypeReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 111140,
+        "mtime_ns": 1785052993000000000,
+        "inode": 1082472
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "matchesPriorTypeReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 3668720,
+        "mtime_ns": 1788291273218255487,
+        "inode": 6813558
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a",
+        "matchesPriorTypeReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 86754,
+        "mtime_ns": 1790740372078265906,
+        "inode": 6813560
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "matchesPriorTypeReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 60680,
+        "mtime_ns": 1788291495301754724,
+        "inode": 14769208
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+        "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928",
+        "matchesPriorTypeReceipt": true,
+        "stableDuringRead": true,
+        "bytes": 392,
+        "mtime_ns": 1788291482553506886,
+        "inode": 14769210
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+        "sha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "matchesPriorTypeIndexHash": true,
+        "stableDuringRead": true,
+        "bytes": 57405807,
+        "mtime_ns": 1792312028319751444,
+        "inode": 33683657
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+        "sha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "matchesPriorTypeIndexHash": true,
+        "stableDuringRead": true,
+        "bytes": 277457615,
+        "mtime_ns": 1792312034034888261,
+        "inode": 33683660
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+        "sha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "matchesPriorTypeIndexHash": true,
+        "stableDuringRead": true,
+        "bytes": 202174044,
+        "mtime_ns": 1792312038378265481,
+        "inode": 33683661
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+        "sha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "matchesPriorTypeIndexHash": true,
+        "stableDuringRead": true,
+        "bytes": 191199626,
+        "mtime_ns": 1792312042557915572,
+        "inode": 33683671
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+        "sha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "matchesPriorTypeIndexHash": true,
+        "stableDuringRead": true,
+        "bytes": 45335148,
+        "mtime_ns": 1792312043581951973,
+        "inode": 33683676
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-OMFI MediaFiles-values.json",
+        "sha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "matchesPriorTypeIndexHash": true,
+        "stableDuringRead": true,
+        "bytes": 535484,
+        "mtime_ns": 1792312043637477450,
+        "inode": 33683677
+      }
+    ]
+  },
+  "currentMediaMuster": {
+    "classifier": "AvidPrecompute::classify is a small pure function, with explicit Unknown/Absent/Present/Conflicting attribute state and direct track count. Only known absent skips count.",
+    "mdbAdapter": "Selected master usage1 /legacy MOBJ, complete own direct attribute/track references, exact name +kind3. Extra classification work is separate from basic Type. Existing source completeness checks may be broader than necessary for this field.",
+    "display": "Current Category for precomputes is Rendered Effects/Titles and Matte Keys/lowercase unknown. Ordinary Media blank. Table/CSV label generation happens at presentation.",
+    "featureAndHeaderPolicy": "Optional feature controls detail columns/controls. OldScanner can request header reading for missing category when enabled; this is historical behavior, not a Bella approval.",
+    "filter": "Current PrecomputeFilterPath compares display strings and uses empty strings as all-descendant wildcards; proposed blank Category table/CSV must preserve an explicit Unknown filter identity.",
+    "testCasesInspectedNotRun": [
+      "confirmed absent import -> Rendered Effects",
+      "present object, two video tracks, null payload -> Titles and Matte Keys",
+      "present object, one video track -> Rendered Effects",
+      "wrong-width kind -> category unknown, Type remains Precompute",
+      "MDB/header source preference and stale identity cases exist but are not new Bella scheduling decisions"
+    ],
+    "sources": [
+      {
+        "path": "src/precompute.h",
+        "bytes": 1175,
+        "sha256": "4ff0c7e52fd8cbd1cc0900bc3638283ee6b69d05d72121f425d91c34af3748cd"
+      },
+      {
+        "path": "src/mediafile.h",
+        "bytes": 12788,
+        "sha256": "49d10ff77f89b8ff5af09796745e3ce5029dac66be7fb69504f16e310c75ade3"
+      },
+      {
+        "path": "src/precomputefilter.h",
+        "bytes": 1649,
+        "sha256": "2303ece77ad98b02048978d8aa7e3c590e336e6519f6615f331abfef993d8f0d"
+      },
+      {
+        "path": "src/featureflags.h",
+        "bytes": 209,
+        "sha256": "33d203dac6df61f458e4addac39428931582a698cc8c31daa2121e9f9ad93ebb"
+      },
+      {
+        "path": "src/mediatablemodel.cpp",
+        "bytes": 12214,
+        "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56"
+      },
+      {
+        "path": "src/mediacsv.cpp",
+        "bytes": 3609,
+        "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442"
+      },
+      {
+        "path": "src/oldscanner/mediaengine/mdbprojection.cpp",
+        "bytes": 65892,
+        "sha256": "75757ff663c541992768c502fa7b0887c4f31a02d23b7ec9e7b28532b160be5f"
+      },
+      {
+        "path": "src/oldscanner/mediaengineadapter.cpp",
+        "bytes": 5202,
+        "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935"
+      },
+      {
+        "path": "src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+        "bytes": 10816,
+        "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6"
+      },
+      {
+        "path": "src/oldscanner/mediaengine/scancoordinator.cpp",
+        "bytes": 36110,
+        "sha256": "ce59914d57573c3c56694c1fdd157c978f491463a706062b26c3abfb63be2f2e"
+      },
+      {
+        "path": "tests/tst_scanner.cpp",
+        "bytes": 185966,
+        "sha256": "6eb123f014a1eacd66442e3e1ce96a61631382f9ed1890b79dfc8c8d00e69426"
+      },
+      {
+        "path": "tests/tst_mediaengine_mxfprojection.cpp",
+        "bytes": 60904,
+        "sha256": "f9f633bc0022e5f681b210d58a95cf472b04db0b6189ead78f9d22b7e8618a22"
+      },
+      {
+        "path": "tests/tst_mediacsv.cpp",
+        "bytes": 21349,
+        "sha256": "4f14378fcd87ad7acf4b903de30c7d93e208a26c679068bff4c5dc5a70b582b8"
+      }
+    ]
+  },
+  "primarySources": [
+    {
+      "title": "Avid Knowledge Base: How to find clips in the Media Tool",
+      "url": "https://kb.avid.com/pkb/articles/en_US/Knowledge/How-to-find-clips-in-the-Media-Tool",
+      "checked": "2026-10-20",
+      "scope": "Public visible choices Rendered Effects and Titles and Matte Keys; no private MDB wire predicate."
+    },
+    {
+      "title": "What is New for Avid Media Composer v8.5, page25",
+      "url": "https://resources.avid.com/SupportFiles/attach/WhatsNew_MediaComposer_v8.5.pdf#page=25",
+      "checked": "2026-10-20",
+      "scope": "Documents introduced separation in Media Tool and Set Bin Display; native read path separately established."
+    }
+  ],
+  "guidance": {
+    "path": "/Users/martymclean/Downloads/CPP SKILL.md",
+    "bytes": 22279,
+    "sha256": "70919980c635f66db649b7eb1e426fb2098754ed6c9db22f1a7eee0935227d35"
+  },
+  "verification": {
+    "freshHashes": [
+      {
+        "group": "mc",
+        "artifactHashesMatched": 22
+      },
+      {
+        "group": "mdvx",
+        "artifactHashesMatched": 17
+      },
+      {
+        "group": "actual MDBs, paired PMRs and retained indexes",
+        "artifactHashesMatched": 18
+      }
+    ],
+    "binaryHashesMatched": 4,
+    "actualRetainedPropertyRowsRangeVerifiedByInputProbe": 1037588,
+    "representativeInputExamples": 5,
+    "representativePropertiesRootRecheckedAgainstActualBytes": 62,
+    "runtimeTestsOrBuilds": "None; research-only documentation.",
+    "limits": [
+      "Actual input audit reuses retained hashed Bento indexes and freshly verifies ranges, with independent owner/input logic; not an independently rebuilt entire TOC parser.",
+      "Native proof connects bin-display predicate to bits6/11, named controls and visible labels. Public sources document MediaTool same groups; no complete MediaTool caller trace is claimed.",
+      "All observed category payload targets resolve; null-object presence is proved natively and synthetic existing cases, not by an actual current null target.",
+      "Damaged/unsupported category inputs and absent-master recovery not exercised by the current clean usage1 subset.",
+      "The approved blank category table/CSV change requires preserving explicit Unknown filtering identity.",
+      "No measured performance gain or runtime/app/media/Bin Filter changes."
+    ]
+  },
+  "temporaryReceipts": [
+    {
+      "path": "/private/tmp/bella-mdb-precompute-category-20261020-mc/findings.json",
+      "bytes": 16583,
+      "sha256": "c83a788e881f9c5e913d551171f3ea4e1a14fcc609e0f45d04e7f9d717cece25"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-precompute-category-20261020-mdvx/findings.json",
+      "bytes": 12218,
+      "sha256": "b52635e0f921c05bb936aa585c6cac25c16f9120f2fcc100102cb8845ab72a9f"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-precompute-category-20261020-drives/findings.json",
+      "bytes": 415937,
+      "sha256": "0abf80581e949feef7de3423bd2ec94f9a1bb9bca40db53d9d3e88048566bc75"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-precompute-category-20261020-drives/probe.py",
+      "bytes": 32222,
+      "sha256": "024003d62aaa0d2cc29b0101ca029bd4495e9a50e8262cedcbf6a6038a685afd"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-precompute-category-20261020-drives/source-hash-receipts.json",
+      "bytes": 5603,
+      "sha256": "820d67e5af7ed4dcd849eb335ca10faba4f0e77c47700ec511747d49761ee66f"
+    }
+  ],
+  "agreedBellaRule": {
+    "status": "Approved by the user on 20 October 2026; not yet implemented.",
+    "gatingAndOwner": "Only the already selected qualified associated master established as Precompute (UsageCode 1); reuse same master as Type/Clip Name/Original Bin. Unknown or Media Type does not acquire a category through this predicate.",
+    "inputs": "Exact own direct _IMPORTSETTING object attribute, Kind3; if present, immediate master track-component CPNT:TrackKind1 count. No prefix/nested matching, no import-settings body, no recorded Source Path.",
+    "mapping": [
+      {
+        "facts": "Confirmed absence of the object attribute",
+        "category": "Rendered Effects",
+        "trackReadRequired": false
+      },
+      {
+        "facts": "Object attribute present; at least two direct video tracks",
+        "category": "Titles and Matte Keys",
+        "trackReadRequired": true
+      },
+      {
+        "facts": "Object attribute present; fewer than two direct video tracks",
+        "category": "Rendered Effects",
+        "trackReadRequired": true
+      },
+      {
+        "facts": "Relevant facts unknown/unreadable/conflicting/unsupported",
+        "category": "Unknown; retain separately established Type",
+        "trackReadRequired": "Only when needed for the decisive branch"
+      }
+    ],
+    "nullObjectPayload": "Matching object-attribute found flag is independent of the object pointer. Null target can qualify as found; no import-body traversal or target-content read is required by this predicate.",
+    "retention": "Small category enum and necessary availability. Read/derive once per selected master and reuse for associated physical rows during database processing. Reuse own direct attribute facts already needed by retained metadata. No formatted category label or permanent attribute/track/object graph solely for category.",
+    "presentation": "Rendered Effects / Titles and Matte Keys; blank table/CSV for unreadable or otherwise unavailable category and for inapplicable ordinary Media. This approved change replaces OldScanner lowercase unknown for Category cells; explicit Unknown filtering remains distinct.",
+    "filterCompatibility": "Keep explicit Unknown category for optional category filtering, distinct from blank table/CSV presentation and empty-string wildcard paths. Preserve optional feature and existing filtering meaning.",
+    "implementationBuildingBlocks": "Carry verified interpretation/useful cases into small new C++17 pure helper and scoped enums/value records. Use checked typed/endian Qt6.5.3 adapter access. No C++20 constructs.",
+    "separateDecisions": "Optional Effect Category/Effect/Effect Sequence retained. General MDB damage/layout coverage, source precedence, header-read conditions and scheduling remain separate. Bin Filter unchanged."
+  }
+}

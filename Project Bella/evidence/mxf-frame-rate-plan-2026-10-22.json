@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "Record explicit approval of Bella MXF Frame Rate rules before audio Sample Rate review, with a separately labelled planning-status estimate requested by the user.",
+  "status": "Approved Frame Rate requirements; no runtime implementation or cutover.",
+  "authorization": {
+    "source": "Direct human approval in the current conversation",
+    "statement": "OK, let's lock those Frame Rate rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read audio Sample Rate from MXF, and what should Bella read and keep?\nAnd how far % are we from finishing?",
+    "scope": "Approves the preceding focused MXF Frame Rate proposal. The audio Sample Rate review is a new request, not approval of its proposed mapping or cross-source priority."
+  },
+  "agreedBellaRules": {
+    "source": "Already qualified physical video descriptor FileDescriptor.SampleRate; complete known eight-byte big-endian rational, preserving original positive signed32 numerator/denominator and typed unit context.",
+    "units": "Use exact rate directly for supported frame-based Avid-compatible forms. No universal interlace/FrameLayout halving. Specific unestablished field-sampled forms need verified unit mapping; otherwise no MXF Frame Rate, retaining the file and independent facts.",
+    "otherClocks": "Do not substitute project/master/audio/timecode clocks or DF mode. Own-track context can support a verified specific unit mapping, not a universal alternate source or extra corroboration walk.",
+    "sharing": "Share the already-read exact rate with Duration where units match. Preserve Duration raw count/unit rate if a verified variant needs a distinct frame conversion. Usable Frame Rate survives missing ContainerDuration; header rate alone does not repair MDB Duration.",
+    "storageAndDisplay": "Small exact numeric value/availability; late familiar labels, exact numeric sorting, no label-to-source parsing or permanent duplicate fraction/string solely for this column. Uncommon label precision remains the prior presentation follow-up.",
+    "audio": "Audio visible Frame Rate remains blank even with an internal Duration display clock. DF/NDF affects timecode numbering/separators rather than frames per second.",
+    "missingDamaged": "No usable supported qualified rate means no MXF Frame Rate contribution; retain physical file and independent usable metadata, with no invented0FPS or unrelated replacement.",
+    "priority": "Usable MDB first; usable independently already-read own-file header only if MDB rate is unusable. Otherwise blank. No FrameRate-only media open; full priority/header-trigger review remains deferred.",
+    "lifetime": "Use fresh small C++17/Qt6.5 helpers; release temporary header/reference/layout facts after wanted compact extraction. No new dependency or generic-MXF scope expansion."
+  },
+  "unchanged": [
+    "Approved Duration including DF HH;MM;SS;FF and NDF HH:MM:SS:FF.",
+    "Compression and other agreed PMR/MDB/MXF requirements.",
+    "OldScanner remains active until explicit cutover approval; Bin Filter unchanged."
+  ],
+  "planningEstimate": {
+    "authority": "Assistant rough scope estimate in response to the user status question; not a measured schedule or a new approved requirement.",
+    "basis": "PMR and release-one MDB requirements substantially settled; MXF identities/names/Project/Kind/Duration/Frame Rate reviewed and agreed. Remaining work includes MXF audio/technical/classification and navigation/damage, OMF/WAV/AIFF, consolidated source priorities/read triggers and scanner coordination design.",
+    "runtimeState": "src/bella contains README.md only; no Bella runtime code or build target. Implementation and comparative correctness/time/memory testing have not started.",
+    "limits": "Not a percentage of finished application code, elapsed/remaining time or total implementation effort. No delivery ETA is established.",
+    "requirementsPlanningPercentRangeApproximate": [
+      60,
+      70
+    ]
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mxf-frame-rate-2026-10-22.json",
+    "sha256BeforeApprovalMetadata": "a76cdc5b5858025945c696cf5542b5afa9bf388e92f54ec1ba80893448bbd64d"
+  },
+  "supersedes": "Earlier pending status of the focused MXF Frame Rate rules. Preserve raw/native/source/corpus findings and hashes; historical proposal wording is superseded by this approval.",
+  "references": {
+    "focusedReview": "docs/reviews/2026-10-21-bella-mxf/frame-rate.md",
+    "researchEvidence": "Project Bella/evidence/mxf-frame-rate-2026-10-22.json",
+    "bellaPlan": "Project Bella/README.md#mxf-frame-rate-agreed-rules"
+  },
+  "validation": {
+    "runtimeImplemented": false,
+    "productionTestsRun": false,
+    "rawReceiptsChanged": false,
+    "nativeOrMediaResearchRepeatedForApproval": false
+  }
+}

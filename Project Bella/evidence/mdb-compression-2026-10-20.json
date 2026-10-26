@@ -1,0 +1,131 @@
+{
+  "date": "2026-10-20",
+  "timezone": "Australia/Sydney",
+  "purpose": "Record the explicit Bella requirement to preserve the current Compression system and its integration boundary.",
+  "status": "Approved preservation requirement; no runtime implementation or cutover.",
+  "userDirection": "Next, Compression: keep the current system as it is. It works and I love it.",
+  "preserve": [
+    "Current codec identification and exact catalogue mappings, qualified format-specific refinements and fallbacks.",
+    "Current readable codec names, DNx branding and exact supported older numbered aliases, qualified DNxUncompressed descriptions and companion audio encoding names.",
+    "Existing output/consumer behavior and table/CSV presentation, including current source preference when multiple eligible Compression results have already been read.",
+    "Existing useful tests and representative fixtures as preservation checks; no naming tests rerun on this documentation-only turn."
+  ],
+  "integration": {
+    "entryPoint": "MediaEngine::Detail::compressionNames(const CompressionFacts&), compressionnames_p.cpp:289.",
+    "reusableCore": "Value-only resolver and existing catalogue/DNx rules; no file reading, ParsedSource, AvidObject or scanner evidence graph dependency.",
+    "newBellaBoundary": "New independent parsers provide equivalent validated format facts through a small adapter later. Keep the resolver/catalogue rules unchanged.",
+    "companionBehavior": "Preserve the existing WAV/AIFF Summary encoding labels, structured coding-ID normalization, qualified legacy FourCC/resolution recovery with genuine coding absence, exact naming-only clock spelling, geometry/layout/depth/subsampling and alpha/representation qualifications.",
+    "outputs": [
+      "compression",
+      "newDnx",
+      "oldDnx",
+      "reallyOldDnx",
+      "legacyIdentifiersUsed"
+    ],
+    "example": "Avid DNx HQX [DNxHD 185x]",
+    "inputFacts": [
+      "codingLabel",
+      "descriptorClass",
+      "legacyCompression",
+      "legacyResolution",
+      "codingAbsent",
+      "geometry",
+      "rate",
+      "layout",
+      "depth",
+      "horizontal",
+      "vertical",
+      "bitDepth",
+      "sampleFormat",
+      "alphaDepth"
+    ],
+    "numericDepthCompatibility": "The existing resolver accepts depth/representation strings. Bella can generate those temporary arguments from numeric depth/format data without storing a formatted Bit Depth label in each result row.",
+    "separateTiming": "Preserve existing naming-only rate qualifications; the separate Duration interpreter must not silently replace or broaden them.",
+    "separateScheduling": "This preserves current Compression selection for already-read eligible sources; conditions for opening extra media files remain in the later scanner/header review.",
+    "noNewColumns": "Preserve current outputs/consumers and prior compact-retention decisions, without adding new visible naming columns."
+  },
+  "sourceReceipts": [
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/compressionnames_p.h",
+      "scope": "CompressionFacts / CompressionNames contract; pure resolver boundary.",
+      "bytes": 1384,
+      "sha256": "26fc69bad86718511987028cd87f4356488ccb1f47a7db2bb915b9154e1654ff"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/compressionnames_p.cpp",
+      "scope": "Existing exact codec catalogue and name builder.",
+      "bytes": 18766,
+      "sha256": "fe5a52e5c1f932330f30e41e5d14465f75777959ad66fa4845133dde52945a82"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/dnxnames_p.h",
+      "scope": "Existing DNx profile/naming/numbered operating-point rules.",
+      "bytes": 4448,
+      "sha256": "9cd7f0d2f2dbfdd7a8a16bd9186f7e4158ebceb506acd5441a44afdd898b44c6"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbprojection.cpp",
+      "scope": "MDB qualified inputs, legacy naming clock rules, audio-summary encoding labels.",
+      "bytes": 65892,
+      "sha256": "75757ff663c541992768c502fa7b0887c4f31a02d23b7ec9e7b28532b160be5f"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/omfprojection.cpp",
+      "scope": "OMF/native audio qualified inputs and companion labels.",
+      "bytes": 72795,
+      "sha256": "df8844ea1313a12c8c34b18d6aeadc92c8d75885ba1eeabd6cf948136b998c71"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mxfprojection.cpp",
+      "scope": "MXF qualified coding/format/representation inputs.",
+      "bytes": 63597,
+      "sha256": "c8c68e78db5f3efaa62235f55624c5478e89a0adc37581a922af050f931cad55"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp",
+      "scope": "Current Compression/name-source preference for already-read eligible observations.",
+      "bytes": 10816,
+      "sha256": "0628f0143c97ed50e1abf18f4b886eb5a7caa9469b8f89a200b1473406c201d6"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengineadapter.cpp",
+      "scope": "Current final Compression result adoption.",
+      "bytes": 5202,
+      "sha256": "ce234931c505c9e950909a13cc612552407eac84e256a3a62f7c1efaddc26935"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediatablemodel.cpp",
+      "scope": "Current table label consumer.",
+      "bytes": 12214,
+      "sha256": "7c737721ab278a7b6c054e4729376dc94432aa2b51e8fa1b6dc52ff409b62e56"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/mediacsv.cpp",
+      "scope": "Current CSV label consumer.",
+      "bytes": 3609,
+      "sha256": "c3893b6f8ffbc2563f7ea8383caaa24445e00bd77f36c1b45ed4206dde45a442"
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_compressionnames.cpp",
+      "scope": "Existing naming cases to preserve; not rerun for this decision.",
+      "bytes": 10998,
+      "sha256": "6692ef6df0af7cf0ae0b57892c1e184d270db0c2835a8b2b3cdce8d618d7cab5"
+    }
+  ],
+  "relatedBitDepthApproval": {
+    "date": "2026-10-20",
+    "reuse": "Carry over verified interpretation rules and useful test cases into small new Bella helpers.",
+    "storage": "Keep depth as a number with necessary format information.",
+    "presentation": "Generate the label when displayed.",
+    "boundary": "Independent C++17/Qt 6.5.3 Bella implementation; no wholesale import of OldScanner projection/evidence machinery.",
+    "remainingCoverage": "Palette/mixed/unsupported RGBA and uncommon fixed-point label details remain as marked for review; the approval does not silently settle every previously proposed edge case.",
+    "compression": "Separate user decision on the same turn preserves the current Compression system; see mdb-compression-2026-10-20.json."
+  },
+  "limits": [
+    "This is source-boundary inspection and an approved preservation decision, not a new binary reverse-engineering or actual-file codec survey.",
+    "No runtime source edits, tests, builds, app cutover, commits or measured speed/memory claims.",
+    "Uncommon generic Bit Depth label details still marked for review must not silently alter preserved Compression descriptions.",
+    "OldScanner remains active; Bella requirements review continues; Bin Filter unchanged."
+  ],
+  "nextField": "Resolution"
+}

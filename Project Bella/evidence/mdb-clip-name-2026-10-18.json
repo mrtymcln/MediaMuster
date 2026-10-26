@@ -1,0 +1,1070 @@
+{
+  "date": "2026-10-18",
+  "purpose": "Bella Clip Name and missing-PMR-master requirements review. The user approved the unique-master selection and missing-name rule on 2026-10-19. No Bella implementation; OldScanner, BinFilter, KelpieId and physical inventory rules unchanged.",
+  "mediaComposer": {
+    "date": "2026-10-18",
+    "applicationVersion": "26.8.0.58987",
+    "scope": "Bounded read-only static arm64 trace of native cached Clip Name lookup and the PMR version1 missing-master recovery route. No application launch, private API execution, database/media writes or Bella implementation.",
+    "binary": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+      "size": 73527536
+    },
+    "keyConclusions": [
+      "The ordinary native GetClipName path asks for the cached master association, resolves that exact master identity through the mob manager, then copies that object's component name. It does not guess a name from filenames or another Name attribute.",
+      "Concrete graph-based missing-master recovery exists in ReadPmrRec specifically for version1, whose stored record omits MasterMobId. It enumerates already-loaded type2 masters, visits their own components, and finds one whose source clips directly reference the target identity.",
+      "That version1 recovery stops at the first matching master in the typed mob-manager iteration. It does not count all distinct candidates or prove that the association is unique.",
+      "The traced component walk follows track/sequence containment and attached precompute components. At each source clip, the callback resolves its SourceID once; it does not recurse through arbitrary referenced mobs' track graphs.",
+      "This proves a native relationship route, not an automatic on-demand MDB opening mechanism or a universal repair for missing/null modern PMR master IDs.",
+      "Bella's proposed unique-candidate recovery is deliberately more conservative than the traced native version1 first-match behavior. It remains a product choice, not an existing approved selection rule."
+    ],
+    "normalClipNameLookup": {
+      "function": "MSMDBMediaStreamMgr::GetClipName",
+      "address": "0x43a91c",
+      "anchors": [
+        "0x43a97c clears the output name.",
+        "0x43a98c..0x43a99c dispatches slot0x198; verified vtable target is GetMasterMobID0x43a7ac.",
+        "0x43a9a0 obtains GetMobManProtocol.",
+        "0x43a9b8..0x43a9c4 dispatches slot0x58; verified AMobMan target is Lookup0x9b6948 with the returned complete master ID.",
+        "0x43a9c8 leaves the output empty when no object is resolved.",
+        "0x43a9d0..0x43a9dc dispatches object name-copy slot0x2b0; verified AComposition target is AComponent::GetNameCopy0x14942c."
+      ],
+      "cachedMasterGetter": {
+        "function": "MSMDBMediaStreamMgr::GetMasterMobID",
+        "address": "0x43a7ac",
+        "anchors": [
+          "0x43a7e8 initializes a null result.",
+          "0x43a804..0x43a868 searches cache entries matching the full requested identity, with eligible directory state and nonempty filename.",
+          "0x43a884..0x43a8cc searches that directory's file-info entry and compares its full file ID.",
+          "0x43a8d0..0x43a8e4 skips null master associations and copies the first eligible nonnull stored master association.",
+          "This routine does not enumerate MDB master tracks or rank competing masters."
+        ]
+      }
+    },
+    "v1MissingMasterRecovery": {
+      "function": "ReadPmrRec",
+      "address": "0x4474e0",
+      "branchRange": "0x4476c8..0x4477f4",
+      "anchors": [
+        "0x4476c8 compares record version with1; other versions go to stored Project/Master reading.",
+        "0x4476d0..0x447704 optionally obtains Project from the already-loaded object matching the file identity.",
+        "0x447708..0x447718 initializes the global mob-manager loop through slot0x90; verified target AMobMan::InitLoopState0x9b61a0.",
+        "0x44771c..0x447728 clears the derived master ID.",
+        "0x447734..0x447748 obtains the next type2 object through slot0xa0; verified target AMobMan::GetNextMobTyped0x9b61ec.",
+        "0x447750 leaves the master null when enumeration is exhausted.",
+        "0x447754..0x447770 builds a temporary list by invoking master VisitLinks with FindFileMobs0x442e34.",
+        "0x447798..0x4477b0 compares collected source identities with the PMR file identity using EqualMobID.",
+        "0x4477e4 continues to another master when no collected identity matched.",
+        "0x4477e8..0x4477f4 reads the matched master's full MobID and jumps to store it. No search for a second candidate occurs."
+      ],
+      "iterator": {
+        "function": "AMobMan::GetNextMobTyped",
+        "address": "0x9b61ec",
+        "evidence": "0x9b6208..0x9b6238 walks mob-manager objects until GetMobType equals the requested type. It is not a ranking by clip name, creation date or PMR record position."
+      },
+      "limit": "Objects must already be present in the mob manager. They may originate from MDB/media loading, but this branch does not itself open an MDB. No genuine v1 runtime exercise was performed."
+    },
+    "relationshipWalk": {
+      "entry": {
+        "function": "AComponent::VisitLinks",
+        "address": "0x14cf0c",
+        "evidence": "Sets traversal flags to2 and dispatches VisitComps1 through slot0x4b0."
+      },
+      "containment": [
+        {
+          "function": "ATrackGroup::VisitComps1",
+          "address": "0x215810",
+          "evidence": "0x215864..0x2158f4 walks the group's track components and auxiliary track components, dispatching their VisitComps1 with the same flags."
+        },
+        {
+          "function": "ASequence::VisitComps1",
+          "address": "0x1fcc58",
+          "evidence": "0x1fcc90..0x1fccf0 enumerates contained sequence components and visits each."
+        },
+        {
+          "function": "AComponent::VisitComps1",
+          "address": "0x14cd10",
+          "evidence": "0x14cd48..0x14cd78 also visits the attached precompute at CompOptionalData+8. SetPrecompute0x148710 stores that pointer at0x14877c."
+        },
+        {
+          "function": "ASourceClip::VisitComps1",
+          "address": "0x1deba0",
+          "evidence": "0x1debd4 tests flag2;0x1debf0..0x1dec0c calls the provided callback for that source clip. There is no traversal of the referenced mob's components here."
+        }
+      ],
+      "callback": {
+        "function": "FindFileMobs",
+        "address": "0x442e34",
+        "anchors": [
+          "0x442e58..0x442e64 invokes ASourceClip::FindMob through verified slot0x5a8.",
+          "0x442e68 ignores an unresolved source.",
+          "0x442e70..0x442e80 reads the referenced object's full MobID and ignores null IDs.",
+          "0x442e84..0x442e98 requires GetMobType()==3, the source-mob role. This check alone does not inspect or prove a file descriptor.",
+          "0x442e9c..0x442ed4 deduplicates and adds the referenced object to the temporary list.",
+          "The callback does not recursively visit that object's tracks. Its caller later compares with the already-established physical FileMobId."
+        ]
+      },
+      "sourceIdentity": {
+        "function": "ASourceClip::Get",
+        "address": "0x1dd7b8",
+        "evidence": "0x1dd838 selects dictionary slot0x368, OMFI:SCLP:SourceID, and0x1dd844 reads it through the MobID reader. Later modern tag can supply a complete AAF-form ID.",
+        "resolver": {
+          "function": "ASourceClip::FindMob",
+          "address": "0x1e09d0",
+          "evidence": "0x1e0a04..0x1e0a20 copies the source clip's full stored ID and resolves that exact ID through the mob manager."
+        }
+      },
+      "role": {
+        "function": "AComposition::GetMobType",
+        "address": "0x183ae4",
+        "evidence": "Returns the stored role byte at object+0x160. Native legacy object loading reads __OMFI:MOBJ:MobType; role2 is used for master enumeration and role3 for source references."
+      }
+    },
+    "nameValue": {
+      "field": "OMFI:CPNT:Name on the selected legacy master",
+      "anchors": [
+        "AComponent::Get0x148104 selects native dictionary slot0x190 at0x1482b4, corresponding to OMFI:CPNT:Name, and reads its raw string handle at0x1482c8.",
+        "0x1485cc..0x1485f8 installs that handle as the component name alias.",
+        "AComponent::GetNameCopy0x14942c reads the installed handle at component+0x38 and copies it with AvSHdlToStr.",
+        "The already-traced GetNameCopyUTF160x14943c converts these legacy name bytes with the current Mac codec. Bella's approved field-specific text policy applies to its selected field."
+      ],
+      "exclusion": "A generic Name attribute in PreservedBinData is not used by this name-copy route."
+    },
+    "recommendationForBella": [
+      "When an explicit PMR MasterMobId is usable, resolve that exact complete identity to the corresponding qualified MDB master and read its own Clip Name.",
+      "When no usable explicit association is available, a conservative proposed fallback is to collect distinct qualified masters whose own supported track/component graph directly references the target full FileMobId.",
+      "Count distinct complete MasterMobIds, rather than tracks, source clips or repeated object records.",
+      "Use a recovered association only when exactly one candidate is established and the required graph is readable; multiple candidates or incomplete required relationships should leave Clip Name unavailable under the proposed basic release-one policy.",
+      "Do not select by filename, matching names, object order, an arbitrary Name attribute or a recursively discovered ancestor master. Do not copy the native v1 hash-iteration first-match tie-break as if it established uniqueness.",
+      "These selection/fallback recommendations are not implementation and are not newly approved by this research."
+    ],
+    "vtableReceipts": [
+      {
+        "class": "MSMDBMediaStreamMgr",
+        "vtable": "0x12bdf90",
+        "addressPoint": "0x12bdfa0",
+        "slot": "0x198",
+        "pointerAddress": "0x12be138",
+        "target": "0x43a7ac",
+        "name": "MSMDBMediaStreamMgr::GetMasterMobID",
+        "storedChainedPointer": "0x1000000043a7ac"
+      },
+      {
+        "class": "AMobMan",
+        "vtable": "0x13cb400",
+        "addressPoint": "0x13cb410",
+        "slot": "0x58",
+        "pointerAddress": "0x13cb468",
+        "target": "0x9b6948",
+        "name": "AMobMan::Lookup",
+        "storedChainedPointer": "0x100000009b6948"
+      },
+      {
+        "class": "AComposition",
+        "vtable": "0x122e530",
+        "addressPoint": "0x122e540",
+        "slot": "0x2b0",
+        "pointerAddress": "0x122e7f0",
+        "target": "0x14942c",
+        "name": "AComponent::GetNameCopy",
+        "storedChainedPointer": "0x1000000014942c"
+      },
+      {
+        "class": "AComposition",
+        "vtable": "0x122e530",
+        "addressPoint": "0x122e540",
+        "slot": "0x4a0",
+        "pointerAddress": "0x122e9e0",
+        "target": "0x14cf0c",
+        "name": "AComponent::VisitLinks",
+        "storedChainedPointer": "0x1000000014cf0c"
+      },
+      {
+        "class": "AComposition",
+        "vtable": "0x122e530",
+        "addressPoint": "0x122e540",
+        "slot": "0x9e0",
+        "pointerAddress": "0x122ef20",
+        "target": "0x183ae4",
+        "name": "AComposition::GetMobType",
+        "storedChainedPointer": "0x10000000183ae4"
+      },
+      {
+        "class": "ASourceClip",
+        "vtable": "0x12354e8",
+        "addressPoint": "0x12354f8",
+        "slot": "0x5a8",
+        "pointerAddress": "0x1235aa0",
+        "target": "0x1e09d0",
+        "name": "ASourceClip::FindMob",
+        "storedChainedPointer": "0x100000001e09d0"
+      }
+    ],
+    "limits": [
+      "Static current-Mac native trace only; no live v1/ambiguous/missing-master experiment.",
+      "The v1 branch is proven. No equivalent universal recovery path was established for a null modern PMR master or every Media Tool/UI call site.",
+      "No claim that the loaded mob manager contains only the current MDB; native recovery may see other loaded objects. Bella's catalogue scope must be explicit.",
+      "Native component traversal includes attached precomputes. Bella should qualify supported relationships deliberately and must not describe an unsupported or partially read graph as complete.",
+      "No production or media changes."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/add-master.txt",
+        "bytes": 23789,
+        "sha256": "ce672ca739f74097ff70f866bdcbbefa476b8335fd78a5a354a0061d470bdfc7"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/base-visitcomps.txt",
+        "bytes": 1382,
+        "sha256": "850454f47965464debaa8fb47577ce6ef21bd6183ac86384eb447f5c0eba63dc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/component-name-read.txt",
+        "bytes": 816,
+        "sha256": "7a82182b428bde01dfa0ea6f2b8eca98ccae78450b88d5cff8720585651c8f71"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/component-visit-links.txt",
+        "bytes": 347,
+        "sha256": "41b6e2b27f57eef06d2077b696f8056852cebb167b13cd8ddb24163b5e1e6b32"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/find-filemobs.txt",
+        "bytes": 2355,
+        "sha256": "d705b84f7f1ab4090291aeb5025c42ada43e3ed23c83e6399f49b0ea14105fbd"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/find-source-mob.txt",
+        "bytes": 1678,
+        "sha256": "cbd40f39ff0dbb8422581b5cd63bc5ad376ad65bb16497f4055bb8e39084f307"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/get-clip-name.txt",
+        "bytes": 3026,
+        "sha256": "25a5aa101eae55b1259a6d58e911f99165dc67eae95016ed1244c974b028327c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/get-master-id.txt",
+        "bytes": 4144,
+        "sha256": "b834a3577659fbf76cc8f9be491e982d1c5654917c152504bdc4dd83054e3494"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/get-mob-type.txt",
+        "bytes": 221,
+        "sha256": "39e4a030b77c178c275633a66440557bd55966adce2fb0663c13f304a2a7d352"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/get-name-copy.txt",
+        "bytes": 334,
+        "sha256": "14301f00fcdc56588fb32c29996cc4b97c4bea02c9393517a7faabfab2145a70"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/libame-symbols.txt",
+        "bytes": 14662267,
+        "sha256": "de3cf7e5cf7739adac9a1a08c414ada8b91fb170410a4d9b82da0aa6a9c8d203"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/mobman-lookup.txt",
+        "bytes": 2286,
+        "sha256": "4716ef5d771f85d825042fc4cc81606472010a32fb5331ddbebe071b4cebc513"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/mobman-next-typed.txt",
+        "bytes": 1116,
+        "sha256": "04a75a7f65dcf1816b73a04d59d92d85ebbd449eaa32acf12b906bcaf1674384"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/pmr-v1-master-recovery.txt",
+        "bytes": 2952,
+        "sha256": "671f601ca58da81a85493a5b6a3fbc9465937afc422d17573979449049d3e24f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/scan-file-cache.txt",
+        "bytes": 15226,
+        "sha256": "7cf95d7ab6e8b8828e5907bef4f27f443fe74104545455dc93a0cfcf441b06d3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/sequence-visitcomps.txt",
+        "bytes": 1988,
+        "sha256": "1da0a88adb8f04eaeff7956c2d43fee8d6b07a155f0cc6a3825e4441a022e106"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/set-precompute.txt",
+        "bytes": 1447,
+        "sha256": "b9a5c689dbe3e1c2f5776fb9d746638024530f2e8460d01ab66ccf44d888bb1f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/sourceclip-get.txt",
+        "bytes": 5546,
+        "sha256": "e1aff199f37d069847e49a51352c87c791f9f2606bce7ea5b5da3b96facadb3b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/sourceclip-visitcomps.txt",
+        "bytes": 1334,
+        "sha256": "1c3ef12828bb35fce5c2f17849a69891a2a5f6b6aa7b21c3b821f0fc5321a8e7"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mc/trackgroup-visitcomps.txt",
+        "bytes": 2543,
+        "sha256": "0af839817933aa9c2fe38e18f5bec02cca195c562ccc418d3ae85254eff22487"
+      }
+    ]
+  },
+  "mdvx": {
+    "date": "2026-10-18",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "version": "0.2",
+      "build": "4073",
+      "architecture": "arm64",
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+    },
+    "scope": "Read-only static ordinary PMR-referenced MDB scanner/enrichment path and corresponding table column display. No MDVx app launch or scan, source edits or media mutation. Existing binary hash reverified this turn.",
+    "conclusions": [
+      "MDVx does not derive or select an MDB master when the supplied PMR MasterMobId fails lookup in the inspected ordinary row path.",
+      "It extracts8bytes atoffset16 of PMR MasterMobId, looks up the CompositionMobs index, and reads a name only from that matching object. It does not choose the first available MDB master or search a source graph for ClipName.",
+      "The PMR item parser supports versions2,8,16; it has no version1 record path that supplies a missing MasterMobId. Do not describe v1 as a supported master-inference case.",
+      "For a zero-filled masterID, the enrichment routine performs an ordinary zero8bytekey lookup without a special null-ID fallback. If no matching entry exists, master metadata is skipped; it does not choose an arbitrary master.",
+      "A newly created row with no master name normally shows the ... placeholder in ClipName. Filename is a separate column. A present empty string can display blank; no filename substitution exists in these column paths.",
+      "MDB string decoding here is the generic ASCII-if-II/MacRoman-otherwise route. This is not the database browser UTF8 path or Bella approved text decoding."
+    ],
+    "ordinaryScanner": {
+      "function": "-[MDVxPMRScannerOperation main]",
+      "address": "0x10003a1c0",
+      "newItem": "0x10003a674..a680 alloc/init a fresh MDVxDatabaseItem before each PMR FillItem call at0x10003a68c.",
+      "physicalAssociation": "Requires parsed DB_ClipName (misleading variable name: it is the physical filename), then combines PMRdirectory and that filename at0x10003a6a8..a70c.",
+      "mdb": "Optional ScanMDB chooses sibling msmMMOB.mdb, then fallback amaMMOB.mdb by reachability; retained reader object goes in scannerstack+0x50 at0x10003a62c.",
+      "rowDispatch": "0x10003a8b4..a8c0: nonnilMDBreaderobject calls addInfoToItem. This branch does not inspect missing DB_NameInBin and then request mediaheader.",
+      "noMdbMediaFallback": "Only nilMDBreaderobject branch0x10003a8f4..a924 tests fileexists and nilDB_NameInBin then calls addinfoToItemFromCorrespondingFile.",
+      "headerGate": "-[MDVxDatabaseItem addinfoToItemFromCorrespondingFile]0x10003092c requires existingpath/file, MXF extension, ScanMXF preference==1 and stored filesize>=1025 before reading. MXF addInfo can populate DB_NameInBin from its metadata dictionary at0x100032718. This is a separate source fallback, not MDB master selection.",
+      "unreferencedQualification": "Scanner also has a later unreferencedfile path through setupWithUnrefFile:clipname:0x100030a14 with its own conditional media-read attempt before MDB addInfo at0x10003ae6c. This audit does not generalize the PMR-row dispatch order to every unreferenced or AMA workflow."
+    },
+    "masterLookup": {
+      "function": "-[MDVxOMFI addInfoToItem:]",
+      "address": "0x100064794",
+      "key": "0x100064804 gets DB_materialPackageUID;0x100064808 adds16;0x100064810 calls UIDtoBentoObj initWithUID. Constructor0x10006163c copies one64bitword at0x100061670..674. Only IDbytes16..23 are used, not complete32.",
+      "tree": "0x100064818..4820 searches CompositionMobsTree at self+0x50. Tree entry stores local Bento objectID;0x10006483c..4848 resolves that objectID via objectID-to-TOC-index tree.",
+      "noMatch": "0x100064838..4850: no indexhit sets masterTOCindex=-1.0x1000648bc..48c0 skips entire master-name/usage/rate block when index=-1.",
+      "nullId": "No all-zero test or nil/unknown-ID recovery is present between DB_materialPackageUID getter and8bytekeylookup. Normal fresh item pointer addresses an allocated32byteslot; absent/missing semantics beyond this route are not inferred.",
+      "name": "0x1000648cc..48ec calls GetStringForObjectAt(masterTOCindex) and stores result in DB_NameInBin. A failed/emptyname does not cause a different master search.",
+      "fileIndependent": "FileMobId separately uses same8byteexcerpt at0x100064864..4888. A missingmaster match still allows file Project/descriptor enrichment at0x100064aa8 onward.",
+      "noGraphFallback": "The inspected name/master block contains no SourceMobs/track/source-clip traversal and no first/next-master iteration. The separate getProjectNameForObjAt source traversal serves Project only and does not populate ClipName."
+    },
+    "pmrVersions": {
+      "function": "-[MDVxDatabaseItem setupWithPmrBytes:length:PMRVersion:usebyteswap:]",
+      "address": "0x100030450",
+      "acceptedRecordVersions": [
+        2,
+        8,
+        16
+      ],
+      "evidence": "0x100030470..30484 tests2,8,16 and returns early for other recordversions. Modern master32bytes copied0x1000306d8..6e0; v2 completelegacy8bytes into32byteslot+16 at0x1000306bc..6c0.",
+      "qualification": "This proves item-record support. It does not claim every possible v1base/appendedset container path was executed or its entire file rejected in a live scan."
+    },
+    "nameDecoding": {
+      "function": "-[MDVxOMFI GetStringForObjectAt:]",
+      "address": "0x100063a58",
+      "selection": "Scans the same object from suppliedTOCindex and returns the first accepted stringproperty. Actualmastername ordinarily comes from OMFI:CPNT:Name0x1029d. The function is broader than an exact Name-property lookup.",
+      "acceptedProperties": {
+        "0x10261": "OMFI:ATTB:StringAttribute",
+        "0x1027f": "OMFI:CLSD:ClassID",
+        "0x10298": "OMFI:CPNT:EffectID",
+        "0x1029d": "OMFI:CPNT:Name",
+        "0x102e1": "OMFI:FL:PathName",
+        "0x10257": "OMFI:ATTB:Name"
+      },
+      "codec": "0x100063b30..3b40 selects Foundation encoding1 if _isII istrue, encoding30 otherwise. SDK constants:1=NSASCIIStringEncoding,30=NSMacOSRomanStringEncoding. It trimsNUL via stringByTrimmingCharactersInSet at0x100063b74.",
+      "qualification": "_isII comes from label.extra==0x4949 at0x100061d28..1d38. This route doesnot select a named UTF8backup or kind4UnicodeName. Foundation encoding1 was independently measured earlier as permissive byte mapping, not strictASCIIvalidation. Databasebrowser StringForTocIndexItem has a separate UTF8path branch and must not be substituted for this scanner routine."
+    },
+    "display": {
+      "itemStorage": "DB_NameInBin getter0x100031558 reads item+0xa8 directly; DB_ClipName getter0x1000314f4 readsitem+0x78 directly. These getters do not implement fallback.",
+      "placeholder": "-[MDVxCore init]0x10004a86c stores CFString... atcore+0x10 (novalue) at0x10004a8d8..a8e0.",
+      "table": "-[MDVxCore tableView:viewForTableColumn:row:]0x100050304 maps FilenameCellID to DB_ClipName at0x1000504f0..514 and ClipnameCellID to DB_NameInBin at0x100050554..578.",
+      "nilFallback": "0x100050b84..b90: nilcolumnvalue gets novalue(...), then0x100050be4 sets textFieldStringValue. Nonnilemptystring bypasses this nilfallback and can be blank.",
+      "exportString": "-[MDVxCore tableView:NSStringValueForTableColumn:row:]0x100050ce4 separately returns DB_ClipName for FilenameCellID at0x100050f14..f38 and DB_NameInBin for ClipnameCellID at0x100050f3c..f60. No replacement of missingName withFilename here.",
+      "limit": "Static rendering path; no app UI run or screenshot comparison. Distinguish underlyingnil/empty from visual placeholder."
+    },
+    "limits": [
+      "Scoped to ordinary PMR-referenced scanner/MDBenrichment and the relevant tablecolumns. No claim all MDVx workflows are identical.",
+      "No media scan or live missingID experiment. Static branch behavior is proven; practical frequency isnot measured.",
+      "Zero8bytekey isnot special-cased; if a malformed/unusual catalog contained thatkey, normalkeylookup could hit it. No claim zeroID necessarily cannot match.",
+      "Exact choice among equal8byteindexkeys wasnot retraced here. No universal fullIDcollision safety isestablished.",
+      "Separate optional mediaheader fallback and unreferenced/AMA paths are not evidence of MDB sourcegraph masterderivation.",
+      "No Bella policy or implementation changed."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/MDVxCore_init.txt",
+        "bytes": 3589,
+        "sha256": "65a717f1c6b6965f7a6253de0775368c3cbf8d92a107e3cffd91ed6407d81e7e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt",
+        "bytes": 16441,
+        "sha256": "be932b1a1d04bf4539a0f4fe6b8fadb68d4d4170387b8613806c5c6af8b0fee1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt",
+        "bytes": 25206,
+        "sha256": "e9f502df3ddc289f84c65be937ec441a847c638c8b17d1df97c3b1f0655644cb"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/MDVxDatabaseItem_addinfoToItemFromCorrespondingFile.txt",
+        "bytes": 2520,
+        "sha256": "aa67805e2bf40d384e2ed142e4f8f64f4bcffb57ce2454c0948a8291c45228b4"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/MDVxDatabaseItem_init.txt",
+        "bytes": 943,
+        "sha256": "457de6c220028b75a0df112788d769326187a78bd63061034974de35f2204d97"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/MDVxDatabaseItem_setupWithPmrBytes_length_PMRVersion_usebyteswap_.txt",
+        "bytes": 6841,
+        "sha256": "1f2b786849a8ffd5d41a93e7f4a7b285018b56a74b5d1ea7f6855c1cfdab5e61"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/MDVxDatabaseItem_setupWithUnrefFile_clipname_.txt",
+        "bytes": 6083,
+        "sha256": "6d572855139d4f8e45bf5a449e993da62851964cf74eea1873a1839dc83dfb5b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/MDVxMXF_addInfoToItem_.txt",
+        "bytes": 3747,
+        "sha256": "18281f5391667e37e8e3b5884b1a498e680ac0ccc0a99fcf8f470c42101ea1d0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/MDVxMediafile_addInfoToItem_.txt",
+        "bytes": 791,
+        "sha256": "6671822d6e283bc06ac982336eb04fa30be88228dcef4b0677460701b2906a62"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/MDVxOMFI_GetStringForObjectAt_.txt",
+        "bytes": 3468,
+        "sha256": "bab9dc9340d24802b7f984fcb1d0aca837cdfa7882e3179b3e3a4335464ba2a3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/MDVxOMFI_addInfoToItem_.txt",
+        "bytes": 9423,
+        "sha256": "20211e8a6dbcd33b0e034f3885504d5af7a54cffd3a05b5d776446549e0f6829"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/MDVxPMRScannerOperation_main.txt",
+        "bytes": 53423,
+        "sha256": "3eeb0753fa8ace9baa58c04efa2bf9345553e74d265102be7d4739b877cabff8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/OMFiTOCReader01.txt",
+        "bytes": 15729,
+        "sha256": "6d9c6d6b78cb233225275753bef98c3e0a654f4be37a90a937a633e422e12cbe"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/PMRFile_FillItem_.txt",
+        "bytes": 8374,
+        "sha256": "b5c412de86e09f3e3e57e84338b3b2273beabbc373fe36df9002487a814f1e00"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/PMRFile_dataWithContentsOfURL_.txt",
+        "bytes": 2941,
+        "sha256": "be372e67b6dc548f8bfaabf445a8519f4adb8224f5afdc192901a8c5f8d61c25"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/UIDtoBentoObj_initWithUID_.txt",
+        "bytes": 759,
+        "sha256": "672ef21b8988c6ba19364dd188b796279fe849299131ca38318ab650edfa9e17"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/lookForProperty_At_.txt",
+        "bytes": 558,
+        "sha256": "45d90b8ad42f2fd572629bbf6a2035c5e66a2ef56f890bc749f05e698cca9862"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/openFile_withIndicator_.txt",
+        "bytes": 5747,
+        "sha256": "9e39a835a301d7740e9e47a51e7d63f7a146b5ec1df4b6dad4a9378d5e805fe8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/sample-dictionary.json",
+        "bytes": 778,
+        "sha256": "379ab6b3b350866a31184f09824d857ec2332160ef32baf042c6ff0f89c0e457"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/selected-cfstrings.json",
+        "bytes": 1015,
+        "sha256": "262fa73c895be518894fcefdc0e0e1ba249549ea0d510e0a3dfb80660a116b1c"
+      }
+    ]
+  },
+  "actualDatabases": {
+    "purpose": "Independent read-only candidate master graph review from actual raw MDB values, restricted to2412 sibling PMR file identities. No production reader/projector used.",
+    "method": [
+      "Read complete MOBJ IDs; bridge only known organization42 legacy12 IDs.",
+      "Use HEAD local references and ObjectSpine membership, not12byte MobIndex identity equality or arbitrary file object order.",
+      "Candidate masters are catalogue CompositionMobs with usage7 or1 and no PhysicalMedia descriptor.",
+      "Walk only recorded track/component references to SCLP SourceID. Record direct file matches and separately follow uniquely resolved onward mob IDs for indirect matches.",
+      "A physical file identity is the stopping point; do not follow through its earlier original-source ancestry.",
+      "Compare the recorded PMR master against graph-derived candidates, without using that PMR master to construct the candidate set."
+    ],
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "activeCatalogueMobs": 699,
+        "activeCompositionUsageCounts": {
+          "7": 143,
+          "1": 10
+        },
+        "arrayCountValidation": {
+          "storedArrayValues": 5092
+        },
+        "storedCpntPrecomputedValues": 0,
+        "masterStats": {
+          "qualifiedMasters": 153,
+          "usage7": 143,
+          "mastersWithPmrFileLinks": 153,
+          "mastersWithDirectPmrFileLinks": 153,
+          "mastersWithIndirectPmrFileLinks": 0,
+          "clipNameBlank": 0,
+          "clipNameWhitespaceOnly": 0,
+          "clipNameAbsentOrAmbiguous": 0,
+          "mastersWithComponentOrSourceIdErrors": 0,
+          "mastersWithUnresolvedNonzeroOnwardMobId": 0,
+          "mastersWithAmbiguousOnwardMobId": 0,
+          "usage1": 10,
+          "distinctCompleteMasterIds": 153
+        },
+        "pmrComparison": {
+          "pmrRecords": 389,
+          "recordedMasterAmongDirectCandidates": 389,
+          "recordedMasterAmongDirectOrIndirectCandidates": 389,
+          "allCandidatesHaveSameClipName": 389,
+          "someCandidateClipNameBlank": 0,
+          "someCandidateClipNameAbsent": 0,
+          "actualPmrStoredMasterNonzero": 389,
+          "uniqueDirectCandidateWithoutLocalErrors": 389,
+          "uniqueDirectCandidateUsage1": 30,
+          "uniqueDirectCandidateUsage7": 359
+        },
+        "directCandidateCountDistribution": {
+          "1": 389
+        },
+        "directOrIndirectCandidateCountDistribution": {
+          "1": 389
+        },
+        "visiblePmrFilesPerQualifiedMasterDistribution": {
+          "3": 83,
+          "2": 70
+        },
+        "componentAndSourceIDErrorCounts": {},
+        "originalSourceEndpointCounts": {
+          "sourceClipWithoutStoredSourceID": 381
+        },
+        "exceptionExamples": [],
+        "recordedMasterNotFoundExamples": [],
+        "problemMasterExamples": [],
+        "unresolvedOnwardIdExamples": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "activeCatalogueMobs": 1439,
+        "activeCompositionUsageCounts": {
+          "7": 380,
+          "1": 35
+        },
+        "arrayCountValidation": {
+          "storedArrayValues": 27282
+        },
+        "storedCpntPrecomputedValues": 0,
+        "masterStats": {
+          "qualifiedMasters": 415,
+          "usage7": 380,
+          "mastersWithPmrFileLinks": 415,
+          "mastersWithDirectPmrFileLinks": 415,
+          "mastersWithIndirectPmrFileLinks": 0,
+          "clipNameBlank": 0,
+          "clipNameWhitespaceOnly": 0,
+          "clipNameAbsentOrAmbiguous": 0,
+          "mastersWithComponentOrSourceIdErrors": 0,
+          "mastersWithUnresolvedNonzeroOnwardMobId": 0,
+          "mastersWithAmbiguousOnwardMobId": 0,
+          "usage1": 35,
+          "distinctCompleteMasterIds": 415
+        },
+        "pmrComparison": {
+          "pmrRecords": 686,
+          "recordedMasterAmongDirectCandidates": 686,
+          "recordedMasterAmongDirectOrIndirectCandidates": 686,
+          "allCandidatesHaveSameClipName": 686,
+          "someCandidateClipNameBlank": 0,
+          "someCandidateClipNameAbsent": 0,
+          "actualPmrStoredMasterNonzero": 686,
+          "uniqueDirectCandidateWithoutLocalErrors": 686,
+          "uniqueDirectCandidateUsage7": 635,
+          "uniqueDirectCandidateUsage1": 51
+        },
+        "directCandidateCountDistribution": {
+          "1": 686
+        },
+        "directOrIndirectCandidateCountDistribution": {
+          "1": 686
+        },
+        "visiblePmrFilesPerQualifiedMasterDistribution": {
+          "1": 268,
+          "4": 22,
+          "2": 65,
+          "6": 2,
+          "3": 51,
+          "5": 7
+        },
+        "componentAndSourceIDErrorCounts": {},
+        "originalSourceEndpointCounts": {
+          "sourceClipWithoutStoredSourceID": 1282
+        },
+        "exceptionExamples": [],
+        "recordedMasterNotFoundExamples": [],
+        "problemMasterExamples": [],
+        "unresolvedOnwardIdExamples": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "activeCatalogueMobs": 1186,
+        "activeCompositionUsageCounts": {
+          "7": 279,
+          "1": 74
+        },
+        "arrayCountValidation": {
+          "storedArrayValues": 19934
+        },
+        "storedCpntPrecomputedValues": 0,
+        "masterStats": {
+          "qualifiedMasters": 353,
+          "usage7": 279,
+          "mastersWithPmrFileLinks": 353,
+          "mastersWithDirectPmrFileLinks": 353,
+          "mastersWithIndirectPmrFileLinks": 0,
+          "clipNameBlank": 0,
+          "clipNameWhitespaceOnly": 0,
+          "clipNameAbsentOrAmbiguous": 0,
+          "mastersWithComponentOrSourceIdErrors": 0,
+          "mastersWithUnresolvedNonzeroOnwardMobId": 0,
+          "mastersWithAmbiguousOnwardMobId": 0,
+          "usage1": 74,
+          "distinctCompleteMasterIds": 353
+        },
+        "pmrComparison": {
+          "pmrRecords": 513,
+          "recordedMasterAmongDirectCandidates": 513,
+          "recordedMasterAmongDirectOrIndirectCandidates": 513,
+          "allCandidatesHaveSameClipName": 513,
+          "someCandidateClipNameBlank": 0,
+          "someCandidateClipNameAbsent": 0,
+          "actualPmrStoredMasterNonzero": 513,
+          "uniqueDirectCandidateWithoutLocalErrors": 513,
+          "uniqueDirectCandidateUsage7": 439,
+          "uniqueDirectCandidateUsage1": 74
+        },
+        "directCandidateCountDistribution": {
+          "1": 513
+        },
+        "directOrIndirectCandidateCountDistribution": {
+          "1": 513
+        },
+        "visiblePmrFilesPerQualifiedMasterDistribution": {
+          "2": 67,
+          "3": 24,
+          "1": 247,
+          "4": 15
+        },
+        "componentAndSourceIDErrorCounts": {},
+        "originalSourceEndpointCounts": {
+          "sourceClipWithoutStoredSourceID": 963
+        },
+        "exceptionExamples": [],
+        "recordedMasterNotFoundExamples": [],
+        "problemMasterExamples": [],
+        "unresolvedOnwardIdExamples": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "activeCatalogueMobs": 1008,
+        "activeCompositionUsageCounts": {
+          "7": 277,
+          "1": 16
+        },
+        "arrayCountValidation": {
+          "storedArrayValues": 18703
+        },
+        "storedCpntPrecomputedValues": 0,
+        "masterStats": {
+          "qualifiedMasters": 293,
+          "usage7": 277,
+          "mastersWithPmrFileLinks": 293,
+          "mastersWithDirectPmrFileLinks": 293,
+          "mastersWithIndirectPmrFileLinks": 0,
+          "clipNameBlank": 0,
+          "clipNameWhitespaceOnly": 0,
+          "clipNameAbsentOrAmbiguous": 0,
+          "mastersWithComponentOrSourceIdErrors": 0,
+          "mastersWithUnresolvedNonzeroOnwardMobId": 0,
+          "mastersWithAmbiguousOnwardMobId": 0,
+          "usage1": 16,
+          "distinctCompleteMasterIds": 293
+        },
+        "pmrComparison": {
+          "pmrRecords": 463,
+          "recordedMasterAmongDirectCandidates": 463,
+          "recordedMasterAmongDirectOrIndirectCandidates": 463,
+          "allCandidatesHaveSameClipName": 463,
+          "someCandidateClipNameBlank": 0,
+          "someCandidateClipNameAbsent": 0,
+          "actualPmrStoredMasterNonzero": 463,
+          "uniqueDirectCandidateWithoutLocalErrors": 463,
+          "uniqueDirectCandidateUsage7": 447,
+          "uniqueDirectCandidateUsage1": 16
+        },
+        "directCandidateCountDistribution": {
+          "1": 463
+        },
+        "directOrIndirectCandidateCountDistribution": {
+          "1": 463
+        },
+        "visiblePmrFilesPerQualifiedMasterDistribution": {
+          "1": 175,
+          "2": 76,
+          "4": 7,
+          "3": 34,
+          "6": 1
+        },
+        "componentAndSourceIDErrorCounts": {},
+        "originalSourceEndpointCounts": {
+          "sourceClipWithoutStoredSourceID": 881
+        },
+        "exceptionExamples": [],
+        "recordedMasterNotFoundExamples": [],
+        "problemMasterExamples": [],
+        "unresolvedOnwardIdExamples": []
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "activeCatalogueMobs": 607,
+        "activeCompositionUsageCounts": {
+          "7": 124
+        },
+        "arrayCountValidation": {
+          "storedArrayValues": 5778
+        },
+        "storedCpntPrecomputedValues": 0,
+        "masterStats": {
+          "qualifiedMasters": 124,
+          "usage7": 124,
+          "mastersWithPmrFileLinks": 124,
+          "mastersWithDirectPmrFileLinks": 124,
+          "mastersWithIndirectPmrFileLinks": 0,
+          "clipNameBlank": 0,
+          "clipNameWhitespaceOnly": 0,
+          "clipNameAbsentOrAmbiguous": 0,
+          "mastersWithComponentOrSourceIdErrors": 0,
+          "mastersWithUnresolvedNonzeroOnwardMobId": 1,
+          "mastersWithAmbiguousOnwardMobId": 0,
+          "distinctCompleteMasterIds": 124
+        },
+        "pmrComparison": {
+          "pmrRecords": 359,
+          "recordedMasterAmongDirectCandidates": 359,
+          "recordedMasterAmongDirectOrIndirectCandidates": 359,
+          "allCandidatesHaveSameClipName": 359,
+          "someCandidateClipNameBlank": 0,
+          "someCandidateClipNameAbsent": 0,
+          "actualPmrStoredMasterNonzero": 359,
+          "uniqueDirectCandidateWithoutLocalErrors": 359,
+          "uniqueDirectCandidateUsage7": 359
+        },
+        "directCandidateCountDistribution": {
+          "1": 359
+        },
+        "directOrIndirectCandidateCountDistribution": {
+          "1": 359
+        },
+        "visiblePmrFilesPerQualifiedMasterDistribution": {
+          "3": 117,
+          "1": 6,
+          "2": 1
+        },
+        "componentAndSourceIDErrorCounts": {},
+        "originalSourceEndpointCounts": {
+          "sourceClipWithoutStoredSourceID": 360
+        },
+        "exceptionExamples": [],
+        "recordedMasterNotFoundExamples": [],
+        "problemMasterExamples": [],
+        "unresolvedOnwardIdExamples": [
+          {
+            "masterObject": 70041,
+            "masterMobId": "060a2b340101010501010f10130000005622d31b55120690b12e46fc807fda72",
+            "unresolvedOnwardIds": [
+              {
+                "id": "060a2b340101010501010f10130000007022d31b55120690815b46fc807fda72",
+                "ownSourceClipObjects": [
+                  70028
+                ],
+                "sameIdObjectsOutsideActiveCatalogue": []
+              }
+            ],
+            "directPmrFileIds": [
+              "060a2b340101010501010f10130000005e22d31b55120690bf0246fc807fda72",
+              "060a2b340101010501010f10130000007822d31b55120690227746fc807fda72"
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "activeCatalogueMobs": 6,
+        "activeCompositionUsageCounts": {
+          "7": 2
+        },
+        "arrayCountValidation": {
+          "storedArrayValues": 22
+        },
+        "storedCpntPrecomputedValues": 0,
+        "masterStats": {
+          "qualifiedMasters": 2,
+          "usage7": 2,
+          "mastersWithPmrFileLinks": 2,
+          "mastersWithDirectPmrFileLinks": 2,
+          "mastersWithIndirectPmrFileLinks": 0,
+          "clipNameBlank": 0,
+          "clipNameWhitespaceOnly": 0,
+          "clipNameAbsentOrAmbiguous": 0,
+          "mastersWithComponentOrSourceIdErrors": 0,
+          "mastersWithUnresolvedNonzeroOnwardMobId": 0,
+          "mastersWithAmbiguousOnwardMobId": 0,
+          "distinctCompleteMasterIds": 2
+        },
+        "pmrComparison": {
+          "pmrRecords": 2,
+          "recordedMasterAmongDirectCandidates": 2,
+          "recordedMasterAmongDirectOrIndirectCandidates": 2,
+          "allCandidatesHaveSameClipName": 2,
+          "someCandidateClipNameBlank": 0,
+          "someCandidateClipNameAbsent": 0,
+          "actualPmrStoredMasterNonzero": 2,
+          "uniqueDirectCandidateWithoutLocalErrors": 2,
+          "uniqueDirectCandidateUsage7": 2
+        },
+        "directCandidateCountDistribution": {
+          "1": 2
+        },
+        "directOrIndirectCandidateCountDistribution": {
+          "1": 2
+        },
+        "visiblePmrFilesPerQualifiedMasterDistribution": {
+          "1": 2
+        },
+        "componentAndSourceIDErrorCounts": {},
+        "originalSourceEndpointCounts": {
+          "sourceClipWithoutStoredSourceID": 2
+        },
+        "exceptionExamples": [],
+        "recordedMasterNotFoundExamples": [],
+        "problemMasterExamples": [],
+        "unresolvedOnwardIdExamples": []
+      }
+    ],
+    "limits": [
+      "Corpus is six genuine little-endian MDBs, not a universal format proof.",
+      "Known files in this review are the2412 physical-media entries already identified by PMR; no directory/header-only files are introduced.",
+      "Candidate counts are observations; they do not approve an arbitrary winner if a future file has multiple candidates.",
+      "Unresolved onward source IDs may describe unavailable original-source endpoints; reported separately from malformed local references.",
+      "Clip names are checked for presence/emptiness only. No arbitrary user attributes, source text or lyrics are copied."
+    ]
+  },
+  "aggregateExperiment": {
+    "method": "Withhold PMR MasterMobId during candidate derivation; use independent MDB own-track/source references, then compare against the recorded PMR master. Actual PMRs all store MasterMobId, so this is not a genuine missing-master or v1 runtime trial.",
+    "pmrComparison": {
+      "pmrRecords": 2412,
+      "recordedMasterAmongDirectCandidates": 2412,
+      "recordedMasterAmongDirectOrIndirectCandidates": 2412,
+      "allCandidatesHaveSameClipName": 2412,
+      "someCandidateClipNameBlank": 0,
+      "someCandidateClipNameAbsent": 0,
+      "actualPmrStoredMasterNonzero": 2412,
+      "uniqueDirectCandidateWithoutLocalErrors": 2412,
+      "uniqueDirectCandidateUsage1": 171,
+      "uniqueDirectCandidateUsage7": 2241
+    },
+    "directCandidateCountDistribution": {
+      "1": 2412
+    },
+    "masterStats": {
+      "qualifiedMasters": 1340,
+      "usage7": 1205,
+      "mastersWithPmrFileLinks": 1340,
+      "mastersWithDirectPmrFileLinks": 1340,
+      "mastersWithIndirectPmrFileLinks": 0,
+      "clipNameBlank": 0,
+      "clipNameWhitespaceOnly": 0,
+      "clipNameAbsentOrAmbiguous": 0,
+      "mastersWithComponentOrSourceIdErrors": 0,
+      "mastersWithUnresolvedNonzeroOnwardMobId": 1,
+      "mastersWithAmbiguousOnwardMobId": 0,
+      "usage1": 135,
+      "distinctCompleteMasterIds": 1340
+    },
+    "result": "All2412 target file IDs resolve to exactly one direct qualified master, and all match the recorded PMR master.",
+    "qualification": "The component routes and source-ID normalization are bounded by the supported inspected layouts. No actual ambiguous-master or malformed-local-graph case was exercised."
+  },
+  "proposedBellaRule": {
+    "status": "Approved requirement on 2026-10-19; not implemented. The key name is retained from the research proposal.",
+    "explicitMaster": "When PMR supplies a usable MasterMobId, look up that full normalized identity on its catalogue-qualified master; read the exact Clip Name property. Do not broadly traverse to rediscover a supplied association.",
+    "missingMaster": "When PMR supplies no usable MasterMobId, use complete-ID source references from a qualified master own track/component graph to the target FileMobId. Count distinct full MasterMobIds.",
+    "uniqueCandidate": "Use the complete recovered MasterMobId and its own name only when exactly one candidate is established from readable relationships.",
+    "noOrMultipleOrIncomplete": "Leave MDB-derived master association/name unavailable when there is no candidate, more than one distinct candidate, or insufficient readable relationships. No arbitrary first/name/date/object-order tie-break.",
+    "explicitButUnmatched": "Keep a supplied PMR identity if MDB cannot resolve it. Do not silently select a different master. Additional source/header reads remain separately undecided.",
+    "name": "Read selected master CPNT:Name in observed legacy layout, appropriate MOBJ:Name in the corresponding supported layout; apply approved text rules. A missing/empty name does not select a different master.",
+    "display": "Propose empty Clip Name when unavailable; Filename remains separate. No new UI column is requested.",
+    "coherence": "Use the same selected master for other master-level metadata; no mixing names/classification from different masters.",
+    "scope": [
+      "Exact supported own track/component source relationship; no association from shared source ancestry alone.",
+      "Native attached-precompute visitation is proven; actual CPNT:Precomputed values are zero in this corpus. Supported component alternatives must be deliberately qualified.",
+      "No newly mandatory header read, cross-source precedence rule or BinFilter change.",
+      "No need to retain a complete raw MDB graph as lasting scan output; no performance claim."
+    ]
+  },
+  "primaryDocumentation": [
+    {
+      "url": "https://connect.avid.com/rs/avid/images/Proxy%20WP.pdf",
+      "title": "Reimagining the Possibilities of Proxy Workflows for Media Production",
+      "scope": "Master/material, file/source and track SourceClip relationships; not an MDB master-selection tie-break rule."
+    },
+    {
+      "url": "https://aaf.sourceforge.net/docs/aafapiman/interfaceIAAFMasterMob3.html",
+      "title": "AAF SDK IAAFMasterMob3",
+      "scope": "AddMasterSlot and AddMasterSlotWithSequence establish explicit SourceClip references to source/file mobs; not the inspected legacy MDB binary schema."
+    }
+  ],
+  "currentSourceHashes": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "bytes": 5159032,
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+      "bytes": 97250,
+      "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "bytes": 22745976,
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+      "bytes": 164660,
+      "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "bytes": 16616336,
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+      "bytes": 123140,
+      "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "bytes": 15703416,
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+      "bytes": 111140,
+      "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "bytes": 3668720,
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+      "bytes": 86754,
+      "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "bytes": 60680,
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+      "bytes": 392,
+      "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928"
+    },
+    {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "bytes": 73527536,
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+    },
+    {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "bytes": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+    }
+  ],
+  "probeReceipts": [
+    {
+      "path": "/private/tmp/bella-mdb-clipname-20261018-drives/check.py",
+      "bytes": 12979,
+      "sha256": "ab011aebf06883f7c3c51ae9967dda7ac00ca7de939cab746245e7edfe13884d"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-clipname-20261018-drives/compact-summary.json",
+      "bytes": 14012,
+      "sha256": "7d4a1e492904de791033bb5b0c565c1e09be8fd84fc441ef195a78c136ab83d6"
+    }
+  ],
+  "rawSummaryReceipts": [
+    {
+      "path": "/private/tmp/bella-mdb-clipname-20261018-mc/findings.json",
+      "bytes": 15867,
+      "sha256": "02ea3d01bd2669022239905076ee13fc2171fadb1dbb0f084715bcee73fac99c"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-clipname-20261018-mdvx/findings.json",
+      "bytes": 12635,
+      "sha256": "1dec5e99b2153c9aed2d093e1b389dd0ec1db1fb3e2bef6d0065fd4dee4d8690"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-clipname-20261018-drives/compact-summary.json",
+      "bytes": 14012,
+      "sha256": "7d4a1e492904de791033bb5b0c565c1e09be8fd84fc441ef195a78c136ab83d6"
+    }
+  ],
+  "validation": {
+    "nativeRawArtifactHashesVerified": 40,
+    "currentInputsHashed": 14,
+    "readOnlyNativeAndMediaInspection": true
+  },
+  "limits": [
+    "No app launch, altered database, production source change or Bella implementation.",
+    "Native PMR-v1 first-match path was statically traced; it is not proof of a universal modern missing-master recovery or every MediaComposer UI display.",
+    "MDVx ordinary PMR-referenced MDB enrichment is distinguished from optional no-MDB header and unreferenced/AMA routes.",
+    "All genuine source files use little-endian metadata.",
+    "Sample uniqueness does not make multiple masters impossible; the proposed release-one rule deliberately leaves that case unavailable."
+  ],
+  "userDecision": {
+    "date": "2026-10-19",
+    "response": "Sounds good. Where do we go from here?",
+    "approved": "Use the explicit PMR MasterMobId when supplied; otherwise recover only one distinct qualified master from readable direct component/source links to the full FileMobId. Leave unavailable for no/multiple/insufficient candidates, retain physical row, and keep Filename separate. Select master before reading its name; do not switch for an empty name.",
+    "scope": "Requirements review only. Extra media-header reads, source precedence, remaining MDB structure/damage decisions and Bella implementation remain later work."
+  }
+}

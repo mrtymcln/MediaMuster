@@ -1,0 +1,976 @@
+{
+  "date": "2026-10-18",
+  "purpose": "Bella MDB complete identities and PMR joining requirements review. Complete-ID/Kelpie rules and the shared identity-normalization component are approved; broader MDB relationship/record-selection details remain under review. No Bella runtime implementation.",
+  "currentUserDecisions": {
+    "mdbText": "Approved in this turn, including deliberate recovery through a separate legacy value. See mdb-text-encoding-2026-10-18.json.",
+    "identity": "Keep complete FileMobId and MasterMobId; no8byte excerpt of modernIDs. Existing KelpieId duplicate rules and BinFilter scope unchanged.",
+    "sharedIdentityNormalisation": {
+      "date": "2026-10-18",
+      "status": "Approved requirement; not implemented",
+      "userInstruction": "We will have a file/function that normalises using those building blocks.",
+      "component": "One shared fresh Bella identity normalizer using complete bounded input, known source layout and declared byte order.",
+      "storage": "Small MobId value backed by C++17 std::array for the complete normalized32-byte form.",
+      "byteOrder": "Qt6.5.3 QtEndian helpers for source-required numeric field conversions.",
+      "lookup": "QHash lookup with complete identity equality. Hashing and lookup remain outside the value-conversion function.",
+      "legacy": "Known Avid legacy forms use verified conversions. Unknown legacy forms retain all bytes and a distinguished format.",
+      "scope": "Future Bella implementation after requirements review. OldScanner, BinFilter, KelpieId and duplicate rules unchanged.",
+      "reviewStatus": "No further representation/comparison decision is needed before other MDB values. MDB-only master selection, general structural damage, source precedence and extra header reads remain later reviews."
+    }
+  },
+  "nativeIdentityReading": {
+    "date": "2026-10-18",
+    "scope": "Read-only static arm64 reconstruction of MDB and PMR identity reading. No private API execution, media writes, OldScanner changes or Bella implementation.",
+    "binaries": [
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+        "size": 73527536
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+        "size": 14340208,
+        "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb"
+      }
+    ],
+    "nativeMdbRead": {
+      "function": "omfiDualStream::ReadUID",
+      "address": "0xb66e8",
+      "anchors": [
+        "0xb671c: initializes NullMobID.",
+        "0xb6740: reads up to 32 property bytes.",
+        "0xb6744..0xb6750: accepts returned widths 32 or 12; other widths leave the null result.",
+        "0xb6770..0xb6778: copies all 32 bytes for a modern ID.",
+        "0xb6798..0xb67e8: for a 12-byte UID, adjusts each of its three 32-bit words for the applicable metadata byte order, then calls ConvertFromOmfiUid at 0xb67f8.",
+        "0xb6800..0xb6858: for a 32-byte ID, adjusts only material Data1 at byte16 (32 bits), Data2 at byte20 (16 bits) and Data3 at byte22 (16 bits). All other bytes stay unchanged.",
+        "The swap condition is stream object-order != II and != zero. No prefix-family exception suppresses these swaps."
+      ],
+      "byteOrderSource": {
+        "function": "omfiDualStream::LoadBentoObject",
+        "address": "0xb2680",
+        "anchors": [
+          "0xb278c: clears the loaded-object order field at stream+0x1e0.",
+          "0xb27a8..0xb2810: scans the loaded object for its ByteOrder property and stores it.",
+          "0xb283c..0xb2844: when loading HEAD/object1, retains its order as the default at stream+0x1e2.",
+          "0xb284c..0xb2850: an object without its own order uses the HEAD/default order.",
+          "0xb2858..0xb2874: absence of any specified order enters an error path."
+        ],
+        "qualification": "The OMF object/HEAD metadata order is separate from the Bento table word order. Current genuine corpus files use II for both, so mixed/endian behavior here is native static evidence, not a genuine sample result."
+      }
+    },
+    "legacyMapping": {
+      "function": "ConvertFromOmfiUid",
+      "address": "0x23675c",
+      "input": "Three decoded 32-bit words: organization, high, low.",
+      "output": {
+        "prefix16Hex": "060a2b340101010101010f0013000000",
+        "materialData1": "high",
+        "materialData2": "low & 0xffff",
+        "materialData3": "low >> 16",
+        "suffix8Hex": "060e2b347f7f2a80",
+        "canonicalLittleEndianBytes": "prefix16 + littleEndian32(high) + littleEndian32(low) + suffix8"
+      },
+      "anchors": [
+        "0x23675c shifts input x0 right32, extracting the second word. The first word is never tested or copied.",
+        "0x23676c..0x236784 stores the constant Avid prefix.",
+        "0x236788..0x236790 stores the high word and the two halves of the low word.",
+        "0x236794..0x23679c stores the fixed suffix."
+      ],
+      "criticalLimit": "This current native helper unconditionally discards the organization word, including a non42 value. Its existence does not establish an information-preserving mapping for every OMF producer.",
+      "reverse": {
+        "function": "ConvertToOmfiUid",
+        "address": "0x236748",
+        "anchors": [
+          "0x236748 reads material bytes16..23.",
+          "0x23674c..0x236754 unconditionally writes organization42 and copies those eight bytes into UID bytes4..11."
+        ],
+        "meaning": "The observed organization42 bridge is reversible. Native conversion of another organization to the same Avid wrapper would lose information."
+      },
+      "constantExtraction": {
+        "0x10ec848": {
+          "segment": "__TEXT",
+          "thinFileOffset": 17745992,
+          "length": 8,
+          "hex": "060e2b347f7f2a80"
+        },
+        "0x10ec850": {
+          "segment": "__TEXT",
+          "thinFileOffset": 17746000,
+          "length": 8,
+          "hex": "060a2b3401010101"
+        }
+      }
+    },
+    "nativeMdbWrite": {
+      "function": "omfiDualStream::WriteUID",
+      "address": "0xb4c9c",
+      "anchors": [
+        "0xb4cdc..0xb4ce0: does not write a null modern identity.",
+        "0xb4cf4 prepares the 12-byte form using ConvertToOmfiUid.",
+        "0xb4d04..0xb4d10: selects the 12-byte output branch only when IsMediaComposerID is true and modern byte13 is zero; otherwise writes all32 bytes.",
+        "0xb4d2c writes32 bytes;0xb4d6c writes12 bytes."
+      ],
+      "qualification": "This explains why one OMF dictionary type, omfi:UID, can carry both widths. It is not a rule to truncate all32-byte IDs to a legacy representation."
+    },
+    "pmrReading": {
+      "setup": {
+        "function": "MSMDBMediaStreamMgr::LoadPMR",
+        "address": "0x4443f0",
+        "anchors": [
+          "0x444ba4 reads magic. Reversed0xa9070000 selects SetSwapBytes(true) at0x444bc4.",
+          "AvidCore AStream::SetSwapBytes at0x2858c stores the swap flag at stream+0x1b6."
+        ]
+      },
+      "versionDispatch": {
+        "function": "ReadPmrRec",
+        "address": "0x4474e0",
+        "anchors": [
+          "0x447544..0x44757c: versions1..7 use Read_OMFMobID; version8/v16 use Read_AAFMobID for the file identity.",
+          "0x447818..0x447848: same distinction for the stored master identity; version1 has no stored master identity."
+        ]
+      },
+      "legacy": {
+        "function": "Read_OMFMobID",
+        "address": "0x2359b4",
+        "layout": "Two32-bit values, high then low. Both are read through the endian-aware stream scalar reader before building the same Avid wrapper.",
+        "anchors": [
+          "0x235a0c..0x235a20 reads high via ReadInt32.",
+          "0x235a24..0x235a3c reads low via ReadInt32.",
+          "0x235a48..0x235a78 stores prefix, normalized material and suffix."
+        ],
+        "important": "An eight-byte legacy PMR ID uses two32-bit source words, not three words and not a source4/2/2 layout."
+      },
+      "modern": {
+        "function": "Read_AAFMobID",
+        "address": "0x235bf0",
+        "layout": "12 label bytes; four separate length/instance bytes; material Data1(32), Data2(16), Data3(16); eight Data4 bytes.",
+        "anchors": [
+          "0x235c48..0x235c60 reads the12-byte label as bytes.",
+          "0x235c64..0x235cd0 reads four individual bytes.",
+          "0x235cd4..0x235d24 reads scalar4/2/2 material fields.",
+          "0x235d28..0x235d50 reads the eight-byte tail unchanged."
+        ],
+        "important": "Normalize only the numeric4/2/2 fields for source endianness. Do not reverse the entire ID or exempt the known Avid wrapper family."
+      },
+      "scalarEvidence": [
+        "AvidCore AStream::ReadUInt32 at0x27054 uses the swap flag and rev32 at0x270a8.",
+        "AvidCore AFileStream::ReadInt32 at0xbdf84 uses the same swap flag and rev32 at0xbdfd8.",
+        "Equivalent16-bit scalar readers use the matching16-bit conversion."
+      ]
+    },
+    "bellaRecommendation": [
+      "Read each owning object's complete OMFI:MOBJ:MobID value using its dictionary type, declared width and applicable metadata byte order.",
+      "Preserve and compare the complete normalized32-byte identity for modern IDs.",
+      "Normalize all three words of a12-byte UID. For the verified organization42 family, use its reversible Avid wrapper to match legacy/modern PMR identities.",
+      "For another organization, retain the complete normalized12-byte UID with a distinct format/namespace. Do not discard its first word or claim an unproven PMR join.",
+      "Use owner role and reference relationships to distinguish FileMobId and MasterMobId; the property name is the same. An object handle or an auxiliary index UID is not a replacement for the owning object's actual identity.",
+      "Normalize each source once, then compare complete identities. Never use an eight-byte excerpt for modern identity matching or try arbitrary whole-ID byte reversals.",
+      "This follows the existing approved complete-ID requirement. It does not change KelpieId, duplicate inventory rules or the Bin Filter."
+    ],
+    "coverageAndLimits": [
+      "The actual same-machine little-endian corpus match is separately recorded by the team; this task establishes native structure and conversion paths.",
+      "No genuine big-endian PMR/MDB specimen was exercised. Native code establishes exact transformations; future verification still needs genuine or appropriately identified authored endian cases.",
+      "The existing OldScanner canonicalDatabaseId helper normalizes8/12-byte big-endian IDs but passes32 bytes through unchanged. Do not reuse that limitation as Bella policy; no production helper was changed.",
+      "Unknown widths, unreadable required references and general MDB damage policy remain separate requirements. This research does not invent new damaged-ID prefix tests."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/convert-from-uid.txt",
+        "bytes": 900,
+        "sha256": "bcf222382acf225fbe8d9b1c283ed84a64e9d8f19ddb760a216e3bc057bf58e0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/convert-to-uid.txt",
+        "bytes": 344,
+        "sha256": "cd70decdad9287e2c65db25a42da10655b969687e06efbdba5c43b4dd1e39f2f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/dualstream-get-container-order.txt",
+        "bytes": 234,
+        "sha256": "ab5049f79e9c857bc43a67eb64fea26fb4b9b1e065a194b5391a9875b1caba21"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/dualstream-init.txt",
+        "bytes": 417483,
+        "sha256": "852c79ca134a542c8dd60a7dd776765201455598f7668571395f451515c7ce81"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/dualstream-set-container-order.txt",
+        "bytes": 233,
+        "sha256": "61bb2c74ee3e99c0008f42e405c1be2ef9a63ca1e48b592fdf51ec41c9042773"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/file-read-i32.txt",
+        "bytes": 2030,
+        "sha256": "d78b2c2d273502bf5afd076956634bc48a39ce957b96622714ab72250dfd2e9b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/file-read-u16.txt",
+        "bytes": 2043,
+        "sha256": "7f7586e58a0897db5f8a25167bf5c830e53c212786e2d74eb45d9b10eb476c67"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/file-read-u32.txt",
+        "bytes": 2036,
+        "sha256": "26f4f62d9ca0b21b6a7a49015a870c7430517850e06d21d1b0f89b52afc8db5e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/is-media-composer-id.txt",
+        "bytes": 1408,
+        "sha256": "bdc8c23f3e8d9d19d69646342d5cbee2076634bd46e65ab1d67ca1b7c219d217"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/load-bento-object.txt",
+        "bytes": 19814,
+        "sha256": "33802f5024c0a1071e48ace74b968539a73f951c0ed750a1c1f324504e4232e3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/load-pmr.txt",
+        "bytes": 147610,
+        "sha256": "6cdd9f32c6856f878a44d27cf390387f3632fbc101b3688229f8a6b5b6704927"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/null-id.txt",
+        "bytes": 737,
+        "sha256": "28fd69ae38c1f2654d7060b8b70b697dca90c5687050763c1fb4ff3ce33c662f"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/read-pmr-aafid.txt",
+        "bytes": 3998,
+        "sha256": "38db56f27d55fc3c482ee0e81861a8cff5a7172101fd0a0c71fa80ff2c9d2511"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/read-pmr-omfid.txt",
+        "bytes": 2369,
+        "sha256": "52ab7cc5877e7dd66875a24572cf4254d4149e0395b33259f77b744024cb2579"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/read-pmr-rec.txt",
+        "bytes": 25942,
+        "sha256": "3c738d22696640dd3b165a48dc7147c48fb39a882abd1930dd715f1052f99801"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/read-uid.txt",
+        "bytes": 4403,
+        "sha256": "bebb739fab82403bef8304652bb4c8a9002cdda19b65811ce10ed1888bf30f32"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/stream-read-i32.txt",
+        "bytes": 1992,
+        "sha256": "14dac6ec04da3ee86fe6c452f7769cfcad56e37a2a7904b640c5c93147321132"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/stream-read-u16.txt",
+        "bytes": 2004,
+        "sha256": "ef532a43c592e94b87761e4e8d485d6e3acd2b1866ba8f2ab471395fc75362b3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/stream-read-u32.txt",
+        "bytes": 1998,
+        "sha256": "3f01969c67c1d7e07c2edb85fe9ccb1b4248f46e82b7142f511e0262d68889ce"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/stream-set-swap.txt",
+        "bytes": 320,
+        "sha256": "e6c752126a9cc464a58e09b72aa8d94659c4248fb2d6b82be49c3c64beed0dc7"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-identity-20261018-native/write-uid.txt",
+        "bytes": 3845,
+        "sha256": "4f4f6279a346d8e63a3f7ae12fb5d8c71068a52d3015bbce309dfdb56b72485d"
+      }
+    ]
+  },
+  "actualDatabases": {
+    "purpose": "Independent raw-value identity membership/role check and two bounded source-clip relationship examples. No production parser use, no media/repository writes.",
+    "normalization": {
+      "modern32": "Preserve all32 recorded bytes in these little-endian files.",
+      "legacy12": "Only organization word42 plus complete8byte core is wrapped as known Avid legacy family.",
+      "prefixHex": "060a2b340101010101010f0013000000",
+      "suffixHex": "060e2b347f7f2a80"
+    },
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "selectedPmrSet": 16,
+        "mobIdStoredWidthCounts": {
+          "12": 816,
+          "32": 584
+        },
+        "sourceClipSourceIdStoredWidths": {
+          "12": 670,
+          "32": 898
+        },
+        "mobjCount": 700,
+        "sameObjectIdenticalRepeatedIdCount": 700,
+        "mobjMissingId": 0,
+        "mobjZeroIdStoredValues": 0,
+        "mobjNonzeroUnrecognizedIdStoredValues": 0,
+        "mobjConflictingCompleteIds": 0,
+        "sameCompleteIdOnMultipleObjects": 0,
+        "pmrMembershipAndRoleCounts": {
+          "pmrRecords": 389,
+          "fileIdMember": 389,
+          "masterIdMember": 389,
+          "fileIdUniqueObject": 389,
+          "masterIdUniqueObject": 389,
+          "fileObjectInSourceIndexWithDescriptor": 389,
+          "masterObjectInCompositionIndexWithoutDescriptor": 389,
+          "fileIdUniqueSourceIndexObjectWithDescriptor": 389,
+          "masterIdUniqueCompositionIndexObjectWithoutDescriptor": 389,
+          "fileObjectInObjectSpine": 389,
+          "masterObjectInObjectSpine": 389
+        },
+        "headMobIndexStats": {
+          "entries": 699,
+          "indexUidBytes12": 699,
+          "indexOrg42": 626,
+          "targetIdBytes12": 408,
+          "normalizedCompleteIndexIdEqualsOwnerId": 408,
+          "targetIdBytes32": 291,
+          "indexCoreEqualsOwnerMaterialExcerpt": 291
+        },
+        "headMobIndexExample": [
+          {
+            "property": "OMFI:SourceMobs",
+            "indexUidHex": "2a0000a102c4f326c17411d3",
+            "targetObject": 86877,
+            "targetFullMobIdHex": "060a2b340101010101010f0013a1000002c4f326c17411d39f1d2cb69d020efb",
+            "indexValueRanges": [
+              [
+                1399548,
+                10922
+              ]
+            ],
+            "slotOffsetWithinValue": 6122,
+            "qualification": "Follow the local ObjRef to the object; index12 UID alone is not the complete modern32 identity."
+          }
+        ],
+        "pairedExamples": [
+          {
+            "pmrFilename": "1051.WAVA02.D77B775B553A76A.mxf",
+            "pmrFileMobId": "060a2b340101010101010f0013000000763a555b339d6e0a060e2b347f7f2a80",
+            "pmrMasterMobId": "060a2b340101010101010f0013000000763a555b279d6e0a060e2b347f7f2a80",
+            "fileObject": 76233,
+            "masterObject": 76165,
+            "fileIdValues": [
+              {
+                "recordedHex": "2a000000763a555b339d6e0a",
+                "ranges": [
+                  [
+                    557021,
+                    12
+                  ]
+                ]
+              },
+              {
+                "recordedHex": "2a000000763a555b339d6e0a",
+                "ranges": [
+                  [
+                    557046,
+                    12
+                  ]
+                ]
+              }
+            ],
+            "masterIdValues": [
+              {
+                "recordedHex": "2a000000763a555b279d6e0a",
+                "ranges": [
+                  [
+                    555460,
+                    12
+                  ]
+                ]
+              },
+              {
+                "recordedHex": "2a000000763a555b279d6e0a",
+                "ranges": [
+                  [
+                    555477,
+                    12
+                  ]
+                ]
+              }
+            ],
+            "masterUsageValues": [
+              "07000000"
+            ],
+            "masterTrackSourceClipGraphPath": [
+              {
+                "sourceObject": 76165,
+                "property": "OMFI:TRKG:Tracks",
+                "targetObject": 76164,
+                "valueRanges": [
+                  [
+                    555442,
+                    18
+                  ]
+                ],
+                "referenceOffsetWithinValue": 10
+              },
+              {
+                "sourceObject": 76164,
+                "property": "OMFI:TRAK:TrackComponent",
+                "targetObject": 76163,
+                "valueRanges": [
+                  [
+                    555409,
+                    8
+                  ]
+                ],
+                "referenceOffsetWithinValue": 0
+              },
+              {
+                "sourceObject": 76163,
+                "property": "OMFI:SEQU:Sequence",
+                "targetObject": 76161,
+                "valueRanges": [
+                  [
+                    555375,
+                    26
+                  ]
+                ],
+                "referenceOffsetWithinValue": 10
+              },
+              {
+                "sourceClipObject": 76161,
+                "property": "OMFI:SCLP:SourceID",
+                "recordedHex": "2a000000763a555b339d6e0a",
+                "ranges": [
+                  [
+                    555318,
+                    12
+                  ]
+                ],
+                "targetFileObject": 76233
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "selectedPmrSet": 16,
+        "mobIdStoredWidthCounts": {
+          "32": 5708,
+          "12": 20
+        },
+        "sourceClipSourceIdStoredWidths": {
+          "32": 5460,
+          "12": 32
+        },
+        "mobjCount": 2864,
+        "sameObjectIdenticalRepeatedIdCount": 2864,
+        "mobjMissingId": 0,
+        "mobjZeroIdStoredValues": 0,
+        "mobjNonzeroUnrecognizedIdStoredValues": 0,
+        "mobjConflictingCompleteIds": 0,
+        "sameCompleteIdOnMultipleObjects": 1412,
+        "pmrMembershipAndRoleCounts": {
+          "pmrRecords": 686,
+          "fileIdMember": 686,
+          "masterIdMember": 686,
+          "fileIdUniqueObject": 0,
+          "masterIdUniqueObject": 0,
+          "fileObjectInSourceIndexWithDescriptor": 686,
+          "masterObjectInCompositionIndexWithoutDescriptor": 686,
+          "fileIdUniqueSourceIndexObjectWithDescriptor": 686,
+          "masterIdUniqueCompositionIndexObjectWithoutDescriptor": 686,
+          "fileObjectInObjectSpine": 686,
+          "masterObjectInObjectSpine": 686
+        },
+        "headMobIndexStats": {
+          "entries": 1439,
+          "indexUidBytes12": 1439,
+          "indexOrg42": 1152,
+          "targetIdBytes32": 1434,
+          "normalizedCompleteIndexIdEqualsOwnerId": 5,
+          "indexCoreEqualsOwnerMaterialExcerpt": 1434,
+          "targetIdBytes12": 5
+        },
+        "headMobIndexExample": [
+          {
+            "property": "OMFI:SourceMobs",
+            "indexUidHex": "2a0000007d73671573110696",
+            "targetObject": 72787,
+            "targetFullMobIdHex": "060a2b340101010501010f10130000007d7367157311069635d37c57583610fa",
+            "indexValueRanges": [
+              [
+                3948962,
+                20482
+              ]
+            ],
+            "slotOffsetWithinValue": 2,
+            "qualification": "Follow the local ObjRef to the object; index12 UID alone is not the complete modern32 identity."
+          }
+        ],
+        "pairedExamples": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "selectedPmrSet": 16,
+        "mobIdStoredWidthCounts": {
+          "32": 4576
+        },
+        "sourceClipSourceIdStoredWidths": {
+          "32": 4168
+        },
+        "mobjCount": 2288,
+        "sameObjectIdenticalRepeatedIdCount": 2288,
+        "mobjMissingId": 0,
+        "mobjZeroIdStoredValues": 0,
+        "mobjNonzeroUnrecognizedIdStoredValues": 0,
+        "mobjConflictingCompleteIds": 0,
+        "sameCompleteIdOnMultipleObjects": 1102,
+        "pmrMembershipAndRoleCounts": {
+          "pmrRecords": 513,
+          "fileIdMember": 513,
+          "masterIdMember": 513,
+          "fileIdUniqueObject": 2,
+          "masterIdUniqueObject": 2,
+          "fileObjectInSourceIndexWithDescriptor": 513,
+          "masterObjectInCompositionIndexWithoutDescriptor": 513,
+          "fileIdUniqueSourceIndexObjectWithDescriptor": 513,
+          "masterIdUniqueCompositionIndexObjectWithoutDescriptor": 513,
+          "fileObjectInObjectSpine": 513,
+          "masterObjectInObjectSpine": 513
+        },
+        "headMobIndexStats": {
+          "entries": 1186,
+          "indexUidBytes12": 1186,
+          "indexOrg42": 964,
+          "targetIdBytes32": 1186,
+          "normalizedCompleteIndexIdEqualsOwnerId": 0,
+          "indexCoreEqualsOwnerMaterialExcerpt": 1186
+        },
+        "headMobIndexExample": [
+          {
+            "property": "OMFI:SourceMobs",
+            "indexUidHex": "2a000000d99dce1333090696",
+            "targetObject": 68269,
+            "targetFullMobIdHex": "060a2b340101010501010f1013000000d99dce1333090696c7917c575836139a",
+            "indexValueRanges": [
+              [
+                2903734,
+                16662
+              ]
+            ],
+            "slotOffsetWithinValue": 2,
+            "qualification": "Follow the local ObjRef to the object; index12 UID alone is not the complete modern32 identity."
+          }
+        ],
+        "pairedExamples": []
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "selectedPmrSet": 16,
+        "mobIdStoredWidthCounts": {
+          "32": 3988,
+          "12": 4
+        },
+        "sourceClipSourceIdStoredWidths": {
+          "32": 3744,
+          "12": 8
+        },
+        "mobjCount": 1996,
+        "sameObjectIdenticalRepeatedIdCount": 1996,
+        "mobjMissingId": 0,
+        "mobjZeroIdStoredValues": 0,
+        "mobjNonzeroUnrecognizedIdStoredValues": 0,
+        "mobjConflictingCompleteIds": 0,
+        "sameCompleteIdOnMultipleObjects": 988,
+        "pmrMembershipAndRoleCounts": {
+          "pmrRecords": 463,
+          "fileIdMember": 463,
+          "masterIdMember": 463,
+          "fileIdUniqueObject": 0,
+          "masterIdUniqueObject": 0,
+          "fileObjectInSourceIndexWithDescriptor": 463,
+          "masterObjectInCompositionIndexWithoutDescriptor": 463,
+          "fileIdUniqueSourceIndexObjectWithDescriptor": 463,
+          "masterIdUniqueCompositionIndexObjectWithoutDescriptor": 463,
+          "fileObjectInObjectSpine": 463,
+          "masterObjectInObjectSpine": 463
+        },
+        "headMobIndexStats": {
+          "entries": 1008,
+          "indexUidBytes12": 1008,
+          "indexOrg42": 790,
+          "targetIdBytes32": 1007,
+          "normalizedCompleteIndexIdEqualsOwnerId": 1,
+          "indexCoreEqualsOwnerMaterialExcerpt": 1007,
+          "targetIdBytes12": 1
+        },
+        "headMobIndexExample": [
+          {
+            "property": "OMFI:SourceMobs",
+            "indexUidHex": "2a0000008463070c73110696",
+            "targetObject": 68197,
+            "targetFullMobIdHex": "060a2b340101010501010f10130000008463070c731106966ee47c57583610fa",
+            "indexValueRanges": [
+              [
+                2726425,
+                14302
+              ]
+            ],
+            "slotOffsetWithinValue": 2,
+            "qualification": "Follow the local ObjRef to the object; index12 UID alone is not the complete modern32 identity."
+          }
+        ],
+        "pairedExamples": []
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "selectedPmrSet": 16,
+        "mobIdStoredWidthCounts": {
+          "32": 1214
+        },
+        "sourceClipSourceIdStoredWidths": {
+          "32": 1438
+        },
+        "mobjCount": 607,
+        "sameObjectIdenticalRepeatedIdCount": 607,
+        "mobjMissingId": 0,
+        "mobjZeroIdStoredValues": 0,
+        "mobjNonzeroUnrecognizedIdStoredValues": 0,
+        "mobjConflictingCompleteIds": 0,
+        "sameCompleteIdOnMultipleObjects": 0,
+        "pmrMembershipAndRoleCounts": {
+          "pmrRecords": 359,
+          "fileIdMember": 359,
+          "masterIdMember": 359,
+          "fileIdUniqueObject": 359,
+          "masterIdUniqueObject": 359,
+          "fileObjectInSourceIndexWithDescriptor": 359,
+          "masterObjectInCompositionIndexWithoutDescriptor": 359,
+          "fileIdUniqueSourceIndexObjectWithDescriptor": 359,
+          "masterIdUniqueCompositionIndexObjectWithoutDescriptor": 359,
+          "fileObjectInObjectSpine": 359,
+          "masterObjectInObjectSpine": 359
+        },
+        "headMobIndexStats": {
+          "entries": 607,
+          "indexUidBytes12": 607,
+          "indexOrg42": 607,
+          "targetIdBytes32": 607,
+          "normalizedCompleteIndexIdEqualsOwnerId": 0,
+          "indexCoreEqualsOwnerMaterialExcerpt": 607
+        },
+        "headMobIndexExample": [
+          {
+            "property": "OMFI:SourceMobs",
+            "indexUidHex": "2a00000028065ace60120690",
+            "targetObject": 68072,
+            "targetFullMobIdHex": "060a2b340101010501010f101300000028065ace601206907ddc46fc807fda72",
+            "indexValueRanges": [
+              [
+                544417,
+                9662
+              ]
+            ],
+            "slotOffsetWithinValue": 2,
+            "qualification": "Follow the local ObjRef to the object; index12 UID alone is not the complete modern32 identity."
+          }
+        ],
+        "pairedExamples": [
+          {
+            "pmrFilename": "V01.E69684C0_1C5401C5406FAV.mxf",
+            "pmrFileMobId": "060a2b340101010501010f1013000000fa06541c55120690f7b846fc807fda72",
+            "pmrMasterMobId": "060a2b340101010501010f1013000000f006541c55120690f42a46fc807fda72",
+            "fileObject": 88016,
+            "masterObject": 88069,
+            "fileIdValues": [
+              {
+                "recordedHex": "060a2b340101010501010f1013000000fa06541c55120690f7b846fc807fda72",
+                "ranges": [
+                  [
+                    542380,
+                    32
+                  ]
+                ]
+              },
+              {
+                "recordedHex": "060a2b340101010501010f1013000000fa06541c55120690f7b846fc807fda72",
+                "ranges": [
+                  [
+                    542425,
+                    32
+                  ]
+                ]
+              }
+            ],
+            "masterIdValues": [
+              {
+                "recordedHex": "060a2b340101010501010f1013000000f006541c55120690f42a46fc807fda72",
+                "ranges": [
+                  [
+                    543946,
+                    32
+                  ]
+                ]
+              },
+              {
+                "recordedHex": "060a2b340101010501010f1013000000f006541c55120690f42a46fc807fda72",
+                "ranges": [
+                  [
+                    543983,
+                    32
+                  ]
+                ]
+              }
+            ],
+            "masterUsageValues": [
+              "07000000"
+            ],
+            "masterTrackSourceClipGraphPath": [
+              {
+                "sourceObject": 88069,
+                "property": "OMFI:TRKG:Tracks",
+                "targetObject": 88050,
+                "valueRanges": [
+                  [
+                    543920,
+                    26
+                  ]
+                ],
+                "referenceOffsetWithinValue": 2
+              },
+              {
+                "sourceObject": 88050,
+                "property": "OMFI:TRAK:TrackComponent",
+                "targetObject": 88048,
+                "valueRanges": [
+                  [
+                    543439,
+                    8
+                  ]
+                ],
+                "referenceOffsetWithinValue": 0
+              },
+              {
+                "sourceObject": 88048,
+                "property": "OMFI:SEQU:Sequence",
+                "targetObject": 88046,
+                "valueRanges": [
+                  [
+                    543397,
+                    26
+                  ]
+                ],
+                "referenceOffsetWithinValue": 10
+              },
+              {
+                "sourceClipObject": 88046,
+                "property": "OMFI:SCLP:SourceID",
+                "recordedHex": "060a2b340101010501010f1013000000fa06541c55120690f7b846fc807fda72",
+                "ranges": [
+                  [
+                    543309,
+                    32
+                  ]
+                ],
+                "targetFileObject": 88016
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "selectedPmrSet": 16,
+        "mobIdStoredWidthCounts": {
+          "32": 6,
+          "12": 12
+        },
+        "sourceClipSourceIdStoredWidths": {
+          "32": 6,
+          "12": 6
+        },
+        "mobjCount": 9,
+        "sameObjectIdenticalRepeatedIdCount": 9,
+        "mobjMissingId": 0,
+        "mobjZeroIdStoredValues": 0,
+        "mobjNonzeroUnrecognizedIdStoredValues": 0,
+        "mobjConflictingCompleteIds": 0,
+        "sameCompleteIdOnMultipleObjects": 3,
+        "pmrMembershipAndRoleCounts": {
+          "pmrRecords": 2,
+          "fileIdMember": 2,
+          "masterIdMember": 2,
+          "fileIdUniqueObject": 1,
+          "masterIdUniqueObject": 1,
+          "fileObjectInSourceIndexWithDescriptor": 2,
+          "masterObjectInCompositionIndexWithoutDescriptor": 2,
+          "fileIdUniqueSourceIndexObjectWithDescriptor": 2,
+          "masterIdUniqueCompositionIndexObjectWithoutDescriptor": 2,
+          "fileObjectInObjectSpine": 2,
+          "masterObjectInObjectSpine": 2
+        },
+        "headMobIndexStats": {
+          "entries": 6,
+          "indexUidBytes12": 6,
+          "indexOrg42": 6,
+          "targetIdBytes12": 4,
+          "normalizedCompleteIndexIdEqualsOwnerId": 4,
+          "targetIdBytes32": 2,
+          "indexCoreEqualsOwnerMaterialExcerpt": 2
+        },
+        "headMobIndexExample": [
+          {
+            "property": "OMFI:SourceMobs",
+            "indexUidHex": "2a0000000de37d9a84120690",
+            "targetObject": 68077,
+            "targetFullMobIdHex": "060a2b340101010501010f10130000000de37d9a8412069034364a963681a3eb",
+            "indexValueRanges": [
+              [
+                11221,
+                82
+              ]
+            ],
+            "slotOffsetWithinValue": 22,
+            "qualification": "Follow the local ObjRef to the object; index12 UID alone is not the complete modern32 identity."
+          }
+        ],
+        "pairedExamples": []
+      }
+    ],
+    "limits": [
+      "All2412 checks prove both complete IDs occur on correctly typed/catalogued candidate objects; this does not by itself prove each master-to-file association independently. PMR supplies the explicit pair.",
+      "Only two selected pairs have independent master-track-source-clip graph paths in this bounded check.",
+      "HEAD12byte indexUIDs pointing to32byte modern objects are not equal complete identities; their ObjRefs establish local object membership. Do not reconstruct a modern32 ID by appending guessed bytes to the indexUID.",
+      "No missing/zero/unrecognized/conflicting MOBJ identity was observed. This does not decide Bella damaged/missing MDB handling.",
+      "SCLP zeroUID endpoints and unrelated legacy identifiers are not treated as damaged MOBJ IDs.",
+      "Genuine samples are little-endian; byte-swapped conversion remains a separately established native rule."
+    ]
+  },
+  "aggregatePmrRoleChecks": {
+    "pmrRecords": 2412,
+    "fileIdMember": 2412,
+    "masterIdMember": 2412,
+    "fileIdUniqueObject": 751,
+    "masterIdUniqueObject": 751,
+    "fileObjectInSourceIndexWithDescriptor": 2412,
+    "masterObjectInCompositionIndexWithoutDescriptor": 2412,
+    "fileIdUniqueSourceIndexObjectWithDescriptor": 2412,
+    "masterIdUniqueCompositionIndexObjectWithoutDescriptor": 2412,
+    "fileObjectInObjectSpine": 2412,
+    "masterObjectInObjectSpine": 2412
+  },
+  "currentSourceHashes": [
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "bytes": 5159032,
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+      "bytes": 97250,
+      "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "bytes": 22745976,
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+      "bytes": 164660,
+      "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "bytes": 16616336,
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+      "bytes": 123140,
+      "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "bytes": 15703416,
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd"
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+      "bytes": 111140,
+      "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "bytes": 3668720,
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+      "bytes": 86754,
+      "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "bytes": 60680,
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8"
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+      "bytes": 392,
+      "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928"
+    },
+    {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "bytes": 73527536,
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+    },
+    {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+      "bytes": 14340208,
+      "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb"
+    }
+  ],
+  "recommendedJoin": {
+    "status": "Complete-ID normalization and shared component approved on 2026-10-18; broader MDB relationship and record-selection details remain under requirements review; no Bella implementation.",
+    "file": "Use complete normalized PMR FileMobId to select the catalogued MDB file-owner object with an appropriate media descriptor. Read actual MOBJ:MobID from that object, not the HEAD MobIndex truncated identity.",
+    "master": "Use PMR explicit MasterMobId to independently select the appropriate catalogued master record by complete normalized identity. PMR already supplies the pair.",
+    "recordSelection": "Full-file first-object match is unsafe: extra objects may have same fullID. Catalogue membership and role disambiguated all2412 examinedPMRrows.",
+    "legacy": "Recognized Avid organization42 UID12 maps reversibly to known32wrapper shared with oldPMR8. Otherlegacyorganization information is preserved, not silentlydiscarded by copying native ConvertFromOmfiUid.",
+    "byteOrder": "Normalize each source once bydeclaredformat: MDBperobject/HEAD order; PMRheader order; numericfields differ12,8,32. BentoTOCwordorder isseparate.",
+    "inventory": "Multiplepaths withsameFileMobId remainseparateKelpieIds; sharedMasterID nevermergesphysicalfiles. MissingMDBlookup doesnotremoveinventory orerasePMRIDs.",
+    "limits": [
+      "The all2412 result proves eachfullID matches an appropriatelycataloguedowner; onlytwoselected master/filepaths had independentgraphchecks.",
+      "No name/objectorder/excerpt/hash-only joining. Fullidentityequality decides the match.",
+      "Deriving masterfromMDB withoutPMRpair, cross-sourceprecedence, missing/damagedrequiredMDBdata and additionalheaderreads remainseparate.",
+      "No samepathconflicting-IDworkflow or BinFilterchange.",
+      "Allgenuinecorpusfilesare littleendian. Nativeconversionrules established; genuinebigendianfixtureverification remainsengineeringwork."
+    ]
+  },
+  "rawSummaryReceipts": [
+    {
+      "path": "/private/tmp/bella-mdb-identity-20261018-native/findings.json",
+      "bytes": 13172,
+      "sha256": "9529d3013b3cf2cbfd1f4e93f06f3488e4eaaaaef015505bb5ea3fe9ae2c3784"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-identity-20261018-drives/compact-summary.json",
+      "bytes": 19162,
+      "sha256": "104283f03cbca64157ea51b6cdf4f25b9f9d0c4b37046b4cfcd4090a3e2653e8"
+    }
+  ],
+  "validation": {
+    "nativeRawArtifactHashesVerified": 21,
+    "currentInputFilesHashed": 14,
+    "readOnly": true
+  },
+  "subsequentClipNameReview": {
+    "date": "2026-10-18",
+    "evidence": "Project Bella/evidence/mdb-clip-name-2026-10-18.json",
+    "scope": "The identity audit above initially checked only two full relationship paths. A subsequent independent experiment withheld the PMR master during candidate discovery and derived exactly one direct own-track master for all2412 fileIDs; all matched the storedPMRmaster.",
+    "status": "Unique-candidate missing-master selection approved on 2026-10-19. No Bella implementation."
+  }
+}

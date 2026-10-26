@@ -1,0 +1,1968 @@
+{
+  "date": "2026-10-19",
+  "timezone": "Australia/Sydney",
+  "purpose": "MDB video Frame Rate field review: raw pair preservation, native writer/display/typed NTSC conversion, MDVx source/formatter and C++17/Qt6.5 building blocks.",
+  "status": "Frame Rate source/storage/interpretation proposals under review, not yet approved or implemented. Existing internal Avid naming, separate columns, blank audio Frame Rate and exact six-tag Kind lookup remain agreed.",
+  "mediaComposer": {
+    "date": "2026-10-19",
+    "scope": "MDB Frame Rate only, physical video descriptor source. Read-only static arm64 disassembly and manual reconstruction; no app/privateAPI execution, runtime/parser implementation, repository edits or media writes. Sample Rate review is separate.",
+    "binary": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "version": "26.8.0.58987",
+      "architecture": "arm64",
+      "uuid": "D55FFCED-FD76-3667-99B8-C9A84180173E",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+      "freshInstalledHashVerified": true
+    },
+    "storedFrameRate": {
+      "owner": "The physical video file Mob identified by complete FileMobId -> own OMFI:MOBJ:PhysicalMedia descriptor. No selected master/sequence/project clock substitution.",
+      "property": "OMFI:MDFL:SampleRate",
+      "dictionaryOffset": "0x2b0",
+      "observedWireType": "omfi:ExactEditRate",
+      "payload": "8bytes: signed32 numerator followed by signed32 denominator, scalar byteorder follows known object/container byteorder. This is a typed binary rate, no textcodec.",
+      "units": "Recorded descriptor samples/frames per second for physical video. For audio this sameproperty is notthevideoFrameRatecolumn.",
+      "nativeRead": [
+        "AFileMediaDesc::Get0x17c080..90 ->Read_ExactEditRate0x257af0 storesnativevalueatdescriptor+0x244.",
+        "AFileMediaDesc::GetExactEditRate0x17c26c returnsinternal+0x244; GetRate0x17c260 callsEditRateFromExactEditRate0x25761c.",
+        "omfiDualStream::ReadExactEditRate0xb696c requests8bytes at0xb6998, swapsnumeratoranddenominatoreach32bits for non-II byteorder0xb69a4..fc.",
+        "Denominators10,100,1000 are representedwithnative mantissa/decimal exponentat0xb6a00..38. Other denominators divide signed32 scalars asdouble and callExactEditRateFromFloat0xb6a3c..48.",
+        "Missing/untranslated/nodata returnszero0xb69c0..cc. The routine testsnonzero readresult, notcomplete8bytepayload; Bella should independentlyvalidatecorrecttypeandlength."
+      ],
+      "componentClockDifferent": "OMFI:CPNT:EditRate on file/master components is a separate edit clock. Do notborrow a masterprojectrate tofillphysicalvideoFrameRate. Native PCMAaudioGetExactEditRate isoverriddenforAudioSamplingRate; thisFrameRatepolicy isonlyforqualifiedvideo descriptors."
+    },
+    "nativeWrite": {
+      "entry": "AFileMediaDesc::Put0x17be10..20 writes own MDFL:SampleRate through Write_ExactEditRate0x257a40.",
+      "dispatcher": "Write_ExactEditRate0x257a64..90 uses specialtype2 andstreamWriteSpecialType; the ordinary fallback isEdRate.mantissa/EdRate.exp10 forotherstreamtypes, notthe8byte MDBwirepayload.",
+      "function": "omfiDualStream::WriteExactEditRate0xb4ea4",
+      "steps": [
+        "Starts numerator=low32mantissa anddenominator=1 at0xb4ed0..d4.",
+        "Extracts signed16decimalexponent at0xb4ed8..dc.",
+        "Positiveexponent multipliesnumeratorby10^exponent; negativeexponent setsdenominatorto10^(-exponent)0xb4fec..5070.",
+        "Writes exactly8 payloadbytes0xb4f80..90 withBento type string ExactEditRate at0xfc1d21.",
+        "This writerdoesnotcallRationalFromExactEditRate; itnaturallyserializesnative29.97as2997/100 and23.976as23976/1000."
+      ],
+      "byteOrderLimit": "The traced installedarm64writerpasseshostintegerbytes totheBento stream; no explicitendianreverse inthisfunction. Readerprovesobjectbyteorder-aware decoding. Do notclaimallplatformwritersalwayswriteII."
+    },
+    "storedVersusInterpretedRate": {
+      "principle": "Preserve whattheMDBrecorded. Itsdecimalfraction isnotproof thattheactualessenceclockdiffersfrombroadcast1000/1001rate. Native Avid deliberately has context-specific interpretations.",
+      "function": "RationalFromExactEditRate(ExactEditRate_tconst&)0x258148",
+      "mappings": [
+        {
+          "nativeInput": "k *23976 *10^-3",
+          "k": "1..10",
+          "output": "(k*24000)/1001",
+          "anchors": "0x258190..1b8 tests;0x258318..32c emits"
+        },
+        {
+          "nativeInput": "k *2997 *10^-2",
+          "k": "1..10",
+          "output": "(k*30000)/1001",
+          "anchors": "0x258214..238 tests;0x258320..32c emits"
+        }
+      ],
+      "comparison": "EqualExactEditRate0x257934 compares integer mantissa/exponent, normalizing decimal trailingzeros. No floatingepsilon/nearest standard rate test inthisequalitypath. Thus e.gnative29970*10^-3 and2997*10^-2 cancompareequal. Thisisnotproofallothernearbyratesarecoerced.",
+      "boundedConsumer": {
+        "function": "ameAMAFI::GetTrackEssenceDuration(AComposition*)0x20421c",
+        "anchors": "0x204298 gets suppliedcompositionAComponent::GetExactEditRate;0x2042a8 callsRationalFromExactEditRate;0x2042dc..340 multipliescontainerdurationbyrateandrounds toeditunitcount.",
+        "scope": "One concretecontainer/trackdurationconversionconsumer. Itstartscomponenteditrate, notnecessarilyphysicalMDFLSampleRate; no universalclaimthateveryMDBcaller,UIorplaybackrouteusesit."
+      },
+      "durationClarification": "A rawMDBdurationcomputedfrom2997/100 preservesrecordedclockarithmetic. ItshouldbedescribedasrecordedMDBduration, notproofnativeNTSCplaybackisexact29.97Hz. Decisionsaboutnormalizingphysicalduration acrossMDB/mediaheadersareaseparatepolicy choice."
+    },
+    "nativeDisplay": {
+      "function": "GetFrameRateAsString0x2587a0",
+      "behavior": "Reads native mantissa/exponent, calculates scaledrate, choosesnearest of13knownscaledrates andformatsdecimal label. Optionalbooleanargument changesratebyfactor2; itscallermeaning notfullytracedhere.",
+      "candidatesHz": [
+        23.976,
+        24,
+        25,
+        29.97,
+        30,
+        47.952,
+        48,
+        50,
+        59.94,
+        60,
+        100,
+        119.88,
+        120
+      ],
+      "anchors": "0x258888..8c8 computesrate\u00d71000;0x2588d0..ec choosesminimumintegerdistance;0x2588f8..a24 formatsdecimal; tableinitialization0x258ae8..b14.",
+      "scope": "Displaylabelhelperconfirmed; notuniversalFrameRatecolumntrace. Readable23.976/29.97 labels donotmeanitrewritesthestoredrawpair. No storagewriteinthisformattingfunction.",
+      "targetLabel": "AmeTargetFormat::TargetRate::GetFrameRateLabel0x69c50 callsGetFrameRate0x699d8, thensuffixoperation; formattingcontextcanincludeadditionalframe/fieldpresentationdecisions. No assumptionallUIlabelsareexactrawfractions."
+    },
+    "BellaRecommendation": {
+      "read": "Onlyqualifiedphysicalvideo descriptor MDFL:SampleRate; keep original numerator/denominator and compactvalidity/source.",
+      "preserve": [
+        "Retainexactstoredsigned32pair,promotedtosafeinternalintegersifneeded. Validatecomplete8byteknownpayload, positive numeratoranddenominator.",
+        "Equivalentfractionreductionisnumericallysafe iforiginalspellingisnotneeded. Itdoesnotmake2997/100equal30000/1001or23976/1000equal24000/1001.",
+        "Usefloatordecimaltextonlyforpresentation. Donotroundratetointegerordiscarddenominator.",
+        "Donotreplaceunknownwithproject/masterrateorsilentlycanonicalize1001. KeepUnknown/unavailableforfutureagreedheaderrecovery.",
+        "Sample Rate/audioHzanddropframe/timecodelabelingareseparateproperties. Preservevaliduncommonratesratherthanrestrictparsertofourtesteddisplaylabels."
+      ],
+      "plain": "KeepthetwointegersAvidstored,andshowfriendlyFrameRatefromthem. AvidmaylabelorinterpretthefamiliardecimalratesasstandardNTSCrates inparticularoperations; retainrawevidencebeforedecidingwhetherBellaadoptsthatinterpretation."
+    },
+    "limits": [
+      "No fullGUI display-pathaudit or claimthatthe13displaylabelsaretheonlylegitimatestoredrates.",
+      "No runtimeexecutionofapporitsprivateAPIs. No MCcodecopiedintoBella.",
+      "ActualcorpusdistributionandQt/C++17implementationadvice areindependentparent/otheragentwork; these nativeclaimsrelyonreceiptedbinary.",
+      "Newreadersshouldnotcopythenativepartialread/floatroundingbehaviorjustbecauseitexists.",
+      "CurrentFrameRatepolicy remainsproposaluntilroot/userapproval; SourcePath/BinFilter/oldscannerdecisionsunchanged."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/omfi-WriteExactEditRate.txt",
+        "bytes": 6187,
+        "sha256": "c3ddff4e579c8377ac91cdfb35e52b4ce2d73a3cb0a4bec65cd324ca64f68ac4"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/WriteExactEditRate-wrapper.txt",
+        "bytes": 2137,
+        "sha256": "26f9ab21504c29551198459a8afb7a0e02e50dc6d48aaaedc996135a863b5350"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/EditRateFromExactEditRate.txt",
+        "bytes": 1306,
+        "sha256": "ba9dc634c3c5def7a6534d673448e4a3988e69be2079a344b55bad85ef522925"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/RationalFromExactEditRate.txt",
+        "bytes": 8990,
+        "sha256": "cddcea25e7ad7e42afbdb4b3ec01ca0b420962daaf3951b3bbb5fc89353c70ff"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/ExactEditRateFromFloat.txt",
+        "bytes": 2420,
+        "sha256": "20b6f0603675f993737dcaa5fe43901b710e3b31f92146485fd07ca4e09f90b6"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/EqualExactEditRate.txt",
+        "bytes": 3733,
+        "sha256": "12ff075f5c2ac3a9e97dcd1a66b83f34ec3dbd28da565e1a21113eab68a25c0c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/GetFrameRateAsString.txt",
+        "bytes": 14723,
+        "sha256": "ddb99a8877d9bfd9f10815d2bc47a284952837d40baca403af62c586d68c23b5"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/TargetRate-GetFrameRate.txt",
+        "bytes": 6845,
+        "sha256": "420a65168a53751cd4369a2225b6e4695904200bcd51843db055a3b12ff186ae"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/TargetRate-GetFrameRateLabel.txt",
+        "bytes": 979,
+        "sha256": "4f6d5e9e286c6106b5ec4da3c7eec55eabd9dde9d0c9cd7ad798a2bea30b7073"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/frame-rate-constants.json",
+        "bytes": 663,
+        "sha256": "a2ad85f14263e2afa26d2a7ad2f27627a99ac2e8f916da26811653ca6a4cce64"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AFileMediaDesc-Get.txt",
+        "bytes": 5904,
+        "sha256": "00d4e8a4eae621ab204fcc0ba7c610bdfac06e7833ad3d4535c0cdb48df3ce66"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AFileMediaDesc-getters.txt",
+        "bytes": 2096,
+        "sha256": "18fa2fe8b2e9839ddfe616f7c94685dd7192351810c0b76d6b96f610531ad83c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AFileMediaDesc-Put.txt",
+        "bytes": 8287,
+        "sha256": "88f09f291396e771a3613976900d518e1d54ad07be6064f5ba07737b2d9bc987"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/omfi-ReadExactEditRate.txt",
+        "bytes": 6436,
+        "sha256": "b07e0c94bc84c58f00d6fa16233b5ed028e39248059a6fec45c82087fd7bbfce"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/ReadRational.txt",
+        "bytes": 4308,
+        "sha256": "f479a6695f8a129cf8b7a3a766c10366d831cac8f37f196c6a2a7cf44d8428c3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/duration-property-dictionary.txt",
+        "bytes": 2279,
+        "sha256": "ea5f0c6a6fdaecf7e7d5c54de03f9d5eaf1d2c426beb6176bb7ec221e8ee7d6c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/PhysicalFileLength-consumer.txt",
+        "bytes": 8985,
+        "sha256": "2abb6b30842666867e87d92aa80081cd1b30937f89b7344288fa0e7349812698"
+      }
+    ]
+  },
+  "mdvx": {
+    "date": "2026-10-19",
+    "timezone": "Australia/Sydney",
+    "purpose": "New bounded read-only MDVx ordinary inventory Frame Rate source, exact pair retention, dictionary formatting and CSV audit. No app launch, native runtime invocation, production/repository edit or media write.",
+    "binary": {
+      "date": "2026-10-19",
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "bytes": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "version": "0.2",
+      "build": "4073",
+      "architecture": "arm64",
+      "priorDisassembly": {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-disassembly.txt",
+        "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074"
+      }
+    },
+    "method": "Fresh hash and arm64 relevant symbols, matching-hash prior complete disassembly, manual register/control-flow trace and direct compiled constant/string decoding. IEEE754 examples model the observed operations; they are not live MDVx output.",
+    "sourceAndStorage": {
+      "owner": "Selected PMR-associated MASTER, using eight-byte ID excerpt\u2192CompositionMobs\u2192TOC. Not the file descriptor MDFL:SampleRate or a file-specific picture track. Bella full-ID and owner rules must not be inferred from this shortcut.",
+      "function": "-[MDVxOMFI addInfoToItem:]0x100064794",
+      "property": "OMFI:CPNT:EditRate0x10293 on matched master. Query0x100064934..0x100064944; check payload length>=8 at0x100064958..0x100064960; pDataFor nonnull at0x100064968..0x10006496c.",
+      "numericRead": "0x100064970..0x100064990 reads two32bit words, reversing each separately when _isII false. Does not round, reduce or replace23976/1000 by24000/1001.",
+      "setter": "setFrameRateNumerator:denominator:0x100031090 stores w2,w3 directly atrow+0xc8/+0xcc.",
+      "getter": "DB_framerate0x1000315b4 returns the same8byte pair via objc_copyStruct. Numerator is low32bits and denominator high32bits of returned x0 on arm64.",
+      "exactnessQualification": "Raw32bit patterns are retained. These loads do not validate signed rational semantics or positivity; presentation converts with unsigned ucvtf. Keeping rawbits is not sufficient evidence of safe invalid-rate handling.",
+      "missing": "Missing master/missing property/short payload/unreadable pointer skips rate setter. Fresh row defaults remain0/0. No file-descriptor fallback or track inference was found in this ordinary rate assignment.",
+      "audioRows": "This source is master editing rate, with no audio-versus-video gating in the Frame Rate table branch. MDVx may show a master editing rate on audio rows; Bella\u2019s agreed audio Frame Rate blank is a different explicit field policy.",
+      "headerLimit": "Inspected MDVxMXF addInfoToItem copies names/Project/IDs, no rate setter. Ordinary no-MDB gateway therefore provides no Frame Rate repair through that row projection. Not a whole-parser capability claim."
+    },
+    "presentation": {
+      "table": "tableView:viewForTableColumn:row:0x100050304; FramerateCellID0x100050890; DB_framerate0x1000508a8; denominator==0 exits to nil0x1000508b0; convert numerator/denominator separately to unsigned double0x1000508c0..c8; NSNumber key0x1000508cc; dictionary atcore+0x58 lookup0x1000508e4.",
+      "dictionary": "initFrameratesDictionary0x1000523ec builds one numeric-key dictionary shared by frame/sample presentation; frameratesDictionary accessor0x100054bd0. Three compiled floating keys are decimal29.97,23.976,59.94, not exact NTSC fractions. Integer picture keys24,25,30,48,50,60 have fps labels; audio-frequency keys also exist in this shared dictionary.",
+      "dictionaryEntries": [
+        {
+          "numericKey": 29.97,
+          "label": "29.97fps",
+          "keyConstruction": "NSNumber numberWithDouble"
+        },
+        {
+          "numericKey": 23.976,
+          "label": "23.976fps",
+          "keyConstruction": "NSNumber numberWithDouble"
+        },
+        {
+          "numericKey": 59.94,
+          "label": "59.94fps",
+          "keyConstruction": "NSNumber numberWithDouble"
+        },
+        {
+          "numericKey": 30,
+          "label": "30fps",
+          "keyConstruction": "NSNumber numberWithInt"
+        },
+        {
+          "numericKey": 60,
+          "label": "60fps",
+          "keyConstruction": "NSNumber numberWithInt"
+        },
+        {
+          "numericKey": 24,
+          "label": "24fps",
+          "keyConstruction": "NSNumber numberWithInt"
+        },
+        {
+          "numericKey": 48,
+          "label": "48fps",
+          "keyConstruction": "NSNumber numberWithInt"
+        },
+        {
+          "numericKey": 25,
+          "label": "25fps",
+          "keyConstruction": "NSNumber numberWithInt"
+        },
+        {
+          "numericKey": 50,
+          "label": "50fps",
+          "keyConstruction": "NSNumber numberWithInt"
+        },
+        {
+          "numericKey": 22050,
+          "label": "22.05 kHz",
+          "keyConstruction": "NSNumber numberWithInt"
+        },
+        {
+          "numericKey": 32000,
+          "label": "32 kHz",
+          "keyConstruction": "NSNumber numberWithInt"
+        },
+        {
+          "numericKey": 44100,
+          "label": "44.1 kHz",
+          "keyConstruction": "NSNumber numberWithInt"
+        },
+        {
+          "numericKey": 48000,
+          "label": "48 kHz",
+          "keyConstruction": "NSNumber numberWithInt"
+        },
+        {
+          "numericKey": 96000,
+          "label": "96 kHz",
+          "keyConstruction": "NSNumber numberWithInt"
+        },
+        {
+          "numericKey": 192000,
+          "label": "192 kHz",
+          "keyConstruction": "NSNumber numberWithInt"
+        }
+      ],
+      "fallback": "On dictionary miss, table0x100050904..0x100050910 passes packed pair x27 to NSString format %u. The unsigned32 format consumes numerator only, not the quotient, denominator, rational or an fps suffix. Thus a legitimate non-dictionary fraction can display its numerator.",
+      "nilDisplay": "Denominator0 produces nil; common table fallback0x100050b84..0x100050b90 uses core.novalue literal ... (set byCore init0x10004a8d8..0x10004a8e0). This is the placeholder, not a zero rate.",
+      "zeroNumerator": "No positive numerator check in Frame Rate display. Numerator0 with positive denominator misses dictionary and is predicted to format0.",
+      "staticExamples": "23976/1000 produces the compiled23.976 double and expected23.976fps label. 24000/1001 produces a distinct double, misses fixed keys, and is predicted to format24000. Likewise2997/100\u219229.97fps versus30000/1001\u219230000, and5994/100\u219259.94fps versus60000/1001\u219260000. These examples are static arithmetic/control-flow predictions, not observed corpus/live UI results.",
+      "doNotConflate": "Raw row pair remains intact despite lossy human display. A dictionary label cannot recover or prove the original rational."
+    },
+    "export": {
+      "stringHelper": "tableView:NSStringValueForTableColumn:row:0x100050ce4 Frame Rate branch0x100051130..0x1000511bc repeats numerator/denominator double key, same dictionary and same %u-numerator fallback. Denominator0 returnsnil at0x1000512e0.",
+      "CSV": "ExportMenu genCsv:0x100067bc0 requests that string helper for eachcolumn at0x100067e24. Nonnil uses description, nil maps to empty literal at0x100067e60. Thus CSV exports the formatted label/numerator fallback, not an additional exact fraction; absent/zero-denominator Frame Rate becomes empty CSV text rather than table ... placeholder.",
+      "runtimeLimit": "No CSV file generated by MDVx; static formatting/serialization call flow only."
+    },
+    "bitrateHelperIsSeparate": {
+      "function": "-[MDVxCore getBitrateTextForItem:]0x100050150",
+      "behavior": "Forms a numeric double key from DB_framerate, substitutes denominator1 only within this helper when zero, then uses DIDResolutionID and that numeric key in DNx dictionaries. Does not change raw rate pair or supply an alternate Frame Rate source.",
+      "UIContext": "Called from special DNx Sample Rate column branches0x100050918..0x100050948 and0x1000511c0..0x1000511f0, not from the Frame Rate display branch. Do not describe its bitrate label as Frame Rate."
+    },
+    "BellaImplicationsNotApproval": [
+      "Preserve exact typed numerator/denominator separately from the display string. Do not copy MDVx master-owner choice or eight-byte identity join as the specification for Bella physical-file Frame Rate.",
+      "Do not silently canonicalize23976/1000 to24000/1001 or infer exact rational from23.976fps display text.",
+      "Do not use decimal dictionary misses, numerator-only fallback, audio-frequency dictionary labels or audio-row master rates as Bella formatting rules.",
+      "No new Frame Rate source/format/missing/header policy approved by this audit; user\u2019s separate-column and audio-blank/video-sample-blank choices remain in force."
+    ],
+    "limits": [
+      "Bounded ordinary inventory/table/string-helper/CSV methods only; not every app/browser/AMA reader.",
+      "Static arm64 analysis; x86_64 code not independently audited.",
+      "No app/private API runtime, generated native UI/CSV, altered MDB fixture, performance or memory measurement.",
+      "Computed example outputs are static predictions from compiled operations and numeric key equality, not live MDVx scan evidence.",
+      "No audio-frequency field recommendation made; separate Sample Rate review remains pending."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/ExportMenu_genCsv_.txt",
+        "bytes": 10241,
+        "sha256": "92959f72f5c4beb7005030925cceed4fbd0f29ed05383c0524a8fb50f2f4f522"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_frameratesDictionary.txt",
+        "bytes": 163,
+        "sha256": "6a40e7c9d5e2ad8f4323c7b52abfe26fb8ea35471e12de58ee709e74e6d00f1b"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_getBitrateTextForItem_.txt",
+        "bytes": 2903,
+        "sha256": "46a0ce0d6f191b714d534501608575b5e5782111bd4782e31db1867257096878"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_init.txt",
+        "bytes": 3590,
+        "sha256": "19d42fca6a3121e13b805150e71ec7b13350e06eaf601f97c4556d730e8e97d9"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_initFrameratesDictionary.txt",
+        "bytes": 9399,
+        "sha256": "0f74bc3262eb800f1c83f394b8e64f2664f91c0b3648f4a54fdb2273fad8b348"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt",
+        "bytes": 16441,
+        "sha256": "be932b1a1d04bf4539a0f4fe6b8fadb68d4d4170387b8613806c5c6af8b0fee1"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt",
+        "bytes": 25206,
+        "sha256": "e9f502df3ddc289f84c65be937ec441a847c638c8b17d1df97c3b1f0655644cb"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxDatabaseItem-objc-excerpt.txt",
+        "bytes": 24581,
+        "sha256": "99ee84dd15386551c5a986e99eb6ddd750e6aee6275a6914a9306a9a381e34dc"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxDatabaseItem_DB_framerate.txt",
+        "bytes": 510,
+        "sha256": "8d85a33ec9b29747de24310040e20a6b19e58d4f1989a8fbc61e272e9e533aa3"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxDatabaseItem_setFrameRateNumerator_denominator_.txt",
+        "bytes": 118,
+        "sha256": "9ed02d790c489787f22e4389aab3fa0a24956f1c9a119eb57463052690f593b2"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxMXF_addInfoToItem_.txt",
+        "bytes": 3747,
+        "sha256": "18281f5391667e37e8e3b5884b1a498e680ac0ccc0a99fcf8f470c42101ea1d0"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxOMFI_addInfoToItem_.txt",
+        "bytes": 9423,
+        "sha256": "20211e8a6dbcd33b0e034f3885504d5af7a54cffd3a05b5d776446549e0f6829"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxPMRScannerOperation_main.txt",
+        "bytes": 53423,
+        "sha256": "3eeb0753fa8ace9baa58c04efa2bf9345553e74d265102be7d4739b877cabff8"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/binary-receipt.json",
+        "bytes": 438,
+        "sha256": "e9b5f434e8b588145f12b68b85a5157b242bd754a8ca31c879d3c8c0ef7e72b6"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/decoded-dictionary-and-format.json",
+        "bytes": 3788,
+        "sha256": "f629d3180f230578eee5c5759b149ae90ec5afb0409bec206d7dceb0fc985dd4"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/fresh-relevant-arm64-symbols.txt",
+        "bytes": 1088,
+        "sha256": "da741065575bc32128c64b929e855dc465755001071a43b2b734c8df765af99d"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/static-number-examples.json",
+        "bytes": 3119,
+        "sha256": "9a66850c0c6659326f400e51e393fb1c7e2cda49f43cd3196c29c5004e8a8249"
+      }
+    ]
+  },
+  "actualDatabases": {
+    "purpose": "Independent read-only video Frame Rate audit of the six established live MDB/PMR pairs; no headers or OldScanner oracle.",
+    "priorDurationFindings": {
+      "path": "/private/tmp/bella-mdb-duration-20261019-drives/findings.json",
+      "sha256": "7dd65d531eb8d3c3321a2c2fa0cd51fde60092e047ad38738ea62d25abe96c22"
+    },
+    "method": [
+      "Live MDB/PMR hashes, cached raw indexes and reused identity helper are verified.",
+      "Full normalized file/master IDs and active catalogue membership choose exact owners. File-owned PhysicalMedia reference supplies descriptor; only native-proven picture descriptor classes CDCI/RGBA/MPGI enter Frame Rate counts. Audio descriptor rates are excluded.",
+      "MDFL:SampleRate is read as the original signed LE32 numerator/denominator omfi:ExactEditRate pair of width8. Positive numerator and denominator are required for this research usable state.",
+      "Original numerator/denominator values and raw hex/ranges are retained. They are never snapped to 30000/1001 or 24000/1001, converted to floating-point storage, or inferred from a filename/project/master label.",
+      "File-own root CPNT:EditRate and selected-master root CPNT:EditRate are research comparisons only. No additional track traversal or runtime consistency check is proposed.",
+      "Reference-array/MobIndex declared counts must exactly match parsed entries."
+    ],
+    "counts": {
+      "pmrFileRows": 2412,
+      "knownVideoRows": 899,
+      "videoDescriptorClass_RGBA": 18,
+      "knownAudioRowsExcludedFromFrameRate": 1513,
+      "videoDescriptorClass_CDCI": 873,
+      "videoDescriptorClass_MPGI": 8
+    },
+    "frameRatesOriginalPairsPerFile": [
+      {
+        "numerator": 24,
+        "denominator": 1,
+        "fileRows": 103
+      },
+      {
+        "numerator": 25,
+        "denominator": 1,
+        "fileRows": 683
+      },
+      {
+        "numerator": 2997,
+        "denominator": 100,
+        "fileRows": 67
+      },
+      {
+        "numerator": 23976,
+        "denominator": 1000,
+        "fileRows": 46
+      }
+    ],
+    "descriptorClassAndRateCounts": [
+      {
+        "class": "CDCI",
+        "numerator": 24,
+        "denominator": 1,
+        "fileRows": 93
+      },
+      {
+        "class": "CDCI",
+        "numerator": 25,
+        "denominator": 1,
+        "fileRows": 675
+      },
+      {
+        "class": "CDCI",
+        "numerator": 2997,
+        "denominator": 100,
+        "fileRows": 63
+      },
+      {
+        "class": "CDCI",
+        "numerator": 23976,
+        "denominator": 1000,
+        "fileRows": 42
+      },
+      {
+        "class": "MPGI",
+        "numerator": 2997,
+        "denominator": 100,
+        "fileRows": 4
+      },
+      {
+        "class": "MPGI",
+        "numerator": 23976,
+        "denominator": 1000,
+        "fileRows": 4
+      },
+      {
+        "class": "RGBA",
+        "numerator": 24,
+        "denominator": 1,
+        "fileRows": 10
+      },
+      {
+        "class": "RGBA",
+        "numerator": 25,
+        "denominator": 1,
+        "fileRows": 8
+      }
+    ],
+    "comparisonCounts": {
+      "fileOwnRootComponent:sameExactRational": 899,
+      "fileOwnRootComponent:differentExactRational": 0,
+      "fileOwnRootComponent:sameRawNumeratorDenominator": 899,
+      "selectedMasterRootComponent:sameExactRational": 899,
+      "selectedMasterRootComponent:differentExactRational": 0,
+      "selectedMasterRootComponent:sameRawNumeratorDenominator": 899
+    },
+    "examples": [
+      {
+        "mdbPath": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobId": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64",
+        "masterMobId": "060a2b340101010501010f1013000000d97717225586059099ba34363bcdaf64",
+        "fileObject": 93780,
+        "masterObject": 93810,
+        "descriptorObject": 93779,
+        "descriptorClass": "RGBA",
+        "descriptorFrameRate": {
+          "ownerObject": 93779,
+          "property": "OMFI:MDFL:SampleRate",
+          "state": "positiveRate",
+          "rows": [
+            {
+              "type": "omfi:ExactEditRate",
+              "length": 8,
+              "hex": "1800000001000000",
+              "ranges": [
+                [
+                  1394336,
+                  8
+                ]
+              ]
+            }
+          ],
+          "rawNumerator": 24,
+          "rawDenominator": 1
+        },
+        "fileOwnRootEditRate": {
+          "ownerObject": 93780,
+          "property": "OMFI:CPNT:EditRate",
+          "state": "positiveRate",
+          "rows": [
+            {
+              "type": "omfi:ExactEditRate",
+              "length": 8,
+              "hex": "1800000001000000",
+              "ranges": [
+                [
+                  1394423,
+                  8
+                ]
+              ]
+            }
+          ],
+          "rawNumerator": 24,
+          "rawDenominator": 1
+        },
+        "selectedMasterRootEditRate": {
+          "ownerObject": 93810,
+          "property": "OMFI:CPNT:EditRate",
+          "state": "positiveRate",
+          "rows": [
+            {
+              "type": "omfi:ExactEditRate",
+              "length": 8,
+              "hex": "1800000001000000",
+              "ranges": [
+                [
+                  1395695,
+                  8
+                ]
+              ]
+            }
+          ],
+          "rawNumerator": 24,
+          "rawDenominator": 1
+        }
+      },
+      {
+        "mdbPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobId": "060a2b340101010501010f1013000000fa06541c55120690f7b846fc807fda72",
+        "masterMobId": "060a2b340101010501010f1013000000f006541c55120690f42a46fc807fda72",
+        "fileObject": 88016,
+        "masterObject": 88069,
+        "descriptorObject": 88015,
+        "descriptorClass": "CDCI",
+        "descriptorFrameRate": {
+          "ownerObject": 88015,
+          "property": "OMFI:MDFL:SampleRate",
+          "state": "positiveRate",
+          "rows": [
+            {
+              "type": "omfi:ExactEditRate",
+              "length": 8,
+              "hex": "b50b000064000000",
+              "ranges": [
+                [
+                  542267,
+                  8
+                ]
+              ]
+            }
+          ],
+          "rawNumerator": 2997,
+          "rawDenominator": 100
+        },
+        "fileOwnRootEditRate": {
+          "ownerObject": 88016,
+          "property": "OMFI:CPNT:EditRate",
+          "state": "positiveRate",
+          "rows": [
+            {
+              "type": "omfi:ExactEditRate",
+              "length": 8,
+              "hex": "b50b000064000000",
+              "ranges": [
+                [
+                  542354,
+                  8
+                ]
+              ]
+            }
+          ],
+          "rawNumerator": 2997,
+          "rawDenominator": 100
+        },
+        "selectedMasterRootEditRate": {
+          "ownerObject": 88069,
+          "property": "OMFI:CPNT:EditRate",
+          "state": "positiveRate",
+          "rows": [
+            {
+              "type": "omfi:ExactEditRate",
+              "length": 8,
+              "hex": "b50b000064000000",
+              "ranges": [
+                [
+                  543873,
+                  8
+                ]
+              ]
+            }
+          ],
+          "rawNumerator": 2997,
+          "rawDenominator": 100
+        }
+      },
+      {
+        "mdbPath": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "fileMobId": "060a2b340101010501010f101300000015da9b2455120690c25146fc807fda72",
+        "masterMobId": "060a2b340101010501010f10130000000dda9b2455120690eea846fc807fda72",
+        "fileObject": 68680,
+        "masterObject": 68786,
+        "descriptorObject": 68679,
+        "descriptorClass": "CDCI",
+        "descriptorFrameRate": {
+          "ownerObject": 68679,
+          "property": "OMFI:MDFL:SampleRate",
+          "state": "positiveRate",
+          "rows": [
+            {
+              "type": "omfi:ExactEditRate",
+              "length": 8,
+              "hex": "a85d0000e8030000",
+              "ranges": [
+                [
+                  17677,
+                  8
+                ]
+              ]
+            }
+          ],
+          "rawNumerator": 23976,
+          "rawDenominator": 1000
+        },
+        "fileOwnRootEditRate": {
+          "ownerObject": 68680,
+          "property": "OMFI:CPNT:EditRate",
+          "state": "positiveRate",
+          "rows": [
+            {
+              "type": "omfi:ExactEditRate",
+              "length": 8,
+              "hex": "a85d0000e8030000",
+              "ranges": [
+                [
+                  17764,
+                  8
+                ]
+              ]
+            }
+          ],
+          "rawNumerator": 23976,
+          "rawDenominator": 1000
+        },
+        "selectedMasterRootEditRate": {
+          "ownerObject": 68786,
+          "property": "OMFI:CPNT:EditRate",
+          "state": "positiveRate",
+          "rows": [
+            {
+              "type": "omfi:ExactEditRate",
+              "length": 8,
+              "hex": "a85d0000e8030000",
+              "ranges": [
+                [
+                  20720,
+                  8
+                ]
+              ]
+            }
+          ],
+          "rawNumerator": 23976,
+          "rawDenominator": 1000
+        }
+      }
+    ],
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "cacheSha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "counts": {
+          "pmrFileRows": 389,
+          "knownVideoRows": 103,
+          "videoDescriptorClass_RGBA": 10,
+          "knownAudioRowsExcludedFromFrameRate": 286,
+          "videoDescriptorClass_CDCI": 93
+        },
+        "frameRatesOriginalPairsPerFile": [
+          {
+            "numerator": 24,
+            "denominator": 1,
+            "fileRows": 103
+          }
+        ],
+        "descriptorClassAndRateCounts": [
+          {
+            "class": "CDCI",
+            "numerator": 24,
+            "denominator": 1,
+            "fileRows": 93
+          },
+          {
+            "class": "RGBA",
+            "numerator": 24,
+            "denominator": 1,
+            "fileRows": 10
+          }
+        ],
+        "comparisonCounts": {
+          "fileOwnRootComponent:sameExactRational": 103,
+          "fileOwnRootComponent:differentExactRational": 0,
+          "fileOwnRootComponent:sameRawNumeratorDenominator": 103,
+          "selectedMasterRootComponent:sameExactRational": 103,
+          "selectedMasterRootComponent:differentExactRational": 0,
+          "selectedMasterRootComponent:sameRawNumeratorDenominator": 103
+        },
+        "rateFieldStates": {
+          "descriptor:positiveRate": 103,
+          "fileOwnRootComponent:positiveRate": 103,
+          "selectedMasterRootComponent:positiveRate": 103
+        },
+        "rateFieldTypesAndWidths": {
+          "('descriptor', 'omfi:ExactEditRate', 8)": 103,
+          "('fileOwnRootComponent', 'omfi:ExactEditRate', 8)": 103,
+          "('selectedMasterRootComponent', 'omfi:ExactEditRate', 8)": 103
+        },
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 1,
+          "omfi:ObjRef:observed": 389
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "cacheSha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "counts": {
+          "pmrFileRows": 686,
+          "knownVideoRows": 279,
+          "videoDescriptorClass_CDCI": 271,
+          "knownAudioRowsExcludedFromFrameRate": 407,
+          "videoDescriptorClass_RGBA": 8
+        },
+        "frameRatesOriginalPairsPerFile": [
+          {
+            "numerator": 25,
+            "denominator": 1,
+            "fileRows": 279
+          }
+        ],
+        "descriptorClassAndRateCounts": [
+          {
+            "class": "CDCI",
+            "numerator": 25,
+            "denominator": 1,
+            "fileRows": 271
+          },
+          {
+            "class": "RGBA",
+            "numerator": 25,
+            "denominator": 1,
+            "fileRows": 8
+          }
+        ],
+        "comparisonCounts": {
+          "fileOwnRootComponent:sameExactRational": 279,
+          "fileOwnRootComponent:differentExactRational": 0,
+          "fileOwnRootComponent:sameRawNumeratorDenominator": 279,
+          "selectedMasterRootComponent:sameExactRational": 279,
+          "selectedMasterRootComponent:differentExactRational": 0,
+          "selectedMasterRootComponent:sameRawNumeratorDenominator": 279
+        },
+        "rateFieldStates": {
+          "descriptor:positiveRate": 279,
+          "fileOwnRootComponent:positiveRate": 279,
+          "selectedMasterRootComponent:positiveRate": 279
+        },
+        "rateFieldTypesAndWidths": {
+          "('descriptor', 'omfi:ExactEditRate', 8)": 279,
+          "('fileOwnRootComponent', 'omfi:ExactEditRate', 8)": 279,
+          "('selectedMasterRootComponent', 'omfi:ExactEditRate', 8)": 279
+        },
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 1,
+          "omfi:ObjRef:observed": 686
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "cacheSha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "counts": {
+          "pmrFileRows": 513,
+          "knownVideoRows": 193,
+          "videoDescriptorClass_CDCI": 193,
+          "knownAudioRowsExcludedFromFrameRate": 320
+        },
+        "frameRatesOriginalPairsPerFile": [
+          {
+            "numerator": 25,
+            "denominator": 1,
+            "fileRows": 193
+          }
+        ],
+        "descriptorClassAndRateCounts": [
+          {
+            "class": "CDCI",
+            "numerator": 25,
+            "denominator": 1,
+            "fileRows": 193
+          }
+        ],
+        "comparisonCounts": {
+          "fileOwnRootComponent:sameExactRational": 193,
+          "fileOwnRootComponent:differentExactRational": 0,
+          "fileOwnRootComponent:sameRawNumeratorDenominator": 193,
+          "selectedMasterRootComponent:sameExactRational": 193,
+          "selectedMasterRootComponent:differentExactRational": 0,
+          "selectedMasterRootComponent:sameRawNumeratorDenominator": 193
+        },
+        "rateFieldStates": {
+          "descriptor:positiveRate": 193,
+          "fileOwnRootComponent:positiveRate": 193,
+          "selectedMasterRootComponent:positiveRate": 193
+        },
+        "rateFieldTypesAndWidths": {
+          "('descriptor', 'omfi:ExactEditRate', 8)": 193,
+          "('fileOwnRootComponent', 'omfi:ExactEditRate', 8)": 193,
+          "('selectedMasterRootComponent', 'omfi:ExactEditRate', 8)": 193
+        },
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 1,
+          "omfi:ObjRef:observed": 513
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "cacheSha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "counts": {
+          "pmrFileRows": 463,
+          "knownVideoRows": 205,
+          "videoDescriptorClass_CDCI": 205,
+          "knownAudioRowsExcludedFromFrameRate": 258
+        },
+        "frameRatesOriginalPairsPerFile": [
+          {
+            "numerator": 25,
+            "denominator": 1,
+            "fileRows": 205
+          }
+        ],
+        "descriptorClassAndRateCounts": [
+          {
+            "class": "CDCI",
+            "numerator": 25,
+            "denominator": 1,
+            "fileRows": 205
+          }
+        ],
+        "comparisonCounts": {
+          "fileOwnRootComponent:sameExactRational": 205,
+          "fileOwnRootComponent:differentExactRational": 0,
+          "fileOwnRootComponent:sameRawNumeratorDenominator": 205,
+          "selectedMasterRootComponent:sameExactRational": 205,
+          "selectedMasterRootComponent:differentExactRational": 0,
+          "selectedMasterRootComponent:sameRawNumeratorDenominator": 205
+        },
+        "rateFieldStates": {
+          "descriptor:positiveRate": 205,
+          "fileOwnRootComponent:positiveRate": 205,
+          "selectedMasterRootComponent:positiveRate": 205
+        },
+        "rateFieldTypesAndWidths": {
+          "('descriptor', 'omfi:ExactEditRate', 8)": 205,
+          "('fileOwnRootComponent', 'omfi:ExactEditRate', 8)": 205,
+          "('selectedMasterRootComponent', 'omfi:ExactEditRate', 8)": 205
+        },
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 1,
+          "omfi:ObjRef:observed": 463
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "cacheSha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "counts": {
+          "pmrFileRows": 359,
+          "knownVideoRows": 119,
+          "videoDescriptorClass_CDCI": 111,
+          "knownAudioRowsExcludedFromFrameRate": 240,
+          "videoDescriptorClass_MPGI": 8
+        },
+        "frameRatesOriginalPairsPerFile": [
+          {
+            "numerator": 25,
+            "denominator": 1,
+            "fileRows": 6
+          },
+          {
+            "numerator": 2997,
+            "denominator": 100,
+            "fileRows": 67
+          },
+          {
+            "numerator": 23976,
+            "denominator": 1000,
+            "fileRows": 46
+          }
+        ],
+        "descriptorClassAndRateCounts": [
+          {
+            "class": "CDCI",
+            "numerator": 25,
+            "denominator": 1,
+            "fileRows": 6
+          },
+          {
+            "class": "CDCI",
+            "numerator": 2997,
+            "denominator": 100,
+            "fileRows": 63
+          },
+          {
+            "class": "CDCI",
+            "numerator": 23976,
+            "denominator": 1000,
+            "fileRows": 42
+          },
+          {
+            "class": "MPGI",
+            "numerator": 2997,
+            "denominator": 100,
+            "fileRows": 4
+          },
+          {
+            "class": "MPGI",
+            "numerator": 23976,
+            "denominator": 1000,
+            "fileRows": 4
+          }
+        ],
+        "comparisonCounts": {
+          "fileOwnRootComponent:sameExactRational": 119,
+          "fileOwnRootComponent:differentExactRational": 0,
+          "fileOwnRootComponent:sameRawNumeratorDenominator": 119,
+          "selectedMasterRootComponent:sameExactRational": 119,
+          "selectedMasterRootComponent:differentExactRational": 0,
+          "selectedMasterRootComponent:sameRawNumeratorDenominator": 119
+        },
+        "rateFieldStates": {
+          "descriptor:positiveRate": 119,
+          "fileOwnRootComponent:positiveRate": 119,
+          "selectedMasterRootComponent:positiveRate": 119
+        },
+        "rateFieldTypesAndWidths": {
+          "('descriptor', 'omfi:ExactEditRate', 8)": 119,
+          "('fileOwnRootComponent', 'omfi:ExactEditRate', 8)": 119,
+          "('selectedMasterRootComponent', 'omfi:ExactEditRate', 8)": 119
+        },
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 1,
+          "omfi:ObjRef:observed": 359
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "cacheSha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "counts": {
+          "pmrFileRows": 2,
+          "knownAudioRowsExcludedFromFrameRate": 2
+        },
+        "frameRatesOriginalPairsPerFile": [],
+        "descriptorClassAndRateCounts": [],
+        "comparisonCounts": {},
+        "rateFieldStates": {},
+        "rateFieldTypesAndWidths": {},
+        "errors": {},
+        "referenceChecks": {
+          "omfi:MobIndex:observed": 2,
+          "omfi:ObjRefArray:observed": 1,
+          "omfi:ObjRef:observed": 2
+        }
+      }
+    ],
+    "limits": [
+      "These are the exact rates stored in MDB, not independent verification against media essence.",
+      "No missing/nonpositive/unsupported video descriptor rate or conflicting video/file/master clock is established by this corpus. These unexercised cases still need implementation rules.",
+      "The original fractional rates differ mathematically from the familiar 1001-based broadcast ratios; retaining the original pair does not assert which clock should win in a future cross-source comparison.",
+      "No audio sample-rate policy, timecode/display rounding, header-read trigger, UI implementation or source-precedence decision is made by this probe."
+    ]
+  },
+  "qtCppBuildingBlocks": {
+    "pinnedQtVersion": "6.5.3",
+    "onlineReferenceScope": "Qt6.5 online documentation currently shows later6.5patch; primitive types and readers checked in pinned6.5.3 headers.",
+    "sourcePropertyName": "SampleRate within MDFL/physical-descriptor context; Frame Rate is the video table heading.",
+    "storage": "Small C++17 runtime value containing original signed32 numerator/denominator (Qt qint32) and necessary encoding/type context. No new parser implementation added.",
+    "byteOrder": "qFromLittleEndian<qint32> or qFromBigEndian<qint32> on each word after validating the complete typed8byte range. Pointer alignment is supported; bounds validation remains parser responsibility.",
+    "availability": "Use common compact field status, or C++17 std::optional where appropriate; do not duplicate status or heap-allocate the trivial value.",
+    "display": "QString formatting only at presentation. Retain source pair, not only a decimal string or double.",
+    "stdRatio": "Compile-time template parameters; not a runtime MDB rate container.",
+    "comparison": "For positive signed32 source pairs, promote before signed64 cross multiplication. Raw mathematical equivalence is distinct from native format-specific semantic equivalence.",
+    "primaryReferences": [
+      {
+        "url": "https://doc.qt.io/qt-6.5/qttypes.html#qint32",
+        "supports": "Fixed32/64bit signed Qt scalar types."
+      },
+      {
+        "url": "https://doc.qt.io/qt-6.5/qtendian.html#qFromLittleEndian",
+        "supports": "Scalar endian memory readers, no source alignment requirement."
+      },
+      {
+        "url": "https://doc.qt.io/qt-6.5/qstring.html#number-3",
+        "supports": "Numeric display formatting, separate from source storage."
+      },
+      {
+        "url": "https://eel.is/c++draft/ratio.syn",
+        "supports": "Compile-time integral template parameters for std::ratio; not a C++17 feature-version claim about later SI typedefs."
+      },
+      {
+        "url": "https://eel.is/c++draft/optional.optional",
+        "supports": "Contained object stored within optional; only C++17 base optional facilities proposed, not later draft APIs."
+      }
+    ]
+  },
+  "proposedBellaRule": {
+    "status": "Proposed 19 October2026; awaiting user agreement; requirements only.",
+    "source": "Qualified physical video file -> own descriptor -> OMFI:MDFL:SampleRate.",
+    "preserve": "Original signed32 numerator and denominator plus necessary format/type meaning. Do not reduce or overwrite source pair, discard denominator or reconstruct from display text.",
+    "usable": "Complete supported typed payload, positive numerator and denominator, safe reference/owner resolution. Unusual positive rates are not rejected merely because absent from this four-rate corpus.",
+    "missing": "Proposed blank video Frame Rate cell; retain file. Audio Frame Rate blank is already agreed. Do not substitute project/master clock or infer by extension.",
+    "retention": "One selected source rate; reuse descriptor pair already required with Length where applicable. No duplicate pair or lasting formatted string solely for this column; no research comparison walks.",
+    "semanticInterpretation": "The user approved the separate provisional AvidDurationInterpreter for the qualified physical-video MDFL ExactEditRate convention; retain raw pair and apply exact native families before elapsed Duration. This does not approve all Frame Rate column sourcing/formatting choices.",
+    "presentation": "Conventional labels24/25/29.97/23.976 do not establish actual essence clock or rewrite raw value. Generic display precision remains a presentation choice.",
+    "deferred": "Frame Rate field/presentation approval, general MDB layouts/damage, other fields header policies, audio Sample Rate sourcing. Duration native video interpreter is now agreed."
+  },
+  "durationFollowUp": {
+    "effect": "Clarifies earlier unapproved Duration arithmetic: a raw2997/100 or23976/1000 pair preserves metadata, but does not prove literal actual essence clock. Typed ExactEditRate interpretation must be agreed.",
+    "nativeMapping": [
+      "exact native23976*10^-3 ->24000/1001",
+      "exact native2997*10^-2 ->30000/1001",
+      "multiples1..10, integer decimal equivalence tests, not arbitrary approximate snapping"
+    ],
+    "boundedConsumer": "ameAMAFI::GetTrackEssenceDuration converts supplied composition rate; not universal physicalMDB/UI normalization evidence.",
+    "retainedFacts": "Integer-clock examples and original raw database comparisons remain valid as recorded-clock observations. No header/essence clock was measured."
+  },
+  "receipts": {
+    "rawSummaryReceipts": [
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/findings.json",
+        "bytes": 11484,
+        "sha256": "073df6dfa86e2bccde2abd37dda6f79f366121f6d35132eafdb0cf45f100c34c",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/findings.json",
+        "bytes": 12974,
+        "sha256": "b2ac4c5cd32b8ab9eca9e6a3f53859a583a53399a3a2d5651ea8c74949a2613a",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-drives/findings.json",
+        "bytes": 20099,
+        "sha256": "51a87e64aef3a6cb1aee36c538ac56bf57c57fdf6c3daf829144f0b8f2a46282",
+        "stableDuringVerification": true
+      }
+    ],
+    "currentBinaryMdbPmrInputs": [
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "bytes": 73527536,
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+        "bytes": 3204640,
+        "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 5159032,
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "bytes": 97250,
+        "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "bytes": 22745976,
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "bytes": 164660,
+        "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "bytes": 16616336,
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "bytes": 123140,
+        "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "bytes": 15703416,
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "bytes": 111140,
+        "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 3668720,
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "bytes": 86754,
+        "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "bytes": 60680,
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+        "bytes": 392,
+        "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928",
+        "stableDuringVerification": true
+      }
+    ],
+    "rawValueIndexes": [
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-1-values.json",
+        "bytes": 57405807,
+        "sha256": "929359186497d0ddcf1c0024efdd3fac808b6224a83bac9326808df175bad17e",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-86452-values.json",
+        "bytes": 277457615,
+        "sha256": "57f85c7d969ff95f6ef318c4123ba79056db2fc6df40fe7b5be745b97a644293",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8646-values.json",
+        "bytes": 202174044,
+        "sha256": "f1f47d4a38027ff115238f60a0fb82afb9559315d100e757971762a8049d4f40",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/edit-8647-values.json",
+        "bytes": 191199626,
+        "sha256": "04162524cfd51a6cbebc498c4b9c893f3d7703490e014ccc6c90bedac93d9f33",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-1-values.json",
+        "bytes": 45335148,
+        "sha256": "c36e577f756083cf9c36b37702123fd11eb0b38db5d9e89c4fd925e21a2e4657",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-20261018-drives/shared-OMFI MediaFiles-values.json",
+        "bytes": 535484,
+        "sha256": "bf8d2f1382d4d65d5ff6e91024eb7082c7d5c88c9d17280c7a975287eaeca0df",
+        "stableDuringVerification": true
+      }
+    ],
+    "nativeArtifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/omfi-WriteExactEditRate.txt",
+        "bytes": 6187,
+        "sha256": "c3ddff4e579c8377ac91cdfb35e52b4ce2d73a3cb0a4bec65cd324ca64f68ac4",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/WriteExactEditRate-wrapper.txt",
+        "bytes": 2137,
+        "sha256": "26f9ab21504c29551198459a8afb7a0e02e50dc6d48aaaedc996135a863b5350",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/EditRateFromExactEditRate.txt",
+        "bytes": 1306,
+        "sha256": "ba9dc634c3c5def7a6534d673448e4a3988e69be2079a344b55bad85ef522925",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/RationalFromExactEditRate.txt",
+        "bytes": 8990,
+        "sha256": "cddcea25e7ad7e42afbdb4b3ec01ca0b420962daaf3951b3bbb5fc89353c70ff",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/ExactEditRateFromFloat.txt",
+        "bytes": 2420,
+        "sha256": "20b6f0603675f993737dcaa5fe43901b710e3b31f92146485fd07ca4e09f90b6",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/EqualExactEditRate.txt",
+        "bytes": 3733,
+        "sha256": "12ff075f5c2ac3a9e97dcd1a66b83f34ec3dbd28da565e1a21113eab68a25c0c",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/GetFrameRateAsString.txt",
+        "bytes": 14723,
+        "sha256": "ddb99a8877d9bfd9f10815d2bc47a284952837d40baca403af62c586d68c23b5",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/TargetRate-GetFrameRate.txt",
+        "bytes": 6845,
+        "sha256": "420a65168a53751cd4369a2225b6e4695904200bcd51843db055a3b12ff186ae",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/TargetRate-GetFrameRateLabel.txt",
+        "bytes": 979,
+        "sha256": "4f6d5e9e286c6106b5ec4da3c7eec55eabd9dde9d0c9cd7ad798a2bea30b7073",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/frame-rate-constants.json",
+        "bytes": 663,
+        "sha256": "a2ad85f14263e2afa26d2a7ad2f27627a99ac2e8f916da26811653ca6a4cce64",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AFileMediaDesc-Get.txt",
+        "bytes": 5904,
+        "sha256": "00d4e8a4eae621ab204fcc0ba7c610bdfac06e7833ad3d4535c0cdb48df3ce66",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AFileMediaDesc-getters.txt",
+        "bytes": 2096,
+        "sha256": "18fa2fe8b2e9839ddfe616f7c94685dd7192351810c0b76d6b96f610531ad83c",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/AFileMediaDesc-Put.txt",
+        "bytes": 8287,
+        "sha256": "88f09f291396e771a3613976900d518e1d54ad07be6064f5ba07737b2d9bc987",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/omfi-ReadExactEditRate.txt",
+        "bytes": 6436,
+        "sha256": "b07e0c94bc84c58f00d6fa16233b5ed028e39248059a6fec45c82087fd7bbfce",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/ReadRational.txt",
+        "bytes": 4308,
+        "sha256": "f479a6695f8a129cf8b7a3a766c10366d831cac8f37f196c6a2a7cf44d8428c3",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/duration-property-dictionary.txt",
+        "bytes": 2279,
+        "sha256": "ea5f0c6a6fdaecf7e7d5c54de03f9d5eaf1d2c426beb6176bb7ec221e8ee7d6c",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-mc/PhysicalFileLength-consumer.txt",
+        "bytes": 8985,
+        "sha256": "2abb6b30842666867e87d92aa80081cd1b30937f89b7344288fa0e7349812698",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/ExportMenu_genCsv_.txt",
+        "bytes": 10241,
+        "sha256": "92959f72f5c4beb7005030925cceed4fbd0f29ed05383c0524a8fb50f2f4f522",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_frameratesDictionary.txt",
+        "bytes": 163,
+        "sha256": "6a40e7c9d5e2ad8f4323c7b52abfe26fb8ea35471e12de58ee709e74e6d00f1b",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_getBitrateTextForItem_.txt",
+        "bytes": 2903,
+        "sha256": "46a0ce0d6f191b714d534501608575b5e5782111bd4782e31db1867257096878",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_init.txt",
+        "bytes": 3590,
+        "sha256": "19d42fca6a3121e13b805150e71ec7b13350e06eaf601f97c4556d730e8e97d9",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_initFrameratesDictionary.txt",
+        "bytes": 9399,
+        "sha256": "0f74bc3262eb800f1c83f394b8e64f2664f91c0b3648f4a54fdb2273fad8b348",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_tableView_NSStringValueForTableColumn_row_.txt",
+        "bytes": 16441,
+        "sha256": "be932b1a1d04bf4539a0f4fe6b8fadb68d4d4170387b8613806c5c6af8b0fee1",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxCore_tableView_viewForTableColumn_row_.txt",
+        "bytes": 25206,
+        "sha256": "e9f502df3ddc289f84c65be937ec441a847c638c8b17d1df97c3b1f0655644cb",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxDatabaseItem-objc-excerpt.txt",
+        "bytes": 24581,
+        "sha256": "99ee84dd15386551c5a986e99eb6ddd750e6aee6275a6914a9306a9a381e34dc",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxDatabaseItem_DB_framerate.txt",
+        "bytes": 510,
+        "sha256": "8d85a33ec9b29747de24310040e20a6b19e58d4f1989a8fbc61e272e9e533aa3",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxDatabaseItem_setFrameRateNumerator_denominator_.txt",
+        "bytes": 118,
+        "sha256": "9ed02d790c489787f22e4389aab3fa0a24956f1c9a119eb57463052690f593b2",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxMXF_addInfoToItem_.txt",
+        "bytes": 3747,
+        "sha256": "18281f5391667e37e8e3b5884b1a498e680ac0ccc0a99fcf8f470c42101ea1d0",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxOMFI_addInfoToItem_.txt",
+        "bytes": 9423,
+        "sha256": "20211e8a6dbcd33b0e034f3885504d5af7a54cffd3a05b5d776446549e0f6829",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/MDVxPMRScannerOperation_main.txt",
+        "bytes": 53423,
+        "sha256": "3eeb0753fa8ace9baa58c04efa2bf9345553e74d265102be7d4739b877cabff8",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/binary-receipt.json",
+        "bytes": 438,
+        "sha256": "e9b5f434e8b588145f12b68b85a5157b242bd754a8ca31c879d3c8c0ef7e72b6",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/decoded-dictionary-and-format.json",
+        "bytes": 3788,
+        "sha256": "f629d3180f230578eee5c5759b149ae90ec5afb0409bec206d7dceb0fc985dd4",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/fresh-relevant-arm64-symbols.txt",
+        "bytes": 1088,
+        "sha256": "da741065575bc32128c64b929e855dc465755001071a43b2b734c8df765af99d",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mdvx/static-number-examples.json",
+        "bytes": 3119,
+        "sha256": "9a66850c0c6659326f400e51e393fb1c7e2cda49f43cd3196c29c5004e8a8249",
+        "stableDuringVerification": true
+      }
+    ],
+    "probeAndHelperReceipts": [
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-drives/probe.py",
+        "bytes": 10527,
+        "sha256": "66013c0ba533fe7a61eeb88e3114d713196af94e66da67d8c18450dc57e536e8",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-drives/findings.json",
+        "bytes": 20099,
+        "sha256": "51a87e64aef3a6cb1aee36c538ac56bf57c57fdf6c3daf829144f0b8f2a46282",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-drives/source-hash-receipts.json",
+        "bytes": 3552,
+        "sha256": "4cbaaa68ec1d0db156c6b0031a7108ce40ced24f6fa4cbe429a5a2a3edcb0809",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-project-20261019-drives/check.py",
+        "bytes": 14085,
+        "sha256": "184dbbf28d7b0fdbdd8b6a02d9791c233ac1b2c27ce4a5d7bc6cbc016d2419ec",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/private/tmp/bella-mdb-duration-20261019-drives/findings.json",
+        "bytes": 418482,
+        "sha256": "7dd65d531eb8d3c3321a2c2fa0cd51fde60092e047ad38738ea62d25abe96c22",
+        "stableDuringVerification": true
+      }
+    ],
+    "probeHashIndexReceipt": {
+      "path": "/private/tmp/bella-mdb-frame-rate-20261019-drives/artifact-hashes.json",
+      "bytes": 501,
+      "sha256": "9c0d23629b33a1e6b54d691b184baefe31186f92d22f9872631725ae946f7877",
+      "stableDuringVerification": true
+    },
+    "pinnedQtAndCppHeaderReceipts": [
+      {
+        "path": "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers/qtypes.h",
+        "bytes": 5084,
+        "sha256": "eda95db76d602a1b18e9984fcde5bc6a55b106370bba4770aee6f1c586e12c24",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers/qendian.h",
+        "bytes": 13070,
+        "sha256": "04dc4bb41bb7e4150c062f1861eac1c385f22432af3762e53858f31f459bce0f",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers/qconfig.h",
+        "bytes": 2206,
+        "sha256": "184f1fa6e75de8e17a1363d2c393f0c883d3f6689bb7be8e306cafb68656d962",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Users/martymclean/Qt/6.5.3/macos/lib/QtCore.framework/Headers/qtcoreversion.h",
+        "bytes": 197,
+        "sha256": "1f962aefb35ed07748b810b9ad83b88735c13564997092f7e4c628071cc08949",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.5.sdk/usr/include/c++/v1/ratio",
+        "bytes": 18212,
+        "sha256": "a559c9d5ebdfc34322774d71aaab307b09d8b86e7d4935272a799d636e0172c6",
+        "stableDuringVerification": true
+      },
+      {
+        "path": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.5.sdk/usr/include/c++/v1/optional",
+        "bytes": 53389,
+        "sha256": "f5a21484360da191265fa23b2d02f410d6b7e06a5ed42bf148c5d854ad26d0a1",
+        "stableDuringVerification": true
+      }
+    ],
+    "typedRateConversionSupplementRaw": {
+      "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/typed-rate-conversion-supplement.json",
+      "bytes": 7093,
+      "sha256": "a9d03286381db1b45b3922b446628b95dc44a0268134b1f4c1fa5070c3c5fb7f"
+    },
+    "typedRateConversionSupplementArtifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/typed-WriteRational.txt",
+        "bytes": 2062,
+        "sha256": "454138ae0769dbebe1cb19f4ac34b5522ab22445dd17d97e6df712b6fcc86dcd"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/typed-AMAFI-ExactEditRateFromRational.txt",
+        "bytes": 6240,
+        "sha256": "20fe5ae10cb5791a6907bd700c7ca3b4fa6ef9b35aed2269f9e8410b80ade255"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/typed-AMAFI-ConvertWithRatio.txt",
+        "bytes": 2139,
+        "sha256": "330409e7aad7a858400e8643a25d55a1bac912ae314d0fb3a1edc462a3b7d261"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/typed-AMAFI-ConvertWithRatio-annotated.txt",
+        "bytes": 1875,
+        "sha256": "3cdd293b3662a7a78bea428c9c926f90fd48d20cd853bf125cc62cb87a5c290e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/RationalFromExactEditRate.txt",
+        "bytes": 8990,
+        "sha256": "cddcea25e7ad7e42afbdb4b3ec01ca0b420962daaf3951b3bbb5fc89353c70ff"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/EqualExactEditRate.txt",
+        "bytes": 3733,
+        "sha256": "12ff075f5c2ac3a9e97dcd1a66b83f34ec3dbd28da565e1a21113eab68a25c0c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/omfi-WriteExactEditRate.txt",
+        "bytes": 6187,
+        "sha256": "c3ddff4e579c8377ac91cdfb35e52b4ce2d73a3cb0a4bec65cd324ca64f68ac4"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/ExactEditRateFromFloat.txt",
+        "bytes": 2420,
+        "sha256": "20b6f0603675f993737dcaa5fe43901b710e3b31f92146485fd07ca4e09f90b6"
+      }
+    ]
+  },
+  "limits": [
+    "Static nativearm64 inspection, no app/privateAPI execution or liveMDVx label/CSV experiment.",
+    "All899videoMDBrates are positive legacy little-endian ExactEditRate8byte pairs; missing/unusual/corrupt/bigendian cases unexercised.",
+    "No media headers/essence clock measured; raw decimal labels do not prove actual NTSC timing.",
+    "Raw source preservation, native format interpretation and UI labels are separate; no universal snapping rule or complete displayed-rate whitelist established.",
+    "No runtime Bella implementation, app cutover, BinFilter change or performance/memory benchmark."
+  ],
+  "typedRateConversionSupplement": {
+    "date": "2026-10-19",
+    "purpose": "Clarify coexisting typed rate representations and native translations; no chronological older/newer assertion. Supplemental static read-only findings, existing finalizedfindings.json unchanged.",
+    "binary": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+    },
+    "notChronology": "The sameinstalledbinarydefinesbothExactEditRateandRationaltypedreaders/writers. TheircoexistenceanddifferentconversionsemanticsdonotbythemselvesestablishwhenonewasintroducedorwhichversionsofMediaComposerwriteeitherone. AnOMF1-versusOMF2chronologicalstatementrequiresindependentprimaryformatdocumentation; thisreceiptmakesnone.",
+    "importantCorrection": "TheinspectedMDBExactEditRatewirepayloadisalreadyan8-bytenumerator/denominatorpair. NativeC++ExactEditRate_tinternalrepresentationismantissa(signed32)+decimalexponent(signed16),notthesamerawwirelayout. Do notsayMDBstoresrawmantissa/exponent.",
+    "genericRational": {
+      "writer": "omfiDualStream::WriteRational0xb6560",
+      "wire": "Passes8bytesoftheRationalpayloadtodatasink0xb6598..a8undertypestringRationalat0xfc1ef9;noNTSCspecialcaseorconversioninthisfunction.",
+      "reader": "omfiDualStream::ReadRational0xb84e4reads8bytesandswapstwoscalar32words0xb8528..55c;nostandardratealiasingthere.",
+      "typeDoesNotMean": "Avalue2997/100inagenericRationalfieldisnotautomaticallylicensedforthespecialExactEditRateNTSCmapping."
+    },
+    "ExactEditRateWire": {
+      "writer": "omfiDualStream::WriteExactEditRate0xb4ea4convertsinternaldecimalto8bytefractionundertypestringExactEditRateat0xfc1d21.",
+      "examples": [
+        {
+          "nativeInternal": "mantissa24,exponent0",
+          "wirePair": "24/1"
+        },
+        {
+          "nativeInternal": "mantissa2997,exponent-2",
+          "wirePair": "2997/100"
+        },
+        {
+          "nativeInternal": "mantissa23976,exponent-3",
+          "wirePair": "23976/1000"
+        }
+      ],
+      "reader": "omfiDualStream::ReadExactEditRate0xb696cconvertsthetypedwirefractiontonativedecimal:denominators10/100/1000specialdirecthandling;otherwisecomputequotientasdoublethenExactEditRateFromFloat.",
+      "readWriteEndian": "Readswapseach32bitscalaraccordingtoobjectbyteorder;installedarm64writerpasseshostbytes. Existingframe-ratereceiptcoversexactanchors.",
+      "meaning": "Fieldtypeandnativeconversioncontextmatter,notjustthenumbers. Numericdifferencebetweendecimalaliasand1001fractiondoesnotestablishdifferentphysicalessenceclock."
+    },
+    "nativeToRational": {
+      "function": "RationalFromExactEditRate0x258148",
+      "specialRules": [
+        {
+          "exactNativeDecimal": "23.976*k",
+          "inputInternal": "23976*k,exponent-3",
+          "output": "24000*k/1001",
+          "k": "1..10",
+          "anchors": "0x258190..1b8and0x258318..32c"
+        },
+        {
+          "exactNativeDecimal": "29.97*k",
+          "inputInternal": "2997*k,exponent-2",
+          "output": "30000*k/1001",
+          "k": "1..10",
+          "anchors": "0x258214..238and0x258320..32c"
+        }
+      ],
+      "comparison": "EqualExactEditRate0x257934comparesmantissa/exponentafterstrippingtrailingdecimalzeros;noepsiloncomparison.",
+      "ordinaryRule": "ForunmatchednativeDecimalmantissaMandexponentE,outputM*10^E/1ifE>=0,orM/10^(-E)ifE<0. Rationalconstructorreductionmaybeperformedafterformingpair;nodecimalaliasissilentlyinferredfromgenericRationalbythisdirection.",
+      "limits": "Signed32nativearithmeticandlargeexponentshaveoverflowboundsnotfullyaudited;notarecommendationtocopyimplementation."
+    },
+    "rationalToNative": {
+      "function": "ameAMAFI::ExactEditRateFromRational0x72df24",
+      "baseTable": [
+        {
+          "rational": "24000/1001",
+          "native": "23976,exponent-3",
+          "nativeConstantAddress": "0x10ed1c0",
+          "nativeRaw64": "0xfffd00005da8"
+        },
+        {
+          "rational": "30000/1001",
+          "native": "2997,exponent-2",
+          "nativeConstantAddress": "0x10ed1e0",
+          "nativeRaw64": "0xfffe00000bb5"
+        }
+      ],
+      "matching": "At0x72df58..74trieseachbasewithConvertWithRatio0x72de8c. HelperdividesinputbybaseRationalviaoperator/at0x72dea8;0x72deac..b4acceptsonlyquotientdenominator1. ThenmultipliesnativebasemantissabyintegerquotientandnormalizesthroughEditRateFromExactEditRate/ExactEditRateFromFloat0x72debc..cc. Noepsilonproximitytest.",
+      "differenceFromOtherDirection": "Thisreversehelperdoesnotimposetheotherhelpersk1..10looplimit;itacceptsanintegralmultiplewhilesigned32operationsremainrepresentable.",
+      "ordinaryFallback": "0x72df78..88loadssignednumerator/denominator,dividesasdoubleandcallsExactEditRateFromFloat.",
+      "scope": "AnAMAFI-specifictypedtranslator,notproofofallMDBreadersorallgenericRationalfields."
+    },
+    "plainRosettaStone": "NativeAvidtypedconvertersprovidearulebookforfamiliar23.976/29.97aliasesandstandard1001fractions. Itisnotoneoldformatreplacedbyonenewformat,anditdoesnotjustifychangingeveryfractionthatlooksalike. RetainrawwirepairanditsknowntypebeforechoosinganyBella interpretation.",
+    "limits": [
+      "Read-onlystaticinspection,notnativeAPIexecution.",
+      "Nochronologicalreleasehistoryestablished.",
+      "Noall-UI/all-fileformatruleestablished.",
+      "FrameRatefindingsandpreviousDurationreceiptremainunchanged;thissupplementclarifiessemanticsandnewreverseconverterevidence."
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/typed-WriteRational.txt",
+        "bytes": 2062,
+        "sha256": "454138ae0769dbebe1cb19f4ac34b5522ab22445dd17d97e6df712b6fcc86dcd"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/typed-AMAFI-ExactEditRateFromRational.txt",
+        "bytes": 6240,
+        "sha256": "20fe5ae10cb5791a6907bd700c7ca3b4fa6ef9b35aed2269f9e8410b80ade255"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/typed-AMAFI-ConvertWithRatio.txt",
+        "bytes": 2139,
+        "sha256": "330409e7aad7a858400e8643a25d55a1bac912ae314d0fb3a1edc462a3b7d261"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/typed-AMAFI-ConvertWithRatio-annotated.txt",
+        "bytes": 1875,
+        "sha256": "3cdd293b3662a7a78bea428c9c926f90fd48d20cd853bf125cc62cb87a5c290e"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/RationalFromExactEditRate.txt",
+        "bytes": 8990,
+        "sha256": "cddcea25e7ad7e42afbdb4b3ec01ca0b420962daaf3951b3bbb5fc89353c70ff"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/EqualExactEditRate.txt",
+        "bytes": 3733,
+        "sha256": "12ff075f5c2ac3a9e97dcd1a66b83f34ec3dbd28da565e1a21113eab68a25c0c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/omfi-WriteExactEditRate.txt",
+        "bytes": 6187,
+        "sha256": "c3ddff4e579c8377ac91cdfb35e52b4ce2d73a3cb0a4bec65cd324ca64f68ac4"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-frame-rate-20261019-mc/ExactEditRateFromFloat.txt",
+        "bytes": 2420,
+        "sha256": "20b6f0603675f993737dcaa5fe43901b710e3b31f92146485fd07ca4e09f90b6"
+      }
+    ]
+  },
+  "terminologyClarification20261019": {
+    "chronology": "No evidence here establishes a simple older/newer rate-notation switchover. The current installed Media Composer contains both typed readers/writers and conversions in both directions.",
+    "exactEditRateWire": "Actual MDB payload remains an8byte numerator/denominator pair. Mantissa plus decimal exponent is native in-memory representation, not the rawMDBpayload.",
+    "rosettaStone": "Avids typed conversion functions explicitly connect particular decimal ExactEditRate forms with NTSC rational clocks. Source pairs are not mathematically identical; this is not general rational reduction or approximate nearest-rate guessing.",
+    "scope": "No second newer rate value/set to prefer in the inspected video descriptor. Preserve the recorded type/pair; timing-context applicability remains a separate rule, not a media-age decision.",
+    "wholeNumberExamples": {
+      "24": "24/1",
+      "25": "25/1"
+    }
+  },
+  "durationSourceDecision20261019": {
+    "date": "2026-10-19",
+    "userInstruction": "Stick with the MDB - not reading the header.",
+    "scope": "Physical Duration only. Other fields may still need headers under their separately agreed future policies.",
+    "source": "MDB only; owned physical descriptor remains proposed detailed field route.",
+    "headerReadsForDuration": false,
+    "headerDurationOverridesMdb": false,
+    "headerFallbackForMissingMdbDuration": false,
+    "conversionApprovedByThisDecision": false,
+    "remaining": "Exact Avid video-rate interpretation, audio display-clock/source details, zero/missing presentation, timecode formatting, sorting and wire-layout/damage coverage remain requirements work.",
+    "runtimeChanged": false
+  },
+  "durationInterpreterDecision20261019": {
+    "date": "2026-10-19",
+    "approvedByUser": true,
+    "userInstruction": "Keep the Length and SampleRate, and use a seperate AvidDurationInterpreter (better name to be finalised?) which copies the exact rules from the Media Composer binary.",
+    "provisionalName": "AvidDurationInterpreter",
+    "finalNameDeferred": true,
+    "organisation": "Separate interpreter boundary; final C++ file/class/function organisation remains design work. No runtime code yet.",
+    "source": "Already agreed MDB-only Duration, exact physical-file-owned descriptor Length and typed SampleRate. No media-header read for Duration.",
+    "retention": "Preserve Length and original SampleRate numerator/denominator unchanged. Derive the effective timing rate separately and transiently.",
+    "nativeContract": {
+      "function": "RationalFromExactEditRate",
+      "address": "0x258148",
+      "engineVersion": "26.8.0.58987",
+      "engineSha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+      "typedScope": "Known MDB OMFI:MDFL:SampleRate ExactEditRate on a qualified physical video descriptor, paired with its own Length.",
+      "exactFamilies": [
+        {
+          "baseAvidFraction": [
+            23976,
+            1000
+          ],
+          "baseTimingFraction": [
+            24000,
+            1001
+          ],
+          "integerMultiplierMinimum": 1,
+          "integerMultiplierMaximum": 10
+        },
+        {
+          "baseAvidFraction": [
+            2997,
+            100
+          ],
+          "baseTimingFraction": [
+            30000,
+            1001
+          ],
+          "integerMultiplierMinimum": 1,
+          "integerMultiplierMaximum": 10
+        }
+      ],
+      "matching": "Exact recognised decimal forms, including equivalent trailing-zero spellings per EqualExactEditRate; no epsilon/nearest-rate match. Overlapping family cases yield equal rationals.",
+      "otherUsableRates": "Keep original positive fraction when not a supported alias. Preserve integer rates.",
+      "excludedNativePaths": [
+        "Different finite ConvertCMEditRate export table",
+        "Approximate TrueNTSCEditRate and pulled-audio ranges",
+        "Wire reader floating-point round trip for other denominators",
+        "Display frame-doubling flags and generic Rational aliasing"
+      ],
+      "actualFileCoverage": "121 matched headers,113 fractional base cases; not every native integer multiple has an actual-file fixture."
+    },
+    "calculation": "Elapsed Duration = Length * effective rate denominator / effective rate numerator, with checked arithmetic. Preserve exact source data; presentation rounding is separate.",
+    "pending": [
+      "Table formatting and sorting",
+      "Zero/missing presentation and structural/layout coverage",
+      "Concrete/pulled audio rate conventions and audio display clock if timecode retained",
+      "Final interpreter name and C++ organisation"
+    ],
+    "implemented": false
+  },
+  "tableDisplayDecision20261020": {
+    "date": "2026-10-20",
+    "approvedByUser": true,
+    "userInstruction": "No we need HH:MM:SS:FF this is non negotiable. How should we do this elegantly ensuring accuracy?",
+    "format": "HH:MM:SS:FF",
+    "elapsedMillisecondProposalRejected": true,
+    "numberingChoice": {
+      "userAnswer": "Follow the file\u2019s recorded drop-frame numbering when available",
+      "followUsableRecordedDropFrame": true,
+      "inferDropFrameFromFrameRate": false,
+      "separators": "Keep the requested colon layout; numbering mode is separate.",
+      "missingFlagFallbackApproved": false
+    },
+    "unchanged": "Keep approved MDB-only source, raw Length/SampleRate and separate native-rule interpreter; no media-header read for Duration.",
+    "notApprovedByThisDecision": [
+      "Audio display-clock source/interpretation details",
+      "Recorded DF flag exact MDB owner/track qualification",
+      "Missing/conflicting/incompatible DF fallback",
+      "Rounding and zero/missing presentation details",
+      "Sorting or CSV changes"
+    ],
+    "runtimeChanged": false
+  },
+  "frameTimecodeFormatterProposal20261020": {
+    "date": "2026-10-20",
+    "purpose": "Small pure DurationFormatter after the agreed AvidDurationInterpreter; requirements proposal only.",
+    "inputs": "Exact preserved duration facts plus a qualified display frame clock and explicit numbering mode.",
+    "video": "Length already counts video frames. Keep that integer count; use interpreted SampleRate as frame clock and a supported nominal base for labels.",
+    "audio": "Preserve selected MDFL Length/SampleRate as audio duration. Proposed display clock is own-file CPNT:EditRate, or supported own-slot MSLT:EditRate where applicable; never invent25fps or use48kHz asfps.",
+    "audioRateInterpretation": "Applying native ExactEditRate convention to the audio display EditRate is an additional proposed typed use; existing approved interpreter scope was physical-video MDFL SampleRate.",
+    "frameConversion": "Length * unitRateDenominator * displayRateNumerator / (unitRateNumerator * displayRateDenominator), with checked integer/rational arithmetic. Round only final audio display-frame count, nearest positive half-up proposed.",
+    "nominalBase": "Supported explicit mapping (e.g.24000/1001->24,30000/1001->30,60000/1001->60). Do not parse rounded Frame Rate strings or divide to elapsed seconds then appendFF.",
+    "dropFrameSource": "Propose own-file explicitly linked applicable timecode component and supported0/1TCCP flag, tied to compatible selected clock. Broader ancestor qualification remains unverified; no recursive sweep merely because reachable.",
+    "dropFrameFallback": "Proposed NDF when usable recorded flag absent, with absence distinguished from recordedfalse. Invalid/conflicting/incompatible flag handling remains undecided.",
+    "precision": "Preserve original count and fractions. Audio display can round to a frame without changing source samples. No extra saved formatted string or header read.",
+    "knownZero": "Agreed00:00:00:00; source-known zero distinct from unavailable.",
+    "unavailable": "Agreedblank when Duration is unavailable.",
+    "largeDurations": "Agreedno24-hourwrap. Preserve safe padding; unsupported/custom/high-rate coverage remains tovalidate.",
+    "examples": [
+      {
+        "kind": "Video",
+        "Length": 250,
+        "unitRate": [
+          25,
+          1
+        ],
+        "displayRate": [
+          25,
+          1
+        ],
+        "mode": "NDF",
+        "display": "00:00:10:00"
+      },
+      {
+        "kind": "Video",
+        "Length": 1,
+        "unitRate": [
+          24,
+          1
+        ],
+        "displayRate": [
+          24,
+          1
+        ],
+        "mode": "NDF",
+        "display": "00:00:00:01"
+      },
+      {
+        "kind": "Video",
+        "Length": 24000,
+        "unitRate": [
+          24000,
+          1001
+        ],
+        "displayRate": [
+          24000,
+          1001
+        ],
+        "mode": "NDF",
+        "display": "00:16:40:00",
+        "elapsedSeconds": 1001
+      },
+      {
+        "kind": "Audio",
+        "Length": 2880002,
+        "unitRate": [
+          48000,
+          1
+        ],
+        "displayRate": [
+          25,
+          1
+        ],
+        "mode": "NDF",
+        "rounding": "nearestframe",
+        "display": "00:01:00:00"
+      },
+      {
+        "kind": "Video",
+        "Length": 107892,
+        "unitRate": [
+          30000,
+          1001
+        ],
+        "displayRate": [
+          30000,
+          1001
+        ],
+        "mode": "DF",
+        "display": "01:00:00:00"
+      }
+    ],
+    "claimsLimit": "No actual-file DF availability count or universal Media Composer Duration-cell DF policy established. Layout and following recorded numbering are user choices. No app change.",
+    "approvalStatus": "Partially approved20October2026: sixaccuracy/displayrules andseparateformatterboundaryaccepted. Remaining metadata source qualification/fallback andsort/CSV choices notapproved.",
+    "acceptedRules": [
+      "Use exact integer/fraction calculations throughout.",
+      "Keep fractional timing precise; use nominal bases such as24or30 only for frame numbering.",
+      "Apply the qualified recorded drop-frame flag.",
+      "Preserve audio samples internally despite display rounding.",
+      "Show knownzero as00:00:00:00; leave unavailable values blank.",
+      "Allow durations beyond24hours."
+    ],
+    "acceptedFormatterDesign": true,
+    "remainingDetails": [
+      "Qualified audio display-clock source/interpretation",
+      "Exact MDB owner/track binding of DF flag",
+      "Missing/unreadable/conflicting/incompatible DF fallback",
+      "Unsupported wire/rate/layout coverage",
+      "Sorting andCSV policy"
+    ]
+  },
+  "durationFormatterAccuracyDecision20261020": {
+    "date": "2026-10-20",
+    "approvedByUser": true,
+    "userInstruction": "Nevermind - your proposal is good.",
+    "approvedRules": [
+      "Use exact integer/fraction calculations throughout.",
+      "Keep fractional timing precise; use nominal bases such as24or30 only for frame numbering.",
+      "Apply the qualified recorded drop-frame flag.",
+      "Preserve audio samples internally despite display rounding.",
+      "Show knownzero as00:00:00:00; leave unavailable values blank.",
+      "Allow durations beyond24hours."
+    ],
+    "format": "HH:MM:SS:FF",
+    "retention": "Original Length/SampleRate remain unchanged; display conversion and rounding do not change stored audio samples.",
+    "organisation": "Accept separate small interpreter and formatter boundaries. Final names/organisation remain design work.",
+    "roundingScope": "Audio rounding occurs only at display. The prior nearest-frame proposal is accepted in that context; exact tie handling is an implementation detail, not loss of source precision.",
+    "nativeFidelity": "Bella formatter is accepted as its own design; no requirement to prove a complete identical MediaComposer Duration-cell pipeline. Verified native interpreter mappings remain the chosen rule.",
+    "pendingMetadataAndOtherPolicies": [
+      "Qualified audio display-clock source/interpretation",
+      "Exact MDB owner/track binding of DF flag",
+      "Missing/unreadable/conflicting/incompatible DF fallback",
+      "Unsupported wire/rate/layout coverage",
+      "Sorting andCSV policy"
+    ],
+    "runtimeChanged": false
+  }
+}

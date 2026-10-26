@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-24",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF Project owner/key/text/retention rules; Original Bin and remaining OMF fields under review.",
+  "authorization": {
+    "source": "Direct human reply",
+    "statement": "OK, let's lock those Project rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Original Bin from OMF, and what should Bella read and keep?",
+    "scope": "Accepts OMF file-owned Project first, immediate-source-only fallback, exact local key order, agreed typed text decoding, unavailability/conflict rules and compact retention. Begins Original Bin review. No runtime implementation/cutover, Bin Filter change, final source-priority or new header-opening reason."
+  },
+  "agreedBellaRules": {
+    "scope": "Project lookup inside an already-read supported OMF1/Bento1. Existing reading, identity and text rules remain agreed. No runtime code/cutover, Bin Filter change, new header-open reason or final cross-source priority.",
+    "ownerOrder": [
+      "Qualified physical file mob",
+      "Only if no usable file-owned result: qualified immediately linked source records",
+      "No OMF Project value"
+    ],
+    "ownerLocalKeyOrder": [
+      "Exact direct _PJ",
+      "Exact direct PROJNAME",
+      "Exact _PJ inside one exact owner-local _USER object-attribute list"
+    ],
+    "text": "Use the already agreed typed representation: legacy Kind2 MacRoman; established marked Unicode layout with checked requested text name, kind/type, two-zero marker, bounded strict UTF-8 and required framing. Kind3 is a checked list reference. Neither key name nor Kind4 alone proves Unicode. No invented paired backup, Unicode-byte MacRoman retry or arbitrary UTF-8 guessing.",
+    "fallback": "Missing, empty, whitespace-only or individually unusable candidate can advance when owner/boundaries remain safe. Unicode preference applies to a proven representation of that candidate, not a lower-priority key or owner. Preserve exact nonblank spelling/spacing.",
+    "sources": "Use only supported complete file-local component/SourceID links and complete normalized identities to active qualified immediate sources. Apply the same local key order. One distinct usable source Project, or exact agreement among several, supplies the value. Do not search master, arbitrary import settings, unrelated objects or deeper source ancestry.",
+    "conflicts": "Conflicting usable same-priority/key values or incomplete/ambiguous required relationships leave OMF contribution unavailable. Do not hide conflict by choosing a lower key/source, first/last item, date or hash order. Missing source values are normal. General OMF damage review remains later.",
+    "retention": "Keep selected owned QString and necessary compact availability/owner/key context. Release temporary bytes/indexes/links. Small fixed key table and shared helpers; no generic inheritance engine or permanent alternate-Project history.",
+    "missingAndDisplay": "No fabricated parser Project from current Avid project, folder, volume or clip/master name. Keep physical row and independent facts. Existing current UI No project label is separate from raw empty value and is unchanged by this review."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-project-2026-10-24.json",
+    "sha256": "2e25154c272b7793823caee9b36c12d0826707459ecf4ebe83f3fdef50dfcbf6"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/project.md",
+    "plan": "Project Bella/README.md",
+    "clipNameApproval": "Project Bella/evidence/omf-clip-name-plan-2026-10-24.json"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "newBuildsOrTests": false,
+    "appCutover": false,
+    "performanceMeasured": false
+  }
+}

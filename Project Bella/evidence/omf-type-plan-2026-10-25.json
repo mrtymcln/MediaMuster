@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-25",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted OMF Type rules; Precompute Category review follows. No implementation/cutover.",
+  "authorization": {
+    "source": "Direct human user instruction",
+    "statement": "OK, let's lock those Type rules in for Bella. Next, how do Media Composer, MDVX and MediaMuster read Precompute Category from OMF, and what should Bella read and keep? Look for the simplest accurate approach.",
+    "scope": "Accepts selected-master own typed four-byte usage1/7, compact existing enum/helper/once-per-master sharing, blank Unknown and separate optional category/effect work. No extra open, new Type category, Bin Filter change, final source-priority decision or implementation/cutover approval."
+  },
+  "agreedBellaRules": {
+    "scope": "Type Media/Precompute independent of Audio/Video Kind. Existing qualified selected-master/full-ID ownership and known legacy OMF/Bento1 scope. No Bin Filter or MXF marker policy change.",
+    "source": "Already selected associated master own OMFI:MOBJ:UsageCode, known UsageCodeType complete4-byte signed numeric value in established object byte order. In-memory native name AppCode is not another OMF field. No UTF8/MacRoman text conversion.",
+    "mapping": {
+      "1": "Precompute",
+      "7": "Media",
+      "otherMissingDamagedConflictingUnsupportedOrNoSafeMaster": "Unknown; blank display/export if no eligible source supplies Type."
+    },
+    "ownershipAndIndependence": "Do not substitute physical FileMob/source usage, code9, another master, import attribute, filename, codec, name text or descriptor Kind. Ambiguous association not repaired by consensus. Readable Type does not require Clip Name text or optional category/effect success.",
+    "nativeBoundary": "Role-qualified native ordinary-master0 allowance/defaults do not broaden first-release explicit1/7. MXF MaterialPackage no-markers ordinaryMedia and standardUsage UID semantics not transplanted to OMF.",
+    "decodeAndClassify": "Read supported typed usage once per selected source master, validate state/type/full width/order and share result with associated physical rows. A small explicit two-case pure/constexpr master-classification function; never cast wire code into output enum. No per-column parser/class/dependency/new visible Type category.",
+    "retention": "Compact three-state enum and necessary availability; label at display/export, Unknown blank instead of current dash. Raw numeric usage temporary only for retained consumers; no permanent label, source usage list or association graph solely for Type.",
+    "optionalWork": "Basic Type needs no import/attribute/track/effect reads. Retained optional details remain separate and can reuse known master/classification. Current already computes Type once per source master, so no invented new per-file caching gain.",
+    "otherDecisions": "No extra media open, new source priorities/cancel/scheduling, OMF damage-policy expansion, native GUI parity or measured gain. Accepted Resolution/Compression remain unchanged; final opening/priorities/general damage later."
+  },
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/omf-type-2026-10-25.json",
+    "sha256": "644a4c4ff3f2b87612c82960b3ce6a96293e23bc33258e966fe9227f6be2a606"
+  },
+  "references": {
+    "review": "docs/reviews/2026-10-23-bella-omf/type.md",
+    "plan": "Project Bella/README.md"
+  },
+  "validation": {
+    "runtimeCodeChanged": false,
+    "newBinaryOrMediaResearchForApproval": false,
+    "newBuildsOrTestsForApproval": false,
+    "appCutover": false,
+    "performanceMeasured": false
+  }
+}

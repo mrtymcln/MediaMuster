@@ -274,6 +274,13 @@ independent of PMR availability. Those compatibility/error/text choices need to
 be agreed before implementation; a request for this hypothetical does not silently
 adopt every MDVx limitation.
 
+The [21 October memory follow-up](memory-lifetime.md) compares the current
+OldScanner buffered path and retained state with MDVx's full-file read and
+per-item record copies. The user approved the explicit read-once/extract/release
+lifetime for Bella PMR on 21 October 2026, using the agreed whole-set selection/fallback
+from the same capture. This adds no runtime implementation or performance
+claim and does not change the already agreed four-PMR maximum.
+
 ### MDVx handling of FileMobId and MasterMobId
 
 The follow-up inspection of installed MDVx 0.2, build 4073, establishes the

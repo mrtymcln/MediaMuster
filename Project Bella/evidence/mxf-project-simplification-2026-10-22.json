@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "Simplify the proposed first-release MXF Project recovery and record current Bella planning scope.",
+  "userSteering": "What is order 3 and 4? Do we need them? They seem a bit too much effort to me.\nHow far left in planning the new Bella code?",
+  "status": "The simplified header Project -> qualified file-owned Project -> blank rule and its presented text/availability/retention details were explicitly approved on 2026-10-22. Unimplemented requirements; historical research and proposal-revision findings remain unchanged.",
+  "previousProposedOrder": [
+    "Usable active Preface.ProjectName",
+    "Qualified physical file SourcePackage project attributes",
+    "Same selected MaterialPackage project attributes; no other master search",
+    "Immediately linked source records of the file only, supported local component paths and fullIDs; no deeperancestry/othermediaopens"
+  ],
+  "revisedProposal": {
+    "order": [
+      "Usable active Preface.ProjectName",
+      "Usable qualified physical file SourcePackage project attributes",
+      "Unavailable/blank on database-unavailableMXFfallback if neither usable"
+    ],
+    "removed": "Selected-master and immediately linked source Project recovery from proposed release-one MXF parser only.",
+    "preserved": "Existing own-file key/type/Unicode/blank/availability/compact-retention rules. Native/corpus findings and alreadyapprovedMDBProjectfallback remain unchanged.",
+    "evidence": "All13checked MXFheaders had usable PrefaceProject matching PMR/MDB; none needed later Project recovery. This does not prove fallback could never help another file.",
+    "tradeoff": "Project can remainblank when available only on a master/source. Less selection/recovery code; no measuredspeedclaim. Master alreadyselected forIDs/ClipName, so step3was anadditionalattribute lookup, not anothermediaopen; step4addslink traversal/qualification."
+  },
+  "planningCheckpoint": {
+    "settled": "PMR and release-one MDB productrequirements; MXF completeidentities and ClipName; memoryfourPMR/fourMDB/readonce rules.",
+    "remainingBlocks": [
+      "FinishMXF technical/classification mappings, fallbackDuration/numbering and reading/damageboundaries",
+      "ReviewOMF/WAV/AIFF headers reusingsettledinterpretation rules",
+      "Consolidatecross-source priorities andadditionalreadtriggers",
+      "Briefscannerdesign:discovery,jobcoordination,cancellation,progress,resultpublication"
+    ],
+    "afterPlanning": "Freshimplementation,correctness/performancecomparison,thenexplicitcutoverapproval.",
+    "currentImplementation": "src/bella contains READMEonly; noruntimecode orbuildtarget; appusesOldScanner.",
+    "noDefensiblePercentOrEta": true
+  },
+  "references": [
+    "mxf-project-2026-10-22.json",
+    "../../docs/reviews/2026-10-21-bella-mxf/project.md",
+    "../README.md"
+  ],
+  "validation": {
+    "documentationOnly": true,
+    "productionCodeChanged": false,
+    "testsRun": false,
+    "newMediaRead": false,
+    "binFilterChanged": false
+  },
+  "approvedBy": {
+    "date": "2026-10-22",
+    "timezone": "Australia/Sydney",
+    "receipt": "Project Bella/evidence/mxf-project-plan-2026-10-22.json",
+    "scope": "Only the simplified header/file-owned/blank Project rule and its presented local-key, Unicode, availability and compact-retention details. No master/source Project recovery. Kind is the next unapproved review.",
+    "historicalStatus": "This file recorded research or a proposal revision before explicit approval. The approval receipt supersedes its pending status; earlier four-source proposals and native/corpus observations remain historical, not newly approved."
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "timezone": "Australia/Sydney",
+  "purpose": "Limited revision of Bella Duration sourcing and confirmation of blank Original Bin on MXF fallback.",
+  "status": "Approved requirements; no runtime implementation or cutover.",
+  "authorization": [
+    "1. MXF contains duration information, but **Bella’s Duration remains MDB-only**. Use MXF for duration, if we fall back to MXF because PMR/MDB not avail.",
+    "2. A reliable MXF source for **Original Bin** is not established. Leave blank if fallback to MXF"
+  ],
+  "agreedBellaRule": {
+    "duration": "Prefer usable own MDB Length/SampleRate and qualified display facts. When the scan falls back to MXF because usable database information is unavailable, use coherent own physical MXF duration and qualified timing/display facts.",
+    "readTrigger": "This exception does not request an open solely for Duration or verification of usable MDB timing. PMR absence alone does not displace usable MDB timing. Exact header-opening conditions remain deferred.",
+    "coherence": "Do not mix MDB count with MXF rate, display clock or DF. A header Frame Rate fallback alone does not qualify header Duration or repair isolated MDB timing damage.",
+    "originalBin": "Leave blank on database-unavailable MXF fallback; no guessed bin name or header search. Preserve separately usable selected-master MDB Original Bin.",
+    "presentation": "Preserve exact integer/fraction arithmetic, audio sample precision, HH:MM:SS:FF, qualified recorded DF, NDF for genuine applicable absence, blank when required timing unusable, known zero and durations beyond 24 hours.",
+    "scope": "Other source rules unchanged. Full priorities and MXF concurrency remain later decisions. OldScanner active, Bin Filter unchanged."
+  },
+  "supersedesInPart": {
+    "restriction": "Earlier blanket prohibition on all media-header Duration fallback, including when a header was independently read.",
+    "historicalReceipts": [
+      "mdb-duration-2026-10-19.json",
+      "mdb-duration-clock-2026-10-19.json",
+      "mdb-duration-plan-2026-10-20.json",
+      "mdb-frame-rate-plan-2026-10-20.json",
+      "mdb-audio-duration-display-2026-10-20.json",
+      "mdb-drop-frame-2026-10-20.json",
+      "mdb-damage-handling-2026-10-20.json"
+    ],
+    "preserved": "Earlier findings, MDB interpretation and display rules remain applicable within their source scope; their source-policy snapshots are historical."
+  },
+  "remaining": [
+    "Verify MXF physical descriptor/track ownership and paired count/rate.",
+    "Verify MXF audio display clock and applicable recorded DF association.",
+    "Keep explicit MXF rational semantics separate from legacy MDB ExactEditRate conversion.",
+    "Review remaining MXF fields and consolidate source priorities at the end."
+  ],
+  "references": [
+    "../../docs/reviews/2026-10-21-bella-mxf/fallback-fields.md",
+    "mxf-header-review-2026-10-21.json"
+  ],
+  "validation": {
+    "documentationOnly": true,
+    "productionCodeChanged": false,
+    "buildsOrParserTestsRun": false,
+    "appRun": false,
+    "newMediaRead": false,
+    "oldScannerActive": true,
+    "binFilterChanged": false
+  }
+}

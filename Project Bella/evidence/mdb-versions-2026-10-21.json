@@ -1,0 +1,2259 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "timezone": "Australia/Sydney",
+  "purpose": "Compare actual MDB version/layout support, native ordinary database paths and fresh observed files before deciding Bella release-one scope.",
+  "status": "Release-one MDB support baseline approved by the user on 2026-10-21. Research remains bounded static/corpus evidence, not runtime implementation or a measured performance result.",
+  "approval": {
+    "date": "2026-10-21",
+    "timezone": "Australia/Sydney",
+    "userStatement": "OK, let's lock those MDB version rules in for Bella.",
+    "decision": "Adopt recommendedBellaSupport below: evidenced ordinary Bento1.0 plus legacy Avid/OMF record layouts and qualified version markers; recognized numeric orders; defer other MDB families as unsupported while preserving physical rows and independent facts.",
+    "scope": "MDB release-one format scope only. Preserve approved text/full-ID/field policies and four-PMR/four-MDB memory lifetimes. OMF2 physical-media-header coverage is a separate later review. OldScanner stays active until explicit cutover approval."
+  },
+  "historicalPolicyStatusNote": "Embedded native/source research receipts retain their original recommendation wording. This approval supersedes their pending status for recommendedBellaSupport; it does not turn research gaps or future verification into runtime proof. Earlier PMR/MDB memory approval receipts describe version scope as pending at their own earlier approval point; this later explicit version approval supersedes that status.",
+  "scope": {
+    "productionCodeChanged": false,
+    "appExecuted": false,
+    "privateApiExecuted": false,
+    "testsExecuted": false,
+    "liveDatabasesWritten": false,
+    "freshFileProbe": "Complete fixed-TOC framing, dictionaries and selectedHEADvalues, not full semantic validation of every payload."
+  },
+  "versionNamespaces": [
+    "MediaComposer app release",
+    "Bento container major/minor",
+    "OMF record/object revision and private property layouts",
+    "PMR record-set selector"
+  ],
+  "mediaComposer": {
+    "date": "2026-10-21",
+    "scope": "read-only static native MDB version/layout analysis",
+    "installedApplication": {
+      "CFBundleIdentifier": "com.avid.mediacomposer",
+      "CFBundleShortVersionString": "26.8.0.58987",
+      "CFBundleVersion": "26.8.0"
+    },
+    "binary": {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "bytes": 73527536,
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+    },
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-versions-20261021-native/LocalMDB-ScanOMFFileToMobManager.txt",
+        "bytes": 47762,
+        "sha256": "a6958c8426bcdc3b214850d91469db7e6cec5748cd1f08f14a3e17aa78523392",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN8LocalMDB23ScanOMFFileToMobManagerEP7AStreamiPiPFviiEhhP6AArrayS6_S6_S6_P11ADirLocatorS6_",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "symbol": "__ZN8LocalMDB23ScanOMFFileToMobManagerEP7AStreamiPiPFviiEhhP6AArrayS6_S6_S6_P11ADirLocatorS6_"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-versions-20261021-native/MediaStreamMgr-ScanOMFFileToCache.txt",
+        "bytes": 39694,
+        "sha256": "ec101964874cc8ac6cf6abe846f63509081e4bca51970ee91c93ec445770c694",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN19MSMDBMediaStreamMgr18ScanOMFFileToCacheEP17MSMMediaDirRecordPDsP12AFileLocatorb",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "symbol": "__ZN19MSMDBMediaStreamMgr18ScanOMFFileToCacheEP17MSMMediaDirRecordPDsP12AFileLocatorb"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-versions-20261021-native/HP-IomfiHPDomain.txt",
+        "bytes": 4687,
+        "sha256": "060e9314899fbd9809006e663b69bf1be7765a843d5dae311a1226d5e1518f00",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN12omfiHPDomain13IomfiHPDomainEP7AStreamh15containerMode_th",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "symbol": "__ZN12omfiHPDomain13IomfiHPDomainEP7AStreamh15containerMode_th"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-versions-20261021-native/HP-CheckBentoLabel.txt",
+        "bytes": 6456,
+        "sha256": "aa334776ab4c0acb45af2cb09a61a75cc85a7e4dc2c448005d23f7e568cb49e6",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN12omfiHPDomain15CheckBentoLabelEP7AStreamPiS2_",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "symbol": "__ZN12omfiHPDomain15CheckBentoLabelEP7AStreamPiS2_"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-versions-20261021-native/HP-InitHPDomainOld.txt",
+        "bytes": 28530,
+        "sha256": "7f89a0db52972060421e8c70f8a8d788933d039fbcbc87a7324303f6832bad39",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN12omfiHPDomain15InitHPDomainOldEP7AStreamh",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "symbol": "__ZN12omfiHPDomain15InitHPDomainOldEP7AStreamh"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-versions-20261021-native/HP-InitHPDomainNew.txt",
+        "bytes": 20054,
+        "sha256": "66b261089ecf6b57f3ca4c7ae40fada0d901d836436bfda130fb259c38b98706",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN12omfiHPDomain15InitHPDomainNewEP7AStreamhh",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "symbol": "__ZN12omfiHPDomain15InitHPDomainNewEP7AStreamhh"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-versions-20261021-native/HP-CloseContainer.txt",
+        "bytes": 24716,
+        "sha256": "4ae396a3520bb09356ddbc88fb593be9982ce18b29f08d6a8568353c333be21c",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN12omfiHPDomain14CloseContainerEv",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "symbol": "__ZN12omfiHPDomain14CloseContainerEv"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-versions-20261021-native/OMF2-Iomf2Domain.txt",
+        "bytes": 4157,
+        "sha256": "5e7b8bb59abf8e303211fcc9f633ed5bd6f675cb9201976baed9ebf89243ec0c",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN10omf2Domain11Iomf2DomainEP7AStreamh15containerMode_t",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "symbol": "__ZN10omf2Domain11Iomf2DomainEP7AStreamh15containerMode_t"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-versions-20261021-native/OMF2-CheckBentoLabel.txt",
+        "bytes": 6013,
+        "sha256": "b2dfd1644fe3ce7fe1bb8d37aaa3530748090f7e404e183b546927dee7f07b33",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN10omf2Domain15CheckBentoLabelEP7AStreamPjS2_",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "symbol": "__ZN10omf2Domain15CheckBentoLabelEP7AStreamPjS2_"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-versions-20261021-native/OMF2-InitOMF2DomainOld.txt",
+        "bytes": 27983,
+        "sha256": "b63f084d88b03440694f108f647fe8f3bba0123a2637d99607adb51126c62e5d",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN10omf2Domain17InitOMF2DomainOldEP7AStreamh",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "symbol": "__ZN10omf2Domain17InitOMF2DomainOldEP7AStreamh"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-versions-20261021-native/OMF2-InitOMF2DomainNew.txt",
+        "bytes": 20492,
+        "sha256": "d8974d701f3e247c92c37a78d1d68321f3b551263ca80fb67ab7becceed13cd9",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__ZN10omf2Domain17InitOMF2DomainNewEP7AStreamh",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "symbol": "__ZN10omf2Domain17InitOMF2DomainNewEP7AStreamh"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-versions-20261021-native/HP-IsOMFIFile.txt",
+        "bytes": 11173,
+        "sha256": "6bc0befb7e0a5ab2d724c60c4c3e11955f71fdb9675d45e1677479775384427c",
+        "command": [
+          "xcrun",
+          "llvm-objdump",
+          "--macho",
+          "--arch=arm64",
+          "--disassemble",
+          "--dis-symname",
+          "__Z10IsOMFIFileP7AStream",
+          "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib"
+        ],
+        "symbol": "__Z10IsOMFIFileP7AStream"
+      }
+    ],
+    "findings": [
+      {
+        "id": "ordinary-mdb-domain",
+        "claim": "Both traced ordinary MDB read paths invoke the legacy omfiHPDomain directly in container mode 1, not omf2Domain.",
+        "confidence": "verified-static",
+        "evidence": [
+          {
+            "artifact": "LocalMDB-ScanOMFFileToMobManager.txt",
+            "addresses": [
+              "0x415084-0x415094"
+            ],
+            "detail": "x0 stream; w1=0, w2=1, w3=0 then omfiHPDomain::New."
+          },
+          {
+            "artifact": "MediaStreamMgr-ScanOMFFileToCache.txt",
+            "addresses": [
+              "0x44d620-0x44d630"
+            ],
+            "detail": "The independent media-stream cache MDB route makes the same direct call."
+          }
+        ]
+      },
+      {
+        "id": "legacy-reader-gate",
+        "claim": "The traced ordinary MDB domain requires a Bento label with major 1 and minor 0; unsupported versions raise omfiHPDomain_UNKNOWN_VERSION.",
+        "confidence": "verified-static",
+        "evidence": [
+          {
+            "artifact": "HP-IomfiHPDomain.txt",
+            "addresses": [
+              "0xd9320-0xd9370"
+            ],
+            "detail": "Mode1 selects InitHPDomainOld."
+          },
+          {
+            "artifact": "HP-InitHPDomainOld.txt",
+            "addresses": [
+              "0xda1d8"
+            ],
+            "detail": "Calls CheckBentoLabel before constructing/decoding contents."
+          },
+          {
+            "artifact": "HP-CheckBentoLabel.txt",
+            "addresses": [
+              "0xddb3c-0xddb94"
+            ],
+            "detail": "Reads explicitly named Bento Major Version / Bento Minor Version; cmp major1 and minor0 required."
+          }
+        ]
+      },
+      {
+        "id": "generic-omf2-reader-gate",
+        "claim": "The installed application separately contains a real OMF2 domain reader whose Bento label gate accepts major 2 and minor 0, not arbitrary later versions.",
+        "confidence": "verified-static",
+        "evidence": [
+          {
+            "artifact": "OMF2-Iomf2Domain.txt",
+            "addresses": [
+              "0x4b2724-0x4b2754"
+            ],
+            "detail": "Open mode1 selects InitOMF2DomainOld."
+          },
+          {
+            "artifact": "OMF2-InitOMF2DomainOld.txt",
+            "addresses": [
+              "0x4b2e3c"
+            ],
+            "detail": "Calls its separate CheckBentoLabel."
+          },
+          {
+            "artifact": "OMF2-CheckBentoLabel.txt",
+            "addresses": [
+              "0x4b512c-0x4b5160"
+            ],
+            "detail": "Checks major2, minor0; otherwise omf2Domain_UNKNOWN_VERSION."
+          }
+        ],
+        "limitation": "This is general OMF-format capability. It does not prove that the ordinary MDB directory loader accepts a Bento2.0 MDB, because both traced MDB routes use the legacy 1.0 gate."
+      },
+      {
+        "id": "metadata-byte-orders",
+        "claim": "Both legacy and OMF2 object domains explicitly accept II and MM metadata byte-order marks.",
+        "confidence": "verified-static",
+        "evidence": [
+          {
+            "artifact": "HP-InitHPDomainOld.txt",
+            "addresses": [
+              "0xda388-0xda3d4"
+            ],
+            "detail": "Reads object1 container byte order, accepts 0x4949 or 0x4d4d; other marks raise UNKNOWN_BYTESEX."
+          },
+          {
+            "artifact": "OMF2-InitOMF2DomainOld.txt",
+            "addresses": [
+              "0x4b2fb0-0x4b2ffc"
+            ],
+            "detail": "Same two accepted byte-order marks in the separate OMF2 domain."
+          }
+        ],
+        "limitation": "These marks describe numeric byte order, not text encoding; they are not reliable Mac/Windows provenance markers."
+      },
+      {
+        "id": "legacy-writer-label",
+        "claim": "The legacy HP writer emits a Bento1.0 trailer and a two-byte legacy header-version spelling 00 01.",
+        "confidence": "verified-static",
+        "evidence": [
+          {
+            "artifact": "HP-CloseContainer.txt",
+            "addresses": [
+              "0xe28e8-0xe28ec",
+              "0xe2a90-0xe2ab8"
+            ],
+            "detail": "Prepares short0x0100 as bytes00 01 on arm64, translates propertycode0x11, emits two bytes. The property name is not re-derived from its native dictionary in this audit; correlate with independently verified dictionary/corpus."
+          },
+          {
+            "artifact": "HP-CloseContainer.txt",
+            "addresses": [
+              "0xe2ddc-0xe2e50"
+            ],
+            "detail": "Builds24-byte label; major1/minor0 at labeloffset12, writes label to stream."
+          }
+        ]
+      },
+      {
+        "id": "namespaces",
+        "claim": "Application version26.8.0.58987, Bento container version, OMF metadata revision and PMR v8/v16 record sets are different version numbers.",
+        "confidence": "classification",
+        "detail": "A modern application can write/use an old Bento/OMF layout with additional privately named properties. UTF8 fields do not by themselves turn a Bento1.0 MDB into Bento2.0. PMR set selectors are unrelated to MDB layout."
+      }
+    ],
+    "limits": [
+      "Read-only static native inspection on installed arm64 libameLibrary.dylib. No Avid private APIs, application execution or malformed fixtures were used.",
+      "No complete all-callers proof across every library/plugin/application path; report the two verified ordinary MDB load paths and the separately verified general OMF2 reader.",
+      "No claim that every semantically valid OMF1 revision or every private Avid property is supported; the precisely verified native version gates are Bento1.0 for those MDB paths and Bento2.0 for the separate OMF2 domain.",
+      "OMF1/1xIMA toolkit families cannot automatically be translated to a native MDB compatibility promise without their actual record/property shapes.",
+      "No attached-drive MDB corpus was inspected by this subtask; parent handles live corpus inventory."
+    ],
+    "recommendationToParent": "Describe ordinary installed Media Composer MDB use as the legacy Bento1.0 family through the two traced native routes. Describe general OMF2 support separately, rather than implying all MDB revisions are accepted. Bella should use explicit observed/supported layout gates and classify unknown layouts as unsupported, preserving physical media rows.",
+    "artifactsVerified": true
+  },
+  "mdvx": {
+    "purpose": "Read-only installed MDVx MDB version support audit for Bella requirements, 2026-10-21 Australia/Sydney.",
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "bytes": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "CFBundleShortVersionString": "0.2",
+      "CFBundleVersion": "4073",
+      "architecture": "arm64"
+    },
+    "method": {
+      "native": "Nine bounded routines freshly disassembled with system otool and exactly compared with retained text; CFStrings resolved directly from installed arm64 Mach-O slice.",
+      "applicationExecuted": false,
+      "userMDBReadOrWritten": false,
+      "repoEdited": false
+    },
+    "namingDistinction": "Trailer/container major at +0x0c is Bento container major, not automatically the separately recorded OMF object-model revision. MDVx labels its refused container branch OMF 2; this diagnostic wording does not establish universal OMF revision-2 refusal.",
+    "findings": [
+      {
+        "scope": "Ordinary scanner routing",
+        "function": "-[MDVxMediafile openFile:withIndicator:]",
+        "addresses": [
+          "0x100043a2c..43a38",
+          "0x100043aac..43ab4",
+          "0x100043aec..43afc"
+        ],
+        "finding": "mdb extension selects MDVxOMFI. This wrapper calls the common reader openFile and stores its boolean result."
+      },
+      {
+        "scope": "Container admission",
+        "function": "-[MDVxOMFI openFile:withIndicator:]",
+        "addresses": [
+          "0x100061ce0..61ce8",
+          "0x100061d00..61d24",
+          "0x100061d3c..61dc4"
+        ],
+        "finding": "Requires >=128 bytes and magic 0xd7726448a54d43a4 in final 24-byte trailer. Compares raw native 16-bit label word at +0x0c to 2; if equal it calls Reader02, logs, and returns false."
+      },
+      {
+        "scope": "Container major2 branch",
+        "function": "-[MDVxOMFI OMFiTOCReader02]",
+        "addresses": [
+          "0x100061e48..61ea8"
+        ],
+        "finding": "Routine only logs OMF 2 not supported, with no TOC decoding. This is positive evidence of unsupported container-major2 path in this installed build."
+      },
+      {
+        "scope": "Other container words",
+        "function": "-[MDVxOMFI openFile:withIndicator:]",
+        "addresses": [
+          "0x100061dc8..61e44"
+        ],
+        "finding": "All other raw major words use Reader01. No check of minor version +0x0e or exact major==1 whitelist appears. Nonzero object count yields true. This is permissive fall-through, not a support promise for future versions."
+      },
+      {
+        "scope": "Fixed table layout",
+        "function": "-[MDVxOMFI OMFiTOCReader01]",
+        "addresses": [
+          "0x100061fe8..62008",
+          "0x1000620e4..620f4"
+        ],
+        "finding": "Divides declared TOC byte length by24 and indexes 24-byte entries. The observed implementation is the legacy Bento1 fixed TOC reader, not a compressed Bento2 TOC reader."
+      },
+      {
+        "scope": "Ordinary semantic enrichment",
+        "function": "-[MDVxOMFI OMFiTOCReader01] and -[MDVxOMFI addInfoToItem:]",
+        "addresses": [
+          "0x1000621a0..62238",
+          "0x1000622ec..62494",
+          "0x100064818..648bc",
+          "0x1000648f8..64994"
+        ],
+        "finding": "Builds identity trees from object1 property IDs0x101e9/0x10202/0x10216 (legacy CompositionMobs/MediaData/SourceMobs). Uses counted 20-byte legacy MobIndex entries. Enrichment follows those trees and fixed legacy property IDs. No explicit OMF:Version/HEAD:Version schema revision dispatch or HEAD:Mobs/HEAD:MediaData catalogue path was found in these bounded ordinary routines.",
+        "qualification": "This supports describing ordinary MDB enrichment as legacy OMF1-style. It is not proof that no isolated newer/private properties can ever be read when their legacy-compatible IDs/layouts match."
+      },
+      {
+        "scope": "Diagnostic browser distinction",
+        "function": "-[MDVxOMFI OMFiTOCReader01] and -[MDVxOMFI getDescriptionForTOCindex:]",
+        "addresses": [
+          "0x10006223c..622d4",
+          "0x100063fb8..64038"
+        ],
+        "finding": "Reader01 loads arbitrary global property/type names into dictionary; raw browser description looks up recorded IDs in that dictionary. Ability to name/display raw properties in a supported fixed TOC is not proof ordinary metadata enrichment understands their OMF schema."
+      },
+      {
+        "scope": "Byte order",
+        "function": "-[MDVxOMFI openFile:withIndicator:]",
+        "addresses": [
+          "0x100061d28..61d38",
+          "0x1000622fc..62310"
+        ],
+        "finding": "Selects payload endian behavior using trailer word+0x0a==0x4949 and swaps some counted/scalar payloads otherwise. Container major/TOC offset/length loads remain native raw loads in inspected gate. A complete big-endian-container support promise is not established."
+      }
+    ],
+    "comparisonSummary": "Installed MDVx has a fixed legacy Bento1-style MDB reader and legacy OMF1-style catalogue enrichment. It explicitly refuses the Bento-major2 label branch that it logs as OMF 2 not supported. Other label words are not rigorously whitelisted, and success does not prove semantic support. Do not equate raw browser dictionary display with ordinary scanner schema support.",
+    "limits": [
+      "No runtime MDVx scan, synthetic format execution or live UI comparison.",
+      "No exhaustive whole-program or schema coverage proof.",
+      "No independent big-endian MDB corpus execution.",
+      "No inferred support based only on strings, file extension, raw browser display, or missing rejection."
+    ],
+    "inputs": [
+      {
+        "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-disassembly.txt",
+        "bytes": 4552262,
+        "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/findings.json",
+        "bytes": 17791,
+        "sha256": "7d70b9bf0ecd3aac703c02831e4e2be1c5d8d172ad9e50a94fca0efc2be5f635"
+      }
+    ],
+    "freshFunctions": [
+      {
+        "argv": [
+          "/usr/bin/otool",
+          "-arch",
+          "arm64",
+          "-tvV",
+          "-p",
+          "-[MDVxMediafile openFile:withIndicator:]",
+          "/Applications/MDVx.app/Contents/MacOS/MDVx"
+        ],
+        "extraction": "Requested routine only, stopped at next symbol.",
+        "exactlyMatchesRetained": true,
+        "artifact": {
+          "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxMediafile_openFile.txt",
+          "bytes": 4273,
+          "sha256": "918afaa90acd4e5aed2a4ff0a26791c2dc51f223f72539cec46cb95edab893c0"
+        }
+      },
+      {
+        "argv": [
+          "/usr/bin/otool",
+          "-arch",
+          "arm64",
+          "-tvV",
+          "-p",
+          "-[MDVxOMFI openFile:withIndicator:]",
+          "/Applications/MDVx.app/Contents/MacOS/MDVx"
+        ],
+        "extraction": "Requested routine only, stopped at next symbol.",
+        "exactlyMatchesRetained": true,
+        "artifact": {
+          "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxOMFI_openFile.txt",
+          "bytes": 5748,
+          "sha256": "a955bfbb112157739d65e0391becf85414dd12ac96367c6ef474cb2412ccba08"
+        }
+      },
+      {
+        "argv": [
+          "/usr/bin/otool",
+          "-arch",
+          "arm64",
+          "-tvV",
+          "-p",
+          "-[MDVxOMFI OMFiTOCReader02]",
+          "/Applications/MDVx.app/Contents/MacOS/MDVx"
+        ],
+        "extraction": "Requested routine only, stopped at next symbol.",
+        "exactlyMatchesRetained": true,
+        "artifact": {
+          "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxOMFI_Reader02.txt",
+          "bytes": 1197,
+          "sha256": "422d4132137d1a9a2dbbddc547717fb240bf3f3f9cc6609e33e5d03247e17d77"
+        }
+      },
+      {
+        "argv": [
+          "/usr/bin/otool",
+          "-arch",
+          "arm64",
+          "-tvV",
+          "-p",
+          "-[MDVxOMFI OMFiTOCReader01]",
+          "/Applications/MDVx.app/Contents/MacOS/MDVx"
+        ],
+        "extraction": "Requested routine only, stopped at next symbol.",
+        "exactlyMatchesRetained": true,
+        "artifact": {
+          "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxOMFI_Reader01.txt",
+          "bytes": 2858,
+          "sha256": "e11301b0cab007ce4409b224b9cd48e5bfdd387ade2ed917791d64e6302c34d9"
+        }
+      },
+      {
+        "argv": [
+          "/usr/bin/otool",
+          "-arch",
+          "arm64",
+          "-tvV",
+          "-p",
+          "-[MDVxOMFI howManyBentoObjectsV01]",
+          "/Applications/MDVx.app/Contents/MacOS/MDVx"
+        ],
+        "extraction": "Requested routine only, stopped at next symbol.",
+        "exactlyMatchesRetained": true,
+        "artifact": {
+          "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxOMFI_howManyObjects.txt",
+          "bytes": 701,
+          "sha256": "240e9a5b87e27eb0a9104f9be0dc746224fcd8f1f4fae251a0c346b27356c15c"
+        }
+      },
+      {
+        "argv": [
+          "/usr/bin/otool",
+          "-arch",
+          "arm64",
+          "-tvV",
+          "-p",
+          "-[MDVxOMFI InitDictionary]",
+          "/Applications/MDVx.app/Contents/MacOS/MDVx"
+        ],
+        "extraction": "Requested routine only, stopped at next symbol.",
+        "exactlyMatchesRetained": true,
+        "artifact": {
+          "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxOMFI_InitDictionary.txt",
+          "bytes": 15844,
+          "sha256": "4c66cede9e0d88261f79bca2bcb0df897b8997cde045eb01cb9de4f66a186318"
+        }
+      },
+      {
+        "argv": [
+          "/usr/bin/otool",
+          "-arch",
+          "arm64",
+          "-tvV",
+          "-p",
+          "-[MDVxOMFI addInfoToItem:]",
+          "/Applications/MDVx.app/Contents/MacOS/MDVx"
+        ],
+        "extraction": "Requested routine only, stopped at next symbol.",
+        "exactlyMatchesRetained": true,
+        "artifact": {
+          "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxOMFI_addInfoToItem.txt",
+          "bytes": 9424,
+          "sha256": "c1097f5a0d8ab935e22379d9737a89b4a7e0f0676ed2959d827684f241978b3a"
+        }
+      },
+      {
+        "argv": [
+          "/usr/bin/otool",
+          "-arch",
+          "arm64",
+          "-tvV",
+          "-p",
+          "-[MDVxOMFI StringForTocIndexItem:]",
+          "/Applications/MDVx.app/Contents/MacOS/MDVx"
+        ],
+        "extraction": "Requested routine only, stopped at next symbol.",
+        "exactlyMatchesRetained": true,
+        "artifact": {
+          "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxOMFI_StringForTocIndexItem.txt",
+          "bytes": 12680,
+          "sha256": "ee8dc5f1153b19d8b94d026df075395905963b02c5c20a8867e66fd2d7b5f4c7"
+        }
+      },
+      {
+        "argv": [
+          "/usr/bin/otool",
+          "-arch",
+          "arm64",
+          "-tvV",
+          "-p",
+          "-[MDVxOMFI getDescriptionForTOCindex:]",
+          "/Applications/MDVx.app/Contents/MacOS/MDVx"
+        ],
+        "extraction": "Requested routine only, stopped at next symbol.",
+        "exactlyMatchesRetained": true,
+        "artifact": {
+          "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxOMFI_getDescriptionForTOCindex.txt",
+          "bytes": 17189,
+          "sha256": "80a5096b7c030dca1aa918ba854b422a88870426c3d091dcca69e529158dd6c5"
+        }
+      }
+    ],
+    "artifacts": [
+      {
+        "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/resolved-cfstrings.json",
+        "bytes": 15516,
+        "sha256": "23197a606017457a85382f2165b782145217e9d038e4c003a1e47f0ffa9cd00f"
+      }
+    ]
+  },
+  "mediaMuster": {
+    "date": "2026-10-21",
+    "scope": "Read-only source/test-source audit of current MediaMuster OldScanner MDB version support. No parser execution, build, app launch, or modified production files.",
+    "root": "/Users/martymclean/Developer/MediaMuster",
+    "inputs": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbbentoreader_p.cpp",
+        "sha256": "92e281f63f7d3903e011cf84d24003332f3dffa12c49e72142ec0d3ff1d42fd0",
+        "bytes": 15663
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbbentoreader_p.h",
+        "sha256": "b5dfee3151e378530998f782564ae6be6bd85fd2ae12a30605c3f547e07352e1",
+        "bytes": 988
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbobjects_p.cpp",
+        "sha256": "21a013b4de7a3e346553e2f4bef73404e9d3c63551f6653aa9403a7128244814",
+        "bytes": 25678
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbobjects_p.h",
+        "sha256": "12d4a38645a37993f5a1cc839c508e002dd94609027d101969673f5487e767cd",
+        "bytes": 427
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbprojection.cpp",
+        "sha256": "75757ff663c541992768c502fa7b0887c4f31a02d23b7ec9e7b28532b160be5f",
+        "bytes": 65892
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbreader.cpp",
+        "sha256": "caf9ef08219020a9408cbffccac475d52807c48548491c048b8e647b44e0836a",
+        "bytes": 355
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginemdb.cpp",
+        "sha256": "ffa222e5ff96d58947ef00906f1c316b7b7bc3ddf5234bbe5f6af738a8128491",
+        "bytes": 33139
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/testmediaenginebento.h",
+        "sha256": "e03c344f2bc5a3de1593477613ff136893b44151fefe7c146fd39a93a2df2819",
+        "bytes": 4973
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_omfprojection.cpp",
+        "sha256": "fd8f664611e66782f1cf6b4ae09590664c42922940585fcf0f7e8eb859655877",
+        "bytes": 125360
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginemdbisolated.cpp",
+        "sha256": "f0a7af6e408eee60f5161ee5bf8c1fe3bba8adde45a43af44bd8728e07cbb510",
+        "bytes": 5442
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/testtypedbento.h",
+        "sha256": "a39535b7944ff3bf6407a12fecbc1a752e49f5082d6663cd89b956b5e089a7c3",
+        "bytes": 4496
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-18-bella-mdb/REVIEW.md",
+        "sha256": "d51b45e59486752b660881d32d91372df2057da010ab0420b514d78c72fffd9d",
+        "bytes": 27231
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mdb-research-2026-10-18.json",
+        "sha256": "ad8f6e59ac3973e6f6650d288a5cf2a8bf8f73ecee5c8e60c2714e4d7e9b4cb0",
+        "bytes": 87513
+      }
+    ],
+    "layers": [
+      {
+        "layer": "Bento container",
+        "supportedBySource": [
+          "Bento1.0 fixed24-byte TOC; TOC words little endian",
+          "Bento2.0 compactTOC; LE orBE container order determined by label",
+          "Declared continuations, immediate values, generation and Bento2 reference-table instructions; compact offsets/lengths include wide forms"
+        ],
+        "checks": [
+          "MDB label exactly final24bytes; valid magic",
+          "Only major1 or2 with minor0",
+          "Only recognized label flags0x0101",
+          "TOC range must end before label",
+          "Fixed24byte entries; immediate length<=4; knownflags; no highproperty/typebyte40bitextension",
+          "Compact recognized opcodes1..15,24,25,26,255 with operand widths and block/context checks"
+        ],
+        "unsupported": [
+          "Other major/minor or unrecognizedlabel/value flags",
+          "Bento1 high property/typebyte extension associated with40bit offsets",
+          "Target/update containers requiring separateupdate resolution",
+          "Unknown compactopcode (zero classified malformed)"
+        ],
+        "references": [
+          {
+            "path": "src/oldscanner/mediaengine/mdbbentoreader_p.cpp",
+            "lines": [
+              101,
+              142
+            ]
+          },
+          {
+            "path": "src/oldscanner/mediaengine/mdbbentoreader_p.cpp",
+            "lines": [
+              227,
+              255
+            ]
+          },
+          {
+            "path": "src/oldscanner/mediaengine/mdbbentoreader_p.cpp",
+            "lines": [
+              260,
+              380
+            ]
+          }
+        ]
+      },
+      {
+        "layer": "OMF semantic/object revision",
+        "recognizedBySource": [
+          "Revision1 when2byteVersionType firstbyte01 (any minor); source recognizes1.x without retainingminor in enum",
+          "Exactly02 00 for revision2",
+          "Verified legacy Avid spelling00 01 accepted asrevision1 only onlegacyHEAD(ObjID) with no modernHEAD"
+        ],
+        "requirements": [
+          "HEAD object1 qualifiedclass; consistentunique revision",
+          "HEAD metadata byteorderII/MM when interpreting multibyte scalarvalues",
+          "Missing/conflicting/unsupportedrevision leaves revisiondependentvalues raw; incompatible version bytes produceUnsupported ifcontainer otherwiseComplete"
+        ],
+        "references": [
+          {
+            "path": "src/oldscanner/mediaengine/mdbobjects_p.cpp",
+            "lines": [
+              231,
+              317
+            ]
+          }
+        ]
+      },
+      {
+        "layer": "Schema and references",
+        "supportedBySource": [
+          "OMF1 reference width8 vs OMF2width4",
+          "OMF1ObjectSpine activecatalogue, optional typedMobIndex arrays",
+          "OMF2HEAD:Mobs plusHEAD:MediaData required; PrimaryMobs not replacement",
+          "MOBJ:PhysicalMedia vsSMOB:MediaDescription descriptorlinks",
+          "OMF1 masterassociationTRKG/TRAK/CPNT vs OMF2MOBJ:Slots/MSLT:Segment/SCLP path",
+          "Byteorder of numericmetadata separate fromBento referencekeyorder",
+          "Bento2 reference recordingtables resolved per property"
+        ],
+        "caveats": [
+          "Version support does not guarantee every private class/type/property or rate/audio format is interpreted",
+          "OMF1 contrary/uncertain per-object metadataorder intentionally leftuninterpreted pending genuine specimen",
+          "Unknown safelyframed vendor fields preserved raw; notcorruption bythemselves"
+        ],
+        "references": [
+          {
+            "path": "src/oldscanner/mediaengine/mdbobjects_p.cpp",
+            "lines": [
+              307,
+              317
+            ]
+          },
+          {
+            "path": "src/oldscanner/mediaengine/mdbobjects_p.cpp",
+            "lines": [
+              417,
+              601
+            ]
+          },
+          {
+            "path": "src/oldscanner/mediaengine/mdbprojection.cpp",
+            "lines": [
+              439,
+              600
+            ]
+          },
+          {
+            "path": "src/oldscanner/mediaengine/mdbprojection.cpp",
+            "lines": [
+              620,
+              747
+            ]
+          }
+        ]
+      }
+    ],
+    "testsReviewedNotRun": [
+      {
+        "path": "tests/tst_mediaenginemdb.cpp",
+        "lines": [
+          170,
+          203
+        ],
+        "coverage": "Unknownschema/dictionary ambiguity retained; OMF3 unsupported"
+      },
+      {
+        "path": "tests/tst_mediaenginemdb.cpp",
+        "lines": [
+          205,
+          237
+        ],
+        "coverage": "Fragmentedvalues on fixedBento1 andcompactBento2"
+      },
+      {
+        "path": "tests/tst_mediaenginemdb.cpp",
+        "lines": [
+          238,
+          289
+        ],
+        "coverage": "Synthetic Bento1/OMF1 bothmetadataorders; Bento2/OMF2 independentlybothcontainerandmetadataorders; refs/scalars/rational"
+      },
+      {
+        "path": "tests/tst_mediaenginemdb.cpp",
+        "lines": [
+          291,
+          314
+        ],
+        "coverage": "Bento2BE reference recordingmap andambiguousmapping"
+      },
+      {
+        "path": "tests/tst_mediaenginemdb.cpp",
+        "lines": [
+          407,
+          440
+        ],
+        "coverage": "Widecompactoffsets, malformedblockboundaries andincompletecontinuations"
+      },
+      {
+        "path": "tests/tst_mediaenginemdb.cpp",
+        "lines": [
+          471,
+          513
+        ],
+        "coverage": "ConflictingHEADclass/type; uncertainlocalbyteorderpolicy forOMF1 vsOMF2"
+      },
+      {
+        "path": "tests/tst_mediaenginemdb.cpp",
+        "lines": [
+          515,
+          592
+        ],
+        "coverage": "Six genuineMDBfixtures; independentbytecount asserts allBento1 fixed24byteTOC; fullsourcepropertyreconstruction"
+      },
+      {
+        "path": "tests/tst_mediaenginemdb.cpp",
+        "lines": [
+          669,
+          690
+        ],
+        "coverage": "Truncations, major3Unsupported and badrange"
+      },
+      {
+        "path": "tests/tst_mediaengine_omfprojection.cpp",
+        "lines": [
+          409,
+          428
+        ],
+        "coverage": "Synthetic OMF2masteridentity andSMOBdescriptorrelationship"
+      },
+      {
+        "path": "tests/tst_mediaengine_omfprojection.cpp",
+        "lines": [
+          430,
+          483
+        ],
+        "coverage": "OMF1/OMF2catalogue membership excludingorphans"
+      },
+      {
+        "path": "tests/tst_mediaengine_omfprojection.cpp",
+        "lines": [
+          485,
+          539
+        ],
+        "coverage": "Requiredcatalogues missing/malformed/wrongclass/type/unresolved/repeated"
+      },
+      {
+        "path": "tests/tst_mediaengine_omfprojection.cpp",
+        "lines": [
+          1839,
+          1883
+        ],
+        "coverage": "CrossOMF1/OMF2 and12/32byteidentity compressioninputs"
+      },
+      {
+        "path": "tests/tst_mediaenginemdbisolated.cpp",
+        "lines": [
+          42,
+          113
+        ],
+        "coverage": "Genuine2026audioMDB parsed/projected withMDB-onlyisolatedtarget; 2physicalfileassociations"
+      }
+    ],
+    "priorRealCorpusEvidence": {
+      "path": "docs/reviews/2026-10-18-bella-mdb/REVIEW.md",
+      "lines": [
+        222,
+        249
+      ],
+      "fact": "Prior audit sixactual MDBs63,954,160bytes allBento1.0LE fixed24-byteTOC, metadataII, legacyOMFI:Version00 01; both12/32byteIDs; notfreshdriveinventory"
+    },
+    "limitations": [
+      "Alltests read as source; none executedthisturn",
+      "No claimthat allcontainer/OMFcrossproduct permutations are independentlytested",
+      "Bento2/BE support has authoredfixturecoverage; priorgenuineMDBset allBento1/OMF1/LE",
+      "Current recognizer permissivelyacceptsOMF1minors; do not claim everyminororprivateextension issemanticallyverified",
+      "No promise allagreedBellafieldsemanticsimplementedinOldScanner; Bella new code stillrequirestests"
+    ],
+    "recommendation": [
+      "Separate current source capability from Bella release requirements; existing code broadness alone is not reason to preserve it in a fresh scanner.",
+      "Given native agent traced ordinaryMSMLocalMDB directly tolegacyomfiHPDomain and CheckBentoLabel exactlyBento1.0, plusallobservedliveMDBsBento1/legacyOMF1, recommendBella release1supporttheverifiedordinaryMDBlayout: Bento1.0 fixed24byteTOC plusqualifiedlegacyOMF1/Avid00 01 objectlayout.",
+      "Recognize othercontainer/objectversions asunsupported cleanly; ignoreMDBmetadata andkeepphysicalrows. Do notguessBento2asfixedTOC orsalvageprefix.",
+      "Current syntheticBento2/OMF2 andBEcoverage isusefulgenericformatwork, notproofordinaryMDBusesorneedsthoseformats. No observedliveMDBcoverage lostbynarrowerrelease1.",
+      "Keep formatlayers separate; futureBento2/OMF2extension onlywhenrealMDBspecimensorordinarynativeMDBwritepathestablishneed.",
+      "II/MM numericorder handling canremain smallverifiedendianhelpers withbounds/typedshapechecks; allgenuineMDBobservationshereareII andnopromiseforuntestedMMspecimens. OMF1contrarylocalorderremainunsupportedpendingevidence.",
+      "Do notequateBentoformat,OMFobjectrevision,textencodingorMediaComposerrelease. Recognize00 01 onlyintheevidencedlegacyHEADcontext; donotgenericallybyteswapversionwords.",
+      "Do notinheritOldScannerpermissivefirstbyte01 anyminoracceptance asclaimallOMF1minorversionssupported; qualifytheconcreteimplementedlayoutandknownversionmarkers."
+    ],
+    "parentResearchSteering": {
+      "source": "Parent agent message thisturn; evidence receipt should beattachedbyparent",
+      "facts": [
+        "OrdinaryMediaComposerMSMLocalMDB callsomfiHPDomain::Newdirectly; thatlegacyCheckBentoLabel requiresBento1.0. Genericomf2Domain existinginbinary doesnotproveordinaryMDBsupport.",
+        "Freshparentinventory14filepaths11hashes,6liveAvidDBallBento1.0/legacyOMF00 01/II;8fixture/copyfilesalsosame."
+      ]
+    }
+  },
+  "observedFiles": {
+    "date": "2026-10-21",
+    "timezone": "Australia/Sydney",
+    "method": "Read-only fresh direct bytes; no app or private API execution.",
+    "discoveryCommand": [
+      "rg",
+      "--files",
+      "--hidden",
+      "--no-ignore",
+      "-g",
+      "*.[mM][dD][bB]",
+      "-g",
+      "!.Trashes",
+      "-g",
+      "!.TemporaryItems",
+      "-g",
+      "!.Spotlight-V100",
+      "-g",
+      "!.DocumentRevisions-V100",
+      "/Volumes/EDIT",
+      "/Users/Shared/AvidMediaComposer",
+      "/Users/martymclean/Developer/MediaMuster/tests/fixtures"
+    ],
+    "discoveryErrors": "",
+    "excludedSystemFolders": [
+      ".Trashes",
+      ".TemporaryItems",
+      ".Spotlight-V100",
+      ".DocumentRevisions-V100"
+    ],
+    "scopeLimits": "Connected EDIT volume, shared Avid media folders and repository fixtures; no claim to have searched every user/system folder or disconnected drive.",
+    "files": [
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 3668720,
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "stableDuringRead": true,
+        "labelHex": "a4434da5486472d7000049490100000010a40800c8562f00",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "labelFlags": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 566288,
+        "tocLength": 3102408,
+        "bodyInspection": "Complete fixed 24-byte TOC framing and property/type dictionaries; selected HEAD values read directly.",
+        "tocEntryCount": 129267,
+        "headerValues": [
+          {
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag",
+            "hex": "48454144",
+            "ranges": [
+              [
+                566468,
+                4
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:Version",
+            "type": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                566492,
+                2
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:ByteOrder",
+            "type": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                566516,
+                2
+              ]
+            ]
+          }
+        ],
+        "role": "Avid media-folder database"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "bytes": 60680,
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "stableDuringRead": true,
+        "labelHex": "a4434da5486472d70000494901000000b06c000040800000",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "labelFlags": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 27824,
+        "tocLength": 32832,
+        "bodyInspection": "Complete fixed 24-byte TOC framing and property/type dictionaries; selected HEAD values read directly.",
+        "tocEntryCount": 1368,
+        "headerValues": [
+          {
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag",
+            "hex": "48454144",
+            "ranges": [
+              [
+                28004,
+                4
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:Version",
+            "type": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                28028,
+                2
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:ByteOrder",
+            "type": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                28052,
+                2
+              ]
+            ]
+          }
+        ],
+        "role": "Avid media-folder database"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "bytes": 3528208,
+        "sha256": "3a8aa13aaa725111c29d22d821eade6e2a1d23a8b7d5e6bd5b6cda4d84101cc1",
+        "stableDuringRead": true,
+        "labelHex": "a4434da5486472d70000494901000000303d0900c8982c00",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "labelFlags": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 605488,
+        "tocLength": 2922696,
+        "bodyInspection": "Complete fixed 24-byte TOC framing and property/type dictionaries; selected HEAD values read directly.",
+        "tocEntryCount": 121779,
+        "headerValues": [
+          {
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag",
+            "hex": "48454144",
+            "ranges": [
+              [
+                605668,
+                4
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:Version",
+            "type": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                605692,
+                2
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:ByteOrder",
+            "type": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                605716,
+                2
+              ]
+            ]
+          }
+        ],
+        "role": "Repository fixture or archived fixture copy"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "bytes": 6411016,
+        "sha256": "07eea423b0d5d04a87a67c18936017dc06e0cc53f2d5e2385bfe99ef55ead351",
+        "stableDuringRead": true,
+        "labelHex": "a4434da5486472d7000049490100000020be1000d0145100",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "labelFlags": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 1097248,
+        "tocLength": 5313744,
+        "bodyInspection": "Complete fixed 24-byte TOC framing and property/type dictionaries; selected HEAD values read directly.",
+        "tocEntryCount": 221406,
+        "headerValues": [
+          {
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag",
+            "hex": "48454144",
+            "ranges": [
+              [
+                1097428,
+                4
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:Version",
+            "type": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                1097452,
+                2
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:ByteOrder",
+            "type": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                1097476,
+                2
+              ]
+            ]
+          }
+        ],
+        "role": "Repository fixture or archived fixture copy"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmMMOB.mdb",
+        "bytes": 53688,
+        "sha256": "db91f1b0e0dcfaef92c263417e51f65e6821c5ef73f628fb01b1d4305d05f34d",
+        "stableDuringRead": true,
+        "labelHex": "a4434da5486472d70000494901000000604b000040860000",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "labelFlags": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 19296,
+        "tocLength": 34368,
+        "bodyInspection": "Complete fixed 24-byte TOC framing and property/type dictionaries; selected HEAD values read directly.",
+        "tocEntryCount": 1432,
+        "headerValues": [
+          {
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag",
+            "hex": "48454144",
+            "ranges": [
+              [
+                19476,
+                4
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:Version",
+            "type": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                19500,
+                2
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:ByteOrder",
+            "type": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                19524,
+                2
+              ]
+            ]
+          }
+        ],
+        "role": "Repository fixture or archived fixture copy"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmMMOB_macroman.mdb",
+        "bytes": 515968,
+        "sha256": "23b6b7ec29483251d1c71f1c10a4e943028e923ea2479a0f8f1ba7a53a18e393",
+        "stableDuringRead": true,
+        "labelHex": "a4434da5486472d70000494901000000f06f0100786f0600",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "labelFlags": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 94192,
+        "tocLength": 421752,
+        "bodyInspection": "Complete fixed 24-byte TOC framing and property/type dictionaries; selected HEAD values read directly.",
+        "tocEntryCount": 17573,
+        "headerValues": [
+          {
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag",
+            "hex": "48454144",
+            "ranges": [
+              [
+                94372,
+                4
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:Version",
+            "type": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                94396,
+                2
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:ByteOrder",
+            "type": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                94420,
+                2
+              ]
+            ]
+          }
+        ],
+        "role": "Repository fixture or archived fixture copy"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+        "bytes": 587424,
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "stableDuringRead": true,
+        "labelHex": "a4434da5486472d700004949010000008075010008810700",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "labelFlags": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 95616,
+        "tocLength": 491784,
+        "bodyInspection": "Complete fixed 24-byte TOC framing and property/type dictionaries; selected HEAD values read directly.",
+        "tocEntryCount": 20491,
+        "headerValues": [
+          {
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag",
+            "hex": "48454144",
+            "ranges": [
+              [
+                95796,
+                4
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:Version",
+            "type": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                95820,
+                2
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:ByteOrder",
+            "type": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                95844,
+                2
+              ]
+            ]
+          }
+        ],
+        "role": "Repository fixture or archived fixture copy"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/msmMMOB.mdb",
+        "bytes": 60680,
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "stableDuringRead": true,
+        "labelHex": "a4434da5486472d70000494901000000b06c000040800000",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "labelFlags": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 27824,
+        "tocLength": 32832,
+        "bodyInspection": "Complete fixed 24-byte TOC framing and property/type dictionaries; selected HEAD values read directly.",
+        "tocEntryCount": 1368,
+        "headerValues": [
+          {
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag",
+            "hex": "48454144",
+            "ranges": [
+              [
+                28004,
+                4
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:Version",
+            "type": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                28028,
+                2
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:ByteOrder",
+            "type": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                28052,
+                2
+              ]
+            ]
+          }
+        ],
+        "role": "Repository fixture or archived fixture copy"
+      },
+      {
+        "path": "/Volumes/EDIT/2026/Developer/MediaMuster/.claude/worktrees/eloquent-swanson-119368/tests/fixtures/msmMMOB.mdb",
+        "bytes": 53688,
+        "sha256": "db91f1b0e0dcfaef92c263417e51f65e6821c5ef73f628fb01b1d4305d05f34d",
+        "stableDuringRead": true,
+        "labelHex": "a4434da5486472d70000494901000000604b000040860000",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "labelFlags": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 19296,
+        "tocLength": 34368,
+        "bodyInspection": "Complete fixed 24-byte TOC framing and property/type dictionaries; selected HEAD values read directly.",
+        "tocEntryCount": 1432,
+        "headerValues": [
+          {
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag",
+            "hex": "48454144",
+            "ranges": [
+              [
+                19476,
+                4
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:Version",
+            "type": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                19500,
+                2
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:ByteOrder",
+            "type": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                19524,
+                2
+              ]
+            ]
+          }
+        ],
+        "role": "Repository fixture or archived fixture copy"
+      },
+      {
+        "path": "/Volumes/EDIT/2026/Developer/MediaMuster/tests/fixtures/msmMMOB.mdb",
+        "bytes": 53688,
+        "sha256": "db91f1b0e0dcfaef92c263417e51f65e6821c5ef73f628fb01b1d4305d05f34d",
+        "stableDuringRead": true,
+        "labelHex": "a4434da5486472d70000494901000000604b000040860000",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "labelFlags": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 19296,
+        "tocLength": 34368,
+        "bodyInspection": "Complete fixed 24-byte TOC framing and property/type dictionaries; selected HEAD values read directly.",
+        "tocEntryCount": 1432,
+        "headerValues": [
+          {
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag",
+            "hex": "48454144",
+            "ranges": [
+              [
+                19476,
+                4
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:Version",
+            "type": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                19500,
+                2
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:ByteOrder",
+            "type": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                19524,
+                2
+              ]
+            ]
+          }
+        ],
+        "role": "Repository fixture or archived fixture copy"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "bytes": 5159032,
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "stableDuringRead": true,
+        "labelHex": "a4434da5486472d7000049490100000040e7150020d13800",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "labelFlags": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 1435456,
+        "tocLength": 3723552,
+        "bodyInspection": "Complete fixed 24-byte TOC framing and property/type dictionaries; selected HEAD values read directly.",
+        "tocEntryCount": 155148,
+        "headerValues": [
+          {
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag",
+            "hex": "48454144",
+            "ranges": [
+              [
+                1435636,
+                4
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:Version",
+            "type": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                1435660,
+                2
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:ByteOrder",
+            "type": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                1435684,
+                2
+              ]
+            ]
+          }
+        ],
+        "role": "Avid media-folder database"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "bytes": 22745976,
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "stableDuringRead": true,
+        "labelHex": "a4434da5486472d70000494901000000401f3d0020f41d01",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "labelFlags": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 4005696,
+        "tocLength": 18740256,
+        "bodyInspection": "Complete fixed 24-byte TOC framing and property/type dictionaries; selected HEAD values read directly.",
+        "tocEntryCount": 780844,
+        "headerValues": [
+          {
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag",
+            "hex": "48454144",
+            "ranges": [
+              [
+                4005876,
+                4
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:Version",
+            "type": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                4005900,
+                2
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:ByteOrder",
+            "type": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                4005924,
+                2
+              ]
+            ]
+          }
+        ],
+        "role": "Avid media-folder database"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "bytes": 16616336,
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "stableDuringRead": true,
+        "labelHex": "a4434da5486472d70000494901000000a0102d00d87ad000",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "labelFlags": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 2953376,
+        "tocLength": 13662936,
+        "bodyInspection": "Complete fixed 24-byte TOC framing and property/type dictionaries; selected HEAD values read directly.",
+        "tocEntryCount": 569289,
+        "headerValues": [
+          {
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag",
+            "hex": "48454144",
+            "ranges": [
+              [
+                2953556,
+                4
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:Version",
+            "type": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                2953580,
+                2
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:ByteOrder",
+            "type": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                2953604,
+                2
+              ]
+            ]
+          }
+        ],
+        "role": "Avid media-folder database"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "bytes": 15703416,
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "stableDuringRead": true,
+        "labelHex": "a4434da5486472d7000049490100000090482a00d054c500",
+        "bentoMajor": 1,
+        "bentoMinor": 0,
+        "labelFlags": 0,
+        "containerByteOrder": "little",
+        "tocOffset": 2771088,
+        "tocLength": 12932304,
+        "bodyInspection": "Complete fixed 24-byte TOC framing and property/type dictionaries; selected HEAD values read directly.",
+        "tocEntryCount": 538846,
+        "headerValues": [
+          {
+            "property": "OMFI:ObjID",
+            "type": "omfi:ObjectTag",
+            "hex": "48454144",
+            "ranges": [
+              [
+                2771268,
+                4
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:Version",
+            "type": "omfi:VersionType",
+            "hex": "0001",
+            "ranges": [
+              [
+                2771292,
+                2
+              ]
+            ]
+          },
+          {
+            "property": "OMFI:ByteOrder",
+            "type": "omfi:Short",
+            "hex": "4949",
+            "ranges": [
+              [
+                2771316,
+                2
+              ]
+            ]
+          }
+        ],
+        "role": "Avid media-folder database"
+      }
+    ],
+    "counts": {
+      "files": 14,
+      "uniqueSha256": 11,
+      "liveMediaFolders": 6
+    }
+  },
+  "originalToolkitReference": {
+    "date": "2026-10-21",
+    "repository": "LWKS-Software/omfkt22",
+    "commit": "4216021db63f3ef6f094b24f260fbdd67f4cb7e2",
+    "files": [
+      {
+        "path": "/private/tmp/bella-mdb-versions-20261021/toolkit/kitomfi-omFile.c",
+        "sha256": "ddeb8da392f4e41688db3e9824b729281fadce6a78e4152b2f33a5dd18e1201f",
+        "upstreamPath": "kitomfi/omFile.c",
+        "url": "https://github.com/LWKS-Software/omfkt22/blob/4216021db63f3ef6f094b24f260fbdd67f4cb7e2/kitomfi/omFile.c"
+      },
+      {
+        "path": "/private/tmp/bella-mdb-versions-20261021/toolkit/kitomfi-omAcces.c",
+        "sha256": "075ec5b04ae79a5107e4885e8ce66f3be2136d485642b59afaa00cb3e5941757",
+        "upstreamPath": "kitomfi/omAcces.c",
+        "url": "https://github.com/LWKS-Software/omfkt22/blob/4216021db63f3ef6f094b24f260fbdd67f4cb7e2/kitomfi/omAcces.c"
+      }
+    ],
+    "findings": [
+      {
+        "source": "kitomfi/omAcces.c:2585-2601",
+        "fact": "Generic OMF VersionType reads byte0 major and byte1 minor with kNeverSwab; metadata endianness must not generically swap these bytes."
+      },
+      {
+        "source": "kitomfi/omFile.c:2537-2573",
+        "fact": "Generic toolkit detects OMF2.0 versus major1 records separately from Bento container; OMF1 in Bento2 is classified IMA. It rejects newer OMF2 minor versions and major>2. This generic toolkit logic is not proof the installed ordinary MDB path accepts those families."
+      }
+    ],
+    "limits": [
+      "No toolkit code was compiled or executed. Original source is reference evidence, not proof of installed native MDB behavior.",
+      "Real Avid MDB legacy00 01 spelling is observed and separately handled by current reader; do not infer canonical OMF0.1 or generic reversal."
+    ]
+  },
+  "recommendedBellaSupport": {
+    "status": "Release-one baseline approved on 2026-10-21. This narrows current generic source capability and is not an assertion that other MDB variants never exist.",
+    "container": "Bento exactly1.0 with the fixed24-byte TOC and supported standard storage/continuation framing. Do not treat every1.x/future label as compatible.",
+    "objectLayout": "Concrete legacy OMF1/Avid MDB layout. Explicit qualified canonical1.0 marker01 00 and observed Avid00 01 spelling with legacyHEAD context; do not infer arbitrary byte swapping or inherit firstbyte01 anyminor acceptance.",
+    "numericByteOrder": "Recognized II and MM for supported numeric layouts, using checked endian helpers. Container order, metadata order and text decoding stay separate. GenuineMM MDB coverage still needs implementation validation; do not guess contrary/uncertain per-object overrides.",
+    "identityAndText": "Keep approved fullFileMobId/MasterMobId12/32 normalization and field-specific explicitUTF8/separateMacRoman rules. UTF8 properties and32byte IDs do not require a newer container version.",
+    "deferred": "Bento2/OMF2/IMA MDB variants and unknown/new versions identified as unsupported rather than interpreted speculatively. Preserve existing generic-format research/tests for future extension when an actual MDB or ordinary native path establishes a need.",
+    "failureScope": "Unsupported MDB metadata is ignored; discovered physical files and independent PMR/filesystem facts remain. Report unsupported separately from damaged. Approved damage boundaries and no-new-header-read policies remain.",
+    "headerReaderScope": "This proposal concernsMDBonly; it does not exclude OMF2 physical-media headers from the later OMF header requirements review.",
+    "design": "Fresh smallC++17/Qt6.5.3 typed format checks and endian helpers, not OldScanner adaptation or retained generic raw-property graph. No implementation yet.",
+    "observedCompatibility": "All6workingDBs and8fixture/copy paths observed are covered by this agreed family; no observed loss. Does not prove compatibility with every historical or externalMDB.",
+    "performance": "No measured speed/memory gain is claimed from excluding version2. The recommendation reduces unproved format scope and verification burden."
+  },
+  "researchReceipts": [
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021-native/findings.json",
+      "sha256": "90c4085d078c3f8b8ae320d62ffc25d0a3398c22b55f9e35311b8229de721029",
+      "role": "mediaComposer"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/findings.json",
+      "sha256": "b4f7db795a67730740794293cb47313319b42a427c1385773bfe74a2bae9cdbc",
+      "role": "mdvx"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-current-20261021.json",
+      "sha256": "0055be97b30379325eda3aa77fbac0400e531bbe444018594aa7f80e8d9da773",
+      "role": "mediaMuster"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021/inventory.json",
+      "sha256": "684ea0289cd7bf7ece28eb86c5439d59c0f59f4b3fee42170673752dc86fb159",
+      "role": "observedFiles"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021/toolkit/receipt.json",
+      "sha256": "f07ce93816b09c2a472fc4dd73afca4d932c077c69ac5b0c58b788a830a2245c",
+      "role": "originalToolkitReference"
+    }
+  ],
+  "mutableEvidenceSnapshots": [
+    {
+      "originalPath": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-18-bella-mdb/REVIEW.md",
+      "snapshotPath": "/private/tmp/bella-mdb-versions-20261021/source-snapshots/REVIEW-before-versions.md",
+      "sha256": "d51b45e59486752b660881d32d91372df2057da010ab0420b514d78c72fffd9d"
+    }
+  ],
+  "verifiedInputAndArtifactCount": 61,
+  "verifiedInputsAndArtifacts": [
+    {
+      "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+      "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+      "roles": [
+        "mediaComposer"
+      ]
+    },
+    {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "roles": [
+        "observedFiles"
+      ]
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "roles": [
+        "observedFiles"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/mdb-research-2026-10-18.json",
+      "sha256": "ad8f6e59ac3973e6f6650d288a5cf2a8bf8f73ecee5c8e60c2714e4d7e9b4cb0",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbbentoreader_p.cpp",
+      "sha256": "92e281f63f7d3903e011cf84d24003332f3dffa12c49e72142ec0d3ff1d42fd0",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbbentoreader_p.h",
+      "sha256": "b5dfee3151e378530998f782564ae6be6bd85fd2ae12a30605c3f547e07352e1",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbobjects_p.cpp",
+      "sha256": "21a013b4de7a3e346553e2f4bef73404e9d3c63551f6653aa9403a7128244814",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbobjects_p.h",
+      "sha256": "12d4a38645a37993f5a1cc839c508e002dd94609027d101969673f5487e767cd",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbprojection.cpp",
+      "sha256": "75757ff663c541992768c502fa7b0887c4f31a02d23b7ec9e7b28532b160be5f",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbreader.cpp",
+      "sha256": "caf9ef08219020a9408cbffccac475d52807c48548491c048b8e647b44e0836a",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "sha256": "3a8aa13aaa725111c29d22d821eade6e2a1d23a8b7d5e6bd5b6cda4d84101cc1",
+      "roles": [
+        "observedFiles"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "sha256": "07eea423b0d5d04a87a67c18936017dc06e0cc53f2d5e2385bfe99ef55ead351",
+      "roles": [
+        "observedFiles"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmMMOB.mdb",
+      "sha256": "db91f1b0e0dcfaef92c263417e51f65e6821c5ef73f628fb01b1d4305d05f34d",
+      "roles": [
+        "observedFiles"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmMMOB_macroman.mdb",
+      "sha256": "23b6b7ec29483251d1c71f1c10a4e943028e923ea2479a0f8f1ba7a53a18e393",
+      "roles": [
+        "observedFiles"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "roles": [
+        "observedFiles"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/msmMMOB.mdb",
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "roles": [
+        "observedFiles"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/testmediaenginebento.h",
+      "sha256": "e03c344f2bc5a3de1593477613ff136893b44151fefe7c146fd39a93a2df2819",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/testtypedbento.h",
+      "sha256": "a39535b7944ff3bf6407a12fecbc1a752e49f5082d6663cd89b956b5e089a7c3",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaengine_omfprojection.cpp",
+      "sha256": "fd8f664611e66782f1cf6b4ae09590664c42922940585fcf0f7e8eb859655877",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginemdb.cpp",
+      "sha256": "ffa222e5ff96d58947ef00906f1c316b7b7bc3ddf5234bbe5f6af738a8128491",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/tst_mediaenginemdbisolated.cpp",
+      "sha256": "f0a7af6e408eee60f5161ee5bf8c1fe3bba8adde45a43af44bd8728e07cbb510",
+      "roles": [
+        "mediaMuster"
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/2026/Developer/MediaMuster/.claude/worktrees/eloquent-swanson-119368/tests/fixtures/msmMMOB.mdb",
+      "sha256": "db91f1b0e0dcfaef92c263417e51f65e6821c5ef73f628fb01b1d4305d05f34d",
+      "roles": [
+        "observedFiles"
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/2026/Developer/MediaMuster/tests/fixtures/msmMMOB.mdb",
+      "sha256": "db91f1b0e0dcfaef92c263417e51f65e6821c5ef73f628fb01b1d4305d05f34d",
+      "roles": [
+        "observedFiles"
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "roles": [
+        "observedFiles"
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "roles": [
+        "observedFiles"
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "roles": [
+        "observedFiles"
+      ]
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "roles": [
+        "observedFiles"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-20261018-mdvx/MDVx-arm64-disassembly.txt",
+      "sha256": "a1ea5b4a2778b0cc55470616a606f507e6236506060afce4db989c47ab003074",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-damage-20261020-mdvx/findings.json",
+      "sha256": "7d70b9bf0ecd3aac703c02831e4e2be1c5d8d172ad9e50a94fca0efc2be5f635",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021-native/HP-CheckBentoLabel.txt",
+      "sha256": "aa334776ab4c0acb45af2cb09a61a75cc85a7e4dc2c448005d23f7e568cb49e6",
+      "roles": [
+        "mediaComposer"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021-native/HP-CloseContainer.txt",
+      "sha256": "4ae396a3520bb09356ddbc88fb593be9982ce18b29f08d6a8568353c333be21c",
+      "roles": [
+        "mediaComposer"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021-native/HP-InitHPDomainNew.txt",
+      "sha256": "66b261089ecf6b57f3ca4c7ae40fada0d901d836436bfda130fb259c38b98706",
+      "roles": [
+        "mediaComposer"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021-native/HP-InitHPDomainOld.txt",
+      "sha256": "7f89a0db52972060421e8c70f8a8d788933d039fbcbc87a7324303f6832bad39",
+      "roles": [
+        "mediaComposer"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021-native/HP-IomfiHPDomain.txt",
+      "sha256": "060e9314899fbd9809006e663b69bf1be7765a843d5dae311a1226d5e1518f00",
+      "roles": [
+        "mediaComposer"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021-native/HP-IsOMFIFile.txt",
+      "sha256": "6bc0befb7e0a5ab2d724c60c4c3e11955f71fdb9675d45e1677479775384427c",
+      "roles": [
+        "mediaComposer"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021-native/LocalMDB-ScanOMFFileToMobManager.txt",
+      "sha256": "a6958c8426bcdc3b214850d91469db7e6cec5748cd1f08f14a3e17aa78523392",
+      "roles": [
+        "mediaComposer"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021-native/MediaStreamMgr-ScanOMFFileToCache.txt",
+      "sha256": "ec101964874cc8ac6cf6abe846f63509081e4bca51970ee91c93ec445770c694",
+      "roles": [
+        "mediaComposer"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021-native/OMF2-CheckBentoLabel.txt",
+      "sha256": "b2dfd1644fe3ce7fe1bb8d37aaa3530748090f7e404e183b546927dee7f07b33",
+      "roles": [
+        "mediaComposer"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021-native/OMF2-InitOMF2DomainNew.txt",
+      "sha256": "d8974d701f3e247c92c37a78d1d68321f3b551263ca80fb67ab7becceed13cd9",
+      "roles": [
+        "mediaComposer"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021-native/OMF2-InitOMF2DomainOld.txt",
+      "sha256": "b63f084d88b03440694f108f647fe8f3bba0123a2637d99607adb51126c62e5d",
+      "roles": [
+        "mediaComposer"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021-native/OMF2-Iomf2Domain.txt",
+      "sha256": "5e7b8bb59abf8e303211fcc9f633ed5bd6f675cb9201976baed9ebf89243ec0c",
+      "roles": [
+        "mediaComposer"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021-native/findings.json",
+      "sha256": "90c4085d078c3f8b8ae320d62ffc25d0a3398c22b55f9e35311b8229de721029",
+      "roles": [
+        "researchReceipt"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021/inventory.json",
+      "sha256": "684ea0289cd7bf7ece28eb86c5439d59c0f59f4b3fee42170673752dc86fb159",
+      "roles": [
+        "researchReceipt"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021/probe.py",
+      "sha256": "f62b6df628e614aef467c5e8ab095b139b6a2c6810a8e0dbbd361ab5d9a205c6",
+      "roles": [
+        "inventoryProbe"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021/source-snapshots/REVIEW-before-versions.md",
+      "sha256": "d51b45e59486752b660881d32d91372df2057da010ab0420b514d78c72fffd9d",
+      "roles": [
+        "mediaMuster"
+      ],
+      "originalPath": "/Users/martymclean/Developer/MediaMuster/docs/reviews/2026-10-18-bella-mdb/REVIEW.md"
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021/toolkit/kitomfi-omAcces.c",
+      "sha256": "075ec5b04ae79a5107e4885e8ce66f3be2136d485642b59afaa00cb3e5941757",
+      "roles": [
+        "originalToolkitReference"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021/toolkit/kitomfi-omFile.c",
+      "sha256": "ddeb8da392f4e41688db3e9824b729281fadce6a78e4152b2f33a5dd18e1201f",
+      "roles": [
+        "originalToolkitReference"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-20261021/toolkit/receipt.json",
+      "sha256": "f07ce93816b09c2a472fc4dd73afca4d932c077c69ac5b0c58b788a830a2245c",
+      "roles": [
+        "researchReceipt"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-current-20261021.json",
+      "sha256": "0055be97b30379325eda3aa77fbac0400e531bbe444018594aa7f80e8d9da773",
+      "roles": [
+        "researchReceipt"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxMediafile_openFile.txt",
+      "sha256": "918afaa90acd4e5aed2a4ff0a26791c2dc51f223f72539cec46cb95edab893c0",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxOMFI_InitDictionary.txt",
+      "sha256": "4c66cede9e0d88261f79bca2bcb0df897b8997cde045eb01cb9de4f66a186318",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxOMFI_Reader01.txt",
+      "sha256": "e11301b0cab007ce4409b224b9cd48e5bfdd387ade2ed917791d64e6302c34d9",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxOMFI_Reader02.txt",
+      "sha256": "422d4132137d1a9a2dbbddc547717fb240bf3f3f9cc6609e33e5d03247e17d77",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxOMFI_StringForTocIndexItem.txt",
+      "sha256": "ee8dc5f1153b19d8b94d026df075395905963b02c5c20a8867e66fd2d7b5f4c7",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxOMFI_addInfoToItem.txt",
+      "sha256": "c1097f5a0d8ab935e22379d9737a89b4a7e0f0676ed2959d827684f241978b3a",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxOMFI_getDescriptionForTOCindex.txt",
+      "sha256": "80a5096b7c030dca1aa918ba854b422a88870426c3d091dcca69e529158dd6c5",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxOMFI_howManyObjects.txt",
+      "sha256": "240e9a5b87e27eb0a9104f9be0dc746224fcd8f1f4fae251a0c346b27356c15c",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/MDVxOMFI_openFile.txt",
+      "sha256": "a955bfbb112157739d65e0391becf85414dd12ac96367c6ef474cb2412ccba08",
+      "roles": [
+        "mdvx"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/findings.json",
+      "sha256": "b4f7db795a67730740794293cb47313319b42a427c1385773bfe74a2bae9cdbc",
+      "roles": [
+        "researchReceipt"
+      ]
+    },
+    {
+      "path": "/private/tmp/bella-mdb-versions-mdvx-20261021/resolved-cfstrings.json",
+      "sha256": "23197a606017457a85382f2165b782145217e9d038e4c003a1e47f0ffa9cd00f",
+      "roles": [
+        "mdvx"
+      ]
+    }
+  ],
+  "limits": [
+    "No exhaustive all-plugin/all-caller MediaComposer compatibility proof. TwoordinaryMDBread paths are verified.",
+    "MDVx diagnostic OMF2 wording refers to its container-major2 test; do not conflate it with every semanticOMF2case.",
+    "All observed actualMDBs are onefamily withIInumericorder; no realBento2/OMF2/MM MDB was found in the bounded search.",
+    "Authored testsource coverage is distinguished from testexecution; no test was run here.",
+    "Different private properties/concrete descriptor layouts may require additional qualification within a supported version.",
+    "Only currently connectedEDIT, sharedAvid folders and repositoryfixtures searched; no claim every userfolder or disconnecteddrive was searched."
+  ]
+}

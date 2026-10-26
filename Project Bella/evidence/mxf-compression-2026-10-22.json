@@ -1,0 +1,694 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Australia/Sydney",
+  "purpose": "MXF Compression: preserve the approved naming behavior using equivalent compact inputs; native/source comparison and reuse of thirteen qualified header observations.",
+  "request": "Next, let's look at Compression from MXF. I want to keep the current behaviour, but how do Media Composer, MDVX and MediaMuster read it, and what should Bella read and keep?",
+  "status": "Current Compression behavior preservation approved on20October2026 and explicitly reaffirmed for MXF on22October2026. Focused research maps equivalent input contract; no new naming scheme, fallback expansion, runtime implementation or cutover.",
+  "authorization": {
+    "source": "Direct user instructions in current conversation",
+    "original": "Compression: keep the current system as it is. It works and I love it.",
+    "reaffirmed": "I want to keep the current behaviour",
+    "scope": "Preserve current identification, catalogue, qualifications, names, aliases, fallbacks, already-read source preference and consumers. Extra header reads and remaining scanner requirements retain planned review boundaries."
+  },
+  "rawReceipts": [
+    {
+      "path": "/private/tmp/bella-mxf-compression-mc-20261022/findings.json",
+      "sha256": "fb639c7e40e202a6bc26802c21faa08b99c2bbda2e8b49b3538186deb13c6460",
+      "bytes": 25884
+    },
+    {
+      "path": "/private/tmp/bella-mxf-compression-mdvx-20261022/findings.json",
+      "sha256": "39142925e572b6214a83d81fc44d23fd87ddf44c9669b154725aaa7ba1534fc2",
+      "bytes": 11199
+    },
+    {
+      "path": "/private/tmp/bella-mxf-compression-current-20261022.json",
+      "sha256": "53776a9c2434b5a0c3931d51ddbc369ceaa8654da80c22413d0aaacf8c954e0f",
+      "bytes": 26182
+    },
+    {
+      "path": "/private/tmp/bella-mxf-compression-cached-20261022.json",
+      "sha256": "194571d65df27e662992794a8ebf0b5a6d10039550128bbe81302d8055d0525b",
+      "bytes": 9628
+    }
+  ],
+  "nativeMediaComposer": {
+    "findings": [
+      {
+        "topic": "The ordinary MXF path reaches the physical source own typed descriptor",
+        "anchors": [
+          "LocalMDB::ScanMXF and MSMDB::ScanMXF prior receipt",
+          "AAFDomain::CopyOut0x4a184",
+          "AComposition::ConvertCompositionFromAAF0x193658, own SourceMob EssenceDescriptor0x193aa4",
+          "AAFDomain::CreateDescriptor0x2ff64",
+          "CDCI ConvertDescriptorFromAAF0x3434a4 -> GetAAFProperties slot0x2d0",
+          "CDCI GetAAFProperties0x342cb4 -> DID GetAAFProperties0x381d8c"
+        ],
+        "evidence": "The selected native route is connected to ordinary managed-media scanner import and the own physical SourceMob EssenceDescriptor factory, not a master or a random other descriptor. Same factory/vtables connect audio and RGBA routes. No new universal GUI cell-source conclusion."
+      },
+      {
+        "topic": "Picture coding label import is typed and separate from descriptor class",
+        "anchors": [
+          "DID GetAAFProperties0x381d8c",
+          "IAAFDigitalImageDescriptor slot0x20 call0x381fe4",
+          "CAAFDigitalImageDescriptor::GetCompression0x1cd7c",
+          "ImplAAFDigitalImageDescriptor::GetCompression0xdc20c",
+          "ConvertAAFCompressionToMCCompression0x2933c call0x382000",
+          "typedUID->SMPTE conversion0x29398",
+          "vcConvertEssenceCodingLabelToMCCompressionID0x30def8 call0x293ac"
+        ],
+        "evidence": "The digital image importer asks its own typed descriptor GetCompression for the coding UID, converts UID representation to SMPTE label order, and uses the native coding-label converter to select an internal compression family. The underlying toolkit property getter checks presence then copies16-byte typed UID; it does not decode a human-readable UTF8 or MacRoman codec name. Raw MXF wire interpretation remains the parser responsibility."
+      },
+      {
+        "topic": "Native picture catalogue recognition and internal IDs are broader than a display-string lookup",
+        "anchors": [
+          "ConvertEssenceCoding0x30def8",
+          "example literal0x10f4480",
+          "version-byte zero comparisons0x30df50/0x30df54",
+          "DID ResolutionID import0x382194/0x3821cc",
+          "DID DynamicCompression(AAFDomain,IAAFObject) call0x3828fc",
+          "CDCI DynamicCompression and repair routes0x342fb0..0x342fe4"
+        ],
+        "evidence": "The native mapper compares full coding-family patterns with registry-version byte7 cleared in many shown branches, then sets internal compression identifiers. DID independently reads Avid ResolutionID/private metadata and uses dynamic codec machinery for supported families. Native codec negotiation, repair toggles, providers and playback-support selection are not the same as MediaMuster display names and need not be recreated in Bella."
+      },
+      {
+        "topic": "Audio sound coding is imported independently from audio precision and frequency",
+        "anchors": [
+          "AudioMediaDesc::GetAAFProperties0x362aac",
+          "sound slot0x20 call0x362d58",
+          "CAAFSoundDescriptor::GetCompression0x5a168",
+          "ImplAAFSoundDescriptor::GetCompression0x148c0c",
+          "UID-toSMPTE0x362d78",
+          "aafConvertAudioCodingToCM0x256e8 call0x362d88",
+          "SetSoundEssenceCoding0x362f48"
+        ],
+        "evidence": "Audio imports its own sound compression UID through the sound descriptor interface, converts it to coding representation, maps it to native AudioCodingFormat, and retains sound essence coding separately. QuantizationBits and AudioSamplingRate are distinct reads. The prior converter artifact also clears byte7 of its selected label comparisons; do not confuse that with zeroing the last byte or a general instruction to loosen Bella exact catalogue matching."
+      },
+      {
+        "topic": "Container wrapping is a separate qualification",
+        "anchors": [
+          "AFileMediaDesc::GetAAFProperties0x17c930",
+          "typed GetContainerFormat slot0x50 call0x17ca94",
+          "CAAFFileDescriptor::GetContainerFormat0x26c6c",
+          "native IsMXFGenericContainer0x17cb80",
+          "Audio SetEssenceContainer0x363040",
+          "AudioCATWrapper::IsD10EssenceContainer0x36321c"
+        ],
+        "evidence": "The native reader obtains the file descriptor ContainerFormat separately and distinguishes MXF wrapping/container families. Audio imports and retains an essence-container ID separately and has a qualified D10 container branch. An essence-container identifier is not interchangeable with PictureEssenceCoding/SoundEssenceCoding or a human-readable Compression label. These broader native routes do not require adding unused container retention to Bella if the preserved resolver does not consume it."
+      },
+      {
+        "topic": "Native metadata publication carries typed coding facts",
+        "anchors": [
+          "DIDDescriptor::FillMetadataSet0x38ae9c",
+          "HasEssenceCoding0x38b058",
+          "PictureCompression native definition0x14efca8 published0x38b070",
+          "AudioMediaDesc::FillMetadataSet0x363658",
+          "GetSoundEssenceCoding0x363748",
+          "SoundCompression native definition0x14efa18 published0x36382c"
+        ],
+        "evidence": "DID publishes its qualified available16-byte coding ID as native AMAFI::Metadata::PictureCompression. Audio publishes SoundCompression, preferring retained own sound coding and otherwise deriving a coding UID from native AudioCodingFormat when its retained value equals the native sentinel. Native publication symbol spelling differs from standard raw MXF PictureEssenceCoding/SoundEssenceCompression and from readable codec-toolkit Lua PictureEssenceCoding/SoundEssenceCoding metadata names. This is not proof of a final GUI string getter or one-to-one raw round-trip."
+      },
+      {
+        "topic": "Installed readable primary codec definitions corroborate naming and auxiliary facts",
+        "anchors": [
+          "SupportingFiles/CodecToolkit_Config/dfm/dnx.lua",
+          "SupportingFiles/CodecToolkit_Config/dfm/dnx_uncompressed.lua",
+          "SupportingFiles/CodecToolkit_Config/dfm/dv.lua",
+          "SupportingFiles/CodecToolkit_Config/dfm/prores.lua",
+          "SupportingFiles/CodecToolkit_Config/dfm/aes3.lua",
+          "SupportingFiles/CodecToolkit_Config/shared/mxf.lua"
+        ],
+        "evidence": "The installed26.8 supporting catalogues include dnx.lua rather than vc3.lua; no dfm/pcm.lua is present. dnx.lua explicitly joins coding variant/VCID with sampled raster/frame layout/rates and AvidDNxHQX/SQ/HQ descriptions. DNxUncompressed defines exact coding labels and context-specific colour/alpha depth/subsampling descriptions. shared/mxf.lua supplies sampled/display/stored geometry, frame layout, rates, subsampling and PixelLayout/ComponentDepth/AlphaSampleDepth facts. These corroborate keeping only the auxiliary facts needed by the existing MediaMuster resolver; do not copy native defaults or playback object machinery wholesale."
+      },
+      {
+        "topic": "Descriptive catalogue labels differ from UI parameter overrides",
+        "anchors": [
+          "dfm/dv.lua codec_name DVNTSC25Mbps4:1:1",
+          "ParamExtender/dfm_param_extender.json lines46423..46443 DV25P411"
+        ],
+        "evidence": "The same qualified DV coding/rate context can have a long descriptive catalogue name and a shorter ParamExtender codec_name. MediaMuster already deliberately uses descriptive dfm labels, as its resolver documents. Matching native readable catalogue descriptions does not establish identical MediaComposer table labels; preserving current MediaMuster naming does not require replacing them with short UI overrides."
+      },
+      {
+        "topic": "Bella preservation implication",
+        "evidence": "Fresh new Bella MXF parser should emit equivalent validated own coding/descriptor/geometry/rate/layout/depth/subsampling/representation/alpha facts into the existing value-only CompressionFacts resolver boundary. Keep current exact catalogue mappings, DNx aliases, context-specific names and fallback behavior. Preserve the resolver current exact-ID behavior rather than copying every native version-agnostic comparison, codec-provider object, repair default or playback capability. Do not open extra media solely because broad native code exists, and do not silently change Compression source preference or Duration/SampleRate rules."
+      }
+    ],
+    "binaries": [
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+        "bytes": 73527536,
+        "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libcom-api.dylib",
+        "bytes": 11873312,
+        "sha256": "9bef7c474afa461af413cde63dcbc0b048aeabe2a685bc3fd487cb4647447728"
+      }
+    ],
+    "catalogueSources": [
+      {
+        "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/dnx.lua",
+        "bytes": 28447,
+        "sha256": "92454474a6697e5e266e285b587cde9db70caa01b9112a735ee7efedac3e550b",
+        "scope": "Lines27..55 and85..158 profile naming/rate/raster/frame-layout coding-variant rows; fetch_mxf290..335 reads PictureEssenceCoding then shared geometry/layout/depth metadata with qualified native overrides."
+      },
+      {
+        "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/dnx_uncompressed.lua",
+        "bytes": 19588,
+        "sha256": "5a912f1ff8bdfd16a6192f5f7eca98f193e9c33d1199c0912d5df5cf19478817",
+        "scope": "Lines15..29 exact legacy/current coding labels;56..144 descriptive codec names by colour/alpha depth/subsampling;211..224 MXF facts fetch. Unrelated decode-provider/private runtime logic is not a Bella requirement."
+      },
+      {
+        "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/dv.lua",
+        "bytes": 11284,
+        "sha256": "5411668b75661244a2bb1d5e8a99adebed3697040085857511dcd6aede4c5978",
+        "scope": "Lines11..40 registered coding labels,64..110 descriptive codec_name rows;75..110 include DV naming facts."
+      },
+      {
+        "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/prores.lua",
+        "bytes": 10250,
+        "sha256": "a2274b57eb6eda5e4f401f717676233cdbdcad64f7cb92d781b3833c544d5ea1",
+        "scope": "Installed descriptive ProRes names paired with coding labels; representative catalogue backing only, no new native GUI-label contract."
+      },
+      {
+        "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/dfm/aes3.lua",
+        "bytes": 3672,
+        "sha256": "2c10271f1c6b9f9cfe4d62e22a74d575d8d57cd49dbfd53e965c584c4a25705c",
+        "scope": "Lines9..18 sound coding/container IDs;35..45 description generation;71..90 qualified audio fact fetch. Native encode defaults are not Bella sample-rate rules."
+      },
+      {
+        "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/shared/mxf.lua",
+        "bytes": 12388,
+        "sha256": "816b61c1b4f8259ae0d6755ef893f8e86830db6ee81091f9fc80c8c92ea4cc29",
+        "scope": "Lines161..230 geometry/layout/rates/subsampling/component/pixel-layout colour/alpha facts;314..322 sound coding/channel facts. Native repair/default machinery is not adopted wholesale."
+      },
+      {
+        "path": "/Applications/Avid Media Composer/SupportingFiles/CodecToolkit_Config/ParamExtender/dfm_param_extender.json",
+        "bytes": 1816947,
+        "sha256": "8eb0210f0aa4060433f7ef126bd071540b2b494f96a8bea34a9f7b156bc5fbb9",
+        "scope": "Specific UI/parameter override example key342B0E06-0104-0101-04-01-02-02-02-02-01-00 + recorded rate (30000,1001), lines46423..46443 codec_name DV25P411 vs dfm descriptive DVNTSC25Mbps4:1:1; no claim complete GUI path."
+      }
+    ],
+    "limits": [
+      "No complete MediaComposer UI Compression table-cell source or exact final naming/default/error contract established.",
+      "PictureCompression/SoundCompression are native published metadata symbols; standard MXF and Lua names are semantically related but not asserted to be identical raw names/representations.",
+      "No exhaustive coding mapper, catalogue, private codec provider, version, container class or malformed metadata coverage.",
+      "Installed native repair/default rules and encoder defaults are not automatically Bella requirements; current exact catalogue behavior and user-approved source/timing/availability rules remain separate.",
+      "No production edits, runtime tests, benchmark, app cutover or claim of measured speed/memory improvement."
+    ]
+  },
+  "mdvx": {
+    "binary": {
+      "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+      "size": 3204640,
+      "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d"
+    },
+    "libraryInputFacts": {
+      "owner": "ami_read_info resolves top file SourcePackage through established EssenceContainerData.LinkedPackageUID path, then its own Descriptor (0x10001015c..0x100010194).",
+      "pictureFields": "Under GenericPictureEssenceDescriptor subclass guard (0x100010198..0x1000101ac), optional Avid ResolutionID through mxf_get_int32_item at0x1000102bc..0x1000102e0 into local sp+0x34, and optional PictureEssenceCoding through mxf_get_ul_item at0x1000102e4..0x10001030c into info+0xdc.",
+      "encoding": "PictureEssenceCoding is exact16 raw bytes; mxf_get_ul_item0x100049614 validates width16 then copies. ResolutionID typed signed32 (getter0x100049398; exact4-byte check in captured getter), not a textual codec name. No UTF-8/MacRoman codec string decode in this route.",
+      "wrapping": "At0x100011950..0x100011974, reads first EssenceContainer label from headerPartition.essenceContainers list into info+0xcc. This is a partition wrapping label, distinct from own descriptor PictureEssenceCoding.",
+      "sound": "GenericSound branch0x1000108a8..0x100010944 reads AudioSamplingRate, QuantizationBits and ChannelCount. No SoundEssenceCompression read in ami_read_info. Data model includes that key but key registration is not a field-read/projection.",
+      "damage": "Absent optional PictureEssenceCoding remains zero/null label, absent ResolutionID remains0. A present typed field whose getter fails takes broader ami failure path. Valid-but-unrecognised codec combination reaches essenceType0. Not a Bella damage policy."
+    },
+    "libraryClassification": {
+      "addressRange": "0x100011978..0x100011ac4",
+      "table": "ESSENCE_TYPE_MAP0x1000e8258,86 rows,32 bytes per row; enum,flag,EssenceContainer pointer,PictureEssenceCoding pointer,AvidResolutionID.",
+      "rule": "First matching row combines available first-partition EssenceContainer, own PictureEssenceCoding, optional AvidResolutionID and row flags. It can recognise via compatible container/coding/resolution combinations or picture-coding fallback when container label is null. It is not simply FourCC or descriptor class.",
+      "ulComparison": "mxf_equals_ul_mod_regver0x100013698 compares bytes0..6 and8..15; ignores registry-version byte7 only. Does not strip arbitrarily many label bytes.",
+      "result": "Stores enum at info+0xa8 (0x100011ac4). Table miss stores0/not recognized.",
+      "coverage": "41 essence enum labels including0/not recognized.86 mappings cover MPEG30/40/50, DV25/50/100, Avid MJPEG ratios, uncompressed1:1/10b, DNxHD1235..1253, MPEG-4, XDCAMHD, AVC-Intra50/100, PCM. No ProRes/DNxHR modern family entries identified in this bounded table; separate application MDB label dictionary does contain modern family labels.",
+      "pcm": "PCM enum40 has BWFClipWrapped/AES3ClipWrapped container-label rows, no pictureCoding or ResolutionID requirement. This recognizes wrapping, without reading sound coding label.",
+      "diagnostic": "ami_print_info0x1000127f0..0x10001287c prints ESSENCE_TYPE_STRINGS0x1000e8d18. DNxHD enums26..35 additionally use37 rate-qualified diagnostic rows at0x1000e8e60. These are linked diagnostic labels, not ordinary row projection."
+    },
+    "ordinaryMxfProjection": {
+      "wrapper": "MDVxMXF.openFile0x100032210..0x1000326b0 constructs only clipname, project, fileUID, matUID; frees ami_info at0x10003266c. addInfoToItem0x1000326b4..0x100032804 transfers only those four fields.",
+      "compressionAbsence": "No info.essenceType/coding/container/ResolutionID transfer and no setDB_CompressionString/setDB_DIDResolutionID call in ordinary MXF wrapper. Library recognition must not be described as an ordinary MXF Compression column value.",
+      "table": "CompressionCellID native view0x100050808..0x10005082c and string-value0x100051008..0x10005102c read DB_CompressionString directly. Getter0x100031588 returns property at item+0xb8; setter0x100031594 stores it.",
+      "separateAppNaming": "setCompressionStringForItem0x10003b494..0x10003b610 looks up existing item.DB_DIDResolutionID in core.resolutionIDDictionary, stores that name. If missing and CompressionFourCC first byte nonzero, formats %c%c%c%c ID:%u. Audio FourCC _AUD shortcuts to Audio in scanner main0x10003a8c4..0x10003a930 and0x10003ae70..0x10003aea8. These naming inputs are supplied by other routes, not copied from ami MXF wrapper.",
+      "bareFallback": "A bare ordinary MXF read itself contributes no Compression value. Static tracing does not prove live UI state when MDB/other prior metadata exist."
+    },
+    "plainSummary": "MDVx bundled libMXF identifies an older codec set from wrapping/coding/ResolutionID, but its ordinary MXF wrapper retains none of those codec facts. The app Compression column displays a separately stored string, normally named from MDB ResolutionID/FourCC information.",
+    "limits": [
+      "Static installed binary only; not every application route, producer or UI behavior.",
+      "No essence decoding or runtime comparison/benchmark.",
+      "SoundEssenceCompression absence scoped to captured ami_read_info; linked model contains key.",
+      "Do not equate Sound container wrapping PCM recognition with verified audio encoding for every conforming/unusual file.",
+      "No production code change."
+    ]
+  },
+  "currentMediaMuster": {
+    "findings": [
+      {
+        "topic": "Property identity and binary encoding",
+        "source": "src/oldscanner/mediaengine/mxfcatalogue_p.h:441,466,513; mxfobjects_p.cpp:23-32,76-86,271-286,312-315",
+        "detail": "FileDescriptor.EssenceContainer, GenericPictureEssenceDescriptor.PictureEssenceCoding and GenericSoundEssenceDescriptor.SoundEssenceCompression are separate16-byte UL binary values. Primer/schema identifies the property; schema key normalization ignores SMPTE registry-version byte for lookup only. Recorded coding VALUE bytes remain exact for names; no UTF-8/MacRoman text decoding or fuzzy family-prefix match."
+      },
+      {
+        "topic": "File ownership and technical source",
+        "source": "src/oldscanner/mediaengine/mxfprojection.cpp:231-277,510-552,652-668,742-759",
+        "detail": "EssenceContainerData.LinkedPackageUID must uniquely resolve same-partition SourcePackage/PackageUID; SourcePackage.Descriptor qualified references identify own descriptor tree, MultipleDescriptor children traversed under reference checks. File descriptor sound/picture class/properties establish meaning; simultaneous sound+picture leaves technical projection unresolved. Headers/footer remain separate observations; does not pick first matching metadata record."
+      },
+      {
+        "topic": "Coding validity/absence",
+        "source": "src/oldscanner/mediaengine/mxfprojection.cpp:24-41,139-158,777-810,838-846",
+        "detail": "unique accepts only present/decoded properties with consistent duplicate values. projectCodec called only if usable coding value16bytes. Original property copied separately as CompressionLabel. Wrongwidth/unreadable/conflicting or unknown16-byte coding never becomes absence. Missing picture coding produces no MXF Compression. Missing sound coding only produces PCM when class inherits WaveAudioDescriptor (thus AES3), owning set completely covered, property genuinely absent, InstanceUID anchor usable; unreadable/incomplete input never invokes PCM fallback."
+      },
+      {
+        "topic": "Pure preserved naming helper",
+        "source": "src/oldscanner/mediaengine/compressionnames_p.h:3-47; compressionnames_p.cpp:289-358",
+        "detail": "compressionNames takes established facts, performs no file reading/source selection. Exact DNx profiles first, exact DNxUncompressed variants next, exact name table next, qualified generic uncompressed/J2K refinements next, supported legacy mappings/fallbacks last. Unknown or ambiguous mappings leave name empty. MXF caller never supplies legacy identifiers/codingAbsent or alphaDepth; helper can support them for other readers, but wiring new MXF values would expand behavior."
+      },
+      {
+        "topic": "Exact broad catalogue",
+        "source": "src/oldscanner/mediaengine/compressionnames_p.cpp:18-159,245-285",
+        "detail": "Name table transcribed from installed Media Composer26.8 CodecToolkit_Config/dfm Lua descriptions; exact16-byte identifiers only, no prefix guess. Includes DV/IEC-DV television standards, ProRes chroma/profile including RAW, JFIF ratios, RLE alpha, D-10 bitrate+standard, XDCAM, common AVC-Intra families, AVC profiles, HEVC profiles, still/image families, audio families, DNx thin-raster and special Avid variants. Shared/ambiguous labels deliberately keep supported family (e.g.AVC Intra,XDCAM,JPEG2000) rather than invent exact bitrate/profile."
+      },
+      {
+        "topic": "DNx identity and aliases",
+        "source": "src/oldscanner/mediaengine/dnxnames_p.h:17-130; compressionnames_p.cpp:289-303; mxfprojection.cpp:988-1014",
+        "detail": "Exact coding label determines HD versus HR and profile; current display Avid DNx HQX optionally [DNxHD175x] etc. Numbered alias only exact supported active raster, FrameLayout, raw ComponentDepth, H/V subsampling and exact rational rate. HR HD-sized raster is still HR and has no HD numbered alias. No nearest-rate matching/rounding/thin-raster substitution. Naming geometry separately prefers usable Display then Sampled then Stored dimensions, layout1 doubles field-height with overflow check. This naming geometry must not be replaced by Bella visible Resolution selection or display-rounded FrameRate."
+      },
+      {
+        "topic": "DNxUncompressed and component strings",
+        "source": "src/oldscanner/mediaengine/compressionnames_p.cpp:304-310; mxfprojection.cpp:168-200,849-918,1015-1029",
+        "detail": "Two exact coding variants identify Avid DNxUncompressed; descriptor-local nonempty BitDepth AND SampleFormat strings append after em dash. Standard253->16-bit Half float,254->32-bit Float; fixed254->16-bit S2.14 fixed point, fixed10/12->16-bit10.6/12.4 fixed point for current Compression presentation. Raw ComponentDepth stays separate from interpreted depth. Current mixed RGBA layouts can supply labelled strings per component; common strings compact. Bella numeric generic BitDepth blank for mixed/pending combinations must not erase needed transient component-specific Compression strings. Preserve bounded compact context and generate compatibility strings only for resolver; no formatted BitDepth string required per row."
+      },
+      {
+        "topic": "MXF-only input omission boundaries",
+        "source": "src/oldscanner/mediaengine/mxfprojection.cpp:1004-1029; compressionnames_p.h:16-33",
+        "detail": "MXF facts set codingLabel, descriptorClass, namingGeometry, exact SampleRate, FrameLayout, RAW ComponentDepth, horizontal/vertical subsampling, local BitDepth/SampleFormat strings. Vertical default1 only if truly absent and complete set. MXF does NOT populate legacyCompression,legacyResolution,codingAbsent,alphaDepth. EssenceContainer/WrappingLabel copied separately but unused by MXF name resolver; ResolutionID may inform visible picture geometry elsewhere but is not passed by MXF projectCodec. Do not introduce new wrapper/ResolutionID/alpha/metadata rescues as preservation."
+      },
+      {
+        "topic": "Current source preference versus scanner I/O",
+        "source": "src/oldscanner/mediaengine/metadataselectionpolicy.cpp:80-94; scancoordinator.cpp:131-180,642-693; Project Bella/README.md:1042-1069",
+        "detail": "Already-read eligible Compression uses MXF/OMF preferred, MDB secondary, same for3 DNx outputs. Approved preservation explicitly retains this preference and all existing outputs/consumers. OldScanner can open media when required metadata including Compression is missing/conflicting; do not automatically transfer this I/O trigger to Bella because extra-header-opening policy remains deferred. Kind approved source qualifiers remain separate; current unknown class+registered coding support need not broaden Bella Kind."
+      },
+      {
+        "topic": "Presentation",
+        "source": "src/oldscanner/mediaengineadapter.cpp:37; src/mediatablemodel.cpp:232-233; src/mediacsv.cpp:44-58",
+        "detail": "Adapter stores selected compression QString; table returns it directly, CSV quotes same string. Keep spelling, punctuation, aliases and qualified DNxUncompressed descriptions. No visible extra compression naming columns required; output struct3DNx variants still has existing consumers/contracts."
+      }
+    ],
+    "mxfBoundaryInputs": [
+      {
+        "fact": "codingLabel",
+        "encoding": "Exact original16byte UL; preserve all bytes",
+        "source": "Own PictureEssenceCoding or SoundEssenceCompression"
+      },
+      {
+        "fact": "descriptorClass",
+        "encoding": "Qualified own descriptor class",
+        "source": "Known schema or existing source qualifier contract"
+      },
+      {
+        "fact": "geometry",
+        "encoding": "Two checked signed integers",
+        "source": "Naming-only first usable Display,Sampled,Stored; layout1 field-height conversion"
+      },
+      {
+        "fact": "rate",
+        "encoding": "Exact numerator/denominator",
+        "source": "Own FileDescriptor.SampleRate; do not feed formatted FrameRate"
+      },
+      {
+        "fact": "layout",
+        "encoding": "Optional raw integer",
+        "source": "Own FrameLayout"
+      },
+      {
+        "fact": "depth",
+        "encoding": "Optional raw integer",
+        "source": "Own ComponentDepth; NOT interpreted bitdepth"
+      },
+      {
+        "fact": "horizontal,vertical",
+        "encoding": "Optional raw integer",
+        "source": "Own subsampling; V=1 only complete true absence"
+      },
+      {
+        "fact": "bitDepth,sampleFormat",
+        "encoding": "Temporary exact compatibility strings",
+        "source": "Own descriptor qualified numeric/component format interpretation; separate generic table display policy"
+      }
+    ],
+    "notNewMXFInputs": [
+      "EssenceContainer/WrappingLabel is distinct and not used to infer Compression",
+      "ResolutionID is not passed by MXF caller",
+      "alphaDepth is not populated by MXF caller",
+      "legacyCompression,legacyResolution,codingAbsent left default by MXF caller",
+      "No metadata read, codec decode or probe initiated by pure resolver"
+    ],
+    "usefulTestsReviewedNotRun": [
+      {
+        "path": "tests/tst_mediaengine_compressionnames.cpp",
+        "lines": "41-256",
+        "cases": "Recorded DV exact labels; legacy standard evidence; present coding never overridden; ProRes family; D-10; exact DNx alias versus approximate rate/HR; unproven IDs unnamed; DNxUncompressed qualified flavours incl fixed10.6/12.4."
+      },
+      {
+        "path": "tests/tst_mediaengine_mxfprojection.cpp",
+        "lines": "755-803,1180-1211",
+        "cases": "Missing-code Wave PCM; unknown descriptor registered sound-code MP2; own DNx operating point; unreadable coding not PCM; incomplete set not absent."
+      },
+      {
+        "path": "tests/tst_mediacsv.cpp",
+        "lines": "53,426",
+        "cases": "Compression string preserved for CSV."
+      }
+    ],
+    "bellaImplications": [
+      "Call unchanged resolver/catalogue via small boundary adapter; preserve names and three DNx outputs/consumers.",
+      "Read file-owned metadata facts once; extract compact numeric/identifier/necessary component representation facts; release temporary graph/buffer.",
+      "Prepare old compatibility strings transiently, including mixed/pending generic BitDepth cases when required for unchanged Compression.",
+      "Keep raw ComponentDepth distinct from interpreted width; exact naming rational distinct from Duration interpreter/rounded display; naming raster distinct from table Resolution.",
+      "Retain current source preference once read; final scanner priority/opening discussion controls extra opens.",
+      "Do not expand codec labels, wrapper fallback, ResolutionID rescue, alphaDepth injection or inferred unknown names under the guise of adapter cleanup."
+    ],
+    "limits": [
+      "Read-only source and cached raw facts audit; no runtime files changed.",
+      "Existing tests reviewed but not run.",
+      "No Media Composer or MDVx binary conclusions made by this subtask.",
+      "No performance or memory saving measured."
+    ]
+  },
+  "reusedHeaderEvidence": {
+    "input": {
+      "path": "/private/tmp/bella-mxf-bitdepth-current-20261022/observations.json",
+      "sha256": "97d7cf6d371bd9a1e37f741bb684449f2994b38e23d147d009778b89077c383c"
+    },
+    "scope": "Reused thirteen already qualified same-header/full-ID depth observations; only existing cached JSON read for this Compression review. No media or essence read, parser execution or label/UI observation.",
+    "counts": {
+      "WaveAudioDescriptor:codingAbsent": 5,
+      "CDCIEssenceDescriptor:060e2b340401010a0401020271130000": 1,
+      "CDCIEssenceDescriptor:060e2b340401010a0401020271010000": 4,
+      "CDCIEssenceDescriptor:060e2b340401010a0401020271030000": 1,
+      "CDCIEssenceDescriptor:060e2b340401010d0401020203070100": 1,
+      "RGBAEssenceDescriptor:codingAbsent": 1
+    },
+    "files": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/1001.WAVA01.D8875D202DA97BA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "f8475c6079b53ff1aefaa33c7306a48538c43ffba8c3e3b189da14617d3cef44",
+        "fileNormalizedHex": "060a2b340101010501010f10130000007ba92d202585059152bc34363bcdaf64",
+        "descriptorOffset": 122972,
+        "descriptorClass": "WaveAudioDescriptor",
+        "pictureCoding": [],
+        "soundCoding": [],
+        "freshReadThisCompressionReview": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/A001_C001_V01.D7EB5BC5323BV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "7bf7822774ef479d0425f2b1756ef96242cfc40e68b5aebe2c83b6d21ead4770",
+        "fileNormalizedHex": "060a2b340101010101010f00130000003b32c55b39229202060e2b347f7f2a80",
+        "descriptorOffset": 143987,
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010a0401020271130000",
+            "range": [
+              144402,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "soundCoding": [],
+        "freshReadThisCompressionReview": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/5511410TA01.6A041816BE45ECA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "050a663a4f9d5a77abfea1df9581b2943205234cb7277e95e3aebded19dbf032",
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ec45be167311069643cb7c57583610fa",
+        "descriptorOffset": 135501,
+        "descriptorClass": "WaveAudioDescriptor",
+        "pictureCoding": [],
+        "soundCoding": [],
+        "freshReadThisCompressionReview": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041581_152C6152C6FCEV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "41d6454ebd62894de5c876116d8da15f95663bcbc4753729ef14341937360244",
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ce6f2c1573110696ab807c57583610fa",
+        "descriptorOffset": 126733,
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010a0401020271010000",
+            "range": [
+              127148,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "soundCoding": [],
+        "freshReadThisCompressionReview": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/7280108SMA01.6A04F087D5405A.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "7250a5396f79cd9b932e1af16fd33402f436ce0f4f11de7f51d80a0efc8fac70",
+        "fileNormalizedHex": "060a2b340101010501010f101300000005547d087311069613b27c57583610fa",
+        "descriptorOffset": 126951,
+        "descriptorClass": "WaveAudioDescriptor",
+        "pictureCoding": [],
+        "soundCoding": [],
+        "freshReadThisCompressionReview": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/1730_8646_submastede88816cv.mxf",
+        "headerRange": [
+          256,
+          524064
+        ],
+        "headerSha256": "ae8cf0aff0369ca65ed2f11e9ab0873c57eae9292228d9123455ae748b757711",
+        "fileNormalizedHex": "060a2b340101010501010f10130000006c8188de27100696dc0d30138b72a179",
+        "descriptorOffset": 120992,
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010a0401020271010000",
+            "range": [
+              121407,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "soundCoding": [],
+        "freshReadThisCompressionReview": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/7293007LMA01.6A0500C57EA1CA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "3fd75b378276e469f6799026f3e68db865f2e5e1317666c721dd3e50db540a52",
+        "fileNormalizedHex": "060a2b340101010501010f10130000001cea570c73110696a5e97c57583610fa",
+        "descriptorOffset": 127394,
+        "descriptorClass": "WaveAudioDescriptor",
+        "pictureCoding": [],
+        "soundCoding": [],
+        "freshReadThisCompressionReview": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/V01.6A050275_B95B90B95B9CCV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "2fdd3de7e4ad0db8c93ed7dad92be469eaf0424c61da09716802d21f0bab8499",
+        "fileNormalizedHex": "060a2b340101010501010f1013000000ccb9950b7311069637c77c57583610fa",
+        "descriptorOffset": 126426,
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010a0401020271010000",
+            "range": [
+              126821,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "soundCoding": [],
+        "freshReadThisCompressionReview": false
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/A01.E6966CE6_A3C580A3C589AA.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "4e1ea26a6459f3e1d07e3c361986602f1c28e8a9d31d0de4ff7ef5ed80676b38",
+        "fileNormalizedHex": "060a2b340101010501010f10130000009a583c0a5512069048e346fc807fda72",
+        "descriptorOffset": 131287,
+        "descriptorClass": "WaveAudioDescriptor",
+        "pictureCoding": [],
+        "soundCoding": [],
+        "freshReadThisCompressionReview": false
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/Untitled Sequence.175B1728V.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "0d324bb99c9183d04541c75b00944e5808410cee4d72eae603c322eaf6994a62",
+        "fileNormalizedHex": "060a2b340101010501010f101300000028175b1761120690badf46fc807fda72",
+        "descriptorOffset": 123673,
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "pictureCoding": [
+          {
+            "hex": "060e2b340401010a0401020271030000",
+            "range": [
+              124088,
+              16
+            ],
+            "type": "MXF_UL_TYPE"
+          }
+        ],
+        "soundCoding": [],
+        "freshReadThisCompressionReview": false
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/V01.E69684C0_1C5401C5406FAV.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "61d42c7317b051b4233a1b7724c5bc66914af5d30498e0ed7fadd6b73e7ca27b",
+        "fileNormalizedHex": "060a2b340101010501010f1013000000fa06541c55120690f7b846fc807fda72",
+        "descriptorOffset": 133290,
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "pictureCoding": [
+          {
+            "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "type": "MXF_UL_TYPE",
+            "range": [
+              133661,
+              16
+            ],
+            "hex": "060e2b340401010d0401020203070100",
+            "value": "060e2b340401010d0401020203070100"
+          }
+        ],
+        "soundCoding": [],
+        "freshReadThisCompressionReview": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/NOV_78D9V02.22180610.586550.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "a38155c6b34a9f570b7648fb69751b822e9a1818da0ca5be7ec975d03d9098f5",
+        "fileNormalizedHex": "060a2b340101010501010f10130000001006182255860590475534363bcdaf64",
+        "descriptorOffset": 119014,
+        "descriptorClass": "RGBAEssenceDescriptor",
+        "pictureCoding": [],
+        "soundCoding": [],
+        "freshReadThisCompressionReview": false
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/V01.6A041582_152D2152D2556V.mxf",
+        "headerRange": [
+          256,
+          261920
+        ],
+        "headerSha256": "f0ce781201559fa7494cb139a75b149b7a94fe0d43281428073afed0f8ca7685",
+        "fileNormalizedHex": "060a2b340101010501010f101300000056252d15731106965e367c57583610fa",
+        "descriptorOffset": 126849,
+        "descriptorClass": "CDCIEssenceDescriptor",
+        "pictureCoding": [
+          {
+            "property": "GenericPictureEssenceDescriptor.PictureEssenceCoding",
+            "type": "MXF_UL_TYPE",
+            "range": [
+              127264,
+              16
+            ],
+            "hex": "060e2b340401010a0401020271010000",
+            "value": "060e2b340401010a0401020271010000"
+          }
+        ],
+        "soundCoding": [],
+        "freshReadThisCompressionReview": false
+      }
+    ],
+    "interpretation": "Five own WaveAudio descriptors omit sound coding; current complete-set/established-absence PCM branch is source evidence, not a fresh app scan. DNx profiles are exact coding-label matches, numbered alias eligibility still requires all naming context. Alpha-only own descriptor has no picture coding; wrapper/alpha alone must not invent Compression."
+  },
+  "bellaPreservationContract": {
+    "resolver": "Reuse MediaEngine::Detail::compressionNames and DNx rules unchanged through a small adapter; no new codec framework or catalogue.",
+    "sources": "Own qualified descriptor PictureEssenceCoding/SoundEssenceCompression, original complete16byte binary value. No UTF8/MacRoman conversion, suffix match or unconditional registry-version rewrite.",
+    "context": "Equivalent naming geometry, exact own SampleRate, FrameLayout, raw ComponentDepth, subsampling and necessary interpreted component/representation facts. Preserve complete-set/true-absence V=1 qualification. Naming raster/rate and raw coded depth are not the formatted Resolution/FrameRate/BitDepth columns.",
+    "pcm": "Existing complete own WaveAudio/AES3 established-absent-sound-coding branch with usable own anchor only. Damaged/conflicting/unreadable/unknown-present coding is not absence.",
+    "depthBoundary": "Keep compact component/coding facts needed to reproduce current descriptions and generate compatibility strings transiently. A generic Bella numeric BitDepth blank must not erase qualified context for DNxUncompressed. Generic uncommon label decisions remain separate.",
+    "noExpansion": "Current MXF caller does not populate alphaDepth, codingAbsent, legacy identifiers or ResolutionID, and wrapping is not a naming input. Do not add these recovery routes under preservation. Alpha padding compatibility does not invent picture Compression when coding is missing.",
+    "presentation": "Preserve existing table/CSV strings, DNx branding/qualified numbered aliases, uncompressed refinements, audio labels and useful test cases.",
+    "sourcePreference": "Preserve already approved eligible already-read MXF/OMF before MDB for Compression. Extra header-open conditions/full priority discussion remain deferred.",
+    "lifetime": "Extract compact wanted facts from required header metadata using small C++17/Qt6.5.3 helpers, scoped temporaries and owned results; release raw header/reference structures. No whole media buffer or essence decode is needed by the naming resolver."
+  },
+  "primarySources": [
+    {
+      "url": "https://pub.smpte.org/latest/st377-1/st377-1-2019.pdf",
+      "sections": [
+        "F.5 Sound Essence Coding,16byte UL and genuine absent-property default",
+        "G.2.25 Picture Essence Coding,16byte UL",
+        "F.2 FileDescriptor EssenceContainer"
+      ],
+      "qualification": "Standard semantics are distinct from preserved MediaMuster narrower fallback/naming behavior; no new broad native default/repair/registry-version masking adopted."
+    }
+  ],
+  "verification": {
+    "rawReceiptsVerified": 4,
+    "distinctNativeSourceAndArtifactPathsHashChecked": 83,
+    "documentationChangedAfterSourceSnapshot": [
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/README.md",
+        "atSourceAudit": "81b0b2aa3271912bb7abcb0797fd4882cfb8bd3965a8376de3df8ec3e3166466",
+        "afterAddingFocusedReview": "fa7997f47486d0b4a131bcf237d2696f3215395beac0499b0adc02fd33e1f8d4",
+        "reason": "Plan updated after source audit; source code and native receipts unchanged."
+      }
+    ],
+    "runtimeSourceChanged": false,
+    "appOrPrivateAPIsExecuted": false,
+    "productionTestsRun": false,
+    "freshPhysicalMediaReads": 0,
+    "essenceDecoded": false,
+    "scanBenchmarkRun": false,
+    "independentFocusedDraftReviews": "Current-source, MDVx and Media Composer reviewers found no material corrections."
+  },
+  "references": {
+    "focusedReview": "docs/reviews/2026-10-21-bella-mxf/compression.md",
+    "bellaPlan": "Project Bella/README.md#mxf-compression-preserve-the-existing-behavior",
+    "earlierApprovedPreservation": "docs/reviews/2026-10-18-bella-mdb/compression-preservation.md"
+  },
+  "unchanged": [
+    "OldScanner remains active; independent Bella runtime follows requirements review, cutover needs explicit approval.",
+    "Bin Filter unchanged.",
+    "Approved BitDepth common-width/numeric/padding rules unchanged; uncommon labels not silently settled.",
+    "Remaining source-priority/opening review retained."
+  ]
+}

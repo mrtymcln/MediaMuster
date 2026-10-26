@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-26",
+  "timezone": "Australia/Sydney",
+  "status": "Accepted final Bella field-priority table and media-header opening rules. Brief scanner design next; no runtime/cutover.",
+  "authorization": {
+    "source": "Direct human user instruction",
+    "statement": "OK, let's lock that priority table and the header-reading rules in for Bella. What's next?",
+    "scope": "Accepts the complete proposed source table, identification/database-unavailable header triggers, fullID/master/timing coherence, Compression exception, and no per-column/header-verification reads. Does not choose header worker count, combined scheduling/cancellation/progress/publication design or approve runtime/cutover."
+  },
+  "currentHead": "c8541868b10334ad0fddd5928a960202008768c9",
+  "agreedExistingConstraints": {
+    "physicalInventory": "All supported physical files retained; filename/path/size/DateCreated are filesystem facts.",
+    "FrameRate": "Usable own MDB first; eligible already-read header only if MDB rate unusable; no rate-only open.",
+    "Duration": "Coherent own MDB first. Agreed MXF fallback only when file MDB metadata unavailable; no isolated timing repair or mixed count/rate/DF; PMR absence alone does not displace usable MDB timing.",
+    "Compression": "Eligible already-read MXF/OMF precedes MDB under preservation; no opening reason. WAVE/AIFF unchanged.",
+    "OriginalBin": "Same selected master MDB; MXF contributes none; agreed OMF route if alreadyread.",
+    "identityAndMaster": "Full normalized qualified IDs; explicit PMR master not silently replaced when unresolved; no unrelated-master filling.",
+    "effects": "One combined lookup from final selected confirmedPrecompute Type/ClipName; Sequence excluded.",
+    "nativeAudio": "Current WAVE/AIFF native/embedded behaviour preserved and separate OMF rules respected; no FVER gate."
+  },
+  "agreedFinalChoices": {
+    "Project": "Usable associated PMR then MDB then eligible already-read header; preserve local owner/key rules.",
+    "generalFields": "MDB then eligible already-read header, with Compression/Duration exceptions, coherent ownership and field-specific availability/conflicts.",
+    "identification": "PMR physical map/fullFileMobId first; qualified already-required header ID can establish compatible existing MDB match. Master selection follows agreed explicit PMR/unique MDB/eligible header rules.",
+    "headerOpen": "Once when no usable PMRmap/FileMobId identifies file OR no safely matched MDBfile/required descriptor. No individual blank/master/optional-value trigger or extra PMR modification/staleness gate.",
+    "rejoin": "If header identifies file, query already-loaded MDB with full ID and apply table; no per-column header/db rereads.",
+    "DurationExtension": "Propose same coherent MDB-first/database-unavailable header fallback boundary for OMF and preserved WAVE/AIFF result; this cross-source extension is not an old approval.",
+    "coherence": "Same qualified file/master; one timing bundle; source-qualified geometry/coding/depth inputs. No voting/candidate history/completion-order wins/new identity-conflict UI."
+  },
+  "agreedTableMarkdown": [
+    "| Field | First choice | Fallback |",
+    "| --- | --- | --- |",
+    "| Filename, File Path, Size, Date Created, volume/location | Physical filesystem | Leave unavailable physical facts unavailable; do not substitute recorded source paths/dates. |",
+    "| FileMobId | Usable full PMR ID for initial physical-file matching | If a header is required, its qualified full own-file ID can establish the MDB match. All combined facts must match that identity. No eight-byte shortcuts. |",
+    "| MasterMobId | Supplied usable PMR master, resolved under the agreed association rules | With no supplied usable master, the uniquely qualified MDB master; then an eligible already-read header association. Do not silently replace an unresolved explicit master. |",
+    "| Project | Usable associated PMR Project | MDB Project; then eligible Project from an already-read header. Each parser keeps its own approved local owner/key order. |",
+    "| Clip Name | Selected master's usable MDB name | Same selected master's eligible name from an already-read header; otherwise blank. |",
+    "| Original Bin | Selected master's usable MDB bin name | Same selected master's eligible OMF/embedded-OMF bin name if already read; otherwise blank. MXF supplies no Original Bin. |",
+    "| Kind | Usable own MDB descriptor result | Eligible own-file result from an already-read header; otherwise agreed unknown presentation. |",
+    "| Compression | Eligible usable own-file result from an already-read MXF/OMF header, preserving the existing source preference | Usable MDB result when no eligible header result is already available. Preserve current WAVE/AIFF handling, names and agreed fixes. Never open solely for Compression. |",
+    "| Resolution | Usable own MDB result | Eligible own-file result from an already-read header; otherwise blank. |",
+    "| Video Frame Rate | Usable own MDB descriptor rate | Usable own-file rate only from an independently already-read header; otherwise blank. Audio's Frame Rate stays blank. |",
+    "| Audio Sample Rate | Usable own MDB audio rate | Eligible own-file rate from an already-read header; otherwise blank. Video's Sample Rate stays blank. |",
+    "| Bit Depth | Usable own MDB interpreted precision/format | Eligible own-file result from an already-read header; otherwise blank. |",
+    "| Duration | Usable coherent own MDB timing | Coherent own header timing only when the file's MDB metadata is unavailable and the scan takes the header fallback. An isolated bad/missing MDB Duration does not itself enable this fallback. Otherwise blank. |",
+    "| Type | Selected master's usable MDB classification | Same selected master's eligible classification from an already-read header; otherwise blank. |",
+    "| Precompute Category | Selected master's usable MDB category | Same selected master's eligible category from an already-read header; otherwise its agreed blank. |",
+    "| Effect and Effect Category | One existing combined lookup on final selected Precompute Type and Clip Name | Preserve canonical/custom/unknown rules. No independent source search or header opening. Effect Sequence stays excluded. |",
+    "| KelpieId and inventory/status flags | App derivation from physical inventory, qualified IDs and database checks | No extra metadata search solely for flags; an unreadable/incomplete reference check does not prove No Reference. |"
+  ],
+  "researchAtApproval": {
+    "path": "/Users/martymclean/Developer/MediaMuster/Project Bella/evidence/source-priorities-2026-10-25.json",
+    "bytes": 10934,
+    "sha256": "4eeeda2879679e33079d2c8970101261f9f77f2c8f28fff9423e3598f2e15bd4"
+  },
+  "nextStage": {
+    "scope": "Brief scanner design within the agreed parser/source requirements.",
+    "alreadyFixed": [
+      "Separate scanner and format parser implementation files/functions.",
+      "Maximum four PMR jobs and maximum four MDB jobs; read each once, extract, release temporary buffers.",
+      "Physical inventory retained and agreed field/source/header choices.",
+      "Fresh C++17/Qt6.5.3 compact implementation; OldScanner stays active and Bin Filter unchanged."
+    ],
+    "toDesign": [
+      "Coordinate PMR/MDB/header work within a bounded background execution plan.",
+      "Set initial media-header concurrency without assuming fourPMR/fourMDB automatically means four header workers.",
+      "Cancellation, responsive progress and result delivery, bounded memory/lifetimes.",
+      "Small file/function/value layout and meaningful implementation verification/benchmarks."
+    ],
+    "boundedSharedFollowUps": "Uncommon display/representation boundaries remain documented engineering follow-ups; no new metadata or broad per-field research programme.",
+    "afterDesign": "Build independent Bella, compare useful outputs and deliberate differences against OldScanner, measure time/peakmemory. App cutover still explicitly approved later."
+  },
+  "validation": {
+    "researchUnmodified": true,
+    "runtimeCodeChanged": false,
+    "testsOrBuildsExecuted": false,
+    "newNativeOrMediaAudit": false,
+    "localLinksChecked": 355,
+    "missingLocalLinks": 0,
+    "gitDiffCheck": "passed",
+    "runtimeDiffPaths": [
+      "src/bella/README.md"
+    ],
+    "runtimeDiffBoundary": "Planning README only; no scanner/parser/test/CMake implementation changes.",
+    "untrackedRuntimeFiles": []
+  }
+}
