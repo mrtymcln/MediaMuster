@@ -12,8 +12,10 @@ projections to verify identities on opened files. This organization preserves
 those consumers while isolating the scanner being replaced.
 
 [Bella](../Project%20Bella/README.md) is a new, independent C++17 / Qt 6.5.3
-scanner/parser. Its requirements review must finish before reader implementation.
-`src/bella/` is reserved and has no parser code or target. Do not patch OldScanner
+scanner/parser. Its requirements review is complete, and new implementation
+choices require user check-ins. The first shared ID helper is implemented under
+`src/bella/` in a separate `mediamuster_bella` library used only by its focused
+tests; the scanner and source readers remain pending. Do not patch OldScanner
 into Bella. The app stays on OldScanner until the user approves the switch.
 
 | Component | Role |

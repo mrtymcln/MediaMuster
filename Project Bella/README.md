@@ -2,7 +2,9 @@
 
 Started 18 October 2026. Status: first-release parser/source requirements and
 the eight registered scanner-workflow decisions are settled. Independent Bella
-implementation is next; new concrete choices still require user check-ins.
+implementation has begun with the shared ID helper and its separate library/test
+target. The scanner and source parsers remain to implement; new concrete choices
+still require user check-ins.
 
 Bella is a fresh start for MediaMuster's scanner and parser. The motivation is to
 reduce scan time and memory use after the Canon and Copland iterations and the
@@ -41,7 +43,8 @@ partial results and incomplete status; cleanup remains responsive. Keep only
 required compact matching facts through matching, then release them. New concrete
 implementation/label/API choices still need a plain-English check-in before
 dependent work; completion of this register is not approval of every proposal
-or app cutover. No Bella runtime or measured improvement exists yet. OldScanner
+or app cutover. The shared ID helper is the first implemented Bella component;
+there is no runnable Bella scanner or measured scan improvement yet. OldScanner
 stays active until explicit cutover approval.
 
 Standing design principle reaffirmed by the user on 25 October 2026: actively
@@ -83,11 +86,349 @@ Duration order. New implementation choices still require check-ins. The
 working agreement. Earlier statements that engineering defaults could be settled
 without a check-in are superseded.
 
+### Implementation decisions
+
+**Build boundary agreed, 27 October 2026:** add a separate
+`mediamuster_bella` static library to the existing CMake build, using Qt Core
+and initially linked only to Bella's focused tests. The user chose this over
+compiling Bella sources directly into each test program. Use the existing
+C++17 and exact Qt 6.5.3 settings. The target now contains the shared ID helper;
+the later decisions below settle its files and contract. PMR parser signatures
+and report details remain pending. Root/test CMake lists are the initial
+existing-file touch points; app integration and cutover remain unapproved.
+See the [approval record](evidence/decision-check-ins-2026-10-27.json).
+
+**PMR entry boundary agreed, 27 October 2026:** the user chose “Option 2 -
+the PMR parser does both jobs.” Its entry point accepts a PMR file path and
+handles reading and interpreting that source, returning compact owned results.
+The caller does not have to capture the file's bytes first. Small internal
+helpers remain possible; this answer does not require a separate public
+byte-parser interface, shared capture layer or thin-wrapper arrangement.
+The comparison with `86c500c` establishes that its path-based PMR parser also
+read the file once into memory before decoding. Moving acquisition outside
+the public parser is not a demonstrated simplification or performance gain.
+Bella's agreed cancellation, changed-source, read-once/lifetime, whole-set,
+text and identity rules remain authoritative; the historical parser's other
+behaviour is not adopted. Exact files, signatures, result details and
+capture/check mechanisms still require their concrete check-ins.
+
+**PMR returned report agreed, 27 October 2026:** the user chose “one report.”
+Return one owned result containing the selected PMR entries, what happened and
+the explanatory/diagnostic details. Keep those related answers together instead
+of returning entries with separate status/detail output parameters. For example,
+a failed read or cancellation must be distinguishable from a usable PMR result.
+This settles the returned-result shape; exact type/field names, outcome/detail
+representation, cancellation input and capture/change checks remain to review.
+It does not add a table feature or establish a performance gain.
+
+**Initial file arrangement agreed, 27 October 2026:** keep each reader's
+entry/report definitions beside that reader, rather than introducing a common
+`types.h` for all formats. The user approved `src/bella/mobid.h/.cpp` for the
+shared ID helper, `src/bella/pmrparser.h/.cpp` for the PMR reader and its report,
+and `tests/tst_bellamobid.cpp` / `tests/tst_bellapmr.cpp` for focused coverage.
+The agreed static-library boundary uses explicit root/test CMake lists. This
+settles these names and placement; exact interfaces, stored representations,
+cancellation and source-change mechanisms still need concrete check-ins.
+The shared ID files, focused ID test and library target are implemented. PMR
+reader/report files await their remaining interface and source-reading decisions.
+
+**Shared scan stop flag agreed, 27 October 2026:** the user chose the shared
+stop flag and asked whether all readers/parsers would use it. One Bella scan's
+organiser and all its PMR/MDB/MXF/OMF/native WAVE/AIFF reading jobs observe the
+same thread-safe stop request. Cancel stops new work and requests cooperative
+stopping of active readers under the already-agreed responsive cleanup and
+partial-result rules. A later scan gets fresh uncancelled state only after
+the previous run has finished cleanup. The flag is not shared with Bin Filter
+or file operations. Small bounded helpers such as ID normalization need no
+separate flag parameter; the calling reader checks between units of work.
+Blocked operating-system reads can still delay stopping. Exact parser parameter
+types, checkpoints, lifetime/wakeup and source-change mechanisms remain to review;
+this record adds no cancellation runtime code yet.
+
+**PMR whole-file capture agreed, 27 October 2026:** the user selected the
+alternative single whole-file request, as in `86c500c`, for less reading code.
+Use `QFile::readAll()` with a shared-stop-flag check before and after that call.
+Do not add the proposed 1 MiB capture loop or intermediate capture checkpoints.
+The whole PMR remains one owned temporary capture; this changes neither the
+agreed read-once lifetime nor the no-memory-cap policy. A Cancel request cannot
+be checked by Bella during `readAll()`, and a blocked OS read may delay its
+return. The caller-facing parser still owns both reading and interpretation.
+Parse checkpoints, source-change checks and the report's detailed interface
+remain to review. This record does not implement the PMR parser yet.
+
+**PMR change-check facts agreed, 27 October 2026:** the user chose size and
+modification time only, using simpler Qt-only code. Compare those facts before
+and after the single whole-file capture. Do not add the proposed native disk-file
+identity or path-to-open-handle identity checks. The user's observation that an
+updated Avid database keeps its usual name does not make its filename a unique
+physical identity; filename spelling is not used as a substitute change test.
+These checks cannot detect every same-size, same-time replacement or rewrite.
+The already-agreed response to a detected change remains report/exclude/manual
+rescan. Exact stamp/report representation and handling of unavailable checks
+remain to review. No file-operation code is reused or changed by this choice.
+
+**PMR parse checkpoints agreed, 27 October 2026:** the user selected the
+alternative that checks the shared stop flag before and after a complete
+record set, rather than before each record. Apply the set-level boundaries to
+both safe base-set framing/traversal and actual selected/fallback set decoding.
+Do not poll within individual records or add a periodic record counter. A stop
+requested during a set is observed at the next set boundary; it can therefore
+wait for that set to finish. This leaves the chosen whole-file `readAll()` and
+its before/after checks unchanged. Whole-set validation and no entry salvage
+remain authoritative; no partial set becomes valid merely because Cancel was
+requested. Exact report/API and capture-check failure details remain pending.
+
+**Readable but unverified PMR agreed, 27 October 2026:** if a PMR capture and
+whole set are otherwise valid but the required Qt size/modification-time check
+cannot be completed, keep that metadata and mark it unverified. The user chose
+this over withholding the readable metadata. Preserve the unavailable-check
+reason and carry the qualification forward; do not silently mark it verified,
+corrupt or changed. An actually detected size/date change still excludes that
+read under the earlier rule. Failed captures or unusable sets do not become
+usable merely because unverified metadata is allowed. No automatic retry,
+native identity check or altered fallback trigger is added.
+
+**PMR unknown extensions/trailing content agreed, 27 October 2026:** match
+`86c500ca6bf9cc93529017979d0f1b3ddac856be` for this metadata-eligibility case.
+An unrecognised extension after the base set, or unexplained content after the
+declared v16 set, makes that PMR unsupported and its metadata unavailable,
+even if a known set was otherwise complete. Do not implement the proposed
+alternative that uses a known set's metadata despite that unknown extra content.
+The historical parser could return older entries with `ok=false`, but the
+scanner merged its index only when `ok=true`; returned entries were not app
+metadata. Bella implements the outcome independently rather than copying that
+code. Other settled rules, including supported-layout damaged-set fallback,
+physical inventory, reference-check meanings and unavailable size/date checks,
+remain unchanged. This decision does not authorise unknown-layout interpretation,
+raw-byte searching or an automatic reread. See the
+[decision receipt](evidence/decision-check-ins-2026-10-27.json).
+
+**Separate PMR result/check answers agreed, 27 October 2026:** keep two
+distinct answers inside the already-approved single report: how reading/parsing
+finished, and whether the size/modification-time check verified the capture.
+The user's example is Reading result: Completed; Size/date check: Unverified;
+Metadata: Retained. Do not replace these with one combined status for every
+possible pairing. This changes representation, not accepted metadata, source
+selection or UI columns. Exact names and the remaining compact report/interface
+details will be reviewed together rather than as separate naming decisions.
+
+#### PMR implementation contract — report/table agreed, failure route pending
+
+On 28 October the user approved item 1 (the compact report/reference interface)
+and item 3 (the unchanged shared MacRoman table). Item 2, the internal expected-
+failure mechanism, remains open while the user asks whether the example has
+occurred and whether extra complexity is justified. Do not infer approval of
+that route. No PMR runtime code is added by these records. The contract collects
+the exact interface and stored values without further naming-only check-ins.
+All types/functions below belong in `pmrparser.h` and namespace `Bella`:
+
+```cpp
+enum class PmrReadResult
+{
+    NotRead, Completed, NoUsableSet, Malformed, Unsupported, IoError, Changed, Cancelled
+};
+
+enum class PmrCheckResult { NotChecked, Verified, Unverified, Changed };
+
+struct PmrEntry
+{
+    MobId fileMobId;
+    QString filename;
+    QString project;
+    std::optional<MobId> masterMobId;
+};
+
+struct PmrSet
+{
+    qint32 version = 0;
+    QVector<PmrEntry> entries;
+};
+
+struct PmrStamp
+{
+    std::optional<qint64> sizeBytes; // Available, nonnegative size only.
+    QDateTime modified; // Invalid means unavailable, not a zero timestamp.
+};
+
+struct PmrReport
+{
+    QString path;
+    PmrReadResult reading = PmrReadResult::NotRead;
+    PmrCheckResult sizeDateCheck = PmrCheckResult::NotChecked;
+    PmrStamp capturedStamp;
+    std::optional<PmrSet> knownSet;
+    bool metadataEligible = false;
+    bool referenceCoverageComplete = false;
+    QStringList diagnostics;
+};
+
+[[nodiscard]] PmrReport parsePmr(
+    const QString &path, const std::atomic_bool &stopRequested);
+
+namespace Detail
+{
+    // Pure comparison: directly test unavailable/changed facts without a filesystem race.
+    [[nodiscard]] PmrCheckResult comparePmrStamps(
+        const PmrStamp &before, const PmrStamp &after);
+}
+```
+
+The report distinguishes a missing set from a complete set, an unusable empty
+set from damaged framing/text, and unsupported scope from I/O failure. The set
+version is kept once; it establishes version 1's absent Project/MasterMobId
+without repeated presence flags. Empty Project in other versions remains valid.
+Only version 1's missing master is represented as absent here; complete stored
+zero IDs are not erased by a new shared-normalizer/null test. No DTM, raw records,
+parser views, per-field history, working graphs or display strings are retained.
+
+The implementation choices and their current status are:
+
+| Choice | Recommendation | Alternative and tradeoff |
+| --- | --- | --- |
+| Compact interface/reference protocol — agreed 28 October | Use the report above with one whole validated `knownSet`, separate read/check answers and explicit metadata/format-coverage qualifications. Both metadata and positive reference consumers can inspect those same owned records according to their qualification. | Keep separate metadata and reference record lists inside the report. This makes their roles separate, but adds two list representations and their bookkeeping. Neither option changes the agreed reference-check meanings. |
+| Expected-failure mechanism — pending | Ordinary open/read/format/check failures return named report results and explanations; small parsing helpers use checked return values. This follows `86c500c`'s ordinary-return approach, with richer status. | A private parsing exception caught once at the reader entry can produce the same report, but adds exception-based control flow for expected input failures. Unexpected allocation/program failures remain distinct in either design. |
+| MacRoman table dependency — agreed 28 October | Reuse only the immutable `AvidText::kMacRomanHigh[128]` table in unchanged `src/avidtext.h`, through a fresh unconditional MacRoman decoder in Bella. No existing file is edited or OldScanner library linked. | Keep a separate fixed mapping table inside Bella. It removes this shared-header dependency but requires maintaining another copy of the same mapping. No measured performance difference is asserted. |
+
+Contract details implementing settled behaviour:
+
+- The caller owns the shared atomic stop flag for the synchronous call. No new
+  cancellation wrapper, worker or source-capture module is introduced. Stop checks
+  stay only at the agreed whole-file and whole-set boundaries.
+- Capture once through `QFile::readAll()` and release the file after capture/checks.
+  Use fresh path-based `QFileInfo` observations before/after that call. Compare
+  available size and modification-time facts; any observed difference is Changed.
+  If no difference is known but required facts are missing, report Unverified and
+  retain otherwise eligible metadata. Keep one owned copy of available pre-read
+  facts in `capturedStamp`; no native identity or extra source read.
+- Inspect the Qt read error and captured byte count. A mismatch to an available
+  expected size is not a complete capture. Missing facts never count as equal
+  facts; unavailable/negative size observations become `nullopt`. The pure
+  comparison helper does not decide source selection or perform I/O.
+- Only a whole validated set enters `knownSet`, following the agreed v16/older
+  preference. Failed or partial sets are discarded. A successful supported-set
+  fallback keeps its explanations without retaining the rejected entries.
+- Unknown extensions/trailing content make metadata ineligible, as agreed. A
+  whole validated known set may remain for existing positive filename/ID reference
+  checks only: the base set for an unknown extension, or the complete v16 set for
+  unknown content after it, with only one set retained. No entry salvage is added.
+  Unsupported extra content cannot establish complete reference coverage.
+- `referenceCoverageComplete` describes known format-level reference coverage,
+  independently of metadata eligibility and size/date verification. It is not
+  inferred from an empty vector or a missing metadata set. The scanner still
+  performs the existing physical-name/ID/source qualification and decides Listed
+  or No Reference; this parser contract introduces no new Unverified-to-NoReference
+  rule. A fully framed, fully examined supported zero-entry set can establish
+  known reference coverage despite supplying no usable metadata. An empty v16
+  set likewise does not invalidate an otherwise complete older fallback's
+  coverage. Damaged framing/text, unknown extra content and incompletely examined
+  relevant sets leave their unknown coverage incomplete.
+- When Cancel is observed after an otherwise eligible selected set is fully
+  validated, including its applicable outer-content checks, keep those completed
+  facts with reading Cancelled and their Verified/Unverified qualification. A
+  partial set remains unusable; start no further pass just to improve cancellation
+  results. This implements the already-agreed completed-partial-result rule.
+- Cancel is the reading result when observed at an agreed checkpoint; preserve
+  facts/explanations already established. Do not perform additional filesystem
+  work after noticing Cancel merely to obtain more diagnostic details. Changed
+  or failed captures and unsupported outer content never become eligible metadata
+  through cancellation or missing verification.
+- Expected input problems are reported normally. Resource/program failures are
+  not relabelled corrupt media; the eventual source-job boundary handles them.
+  `parsePmr` allocates and is therefore not declared `noexcept`.
+- Preserve the established counted-string interpretation: consume the complete
+  bounded payload for framing, interpret through its first NUL, fixed MacRoman
+  for Project/legacy Filename and strict UTF-8 for the interpreted v16 Filename.
+  The shared `AvidText::decode()` heuristic must not be called. The existing
+  counted/C-string baseline is visible in the retained reader and `86c500c`.
+- Initial focused tests cover supported layouts/orders, complete identities,
+  text rules, safe preferred-set/fallback framing, unsupported extra content,
+  whole-set rejection, pre-cancelled input, stamp comparison, owned results and
+  genuine fixture output. Additional deterministic in-progress cancellation or
+  source-change timing instrumentation must be reviewed before being added.
+
+This proposal touches only new Bella/test files and their already-approved
+CMake lists, plus the disclosed optional dependency on the generic character
+table. It changes no active scanner, Bin Filter, MediaFile/table/progress,
+journal, Unfinished Business or Undo implementation, and claims no scan-time or
+peak-memory improvement.
+
+#### Agreed first ID-helper contract
+
+The first code implements the already-agreed shared ID normalizer, its focused
+test and the approved static-library wiring. This is part of
+PMR-first development. It needs no file I/O, cancellation or source-change
+mechanism; those PMR choices remain pending. Complete IDs, known legacy
+equivalence, preservation of unfamiliar legacy IDs, `std::array`, QtEndian and
+QHash/full equality are already approved and are not reopened here.
+
+On 27 October the user chose the database convention, one container size and
+the ordinary returned-answer route for expected bad input. The concrete
+ID-helper contract below is agreed; the alternatives remain as decision context.
+
+| Choice | Recommendation | Alternative and tradeoff |
+| --- | --- | --- |
+| Internal byte spelling | Normalize numeric fields to little-endian spelling on every host, following the existing database ID representation. Preserve all other bytes. | Use big-endian spelling internally. Both can support correct matching; this would choose a different internal representation from existing database IDs. Source-specific conversion remains necessary either way. |
+| Owned ID storage | A private fixed 32-byte `std::array` plus a form label. Modern/recognized IDs use 32 active bytes; an unfamiliar legacy UID keeps its complete 12 active bytes and its distinct label. The remaining storage is zeroed and is not part of that ID. | Use distinct 32-byte and 12-byte types inside an inline `std::variant`. This makes the alternatives distinct types, but the variant still reserves room for the largest alternative plus its discriminator/padding. It does not automatically save storage for legacy IDs. Code must dispatch between its active types. |
+| Invalid-width answer | Return either the owned ID or a named `InvalidWidth` result normally. The reader supplies field/source context in its report. | Raise a typed conversion exception that the reader catches. Both preserve the failure; the returned answer requires an explicit result branch, while the exception requires a catch path. |
+
+**Storage explanation corrected, 27 October:** the earlier statement that
+separately sized alternatives avoid unused per-ID storage was misleading for
+an inline variant. A temporary C++17 type-size probe with Apple Clang 17 on
+arm64 found 36 bytes for both a 32-byte array plus default-underlying-type enum
+and `std::variant<std::array<unsigned char, 32>, std::array<unsigned char, 12>>`.
+A one-byte enum made the illustrative tagged struct 33 bytes. These are sizes
+of temporary example types, not Bella runtime/peak-memory measurements or an
+approved choice of enum backing. The actual comparison is direct tagged storage
+versus compiler-distinguished alternatives. The user subsequently chose the
+single labelled container.
+
+The agreed names are in namespace `Bella`: `MobIdLayout` with `PmrLegacy8`,
+`OmfUid12` and `Aaf32`; `ByteOrder` with `LittleEndian` and `BigEndian`;
+`MobIdKind` with `Aaf32` and `OmfUid12`; and `MobIdError::InvalidWidth`.
+`normalizeMobId(QByteArrayView bytes, MobIdLayout layout, ByteOrder byteOrder)`
+returns `MobIdResult`, a `std::variant<MobId, MobIdError>`. The bounded input is
+borrowed only during the call; the returned ID owns its complete value.
+`MobId::kind()` identifies its form and `bytes()` exposes a read-only view of
+its own active bytes. Only normalization constructs an ID; no public default
+identity is invented. Equality and Qt's `qHash` include the form and all active
+bytes, never unused storage or object padding. Text formatting is not part of
+this increment.
+
+Require the exact width selected by the supplied layout rather than inferring
+layout from length. For modern values, convert only the numeric material
+fields at offsets 16/20/22 as 32/16/16 bits. For legacy eight-byte values, convert
+two 32-bit words and apply the verified wrapper. For 12-byte values, convert all
+three words; organization 42 maps through that wrapper, while other organizations
+retain the complete separately tagged legacy UID. Do not add all-zero/prefix
+rejection or assign format-specific null meanings in this shared conversion.
+See the [identity evidence](../docs/reviews/2026-10-18-bella-mdb/identities-and-pmr.md#complete-representations-and-byte-order).
+
+Implement only `mobid.h/.cpp`, `tst_bellamobid.cpp` and their
+root/test CMake entries first. Check full-byte preservation, equivalent known
+forms, authored opposite-endian examples, distinct unfamiliar legacy IDs,
+wrong widths, complete-key hash lookup and ownership after input release.
+Genuine available identity fixtures are little-endian; authored big-endian
+tests will not be described as genuine big-endian verification. No PMR stubs,
+new shared source files, existing runtime integration or performance claim is
+included in this increment.
+
+**First implementation checked, 27 October 2026:** the ID helper and its
+focused tests build with C++17 and exact Qt 6.5.3. The existing Mac Debug build
+compiled arm64 and x86_64; the native arm64 test run passed all 14 QtTest checks
+(including setup/cleanup). A separate arm64 AddressSanitizer/UndefinedBehaviorSanitizer
+build passed the same checks. Coverage includes the two genuine little-endian
+PMR fixtures and explicitly authored opposite-endian examples. The generated
+link graph keeps Bella independent of OldScanner and out of the app. Windows,
+a runnable Bella scan, scan comparisons and performance/peak-memory measurements
+remain unverified. See the
+[implementation receipt](evidence/decision-check-ins-2026-10-27.json).
+
 ## Evidence standard for improvement claims
 
 Clarified 22 October 2026 after the user explicitly requested an honest
-assessment: Bella has no runtime implementation/build target yet, so no scan-time,
-peak-memory or crash-rate improvement has been demonstrated. Many per-field
+assessment: Bella then had no runtime implementation/build target. The first
+ID-helper increment now exists, but there is still no runnable Bella scanner or
+demonstrated scan-time, peak-memory or crash-rate improvement. Many per-field
 reviews preserve sound OldScanner interpretation rather than improve it. Current
 PMR preparation already buffers a source once and releases its raw image; do not
 invent per-row disk rereads or physical copies from Qt-shared assignments.
@@ -153,8 +494,8 @@ records the detailed assessment and limits. This adds no new feature or cutover.
 The current app uses [OldScanner](../src/oldscanner/README.md). Its existing
 MediaEngine readers and genuine-media fixtures provide references for reviewing
 behavior and comparing a replacement. They do not supply Bella's implementation.
-The [Bella source folder](../src/bella/README.md) is reserved, with no runtime
-implementation or build target yet.
+The [Bella source folder](../src/bella/README.md) now holds the independent shared
+ID helper in `mediamuster_bella`; the scanner and format readers remain pending.
 The requested examination of an exact MDVx-style PMR scanner/parser is hypothetical;
 it does not yet choose all of MDVx's format and behavior limitations for Bella.
 
@@ -439,7 +780,8 @@ Windows producer encoding remains deliberately deferred.
 
 MDB/media-header fallback and source-precedence conditions remain part of the
 later source-capability review. These PMR decisions do not add fallback reads or
-expand Bin Filter scope. No Bella runtime code has been written.
+expand Bin Filter scope. The shared ID helper is implemented; the PMR parser
+and its file-reading mechanics remain pending.
 
 ## MDB requirements review
 
@@ -1427,9 +1769,9 @@ Then build fresh Bella and compare correctness, scan time and memory against
 OldScanner/reference behavior. App cutover remains separately approved. Rare
 layouts, overflow and malformed-input coverage are engineering verification,
 not reasons to repeat settled user decisions. No delivery ETA is established.
-Bella currently has documentation only, with no runtime code or build target;
-new Bella implementation has not started. No revised completion percentage or
-delivery estimate is established by this checkpoint.
+At that checkpoint Bella had documentation only. The 27 October first increment
+adds the shared ID helper and its independent library/test, as recorded above.
+No completion percentage or delivery estimate is established by this checkpoint.
 
 Project's MDB owner/key/blank/source
 fallback, Original Bin's owner/name/empty handling, the physical-path-only

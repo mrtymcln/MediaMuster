@@ -28,6 +28,9 @@ mediamuster_add_test(tst_diagnostics core
 
 # Core value types and metadata selection.
 mediamuster_add_test(tst_mobid core)
+mediamuster_add_test(tst_bellamobid core)
+target_link_libraries(tst_bellamobid PRIVATE mediamuster_bella)
+target_compile_definitions(tst_bellamobid PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 mediamuster_add_test(tst_pathkey core)
 mediamuster_add_test(tst_format core)
 mediamuster_add_test(tst_mediaevidence core)

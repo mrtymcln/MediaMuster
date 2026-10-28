@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "date": "2026-10-27",
   "timezone": "Australia/Sydney",
-  "status": "All eight initial scanner-workflow decisions resolved. Current progress delivery and numeric timecode Duration order retained;200ms/coalescing and elapsed-time sort declined. New concrete implementation choices still require check-ins. No runtime/cutover.",
+  "status": "All eight initial scanner-workflow decisions resolved. Sixteen subsequent implementation choices are agreed, including the compact PMR report/reference interface and unchanged MacRoman table dependency approved 28 October. The internal PMR expected-failure route remains under clarification. The independent shared ID helper and its focused test/library are implemented and verified; PMR/source readers and scanner remain pending. New concrete choices still require check-ins. No app cutover or measured scan improvement.",
   "instruction": {
     "source": "Direct human user message",
     "quote": "Can you make a point, to check-in with ME at every decision. Give me a list of the decisions explained in plain English and the recommendation highlighted. Do not always assume, do not hallucinate - ground yourself in the plan and the codebase every now and then."
@@ -17,6 +17,329 @@
     "Record each answer before building on it. Recheck current source revision periodically and before relying on implementation claims.",
     "Do not claim speed/memory improvements without measurements. Bring later concrete choices back instead of assuming a broad policy approves every number, label or layout."
   ],
+  "implementationDecisions": [
+    {
+      "id": "bella_build_boundary",
+      "date": "2026-10-27",
+      "status": "Agreed",
+      "headAtCheck": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+      "source": "Direct human answer to the asynchronous build-boundary question",
+      "question": "How should Bella be compiled during development?",
+      "recommendedOption": "A separate mediamuster_bella static library, using Qt Core and initially linked only to Bella's focused tests, in the existing CMake build.",
+      "alternative": "Compile Bella sources directly into test programs and introduce a library later.",
+      "answer": "Separate Bella static library (Recommended)",
+      "agreedRule": "Use the separate static library with the existing C++17 and exact Qt 6.5.3 settings. Keep the app using OldScanner and leave Bin Filter unchanged.",
+      "initialExistingFileTouchPoints": [
+        "CMakeLists.txt",
+        "tests/CMakeLists.txt"
+      ],
+      "scope": "Build boundary only. Source/header layout, parser signatures and result structures require subsequent check-ins before dependent code. No progress, MediaFile/table, journal, Unfinished Business, Undo or Bin Filter integration is approved by this answer.",
+      "implementationStatus": "Implemented: mediamuster_bella contains the independent shared ID helper, linked only to its focused tests and Qt Core."
+    },
+    {
+      "id": "pmr_acquisition_boundary",
+      "date": "2026-10-27",
+      "status": "Agreed",
+      "headAtCheck": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+      "source": "Direct human answer after explanation and comparison with 86c500ca6bf9cc93529017979d0f1b3ddac856be",
+      "question": "Should the PMR parser receive captured bytes, or read the file itself?",
+      "options": [
+        "Option 1: caller captures the PMR bytes, parser interprets them.",
+        "Option 2: PMR parser accepts a file path and handles both reading and interpretation."
+      ],
+      "answer": "Lets go with Option 2 - the PMR parser does both jobs.",
+      "agreedRule": "Provide a path-based PMR parser entry point that reads the source once into scoped memory and returns compact owned results after interpreting it. The caller need not acquire the bytes first.",
+      "recommendationHistory": "Initially recommended caller capture for reuse and direct tests. Historical source comparison showed 86c500c already used scoped whole-file capture plus small memory-decoding helpers. Neither API boundary has a demonstrated simplicity or runtime advantage. A thin-wrapper arrangement was subsequently proposed; the user explicitly selected Option 2.",
+      "scope": "PMR acquisition boundary only. Small internal helpers are possible, but no separate public byte-parser interface, shared capture layer or thin wrapper is required by this choice. Other parser acquisition APIs are not settled here. Preserve approved cancellation, changed-source handling, lifetimes, complete identities, whole-set rejection/fallback and text rules; do not adopt historical DTM, recovery or other differing behavior.",
+      "historicalCodeAnchors": [
+        "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/mediascanner.cpp:903-910",
+        "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/pmrparser.cpp:226-249",
+        "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/pmrparser.cpp:301-306"
+      ],
+      "implementationStatus": "Recorded; the shared ID helper is implemented independently. PMR signatures, result details and capture/check mechanisms remain pending."
+    },
+    {
+      "id": "pmr_returned_report",
+      "date": "2026-10-27",
+      "status": "Agreed",
+      "headAtCheck": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+      "source": "Direct human answer after a plain-English report analogy",
+      "question": "Should the PMR parser return one report containing its entries, outcome and explanation, or return these through separate outputs?",
+      "recommendedOption": "One owned returned result containing entries, outcome and explanatory/diagnostic details together.",
+      "alternative": "Return entries and provide status/details through separate output parameters, expanding 86c500c's yes/no flag to preserve Bella's required distinctions.",
+      "answer": "Lets go with one report.",
+      "agreedRule": "Return the PMR entries, outcome and explanation together in one owned result. Preserve approved distinctions between usable metadata and unavailable, failed, changed or cancelled reads.",
+      "scope": "Returned-result shape only. Does not settle exact type/field names, outcome/detail representation, cancellation input, source stamps or capture/change-check mechanisms. Path-based acquisition remains agreed. No new visible feature or performance claim.",
+      "implementationStatus": "Recorded; the PMR report is not implemented yet. The shared ID helper/library is a separate completed increment."
+    },
+    {
+      "id": "initial_reader_report_file_arrangement",
+      "date": "2026-10-27",
+      "status": "Agreed",
+      "headAtCheck": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+      "source": "Direct human answer to the reader/report placement question",
+      "question": "Should each reader's entry/report definitions live beside that reader, or in an additional shared types.h?",
+      "recommendedOption": "Keep each reader's report beside that reader, with the already-agreed shared ID helper separate.",
+      "alternative": "Introduce a shared types.h containing the report definitions for all formats.",
+      "answer": "Lets go with the recommended arrangement, keeping each reader's report beside its reader.",
+      "agreedFiles": [
+        "src/bella/mobid.h",
+        "src/bella/mobid.cpp",
+        "src/bella/pmrparser.h",
+        "src/bella/pmrparser.cpp",
+        "tests/tst_bellamobid.cpp",
+        "tests/tst_bellapmr.cpp"
+      ],
+      "agreedRule": "Put shared identity types/functions in mobid.h/.cpp and PMR entry/report definitions beside its reader in pmrparser.h/.cpp. Add their focused tests through explicit existing root/test CMake lists. Do not introduce a common types.h now.",
+      "scope": "Initial filenames and placement only. Does not settle exact interfaces or stored representations, cancellation or source-change mechanisms. No app integration, cutover or performance claim.",
+      "implementationStatus": "mobid.h/.cpp, tst_bellamobid.cpp and their library/test entries are implemented. PMR files remain pending; no parser placeholders were added."
+    },
+    {
+      "id": "id_helper_internal_byte_order",
+      "date": "2026-10-27",
+      "status": "Agreed",
+      "headAtCheck": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+      "source": "Direct human answer, item 1 of the three ID-helper choices",
+      "question": "Should Bella use the existing database or MXF convention for its normalized internal ID numeric fields?",
+      "recommendedOption": "Existing database convention: little-endian spelling of numeric fields on every host, preserving all other ID bytes.",
+      "alternative": "Use MXF's big-endian spelling internally, with explicit conversion from other sources.",
+      "answer": "Database convention",
+      "agreedRule": "Use the database convention under the concrete first ID-helper contract in Project Bella/README.md. Continue to interpret each input using its explicitly supplied layout and declared byte order.",
+      "scope": "Internal canonical spelling, not changed source interpretation or displayed-ID formatting. No runtime performance advantage is established."
+    },
+    {
+      "id": "id_helper_owned_storage",
+      "date": "2026-10-27",
+      "status": "Agreed",
+      "headAtCheck": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+      "source": "Direct human answer, item 2 of the three ID-helper choices",
+      "question": "Should Bella use one labelled fixed-size ID container or separate modern and older ID types in a common holder?",
+      "recommendedOption": "One private 32-byte std::array plus a form label; modern/recognized IDs have 32 active bytes and unfamiliar legacy UIDs have 12 active bytes. Unused storage is not part of the ID.",
+      "alternative": "Separate 32-byte and 12-byte types inside an inline variant, which still reserves room for its largest alternative.",
+      "answer": "One container size",
+      "agreedRule": "Use the single labelled owned container, with read-only kind/active-byte access, full active-byte equality and QHash support, as described in the concrete first ID-helper contract.",
+      "scope": "Storage and interface of the shared ID helper only. Preserve the complete unfamiliar legacy UID and distinguish its form. No automatic memory saving is claimed; the earlier variant-space explanation was corrected before the answer."
+    },
+    {
+      "id": "id_helper_invalid_width_result",
+      "date": "2026-10-27",
+      "status": "Agreed",
+      "headAtCheck": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+      "source": "Direct human answer, item 3 of the three ID-helper choices",
+      "question": "Should incomplete ID bytes return an ordinary failure answer or raise a typed conversion exception?",
+      "recommendedOption": "Return either the complete owned ID or a named InvalidWidth result; the caller checks it and provides source/field context in the PMR report.",
+      "alternative": "Raise a typed conversion exception which the reader catches and converts to its report.",
+      "answer": "Recommended: expected bad input follows the ordinary reply route. The caller must check the answer.",
+      "agreedRule": "Use MobIdResult, a std::variant<MobId, MobIdError>, returned by normalizeMobId(QByteArrayView, MobIdLayout, ByteOrder), under the concrete first ID-helper contract. Wrong byte counts return MobIdError::InvalidWidth normally.",
+      "scope": "The bounded shared ID conversion, not PMR capture/cancel/change-check mechanisms or a blanket exception policy. This approval enables mobid.h/.cpp, its focused test and the existing-CMake static-library wiring; no PMR stubs or app integration."
+    },
+    {
+      "id": "shared_scan_stop_flag",
+      "date": "2026-10-27",
+      "status": "Agreed",
+      "headAtCheck": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+      "source": "Direct human choice of shared stop flag, followed by a question about its use across readers/parsers",
+      "question": "How should the PMR reader notice Cancel: a shared stop flag or a function it calls to ask whether to stop?",
+      "recommendedOption": "One shared thread-safe stop flag observed by the reader between reading and decoding steps.",
+      "alternative": "A function the reader calls for customised stop checks, adding another callable interface.",
+      "answer": "Lets go with the shared stop flag. Would all readers/parsers use this same stop flag?",
+      "agreedRule": "Use the same per-scan stop request for the Bella organiser and every PMR/MDB/MXF/OMF/native WAVE/AIFF source job. Cancel stops new work and requests cooperative stopping of active readers. Each later scan gets fresh uncancelled state only after prior cleanup.",
+      "clarification": "Same flag means within one Bella scan. It is not global across scans and is not shared with Bin Filter or file operations. Small bounded helpers such as the ID normalizer need no flag parameter; the reader checks between units of work. Blocking OS reads may delay stopping.",
+      "planBasis": [
+        "docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md:101-103",
+        "docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md:185-188",
+        "docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md:198-204"
+      ],
+      "currentCodeBasis": [
+        "src/backgroundjob.h:38-61",
+        "src/mediaengine/scanmodel.h:289-299",
+        "src/oldscanner/oldscanner.cpp:373"
+      ],
+      "scope": "Shared cancellation signal and per-scan scope. Exact parser parameter types, checkpoint placement, lifetime/wakeup, source-change and publication mechanisms still need concrete check-ins. Preserve responsive cleanup and partial results; do not copy the existing blocking GUI shutdown path or change active OldScanner/Bin Filter/file operations.",
+      "implementationStatus": "Recorded; no cancellation runtime code added yet."
+    },
+    {
+      "id": "pmr_single_call_capture",
+      "date": "2026-10-27",
+      "status": "Agreed",
+      "headAtCheck": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+      "source": "Direct human answer to the PMR reading/checkpoint choice",
+      "question": "Should Bella capture a PMR in up-to-1-MiB pieces with stop checks between requests, or request the whole file in one call with checks before and after?",
+      "recommendedOptionAtQuestion": "A small up-to-1-MiB read loop, giving additional opportunities to observe cancellation during large captures.",
+      "selectedAlternative": "Single whole-file call, as in 86c500c, with Cancel checks before and after the call.",
+      "answer": "Go with Alternative: request the whole file in one call, as 86c500c did. Bella would check Cancel before and after that call. Pro: less reading code.",
+      "agreedRule": "Use QFile::readAll() for the PMR capture and check the shared scan stop flag before and after it. Do not introduce the proposed 1-MiB capture loop or intermediate capture checkpoints.",
+      "tradeoff": "Fewer reading-code steps; Bella cannot inspect its stop flag while readAll is running. A blocked OS read can delay return. Both options retain one full PMR capture, so this establishes neither a memory cap nor a performance advantage.",
+      "scope": "PMR capture request and its before/after cancellation checks only. Does not choose parse-loop checkpoints, exact report/API representation, source-change detection or capture-error precedence. Path-based parser ownership, read-once extraction/release and all existing PMR format rules remain.",
+      "implementationStatus": "Recorded; PMR runtime code remains pending."
+    },
+    {
+      "id": "pmr_qt_size_modified_checks",
+      "date": "2026-10-27",
+      "status": "Agreed",
+      "headAtCheck": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+      "source": "Direct human answer to the PMR change-detection facts question",
+      "question": "Should Bella check disk-file identity plus size/modification time before and after reading, or use simpler Qt-only size/modification-time checks?",
+      "recommendedOptionAtQuestion": "Disk-file identity plus size and modification time, including checking that the path still identifies the opened file.",
+      "selectedAlternative": "Size and modification time only, using Qt-only code.",
+      "answer": "If databases are updated, they always have the same msmFMID.pmr etc name. Check only the size and modification time with simpler Qt-only code.",
+      "agreedRule": "Compare PMR size and modification time before and after its one QFile::readAll capture. Use Qt-only checks and do not add native disk identity or path-to-open-handle identity checks.",
+      "tradeoff": "Fewer platform-specific mechanisms. A same-size, same-time replacement or rewrite may escape detection. The standard database name does not itself prove unchanged file identity or contents.",
+      "scope": "PMR change-check facts only. Report/exclude detected changed reads and leave a fresh attempt to manual rescan, as already agreed. Exact stamp/report representation and unavailable-check handling remain pending. Do not link or modify file-operation code for this check.",
+      "implementationStatus": "Recorded; PMR runtime code remains pending."
+    },
+    {
+      "id": "pmr_set_level_stop_checks",
+      "date": "2026-10-27",
+      "status": "Agreed",
+      "headAtCheck": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+      "source": "Direct human answer selecting the alternative in-memory parsing checkpoint policy",
+      "question": "After the whole PMR is in memory, should its parser check Cancel before each record or before and after a complete record set?",
+      "recommendedOptionAtQuestion": "Before each record, including during base framing and selected/fallback decoding.",
+      "selectedAlternative": "Before and after a complete record set.",
+      "answer": "Lets go with the alternative.",
+      "agreedRule": "Check the shared stop flag before and after each complete record-set pass, covering safe base-set framing/traversal and selected/fallback set decoding. Do not add per-record polling or a periodic record counter.",
+      "tradeoff": "Fewer stop checks; a Cancel request during a set waits for its next set boundary. No speed or stopping-latency advantage has been measured.",
+      "scope": "In-memory PMR parsing checkpoint granularity. Whole-file readAll and its before/after checks remain unchanged. Whole-set validation, no entry salvage and all existing source/partial-scan rules remain. Exact report/API and capture-check failure details still need their concrete review.",
+      "implementationStatus": "Recorded; PMR runtime code remains pending."
+    },
+    {
+      "id": "pmr_keep_unverified_metadata",
+      "date": "2026-10-27",
+      "status": "Agreed",
+      "headAtCheck": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+      "source": "Direct human answer to the readable-PMR/unavailable-check policy question",
+      "question": "If Bella reads a PMR but cannot obtain the size/date information required to verify it, should its metadata be unused or retained with unverified status?",
+      "recommendedOptionAtQuestion": "Return could-not-verify and leave that PMR's metadata unused.",
+      "selectedAlternative": "Keep otherwise valid PMR metadata and mark it unverified.",
+      "answer": "I think we should keep the PMR metadata and mark it unverified.",
+      "agreedRule": "Retain an otherwise valid captured/whole-set PMR contribution when the required size/modification-time check cannot be completed. Mark it unverified and preserve the reason; carry that qualification through later matching/status handling.",
+      "scope": "Unavailable verification facts, not an observed change or failed capture/format. A detected change still excludes that read. Invalid sets remain invalid, and no automatic retry, stronger native identity check or changed source-opening rule is introduced.",
+      "implementationStatus": "Recorded; the PMR report and parser remain pending."
+    },
+    {
+      "id": "pmr_unknown_content_metadata_eligibility",
+      "date": "2026-10-27",
+      "status": "Agreed",
+      "headAtCheck": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+      "source": "Direct human confirmation after comparing exact 86c500c parser and scanner behavior",
+      "question": "Should Bella use a complete known set's metadata despite an unknown extension or trailing content, or withhold that PMR's metadata as 86c500c did?",
+      "recommendedOptionAtConfirmation": "Match 86c500c for unknown-extra-content PMR metadata eligibility.",
+      "alternative": "Keep one complete known set's metadata with a distinct unknown-extra-content qualification, without interpreting or searching those unknown bytes.",
+      "answer": "Yes, let's match the behaviour of 86c500c for unknown extensions or trailing content. Record that decision.",
+      "agreedRule": "Unknown extension versions after the base set, or unexplained content after the declared v16 set, make that PMR unsupported and its metadata unavailable. Do not use an otherwise complete known set's metadata in this case.",
+      "historicalBehavior": "At 86c500c, unknown extensions and trailing v16 content return older entries with ok=false. The scanner merges only ok=true indexes, so those returned entries never become selected PMR metadata. The v16 set is not promoted before the trailing-content check.",
+      "historicalCodeAnchors": [
+        "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/pmrparser.cpp:228-229",
+        "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/pmrparser.cpp:274-297",
+        "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/mediascanner.cpp:909-925"
+      ],
+      "scope": "This unknown-content metadata-eligibility case only; implement independently. Supported versions, whole-set selection/rejection and safely located fallback for damaged supported sets remain agreed. Physical inventory/reference-check meanings and keeping otherwise valid size/date-unverified metadata remain unchanged. No unknown-format interpretation, raw search, retry, existing scanner modification or cutover.",
+      "implementationStatus": "Recorded; PMR runtime code remains pending."
+    },
+    {
+      "id": "pmr_separate_read_and_verification_fields",
+      "date": "2026-10-27",
+      "status": "Agreed",
+      "headAtCheck": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+      "source": "Direct human selection of two separate answers inside the single PMR report",
+      "question": "Should the one report describe reading result and size/date verification separately, or use one combined label for every pairing?",
+      "recommendedOption": "Separate reading/parsing result and size/date verification answers within the same owned report.",
+      "alternative": "One combined status label for every completion/verification pairing.",
+      "answer": "two separate answers inside the same report. E.g. For a readable PMR whose modification date was unavailable: Reading result: Completed; Size/date check: Unverified; Metadata: Retained",
+      "agreedRule": "Represent the reading/parsing outcome and capture-verification qualification as separate fields in the same PMR report. Valid metadata can be retained with Completed + Unverified, as already approved.",
+      "scope": "Report representation only. No new UI column, scanning behavior or source rule. Exact names and the remaining compact report/API contract will be reviewed together, rather than through isolated naming decisions.",
+      "implementationStatus": "Recorded; PMR runtime code remains pending."
+    },
+    {
+      "id": "pmr_compact_report_reference_contract",
+      "date": "2026-10-28",
+      "status": "Agreed",
+      "headAtCheck": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+      "source": "Direct human selection of recommended item 1 in the consolidated PMR proposal",
+      "question": "Should the report keep one complete known record set with explicit use/coverage qualifications, or separate metadata and reference record lists?",
+      "recommendedOption": "The concrete parsePmr(path, const atomic stop flag reference) interface and compact report in Project Bella/README.md, with one whole known set, independent read/check results, partial available stamp facts, metadata eligibility and format-level reference coverage.",
+      "alternative": "Separate metadata and reference record lists inside the same report, with their own bookkeeping.",
+      "answer": "1. Recommended",
+      "agreedRule": "Use the consolidated contract's names, types, retained values and reference qualifications. Keep only whole validated sets; unsupported extra content never supplies metadata. Any retained whole-set reference-only facts remain subject to the existing scanner's name/ID/source qualification and cannot establish unsupported negative coverage. Valid empty-set coverage is distinct from missing or damaged data.",
+      "scope": "Concrete PMR interface/report/reference representation, including its pure stamp-comparison helper and settled input/format/cancellation semantics. No new per-entry histories, graphs, source opens, flag wrapper, native identity check, display column, NoReference rule or app integration. The internal expected-failure mechanism is explicitly not approved by item 1.",
+      "implementationStatus": "Recorded; PMR runtime code waits on clarification of the remaining expected-failure route."
+    },
+    {
+      "id": "pmr_shared_macroman_table",
+      "date": "2026-10-28",
+      "status": "Agreed",
+      "headAtCheck": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+      "source": "Direct human selection of recommended item 3 in the consolidated PMR proposal",
+      "question": "Should the new fixed-MacRoman Bella decoder reuse the existing immutable character table or keep a separate mapping inside Bella?",
+      "recommendedOption": "Reuse only AvidText::kMacRomanHigh[128] in unchanged src/avidtext.h with fresh unconditional MacRoman decoding logic in Bella.",
+      "alternative": "Duplicate the same fixed mapping inside Bella to remove the shared-header dependency.",
+      "answer": "3. Recommended",
+      "agreedRule": "Allow this generic existing-header dependency without editing the header or linking OldScanner. Never call AvidText::decode for Bella PMR fields because it tries UTF-8 first. Keep fixed MacRoman for Project/legacy Filename and strict UTF-8 for v16 Filename.",
+      "scope": "Immutable character-mapping data only. No existing reader/decoder implementation is adopted or changed; Bin Filter and the active scanner remain unchanged. No measured performance claim.",
+      "implementationStatus": "Recorded; the dependency will be added with the independent PMR parser."
+    }
+  ],
+  "firstImplementation": {
+    "date": "2026-10-27",
+    "baselineHead": "0065be4acd760120f0eab71af1a627bbd692b2ab",
+    "component": "Independent shared MobId normalization, owned value, full equality and Qt hash support",
+    "sourceFiles": [
+      {
+        "path": "src/bella/mobid.h",
+        "sha256": "f20f203bea1f64e1f7132281f44ef96c6c5d85b3a2a40c93859008e4a72c653e"
+      },
+      {
+        "path": "src/bella/mobid.cpp",
+        "sha256": "1b0063f8fca94e1b85e879032ae850cd40a0c588bf0bc493ffa8b898b635eb1c"
+      },
+      {
+        "path": "tests/tst_bellamobid.cpp",
+        "sha256": "f43937aea51842826f6ae20f8f227b822a94a4cd9d9171bef2200c58bacb740d"
+      }
+    ],
+    "build": {
+      "language": "C++17",
+      "qt": "6.5.3 EXACT",
+      "compiler": "Apple Clang 17.0.0",
+      "configuration": "Debug",
+      "compiledArchitectures": ["arm64", "x86_64"],
+      "executedArchitecture": "arm64",
+      "target": "tst_bellamobid",
+      "warnings": "No compiler warnings in the focused build output"
+    },
+    "normalTests": {
+      "command": "ctest --test-dir build -R '^tst_bellamobid$' --output-on-failure",
+      "ctestSuitesPassed": 1,
+      "qtTestPassedIncludingSetupCleanup": 14,
+      "failed": 0,
+      "skipped": 0
+    },
+    "sanitizers": {
+      "configuration": "Separate arm64 Debug build with -fsanitize=address,undefined -fno-omit-frame-pointer",
+      "command": "env UBSAN_OPTIONS=halt_on_error=1 ctest --test-dir /private/tmp/bella-mobid-sanitizer -R '^tst_bellamobid$' --output-on-failure",
+      "ctestSuitesPassed": 1,
+      "qtTestPassedIncludingSetupCleanup": 14,
+      "failed": 0,
+      "skipped": 0,
+      "environment": "Qt CPU-feature detection aborted inside the sandbox before running the sanitizer suite. Configuration and final sanitizer test were rerun outside the sandbox with user approval and passed."
+    },
+    "coverage": [
+      "Complete 32-byte preservation and the declared 32/16/16-bit field conversion",
+      "Verified eight-/12-byte Avid legacy mapping and distinct unfamiliar complete 12-byte UIDs",
+      "Authored little-/big-endian values, including wrapped modern IDs and no byte-order guessing",
+      "Wrong widths, all-zero/arbitrary-label preservation, complete-key QHash equality and ownership/copy/move",
+      "Pinned FileMobId and MasterMobId values from two genuine little-endian PMR fixtures"
+    ],
+    "genuineFixtures": [
+      "tests/fixtures/msmFMID.pmr",
+      "tests/fixtures/omf/mc2026_audio/msmFMID.pmr"
+    ],
+    "boundaryVerification": "Generated Ninja link graph: Bella has only its own object and Qt Core dependency; the only runtime consumer is tst_bellamobid. MediaMuster still links OldScanner, with no Bella dependency.",
+    "existingRuntimeFilesChanged": [],
+    "existingBuildFilesChanged": ["CMakeLists.txt", "tests/CMakeLists.txt"],
+    "limits": "No Windows run, genuine big-endian fixture run, full existing-suite run, Bella source parsing/scanning, app integration, cutover or scan-time/peak-memory comparison. Authored opposite-endian examples do not establish genuine big-endian fixture coverage."
+  },
   "headAtReview": "c2cc89e9404fae5f84787c624f14e16d862d68bc",
   "evidence": {
     "sourceFiles": [

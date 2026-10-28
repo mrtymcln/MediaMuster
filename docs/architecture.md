@@ -8,8 +8,9 @@ The active scanner/parser is [OldScanner](../src/oldscanner/README.md), isolated
 under `src/oldscanner/` with its existing behavior and internal `MediaEngine`
 namespace. The AVB reader/reference resolver and shared reading types remain
 under `src/mediaengine/`; Bin Filter stays unchanged. [Bella](../Project%20Bella/README.md)
-will be a new, independent C++17 / Qt 6.5.3 implementation. Its source folder is
-reserved while requirements are reviewed, with no parser code or target yet.
+is a new, independent C++17 / Qt 6.5.3 implementation. Its first component is the
+shared ID helper under `src/bella/`, in a separate `mediamuster_bella` library
+linked only to its focused tests. Its scanner and source readers remain pending.
 The app continues using OldScanner until the user approves switching to Bella.
 
 ## From storage to table
