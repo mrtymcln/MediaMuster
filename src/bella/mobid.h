@@ -39,7 +39,7 @@ namespace Bella
 	/// Unknown source layouts/orders must be resolved by the reader before calling.
 	/// Expected width failures return InvalidWidth; input bytes are never retained.
 	[[nodiscard]] MobIdResult normalizeMobId(QByteArrayView bytes, MobIdLayout layout,
-										   ByteOrder byteOrder) noexcept;
+											 ByteOrder byteOrder) noexcept;
 
 	/// Owns a complete ID in database numeric-field order, independent of host order.
 	/// An unfamiliar legacy UID remains a distinct 12-byte form, not a padded AAF ID.

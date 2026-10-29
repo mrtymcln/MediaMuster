@@ -42,6 +42,10 @@ mediamuster_add_test(tst_conventions core)
 
 ### Media ###
 
+mediamuster_add_test(tst_bellapmr media)
+target_link_libraries(tst_bellapmr PRIVATE mediamuster_bella)
+target_compile_definitions(tst_bellapmr PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+
 # Discovery and physical-file record model.
 mediamuster_add_test(tst_mediaenginediscovery media)
 target_link_libraries(tst_mediaenginediscovery PRIVATE mediamuster_oldscanner_core)

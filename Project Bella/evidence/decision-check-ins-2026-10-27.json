@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "date": "2026-10-27",
   "timezone": "Australia/Sydney",
-  "status": "All eight initial scanner-workflow decisions resolved. Sixteen subsequent implementation choices are agreed, including the compact PMR report/reference interface and unchanged MacRoman table dependency approved 28 October. The internal PMR expected-failure route remains under clarification. The independent shared ID helper and its focused test/library are implemented and verified; PMR/source readers and scanner remain pending. New concrete choices still require check-ins. No app cutover or measured scan improvement.",
+  "status": "All eight initial scanner-workflow decisions and twenty-three subsequent implementation choices are agreed. The independent shared ID helper and PMR parser/report are implemented and verified in focused normal and ASan/UBSan tests. Scanner and other source readers remain pending. Grouped report sections and a four-choice record-use enum are implemented and verified29October. New concrete choices still require check-ins. OldScanner stays active; Bin Filter unchanged. No app cutover or measured scan improvement. The latest two-boolean metadata/reference arrangement is approved29October and supersedes PmrUse; implemented and verified. The next bounded implementation choice concerns MDB acquisition ownership.",
   "instruction": {
     "source": "Direct human user message",
     "quote": "Can you make a point, to check-in with ME at every decision. Give me a list of the decisions explained in plain English and the recommendation highlighted. Do not always assume, do not hallucinate - ground yourself in the plan and the codebase every now and then."
@@ -34,7 +34,7 @@
         "tests/CMakeLists.txt"
       ],
       "scope": "Build boundary only. Source/header layout, parser signatures and result structures require subsequent check-ins before dependent code. No progress, MediaFile/table, journal, Unfinished Business, Undo or Bin Filter integration is approved by this answer.",
-      "implementationStatus": "Implemented: mediamuster_bella contains the independent shared ID helper, linked only to its focused tests and Qt Core."
+      "implementationStatus": "Implemented: independent ID helper and PMR parser in mediamuster_bella, linked only to focused Bella tests and Qt Core."
     },
     {
       "id": "pmr_acquisition_boundary",
@@ -56,7 +56,7 @@
         "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/pmrparser.cpp:226-249",
         "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/pmrparser.cpp:301-306"
       ],
-      "implementationStatus": "Recorded; the shared ID helper is implemented independently. PMR signatures, result details and capture/check mechanisms remain pending."
+      "implementationStatus": "Implemented and checked 28 October in the independent PMR increment; see pmrImplementation receipt. No app integration."
     },
     {
       "id": "pmr_returned_report",
@@ -70,7 +70,7 @@
       "answer": "Lets go with one report.",
       "agreedRule": "Return the PMR entries, outcome and explanation together in one owned result. Preserve approved distinctions between usable metadata and unavailable, failed, changed or cancelled reads.",
       "scope": "Returned-result shape only. Does not settle exact type/field names, outcome/detail representation, cancellation input, source stamps or capture/change-check mechanisms. Path-based acquisition remains agreed. No new visible feature or performance claim.",
-      "implementationStatus": "Recorded; the PMR report is not implemented yet. The shared ID helper/library is a separate completed increment."
+      "implementationStatus": "Implemented and checked 28 October in the independent PMR increment; see pmrImplementation receipt. No app integration."
     },
     {
       "id": "initial_reader_report_file_arrangement",
@@ -92,7 +92,7 @@
       ],
       "agreedRule": "Put shared identity types/functions in mobid.h/.cpp and PMR entry/report definitions beside its reader in pmrparser.h/.cpp. Add their focused tests through explicit existing root/test CMake lists. Do not introduce a common types.h now.",
       "scope": "Initial filenames and placement only. Does not settle exact interfaces or stored representations, cancellation or source-change mechanisms. No app integration, cutover or performance claim.",
-      "implementationStatus": "mobid.h/.cpp, tst_bellamobid.cpp and their library/test entries are implemented. PMR files remain pending; no parser placeholders were added."
+      "implementationStatus": "Implemented and checked 28 October in the independent PMR increment; see pmrImplementation receipt. No app integration."
     },
     {
       "id": "id_helper_internal_byte_order",
@@ -156,7 +156,7 @@
         "src/oldscanner/oldscanner.cpp:373"
       ],
       "scope": "Shared cancellation signal and per-scan scope. Exact parser parameter types, checkpoint placement, lifetime/wakeup, source-change and publication mechanisms still need concrete check-ins. Preserve responsive cleanup and partial results; do not copy the existing blocking GUI shutdown path or change active OldScanner/Bin Filter/file operations.",
-      "implementationStatus": "Recorded; no cancellation runtime code added yet."
+      "implementationStatus": "PMR implements the agreed caller-owned shared atomic flag and whole-file/set checkpoints. Scanner ownership, job coordination and other readers remain to implement."
     },
     {
       "id": "pmr_single_call_capture",
@@ -171,7 +171,7 @@
       "agreedRule": "Use QFile::readAll() for the PMR capture and check the shared scan stop flag before and after it. Do not introduce the proposed 1-MiB capture loop or intermediate capture checkpoints.",
       "tradeoff": "Fewer reading-code steps; Bella cannot inspect its stop flag while readAll is running. A blocked OS read can delay return. Both options retain one full PMR capture, so this establishes neither a memory cap nor a performance advantage.",
       "scope": "PMR capture request and its before/after cancellation checks only. Does not choose parse-loop checkpoints, exact report/API representation, source-change detection or capture-error precedence. Path-based parser ownership, read-once extraction/release and all existing PMR format rules remain.",
-      "implementationStatus": "Recorded; PMR runtime code remains pending."
+      "implementationStatus": "Implemented and checked 28 October in the independent PMR increment; see pmrImplementation receipt. No app integration."
     },
     {
       "id": "pmr_qt_size_modified_checks",
@@ -186,7 +186,7 @@
       "agreedRule": "Compare PMR size and modification time before and after its one QFile::readAll capture. Use Qt-only checks and do not add native disk identity or path-to-open-handle identity checks.",
       "tradeoff": "Fewer platform-specific mechanisms. A same-size, same-time replacement or rewrite may escape detection. The standard database name does not itself prove unchanged file identity or contents.",
       "scope": "PMR change-check facts only. Report/exclude detected changed reads and leave a fresh attempt to manual rescan, as already agreed. Exact stamp/report representation and unavailable-check handling remain pending. Do not link or modify file-operation code for this check.",
-      "implementationStatus": "Recorded; PMR runtime code remains pending."
+      "implementationStatus": "Implemented and checked 28 October in the independent PMR increment; see pmrImplementation receipt. No app integration."
     },
     {
       "id": "pmr_set_level_stop_checks",
@@ -201,7 +201,7 @@
       "agreedRule": "Check the shared stop flag before and after each complete record-set pass, covering safe base-set framing/traversal and selected/fallback set decoding. Do not add per-record polling or a periodic record counter.",
       "tradeoff": "Fewer stop checks; a Cancel request during a set waits for its next set boundary. No speed or stopping-latency advantage has been measured.",
       "scope": "In-memory PMR parsing checkpoint granularity. Whole-file readAll and its before/after checks remain unchanged. Whole-set validation, no entry salvage and all existing source/partial-scan rules remain. Exact report/API and capture-check failure details still need their concrete review.",
-      "implementationStatus": "Recorded; PMR runtime code remains pending."
+      "implementationStatus": "Implemented and checked 28 October in the independent PMR increment; see pmrImplementation receipt. No app integration."
     },
     {
       "id": "pmr_keep_unverified_metadata",
@@ -215,7 +215,7 @@
       "answer": "I think we should keep the PMR metadata and mark it unverified.",
       "agreedRule": "Retain an otherwise valid captured/whole-set PMR contribution when the required size/modification-time check cannot be completed. Mark it unverified and preserve the reason; carry that qualification through later matching/status handling.",
       "scope": "Unavailable verification facts, not an observed change or failed capture/format. A detected change still excludes that read. Invalid sets remain invalid, and no automatic retry, stronger native identity check or changed source-opening rule is introduced.",
-      "implementationStatus": "Recorded; the PMR report and parser remain pending."
+      "implementationStatus": "Implemented and checked 28 October in the independent PMR increment; see pmrImplementation receipt. No app integration."
     },
     {
       "id": "pmr_unknown_content_metadata_eligibility",
@@ -235,7 +235,7 @@
         "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/mediascanner.cpp:909-925"
       ],
       "scope": "This unknown-content metadata-eligibility case only; implement independently. Supported versions, whole-set selection/rejection and safely located fallback for damaged supported sets remain agreed. Physical inventory/reference-check meanings and keeping otherwise valid size/date-unverified metadata remain unchanged. No unknown-format interpretation, raw search, retry, existing scanner modification or cutover.",
-      "implementationStatus": "Recorded; PMR runtime code remains pending."
+      "implementationStatus": "Implemented and checked 28 October in the independent PMR increment; see pmrImplementation receipt. No app integration."
     },
     {
       "id": "pmr_separate_read_and_verification_fields",
@@ -249,7 +249,7 @@
       "answer": "two separate answers inside the same report. E.g. For a readable PMR whose modification date was unavailable: Reading result: Completed; Size/date check: Unverified; Metadata: Retained",
       "agreedRule": "Represent the reading/parsing outcome and capture-verification qualification as separate fields in the same PMR report. Valid metadata can be retained with Completed + Unverified, as already approved.",
       "scope": "Report representation only. No new UI column, scanning behavior or source rule. Exact names and the remaining compact report/API contract will be reviewed together, rather than through isolated naming decisions.",
-      "implementationStatus": "Recorded; PMR runtime code remains pending."
+      "implementationStatus": "Implemented and checked 28 October in the independent PMR increment; see pmrImplementation receipt. No app integration."
     },
     {
       "id": "pmr_compact_report_reference_contract",
@@ -263,7 +263,7 @@
       "answer": "1. Recommended",
       "agreedRule": "Use the consolidated contract's names, types, retained values and reference qualifications. Keep only whole validated sets; unsupported extra content never supplies metadata. Any retained whole-set reference-only facts remain subject to the existing scanner's name/ID/source qualification and cannot establish unsupported negative coverage. Valid empty-set coverage is distinct from missing or damaged data.",
       "scope": "Concrete PMR interface/report/reference representation, including its pure stamp-comparison helper and settled input/format/cancellation semantics. No new per-entry histories, graphs, source opens, flag wrapper, native identity check, display column, NoReference rule or app integration. The internal expected-failure mechanism is explicitly not approved by item 1.",
-      "implementationStatus": "Recorded; PMR runtime code waits on clarification of the remaining expected-failure route."
+      "implementationStatus": "Implemented and checked 28 October in the independent PMR increment; see pmrImplementation receipt. No app integration."
     },
     {
       "id": "pmr_shared_macroman_table",
@@ -277,7 +277,92 @@
       "answer": "3. Recommended",
       "agreedRule": "Allow this generic existing-header dependency without editing the header or linking OldScanner. Never call AvidText::decode for Bella PMR fields because it tries UTF-8 first. Keep fixed MacRoman for Project/legacy Filename and strict UTF-8 for v16 Filename.",
       "scope": "Immutable character-mapping data only. No existing reader/decoder implementation is adopted or changed; Bin Filter and the active scanner remain unchanged. No measured performance claim.",
-      "implementationStatus": "Recorded; the dependency will be added with the independent PMR parser."
+      "implementationStatus": "Implemented and checked 28 October in the independent PMR increment; see pmrImplementation receipt. No app integration."
+    },
+    {
+      "id": "pmr_expected_failure_returns",
+      "date": "2026-10-28",
+      "status": "Agreed",
+      "headAtCheck": "b1915319519a978ef0b9043a20197943ccf34d32",
+      "source": "Direct human approval after clarification of item 2 and comparison with 86c500c",
+      "question": "Should expected PMR failures use ordinary checked returns or private parsing exceptions?",
+      "recommendedOption": "Ordinary checked returns for expected open/read/format/check failures, named in the report with explanations.",
+      "alternative": "Private parsing exceptions caught at the reader entry, producing the same report with exception-based control flow.",
+      "answer": "Sure! record item 2 that way and begin implementing the PMR parser",
+      "agreedRule": "Follow the ordinary failure-return style of 86c500c without extra exception/recovery machinery. Retain the agreed bounds checks. Keep unexpected allocation/program failures distinct; parsePmr is not noexcept.",
+      "evidenceQualification": "All six genuine PMRs in the 18 October review were structurally complete. Truncation examples are illustrative and tests authored, not observed damage in those specimens.",
+      "scope": "Completes the consolidated PMR implementation contract and authorises the independent PMR parser/tests. OldScanner stays active, Bin Filter unchanged; no app integration or performance claim.",
+      "implementationStatus": "Implemented and checked 28 October in the independent PMR increment; see pmrImplementation receipt. No app integration."
+    },
+    {
+      "id": "pmr_central_result_finalization",
+      "date": "2026-10-29",
+      "status": "Agreed",
+      "headAtCheck": "b1915319519a978ef0b9043a20197943ccf34d32",
+      "source": "Direct human selection of both internal cleanups following the streamlining explanation; scope stated at the start of implementation.",
+      "answer": "Let's go with both recommended internal cleanups.",
+      "agreedRule": "Consolidate repeated internal set-selection/unsupported result handling while preserving all report fields, record-use qualifications and cancellation checkpoints.",
+      "alternative": "Leave the duplicated finalization blocks in the preferred and fallback branches.",
+      "scope": "Internal control-flow cleanup only; no source interpretation, record layout, retained output, public report restructuring or integration change.",
+      "implementationStatus": "Implemented and verified29October; see pmrCleanup receipt. Existing field names and enum/boolean answers retained."
+    },
+    {
+      "id": "pmr_diagnostic_source_context_once",
+      "date": "2026-10-29",
+      "status": "Agreed",
+      "headAtCheck": "b1915319519a978ef0b9043a20197943ccf34d32",
+      "source": "Direct human selection of both internal cleanups following the streamlining explanation; scope stated at the start of implementation.",
+      "answer": "Let's go with both recommended internal cleanups.",
+      "agreedRule": "Keep the source path once in PmrReport.path and store diagnostic reason text without a program-added path prefix. Any future warning/log delivery must combine report.path with each reason.",
+      "alternative": "Keep repeating the path inside each diagnostic as well as the report.",
+      "scope": "Diagnostic string contract refinement only; no suppression, truncation, lost explanations or missing source paths in delivered warnings. No active scanner/logging consumer is modified.",
+      "implementationStatus": "Implemented and verified29October; see pmrCleanup receipt. Existing field names and enum/boolean answers retained."
+    },
+    {
+      "id": "pmr_grouped_report_layout",
+      "date": "2026-10-29",
+      "status": "Agreed",
+      "headAtCheck": "b1915319519a978ef0b9043a20197943ccf34d32",
+      "source": "Direct human approval of both report-consolidation options after comparison with boolean-only fields.",
+      "answer": "I like both options",
+      "agreedRule": "Use five report sections: source(path,capturedStamp), reading, sizeDateCheck, records(knownSet,use), diagnostics. Keep source and owned record facts intact. Names are PmrSource, PmrRecords and the existing PmrReport.",
+      "alternative": "Keep all source, record and qualification fields flat in PmrReport.",
+      "scope": "Representation only. Preserve all input/output interpretations, eligibility/reference meanings, empty sets, late-cancel completed data, read/check result enums, diagnostic source context and owned lifetimes. No bool-only report, active app integration or performance claim.",
+      "implementationStatus": "Implemented and verified29October; see pmrGroupedReport receipt. Same data and classifications through grouped source/records and PmrUse."
+    },
+    {
+      "id": "pmr_combined_record_use_enum",
+      "date": "2026-10-29",
+      "status": "Agreed",
+      "headAtCheck": "b1915319519a978ef0b9043a20197943ccf34d32",
+      "source": "Direct human approval of both report-consolidation options after comparison with boolean-only fields.",
+      "answer": "I like both options",
+      "agreedRule": "Replace the two public metadataEligible/referenceCoverageComplete booleans with records.use of enum PmrUse: MetadataWithCompleteCoverage, MetadataWithIncompleteCoverage, NoMetadataWithCompleteCoverage, NoMetadataWithIncompleteCoverage. Default to the final value. Preserve known positive-reference facts when both permissions are unavailable.",
+      "alternative": "Retain the two independent public booleans. Reading and sizeDateCheck remain their separate enums in either arrangement.",
+      "scope": "Representation only. Preserve all input/output interpretations, eligibility/reference meanings, empty sets, late-cancel completed data, read/check result enums, diagnostic source context and owned lifetimes. No bool-only report, active app integration or performance claim.",
+      "implementationStatus": "Implemented and verified29October; see pmrGroupedReport receipt. Same data and classifications through grouped source/records and PmrUse."
+    },
+    {
+      "id": "pmr_metadata_usability_boolean",
+      "date": "2026-10-29",
+      "status": "Agreed",
+      "headAtCheck": "b1915319519a978ef0b9043a20197943ccf34d32",
+      "source": "Direct human selection of CanUsePmrMetadata yes/no while explicitly retaining format checks.",
+      "answer": "Lets just have CanUsePmrMetadata: yes or no instead. Retain checks, such as the utf-8 check. What should we call that? CanUseUtf8Record ??",
+      "agreedRule": "Use a yes/no answer to whether PMR metadata can be used. Retain the actual bounds, text, identity, whole-set fallback, capture and stop checks. Do not treat this answer as proof of undamaged source data.",
+      "scope": "Metadata-use summary approved. Exact reduced return contract, independent reference-coverage transport and proposed internal UTF8-check name remain to settle before dependent interface changes. No automatic deletion of the agreed NoReference behaviour or added per-record diagnostic flag.",
+      "implementationStatus": "Implemented and verified29October as grouped records.canUsePmrMetadata and records.referenceCoverageComplete; see pmrBooleanReport receipt."
+    },
+    {
+      "id": "pmr_retain_reference_coverage_with_metadata_boolean",
+      "date": "2026-10-29",
+      "status": "Agreed",
+      "headAtCheck": "b1915319519a978ef0b9043a20197943ccf34d32",
+      "source": "Direct human agreement to retain independent reference coverage after selecting CanUsePmrMetadata.",
+      "answer": "Yep retain that. I think I'm ready to move on now!",
+      "agreedRule": "Replace PmrUse with the proposed canUsePmrMetadata and referenceCoverageComplete booleans inside grouped PmrRecords. Preserve the existing No Reference meaning, complete known sets and positive-only references. Keep all parsing/capture/cancel checks; name the existing one-pass v16 filename decoder check isValidUtf8Filename as proposed, without a stored record field or additional pass.",
+      "scope": "The exact proposed two-boolean arrangement resolves the pending return-contract issue. Grouped source/records, reading and size/date answers and diagnostic reasons remain otherwise unchanged. No active app/OldScanner/Bin Filter integration.",
+      "implementationStatus": "Implemented and verified29October as grouped records.canUsePmrMetadata and records.referenceCoverageComplete; see pmrBooleanReport receipt."
     }
   ],
   "firstImplementation": {
@@ -303,7 +388,10 @@
       "qt": "6.5.3 EXACT",
       "compiler": "Apple Clang 17.0.0",
       "configuration": "Debug",
-      "compiledArchitectures": ["arm64", "x86_64"],
+      "compiledArchitectures": [
+        "arm64",
+        "x86_64"
+      ],
       "executedArchitecture": "arm64",
       "target": "tst_bellamobid",
       "warnings": "No compiler warnings in the focused build output"
@@ -337,7 +425,10 @@
     ],
     "boundaryVerification": "Generated Ninja link graph: Bella has only its own object and Qt Core dependency; the only runtime consumer is tst_bellamobid. MediaMuster still links OldScanner, with no Bella dependency.",
     "existingRuntimeFilesChanged": [],
-    "existingBuildFilesChanged": ["CMakeLists.txt", "tests/CMakeLists.txt"],
+    "existingBuildFilesChanged": [
+      "CMakeLists.txt",
+      "tests/CMakeLists.txt"
+    ],
     "limits": "No Windows run, genuine big-endian fixture run, full existing-suite run, Bella source parsing/scanning, app integration, cutover or scan-time/peak-memory comparison. Authored opposite-endian examples do not establish genuine big-endian fixture coverage."
   },
   "headAtReview": "c2cc89e9404fae5f84787c624f14e16d862d68bc",
@@ -500,7 +591,8 @@
     "initialDecisionRegisterComplete": true,
     "noDecisionQuestionPending": true,
     "lastQuestion": "duration_sorting",
-    "earlierDurationNotesAlignedWithDecision8": true
+    "earlierDurationNotesAlignedWithDecision8": true,
+    "scope": "Original eight-decision documentation audit before runtime implementation; later component build/test evidence is recorded separately in firstImplementation and pmrImplementation."
   },
   "agreedEngineeringDecisions": [
     {
@@ -1001,5 +1093,1616 @@
   "initialDecisionRegisterComplete": true,
   "allOriginalRecommendationsSelected": false,
   "futureImplementationChoicesRequireUserCheckIn": true,
-  "nextStage": "Build independent Bella from the approved baseline. Present any new concrete implementation choice before dependent work. Keep OldScanner active until explicit cutover approval; report actual measurements when a runnable Bella build exists."
+  "nextStage": "PMR boolpair implemented and verified. Next: explain MDB acquisition ownership options and wait for user choice; then propose one concrete grouped MDB implementation contract grounded in its approved format/field/lifetime rules. No MDB code/stubs or app cutover yet.",
+  "pmrImplementation": {
+    "date": "2026-10-28",
+    "baselineHead": "b1915319519a978ef0b9043a20197943ccf34d32",
+    "component": "Independent path-based PMR capture/parser and owned report with separate read/check results, whole-set selection and reference qualifications",
+    "approval": "Direct human approval of expected ordinary returns and instruction to begin PMR implementation; all consolidated interface/table decisions already agreed.",
+    "sourceFiles": [
+      {
+        "path": "src/bella/pmrparser.h",
+        "sha256": "a2506b0f27210cf475b62a840f19c03019bdd35ba8850123f924920176e228f5"
+      },
+      {
+        "path": "src/bella/pmrparser.cpp",
+        "sha256": "275fa68e83cdac6fb54d9d1b756d2f750a59d479a397de2129d079e0c597ceaa"
+      },
+      {
+        "path": "tests/tst_bellapmr.cpp",
+        "sha256": "99b6c102a07c9516e90df0590b5999dba7b48bc24e74f8a526dd6ba2fc710a1a"
+      }
+    ],
+    "build": {
+      "language": "C++17",
+      "qt": "6.5.3 EXACT",
+      "compiler": "Apple Clang 17.0.0",
+      "configuration": "Debug",
+      "compiledArchitectures": [
+        "arm64",
+        "x86_64"
+      ],
+      "executedArchitecture": "arm64",
+      "targets": [
+        "tst_bellapmr",
+        "tst_bellamobid"
+      ],
+      "warnings": "No compiler warnings in the focused build output"
+    },
+    "normalTests": {
+      "buildCommand": "cmake --build build --target tst_bellapmr tst_bellamobid --parallel 4",
+      "testCommand": "ctest --test-dir build -R '^tst_bella(mobid|pmr)$' --output-on-failure",
+      "ctestSuitesPassed": 2,
+      "pmrQtTestPassedIncludingSetupCleanup": 56,
+      "idQtTestPassedIncludingSetupCleanup": 14,
+      "failed": 0,
+      "skipped": 0
+    },
+    "sanitizers": {
+      "configuration": "Reused separate arm64 Debug build with -fsanitize=address,undefined -fno-omit-frame-pointer",
+      "configureCommand": "cmake -S . -B /private/tmp/bella-mobid-sanitizer",
+      "buildCommand": "cmake --build /private/tmp/bella-mobid-sanitizer --target tst_bellapmr tst_bellamobid --parallel 4",
+      "testCommand": "env UBSAN_OPTIONS=halt_on_error=1 ctest --test-dir /private/tmp/bella-mobid-sanitizer -R '^tst_bella(mobid|pmr)$' --output-on-failure",
+      "ctestSuitesPassed": 2,
+      "pmrQtTestPassedIncludingSetupCleanup": 56,
+      "idQtTestPassedIncludingSetupCleanup": 14,
+      "failed": 0,
+      "skipped": 0,
+      "sanitizerReports": 0,
+      "environment": "Configuration, focused build and tests completed inside the sandbox in this run."
+    },
+    "coverage": [
+      "Authored supported base layouts1–8 and appended16 in both declared byte orders; signed0/-1 branch retained with diagnostic, not described as proven historical formats",
+      "Whole-set v16 preference/fallback; no individual entry salvage or duplicate decoded sets; safe base framing versus broken boundaries",
+      "Strict v16 UTF-8 and first-marker rule, unrestricted second marker, fixed MacRoman including bytes also valid as UTF-8, counted first-NUL/null interpretation",
+      "Every authored base truncation and every v16 record-region truncation after a complete known extension header; huge counts and out-of-bounds lengths",
+      "Unknown extensions/trailing content disable metadata and complete reference coverage, retaining only one whole known set for qualified positive references",
+      "Valid empty-set format coverage independent of metadata, whole-set empty/null Filename rejection, blank/absent legitimate fields",
+      "Complete and zero identities preserved, DTM skipped, valid4096-byte text not limited to native capacities, owned report after input/file destruction and copy/move",
+      "Pre-cancelled and missing-file report results; pure stamp comparison for equal, changed, partial, unavailable, negative-size and epoch-zero facts",
+      "All878 chosen records from five genuine little-endian fixtures compared against independent full-record expectations"
+    ],
+    "fixtureVerification": {
+      "method": "Independent bounded Python observer decoded fixture bytes without invoking OldScanner/Bella, using explicit complete-ID numeric-field normalization, strict v16 UTF-8, Python fixed mac_roman and ignored DTM. Pinned fingerprints are now durable regression expectations in tst_bellapmr.cpp. Fixture provenance is in existing corpus_headers/README.md and omf/README.md.",
+      "fingerprintConvention": "SHA-256 of literal ASCII Bella PMR full records v1 followed by newline; unsigned32 BE selected version/count; then each stored-order complete normalized FileMobId, UTF-8 Filename, UTF-8 Project, optional normalized MasterMobId, each field preceded by unsigned32 BE byte length (absent master length0). No sorting/deduplication.",
+      "fixtures": [
+        {
+          "path": "tests/fixtures/corpus_headers/msmFMID.pmr",
+          "bytes": 102682,
+          "sha256": "f1c0dabb9f0d9cdfa4df8951b46295ab83f90aa2b99ce936bd531093c2641c13",
+          "byteOrder": "little",
+          "baseVersion": 8,
+          "baseCount": 435,
+          "extensionVersion": 16,
+          "extensionCount": 435,
+          "selectedVersion": 16,
+          "selectedCount": 435,
+          "selectedFullRecordsSha256": "44aa350f0677e7fd9155a733e82a628b961cfd69111492348e478e1ebc18ca38",
+          "nonAsciiFilenames": 6,
+          "nonAsciiProjects": 435
+        },
+        {
+          "path": "tests/fixtures/corpus_headers/msmFMID_round3.pmr",
+          "bytes": 86996,
+          "sha256": "d56cc87c811040cdb1dc9bc60cb8af4d17c0df3b65325042da6fdd2a73285d69",
+          "byteOrder": "little",
+          "baseVersion": 8,
+          "baseCount": 360,
+          "extensionVersion": 16,
+          "extensionCount": 360,
+          "selectedVersion": 16,
+          "selectedCount": 360,
+          "selectedFullRecordsSha256": "1133f437da53b90d3332bedfac8ab791335d03a84c6b775a5181d32ede8f9f3e",
+          "nonAsciiFilenames": 0,
+          "nonAsciiProjects": 360
+        },
+        {
+          "path": "tests/fixtures/msmFMID.pmr",
+          "bytes": 248,
+          "sha256": "1701b03566019a2957950d1edcc3481b211e7269e774facf925a0cdef9cbda03",
+          "byteOrder": "little",
+          "baseVersion": 8,
+          "baseCount": 1,
+          "extensionVersion": 16,
+          "extensionCount": 1,
+          "selectedVersion": 16,
+          "selectedCount": 1,
+          "selectedFullRecordsSha256": "be2a925654ac00bc25146223b748dc879e49c6a0cb5a2c6645c29f1ffdae1d8f",
+          "nonAsciiFilenames": 0,
+          "nonAsciiProjects": 0
+        },
+        {
+          "path": "tests/fixtures/omf/avid_supporting/msmFMID.pmr",
+          "bytes": 12352,
+          "sha256": "be38daf54e5a4cf072dfd13b40a680eb49ddc9fdc55e71f536dd7ec444365dfe",
+          "byteOrder": "little",
+          "baseVersion": 2,
+          "baseCount": 80,
+          "extensionVersion": 16,
+          "extensionCount": 80,
+          "selectedVersion": 16,
+          "selectedCount": 80,
+          "selectedFullRecordsSha256": "44a2068496b885c6dfb5767408dbe9c31a2a110a911d8d97868a92f20427b0db",
+          "nonAsciiFilenames": 0,
+          "nonAsciiProjects": 0
+        },
+        {
+          "path": "tests/fixtures/omf/mc2026_audio/msmFMID.pmr",
+          "bytes": 392,
+          "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928",
+          "byteOrder": "little",
+          "baseVersion": 2,
+          "baseCount": 2,
+          "extensionVersion": 16,
+          "extensionCount": 2,
+          "selectedVersion": 16,
+          "selectedCount": 2,
+          "selectedFullRecordsSha256": "e919894a99ad9c237e24a117de2b85772da1cadacef14d4b0b2f463efa37a3d1",
+          "nonAsciiFilenames": 0,
+          "nonAsciiProjects": 2
+        }
+      ],
+      "totalSelectedRecords": 878,
+      "nonAsciiProjectRecords": 797,
+      "nonAsciiFilenames": 6,
+      "macRomanTableMappingCheck": "All128 high-byte entries match Python mac_roman; no heuristic decode invoked.",
+      "scope": "Separate verification of repository fixtures; do not merge counts with the original six-live-PMR research survey. Genuine fixtures here are little-endian; opposite-endian tests are authored."
+    },
+    "boundaryVerification": "Generated Ninja graph: Bella archive contains only its own MobId and PMR objects; only the two Bella test targets link it. MediaMuster still links OldScanner with no Bella dependency. Normal PMR binary contains arm64 and x86_64; sanitizer binary arm64.",
+    "approvedExistingHeaderDependency": {
+      "path": "src/avidtext.h",
+      "usage": "Immutable AvidText::kMacRomanHigh table only, unchanged. AvidText::decode is never called.",
+      "sha256": "32d45b13d8cfec1aeb63ef053753f80053632e7f8feb7ba299ffdb12005ee52f"
+    },
+    "existingRuntimeFilesChanged": [],
+    "existingBuildFilesChanged": [
+      "CMakeLists.txt",
+      "tests/CMakeLists.txt"
+    ],
+    "codeReview": "Independent read-only review found no material correctness issue in framing, whole-set selection, reference coverage, cancellation, capture verification, text, identity or ownership. No malformed-set-wins aggregation policy was added: NoUsableSet means none selected, and diagnostics preserve rejected alternatives.",
+    "limits": "No Windows or x86_64 execution, genuine big-endian fixture, full existing-suite run, end-to-end changed/unverified capture, injected mid-read I/O failure, deterministic in-progress cancellation, blocked-read stop measurement, runnable Bella scanner, app integration/cutover, or scan-time/peak-memory comparison. No new timing/test injection hooks were added.",
+    "latestValidationReceipt": "Project Bella/evidence/decision-check-ins-2026-10-27.json",
+    "latestValidationNote": "FinalPMRboolpair verified29October:57PMR+14IDchecks plus27priorpaths; older dated sourcehashes remain historical.",
+    "latestValidationSection": "pmrBooleanReport"
+  },
+  "pmrCleanup": {
+    "date": "2026-10-29",
+    "scope": "Approved internal result-finalization consolidation and path-once diagnostics; no public field/type/enum change.",
+    "changedFiles": [
+      "src/bella/pmrparser.cpp",
+      "src/bella/pmrparser.h",
+      "tests/tst_bellapmr.cpp"
+    ],
+    "testedSourceFiles": [
+      {
+        "path": "src/bella/pmrparser.cpp",
+        "sha256": "c8f70712e2bf85cfc79bcc5d121e69f91742674d198546f286c3a01daea1b0f7"
+      },
+      {
+        "path": "src/bella/pmrparser.h",
+        "sha256": "f4a3f72f4695a7d2095e341498e8c297fce490c4fbc27747a013b726bbe4f412"
+      },
+      {
+        "path": "src/bella/mobid.cpp",
+        "sha256": "cf4718e1a68d0f5cffb3e958983a9ce729c102e1a807885ad57f03a89ffca969"
+      },
+      {
+        "path": "src/bella/mobid.h",
+        "sha256": "95ba2ca6f8f315beb729fedd0cf91f35f53d6a5dce793e1da15b6dfbd4c833a8"
+      },
+      {
+        "path": "tests/tst_bellapmr.cpp",
+        "sha256": "0a8492fdfeaf7d3438b03976089c8db311f8cdafd965a48d629d00eb0e222238"
+      },
+      {
+        "path": "tests/tst_bellamobid.cpp",
+        "sha256": "f43937aea51842826f6ae20f8f227b822a94a4cd9d9171bef2200c58bacb740d"
+      }
+    ],
+    "implementation": {
+      "resultHandling": "selectSet applies unsupported/read/metadata/reference qualifications once for preferred and fallback paths; callers retain existing cancellation checkpoints. No new wrapper types or exception mechanism.",
+      "diagnostics": "Reason text only; source retained in report.path. Any future display/Console/disk-warning delivery must prefix each reason with report.path; no actual GUI/log consumer is introduced here.",
+      "beforeCppPhysicalLines": 465,
+      "afterCppPhysicalLines": 454,
+      "performanceClaim": "None; line count is a structural observation, not a runtime or memory measurement."
+    },
+    "focusedTests": {
+      "normalCommand": "ctest --test-dir build -R '^tst_bella(mobid|pmr)$' --output-on-failure",
+      "sanitizerCommand": "env UBSAN_OPTIONS=halt_on_error=1 ctest --test-dir /private/tmp/bella-mobid-sanitizer -R '^tst_bella(mobid|pmr)$' --output-on-failure",
+      "normalSuitesPassed": 2,
+      "sanitizerSuitesPassed": 2,
+      "pmrQtTestPassedIncludingSetupCleanup": 57,
+      "idQtTestPassedIncludingSetupCleanup": 14,
+      "failed": 0,
+      "skipped": 0,
+      "newCoverage": "Same reason text at two distinct source paths; source context retained and full warning reconstructable. Malformed/empty preferred sets plus unknown tail retain only base reference facts, with metadata and complete reference coverage disabled."
+    },
+    "build": "Existing C++17/exactQt6.5.3 Debug normal universalarm64+x86_64 library and separatearm64 ASan/UBSan library rebuilt. Executed nativelyarm64. No build warnings in focused output.",
+    "corpusRegression": {
+      "inventoryReceipt": "Project Bella/evidence/pmr-machine-validation-2026-10-28.json",
+      "comparison": {
+        "paths": 27,
+        "recordCountIncludingCopies": 3582,
+        "reading": {
+          "Completed": 24,
+          "Malformed": 3
+        },
+        "check": {
+          "Verified": 27
+        },
+        "oracleMatches": 27,
+        "baselineSemanticMatches": 27,
+        "diagnosticReasonMatchesAfterRemovingOldPrefix": 27,
+        "normalAndAsanEqual": true,
+        "observedSourceContentsUnchanged": true,
+        "currentSizeDateHashesStable": true,
+        "scope": "Regression over the27previously located paths; no new filesystemwide discovery performed."
+      },
+      "method": "Reread the27previously located files and compare all report qualifications/selectedversion/count/fullrecordfingerprints against a fresh independent observer. Also compare against28October results and require every original diagnosticreason to match after removal of its old path prefix. No new filesystemwide discovery.",
+      "results": [
+        {
+          "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 80,
+          "fullRecordsSha256": "44a2068496b885c6dfb5767408dbe9c31a2a110a911d8d97868a92f20427b0db",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "be38daf54e5a4cf072dfd13b40a680eb49ddc9fdc55e71f536dd7ec444365dfe",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 359,
+          "fullRecordsSha256": "36b123256919319ff30766ee9c3245a4c6f91542823c31399cfd2ebf733dfbab",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 2,
+          "fullRecordsSha256": "e919894a99ad9c237e24a117de2b85772da1cadacef14d4b0b2f463efa37a3d1",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/mbcs0-unicode1.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "3aecd1ac4e842f63946a56c72e8a7e35f4048eac0ed4398b2087b10d392d64ac",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "770fc49c9866106343f9d9e844cdb7da0ac8415ef8b2198c79d562928a8672b9",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/mbcs1-unicode1-project.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "699b82485b9300a001a13a3e19bcbbe7f41be2c2a3f7ad90f0fc1eb649034301",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "8c087d9fba67842b179da4d7d77b6e6a4acdf56bbb07e53377932c98ac393222",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/mbcs1-unicode2.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 2,
+          "fullRecordsSha256": "29419cf1cd0156c6944cbecf6efeff277d1a55128d14ffbc1adc0f2ce8ee64b1",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "ab12651941142675cb5d6156d52cf1fe99fa48008a60bf93bc081d275bed996f",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/project-1023.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 8,
+          "knownCount": 1,
+          "fullRecordsSha256": "0f097b2141cfa96960b9d1b7cf7d9ff04028a931d1ece888647ca4aa8b2a768f",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "74890bc55a05592c8fc99f0836a4f0d8cee9d2f3db0b91d646a27c20ad1f607b",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/project-1024.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 8,
+          "knownCount": 1,
+          "fullRecordsSha256": "6f15784240f3b33069e8755b875378c6b3ee64555ffdb022fa73680254f11fc6",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "4e1ef0a7ac54a67a400dc5144e0e36d58700e11aebeb3239870538951419d640",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/project-declares1024-missing.pmr",
+          "reading": "Malformed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": null,
+          "knownCount": null,
+          "fullRecordsSha256": null,
+          "metadataEligible": false,
+          "referenceCoverageComplete": false,
+          "sourceSha256": "4fca2699c5829c0024042bbba6756f5c2dd080c15add63bc92fe6e6d964c6a26",
+          "diagnosticReasons": [
+            "Version 8 record 1: Project at byte 58 needs 1024 bytes; only 36 remain."
+          ]
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/trailer-complete4.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 8,
+          "knownCount": 1,
+          "fullRecordsSha256": "2304e8729adb88291621f2faf1ad685e12474b76a7522a2df8b6e6a1e20b6e6b",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "8eb14f1cca19ef707f7ad8fa366f75f1151cbcbe913aa3a112a1a3fcf64af432",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/trailer-partial2.pmr",
+          "reading": "Malformed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": null,
+          "knownCount": null,
+          "fullRecordsSha256": null,
+          "metadataEligible": false,
+          "referenceCoverageComplete": false,
+          "sourceSha256": "5a5bc937a79a4c391c9943ae77f0b672e0bd1c9215b3c2f3682f5458e9e61126",
+          "diagnosticReasons": [
+            "Version 8 record 1: ignored modification word at byte 97 needs 4 bytes; only 2 remain."
+          ]
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/trailer-partial3.pmr",
+          "reading": "Malformed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": null,
+          "knownCount": null,
+          "fullRecordsSha256": null,
+          "metadataEligible": false,
+          "referenceCoverageComplete": false,
+          "sourceSha256": "fc455ac15a699858a1b35464ca4cb0e3bd8848e747ddc1ae8ec9c20b626c7afe",
+          "diagnosticReasons": [
+            "Version 8 record 1: ignored modification word at byte 97 needs 4 bytes; only 3 remain."
+          ]
+        },
+        {
+          "path": "/Users/martymclean/Desktop/msmFMID 2.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 80,
+          "fullRecordsSha256": "44a2068496b885c6dfb5767408dbe9c31a2a110a911d8d97868a92f20427b0db",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "be38daf54e5a4cf072dfd13b40a680eb49ddc9fdc55e71f536dd7ec444365dfe",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/martymclean/Desktop/msmFMID 3.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 61,
+          "fullRecordsSha256": "0f8d0bfe2790e09ba9a954d93b56978040f7478e6d7f8d8750f32ea111a65f44",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "30f80656514e643f0c32edb0d0b8c53de7151e26d28611d1888be8b102332642",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/martymclean/Desktop/msmFMID 4.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 61,
+          "fullRecordsSha256": "0f8d0bfe2790e09ba9a954d93b56978040f7478e6d7f8d8750f32ea111a65f44",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "30f80656514e643f0c32edb0d0b8c53de7151e26d28611d1888be8b102332642",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/martymclean/Desktop/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "be2a925654ac00bc25146223b748dc879e49c6a0cb5a2c6645c29f1ffdae1d8f",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "1701b03566019a2957950d1edcc3481b211e7269e774facf925a0cdef9cbda03",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 435,
+          "fullRecordsSha256": "44aa350f0677e7fd9155a733e82a628b961cfd69111492348e478e1ebc18ca38",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "f1c0dabb9f0d9cdfa4df8951b46295ab83f90aa2b99ce936bd531093c2641c13",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmFMID_round3.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 360,
+          "fullRecordsSha256": "1133f437da53b90d3332bedfac8ab791335d03a84c6b775a5181d32ede8f9f3e",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "d56cc87c811040cdb1dc9bc60cb8af4d17c0df3b65325042da6fdd2a73285d69",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "be2a925654ac00bc25146223b748dc879e49c6a0cb5a2c6645c29f1ffdae1d8f",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "1701b03566019a2957950d1edcc3481b211e7269e774facf925a0cdef9cbda03",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 80,
+          "fullRecordsSha256": "44a2068496b885c6dfb5767408dbe9c31a2a110a911d8d97868a92f20427b0db",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "be38daf54e5a4cf072dfd13b40a680eb49ddc9fdc55e71f536dd7ec444365dfe",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 2,
+          "fullRecordsSha256": "e919894a99ad9c237e24a117de2b85772da1cadacef14d4b0b2f463efa37a3d1",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Volumes/EDIT/2026/Developer/MediaMuster/.claude/worktrees/eloquent-swanson-119368/tests/fixtures/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "be2a925654ac00bc25146223b748dc879e49c6a0cb5a2c6645c29f1ffdae1d8f",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "1701b03566019a2957950d1edcc3481b211e7269e774facf925a0cdef9cbda03",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Volumes/EDIT/2026/Developer/MediaMuster/tests/fixtures/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "be2a925654ac00bc25146223b748dc879e49c6a0cb5a2c6645c29f1ffdae1d8f",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "1701b03566019a2957950d1edcc3481b211e7269e774facf925a0cdef9cbda03",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 389,
+          "fullRecordsSha256": "639542884eb61e56064601dd94301841188ad97812f6b44934143f7ec58cef5b",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 686,
+          "fullRecordsSha256": "35a7287fd36b2f11e2037ba52debee7a775bea81ce52c73314ee5714f457c0ba",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 513,
+          "fullRecordsSha256": "ee1f16fe84cdd24d467788220853542b739df7372a735ee9a355111574db38ee",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7",
+          "diagnosticReasons": []
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "knownVersion": 16,
+          "knownCount": 463,
+          "fullRecordsSha256": "5b7e8cbdba4de2723916549fb9f6f407b69ddab8727d44d9454501fc5638206a",
+          "metadataEligible": true,
+          "referenceCoverageComplete": true,
+          "sourceSha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524",
+          "diagnosticReasons": []
+        }
+      ],
+      "normalProbeSha256": "cd3f5457830cbf41ba1136358681fb65f500a3edc6c39f6ac38fac4c92340f5a",
+      "sanitizerProbeSha256": "cd3f5457830cbf41ba1136358681fb65f500a3edc6c39f6ac38fac4c92340f5a",
+      "observerResultsSha256": "ef6788a455141a7c730de81106baa4bd9624b0c3c3e9aa004b6610b413b51a8b",
+      "sandbox": "Reused user-approved outside-sandbox temporary probes because Qt feature detection previously failed in sandbox. Focused CTest runs succeeded inside it."
+    },
+    "independentReview": "Read-only review found no semantic drift in both selection paths, eligibility/coverage flags or cancellation check positions. Diagnostics retain exact reasons and report.path context.",
+    "activeRuntimeFilesChanged": [],
+    "limits": "No app integration or actual GUI/log-delivery test, scanner cutover, new filesystem discovery, deterministic in-progress cancellation/source-change hook, Windows/x86_64 execution, full old-suite run or runtime/peak-memory comparison. Prior protected-folder accessibility limits remain."
+  },
+  "pmrGroupedReport": {
+    "date": "2026-10-29",
+    "scope": "Both approved report consolidations; representation only, preserving data/qualification/cancellation/verification semantics.",
+    "topLevelFields": [
+      "source",
+      "reading",
+      "sizeDateCheck",
+      "records",
+      "diagnostics"
+    ],
+    "sourceFields": [
+      "path",
+      "capturedStamp"
+    ],
+    "recordFields": [
+      "knownSet",
+      "use"
+    ],
+    "useMapping": [
+      {
+        "oldMetadataEligible": true,
+        "oldReferenceCoverageComplete": true,
+        "use": "MetadataWithCompleteCoverage"
+      },
+      {
+        "oldMetadataEligible": true,
+        "oldReferenceCoverageComplete": false,
+        "use": "MetadataWithIncompleteCoverage"
+      },
+      {
+        "oldMetadataEligible": false,
+        "oldReferenceCoverageComplete": true,
+        "use": "NoMetadataWithCompleteCoverage"
+      },
+      {
+        "oldMetadataEligible": false,
+        "oldReferenceCoverageComplete": false,
+        "use": "NoMetadataWithIncompleteCoverage"
+      }
+    ],
+    "default": "No retained knownSet, readingNotRead, sizeDateCheckNotChecked, records.useNoMetadataWithIncompleteCoverage.",
+    "positiveReferenceRule": "NoMetadataWithIncompleteCoverage is not NoData: a wholly validated knownSet may remain for qualified positive reference checks.",
+    "changedFiles": [
+      "src/bella/pmrparser.h",
+      "src/bella/pmrparser.cpp",
+      "tests/tst_bellapmr.cpp"
+    ],
+    "testedSourceFiles": [
+      {
+        "path": "src/bella/pmrparser.h",
+        "sha256": "7068fc09c24bf7334e457d01212a1537586f21f8cd3a8909d5d9374d1b04157a"
+      },
+      {
+        "path": "src/bella/pmrparser.cpp",
+        "sha256": "d7c2ca5580754918e794745976a7e348f9be2878475342307a3075aa5264a7cd"
+      },
+      {
+        "path": "src/bella/mobid.h",
+        "sha256": "95ba2ca6f8f315beb729fedd0cf91f35f53d6a5dce793e1da15b6dfbd4c833a8"
+      },
+      {
+        "path": "src/bella/mobid.cpp",
+        "sha256": "cf4718e1a68d0f5cffb3e958983a9ce729c102e1a807885ad57f03a89ffca969"
+      },
+      {
+        "path": "tests/tst_bellapmr.cpp",
+        "sha256": "42db3dfbfe63e237e70ee4bba0c69649de6802c6e932932afe42187caf388afc"
+      },
+      {
+        "path": "tests/tst_bellamobid.cpp",
+        "sha256": "f43937aea51842826f6ae20f8f227b822a94a4cd9d9171bef2200c58bacb740d"
+      }
+    ],
+    "build": "C++17/exactQt6.5.3 Debug normal arm64+x86_64 and separatearm64 ASan/UBSan libraries rebuilt. Executionarm64. No focused compiler warnings.",
+    "focusedTests": {
+      "normalCommand": "ctest --test-dir build -R '^tst_bella(mobid|pmr)$' --output-on-failure",
+      "sanitizerCommand": "env UBSAN_OPTIONS=halt_on_error=1 ctest --test-dir /private/tmp/bella-mobid-sanitizer -R '^tst_bella(mobid|pmr)$' --output-on-failure",
+      "normalSuitesPassed": 2,
+      "sanitizerSuitesPassed": 2,
+      "pmrQtTestPassedIncludingSetupCleanup": 57,
+      "idQtTestPassedIncludingSetupCleanup": 14,
+      "failed": 0,
+      "skipped": 0,
+      "testMigration": "Grouped paths/stamps/knownSet;37 exact enum assertions cover all4use states and replace old bool checks. Existing fixtures/fingerprints/cases preserved; no compatibility bools or new cancellation hooks."
+    },
+    "corpusRegression": {
+      "inventoryReceipt": "Project Bella/evidence/pmr-machine-validation-2026-10-28.json",
+      "comparison": {
+        "paths": 27,
+        "selectedRecordsIncludingCopies": 3582,
+        "reading": {
+          "Completed": 24,
+          "Malformed": 3
+        },
+        "sizeDateCheck": {
+          "Verified": 27
+        },
+        "recordsUse": {
+          "MetadataWithCompleteCoverage": 24,
+          "NoMetadataWithIncompleteCoverage": 3
+        },
+        "allSourceFactsGroupedAndPreserved": true,
+        "oracleMatches": 27,
+        "priorBooleanClassificationMatches": 27,
+        "priorOwnedRecordAndReasonMatches": 27,
+        "normalAndSanitizerEqual": true,
+        "observedSourceContentsAndStampsStable": true,
+        "scope": "Regression over the27previously inventoried paths; no new full-machine traversal."
+      },
+      "method": "Fresh independent decoder over the27previously inventoried paths. Compare reading/check, source.path and captured size/time, selectedset version/count/every fullrecordfingerprint and exact reason notes; map the old two boolean answers to the new enum and compare both prior results and fresh oracle. Adapted temporary C++ probe serializes raw enum names, not legacy public bools. No new whole-machine discovery.",
+      "results": [
+        {
+          "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 80,
+          "fullRecordsSha256": "44a2068496b885c6dfb5767408dbe9c31a2a110a911d8d97868a92f20427b0db",
+          "capturedStamp": {
+            "modifiedMs": 1787990952003,
+            "sizeBytes": 12352
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 359,
+          "fullRecordsSha256": "36b123256919319ff30766ee9c3245a4c6f91542823c31399cfd2ebf733dfbab",
+          "capturedStamp": {
+            "modifiedMs": 1790740372078,
+            "sizeBytes": 86754
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 2,
+          "fullRecordsSha256": "e919894a99ad9c237e24a117de2b85772da1cadacef14d4b0b2f463efa37a3d1",
+          "capturedStamp": {
+            "modifiedMs": 1788291482553,
+            "sizeBytes": 392
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/mbcs0-unicode1.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "3aecd1ac4e842f63946a56c72e8a7e35f4048eac0ed4398b2087b10d392d64ac",
+          "capturedStamp": {
+            "modifiedMs": 1788561087804,
+            "sizeBytes": 116
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/mbcs1-unicode1-project.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "699b82485b9300a001a13a3e19bcbbe7f41be2c2a3f7ad90f0fc1eb649034301",
+          "capturedStamp": {
+            "modifiedMs": 1788561087804,
+            "sizeBytes": 213
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/mbcs1-unicode2.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 2,
+          "fullRecordsSha256": "29419cf1cd0156c6944cbecf6efeff277d1a55128d14ffbc1adc0f2ce8ee64b1",
+          "capturedStamp": {
+            "modifiedMs": 1788561087804,
+            "sizeBytes": 309
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/project-1023.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 8,
+          "knownCount": 1,
+          "fullRecordsSha256": "0f097b2141cfa96960b9d1b7cf7d9ff04028a931d1ece888647ca4aa8b2a768f",
+          "capturedStamp": {
+            "modifiedMs": 1788561087805,
+            "sizeBytes": 1117
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/project-1024.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 8,
+          "knownCount": 1,
+          "fullRecordsSha256": "6f15784240f3b33069e8755b875378c6b3ee64555ffdb022fa73680254f11fc6",
+          "capturedStamp": {
+            "modifiedMs": 1788561087805,
+            "sizeBytes": 1118
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/project-declares1024-missing.pmr",
+          "reading": "Malformed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "NoMetadataWithIncompleteCoverage",
+          "knownVersion": null,
+          "knownCount": null,
+          "fullRecordsSha256": null,
+          "capturedStamp": {
+            "modifiedMs": 1788561087805,
+            "sizeBytes": 94
+          },
+          "diagnostics": [
+            "Version 8 record 1: Project at byte 58 needs 1024 bytes; only 36 remain."
+          ]
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/trailer-complete4.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 8,
+          "knownCount": 1,
+          "fullRecordsSha256": "2304e8729adb88291621f2faf1ad685e12474b76a7522a2df8b6e6a1e20b6e6b",
+          "capturedStamp": {
+            "modifiedMs": 1788561087804,
+            "sizeBytes": 101
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/trailer-partial2.pmr",
+          "reading": "Malformed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "NoMetadataWithIncompleteCoverage",
+          "knownVersion": null,
+          "knownCount": null,
+          "fullRecordsSha256": null,
+          "capturedStamp": {
+            "modifiedMs": 1788561087804,
+            "sizeBytes": 99
+          },
+          "diagnostics": [
+            "Version 8 record 1: ignored modification word at byte 97 needs 4 bytes; only 2 remain."
+          ]
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/trailer-partial3.pmr",
+          "reading": "Malformed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "NoMetadataWithIncompleteCoverage",
+          "knownVersion": null,
+          "knownCount": null,
+          "fullRecordsSha256": null,
+          "capturedStamp": {
+            "modifiedMs": 1788561087804,
+            "sizeBytes": 100
+          },
+          "diagnostics": [
+            "Version 8 record 1: ignored modification word at byte 97 needs 4 bytes; only 3 remain."
+          ]
+        },
+        {
+          "path": "/Users/martymclean/Desktop/msmFMID 2.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 80,
+          "fullRecordsSha256": "44a2068496b885c6dfb5767408dbe9c31a2a110a911d8d97868a92f20427b0db",
+          "capturedStamp": {
+            "modifiedMs": 1784513339174,
+            "sizeBytes": 12352
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/Desktop/msmFMID 3.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 61,
+          "fullRecordsSha256": "0f8d0bfe2790e09ba9a954d93b56978040f7478e6d7f8d8750f32ea111a65f44",
+          "capturedStamp": {
+            "modifiedMs": 1784544621353,
+            "sizeBytes": 13496
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/Desktop/msmFMID 4.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 61,
+          "fullRecordsSha256": "0f8d0bfe2790e09ba9a954d93b56978040f7478e6d7f8d8750f32ea111a65f44",
+          "capturedStamp": {
+            "modifiedMs": 1784544621353,
+            "sizeBytes": 13496
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/Desktop/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "be2a925654ac00bc25146223b748dc879e49c6a0cb5a2c6645c29f1ffdae1d8f",
+          "capturedStamp": {
+            "modifiedMs": 1783052387386,
+            "sizeBytes": 248
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 435,
+          "fullRecordsSha256": "44aa350f0677e7fd9155a733e82a628b961cfd69111492348e478e1ebc18ca38",
+          "capturedStamp": {
+            "modifiedMs": 1785719912862,
+            "sizeBytes": 102682
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmFMID_round3.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 360,
+          "fullRecordsSha256": "1133f437da53b90d3332bedfac8ab791335d03a84c6b775a5181d32ede8f9f3e",
+          "capturedStamp": {
+            "modifiedMs": 1786262281135,
+            "sizeBytes": 86996
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "be2a925654ac00bc25146223b748dc879e49c6a0cb5a2c6645c29f1ffdae1d8f",
+          "capturedStamp": {
+            "modifiedMs": 1779716614000,
+            "sizeBytes": 248
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 80,
+          "fullRecordsSha256": "44a2068496b885c6dfb5767408dbe9c31a2a110a911d8d97868a92f20427b0db",
+          "capturedStamp": {
+            "modifiedMs": 1788314697907,
+            "sizeBytes": 12352
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 2,
+          "fullRecordsSha256": "e919894a99ad9c237e24a117de2b85772da1cadacef14d4b0b2f463efa37a3d1",
+          "capturedStamp": {
+            "modifiedMs": 1788314697918,
+            "sizeBytes": 392
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Volumes/EDIT/2026/Developer/MediaMuster/.claude/worktrees/eloquent-swanson-119368/tests/fixtures/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "be2a925654ac00bc25146223b748dc879e49c6a0cb5a2c6645c29f1ffdae1d8f",
+          "capturedStamp": {
+            "modifiedMs": 1779698880000,
+            "sizeBytes": 248
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Volumes/EDIT/2026/Developer/MediaMuster/tests/fixtures/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "be2a925654ac00bc25146223b748dc879e49c6a0cb5a2c6645c29f1ffdae1d8f",
+          "capturedStamp": {
+            "modifiedMs": 1779716614000,
+            "sizeBytes": 248
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 389,
+          "fullRecordsSha256": "639542884eb61e56064601dd94301841188ad97812f6b44934143f7ec58cef5b",
+          "capturedStamp": {
+            "modifiedMs": 1561095049000,
+            "sizeBytes": 97250
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 686,
+          "fullRecordsSha256": "35a7287fd36b2f11e2037ba52debee7a775bea81ce52c73314ee5714f457c0ba",
+          "capturedStamp": {
+            "modifiedMs": 1785052993000,
+            "sizeBytes": 164660
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 513,
+          "fullRecordsSha256": "ee1f16fe84cdd24d467788220853542b739df7372a735ee9a355111574db38ee",
+          "capturedStamp": {
+            "modifiedMs": 1790763274000,
+            "sizeBytes": 123140
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "recordsUse": "MetadataWithCompleteCoverage",
+          "knownVersion": 16,
+          "knownCount": 463,
+          "fullRecordsSha256": "5b7e8cbdba4de2723916549fb9f6f407b69ddab8727d44d9454501fc5638206a",
+          "capturedStamp": {
+            "modifiedMs": 1785052993000,
+            "sizeBytes": 111140
+          },
+          "diagnostics": []
+        }
+      ],
+      "normalProbeResultsSha256": "4692124cf24177070662abad75b97032a96939e625e7b034ee26078378c3b458",
+      "sanitizerProbeResultsSha256": "4692124cf24177070662abad75b97032a96939e625e7b034ee26078378c3b458",
+      "observerResultsSha256": "6a259abeffff6d6f8c43f19979ba032f716b8b50f366fd5fe5547668469b0fce",
+      "temporaryProbeSourceSha256": "cdb6f2f92e85e361669fbf491c21a02d28ba3a5303c03bc07690a24ce7c5cfc2",
+      "sandbox": "Focused CTest succeeded inside sandbox. Reused user-approved outside-sandbox corpus probes to avoid known Qt CPU-feature detection failure."
+    },
+    "independentReview": "Read-only diff review found mapping/defaults/empty-set coverage/positive-only records/source fields/late Cancel and independent verification correct. No extra public boolean helper API.",
+    "activeRuntimeFilesChanged": [],
+    "limits": "No app integration, actual warning-delivery test, full existing-suite run, Windows/x86_64 execution, new discovery of protected folders, forced live-cancel/change timing test or scan-time/peak-memory comparison. No memory saving claimed from grouping or enum conversion."
+  },
+  "pendingPmrSimplification": {
+    "status": "Resolved, implemented and verified29October",
+    "approved": "canUsePmrMetadata plus independent referenceCoverageComplete; existing checks retained.",
+    "utf8CheckName": "isValidUtf8Filename, a local existing decoder-result check rather than a persisted field or second pass."
+  },
+  "pmrBooleanReport": {
+    "date": "2026-10-29",
+    "scope": "Approved metadata-usability boolean plus retained independent reference coverage, replacing PmrUse; existing validation and other report fields retained.",
+    "recordFields": [
+      "knownSet",
+      "canUsePmrMetadata",
+      "referenceCoverageComplete"
+    ],
+    "checkName": "isValidUtf8Filename is a local value of !QStringDecoder::hasError() after one existing decode; no new pass or stored record field.",
+    "mapping": {
+      "MetadataWithCompleteCoverage": [
+        true,
+        true
+      ],
+      "MetadataWithIncompleteCoverage": [
+        true,
+        false
+      ],
+      "NoMetadataWithCompleteCoverage": [
+        false,
+        true
+      ],
+      "NoMetadataWithIncompleteCoverage": [
+        false,
+        false
+      ]
+    },
+    "testedSourceFiles": [
+      {
+        "path": "src/bella/pmrparser.h",
+        "sha256": "4ab341e53ab9626ea7f1e382a84003f5c7bf311f2c5c0b59cd53a15613117d54"
+      },
+      {
+        "path": "src/bella/pmrparser.cpp",
+        "sha256": "b6bc828977b08cd07a7b4ef3942b92be61b75cedfe4cbaf12e01001215ebe537"
+      },
+      {
+        "path": "src/bella/mobid.h",
+        "sha256": "95ba2ca6f8f315beb729fedd0cf91f35f53d6a5dce793e1da15b6dfbd4c833a8"
+      },
+      {
+        "path": "src/bella/mobid.cpp",
+        "sha256": "cf4718e1a68d0f5cffb3e958983a9ce729c102e1a807885ad57f03a89ffca969"
+      },
+      {
+        "path": "tests/tst_bellapmr.cpp",
+        "sha256": "b87879166df972885b324fc227bc4ee4abede02f95f1feb090639747cfcfd07f"
+      },
+      {
+        "path": "tests/tst_bellamobid.cpp",
+        "sha256": "f43937aea51842826f6ae20f8f227b822a94a4cd9d9171bef2200c58bacb740d"
+      }
+    ],
+    "changedFiles": [
+      "src/bella/pmrparser.h",
+      "src/bella/pmrparser.cpp",
+      "tests/tst_bellapmr.cpp"
+    ],
+    "build": "C++17/exactQt6.5.3 Debug normaluniversalarm64+x86_64 and separatearm64 ASan/UBSan libraries rebuilt; nativearm64 execution; no focused compiler warnings.",
+    "focusedTests": {
+      "normalCommand": "ctest --test-dir build -R '^tst_bella(mobid|pmr)$' --output-on-failure",
+      "sanitizerCommand": "env UBSAN_OPTIONS=halt_on_error=1 ctest --test-dir /private/tmp/bella-mobid-sanitizer -R '^tst_bella(mobid|pmr)$' --output-on-failure",
+      "normalSuitesPassed": 2,
+      "sanitizerSuitesPassed": 2,
+      "pmrQtTestPassedIncludingSetupCleanup": 57,
+      "idQtTestPassedIncludingSetupCleanup": 14,
+      "failed": 0,
+      "skipped": 0,
+      "testMigration": "All37 previous use-enum assertions replaced with both exact bool assertions; test slots and five full-record fixture fingerprints unchanged."
+    },
+    "corpusRegression": {
+      "inventoryReceipt": "Project Bella/evidence/pmr-machine-validation-2026-10-28.json",
+      "comparison": {
+        "paths": 27,
+        "selectedRecordsIncludingCopies": 3582,
+        "reading": {
+          "Completed": 24,
+          "Malformed": 3
+        },
+        "sizeDateCheck": {
+          "Verified": 27
+        },
+        "metadataUsable": 24,
+        "coverageComplete": 24,
+        "allPriorEnumMeaningsPreserved": true,
+        "allSourceAndRecordFactsAndReasonsPreserved": true,
+        "oracleMatches": 27,
+        "normalAndSanitizerEqual": true,
+        "sourceContentsAndStampsObservedStable": true,
+        "scope": "Regression over previously located27paths; no new filesystemwide inventory."
+      },
+      "method": "Fresh independent decoder over27priorpaths, compare old useenum to boolpair, all read/check/source/ownedrecord facts and exact notes; normal+sanitizer probes serialize actual grouped fields. No new filesystemwide discovery.",
+      "results": [
+        {
+          "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 80,
+          "fullRecordsSha256": "44a2068496b885c6dfb5767408dbe9c31a2a110a911d8d97868a92f20427b0db",
+          "capturedStamp": {
+            "modifiedMs": 1787990952003,
+            "sizeBytes": 12352
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 359,
+          "fullRecordsSha256": "36b123256919319ff30766ee9c3245a4c6f91542823c31399cfd2ebf733dfbab",
+          "capturedStamp": {
+            "modifiedMs": 1790740372078,
+            "sizeBytes": 86754
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 2,
+          "fullRecordsSha256": "e919894a99ad9c237e24a117de2b85772da1cadacef14d4b0b2f463efa37a3d1",
+          "capturedStamp": {
+            "modifiedMs": 1788291482553,
+            "sizeBytes": 392
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/mbcs0-unicode1.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "3aecd1ac4e842f63946a56c72e8a7e35f4048eac0ed4398b2087b10d392d64ac",
+          "capturedStamp": {
+            "modifiedMs": 1788561087804,
+            "sizeBytes": 116
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/mbcs1-unicode1-project.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "699b82485b9300a001a13a3e19bcbbe7f41be2c2a3f7ad90f0fc1eb649034301",
+          "capturedStamp": {
+            "modifiedMs": 1788561087804,
+            "sizeBytes": 213
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/mbcs1-unicode2.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 2,
+          "fullRecordsSha256": "29419cf1cd0156c6944cbecf6efeff277d1a55128d14ffbc1adc0f2ce8ee64b1",
+          "capturedStamp": {
+            "modifiedMs": 1788561087804,
+            "sizeBytes": 309
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/project-1023.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 8,
+          "knownCount": 1,
+          "fullRecordsSha256": "0f097b2141cfa96960b9d1b7cf7d9ff04028a931d1ece888647ca4aa8b2a768f",
+          "capturedStamp": {
+            "modifiedMs": 1788561087805,
+            "sizeBytes": 1117
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/project-1024.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 8,
+          "knownCount": 1,
+          "fullRecordsSha256": "6f15784240f3b33069e8755b875378c6b3ee64555ffdb022fa73680254f11fc6",
+          "capturedStamp": {
+            "modifiedMs": 1788561087805,
+            "sizeBytes": 1118
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/project-declares1024-missing.pmr",
+          "reading": "Malformed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": false,
+          "referenceCoverageComplete": false,
+          "knownVersion": null,
+          "knownCount": null,
+          "fullRecordsSha256": null,
+          "capturedStamp": {
+            "modifiedMs": 1788561087805,
+            "sizeBytes": 94
+          },
+          "diagnostics": [
+            "Version 8 record 1: Project at byte 58 needs 1024 bytes; only 36 remain."
+          ]
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/trailer-complete4.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 8,
+          "knownCount": 1,
+          "fullRecordsSha256": "2304e8729adb88291621f2faf1ad685e12474b76a7522a2df8b6e6a1e20b6e6b",
+          "capturedStamp": {
+            "modifiedMs": 1788561087804,
+            "sizeBytes": 101
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/trailer-partial2.pmr",
+          "reading": "Malformed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": false,
+          "referenceCoverageComplete": false,
+          "knownVersion": null,
+          "knownCount": null,
+          "fullRecordsSha256": null,
+          "capturedStamp": {
+            "modifiedMs": 1788561087804,
+            "sizeBytes": 99
+          },
+          "diagnostics": [
+            "Version 8 record 1: ignored modification word at byte 97 needs 4 bytes; only 2 remain."
+          ]
+        },
+        {
+          "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/trailer-partial3.pmr",
+          "reading": "Malformed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": false,
+          "referenceCoverageComplete": false,
+          "knownVersion": null,
+          "knownCount": null,
+          "fullRecordsSha256": null,
+          "capturedStamp": {
+            "modifiedMs": 1788561087804,
+            "sizeBytes": 100
+          },
+          "diagnostics": [
+            "Version 8 record 1: ignored modification word at byte 97 needs 4 bytes; only 3 remain."
+          ]
+        },
+        {
+          "path": "/Users/martymclean/Desktop/msmFMID 2.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 80,
+          "fullRecordsSha256": "44a2068496b885c6dfb5767408dbe9c31a2a110a911d8d97868a92f20427b0db",
+          "capturedStamp": {
+            "modifiedMs": 1784513339174,
+            "sizeBytes": 12352
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/Desktop/msmFMID 3.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 61,
+          "fullRecordsSha256": "0f8d0bfe2790e09ba9a954d93b56978040f7478e6d7f8d8750f32ea111a65f44",
+          "capturedStamp": {
+            "modifiedMs": 1784544621353,
+            "sizeBytes": 13496
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/Desktop/msmFMID 4.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 61,
+          "fullRecordsSha256": "0f8d0bfe2790e09ba9a954d93b56978040f7478e6d7f8d8750f32ea111a65f44",
+          "capturedStamp": {
+            "modifiedMs": 1784544621353,
+            "sizeBytes": 13496
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/Desktop/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "be2a925654ac00bc25146223b748dc879e49c6a0cb5a2c6645c29f1ffdae1d8f",
+          "capturedStamp": {
+            "modifiedMs": 1783052387386,
+            "sizeBytes": 248
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 435,
+          "fullRecordsSha256": "44aa350f0677e7fd9155a733e82a628b961cfd69111492348e478e1ebc18ca38",
+          "capturedStamp": {
+            "modifiedMs": 1785719912862,
+            "sizeBytes": 102682
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmFMID_round3.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 360,
+          "fullRecordsSha256": "1133f437da53b90d3332bedfac8ab791335d03a84c6b775a5181d32ede8f9f3e",
+          "capturedStamp": {
+            "modifiedMs": 1786262281135,
+            "sizeBytes": 86996
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "be2a925654ac00bc25146223b748dc879e49c6a0cb5a2c6645c29f1ffdae1d8f",
+          "capturedStamp": {
+            "modifiedMs": 1779716614000,
+            "sizeBytes": 248
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 80,
+          "fullRecordsSha256": "44a2068496b885c6dfb5767408dbe9c31a2a110a911d8d97868a92f20427b0db",
+          "capturedStamp": {
+            "modifiedMs": 1788314697907,
+            "sizeBytes": 12352
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 2,
+          "fullRecordsSha256": "e919894a99ad9c237e24a117de2b85772da1cadacef14d4b0b2f463efa37a3d1",
+          "capturedStamp": {
+            "modifiedMs": 1788314697918,
+            "sizeBytes": 392
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Volumes/EDIT/2026/Developer/MediaMuster/.claude/worktrees/eloquent-swanson-119368/tests/fixtures/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "be2a925654ac00bc25146223b748dc879e49c6a0cb5a2c6645c29f1ffdae1d8f",
+          "capturedStamp": {
+            "modifiedMs": 1779698880000,
+            "sizeBytes": 248
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Volumes/EDIT/2026/Developer/MediaMuster/tests/fixtures/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 1,
+          "fullRecordsSha256": "be2a925654ac00bc25146223b748dc879e49c6a0cb5a2c6645c29f1ffdae1d8f",
+          "capturedStamp": {
+            "modifiedMs": 1779716614000,
+            "sizeBytes": 248
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 389,
+          "fullRecordsSha256": "639542884eb61e56064601dd94301841188ad97812f6b44934143f7ec58cef5b",
+          "capturedStamp": {
+            "modifiedMs": 1561095049000,
+            "sizeBytes": 97250
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 686,
+          "fullRecordsSha256": "35a7287fd36b2f11e2037ba52debee7a775bea81ce52c73314ee5714f457c0ba",
+          "capturedStamp": {
+            "modifiedMs": 1785052993000,
+            "sizeBytes": 164660
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 513,
+          "fullRecordsSha256": "ee1f16fe84cdd24d467788220853542b739df7372a735ee9a355111574db38ee",
+          "capturedStamp": {
+            "modifiedMs": 1790763274000,
+            "sizeBytes": 123140
+          },
+          "diagnostics": []
+        },
+        {
+          "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+          "reading": "Completed",
+          "sizeDateCheck": "Verified",
+          "canUsePmrMetadata": true,
+          "referenceCoverageComplete": true,
+          "knownVersion": 16,
+          "knownCount": 463,
+          "fullRecordsSha256": "5b7e8cbdba4de2723916549fb9f6f407b69ddab8727d44d9454501fc5638206a",
+          "capturedStamp": {
+            "modifiedMs": 1785052993000,
+            "sizeBytes": 111140
+          },
+          "diagnostics": []
+        }
+      ],
+      "normalResultsSha256": "1f1622eafcaf6cc94afd59f1f5df7f23cae0bc5820b0db3c03ed7f741b249128",
+      "sanitizerResultsSha256": "1f1622eafcaf6cc94afd59f1f5df7f23cae0bc5820b0db3c03ed7f741b249128",
+      "oracleResultsSha256": "f70dfaba9c375b0e9db965759e242232054fba44a97a38cbd6f156c432caa418",
+      "sandbox": "Focused CTest succeeded inside sandbox; corpus probes reused approved outside-sandbox execution because Qt CPU detection had failed there previously."
+    },
+    "independentReview": "Read-only review found exact inverse mapping, safe defaults, positive-only and empty-set coverage preserved, same Cancel checkpoints and one UTF8 decoding pass.",
+    "activeRuntimeFilesChanged": [],
+    "limits": "No app integration/cutover, actual GUI/log-delivery test, full existing-suite run, Windows/x86_64 execution, new discovery of protected locations, forced live-change/cancel race instrumentation, or runtime/peak-memory comparison."
+  }
 }

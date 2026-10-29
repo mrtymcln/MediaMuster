@@ -88,6 +88,8 @@ find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Widgets Core Gui Concurrent)
 add_library(mediamuster_bella STATIC
     src/bella/mobid.cpp
     src/bella/mobid.h
+    src/bella/pmrparser.cpp
+    src/bella/pmrparser.h
 )
 set_target_properties(mediamuster_bella PROPERTIES AUTOMOC OFF)
 target_include_directories(mediamuster_bella PUBLIC ${CMAKE_SOURCE_DIR}/src)

@@ -2,9 +2,11 @@
 
 Started 18 October 2026. Status: first-release parser/source requirements and
 the eight registered scanner-workflow decisions are settled. Independent Bella
-implementation has begun with the shared ID helper and its separate library/test
-target. The scanner and source parsers remain to implement; new concrete choices
-still require user check-ins.
+implementation includes the shared ID helper and the first PMR parser in their
+separate library/test targets. The focused PMR tests pass normally and with
+ASan/UBSan on arm64. The scanner and
+other source parsers remain to implement; new concrete choices still require
+user check-ins.
 
 Bella is a fresh start for MediaMuster's scanner and parser. The motivation is to
 reduce scan time and memory use after the Canon and Copland iterations and the
@@ -43,7 +45,7 @@ partial results and incomplete status; cleanup remains responsive. Keep only
 required compact matching facts through matching, then release them. New concrete
 implementation/label/API choices still need a plain-English check-in before
 dependent work; completion of this register is not approval of every proposal
-or app cutover. The shared ID helper is the first implemented Bella component;
+or app cutover. The shared ID helper and PMR parser are implemented;
 there is no runnable Bella scanner or measured scan improvement yet. OldScanner
 stays active until explicit cutover approval.
 
@@ -94,7 +96,7 @@ and initially linked only to Bella's focused tests. The user chose this over
 compiling Bella sources directly into each test program. Use the existing
 C++17 and exact Qt 6.5.3 settings. The target now contains the shared ID helper;
 the later decisions below settle its files and contract. PMR parser signatures
-and report details remain pending. Root/test CMake lists are the initial
+and report details are settled in the contract below. Root/test CMake lists are the initial
 existing-file touch points; app integration and cutover remain unapproved.
 See the [approval record](evidence/decision-check-ins-2026-10-27.json).
 
@@ -129,8 +131,8 @@ and `tests/tst_bellamobid.cpp` / `tests/tst_bellapmr.cpp` for focused coverage.
 The agreed static-library boundary uses explicit root/test CMake lists. This
 settles these names and placement; exact interfaces, stored representations,
 cancellation and source-change mechanisms still need concrete check-ins.
-The shared ID files, focused ID test and library target are implemented. PMR
-reader/report files await their remaining interface and source-reading decisions.
+The shared ID and PMR reader/report files now use this arrangement, with their
+focused tests and library target. See their implementation checks below.
 
 **Shared scan stop flag agreed, 27 October 2026:** the user chose the shared
 stop flag and asked whether all readers/parsers would use it. One Bella scan's
@@ -212,13 +214,77 @@ possible pairing. This changes representation, not accepted metadata, source
 selection or UI columns. Exact names and the remaining compact report/interface
 details will be reviewed together rather than as separate naming decisions.
 
-#### PMR implementation contract — report/table agreed, failure route pending
+#### Agreed PMR implementation contract
+
+**Latest direction, 29 October 2026:** the user chose a simple
+`CanUsePmrMetadata` yes/no answer while retaining checks, including v16 Filename
+UTF-8 validation, then explicitly retained the independent reference-coverage
+fact. The current contract uses `records.canUsePmrMetadata` and
+`records.referenceCoverageComplete` instead of `PmrUse`. This preserves the
+existing No Reference meaning, including usable older fallback with incomplete
+coverage. Source/record grouping, reading/check answers and diagnostic reasons
+otherwise stay unchanged. `isValidUtf8Filename` names the existing one-pass
+decoder check; it is not a stored record field or an additional decoding pass.
+These approvals supersede the earlier four-way use enum as a representation only.
+
+The final boolean pair is implemented and verified: 57 PMR and 14 ID QtTest
+cases pass in normal and arm64 ASan/UBSan builds. Both corpus probes match a
+fresh independent decoder and the previous enum classifications on all 27 prior
+paths / 3,582 selected records (including copies), with all source facts and
+explanatory reasons retained. No new full-machine search or active app consumer
+change was made. See `pmrBooleanReport` in the
+[validation receipt](evidence/decision-check-ins-2026-10-27.json).
+
+**Report consolidations agreed, 29 October 2026:** the user subsequently chose
+both proposed consolidations. Group `path` and `capturedStamp` in `PmrSource`
+under `report.source`, and group `knownSet` with its permitted-use classification
+in `PmrRecords` under `report.records`. Replace the two public metadata/coverage
+booleans with `records.use`: the four-choice `PmrUse` enum shown below. Keep
+`reading` and `sizeDateCheck` separate, and keep `diagnostics` as reason text.
+This supersedes the earlier flat layout/two-boolean representation, without
+changing record eligibility, complete-reference meanings, retained positive
+references, empty sets, cancellation or source checks. No active app integration,
+all-boolean status model or measured performance improvement is selected.
+
+The grouped layout and `PmrUse` are implemented and checked: 57 PMR and 14 ID
+QtTest cases pass normally and with arm64 ASan/UBSan. All four use choices are
+asserted in focused coverage. Both corpus probes match a fresh independent
+decoder and the previous classifications on all 27 prior paths / 3,582 records
+(including copies), with source facts and reason notes preserved. No new full
+filesystem discovery or active app integration was performed. See the
+`pmrGroupedReport` section of the
+[validation receipt](evidence/decision-check-ins-2026-10-27.json).
+
+**Internal cleanups agreed, 29 October 2026:** the user chose both internal
+cleanups: consolidate the repeated set-result/unsupported finalization, and keep
+the source path once in `PmrReport.path` rather than prefixing every diagnostic.
+`diagnostics` now contains reason text; any future display/log delivery must
+combine that reason with `report.path` so full source context remains available.
+Keep all public fields and answer values, whole-set/source rules, warning detail
+and cancellation boundaries. The alternative report reorganisation was not
+selected. No active scanner, table, progress, operations or Bin Filter change is
+needed. This is a readability/representation change, with no measured speed or
+memory claim.
+
+The cleanups are implemented. The focused normal and arm64 ASan/UBSan suites
+pass 57 PMR and 14 ID cases, including the diagnostic source/reason contract and
+unsupported preferred-set fallback cases. Both corpus probes match a fresh
+independent decoder on all 27 previously located paths and 3,582 selected records
+(including copies), with unchanged outcomes/qualifications and exact original
+reason text after removing the repeated prefix. This is regression coverage of
+the prior inventory, not a new full-machine search. No actual GUI/log delivery
+is introduced or tested. See the `pmrCleanup` section of the
+[validation receipt](evidence/decision-check-ins-2026-10-27.json).
 
 On 28 October the user approved item 1 (the compact report/reference interface)
-and item 3 (the unchanged shared MacRoman table). Item 2, the internal expected-
-failure mechanism, remains open while the user asks whether the example has
-occurred and whether extra complexity is justified. Do not infer approval of
-that route. No PMR runtime code is added by these records. The contract collects
+and item 3 (the unchanged shared MacRoman table), then approved item 2: ordinary
+checked returns for expected open/read/format/check failures, as in `86c500c`,
+with named results and explanations in Bella's report. No private parsing
+exceptions or recovery framework are introduced. The truncation example was
+illustrative: all six genuine PMRs in the recorded review were structurally
+complete; truncated inputs are authored validation cases. Necessary bounds
+checks remain. Unexpected resource/program failures remain distinct.
+The user explicitly authorised beginning the PMR parser. The contract collects
 the exact interface and stored values without further naming-only check-ins.
 All types/functions below belong in `pmrparser.h` and namespace `Bella`:
 
@@ -250,15 +316,25 @@ struct PmrStamp
     QDateTime modified; // Invalid means unavailable, not a zero timestamp.
 };
 
-struct PmrReport
+struct PmrSource
 {
     QString path;
+    PmrStamp capturedStamp;
+};
+
+struct PmrRecords
+{
+    std::optional<PmrSet> knownSet;
+    bool canUsePmrMetadata = false;
+    bool referenceCoverageComplete = false;
+};
+
+struct PmrReport
+{
+    PmrSource source;
     PmrReadResult reading = PmrReadResult::NotRead;
     PmrCheckResult sizeDateCheck = PmrCheckResult::NotChecked;
-    PmrStamp capturedStamp;
-    std::optional<PmrSet> knownSet;
-    bool metadataEligible = false;
-    bool referenceCoverageComplete = false;
+    PmrRecords records;
     QStringList diagnostics;
 };
 
@@ -286,7 +362,7 @@ The implementation choices and their current status are:
 | Choice | Recommendation | Alternative and tradeoff |
 | --- | --- | --- |
 | Compact interface/reference protocol — agreed 28 October | Use the report above with one whole validated `knownSet`, separate read/check answers and explicit metadata/format-coverage qualifications. Both metadata and positive reference consumers can inspect those same owned records according to their qualification. | Keep separate metadata and reference record lists inside the report. This makes their roles separate, but adds two list representations and their bookkeeping. Neither option changes the agreed reference-check meanings. |
-| Expected-failure mechanism — pending | Ordinary open/read/format/check failures return named report results and explanations; small parsing helpers use checked return values. This follows `86c500c`'s ordinary-return approach, with richer status. | A private parsing exception caught once at the reader entry can produce the same report, but adds exception-based control flow for expected input failures. Unexpected allocation/program failures remain distinct in either design. |
+| Expected-failure mechanism — agreed 28 October | Ordinary open/read/format/check failures return named report results and explanations; small parsing helpers use checked return values. This follows `86c500c`'s ordinary-return approach, with richer status. | A private parsing exception caught once at the reader entry can produce the same report, but adds exception-based control flow for expected input failures. Unexpected allocation/program failures remain distinct in either design. |
 | MacRoman table dependency — agreed 28 October | Reuse only the immutable `AvidText::kMacRomanHigh[128]` table in unchanged `src/avidtext.h`, through a fresh unconditional MacRoman decoder in Bella. No existing file is edited or OldScanner library linked. | Keep a separate fixed mapping table inside Bella. It removes this shared-header dependency but requires maintaining another copy of the same mapping. No measured performance difference is asserted. |
 
 Contract details implementing settled behaviour:
@@ -299,12 +375,12 @@ Contract details implementing settled behaviour:
   available size and modification-time facts; any observed difference is Changed.
   If no difference is known but required facts are missing, report Unverified and
   retain otherwise eligible metadata. Keep one owned copy of available pre-read
-  facts in `capturedStamp`; no native identity or extra source read.
+  facts in `source.capturedStamp`; no native identity or extra source read.
 - Inspect the Qt read error and captured byte count. A mismatch to an available
   expected size is not a complete capture. Missing facts never count as equal
   facts; unavailable/negative size observations become `nullopt`. The pure
   comparison helper does not decide source selection or perform I/O.
-- Only a whole validated set enters `knownSet`, following the agreed v16/older
+- Only a whole validated set enters `records.knownSet`, following the agreed v16/older
   preference. Failed or partial sets are discarded. A successful supported-set
   fallback keeps its explanations without retaining the rejected entries.
 - Unknown extensions/trailing content make metadata ineligible, as agreed. A
@@ -312,8 +388,9 @@ Contract details implementing settled behaviour:
   checks only: the base set for an unknown extension, or the complete v16 set for
   unknown content after it, with only one set retained. No entry salvage is added.
   Unsupported extra content cannot establish complete reference coverage.
-- `referenceCoverageComplete` describes known format-level reference coverage,
-  independently of metadata eligibility and size/date verification. It is not
+- `records.referenceCoverageComplete` describes known format-level reference
+  coverage, independently of `records.canUsePmrMetadata` and size/date
+  verification. Both answers are retained as independent booleans; they are not
   inferred from an empty vector or a missing metadata set. The scanner still
   performs the existing physical-name/ID/source qualification and decides Listed
   or No Reference; this parser contract introduces no new Unverified-to-NoReference
@@ -346,19 +423,65 @@ Contract details implementing settled behaviour:
   genuine fixture output. Additional deterministic in-progress cancellation or
   source-change timing instrumentation must be reviewed before being added.
 
-This proposal touches only new Bella/test files and their already-approved
-CMake lists, plus the disclosed optional dependency on the generic character
+This implementation touches only new Bella/test files and their already-approved
+CMake lists, plus the approved dependency on the generic character
 table. It changes no active scanner, Bin Filter, MediaFile/table/progress,
 journal, Unfinished Business or Undo implementation, and claims no scan-time or
 peak-memory improvement.
+
+**PMR implementation checked, 28 October 2026:** `pmrparser.h/.cpp` implements
+the agreed path-based capture, report, whole-set selection, bounds/text/identity,
+verification and cancellation rules independently. The existing C++17 / exact
+Qt 6.5.3 Debug build compiles arm64 and x86_64. Native arm64 runs pass all 56 PMR
+QtTest cases (including setup/cleanup); the 14 ID cases still pass. Both suites
+also pass in the separate arm64 ASan/UBSan build, with no sanitizer reports.
+
+The five genuine repository PMRs yield 878 selected v16 records. Tests compare
+every complete FileMobId, Filename, Project and MasterMobId in stored order
+against fingerprints from an independent bounded decoder of those fixture bytes,
+using fixed MacRoman and strict v16 UTF-8. This covers 797 non-ASCII Project
+records and six non-ASCII filenames; fixture provenance is retained in the
+existing corpus/OMF fixture READMEs. This is a separate validation run over
+repository fixtures; the original 18 October survey covered six live PMRs.
+All genuine fixtures here are
+little-endian; opposite-endian and damaged-input cases are explicitly authored.
+
+The tests also cover whole-set fallback/rejection, safe framing, unknown extra
+content, empty-set coverage, counted/NUL text, complete zero IDs, ignored DTM,
+long text, pre-cancellation, open failure, ownership and the pure stamp comparison.
+No deterministic in-progress cancellation, concurrent source-change or read-error
+injection hooks were introduced. Windows/x86_64 execution, real changed/unverified
+captures and blocked-read stopping remain unverified. No scanner integration,
+cutover, full existing-suite run or scan-time/peak-memory comparison is claimed.
+See the [PMR implementation receipt](evidence/decision-check-ins-2026-10-27.json).
+
+**Expanded PMR check, 28 October 2026:** at the user's request, a read-only
+filesystem traversal located 27 PMR paths: 21 on the computer and six on EDIT.
+Both the normal and ASan/UBSan Bella builds matched an independent decoder for
+every outcome and every returned field across 3,582 records, counting copied
+databases. Twenty-four files completed; three correctly rejected files were
+deliberately truncated historical scanner probes, not damaged live Avid databases.
+All four live managed-media databases found on EDIT completed, as did its two
+repository fixture copies. Available size/date checks verified all 27 captures;
+before/after audit hashes and stamps remained consistent.
+
+Both libraries, probes and focused tests were rebuilt after detecting a source
+file newer than the previous objects. The current-source focused suites again
+passed 56 PMR and 14 ID cases in each normal/sanitizer run. No production code
+was edited for this audit. Two filesystem traversals, including an approved run
+outside the sandbox, retained 519 traversal errors, mostly protected locations.
+This establishes results for all located accessible files, not an exhaustive
+claim about protected folders. No speed or peak-memory comparison was made.
+The [expanded receipt](evidence/pmr-machine-validation-2026-10-28.json) retains
+the full path inventory, errors, current source hashes and per-file comparisons.
 
 #### Agreed first ID-helper contract
 
 The first code implements the already-agreed shared ID normalizer, its focused
 test and the approved static-library wiring. This is part of
 PMR-first development. It needs no file I/O, cancellation or source-change
-mechanism; those PMR choices remain pending. Complete IDs, known legacy
-equivalence, preservation of unfamiliar legacy IDs, `std::array`, QtEndian and
+mechanism; PMR's later agreed contract above handles those separately. Complete
+IDs, known legacy equivalence, preservation of unfamiliar legacy IDs, `std::array`, QtEndian and
 QHash/full equality are already approved and are not reopened here.
 
 On 27 October the user chose the database convention, one container size and
@@ -609,7 +732,8 @@ names. MacRoman is Bella's agreed rule at this stage, not a claim that every
 historical PMR identifies that encoding. No UTF-8 guessing or receiving-system
 codec selection is needed to choose the text encoding under this rule.
 
-These are approved requirements. Bella's parser has not been implemented.
+These are approved requirements. Bella's independent PMR implementation and
+focused verification now follow the implementation contract above.
 Whole-set rejection and the validation checks below are agreed. Historical PMR
 modification-time interpretation is excluded by the decision above.
 
@@ -781,7 +905,7 @@ Windows producer encoding remains deliberately deferred.
 MDB/media-header fallback and source-precedence conditions remain part of the
 later source-capability review. These PMR decisions do not add fallback reads or
 expand Bin Filter scope. The shared ID helper is implemented; the PMR parser
-and its file-reading mechanics remain pending.
+is implemented and checked under the contract above.
 
 ## MDB requirements review
 

@@ -7,13 +7,14 @@ records standard coordination and lifetime choices. On 27 October the user
 confirmed final results at scan end and partial-result retention on Cancel,
 preserving current behaviour. The first implemented component is the shared
 `MobId` normalizer in `mobid.h/.cpp`, built as `mediamuster_bella` and exercised
-by `tests/tst_bellamobid.cpp`. The scanner and PMR/MDB/MXF/OMF/native-audio
-readers are not implemented yet.
+by `tests/tst_bellamobid.cpp`. The first independent PMR reader/report is now in
+`pmrparser.h/.cpp`, with focused normal and sanitizer tests passing. The scanner and
+MDB/MXF/OMF/native-audio readers remain to implement.
 
 On 27 October the user approved a separate `mediamuster_bella` static library
 in the existing CMake build, using Qt Core and initially linked only to Bella's
 focused tests. Parser signatures and result details still require check-ins
-before dependent implementation. The target currently contains only the ID helper.
+before dependent implementation. The target contains the ID helper and PMR parser.
 See the
 [implementation decision](../../Project%20Bella/README.md#implementation-decisions).
 
@@ -26,16 +27,18 @@ rather than separate outputs. The initial file arrangement is also agreed:
 `mobid.h/.cpp` holds the shared ID helper, `pmrparser.h/.cpp` holds the PMR reader
 and its entry/report definitions, with focused `tst_bellamobid.cpp` and
 `tst_bellapmr.cpp` under `tests/`. No common `types.h` is introduced. Exact
-PMR API/report details and check mechanisms still need their check-ins.
+PMR API/report details and check mechanisms are settled in the
+[PMR contract](../../Project%20Bella/README.md#agreed-pmr-implementation-contract).
 
 The user approved a shared scan stop flag: the organiser and every Bella source
 reader in one scan observe the same stop request. Each later scan gets fresh
 state after prior cleanup. Bin Filter and file operations remain outside this
 flag's scope. The bounded ID helper needs no stop parameter; its calling reader
-checks between units of work. Parser parameters, checkpoints and detailed
-lifetime/wakeup mechanisms remain pending; this is not implemented yet.
+checks between units of work. Parameters and checkpoints are settled for PMR,
+which observes the caller-owned atomic flag synchronously. Scanner lifetime
+and wakeup mechanics remain to implement.
 
-PMR capture will use the user's chosen single `QFile::readAll()` call, checking
+PMR capture uses the user's chosen single `QFile::readAll()` call, checking
 the shared stop flag before and after it. The proposed 1 MiB reading loop was
 not selected. PMR source-change detection uses only size and modification time
 before/after capture, through Qt; native file-identity checks were not selected.
@@ -49,11 +52,38 @@ Other agreed format/fallback and reference-check rules remain unchanged.
 The one report has separate reading-result and size/date-verification answers;
 Completed + Unverified can retain valid metadata. On 28 October the user approved
 the concrete compact report/API/reference contract and reuse of only the fixed
-MacRoman table in unchanged `src/avidtext.h`. The internal expected-failure route
-remains under clarification. The heuristic `AvidText::decode()` is not approved
-for Bella. No PMR runtime implementation has been added yet.
+MacRoman table in unchanged `src/avidtext.h`. The user then approved ordinary
+checked returns for expected input failures, with named results and explanations
+in the report, and authorised implementation. No private parsing exceptions or
+recovery framework are added. The heuristic `AvidText::decode()` is not approved
+for Bella. PMR implementation and its focused checks are complete for this increment.
 Whole-file capture still means one temporary owned buffer, without
 an added memory cap or an instant-cancellation guarantee.
+
+On 29 October the user approved two internal cleanups. Preferred/fallback paths
+now share final qualification handling. Diagnostic notes contain reason text,
+with the source stored once in `PmrReport.path`; future warning display/logging
+must combine both so each delivered message includes its full source path.
+Public report fields and answer values are unchanged. The normal and sanitizer
+suites pass 57 PMR and 14 ID cases after this cleanup; both corpus probes match
+the independent observer on all 27 previously inventoried paths. No active app
+consumer or warning-delivery implementation is modified here.
+
+On 29 October the user approved grouped report sections. The five
+top-level sections are now `source`, `reading`, `sizeDateCheck`, `records` and
+`diagnostics`. Source context is `source.path` / `source.capturedStamp`;
+`records.knownSet` owns the selected whole set. The user's later simplification
+uses `records.canUsePmrMetadata` and separately retains
+`records.referenceCoverageComplete` for the agreed No Reference behaviour,
+superseding `PmrUse`. A whole known set can still supply positive reference facts
+when both answers are false. Reading/check enums, source/text/identity rules,
+late-cancel retention and reason-only diagnostics remain unchanged. The local
+`isValidUtf8Filename` names the existing decoder check without adding a pass or
+stored field. The earlier path-once rule uses `source.path` for delivered warnings.
+Focused tests still pass 57 PMR and 14 ID cases normally and with ASan/UBSan;
+the 27-path regression preserves all source/record/reason facts. See the latest
+PMR validation section
+in the implementation receipt below.
 
 The ID helper's concrete contract is agreed: one owned labelled 32-byte
 container, database numeric-field convention, complete active-byte equality/hash,
@@ -62,8 +92,10 @@ a distinct complete 12-byte form. It performs no file I/O and adds no text
 formatting or format-specific null/prefix rejection. See the
 [agreed ID contract](../../Project%20Bella/README.md#agreed-first-id-helper-contract).
 
-The focused ID suite passes in the Mac Debug build and an arm64 ASan/UBSan
-build with the pinned Qt. The normal binary includes arm64 and x86_64; tests
+The focused ID and PMR suites pass in the Mac Debug build and an arm64 ASan/UBSan
+build with the pinned Qt: 14 ID and 57 PMR cases, including setup/cleanup. All 878
+selected records from five genuine PMR fixtures match independent full-record
+fingerprints. The normal binaries include arm64 and x86_64; tests
 were executed natively on arm64. Genuine fixtures are little-endian; opposite
 order is covered by authored cases. This is component verification, not a scan
 or performance comparison. See the
@@ -103,7 +135,7 @@ validate their formats and return compact values. Shared interpretation helpers
 remain small and reusable. Names/signatures and preserved WAVE/AIFF placement
 follow the brief scanner design. See the
 [agreed separation](../../Project%20Bella/README.md#agreed-separation-of-scanner-and-parsers).
-Only the shared ID helper is implemented so far; the parser files remain pending.
+The shared ID helper and PMR parser are implemented; the other parsers remain pending.
 
 The app continues using [OldScanner](../oldscanner/README.md). Bin Filter stays
 outside Bella's scope. A switch to Bella requires the user's explicit approval.

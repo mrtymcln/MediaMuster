@@ -170,7 +170,7 @@ operation identity checks.
 
 Bella must be a new, independent C++17 / Qt 6.5.3 scanner/parser, rather than an
 adaptation of OldScanner. The requirements review is complete; `src/bella/`
-now contains the first shared ID helper in its independent `mediamuster_bella`
+now contains the shared ID helper and PMR parser in its independent `mediamuster_bella`
 library. Its focused tests link only Bella and Qt. Bring new implementation
 choices to the user before dependent work, as the Bella decision record requires.
 OldScanner remains active until the user explicitly approves the app's switch

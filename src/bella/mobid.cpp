@@ -41,8 +41,8 @@ namespace Bella
 		void normalizeNumber(const char *source, quint8 *destination, ByteOrder byteOrder) noexcept
 		{
 			const T value = byteOrder == ByteOrder::BigEndian
-							? qFromBigEndian<T>(source)
-							: qFromLittleEndian<T>(source);
+								? qFromBigEndian<T>(source)
+								: qFromLittleEndian<T>(source);
 			qToLittleEndian<T>(value, destination);
 		}
 
@@ -82,11 +82,11 @@ namespace Bella
 			std::memcpy(normalized.data(), bytes.data(), normalized.size());
 			// AAF's material fields are 32/16/16 bits, including wrapped legacy IDs.
 			normalizeNumber<quint32>(bytes.data() + kMaterialOffset,
-									normalized.data() + kMaterialOffset, byteOrder);
+									 normalized.data() + kMaterialOffset, byteOrder);
 			normalizeNumber<quint16>(bytes.data() + kMaterialFirstShortOffset,
-									normalized.data() + kMaterialFirstShortOffset, byteOrder);
+									 normalized.data() + kMaterialFirstShortOffset, byteOrder);
 			normalizeNumber<quint16>(bytes.data() + kMaterialSecondShortOffset,
-									normalized.data() + kMaterialSecondShortOffset, byteOrder);
+									 normalized.data() + kMaterialSecondShortOffset, byteOrder);
 			return MobId(normalized, MobIdKind::Aaf32);
 		}
 

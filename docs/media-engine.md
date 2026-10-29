@@ -13,9 +13,9 @@ those consumers while isolating the scanner being replaced.
 
 [Bella](../Project%20Bella/README.md) is a new, independent C++17 / Qt 6.5.3
 scanner/parser. Its requirements review is complete, and new implementation
-choices require user check-ins. The first shared ID helper is implemented under
+choices require user check-ins. The shared ID helper and PMR parser are implemented under
 `src/bella/` in a separate `mediamuster_bella` library used only by its focused
-tests; the scanner and source readers remain pending. Do not patch OldScanner
+tests; the scanner and other source readers remain pending. Do not patch OldScanner
 into Bella. The app stays on OldScanner until the user approves the switch.
 
 | Component | Role |
