@@ -1,0 +1,439 @@
+{
+  "date": "2026-10-31",
+  "timezone": "Australia/Sydney",
+  "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+  "status": "Read-only investigation complete. After receiving these findings, the user approved bounded unsigned64 audio fractions; see subsequentApproval. No runtime implementation is included.",
+  "userRequest": "the recommended option: bounded 64-bit fractions sounds best. But can't be expressed? look for actual values that would be used, not theoretical ones.",
+  "nativeAudio": {
+    "scope": "Targeted real audio project roots, no hidden/photo libraries, no symlinks; native header/chunk metadata only, no sound payload read. Hash is offset/length-tagged metadata spans, not full-file SHA256.",
+    "roots": [
+      "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/03_SND_RUSHES",
+      "/Volumes/EDIT/2017_09_09_FIXING_JAMES_KINGSLEY/05_SFX",
+      "/Volumes/EDIT/2020",
+      "/Volumes/EDIT/2026/Music",
+      "/Volumes/EDIT/2026/Downloads",
+      "/Volumes/EDIT/Logic",
+      "/Users/Shared/AvidMediaComposer/OMFI MediaFiles"
+    ],
+    "pathsExamined": 1803,
+    "nativeReadablePaths": 1801,
+    "pathCountsIncludeCopies": true,
+    "exhaustiveMachineInventory": false,
+    "containerCounts": {
+      "WAVE": 803,
+      "AIFC": 4,
+      "AIFF": 994
+    },
+    "rates": [
+      {
+        "numerator": 8012,
+        "denominator": 1,
+        "pathCount": 1
+      },
+      {
+        "numerator": 11127,
+        "denominator": 1,
+        "pathCount": 6
+      },
+      {
+        "numerator": 22254,
+        "denominator": 1,
+        "pathCount": 1
+      },
+      {
+        "numerator": 44100,
+        "denominator": 1,
+        "pathCount": 1255
+      },
+      {
+        "numerator": 48000,
+        "denominator": 1,
+        "pathCount": 538
+      }
+    ],
+    "otherStatuses": {
+      "not supported native signature": 2
+    },
+    "allObservedRatesFitSigned32Pair": true,
+    "allObservedRatesFitUnsigned64Pair": true,
+    "allReadableMetadataStableDuringRead": true,
+    "rootIndependentByteChecks": [
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/TONE_100A01.6A972997.0C53E0.aif",
+        "container": "AIFC",
+        "frequency_offset": 640,
+        "frequency_bytes": "400ebb80000000000000",
+        "numerator": 48000,
+        "denominator": 1
+      },
+      {
+        "path": "/Volumes/EDIT/2026/Downloads/Do What You Want (Stems)/Do What You Want (Stems)/Do What You Want (Xtina Parts)/Xtina DWYW  rough mix2.aiff",
+        "container": "AIFF",
+        "frequency_offset": 28,
+        "frequency_bytes": "400eac44000000000000",
+        "numerator": 44100,
+        "denominator": 1
+      },
+      {
+        "path": "/Volumes/EDIT/2020/Bloody Mary stems/Smart Tempo Multitrack Set 1.aif",
+        "container": "AIFF",
+        "frequency_offset": 446,
+        "frequency_bytes": "400ebb80000000000000",
+        "numerator": 48000,
+        "denominator": 1
+      },
+      {
+        "path": "/Volumes/EDIT/2020/Platinum Sound/sounds/Moof.wav",
+        "container": "WAVE",
+        "frequency_offset": 24,
+        "frequency_bytes": "4c1f0000",
+        "numerator": 8012,
+        "denominator": 1
+      },
+      {
+        "path": "/Volumes/EDIT/2020/Platinum Sound/sounds/Boing.wav",
+        "container": "WAVE",
+        "frequency_offset": 24,
+        "frequency_bytes": "772b0000",
+        "numerator": 11127,
+        "denominator": 1
+      },
+      {
+        "path": "/Volumes/EDIT/2020/Platinum Sound/sounds/Indigo.wav",
+        "container": "WAVE",
+        "frequency_offset": 24,
+        "frequency_bytes": "ee560000",
+        "numerator": 22254,
+        "denominator": 1
+      },
+      {
+        "path": "/Volumes/EDIT/2020/01 Just Dance (Instrumental).wav",
+        "container": "WAVE",
+        "frequency_offset": 24,
+        "frequency_bytes": "44ac0000",
+        "numerator": 44100,
+        "denominator": 1
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/TONE_100A01.6A972974.039700.wav",
+        "container": "WAVE",
+        "frequency_offset": 4076,
+        "frequency_bytes": "80bb0000",
+        "numerator": 48000,
+        "denominator": 1
+      }
+    ],
+    "fullTemporaryReceipt": "/private/tmp/bella-audio-frequency-20261031.json",
+    "receiptSha256": "330fa7740a2fa46bd609dd8dee16381afdce25712e9d99517c846ee77c4b14cd"
+  },
+  "mdb": {
+    "allSixOriginalFilesMatchPriorFullAuditHashes": true,
+    "allSixStableDuringFreshRead": true,
+    "sourceFiles": [
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "before": {
+          "bytes": 5159032,
+          "mtimeNs": 1561096331000000000,
+          "inode": 469151,
+          "device": 16777237
+        },
+        "after": {
+          "bytes": 5159032,
+          "mtimeNs": 1561096331000000000,
+          "inode": 469151,
+          "device": 16777237
+        },
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "expectedSha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "matchesHistoricalBytes": true,
+        "stableDuringRead": true,
+        "historicalCountsPerPmrFile": {
+          "pmrRows": 389,
+          "descriptorClass:RGBA": 10,
+          "nonAudioRowsExcludedFromSampleRate": 103,
+          "descriptorClass:PCMA": 286,
+          "audioRows": 286,
+          "PCMA:MDFL:positiveRate": 286,
+          "PCMA:PCMA:positiveRate": 286,
+          "PCMA:PCMAEqualsMDFL": 286,
+          "PCMA:PCMADiffersMDFL": 0,
+          "descriptorClass:CDCI": 93
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "before": {
+          "bytes": 22745976,
+          "mtimeNs": 1785052712000000000,
+          "inode": 1081262,
+          "device": 16777237
+        },
+        "after": {
+          "bytes": 22745976,
+          "mtimeNs": 1785052712000000000,
+          "inode": 1081262,
+          "device": 16777237
+        },
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "expectedSha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "matchesHistoricalBytes": true,
+        "stableDuringRead": true,
+        "historicalCountsPerPmrFile": {
+          "pmrRows": 686,
+          "descriptorClass:CDCI": 271,
+          "nonAudioRowsExcludedFromSampleRate": 279,
+          "descriptorClass:PCMA": 407,
+          "audioRows": 407,
+          "PCMA:MDFL:positiveRate": 407,
+          "PCMA:PCMA:positiveRate": 407,
+          "PCMA:PCMAEqualsMDFL": 407,
+          "PCMA:PCMADiffersMDFL": 0,
+          "descriptorClass:RGBA": 8
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "before": {
+          "bytes": 16616336,
+          "mtimeNs": 1778753153000000000,
+          "inode": 1081897,
+          "device": 16777237
+        },
+        "after": {
+          "bytes": 16616336,
+          "mtimeNs": 1778753153000000000,
+          "inode": 1081897,
+          "device": 16777237
+        },
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "expectedSha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "matchesHistoricalBytes": true,
+        "stableDuringRead": true,
+        "historicalCountsPerPmrFile": {
+          "pmrRows": 513,
+          "descriptorClass:CDCI": 193,
+          "nonAudioRowsExcludedFromSampleRate": 193,
+          "descriptorClass:PCMA": 320,
+          "audioRows": 320,
+          "PCMA:MDFL:positiveRate": 320,
+          "PCMA:PCMA:positiveRate": 320,
+          "PCMA:PCMAEqualsMDFL": 320,
+          "PCMA:PCMADiffersMDFL": 0
+        }
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "before": {
+          "bytes": 15703416,
+          "mtimeNs": 1778753179000000000,
+          "inode": 1082384,
+          "device": 16777237
+        },
+        "after": {
+          "bytes": 15703416,
+          "mtimeNs": 1778753179000000000,
+          "inode": 1082384,
+          "device": 16777237
+        },
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "expectedSha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "matchesHistoricalBytes": true,
+        "stableDuringRead": true,
+        "historicalCountsPerPmrFile": {
+          "pmrRows": 463,
+          "descriptorClass:CDCI": 205,
+          "nonAudioRowsExcludedFromSampleRate": 205,
+          "descriptorClass:PCMA": 258,
+          "audioRows": 258,
+          "PCMA:MDFL:positiveRate": 258,
+          "PCMA:PCMA:positiveRate": 258,
+          "PCMA:PCMAEqualsMDFL": 258,
+          "PCMA:PCMADiffersMDFL": 0
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "before": {
+          "bytes": 3668720,
+          "mtimeNs": 1788291273218255487,
+          "inode": 6813558,
+          "device": 16777234
+        },
+        "after": {
+          "bytes": 3668720,
+          "mtimeNs": 1788291273218255487,
+          "inode": 6813558,
+          "device": 16777234
+        },
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "expectedSha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "matchesHistoricalBytes": true,
+        "stableDuringRead": true,
+        "historicalCountsPerPmrFile": {
+          "pmrRows": 359,
+          "descriptorClass:CDCI": 111,
+          "nonAudioRowsExcludedFromSampleRate": 119,
+          "descriptorClass:PCMA": 240,
+          "audioRows": 240,
+          "PCMA:MDFL:positiveRate": 240,
+          "PCMA:PCMA:positiveRate": 240,
+          "PCMA:PCMAEqualsMDFL": 240,
+          "PCMA:PCMADiffersMDFL": 0,
+          "descriptorClass:MPGI": 8
+        }
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "before": {
+          "bytes": 60680,
+          "mtimeNs": 1788291495301754724,
+          "inode": 14769208,
+          "device": 16777234
+        },
+        "after": {
+          "bytes": 60680,
+          "mtimeNs": 1788291495301754724,
+          "inode": 14769208,
+          "device": 16777234
+        },
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "expectedSha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "matchesHistoricalBytes": true,
+        "stableDuringRead": true,
+        "historicalCountsPerPmrFile": {
+          "pmrRows": 2,
+          "descriptorClass:WAVD": 1,
+          "audioRows": 2,
+          "WAVD:MDFL:positiveRate": 1,
+          "WAVD:PCMA:absent": 1,
+          "WAVD:summaryEqualsMDFL": 1,
+          "WAVD:summaryDiffersMDFL": 0,
+          "descriptorClass:AIFD": 1,
+          "AIFD:MDFL:positiveRate": 1,
+          "AIFD:PCMA:absent": 1,
+          "AIFD:summaryEqualsMDFL": 1,
+          "AIFD:summaryDiffersMDFL": 0
+        }
+      }
+    ],
+    "freshRepresentativeByteChecks": [
+      {
+        "database": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "descriptorClass": "PCMA",
+        "fileObject": 92287,
+        "descriptorObject": 92286,
+        "fileMobId": "060a2b340101010501010f1013000000782a3120258505911bcb34363bcdaf64",
+        "rawHex": "80bb000001000000",
+        "ranges": [
+          [
+            1341067,
+            8
+          ]
+        ],
+        "encoding": "two signed little-endian32 words",
+        "numerator": 48000,
+        "denominator": 1,
+        "fitsPositiveSigned32Pair": true,
+        "fitsPositiveUnsigned64Pair": true
+      },
+      {
+        "database": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "descriptorClass": "WAVD",
+        "fileObject": 68071,
+        "descriptorObject": 68070,
+        "fileMobId": "060a2b340101010101010f00130000007429976a70397047060e2b347f7f2a80",
+        "rawHex": "80bb0000",
+        "ranges": [
+          [
+            9178,
+            4
+          ]
+        ],
+        "encoding": "unsigned little-endian32 Hz",
+        "numerator": 48000,
+        "denominator": 1,
+        "fitsPositiveSigned32Pair": true,
+        "fitsPositiveUnsigned64Pair": true
+      },
+      {
+        "database": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "descriptorClass": "AIFD",
+        "fileObject": 68128,
+        "descriptorObject": 68127,
+        "fileMobId": "060a2b340101010101010f00130000009729976a3ec57047060e2b347f7f2a80",
+        "rawHex": "400ebb80000000000000",
+        "ranges": [
+          [
+            10508,
+            10
+          ]
+        ],
+        "encoding": "big-endian extended80",
+        "numerator": 48000,
+        "denominator": 1,
+        "fitsPositiveSigned32Pair": true,
+        "fitsPositiveUnsigned64Pair": true
+      }
+    ],
+    "historicalOwnerQualifiedAudioRows": 1513,
+    "historicalClasses": {
+      "PCMA": 1511,
+      "WAVD": 1,
+      "AIFD": 1
+    },
+    "historicalConcreteRate": {
+      "numerator": 48000,
+      "denominator": 1
+    },
+    "fullCatalogueTraversalRerun": false,
+    "basis": "Fresh complete-source hashes match the prior full audit; selected PCMA/WAVD/AIFD original ranges re-read. Counts are from the earlier owner-qualified audit.",
+    "priorEvidence": "Project Bella/evidence/mdb-audio-sample-rate-2026-10-20.json",
+    "fullTemporaryReceipt": "/private/tmp/bella-mdb-audio-values-20261031/fresh-receipt.json",
+    "receiptSha256": "2e9d98717da90ccdbf3b36e666fba8022c8df21e9dba068ee73018dbb3cc9808"
+  },
+  "documentedProductionValues": [
+    {
+      "source": "https://brainstormtime.com/wp-content/uploads/2021/01/um_dcd24_1.00.pdf",
+      "location": "Printed page16 / PDF page index8, word-clock output-rate table",
+      "listedHz": [
+        "44144.100",
+        "45937.500",
+        "47952.048"
+      ],
+      "qualification": "Manufacturer-specified hardware clock values, not observed fractional headers in this local file sample. Printed decimal labels may round actual clocks."
+    },
+    {
+      "source": "https://cdn.sounddevices.com/wp-content/uploads/2025/09/888-v11.00-User-Guide.pdf",
+      "location": "Section6.12 Record/Play, Sample Rate",
+      "listedHz": [
+        44100,
+        47952,
+        48000,
+        48048,
+        96000,
+        192000
+      ],
+      "qualification": "Documented recorder settings; not added to the local observed-file counts."
+    }
+  ],
+  "unsigned64ExactFit": {
+    "claim": "Every valid positive normalized AIFF80 value in [1,2^64) Hz reduces to numerator and denominator each <=2^64-1.",
+    "proof": "Write x=S*2^(e-63) with 2^63<=S<2^64. For0<=e<=63, reduce common powers of two; remaining numerator has at most64 bits and denominator is at most2^63. Thus all fractional precision is retained in that interval.",
+    "authoredBoundaryMathChecks": 320,
+    "qualification": "This is a mathematical range guarantee, separate from real-file observations. Requires unsigned64 words. It is not a guarantee that unchecked cross multiplication, formatting or existing signed32 MediaRate arithmetic is safe.",
+    "practicalConclusion": "No observed value or manufacturer-documented practical audio range here exceeds U64 exact storage. Earlier general warning overstated a practical representability concern.",
+    "oldConverter": "src/oldscanner/mediaengine/mdbprojection.cpp:1101-1129",
+    "existingRateArithmetic": "src/mediaduration.h:7-43"
+  },
+  "runtimeChanges": false,
+  "mediaModified": false,
+  "performanceMeasurements": false,
+  "decisionAtInvestigationConclusion": "No new approval recorded at that point; existing32 decisions retained. User preference for64 was tentative pending these findings.",
+  "subsequentApproval": {
+    "date": "2026-10-31",
+    "decisionId": "mdb_audio_frequency_bounded_unsigned64",
+    "record": "Project Bella/evidence/decision-check-ins-2026-10-27.json",
+    "answer": "i'm not a coder so dont really understand sorry. but lets go with recommended option: bounded 64-bit fractions"
+  }
+}

@@ -186,6 +186,8 @@ private slots:
 	void brokenBaseFramingCannotFindAnAppendedSet();
 	void everyBaseTruncationAndImpossibleCount();
 	void everyTruncatedKnownUnicodeSetFallsBack();
+	void preferredSetFallbackDiagnostics_data();
+	void preferredSetFallbackDiagnostics();
 	void unsupportedExtensionsAndTailsKeepReferenceOnlyWholeSets();
 	void diagnosticsSeparateFileContextFromReasons();
 	void emptySetsHaveIndependentReferenceCoverage();
@@ -459,7 +461,10 @@ void TestBellaPmr::wholeSetFailureDiscardsAllItsEntries()
 	QVERIFY(!noSet.records.canUsePmrMetadata);
 	QVERIFY(!noSet.records.referenceCoverageComplete);
 	QVERIFY(!noSet.records.knownSet);
-	QVERIFY(!noSet.diagnostics.isEmpty());
+	QCOMPARE(noSet.diagnostics, QStringList({
+		QStringLiteral("Version 16 record 2: Filename is not valid UTF-8. Version 16 is unusable; trying the older set from the same capture."),
+		QStringLiteral("Version 8 record 2: Filename is empty or null."),
+	}));
 }
 
 void TestBellaPmr::safeBaseFramingCanReachPreferredSet()
@@ -549,8 +554,97 @@ void TestBellaPmr::everyTruncatedKnownUnicodeSetFallsBack()
 		QCOMPARE(report.records.knownSet->version, qint32{8});
 		QCOMPARE(report.records.knownSet->entries.size(), qsizetype{1});
 		QCOMPARE(report.records.knownSet->entries.front().filename, QStringLiteral("base.mxf"));
-		QVERIFY(!report.diagnostics.isEmpty());
+		QCOMPARE(report.diagnostics.size(), qsizetype{1});
+		QVERIFY(report.diagnostics.front().endsWith(QStringLiteral(" Version 16 is unusable; trying the older set from the same capture.")));
 	}
+}
+
+void TestBellaPmr::preferredSetFallbackDiagnostics_data()
+{
+	QTest::addColumn<QByteArray>("bytes");
+	QTest::addColumn<QString>("reason");
+	QTest::addColumn<bool>("completeCoverage");
+	for (const bool bigEndian : {false, true})
+	{
+		Record base;
+		base.filename = "base.mxf";
+		const QByteArray baseBytes = pmrBytes(8, bigEndian, {base});
+		const auto addCase = [bigEndian](const char *name, const QByteArray &bytes,
+									 const QString &reason, bool completeCoverage)
+		{
+			QTest::newRow(qPrintable(QStringLiteral("%1-%2")
+				.arg(QString::fromLatin1(name), bigEndian ? QStringLiteral("BE") : QStringLiteral("LE"))))
+				<< bytes << reason << completeCoverage;
+		};
+		Record rejected;
+		rejected.filename = QByteArray::fromHex("ff");
+		QByteArray badUtf8 = baseBytes;
+		appendSet(badUtf8, 16, bigEndian, {rejected});
+		addCase("invalid-utf8", badUtf8,
+			QStringLiteral("Version 16 record 1: Filename is not valid UTF-8."), false);
+
+		rejected = Record{};
+		rejected.firstMarker = 1;
+		QByteArray badMarker = baseBytes;
+		appendSet(badMarker, 16, bigEndian, {rejected});
+		addCase("invalid-marker", badMarker,
+			QStringLiteral("Version 16 record 1: Filename has an invalid v16 prefix."), false);
+
+		rejected = Record{};
+		rejected.nullFilename = true;
+		QByteArray nullFilename = baseBytes;
+		appendSet(nullFilename, 16, bigEndian, {rejected});
+		addCase("null-filename", nullFilename,
+			QStringLiteral("Version 16 record 1: Filename is empty or null."), false);
+
+		QByteArray empty = baseBytes;
+		appendSet(empty, 16, bigEndian, {});
+		addCase("empty-set", empty, QStringLiteral("Version 16 contains no entries."), true);
+
+		QByteArray impossibleCount = baseBytes;
+		appendNumber<qint32>(impossibleCount, 16, bigEndian);
+		appendNumber<quint32>(impossibleCount, 1, bigEndian);
+		addCase("impossible-count", impossibleCount,
+			QStringLiteral("Version 16 declares 1 records at byte %1, beyond the 0 remaining bytes.")
+				.arg(impossibleCount.size()), false);
+
+		QByteArray truncated = baseBytes;
+		appendSet(truncated, 16, bigEndian, {Record{}});
+		truncated.chop(1);
+		addCase("truncated-record", truncated,
+			QStringLiteral("Version 16 record 1: ignored modification word at byte %1 needs 4 bytes; only 3 remain.")
+				.arg(truncated.size() - 3), false);
+
+		QByteArray missingCount = baseBytes;
+		appendNumber<qint32>(missingCount, 16, bigEndian);
+		addCase("missing-count", missingCount,
+			QStringLiteral("v16 record count at byte %1 needs 4 bytes; only 0 remain.")
+				.arg(missingCount.size()), false);
+		QByteArray partialCount = missingCount;
+		partialCount.append("\0\0", 2);
+		addCase("partial-count", partialCount,
+			QStringLiteral("v16 record count at byte %1 needs 4 bytes; only 2 remain.")
+				.arg(missingCount.size()), false);
+	}
+}
+
+void TestBellaPmr::preferredSetFallbackDiagnostics()
+{
+	QFETCH(QByteArray, bytes);
+	QFETCH(QString, reason);
+	QFETCH(bool, completeCoverage);
+	const auto report = parseBytes(bytes);
+	QVERIFY(report.reading == Read::Completed);
+	QVERIFY(report.sizeDateCheck == Check::Verified);
+	QVERIFY(report.records.canUsePmrMetadata);
+	QCOMPARE(report.records.referenceCoverageComplete, completeCoverage);
+	QVERIFY(report.records.knownSet);
+	QCOMPARE(report.records.knownSet->version, qint32{8});
+	QCOMPARE(report.records.knownSet->entries.size(), qsizetype{1});
+	QCOMPARE(report.records.knownSet->entries.front().filename, QStringLiteral("base.mxf"));
+	QCOMPARE(report.diagnostics, QStringList({
+		reason + QStringLiteral(" Version 16 is unusable; trying the older set from the same capture."),
+	}));
 }
 
 void TestBellaPmr::unsupportedExtensionsAndTailsKeepReferenceOnlyWholeSets()
@@ -602,7 +696,12 @@ void TestBellaPmr::unsupportedExtensionsAndTailsKeepReferenceOnlyWholeSets()
 		QCOMPARE(report.records.knownSet->entries.size(), qsizetype{1});
 		QCOMPARE(report.records.knownSet->entries.front().filename, QStringLiteral("base.mxf"));
 		QCOMPARE(report.records.knownSet->entries.front().fileMobId.bytes().toByteArray(), expectedFileId(8));
-		QVERIFY(!report.diagnostics.isEmpty());
+		QCOMPARE(report.diagnostics.size(), qsizetype{2});
+		QCOMPARE(report.diagnostics.front(), QStringLiteral("Unexplained content after the declared v16 set."));
+		QCOMPARE(report.diagnostics.back(),
+			(records.isEmpty() ? QStringLiteral("Version 16 contains no entries.")
+							   : QStringLiteral("Version 16 record 1: Filename is not valid UTF-8."))
+				+ QStringLiteral(" Version 16 is unusable; trying the older set from the same capture."));
 	}
 }
 
@@ -641,7 +740,9 @@ void TestBellaPmr::diagnosticsSeparateFileContextFromReasons()
 		QVERIFY(report.records.knownSet);
 		QCOMPARE(report.records.knownSet->version, qint32{8});
 		QCOMPARE(report.records.knownSet->entries.front().filename, QStringLiteral("base.mxf"));
-		QVERIFY(report.diagnostics.size() >= qsizetype{2});
+		QCOMPARE(report.diagnostics, QStringList({
+			QStringLiteral("Version 16 record 1: Filename is not valid UTF-8. Version 16 is unusable; trying the older set from the same capture."),
+		}));
 		for (const auto &reason : report.diagnostics)
 		{
 			QVERIFY(!reason.isEmpty());
@@ -802,6 +903,9 @@ void TestBellaPmr::preCancelledAndIoFailures()
 	QVERIFY(!cancelled.records.canUsePmrMetadata);
 	QVERIFY(!cancelled.records.referenceCoverageComplete);
 	QCOMPARE(cancelled.source.path, missing);
+	QCOMPARE(cancelled.diagnostics, QStringList({
+		QStringLiteral("PMR reading cancelled at a whole-file or whole-set boundary."),
+	}));
 
 	const std::atomic_bool running{false};
 	const auto absent = Bella::parsePmr(missing, running);

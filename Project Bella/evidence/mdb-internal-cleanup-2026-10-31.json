@@ -1,0 +1,442 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-31",
+  "timezone": "Australia/Sydney",
+  "decision": "mdb_three_internal_cleanups",
+  "status": "Implemented and verified",
+  "scope": [
+    "Removed redundant audio blocked flags; unavailable values remain unavailable through later claims.",
+    "Merged only private Unsupported into Unreadable; public Unsupported outcomes remain.",
+    "Read and validate the owner attribute list once for lazy Project-key selection."
+  ],
+  "unchanged": [
+    "All binary bounds/type/ownership checks and qualification semantics.",
+    "All returned values, availability and public statuses.",
+    "All warning text/order/count; no warning combination implemented.",
+    "Public headers, PMR and MobId sources.",
+    "Existing phase-only Cancel and capture/check behavior.",
+    "OldScanner remains active; Bin Filter and surrounding runtime code unchanged."
+  ],
+  "baseline": {
+    "head": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+    "files": [
+      {
+        "path": "src/bella/mdbparser.cpp",
+        "sha256": "1ea57a5f1b9ad3bd9748f7d1bdff42fe107477b96a91bc21965970dfe9be8cc5"
+      },
+      {
+        "path": "src/bella/mdbparser.h",
+        "sha256": "38cface04f16dd9572dac0be2af9e85d6f67875c9444fc304c6dc4eb6e1a7569"
+      },
+      {
+        "path": "src/bella/pmrparser.cpp",
+        "sha256": "b6bc828977b08cd07a7b4ef3942b92be61b75cedfe4cbaf12e01001215ebe537"
+      },
+      {
+        "path": "src/bella/pmrparser.h",
+        "sha256": "4ab341e53ab9626ea7f1e382a84003f5c7bf311f2c5c0b59cd53a15613117d54"
+      },
+      {
+        "path": "src/bella/mobid.cpp",
+        "sha256": "cf4718e1a68d0f5cffb3e958983a9ce729c102e1a807885ad57f03a89ffca969"
+      },
+      {
+        "path": "src/bella/mobid.h",
+        "sha256": "95ba2ca6f8f315beb729fedd0cf91f35f53d6a5dce793e1da15b6dfbd4c833a8"
+      },
+      {
+        "path": "tests/tst_bellamdb.cpp",
+        "sha256": "ac9e9105520d2d1697f47a8816e913d44a8e6a66132d7154acf382369dabb099"
+      },
+      {
+        "path": "Project Bella/README.md",
+        "sha256": "7db1347636f4d4c4cdd66b1507a82eff184044ed4e2f2fc7691049ebaf1dd001"
+      },
+      {
+        "path": "src/bella/README.md",
+        "sha256": "f59920089a1ac3e3dfd84698ae3452f95c029652c0437b1539fa657797ad972d"
+      },
+      {
+        "path": "Project Bella/evidence/decision-check-ins-2026-10-27.json",
+        "sha256": "a6338b9ad5d8e0407fa46f59317fb5cda844e6774da6b4e3889fe7d55cf8d6f2"
+      }
+    ]
+  },
+  "validation": {
+    "normal": {
+      "buildDirectory": "/Users/martymclean/Developer/MediaMuster/build",
+      "runtimeArchitecture": "arm64",
+      "totals": {
+        "tst_bellamobid": {
+          "passed": 14,
+          "failed": 0,
+          "skipped": 0,
+          "qtFrameworkCasesIncluded": 2
+        },
+        "tst_bellapmr": {
+          "passed": 57,
+          "failed": 0,
+          "skipped": 0,
+          "qtFrameworkCasesIncluded": 2
+        },
+        "tst_bellamdb": {
+          "passed": 123,
+          "failed": 0,
+          "skipped": 0,
+          "qtFrameworkCasesIncluded": 2
+        }
+      },
+      "lastTestLogSha256": "b5c42951f604a18fff0fca46f4017cf9e77efaadeeb989af9bd0ead72283ef78"
+    },
+    "asanUbsan": {
+      "buildDirectory": "/private/tmp/bella-mobid-sanitizer",
+      "runtimeArchitecture": "arm64",
+      "totals": {
+        "tst_bellamobid": {
+          "passed": 14,
+          "failed": 0,
+          "skipped": 0,
+          "qtFrameworkCasesIncluded": 2
+        },
+        "tst_bellapmr": {
+          "passed": 57,
+          "failed": 0,
+          "skipped": 0,
+          "qtFrameworkCasesIncluded": 2
+        },
+        "tst_bellamdb": {
+          "passed": 123,
+          "failed": 0,
+          "skipped": 0,
+          "qtFrameworkCasesIncluded": 2
+        }
+      },
+      "lastTestLogSha256": "0d0fbf390d23c2fc61d82b04041bda3f48e6a5a2a92ed009a53e89bf94267756"
+    }
+  },
+  "mdbSubstantiveTests": 121,
+  "regressions": {
+    "previousQtCasesRetained": 109,
+    "newAudioRows": 12,
+    "newProjectMessageRows": 2,
+    "baselineReaderWithExtendedTests": "123passed,0failed,0skipped",
+    "purpose": "Pin three-format absorbing-unavailability and exact Project warning order/count before cleanup."
+  },
+  "corpus": {
+    "reportsCompared": 45,
+    "differentReports": [],
+    "serializedBytesIdentical": true,
+    "beforeSha256": "b9141128ebeac44474bc27bc88d673c635b8ae0acd18b1cacccc187676cfcf34",
+    "afterSha256": "b9141128ebeac44474bc27bc88d673c635b8ae0acd18b1cacccc187676cfcf34",
+    "warningLiteralSequenceUnchanged": true,
+    "priorMdbTestsRetained": 109,
+    "currentMdbTests": 123,
+    "addedMdbTests": [
+      "audioSummaryDamageBoundaries(AIFF later formats cannot supply unavailable first depth)",
+      "audioSummaryDamageBoundaries(AIFF later formats cannot supply unavailable first frequency)",
+      "audioSummaryDamageBoundaries(AIFF short first prefix then complete formats)",
+      "audioSummaryDamageBoundaries(AIFF third format cannot repair depth conflict)",
+      "audioSummaryDamageBoundaries(AIFF third format cannot repair encoding conflict)",
+      "audioSummaryDamageBoundaries(AIFF third format cannot repair frequency conflict)",
+      "audioSummaryDamageBoundaries(WAVE later formats cannot supply unavailable first depth)",
+      "audioSummaryDamageBoundaries(WAVE later formats cannot supply unavailable first frequency)",
+      "audioSummaryDamageBoundaries(WAVE short first prefix then complete formats)",
+      "audioSummaryDamageBoundaries(WAVE third format cannot repair depth conflict)",
+      "audioSummaryDamageBoundaries(WAVE third format cannot repair encoding conflict)",
+      "audioSummaryDamageBoundaries(WAVE third format cannot repair frequency conflict)",
+      "unreadableProjectListKeepsProblems(wrong attribute-entry class)",
+      "unreadableProjectListKeepsProblems(wrong owner attribute-list class)"
+    ],
+    "sourceHashesStable": true,
+    "sources": [
+      {
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmFMID.pmr",
+        "sha256": "be38daf54e5a4cf072dfd13b40a680eb49ddc9fdc55e71f536dd7ec444365dfe"
+      },
+      {
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "sha256": "9830c57faec50247106c634f3ee21f29538284439fa62975ed7ae74ca944486a"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmFMID.pmr",
+        "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928"
+      },
+      {
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8"
+      },
+      {
+        "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/mdb-probe-0.mdb",
+        "sha256": "feff69c3ddac844e9360bcfbc96398f6a574deb39ecb99342c66608c7d081f1b"
+      },
+      {
+        "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/mdb-probe-1.mdb",
+        "sha256": "21caf65a0f9c8b60b730d09192c2728532af87455d7b22935d2914f9363c9b35"
+      },
+      {
+        "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/mdb-probe-2.mdb",
+        "sha256": "606114e66c95bf250fb005f69c9bf032178c52e266534c87267bc063117886ce"
+      },
+      {
+        "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/mbcs0-unicode1.pmr",
+        "sha256": "770fc49c9866106343f9d9e844cdb7da0ac8415ef8b2198c79d562928a8672b9"
+      },
+      {
+        "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/mbcs1-unicode1-project.pmr",
+        "sha256": "8c087d9fba67842b179da4d7d77b6e6a4acdf56bbb07e53377932c98ac393222"
+      },
+      {
+        "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/mbcs1-unicode2.pmr",
+        "sha256": "ab12651941142675cb5d6156d52cf1fe99fa48008a60bf93bc081d275bed996f"
+      },
+      {
+        "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/project-1023.pmr",
+        "sha256": "74890bc55a05592c8fc99f0836a4f0d8cee9d2f3db0b91d646a27c20ad1f607b"
+      },
+      {
+        "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/project-1024.pmr",
+        "sha256": "4e1ef0a7ac54a67a400dc5144e0e36d58700e11aebeb3239870538951419d640"
+      },
+      {
+        "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/project-declares1024-missing.pmr",
+        "sha256": "4fca2699c5829c0024042bbba6756f5c2dd080c15add63bc92fe6e6d964c6a26"
+      },
+      {
+        "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/trailer-complete4.pmr",
+        "sha256": "8eb14f1cca19ef707f7ad8fa366f75f1151cbcbe913aa3a112a1a3fcf64af432"
+      },
+      {
+        "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/trailer-partial2.pmr",
+        "sha256": "5a5bc937a79a4c391c9943ae77f0b672e0bd1c9215b3c2f3682f5458e9e61126"
+      },
+      {
+        "path": "/Users/martymclean/.codex/visualizations/2026/09/04/01a06e81-115b-7533-a1e4-83c073a6b852/MediaMuster-audit/evidence/scanner-probes/generated/trailer-partial3.pmr",
+        "sha256": "fc455ac15a699858a1b35464ca4cb0e3bd8848e747ddc1ae8ec9c20b626c7afe"
+      },
+      {
+        "path": "/Users/martymclean/Desktop/msmFMID 2.pmr",
+        "sha256": "be38daf54e5a4cf072dfd13b40a680eb49ddc9fdc55e71f536dd7ec444365dfe"
+      },
+      {
+        "path": "/Users/martymclean/Desktop/msmFMID 3.pmr",
+        "sha256": "30f80656514e643f0c32edb0d0b8c53de7151e26d28611d1888be8b102332642"
+      },
+      {
+        "path": "/Users/martymclean/Desktop/msmFMID 4.pmr",
+        "sha256": "30f80656514e643f0c32edb0d0b8c53de7151e26d28611d1888be8b102332642"
+      },
+      {
+        "path": "/Users/martymclean/Desktop/msmFMID.pmr",
+        "sha256": "1701b03566019a2957950d1edcc3481b211e7269e774facf925a0cdef9cbda03"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmFMID.pmr",
+        "sha256": "f1c0dabb9f0d9cdfa4df8951b46295ab83f90aa2b99ce936bd531093c2641c13"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmFMID_round3.pmr",
+        "sha256": "d56cc87c811040cdb1dc9bc60cb8af4d17c0df3b65325042da6fdd2a73285d69"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+        "sha256": "3a8aa13aaa725111c29d22d821eade6e2a1d23a8b7d5e6bd5b6cda4d84101cc1"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+        "sha256": "07eea423b0d5d04a87a67c18936017dc06e0cc53f2d5e2385bfe99ef55ead351"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmFMID.pmr",
+        "sha256": "1701b03566019a2957950d1edcc3481b211e7269e774facf925a0cdef9cbda03"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmMMOB.mdb",
+        "sha256": "db91f1b0e0dcfaef92c263417e51f65e6821c5ef73f628fb01b1d4305d05f34d"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/msmMMOB_macroman.mdb",
+        "sha256": "23b6b7ec29483251d1c71f1c10a4e943028e923ea2479a0f8f1ba7a53a18e393"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmFMID.pmr",
+        "sha256": "be38daf54e5a4cf072dfd13b40a680eb49ddc9fdc55e71f536dd7ec444365dfe"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/msmFMID.pmr",
+        "sha256": "c92b9bd47f9c1de0dc6d3999a79cbde46195266eb0ac12b2bfb54151a046e928"
+      },
+      {
+        "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/mc2026_audio/msmMMOB.mdb",
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8"
+      },
+      {
+        "path": "/Volumes/EDIT/2026/Developer/MediaMuster/.claude/worktrees/eloquent-swanson-119368/tests/fixtures/msmFMID.pmr",
+        "sha256": "1701b03566019a2957950d1edcc3481b211e7269e774facf925a0cdef9cbda03"
+      },
+      {
+        "path": "/Volumes/EDIT/2026/Developer/MediaMuster/.claude/worktrees/eloquent-swanson-119368/tests/fixtures/msmMMOB.mdb",
+        "sha256": "db91f1b0e0dcfaef92c263417e51f65e6821c5ef73f628fb01b1d4305d05f34d"
+      },
+      {
+        "path": "/Volumes/EDIT/2026/Developer/MediaMuster/tests/fixtures/msmFMID.pmr",
+        "sha256": "1701b03566019a2957950d1edcc3481b211e7269e774facf925a0cdef9cbda03"
+      },
+      {
+        "path": "/Volumes/EDIT/2026/Developer/MediaMuster/tests/fixtures/msmMMOB.mdb",
+        "sha256": "db91f1b0e0dcfaef92c263417e51f65e6821c5ef73f628fb01b1d4305d05f34d"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmFMID.pmr",
+        "sha256": "d97b6d680b2c2055fd9268a7f8fd8e6e5e9122db62fe308b083ec3363e32b544"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmFMID.pmr",
+        "sha256": "22a8b85a300e878b47963f0e44b6e0e129aebe0d6e2183fd655fb63c8ba6bd79"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmFMID.pmr",
+        "sha256": "aeff40c042f5ee496b2a396333bdc4b03ddc43bbd9b16300d82a21b56e77d1c7"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmFMID.pmr",
+        "sha256": "4c2072fb68b82a58a1c5121c5859e97276036d31773bf226aaab09e960528524"
+      },
+      {
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd"
+      }
+    ],
+    "allStringLiteralsUnchanged": true,
+    "stringLiteralCount": 480
+  },
+  "independentReview": "No drift found: entire direct list validation, lazy Project priority, nested USER distinctions, absorbing unavailable audio fields, private failure handling and public outcomes preserved.",
+  "workingSources": [
+    {
+      "path": "src/bella/mdbparser.cpp",
+      "sha256": "35afb9f7bc8e5f151d7961fc1caa2855b78c48b7180d3f4a770857ee6c0dca48"
+    },
+    {
+      "path": "src/bella/mdbparser.h",
+      "sha256": "38cface04f16dd9572dac0be2af9e85d6f67875c9444fc304c6dc4eb6e1a7569"
+    },
+    {
+      "path": "tests/tst_bellamdb.cpp",
+      "sha256": "ac9e9105520d2d1697f47a8816e913d44a8e6a66132d7154acf382369dabb099"
+    }
+  ],
+  "warningCombinations": {
+    "status": "Proposals only; await separate user choice",
+    "recommendation": "Start with the two same-cause Project cases; keep independent failures, cancellation, source change and verification results separate.",
+    "candidates": [
+      {
+        "case": "Direct Project conflict",
+        "currently": [
+          "Project text is unreadable, unsupported or conflicting.",
+          "Own Project candidates conflict; lower-priority Project substitution is blocked."
+        ],
+        "proposed": "Project names disagree; Project is left blank without substituting other Project values.",
+        "messagesBefore": 2,
+        "messagesAfter": 1,
+        "conditions": "Actual direct-key conflict only. Keep object/key and full path context. Nested USER conflicts already have one message."
+      },
+      {
+        "case": "Unreadable Project owner attribute list",
+        "currently": [
+          "_PJ: Project text is unreadable, unsupported or conflicting.",
+          "PROJNAME: Project text is unreadable, unsupported or conflicting.",
+          "Incomplete own Project attributes prevent lower-owner substitution."
+        ],
+        "proposed": "Project attributes cannot be read; Project is left blank without substituting a linked record.",
+        "messagesBefore": 3,
+        "messagesAfter": 1,
+        "conditions": "Only when the same unreadable list caused all messages; separate damaged values remain separate."
+      },
+      {
+        "case": "Rejected preferred PMR set and older-set fallback",
+        "currently": [
+          "The specific v16 rejection reason.",
+          "Version 16 is unusable; trying the older set from the same capture."
+        ],
+        "proposed": "The newer PMR records could not be used: [reason]. Trying the older records.",
+        "messagesBefore": 2,
+        "messagesAfter": 1,
+        "conditions": "Combine only when fallback actually begins. A Cancel check currently separates the two messages; preserve truthful cancellation reporting."
+      },
+      {
+        "case": "Zero WAVE sample storage width",
+        "currently": [
+          "WAVE fmt sample storage width is zero.",
+          "WAVE sample precision is invalid or unsupported for its storage width and encoding."
+        ],
+        "proposed": "Audio bit depth is unavailable because the recorded sample storage width is zero.",
+        "messagesBefore": 2,
+        "messagesAfter": 1,
+        "conditions": "Same-cause zero-width case only; keep independent frequency/encoding findings."
+      },
+      {
+        "case": "Broken audio Summary before a required format chunk",
+        "currently": [
+          "Audio Summary has an incomplete metadata chunk header. / Audio Summary metadata chunk exceeds its available container range.",
+          "Audio Summary has no complete required format chunk before sound data."
+        ],
+        "proposed": "The audio summary is incomplete before any usable format details could be read.",
+        "messagesBefore": 2,
+        "messagesAfter": 1,
+        "conditions": "Only when no earlier complete format exists; retain specific framing reason and source/owner context."
+      }
+    ]
+  },
+  "temporaryArtifacts": [
+    {
+      "path": "/private/tmp/bella-internal-cleanup-20261031/before-tests.txt",
+      "sha256": "dd1f501abd5cb25c05acdd1255ab1d81b5f430c84e17e12a0c770a2499d3305e"
+    },
+    {
+      "path": "/private/tmp/bella-internal-cleanup-20261031/before-results.json",
+      "sha256": "b9141128ebeac44474bc27bc88d673c635b8ae0acd18b1cacccc187676cfcf34"
+    },
+    {
+      "path": "/private/tmp/bella-internal-cleanup-20261031/after-results.json",
+      "sha256": "b9141128ebeac44474bc27bc88d673c635b8ae0acd18b1cacccc187676cfcf34"
+    },
+    {
+      "path": "/private/tmp/bella-internal-cleanup-20261031/comparison.json",
+      "sha256": "77ad5a047fbea6ce831ce4c7a0f9940d964209f41e39fff5fcaf81c77e8e44b0"
+    },
+    {
+      "path": "/private/tmp/bella-internal-cleanup-20261031/prior-sanitizer-tests.log",
+      "sha256": "b06ffe25bdba8b5f82ff9fa5058c1e56b404f5fc0f3edb9b9910b842dce0d8ea"
+    }
+  ],
+  "limits": [
+    "Before/after comparisons cover the45previously inventoried sources, including real computer/EDIT data, archives/copies and authored controls; no new whole-machine inventory or full scan was run.",
+    "Targeted authored cases do not prove every possible damaged input.",
+    "Normal build compiles arm64+x86_64; runtime tests and sanitizers ran on arm64.",
+    "No scan-speed or peak-memory gain has been measured.",
+    "Temporary baseline tests use the same extended test source as the after build."
+  ]
+}

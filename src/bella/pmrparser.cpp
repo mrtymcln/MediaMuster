@@ -326,6 +326,7 @@ namespace Bella
 
 			bool unsupported = false;
 			bool completeCoverage = true;
+			std::optional<qsizetype> unicodeFailureNote;
 			if (base.remaining() != 0)
 			{
 				const auto extension = base.number<qint32>("extension version");
@@ -359,12 +360,16 @@ namespace Bella
 					}
 					else
 						explain(report, base.error());
-					explain(report, QStringLiteral("Version 16 is unusable; trying the older set from the same capture."));
+					unicodeFailureNote = report.diagnostics.size() - 1;
 				}
 			}
 
 			if (cancelled(report, stopRequested))
 				return;
+			// Keep the rejection reason on Cancel, and describe fallback only once
+			// the existing checks have allowed that attempt to begin.
+			if (unicodeFailureNote)
+				report.diagnostics[*unicodeFailureNote].append(QStringLiteral(" Version 16 is unusable; trying the older set from the same capture."));
 			auto fallback = baseStart;
 			selectSet(report, decodeSet(fallback, *version, *count), completeCoverage, unsupported);
 			cancelled(report, stopRequested);

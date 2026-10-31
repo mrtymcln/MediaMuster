@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "date": "2026-10-27",
   "timezone": "Australia/Sydney",
-  "status": "All eight initial scanner-workflow decisions and twenty-three subsequent implementation choices are agreed. The independent shared ID helper and PMR parser/report are implemented and verified in focused normal and ASan/UBSan tests. Scanner and other source readers remain pending. Grouped report sections and a four-choice record-use enum are implemented and verified29October. New concrete choices still require check-ins. OldScanner stays active; Bin Filter unchanged. No app cutover or measured scan improvement. The latest two-boolean metadata/reference arrangement is approved29October and supersedes PmrUse; implemented and verified. The next bounded implementation choice concerns MDB acquisition ownership.",
+  "status": "All eight initial scanner-workflow decisions and forty subsequent implementation choices are agreed. Shared ID, PMR and independent MDB components are implemented and verified with focused normal and ASan/UBSan tests, using C++17 and exact Qt6.5.3. MDB genuine catalogue comparisons match twelve paths including EDIT; numbering has separately scoped checks. OldScanner stays active; Bin Filter unchanged. No app cutover or measured scan improvement.",
   "instruction": {
     "source": "Direct human user message",
     "quote": "Can you make a point, to check-in with ME at every decision. Give me a list of the decisions explained in plain English and the recommendation highlighted. Do not always assume, do not hallucinate - ground yourself in the plan and the codebase every now and then."
@@ -363,6 +363,330 @@
       "agreedRule": "Replace PmrUse with the proposed canUsePmrMetadata and referenceCoverageComplete booleans inside grouped PmrRecords. Preserve the existing No Reference meaning, complete known sets and positive-only references. Keep all parsing/capture/cancel checks; name the existing one-pass v16 filename decoder check isValidUtf8Filename as proposed, without a stored record field or additional pass.",
       "scope": "The exact proposed two-boolean arrangement resolves the pending return-contract issue. Grouped source/records, reading and size/date answers and diagnostic reasons remain otherwise unchanged. No active app/OldScanner/Bin Filter integration.",
       "implementationStatus": "Implemented and verified29October as grouped records.canUsePmrMetadata and records.referenceCoverageComplete; see pmrBooleanReport receipt."
+    },
+    {
+      "id": "mdb_acquisition_boundary",
+      "date": "2026-10-30",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human approval of the recommended MDB ownership boundary.",
+      "question": "Should the MDB parser read the file itself, or receive bytes captured by its caller?",
+      "recommendedOption": "MDB parser accepts a file path and handles both reading and interpretation, as Bella's PMR parser does.",
+      "alternative": "Caller captures the MDB bytes and passes them to a separate parser.",
+      "answer": "lets go with the rec: MDB parser does both (just like PMR)",
+      "agreedRule": "Provide a path-based MDB parser entry point that owns one source capture, interprets the approved fields and owner relationships, and returns compact owned results. Release the capture and temporary indexes after extraction; retain only required compact matching facts for their agreed lifetime.",
+      "scope": "MDB acquisition ownership only. Small private helpers remain possible. No separate public byte-parser interface or shared capture layer is required. This does not automatically extend PMR's readAll, stop-checkpoint, Qt size/date, unverified-metadata or report choices to MDB. Preserve MDB's approved version and local-versus-shared damage rules, shared stop request, four source jobs total and compact catalogue lifetime. No active app, OldScanner, Bin Filter, MediaFile/table, progress, journal, Unfinished Business or Undo integration.",
+      "historicalCodeAnchors": [
+        "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/mdbparser.cpp:93-119"
+      ],
+      "implementationStatus": "Ownership decision recorded. MDB runtime code and its remaining concrete implementation contract are pending."
+    },
+    {
+      "id": "mdb_whole_file_capture",
+      "date": "2026-10-30",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human approval after whole-file versus chunked reading pros/cons and historical comparison.",
+      "question": "Should MDB request the whole file in one call, like PMR, or read it in smaller chunks?",
+      "recommendedOption": "One QFile::readAll() capture call, checking the shared stop flag before and after it.",
+      "alternative": "A bounded capture loop with stop checks between smaller read calls; both approaches retain the complete image.",
+      "answer": "Lets go with the recommended whole-file call for MDB too, just like PMR.",
+      "agreedRule": "Capture MDB bytes with a single QFile::readAll() call and inspect the shared stop request before and after that call. Accept that an active read call must finish before Cancel can be observed. Retain the agreed one job-owned capture and release-after-extraction lifetime.",
+      "scope": "MDB capture mechanism and capture stop checkpoints only. One Qt call may perform multiple operating-system reads; no prompt stopping during a blocked read is promised. No chunked capture loop, RAM cap, streaming parser or measured performance claim. In-memory stop checkpoints, source-change checks, unavailable-check policy and exact failure/report contract still need check-ins. No MDB runtime code, CMake change or active app integration.",
+      "historicalCodeAnchors": [
+        "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/mdbparser.cpp:93-111"
+      ],
+      "implementationStatus": "Capture choice recorded; dependent MDB runtime implementation remains pending its remaining concrete contract."
+    },
+    {
+      "id": "mdb_size_modification_time_check",
+      "date": "2026-10-30",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human approval after simple Qt size/date versus additional native file-identity pros/cons and examples.",
+      "question": "How should Bella notice an MDB changing while being read?",
+      "recommendedOption": "Compare fresh file-size and modification-time observations before and after capture, as for PMR.",
+      "alternative": "Also establish the operating system's underlying file identity and whether the path still refers to the opened object; adds platform-specific handling/testing.",
+      "answer": "Lets go with the recommended size and modification time check for MDB too, just like PMR.",
+      "agreedRule": "Use fresh Qt QFileInfo observations of the source path's size and modification time before and after MDB capture. Compare available facts. An observed change in either excludes that MDB contribution under the existing changed-source rule; retain physical inventory and independent facts, with a fresh read left to manual rescan.",
+      "scope": "MDB source-change observation facts only. No additional native file-identity mechanism. Same-size rewrites/replacements with unchanged or restored timestamps can escape detection; this is not an atomic-snapshot or content-correctness guarantee. Unavailable-check handling, exact helper/report definitions and in-memory stop checkpoints remain to settle. No PMR runtime changes, MDB runtime implementation, app integration or performance claim.",
+      "currentCodeAnchors": [
+        "src/bella/pmrparser.cpp:373-395",
+        "src/bella/pmrparser.cpp:411-437"
+      ],
+      "historicalCodeAnchors": [
+        "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/mdbparser.cpp:93-119"
+      ],
+      "implementationStatus": "Size/modification-time check choice recorded; dependent MDB runtime implementation remains pending its remaining concrete contract."
+    },
+    {
+      "id": "mdb_keep_otherwise_usable_metadata_unverified",
+      "date": "2026-10-30",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human approval after retaining versus withholding otherwise usable MDB metadata when a size/date observation is unavailable.",
+      "question": "Should otherwise usable MDB metadata be kept as unverified when the size or modification-time check cannot be completed?",
+      "recommendedOption": "Keep otherwise usable MDB metadata and mark the size/date check unverified, as for PMR.",
+      "alternative": "Withhold that MDB's metadata when the required source check cannot be completed.",
+      "answer": "Lets go with the recommended option: keep otherwise usable MDB metadata and mark the check as unverified, just like PMR.",
+      "agreedRule": "Retain otherwise usable MDB facts if source size/modification-time observations are insufficient to complete the check, and carry the check's unverified qualification. Do not treat an unavailable observation alone as evidence of change or content damage. An observed difference in an available size/date fact still excludes the contribution even when another fact is unavailable.",
+      "scope": "Unavailable source-check policy only. Failed captures and unusable fields/relationships do not become usable. Preserve MDB's complete shared-foundation requirement, independent local-value/association handling, physical inventory and source/fallback rules. No automatic retry, additional header-read trigger or native file-identity mechanism. Exact report representation and in-memory stop checkpoints remain to settle. No runtime code or active app integration.",
+      "currentCodeAnchors": [
+        "src/bella/pmrparser.cpp:389-395",
+        "src/bella/pmrparser.cpp:423-452"
+      ],
+      "implementationStatus": "Unavailable-check policy recorded; dependent MDB runtime implementation remains pending its remaining concrete contract."
+    },
+    {
+      "id": "mdb_phase_only_parse_cancellation",
+      "date": "2026-10-30",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human choice of the alternative after comparing checks within repeated work with checks between major stages.",
+      "question": "When should Bella check Cancel while interpreting the captured MDB?",
+      "recommendedOption": "Check between directory entries and records, and during reference/link-list traversal, to provide more stop opportunities during long searches.",
+      "alternative": "Check only between major in-memory parsing stages, similar to PMR's whole-set checks; fewer checkpoints, with Cancel possibly waiting until the current stage finishes.",
+      "answer": "Lets go with alternative",
+      "selectedOption": "Phase-only in-memory cancellation checks.",
+      "recommendationSelected": false,
+      "agreedRule": "Check the shared stop flag between major in-memory MDB parsing stages. Do not introduce per-entry, per-object/record or per-reference/link stop checks inside those stage loops. Accept that an active stage may finish before the request is observed. Retain the separately approved checks before and after whole-file readAll capture.",
+      "scope": "In-memory cancellation granularity only. Preserve complete trusted shared foundations and the existing qualification rules for any retained completed facts; phase-only checking does not permit unsafe structural-prefix salvage. Exact phase/helper/report arrangement remains for the concrete implementation contract. No stopping-time measurement, MDB runtime implementation or active app integration.",
+      "currentCodeComparisonAnchors": [
+        "src/oldscanner/mediaengine/mdbbentoreader_p.cpp:233-235",
+        "src/oldscanner/mediaengine/mdbobjects_p.cpp:173-182",
+        "src/oldscanner/mediaengine/mdbobjects_p.cpp:546-551",
+        "src/oldscanner/mediaengine/mdbprojection.cpp:727-730"
+      ],
+      "implementationStatus": "Phase-only Cancel policy recorded; dependent MDB runtime implementation remains pending its remaining concrete contract."
+    },
+    {
+      "id": "mdb_expected_failure_returns",
+      "date": "2026-10-31",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human approval after ordinary checked replies versus private parsing exceptions were explained with the agreed local/shared damage boundaries.",
+      "question": "Should expected MDB input problems use ordinary checked replies or private parsing exceptions?",
+      "recommendedOption": "Ordinary checked replies, as for PMR: helpers return the value or an expected failure/unavailability answer that callers check.",
+      "alternative": "Private parsing exceptions that jump to a designated error handler; carefully scoped to preserve independently usable information.",
+      "answer": "Lets go with the recommended option: ordinary checked replies for MDB, just like PMR.",
+      "agreedRule": "Use ordinary checked returns for expected MDB open/read/format/check failures and unavailability. Callers must inspect the answer and apply the agreed boundary: preserve independent usable facts within trustworthy shared structure, or exclude that MDB's metadata when shared foundations are unsafe. Do not add private exception-based control flow for these expected input failures.",
+      "scope": "MDB expected-input control flow only. Preserve all settled data, damage, capture, change/unverified and phase-only stop policies. Unexpected allocation/program failures remain distinct; no catch-all or noexcept promise for the allocating parser. Exact helper/result types and concrete phase/report contract remain to settle. No MDB runtime implementation, existing app integration or performance claim.",
+      "currentCodeAnchors": [
+        "src/bella/pmrparser.cpp:34-43",
+        "src/bella/pmrparser.cpp:405-409",
+        "src/oldscanner/mediaengine/mdbbentoreader_p.cpp:395-410"
+      ],
+      "historicalCodeAnchors": [
+        "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/mdbparser.cpp:93-119"
+      ],
+      "implementationStatus": "Ordinary checked-reply choice recorded; dependent MDB runtime implementation remains pending its remaining concrete contract."
+    },
+    {
+      "id": "mdb_returned_report",
+      "date": "2026-10-31",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human approval after one report versus separate catalogue/status/detail outputs were compared with PMR and historical86c500c.",
+      "question": "Should MDB return everything in one report?",
+      "recommendedOption": "One owned MDB report, like PMR, keeping compact extracted information and its qualifications together.",
+      "alternative": "Return the catalogue with status and explanations supplied separately, similar to historical86c500c's catalogue plus bool*ok and logging.",
+      "answer": "Lets go with the recommended option: one MDB report, just like PMR.",
+      "agreedRule": "Return one owned MDB report containing the compact extracted information, reading outcome, size/date qualification and explanatory reasons together, rather than separate return/output channels. A completed read may coexist with an unverified check and retained otherwise usable metadata.",
+      "scope": "Returned-result packaging only. Exact member/type names, outcome inventories, retained source context, file/master/association representation and concrete phase/helper contract remain to review. Preserve MDB's independent local-fact qualifications and reference-coverage meanings; do not copy PMR's whole-set model or exact fields by default. No MDB runtime implementation, app integration or performance claim.",
+      "currentCodeAnchors": [
+        "src/bella/pmrparser.h:69-81"
+      ],
+      "historicalCodeAnchors": [
+        "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/mdbparser.h:49-69",
+        "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/mdbparser.cpp:93-128"
+      ],
+      "implementationStatus": "Single MDB report choice recorded; dependent runtime implementation remains pending its concrete contract."
+    },
+    {
+      "id": "mdb_separate_matching_records_combined_final_rows",
+      "date": "2026-10-31",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human approval after definitions, ID roles, current code/history and temporary-catalogue versus final-row distinctions were explained.",
+      "question": "How should MDB information be arranged during matching and in the final physical-file rows?",
+      "recommendedOption": "Separate full-ID file/master records during matching, then one combined record per physical file for the final table.",
+      "alternative": "Combine clip information into per-file records earlier; preserve independent master data/lookups for later or different matches.",
+      "answer": "Lets go with the recommended option: separate file and master records during matching, then one combined record per physical file for the final table. Record that decision. What's next?",
+      "agreedRule": "Keep compact file facts and master facts in separate catalogue records while matching, linked through complete normalized FileMobId/MasterMobId identities. Preserve independent lookups and required direct associations, including explicit PMR master priority and later header-identified joins. Assemble one combined final record per physical file, with scanner-assigned KelpieId. Release temporary matching catalogues after matching while retaining completed row values and required compact operation/status facts.",
+      "scope": "Intermediate catalogue grouping and final-row arrangement only. Shared Avid identities do not merge physical rows. Exact containers, record-value/availability types, report members and concrete phase/helper contract remain to review. The broad arrangement exists in current OldScanner and86c500c; no measured efficiency gain or runtime/app integration is claimed. OldScanner remains active; Bin Filter unchanged.",
+      "currentCodeAnchors": [
+        "src/oldscanner/mediaengine/projection.h:21-28",
+        "src/oldscanner/mediaengine/scancoordinator.cpp:548-583",
+        "src/oldscanner/mediaengineadapter.cpp:70-103",
+        "src/mediafile.h:17-54"
+      ],
+      "historicalCodeAnchors": [
+        "e15ec15:src/mdbparser.h:10-50",
+        "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/mdbparser.h:15-54",
+        "86c500ca6bf9cc93529017979d0f1b3ddac856be:src/mediascanner.cpp:1039-1051"
+      ],
+      "implementationStatus": "Separate matching records/combined final rows recorded; dependent Bella runtime implementation remains pending its concrete contract."
+    },
+    {
+      "id": "mdb_plain_values_separate_problem_notes",
+      "date": "2026-10-31",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human approval after simple values with separate notes versus a status/source/explanation wrapper on every field were compared using valid/missing/damaged Bit Depth and known-zero Duration examples.",
+      "question": "How much status information should each stored MDB value carry?",
+      "recommendedOption": "Simple owned values with explicit unavailability, separate report problem notes and only the specific qualifications required by agreed behavior.",
+      "alternative": "Wrap every field with its value, status, source and explanation, keeping each field's context directly attached.",
+      "answer": "Lets go with the recommended option: simple values with separate problem notes and the necessary specific qualifications. Record that decision. What's next?",
+      "agreedRule": "Retain usable MDB values directly and represent unavailable values explicitly. Keep problem reasons separately in the report instead of a permanent status/source/explanation wrapper around every field. Preserve all agreed numeric meanings, ownership and local-damage boundaries. Known zero is present, not a missing-value default. Retain explicit machine-usable qualifications where matching/validity/reference behavior requires them; do not make code infer those distinctions from human-readable notes.",
+      "scope": "Record-value/qualification style only. Required descriptor, master-association, duration-numbering and reference-coverage distinctions remain. Exact C++ value/availability types, specific qualification members, note representation, report/interface and phase/helper contract remain to settle. No field is removed, no current MediaFile/table or app integration is implemented, and no performance claim is made.",
+      "planAnchors": [
+        "docs/reviews/2026-10-18-bella-mdb/duration.md:214-233",
+        "docs/reviews/2026-10-18-bella-mdb/damage-handling.md:137-159",
+        "docs/reviews/2026-10-18-bella-mdb/clip-name.md:123-145",
+        "docs/reviews/2026-10-18-bella-mdb/audio-sample-rate.md:128-151"
+      ],
+      "implementationStatus": "Simple values/separate problem notes/specific qualifications recorded; dependent Bella runtime implementation remains pending its concrete contract."
+    },
+    {
+      "id": "mdb_audio_frequency_bounded_unsigned64",
+      "date": "2026-10-31",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human approval after asking for actual production/file values, receiving a fresh corpus investigation and a corrected practical-range explanation.",
+      "question": "Should exact MDB audio-frequency work use bounded unsigned64 numerator/denominator fractions or the current converter's signed32 limit?",
+      "recommendedOption": "A bounded reduced positive fraction using unsigned64 numerator and denominator, while preserving the original source frequency value.",
+      "alternative": "Retain the current MDB converter's signed32 fraction limit.",
+      "answer": "i'm not a coder so dont really understand sorry. but lets go with recommended option: bounded 64-bit fractions",
+      "agreedRule": "Use reduced positive unsigned64 numerator/denominator fractions for exact audio-frequency work. Preserve the approved original PCMA rate words, WAVE unsigned32 Hz or AIFF ten-byte frequency. Use checked conversion/arithmetic; unsupported or unrepresentable frequency stays unavailable with a reason while independent usable MDB information remains. Do not round or narrow a supported stored frequency.",
+      "evidence": "Project Bella/evidence/mdb-audio-frequency-values-2026-10-31.json",
+      "evidenceQualification": "All1801 observed native audio paths and the unchanged six-MDB audit fit signed32 already. No observed specimen demonstrates a need for the wider pair. Unsigned64 pairs mathematically preserve all valid AIFF80 values in [1,2^64)Hz; the prior warning overstated a practical storage concern.",
+      "scope": "Audio-frequency exact working representation only. No arbitrary-precision dependency, no mechanical widening of current signed32 MediaRate/Duration arithmetic, no performance claim and no app integration. Exact retained record members and helper/API definitions remain to review; original source-value meanings and all source/availability rules stay agreed.",
+      "implementationStatus": "Bounded unsigned64 audio-frequency choice recorded; dependent Bella runtime implementation remains pending its concrete contract."
+    },
+    {
+      "id": "mdb_source_check_measurements_temporary",
+      "date": "2026-10-31",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human approval after retained check result/reasons versus PMR-like captured measurements were compared with a plain-English successful-report example.",
+      "question": "What should Bella keep after checking an MDB's size and modification time?",
+      "recommendedOption": "Keep the check result and problem explanation; use the before/after measurements for comparison and then release them.",
+      "alternative": "Also return the original MDB size and modification date, as PMR's captured stamp does, for later inspection.",
+      "answer": "Lets go with the recommended option: keep just the check result and problem explanation. Record that decision. What's next?",
+      "agreedRule": "Retain the MDB path, size/date check result and explanatory problem notes. Keep fresh before/after database measurements temporary, releasing them after the agreed comparison rather than adding a returned MDB captured stamp. When a change is detected, the explanation includes the actual available before/after difference.",
+      "scope": "Returned MDB source-check context only. Preserve all capture/check/error handling and the agreed unverified-metadata policy. Separately required physical-media operation/scan facts and identities remain required. Do not alter PMR's existing captured stamp or operation code. Exact MDB report/interface and record types remain to settle; no runtime/app integration or measured efficiency claim.",
+      "currentCodeAnchors": [
+        "src/bella/pmrparser.h:48-58",
+        "src/bella/pmrparser.cpp:423-434",
+        "src/opscanreceipt.cpp:36-47",
+        "src/opscanreceipt.cpp:127-150"
+      ],
+      "implementationStatus": "Temporary MDB source measurements/retained check result and reasons recorded; dependent Bella runtime implementation remains pending its concrete contract."
+    },
+    {
+      "id": "mdb_entry_report_contract",
+      "date": "2026-10-31",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human approval of the concrete parser/report proposal and both recommended implementation options.",
+      "answer": "Lets go with the proposal and both recommended options: one True/False input for optional precompute details and two parsing stages. Record those decisions. What's next?",
+      "agreedRule": "Use src/bella/mdbparser.h/.cpp and tests/tst_bellamdb.cpp with the existing Bella library/test build lists. Provide synchronous MdbReport parseMdb(const QString &path, const std::atomic_bool &stopRequested, bool includePrecomputeDetails). Return five members: path(QString), reading(MdbReadResult), sizeDateCheck(MdbCheckResult), catalogue(MdbCatalogue), problemNotes(QStringList). Read answers: NotRead(default), Completed, Malformed, Unsupported, IoError, Changed, Cancelled. Check answers: NotChecked(default), Verified, Unverified, Changed. Completed means the planned pass finished; locally unavailable fields do not make every independent fact unusable. Keep problem source context once and combine it with notes at delivery.",
+      "scope": "Concrete entry/report boundary and named outcomes approved. Exact catalogue file/master members, availability/qualification types, association/owner representation, containers, arithmetic helpers and test cases still need the value contract before dependent runtime work. Existing root/test CMake lists are later touch points; no current app, MediaFile/table, progress, operation/journal/Undo or Bin Filter integration.",
+      "proposal": "Project Bella/README.md#agreed-mdb-entry-report-and-major-stages",
+      "implementationStatus": "Entry/report contract recorded; runtime remains pending the concrete catalogue/value contract."
+    },
+    {
+      "id": "mdb_optional_details_boolean_input",
+      "date": "2026-10-31",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human approval of both recommended options in the concrete MDB proposal.",
+      "question": "How should the frozen optional precompute-details request be passed to the MDB parser?",
+      "recommendedOption": "One explicitly named bool includePrecomputeDetails argument.",
+      "alternative": "A named MdbOptions record containing the same one setting.",
+      "answer": "one True/False input for optional precompute details",
+      "agreedRule": "Pass the scan's fixed optional-detail demand as one bool includePrecomputeDetails, using a clearly named value at call sites. Do not read changing GUI/global settings. Ordinary IDs, Type, Clip Name and required matching relationships remain available independently of optional-detail demand.",
+      "scope": "Input packaging only; frozen optional-detail behavior was already agreed. No extra options record or runtime/app integration is introduced by this record.",
+      "implementationStatus": "Boolean optional-details input recorded; dependent runtime remains pending the concrete catalogue/value contract."
+    },
+    {
+      "id": "mdb_two_in_memory_stages",
+      "date": "2026-10-31",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human approval of both recommended options in the concrete MDB proposal.",
+      "question": "How should MDB interpretation be divided into major stages after capture/checking?",
+      "recommendedOption": "Two stages: establish complete shared foundations; then extract and qualify required values/relationships.",
+      "alternative": "Three stages: shared foundations, value extraction, then separate relationship qualification/final assembly, adding a stop boundary and intermediate-state handling.",
+      "answer": "two parsing stages",
+      "agreedRule": "After capture/source-checking, use two major in-memory stages. First establish complete trusted label/layout, TOC and required dictionary/catalogue/lookup foundations. Second extract and qualify approved file/master values and required associations/relationships into the compact catalogue. Check the shared stop flag before/after each stage, not inside per-item loops or automatically around every private helper/subpass. The separately approved before/after readAll checks remain. Preserve only already completed qualified facts at checkpoints.",
+      "scope": "Concrete phase arrangement within the previously approved phase-only Cancel policy. No unsafe structural-prefix salvage, no new field/source behavior and no measured stopping-time claim. Runtime remains pending the concrete value contract.",
+      "implementationStatus": "Two in-memory stages recorded; dependent runtime remains pending the concrete catalogue/value contract."
+    },
+    {
+      "id": "mdb_concrete_catalogue_value_contract",
+      "date": "2026-10-31",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human approval of the concrete record contract and recommended lists/direct links, with an explicit instruction to begin MDB parser/test implementation.",
+      "answer": "Lets approve the record contract with the recommended lists and direct links. Record that decision and begin implementing the MDB parser and its tests. Remember to keep the code as elegant as possible - use C++17 and Qt building blocks where you can. If you have any more questions, ask me - do not assume.",
+      "agreedRule": "Use the exact file/master record types and necessary qualifications in the agreed MDB value contract. Return owned QVector file/master records with complete binary MobIds and direct master-record indices preserving owner context; build scan-wide ID-to-record-list lookups later. Preserve exact rate type context, audio source values, bounded unsigned64 audio math, Project/numbering/descriptor/reference qualifications and compact naming/depth facts. Independently implement mdbparser.h/.cpp and tst_bellamdb.cpp with C++17 and exact Qt6.5.3, scoped private helpers, ordinary checked replies and approved capture/two-stage cancellation. Use the existing unchanged MacRoman table as approved.",
+      "declinedAlternative": "Return per-report full-ID-keyed record groups rather than ordinary owned record lists/direct indices.",
+      "scope": "Authorises the independent MDB reader and meaningful focused tests under the agreed contract, including explicit root/test CMake list additions. Keep OldScanner active and Bin Filter unchanged; no app/progress/MediaFile/table/operation/journal/Undo integration. Remaining uncommon display labels and later helper extraction/integration still need check-ins. New substantive choices must be explained and approved; no assumed metadata changes or unmeasured improvement claims.",
+      "contract": "Project Bella/README.md#agreed-concrete-mdb-catalogue-values",
+      "implementationStatus": "Implemented and verified; see Project Bella/evidence/mdb-implementation-2026-10-31.json."
+    },
+    {
+      "id": "mdb_audio_summary_keep_earlier_readable_values",
+      "date": "2026-10-31",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human asynchronous answer during implementation.",
+      "question": "If a complete audio-format header is readable but a later metadata chunk has a broken length, retain earlier qualified audio values or withhold the summary's values?",
+      "recommendedOption": "Keep earlier readable values and report the later problem, matching current behavior and the independent-fact policy.",
+      "alternative": "Withhold all values from that audio summary when later metadata framing cannot be completed.",
+      "answer": "Keep earlier readable values and report the problem (Recommended)",
+      "agreedRule": "Keep independently qualified frequency/depth/encoding from complete readable audio-format chunks when a later metadata chunk has invalid framing, and report the later problem. This does not make incomplete or conflicting required format fields usable, nor waive the complete shared MDB foundation requirement.",
+      "evidenceQualification": "No actual damaged summary specimen was found; this is an authored invalid-input boundary policy. Current summary readers retain already decoded fields;86c500c stops at the first required format chunk.",
+      "scope": "Later unrelated audio-summary metadata damage only. No new source fallback, physical-media open, retry or unsafe required-field prefix salvage.",
+      "implementationStatus": "Implemented and verified; see Project Bella/evidence/mdb-implementation-2026-10-31.json."
+    },
+    {
+      "id": "mdb_three_internal_cleanups",
+      "date": "2026-10-31",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human user instruction after the comparison and simplification review.",
+      "answer": "Let's go with the three recommended internal cleanups. Record that decision and implement them, keeping all checks and results unchanged. What are the warning messages we can combine?",
+      "recommendedOption": "Remove redundant audio blocked flags, merge the private failure labels that consumers handle identically, and obtain the checked Project-owner attribute list once for reuse.",
+      "alternative": "Keep the existing internal duplication. Warning-message consolidation and public-report changes are separate proposals.",
+      "agreedRule": "Implement exactly the three recommended internal cleanups. Preserve all checks, field values, availability/qualification, public statuses, diagnostic text/order/count, phase-only Cancel and source acquisition behavior. Keep OldScanner active and Bin Filter unchanged.",
+      "cleanups": [
+        "Remove the five audio blocked flags; unavailability already absorbs later merges.",
+        "Fold private Issue::Unsupported into Issue::Unreadable without changing public MdbReadResult::Unsupported or its diagnostics.",
+        "Read/validate the owner attribute list once for Project key selection; preserve the priority and lazy requested-value decoding."
+      ],
+      "warningMessages": "Explain candidate combinations to the user; no warning-delivery change is approved.",
+      "implementationStatus": "Implemented and verified; see Project Bella/evidence/mdb-internal-cleanup-2026-10-31.json."
+    },
+    {
+      "id": "pmr_mdb_five_same_cause_warning_combinations",
+      "date": "2026-11-01",
+      "status": "Agreed",
+      "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+      "source": "Direct human reply to the five warning combinations presented after the internal cleanups.",
+      "answer": "Lets do all of them",
+      "agreedRule": "Combine all five proposed same-cause warning groups. Preserve all parsing checks, metadata values, availability, qualifications, public reading/check results, source acquisition and existing Cancel opportunities. Keep independent failures distinct and retain source/object/key context. Do not claim PMR fallback starts if Cancel prevented it.",
+      "combinations": [
+        "Direct Project key conflict plus blocked-substitution explanation.",
+        "One unreadable Project-owner attribute list causing repeated key/fallback notes.",
+        "Rejected preferred PMR v16 reason plus older-set fallback notice when fallback begins.",
+        "Zero WAVE sample storage width plus resulting precision failure.",
+        "Broken audio Summary framing before a complete format plus no complete required format note; preserve specific framing reason."
+      ],
+      "evidence": "Project Bella/evidence/mdb-internal-cleanup-2026-10-31.json warningCombinations; current readers and tests.",
+      "scope": "Bella reader warnings and focused tests/documentation only. No integration or OldScanner/Bin Filter behavior changes.",
+      "implementationStatus": "Implemented and verified; see Project Bella/evidence/reader-warning-combinations-2026-11-01.json."
     }
   ],
   "firstImplementation": {
@@ -1093,7 +1417,48 @@
   "initialDecisionRegisterComplete": true,
   "allOriginalRecommendationsSelected": false,
   "futureImplementationChoicesRequireUserCheckIn": true,
-  "nextStage": "PMR boolpair implemented and verified. Next: explain MDB acquisition ownership options and wait for user choice; then propose one concrete grouped MDB implementation contract grounded in its approved format/field/lifetime rules. No MDB code/stubs or app cutover yet.",
+  "nextStage": "The approved five warning combinations are implemented and verified. Further concrete Bella reader/scanner decisions require a plain-English user check-in before dependent implementation.",
+  "pendingMdbCatalogueValues": {
+    "status": "Resolved; full contract and recommended lists/direct links approved31October; independent implementation requested.",
+    "date": "2026-10-31",
+    "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+    "proposal": "Project Bella/README.md#agreed-concrete-mdb-catalogue-values",
+    "recommendedStorage": "Owned QVector file/master records, with full MobIds and direct master-record positions preserving owner context. Build full-ID-to-record-list lookups later for matching.",
+    "alternativeStorage": "Return QHash full-ID-keyed record groups directly, with corresponding owner-safe link handles; still requires scan-wide matching.",
+    "retainedValues": "Exact qualified file text/Project owner-key-conflict, Kind and four-byte descriptor tag, descriptor eligibility, count/rates with type context, five-state numbering, original audio source value with approved temporary U64 arithmetic, numeric raster, bounded depth/component facts, compact Compression naming facts, master links/completeness; master ID/name/bin/Type/requested category; file reference coverage; report notes.",
+    "dependencyNotice": "Proposes the unchanged AvidText::kMacRomanHigh table for fixed MDB text decoding. Shared Bella MobId is already approved; unchanged Compression-resolver preservation already agreed. Bella owns its small enums and does not import app row/evidence types.",
+    "scopeIfApproved": "Concrete parser value contract and independent MDB reader/focused-test implementation in already-approved files/build targets. Remaining uncommon generic representation labels and later shared-helper extraction/integration still require check-ins. No current app/OldScanner/Bin Filter/progress/MediaFile/table/operation/journal/Undo integration. No performance claim.",
+    "resolvedByDecision": "mdb_concrete_catalogue_value_contract",
+    "resolutionDate": "2026-10-31"
+  },
+  "pendingMdbEntryReportStages": {
+    "status": "Resolved; proposal and both recommended options approved31October.",
+    "date": "2026-10-31",
+    "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+    "proposal": "Project Bella/README.md#agreed-mdb-entry-report-and-major-stages",
+    "recommendedInput": "One explicit bool includePrecomputeDetails argument, fixed by the scan request.",
+    "alternativeInput": "A named one-field MdbOptions record containing the same frozen setting.",
+    "recommendedStages": "Two in-memory stages after capture/check: complete shared foundations; then extract and qualify the required values/relationships.",
+    "alternativeStages": "Three in-memory stages, splitting extraction from relationship qualification/final assembly; adds a stop boundary and intermediate-state handling.",
+    "scope": "Entry/report/stage contract agreed. Exact record values, qualifications, association/owner representation and containers remain pending. No runtime or MDB stubs.",
+    "resolvedByDecisions": [
+      "mdb_entry_report_contract",
+      "mdb_optional_details_boolean_input",
+      "mdb_two_in_memory_stages"
+    ],
+    "resolutionDate": "2026-10-31"
+  },
+  "pendingMdbAudioFrequencyWidth": {
+    "status": "Resolved; user approved bounded unsigned64 audio fractions after the actual-value investigation.",
+    "date": "2026-10-31",
+    "headAtCheck": "14bc6e30775be51bb9b64a65dd52a791c6a3bb86",
+    "userReply": "the recommended option: bounded 64-bit fractions sounds best. But can't be expressed? look for actual values that would be used, not theoretical ones.",
+    "evidence": "Project Bella/evidence/mdb-audio-frequency-values-2026-10-31.json",
+    "finding": "No actual observed frequency in the targeted native sample or unchanged MDB audit needs wider than signed32, and none exceeds unsigned64. All valid positive AIFF80 values in [1,2^64)Hz fit an unsigned64 numerator/denominator exactly; the earlier warning overstated a practical storage concern.",
+    "scope": "Audio-frequency representation only; no automatic change to existing signed32 MediaRate, Duration maths, PMR or active app.",
+    "resolvedByDecision": "mdb_audio_frequency_bounded_unsigned64",
+    "resolutionDate": "2026-10-31"
+  },
   "pmrImplementation": {
     "date": "2026-10-28",
     "baselineHead": "b1915319519a978ef0b9043a20197943ccf34d32",
@@ -2704,5 +3069,37 @@
     "independentReview": "Read-only review found exact inverse mapping, safe defaults, positive-only and empty-set coverage preserved, same Cancel checkpoints and one UTF8 decoding pass.",
     "activeRuntimeFilesChanged": [],
     "limits": "No app integration/cutover, actual GUI/log-delivery test, full existing-suite run, Windows/x86_64 execution, new discovery of protected locations, forced live-change/cancel race instrumentation, or runtime/peak-memory comparison."
+  },
+  "mdbImplementation": {
+    "status": "Implemented and verified",
+    "date": "2026-10-31",
+    "receipt": "Project Bella/evidence/mdb-implementation-2026-10-31.json",
+    "entry": "Bella::parseMdb(path, stopRequested, includePrecomputeDetails)",
+    "activeScanner": "OldScanner",
+    "binFilter": "Unchanged",
+    "measuredScanImprovement": false
+  },
+  "mdbComparisonReview": {
+    "date": "2026-10-31",
+    "receipt": "Project Bella/evidence/bella-oldscanner-comparison-2026-10-31.json",
+    "status": "Read-only comparison complete; cleanup proposals await user choice.",
+    "bellaFullScannerAvailable": false,
+    "productionChangesMade": false
+  },
+  "mdbInternalCleanup": {
+    "status": "Implemented and verified",
+    "date": "2026-10-31",
+    "receipt": "Project Bella/evidence/mdb-internal-cleanup-2026-10-31.json",
+    "warningsChanged": false,
+    "publicReportChanged": false
+  },
+  "readerWarningCombinations": {
+    "date": "2026-11-01",
+    "status": "Implemented and verified",
+    "decisionId": "pmr_mdb_five_same_cause_warning_combinations",
+    "publicReportChanged": false,
+    "metadataBehaviorChanged": false,
+    "receipt": "Project Bella/evidence/reader-warning-combinations-2026-11-01.json",
+    "warningTextCountChanged": true
   }
 }

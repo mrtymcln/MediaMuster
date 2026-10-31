@@ -90,6 +90,8 @@ add_library(mediamuster_bella STATIC
     src/bella/mobid.h
     src/bella/pmrparser.cpp
     src/bella/pmrparser.h
+    src/bella/mdbparser.cpp
+    src/bella/mdbparser.h
 )
 set_target_properties(mediamuster_bella PROPERTIES AUTOMOC OFF)
 target_include_directories(mediamuster_bella PUBLIC ${CMAKE_SOURCE_DIR}/src)

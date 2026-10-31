@@ -8,13 +8,111 @@ confirmed final results at scan end and partial-result retention on Cancel,
 preserving current behaviour. The first implemented component is the shared
 `MobId` normalizer in `mobid.h/.cpp`, built as `mediamuster_bella` and exercised
 by `tests/tst_bellamobid.cpp`. The first independent PMR reader/report is now in
-`pmrparser.h/.cpp`, with focused normal and sanitizer tests passing. The scanner and
-MDB/MXF/OMF/native-audio readers remain to implement.
+`pmrparser.h/.cpp`. The independent MDB reader/report is now in
+`mdbparser.h/.cpp`. Focused normal and sanitizer tests pass for all three
+components. The scanner and MXF/OMF/native-audio readers remain to implement.
+
+On 30 October the user chose a path-based MDB parser that handles both reading
+and interpretation, as PMR does. It will capture each source once, extract the
+approved compact file/master facts and relationships, then release the capture
+and temporary indexes. The user then approved one `QFile::readAll()` capture
+call, with the shared stop flag checked before and after it, instead of a
+chunked read loop. Cancel waits while an active call finishes. The user also
+approved fresh Qt size/modification-time observations before and after capture,
+as for PMR, over additional operating-system file-identity checks. An observed
+change excludes that MDB's contribution under the agreed changed-read rule.
+When that check cannot be completed, the user chose to retain otherwise usable
+MDB metadata and mark the check unverified, as for PMR. Actual detected changes
+and failed reads still exclude that source's contribution; MDB's approved
+local-damage boundaries remain. For in-memory interpretation the user chose
+the alternative: check Cancel only between major stages, not between individual
+entries, records or links. Cancel may wait for the current stage to finish;
+the before/after capture checks still apply. On 31 October the user chose
+ordinary checked replies for expected MDB input failures, as for PMR, over
+private parsing exceptions. Callers must check the answer; unexpected resource
+or program failures remain distinct. The user also chose one owned MDB report
+for the extracted information, reading outcome, size/date qualification and
+explanations, over separate catalogue/status/detail outputs. The user then
+approved separate file/master records during matching, linked by complete
+IDs, followed by one combined record per physical file for the final table.
+The scanner supplies each physical row's KelpieId; shared Avid identities do
+not merge rows. Temporary matching catalogues go after matching under the
+agreed lifetime rule. The user also approved simple owned values with explicit
+unavailability, separate report problem notes and only the specific
+qualifications required by the agreed rules, over a status/source/explanation
+wrapper around every field. Known zero remains distinct from unavailable;
+required matching/validity distinctions remain explicit. Exact value and
+qualification types, containers, report members and phase/helper arrangements
+still need their check-ins before dependent code. Following an actual-value
+investigation, the user approved bounded unsigned 64-bit numerator/denominator
+fractions for exact audio-frequency work. Preserve the approved original source
+value and use checked arithmetic; existing signed-32 `MediaRate` is not being
+widened. See the [actual-value findings](../../Project%20Bella/evidence/mdb-audio-frequency-values-2026-10-31.json).
+The user chose to keep MDB size/date check results and problem explanations,
+with the source path, while releasing the temporary database size/date
+measurements after comparison. Detected changes explain the actual available
+differences. PMR's retained captured stamp and the separately required physical
+operation facts remain as agreed.
+The user approved the concrete entry/report package on 31 October:
+`mdbparser.h/.cpp`, `tests/tst_bellamdb.cpp` and synchronous
+`parseMdb(path, stopRequested, bool includePrecomputeDetails)`. The report has
+`path`, `reading`, `sizeDateCheck`, `catalogue` and `problemNotes`, with the
+agreed seven read outcomes and four check outcomes. The optional-details
+request is one True/False input fixed for the scan. After capture/checking,
+two in-memory stages establish complete shared foundations, then extract and
+qualify required values/relationships; Cancel checks surround those stages.
+Those entry decisions were followed by the full record contract, which was
+approved on 31 October, with ordinary owned lists and direct master links;
+the user requested implementation of the MDB parser and tests. That work is
+implemented and verified. See the [agreed value contract](../../Project%20Bella/README.md#agreed-concrete-mdb-catalogue-values) and the
+[agreed entry/report/stages](../../Project%20Bella/README.md#agreed-mdb-entry-report-and-major-stages).
+The user also approved retaining complete earlier audio-summary values if a
+later unrelated metadata chunk has damaged framing, with a problem note.
+Conflicting or unreadable required values remain unavailable at their own scope.
+No active app integration is added. See the
+[MDB entry decision](../../Project%20Bella/README.md#implementation-decisions).
+
+The [MDB validation receipt](../../Project%20Bella/evidence/mdb-implementation-2026-10-31.json)
+records 107 substantive MDB invocations (109 Qt passes including setup/cleanup),
+normal and ASan/UBSan results, matching independent catalogue comparisons for
+twelve source paths, separately scoped numbering checks and the remaining
+validation limits. The original source values remain owned in the report;
+temporary capture/index/graph/fraction data is released on return. Kind's six
+display classes do not gate other independently qualified known-format fields.
+
+On 31 October the user approved three internal MDB cleanups: remove redundant
+audio blocked flags, collapse the private Unsupported/Unreadable distinction
+that no consumer uses, and reuse a checked Project-owner attribute list.
+Keep all checks, results, qualifications, public outcomes and diagnostic
+text/order/count unchanged. That cleanup approval did not include warning
+changes. Implementation and verification are complete; the
+[cleanup receipt](../../Project%20Bella/evidence/mdb-internal-cleanup-2026-10-31.json)
+records identical before/after dumps for all 45 comparison sources, unchanged
+diagnostic text/order/count, and 123 passing MDB Qt cases (121 substantive)
+normally and with ASan/UBSan. The same extended cases also pass against the saved
+pre-cleanup reader. Public reports and PMR/MobId code are unchanged. No app or
+surrounding runtime integration is added.
+
+On 1 November the user approved all five subsequent same-cause warning
+combinations: direct Project key conflict, one unreadable Project-owner list,
+rejected PMR v16 with older-set fallback, zero WAVE storage width, and broken
+audio Summary framing before any complete format. Retain the precise cause,
+source/object/key context and independent failures. Preserve every parsing
+check, metadata result, public qualification and existing Cancel checkpoint;
+do not announce PMR fallback if Cancel prevents it. This changes Bella reader
+notes only. Implementation and verification are complete; no app warning
+delivery or scanner integration is added. The
+[warning-combination receipt](../../Project%20Bella/evidence/reader-warning-combinations-2026-11-01.json)
+records 151 MDB, 73 PMR and 14 ID Qt passes normally and with ASan/UBSan, including
+44 added authored warning cases. All public metadata/statuses match the saved
+readers across the 45 prior sources and both MDB detail settings (63 reports).
+The authored cases cover the changed warning branches; the prior corpus returns
+identical complete reports. No measured speed or memory claim is made.
 
 On 27 October the user approved a separate `mediamuster_bella` static library
 in the existing CMake build, using Qt Core and initially linked only to Bella's
 focused tests. Parser signatures and result details still require check-ins
-before dependent implementation. The target contains the ID helper and PMR parser.
+before dependent implementation. The target contains the ID helper, PMR and MDB parsers.
 See the
 [implementation decision](../../Project%20Bella/README.md#implementation-decisions).
 

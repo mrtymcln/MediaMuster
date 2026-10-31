@@ -2,10 +2,10 @@
 
 Started 18 October 2026. Status: first-release parser/source requirements and
 the eight registered scanner-workflow decisions are settled. Independent Bella
-implementation includes the shared ID helper and the first PMR parser in their
-separate library/test targets. The focused PMR tests pass normally and with
-ASan/UBSan on arm64. The scanner and
-other source parsers remain to implement; new concrete choices still require
+implementation includes the shared ID helper and independent PMR and MDB parsers
+in their separate library/test targets. Their focused tests pass normally and
+with ASan/UBSan on arm64. The scanner and
+remaining source parsers remain to implement; new concrete choices still require
 user check-ins.
 
 Bella is a fresh start for MediaMuster's scanner and parser. The motivation is to
@@ -45,7 +45,7 @@ partial results and incomplete status; cleanup remains responsive. Keep only
 required compact matching facts through matching, then release them. New concrete
 implementation/label/API choices still need a plain-English check-in before
 dependent work; completion of this register is not approval of every proposal
-or app cutover. The shared ID helper and PMR parser are implemented;
+or app cutover. The shared ID helper, PMR parser and MDB parser are implemented;
 there is no runnable Bella scanner or measured scan improvement yet. OldScanner
 stays active until explicit cutover approval.
 
@@ -113,6 +113,579 @@ Bella's agreed cancellation, changed-source, read-once/lifetime, whole-set,
 text and identity rules remain authoritative; the historical parser's other
 behaviour is not adopted. Exact files, signatures, result details and
 capture/check mechanisms still require their concrete check-ins.
+
+**MDB entry boundary agreed, 30 October 2026:** the user chose “MDB parser
+does both (just like PMR).” Give the MDB parser a file path; it opens and
+captures that source once, interprets the approved fields and relationships,
+and returns compact owned results. Release its capture and temporary indexes
+after extraction. The caller does not acquire the bytes first. Small private
+helpers remain possible; this choice does not require a separate public
+byte-parser interface or shared capture layer. Historical `86c500c` also put
+file reading inside its MDB parser entry point; Bella remains an independent
+implementation of the approved MDB requirements.
+
+This settles acquisition ownership only. Subsequent reading-call and source-
+check choices, unavailable-check handling and in-memory stop policy are
+recorded below. The single-report packaging is also agreed; its concrete
+members, catalogue representation and phase/helper contract still need check-ins.
+PMR-specific answers are not automatically extended to MDB. Preserve
+the approved MDB version/damage rules, compact catalogue lifetime and shared
+four-source-job limit. No MDB runtime code, existing app integration or cutover
+is implemented by this record. See the
+[decision receipt](evidence/decision-check-ins-2026-10-27.json).
+
+**MDB whole-file reading agreed, 30 October 2026:** the user chose the
+recommended whole-file call, as for PMR. Request the MDB capture with one
+`QFile::readAll()` call and check the shared stop flag before and after it.
+The user chose this over a chunked capture loop, accepting that Cancel must
+wait for an active call to finish. One Qt call need not mean one operating-
+system read. Both approaches retain the complete job-owned image; this choice
+does not add a memory cap or claim lower memory use or faster reading.
+
+Historical `86c500c` also used `QFile::readAll()` inside its MDB loader. The
+following decisions settle source-change check facts and unavailable-check
+handling; the later cancellation decision settles in-memory checkpoint
+granularity. The later expected-failure decision settles ordinary checked
+replies; report details remain separate choices. This records the approved
+capture mechanism; no MDB runtime implementation or existing app integration
+is added.
+
+**MDB size/modification-time check agreed, 30 October 2026:** the user chose
+the recommended simple Qt check, as for PMR. Observe the source path's size
+and modification time freshly before and after capture using `QFileInfo`.
+Compare the available facts; an observed difference in either means the
+captured MDB contribution is excluded under the already-approved changed-read
+rule. Keep the physical inventory and independently valid source facts; leave
+a fresh attempt to manual rescan.
+
+The user chose this over adding operating-system file-identity checks. Size
+and date can miss a rewrite or replacement that preserves both values; they
+do not establish an atomic snapshot or prove all contents correct. The
+following decision settles unavailable-check handling; exact helper/report
+definitions remain pending. No PMR or existing app runtime code is changed
+by this record.
+
+**Readable but unverified MDB agreed, 30 October 2026:** when an MDB capture
+and its selected facts are otherwise usable but the size/modification-time
+check cannot be completed, retain those facts and mark the check unverified,
+as for PMR. The user chose this over withholding that MDB's otherwise usable
+metadata. Preserve the missing-check qualification; an unavailable observation
+alone does not establish a source change or damaged content.
+
+An observed difference in an available size/date fact still excludes that
+MDB contribution, even if another observation is unavailable. A failed read
+or an unusable field/relationship does not become usable through this choice.
+Keep the approved MDB shared-structure/local-damage boundaries and existing
+source/fallback rules. No retry, new header-read trigger or additional file-
+identity check is introduced. Exact report representation remains pending;
+the following decision settles in-memory stop granularity. This record changes
+documentation only.
+
+**MDB phase-only Cancel checks agreed, 30 October 2026:** the user chose
+the alternative: check the shared stop flag between major in-memory parsing
+stages, similar to PMR's whole-set approach. Do not add stop checks within
+each directory/TOC-entry, object/record or reference/link traversal loop. A
+request arriving during a stage may wait until that stage finishes. The
+previously agreed checks before and after `QFile::readAll()` still apply.
+
+This declines the recommendation to check between entries, records and links;
+no measured stopping-time claim is made. It changes stop opportunities, not
+MDB validity: complete trusted shared foundations remain required, and any
+retained completed facts must satisfy their existing qualification rules.
+Exact phase/helper/report arrangements belong in the concrete implementation
+contract. No MDB runtime code or active app integration is added by this record.
+
+**MDB expected-failure replies agreed, 31 October 2026:** the user chose
+ordinary checked replies, as for PMR. Helpers return an expected usable value
+or failure/unavailability answer, and callers check it. Use this route for
+expected open/read/format/check problems, rather than private parsing
+exceptions caught at the MDB entry point.
+
+This settles control flow, not a new damage policy or report layout. Within
+trusted shared foundations, an unusable value or relationship still leaves
+independent usable facts available; unsafe shared foundations exclude that
+MDB's metadata. Keep unexpected allocation/program failures distinct from
+damaged input; do not add a catch-all or promise a non-throwing allocating
+parser. The exact helper/result types and concrete report contract remain
+pending. This decision adds no MDB runtime code or existing app integration.
+
+**MDB returned report agreed, 31 October 2026:** the user chose one owned
+MDB report, as for PMR, rather than returning the catalogue with separate
+status/detail outputs. Keep the extracted compact information together with
+the reading outcome, source-check qualification and explanatory reasons.
+For example, reading may complete while the source check remains unverified
+and otherwise usable metadata is retained.
+
+This settles packaging only. The following decision settles the file/master
+grouping; exact field/type names, outcome lists, retained source context,
+association representation and phase/helper arrangements remain to review.
+Preserve independently usable MDB facts and
+reference-coverage meanings; do not assume PMR's whole-set selection model or
+its exact fields apply to MDB. No MDB runtime code or app integration is added.
+
+**MDB matching catalogue and final rows agreed, 31 October 2026:** keep
+separate compact file and master records during matching, joined using their
+complete normalized FileMobId/MasterMobId identities. Assemble one combined
+record per physical file for the final table, with its own KelpieId. The user
+explicitly approved this after clarification that the temporary catalogue and
+final physical-file rows are different stages.
+
+Preserve the independent file/master lookups, explicit PMR master priority,
+required direct associations and facts needed for files identified later from
+headers. Shared master information does not merge physical rows. Release the
+temporary matching catalogue after matching under the agreed lifetime rule;
+retain completed row values and required compact operation/status facts.
+
+The alternative was combining clip information into per-file entries earlier,
+while still needing independent master lookup. Current OldScanner and
+`86c500c` use the broad separate-catalogue/combined-row arrangement; this is
+not a claim of a new measured efficiency gain. The following decision settles
+the value/qualification style; exact containers, value/availability types,
+report members and phase/helper contract remain to review. No current
+MediaFile/table or other app integration is implemented.
+
+**MDB simple values and separate problem notes agreed, 31 October 2026:**
+the user chose ordinary owned values, with an explicit unavailable answer when
+a value cannot be used, and explanations in the report's separate problem
+notes. Do not add a value/status/source/explanation wrapper around every
+field. Preserve the few specific qualifications required by the already-agreed
+matching, validity and reference rules.
+
+For example, usable Bit Depth retains its numeric value; missing Bit Depth is
+unavailable; damaged Bit Depth is unavailable with an explanation. A genuine
+zero Duration remains a known value, distinct from missing or unreadable.
+Keep exact numeric source meanings and ownership. Required distinctions for
+descriptor eligibility, master-association completeness, duration numbering
+and negative-reference coverage must remain available to the code through
+explicit qualifications rather than interpreting human-readable problem text.
+Exact C++ types, qualification members and note representation are still part
+of the concrete contract. This decision adds no runtime code, field removal,
+app integration or measured performance claim.
+
+**Audio-frequency investigation, 31 October 2026:**
+the user preferred the proposed bounded 64-bit fraction but asked for actual
+values before completing that decision. A fresh read-only header investigation
+of targeted EDIT project/library folders and shared OMFI media found 1,801
+readable native audio paths, including copies: 1,255 at 44,100 Hz, 538 at
+48,000 Hz, six at 11,127 Hz, one at 22,254 Hz and one at 8,012 Hz. All fit
+both the current signed-32 fraction limit and the proposed unsigned-64 pair.
+The 998 AIFF/AIFF-C paths contain only exact 44,100 or 48,000 Hz. No fractional
+specimen or actual unsupported frequency was found in this targeted sample;
+this was not an exhaustive computer-wide inventory.
+
+All six original MDB hashes still match the prior owner-qualified audit,
+whose 1,513 audio records are all exactly 48,000 Hz. Selected PCMA/WAVD/AIFD
+frequency bytes were freshly rechecked; the earlier complete catalogue
+traversal was not rerun. See the
+[actual-value receipt](evidence/mdb-audio-frequency-values-2026-10-31.json).
+
+Correction to the earlier broad warning: a reduced **unsigned** 64-bit
+numerator/denominator can preserve every valid positive AIFF80 value from
+1 Hz up to (but excluding) 2^64 Hz, including all its fractional precision.
+The practical audio range therefore has no such storage exclusion. This is a
+mathematical storage guarantee, not a claim about unchecked arithmetic or a
+real file that needs the wider pair. Existing signed-32 `MediaRate` arithmetic
+must not be widened mechanically. The subsequent approval is recorded below;
+the investigation changed no MDB runtime code, larger-number dependency or
+existing rate type.
+
+**MDB bounded 64-bit audio fractions agreed, 31 October 2026:** after the
+actual-value investigation and plain-English explanation, the user chose
+the recommended bounded 64-bit fractions. For exact audio-frequency work,
+use a reduced positive numerator/denominator pair of unsigned 64-bit integers.
+Preserve the original approved source value independently: PCMA's original
+rate words, WAVE's integer Hz, or AIFF's ten-byte frequency. Use checked
+conversion and arithmetic; unsupported/unrepresentable values stay unavailable
+with a reason, without invalidating independent MDB information.
+
+The actual files checked need no wider-than-32-bit representation; this choice
+sets Bella's supported exact working range rather than claiming a measured
+improvement or a newly rescued specimen. No arbitrary-precision dependency is
+required. This approval concerns audio frequency, not the descriptor clock,
+Duration maths or a mechanical widening of existing `MediaRate`. Exact record
+members/helper interfaces remain to review. No runtime or app integration is
+implemented by this record.
+
+**MDB source-check measurements temporary, agreed 31 October 2026:** the
+user chose to retain the size/date check result and any problem explanation,
+rather than also returning the original database size/modification-time
+measurements. Keep the source path with the report's context; use fresh
+before/after measurements for the agreed check, then release those temporary
+values. A detected change's explanation includes the actual available
+before/after difference. Preserve all capture/check/error handling and the
+unverified-metadata rule.
+
+The declined alternative was retaining the original measurements in a
+PMR-like captured stamp for later inspection. No current downstream MDB
+consumer requiring those retained values was found. This does not change
+the separately required physical-media scan/operation facts or identities,
+and it does not alter the approved PMR report. No MDB runtime implementation
+or active app integration is added by this record.
+
+#### Agreed MDB entry, report and major stages
+
+Prepared 31 October 2026 against `14bc6e30775be51bb9b64a65dd52a791c6a3bb86`.
+The user approved this proposal and both recommended choices on 31 October
+2026: one True/False optional-details input and two in-memory parsing stages.
+This settles the entry/report/stage contract; the exact file/master value
+contract remains separate work. No runtime implementation is added here.
+
+**Agreed files:** `src/bella/mdbparser.h/.cpp` for the function and its report
+definitions, and `tests/tst_bellamdb.cpp` for focused tests. Later implementation
+would add them to the existing explicit root/test CMake lists for
+`mediamuster_bella`, with C++17 and exact Qt 6.5.3 / Qt Core. Those are existing
+build-file touch points; this proposal adds no active app, MediaFile/table,
+progress, operation/journal/Undo or Bin Filter integration.
+
+**Agreed synchronous entry:** `MdbReport parseMdb(const QString &path,
+const std::atomic_bool &stopRequested, bool includePrecomputeDetails)`.
+Use the shared scan stop flag and the optional-detail demand fixed for that
+scan. Return one owned report. Small allocating helpers/parser are not promised
+`noexcept`. Caller-owned inputs remain alive for this synchronous call.
+
+**Agreed report members:**
+
+| Member | C++ value | Meaning |
+| --- | --- | --- |
+| `path` | `QString` | The supplied source path, retained once. |
+| `reading` | `MdbReadResult` | How the attempt ended. |
+| `sizeDateCheck` | `MdbCheckResult` | Independent source-check qualification. |
+| `catalogue` | `MdbCatalogue` | Separate owned file/master facts, required associations and reference coverage; exact members/types still pending. |
+| `problemNotes` | `QStringList` | Explanatory reasons. Delivery combines them with `path` so warning/log messages keep full source context. |
+
+`MdbReadResult` uses `NotRead` (default), `Completed`, `Malformed`,
+`Unsupported`, `IoError`, `Changed`, `Cancelled`. `Completed` means the planned
+pass finished; individual unavailable/damaged fields remain absent or qualified
+under the agreed local-damage policy. It does not mean every optional field is
+filled. Unsafe shared foundations exclude MDB metadata; a valid empty
+catalogue is distinct from a failed read. There is no PMR-specific
+`NoUsableSet` or whole-set fallback in this MDB contract.
+
+`MdbCheckResult` uses `NotChecked` (default), `Verified`, `Unverified`,
+`Changed`. Return no captured-size/date member, as just approved. The read/check
+answers stay independent; a completed attempt may retain otherwise usable
+metadata with an unverified check. On Cancel, only already completed qualified
+facts can survive; an unfinished dependency is not made valid by returning it.
+
+**Input packaging agreed:** one explicit yes/no
+`includePrecomputeDetails` argument, because this parser currently needs one
+such setting. Use a clearly named value at call sites. The declined alternative was a named
+`MdbOptions` record containing that same flag; its setting name is explicit
+inside the options value, but it introduces a type for one setting. Both carry
+the same frozen request and preserve ordinary IDs, Type, Clip Name and required
+relationships. Neither reads changing GUI/global settings or changes the
+already-approved optional-detail demand.
+
+**Major stages agreed after capture/checking:** two in-memory stages:
+
+1. Establish complete trusted shared label/layout, TOC and required
+   dictionary/catalogue/lookup foundations.
+2. Extract and qualify the approved file/master values and required
+   associations/relationships into the compact catalogue.
+
+Check Cancel before/after these major stages, without per-item loop checks.
+Private helpers/subpasses do not automatically add checkpoints. The approved
+before/after `readAll()` checks remain separate. The declined alternative was three in-memory
+stages, splitting value extraction from relationship qualification/final
+assembly. That adds a stop boundary and requires more intermediate-state
+handling. In either arrangement, checkpoints retain only already qualified
+completed facts under the existing damage/Cancel rules. No stopping-time or
+performance difference has been measured.
+
+This approval alone does not settle the concrete file/master members,
+availability/qualification types, association/duplicate-owner representation,
+container layout, arithmetic helpers or test cases. Those remain to review
+before dependent runtime implementation; no placeholder MDB reader is added.
+
+#### Agreed concrete MDB catalogue values
+
+Prepared 31 October 2026 against `14bc6e30775be51bb9b64a65dd52a791c6a3bb86`.
+The user approved this record contract with the recommended lists/direct links
+on 31 October 2026 and explicitly requested implementation of the independent
+MDB parser and tests. The metadata sources, interpretations, damage boundaries
+and approved entry/report/two-stage workflow remain authoritative. The scoped
+parser and tests are now implemented and verified; see the implementation
+receipt below. This does not complete the scanner, display formatting or app
+integration.
+
+**Audio-summary boundary agreed, 31 October:** when a complete readable WAVE
+format or AIFF common chunk is followed by a damaged unrelated metadata chunk,
+retain the earlier independently established frequency/depth/encoding values
+and report the later framing problem. The user chose this over withholding all
+values from the summary. A damaged or conflicting required format value still
+withholds that affected value. No genuine damaged specimen established this
+case; it is an explicit boundary policy covered by authored controls.
+
+**Agreed storage:** `MdbCatalogue.files` is `QVector<MdbFileRecord>` and
+`masters` is `QVector<MdbMasterRecord>`. Each record owns its complete Bella
+`MobId`. Each file's direct links identify positions in that same report's
+master list, preserving the qualified owner context. The later coordinator can
+build full-ID-to-record-list lookups across reports. An ID lookup must retain
+all matching qualified records, without first/last insert overwriting another.
+
+**Declined alternative storage:** return full-ID-keyed groups of records directly, such
+as `QHash<MobId, QVector<...>>`. That gives each returned catalogue its own ID
+lookup, but makes grouping and link handles more involved; the scanner still
+needs scan-wide matching. Both retain separate file/master records and the
+same metadata. No speed/memory advantage has been measured for either layout.
+
+The actual identity audit has one correctly qualified file/master owner for
+all 2,412 target matches. Identical IDs occur on other, unqualified objects;
+that is a demonstrated reason to validate ownership. Conflicting qualified
+owners are rule-driven cases, not a claimed damaged specimen in this corpus.
+
+**Agreed core types:**
+
+| Type | Agreed C++ value |
+| --- | --- |
+| `MdbKind` | `Unknown`, `Audio`, `Video`; Bella-owned enum. |
+| `MdbType` | `Unknown`, `Media`, `Precompute`; Bella-owned enum. |
+| `MdbPrecomputeCategory` | `Unknown`, `RenderedEffects`, `TitlesAndMatteKeys`. |
+| `MdbRateWords` | Two `qint32` members, `numerator` and `denominator`; original unreduced supported words. |
+| `MdbRateEncoding` | `ExactEditRate`, `Rational`; known type context, with unavailable rates represented by the enclosing optional. |
+| `MdbRate` | `MdbRateWords words` plus `MdbRateEncoding encoding`; retain the context required by the approved clock interpreter. |
+| `MdbDimensions` | Positive checked `qint64 width` and `height`. |
+| `MdbRasterOrigin` | `Stored`, `Display`, `VerifiedProxy`. |
+| `MdbRaster` | `MdbDimensions dimensions` and `MdbRasterOrigin origin`. |
+| `MdbAudioSourceValue` | `std::variant<MdbRateWords, quint32, std::array<quint8, 10>>`: original PCMA fraction, WAVE Hz or AIFF80 bytes. |
+| Exact audio working fraction | Reduced positive `quint64 numerator` / `denominator`, checked and temporary; do not also retain a normalized duplicate with the source value. |
+
+**Agreed file record members:**
+
+| Member | Type / purpose |
+| --- | --- |
+| `fileMobId` | Required owned `MobId`; no fabricated default ID. |
+| `project` | `QString`; the completed approved file/immediate-source selection. |
+| `projectSelection` | `MdbProjectSelection`: `Unavailable`, `Conflict`, `OwnFile`, `ImmediateSources`. |
+| `projectKey` | `MdbProjectKey`: `None`, `Pj`, `ProjName`, `UserPj`, `Mixed`. |
+| `kind` | `MdbKind`, from the approved exact own-descriptor lookup. |
+| `descriptorClass` | `std::optional<std::array<quint8, 4>>`; exact validated own descriptor tag for format/naming context. |
+| `ownDescriptorQualified` | `bool`, default false; required owned descriptor/context established, independently of optional-column completeness. |
+| `length` | `std::optional<qint64>`; qualified nonnegative own descriptor Length, including known zero. |
+| `sampleRate` | `std::optional<MdbRate>`; own descriptor SampleRate with type context. Share it between video Frame Rate and Duration instead of retaining a second Frame Rate pair. |
+| `audioEditRate` | `std::optional<MdbRate>`; own-file display frame clock with type context when required for audio timecode Duration. |
+| `numbering` | `MdbNumbering`: `Unavailable`, `NotRequired`, `MissingNdfFallback`, `RecordedNdf`, `RecordedDf`. |
+| `audioFrequency` | `std::optional<MdbAudioSourceValue>`; independently selected concrete audio frequency, never repaired from `sampleRate` or `audioEditRate`. |
+| `resolution` | `std::optional<MdbRaster>`; selected visible numeric raster and its compact origin. |
+| `bitDepth` | `MdbBitDepth`, the small source/representation value described below. |
+| `compression` | `MdbCompression`, the compact facts for the preserved naming system, described below. |
+| `directMasterRecords` | `QVector<qsizetype>` of distinct qualified master-record positions in this report; every index must be valid. |
+| `masterLinksComplete` | `bool`, default false; relevant relationship coverage is sufficient to prove the candidate set complete. |
+
+The Project qualifications preserve the already-recorded owner/key/conflict
+distinctions without wrappers around every string. `Mixed` covers agreeing
+immediate sources that used different permitted keys. A conflict blocks the
+lower-priority substitution prohibited by the Project rule; notes explain it.
+The enclosing report/file record supplies source/owner scope. No contributor-ID
+history is proposed without a concrete consumer.
+
+Keep the exact descriptor tag independently of the six-class **Kind** lookup.
+Existing preserved Compression rules also use tags such as `JPED` and `WAVE`;
+collapsing those tags to Unknown would discard naming context. Kind still uses
+the approved PCMA/AIFD/WAVD and CDCI/RGBA/MPGI mapping; an unknown Kind alone
+does not make other independently qualified fields inapplicable. Retaining a
+tag does not authorize decoding an unknown layout. Likewise, apply Avid video
+rate aliases only to their approved type/context, never to a literal Rational
+or the concrete audio-frequency variant merely because the numbers match.
+
+The numbering states preserve missing applicable DF separately from recorded
+false, and known NDF-only clocks separately from an unavailable required check.
+Valid Length/rate facts survive unavailable numbering; the later formatter
+applies the already-agreed blank-display rule. Unknown optional values use
+empty text or `nullopt`; do not add a second generic missing flag to each one.
+
+`masterLinksComplete` must include potentially relevant unresolved branches.
+One observed candidate plus an unreadable branch is not proven unique. The
+scanner still prefers an explicit PMR MasterMobId and deduplicates derived
+candidate IDs by complete identity; these local record links do not change
+those rules or introduce another physical-row ID.
+
+**Agreed depth value:** `MdbBitDepth` contains optional `quint32 bits` and
+`storageBits`, `MdbDepthRepresentation representation` with values `Unknown`,
+`Integer`, `HalfFloat`, `Float`, `S2_14Fixed`, `Fixed10_6`, `Fixed12_4`,
+optional `qint32 rawComponentWidth`, and
+optional `pixelLayout` / `pixelStructure` arrays. Each array is an owned
+`MdbComponentArray` containing `std::array<quint8, 8> values` plus its
+`quint8 count` in 0..8. Check their individual
+lengths/correspondence; preserve the separate codes and widths. The complete
+coding identifier needed for special widths is shared with `compression`.
+
+For known meaningful RGBA components, the conservative one-value rule uses a
+common interpreted width only when all agree, including a sole alpha component;
+mixed/palette/unsupported meanings leave that value unavailable with the
+compact original arrays retained. Ignore only documented fill/no-component
+entries; never take the first/last component or sum widths. Keep source and
+representation context for uncommon fixed10.6/12.4 generic labels, which remain
+explicit presentation follow-ups rather than adopting a storage-width default.
+
+**Agreed naming value:** `MdbCompression` retains `MdbCodingState codingState`
+(`Unavailable`, `Absent`, `Present`), with complete normalized
+`std::array<quint8, 16> codingLabel` used only for `Present`;
+`std::optional<std::array<quint8, 4>> legacyCompression`;
+optional `qint64 resolutionId`; optional uncropped,
+field-normalized `MdbDimensions namingGeometry`; optional `quint16 frameLayout`;
+optional `qint32 horizontalSubsampling` / `verticalSubsampling`; and
+`MdbAudioEncoding audioEncoding` (`Unknown`, `Pcm`, `IeeeFloat`).
+
+Genuine coding absence differs from unreadable/unknown coding. The same file's
+descriptor class, original rate and depth/representation/components supply the
+other naming inputs; avoid duplicate permanent copies. Qualified alpha depth
+and the preserved naming-only rate adaptation can be derived from these facts.
+Keep naming geometry separate from cropped/proxy visible Resolution.
+
+The already-approved unchanged Compression resolver receives a temporary
+adapter when names are needed. No existing string-bearing `CompressionFacts`
+or complete property graph is retained in the MDB result. Temporary resolver
+depth/representation strings are generated from the numeric facts; existing
+Compression descriptions remain authoritative independently of pending generic
+Bit Depth labels.
+
+**Agreed master record members:** required `MobId masterMobId`,
+`QString clipName`, `QString originalBin`, `MdbType type` and
+`MdbPrecomputeCategory precomputeCategory`. Empty names do not erase the
+qualified master identity or independent bin/type facts. No master Project,
+master Length, recorded Source Path or Effect Sequence is added. Category
+work follows the frozen optional-details input and proven Precompute Type;
+Effect/Effect Category derive later from the final selected Type/name.
+
+**Catalogue qualification:** add `bool fileReferencesComplete`, default false.
+It becomes true only after complete relevant active file-reference, role,
+identity and required descriptor qualification. A fully checked empty
+catalogue can have true coverage. Unknown
+master names, optional columns or category work do not by themselves negate
+file-reference coverage. Preserve qualified positive file IDs even when
+coverage is incomplete or their descriptor/optional metadata is unavailable.
+Each returned value is qualified at its own scope; no new source-global
+`CanUseMdbMetadata` flag is proposed to override independent local facts.
+
+Defaults are Unknown/unavailable/false/empty. Source-global unsafe foundations
+produce no salvaged catalogue prefix. Explanations remain `problemNotes` in the
+approved report, with source/owner/field detail as needed; no generic per-field
+status/source/explanation machinery or warning suppression is introduced.
+
+**Implementation scope approved:** independently implement the agreed
+path-based MDB reader and focused tests in its already-approved files, with
+small bounded private helpers and the pinned C++17/Qt 6.5.3 build. Use the shared
+Bella `MobId` normalizer. Fixed MacRoman decoding would depend on the existing
+unchanged `AvidText::kMacRomanHigh` table, as PMR does; this existing-code
+dependency is approved with this packet. Compression-resolver preservation is
+already agreed. Bella-owned Kind/Type/category enums avoid depending on the
+app's row/evidence types. Root/test CMake lists are the existing files to edit.
+Verify genuine MDB outputs against the recorded field evidence/OldScanner
+reference and independent source checks, plus meaningful authored boundary and
+local/shared-damage cases and normal/sanitizer builds. No new fault-injection
+framework, active app integration, cutover or performance claim is approved.
+
+This is the agreed parser value contract. Remaining uncommon presentation
+labels and later shared-helper extraction/integration still need their own
+check-ins; they are not silently selected by these retained source values.
+
+**MDB implementation verified, 31 October 2026:** `mdbparser.h/.cpp` now provide
+the independent reader and owned report, built only into `mediamuster_bella`
+and its tests. The [validation receipt](evidence/mdb-implementation-2026-10-31.json)
+records exact source hashes, test results, byte evidence, comparison fingerprints
+and limits. The normal universal build and arm64 ASan/UBSan build pass the
+focused ID, PMR and MDB suites. Initial MDB verification had 107 substantive
+invocations, or 109 Qt passes including framework setup/cleanup; ID and PMR
+retained 14 and 57 Qt passes. The later cleanup receipt records the expanded suite.
+
+Independent catalogue comparisons match all retained values and full-ID/master
+relationships across six original MDB paths (including EDIT) and six repository
+specimens: 3,839 file records and 1,922 master records, with copy provenance
+preserved. Numbering is excluded from those whole-record fingerprints and
+checked separately: 3,266 scoped checks pass, including fresh-byte qualification
+of the genuine DF case and known JPED/MPGA unit contexts. No complete independent
+oracle is claimed for every remaining corpus numbering result. The original
+six sources contain 2,435 file records and 1,340 masters, including 23 file
+records absent from their current PMRs.
+
+The checks caught and corrected a test-object collision, signed-only acceptance
+of genuine unsigned subsampling, and inappropriate use of Unknown Kind to gate
+known format timing. Kind retains its six-tag rule; known descriptor unit
+context independently supplies qualified fields. No genuine damaged MDB was
+found: the damage tests exercise explicit policies rather than proving that
+every possible damaged file will be diagnosed. Mid-capture changes, unavailable
+timestamps and mid-stage Cancel were not forced with new fault-injection hooks.
+No scan-time or peak-memory improvement has been measured.
+
+Existing build-file edits are limited to the approved root/test CMake additions.
+The immutable MacRoman table is read unchanged. OldScanner remains active;
+MediaFile/table, progress, operations/journal/Unfinished Business/Undo and Bin
+Filter have no Bella integration in this step.
+
+**Fresh historical/current comparison, 31 October 2026:** the requested computer
+and EDIT review is recorded in the [comparison receipt](evidence/bella-oldscanner-comparison-2026-10-31.json).
+A read-only search inspected 734,163 accessible directories, finding 27 PMRs and
+18 Avid/test MDBs; six unrelated application index databases were excluded.
+521 protected locations could not be inspected. Copies, archives and authored
+controls are identified separately from managed originals.
+
+Unchanged `86c500c` and current OldScanner full scans found the same 3,848 physical
+paths (1,796 computer and 2,052 EDIT), with matching full file/master IDs. Their
+other metadata is not wholly identical; the receipt preserves per-column changes.
+All 45 selected database hashes and 3,892 source/folder observations stayed
+unchanged. Bella still has no full scanner: its available PMR/MDB stages were
+compared separately. The six managed PMRs match history's 2,412 selected records;
+the six managed MDBs agree on 2,435 file IDs, lengths, original rates and visible
+resolutions. Bella additionally retains proven RSET associations and distinct
+depth facts, and excludes demonstrated inactive record contributions.
+
+All 2,413 current database-listed physical rows match Bella local MDB full IDs
+and direct masters; 2,412 also match exact PMR filenames/IDs. The remaining
+`copy.mxf` has a positive MDB/header identity match. Current listed CSV Projects
+all agree with Bella MDB. The other 1,435 physical rows need media/header paths
+Bella has yet to implement. No full Bella display parity or speed/memory gain is
+claimed. Builds, output scope and cache conditions differ, so these probe wall
+times are not a performance benchmark.
+
+The same review identified proposed internal cleanups: redundant audio blocked
+flags, a private failure distinction with identical handling, unused accessors
+and repeated attribute-list work. Combining duplicate warning explanations and
+deriving repeated public fields are separate choices. No simplification was
+implemented and no settled policy was changed; await the user's decision.
+
+**Three internal cleanups approved, 31 October 2026:** the user subsequently
+approved removing the five redundant audio blocked flags, merging the private
+failure labels that consumers handle identically, and reading the checked
+Project-owner attribute list once for reuse. Record the approval before edits.
+Keep all checks, returned values/qualifications, public outcomes and diagnostic
+text/order/count unchanged. Implementation and verification are complete; see the
+[cleanup receipt](evidence/mdb-internal-cleanup-2026-10-31.json). All 45 saved
+before/after report dumps are byte-for-byte identical, including diagnostics.
+The expanded MDB suite passes 123 Qt cases (121 substantive), normally and with
+ASan/UBSan; all 109 previous Qt cases remain, with 12 added audio sequences and
+two exact Project-warning cases. The saved pre-cleanup reader also passes the
+expanded suite. Public headers, PMR and MobId sources remain unchanged.
+At that point the request to explain warning combinations did not approve
+changing them; the subsequent approval is recorded below. Public report changes
+remain separate decisions.
+
+The warning review identifies five possible same-cause combinations: direct
+Project conflict plus blocked-substitution explanation; one unreadable owner
+attribute list reported for two keys and the final Project consequence; rejected
+PMR v16 records plus the older-set fallback notice; zero WAVE storage width plus
+unavailable precision; and an audio Summary framing failure before any usable
+format plus the missing-format consequence. These were proposals at that review. Preserve
+source/owner/key context, independent field failures and truthful Cancel/fallback
+reporting; the PMR cause and fallback currently straddle a cancellation check.
+No warning text, count or order was changed by the approved internal cleanups.
+
+**Five warning combinations approved, 1 November 2026:** the user chose
+“Lets do all of them.” Combine all five same-cause groups above, retaining
+the specific reason and source/owner/key context. Independent failures remain
+separate. Preserve all parsing checks, values, availability, qualifications,
+public reading/check results and existing Cancel opportunities. A PMR report
+may say it is trying older records only after the existing Cancel checks allow
+that attempt. This approval changes Bella reader notes only; no app warning
+delivery, OldScanner cutover or Bin Filter change is included. Implementation
+and verification are complete. The
+[warning-combination receipt](evidence/reader-warning-combinations-2026-11-01.json)
+records 44 added focused cases, with 151 MDB, 73 PMR and 14 ID Qt passes normally
+and with ASan/UBSan. All public values and statuses match the saved readers on
+the 45 previously inventoried sources (63 comparisons including both MDB detail
+settings); those sources do not exercise the new combinations, which the authored
+cases check explicitly. No scan-speed or memory improvement is claimed. See the
+[approval record](evidence/decision-check-ins-2026-10-27.json).
 
 **PMR returned report agreed, 27 October 2026:** the user chose “one report.”
 Return one owned result containing the selected PMR entries, what happened and
