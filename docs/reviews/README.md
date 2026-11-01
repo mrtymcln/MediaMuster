@@ -6,7 +6,7 @@ not certify later builds. Current ownership and behavior are in the
 
 | Record | Retained scope |
 | --- | --- |
-| [Bella MDB comparative verdict, 1 November](2026-11-01-bella-mdb-review/VERDICT.md) | Three reproduced relationship/category qualification gaps; fresh 411-path Bella/OldScanner/MDVX execution, MDB-focused native decompilation, public references and Git history. |
+| [Bella MDB comparative verdict, 1 November](2026-11-01-bella-mdb-review/VERDICT.md) | Current scope reassessment and approved JPED Video change: 30 Kind values corrected, native-corpus membership/other values preserved, no measured performance regression. Separately retains and revalidates three authored relationship/category qualification findings; historical fixture-inclusive and fresh native corpora remain distinct. |
 | [AVB binary findings](2026-09-05-avb/binary-findings.md) | Direct Media Composer serialization and object-reference evidence. |
 | [File operations](2026-09-06-current-code/file-operations.md) and [coverage](2026-09-06-current-code/file-operation-coverage.md) | Operation-engine findings and validation boundaries. |
 | [Primary format sources](2026-09-20-media-scope/public-specs.md), [binary dispatch](2026-09-20-media-scope/binary-dispatch.md), [audio extensions](2026-09-20-media-scope/audio-extensions.md) | Avid/SMPTE/OMF sources and independently inspected Media Composer behavior. |
@@ -23,7 +23,7 @@ not certify later builds. Current ownership and behavior are in the
 | [MDB Project](2026-10-18-bella-mdb/project.md) | Caller-specific native lookup, file/source Project differences and agreed blank/missing fallback. |
 | [MDB Original Bin](2026-10-18-bella-mdb/original-bin.md) | Direct master bin references, Unicode/legacy names, MDVx omission and agreed Bella retention. |
 | [MDB Source Path](2026-10-18-bella-mdb/source-path.md) | Preserved import-path findings and approved physical Filename/File Path only decision. |
-| [MDB Kind](2026-10-18-bella-mdb/kind.md) | Native descriptors, MDVx usage versus audio detection and agreed six-type Kind lookup with lowercase unknown display. |
+| [MDB Kind](2026-10-18-bella-mdb/kind.md) | Native descriptors, MDVx usage versus audio detection and exact Kind lookup with lowercase unknown display; JPED Video is now a separately approved addition to the original six-class mapping. Wider class inheritance remains outside scope. |
 | [MDB Duration](2026-10-18-bella-mdb/duration.md) | Native physical count/rate, MDVx omission, clip/master differences and agreed exact duration retention/display maths. |
 | [MDB Frame Rate](2026-10-18-bella-mdb/frame-rate.md) | Raw pairs, native rate interpretation and current-app comparison; agreed shared Duration rate, numeric sorting and MDB-first priority with independently read header fallback only. |
 | [MDB drop-frame numbering](2026-10-18-bella-mdb/drop-frame.md) | Native flag layouts, linked source/track/range qualification, real clock mismatches and agreed absence/damage display rules. |

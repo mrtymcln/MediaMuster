@@ -1,0 +1,77 @@
+{
+  "modified_test_file": "tests/tst_bellamdb.cpp",
+  "removed": [
+    {
+      "test": "zeroLengthIsKnown",
+      "count": 1,
+      "reason": "Fully subsumed by legacyLengthValues zero Long case for both metadata byte orders, with stronger independent-field and diagnostic checks."
+    },
+    {
+      "test": "audioSummaryDamageBoundaries: WAVE later unrelated broken chunk; AIFF later unrelated broken chunk",
+      "count": 2,
+      "reason": "Same valid required format + malformed unrelated JUNK chunk bytes and results as audioSummaryFramingProblems after-format/unrelated-chunk-exceeds-range rows; surviving rows also assert exact source/owner/reason notes."
+    }
+  ],
+  "kept": [
+    "JPED Video and MPGA Unknown Kind with qualified timing",
+    "Bento2/OMF2 unsupported negative controls",
+    "Expected input damage, local availability, typed rate and full-identity controls",
+    "Existing fixture tests retained as separate regressions, not used as audit ground truth"
+  ],
+  "checked_in_fixture_tests_executed": false,
+  "excluded_fixture_selectors": [
+    "genuineDatabases",
+    "genuineAudioFieldsAndIdentities"
+  ],
+  "selectors": [
+    "reportDefaults",
+    "preCancelledDoesNotOpen",
+    "missingSource",
+    "emptyCatalogue",
+    "referenceArrayExtentAcceptsCountMarker",
+    "unsupportedLayouts",
+    "damagedSharedFoundation",
+    "ownedVideoFacts",
+    "descriptorKindKeepsQualifiedTiming",
+    "originalRateEncoding",
+    "legacyLengthValues",
+    "legacyLengthRejectsOtherForms",
+    "legacyLengthMixedDuplicates",
+    "localDamageKeepsIndependentFacts",
+    "pcmaWrongNumericTypeDoesNotInventDepth",
+    "duplicateOwnersRemainSeparate",
+    "masterOwnerLinksRemainSeparate",
+    "incompleteMasterGraphDoesNotProveUnique",
+    "missingTrackComponentDoesNotProveUnique",
+    "unknownDictionaryCannotProveCodingAbsence",
+    "codingByteOrderLookup",
+    "optionalIndexIdentity",
+    "projectSelection",
+    "unreadableProjectListKeepsProblems",
+    "originalBinUtf8Fallback",
+    "originalBinConflictBoundary",
+    "audioSourceRepresentations",
+    "unsupportedWaveStorage",
+    "zeroWaveWidthProblem",
+    "aiffInvalidFrequencyIsLocal",
+    "aiffBoundedFractionEdges",
+    "audioSummaryDamageBoundaries",
+    "audioSummaryFramingProblems",
+    "specialDepthCodes",
+    "unrelatedCodingDoesNotValidateDepthSentinel",
+    "rgbaKeepsSeparateArrays",
+    "rgbaMismatchedArraysDoNotGuessDepth",
+    "numbering",
+    "numberingDamageKeepsCountAndClock",
+    "knownNdfClockDoesNotNeedDamagedFlag",
+    "optionalDetailsDoNotRemoveType",
+    "precomputeImportKindBoundary",
+    "sharedMasterAttributes"
+  ],
+  "exit_code": 0,
+  "totals": [
+    "Totals: 155 passed, 0 failed, 0 skipped, 0 blacklisted, 165ms"
+  ],
+  "test_output": "generated-tests.txt",
+  "production_source_changes": false
+}

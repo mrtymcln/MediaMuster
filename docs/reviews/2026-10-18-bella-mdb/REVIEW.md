@@ -1,9 +1,24 @@
 # Bella: MDB contents, encoding and retained values
 
+**Current scope, 1 November 2026:** this dated research remains evidence, not a
+list of additional features to implement. The
+[scope reassessment and JPED approval](../../../Project%20Bella/README.md#mdb-audit-reassessment-and-jped-approval)
+preserve phase-only cancellation, compact values with separate problem notes,
+the legacy MDB version baseline and the recorded Source Path exclusion.
+Unused channel/container/imported-status row values are not missing Bella
+requirements; temporary decoding needed for retained fields remains allowed.
+The user separately approved `JPED` as Video, making the current Kind map seven
+classes. Wider class/inheritance expansion remains research. The
+[post-JPED receipt](../../../artifacts/mdb-jped-kind-2026-11-01/validation.json)
+records the narrow change; the separate
+[damaged-input qualification findings](../2026-11-01-bella-mdb-review/VERDICT.md)
+remain open and within scope. No further production changes are made here.
+
 Research date: 18 October 2026. This is a requirements review, not a Bella
 implementation. The user subsequently approved the [MDB text rule](text-encoding.md)
 and [Clip Name/master-selection rule](clip-name.md). Other recommendations below
-remain under review. OldScanner remains the active scanner. Bin Filter is outside
+are dated proposals; the later agreed scope linked above controls implementation.
+OldScanner remains the active scanner. Bin Filter is outside
 this review's implementation scope.
 
 **Source revision approved on 21 October 2026:** MDB remains first for Duration.
@@ -31,8 +46,9 @@ recorded Source Path in Bella. Its extraction proposal is superseded research.
 The [Kind follow-up](kind.md) establishes native sound/picture descriptor
 families and independent physical-file classification: 1,513 Audio and
 899 Video. MDVx's visible Kind means master usage instead. The user approved
-Bella's exact six-class physical-descriptor lookup on 19 October 2026, with
-lowercase `unknown` displayed for a missing or unrecognised type.
+Bella's original exact six-class physical-descriptor lookup on 19 October 2026,
+with lowercase `unknown` for a missing or unrecognised type. The user added only
+`JPED` to Video on 1 November; other native classes remain outside that map.
 
 The [Duration follow-up](duration.md) establishes physical descriptor count/rate
 pairs on all 2,412 file rows, native PCM rate distinctions and MDVx's ordinary

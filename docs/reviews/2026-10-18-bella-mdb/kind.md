@@ -1,10 +1,19 @@
 # Bella: Kind from MDB
 
-Research date: 19 October 2026. **The user approved the exact six-type lookup
-below on this date**, including the displayed lowercase `unknown` for a missing
-or unrecognised type. Earlier text, identity, master-selection, Project,
-Original Bin and physical-path decisions remain agreed. This review adds no
-Bella runtime code, OldScanner changes, media writes or Bin Filter work.
+Research date: 19 October 2026. The user originally approved six descriptor
+classes and lowercase `unknown` for missing/unrecognised types. **On 1 November
+2026 the user separately approved adding `JPED` to Video.** The current seven-class
+lookup below incorporates that implemented amendment; original six-class
+corpus counts and raw evidence remain dated historical observations. Earlier
+text, identity, master-selection, Project, Original Bin and physical-path
+decisions remain agreed. This documentation update adds no production code.
+
+The [post-JPED validation](../../../artifacts/mdb-jped-kind-2026-11-01/validation.json)
+records exactly 30 Unknown-to-Video changes across both detail modes, with all
+other report values unchanged, 2,515 files/1,420 masters and no measurable
+performance regression. See the
+[scope reassessment](../../../Project%20Bella/README.md#mdb-audit-reassessment-and-jped-approval)
+for deliberate exclusions and the separate open damaged-input findings.
 
 The file's own descriptor is the single authority for MDB-derived Kind. The
 research track checks do not become runtime checks. The wider native-family
@@ -26,7 +35,7 @@ Full normalized FileMobId
   -> its own MOBJ:PhysicalMedia reference
   -> media descriptor's structured class
        -> PCMA / AIFD / WAVD: Audio
-       -> CDCI / RGBA / MPGI: Video
+       -> CDCI / RGBA / MPGI / JPED: Video
        -> missing / other:   unknown
 ```
 
@@ -162,7 +171,7 @@ corresponding file descriptor occurred in the six actual MDBs. Native support
 for Data is not a claim that Bella already supports that MDB representation.
 The earlier corpus result remains 1,513 Audio, 899 Video and no observed Data.
 
-The approved six-type Bella lookup below introduces no Data display value.
+The approved lookup, now including JPED, introduces no Data display value.
 Other descriptor classes produce `unknown` in this first-release lookup, even
 where the broader native research establishes a family. The exact MDB Data
 mapping remains unverified research. Do not default unsupported descriptions
@@ -244,13 +253,14 @@ and the later layout/damage review, not a claim of tested universal support.
 
 ## Agreed Bella rule
 
-Confirmed by the user on **19 October 2026**: use a small fixed C++17 lookup
-on the exact matched physical file's own descriptor class:
+Confirmed by the user on **19 October 2026**, with only JPED added on
+**1 November 2026**: use a small fixed C++17 lookup on the exact matched physical
+file's own descriptor class:
 
 | Exact stored descriptor class | Internal result | Display |
 | --- | --- | --- |
 | `PCMA`, `AIFD`, `WAVD` | Audio | `Audio` |
-| `CDCI`, `RGBA`, `MPGI` | Video | `Video` |
+| `CDCI`, `RGBA`, `MPGI`, `JPED` | Video | `Video` |
 | Missing or any other class | Unknown | `unknown` |
 
 The displayed `unknown` is lowercase and replaces the earlier proposal to
@@ -275,9 +285,10 @@ Keep a small strongly typed Audio/Video/Unknown value internally; the UI supplie
 the three display labels. A fixed `constexpr` C++17 lookup or equivalent pure
 function can implement the rule when coding begins. No dynamic mapping,
 per-row duplicate label, raw descriptor or retained track graph is needed
-solely for Kind. The current task records requirements, not runtime code.
+solely for Kind. The original review recorded requirements; the fixed lookup
+including the later JPED amendment is now implemented in Bella's MDB parser.
 
-Do not silently add `MPGA`, `JPED`, `TIFD`, `DIDD`, raw `WAVE`/`AIFC`, native
+Do not silently add `MPGA`, `TIFD`, `DIDD`, raw `WAVE`/`AIFC`, native
 Data class marks or arbitrary subclasses to this exact first-release mapping.
 Wider native findings remain research. This approval adds neither a Data nor a
 Still display value. Unknown Kind does not prove other fields inapplicable.
@@ -288,7 +299,7 @@ The agreed per-field table records:
 
 | Field | Applicable MDB owner and value | Missing-value result | Additional file read |
 | --- | --- | --- | --- |
-| Kind | Exact full-ID physical file → own descriptor class → exact six-tag fixed lookup | Unknown internally, display `unknown`, retain file; no other-source guessing | Deferred until header review and source-priority decisions |
+| Kind | Exact full-ID physical file → own descriptor class → exact seven-tag fixed lookup, including JPED | Unknown internally, display `unknown`, retain file; no other-source guessing | Follow the separately agreed source-priority/header-opening rules |
 
 This requires **no text-encoding fallback**. The class identifiers and track
 numbers are structured format values; “Audio” and “Video” are display labels
@@ -300,11 +311,15 @@ fields, such as Clip Name and Project.
 The [curated Kind evidence](../../../Project%20Bella/evidence/mdb-kind-2026-10-19.json)
 records exact installed binary and database hashes, native addresses, MDVx's
 separate usage/audio paths, independent file-owned descriptor/track checks,
-coverage and the agreed rule. Earlier broader-family/blank-cell proposals are
-superseded by the exact six-tag lookup and lowercase `unknown` display.
-Raw disassembly, private media paths, copied
-binary slices and temporary probes remain outside the repository. No runtime
-implementation, live scan, malformed-file experiment or performance/memory
-measurement is claimed. All 60 listed native artifacts, 15 current binary/MDB/PMR
-inputs and six raw indexes were checked against their captured hashes. JSON,
-new report links and whitespace checks passed.
+coverage and the original agreed rule. Its 19 October approval is historical;
+the linked 1 November receipt records the subsequent JPED-only amendment.
+Earlier broader-family/blank-cell proposals remain superseded by the fixed
+lookup and lowercase `unknown` display.
+The original research's raw disassembly, private media paths, copied
+binary slices and temporary probes remain outside the repository. That research
+added no runtime implementation and claimed no live scan, malformed-file
+experiment or performance/memory measurement. All 60 listed native artifacts,
+15 current binary/MDB/PMR
+inputs and six raw indexes were checked against their captured hashes. Those
+validation claims describe the original research snapshot; the post-JPED
+runtime/performance checks are recorded separately above.

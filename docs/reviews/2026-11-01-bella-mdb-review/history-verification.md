@@ -1,5 +1,7 @@
 # Independent MDB source/history verification
 
+Current disposition: the [scope reassessment and JPED result](VERDICT.md#current-scope-and-approved-jped-change) supersede general feature-expansion recommendations. The authored owner/list/class findings below concern existing qualification requirements and remain separate from deliberate exclusions.
+
 Verified against HEAD `20220f2b4c2b7ff6ef3d017a77568e5edf7de7cd` on 1 November 2026. This addendum checks the existing review's historical findings against source and fresh execution. Production source and tests are unchanged.
 
 The current Bella implementation is **not uniformly more correct than every predecessor**. Fresh execution confirms two lost safeguards, one additional category qualification gap shared with OldScanner, and invalid relationship routes shared with OldScanner. These are damaged-input reproductions; they do not establish a failure in the ordinary working-media corpus.
@@ -53,3 +55,11 @@ The old stricter `unterminated-name` test is a historical difference, not an add
 Keep Bella's complete normalized identities, distinct duplicate owners, exact original rates and compact returned records. Reintroducing proximity ownership, first-nonempty owner merging, broad recursive attributes or structural-prefix salvage would conflict with its approved MDB contract. Wider OMF2/Bento2 support is also a deliberate scope difference, not evidence that the current legacy MDB implementation regressed.
 
 No historical application checkout was compiled by this addendum, no historical full suite was executed, and no speed/peak-memory superiority claim is justified. Its freshly built executable baseline is current active OldScanner. Reachable history was inspected as source; claims that every historical implementation returns the same output remain unsupported.
+
+## Post-JPED source and control revalidation
+
+Rechecked on 1 November against HEAD `15aed2572973b27b01ee41f2bf9166ee40f7d185`. `git diff 20220f2..15aed257 -- src/bella/mdbparser.cpp` contains only the approved JPED addition to the video whitelist and removal of the stale numeric Kind comment. The relationship walk, null attribute-slot handling and category class checks are unchanged.
+
+Both retained reproduction programs were independently rebuilt against that current parser using the pinned Qt 6.5.3 command in [history.md](history.md#reproduction). All 28 parses exited normally, and each captured output was byte-identical to its retained category/attribute or relationship/Project result. The [new revalidation receipt](evidence/reassessment/receipt.json) preserves current source hashes, build commands, output hashes and the exact baseline-match checks; [category/attribute output](evidence/reassessment/history-repro-results.txt) and [relationship/Project output](evidence/reassessment/history-graph-repro-results.txt) are saved separately. The temporary executables remain under `/tmp/mdb-doc-reassessment-20261101/`; earlier proof receipts were not rewritten.
+
+These controls remain useful bounded qualification coverage. The unrelated old stricter terminator expectation remains unsettled and is not promoted to a defect. JPED's native-corpus change and performance validation are recorded [separately](../../../artifacts/mdb-jped-kind-2026-11-01/validation.json). No further production change was made.

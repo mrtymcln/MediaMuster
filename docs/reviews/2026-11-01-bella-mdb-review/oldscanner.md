@@ -1,5 +1,7 @@
 # Current active OldScanner MDB baseline
 
+Historical baseline at `20220f2`, before the approved JPED Kind change. The [current verdict](VERDICT.md#current-scope-and-approved-jped-change) separates this fixture-inclusive comparison from the later fresh native corpus. In that later corpus, post-JPED Bella and OldScanner agree on all 2,515 Kind values; the 86 direct-own-project differences remain unchanged. See the [current comparison receipt](../../../artifacts/mdb-jped-kind-2026-11-01/current-vs-oldscanner.json). Nothing here recommends restoring Bella-excluded Source Path or unused retained row fields.
+
 Review date: 1 November 2026; source HEAD `20220f2`. A fresh isolated native arm64 Release build compiled the current MDB reader and MDB projector directly from the worktree with pinned Qt 6.5.3 Core. Its source closure contains 31 repository source/header files, hashed in [build-receipt.json](evidence/oldscanner/build-receipt.json). The ordinary scanner, coordinator, OMF reader and physical media-header readers were not invoked or linked. No production source or input MDB was written.
 
 All **383 inventoried paths** were submitted individually to the current reader/projector. Every process exited normally; no timeout or JSON-output failure occurred. The path grouping used by the parent comparison gives 15 specimen/derivative paths, 362 authored/archive controls and six non-Bento files. These are paths, including copies and archived fixtures, not 383 distinct working Avid databases.

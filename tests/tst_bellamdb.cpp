@@ -400,7 +400,6 @@ private slots:
 	void descriptorKindKeepsQualifiedTiming();
 	void originalRateEncoding_data();
 	void originalRateEncoding();
-	void zeroLengthIsKnown();
 	void legacyLengthValues_data();
 	void legacyLengthValues();
 	void legacyLengthRejectsOtherForms_data();
@@ -681,17 +680,6 @@ void TestBellaMdb::originalRateEncoding()
 	QCOMPARE(sourceRate.encoding, exact ? Bella::MdbRateEncoding::ExactEditRate : Bella::MdbRateEncoding::Rational);
 	if (exact)
 		QCOMPARE(report.catalogue.files.first().numbering, Bella::MdbNumbering::MissingNdfFallback);
-}
-
-void TestBellaMdb::zeroLengthIsKnown()
-{
-	auto writer = video();
-	replace(writer, 201, "OMFI:MDFL:Length", number<qint32>(0));
-	const auto report = parse(writer);
-	QCOMPARE(report.reading, Bella::MdbReadResult::Completed);
-	QVERIFY(report.catalogue.files.first().length);
-	QCOMPARE(*report.catalogue.files.first().length, 0);
-	QVERIFY(report.catalogue.files.first().sampleRate);
 }
 
 void TestBellaMdb::legacyLengthValues_data()
@@ -1572,7 +1560,6 @@ void TestBellaMdb::audioSummaryDamageBoundaries_data()
 	for (const bool aiff : {false, true})
 	{
 		const auto prefix = aiff ? QStringLiteral("AIFF ") : QStringLiteral("WAVE ");
-		QTest::newRow(qPrintable(prefix + "later unrelated broken chunk")) << aiff << 0;
 		QTest::newRow(qPrintable(prefix + "required format itself short")) << aiff << 1;
 		QTest::newRow(qPrintable(prefix + "frequency conflict only")) << aiff << 2;
 		QTest::newRow(qPrintable(prefix + "depth conflict only")) << aiff << 3;
@@ -1613,9 +1600,7 @@ void TestBellaMdb::audioSummaryDamageBoundaries()
 		first.replace(aiff ? 8 : 4, aiff ? 10 : 4, QByteArray(aiff ? 10 : 4, '\0'));
 	const QByteArray formatId = aiff ? "COMM" : "fmt ";
 	auto fields = chunk(formatId, first, aiff);
-	if (variation == 0)
-		fields += QByteArray("JUNK") + number<quint32>(100, aiff) + QByteArray("xx");
-	else if (variation >= 2)
+	if (variation >= 2)
 	{
 		fields += chunk(formatId, makeFormat(variation == 2 || variation == 4, variation == 3 || variation == 5 ? 16 : variation == 9 ? 32
 																																	  : 24),
@@ -1633,8 +1618,8 @@ void TestBellaMdb::audioSummaryDamageBoundaries()
 	QVERIFY(facts.ownDescriptorQualified);
 	QCOMPARE(facts.length, std::optional<qint64>(96000));
 	QVERIFY(facts.sampleRate);
-	const bool frequencyUsable = variation == 0 || variation == 3 || variation == 5 || variation == 7 || variation == 9;
-	const bool depthUsable = variation == 0 || variation == 2 || variation == 4 || variation == 6 || variation == 9;
+	const bool frequencyUsable = variation == 3 || variation == 5 || variation == 7 || variation == 9;
+	const bool depthUsable = variation == 2 || variation == 4 || variation == 6 || variation == 9;
 	QCOMPARE(facts.audioFrequency.has_value(), frequencyUsable);
 	QCOMPARE(facts.bitDepth.bits.has_value(), depthUsable);
 	if (facts.bitDepth.bits)

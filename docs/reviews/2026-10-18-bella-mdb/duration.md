@@ -7,7 +7,9 @@ also agreed. The six exact-arithmetic, source-precision, qualified DF,
 zero/blank and long-duration rules were subsequently approved; remaining
 source/layout details below are under review.** Bella retains physical-file
 Duration; the earlier removal of Clip
-Duration remains in force. The exact six-tag Kind lookup is already agreed.
+Duration remains in force. The fixed Kind lookup is separately agreed, with
+JPED added to Video on 1 November 2026; that narrow amendment does not change
+these independent typed timing rules.
 This review adds no runtime parser, OldScanner change, media write or Bin Filter
 work. **The user originally agreed MDB-only Duration on 19 October 2026; the
 21 October source revision below supersedes that blanket restriction.**
@@ -297,7 +299,8 @@ C++ organisation and identifier styling remain part of later design. This
 naming/presentation clarification does not approve the complete proposed
 Duration source, validation or fallback rule.
 
-This review does not change discovery, the agreed six-type Kind mapping, the
+This review does not change discovery, the separately agreed fixed Kind mapping
+(including the later JPED-only amendment), the
 selected-master rules or Bin Filter. PMR has no supported Duration mapping.
 The broader media-header review must follow the 21 October source revision:
 MDB first, with the qualified database-unavailable MXF fallback, without a

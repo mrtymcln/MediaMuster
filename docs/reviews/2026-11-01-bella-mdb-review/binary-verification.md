@@ -1,5 +1,7 @@
 # Independent binary verification — 1 November 2026
 
+This retains the pre-JPED verification and its original capture set. The [current verdict](VERDICT.md#current-scope-and-approved-jped-change) records the completed, explicitly approved JPED change and distinguishes native compatibility research from agreed implementation work. Native breadth is not an instruction to reverse deliberate Bella exclusions.
+
 This addendum verifies the existing binary review instead of assuming its retained conclusions. No installed application bytes or production source files changed. Media Composer was not launched to read or rebuild databases; the parent review handles actual MDVX MDB execution separately.
 
 ## Fresh work and reproducibility
@@ -23,13 +25,13 @@ A wording refinement is needed for the retained comparison's “ISO-8859-1” la
 
 **Media Composer supplies useful compatibility evidence, not proof of Bella's entire contract.** Fresh engine captures corroborate descriptor-owned legacy Length, separately read rates, selected-master Original Bin, direct import-setting lookup and immediate video-track counting. Assembly is necessary: Hopper's newly generated `ATrackGroup::NumVideoTracks()` pseudo-code incorrectly says `return 0`, while instructions compare `AComponent::GetType()` against picture kind 1, increment `w20`, and return `x20`. The correct native predicate combines a found object attribute with at least two immediate picture tracks. It does not establish a safe policy for ambiguous duplicate raw properties or corrupt class tags.
 
-One concrete compatibility improvement available from Media Composer is **valid per-object metadata byte order**. `omfiDualStream::LoadBentoObject` at `0xb2680` loads an object's own order and uses the saved HEAD order when absent. Current Bella `Image::bigEndian()` at `src/bella/mdbparser.cpp:324` withholds numeric facts whenever a present local order differs from HEAD. Supporting a validated local override, with mixed-order fixtures and independent per-object reads, would extend Bella's compatibility. It is a documented unsupported case; the current real-file corpus does not demonstrate a failure requiring immediate correction.
+One compatibility research lead from Media Composer is **valid per-object metadata byte order**. `omfiDualStream::LoadBentoObject` at `0xb2680` loads an object's own order and uses the saved HEAD order when absent. Bella `Image::bigEndian()` at the reviewed `src/bella/mdbparser.cpp:324` withholds numeric facts whenever a present local order differs from HEAD. Mixed-order behavior needs genuine examples or controlled native reads and an established supported-layout interpretation before implementation. It is a documented verification gap, not a current demonstrated native-corpus failure or an approved extension task.
 
 ## What to adopt and retain
 
 1. Restore useful historical damage qualifications: counted null attribute slots must preserve incomplete coverage, and track/component relationship roles must be checked before using their properties. Those are the parent history audit's reproductions, not a claim that Media Composer was run against those controls.
 2. Keep Bella's full identity normalization, separate duplicate owners, typed widths, explicit conflict/absence distinctions and original rate pairs. Do not replace these with MDVX's truncated key, raw partial reads, fixed IDs or usage override.
-3. Use the native owner routes and category predicate as regression targets; use local-order support as an optional compatibility extension. Keep exact damaged-input policy explicit because public OMF documentation and native pseudo-code do not settle every private MDB case.
+3. Use the native owner routes and category predicate as regression targets. Keep local-order support as research pending the verification above, and preserve the agreed release-one format boundary. Public OMF documentation and native pseudo-code do not settle every private damaged-input case.
 4. Expand independent corpus diversity before claiming universal superiority: historical/Windows encodings, mixed local byte order, uncommon descriptor families and deliberately ambiguous graphs remain weakly covered. Current comparison agreement is strong evidence for the checked overlapping facts, not proof for every report field or every MDB version.
 
 This addendum adds no new confirmed production defect beyond the history findings. It verifies relevant arm64 behavior; it does not execute the x86_64 slices, reconstruct all procedures in these large binaries, or prove GUI behavior, performance, memory usage or every private schema version.

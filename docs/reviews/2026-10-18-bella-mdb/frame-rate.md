@@ -2,11 +2,15 @@
 
 Research date: 19 October 2026; approval follow-up: 20 October 2026.
 **The user approved the shared rate design, late labels, numeric sorting and
-MDB-first priority with only an independently read header as fallback. No
-runtime implementation exists.** Internal names should match
+MDB-first priority with only an independently read header as fallback.** The
+original review added no runtime implementation. Bella now captures the typed
+descriptor rate; the separate interpreter and presentation integration remain
+approved work. Internal names should match
 Avid properties where practical. Separate Frame Rate and Sample Rate columns,
-blank Frame Rate for audio, blank Sample Rate for video, and the exact six-tag
-Kind lookup are already agreed. OldScanner remains active; Bin Filter is outside
+blank Frame Rate for audio, blank Sample Rate for video, and the fixed
+Kind lookup are already agreed. The later JPED-only Kind amendment is recorded
+in [Kind](kind.md); it does not broaden this field's independent source/layout
+rules. OldScanner remains active; Bin Filter is outside
 this replacement.
 
 **Duration source revision, 21 October 2026:** Frame Rate's rule remains as

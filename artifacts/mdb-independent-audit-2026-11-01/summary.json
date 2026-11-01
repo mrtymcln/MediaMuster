@@ -12,16 +12,6 @@
   "unrelated_lmdb_inputs": 6,
   "bella_files": 2515,
   "bella_masters": 1420,
-  "current_oldscanner_common_semantic_disagreements": {
-    "kind": 30,
-    "project": 86
-  },
-  "oldscanner_fields_absent_from_bella_api": {
-    "Source Path": 411,
-    "Source Container": 581,
-    "Imported": 2381,
-    "Channels": 1513
-  },
   "historical_snapshots": 49,
   "historical_runs": 637,
   "sanitizer_runs": 298,
@@ -36,7 +26,7 @@
     "MDVx": 12,
     "MediaComposer": 10
   },
-  "verdict": "Prefer Bella core, fix JPED Kind omission, restore selected older fields and bounded cancellation. No universal superiority claim.",
+  "verdict": "Prefer Bella for the agreed compact MDB contract. JPED-only Kind expansion is implemented. Withdraw extra result fields, loop cancellation, generic provenance and format/class expansion as default corrective work; retain three separately revalidated authored-input qualification findings as open. No universal correctness claim.",
   "scope_limits": [
     "Inaccessible locations not searched; access errors logged.",
     "Old fixtures and prior-generated temporary evidence excluded even though paths inventoried.",
@@ -44,5 +34,22 @@
     "Targeted MDB decompilation; no full application decompilation or Media Composer full runtime field oracle.",
     "47 documented fresh web searches; no claim entire web exhausted.",
     "Finite native corpus and generated mutations cannot establish universal correctness."
-  ]
+  ],
+  "snapshot": "Original measurements at pre-JPED audit HEAD; current conclusions amended 1 November 2026.",
+  "baseline_oldscanner_common_semantic_disagreements": {
+    "kind": 30,
+    "project": 86
+  },
+  "post_jped_oldscanner_common_semantic_disagreements": {
+    "project": 86
+  },
+  "older_capabilities_not_missing_bella_result_requirements": {
+    "Source Path": 411,
+    "Source Container": 581,
+    "Imported": 2381,
+    "Channels": 1513
+  },
+  "scope_reassessment": "../mdb-scope-reassessment-2026-11-01/reassessment.json",
+  "post_jped_validation": "../mdb-jped-kind-2026-11-01/validation.json",
+  "raw_measurements": "Pre-JPED comparison/benchmark/sanitizer files and evidence.tar.gz remain immutable; only current prose and summary conclusions are updated."
 }

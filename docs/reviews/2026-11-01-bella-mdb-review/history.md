@@ -1,5 +1,7 @@
 # Bella MDB: Git history review
 
+This records the pre-JPED source/history investigation. The [current verdict](VERDICT.md#current-scope-and-approved-jped-change) records the approved JPED expansion and scope reassessment; the [post-JPED control rerun](history-verification.md#post-jped-source-and-control-revalidation) confirms that the separate damaged-input qualification findings below still reproduce. Older test expectations and broader historical capabilities do not by themselves authorize changing Bella.
+
 Review date: 1 November 2026. Reviewed HEAD `20220f2b4c2b7ff6ef3d017a77568e5edf7de7cd`. MDB only; no production source changes.
 
 ## Findings carried forward from historical validation
@@ -85,7 +87,7 @@ The [source](evidence/history-repro.cpp) and [captured output](evidence/history-
 
 ## Limits
 
-This work reviews reachable local Git history, selected implementation diffs and representative source snapshots; it does not claim every deleted line in every historical commit was audited. No historical application build or full historical suite was run. The current-source authored harness is separate from the parent review's genuine corpus and normal/sanitizer test runs. Capability or validation differences deliberately approved for Bella are called out above rather than reported as defects. Unreachable objects, unavailable remote history, disconnected drives and any unprovided historic branches are outside this receipt.
+This work reviews reachable local Git history, selected implementation diffs and representative source snapshots; it does not claim every deleted line in every historical commit was audited. This particular investigation ran no historical application build or full historical suite. A separate [later audit](../../../artifacts/mdb-independent-audit-2026-11-01/evidence/history/audit-summary.json) built 49 historical standalone executables and ran 637 input processes; those results supplement rather than change this receipt's method. The authored harness is separate from both native-corpus investigations. Capability or validation differences deliberately approved for Bella are called out above rather than reported as defects. Unreachable objects, unavailable remote history, disconnected drives and any unprovided historic branches are outside this receipt.
 
 ## Subsequent current-implementation baseline
 

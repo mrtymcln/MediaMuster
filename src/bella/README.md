@@ -12,6 +12,51 @@ by `tests/tst_bellamobid.cpp`. The first independent PMR reader/report is now in
 `mdbparser.h/.cpp`. Focused normal and sanitizer tests pass for all three
 components. The scanner and MXF/OMF/native-audio readers remain to implement.
 
+On 1 November the user approved adding `JPED` to MDB Video Kind. The current
+exact mapping is Audio for `PCMA`/`AIFD`/`WAVD`, Video for
+`CDCI`/`RGBA`/`MPGI`/`JPED`, and Unknown for other classes. The original
+six-class rule remains relevant only to earlier dated validation. No automatic
+class-hierarchy classification or additional MDB Kind class was approved.
+The [post-change receipt](../../artifacts/mdb-jped-kind-2026-11-01/validation.json)
+and [full-report comparison](../../artifacts/mdb-jped-kind-2026-11-01/delta-verification.json)
+record exactly 30 JPED Unknown-to-Video changes across both detail modes, with
+all other returned values unchanged. The seven fresh Avid MDBs still yield
+2,515 file records and 1,420 masters; all 13 original input hashes remain
+unchanged. Native MDVx and independent-reader comparisons were rerun, and 298
+sanitizer executions passed. The
+[before/after benchmark](../../artifacts/mdb-jped-kind-2026-11-01/benchmark-delta.json)
+shows no measurable regression in this corpus: aggregate medians 243.8 to
+243.3 ms, per-database time variation below 1%, and no median peak-RSS increase.
+
+The 1 November duplicate-test cleanup removed three executed cases already
+covered by stronger Length/endian or audio-framing controls. Its generated-only
+run passed **155 Qt cases, 0 failed**; checked-in-fixture selectors were not run,
+so this is not a new full-suite result. JPED Video/MPGA Unknown timing coverage
+and unsupported-layout controls remain. See the
+[cleanup receipt](../../artifacts/mdb-scope-reassessment-2026-11-01/test-cleanup.json)
+and [scope amendment](../../Project%20Bella/evidence/mdb-scope-reassessment-2026-11-01.json).
+Earlier test totals below remain historical results.
+
+The subsequent audit reassessment withdraws suggestions that reverse deliberate
+scope choices. Keep `readAll()` and phase-only cancellation, ordinary owned
+values with required specific qualifications and separate `problemNotes`, and
+the supported legacy MDB version baseline. Per-entry polling, generic per-field
+provenance/status machinery, retained raw evidence graphs and broader
+Bento 2/OMF 2/IMA MDB support are not corrective work under the agreed plan.
+Recorded Source Path is excluded; physical Filename/File Path remain required.
+Unused retained channel-count/source-container/imported-status copies are not
+missing result requirements, although temporary decoding needed for retained
+fields remains allowed. The typed video-rate interpreter and duration formatter
+are already agreed separate work; the fresh native-corpus audit found no further
+parser defect in the returned rate facts. Separate
+[authored-input verification](../../docs/reviews/2026-11-01-bella-mdb-review/VERDICT.md)
+reproduces three current damage/qualification findings, which remain open and
+within scope without authorizing production edits in this documentation update.
+Correct demonstrated violations and measure internal
+optimizations while preserving the approved behavior. See the
+[current scope reassessment](../../Project%20Bella/README.md#mdb-audit-reassessment-and-jped-approval)
+and [updated audit](../../artifacts/mdb-independent-audit-2026-11-01/report.txt).
+
 On 30 October the user chose a path-based MDB parser that handles both reading
 and interpretation, as PMR does. It will capture each source once, extract the
 approved compact file/master facts and relationships, then release the capture
@@ -77,8 +122,9 @@ records 107 substantive MDB invocations (109 Qt passes including setup/cleanup),
 normal and ASan/UBSan results, matching independent catalogue comparisons for
 twelve source paths, separately scoped numbering checks and the remaining
 validation limits. The original source values remain owned in the report;
-temporary capture/index/graph/fraction data is released on return. Kind's six
-display classes do not gate other independently qualified known-format fields.
+temporary capture/index/graph/fraction data is released on return. That dated
+receipt used the original six-class Kind lookup; JPED was added on 1 November.
+Kind does not gate other independently qualified known-format fields.
 
 On 31 October the user approved three internal MDB cleanups: remove redundant
 audio blocked flags, collapse the private Unsupported/Unreadable distinction

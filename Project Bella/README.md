@@ -56,6 +56,75 @@ clear lifetimes. Add complexity only for a concrete supported case or required
 behavior. Preserve necessary ownership/type/bounds checks and agreed metadata;
 judge the implementation by correct results and measured scan time/peak memory.
 
+## MDB audit reassessment and JPED approval
+
+**Current position, 1 November 2026:** the fresh MDB audit's capability
+comparisons do not expand Bella's agreed product scope. Its recommendations to
+restore excluded fields, add per-entry cancellation checks, introduce generic
+per-field provenance or broaden supported MDB formats are withdrawn as default
+implementation work. The fresh native-corpus audit established no additional
+parser defect after the separately approved JPED change. A separate
+[authored-input verification](../docs/reviews/2026-11-01-bella-mdb-review/VERDICT.md)
+reproduces three current damage/qualification defects in attribute-list
+coverage, class-qualified relationship traversal and category component checks.
+Those remain within-scope open findings; they do not justify the withdrawn
+scope expansions. No further production change is authorized by this update.
+
+The user explicitly authorized adding `JPED` to MDB Video Kind on 1 November.
+The implemented exact lookup is now Audio for `PCMA`/`AIFD`/`WAVD`, Video for
+`CDCI`/`RGBA`/`MPGI`/`JPED`, and Unknown for other classes. This narrowly revises
+the original six-class decision; it does not authorize `MPGA`, `WAVE`, `TIFD`,
+automatic class-hierarchy expansion or a track-based fallback for MDB Kind.
+
+The [post-JPED validation](../artifacts/mdb-jped-kind-2026-11-01/validation.json)
+and [full-report comparison](../artifacts/mdb-jped-kind-2026-11-01/delta-verification.json)
+record exactly 30 qualified JPED Kind changes from Unknown to Video, in both
+optional-detail modes, with every other returned value unchanged across the
+13 fresh inputs. The seven Avid MDBs still return 2,515 files and 1,420 masters;
+six unrelated MDB-extension inputs are rejected. Native MDVx and independent
+reader comparisons were rerun. The saved sanitizer run has 298 successful
+executions, including 136 newly generated malformed cases. The
+[before/after benchmark](../artifacts/mdb-jped-kind-2026-11-01/benchmark-delta.json)
+shows no measurable regression in this corpus: aggregate medians 243.8 to
+243.3 ms, per-database timing variation below 1%, and no median peak-RSS increase.
+These are parser measurements, not a runnable Bella scanner benchmark.
+
+The 1 November test cleanup removed three duplicate executed cases: the separate
+zero-Length test and two later-unrelated-audio-chunk cases already covered by
+stronger endian/framing controls. The generated-only run passed **155 Qt cases,
+0 failed**; the two checked-in-fixture selectors were not executed, so this is
+not a new full-suite result. JPED Video/MPGA Unknown timing coverage and the
+unsupported-layout negative controls remain. See the
+[cleanup receipt](../artifacts/mdb-scope-reassessment-2026-11-01/test-cleanup.json)
+and [scope amendment](evidence/mdb-scope-reassessment-2026-11-01.json).
+Earlier test totals below describe their dated runs.
+
+The remaining boundaries stay as agreed:
+
+- Keep one `readAll()` capture and phase-only Cancel checks. Per-entry,
+  object and link polling was explicitly declined.
+- Keep ordinary values, the required specific machine-readable qualifications
+  and separate `problemNotes`. Generic per-field status/source/explanation
+  wrappers, contributor histories and retained raw graphs are excluded.
+- Keep recorded Source Path excluded. Physical Filename and File Path remain.
+  Copland's removed channel-count/source-container/imported-status row copies
+  are not missing Bella result requirements; temporary decoding needed for
+  retained fields remains permitted. See the
+  [Copland unused-value decision](../Project%20Copland/README.md#unused-per-file-values--17-october-2026).
+- Keep Bento 2/OMF 2/IMA MDB variants deferred and report unsupported layouts
+  truthfully. Wider reader capability is not by itself an in-scope improvement.
+- Complete the already-agreed typed video-rate interpreter and duration
+  formatter at their planned boundary, preserving original values. The audit
+  did not establish a defect in the parser's returned rate facts.
+- Correct demonstrated violations of agreed ownership, typing, bounds,
+  qualifications or diagnostics. Measured internal optimizations remain within
+  scope when they preserve all approved behavior and lifetime/Cancel boundaries;
+  this reassessment identifies no additional concrete performance patch.
+
+The [updated MDB audit](../artifacts/mdb-independent-audit-2026-11-01/report.txt)
+distinguishes those scope decisions from the fresh binary/corpus observations.
+Earlier dated six-class results and raw receipts remain historical evidence.
+
 ## Decision check-ins
 
 **User instruction, 27 October 2026:** check in with the user at every new
@@ -479,10 +548,11 @@ lower-priority substitution prohibited by the Project rule; notes explain it.
 The enclosing report/file record supplies source/owner scope. No contributor-ID
 history is proposed without a concrete consumer.
 
-Keep the exact descriptor tag independently of the six-class **Kind** lookup.
+Keep the exact descriptor tag independently of the exact **Kind** lookup.
 Existing preserved Compression rules also use tags such as `JPED` and `WAVE`;
-collapsing those tags to Unknown would discard naming context. Kind still uses
-the approved PCMA/AIFD/WAVD and CDCI/RGBA/MPGI mapping; an unknown Kind alone
+collapsing those tags to Unknown would discard naming context. With the
+1 November JPED approval, Kind uses the approved PCMA/AIFD/WAVD and
+CDCI/RGBA/MPGI/JPED mapping; an unknown Kind alone
 does not make other independently qualified fields inapplicable. Retaining a
 tag does not authorize decoding an unknown layout. Likewise, apply Avid video
 rate aliases only to their approved type/context, never to a literal Rational
@@ -601,9 +671,10 @@ records absent from their current PMRs.
 
 The checks caught and corrected a test-object collision, signed-only acceptance
 of genuine unsigned subsampling, and inappropriate use of Unknown Kind to gate
-known format timing. Kind retains its six-tag rule; known descriptor unit
-context independently supplies qualified fields. No genuine damaged MDB was
-found: the damage tests exercise explicit policies rather than proving that
+known format timing. At this 31 October checkpoint Kind retained the original
+six-tag rule; the 1 November JPED approval revises only that mapping. Known
+descriptor unit context independently supplies qualified fields. No genuine
+damaged MDB was found: the damage tests exercise explicit policies rather than proving that
 every possible damaged file will be diagnosed. Mid-capture changes, unavailable
 timestamps and mid-stage Cancel were not forced with new fault-injection hooks.
 No scan-time or peak-memory improvement has been measured.
@@ -1934,13 +2005,14 @@ There are 191 selected-master records across the six MDBs containing both
 picture and sound tracks, covering 572 file rows; their overall mix cannot
 classify each physical file.
 
-Confirmed by the user on **19 October 2026**: use one small fixed C++17 lookup
-on the exact full-ID physical file's own safely read descriptor class:
+Confirmed by the user on **19 October 2026**, with the separately approved
+**1 November JPED addition**: use one small fixed C++17 lookup on the exact
+full-ID physical file's own safely read descriptor class:
 
 | Exact class | Kind display |
 | --- | --- |
 | `PCMA`, `AIFD`, `WAVD` | `Audio` |
-| `CDCI`, `RGBA`, `MPGI` | `Video` |
+| `CDCI`, `RGBA`, `MPGI`, `JPED` | `Video` |
 | Missing or any other class | `unknown` |
 
 Keep a compact Audio/Video/Unknown value internally; the UI supplies those
@@ -1952,9 +2024,13 @@ descriptor/layout coverage remains implementation verification work.
 
 Restricting the descriptor lookup to PCMA and CDCI would cover 2,384 files and
 leave 28 known audio/video files unclassified (AIFD/WAVD audio, RGBA/MPGI video).
-The agreed six-class lookup covers all 2,412 observed files while still using
-only one descriptor class as the field's source. Wider native-known classes
-remain research and are not silently added to this first-release mapping.
+The original six-class lookup covered all 2,412 files in that October corpus
+while still using only one descriptor class as the field's source. The fresh
+November corpus includes 30 qualified JPED records; the user's JPED approval
+adds Video for them. The current seven-class mapping is implemented and
+[verified](../artifacts/mdb-jped-kind-2026-11-01/validation.json). Other wider
+native-known classes remain research and are not silently added to this
+first-release mapping.
 
 The physical descriptor is the sole MDB authority: no TrackKind/master-track
 cross-check, vote, fallback or veto for this field, and no filename/codec guess.
@@ -2558,7 +2634,8 @@ No completion percentage or delivery estimate is established by this checkpoint.
 
 Project's MDB owner/key/blank/source
 fallback, Original Bin's owner/name/empty handling, the physical-path-only
-decision and the exact six-class Kind lookup are agreed. Duration prefers MDB,
+decision and the exact Kind lookup, now including the approved JPED addition,
+are agreed. Duration prefers MDB,
 with qualified MXF Duration allowed when usable database information is
 unavailable and the scan falls back to MXF; no Duration-only header open is
 requested. Keeping MDB Length/SampleRate
@@ -2774,7 +2851,8 @@ Media Composer's physical descriptor import to its sound/picture families,
 separates MDVx's internal classification from its different visible Kind/usage
 column, and compares OldScanner with thirteen actual headers. **The user approved
 these MXF Kind rules on 22 October 2026; they remain unimplemented.** The preceding simplified
-Project rule is agreed; the exact six-class MDB Kind rule is unchanged.
+Project rule is agreed. These MXF rules do not expand MDB Kind beyond its
+separate exact mapping and the later approved JPED addition.
 
 Use the already qualified physical file's own descriptor class as the single
 MXF Kind authority. Its binary class identifier needs no text decoding. The
@@ -3651,7 +3729,8 @@ this review. It is retained existing behavior, not a newly proven standard
 descriptor or permission to classify a root WAVE MediaData object. Known native
 aliases and raw MediaData tags have distinct roles. Do not add generic `DIDD`
 or new classes merely because Media Composer has a broader native hierarchy;
-the six-class MDB decision also remains unchanged.
+MDB retains its separate exact mapping, revised only by the later approved
+JPED addition; this OMF mapping does not authorize more MDB classes.
 
 These are four-byte structured tags, without UTF-8/MacRoman selection. A small
 fixed C++17 helper returns a strongly typed Audio/Video/Unknown result. Keep no
@@ -4409,6 +4488,12 @@ Location column to File Path for Bella. The 20 October decision also removes
 Effect Sequence from both displayed/exported fields and stored scan results.
 This retains useful answers, identities
 and compact checks without requiring the existing parser's temporary structures.
+
+Copland's 17 October unused-value decision removed the retained UI-row copies
+of channel count, source container and imported status. It expressly kept
+temporary reader/projection facts needed for retained interpretations. Those
+removed copies are not missing Bella result fields; the 1 November MDB audit
+reassessment does not reinstate them or recorded Source Path.
 
 | Group | Current fields and purpose |
 | --- | --- |

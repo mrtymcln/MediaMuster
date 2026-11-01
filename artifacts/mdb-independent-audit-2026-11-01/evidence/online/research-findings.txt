@@ -1,3 +1,5 @@
+Current documentation amendment, 1 November 2026: the observations below describe the original pre-JPED source snapshot. The user subsequently approved JPED Video only; all 30 records now classify as Video, with other results unchanged. The scope reassessment withdraws extra fields, loop cancellation, generic provenance and additional format/class support as default improvements. See artifacts/mdb-scope-reassessment-2026-11-01/reassessment.json and artifacts/mdb-jped-kind-2026-11-01/validation.json. Raw captures, counts and hashes below remain historical evidence.
+
 Fresh online MDB research, 2026-11-01
 
 Scope: fresh external search and original published specifications. No previous MediaMuster documentation, evidence, tests, or fixtures were read or used. The independently cloned pymdb source was freshly discovered online. The comparison corpus came from the root agent's new filesystem manifest. Online coverage is broad and documented, not a claim that every document on the entire web has been found.

@@ -1,5 +1,7 @@
 # Fresh documentation verification
 
+This is the retained pre-JPED verification. The [current verdict](VERDICT.md#current-scope-and-approved-jped-change) records the approved JPED change and superseding scope assessment. The separate later [research receipt](../../../artifacts/mdb-independent-audit-2026-11-01/evidence/online/research-findings.txt) retrieved original specifications/manuals through other URLs; failures recorded here remain truthful historical attempts, not a claim those documents are unavailable now.
+
 Date: 1 November 2026 (Australia/Sydney). MDB only. This independently rechecked the main claims in [online.md](online.md) with 16 fresh search queries and direct source reads. It adds no production changes and no application runtime claims.
 
 The public evidence does **not** establish one universally correct MDB implementation. No complete public specification of the current private MDB schema was located. Original Apple/Avid sources define the foundation; the independent MDB reader documents its own observed vocabulary. The remaining private-field decisions still require specimen bytes, native behavior and an explicit report contract.
@@ -25,7 +27,7 @@ Do not justify that extension using toolkit comments alone. The [original `omUti
 ## Recommendations grounded in this verification
 
 1. Keep dictionary-based property identification, typed widths, independent container/metadata byte order and complete identities. Neither a permissive third-party decoder nor generic OMF2 tables justify weakening these checks.
-2. Retain a compatibility backlog for genuinely observed mixed-order objects and additional MDB layouts. Mark the current omissions explicitly; do not equate a smaller approved support range with universal superiority.
+2. Keep mixed-order verification gaps and additional MDB layouts marked as research/deferred compatibility work. Do not equate a smaller approved support range with universal superiority, or treat the existence of native/generic code as authorization to expand Bella's release-one support.
 3. Use pymdb's readable object/property catalogue as an additional source of hypotheses and a debugging cross-check. Validate each adopted private field against bytes/native behavior; do not import its container assumptions or convenience fallbacks wholesale.
 4. Rank fixes by demonstrated semantic errors before broadening formats. The historical null-slot and class-qualification reproductions in this review are more concrete than speculative support for unseen MDB versions.
 
