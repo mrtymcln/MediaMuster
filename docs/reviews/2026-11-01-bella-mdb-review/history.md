@@ -3,11 +3,13 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
-This records the pre-JPED source/history investigation. The [current verdict](VERDICT.md#current-scope-and-approved-jped-change) records the approved JPED expansion and scope reassessment; the [post-JPED control rerun](history-verification.md#post-jped-source-and-control-revalidation) confirms that the separate damaged-input qualification findings below still reproduce. Older test expectations and broader historical capabilities do not by themselves authorize changing Bella.
+This records the pre-JPED source/history investigation. The [current implementation](VERDICT.md#qualification-fixes-implemented) closes all three qualification findings after the user's explicit authorization, while preserving the separately approved JPED addition and scope reassessment. The [post-JPED control rerun](history-verification.md#post-jped-source-and-control-revalidation) below describes the earlier pre-fix verification. Historical behavior and source locations in this record are not claims about the corrected parser. Older tests and broader capabilities do not themselves authorize expanding Bella.
+
+The later proposed [SEQU conflict finding is withdrawn](VERDICT.md#sequ-conflict-finding-withdrawn). The pre-Canon parser selected `SEQU:Sequence` for legacy OMF and switched to `SEQU:Components` only for OMF 2 (`9c286ee^:src/omfobjects.cpp`, `PropertyIds` initialization). It did not establish a rule that both properties must coexist and agree. The manufactured mixed-revision probe is not a demonstrated supported-MDB defect and creates no code/test backlog. The corrected wrong-owner routes documented below remain separate, valid findings.
 
 Review date: 1 November 2026. Reviewed HEAD `20220f2b4c2b7ff6ef3d017a77568e5edf7de7cd`. MDB only; no production source changes.
 
-## Findings carried forward from historical validation
+## Retained pre-fix findings from historical validation
 
 The findings combine new regressions and inherited flaws: Bella lost the counted-null-slot safeguard and the category helper's direct-track-class guard. Its wrong-component category gap and generic wrong-route graph traversal are also present in current OldScanner. See [the same-control follow-up](inherited-behaviour.md); older implementations are not uniformly immune.
 

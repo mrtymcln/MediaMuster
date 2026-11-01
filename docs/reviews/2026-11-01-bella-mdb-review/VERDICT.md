@@ -5,7 +5,7 @@
 
 ## Current scope and approved JPED change
 
-Updated 1 November 2026 after the user's scope reassessment and narrow JPED approval. The original audit below records pre-JPED HEAD `20220f2`; its raw receipts remain historical evidence, not the current feature backlog.
+Updated 1 November 2026 after the user's scope reassessment, narrow JPED approval and subsequent instruction to implement the three MDB qualification fixes. Those fixes are now implemented and verified as described below. The original audit records pre-JPED HEAD `20220f2`; its dated results are historical evidence, not the current feature backlog.
 
 JPED is now an explicitly approved Video Kind alongside CDCI, RGBA and MPGI. The prior Unknown result followed the originally approved six-class lookup; its expansion is a subsequent user decision, not proof that the old implementation violated that lookup. The fresh rerun checks all 13 original inputs in both optional-detail modes: exactly 30 qualified JPED records change Unknown to Video, with every other returned value unchanged. Live membership remains 2,515 files and 1,420 masters. Before/after aggregate median parsing time is 243.8/243.3 ms with no median RSS increase; no performance regression was measured. See the JPED validation and complete report delta.
 
@@ -21,12 +21,131 @@ The recommendations have been reassessed against the agreed plan:
 | Restore recorded Source Path | Excluded from Bella's extraction, storage, presentation and additional reads. Physical Filename/File Path remain required. |
 | Broaden Kind automatically through helper reuse or class inheritance | Not authorized by the JPED change. Other native classes remain outside the agreed exact lookup unless separately expanded. |
 | Add Bento 2/OMF 2/IMA MDB support | Deliberately deferred release-one compatibility work. Unsupported replies are expected within that version boundary. |
+| Require agreement between `SEQU:Sequence` and `SEQU:Components` | Withdrawn after the final review's reassessment. These are revision-specific properties; the manufactured mixed-revision probe did not establish a supported-MDB defect or a required native conflict rule. See the [withdrawal below](#sequ-conflict-finding-withdrawn). |
 | Preserve typed rate facts and use the separate qualified ExactEditRate interpreter/formatter | Existing approved work, not a newly discovered parser defect. Literal Rational values and concrete audio frequencies must not acquire video aliases. |
 | Reduce unnecessary copying, allocation or repeated work | Within scope only when measured and behavior-preserving, including approved checks, qualifications, diagnostics and cancellation boundaries. No specific remaining bottleneck was established by the native-corpus audit. |
 
 These dispositions follow the [Bella decisions](../../../Project%20Bella/README.md) and [Copland unused-value decision](../../../Project%20Copland/README.md#unused-per-file-values--17-october-2026). They supersede feature/API suggestions in the earlier independent audit.
 
-The three authored damaged-input qualification findings below are a separate matter. At post-JPED HEAD `15aed257`, the relevant production paths are unchanged from `20220f2`; both retained reproduction programs were rebuilt and all 28 outputs exactly match their saved category/graph outputs. These concern agreed owner, relationship and incomplete-list qualification, not the declined feature proposals. They remain bounded current findings; no production fix is made or authorized by this documentation update. See [current-source revalidation](history-verification.md#post-jped-source-and-control-revalidation).
+The three authored damaged-input findings concerned agreed owner, relationship and incomplete-list qualification, not the declined feature proposals. The [post-JPED revalidation](history-verification.md#post-jped-source-and-control-revalidation) established that they still reproduced before this implementation. The user then explicitly authorized their correction; all three are now closed by the changes below.
+
+## Qualification fixes implemented
+
+The implementation stays inside the existing [MDB parser](../../../src/bella/mdbparser.cpp) and checked-result design:
+
+- `components()` follows only relationships applicable to the supported owner class, checks each target's role before enqueueing it, and stops invalid branches. Invalidly reached source clips cannot contribute positive master links or Project inheritance. The iterative walker, cycle detection, independent valid branches and existing completeness qualifications remain.
+- A small shared `trackComponent()` helper requires a `TRAK` and a supported component target. The fixed supported-role rules retain inherited legacy `TRKG:Tracks` on `RSET`, `PVOL` and `SLCT`; a literal class-name switch must not discard that valid path. Existing wrapper-local properties stay restricted to their own classes, without introducing general class inheritance or broader OMF format support.
+- A null slot inside `ATTR:AttrRefs` now returns the existing Unreadable reply with a contextual problem note. Absent owner-list pointers, valid empty lists and the agreed missing-AttrRefs absence rule remain unchanged. A readable `_IMPORTSETTING` object attribute with a null object payload still counts as present.
+- Precompute Category uses the same qualified track/component step and still reads only immediate components' typed TrackKind values. It validates all decisive tracks, preserves direct counting and leaves the category Unknown when a dependency is unusable; separately qualified Type and other facts survive.
+
+There are no public report/API, file-read, cancellation-checkpoint, version, Kind-class or retained-field expansions. The original stricter string-terminator observation remains unsettled and outside these three fixes.
+
+The [MDB tests](../../../tests/tst_bellamdb.cpp) add `relationshipClassQualification`, `nullAttributeSlotsAreIncomplete` and `categoryTrackQualification`: 48 focused regression rows across both metadata byte orders. The pre-fix parser fails 34 rows and passes 14 valid controls; the corrected parser passes all 48. The full generated-control run passes 203 Qt cases, including setup/cleanup, normally and with ASan/UBSan: zero failures, zero skips and empty sanitizer stderr. Checked-in fixtures were not used.
+
+Fresh comparisons cover all 13 original inputs in both optional-detail modes: all 26 complete reports are identical before and after the qualification changes, excluding elapsed parsing time, including problem notes. The seven Avid MDBs still return 2,515 file records and 1,420 masters, with all 30 JPED files classified Video. Native MDVX and independent Python-reader comparisons retain their previous outcomes. The new ASan/UBSan run has 298 successful executions and no reports. These native-corpus results are separate from the corrected authored damaged-input cases.
+
+The quiet qualification-fix benchmark used nine alternating before/after Release pairs per database. The sum of per-database median parse times fell from 266.669 to 234.265 ms, approximately 12.2%; every database's median was lower, by 1.8–22.7%. Default peak-process RSS medians varied from −1.69 to +1.74 MB with overlapping observations, so these runs do not establish a uniform memory reduction. A separate 15-pair check of the largest database with `QT_HASH_SEED=0` measured RSS medians of 104.219 and 104.235 MB, a +16 KB difference; the median paired difference was −32 KB. No material memory regression was established by those measurements. These are parser-harness results, not full-application scan measurements. An initial benchmark overlapping other heavy jobs was superseded by the quiet run; these figures are also separate from the earlier JPED benchmark above.
+
+## Safeguards retained verification
+
+**User decision, 1 November 2026:** keep all three recommended safeguards in
+Bella, record the decision and verify their implementation and tests, keeping
+all other checks, results and warning messages unchanged. This confirms the
+guarded working copy; it does not authorize another cleanup or format expansion.
+The [decision record](../../../Project%20Bella/README.md#implementation-decisions)
+and [parser notes](../../../src/bella/README.md) record this instruction.
+
+The implementation and test audit found all three safeguards already present:
+
+| Safeguard | Implementation | Existing regression coverage |
+| --- | --- | --- |
+| Check the owner and target classes before using a relationship | `components()` chooses the appropriate properties and checks target roles; valid independent branches and legacy selector track routes survive. | `relationshipClassQualification`: 30 rows. |
+| Treat a missing entry inside a counted attribute list as unreadable | `ownerAttributes()` withholds dependent metadata while preserving genuine absent/empty-list meanings and independent facts. | `nullAttributeSlotsAreIncomplete`: 8 rows. |
+| Check the track and component before counting categories | Shared `trackComponent()` is used by the walk and category reader; category counting remains direct and separately proven Type survives. | `categoryTrackQualification`: 10 rows. |
+
+These **48 rows** cover both metadata byte orders. Their test diff contains
+additions only; no previous assertion or test was weakened. No production code,
+public header, test source or build file was changed for this retention check.
+The pinned parser SHA-256 is
+`98415cdd6c8c534719217e7f40206f25a289ef87710bd103ced89f4fb20b23c5`;
+the test source SHA-256 is
+`2e257b26d866190e98aa4a4a8a75ff3a4b81c04e79f25262451aad3b61fbe3f7`.
+Both still matched the working copy after verification.
+
+Fresh isolated builds used **C++17 and exactly Qt 6.5.3**. The normal build
+compiled arm64 and x86_64; tests ran on arm64. The arm64 sanitizer build used
+AddressSanitizer and UndefinedBehaviorSanitizer, with undefined behavior set to
+stop the run. Each complete MDB test invocation returned **203 passed, 0 failed,
+7 skipped**. All 48 safeguard rows passed; sanitizer execution had no findings
+and empty stderr. The seven skips are the six `genuineDatabases` fixture rows
+and `genuineAudioFieldsAndIdentities`, whose shared fixture directory was retired.
+They are not counted as passes or restored for this check.
+
+Two fresh preservation replays compared against the previously guarded reports:
+
+- The same 56 authored paths, each with optional precompute details off and on,
+  produced **112 complete reports**, byte-for-byte identical. This includes all
+  52 warning entries, their wording, order and count, as well as public values,
+  nullness and record order.
+- The same seven distinct genuine MDBs on the computer and EDIT, in both detail
+  modes, produced **14 complete reports**, byte-for-byte identical. Each mode
+  retained 2,515 file records and 1,420 masters. These real reports have no
+  warnings; the authored cases provide nonempty-warning coverage. Input hashes,
+  sizes and filesystem stamps remained unchanged.
+
+The preservation baseline is the already guarded parser above. The safeguards'
+previously documented corrections to malformed-input results and the valid
+legacy-selector route remain; no additional result or warning change was made.
+This is bounded verification, not a proof for every possible damaged MDB or a
+new performance measurement. Disposable snapshots and logs stayed outside the
+checkout. OldScanner remains the active app implementation; Bin Filter and app
+integration were unchanged.
+
+## SEQU conflict finding withdrawn
+
+**Reassessment, 1 November 2026:** the final read-only review initially called
+Bella's union of `SEQU:Sequence` and `SEQU:Components` a remaining P2 correctness
+finding and proposed a shared agreement check. That priority and required-fix
+recommendation are withdrawn. It is not an open Bella defect or implementation
+backlog item established by this audit.
+
+The [published OMF schemas](online-verification.md) define different revisions:
+OMF 1 uses `OMFI:SEQU:Sequence`, an ordered array of component references;
+OMF 2 uses `OMFI:SEQU:Components`, an ordered array of segments and optional
+transitions. These are not established simultaneous aliases whose agreement
+Bella must require. Calling the referenced components "children" describes
+the sequence traversal inside the MDB, not additional files or retained fields.
+Following supported sequence references remains necessary to establish source
+and master relationships.
+
+The temporary authored probe demonstrated that Bella combines two disagreeing
+arrays when both properties are placed on one sequence. It could consequently
+report a complete master link or inherited Project. This establishes behavior
+on a manufactured mixture of revisions, not a failure in a supported native
+MDB. The existing numbering reader's agreement check is an implementation
+comparison, not independent evidence that this must be the general MDB rule.
+
+Fresh read-only inspection of all data objects in the seven native Avid MDBs
+found **13,947 SEQU objects, all using `Sequence`; no object used `Components`
+or both properties**. This includes inactive objects and is a different count
+from the live file/master catalogues. The historical pre-Canon parser selected
+one sequence property according to OMF revision rather than merging both.
+
+Fresh targeted Media Composer disassembly found separate legacy
+`ASequence::GetOMFI()` and OMF 2 `omf2SEQU::omf2Get()` readers, each reading an
+object-reference array through its respective stream. This corroborates
+separate version paths. The native numeric property codes were not independently
+mapped back to their name strings; no trace established a dual-property merge
+or agreement policy, and Media Composer was not run against the manufactured
+case. See the [binary reassessment](binary-verification.md).
+
+There is therefore no demonstrated need for new conflict machinery, a shared
+alias-resolution helper, compatibility removal or additional regression tests
+for this proposal. Any future change requires concrete supported-MDB evidence.
+The approved JPED Kind change and three implemented qualification fixes remain
+valid. In particular, rejecting `SEQU:Sequence` on a wrong-class MOBJ owner is
+a separate, reproduced owner-qualification fix and is not withdrawn. This
+documentation update makes no code or test changes and runs no additional tests.
 
 ## Retained pre-JPED audit
 
@@ -69,7 +188,7 @@ These are per-query comparisons, including duplicate paths and repeated masters,
 
 **These MDVX comparisons are conditional lookups.** Query IDs and links were supplied by Bella. MDVX additionally keys enrichment on only eight bytes at identity offset 16 and uses hardcoded property IDs. No eight-byte collision occurred among the inventoried Bella records, but agreement cannot independently prove full identities, missing records, association correctness or dictionary-remapped authored metadata. Its helper also lacks Bella's Length, physical raster, DF/NDF qualifications, complete coding label, Original Bin and Precompute Category. Opening a fixture is not proof it extracted those facts correctly.
 
-Three actionable correctness findings reproduce in both metadata byte orders:
+The following three findings reproduced in both metadata byte orders at the retained pre-fix revision; all are corrected by the implementation above:
 
 1. **P2: dispatch relationship edges by owning class and qualify target roles.** `components()` at `src/bella/mdbparser.cpp:665–674` follows every supported relationship property on every recognized class. MOBJ can carry SEQU/NEST edges, or FILL/TCCP can impersonate a track, producing an invented complete master link. A file can inherit Project through the same invalid route. Current OldScanner shares this flaw. Earlier class-dispatched wrapper traversal is useful, but its initial track handling was also incomplete; copying it wholesale is insufficient.
 2. **P2: preserve incomplete coverage for a counted null attribute entry.** `ownerAttributes()` at lines 709–710 silently skips zero entries. `{0}` becomes Rendered Effects; `{valid import entry, 0}` can become Titles and Matte Keys. OldScanner and the older dedicated implementation withhold the dependent category. Restore this safeguard while retaining the distinction between a null owner-list pointer, an explicit empty list and an unresolved slot. The shared list also supplies Project and Original Bin.
@@ -83,4 +202,4 @@ Fresh binary verification decompiled 24 procedures in MDVX and Media Composer's 
 
 The online search found useful original Apple/Avid Bento/OMF sources and Avid operational documentation, but no complete public specification of the current private MDB schema. Independent pymdb tables derive from two reference samples and are useful hypotheses, not a complete authority; its footer byte-order assumption conflicts with Apple's original container definition. The indexed Bento PDF returned 403 and the historical MDVX manual URL returned 404. The [fresh documentation verification](online-verification.md) links the primary sources and explains the toolkit/native byte-order nuance. This was a broad search of discoverable material, not every document on the internet.
 
-**The retained correctness leads are narrow:** complete-list and direct-track guards, class-qualified graph traversal/category components, and preservation of independent fields when a dependency is damaged. They fit the agreed qualification policy but are not an instruction to change code now. The approved JPED change is complete. Bella remains the preferred base for the agreed report contract; the later native-corpus benchmark supports its measured performance advantage on that workload without establishing universal correctness or superiority.
+**Current disposition:** the complete-list, class-qualified graph and direct category checks are implemented within the agreed qualification policy. JPED's separately approved Kind addition remains intact. The retained findings above explain why the checks changed; they are no longer open defects. The later [SEQU conflict proposal is withdrawn](#sequ-conflict-finding-withdrawn), with no further corrective work established by that probe. Bella remains the preferred base for the agreed compact report contract, without a claim of universal correctness or superiority.

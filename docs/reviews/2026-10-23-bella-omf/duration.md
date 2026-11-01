@@ -125,7 +125,7 @@ or complex sequence/range specimen is asserted by this selected set.
    belongs in the parser; this semantic step precedes common duration maths.
 3. **Preserve the bounded audio frequency recovery.** A usable MDFL count/rate
    pair remains first. If MDFL rate is unusable, an already decoded valid,
-   unambiguous frequency from that same owned supported `WAVD:Summary.fmt `
+   unambiguous frequency from that same owned supported `WAVD:Summary.fmt`
    or `AIFD:Summary.COMM` may supply the audio clock. Include the existing
    contextual WAVE descriptor compatibility branch accepted with Kind. Preserve
    raw rate availability and the selected fallback's compact origin/status;

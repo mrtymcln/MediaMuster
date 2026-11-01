@@ -5,6 +5,8 @@
 
 This is the retained pre-JPED verification. The [current verdict](VERDICT.md#current-scope-and-approved-jped-change) records the approved JPED change and superseding scope assessment. The separate later research receipt retrieved original specifications/manuals through other URLs; failures recorded here remain truthful historical attempts, not a claim those documents are unavailable now.
 
+The later [SEQU conflict proposal is withdrawn](VERDICT.md#sequ-conflict-finding-withdrawn). The specifications distinguish legacy `SEQU:Sequence` from OMF 2 `SEQU:Components`; they do not establish a requirement that both coexist and agree in Bella's supported MDBs. The seven native databases contain 13,947 SEQU objects, all using `Sequence`, with no `Components` owners or dual-property owners across all data objects. The manufactured mixed-revision probe does not justify another required fix or test. The three approved qualification fixes and JPED approval remain intact.
+
 Date: 1 November 2026 (Australia/Sydney). MDB only. This independently rechecked the main claims in [online.md](online.md) with 16 fresh search queries and direct source reads. It adds no production changes and no application runtime claims.
 
 The public evidence does **not** establish one universally correct MDB implementation. No complete public specification of the current private MDB schema was located. Original Apple/Avid sources define the foundation; the independent MDB reader documents its own observed vocabulary. The remaining private-field decisions still require specimen bytes, native behavior and an explicit report contract.

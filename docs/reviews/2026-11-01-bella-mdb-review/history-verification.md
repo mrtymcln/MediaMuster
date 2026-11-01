@@ -3,7 +3,11 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
-Current disposition: the [scope reassessment and JPED result](VERDICT.md#current-scope-and-approved-jped-change) supersede general feature-expansion recommendations. The authored owner/list/class findings below concern existing qualification requirements and remain separate from deliberate exclusions.
+Current disposition: all three owner/list/class qualification findings are now [implemented and verified](VERDICT.md#qualification-fixes-implemented) following the user's explicit instruction. The [scope reassessment and JPED result](VERDICT.md#current-scope-and-approved-jped-change) still exclude the withdrawn feature expansions. The source comparisons and executions below retain their original pre-fix revisions and results.
+
+The later [SEQU conflict proposal is withdrawn](VERDICT.md#sequ-conflict-finding-withdrawn), rather than added as a fourth required correction. Historical code chooses one sequence-list property by OMF revision; it does not establish simultaneous competing claims. The artificial cross-revision probe therefore does not justify new conflict handling or tests. This reassessment leaves the three corrected qualification findings and JPED approval intact.
+
+## Retained pre-fix verification
 
 Verified against HEAD `20220f2b4c2b7ff6ef3d017a77568e5edf7de7cd` on 1 November 2026. This addendum checks the existing review's historical findings against source and fresh execution. Production source and tests are unchanged.
 
@@ -48,7 +52,7 @@ Its general `componentObjectIds()` at lines 603–628 follows wrapper properties
 
 The old stricter `unterminated-name` test is a historical difference, not an additional confirmed current defect. The current approved text contract deliberately leaves exact terminator acceptance unsettled. Fresh controls still accept the bounded unterminated `_IMPORTSETTING` key. A native writer's use of a terminating NUL does not by itself prove that a reader must reject the bounded alternative.
 
-## Improvements justified by this comparison
+## Corrections justified and subsequently implemented
 
 1. Preserve a counted null attribute slot as incomplete coverage; keep a null owner-list pointer and an explicit empty list as absence controls. Withhold dependent category/Project/bin answers as required, retaining unrelated fields.
 2. Dispatch graph edges by supported owning class and qualify required target roles. A recognized class alone is insufficient. A known unrelated class carrying a familiar property must not authorize a relationship or Project inheritance.
@@ -65,4 +69,4 @@ Rechecked on 1 November against HEAD `15aed2572973b27b01ee41f2bf9166ee40f7d185`.
 
 Both retained reproduction programs were independently rebuilt against that current parser using the pinned Qt 6.5.3 command in [history.md](history.md#reproduction). All 28 parses exited normally, and each captured output was byte-identical to its retained category/attribute or relationship/Project result. The new revalidation receipt preserves current source hashes, build commands, output hashes and the exact baseline-match checks; category/attribute output and relationship/Project output are saved separately. The temporary executables remain under `/tmp/mdb-doc-reassessment-20261101/`; earlier proof receipts were not rewritten.
 
-These controls remain useful bounded qualification coverage. The unrelated old stricter terminator expectation remains unsettled and is not promoted to a defect. JPED's native-corpus change and performance validation are recorded separately. No further production change was made.
+Those controls established the pre-fix qualification failures; this revalidation itself made no production changes. The user subsequently authorized all three fixes, now covered by 48 focused regression rows and the [current implementation verification](VERDICT.md#qualification-fixes-implemented). The unrelated old stricter terminator expectation remains unsettled and is not promoted to a defect. JPED's native-corpus change and validation remain a separate earlier step.

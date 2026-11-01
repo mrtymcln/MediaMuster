@@ -68,10 +68,10 @@ per-field provenance or broaden supported MDB formats are withdrawn as default
 implementation work. The fresh native-corpus audit established no additional
 parser defect after the separately approved JPED change. A separate
 [authored-input verification](../docs/reviews/2026-11-01-bella-mdb-review/VERDICT.md)
-reproduces three current damage/qualification defects in attribute-list
-coverage, class-qualified relationship traversal and category component checks.
-Those remain within-scope open findings; they do not justify the withdrawn
-scope expansions. No further production change is authorized by this update.
+identified three damage/qualification defects in attribute-list coverage,
+class-qualified relationship traversal and category component checks. The user
+subsequently authorized these three local fixes, now implemented as described
+below. They do not justify any of the withdrawn scope expansions.
 
 The user explicitly authorized adding `JPED` to MDB Video Kind on 1 November.
 The implemented exact lookup is now Audio for `PCMA`/`AIFD`/`WAVD`, Video for
@@ -101,6 +101,67 @@ unsupported-layout negative controls remain. See the
 cleanup receipt
 and scope amendment.
 Earlier test totals below describe their dated runs.
+
+**MDB qualification fixes implemented, 1 November 2026:** relationship traversal
+now follows only the existing properties appropriate to each owner class and
+qualifies each target role before adding it to the walk. Invalid branches cannot
+supply positive master links or immediate-source Project; unrelated extra
+properties are ignored, and valid independent branches survive. The iterative
+walk and cycle detection remain. Legacy selectors retain their inherited
+`TRKG:Tracks` route, as do the existing RSET/PVOL track groups; this is a fixed
+role policy, not a dynamic class hierarchy or expanded format reader.
+
+A null slot inside `ATTR:AttrRefs` now returns the existing Unreadable answer.
+Dependent metadata is withheld without discarding independently valid IDs,
+Type, names or descriptor facts. Null owner-list pointers, empty lists and valid
+ATTR objects without AttrRefs retain the agreed absence meaning. A valid
+`_IMPORTSETTING` object attribute with a null payload still counts as present.
+
+The category reader and relationship walk share one small qualified
+track-component helper. Each consumed track must be TRAK and its target a
+supported component; category counting reads that immediate component's typed
+TrackKind. It still checks all direct tracks, does not recursively count leaves
+or inspect import-setting bodies, and preserves proven Precompute Type when
+Category is Unknown. Report types, field scope, one capture, phase-only Cancel,
+header-opening rules and the seven-class Kind map are unchanged.
+
+The new 48 regression rows cover both metadata byte orders: 34 fail against the
+frozen pre-fix parser and all 48 pass after the fixes. All generated MDB controls
+pass **203 Qt cases, 0 failed**, with retired real-media fixture selectors
+excluded. The fresh corpus rerun returns identical complete Bella reports in
+both detail modes across all 13 original inputs, excluding elapsed timing only:
+2,515 files, 1,420 masters and all 30 JPED Video records remain. Input hashes,
+OldScanner comparisons, native MDVx comparisons and the independent reader's
+results are unchanged. The corpus/random-mutation sanitizer run passes all
+298 executions; targeted sanitizer results are recorded with the current
+[audit verification](../docs/reviews/2026-11-01-bella-mdb-review/VERDICT.md).
+
+Nine quiet alternating-order parser measurements per database gave aggregate
+median times of **266.7 ms before / 234.3 ms after**, about 12% lower in this
+workload. Default-process peak RSS varied by approximately -1.7 to +1.7 MB,
+with overlapping ranges; a separate 15-pair largest-input check fixing Qt's
+hash seed differed by only +16 KB in independent medians. These are bounded
+parser measurements with comparable memory use, not a full scanner/NEXIS
+acceptance result. Raw audit assets remain retired; disposable inputs and
+measurement outputs stay outside the checkout.
+
+**Later SEQU conflict finding withdrawn, 1 November 2026:** the final review
+overstated a manufactured mixed-revision case as a remaining P2 defect.
+`OMFI:SEQU:Sequence` is the OMF 1 component-reference list;
+`OMFI:SEQU:Components` is its OMF 2 counterpart, not an established second
+simultaneous claim in the supported MDB layout. All 13,947 SEQU objects across
+the seven native MDBs use `Sequence`; none uses `Components` or both properties.
+The historical format-aware parser selects one property by revision. Fresh
+Media Composer disassembly shows separate legacy `ASequence::GetOMFI()` and
+OMF 2 `omf2SEQU::omf2Get()` readers, without establishing a dual-property merge
+or conflict policy.
+
+The artificial probe does not demonstrate a supported-MDB failure or justify
+new conflict-resolution machinery, tests or removal of existing compatibility
+paths. The finding is withdrawn as a required Bella fix and backlog item;
+sequence traversal itself remains necessary. The three approved qualification
+fixes and JPED Video change remain implemented and approved. See the
+[SEQU reassessment](../docs/reviews/2026-11-01-bella-mdb-review/VERDICT.md#sequ-conflict-finding-withdrawn).
 
 The remaining boundaries stay as agreed:
 
@@ -846,6 +907,24 @@ byte-for-byte for all 63 prior corpus invocations and 324 authored invocations,
 including diagnostic text, order and count. Authored counts include repeated
 contents/order/detail controls, not 324 unique real damaged files. No speed or
 memory improvement is claimed.
+
+**Three MDB safeguards retained, 1 November 2026:** the user explicitly chose
+to keep all three recommended safeguards already implemented in Bella:
+
+- A missing entry inside a counted attribute list makes the dependent metadata
+  unavailable; genuine absent or empty lists keep their agreed meaning.
+- Follow relationship properties only on the appropriate object classes, and
+  check the referenced object's role before using that relationship.
+- Check both the track and its component before counting precompute categories,
+  keeping independently established Type and other metadata.
+
+Record this as confirmation of the existing implementation, without expanding
+format support or changing the public report. Keep all other checks, results and
+warning messages unchanged, including their order and count. Verify the existing
+regression coverage and complete reports; no further parser cleanup is included.
+OldScanner stays active and Bin Filter is unchanged. The
+[retention verification](../docs/reviews/2026-11-01-bella-mdb-review/VERDICT.md#safeguards-retained-verification)
+records the checks for this instruction separately from earlier dated runs.
 
 **PMR returned report agreed, 27 October 2026:** the user chose “one report.”
 Return one owned result containing the selected PMR entries, what happened and
@@ -2303,7 +2382,7 @@ and Duration is blank.
 The [audio Sample Rate follow-up](../docs/reviews/2026-10-18-bella-mdb/audio-sample-rate.md)
 establishes the concrete native sources for the agreed audio descriptor classes:
 own `PCMA:AudioSamplingRate` for PCMA, own AIFD Summary's `COMM` sample frequency
-for AIFD, and own WAVD Summary's `fmt ` sample frequency for WAVD. The summaries
+for AIFD, and own WAVD Summary's `fmt` sample frequency for WAVD. The summaries
 are embedded MDB metadata, so reading them does not open the physical recording.
 These are numeric values, with type-specific encoding, not text.
 

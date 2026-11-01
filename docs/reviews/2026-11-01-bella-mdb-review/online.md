@@ -5,6 +5,8 @@
 
 This retains the earlier online/source review of pre-JPED `20220f2`. The [current verdict](VERDICT.md#current-scope-and-approved-jped-change) records JPED's separately approved Video mapping and the scope reassessment. Publicly documented capabilities do not require Bella to restore excluded fields, add generic provenance, change cancellation granularity or support deferred MDB versions.
 
+The later proposed [SEQU conflict finding is withdrawn](VERDICT.md#sequ-conflict-finding-withdrawn). OMF 1 specifies `OMFI:SEQU:Sequence` as an array of component references (printed pp. 74–75); OMF 2.1 specifies `OMFI:SEQU:Components` as ordered segments and optional transitions (printed pp. 195–196). These are revision-specific properties, not an established pair of simultaneous aliases requiring agreement. An artificial mixed-revision record does not establish a supported-MDB defect or justify more conflict handling or tests. JPED and the three approved qualification fixes remain valid.
+
 The failed PDF/manual fetches below describe this investigation's URLs and attempts. A separate later 47-query research run retrieved original OMF 1, OMF 2.1, Bento and MDVx manuals using other archived/current URLs; those later results supersede any inference that the publications remain unavailable. Neither search claims to exhaust the web or supply a complete private MDB schema.
 
 Reviewed 1 November 2026 (Australia/Sydney), against `src/bella/mdbparser.cpp` at repository HEAD `20220f2`. This is a documentation and source comparison, not a new application execution receipt. No production source was changed.

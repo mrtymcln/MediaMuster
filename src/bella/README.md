@@ -53,12 +53,55 @@ fields remains allowed. The typed video-rate interpreter and duration formatter
 are already agreed separate work; the fresh native-corpus audit found no further
 parser defect in the returned rate facts. Separate
 [authored-input verification](../../docs/reviews/2026-11-01-bella-mdb-review/VERDICT.md)
-reproduces three current damage/qualification findings, which remain open and
-within scope without authorizing production edits in this documentation update.
-Correct demonstrated violations and measure internal
-optimizations while preserving the approved behavior. See the
+identified three damage/qualification findings; the user subsequently approved
+their local fixes, now implemented below. Correct demonstrated violations and
+measure internal optimizations while preserving the approved behavior. See the
 [current scope reassessment](../../Project%20Bella/README.md#mdb-audit-reassessment-and-jped-approval)
 and updated audit.
+
+The 1 November qualification fixes keep the same public report and two parsing
+stages. `components()` dispatches only owner-appropriate relationships, checks
+incoming target roles before traversal and rejects invalid branches without
+discarding valid siblings. Legacy selector/RSET/PVOL Tracks remain supported.
+One private `trackComponent()` helper qualifies TRAK and component roles for
+both traversal and direct precompute-category counting. It does not turn
+category counting into recursive leaf counting or expand Kind classification.
+
+`ownerAttributes()` now treats a counted null AttrRefs slot as Unreadable.
+Genuine list absence/emptiness and a present Kind-3 import attribute with a null
+payload retain their different meanings. Existing checked replies and
+`problemNotes` carry failures; no generic status/provenance layer is added.
+The one capture, phase-only cancellation and legacy layout limits are unchanged.
+
+On 1 November the user explicitly confirmed keeping all three safeguards above,
+with every other check, result and warning message unchanged. This confirms the
+existing implementation rather than authorizing another parser rewrite. See the
+[recorded decision](../../Project%20Bella/README.md#implementation-decisions) and
+[retention verification](../../docs/reviews/2026-11-01-bella-mdb-review/VERDICT.md#safeguards-retained-verification).
+
+All 48 new endian-paired regression rows pass (34 fail on the pre-fix parser);
+the generated MDB run has **203 passes, 0 failures**, excluding retired fixture
+selectors. All 26 full reports from the 13 fresh native/rejection inputs match
+before/after except timing. Seven Avid MDBs retain 2,515 files/1,420 masters,
+including all JPED Video records, and external-reader comparisons are unchanged.
+The corpus/mutation sanitizer run has 298 passes. Current verification and the
+separate targeted sanitizer result are recorded in the
+[MDB verdict](../../docs/reviews/2026-11-01-bella-mdb-review/VERDICT.md).
+Quiet paired measurements gave aggregate median parser times 266.7/234.3 ms
+before/after with comparable peak-memory ranges; the largest-input controlled
+hash-seed check differed by +16 KB in independent RSS medians. No full scanner
+performance claim or retained raw audit assets are introduced.
+
+The later SEQU conflict P2 finding is **withdrawn**. OMF 1 `SEQU:Sequence` and
+OMF 2 `SEQU:Components` are revision-specific lists, not established simultaneous
+claims in the supported MDB layout. All 13,947 SEQU objects in the seven native
+MDBs use `Sequence`; none uses `Components` or both. Historical format dispatch
+and Media Composer's separate legacy/OMF 2 readers support that distinction,
+without establishing a native conflict policy. The manufactured mixed-revision
+probe does not justify a required Bella fix, backlog item, new conflict
+machinery, tests or removal of compatibility paths. The three qualification
+fixes and JPED change above remain approved and implemented. See the
+[SEQU reassessment](../../docs/reviews/2026-11-01-bella-mdb-review/VERDICT.md#sequ-conflict-finding-withdrawn).
 
 On 30 October the user chose a path-based MDB parser that handles both reading
 and interpretation, as PMR does. It will capture each source once, extract the

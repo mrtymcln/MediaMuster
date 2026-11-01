@@ -8,6 +8,15 @@ on 21 October 2026; not yet implemented.** General MDB damage handling is
 already agreed. OldScanner remains active until explicit cutover approval;
 Bin Filter is unchanged.
 
+**Current reassessment, 1 November 2026:** the legacy release-one parser is now
+implemented. The later [SEQU conflict proposal is withdrawn](../2026-11-01-bella-mdb-review/VERDICT.md#sequ-conflict-finding-withdrawn):
+OMF 1's `SEQU:Sequence` and OMF 2's `SEQU:Components` belong to different
+revisions, not an established pair of simultaneous MDB claims. Separate native
+sequence readers and the historical format-selected property support that
+distinction. All 13,947 SEQU objects in the seven native MDBs use `Sequence`;
+none uses `Components`. The mixed-revision probe establishes no required
+conflict check, compatibility removal or broader format support.
+
 ## Plain-language result
 
 All six working Avid media-folder databases found in the bounded search use

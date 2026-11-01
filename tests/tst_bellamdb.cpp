@@ -90,6 +90,19 @@ namespace
 		writer.add(clip, "OMFI:SCLP:SourceID", "omfi:UID", uid(target, writer.metadataBig));
 	}
 
+	void componentTrack(TypedBento &writer, quint32 track, quint32 component)
+	{
+		object(writer, track, "TRAK");
+		writer.add(track, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(component, 1));
+	}
+
+	void sourceComponent(TypedBento &writer, quint32 component, quint32 target = 11, qint16 kind = 1)
+	{
+		object(writer, component, "SCLP");
+		writer.add(component, "OMFI:SCLP:SourceID", "omfi:UID", uid(target, writer.metadataBig));
+		writer.add(component, "OMFI:CPNT:TrackKind", "omfi:TrackType", number(kind, writer.metadataBig), true);
+	}
+
 	TypedBento video(bool big = false)
 	{
 		TypedBento writer;
@@ -415,6 +428,12 @@ private slots:
 	void masterOwnerLinksRemainSeparate();
 	void incompleteMasterGraphDoesNotProveUnique();
 	void missingTrackComponentDoesNotProveUnique();
+	void relationshipClassQualification_data();
+	void relationshipClassQualification();
+	void nullAttributeSlotsAreIncomplete_data();
+	void nullAttributeSlotsAreIncomplete();
+	void categoryTrackQualification_data();
+	void categoryTrackQualification();
 	void unknownDictionaryCannotProveCodingAbsence();
 	void codingByteOrderLookup_data();
 	void codingByteOrderLookup();
@@ -945,6 +964,247 @@ void TestBellaMdb::missingTrackComponentDoesNotProveUnique()
 	QCOMPARE(facts.length, std::optional<qint64>(250));
 	QVERIFY(report.catalogue.fileReferencesComplete);
 	QVERIFY(!report.problemNotes.isEmpty());
+}
+
+void TestBellaMdb::relationshipClassQualification_data()
+{
+	QTest::addColumn<bool>("big");
+	QTest::addColumn<int>("variation");
+	const std::array<const char *, 15> cases{{"FILL cannot be a track", "TCCP cannot be a track", "ATTB cannot be a track",
+											  "ATTB cannot be a component", "MOBJ ignores SEQU edges", "MOBJ ignores NEST edges", "FILL ignores track edges",
+											  "file MOBJ ignores SEQU Project route", "valid immediate-source Project route", "valid sequence component",
+											  "component cycle", "valid sibling survives invalid track", "RSET inherited tracks", "PVOL inherited tracks", "SLCT inherited tracks"}};
+	for (const bool big : {false, true})
+		for (int variation = 0; variation < int(cases.size()); ++variation)
+			QTest::newRow(qPrintable(QStringLiteral("%1 %2").arg(big ? "BE" : "LE", cases[std::size_t(variation)]))) << big << variation;
+}
+
+void TestBellaMdb::relationshipClassQualification()
+{
+	QFETCH(bool, big);
+	QFETCH(int, variation);
+	auto writer = variation == 7 || variation == 8 ? video(big) : lengthFixture(big);
+	if (variation <= 2)
+		replace(writer, 401, "OMFI:ObjID", variation == 0 ? "FILL" : variation == 1 ? "TCCP"
+																					: "ATTB");
+	else if (variation == 3)
+		replace(writer, 501, "OMFI:ObjID", "ATTB");
+	else if (variation == 4 || variation == 5)
+	{
+		replace(writer, 501, "OMFI:SCLP:SourceID", QByteArray(12, '\0'));
+		sourceComponent(writer, 601);
+		writer.referenceArray(301, variation == 4 ? "OMFI:SEQU:Sequence" : "OMFI:NEST:Slots", {601}, 1);
+	}
+	else if (variation == 6)
+	{
+		replace(writer, 501, "OMFI:ObjID", "FILL");
+		sourceComponent(writer, 601);
+		writer.add(501, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(601, 1));
+	}
+	else if (variation == 7 || variation == 8)
+	{
+		source(writer, 701, 33, {{"_PJ", "Source project"}});
+		members(writer, {101, 301, 701});
+		if (variation == 7)
+		{
+			sourceComponent(writer, 702, 33);
+			writer.referenceArray(101, "OMFI:SEQU:Sequence", {702}, 1);
+		}
+		else
+			immediateSources(writer, {33});
+	}
+	else if (variation == 9 || variation == 10)
+	{
+		replace(writer, 501, "OMFI:ObjID", "SEQU");
+		if (variation == 9)
+			sourceComponent(writer, 601);
+		writer.referenceArray(501, "OMFI:SEQU:Sequence", {variation == 9 ? 601u : 501u}, 1);
+	}
+	else if (variation == 11)
+	{
+		members(writer, {101, 301, 302});
+		master(writer, 302, 402, 502, 23, 11, "Invalid sibling");
+		replace(writer, 402, "OMFI:ObjID", "FILL");
+	}
+	else
+	{
+		replace(writer, 501, "OMFI:ObjID", variation == 12 ? "RSET" : variation == 13 ? "PVOL"
+																					  : "SLCT");
+		writer.referenceArray(501, "OMFI:TRKG:Tracks", {402}, 1);
+		componentTrack(writer, 402, 502);
+		sourceComponent(writer, 502);
+	}
+	const auto report = parse(writer);
+	QCOMPARE(report.reading, Bella::MdbReadResult::Completed);
+	QCOMPARE(report.sizeDateCheck, Bella::MdbCheckResult::Verified);
+	QCOMPARE(report.catalogue.files.size(), 1);
+	QCOMPARE(report.catalogue.masters.size(), variation == 11 ? 2 : 1);
+	QVERIFY(report.catalogue.fileReferencesComplete);
+	const auto &facts = report.catalogue.files.first();
+	QCOMPARE(bytes(facts.fileMobId), expectedUid(11));
+	QVERIFY(facts.ownDescriptorQualified);
+	QCOMPARE(facts.length, std::optional<qint64>(250));
+	QVERIFY(facts.sampleRate);
+	QCOMPARE(facts.bitDepth.bits, std::optional<quint32>(10));
+	const bool linked = variation >= 7 && variation != 10;
+	const bool complete = variation >= 4 && variation != 10 && variation != 11;
+	QCOMPARE(facts.directMasterRecords, linked ? QVector<qsizetype>{0} : QVector<qsizetype>{});
+	QCOMPARE(facts.masterLinksComplete, complete);
+	QCOMPARE(facts.project, variation == 7 ? QString{} : variation == 8 ? QStringLiteral("Source project")
+																		: QStringLiteral("Independent Project"));
+	QCOMPARE(facts.projectSelection, variation == 7 ? Bella::MdbProjectSelection::Unavailable : variation == 8 ? Bella::MdbProjectSelection::ImmediateSources
+																											   : Bella::MdbProjectSelection::OwnFile);
+	QCOMPARE(report.catalogue.masters.first().clipName, QStringLiteral("Master"));
+	QCOMPARE(report.catalogue.masters.first().type, Bella::MdbType::Media);
+	if (complete)
+		QVERIFY2(report.problemNotes.isEmpty(), qPrintable(report.problemNotes.join('\n')));
+	else
+		QVERIFY(!report.problemNotes.isEmpty());
+}
+
+void TestBellaMdb::nullAttributeSlotsAreIncomplete_data()
+{
+	QTest::addColumn<bool>("big");
+	QTest::addColumn<int>("variation");
+	const std::array<const char *, 4> cases{{"null master attribute slot", "import plus null slot", "Bin and import plus null slot", "own Project plus null slot blocks source fallback"}};
+	for (const bool big : {false, true})
+		for (int variation = 0; variation < int(cases.size()); ++variation)
+			QTest::newRow(qPrintable(QStringLiteral("%1 %2").arg(big ? "BE" : "LE", cases[std::size_t(variation)]))) << big << variation;
+}
+
+void TestBellaMdb::nullAttributeSlotsAreIncomplete()
+{
+	QFETCH(bool, big);
+	QFETCH(int, variation);
+	auto writer = lengthFixture(big);
+	replace(writer, 301, "OMFI:MOBJ:UsageCode", number<quint32>(1, big));
+	writer.add(501, "OMFI:CPNT:TrackKind", "omfi:TrackType", number<qint16>(1, big), true);
+	replace(writer, 301, "OMFI:TRKG:Tracks", number<quint16>(2, big) + writer.reference(401, 1) + writer.reference(402, 1));
+	componentTrack(writer, 402, 502);
+	sourceComponent(writer, 502);
+	if (variation == 3)
+	{
+		replace(writer, 17000, "OMFI:ATTR:AttrRefs", number<quint16>(2, big) + writer.reference(17001, 1) + writer.reference(0, 1));
+		source(writer, 701, 33, {{"_PJ", "Must not replace damaged own Project"}});
+		members(writer, {101, 301, 701});
+		immediateSources(writer, {33});
+	}
+	else
+	{
+		if (variation == 0)
+			attributes(writer, 301, 18000, {});
+		else if (variation == 1)
+			attributes(writer, 301, 18000, {{"_IMPORTSETTING", {}, 3, 0}});
+		else
+		{
+			attributes(writer, 301, 18000, {{"_ORG_BIN", {}, 3, 18100}, {"_IMPORTSETTING", {}, 3, 0}});
+			object(writer, 18100, "MCBR");
+			writer.add(18100, "OMFI:MCBR:MC:binNameUTF8", "omfi:String", QByteArray("Must not win\0", 13));
+		}
+		QByteArray entries = number<quint16>(quint16(variation + 1), big);
+		for (int index = 0; index < variation; ++index)
+			entries += writer.reference(18001 + quint32(index), 1);
+		entries += writer.reference(0, 1);
+		replace(writer, 18000, "OMFI:ATTR:AttrRefs", entries);
+	}
+	const auto withoutDetails = parse(writer, false);
+	const auto withDetails = parse(writer, true);
+	for (const auto *report : {&withoutDetails, &withDetails})
+	{
+		QCOMPARE(report->reading, Bella::MdbReadResult::Completed);
+		QCOMPARE(report->catalogue.files.size(), 1);
+		QCOMPARE(report->catalogue.masters.size(), 1);
+		QVERIFY(report->catalogue.fileReferencesComplete);
+		const auto &facts = report->catalogue.files.first();
+		QCOMPARE(bytes(facts.fileMobId), expectedUid(11));
+		QVERIFY(facts.ownDescriptorQualified);
+		QCOMPARE(facts.length, std::optional<qint64>(250));
+		QVERIFY(facts.sampleRate);
+		QVERIFY(facts.masterLinksComplete);
+		QCOMPARE(facts.directMasterRecords, QVector<qsizetype>{0});
+		QCOMPARE(facts.project, variation == 3 ? QString{} : QStringLiteral("Independent Project"));
+		QCOMPARE(facts.projectSelection, variation == 3 ? Bella::MdbProjectSelection::Unavailable : Bella::MdbProjectSelection::OwnFile);
+		const auto &master = report->catalogue.masters.first();
+		QCOMPARE(master.clipName, QStringLiteral("Master"));
+		QCOMPARE(master.type, Bella::MdbType::Precompute);
+		QVERIFY(master.originalBin.isEmpty());
+		QVERIFY(std::any_of(report->problemNotes.cbegin(), report->problemNotes.cend(), [](const auto &note)
+							{ return note.contains(QStringLiteral("OMFI:ATTR:AttrRefs")); }));
+	}
+	QCOMPARE(withoutDetails.catalogue.masters.first().precomputeCategory, Bella::MdbPrecomputeCategory::Unknown);
+	QCOMPARE(withDetails.catalogue.masters.first().precomputeCategory, variation == 3 ? Bella::MdbPrecomputeCategory::RenderedEffects : Bella::MdbPrecomputeCategory::Unknown);
+	QCOMPARE(withoutDetails.problemNotes, withDetails.problemNotes);
+}
+
+void TestBellaMdb::categoryTrackQualification_data()
+{
+	QTest::addColumn<bool>("big");
+	QTest::addColumn<int>("variation");
+	const std::array<const char *, 5> cases{{"attribute cannot be a category track", "attribute cannot be a category component", "track cannot be a category component",
+											 "sequence counts as one direct track", "invalid third track after two video tracks"}};
+	for (const bool big : {false, true})
+		for (int variation = 0; variation < int(cases.size()); ++variation)
+			QTest::newRow(qPrintable(QStringLiteral("%1 %2").arg(big ? "BE" : "LE", cases[std::size_t(variation)]))) << big << variation;
+}
+
+void TestBellaMdb::categoryTrackQualification()
+{
+	QFETCH(bool, big);
+	QFETCH(int, variation);
+	auto writer = lengthFixture(big);
+	replace(writer, 301, "OMFI:MOBJ:UsageCode", number<quint32>(1, big));
+	// The object attribute is present even with this null payload.
+	attributes(writer, 301, 18000, {{"_IMPORTSETTING", {}, 3, 0}});
+	writer.add(501, "OMFI:CPNT:TrackKind", "omfi:TrackType", number<qint16>(1, big), true);
+	replace(writer, 301, "OMFI:TRKG:Tracks", number<quint16>(variation == 4 ? 3 : 2, big) + writer.reference(401, 1) + writer.reference(402, 1) + (variation == 4 ? writer.reference(403, 1) : QByteArray{}));
+	componentTrack(writer, 402, 502);
+	sourceComponent(writer, 502);
+	if (variation == 0)
+		replace(writer, 401, "OMFI:ObjID", "ATTB");
+	else if (variation == 1 || variation == 2)
+		replace(writer, 501, "OMFI:ObjID", variation == 1 ? "ATTB" : "TRAK");
+	else if (variation == 3)
+	{
+		replace(writer, 501, "OMFI:ObjID", "SEQU");
+		writer.referenceArray(501, "OMFI:SEQU:Sequence", {601, 602}, 1);
+		sourceComponent(writer, 601);
+		sourceComponent(writer, 602);
+		replace(writer, 502, "OMFI:CPNT:TrackKind", number<qint16>(2, big));
+	}
+	else
+	{
+		componentTrack(writer, 403, 503);
+		sourceComponent(writer, 503, 11, 2);
+		replace(writer, 403, "OMFI:ObjID", "ATTB");
+	}
+	const auto withoutDetails = parse(writer, false);
+	const auto withDetails = parse(writer, true);
+	for (const auto *report : {&withoutDetails, &withDetails})
+	{
+		QCOMPARE(report->reading, Bella::MdbReadResult::Completed);
+		QCOMPARE(report->catalogue.files.size(), 1);
+		QCOMPARE(report->catalogue.masters.size(), 1);
+		QVERIFY(report->catalogue.fileReferencesComplete);
+		const auto &facts = report->catalogue.files.first();
+		QCOMPARE(facts.project, QStringLiteral("Independent Project"));
+		QVERIFY(facts.ownDescriptorQualified);
+		QCOMPARE(facts.length, std::optional<qint64>(250));
+		QVERIFY(facts.sampleRate);
+		QCOMPARE(facts.directMasterRecords, QVector<qsizetype>{0});
+		QCOMPARE(facts.masterLinksComplete, variation == 3);
+		QCOMPARE(report->catalogue.masters.first().clipName, QStringLiteral("Master"));
+		QCOMPARE(report->catalogue.masters.first().type, Bella::MdbType::Precompute);
+	}
+	QCOMPARE(withoutDetails.catalogue.masters.first().precomputeCategory, Bella::MdbPrecomputeCategory::Unknown);
+	QCOMPARE(withDetails.catalogue.masters.first().precomputeCategory, variation == 3 ? Bella::MdbPrecomputeCategory::RenderedEffects : Bella::MdbPrecomputeCategory::Unknown);
+	if (variation == 3)
+		QVERIFY2(withDetails.problemNotes.isEmpty(), qPrintable(withDetails.problemNotes.join('\n')));
+	else
+		QVERIFY(!withDetails.problemNotes.isEmpty());
+	// Disabling the optional category adds no diagnostics beyond the required graph checks.
+	auto ordinary = writer;
+	replace(ordinary, 301, "OMFI:MOBJ:UsageCode", number<quint32>(7, big));
+	QCOMPARE(withoutDetails.problemNotes, parse(ordinary, true).problemNotes);
 }
 
 void TestBellaMdb::unknownDictionaryCannotProveCodingAbsence()

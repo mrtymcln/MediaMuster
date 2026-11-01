@@ -15,7 +15,18 @@ classes. Wider class/inheritance expansion remains research. The
 post-JPED receipt
 records the narrow change; the separate
 [damaged-input qualification findings](../2026-11-01-bella-mdb-review/VERDICT.md)
-remain open and within scope. No further production changes are made here.
+were subsequently approved for correction and are now fixed: class-qualified
+relationships, incomplete attribute slots and category track/component roles.
+The current verdict records the generated tests, unchanged fresh native reports
+and paired performance checks; the dated research below remains historical.
+
+The later [SEQU conflict finding was withdrawn](../2026-11-01-bella-mdb-review/VERDICT.md#sequ-conflict-finding-withdrawn).
+OMF 1 `SEQU:Sequence` and OMF 2 `SEQU:Components` are revision-specific
+properties. A manufactured mixed-revision record does not establish a supported
+MDB failure or a required native conflict rule. All 13,947 sequence objects in
+the seven native MDBs use `Sequence`; none uses `Components`. No additional
+conflict-handling code or tests are justified by that proposal. The approved
+wrong-owner relationship fix and the other completed changes remain valid.
 
 Research date: 18 October 2026. This is a requirements review, not a Bella
 implementation. The user subsequently approved the [MDB text rule](text-encoding.md)

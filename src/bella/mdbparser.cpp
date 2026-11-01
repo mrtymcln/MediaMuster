@@ -604,10 +604,45 @@ namespace Bella
 			return std::get<Issue>(refs);
 		}
 
+		bool componentClass(QByteArrayView cls)
+		{
+			return named(cls, {"TRKG", "SCLP", "SEQU", "FILL", "TCCP", "RSET", "PVOL", "NEST", "SLCT", "MGRP", "ERAT"});
+		}
+
+		Read<quint32> trackComponent(const Image &image, quint32 track)
+		{
+			const auto cls = image.tag(track);
+			if (!valueOf(cls) || *valueOf(cls) != "TRAK")
+			{
+				image.problem(track, "OMFI:ObjID", QStringLiteral("Track reference is not a qualified TRAK object."));
+				return Issue::Unreadable;
+			}
+			const auto component = target(image, track, "OMFI:TRAK:TrackComponent");
+			if (!valueOf(component) || !*valueOf(component))
+			{
+				image.problem(track, "OMFI:TRAK:TrackComponent", QStringLiteral("Required track component is missing, null, unreadable or conflicting."));
+				return Issue::Unreadable;
+			}
+			const auto componentTag = image.tag(*valueOf(component));
+			if (!valueOf(componentTag) || !componentClass(*valueOf(componentTag)))
+			{
+				image.problem(*valueOf(component), "OMFI:ObjID", QStringLiteral("Track component is not a supported component object."));
+				return Issue::Unreadable;
+			}
+			return *valueOf(component);
+		}
+
 		struct Walk
 		{
 			QVector<quint32> objects;
 			bool complete = true;
+		};
+
+		enum class TargetRole
+		{
+			Component,
+			Track,
+			SourceClip
 		};
 
 		Walk components(const Image &image, quint32 root)
@@ -636,49 +671,79 @@ namespace Bella
 				colour[item.first] = 1;
 				pending.append({item.first, true});
 				const auto cls = image.tag(item.first);
-				if (!valueOf(cls) || !named(*valueOf(cls), {"MOBJ", "TRAK", "TRKG", "SCLP", "SEQU", "FILL", "TCCP", "RSET", "PVOL", "NEST", "SLCT", "MGRP", "ERAT"}))
+				const bool rootMob = item.first == root && valueOf(cls) && *valueOf(cls) == "MOBJ";
+				if (!valueOf(cls) || (!componentClass(*valueOf(cls)) && *valueOf(cls) != "TRAK" && !rootMob))
 				{
 					result.complete = false;
 					image.problem(item.first, "OMFI:ObjID", QStringLiteral("Component class is unknown or unreadable; relationship coverage is incomplete."));
-				}
-				if (!image.exists(item.first))
 					continue;
-				result.objects.append(item.first);
-				if (valueOf(cls))
-				{
-					const auto kind = *valueOf(cls);
-					const auto usage = kind == "MOBJ" ? image.integer(item.first, "OMFI:MOBJ:UsageCode") : Read<qint64>(Issue::Missing);
-					const bool master = valueOf(usage) && (*valueOf(usage) == 1 || *valueOf(usage) == 7);
-					const bool required = kind == "TRAK" ? image.has(item.first, "OMFI:TRAK:TrackComponent") : kind == "SEQU"								 ? image.has(item.first, "OMFI:SEQU:Sequence") || image.has(item.first, "OMFI:SEQU:Components")
-																										   : kind == "NEST"									 ? image.has(item.first, "OMFI:NEST:Slots")
-																										   : kind == "SLCT"									 ? image.has(item.first, "OMFI:SLCT:Selected")
-																										   : kind == "MGRP"									 ? image.has(item.first, "OMFI:MGRP:Choices")
-																										   : kind == "ERAT"									 ? image.has(item.first, "OMFI:ERAT:InputSegment")
-																										   : master || named(kind, {"TRKG", "RSET", "PVOL"}) ? image.has(item.first, "OMFI:TRKG:Tracks")
-																																							 : true;
-					if (!required)
-					{
-						result.complete = false;
-						image.problem(item.first, "component graph", QStringLiteral("Required component link is missing."));
-					}
 				}
-				for (const auto *name : {"OMFI:TRKG:Tracks", "OMFI:TRAK:TrackComponent", "OMFI:SEQU:Sequence", "OMFI:SEQU:Components",
-										 "OMFI:NEST:Slots", "OMFI:SLCT:Selected", "OMFI:SLCT:Alternates", "OMFI:MGRP:Choices", "OMFI:ERAT:InputSegment"})
+				result.objects.append(item.first);
+				const auto follow = [&](const char *name, bool required, TargetRole role = TargetRole::Component)
 				{
 					const auto refs = image.references(item.first, name);
 					if (const auto *targets = valueOf(refs))
 						for (auto it = targets->crbegin(); it != targets->crend(); ++it)
 						{
-							if (!*it)
+							const auto targetTag = *it ? image.tag(*it) : Read<QByteArrayView>(Issue::Unreadable);
+							const bool qualified = valueOf(targetTag) &&
+												   (role == TargetRole::Track		 ? *valueOf(targetTag) == "TRAK"
+													: role == TargetRole::SourceClip ? *valueOf(targetTag) == "SCLP"
+																					 : componentClass(*valueOf(targetTag)));
+							if (!qualified)
+							{
 								result.complete = false;
+								image.problem(item.first, name, QStringLiteral("Component reference has a null, unreadable or wrong-class target; dependent relationships are incomplete."));
+								continue;
+							}
 							pending.append({*it, false});
 						}
-					else if (!missing(refs))
+					else if (missing(refs))
+					{
+						if (required)
+						{
+							result.complete = false;
+							image.problem(item.first, "component graph", QStringLiteral("Required component link is missing."));
+						}
+					}
+					else
 					{
 						result.complete = false;
 						image.problem(item.first, name, QStringLiteral("Component references are unreadable or conflicting; dependent relationships are incomplete."));
 					}
+				};
+				const auto kind = *valueOf(cls);
+				if (kind == "MOBJ")
+				{
+					const auto usage = image.integer(item.first, "OMFI:MOBJ:UsageCode");
+					follow("OMFI:TRKG:Tracks", valueOf(usage) && (*valueOf(usage) == 1 || *valueOf(usage) == 7), TargetRole::Track);
 				}
+				else if (named(kind, {"TRKG", "RSET", "PVOL"}) || (kind == "SLCT" && image.has(item.first, "OMFI:TRKG:Tracks")))
+					follow("OMFI:TRKG:Tracks", true, TargetRole::Track);
+				else if (kind == "TRAK")
+				{
+					const auto component = trackComponent(image, item.first);
+					if (valueOf(component))
+						pending.append({*valueOf(component), false});
+					else
+						result.complete = false;
+				}
+				else if (kind == "SEQU")
+				{
+					follow("OMFI:SEQU:Sequence", !image.has(item.first, "OMFI:SEQU:Components"));
+					follow("OMFI:SEQU:Components", false);
+				}
+				else if (kind == "NEST")
+					follow("OMFI:NEST:Slots", true);
+				else if (kind == "SLCT")
+				{
+					follow("OMFI:SLCT:Selected", true);
+					follow("OMFI:SLCT:Alternates", false);
+				}
+				else if (kind == "MGRP")
+					follow("OMFI:MGRP:Choices", true, TargetRole::SourceClip);
+				else if (kind == "ERAT")
+					follow("OMFI:ERAT:InputSegment", true);
 			}
 			return result;
 		}
@@ -707,7 +772,10 @@ namespace Bella
 			for (const auto entry : *valueOf(entries))
 			{
 				if (!entry)
-					continue;
+				{
+					image.problem(*valueOf(list), "OMFI:ATTR:AttrRefs", QStringLiteral("Attribute list contains a null entry; dependent metadata is unavailable."));
+					return Issue::Unreadable;
+				}
 				const auto entryClass = image.tag(entry);
 				const auto entryName = image.text(entry, "OMFI:ATTB:Name");
 				if (!valueOf(entryClass) || *valueOf(entryClass) != "ATTB" || !valueOf(entryName))
@@ -946,8 +1014,8 @@ namespace Bella
 			qsizetype video = 0;
 			for (const auto track : *valueOf(tracks))
 			{
-				const auto component = target(image, track, "OMFI:TRAK:TrackComponent");
-				if (!valueOf(component) || !*valueOf(component))
+				const auto component = trackComponent(image, track);
+				if (!valueOf(component))
 					return MdbPrecomputeCategory::Unknown;
 				const auto kind = image.integer(*valueOf(component), "OMFI:CPNT:TrackKind");
 				if (!valueOf(kind))

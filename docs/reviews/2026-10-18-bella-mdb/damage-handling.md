@@ -9,6 +9,15 @@ already agreed, including separate legacy text recovery and Duration's
 missing/damaged behaviour, remain in force. OldScanner stays active and Bin
 Filter stays unchanged.
 
+**Current reassessment, 1 November 2026:** the approved qualification fixes are
+[implemented](../2026-11-01-bella-mdb-review/VERDICT.md#qualification-fixes-implemented).
+The later [SEQU conflict finding is withdrawn](../2026-11-01-bella-mdb-review/VERDICT.md#sequ-conflict-finding-withdrawn).
+Its probe mixed OMF 1 `SEQU:Sequence` and OMF 2 `SEQU:Components`; it did not
+establish a supported-MDB failure or Media Composer's policy for that combination.
+It therefore creates no required conflict-handling code or test work under the
+general damage policy. The reproduced wrong-owner relationship checks, null
+attribute-slot handling and direct category qualification remain valid.
+
 **Duration source revision, 21 October 2026:** the user subsequently approved
 MDB-first Duration with coherent own MXF timing when the scan falls back to
 MXF because usable database information is unavailable. An isolated damaged

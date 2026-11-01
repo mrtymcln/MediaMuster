@@ -5,6 +5,8 @@
 
 This retains the pre-JPED verification and its original capture set. The [current verdict](VERDICT.md#current-scope-and-approved-jped-change) records the completed, explicitly approved JPED change and distinguishes native compatibility research from agreed implementation work. Native breadth is not an instruction to reverse deliberate Bella exclusions.
 
+The later proposed [SEQU conflict finding is withdrawn](VERDICT.md#sequ-conflict-finding-withdrawn). The additional sequence disassembly described below does not establish a Media Composer rule requiring legacy and OMF 2 child lists to agree. It creates no further code/test work; JPED and the three approved qualification fixes remain valid.
+
 This addendum verifies the existing binary review instead of assuming its retained conclusions. No installed application bytes or production source files changed. Media Composer was not launched to read or rebuild databases; the parent review handles actual MDVX MDB execution separately.
 
 ## Fresh work and reproducibility
@@ -29,6 +31,14 @@ A wording refinement is needed for the retained comparison's “ISO-8859-1” la
 **Media Composer supplies useful compatibility evidence, not proof of Bella's entire contract.** Fresh engine captures corroborate descriptor-owned legacy Length, separately read rates, selected-master Original Bin, direct import-setting lookup and immediate video-track counting. Assembly is necessary: Hopper's newly generated `ATrackGroup::NumVideoTracks()` pseudo-code incorrectly says `return 0`, while instructions compare `AComponent::GetType()` against picture kind 1, increment `w20`, and return `x20`. The correct native predicate combines a found object attribute with at least two immediate picture tracks. It does not establish a safe policy for ambiguous duplicate raw properties or corrupt class tags.
 
 One compatibility research lead from Media Composer is **valid per-object metadata byte order**. `omfiDualStream::LoadBentoObject` at `0xb2680` loads an object's own order and uses the saved HEAD order when absent. Bella `Image::bigEndian()` at the reviewed `src/bella/mdbparser.cpp:324` withholds numeric facts whenever a present local order differs from HEAD. Mixed-order behavior needs genuine examples or controlled native reads and an established supported-layout interpretation before implementation. It is a documented verification gap, not a current demonstrated native-corpus failure or an approved extension task.
+
+## Sequence property reassessment
+
+A subsequent, separate arm64 disassembly checked sequence handling in the installed `libameLibrary.dylib`. Legacy `ASequence::GetOMFI()` at `0x1cd270` reads an object-reference array through `omfiDualStream` (property code `0x75`) and resolves its entries with `ReadObjectFromID()`. `ASequence::PutOMFI_Pass2()` at `0x1fb280` writes `SEQU` and the same array through `WriteIDArray()`. Separate OMF 2 `omf2SEQU::omf2Get()` at `0x51fb88` and `omf2Put()` at `0x51f9f8` use property code `0x54` and `GetObjRefArray<omf2CPNT*>` / `PutObjRefArray`.
+
+Both property-name strings occur in the binary, but those numeric codes were not independently mapped to the exact names. The published schemas establish the revision distinction: OMF 1 uses `SEQU:Sequence`; OMF 2 uses `SEQU:Components`. The inspected routines corroborate separate readers, without establishing any native merge, comparison or conflicting-record policy. No damaged dual-property MDB was executed through Media Composer. These later assembly observations are separate from the original capture counts above.
+
+The [reassessment](VERDICT.md#sequ-conflict-finding-withdrawn) therefore withdraws the proposed conflict P2. The artificial mixed-revision probe is not a demonstrated supported-MDB failure. Sequence traversal remains necessary, but this proposal does not justify new conflict machinery, format support or tests.
 
 ## What to adopt and retain
 

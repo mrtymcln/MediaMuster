@@ -3,11 +3,13 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
-The table records pre-JPED results. All 28 authored controls were [rebuilt and rechecked against post-JPED Bella](history-verification.md#post-jped-source-and-control-revalidation) and give identical outputs. They remain separate from the [withdrawn scope-expansion proposals and completed JPED change](VERDICT.md#current-scope-and-approved-jped-change); the JPED native-corpus rerun does not exercise these damaged graphs.
+The table records pre-fix results. All 28 original controls were [rebuilt and rechecked after JPED](history-verification.md#post-jped-source-and-control-revalidation) and gave identical outputs before the user authorized the three qualification fixes. Those fixes are now [implemented and verified](VERDICT.md#qualification-fixes-implemented); the table explains their inheritance, not current open Bella defects. The withdrawn scope-expansion proposals remain excluded.
+
+The later proposed [SEQU conflict finding is withdrawn](VERDICT.md#sequ-conflict-finding-withdrawn). Mixing OMF 1's `Sequence` with OMF 2's `Components` in an artificial record does not establish a supported-MDB failure or a native agreement rule. No extra conflict machinery or tests are required on that basis. The table's wrong-owner sequence routes are distinct from that withdrawn proposal; their approved fixes and the JPED addition remain valid.
 
 Follow-up, 1 November 2026. The same retained category and graph controls were exported as 28 standalone MDBs (14 cases in each byte order) and run through the fresh current-source OldScanner probe from the baseline review. Every process exited normally. The generator and complete OldScanner reports are retained.
 
-| Case | Current Bella | Current active OldScanner | Assessment |
+| Case | Pre-fix Bella | OldScanner baseline | Assessment |
 | --- | --- | --- | --- |
 | Null slot inside a counted attribute list | Skips slot and returns a category | Withholds category | Bella regression relative to OldScanner and the original TOC reader's explicit test |
 | Track object changed from TRAK to ATTB, retaining TrackComponent | Counts it and returns Titles and Matte Keys | Withholds category | Bella lost the former category helper's track-class guard |
@@ -22,6 +24,6 @@ The pre-Canon original TOC reader has the same partial distinction in `9c286ee^:
 
 That original reader's general component walker does dispatch outgoing wrapper properties by class, unlike the active OldScanner's generic union. However, its initial TRKG:Tracks → TrackComponent step does not check the track's class. Therefore it is not accurate to say every original graph case was safe: wrong-class track traversal was already possible, while the later unconditional MOBJ → SEQU/NEST shortcut is broader. These original-reader statements are source inspection, not a newly executed historical binary test.
 
-The three review findings therefore mix lost safeguards and inherited flaws. Their correctness implications for Bella remain the same; the evidence does not show that all were newly introduced. MDVX comparison is a separate native investigation, not established by this OldScanner probe.
+The three review findings therefore mixed lost safeguards and inherited flaws; the evidence does not show that all were newly introduced. They are now corrected in Bella. MDVX comparison is a separate native investigation, not established by this OldScanner probe.
 
 The unterminated-key observation remains outside the three confirmed findings. Current OldScanner also accepts it in these controls; the original dedicated category test was stricter, but current approved requirements do not settle exact on-disk terminator acceptance.

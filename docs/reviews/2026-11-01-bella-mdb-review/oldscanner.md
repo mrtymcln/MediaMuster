@@ -3,7 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
-Historical baseline at `20220f2`, before the approved JPED Kind change. The [current verdict](VERDICT.md#current-scope-and-approved-jped-change) separates this fixture-inclusive comparison from the later fresh native corpus. In that later corpus, post-JPED Bella and OldScanner agree on all 2,515 Kind values; the 86 direct-own-project differences remain unchanged. See the current comparison receipt. Nothing here recommends restoring Bella-excluded Source Path or unused retained row fields.
+Historical baseline at `20220f2`, before the approved JPED Kind change and subsequent qualification fixes. The [current verdict](VERDICT.md#qualification-fixes-implemented) separates this fixture-inclusive comparison from the fresh native corpus. All native-corpus reports remain unchanged by the qualification fixes: Bella and OldScanner agree on all 2,515 Kind values, while the 86 direct-own-project differences remain. Their damaged-input behavior now differs as the focused regression tests establish. Nothing here recommends restoring Bella-excluded Source Path or unused retained row fields.
+
+The later [SEQU conflict finding is withdrawn](VERDICT.md#sequ-conflict-finding-withdrawn). OldScanner's broad property traversal does not establish that legacy `SEQU:Sequence` and OMF 2 `SEQU:Components` are simultaneous claims requiring agreement. The artificial mixed-revision case is absent from the seven native MDBs and does not justify another Bella fix or test. JPED and the three approved qualification fixes remain intact.
 
 Review date: 1 November 2026; source HEAD `20220f2`. A fresh isolated native arm64 Release build compiled the current MDB reader and MDB projector directly from the worktree with pinned Qt 6.5.3 Core. Its source closure contains 31 repository source/header files, hashed in build-receipt.json. The ordinary scanner, coordinator, OMF reader and physical media-header readers were not invoked or linked. No production source or input MDB was written.
 

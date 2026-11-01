@@ -10,7 +10,7 @@ describe their original runs; references to removed raw material are historical.
 
 | Record | Retained scope |
 | --- | --- |
-| [Bella MDB comparative verdict, 1 November](2026-11-01-bella-mdb-review/VERDICT.md) | Current scope reassessment and approved JPED Video change: 30 Kind values corrected, native-corpus membership/other values preserved, no measured performance regression. Separately retains and revalidates three authored relationship/category qualification findings; historical fixture-inclusive and fresh native corpora remain distinct. |
+| [Bella MDB comparative verdict, 1 November](2026-11-01-bella-mdb-review/VERDICT.md) | Approved JPED Video addition and all three MDB qualification fixes implemented. The later [SEQU conflict finding is withdrawn](2026-11-01-bella-mdb-review/VERDICT.md#sequ-conflict-finding-withdrawn): a mixed-revision probe did not establish required Bella work. All 48 focused regression rows pass; 26 native-corpus reports remain identical before/after the qualification fixes. Deliberate scope exclusions and historical fixture-inclusive results remain distinct. |
 | [AVB binary findings](2026-09-05-avb/binary-findings.md) | Direct Media Composer serialization and object-reference evidence. |
 | [File operations](2026-09-06-current-code/file-operations.md) and [coverage](2026-09-06-current-code/file-operation-coverage.md) | Operation-engine findings and validation boundaries. |
 | [Primary format sources](2026-09-20-media-scope/public-specs.md), [binary dispatch](2026-09-20-media-scope/binary-dispatch.md), [audio extensions](2026-09-20-media-scope/audio-extensions.md) | Avid/SMPTE/OMF sources and independently inspected Media Composer behavior. |
