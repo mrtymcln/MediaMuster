@@ -338,6 +338,8 @@ namespace Bella
 						return Issue::Unreadable;
 					// A recognized scalar type elsewhere does not make it valid
 					// for this property. Preserve the established OMF typed widths.
+					if (QByteArrayView(name) == "OMFI:MDFL:Length" && (bytes.size() != 4 || type != "omfi:Long"))
+						return Issue::Unreadable;
 					if (QByteArrayView(name) == "OMFI:MDAU:BitsPerSample" &&
 						(bytes.size() != 2 || !named(type, {"omfi:Ushort", "omfi:UShort", "omfi:UInt16"})))
 						return Issue::Unreadable;
@@ -456,9 +458,7 @@ namespace Bella
 			}
 
 			bool exists(quint32 object) const { return m_byObject.contains(object); }
-			bool active(quint32 object) const { return m_activeSet.contains(object); }
 			const QVector<quint32> &activeMobs() const { return m_active; }
-			const QVector<quint32> &mediaObjects() const { return m_media; }
 			bool referenceClassesKnown() const { return m_referenceClassesKnown; }
 			bool disputed(quint32 object) const { return m_disputed.contains(object); }
 			bool has(quint32 object, const char *name) const
@@ -862,9 +862,9 @@ namespace Bella
 			return result;
 		}
 
-		QString originalBin(const Image &image, quint32 master)
+		QString originalBin(const Image &image, quint32 master, const Read<AttributeList> &attrs)
 		{
-			const auto entries = attributes(ownerAttributes(image, master), QStringLiteral("_ORG_BIN"));
+			const auto entries = attributes(attrs, QStringLiteral("_ORG_BIN"));
 			if (!valueOf(entries))
 			{
 				if (!missing(entries))
@@ -890,6 +890,11 @@ namespace Bella
 					return {};
 				}
 				const auto modern = image.text(*valueOf(bin), "OMFI:MCBR:MC:binNameUTF8", true);
+				if (const auto *issue = std::get_if<Issue>(&modern); issue && *issue == Issue::Conflict)
+				{
+					image.problem(*valueOf(bin), "OMFI:MCBR:MC:binNameUTF8", QStringLiteral("Conflicting Unicode bin names; bin is unavailable."));
+					return {};
+				}
 				QString name;
 				if (valueOf(modern) && !valueOf(modern)->trimmed().isEmpty())
 					name = *valueOf(modern);
@@ -918,9 +923,9 @@ namespace Bella
 			return chosen.value_or(QString{});
 		}
 
-		MdbPrecomputeCategory precomputeCategory(const Image &image, quint32 master)
+		MdbPrecomputeCategory precomputeCategory(const Image &image, quint32 master, const Read<AttributeList> &attrs)
 		{
-			const auto imports = attributes(ownerAttributes(image, master), QStringLiteral("_IMPORTSETTING"));
+			const auto imports = attributes(attrs, QStringLiteral("_IMPORTSETTING"));
 			if (!valueOf(imports))
 				return missing(imports) ? MdbPrecomputeCategory::RenderedEffects : MdbPrecomputeCategory::Unknown;
 			if (valueOf(imports)->isEmpty())
@@ -928,6 +933,10 @@ namespace Bella
 			for (const auto entry : *valueOf(imports))
 			{
 				const auto kind = image.integer(entry, "OMFI:ATTB:Kind");
+				// Preserve duplicate-entry handling; only one known non-object entry proves this absence.
+				if (const auto *knownKind = valueOf(kind); knownKind && valueOf(imports)->size() == 1 &&
+														   (*knownKind == 1 || *knownKind == 2 || *knownKind == 4))
+					return MdbPrecomputeCategory::RenderedEffects;
 				if (!valueOf(kind) || *valueOf(kind) != 3 || !valueOf(target(image, entry, "OMFI:ATTB:ObjAttribute")))
 					return MdbPrecomputeCategory::Unknown;
 			}
@@ -969,18 +978,18 @@ namespace Bella
 		void codingFacts(const Image &image, quint32 descriptor, MdbFileRecord &file)
 		{
 			const auto coded = image.bytes(descriptor, "OMFI:DIDD:EssenceCompression", {"omfi:GUID"});
+			const auto big = valueOf(coded) && valueOf(coded)->size() == 16 ? image.bigEndian(descriptor) : std::nullopt;
 			if (missing(coded))
 				file.compression.codingState = MdbCodingState::Absent;
-			else if (valueOf(coded) && valueOf(coded)->size() == 16 && image.bigEndian(descriptor))
+			else if (big)
 			{
 				const auto bytes = *valueOf(coded);
-				const bool big = *image.bigEndian(descriptor);
 				auto &label = file.compression.codingLabel;
 				std::copy(bytes.begin() + 8, bytes.end(), label.begin());
 				for (int i = 0; i < 8; ++i)
 				{
 					constexpr std::array<int, 8> littleOffsets{3, 2, 1, 0, 5, 4, 7, 6};
-					label[std::size_t(8 + i)] = quint8(bytes[big ? i : littleOffsets[std::size_t(i)]]);
+					label[std::size_t(8 + i)] = quint8(bytes[*big ? i : littleOffsets[std::size_t(i)]]);
 				}
 				file.compression.codingState = MdbCodingState::Present;
 			}
@@ -2014,10 +2023,11 @@ namespace Bella
 					master.clipName = *valueOf(name);
 				else if (!missing(name))
 					image.problem(object, "OMFI:CPNT:Name", QStringLiteral("Master name is unreadable or conflicting."));
-				master.originalBin = originalBin(image, object);
+				const auto attrs = ownerAttributes(image, object);
+				master.originalBin = originalBin(image, object, attrs);
 				master.type = *valueOf(usage) == 1 ? MdbType::Precompute : MdbType::Media;
 				if (details && master.type == MdbType::Precompute)
-					master.precomputeCategory = precomputeCategory(image, object);
+					master.precomputeCategory = precomputeCategory(image, object, attrs);
 				masterOwners.append(object);
 				result.masters.append(std::move(master));
 			}

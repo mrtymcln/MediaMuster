@@ -687,6 +687,88 @@
       "evidence": "Project Bella/evidence/mdb-internal-cleanup-2026-10-31.json warningCombinations; current readers and tests.",
       "scope": "Bella reader warnings and focused tests/documentation only. No integration or OldScanner/Bin Filter behavior changes.",
       "implementationStatus": "Implemented and verified; see Project Bella/evidence/reader-warning-combinations-2026-11-01.json."
+    },
+    {
+      "id": "mdb_length_documented_legacy_long32",
+      "date": "2026-11-01",
+      "status": "Agreed",
+      "headAtCheck": "f287b1de1d00cfbf5e8c92963215e427cf4f216b",
+      "source": "Direct user instruction choosing Option1 after primary-spec, Hopper and plain-English review.",
+      "answer": "Lets go with Option 1, the recommended check. Record that decision and implement it, including correcting the tests. Keep all other checks and results unchanged.",
+      "recommendedOption": "Require the documented omfi:Long four-byte representation for MDFL:Length in Bella's supported legacy MDB family; signed decode in the established byte order, keep nonnegative values including zero in existing64-bit storage.",
+      "alternative": "Keep the current generic integer-format tolerance for this field, including undocumented position and small-number forms.",
+      "agreedRule": "Add only the property-specific legacy Length type/width guard. Keep all existing bounds, byte-order, nonnegative, duplicate/conflict, owner, timing, cancellation and source-check rules. Unsupported Length uses existing unavailability/problem note; keep independently usable metadata. Preserve all other outputs for unchanged inputs, especially all checked genuine MDBs.",
+      "testCorrection": "Correct the authored legacy video/audio fixture baseline and conflicting/duplicate-owner Length entries from OMF2 Length32 to omfi:Long; retain wrong-type forms as explicit rejection cases.",
+      "publicContract": "No public fields, enums, states or diagnostic wording changes. No alteration of the internal64-bit count or newly added extended64-bit/OMF2 support.",
+      "scope": "Bella MDB reader/tests and factual decision/verification documentation only. OldScanner remains active; Bin Filter and surrounding app code unchanged.",
+      "evidence": [
+        "/private/tmp/bella-mdb-length-boundary-20261101/spec/SPEC-REVIEW.json",
+        "/private/tmp/bella-mdb-length-boundary-20261101/hopper/HOPPER-REVIEW.md",
+        "/private/tmp/bella-mdb-length-boundary-20261101/bella/length-types-corpus.json"
+      ],
+      "implementationStatus": "Implemented and verified; see Project Bella/evidence/mdb-length-check-2026-11-01.json."
+    },
+    {
+      "id": "mdb_bin_name_conflict_and_typed_precompute_absence",
+      "date": "2026-11-01",
+      "status": "Agreed",
+      "headAtCheck": "f287b1de1d00cfbf5e8c92963215e427cf4f216b",
+      "source": "Direct user approval of both narrow corrections following plain-English examples, recorded-rule review and fresh Hopper/assembly verification.",
+      "answer": "Approve both corrections (Recommended)",
+      "question": "Do you approve recording and implementing these two narrow corrections, with regression tests? (1) Conflicting readable modern bin names leave Original Bin unavailable with one conflict note; unreadable modern names still allow the agreed legacy fallback. (2) A single readable _IMPORTSETTING entry of a supported non-link kind gives Rendered Effects; unreadable, unsupported and duplicate-entry handling stay unchanged. The three internal cleanups remain pending.",
+      "agreedRule": "Implement the two verified corrections only: stop Original Bin selection on the existing binNameUTF8 Conflict result, and classify a single exact _IMPORTSETTING entry of supported non-object Kind1,2 or4 as confirmed object-attribute absence (RenderedEffects). Do not change the shared decoder or duplicate classification.",
+      "originalBin": {
+        "conflict": "Leave Original Bin unavailable and replace the invalid-Unicode/legacy-fallback note with one precise conflict note at the same MCBR/property context.",
+        "note": "Conflicting Unicode bin names; bin is unavailable.",
+        "preserve": "Unreadable/invalid UTF8 still tries its separate legacy name; identical modern duplicates agree; usable modern wins over its older counterpart. Other reference/name handling stays unchanged."
+      },
+      "precomputeCategory": {
+        "correctedCase": "Exactly one matching entry, with a uniquely readable supported non-object Kind1,2 or4, gives RenderedEffects without reading object payload or tracks.",
+        "preserve": "Unreadable/conflicting or unsupported Kind, mixed kinds and multiple non-object entries stay Unknown. Existing all-Kind3 path, including null object payload and immediate picture-track threshold, is unchanged. Add no warning for confirmed absence."
+      },
+      "scope": "Bella MDB parser, regression tests and decision/verification documentation only. No public fields/enums, source acquisition/checks, cancellation, matching, progress, table/MediaFile, journal, Unfinished Business, Undo, OldScanner or Bin Filter changes.",
+      "pendingCleanups": [
+        "Remove two unused private helpers.",
+        "Reuse one checked coding byte-order answer.",
+        "Share the checked master attribute list for Original Bin and optional Precompute Category."
+      ],
+      "evidence": [
+        "docs/reviews/2026-10-18-bella-mdb/original-bin.md",
+        "docs/reviews/2026-10-18-bella-mdb/precompute-category.md",
+        "/private/tmp/bella-mdb-next-review-20261101/REVIEW.json",
+        "/private/tmp/bella-mdb-next-review-20261101/native/fresh-comparison-notes.json"
+      ],
+      "implementationStatus": "Implemented and verified; see Project Bella/evidence/mdb-correctness-corrections-2026-11-01.json."
+    },
+    {
+      "id": "mdb_three_small_internal_cleanups",
+      "date": "2026-11-01",
+      "status": "Agreed",
+      "headAtCheck": "f287b1de1d00cfbf5e8c92963215e427cf4f216b",
+      "source": "Direct user instruction approving all three recommended internal cleanups after the source/native review and the separate correctness corrections.",
+      "answer": "Lets go with the three recommended internal cleanups. Record that decision and implement them, keeping all checks, results and warning messages unchanged.",
+      "agreedRule": "Remove only the two unused private accessors; reuse one checked coding byte-order answer; reuse the complete checked master attribute-list result for Original Bin and optional Precompute Category. Preserve every logical check, metadata result, qualification, diagnostic text/order/count, public contract, source check and Cancel opportunity.",
+      "cleanups": [
+        {
+          "change": "Remove Image::active and Image::mediaObjects, which have no callers.",
+          "preserve": "Keep the active-set and media-object data structures and all their validation uses."
+        },
+        {
+          "change": "Remember the coding-identifier byte order once when its value is readable and exactly16 bytes.",
+          "preserve": "Retain lazy lookup and the distinction between unavailable order and valid little-endian false. Keep the separate descriptor-context validation."
+        },
+        {
+          "change": "Prepare Read<AttributeList> immediately after master-name handling and pass it by const reference to the two existing helpers.",
+          "preserve": "Do not turn a failed check into an empty list. Keep Original Bin before category, preserve all messages, and keep category/body/track decoding under includePrecomputeDetails && Precompute."
+        }
+      ],
+      "scope": "Bella MDB private implementation, focused preservation tests and decision/verification documentation. No new public fields/enums, broad function rearrangement, app integration or measured-performance claim. OldScanner remains active and Bin Filter is unchanged.",
+      "correctnessBaseline": "Includes decision43 Unicode-conflict and single-supported-nonobject-category corrections; preserve their new results and messages.",
+      "evidence": [
+        "/private/tmp/bella-mdb-next-review-20261101/simplification/review.md",
+        "Project Bella/evidence/mdb-correctness-corrections-2026-11-01.json"
+      ],
+      "implementationStatus": "Implemented and verified; see Project Bella/evidence/mdb-three-small-cleanups-2026-11-01.json."
     }
   ],
   "firstImplementation": {
@@ -1417,7 +1499,7 @@
   "initialDecisionRegisterComplete": true,
   "allOriginalRecommendationsSelected": false,
   "futureImplementationChoicesRequireUserCheckIn": true,
-  "nextStage": "The approved five warning combinations are implemented and verified. Further concrete Bella reader/scanner decisions require a plain-English user check-in before dependent implementation.",
+  "nextStage": "The approved legacy Length type/width guard and fixture corrections are implemented and verified. Further concrete Bella choices require a plain-English user check-in before dependent implementation.",
   "pendingMdbCatalogueValues": {
     "status": "Resolved; full contract and recommended lists/direct links approved31October; independent implementation requested.",
     "date": "2026-10-31",
@@ -3101,5 +3183,46 @@
     "metadataBehaviorChanged": false,
     "receipt": "Project Bella/evidence/reader-warning-combinations-2026-11-01.json",
     "warningTextCountChanged": true
+  },
+  "mdbLengthCheck": {
+    "date": "2026-11-01",
+    "status": "Implemented and verified",
+    "decisionId": "mdb_length_documented_legacy_long32",
+    "publicReportChanged": false,
+    "receipt": "Project Bella/evidence/mdb-length-check-2026-11-01.json",
+    "productionLinesAdded": 2,
+    "corpusReportsIdentical": 63,
+    "originalCorrectedMdbQtCasesPassedBefore": 151,
+    "currentMdbQtCasesPassed": 157
+  },
+  "mdbCorrectnessCorrections": {
+    "date": "2026-11-01",
+    "decisionId": "mdb_bin_name_conflict_and_typed_precompute_absence",
+    "status": "Implemented and verified",
+    "receipt": "Project Bella/evidence/mdb-correctness-corrections-2026-11-01.json",
+    "threeInternalCleanupsApproved": false,
+    "publicContractChanged": false,
+    "affectedEdgeCaseResultsChanged": true,
+    "productionLinesAdded": 9,
+    "corpusReportsIdentical": 63,
+    "priorMdbQtCasesPassedAfter": 157,
+    "currentMdbQtCasesPassed": 161,
+    "newAuthoredParses": 256,
+    "threeInternalCleanupsApprovalScope": "Not included in decision43; separately approved by decision44."
+  },
+  "mdbThreeSmallCleanups": {
+    "date": "2026-11-01",
+    "decisionId": "mdb_three_small_internal_cleanups",
+    "status": "Implemented and verified",
+    "receipt": "Project Bella/evidence/mdb-three-small-cleanups-2026-11-01.json",
+    "metadataBehaviorChanged": false,
+    "warningMessagesChanged": false,
+    "publicContractChanged": false,
+    "currentMdbQtCasesPassed": 165,
+    "newAuthoredParses": 68,
+    "priorCorpusReportsIdentical": 63,
+    "authoredReportsIdentical": 324,
+    "completeReportsIdentical": 387,
+    "expandedSuitePassesBeforeAndAfter": true
   }
 }

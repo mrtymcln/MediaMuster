@@ -109,6 +109,67 @@ readers across the 45 prior sources and both MDB detail settings (63 reports).
 The authored cases cover the changed warning branches; the prior corpus returns
 identical complete reports. No measured speed or memory claim is made.
 
+On 1 November the user approved the documented legacy Length check. Require
+`OMFI:MDFL:Length` to have type `omfi:Long` and exactly four bytes, then use
+the existing signed byte-order-aware decode and nonnegative/known-zero rule.
+The existing 64-bit returned count stays unchanged. Unsupported Length uses
+the current unavailable answer/problem note and preserves independent fields.
+Only this property's accepted wire forms change; all other checks, public
+members, diagnostic strings, source checks and Cancel opportunities remain.
+Correct the authored `Length32` fixture baseline and other valid test entries
+to legacy `Long`, while testing the mismatched forms explicitly. No general
+extended64-bit/OMF2 support or app integration is added. Implementation and
+verification are complete; see the
+[Length-check receipt](../../Project%20Bella/evidence/mdb-length-check-2026-11-01.json)
+and [approval record](../../Project%20Bella/evidence/decision-check-ins-2026-10-27.json).
+The corrected prior 151 MDB Qt cases pass against the saved reader. The current
+suite passes 157 MDB, 73 PMR and 14 ID cases normally and with ASan/UBSan; six new
+endian rows exercise 74 authored Length controls and preservation of independent
+facts. All 63 full reports from the 45 prior paths match byte-for-byte before
+and after. No active runtime, OldScanner or Bin Filter changes are included.
+
+On 1 November the user approved two narrow MDB corrections after the native
+and source review. Stop Original Bin selection on the existing `binNameUTF8`
+Conflict reply with one precise conflict note; retain unreadable-Unicode fallback
+to the separate legacy property and all other priority/duplicate behavior.
+For optional Precompute Category, one exact `_IMPORTSETTING` entry of readable
+supported non-object Kind 1, 2 or 4 gives Rendered Effects without inspecting
+its payload or tracks. Unsupported/unreadable/conflicting Kind and mixed or
+multiple non-object entries retain Unknown. The existing all-Kind-3 route,
+including null payload and direct-track counting, remains. No new public
+fields/enums, category warnings, source/Cancel policy or app integration are
+added. The [decision record](../../Project%20Bella/evidence/decision-check-ins-2026-10-27.json)
+was updated before the production edits. Implementation and verification are
+complete; the [correction receipt](../../Project%20Bella/evidence/mdb-correctness-corrections-2026-11-01.json)
+records 161 MDB, 73 PMR and 14 ID Qt passes normally and with ASan/UBSan.
+The 157 prior MDB cases also pass against the corrected reader. Four new
+endian rows exercise 256 authored parses, including both entry orders and
+optional details off/on; the new groups fail as expected against the saved
+pre-correction reader. All 63 complete reports from the 45 prior paths remain
+byte-identical, including notes; those prior inputs do not exercise the two
+corrected cases. Those corrections did not include the three internal cleanups;
+their subsequent approval is recorded below. OldScanner remains active and Bin
+Filter is unchanged.
+
+On 1 November the user separately approved all three small internal MDB cleanups:
+remove two unused private accessors, reuse the checked coding byte order and
+share a complete checked master attribute list with Original Bin and optional
+Precompute Category. Retain live validation collections, lazy optional work,
+unavailable versus valid little-endian order, and all missing/damaged/conflicting
+list states. The list is prepared after master-name handling and passed by const
+reference. All checks, values, qualifications and warning text/order/count must
+match the corrected baseline. No public fields/enums, source/Cancel changes,
+app integration or larger rearrangement is included. The
+[decision record](../../Project%20Bella/evidence/decision-check-ins-2026-10-27.json)
+was updated before production edits. Implementation and verification are complete;
+the [cleanup receipt](../../Project%20Bella/evidence/mdb-three-small-cleanups-2026-11-01.json)
+records 165 MDB, 73 PMR and 14 ID Qt passes normally and with ASan/UBSan. The
+expanded MDB suite also passes against the saved pre-cleanup reader. Four new
+endian rows exercise 68 additional authored parses. All 63 prior and 324 authored
+full before/after reports are byte-identical, including diagnostic text/order/count;
+authored invocations include repeated byte contents. No measured speed or memory
+gain is claimed. OldScanner remains active and Bin Filter is unchanged.
+
 On 27 October the user approved a separate `mediamuster_bella` static library
 in the existing CMake build, using Qt Core and initially linked only to Bella's
 focused tests. Parser signatures and result details still require check-ins

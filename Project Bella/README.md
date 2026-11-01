@@ -687,6 +687,92 @@ settings); those sources do not exercise the new combinations, which the authore
 cases check explicitly. No scan-speed or memory improvement is claimed. See the
 [approval record](evidence/decision-check-ins-2026-10-27.json).
 
+**Legacy MDB Length check approved, 1 November 2026:** the user chose Option 1
+and requested implementation, test correction and preservation of all other
+checks/results. In Bella's supported legacy MDB family, `OMFI:MDFL:Length`
+must be declared `omfi:Long` with exactly four payload bytes. Keep the existing
+signed decode in the established byte order, nonnegative/known-zero rule and
+64-bit internal storage. An unsupported Length uses the existing unavailable
+answer and problem note; independently usable metadata remains available.
+No public field, state, warning wording, source/Cancel policy, OMF2 support or
+general extended-layout support is added or changed.
+
+The reference toolkit declares legacy Length as `OMInt32`/`omfi:Long`; its
+OMF2 `Length32`/`Length64` declarations do not establish legacy aliases. Fresh
+Hopper decompilation of Media Composer 26.8.0.58987 confirms the ordinary
+legacy writer/reader's 32-bit route. Its permissive byte extraction is not the
+schema contract. All 5,590 Length occurrences across the 15 genuine-derived
+paths inspected use `omfi:Long` with four bytes (5,503 occurrences after
+deduplicating to 11 genuine contents); none uses an eight-byte Length. These
+counts include inactive objects and copies, not physical table rows.
+
+Correct the authored legacy fixture baseline, conflicting-Length and second
+owner records from `Length32` to `Long`; retain unsupported types and widths
+as explicit rejection controls. The prior fixture spelling was a test setup
+mistake, not evidence of a supported legacy alias. The approval is recorded
+before dependent edits in the
+[decision record](evidence/decision-check-ins-2026-10-27.json). Implementation
+and verification are complete; see the
+[Length-check receipt](evidence/mdb-length-check-2026-11-01.json). The corrected
+original 151 MDB Qt cases also pass against the saved pre-change reader. The
+expanded suite passes 157 MDB, 73 PMR and 14 ID Qt cases normally and with
+ASan/UBSan, including 74 new authored Length controls grouped into six endian
+rows. All 63 full before/after reports from the 45 prior sources are byte-for-byte
+identical, including diagnostic text and qualifications. Public headers and
+PMR/MobId code are unchanged. OldScanner remains active and Bin Filter is unchanged.
+
+**Two narrow MDB corrections approved, 1 November 2026:** the user approved
+recording, implementing and testing the two findings from the subsequent source
+and native review. An existing `binNameUTF8` conflict now leaves Original Bin
+unavailable before legacy fallback, with one note: “Conflicting Unicode bin
+names; bin is unavailable.” Unreadable Unicode still tries its separate legacy
+counterpart; usable modern text and identical duplicates retain their existing
+priority/agreement behavior. The shared decoder and other reference/duplicate
+rules are unchanged.
+
+For optional Precompute Category, exactly one matching `_IMPORTSETTING` entry
+with readable supported non-object Kind 1, 2 or 4 proves absence of the required
+object attribute and gives Rendered Effects without reading its payload or
+tracks. Unsupported/unreadable/conflicting Kind, mixed kinds and multiple
+non-object entries keep their existing Unknown result. The existing all-Kind-3
+path, null payload, direct-track threshold and optional-details gate remain.
+No new category warning, public field or enum is introduced. All other checks,
+metadata, source/Cancel behavior and surrounding runtime remain unchanged.
+The [approval record](evidence/decision-check-ins-2026-10-27.json) was updated
+before production edits. Implementation and verification are complete; see the
+[correction receipt](evidence/mdb-correctness-corrections-2026-11-01.json).
+All 157 prior MDB Qt cases pass against the corrected reader. The expanded
+161 MDB, 73 PMR and 14 ID cases pass normally and with ASan/UBSan. Four new
+endian rows exercise 256 authored parses, including both record orders and
+optional details off/on. The two new regression groups fail for their intended
+reasons against the saved pre-correction reader. All 63 complete reports from
+the 45 prior paths remain byte-for-byte identical, including notes; those inputs
+do not exercise the corrected cases. The three internal cleanup proposals were
+not included in that approval; their separate approval is recorded below.
+
+**Three small internal MDB cleanups approved, 1 November 2026:** the user
+approved removing the two unused private accessors, reusing one checked coding
+byte-order answer and sharing the checked master attribute list between Original
+Bin and optional Precompute Category. Keep the live active/media collections and
+their checks. Obtain byte order only for an otherwise readable complete coding
+identifier, preserving unavailable versus little-endian. Prepare the complete
+checked attribute-list result after master-name handling, retain all failure
+states and pass it by const reference; do not read optional category bodies or
+tracks early. Keep every check, result, qualification and warning text/order/count
+unchanged, including the two preceding correctness corrections. No public
+contract, source/Cancel opportunity, app integration or wider function
+rearrangement is included. OldScanner remains active and Bin Filter is unchanged.
+The [approval record](evidence/decision-check-ins-2026-10-27.json) was updated
+before production edits. Implementation and verification are complete; see the
+[cleanup receipt](evidence/mdb-three-small-cleanups-2026-11-01.json). All 165 MDB,
+73 PMR and 14 ID Qt cases pass normally and with ASan/UBSan; the expanded MDB
+suite also passes against the saved pre-cleanup reader. Four new endian rows
+exercise 68 additional authored parses. Complete before/after reports match
+byte-for-byte for all 63 prior corpus invocations and 324 authored invocations,
+including diagnostic text, order and count. Authored counts include repeated
+contents/order/detail controls, not 324 unique real damaged files. No speed or
+memory improvement is claimed.
+
 **PMR returned report agreed, 27 October 2026:** the user chose “one report.”
 Return one owned result containing the selected PMR entries, what happened and
 the explanatory/diagnostic details. Keep those related answers together instead

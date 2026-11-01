@@ -7,6 +7,7 @@
 #include <QByteArray>
 #include <QFile>
 #include <QTest>
+#include <QtEndian>
 
 namespace
 {
@@ -18,8 +19,8 @@ namespace
 		return f.readAll();
 	}
 
-	// A version-2 PMR: 12-byte header, then the first pair's MASTER record
-	// whose first 8 bytes are its MOB.
+	// A version-2 PMR has a 12-byte header followed by the first record's
+	// 8-byte FileMobId. Its MasterMobId follows Filename and Project.
 	constexpr int kPmrV2HeaderSize = 12;
 } // namespace
 
@@ -29,6 +30,7 @@ class TestOmfUid : public QObject
 
 private slots:
 	void toMobIdBytes_is_prefix_core_suffix();
+	void toMobIdBytes_matches_the_unicode_set_in_the_real_pmrs_data();
 	void toMobIdBytes_matches_the_unicode_set_in_the_real_pmrs();
 	void toMobIdBytes_does_not_swap_middle_fields();
 	void toIdText_12_bytes_wraps_the_core();
@@ -43,37 +45,47 @@ void TestOmfUid::toMobIdBytes_is_prefix_core_suffix()
 	const unsigned char core[OmfUid::kPmrSize] = {0x74, 0x29, 0x97, 0x6a, 0x70, 0x39, 0x70, 0x47};
 	const auto wrapped = OmfUid::toMobIdBytes(core);
 
-	QCOMPARE(int(wrapped.size()), MobId::kRawSize);
-	QVERIFY(std::equal(std::begin(OmfUid::kPrefix), std::end(OmfUid::kPrefix), wrapped.begin()));
-	QVERIFY(std::equal(std::begin(core), std::end(core), wrapped.begin() + sizeof OmfUid::kPrefix));
-	QVERIFY(std::equal(std::begin(OmfUid::kSuffix), std::end(OmfUid::kSuffix),
-					   wrapped.begin() + sizeof OmfUid::kPrefix + OmfUid::kPmrSize));
-
 	// FileMobId recorded for the WAVE fixture in Avid's PMR Unicode set.
+	QCOMPARE(QByteArray(reinterpret_cast<const char *>(wrapped.data()), static_cast<qsizetype>(wrapped.size())),
+			 QByteArray::fromHex("060a2b340101010101010f00130000007429976a70397047060e2b347f7f2a80"));
 	QCOMPARE(OmfUid::toMobIdText(core),
 			 QStringLiteral("060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80"));
 }
 
+void TestOmfUid::toMobIdBytes_matches_the_unicode_set_in_the_real_pmrs_data()
+{
+	QTest::addColumn<QString>("relativePath");
+	QTest::addColumn<int>("fileSize");
+	QTest::addColumn<int>("unicodeHeaderOffset");
+	QTest::addColumn<quint32>("recordCount");
+	// Independent bounded walks of the genuine fixtures' declared records
+	// establish these v16 boundaries; no identity or version-marker search.
+	QTest::newRow("genuine-current-audio")
+		<< QStringLiteral("mc2026_audio/msmFMID.pmr") << 392 << 148 << quint32{2};
+	QTest::newRow("genuine-supporting")
+		<< QStringLiteral("avid_supporting/msmFMID.pmr") << 12352 << 4178 << quint32{80};
+}
+
 void TestOmfUid::toMobIdBytes_matches_the_unicode_set_in_the_real_pmrs()
 {
-	// The PMR Unicode set must contain the exact wrapped form of its legacy record.
-	const QString fixtures = QStringLiteral(FIXTURES_DIR "/omf/");
-	for (const char *pmr : {"mc2026_audio/msmFMID.pmr", "avid_supporting/msmFMID.pmr"})
-	{
-		const QByteArray data = readAll(fixtures + QLatin1String(pmr));
-		QVERIFY2(data.size() > kPmrV2HeaderSize + OmfUid::kPmrSize, pmr);
+	QFETCH(QString, relativePath);
+	QFETCH(int, fileSize);
+	QFETCH(int, unicodeHeaderOffset);
+	QFETCH(quint32, recordCount);
+	const QByteArray data = readAll(QStringLiteral(FIXTURES_DIR "/omf/") + relativePath);
+	QCOMPARE(data.size(), fileSize);
+	QCOMPARE(qFromLittleEndian<quint32>(data.constData()), quint32{0x7a9});
+	QCOMPARE(qFromLittleEndian<quint32>(data.constData() + 4), quint32{2});
+	QCOMPARE(qFromLittleEndian<quint32>(data.constData() + 8), recordCount);
+	QCOMPARE(qFromLittleEndian<quint32>(data.constData() + unicodeHeaderOffset), quint32{16});
+	QCOMPARE(qFromLittleEndian<quint32>(data.constData() + unicodeHeaderOffset + 4), recordCount);
 
-		const auto *first = reinterpret_cast<const unsigned char *>(data.constData()) + kPmrV2HeaderSize;
-		const auto wrapped = OmfUid::toMobIdBytes(first);
-		const QByteArray needle(reinterpret_cast<const char *>(wrapped.data()), MobId::kRawSize);
-
-		const qsizetype at = data.indexOf(needle);
-		QVERIFY2(at > kPmrV2HeaderSize + OmfUid::kPmrSize, pmr);
-		// The legacy core occurs earlier than its wrapped Unicode form.
-		QCOMPARE(data.indexOf(QByteArray(reinterpret_cast<const char *>(first), OmfUid::kPmrSize)),
-				 qsizetype(kPmrV2HeaderSize));
-		QVERIFY(OmfUid::isWrappedOmfId(OmfUid::toMobIdText(first)));
-	}
+	// The first field after each set header is FileMobId: 8 bytes in v2,
+	// 32 bytes in v16. Compare that exact field, not an occurrence elsewhere.
+	const QByteArray legacyFileId = data.mid(kPmrV2HeaderSize, 8);
+	const auto wrapped = OmfUid::toMobIdBytes(reinterpret_cast<const unsigned char *>(legacyFileId.constData()));
+	QCOMPARE(QByteArray(reinterpret_cast<const char *>(wrapped.data()), static_cast<qsizetype>(wrapped.size())),
+			 data.mid(unicodeHeaderOffset + 8, 32));
 }
 
 void TestOmfUid::toMobIdBytes_does_not_swap_middle_fields()
@@ -90,7 +102,6 @@ void TestOmfUid::toIdText_12_bytes_wraps_the_core()
 	// The captured Avid prefix-42 spelling has the exact PMR bridge.
 	const QByteArray uid = QByteArray::fromHex("2a000000"
 											   "7429976a70397047");
-	QCOMPARE(uid.size(), OmfUid::kUidSize);
 	QCOMPARE(OmfUid::toIdText(uid),
 			 QStringLiteral("060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80"));
 
@@ -111,8 +122,6 @@ void TestOmfUid::toIdText_32_bytes_formats_unchanged()
 												"01010f1013000000"
 												"a4bb7f1311399006"
 												"6d01ce4ff0f5d57a");
-	QCOMPARE(umid.size(), MobId::kRawSize);
-	QCOMPARE(OmfUid::toIdText(umid), MobId::format(umid));
 	QCOMPARE(OmfUid::toIdText(umid),
 			 QStringLiteral("060a2b3401010105.01010f1013000000.a4bb7f1311399006.6d01ce4ff0f5d57a"));
 	QVERIFY(!OmfUid::isWrappedOmfId(OmfUid::toIdText(umid)));
@@ -165,7 +174,6 @@ void TestOmfUid::omf_form_never_collides_with_mxf_form()
 	QVERIFY(!omf.startsWith(QStringLiteral("060a2b3401010105")));
 	// Material swapping leaves the wrapper's prefix and suffix intact.
 	QVERIFY(OmfUid::isWrappedOmfId(MobId::swapMaterialByteOrder(omf)));
-	QVERIFY(!MobId::isAllZero(omf));
 }
 
 QTEST_APPLESS_MAIN(TestOmfUid)

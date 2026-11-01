@@ -180,7 +180,8 @@ namespace Bella
 				if (nameBytes.size() < 2 || nameBytes[0] != '\0')
 					return {{}, PmrReadResult::Malformed, QStringLiteral("Filename has an invalid v16 prefix.")};
 				nameBytes = interpretedString(nameBytes.sliced(2));
-				QStringDecoder utf8(QStringDecoder::Utf8, QStringConverter::Flag::Stateless);
+				QStringDecoder utf8(QStringDecoder::Utf8,
+									QStringConverter::Flag::Stateless | QStringConverter::Flag::ConvertInitialBom);
 				filename = utf8.decode(nameBytes);
 				const bool isValidUtf8Filename = !utf8.hasError();
 				if (!isValidUtf8Filename)
