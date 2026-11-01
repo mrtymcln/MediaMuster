@@ -1,5 +1,8 @@
 # Shared Avid compression-name catalogue
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 User decision, 8 October 2026: use Avid's descriptive compression names wherever
 established by the recorded format information. Preserve the agreed DNx names and
 verified historical operating-point names. The user subsequently approved removing
@@ -113,11 +116,11 @@ force extra header reads just to obtain a longer name.
 
 Verification files:
 
-- [Source definitions and genuine specimens](evidence/compression-name-source-evidence-2026-10-08.json).
-- [Repeat scan CSV](evidence/full-scan-compression-names-2026-10-08.csv) and
-  [scan report](evidence/compression-names-real-scan-2026-10-08.json).
-- [Every changed cell and scheduling comparison](evidence/compression-names-real-scan-comparison-2026-10-08.json).
-- [Build/source verification receipt](evidence/compression-names-verification-2026-10-08.json).
+- Source definitions and genuine specimens.
+- Repeat scan CSV and
+  scan report.
+- Every changed cell and scheduling comparison.
+- Build/source verification receipt.
 
 ## Unsupported inherited identifiers
 
@@ -133,7 +136,7 @@ D-10 bitrate ordering.
 Nine older DNx aliases have no independently established coding-label provenance
 in the reviewed Avid Lua/JSON definitions or source-anchored specimens. The initial
 catalogue retained them under the user's request for unchanged DNx behaviour. The
-[bounded alias evidence](evidence/dnx-unproven-aliases-2026-10-08.json) records each
+bounded alias evidence records each
 identifier and the limits of the search. Their absence from those sources does not
 prove every conceivable file containing them invalid.
 
@@ -152,5 +155,5 @@ Removal verification passes **40/40 native suites** and both universal Debug app
 builds. The repeat scan retains all **2,413 rows**, all **806 DNx names** and every
 other exported metadata value; header scheduling, source receipts and all 298
 notices are unchanged. The
-[removal verification receipt](evidence/dnx-alias-removal-verification-2026-10-08.json)
+removal verification receipt
 records that subsequent run separately from the initial catalogue verification above.

@@ -1,5 +1,8 @@
 # Preserve MediaEngine's information with smaller RAM storage
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Recorded 9 October 2026. This is a measured implementation proposal, following
 the attached C++ coding standards and the [NEXIS regression investigation](nexis-memory-regression-2026-10-09.md).
 This experiment did not change the application. The subsequent
@@ -121,10 +124,10 @@ private completed block before storing it. Its total allocated byte capacity
 equals its compressed payload count. This finding reinforces measuring capacity
 and process memory instead of assuming a small QByteArray::size means small RAM.
 
-See the [feasibility summary](evidence/ram-archive-feasibility-summary-2026-10-09.json),
-[individual-source measurements](evidence/ram-archive-feasibility-2026-10-09.json),
-[cumulative experiment](evidence/ram-archive-cumulative-2026-10-09.json) and
-[independent review](evidence/ram-archive-independent-review-2026-10-09.json).
+See the feasibility summary,
+individual-source measurements,
+cumulative experiment and
+independent review.
 The diagnostic source and runners are retained beside those receipts.
 
 ## Remaining implementation and proof

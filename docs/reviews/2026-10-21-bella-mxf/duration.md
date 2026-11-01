@@ -1,5 +1,8 @@
 # Bella: physical-file Duration from MXF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 22 October 2026. **The user approved the detailed MXF Duration
 rules below on this date; they remain unimplemented.** The user approved the preceding
 [MXF Kind rules](kind.md). Existing exact arithmetic, audio precision,
@@ -11,7 +14,7 @@ values, known-zero display and hours beyond 24 remain agreed.
 mode. This supersedes the earlier interpretation requiring colons for DF.
 The numerical rules and source/flag qualification are unchanged. The subsequent
 Duration approval also accepts the field/clock rules below. The
-[revision receipt](../../../Project%20Bella/evidence/mxf-duration-format-revision-2026-10-22.json)
+revision receipt
 records the user's instruction. Avid's
 [Editing Guide](https://resources.avid.com/SupportFiles/attach/Media_Composer_Editing_Guide_2024.x.pdf)
 also illustrates DF with semicolons between all four fields.
@@ -229,12 +232,12 @@ other field priorities, OldScanner and Bin Filter remain unchanged.
 
 ## Evidence and verification limits
 
-The [approval receipt](../../../Project%20Bella/evidence/mxf-duration-plan-2026-10-22.json)
+The approval receipt
 records the decision without approving the subsequent MXF Frame Rate review
 or other pending navigation/field proposals. Earlier pending wording in the
 historical research is superseded by this approval.
 
-The [curated receipt](../../../Project%20Bella/evidence/mxf-duration-2026-10-22.json)
+The curated receipt
 separates native import paths, MDVx library capabilities, current source issues,
 actual bounded-header observations and the now-approved design. Hashed raw receipts,
 disassembly and independent probe artifacts remain in `/private/tmp`.

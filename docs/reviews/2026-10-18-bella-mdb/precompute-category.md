@@ -1,5 +1,8 @@
 # Bella: Precompute Category from MDB
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 20 October 2026. The user approved the separate
 [Type rules](type.md): selected-master usage 1 is Precompute, 7 is Media and
 unknown/unreadable Type is displayed/exported blank. **The user approved these
@@ -125,7 +128,7 @@ decoder and does not use OldScanner classification or physical media headers
 as an oracle. These clean current inputs do not exercise damaged category
 records, unsupported layouts or absent-master recovery.
 
-[Curated evidence](../../../Project%20Bella/evidence/mdb-precompute-category-2026-10-20.json)
+Curated evidence
 retains source hashes, typed values, representative own attribute/track paths,
 native entry points and the MDVx trace. Raw probes, bulk indexes and disassembly
 remain outside the repository.

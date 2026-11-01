@@ -1,5 +1,8 @@
 # Bella: Original Bin from MDB
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 19 October 2026. The user approved the simple per-field priority
 table and the [Project rules](project.md) on this date. The user subsequently
 approved the Original Bin rules below on **19 October 2026**, restating the
@@ -183,7 +186,7 @@ requirements decisions.
 
 ## Evidence and validation
 
-The [curated Original Bin evidence](../../../Project%20Bella/evidence/mdb-original-bin-2026-10-19.json)
+The curated Original Bin evidence
 contains native addresses, exact binary/database hashes, independent ownership
 and paired-name counts, two relevant examples, agreed rules and hashed
 probe/artifact receipts. All 38 listed native artifacts, 16 current binary/MDB/PMR

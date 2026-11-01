@@ -1,5 +1,8 @@
 # PMR legacy text encoding
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 18 October 2026. **MacRoman is established for the observed Mac-created project
 name.** The user confirmed that the character stored as byte `a7` was typed as
 `ß`. Apple defines exactly that MacRoman mapping. Media Composer's native codec
@@ -175,7 +178,7 @@ every historical PMR. No reader, setting or fallback implementation has changed.
 
 ## Retained evidence
 
-[Curated evidence](../../../Project%20Bella/evidence/pmr-text-encoding-2026-10-18.json)
+Curated evidence
 contains user-confirmed provenance, binary identities, exact instruction chains,
 the public API probe result, decompilation hashes and primary-source receipts.
 Raw decompiled code, probes and downloaded source remain under

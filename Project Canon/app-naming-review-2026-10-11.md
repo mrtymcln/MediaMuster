@@ -1,5 +1,8 @@
 # MediaMuster naming review
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 11 October 2026. This is a proposal for the entire app, including every declared
 local variable. No source names have been changed by this review.
 
@@ -16,8 +19,8 @@ would add churn without a demonstrated benefit.
 
 ## The complete list
 
-Open the [searchable naming inventory](app-naming-review-2026-10-11.html).
-It contains **225 source and build files** and **21,205 declaration locations**.
+The retired searchable naming inventory
+contained **225 source and build files** and **21,205 declaration locations**.
 It includes fields, constants, parameters,
 local temporaries, loop variables, structured bindings, lambda initializer
 captures, templates, aliases, enums and enum values, macros, logging categories,
@@ -178,7 +181,7 @@ names, validation, TXT export across filters, source fingerprints and storage
 failure handling. Visual browser review was unavailable because the browser tool
 rejects local file URLs.
 
-The [inventory manifest](evidence/app-naming-inventory-2026-10-11.json) records the
+The inventory manifest records the
 source hashes, counts and tooling. The report is self-contained and uses no
 external scripts or network requests. No app tests were rerun for this naming-only
 review because no application code or behaviour changed.

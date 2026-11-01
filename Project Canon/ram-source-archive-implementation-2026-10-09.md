@@ -1,5 +1,8 @@
 # Lossless source metadata archives in RAM
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Implemented 9 October 2026, following the [storage repair proposal](ram-storage-repair-proposal-2026-10-09.md)
 and [Windows/NEXIS investigation](nexis-memory-regression-2026-10-09.md).
 The local implementation and comparisons pass. The reported Windows/NEXIS crash
@@ -125,10 +128,10 @@ stamps remain unchanged. Full graph inspection restores one source at a time,
 after capturing retained memory. Allocation capacities are deliberately not
 semantic fields. The final app-boundary CSV is **byte-for-byte identical**.
 
-See the [full graph/row comparison](evidence/source-archive-full-proof-comparison-2026-10-09.json),
-[first diagnostic pair](evidence/source-archive-full-proof-comparison-first-pair-2026-10-09.json),
-[app-boundary comparison](evidence/source-archive-scanner-comparison-2026-10-09.json) and
-[final archive test log](evidence/source-archive-tests-final-2026-10-09.txt).
+See the full graph/row comparison,
+first diagnostic pair,
+app-boundary comparison and
+final archive test log.
 Diagnostic sources, build commands, library/code hashes, baseline ABI headers
 and input stamps are retained beside these receipts. Temporary probe binaries
 and static libraries are not added to the repository.

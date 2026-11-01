@@ -1,8 +1,11 @@
 # Bella Frame Rate from OMF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 24 October 2026. **OMF Frame Rate rules accepted.**
 [Duration is agreed](duration.md), as recorded in the
-[approval](../../../Project%20Bella/evidence/omf-duration-plan-2026-10-24.json).
+approval.
 This focused review reuses the established native rate/ownership evidence and
 five recorded OMF timings. No new media read, runtime implementation/cutover,
 Bin Filter change or new header-opening trigger.
@@ -113,7 +116,7 @@ Duration timing. The full priority table remains at the end of the plan.
 
 ## Evidence and limits
 
-The [curated evidence](../../../Project%20Bella/evidence/omf-frame-rate-2026-10-24.json)
+The curated evidence
 contains reuse-only native rate evidence, scoped MDVx/source receipts and compact
 derived observations. Source hashes and method artifacts distinguish verified
 control flow from illustrative output. Direct genuine-OMF codec tests include
@@ -125,7 +128,7 @@ function receipts are unavailable. Their recorded facts are reused through
 the present curated evidence; these missing raw files were not freshly rehashed
 or recovered. The evidence distinguishes that historical list from the present
 inputs and installed binary whose hashes were checked for this review.
-The [Frame Rate approval](../../../Project%20Bella/evidence/omf-frame-rate-plan-2026-10-24.json)
+The Frame Rate approval
 records the user's explicit acceptance. Original research remains unchanged.
 
 No native app/private API or production parser execution, build/tests, recording

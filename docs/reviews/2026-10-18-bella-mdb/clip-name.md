@@ -1,5 +1,8 @@
 # Bella: Clip Name and a missing PMR MasterMobId
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 18 October 2026. This follows the [MDB identity review](identities-and-pmr.md).
 Complete-ID normalization and MDB text decoding are approved. The user also
 approved the master-selection and missing-name rules below on **19 October 2026**.
@@ -157,7 +160,7 @@ physical-inventory and Bin Filter rules remain unchanged.
 
 ## Evidence and limits
 
-The [curated Clip Name evidence](../../../Project%20Bella/evidence/mdb-clip-name-2026-10-18.json)
+The curated Clip Name evidence
 contains native function addresses, binary hashes, independent experiment counts,
 probe receipts and qualifications. Raw disassembly and indexes stay outside the
 repository. Neither application was launched or run against altered databases.

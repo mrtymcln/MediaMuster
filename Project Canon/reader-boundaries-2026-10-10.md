@@ -1,5 +1,8 @@
 # Independent MDB and OMF reader ownership
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 10 October 2026. The user chose the names `MxfReader`, `OmfReader`, `projectMxf`
 and `projectOmf`, and explicitly required independent MDB/OMF implementations
 even where their formats overlap. This supersedes the earlier shared-interpreter
@@ -93,8 +96,8 @@ Verification completed with Qt 6.5.3 and C++17:
   the initial equality proof covers the available local records. The mounted EDIT
   comparison below supersedes that limited coverage.
 
-The [comparison summary](evidence/reader-boundaries-summary-2026-10-10.json) and
-[proof archive](evidence/reader-boundaries-proof-2026-10-10.zip) preserve receipts,
+The comparison summary and
+proof archive preserve receipts,
 CSV and test logs, including the initial test-expectation failures and final
 passing runs. Old-reader test suites remain present and passed.
 
@@ -133,7 +136,7 @@ reader tests provide header-fallback coverage. This full comparison establishes
 equivalence for local/EDIT media, not Windows/NEXIS performance or compatibility.
 The simultaneous proof runs are not a speed benchmark.
 
-The [mounted comparison summary](evidence/reader-boundaries-edit-summary-2026-10-10.json)
-and [complete receipts/CSV archive](evidence/reader-boundaries-edit-proof-2026-10-10.zip)
+The mounted comparison summary
+and complete receipts/CSV archive
 preserve the validation results, binary/source hashes and checksummed receipts.
 The initial local-only archive above remains available as historical evidence.

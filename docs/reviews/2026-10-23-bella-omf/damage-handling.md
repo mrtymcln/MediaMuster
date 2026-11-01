@@ -1,7 +1,10 @@
 # Bella OMF damage handling
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 25 October 2026. **The user approved these OMF damage boundaries.**
-The [approval record](../../../Project%20Bella/evidence/omf-damage-handling-plan-2026-10-25.json)
+The approval record
 preserves the direct instruction and unchanged research snapshot.
 The user approved [Effect](effect.md); this review settles the proposed general
 OMF failure boundaries. No runtime implementation/cutover or Bin Filter change.
@@ -115,7 +118,7 @@ separate; this review adds no automatic retry loop or new read trigger.
 
 ## Evidence limits
 
-The [curated record](../../../Project%20Bella/evidence/omf-damage-handling-2026-10-25.json)
+The curated record
 contains native/current receipts, hashes, source anchors and useful inspected
 test cases. Tests are evidence of intended cases, not new executions here;
 some broadly named projection tests actually use MDB and must stay labelled.

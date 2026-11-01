@@ -1,5 +1,8 @@
 # Bella: alpha MXF identification without MDB
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 22 October 2026. **The user approved the narrow alpha rule below
 on 22 October 2026. It remains unimplemented. JPEG 2000 is approved separately.**
 
@@ -113,12 +116,12 @@ This establishes an approved new MXF input path for the ten formerly blank cases
 Their expected label is then **1:1 Alpha 8bit**, matching the verified MDB
 result. No modified Bella reader/naming adapter has been executed. No extra
 header opening, essence reading or source-priority change is authorised by this rule.
-The [approval receipt](../../../Project%20Bella/evidence/mxf-alpha-identification-plan-2026-10-22.json)
+The approval receipt
 records the decision.
 
 ## Evidence and limits
 
-The [curated evidence](../../../Project%20Bella/evidence/mxf-alpha-identification-2026-10-22.json)
+The curated evidence
 retains three independent native/wire receipts, binary/configuration hashes,
 all ten positive header matches, controls and scope. Raw disassembly, original
 header copies and scripts remain in `/private/tmp`.

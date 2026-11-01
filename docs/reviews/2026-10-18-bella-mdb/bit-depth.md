@@ -1,5 +1,8 @@
 # Bella: Bit Depth from MDB
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 20 October 2026. **The user approved carrying over verified Bit
 Depth interpretation rules and useful tests into small new Bella helpers,
 keeping depth numeric with necessary format information and generating labels
@@ -80,7 +83,7 @@ independent own depth sources to arbitrate in this corpus.
 
 Complete identities, owner references, declared types, raw values/ranges,
 coding contexts and hash receipts are in the
-[curated evidence](../../../Project%20Bella/evidence/mdb-bit-depth-2026-10-20.json).
+curated evidence.
 Other byte orders/layouts, missing/damaged fields, mixed RGBA widths and
 extensible WAV summaries were not exercised by these real samples.
 

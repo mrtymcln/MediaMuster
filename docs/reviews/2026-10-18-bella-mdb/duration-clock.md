@@ -1,5 +1,8 @@
 # Bella: where the Duration rate conversion belongs
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 19 October 2026. **The user approved source-value preservation
 and the separate native-rule interpreter; no runtime implementation exists.**
 Frame-numbered timecode and following recorded drop-frame numbering when
@@ -386,17 +389,17 @@ qualified DF association, genuine-absence NDF and damaged-required-value blank
 policy are now agreed. Own CPNT/slot layout qualification, supported numeric
 forms and edge cases remain implementation coverage, without claiming a
 fully traced native audio UI path. See the
-[approval receipt](../../../Project%20Bella/evidence/mdb-duration-plan-2026-10-20.json).
+approval receipt.
 The full source-priority-table discussion remains deferred to the end of the
 requirements plan. No new header/source policy for other fields is introduced.
 
-The [audio-display evidence](../../../Project%20Bella/evidence/mdb-audio-duration-display-2026-10-20.json)
+The audio-display evidence
 records the prior-corpus re-aggregation, source references and seven independent
 exact-fraction arithmetic examples. No scanner, Qt binary or app was executed.
 
 ## Evidence and limits
 
-The [curated evidence](../../../Project%20Bella/evidence/mdb-duration-clock-2026-10-19.json)
+The curated evidence
 contains native path receipts, seven representative full-ID/raw-field examples,
 all 121 physical-header input receipts, source hashes and the independent
 verification. Raw probes and disassembly remain outside the repository.

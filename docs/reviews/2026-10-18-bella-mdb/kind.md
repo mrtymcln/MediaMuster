@@ -1,5 +1,8 @@
 # Bella: Kind from MDB
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 19 October 2026. The user originally approved six descriptor
 classes and lowercase `unknown` for missing/unrecognised types. **On 1 November
 2026 the user separately approved adding `JPED` to Video.** The current seven-class
@@ -8,7 +11,7 @@ corpus counts and raw evidence remain dated historical observations. Earlier
 text, identity, master-selection, Project, Original Bin and physical-path
 decisions remain agreed. This documentation update adds no production code.
 
-The [post-JPED validation](../../../artifacts/mdb-jped-kind-2026-11-01/validation.json)
+The post-JPED validation
 records exactly 30 Unknown-to-Video changes across both detail modes, with all
 other report values unchanged, 2,515 files/1,420 masters and no measurable
 performance regression. See the
@@ -308,7 +311,7 @@ fields, such as Clip Name and Project.
 
 ## Evidence and validation
 
-The [curated Kind evidence](../../../Project%20Bella/evidence/mdb-kind-2026-10-19.json)
+The curated Kind evidence
 records exact installed binary and database hashes, native addresses, MDVx's
 separate usage/audio paths, independent file-owned descriptor/track checks,
 coverage and the original agreed rule. Its 19 October approval is historical;

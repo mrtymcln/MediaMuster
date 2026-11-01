@@ -1,5 +1,8 @@
 # Bella: Precompute Category from MXF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 22 October 2026. **The user approved these MXF Precompute Category
 rules on 22 October 2026; they remain unimplemented.** MXF Type is approved separately. OldScanner remains active;
 Bin Filter is unchanged. The [MDB category rule](../2026-10-18-bella-mdb/precompute-category.md)
@@ -157,7 +160,7 @@ C++17 enums/value records and checked Qt 6.5.3 source decoding are sufficient.
 The useful improvement is compact source extraction around preserved semantics;
 no speed/memory gain is measured and no new framework is needed.
 
-[Curated evidence](../../../Project%20Bella/evidence/mxf-precompute-category-2026-10-22.json)
+Curated evidence
 retains native functions/hashes, the 11 raw owner-qualified comparisons, current
 source/test references and the MDVx route boundaries. No runtime files changed,
 app/private APIs ran, or new tests/builds/benchmarks were executed.

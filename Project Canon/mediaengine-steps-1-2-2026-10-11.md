@@ -1,5 +1,8 @@
 # MediaEngine: steps 1 and 2
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Implemented 11 October 2026, following the user's approval of steps 1 and 2 in the
 [retention plan](newtestament-retention-plan-2026-10-10.md). These changes preserve
 supported metadata and complete retained source contents. No stage 3 retention
@@ -157,7 +160,7 @@ establish successful completion of the 300,000-file Windows/NEXIS scan.
 
 ## Reproduction and source-state boundary
 
-The [verification receipt](evidence/mediaengine-steps-1-2-verification-2026-10-11.json)
+The verification receipt
 records frozen executable hashes, Release build settings, the passing test-log
 hash, every raw timing trial, retained/resident/high-water memory counters,
 complete proof hashes/counts and source-storage sizes. Before starts at clean

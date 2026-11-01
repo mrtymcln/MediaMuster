@@ -1,5 +1,8 @@
 # Bella: Project from MDB
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 19 October 2026. Project text decoding is already approved in the
 [text review](text-encoding.md). The user also approved the owner, key,
 blank-value and immediate-source fallback rules here on **19 October 2026**.
@@ -264,13 +267,13 @@ not establish exactly how or when that happened. They are not proof of damaged
 text. The user subsequently approved the file-first Bella choice on 19 October
 2026. PMR/MDB/header priority remains undecided.
 
-The [curated values evidence](../../../Project%20Bella/evidence/mdb-project-values-2026-10-19.json)
+The curated values evidence
 records exact names, counts, all differing pairs, per-database counts and hashed
 inputs/probes. Raw per-file identifiers remain in the temporary probe output.
 
 ## Evidence
 
-The [curated Project evidence](../../../Project%20Bella/evidence/mdb-project-2026-10-19.json)
+The curated Project evidence
 contains the native addresses and qualifications, source hashes, independent
 counts, agreed policy and hashed raw/probe receipts. All 45 listed native
 artifacts and all 15 current MDB/PMR/binary inputs were checked. Raw indexes,

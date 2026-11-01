@@ -1,5 +1,8 @@
 # Speed and memory review — 8 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 This is a read-only review using the attached C++ standards and the user's
 [modern C++ features reference](https://github.com/AnthonyCalandra/modern-cpp-features/tree/master).
 No application, reader, schema or test code changed. The additional C++ program
@@ -108,10 +111,10 @@ cancellation. Multiple workspaces may share the same storage backend.
 
 ## Receipts
 
-- [Review measurements and method](evidence/performance-review-2026-10-08.json).
-- [Per-trial diagnostic results](evidence/performance-review-probes-2026-10-08.jsonl).
-- [Diagnostic source](evidence/performance-review-probe-2026-10-08.cpp).
-- [Current full-scope baseline](evidence/dnx-alias-removal-real-scan-2026-10-08.json).
+- Review measurements and method.
+- Per-trial diagnostic results.
+- Diagnostic source.
+- Current full-scope baseline.
 - [Existing database-first memory investigation](database-first-and-memory-2026-10-07.md).
 
 ## Reader coverage after the first implementation
@@ -143,5 +146,5 @@ The user subsequently approved extending compaction. See the
 for the applied changes and measured tradeoffs; the paragraph above describes
 the read-only review before that implementation.
 
-See the [measurement receipt](evidence/remaining-reader-storage-2026-10-08.json)
-and [diagnostic source](evidence/remaining-reader-storage-probe-2026-10-08.cpp).
+See the measurement receipt
+and diagnostic source.

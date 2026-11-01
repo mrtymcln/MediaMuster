@@ -1,5 +1,8 @@
 # MediaEngine database lifetimes — 11 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Normal scans read the databases first, extract supported metadata and evidence,
 then release their temporary database copies and unused reader graphs. PMR, MDB,
 MXF and OMF/legacy sources follow the same ownership rule. Loaded AVB graphs remain
@@ -136,4 +139,4 @@ particularly where most media lacks databases.
 
 Full source/build hashes, trial ranges, preservation fingerprints, final wording
 delta, test logs and final application signature verification are recorded in the
-[verification receipt](evidence/mediaengine-database-lifetime-verification-2026-10-11.json).
+verification receipt.

@@ -1,9 +1,0 @@
-{
-  "local_markdown_links_checked": 509,
-  "missing_links": [],
-  "production_changes": [],
-  "parser_matches_approved_jped_source": true,
-  "generated_test_result": "155 passed, 0 failed; checked-in fixture selectors excluded",
-  "raw_revalidation_result": "28 authored parses exactly match saved outputs; three separate qualification findings remain open",
-  "all_checks_pass": true
-}

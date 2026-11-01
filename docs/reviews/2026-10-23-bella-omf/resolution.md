@@ -1,9 +1,12 @@
 # Bella Resolution from OMF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 25 October 2026. **OMF Resolution rules approved**, as recorded in the
-[approval](../../../Project%20Bella/evidence/omf-resolution-plan-2026-10-25.json).
+approval.
 [Compression](compression.md) was approved in the
-[approval record](../../../Project%20Bella/evidence/omf-compression-plan-2026-10-25.json).
+approval record.
 This review preserves the useful visible-picture-raster policy already agreed
 for [MDB](../2026-10-18-bella-mdb/resolution.md) and
 [MXF](../2026-10-21-bella-mxf/resolution.md), with OMF's own coordinate/layout
@@ -132,7 +135,7 @@ exercise both OmfReader and MdbReader, unlike some other MDB-default matrices.
 They are useful crop, partial-default, offset, field, overflow and exact-proxy
 preservation cases; source inspection does not constitute a new passing run.
 
-The [curated evidence](../../../Project%20Bella/evidence/omf-resolution-2026-10-25.json)
+The curated evidence
 separates native/current/MDVx receipts, reused bytes and illustrative arithmetic.
 No native app/private APIs, production parser, tests/builds, runtime code,
 media modifications or measured performance comparison. Compression's approved

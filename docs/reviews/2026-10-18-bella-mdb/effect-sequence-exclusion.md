@@ -1,5 +1,8 @@
 # Bella: Effect Sequence excluded
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Decision date: 20 October 2026. **The user explicitly excluded Effect Sequence:
 no column and no stored sequence information in Bella.** This supersedes its
 earlier inclusion in the optional precompute details. No runtime code changed;
@@ -37,7 +40,7 @@ Dropping it reduces stored data and table/export clutter. The gain is modest
 and unmeasured; the effect-token parsing still remains necessary. This is a
 requirements decision, not an implemented change or a benchmark.
 
-[Decision evidence](../../../Project%20Bella/evidence/effect-sequence-exclusion-2026-10-20.json)
+Decision evidence
 records the scope and source references. Existing field research/native/data
 receipts remain historical evidence; their descriptions of OldScanner's
 three-field helper do not override this later exclusion.

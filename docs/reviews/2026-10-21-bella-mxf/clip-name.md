@@ -1,10 +1,13 @@
 # Bella: Clip Name from MXF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research and approval date: 22 October 2026. The user approved the
 [MXF FileMobId/MasterMobId rules](identities.md), then **approved all five Clip
 Name owner/text/blank/retention rules below. They are requirements, not yet
 implemented.** OldScanner remains active and Bin Filter is unchanged. The
-[approval receipt](../../../Project%20Bella/evidence/mxf-clip-name-plan-2026-10-22.json)
+approval receipt
 records this decision separately from the next, unapproved Project review.
 
 ## Source and encoding
@@ -129,10 +132,10 @@ requested. The existing Duration/Original Bin decisions remain unchanged.
 
 ## Evidence
 
-The [curated Clip Name evidence](../../../Project%20Bella/evidence/mxf-clip-name-2026-10-22.json)
+The curated Clip Name evidence
 preserves native/source receipts, complete comparison samples and hashes.
-The [22 October identity approval](../../../Project%20Bella/evidence/mxf-identities-plan-2026-10-22.json)
-records the preceding user decision. The [Clip Name approval receipt](../../../Project%20Bella/evidence/mxf-clip-name-plan-2026-10-22.json)
+The 22 October identity approval
+records the preceding user decision. The Clip Name approval receipt
 supersedes the earlier proposal status without changing the research findings
 or their limitations.
 No Bella code, build, parser suite, app/private API, essence read or comparative

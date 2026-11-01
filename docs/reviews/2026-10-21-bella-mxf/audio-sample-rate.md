@@ -1,5 +1,8 @@
 # Bella: audio Sample Rate from MXF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 22 October 2026. **The user approved the focused MXF audio Sample
 Rate rules below on this date; they remain unimplemented.** The preceding Frame Rate rules
 are agreed. The audio Sample Rate column's kHz presentation, video's blank
@@ -126,12 +129,12 @@ it does not adapt OldScanner into Bella or claim a measured performance gain.
 
 ## Evidence and planning status
 
-The [approval receipt](../../../Project%20Bella/evidence/mxf-audio-sample-rate-plan-2026-10-22.json)
+The approval receipt
 records the decision without approving the subsequent Bit Depth review or
 other new MXF navigation/field proposals. Earlier pending wording in the
 historical research is superseded by this approval.
 
-The [curated receipt](../../../Project%20Bella/evidence/mxf-audio-sample-rate-2026-10-22.json)
+The curated receipt
 records installed-binary/source hashes, native boundaries, five reused header
 facts and the agreed rule. Raw artifacts remain in `/private/tmp`. No app/private
 API, fresh drive/recording-payload read, production test, benchmark or runtime

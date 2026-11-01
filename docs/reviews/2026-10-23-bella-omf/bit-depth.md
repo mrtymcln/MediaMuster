@@ -1,9 +1,12 @@
 # Bella Bit Depth from OMF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 25 October 2026. **OMF Bit Depth rules approved**, as recorded in the
-[approval](../../../Project%20Bella/evidence/omf-bit-depth-plan-2026-10-25.json).
+approval.
 Audio Sample Rate and its shared-helper simplification are agreed, as recorded
-in the [approval](../../../Project%20Bella/evidence/omf-audio-sample-rate-plan-2026-10-25.json).
+in the approval.
 This review preserves the agreed numeric-depth/necessary-format/late-label
 design. No runtime implementation/cutover, Bin Filter change, extra column,
 Compression naming change or new header-opening reason.
@@ -149,7 +152,7 @@ has already been measured.
 
 ## Evidence
 
-The [curated evidence](../../../Project%20Bella/evidence/omf-bit-depth-2026-10-25.json)
+The curated evidence
 contains native/current/MDVx receipts, fresh and reused method boundaries,
 five compact observations and the one bounded AIFF-C encoding recheck.
 Historical unavailable raw references are separated from present rehashed

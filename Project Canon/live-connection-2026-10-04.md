@@ -1,5 +1,8 @@
 # Connecting MediaEngine to the application
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Started 4 October 2026; continued 7 October 2026. The user authorized connecting the replacement engines immediately,
 without making RAM optimization a prerequisite. The existing table, CSV and file
 operation executor remain the consumers of the new scan results.
@@ -156,7 +159,7 @@ pairs whose databases use exactly `2997/100` or `23976/1000`, while their matchi
 MXF headers use `30000/1001` or `24000/1001`. A finite set of verified resolution-ID
 and decimal-clock pairs now supplies naming-only operating points, subject to
 the same profile, raster, layout, depth and sampling checks. No nearest-rate
-search or general rounding is used. [The complete paired evidence](evidence/dnx-mdb-decimal-clocks-2026-10-07.json)
+search or general rounding is used. The complete paired evidence
 records those cases; recorded Frame Rate and Duration values stay unchanged.
 The same legacy decimal clock occurs in
 `BLACK_720x480x1_DV411.omf`, whose codec remains `DV 25 411` without a guessed
@@ -185,7 +188,7 @@ Read six PMRs and six MDBs first; **2,348 media headers were deliberately skippe
 and 65 read**. Sixty-four needed Clip Duration evidence and one lacked a usable
 database match. The sources retain honest `NotRead` receipts and scheduling reasons.
 See [database-first scheduling](database-first-scheduling-2026-10-07.md) and the
-[raw scan report](live-scan-2026-10-07.json).
+raw scan report.
 
 | Same-corpus Debug measurement | Before these fixes | Final |
 | --- | ---: | ---: |
@@ -200,10 +203,10 @@ this remains a substantial RAM cost, not a return to the old app's footprint.
 [Allocation evidence](database-first-and-memory-2026-10-07.md) separates the
 smaller storage improvements from the main reduction in unnecessary header reads.
 
-The earlier stored-only [production CSV](evidence/full-scan-2026-10-07.csv) matches the old export
+The earlier stored-only production CSV matches the old export
 exactly for 19 of its 24 columns, including names, projects, bins, file durations,
 MobIds, MasterMobIds and database status. No populated field became blank.
-Changed cells are fully enumerated in the [cell-by-cell comparison](evidence/full-scan-comparison-2026-10-07.json):
+Changed cells are fully enumerated in the cell-by-cell comparison:
 file-associated clip-track lists, approved DNx names/flavours, stored raster
 including padding, numeric Bit Depth separate from Sample Format, and one newly
 established Source Filename. The readable comparison explains every category;

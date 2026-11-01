@@ -1,5 +1,8 @@
 # Bella: MXF header reading
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 21 October 2026. **Capability comparison and recommendations;
 the focused identity, Clip Name, Project, Kind, Duration, Frame Rate and audio
 Sample Rate rules were approved on 22 October,
@@ -247,7 +250,7 @@ then assemble the full source-priority table as requested.
 
 ## Evidence and verification limits
 
-The [curated comparison](../../../Project%20Bella/evidence/mxf-header-review-2026-10-21.json)
+The curated comparison
 contains independent installed-native/source audits, the early-filter follow-up,
 ten header observations and hashed evidence inputs. Raw scripts and disassembly
 remain in `/private/tmp`. The header probe hashes captured metadata ranges, not

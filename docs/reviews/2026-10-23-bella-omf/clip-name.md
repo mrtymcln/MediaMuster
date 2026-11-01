@@ -1,7 +1,10 @@
 # Bella Clip Name from OMF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 24 October 2026. **The user approved these Clip Name rules.** The
-[approval record](../../../Project%20Bella/evidence/omf-clip-name-plan-2026-10-24.json)
+approval record
 preserves the direct instruction and original research snapshot. The user has
 approved the OMF reading, version/text and FileMobId/MasterMobId rules. This is
 a focused field review for the supported Bento1/legacy-OMF1 media layout, not
@@ -111,10 +114,10 @@ production parser/table. No recording payload was read.
 
 ## Evidence and limits
 
-The [curated evidence](../../../Project%20Bella/evidence/omf-clip-name-2026-10-24.json)
+The curated evidence
 retains native/source receipts, exact source anchors, five fresh bounded name
 rechecks and explicit distinctions between tests inspected and tests run.
-The [ID approval](../../../Project%20Bella/evidence/omf-identities-plan-2026-10-24.json)
+The ID approval
 records the preceding user decision. The original identity research snapshot
 remains unchanged.
 

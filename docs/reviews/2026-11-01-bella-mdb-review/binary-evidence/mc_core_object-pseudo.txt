@@ -1,6 +1,0 @@
-int __ZN12CoreAttrList10FindObjectEPKcPh(int * arg0, int * arg1) {
-    r4 = *(*arg0 + 0x140);
-    r0 = (r4)(arg0, 0x3, arg1, r2, r4);
-    return r0;
-}
-

@@ -1,5 +1,8 @@
 # Bella PMR format and scanner research
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 18 October 2026. PMR is a compact cache that connects managed-media filenames to
 file identities, associated master identities, a project string and a modification
 word. It cannot by itself fill MediaMuster's technical metadata columns.
@@ -320,7 +323,7 @@ that sample. That does not establish uniqueness for arbitrary Avid IDs or a
 measured speed advantage. Full IDs differing outside the excerpt are
 indistinguishable to the inspected short-key comparators.
 
-[ID comparison evidence](../../../Project%20Bella/evidence/mdvx-identities-2026-10-18.json)
+ID comparison evidence
 retains exact instructions, comparator/block bindings, artifact hashes and the
 sample check. The installed binary hash matches the earlier inspection. No
 runtime scan was made. The user subsequently approved reading complete IDs and
@@ -349,7 +352,7 @@ attachment. This is a design implication, not implemented production code.
 ## Evidence identity and reproduction
 
 Curated hashes, per-file results, native addresses and GitHub receipt are retained
-in [the evidence summary](../../../Project%20Bella/evidence/pmr-research-2026-10-18.json).
+in the evidence summary.
 The installed library is
 `/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib`.
 Its whole universal-binary SHA-256 is

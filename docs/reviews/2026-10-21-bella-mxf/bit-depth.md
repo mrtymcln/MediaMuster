@@ -1,5 +1,8 @@
 # Bella: Bit Depth from MXF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 22 October 2026. **The user approved the focused MXF source,
 layout and missing-value rules on 22 October 2026; they remain unimplemented.**
 Audio Sample Rate is agreed. The existing Bit Depth core remains agreed: carry verified
@@ -171,12 +174,12 @@ or essence claim is introduced.
 
 ## Evidence and limits
 
-The [approval receipt](../../../Project%20Bella/evidence/mxf-bit-depth-plan-2026-10-22.json)
+The approval receipt
 records the user's acceptance of these recommendations. Source priorities,
 extra header reads and the outstanding uncommon fixed-point labels remain
 separate decisions. This is requirements approval, with no runtime cutover.
 
-The [curated receipt](../../../Project%20Bella/evidence/mxf-bit-depth-2026-10-22.json)
+The curated receipt
 records installed binary/source hashes, fresh native padding proof, actual
 scalar/layout bytes, primary-source hashes and the recommendation now approved. Raw disassembly
 and probes remain in `/private/tmp`.

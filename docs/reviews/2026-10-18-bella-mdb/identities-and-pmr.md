@@ -1,5 +1,8 @@
 # Bella: MDB identities and matching to PMR
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 18 October 2026. This follows the [MDB overview](REVIEW.md).
 Complete identities, the KelpieId duplicate rules and the shared normalization
 component below are approved. The subsequent Clip Name review's master-selection
@@ -166,7 +169,7 @@ change is introduced by this review.
 
 ## Evidence and limits
 
-The [curated identity evidence](../../../Project%20Bella/evidence/mdb-identities-2026-10-18.json)
+The curated identity evidence
 records native addresses, binary hashes, selected actual-file ranges and bounded
 verification results. The principal native anchors are `ReadUID` at `0xb66e8`,
 `ConvertFromOmfiUid` at `0x23675c`, `ConvertToOmfiUid` at `0x236748`,

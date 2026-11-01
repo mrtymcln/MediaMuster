@@ -1,5 +1,8 @@
 # Bella: physical-file Duration from MDB
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 19 October 2026. **MDB-first sourcing, keeping Length/SampleRate
 and a separate exact native-rule interpreter are agreed. On 20 October,
 frame-numbered timecode and following recorded drop-frame numbering when available were
@@ -309,7 +312,7 @@ design; corpus coverage is supporting evidence rather than an accuracy guarantee
 
 ## Evidence and validation
 
-The [curated Duration evidence](../../../Project%20Bella/evidence/mdb-duration-2026-10-19.json)
+The curated Duration evidence
 contains native/MDVx addresses, current binary/database hashes, exact field
 types and rates, compact actual examples and the proposed rule. Raw disassembly,
 full probes and value indexes remain outside the repository. The local copy

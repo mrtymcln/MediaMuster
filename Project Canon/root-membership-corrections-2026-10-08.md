@@ -1,5 +1,8 @@
 # Recorded contents and unresolved references
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Implementation and verification: 8 October 2026. This follows correction priorities
 1 and 2 in the [7 October audit closeout](audit-closeout-2026-10-07.md): F40/F14
 recorded root membership and F06/F07 incomplete or contradictory MXF references.
@@ -147,10 +150,10 @@ notices increased from 273 to 275 because two newly read headers exposed equally
 eligible source-path disagreements. Those alternatives remain in evidence; no
 arbitrary winner was introduced. The exact cell/path changes and source receipts
 are linked below.
-The [13-cell ownership/path proof](evidence/root-membership-changed-cells-proof-2026-10-08.json)
+The 13-cell ownership/path proof
 retains the linked header tracks/locators and the active versus excluded MDB
-attribute paths. Its [frozen-build receipt](evidence/root-membership-changed-cells-receipt-2026-10-08.json)
-and [probe source](evidence/root-membership-changed-cells-probe-2026-10-08.cpp)
+attribute paths. Its frozen-build receipt
+and probe source
 record how those observations were obtained.
 The prior CSV preserves displayed values rather than an object-level selection
 receipt. The excluded record is the sole matching-ID path to the old Bin value,
@@ -162,14 +165,14 @@ The scan took **20,736 ms**. `/usr/bin/time` recorded **2,539,395,648 bytes** pe
 process footprint (about 2.54 GB). This is a Debug observation with uncontrolled
 filesystem cache, not a comparative performance guarantee or a new memory cap.
 
-- [Corrected scanner-fixture run](evidence/root-membership-scanner-fixtures-2026-10-08.txt)
-- [Fresh MXF counterexample results](evidence/root-membership-mxfprojection-2026-10-08.json)
-- [OMF counterexamples retaining other open findings](evidence/root-membership-omfprojection-2026-10-08.json)
-- [Real-scan log](evidence/root-membership-real-scan-2026-10-08.txt)
-- [Fresh CSV](evidence/full-scan-root-membership-2026-10-08.csv)
-- [Every-cell/path comparison and hashes](evidence/root-membership-comparison-2026-10-08.json)
-- [Inventory, source receipts and notices](live-scan-root-membership-2026-10-08.json)
-- [Build, source/archive hashes and diagnostic commands](evidence/root-membership-verification-2026-10-08.json)
+- Corrected scanner-fixture run
+- Fresh MXF counterexample results
+- OMF counterexamples retaining other open findings
+- Real-scan log
+- Fresh CSV
+- Every-cell/path comparison and hashes
+- Inventory, source receipts and notices
+- Build, source/archive hashes and diagnostic commands
 
 ## Audit status and remaining limits
 
@@ -177,7 +180,7 @@ This closes the reported mechanisms in **F06, F07, F14 and F40** within the
 admitted formats and approved strict policy. The updated 40-entry status totals
 are 25 Resolved, 9 Partly resolved, 1 Open, 1 Needs evidence and 4 Accepted scope
 limits. The 7 October ledger remains the dated earlier assessment.
-The [updated machine-readable ledger](evidence/audit-closeout-ledger-2026-10-08.json)
+The updated machine-readable ledger
 identifies the four newly assessed entries and the inherited assessments.
 
 These ownership corrections do not finish timeline interpretation. Exact

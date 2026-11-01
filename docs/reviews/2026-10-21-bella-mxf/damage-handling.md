@@ -1,8 +1,11 @@
 # Bella MXF damage handling
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 23 October 2026. **The user approved these boundaries on 23 October 2026;
 no Bella runtime change or cutover.**
-The [approval receipt](../../../Project%20Bella/evidence/mxf-damage-handling-plan-2026-10-23.json) records the accepted scope.
+The approval receipt records the accepted scope.
 
 Keep the physical file listed. Use metadata only when its bytes, meaning and
 ownership can be established. Within a safely read header, one damaged value
@@ -17,7 +20,7 @@ approved field rules, source priorities or reasons for opening a media header.
 
 These findings come from installed native routines and current source code.
 They establish particular failure paths, not universal recovery guarantees.
-The [evidence record](../../../Project%20Bella/evidence/mxf-damage-handling-2026-10-23.json)
+The evidence record
 retains binary hashes, native addresses, source anchors and inspected tests.
 
 | Reader | Verified behavior | Consequence for Bella |

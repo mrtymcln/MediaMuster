@@ -1,5 +1,8 @@
 # Bella: preserve Compression from MXF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 22 October 2026. **Preserving the current Compression behavior
 is already approved, and the user reaffirmed it for MXF.** This review maps the
 inputs needed by that preserved system; it introduces no new catalogue,
@@ -129,7 +132,7 @@ eligible already-read MXF/OMF results precede MDB results. Preserve that
 behavior; it does not authorize opening an extra header. The full priority
 table and extra-read policy remain scheduled at the end of the review.
 
-The [curated evidence](../../../Project%20Bella/evidence/mxf-compression-2026-10-22.json)
+The curated evidence
 records the independent native/source audits, exact input contract and reused
 sample facts. Raw disassembly remains in `/private/tmp`. This is requirements
 research: no runtime files changed, no production tests or app/private APIs

@@ -1,5 +1,8 @@
 # Media Composer's Project-name display path
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 18 October 2026. Read-only analysis of the installed **Media Composer
 26.8.0.58987, arm64**. The PMR-derived Media Tool project chooser explicitly
 decodes Project bytes using **the receiving Mac's current system encoding**.
@@ -186,7 +189,7 @@ codec probe. Media Composer's private functions were not executed, its UI was no
 used to rescan media, language preferences were not changed, and no timing claim
 or Windows-build decoding claim is made.
 
-[Curated evidence](../../../Project%20Bella/evidence/pmr-project-display-2026-10-18.json)
+Curated evidence
 retains the binary hashes/UUIDs, exact call and dispatch receipts, local probe and
 decompilation hashes. Raw disassembly and recovered pseudo-C remain in temporary
 folders under `/private/tmp/bella-pmr-project-display-20261018-*`; they are not

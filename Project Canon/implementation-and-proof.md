@@ -1,5 +1,8 @@
 # Implementation and proof
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Status: the fresh engines are connected to the live application; see the
 [live connection and verification report](live-connection-2026-10-04.md).
 Requirements below remain the acceptance plan, not a claim that every check is complete.

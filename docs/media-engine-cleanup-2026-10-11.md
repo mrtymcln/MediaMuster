@@ -1,5 +1,8 @@
 # MediaEngine cleanup — 11 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 MediaEngine is now the application's only discovery, reading and metadata engine.
 Its code lives in `src/mediaengine/`, with the concrete component names recorded
 in [engine terminology](media-engine.md). The superseded implementation and its
@@ -22,7 +25,7 @@ supported media-data classes. Existing contents-membership checks still apply.
 
 This recognises a demonstrated Avid layout. It does not establish formal class
 inheritance for every extension class or derive compression from the word MPEG.
-The [independent byte examination](../Project%20Canon/evidence/mediaengine-mpeg-ownership-2026-10-11.json)
+The independent byte examination
 records specimen hashes, property locations and the OMF specification/toolkit
 evidence. A real MPEG file passes the operation identity check with the matching
 MobId; a different claim is refused without copying it.
@@ -48,7 +51,7 @@ compression mappings were not changed by the ownership correction.
 The live comparison retains the same 475,088 source objects, 498,221 relationships
 and 2,719,926 properties as the saved scan. No metadata-retention or memory-policy
 cut is part of this cleanup. Detailed counts and verification context are in the
-[verification receipt](../Project%20Canon/evidence/mediaengine-cleanup-verification-2026-10-11.json).
+verification receipt.
 
 This verifies the tested macOS build and available corpus. The 300,000-file
 Windows/NEXIS scan has not been repeated for this cleanup; this report makes no

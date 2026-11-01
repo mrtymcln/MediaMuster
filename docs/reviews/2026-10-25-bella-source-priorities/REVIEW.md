@@ -1,8 +1,11 @@
 # Bella source priorities and media-header opening
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research/proposal: 25 October 2026. **The user approved the complete table and
 header-opening rules on 26 October 2026.** The
-[approval record](../../../Project%20Bella/evidence/source-priorities-plan-2026-10-26.json)
+approval record
 preserves the direct instruction and unchanged proposal snapshot.
 This combines the earlier field rules with the now-agreed final source-order
 and opening choices. No new format/field, runtime implementation, Bin Filter
@@ -111,7 +114,7 @@ background organiser with one shared reader team. Remaining engineering choices
 still require the user's check-in; see the
 [decision register](../2026-10-26-bella-scanner-design/REVIEW.md#decision-register).
 
-The [decision basis](../../../Project%20Bella/evidence/source-priorities-2026-10-25.json)
+The decision basis
 links the relevant existing approvals/reviews. This turn adds no new binary or
 physical-media audit, parser/test/build run, measured performance result or
 runtime change. The field/opening table is agreed. **27 October update:** all

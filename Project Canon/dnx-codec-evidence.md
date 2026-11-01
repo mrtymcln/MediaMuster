@@ -1,5 +1,8 @@
 # DNx codec evidence
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Checked 3 October 2026. Research only; no parser fix is implemented by this note.
 
 ## Primary references
@@ -211,7 +214,7 @@ The user independently confirmed the `220` name in MediaInfo and VLC. A local
 read through the installed MediaInfoLib 26.05 independently reproduced the
 profile, geometry, scan type and component format; its JSON output did not
 include the numbered name. These are recorded separately in the
-[reproducible file evidence](evidence/dnxhd220-legacy-clock-2026-10-07.json).
+reproducible file evidence.
 
 The initial correction accepted only this exact legacy OMF profile/clock combination,
 subject to the existing raster, layout, depth and sampling checks. It neither
@@ -231,7 +234,7 @@ properties repeat those exact decimal rates. The corresponding MXF descriptors
 record `30000/1001` or `24000/1001`. Each comparison matches the complete file
 MobId after applying the source's established byte convention, and agrees on
 profile, raster, layout, depth and chroma subsampling. See the
-[fourteen file comparisons](evidence/dnx-mdb-decimal-clocks-2026-10-07.json).
+fourteen file comparisons.
 
 These observations establish finite, source-qualified **name-table clock
 spellings**, not a general equality between decimal and NTSC rational rates.

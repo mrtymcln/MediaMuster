@@ -1,7 +1,10 @@
 # Bella OMF versions and text encoding
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 23 October 2026. **The user approved these release-one version and text rules.**
-The [approval record](../../../Project%20Bella/evidence/omf-versions-and-text-plan-2026-10-23.json)
+The approval record
 preserves the direct instruction and research snapshot. The TOC-driven reading
 and compact-retention approach is already agreed. This review records the
 release-one version range and text rules; it does not implement a parser or
@@ -122,7 +125,7 @@ Windows or arbitrary third-party producer claim.
 
 ## Verification and next step
 
-The [evidence record](../../../Project%20Bella/evidence/omf-versions-and-text-2026-10-23.json)
+The evidence record
 contains fresh installed-native/source receipts, the captured Mac project bytes,
 the pinned external sample and explicit coverage limits. No application/private
 API or production parser/build/test was executed. Tests were inspected only;

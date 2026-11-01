@@ -1,5 +1,8 @@
 # Bella: Effect Category from MDB
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 20 October 2026. The user approved the separate
 [Precompute Category rules](precompute-category.md), including blank unreadable
 values, and asked to preserve current Effect Category behaviour while reviewing
@@ -134,7 +137,7 @@ additional local source-reference candidates do not extend the physical
 inventory. No new physical-row recognition weighting or changed
 association/inventory rule is claimed.
 
-[Curated evidence](../../../Project%20Bella/evidence/mdb-effect-category-2026-10-20.json)
+Curated evidence
 keeps the provenance split, native/resource receipts, category counts and
 representative owner-qualified raw name values. Bulk indexes and probes remain
 outside the repository.

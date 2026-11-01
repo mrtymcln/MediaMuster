@@ -1,5 +1,8 @@
 # Bella Effect Category from MXF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 22 October 2026. The user approved MXF
 [Precompute Category](precompute-category.md) separately. **The user approved
 these MXF Effect Category rules on 22 October 2026; they remain unimplemented.**
@@ -130,7 +133,7 @@ The useful Bella change is a small adapter around its selected inputs, using
 C++17 value returns and Qt 6.5.3 QString/shared lookup facilities. No performance
 gain is measured by this source review.
 
-[Curated evidence](../../../Project%20Bella/evidence/mxf-effect-category-2026-10-22.json)
+Curated evidence
 retains native/MDVx/current-source hashes, route anchors and the eleven captured
 name checks. No runtime code changed, app/private API ran, build/test executed
 or benchmark was performed.

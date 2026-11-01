@@ -1,5 +1,8 @@
 # Bella: Frame Rate from MXF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 22 October 2026. **The user approved the focused MXF Frame Rate
 rules below on this date; they remain unimplemented.** The preceding Duration rules are
 agreed, including DF semicolons and NDF colons. Existing numeric rate storage,
@@ -151,12 +154,12 @@ discussion remains at the end of the plan as requested.
 
 ## Evidence and limits
 
-The [approval receipt](../../../Project%20Bella/evidence/mxf-frame-rate-plan-2026-10-22.json)
+The approval receipt
 records the decision without approving the subsequent audio Sample Rate review
 or other new MXF field/navigation choices. Earlier pending wording in the
 historical research is superseded by this approval.
 
-The [curated receipt](../../../Project%20Bella/evidence/mxf-frame-rate-2026-10-22.json)
+The curated receipt
 records installed-binary/source hashes, native anchors, reused actual-header
 facts, two bounded fixture controls and the agreed rule. Raw disassembly and
 probe artifacts remain in `/private/tmp`.

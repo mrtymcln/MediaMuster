@@ -1,5 +1,8 @@
 # MediaEngine media-source storage proposal
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Originally recorded 10 October 2026 as an investigated proposal, before any
 media-source image implementation or change to retained information was approved.
 
@@ -95,7 +98,7 @@ decision and verified handling before implementation.
 sections 7.5 and 12, establishes both later metadata repetitions/updates and
 indexed partition discovery. The inspected corpus supplies no example where
 later metadata changes the displayed values. See the saved
-[framing inventory](evidence/fresh-mxf-klv-counts-2026-10-04.jsonl) and
+framing inventory and
 [reader evidence](fresh-mxf-reader-2026-10-04.md).
 
 ## Recommended representation

@@ -1,5 +1,8 @@
 # Local startup and support check — 18 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 The local startup/support check passed without an application-code change.
 The user chose to finish the non-scanner/parser cleanup and retain the current
 logger rather than investigate logging overhead.
@@ -8,7 +11,7 @@ Source revision: `2d5772ea2488d809a482948e4a8ded515d09d2d3`. The current Debug
 universal build uses Qt 6.5.3 and C++17; native execution was arm64 on macOS 15.8.2.
 The build and bundle signature verification succeeded. Detailed results,
 binary/source hashes and controlled-probe compile commands are in the
-[receipt](evidence/startup-support-acceptance-2026-10-18.json).
+receipt.
 
 ## Normal application
 

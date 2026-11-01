@@ -1,5 +1,8 @@
 # Bella: MDB text encoding
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 18 October 2026. This follows the [MDB overview](REVIEW.md).
 The user approved the Bella text rule below on 18 October 2026, explicitly
 including deliberate recovery through the separate legacy value when Unicode is
@@ -55,7 +58,7 @@ the loss flag; the path writers request it and log loss but still write the
 converted copy. A healthy MDB can therefore have a less complete legacy value.
 
 The native codec selector is `CFStringGetSystemEncoding()`. The earlier
-[standalone Core Foundation probe](../../../Project%20Bella/evidence/pmr-project-display-2026-10-18.json)
+standalone Core Foundation probe
 returned encoding 0, Western (Mac OS Roman), on this Mac. This corroborates the
 MacRoman scope and the actual `ß` Project bytes. It is not proof that every
 historical or Windows writer uses MacRoman, or a measurement of any application
@@ -113,7 +116,7 @@ values contain the known MacRoman Project spelling. Other attributes, including
 `Name` and `Comments`, use both Kind 2 and Kind 4 on different owners.
 
 The existing committed fixture
-[`msmMMOB_macroman.mdb`](../../../tests/fixtures/msmMMOB_macroman.mdb)
+`msmMMOB_macroman.mdb`
 provides a non-ASCII pair on bin-reference object 71271:
 
 | Representation | File offset | Bytes including NUL | Decoded text |
@@ -163,7 +166,7 @@ remain separate requirements. PMR's approved whole-set fallback is unchanged.
 
 Addresses refer to the arm64 slice of the hashed installed binaries. Full hashes,
 selected call sites, actual-file observations and temporary-artifact receipts are
-in the [curated text evidence](../../../Project%20Bella/evidence/mdb-text-encoding-2026-10-18.json).
+in the curated text evidence.
 Raw disassembly and probes remain outside the repository.
 
 | Binary | Function | Address |

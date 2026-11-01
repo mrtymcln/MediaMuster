@@ -1,5 +1,8 @@
 # Applied app naming choices — 11 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 The exported `mediamuster-naming-choices.txt` contained 166 decisions: 133 renames
 and 33 keeps. All decisions were applied, with the user's approved corrections
 below. Connected declarations, definitions, calls, includes and build entries
@@ -61,7 +64,7 @@ The existing 28 missing-field-initializer test warnings are unchanged. No Window
 build or complete drive scan was run for this naming-only batch. Suite runtimes
 (36.22 s before, 34.08 s after) are not scan-performance measurements.
 
-The [machine-readable receipt](evidence/app-naming-applied-2026-10-11.json)
+The machine-readable receipt
 records every decision, its resolved name, file moves, source hashes and check
-results. The [test log](evidence/app-naming-tests-2026-10-11.txt) records the final
+results. The test log records the final
 suite run.

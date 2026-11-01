@@ -1,5 +1,8 @@
 # Full scan comparison — 7 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 This is the historical database-first scan with stored-only Resolution. The user
 subsequently revised that column to visible geometry; see [the later verification](visible-resolution-2026-10-07.md).
 The CSV, JSON and measurements below remain evidence of this earlier source state.
@@ -33,7 +36,7 @@ This run used about **82% less peak memory** and took about **89% less scan time
 
 These are single-run measurements, with uncontrolled filesystem-cache state. They are not a statistical benchmark or a measurement of the running GUI. The earlier user-reported **3,774 ms / 147.1 MB** old-app baseline has different instrumentation and unspecified build/cache state. The new engine has **not** been shown to match that old performance. Retaining the richer source evidence still costs substantial RAM.
 
-Logs: [before](evidence/full-scan-before-database-first-2026-10-07.txt), [final scan](evidence/live-connection-real-scan-2026-10-07.txt). The [scan report](live-scan-2026-10-07.json) contains per-source outcomes, read reasons, graph sizes, retained-memory measurements, row identities and notices.
+Logs: before, final scan. The scan report contains per-source outcomes, read reasons, graph sizes, retained-memory measurements, row identities and notices.
 
 ## Every exported field
 
@@ -76,7 +79,7 @@ Counts compare exact cell text across the 2,413 matching paths. “Filled” is 
 - **Bit Depth — 16 cells:** eight previously blank values become `16-bit`; four `Float` cells become `32-bit`; four become `16-bit`. Numeric representation remains separately recorded in internal Sample Format, as agreed.
 - **Source Filename — one cell:** an explicit recorded import filename supplies `0943VR.MXF`. URL basenames decode percent escapes only for actual URL properties; native paths and original values remain intact. See [URI evidence](source-filename-uri-2026-10-07.md).
 
-The [complete cell-by-cell comparison](evidence/full-scan-comparison-2026-10-07.json) retains all old/new values, paths, hashes and codec-change patterns. The [new production CSV](evidence/full-scan-2026-10-07.csv) can be inspected directly. The supplied baseline file was not edited.
+The complete cell-by-cell comparison retains all old/new values, paths, hashes and codec-change patterns. The new production CSV can be inspected directly. The supplied baseline file was not edited.
 
 ## Notices retained
 

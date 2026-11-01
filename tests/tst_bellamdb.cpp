@@ -2,6 +2,8 @@
 // database checks below use pinned identities and recorded field expectations;
 // no OldScanner reader or projection supplies their expected values.
 
+#include "testfixtures.h"
+
 #include "bella/mdbparser.h"
 #include "testmediaenginebento.h"
 
@@ -2030,6 +2032,7 @@ void TestBellaMdb::genuineDatabases_data()
 
 void TestBellaMdb::genuineDatabases()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(QString, relative);
 	const std::atomic_bool stop{false};
 	const auto report = Bella::parseMdb(QStringLiteral(FIXTURES_DIR) + '/' + relative, stop, true);
@@ -2044,6 +2047,7 @@ void TestBellaMdb::genuineDatabases()
 
 void TestBellaMdb::genuineAudioFieldsAndIdentities()
 {
+	REQUIRE_TEST_FIXTURES();
 	const std::atomic_bool stop{false};
 	const auto report = Bella::parseMdb(QStringLiteral(FIXTURES_DIR "/omf/mc2026_audio/msmMMOB.mdb"), stop, true);
 	QVERIFY2(report.reading == Bella::MdbReadResult::Completed, qPrintable(report.problemNotes.join('\n')));

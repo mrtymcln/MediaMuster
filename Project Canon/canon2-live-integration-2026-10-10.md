@@ -1,5 +1,8 @@
 # MediaEngine live integration
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 On 10 October 2026, after reviewing the native MXF storage comparison, the user
 approved the native-source-storage pipeline. MediaEngine supplies the application's
 MediaScanner engine.
@@ -70,8 +73,8 @@ The Console now names MediaEngine and reports retained native database/MXF paylo
 alongside any graph archives. These payload figures are not total app RAM.
 Single live-audit timings are saved as observations, without a performance claim.
 
-Saved [verification summary](evidence/canon2-live-integration-summary-2026-10-10.json)
-and [proof archive](evidence/canon2-live-integration-proof-2026-10-10.zip) include
+Saved verification summary
+and proof archive include
 the before/after reports and CSVs, build/test logs, binary receipts and source
 snapshots. No copied media or executable binaries are included.
 

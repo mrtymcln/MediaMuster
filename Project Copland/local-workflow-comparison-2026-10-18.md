@@ -1,5 +1,8 @@
 # Local workflow comparison — 18 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Copland substantially reduces memory **while a bin remains loaded** on this
 sample. It does not substantially reduce the temporary parsing peak or establish
 a meaningful scan-speed improvement. No application implementation was changed
@@ -137,7 +140,7 @@ the process; the large-bin peak must not be described as scan-only memory.
 Representative Windows/NEXIS validation and the 300,000-file database-free
 workload remain outstanding. Exact sequence filtering remains deferred after V1.
 
-The [evidence receipt](evidence/local-workflow-comparison-2026-10-18.json) preserves
+The evidence receipt preserves
 all six timing/memory runs, CSV comparisons, native checks, source-path control,
 commands, probe sources and artifact fingerprints. Large media, binaries and raw
 per-file output remain in the temporary comparison folder rather than the repo.

@@ -1,4 +1,0 @@
-    r20 = [[NSString stringWithFormat:@"OMF 2 not supported"] retain];
-    [xConsole xNSLog:"/Volumes/MyHome/Programming/Xcode_projects/MDVx/MDVx1/MDVxCore/MDVxOMFI.m" :0x16d :"-[MDVxOMFI OMFiTOCReader02]" :r20];
-    [r20 release];
-    return;

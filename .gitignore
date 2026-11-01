@@ -10,5 +10,13 @@ CMakeLists.txt.user*
 Thumbs.db
 Desktop.ini
 
-# Keep the large audit evidence archive local.
-/artifacts/mdb-independent-audit-2026-11-01/evidence.tar.gz
+# Retired audit outputs and shared test fixtures.
+/artifacts/
+/Project Bella/evidence/
+/Project Canon/evidence/
+/Project Copland/evidence/
+/Project Canon/*-scan-*.json
+/Project Canon/app-naming-review-*.html
+/docs/reviews/**/evidence/
+/docs/reviews/**/binary-evidence/
+/tests/fixtures/

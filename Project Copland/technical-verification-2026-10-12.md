@@ -1,5 +1,8 @@
 # Copland technical verification — 12 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 This verifies the current implementation at
 `3e7246a575f5b0247efbe007f271070cb597d306`. Application source has not changed.
 The [Copland contract and implementation order](README.md) remain the plan;
@@ -42,8 +45,8 @@ inspected. The user approved ending that stalled session, and its main process
 was confirmed closed. This attempt establishes neither a license restriction nor
 the cause of the stall.
 
-Evidence: [bin verification](evidence/bin-technical-verification-2026-10-12.json)
-and [native-app attempt](evidence/media-composer-check-2026-10-12.json).
+Evidence: bin verification
+and native-app attempt.
 
 ## Original Bin evidence
 
@@ -68,7 +71,7 @@ absence. Established **inapplicability** can stop reading. Unsupported or
 unestablished coverage must remain distinct from checked absence. The same agreed
 checklist must use Source Path after C94, rather than the removed Source Filename.
 
-Evidence: [Original Bin verification](evidence/original-bin-verification-2026-10-12.json)
+Evidence: Original Bin verification
 and [property reference](metadata-reference.md).
 
 ## Cancellation and operation safeguards
@@ -103,7 +106,7 @@ Fresh focused results:
 - AVB references: 22 passed; AVB reader: 35 passed, one optional supplied-bin skip.
 - Four further focused Original Bin/text/scanner commands passed.
 
-Evidence: [scan and operation verification](evidence/scan-operation-verification-2026-10-12.json).
+Evidence: scan and operation verification.
 
 ## Local app baseline
 
@@ -140,7 +143,7 @@ flushing, startup recovery/crash collection and exact sequence filtering were no
 measured. Current scan/return-to-idle paths can still discover/poll volumes despite
 UiOnly bypassing automatic timer startup; C60 must remove those catch-up polls too.
 
-Evidence: [local app receipt](evidence/local-app-verification-2026-10-12.json), including
+Evidence: local app receipt, including
 commands, probe source, hashes, counters, all three trial results and limitations.
 
 The remaining external checks are the Media Composer comparison and representative

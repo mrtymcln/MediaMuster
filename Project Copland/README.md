@@ -1,5 +1,8 @@
 # Project Copland
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Status: agreed V1 simplification implemented; local workflow and support checks
 complete; representative workload acceptance outstanding.
 Started 11 October 2026; decisions updated
@@ -586,7 +589,7 @@ removed during loaded-bin compaction. Do not infer
 a file/source role from an arbitrary SourceClip reference; it can target a master
 or another composition.
 
-The [fresh role evidence](evidence/identity-roles-2026-10-13.json) covers the
+The fresh role evidence covers the
 installed Media Composer binary, bounded discovery on both currently mounted
 drives, genuine AVB/MDB specimens, an exported AAF and relevant primary
 documentation. It distinguishes literal OMF/AAF names and AVB class tags from
@@ -996,7 +999,7 @@ EDIT directories. The search did not bypass permissions, follow symlinks or ente
 other-device mounts; the sealed System volume was outside this Data-volume search.
 No discovered managed root had an admission error. Full counts, roots, document
 hashes and temporary artifact hashes are in the
-[identity-review receipt](evidence/media-identity-review-2026-10-11.json).
+identity-review receipt.
 
 An independent review of 99 distinct genuine AVB contents found nine source identities
 referenced by two ordinary master identities, but none matches a scanned physical
@@ -1120,7 +1123,7 @@ checks remain separate under C03/C15.
 
 Primary documentation supporting the roles and identity distinction:
 
-The [13 October terminology check](evidence/identity-terminology-2026-10-13.json)
+The 13 October terminology check
 confirms that **File Mob ID / FileMobID** and **Master Mob ID / MasterMobID** are
 Avid's own role-specific names in documentation and the installed Media Composer
 library. The general MDB property remains `OMFI:MOBJ:MobID`; PMR stores positional
@@ -1283,7 +1286,7 @@ Archived class counts for the earlier nine inspected genuine bins contain no
 `SLCT` selector objects. Two sequence bins contain `RSET` essence groups, but
 alternate media representations do not establish genuine multicam selection
 behavior. See
-[archived bin counts](../Project%20Canon/evidence/avb-reader-probe-results-2026-10-04.jsonl).
+archived bin counts.
 
 The wider 11 October inspection found a genuine selector specimen at
 `/Volumes/EDIT/2026/Documents/Avid Projects/block 1729/8645 v1.avb`: 261 `SLCT`
@@ -1389,8 +1392,8 @@ this was a correctness investigation, not an application performance benchmark.
 | `1001.WAVA01.D8875D202DA97BA.mxf` | One projected file; Source Path warning only. Its linked URL is `file:///EDIT/.../1001.WAV`; the linked native path is `/Volumes/EDIT/.../1001.WAV`. Source Filename agrees. |
 | `V01.E69671C4_DEDE70DEDE787V.mxf` | One projected file; Source Path warning only. The URL begins `file:///Macintosh%20HD/Users/...` and the native path begins `/Users/...`; both yield `Apple ProRes 422 Proxy.mov`. |
 | `V01.6A0416EF_15EDA15EDA552V copy.mxf` | One projected file; no selected-field conflicts. |
-| [Round3 MDB](../tests/fixtures/corpus_headers/msmMMOB_round3.mdb) | 810 projected file records and 300 master records; no selected-field conflicts in the grouped observations. |
-| [Media Composer audio MDB](../tests/fixtures/omf/mc2026_audio/msmMMOB.mdb) | Two projected file records and two masters; no selected-field conflicts. |
+| Round3 MDB | 810 projected file records and 300 master records; no selected-field conflicts in the grouped observations. |
+| Media Composer audio MDB | Two projected file records and two masters; no selected-field conflicts. |
 | EDIT folder `1/msmMMOB.mdb`, restricted to the FEB_79 file ID among 392 projected candidates | Source Path differs between volume-qualified `Mojave/Users/.../FEB_79-00b01a6d.PICT` and POSIX `/Users/.../FEB_79-00b01a6d.PICT` spellings on the same locator object. A single MDB Pixel Layout value differs in representation from the MXF's pixel-component list; that saved warning compares two sources. |
 
 The Source Path warnings establish differing representations from qualified
@@ -1714,7 +1717,7 @@ Undo. The existing lack of a per-file success Console line for ordinary Copy/Mov
 is recorded as observed behavior; no operation fix or message change is made.
 Detailed scope is recorded in the
 [checkpoint report](file-operation-acceptance-2026-10-18.md), alongside the
-[evidence receipt](evidence/file-operation-acceptance-2026-10-18.json).
+evidence receipt.
 Local forced branches do not establish physical cross-volume, Windows, SMB/NEXIS
 or power-loss behavior. No speed or memory improvement is claimed here.
 
@@ -2136,7 +2139,7 @@ representative Windows/NEXIS/scale acceptance remain outstanding; no scan-time
 or memory saving is claimed by this scheduling correction.
 
 The user subsequently requested specifications, Avid documentation and fresh disk
-evidence for bin-name storage. The [17 October storage receipt](evidence/original-bin-storage-2026-10-17.json)
+evidence for bin-name storage. The 17 October storage receipt
 separates the optional extension mechanisms from actual names and reader support.
 A genuine OMF explicitly records `Media Slides`; an EDIT MXF matches the local
 MDB's `D001_SOUND` association without that name appearing in the inspected MXF
@@ -2328,7 +2331,7 @@ traversal representation; present those implementation crossroads under C98
 before dependent changes. No source-track implementation or validation is claimed
 by this choice record alone.
 
-The bounded read-only [source-track semantics audit](evidence/source-track-semantics-2026-10-17.json)
+The bounded read-only source-track semantics audit
 corroborates the required track number plus media kind in the installed Avid
 binary. `GetSrcTrack()` constructs that label, and `FindTrackByLabel()` compares
 both parts. Native audio/video counters establish kind 2/1 respectively. Fresh
@@ -2451,15 +2454,15 @@ of an unavailable trim mapping. Empty or unproven-length SourceClips cannot use
 that route. Known numeric parameter controls with all object links null do not
 create false media gaps; arbitrary side pointers cannot establish edit use.
 
-The [native angle/range evidence](evidence/angle-range-semantics-2026-10-17.json)
-and [transition/time evidence](evidence/transition-time-semantics-2026-10-17.json)
+The native angle/range evidence
+and transition/time evidence
 record exact binary anchors, genuine structural corroboration and limits. All
 five motion objects in the audited genuine bin have enabled mapping controls;
 they do not establish the constant-ratio branch. Full genuine edit acceptance,
 curve interpretation and the sequence picker remain outstanding. No measured
 speed/memory improvement or Windows/NEXIS acceptance is claimed.
 
-The final [read-only production probe](evidence/angle-range-production-probe-2026-10-17.json)
+The final read-only production probe
 reads the genuine 49,159-object bin completely and resolves its listed sequence
 without cancellation. Selector 33511 reaches selected child 11236 and excludes
 alternatives 11237/11238. The 663 unique FileMobIds are an incomplete reference
@@ -2517,14 +2520,14 @@ This can repeat route information; no performance advantage is claimed. These
 choices preserve proven-only results and explicit Console gaps where a map or
 relative link cannot be established.
 
-The [relative-track receipt](evidence/relative-track-semantics-2026-10-17.json)
+The relative-track receipt
 records native scope/slot/offset rules and unchanged genuine-file provenance.
 Scope zero is the nearest enclosing scope; sequences are not scopes. Mob
 references restart ownership inside the target Mob rather than treating the
 calling SourceClip as its parent. Resolution requires the recorded media kind
 and exact edit rate to agree. These rules do not prune placed disabled media.
 
-The [speed-map receipt](evidence/speed-map-semantics-2026-10-17.json) establishes
+The speed-map receipt establishes
 native parameter identifiers and linear-map evaluation, but does **not** establish
 a serialized-only condition proving equivalence to Avid's active effect callback.
 The callback and saved-map fallback use different final endpoints; a min/max

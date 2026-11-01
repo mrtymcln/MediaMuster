@@ -1,5 +1,8 @@
 # OldScanner: actual MDB versus MXF Compression labels
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Comparison date: 22 October 2026. This follows the user's request for an actual
 same-file comparison after the earlier hypothetical missing-information example.
 **The current OldScanner does not always produce the same Compression label
@@ -101,9 +104,9 @@ or the naming contract during this comparison.
 
 ## Evidence
 
-The [comparison receipt](../../../Project%20Bella/evidence/mxf-mdb-compression-comparison-2026-10-22.json)
+The comparison receipt
 contains counts, exact differing pairs, input/build hashes, independent identity
-audit and direct-reader rechecks. The [CSV](compression-comparison.csv) lists
+audit and direct-reader rechecks. The CSV lists
 all 2,411 path/ID/label pairs. Raw projection outputs and the temporary probe
 remain in `/private/tmp/bella-compression-pairs-20261022`.
 

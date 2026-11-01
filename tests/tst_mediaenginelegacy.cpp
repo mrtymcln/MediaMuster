@@ -2,6 +2,8 @@
 // authored containers. Large sample ranges are guarded so metadata-only reads
 // cannot accidentally pass by copying the audio or video into memory.
 
+#include "testfixtures.h"
+
 #include "oldscanner/mediaengine/omfreader.h"
 #include "oldscanner/mediaengine/projection.h"
 #include "oldscanner/mediaengine/audioreader_p.h"
@@ -615,6 +617,7 @@ void TestMediaEngineLegacy::cancellation()
 
 void TestMediaEngineLegacy::realAvidSlates_data()
 {
+	REQUIRE_TEST_FIXTURES();
 	QTest::addColumn<QString>("path");
 	const QDir directory(QStringLiteral(FIXTURES_DIR) + "/omf/avid_supporting");
 	const auto names = directory.entryList({QStringLiteral("*.omf")}, QDir::Files, QDir::Name);
@@ -625,6 +628,7 @@ void TestMediaEngineLegacy::realAvidSlates_data()
 
 void TestMediaEngineLegacy::realAvidSlates()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(QString, path);
 	QFile source(path);
 	QVERIFY(source.open(QIODevice::ReadOnly));
@@ -655,6 +659,7 @@ void TestMediaEngineLegacy::realAvidAudio_data()
 
 void TestMediaEngineLegacy::realAvidAudio()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(QString, name);
 	QFETCH(bool, isWave);
 	QFile source(QStringLiteral(FIXTURES_DIR) + "/omf/mc2026_audio/" + name);
@@ -696,6 +701,7 @@ void TestMediaEngineLegacy::realAudioSummariesMatchNativeFields_data()
 
 void TestMediaEngineLegacy::realAudioSummariesMatchNativeFields()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(QString, name);
 	QFETCH(bool, isWave);
 	QFile input(QStringLiteral(FIXTURES_DIR) + "/omf/mc2026_audio/" + name);
@@ -743,14 +749,15 @@ void TestMediaEngineLegacy::genuineProjectionOutlivesInput_data()
 {
 	QTest::addColumn<QString>("relative");
 	for (const auto &relative : {
-		QStringLiteral("omf/avid_supporting/BLACK_720x576x1_DV411.omf"),
-		QStringLiteral("omf/mc2026_audio/TONE_100A01.6A972974.039700.wav"),
-		QStringLiteral("omf/mc2026_audio/TONE_100A01.6A972997.0C53E0.aif")})
+			 QStringLiteral("omf/avid_supporting/BLACK_720x576x1_DV411.omf"),
+			 QStringLiteral("omf/mc2026_audio/TONE_100A01.6A972974.039700.wav"),
+			 QStringLiteral("omf/mc2026_audio/TONE_100A01.6A972997.0C53E0.aif")})
 		QTest::newRow(qPrintable(relative)) << relative;
 }
 
 void TestMediaEngineLegacy::genuineProjectionOutlivesInput()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(QString, relative);
 	QTemporaryDir temporary;
 	QVERIFY(temporary.isValid());
@@ -799,8 +806,8 @@ void TestMediaEngineLegacy::audioSummaryFieldsFollowFragmentedRanges()
 	// Microsoft WAVEFORMATEXTENSIBLE: 24 storage bits, 20 valid bits, stereo
 	// speaker mask and PCM GUID. Only its Bento storage is fragmented here.
 	const auto format = number<quint16>(0xfffe) + number<quint16>(2) + number<quint32>(48000) + number<quint32>(288000) +
-		number<quint16>(6) + number<quint16>(24) + number<quint16>(22) + number<quint16>(20) + number<quint32>(3) +
-		QByteArray::fromHex("0100000000001000800000aa00389b71");
+						number<quint16>(6) + number<quint16>(24) + number<quint16>(22) + number<quint16>(20) + number<quint32>(3) +
+						QByteArray::fromHex("0100000000001000800000aa00389b71");
 	MediaEngine::RawProperty summary;
 	summary.locator.name = QStringLiteral("OMFI:WAVD:Summary");
 	summary.locator.objectNumber = 201;
@@ -813,7 +820,7 @@ void TestMediaEngineLegacy::audioSummaryFieldsFollowFragmentedRanges()
 	summary.bento = context;
 	const auto fields = MediaEngine::Detail::decodeAudioSummary(summary);
 	const auto guid = std::find_if(fields.cbegin(), fields.cend(), [](const auto &field)
-		{ return field.locator.name == QLatin1String("OMFI:WAVD:Summary.fmt .SubFormat"); });
+								   { return field.locator.name == QLatin1String("OMFI:WAVD:Summary.fmt .SubFormat"); });
 	QVERIFY(guid != fields.cend());
 	QCOMPARE(guid->state, PropertyReadState::Present);
 	QCOMPARE(guid->encoding, QByteArray::fromHex("0100000000001000800000aa00389b71"));

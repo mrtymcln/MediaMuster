@@ -1,5 +1,8 @@
 # Source Filename URI correction — 7 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 The full-volume comparison exposed a real presentation regression: a source name
 could become blank because the same name appeared as both `Apple%20ProRes...mov`
 in an MXF import URL and `Apple ProRes...mov` in its recorded native import path.
@@ -8,7 +11,7 @@ Those are equivalent filename observations, not conflicting filenames.
 Read-only probes of the actual shared ProRes sample and EDIT audio confirmed
 this combination. An EDIT title's name similarly became `ADR%20TEMPLATE...PICT`
 instead of `ADR TEMPLATE...PICT` when only the URL supplied it. The
-[original projected observations](evidence/source-filename-uri-2026-10-07.json)
+original projected observations
 retain the exact paths, owning object handles and property names.
 
 The MXF projector now derives the filename of `NetworkLocator.URLString` with

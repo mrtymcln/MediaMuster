@@ -1,5 +1,8 @@
 # Bella: Duration and Original Bin during MXF fallback
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Agreed by the user on 21 October 2026. **Requirements revision; not yet
 implemented.** This supersedes the earlier blanket MDB-only Duration restriction
 for the specific fallback below.
@@ -41,6 +44,6 @@ The full source-priority table, MXF concurrency and unrelated header recovery
 remain separate decisions. OldScanner stays active until explicit cutover
 approval and Bin Filter is unchanged. This revision changes documentation only.
 
-The [approval receipt](../../../Project%20Bella/evidence/mxf-fallback-fields-2026-10-21.json)
+The approval receipt
 preserves the user's two instructions. Earlier research/approval receipts remain
 historical snapshots; this later revision governs current Bella requirements.

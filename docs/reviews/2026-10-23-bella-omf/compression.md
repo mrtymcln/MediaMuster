@@ -1,12 +1,15 @@
 # Bella Compression from OMF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 25 October 2026. **Keep the current Compression naming system.** This is an
 approved preservation requirement, reaffirmed by the user for OMF. The detailed
 OMF acquisition and small-helper rules below were approved on 25 October, as
-recorded in the [approval](../../../Project%20Bella/evidence/omf-compression-plan-2026-10-25.json).
+recorded in the approval.
 No runtime implementation or app cutover. The preceding
 [Bit Depth rules](bit-depth.md) are approved in their
-[approval record](../../../Project%20Bella/evidence/omf-bit-depth-plan-2026-10-25.json).
+approval record.
 
 The simplest implementation is to call the existing pure
 [Compression resolver](../../../src/oldscanner/mediaengine/compressionnames_p.cpp)
@@ -125,7 +128,7 @@ end of the review. No speed, memory or stability improvement is measured here.
 
 ## Evidence and limits
 
-The [curated record](../../../Project%20Bella/evidence/omf-compression-2026-10-25.json)
+The curated record
 separates native read/write traces, MDVx's generic route, current source/test
 inspection and reused genuine metadata. Five earlier qualified physical paths
 provide compact examples: WAVE PCM tag 1, AIFF-C `in24`, JPED `JFIF`/110, CDCI

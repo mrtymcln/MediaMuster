@@ -1,5 +1,8 @@
 # Audit coverage by Project Canon
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 For the current implementation assessment, use the
 [7 October finding-by-finding closeout](audit-closeout-2026-10-07.md). The counts
 and categories below describe the original planning stage.

@@ -1,5 +1,8 @@
 # Agreed text encoding and PMR set names
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 User decision, 3 October 2026:
 
 - `PmrFileSet`: `Legacy`, `Unicode`.
@@ -124,7 +127,7 @@ check Legacy/Unicode membership, per-property encoding/basis, ASCII-only explici
 UTF-8, legacy project text inside the Unicode set, invalid UTF-8 retaining its known
 encoding, null strings, and binary/absent fields having no text encoding.
 
-Proof: [encoding implementation test output](evidence/text-encoding-tests-2026-10-03.txt).
+Proof: encoding implementation test output.
 These focused tests supplement the preceding full 29-suite PMR-stage result.
 Fresh MDB/AVB readers were implemented and connected subsequently; the
 [live connection report](live-connection-2026-10-04.md#verification-record)

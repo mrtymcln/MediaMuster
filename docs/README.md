@@ -282,8 +282,13 @@ Keep dated reviews as written reports under `docs/reviews/`. Record useful resul
 and their limits in the report; do not check in temporary probes, generated output,
 logs, screenshots or copies of source code.
 
-Real media fixtures under `tests/fixtures/` remain active regression inputs. The
-app's effect catalogue is maintained in `src/effectcatalogue.cpp`; its
+Raw audit evidence and shared media fixtures were retired on 1 November 2026.
+Written findings and approved requirements remain; their dated measurements
+describe the original runs, and references to removed raw files are historical.
+Generated tests remain active; checks that require the retired shared fixtures
+explicitly skip. The old media corpus is no longer available from this checkout.
+
+The app's effect catalogue is maintained in `src/effectcatalogue.cpp`; its
 [provenance and recognition rules](avid-effects-catalogue.md) are documented separately.
 Future catalogue updates require renewed binary inspection and comparison with
 the application catalogue.

@@ -2,6 +2,8 @@
 // proven media membership in both byte orders. Real Media Composer OMF bins
 // pin exact file identities.
 
+#include "testfixtures.h"
+
 #include "avbbinloader.h"
 #include "mobid.h"
 #include "testavb.h"
@@ -803,6 +805,7 @@ void TestAvbParser::omf_identity_does_not_match_a_byte_swapped_clip()
 
 void TestAvbParser::omf_bins_preserve_file_identities()
 {
+	REQUIRE_TEST_FIXTURES();
 	struct Pin
 	{
 		const char *file;

@@ -1,5 +1,8 @@
 # MXF identity byte-order correction — 7 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 The full comparison exposed a genuine matching bug: 277 file IDs differed from
 the old CSV because MediaEngine retained an MXF byte ordering where its database
 matching expected the database ordering. All 277 differences have exactly this
@@ -44,7 +47,7 @@ sample's file ID and master ID, unchanged PMR encoding, legacy eight-byte wrappi
 retained raw bytes, and the all-zero identity. The isolated projector suite passed
 **25 cases, 0 failures**.
 
-[Machine-readable evidence](evidence/mxf-identity-byte-order-2026-10-07.json)
+Machine-readable evidence
 records the full IDs, exact property ranges, source paths, numeric equivalence,
 comparison counts and reference-source checksum. The final whole-scan comparison
 is recorded separately; these findings do not certify every possible Avid ID

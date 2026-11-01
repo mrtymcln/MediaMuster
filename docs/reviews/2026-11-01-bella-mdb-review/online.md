@@ -1,8 +1,11 @@
 # Bella MDB: online documentation review
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 This retains the earlier online/source review of pre-JPED `20220f2`. The [current verdict](VERDICT.md#current-scope-and-approved-jped-change) records JPED's separately approved Video mapping and the scope reassessment. Publicly documented capabilities do not require Bella to restore excluded fields, add generic provenance, change cancellation granularity or support deferred MDB versions.
 
-The failed PDF/manual fetches below describe this investigation's URLs and attempts. A separate later [47-query research run](../../../artifacts/mdb-independent-audit-2026-11-01/evidence/online/research-findings.txt) retrieved original OMF 1, OMF 2.1, Bento and MDVx manuals using other archived/current URLs; those later results supersede any inference that the publications remain unavailable. Neither search claims to exhaust the web or supply a complete private MDB schema.
+The failed PDF/manual fetches below describe this investigation's URLs and attempts. A separate later 47-query research run retrieved original OMF 1, OMF 2.1, Bento and MDVx manuals using other archived/current URLs; those later results supersede any inference that the publications remain unavailable. Neither search claims to exhaust the web or supply a complete private MDB schema.
 
 Reviewed 1 November 2026 (Australia/Sydney), against `src/bella/mdbparser.cpp` at repository HEAD `20220f2`. This is a documentation and source comparison, not a new application execution receipt. No production source was changed.
 
@@ -21,7 +24,7 @@ The documentation search found no new confirmed Bella defect. The strongest avai
 | [MDVx author's product page](https://djfio.com/mdv/) | Product description and current downloads navigation | Confirms MDB-based scanning. The current reachable page advertises a PDF manual but its downloads navigation did not expose a direct manual asset. No public MDB schema was found there. |
 | [Samba's Media Harmony documentation](https://devel.samba.org/samba/docs/4.1/man-html/vfs_media_harmony.8.html) | MDB file-name virtualization description | Useful inventory caveat: client-specific suffixed MDB files can exist. It does not define MDB payloads. |
 
-Source downloads and inspected file hashes are recorded in [online-sources.json](online-sources.json). A mirror of an original specification is distinguished from commentary by a third party.
+Source downloads and inspected file hashes are recorded in online-sources.json. A mirror of an original specification is distinguished from commentary by a third party.
 
 ## Schema comparison
 

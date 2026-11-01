@@ -1,12 +1,15 @@
 # Bella: FileMobId and MasterMobId in MXF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 21 October 2026; approval: 22 October 2026. Complete identities,
 the shared normalizer and KelpieId rules were already approved. **The user now
 approved all six MXF ownership, selection, normalization, retention and
 availability rules below. They are requirements, not yet implemented.** OldScanner
 remains active and Bin Filter is unchanged. The user's
 [Duration/Original Bin revision](fallback-fields.md) remains in force.
-See the [approval receipt](../../../Project%20Bella/evidence/mxf-identities-plan-2026-10-22.json).
+See the approval receipt.
 
 ## What the two values mean
 
@@ -171,10 +174,10 @@ No new same-path/conflicting-ID workflow or Bin Filter change is introduced.
 
 ## Evidence and limits
 
-The [curated identity evidence](../../../Project%20Bella/evidence/mxf-identities-2026-10-21.json)
+The curated identity evidence
 links fresh native function extractions, independent source inspection and
 bounded actual-header/database observations. It separates observed behaviour
-from Bella's identity requirements. The [22 October approval receipt](../../../Project%20Bella/evidence/mxf-identities-plan-2026-10-22.json)
+from Bella's identity requirements. The 22 October approval receipt
 supersedes its earlier proposal status; the historical research findings and
 limits remain unchanged. Other MXF field and navigation proposals remain
 separate reviews.

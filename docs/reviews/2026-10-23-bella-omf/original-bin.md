@@ -1,5 +1,8 @@
 # Bella Original Bin from OMF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 24 October 2026. **OMF Original Bin rules accepted.** OMF
 reading, version/text, identity, Clip Name and Project rules are agreed. This
 review records a name-only lookup inside an OMF already being read; no runtime
@@ -136,11 +139,11 @@ decisions. This rule does not open another file merely to fill Original Bin.
 
 ## Evidence and verification
 
-The [curated evidence](../../../Project%20Bella/evidence/omf-original-bin-2026-10-24.json)
+The curated evidence
 contains native/current receipts, hashes, the 82-file presence survey and 35
 owner/name rechecks. The user's subsequent “Sounds ok!” accepts the proposed
-Original Bin behavior; the [approval record](../../../Project%20Bella/evidence/omf-original-bin-plan-2026-10-24.json)
-preserves that scope. Original research is unchanged. The [Project approval](../../../Project%20Bella/evidence/omf-project-plan-2026-10-24.json)
+Original Bin behavior; the approval record
+preserves that scope. Original research is unchanged. The Project approval
 records the preceding decision; original Project research remains unchanged.
 
 Existing Original Bin priority tests were inspected only and use MDB by default;

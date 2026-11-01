@@ -1,8 +1,11 @@
 # Bella MXF layouts and header navigation
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 23 October 2026. **The user approved the full release-one scope, including
 selective reading, compact retention and layout/admission/recovery restrictions.**
-The [scope approval](../../../Project%20Bella/evidence/mxf-layouts-and-navigation-plan-2026-10-23.json) records this baseline; no runtime implementation or cutover.
+The scope approval records this baseline; no runtime implementation or cutover.
 The separate [MXF damage rules](damage-handling.md) are agreed. This review records the
 agreed boundary of an already required MXF read; it does not create new
 reasons to open headers or change the source-priority table.
@@ -88,7 +91,7 @@ The four final bytes were recorded without claiming a complete RIP validation.
 
 The earlier 64 MiB limit capped **accumulated retained metadata**, not the first
 64 MiB of the physical file. That parser already used HeaderByteCount to derive
-its stopping boundary. The [historical source receipt](../../../Project%20Bella/evidence/mxf-header-boundary-clarification-2026-10-23.json)
+its stopping boundary. The historical source receipt
 verifies both checks. The user confirmed that limit worked in their usage.
 A metadata-memory ceiling and the declared header-section boundary are separate
 rules: using the precise section does not require removing a practical memory
@@ -108,7 +111,7 @@ Validate header/file boundaries, packet/value lengths and typed forms before
 reading or allocating. A small observed header is not a universal size guarantee;
 the useful saving comes from selective work and retention. This agrees the read
 and lifetime principle; the admission/recovery restrictions below were
-subsequently approved in the same requirements review. The [approval record](../../../Project%20Bella/evidence/mxf-selective-header-plan-2026-10-23.json)
+subsequently approved in the same requirements review. The approval record
 records the scope. No Bella runtime code or cutover is introduced.
 
 ## Agreed release-one rules
@@ -173,7 +176,7 @@ payload skipping, metadata/essence separation, relocated local tags, source
 change and cancellation; add meaningful admission/stop-boundary cases when Bella
 is implemented. Current tests were inspected, not executed in this review.
 
-The [curated evidence](../../../Project%20Bella/evidence/mxf-layouts-and-navigation-2026-10-23.json)
+The curated evidence
 retains native/source receipts and the ten fresh observations. No production
 runtime code changed. No application/private API, production parser, build or
 test was executed.

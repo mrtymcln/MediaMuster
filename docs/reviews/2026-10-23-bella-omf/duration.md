@@ -1,8 +1,11 @@
 # Bella physical-file Duration from OMF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 24 October 2026. **OMF Duration rules accepted.** The user
 has approved [OMF Kind](kind.md), as recorded in its
-[approval](../../../Project%20Bella/evidence/omf-kind-plan-2026-10-24.json).
+approval.
 This review reuses the agreed exact arithmetic, Avid rate interpretation,
 audio display conversion and qualified DF policy. No runtime code/cutover,
 Bin Filter change, final source-priority table or new header-opening reason.
@@ -169,13 +172,13 @@ and complex unsupported layouts still receive their own focused review.
 
 ## Evidence and limits
 
-The [curated evidence](../../../Project%20Bella/evidence/omf-duration-2026-10-24.json)
+The curated evidence
 contains current/native/MDVx receipts, fresh five-file timing observations,
 source hashes and exact arithmetic/simple-source-link derivation. Previously
 established native ownership, finite rate interpreter and DF encoding are
 explicitly reused. Current direct-OMF, native-audio and MDB-default tests are
 distinguished and inspected only; no build/test or production parser was run.
-The [Duration approval](../../../Project%20Bella/evidence/omf-duration-plan-2026-10-24.json)
+The Duration approval
 records the user's explicit acceptance. Original research remains unchanged.
 
 No native app/private API execution, runtime/media change or cutover. No Bella

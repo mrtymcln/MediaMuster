@@ -1,5 +1,8 @@
 # Database-first scheduling — 7 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 The user confirmed this policy: **read the databases first; read a media header
 only when there is no usable database match, or required table metadata is
 missing or conflicting.** This replaces the initial MediaEngine connection's practice
@@ -104,7 +107,7 @@ length individually.
 
 A real legacy Tone MDB contains two master objects with the same MobID, each
 recording track label 1 and 1500 units at 25/1. These produced duplicate display
-entries before selected-value coalescing. The [compact source evidence](evidence/clip-duration-database-evidence-2026-10-07.json)
+entries before selected-value coalescing. The compact source evidence
 preserves both observations and the source fingerprints.
 
 Track numbers also need their source context. For
@@ -124,7 +127,7 @@ These are read-only MDB projection checks, **not whole-scan performance results*
 | MDB | Projected file objects | With Clip Duration before | After |
 | --- | ---: | ---: | ---: |
 | `/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb` | 392 | 82 | 359 |
-| [SupportingFiles fixture](../tests/fixtures/omf/avid_supporting/msmMMOB.mdb) | 80 | 77 | 80 |
+| SupportingFiles fixture | 80 | 77 | 80 |
 
 The fixture has three sequence-backed results. One inspected EDIT example has
 master 68160, track 68133 and sequence 68131: recorded component lengths

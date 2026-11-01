@@ -1,5 +1,8 @@
 # Project Canon
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 **Historical plan and evidence.** [Project Copland](../Project%20Copland/README.md)
 now records the active V1 scope and confirmed decisions, including revisions to
 Canon's retention and bin-enrichment design. The descriptions below record the
@@ -37,7 +40,7 @@ permanent scoped reading path, exact metadata/evidence comparisons and measureme
 `SourceReceipt` is the current per-source record; loaded AVB graphs remain available
 for active bin consumers. Earlier implementation reports retain their dated state.
 The [app naming review](app-naming-review-2026-10-11.md) and its
-[searchable inventory](app-naming-review-2026-10-11.html) group related components
+searchable inventory group related components
 and propose names that describe their roles. The full declaration inventory,
 including local variables, remains available without generated prefix suggestions.
 Its dropdowns record
@@ -61,7 +64,7 @@ record the approved strict ownership policy and current projection changes; the
 the genuine-file observations and hashes.
 That stage's final native suite passes 38/38. The repeat scan keeps all 2,413 physical rows;
 13 displayed cells change for the recorded reasons in that report. F06, F07, F14
-and F40 are closed within the admitted scope. The [8 October ledger](evidence/audit-closeout-ledger-2026-10-08.json)
+and F40 are closed within the admitted scope. The 8 October ledger
 retains those findings and their evidence boundaries.
 
 The later [legacy compression/audio-summary correction](legacy-compression-and-audio-summaries-2026-10-08.md)
@@ -71,7 +74,7 @@ Native and copied audio headers share their field decoder and retain individual
 field bytes, locations and read states. Final verification passes 39/39 native
 suites and keeps all 2,413 physical rows; only two supported DV short names change.
 Database-first scheduling and all existing scan notices remain unchanged. The
-[current ledger](evidence/audit-closeout-ledger-2026-10-08.json) records 28 Resolved,
+current ledger records 28 Resolved,
 6 Partly resolved, 1 Open, 1 Needs evidence and 4 Accepted scope limits. Genuine
 specimen coverage and authored controls are distinguished in the correction report.
 
@@ -89,7 +92,7 @@ then approved removing those exact nine unsupported rows, while
 retaining the verified DNx naming rules. Removal
 verification passes 40/40 native suites. The repeat scan keeps all 2,413 rows,
 all 806 DNx names and every other exported metadata value unchanged. The
-[current verification receipt](evidence/dnx-alias-removal-verification-2026-10-08.json)
+current verification receipt
 records both app builds, tests and that separate corpus comparison.
 Historical corpus and byte-search receipts remain unchanged.
 

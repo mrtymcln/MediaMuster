@@ -1,5 +1,8 @@
 # Bella
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 MediaMuster's new, independent scanner/parser is being built here. The source/field
 and header-opening requirements are agreed through 26 October 2026. The
 [scanner design proposal](../../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md)
@@ -17,14 +20,14 @@ exact mapping is Audio for `PCMA`/`AIFD`/`WAVD`, Video for
 `CDCI`/`RGBA`/`MPGI`/`JPED`, and Unknown for other classes. The original
 six-class rule remains relevant only to earlier dated validation. No automatic
 class-hierarchy classification or additional MDB Kind class was approved.
-The [post-change receipt](../../artifacts/mdb-jped-kind-2026-11-01/validation.json)
-and [full-report comparison](../../artifacts/mdb-jped-kind-2026-11-01/delta-verification.json)
+The post-change receipt
+and full-report comparison
 record exactly 30 JPED Unknown-to-Video changes across both detail modes, with
 all other returned values unchanged. The seven fresh Avid MDBs still yield
 2,515 file records and 1,420 masters; all 13 original input hashes remain
 unchanged. Native MDVx and independent-reader comparisons were rerun, and 298
 sanitizer executions passed. The
-[before/after benchmark](../../artifacts/mdb-jped-kind-2026-11-01/benchmark-delta.json)
+before/after benchmark
 shows no measurable regression in this corpus: aggregate medians 243.8 to
 243.3 ms, per-database time variation below 1%, and no median peak-RSS increase.
 
@@ -33,8 +36,8 @@ covered by stronger Length/endian or audio-framing controls. Its generated-only
 run passed **155 Qt cases, 0 failed**; checked-in-fixture selectors were not run,
 so this is not a new full-suite result. JPED Video/MPGA Unknown timing coverage
 and unsupported-layout controls remain. See the
-[cleanup receipt](../../artifacts/mdb-scope-reassessment-2026-11-01/test-cleanup.json)
-and [scope amendment](../../Project%20Bella/evidence/mdb-scope-reassessment-2026-11-01.json).
+cleanup receipt
+and scope amendment.
 Earlier test totals below remain historical results.
 
 The subsequent audit reassessment withdraws suggestions that reverse deliberate
@@ -55,7 +58,7 @@ within scope without authorizing production edits in this documentation update.
 Correct demonstrated violations and measure internal
 optimizations while preserving the approved behavior. See the
 [current scope reassessment](../../Project%20Bella/README.md#mdb-audit-reassessment-and-jped-approval)
-and [updated audit](../../artifacts/mdb-independent-audit-2026-11-01/report.txt).
+and updated audit.
 
 On 30 October the user chose a path-based MDB parser that handles both reading
 and interpretation, as PMR does. It will capture each source once, extract the
@@ -92,7 +95,7 @@ still need their check-ins before dependent code. Following an actual-value
 investigation, the user approved bounded unsigned 64-bit numerator/denominator
 fractions for exact audio-frequency work. Preserve the approved original source
 value and use checked arithmetic; existing signed-32 `MediaRate` is not being
-widened. See the [actual-value findings](../../Project%20Bella/evidence/mdb-audio-frequency-values-2026-10-31.json).
+widened. See the actual-value findings.
 The user chose to keep MDB size/date check results and problem explanations,
 with the source path, while releasing the temporary database size/date
 measurements after comparison. Detected changes explain the actual available
@@ -117,7 +120,7 @@ Conflicting or unreadable required values remain unavailable at their own scope.
 No active app integration is added. See the
 [MDB entry decision](../../Project%20Bella/README.md#implementation-decisions).
 
-The [MDB validation receipt](../../Project%20Bella/evidence/mdb-implementation-2026-10-31.json)
+The MDB validation receipt
 records 107 substantive MDB invocations (109 Qt passes including setup/cleanup),
 normal and ASan/UBSan results, matching independent catalogue comparisons for
 twelve source paths, separately scoped numbering checks and the remaining
@@ -132,7 +135,7 @@ that no consumer uses, and reuse a checked Project-owner attribute list.
 Keep all checks, results, qualifications, public outcomes and diagnostic
 text/order/count unchanged. That cleanup approval did not include warning
 changes. Implementation and verification are complete; the
-[cleanup receipt](../../Project%20Bella/evidence/mdb-internal-cleanup-2026-10-31.json)
+cleanup receipt
 records identical before/after dumps for all 45 comparison sources, unchanged
 diagnostic text/order/count, and 123 passing MDB Qt cases (121 substantive)
 normally and with ASan/UBSan. The same extended cases also pass against the saved
@@ -148,7 +151,7 @@ check, metadata result, public qualification and existing Cancel checkpoint;
 do not announce PMR fallback if Cancel prevents it. This changes Bella reader
 notes only. Implementation and verification are complete; no app warning
 delivery or scanner integration is added. The
-[warning-combination receipt](../../Project%20Bella/evidence/reader-warning-combinations-2026-11-01.json)
+warning-combination receipt
 records 151 MDB, 73 PMR and 14 ID Qt passes normally and with ASan/UBSan, including
 44 added authored warning cases. All public metadata/statuses match the saved
 readers across the 45 prior sources and both MDB detail settings (63 reports).
@@ -166,8 +169,8 @@ Correct the authored `Length32` fixture baseline and other valid test entries
 to legacy `Long`, while testing the mismatched forms explicitly. No general
 extended64-bit/OMF2 support or app integration is added. Implementation and
 verification are complete; see the
-[Length-check receipt](../../Project%20Bella/evidence/mdb-length-check-2026-11-01.json)
-and [approval record](../../Project%20Bella/evidence/decision-check-ins-2026-10-27.json).
+Length-check receipt
+and approval record.
 The corrected prior 151 MDB Qt cases pass against the saved reader. The current
 suite passes 157 MDB, 73 PMR and 14 ID cases normally and with ASan/UBSan; six new
 endian rows exercise 74 authored Length controls and preservation of independent
@@ -184,9 +187,9 @@ its payload or tracks. Unsupported/unreadable/conflicting Kind and mixed or
 multiple non-object entries retain Unknown. The existing all-Kind-3 route,
 including null payload and direct-track counting, remains. No new public
 fields/enums, category warnings, source/Cancel policy or app integration are
-added. The [decision record](../../Project%20Bella/evidence/decision-check-ins-2026-10-27.json)
+added. The decision record
 was updated before the production edits. Implementation and verification are
-complete; the [correction receipt](../../Project%20Bella/evidence/mdb-correctness-corrections-2026-11-01.json)
+complete; the correction receipt
 records 161 MDB, 73 PMR and 14 ID Qt passes normally and with ASan/UBSan.
 The 157 prior MDB cases also pass against the corrected reader. Four new
 endian rows exercise 256 authored parses, including both entry orders and
@@ -206,9 +209,9 @@ list states. The list is prepared after master-name handling and passed by const
 reference. All checks, values, qualifications and warning text/order/count must
 match the corrected baseline. No public fields/enums, source/Cancel changes,
 app integration or larger rearrangement is included. The
-[decision record](../../Project%20Bella/evidence/decision-check-ins-2026-10-27.json)
+decision record
 was updated before production edits. Implementation and verification are complete;
-the [cleanup receipt](../../Project%20Bella/evidence/mdb-three-small-cleanups-2026-11-01.json)
+the cleanup receipt
 records 165 MDB, 73 PMR and 14 ID Qt passes normally and with ASan/UBSan. The
 expanded MDB suite also passes against the saved pre-cleanup reader. Four new
 endian rows exercise 68 additional authored parses. All 63 prior and 324 authored
@@ -304,7 +307,7 @@ fingerprints. The normal binaries include arm64 and x86_64; tests
 were executed natively on arm64. Genuine fixtures are little-endian; opposite
 order is covered by authored cases. This is component verification, not a scan
 or performance comparison. See the
-[implementation receipt](../../Project%20Bella/evidence/decision-check-ins-2026-10-27.json).
+implementation receipt.
 
 The user's 27 October instruction requires a check-in at every new decision,
 including internal engineering choices. Explain options in plain English,

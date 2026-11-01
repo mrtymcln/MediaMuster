@@ -1,7 +1,10 @@
 # Bella OMF FileMobId and MasterMobId
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research: 23 October 2026. **The user approved these identity/ownership rules
-on 24 October 2026.** The [approval record](../../../Project%20Bella/evidence/omf-identities-plan-2026-10-24.json)
+on 24 October 2026.** The approval record
 preserves the direct instruction and the original research snapshot.
 The user has approved OMF selective reading and the release-one version/text
 rules. This review adds no runtime code or app cutover. OldScanner and Bin Filter
@@ -139,7 +142,7 @@ damage handling remain separate decisions.
 
 ## Evidence and verification
 
-The [curated evidence](../../../Project%20Bella/evidence/omf-identities-2026-10-23.json)
+The curated evidence
 contains fresh native method receipts and hashes, exact current source anchors,
 the five raw small-value observations and explicit limitations. Native anchors
 include `ReadUID` at `0xb66e8`, `AComposition::Get` at `0x181420`,

@@ -1,5 +1,8 @@
 # Bella: Type from MXF and the improvement claim
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 22 October 2026. **The user approved these MXF Type rules on
 22 October 2026; they remain unimplemented.** Resolution is approved separately.
 OldScanner stays active; Bin Filter is unchanged. Type means **Media** or
@@ -220,12 +223,12 @@ speed improvement would overstate the evidence.
 
 ## Evidence and validation
 
-[Curated evidence](../../../Project%20Bella/evidence/mxf-type-2026-10-22.json)
+Curated evidence
 retains fresh native findings, actual header examples, source/test references
 and the boundaries above. The previous 2,411-path Compression/Resolution probe
 **did not capture Type**, so it cannot establish paired Type counts or parity.
 Existing tests cover associated-master classification and complete owning-set
 absence. No new app execution, production modification, benchmark or test run
 is claimed by this requirements review. The
-[Type approval receipt](../../../Project%20Bella/evidence/mxf-type-plan-2026-10-22.json)
+Type approval receipt
 records the agreed scope.

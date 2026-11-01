@@ -1,5 +1,8 @@
 # Bella MDB: Git history review
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 This records the pre-JPED source/history investigation. The [current verdict](VERDICT.md#current-scope-and-approved-jped-change) records the approved JPED expansion and scope reassessment; the [post-JPED control rerun](history-verification.md#post-jped-source-and-control-revalidation) confirms that the separate damaged-input qualification findings below still reproduce. Older test expectations and broader historical capabilities do not by themselves authorize changing Bella.
 
 Review date: 1 November 2026. Reviewed HEAD `20220f2b4c2b7ff6ef3d017a77568e5edf7de7cd`. MDB only; no production source changes.
@@ -36,7 +39,7 @@ At `src/bella/mdbparser.cpp:666`, `components()` tries every supported relations
 
 All reproduce in both II and MM. The Project case directly changes returned metadata; the false complete master link can additionally authorize the wrong Clip Name/Type when downstream matching has no supplied PMR MasterMobId. The approved rules require supported typed component routes (`clip-name.md:135–139`) and the file's own supported track/component paths for Project (`project.md`, agreed rules 5–6). The old component walker used class-specific outgoing edges (`9c286ee^:src/omfobjects.cpp`, `componentObjectIds()`), rather than this unconditional union. Validate applicable edge/target roles locally, withhold the dependent relation on damage, and keep independent facts.
 
-The separate [graph harness](evidence/history-graph-repro.cpp) and [output](evidence/history-graph-repro-results.txt) contain 14 parses: modes 0/6 are ordinary master/Project controls; 1/2 use wrong known track classes; 3/4 attach owner-inapplicable properties to a master; 5 demonstrates unsupported Project inheritance.
+The separate graph harness and output contain 14 parses: modes 0/6 are ordinary master/Project controls; 1/2 use wrong known track classes; 3/4 attach owner-inapplicable properties to a master; 5 demonstrates unsupported Project inheritance.
 
 ### Historical strictness difference: terminator handling remains unproven
 
@@ -48,7 +51,7 @@ The first harness's mode 5 removes NUL; mode 6 records trailing-data acceptance.
 
 ## Implementation lineage
 
-The [machine-readable receipt](evidence/history-commits.json) lists 46 reachable commits affecting the selected MDB parser/container paths across 22 local refs, including full hashes, dates and milestone source SHA-256 values. `git log --all --name-status -- '*mdb*' '*MDB*'` was also inspected to follow the renamed readers and deleted test suites. Commit messages alone were not treated as proof of their behavior.
+The machine-readable receipt lists 46 reachable commits affecting the selected MDB parser/container paths across 22 local refs, including full hashes, dates and milestone source SHA-256 values. `git log --all --name-status -- '*mdb*' '*MDB*'` was also inspected to follow the renamed readers and deleted test suites. Commit messages alone were not treated as proof of their behavior.
 
 | Generation | Commits inspected | Actual approach and review significance |
 | --- | --- | --- |
@@ -68,9 +71,10 @@ The [machine-readable receipt](evidence/history-commits.json) lists 46 reachable
 - **Keep independently checked local damage.** Canon retained useful raw prefixes after some structural failures; Bella validates complete shared TOC framing before publishing a catalogue. The prior incomplete-prefix behavior is not a compatible salvage requirement.
 - **Retain absent versus malformed distinctions.** Historical precompute controls are particularly valuable here: null list entries, wrong typed widths and incomplete direct tracks must not become proof of a category. The former stricter terminator test remains a separately qualified difference. The reproductions above reveal gaps not covered by the current named test rows.
 
-## Reproduction
+## Historical reproduction
 
-From the repository root, using the pinned installed Qt:
+The original command used the repository root and pinned installed Qt. Its audit
+harnesses were retired with the raw evidence and are no longer in this checkout:
 
 ```sh
 clang++ -std=c++17 -I src -I tests \
@@ -83,11 +87,11 @@ clang++ -std=c++17 -I src -I tests \
 /tmp/bella-mdb-history-repro
 ```
 
-The [source](evidence/history-repro.cpp) and [captured output](evidence/history-repro-results.txt) are retained. To reproduce the graph cases, substitute `history-graph-repro.cpp` in the same command. In total the two harnesses ran 28 authored parses. No malformed specimen was supplied to Media Composer or MDVx in this history subreview.
+The source and captured output are retained. To reproduce the graph cases, substitute `history-graph-repro.cpp` in the same command. In total the two harnesses ran 28 authored parses. No malformed specimen was supplied to Media Composer or MDVx in this history subreview.
 
 ## Limits
 
-This work reviews reachable local Git history, selected implementation diffs and representative source snapshots; it does not claim every deleted line in every historical commit was audited. This particular investigation ran no historical application build or full historical suite. A separate [later audit](../../../artifacts/mdb-independent-audit-2026-11-01/evidence/history/audit-summary.json) built 49 historical standalone executables and ran 637 input processes; those results supplement rather than change this receipt's method. The authored harness is separate from both native-corpus investigations. Capability or validation differences deliberately approved for Bella are called out above rather than reported as defects. Unreachable objects, unavailable remote history, disconnected drives and any unprovided historic branches are outside this receipt.
+This work reviews reachable local Git history, selected implementation diffs and representative source snapshots; it does not claim every deleted line in every historical commit was audited. This particular investigation ran no historical application build or full historical suite. A separate later audit built 49 historical standalone executables and ran 637 input processes; those results supplement rather than change this receipt's method. The authored harness is separate from both native-corpus investigations. Capability or validation differences deliberately approved for Bella are called out above rather than reported as defects. Unreachable objects, unavailable remote history, disconnected drives and any unprovided historic branches are outside this receipt.
 
 ## Subsequent current-implementation baseline
 

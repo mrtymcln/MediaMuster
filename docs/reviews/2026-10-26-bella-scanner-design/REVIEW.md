@@ -1,5 +1,8 @@
 # Bella scanner design and decisions
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Initial proposal: 26 October 2026. All eight registered decisions resolved:
 27 October 2026. Bella will use C++17 and the project's pinned Qt 6.5.3 to
 implement the agreed parser and source rules. The register distinguishes the
@@ -317,5 +320,5 @@ failure paths as well as successful output.
 Set numeric performance expectations from that baseline rather than promising
 a speedup from architecture alone. OldScanner remains the app's scanner until
 the independent Bella implementation has been compared and the user approves
-the switch. The [design record](../../../Project%20Bella/evidence/scanner-design-2026-10-26.json)
+the switch. The design record
 preserves source anchors, standard-library references and the proposal's status.

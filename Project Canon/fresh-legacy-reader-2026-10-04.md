@@ -1,5 +1,8 @@
 # Fresh OMF and legacy-audio reader
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Later status: this reader is now connected to the application. The
 [8 October compression/audio-summary correction](legacy-compression-and-audio-summaries-2026-10-08.md)
 records shared native/Summary field decoding, per-field evidence and current
@@ -126,7 +129,8 @@ audio-channel column/CSV field or other new UI policy is introduced.
 ## Genuine Avid observations
 
 The two files under `/Users/Shared/AvidMediaComposer/OMFI MediaFiles` were read
-without modification. Corresponding test fixtures live in `tests/fixtures/omf/mc2026_audio`.
+without modification. Corresponding test fixtures were held in
+`tests/fixtures/omf/mc2026_audio` before their retirement.
 
 | File | Physical bytes | Native evidence | Embedded graph |
 | --- | ---: | --- | --- |
@@ -178,12 +182,12 @@ requests, not filesystem read-ahead or physical disk traffic. The probe is an
 unoptimized x86_64 build under Rosetta, not a full-scan speed/RAM benchmark. These
 results do not establish coverage of every possible private codec or OMF variant.
 
-Evidence: [detailed MDB/legacy tests](evidence/fresh-legacy-tests-2026-10-04.txt),
-[build log](evidence/fresh-legacy-build-2026-10-04.txt),
-[probe source](evidence/fresh-legacy-probe-2026-10-04.cpp),
-[reproduction commands](evidence/fresh-legacy-reproduction-2026-10-04.txt),
-[per-file probe results](evidence/fresh-legacy-probe-results-2026-10-04.jsonl),
-[input/source receipts](evidence/fresh-legacy-receipts-2026-10-04.json).
+Evidence: detailed MDB/legacy tests,
+build log,
+probe source,
+reproduction commands,
+per-file probe results,
+input/source receipts.
 Receipts were collected after reading; hashes identify the available files, not
 an atomic snapshot of the earlier probe.
 

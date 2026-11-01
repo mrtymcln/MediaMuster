@@ -1,6 +1,9 @@
 # Fresh documentation verification
 
-This is the retained pre-JPED verification. The [current verdict](VERDICT.md#current-scope-and-approved-jped-change) records the approved JPED change and superseding scope assessment. The separate later [research receipt](../../../artifacts/mdb-independent-audit-2026-11-01/evidence/online/research-findings.txt) retrieved original specifications/manuals through other URLs; failures recorded here remain truthful historical attempts, not a claim those documents are unavailable now.
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
+This is the retained pre-JPED verification. The [current verdict](VERDICT.md#current-scope-and-approved-jped-change) records the approved JPED change and superseding scope assessment. The separate later research receipt retrieved original specifications/manuals through other URLs; failures recorded here remain truthful historical attempts, not a claim those documents are unavailable now.
 
 Date: 1 November 2026 (Australia/Sydney). MDB only. This independently rechecked the main claims in [online.md](online.md) with 16 fresh search queries and direct source reads. It adds no production changes and no application runtime claims.
 

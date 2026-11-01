@@ -1,6 +1,8 @@
 // This target links only MDB's reader and projector implementations. A genuine
 // database with copied audio summaries proves that OMF media support is optional.
 
+#include "testfixtures.h"
+
 #include "oldscanner/mediaengine/mdbreader.h"
 #include "oldscanner/mediaengine/projection.h"
 
@@ -41,6 +43,7 @@ private slots:
 
 void TestMediaEngineMdbIsolated::genuineAudioDatabase()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFile input(QStringLiteral(FIXTURES_DIR "/omf/mc2026_audio/msmMMOB.mdb"));
 	QVERIFY2(input.open(QIODevice::ReadOnly), qPrintable(input.errorString()));
 	MediaEngine::Cancellation cancellation;
@@ -75,7 +78,7 @@ void TestMediaEngineMdbIsolated::genuineAudioDatabase()
 			}
 			QCOMPARE(recorded, property.encoding);
 			const auto precisionName = property.locator.name +
-				(property.encoding.startsWith("RIFF") ? QStringLiteral(".fmt .wBitsPerSample") : QStringLiteral(".COMM.sampleSize"));
+									   (property.encoding.startsWith("RIFF") ? QStringLiteral(".fmt .wBitsPerSample") : QStringLiteral(".COMM.sampleSize"));
 			for (const auto &field : object.properties)
 				if (field.locator.name == precisionName)
 				{

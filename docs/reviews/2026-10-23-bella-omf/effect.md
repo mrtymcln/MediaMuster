@@ -1,10 +1,13 @@
 # Bella Effect from OMF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 25 October 2026. **OMF Effect integration approved by the user.**
-The [Effect approval](../../../Project%20Bella/evidence/omf-effect-plan-2026-10-25.json)
+The Effect approval
 records the accepted rules and unchanged research snapshot.
 [Effect Category](effect-category.md) and its shared integration were approved
-in the [approval record](../../../Project%20Bella/evidence/omf-effect-category-plan-2026-10-25.json).
+in the approval record.
 Preserve the already-agreed [MDB](../2026-10-18-bella-mdb/effect.md)/
 [MXF](../2026-10-21-bella-mxf/effect.md) Effect output contract. No runtime
 implementation/cutover or Bin Filter change.
@@ -99,7 +102,7 @@ corpus. Prior MDB/MXF observations, authored lookup/model/scanner controls and
 reused native methods remain distinct evidence. Tests were inspected only;
 no new lookup execution, live app cells or universal name parity is claimed.
 
-The [curated record](../../../Project%20Bella/evidence/omf-effect-2026-10-25.json)
+The curated record
 records those sources and unchanged hashes. No media reads/writes, native apps
 or private APIs, tests/builds/production parser, runtime changes or cutover.
 Effect Category's approved names/integration, Type and Sequence exclusion stay

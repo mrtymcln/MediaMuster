@@ -1,5 +1,8 @@
 # Bella: PMR reading and memory lifetime
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 21 October 2026. **PMR read-once/extract/release memory workflow
 approved by the user on 21 October 2026; not yet implemented.** The PMR field/set/fallback rules
 and four-job maximum remain approved. The equivalent MDB read-once memory
@@ -110,7 +113,7 @@ total **583,336 bytes**, approximately 0.58 MB, with the largest 164,660 bytes.
 That makes whole-file capture a modest input-buffer cost in this corpus. It
 does not measure temporary object overhead or bound other users' PMR sizes.
 
-The [curated evidence](../../../Project%20Bella/evidence/pmr-memory-lifetime-2026-10-21.json)
+The curated evidence
 records source/native findings, file-size observations, applied C++ principles
 and the approved workflow. No scan benchmark, parser suite, app/private API execution
 or live database write was performed. OldScanner remains active and Bin Filter

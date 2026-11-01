@@ -1,5 +1,8 @@
 # MediaEngine: database storage comparison
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Recorded 10 October 2026. The user authorized comparing archive and native
 database storage using the same format readers. The first stage was to reuse the verified format readers,
 retain exact PMR/MDB source images, extract the same file facts, and release
@@ -204,9 +207,9 @@ architectural stage if we choose to remove that temporary expansion.
 
 ### Reproducing and inspecting the evidence
 
-The [summary](evidence/canon2-comparison-summary-2026-10-10.json) contains all
+The summary contains all
 trial counters, preservation totals, binary/library/source hashes and selected
-CMake settings. The [raw evidence archive](evidence/canon2-comparison-proof-2026-10-10.zip)
+CMake settings. The raw evidence archive
 contains reports, CSVs, logs, receipts, tested source files and a SHA-256 manifest.
 It does not bundle the original private database/media files.
 

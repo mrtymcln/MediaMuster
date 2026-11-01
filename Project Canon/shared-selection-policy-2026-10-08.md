@@ -1,5 +1,8 @@
 # Shared metadata selection policy — 8 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Implemented the approved **3 > 2 > 1 > 0** plan. There is one handwritten,
 commented [C++ policy table](../src/mediaengine/metadataselectionpolicy.cpp), with an
 explicit row for each of the 41 defined metadata properties, including internal
@@ -66,13 +69,13 @@ baseline: `/Users/Shared/AvidMediaComposer` and `/Volumes/EDIT`.
 | Scan time | 22,007 ms for this repeat; one run is not a controlled speed benchmark |
 | Peak memory footprint | 2,527,238,592 bytes, approximately 2.53 GB |
 
-Receipts: [controlled preference change](evidence/shared-policy-controlled-change-2026-10-08.md),
-[source hashes and verification](evidence/shared-policy-verification-2026-10-08.json),
-[app build](evidence/shared-policy-app-build-2026-10-08.txt),
-[full-scan comparison](evidence/shared-policy-full-comparison-2026-10-08.json),
-[scan log](evidence/shared-policy-real-scan-2026-10-08.txt),
-[export](evidence/full-scan-shared-policy-2026-10-08.csv), and
-[scan detail](live-scan-shared-policy-2026-10-08.json).
+Receipts: controlled preference change,
+source hashes and verification,
+app build,
+full-scan comparison,
+scan log,
+export, and
+scan detail.
 
 The first suite run exposed one UI-only fixture that copied a MediaEngine record and then
 changed its display labels without changing its evidence. Its row-filtering section

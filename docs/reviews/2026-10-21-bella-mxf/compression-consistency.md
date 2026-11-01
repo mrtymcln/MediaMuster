@@ -1,5 +1,8 @@
 # Bella: Compression consistency rules
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Review date: 22 October 2026. **The JPEG 2000 fix was approved on 22 October
 2026; it remains unimplemented. The [alpha follow-up](alpha-identification.md)
 has found positive format evidence; its narrow rule was approved separately
@@ -70,8 +73,8 @@ superseded; the narrow rule is approved and remains unimplemented.
 
 ## Evidence and scope
 
-The [JPEG approval receipt](../../../Project%20Bella/evidence/mxf-jpeg2000-consistency-plan-2026-10-22.json)
-records the decision and its scope. The [consistency research receipt](../../../Project%20Bella/evidence/mxf-compression-consistency-proposal-2026-10-22.json)
+The JPEG approval receipt
+records the decision and its scope. The consistency research receipt
 records the recommendations, current naming/source facts, installed Avid definitions
 and fresh bounded alpha-marker check. The unchanged helper and source guards
 are documented in the [Compression review](compression.md).

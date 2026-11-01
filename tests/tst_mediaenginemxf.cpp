@@ -2,6 +2,8 @@
 // Real Avid excerpts remain explicitly incomplete files; they still provide usable
 // metadata. Guarded devices catch accidental reads of large essence payloads.
 
+#include "testfixtures.h"
+
 #include "oldscanner/mediaengine/mxfreader.h"
 
 #include <QBuffer>
@@ -735,6 +737,7 @@ void TestMediaEngineMxf::realAvidFixtures_data()
 
 void TestMediaEngineMxf::realAvidFixtures()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(QString, path);
 	QFETCH(bool, excerpt);
 	QFile source(path);

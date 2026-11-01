@@ -1,5 +1,8 @@
 # Bella: Resolution from MXF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 22 October 2026. **The user approved these MXF Resolution rules
 on 22 October 2026. They remain unimplemented; OldScanner stays active.**
 The alpha identification rule was approved separately.
@@ -163,12 +166,12 @@ without measurements.
 
 ## Evidence and limits
 
-[Curated evidence](../../../Project%20Bella/evidence/mxf-resolution-2026-10-22.json)
+Curated evidence
 links the fresh native receipts, retained paired source outputs, raw physical
 examples and source/test hashes. Useful existing cases are in
 [the MXF projection tests](../../../tests/tst_mediaengine_mxfprojection.cpp:818):
 crop/field heights, absence, conflicting/unreadable values, nested offsets,
 overflow and exact proxy matches plus near misses. Tests were inspected, not
 newly run; no runtime code changed for this requirements review.
-The [approval receipt](../../../Project%20Bella/evidence/mxf-resolution-plan-2026-10-22.json)
+The approval receipt
 records the decision and its scope.

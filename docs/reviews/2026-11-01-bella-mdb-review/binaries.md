@@ -1,5 +1,8 @@
 # MDB binary comparison — 1 November 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 This is the retained pre-JPED binary investigation. The [current verdict](VERDICT.md#current-scope-and-approved-jped-change) records the approved JPED Video mapping and scoped recommendations. The later independent binary/native-corpus work corroborates JPED's image ancestry; it does not authorize automatic Kind inheritance or other class additions. Source Path, generic provenance machinery, per-loop cancellation and broader MDB formats remain subject to their explicit exclusions or deferred decisions.
 
 This is a read-only MDB review of the installed Media Composer and MDVx binaries against Bella's current `src/bella/mdbparser.cpp`. Hopper's actual C-like decompiler and assembly output were captured anew for the selected routines. Decompiler output is not recovered source code, and the conclusions below use assembly where the pseudo-C loses arguments, register widths or return values.
@@ -15,13 +18,13 @@ The binary work does not establish a new confirmed Bella defect in the sampled p
 | Media Composer `AvidCore` | Same installed application | `b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb` |
 | Media Composer main executable | Same installed application | `a4a1d1b41f2f8b509781c3b8a50286c0cd7c9746cf85e609ec5a7bcbf45a727a` |
 
-All four are universal x86_64/arm64 files. This review decompiles and inspects arm64. Fresh file sizes, paths and architectures are retained in [binary-identity.json](binary-evidence/binary-identity.json). The hashes match the prior native evidence, allowing that evidence to be consulted without implying that every earlier target was decompiled again.
+All four are universal x86_64/arm64 files. This review decompiles and inspects arm64. Fresh file sizes, paths and architectures are retained in binary-identity.json. The hashes match the prior native evidence, allowing that evidence to be consulted without implying that every earlier target was decompiled again.
 
-Hopper Disassembler is `6.6.1-demo`, build `42.6316048`. Its bundled `HopperMCPServer` was used over the documented JSON-RPC stdio interface. [collect_current.py](binary-evidence/collect_current.py) reproduces the selected calls against the indicated loaded Hopper documents. No application file was patched or saved by this work. `otool -arch arm64 -tvV` independently supplied the short `quick-*.s` assembly extracts.
+Hopper Disassembler is `6.6.1-demo`, build `42.6316048`. Its bundled `HopperMCPServer` was used over the documented JSON-RPC stdio interface. collect_current.py reproduces the selected calls against the indicated loaded Hopper documents. No application file was patched or saved by this work. `otool -arch arm64 -tvV` independently supplied the short `quick-*.s` assembly extracts.
 
-The final fresh set contains **27 procedures**: 11 MDVx, 12 `libameLibrary`, 3 `AvidCore`, and 1 Media Composer main predicate. Every one has successful `*-info`, `*-assembly` and `*-pseudo` JSON/text captures: **81 successful tool results**, listed with hashes in the four image-specific `*-capture-receipt.json` files and [capture-manifest.json](binary-evidence/capture-manifest.json). Initial empty/error replies are excluded from that count. Procedure addresses below are unslid arm64 virtual addresses in the named image, not universal-file offsets.
+The final fresh set contains **27 procedures**: 11 MDVx, 12 `libameLibrary`, 3 `AvidCore`, and 1 Media Composer main predicate. Every one has successful `*-info`, `*-assembly` and `*-pseudo` JSON/text captures: **81 successful tool results**, listed with hashes in the four image-specific `*-capture-receipt.json` files and capture-manifest.json. Initial empty/error replies are excluded from that count. Procedure addresses below are unslid arm64 virtual addresses in the named image, not universal-file offsets.
 
-Hopper restored some earlier demo windows as empty documents, so their names alone could not establish loaded content. The engine was loaded anew; Core, the main executable and MDVx were then loaded from uniquely named, byte-identical temporary copies to avoid duplicate-name lookup. [binary-copy-identity.json](binary-evidence/binary-copy-identity.json) verifies those copies against the installed hashes. The main `brDisplayable` procedure was explicitly defined at its known symbol address in Hopper before capture. These analysis actions change Hopper's temporary analysis state, not the executable bytes.
+Hopper restored some earlier demo windows as empty documents, so their names alone could not establish loaded content. The engine was loaded anew; Core, the main executable and MDVx were then loaded from uniquely named, byte-identical temporary copies to avoid duplicate-name lookup. binary-copy-identity.json verifies those copies against the installed hashes. The main `brDisplayable` procedure was explicitly defined at its known symbol address in Hopper before capture. These analysis actions change Hopper's temporary analysis state, not the executable bytes.
 
 ## MDVx comparison boundaries
 

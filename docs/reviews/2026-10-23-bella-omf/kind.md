@@ -1,5 +1,8 @@
 # Bella Kind from OMF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 24 October 2026. **OMF Kind rules accepted.** Original Bin
 is accepted. This is a focused format review under the user's instruction to
 preserve trusted useful metadata while redesigning reading, intermediate data
@@ -104,12 +107,12 @@ comparisons of required results, scan time and peak memory.
 
 ## Evidence and verification
 
-The [curated evidence](../../../Project%20Bella/evidence/omf-kind-2026-10-24.json)
+The curated evidence
 contains ten focused fresh native methods, the current source receipt, MDVx's
 distinct usage/audio routes and compact derived owner/class observations. Prior
 native ownership/family work and actual metadata are explicitly reused. Artifact
 hashes and the derivation distinguish fresh checks from reused evidence.
-The [approval record](../../../Project%20Bella/evidence/omf-kind-plan-2026-10-24.json)
+The approval record
 records the user's explicit acceptance and the unchanged scope. Original research
 remains unchanged.
 

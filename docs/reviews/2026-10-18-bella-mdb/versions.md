@@ -1,5 +1,8 @@
 # Bella: MDB versions and supported layouts
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 21 October 2026. **Release-one support range approved by the user
 on 21 October 2026; not yet implemented.** General MDB damage handling is
 already agreed. OldScanner remains active until explicit cutover approval;
@@ -181,7 +184,7 @@ the eventual code remains fresh C++17 and pinned Qt 6.5.3.
 
 ## Evidence and limits
 
-The [curated evidence](../../../Project%20Bella/evidence/mdb-versions-2026-10-21.json)
+The curated evidence
 contains native/source receipts, the 14-path inventory, pinned original-toolkit
 references, the proposal and 61 verified receipt/source/artifact inputs.
 Native artifacts and the read-only probe remain in `/private/tmp`. A snapshot

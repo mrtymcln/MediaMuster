@@ -1,5 +1,8 @@
 # Bounded real-corpus root-membership investigation — 2026-10-08
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Read-only investigation for audit priorities F40, F14, F06 and F07. No repository or media changes, no main build. A standalone metadata probe used the existing MediaEngine archive. Twelve sequential specimens were inspected; all returned `ParsedSource::Outcome::Complete`. This is evidence about these specimens and the inspected graph reader, not universal format correctness, cache freshness, or assurance that every media file has valid roots.
 
 ## Results
@@ -108,4 +111,4 @@ Pre-change scanmodel header SHA-256: `fbcdf96d95192c45bb531d8bfb4ea59983835bc962
 
 ## Durable repository copies
 
-The [full JSONL evidence](evidence/root-membership-specimens-2026-10-08.jsonl.gz) is gzip-compressed without changing its decompressed bytes. The [manifest](evidence/root-membership-specimens-manifest-2026-10-08.json) records both hashes and the original artifact provenance. The [probe source](evidence/root-membership-probe-2026-10-08.cpp) is retained exactly as compiled, alongside its [matching pre-correction model header](evidence/root-membership-probe-scanmodel-2026-10-08.h). A new probe against current MediaEngine headers must be adapted in a separate source copy and linked to a freshly built library; it would produce new evidence and hashes. Temporary paths above identify the original investigation, rather than being its only retained evidence.
+The full JSONL evidence is gzip-compressed without changing its decompressed bytes. The manifest records both hashes and the original artifact provenance. The probe source is retained exactly as compiled, alongside its matching pre-correction model header. A new probe against current MediaEngine headers must be adapted in a separate source copy and linked to a freshly built library; it would produce new evidence and hashes. Temporary paths above identify the original investigation, rather than being its only retained evidence.

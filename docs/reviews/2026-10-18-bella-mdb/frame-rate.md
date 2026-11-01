@@ -1,5 +1,8 @@
 # Bella: Frame Rate from MDB
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 19 October 2026; approval follow-up: 20 October 2026.
 **The user approved the shared rate design, late labels, numeric sorting and
 MDB-first priority with only an independently read header as fallback.** The
@@ -209,7 +212,7 @@ The decisive source points are
 [table display](../../../src/mediatablemodel.cpp),
 [CSV](../../../src/mediacsv.cpp) and
 [sorting](../../../src/mediafilterproxy.cpp). The new
-[current-code evidence](../../../Project%20Bella/evidence/mdb-frame-rate-current-2026-10-20.json)
+current-code evidence
 records exact lines and source hashes.
 
 Current `legacyDnxNamingRate` has narrowly qualified decimal-to-NTSC aliases
@@ -388,7 +391,7 @@ the mere presence of a header does not select that source. If MDB SampleRate
 is usable but Length is not, Frame Rate can still be known while Duration is
 unavailable. Audio's visible Frame Rate remains blank.
 
-The [decision receipt](../../../Project%20Bella/evidence/mdb-frame-rate-plan-2026-10-20.json)
+The decision receipt
 records this approval and supersedes earlier proposal/pending wording in the
 historical evidence receipts. No runtime source changed, app was run or tests
 were needed for this requirements update.
@@ -402,7 +405,7 @@ presentation are agreed; unusual-rate precision remains a presentation detail.
 
 ## Evidence
 
-The [curated Frame Rate evidence](../../../Project%20Bella/evidence/mdb-frame-rate-2026-10-19.json)
+The curated Frame Rate evidence
 contains current binary/MDB/PMR and raw-index hashes, three actual byte-range
 examples, native writer/conversion/display observations, bounded MDVx formatting
 predictions and pinned Qt/C++ header receipts. Raw disassembly and probes remain

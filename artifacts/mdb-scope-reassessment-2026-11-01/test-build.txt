@@ -1,7 +1,0 @@
-[  0%] Built target jped_regression_autogen_timestamp_deps
-[ 16%] Automatic MOC for target jped_regression
-[ 16%] Built target jped_regression_autogen
-[ 50%] Building CXX object CMakeFiles/jped_regression.dir/Users/martymclean/Developer/MediaMuster/tests/tst_bellamdb.cpp.o
-[ 50%] Building CXX object CMakeFiles/jped_regression.dir/Users/martymclean/Developer/MediaMuster/src/bella/mdbparser.cpp.o
-[ 66%] Linking CXX executable jped_regression
-[100%] Built target jped_regression

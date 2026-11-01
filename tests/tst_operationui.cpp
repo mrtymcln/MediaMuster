@@ -1,3 +1,4 @@
+#include "testfixtures.h"
 #include "testmediafile.h"
 #include "mainwindow.h"
 #include "featureflags.h"
@@ -300,6 +301,7 @@ private:
 
 void TestOperationUi::scan_results_keep_reconciliation_issues()
 {
+	REQUIRE_TEST_FIXTURES();
 	QTemporaryDir temporary;
 	QVERIFY(temporary.isValid());
 	const QString folder = temporary.path() + QStringLiteral("/Avid MediaFiles/MXF/1");
@@ -761,6 +763,7 @@ void TestOperationUi::undo_restores_inventory_data()
 
 void TestOperationUi::undo_restores_inventory()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(OpKind, kind);
 	QFETCH(bool, keepOtherLocation);
 	QFETCH(bool, blockUndo);
@@ -3314,8 +3317,8 @@ void TestOperationUi::copy_move_jobs_report_one_console_summary()
 		QCOMPARE(finished.first().at(0).toInt(), 2);
 		QCOMPARE(finished.first().at(1).toInt(), 0);
 		const QString summary = QStringLiteral("%1 complete: 2 files %2 to %3.")
-			.arg(copy ? QStringLiteral("Copy") : QStringLiteral("Move"),
-				 copy ? QStringLiteral("copied") : QStringLiteral("moved"), job.destRoot);
+									.arg(copy ? QStringLiteral("Copy") : QStringLiteral("Move"),
+										 copy ? QStringLiteral("copied") : QStringLiteral("moved"), job.destRoot);
 		QCOMPARE(window.m_console->toPlainText().count(QStringLiteral("operations: ") + summary), 1);
 		int confirmations = 0;
 		for (const auto &message : messages)

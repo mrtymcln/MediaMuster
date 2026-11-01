@@ -1,3 +1,4 @@
+#include "testfixtures.h"
 #include "oprunner.h"
 #include "opmanager.h"
 #include "opscanreceipt.h"
@@ -428,6 +429,7 @@ void TestFileOperations::mixed_omf_mxf_transfer_preserves_layout_data()
 
 void TestFileOperations::mixed_omf_mxf_transfer_preserves_layout()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(bool, move);
 	QFETCH(bool, resume);
 	Fixture f;
@@ -483,7 +485,7 @@ void TestFileOperations::mixed_omf_mxf_transfer_preserves_layout()
 		QVERIFY(!OperationRecovery::readSummary(f.journals).resumable.isEmpty());
 		QCOMPARE(copyMoveSummaries(sink),
 				 QStringList{move ? QStringLiteral("Move cancelled: 0 files moved to %1; 4 not completed.").arg(f.dest)
-							  : QStringLiteral("Copy cancelled: 1 file copied to %1; 3 not completed.").arg(f.dest)});
+								  : QStringLiteral("Copy cancelled: 1 file copied to %1; 3 not completed.").arg(f.dest)});
 		cancel.store(false);
 		runner.hooks = {};
 		runner.hooks.forceCopy = true;
@@ -707,8 +709,8 @@ void TestFileOperations::already_at_destination_only_job()
 		QVERIFY(OperationRecovery::readSummary(f.journals).resumable.isEmpty());
 		QCOMPARE(get(f.src), f.bytes);
 		QCOMPARE(copyMoveSummaries(sink), QStringList{
-			kind == OpKind::Copy ? QStringLiteral("Copy complete: 0 files copied to %1; 1 already at destination.").arg(request.destRoot)
-								: QStringLiteral("Move complete: 0 files moved to %1; 1 already at destination.").arg(request.destRoot)});
+											  kind == OpKind::Copy ? QStringLiteral("Copy complete: 0 files copied to %1; 1 already at destination.").arg(request.destRoot)
+																   : QStringLiteral("Move complete: 0 files moved to %1; 1 already at destination.").arg(request.destRoot)});
 	}
 }
 void TestFileOperations::undo_already_restored_object_finishes_without_changes()
@@ -1539,6 +1541,7 @@ void TestFileOperations::same_volume_keep_both_handles_late_conflict()
 }
 void TestFileOperations::real_mxf_identity_is_checked()
 {
+	REQUIRE_TEST_FIXTURES();
 	Fixture f;
 	const QString sample = QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf");
 	const auto header = mxfEvidence(readMxf(sample));
@@ -1566,6 +1569,7 @@ void TestFileOperations::real_mxf_identity_is_checked()
 }
 void TestFileOperations::mediaengine_scan_receipt_checks_location_and_header_subset()
 {
+	REQUIRE_TEST_FIXTURES();
 	Fixture f;
 	const QString sample = QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf");
 	const auto header = mxfEvidence(readMxf(sample));
@@ -1749,6 +1753,7 @@ void TestFileOperations::compact_scan_receipt_operations_and_recovery_data()
 
 void TestFileOperations::compact_scan_receipt_operations_and_recovery()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(int, kind);
 	QFETCH(bool, resume);
 	Fixture f;
@@ -1903,6 +1908,7 @@ void TestFileOperations::skipped_header_checks_database_file_identity_data()
 
 void TestFileOperations::skipped_header_checks_database_file_identity()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(int, kind);
 	QFETCH(QString, condition);
 	Fixture f;
@@ -2119,6 +2125,7 @@ void TestFileOperations::real_legacy_header_identity_is_checked_data()
 
 void TestFileOperations::real_legacy_header_identity_is_checked()
 {
+	REQUIRE_TEST_FIXTURES();
 	Fixture f;
 	QFETCH(QString, sample);
 	QFETCH(bool, compact);
@@ -2168,6 +2175,7 @@ void TestFileOperations::real_legacy_header_identity_is_checked()
 
 void TestFileOperations::mxf_parser_borrows_protected_handle()
 {
+	REQUIRE_TEST_FIXTURES();
 	Fixture f;
 	const QString sample = QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf");
 	const auto expected = mxfEvidence(readMxf(sample));
@@ -2518,6 +2526,7 @@ void TestFileOperations::invalid_mxf_claims_are_refused_by_adapter()
 
 void TestFileOperations::rebalance_refuses_different_file_from_same_master()
 {
+	REQUIRE_TEST_FIXTURES();
 	// Two audio tracks from one real master have different essence-file IDs.
 	// Keeping only the master claim would let the wrong track pass validation.
 	const QString first = QStringLiteral(FIXTURES_DIR "/avid_headers/A01.E683CD73_FF4BEFF4BE934A.mxf");

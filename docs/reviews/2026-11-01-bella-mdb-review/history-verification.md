@@ -1,5 +1,8 @@
 # Independent MDB source/history verification
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Current disposition: the [scope reassessment and JPED result](VERDICT.md#current-scope-and-approved-jped-change) supersede general feature-expansion recommendations. The authored owner/list/class findings below concern existing qualification requirements and remain separate from deliberate exclusions.
 
 Verified against HEAD `20220f2b4c2b7ff6ef3d017a77568e5edf7de7cd` on 1 November 2026. This addendum checks the existing review's historical findings against source and fresh execution. Production source and tests are unchanged.
@@ -10,10 +13,10 @@ The current Bella implementation is **not uniformly more correct than every pred
 
 Both retained Bella reproduction programs were compiled anew with `clang++ -std=c++17`, repository `src`/`tests`, pinned Qt 6.5.3 Core/Test, and current `mdbparser.cpp`/`mobid.cpp`. Both exited zero. Together they parse 28 authored MDBs, split evenly between II and MM metadata byte order. Results exactly reproduce the retained earlier observations:
 
-- [Category/attribute output](evidence/history-verification-category.txt).
-- [Relationship/Project output](evidence/history-verification-graph.txt).
+- Category/attribute output.
+- Relationship/Project output.
 
-A separate fresh arm64 Release CMake build of the retained OldScanner probe also succeeded, using the current repository sources. It ran all 28 standalone controls from `/tmp/bella-mdb-inheritance-controls`, with every process exiting zero. [Complete fresh outputs with input hashes](evidence/history-verification-oldscanner.json) and [source/output receipt](evidence/history-verification-receipt.json) are retained.
+A separate fresh arm64 Release CMake build of the retained OldScanner probe also succeeded, using the current repository sources. It ran all 28 standalone controls from `/tmp/bella-mdb-inheritance-controls`, with every process exiting zero. Complete fresh outputs with input hashes and source/output receipt are retained.
 
 | Authored case, in both byte orders | Fresh Bella | Fresh OldScanner | Consequence |
 | --- | --- | --- | --- |
@@ -60,6 +63,6 @@ No historical application checkout was compiled by this addendum, no historical 
 
 Rechecked on 1 November against HEAD `15aed2572973b27b01ee41f2bf9166ee40f7d185`. `git diff 20220f2..15aed257 -- src/bella/mdbparser.cpp` contains only the approved JPED addition to the video whitelist and removal of the stale numeric Kind comment. The relationship walk, null attribute-slot handling and category class checks are unchanged.
 
-Both retained reproduction programs were independently rebuilt against that current parser using the pinned Qt 6.5.3 command in [history.md](history.md#reproduction). All 28 parses exited normally, and each captured output was byte-identical to its retained category/attribute or relationship/Project result. The [new revalidation receipt](evidence/reassessment/receipt.json) preserves current source hashes, build commands, output hashes and the exact baseline-match checks; [category/attribute output](evidence/reassessment/history-repro-results.txt) and [relationship/Project output](evidence/reassessment/history-graph-repro-results.txt) are saved separately. The temporary executables remain under `/tmp/mdb-doc-reassessment-20261101/`; earlier proof receipts were not rewritten.
+Both retained reproduction programs were independently rebuilt against that current parser using the pinned Qt 6.5.3 command in [history.md](history.md#reproduction). All 28 parses exited normally, and each captured output was byte-identical to its retained category/attribute or relationship/Project result. The new revalidation receipt preserves current source hashes, build commands, output hashes and the exact baseline-match checks; category/attribute output and relationship/Project output are saved separately. The temporary executables remain under `/tmp/mdb-doc-reassessment-20261101/`; earlier proof receipts were not rewritten.
 
-These controls remain useful bounded qualification coverage. The unrelated old stricter terminator expectation remains unsettled and is not promoted to a defect. JPED's native-corpus change and performance validation are recorded [separately](../../../artifacts/mdb-jped-kind-2026-11-01/validation.json). No further production change was made.
+These controls remain useful bounded qualification coverage. The unrelated old stricter terminator expectation remains unsettled and is not promoted to a defect. JPED's native-corpus change and performance validation are recorded separately. No further production change was made.

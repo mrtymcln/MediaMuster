@@ -1,5 +1,8 @@
 # Bella: preserve the current Compression system
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Decision date: 20 October 2026. The user directed: **“Compression: keep the
 current system as it is.”** This is an approved preservation requirement, not
 a proposal for a replacement codec catalogue. The same turn approved carrying
@@ -62,7 +65,7 @@ Source inspection establishes this integration boundary; no binaries were
 reinvestigated, no runtime source changed, no tests rerun and no timing or
 memory improvement measured for this decision. Existing naming tests are
 preservation material, not a newly reported passing run. The
-[curated record](../../../Project%20Bella/evidence/mdb-compression-2026-10-20.json)
+curated record
 retains the approved scope and source hashes. Requirements review continues
 before Bella implementation. OldScanner remains active until explicit cutover
 approval, and Bin Filter stays unchanged. Resolution is the next field review.

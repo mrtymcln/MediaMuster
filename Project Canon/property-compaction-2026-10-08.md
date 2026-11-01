@@ -1,5 +1,8 @@
 # MDB/OMF property storage compaction — 8 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 The user approved the first proposal from the [performance review](performance-review-2026-10-08.md):
 release unused property storage while retaining every original property and its evidence.
 
@@ -79,14 +82,14 @@ Capacities and pointer addresses are excluded from semantic hashes.
 
 The diagnostic streams through a bounded 64 KB hash buffer and is not part of an
 application target. Its timings are supplementary because tests/builds ran
-concurrently. The [source/projection proof](evidence/property-compaction-graph-summary-2026-10-08.json)
-and [verification receipt](evidence/property-compaction-verification-2026-10-08.json)
+concurrently. The source/projection proof
+and verification receipt
 record the method and limits.
 
 ## Receipts
 
-- [Before scan](evidence/property-compaction-before-real-scan-2026-10-08.json)
-- [After scan](evidence/property-compaction-after-real-scan-2026-10-08.json)
-- [Before CSV](evidence/property-compaction-before-real-scan-2026-10-08.csv)
-- [After CSV](evidence/property-compaction-after-real-scan-2026-10-08.csv)
-- [Verification](evidence/property-compaction-verification-2026-10-08.json)
+- Before scan
+- After scan
+- Before CSV
+- After CSV
+- Verification

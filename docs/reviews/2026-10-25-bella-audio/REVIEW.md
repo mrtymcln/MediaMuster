@@ -1,7 +1,10 @@
 # Bella native WAVE and AIFF: preserve existing behaviour
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 25 October 2026. **The user chose to preserve current WAVE/AIFF rules and behaviour.**
-The [preservation decision](../../../Project%20Bella/evidence/audio-preservation-plan-2026-10-25.json)
+The preservation decision
 supersedes the pending behaviour changes below. This is not blanket approval of
 the preceding proposal or its extra version checks. The original research is
 retained unchanged as evidence.
@@ -160,7 +163,7 @@ numbering availability, then local failure/duplicate handling under the agreed
 general principles. No inference that a BWF UMID automatically is FileMobId,
 time reference is Duration, or recorded origin date is filesystem Date Created.
 
-The [curated evidence](../../../Project%20Bella/evidence/audio-layouts-2026-10-25.json)
+The curated evidence
 retains three bounded reader receipts, hashes/anchors and the two native layout
 observations. Other variants are source/native evidence and authored test cases,
 not observed physical RF64/BW64/plain-AIFF/float examples. No application/private

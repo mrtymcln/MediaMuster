@@ -1,3 +1,5 @@
+#include "testfixtures.h"
+
 #include <QtTest>
 #include <QBuffer>
 #include <QCryptographicHash>
@@ -257,7 +259,9 @@ void TestMediaEnginePmrRobustness::invalidDeviceAndPreCancellation()
 
 void TestMediaEnginePmrRobustness::realSources()
 {
-	QStringList paths = fixturePaths();
+	QStringList paths;
+	if (TestFixtures::available())
+		paths = fixturePaths();
 	paths += qEnvironmentVariable("MEDIAMUSTER_MEDIAENGINE_PMR_FILES").split(';', Qt::SkipEmptyParts);
 	const QString roots = qEnvironmentVariable("MEDIAMUSTER_MEDIAENGINE_REAL_SCAN_ROOTS");
 	if (!roots.isEmpty())
@@ -270,6 +274,8 @@ void TestMediaEnginePmrRobustness::realSources()
 			if (candidate.hint == MediaEngine::SourceCandidate::ReaderHint::Pmr)
 				paths.append(candidate.path);
 	}
+	if (paths.isEmpty())
+		QSKIP("No shared PMR fixtures or opt-in external PMR sources are available.");
 	const MediaEngine::PmrReader reader;
 	qsizetype objects = 0;
 	for (const auto &path : paths)
@@ -291,6 +297,7 @@ void TestMediaEnginePmrRobustness::realSources()
 
 void TestMediaEnginePmrRobustness::benchmark()
 {
+	REQUIRE_TEST_FIXTURES();
 	if (!qEnvironmentVariableIsSet("MEDIAMUSTER_MEDIAENGINE_PMR_BENCHMARK"))
 		QSKIP("Opt-in parsing benchmark; excludes discovery and filesystem I/O.");
 	QVector<QByteArray> corpus;

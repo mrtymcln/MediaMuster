@@ -1,5 +1,8 @@
 # MediaEngine: retain media facts without full media archives
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Implemented 11 October 2026 after the user approved **stages 3a and 3b only** in
 the [retention plan](newtestament-retention-plan-2026-10-10.md), including discarding
 partial, failed and cancelled media archives. **PMR/MDB source snapshots remain
@@ -99,7 +102,7 @@ discarded. Retained database acquisition counts, bytes and receipts must match.
 The complete MXFs total 1,573,370,667 physical bytes and complete normally. The
 legacy set totals 43,910,168 bytes: 80 genuine Avid SupportingFiles OMFs plus two
 Media Composer-created native audio files; provenance is in the
-[fixture record](../tests/fixtures/omf/README.md). The 795 specimens are truncated
+fixture record. The 795 specimens are truncated
 genuine headers, all yielding incomplete outcomes. They exercise partial-source
 retention and are not ordinary complete-file Interplay scans.
 
@@ -121,7 +124,7 @@ include extracted evidence, scan records, libraries and allocator effects.
 ## Measured speed and RAM
 
 Measurements and preservation results are recorded in the
-[verification receipt](evidence/mediaengine-media-retention-verification-2026-10-11.json).
+verification receipt.
 Results below use three fresh-process before/after pairs per dataset. Their order
 alternates. Builds, tests and source restoration did not run during these trials.
 The filesystem cache was warm and uncontrolled. All four logical comparisons and
@@ -178,7 +181,7 @@ That is a similar media-reader lifetime, while MediaMuster retains a wider set o
 supported facts and their competing evidence. It is not proof that the apps do
 identical work, or a measured MDVx performance comparison. Concrete binary
 addresses, identity and limits are recorded in the
-[11 October lifetime audit](evidence/mdvx-media-lifetime-2026-10-11.md).
+11 October lifetime audit.
 
 ## Reproduction
 

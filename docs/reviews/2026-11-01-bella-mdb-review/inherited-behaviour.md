@@ -1,8 +1,11 @@
 # Which findings already existed in earlier MDB readers?
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 The table records pre-JPED results. All 28 authored controls were [rebuilt and rechecked against post-JPED Bella](history-verification.md#post-jped-source-and-control-revalidation) and give identical outputs. They remain separate from the [withdrawn scope-expansion proposals and completed JPED change](VERDICT.md#current-scope-and-approved-jped-change); the JPED native-corpus rerun does not exercise these damaged graphs.
 
-Follow-up, 1 November 2026. The same retained category and graph controls were exported as 28 standalone MDBs (14 cases in each byte order) and run through the fresh current-source OldScanner probe from the baseline review. Every process exited normally. The [generator](evidence/oldscanner/inheritance-controls.cpp) and [complete OldScanner reports](evidence/oldscanner/inheritance-results.json) are retained.
+Follow-up, 1 November 2026. The same retained category and graph controls were exported as 28 standalone MDBs (14 cases in each byte order) and run through the fresh current-source OldScanner probe from the baseline review. Every process exited normally. The generator and complete OldScanner reports are retained.
 
 | Case | Current Bella | Current active OldScanner | Assessment |
 | --- | --- | --- | --- |

@@ -1,5 +1,8 @@
 # MediaEngine lossless compression estimate
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 The user asked how much RAM compression could save. This is a read-only
 measurement of genuine retained source bytes, not an implementation change or a
 new whole-app memory benchmark.
@@ -81,9 +84,9 @@ the full workload fits safely or completes.
 
 ## Saved evidence
 
-- [Exact totals and limitations](evidence/canon2-compression-payload-summary-2026-10-10.json).
-- [Measurement utility, per-source results and SHA-256 manifest](evidence/canon2-compression-payload-proof-2026-10-10.zip).
-- [Earlier OMF/legacy archive measurements](evidence/ram-archive-feasibility-2026-10-09.json).
+- Exact totals and limitations.
+- Measurement utility, per-source results and SHA-256 manifest.
+- Earlier OMF/legacy archive measurements.
 
 No production code, engine selection, scan scope, metadata policy, reader or
 test-retirement decision changed in this experiment.

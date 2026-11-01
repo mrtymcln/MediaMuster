@@ -1,5 +1,8 @@
 # Scan-local folder reuse — 9 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 The user approved the second contained candidate from the
 [performance review](performance-review-2026-10-08.md): ask the filesystem fewer
 times for information shared by files in the same folder. This follows the
@@ -133,9 +136,9 @@ match exactly. Database-first scheduling retains 116 media-header reads and
 2,297 deliberate header skips. The probe's separate instrumented timings are
 supplementary, not substituted for these uninstrumented trials.
 
-See the [query and semantic proof](evidence/folder-cache-probe-receipt-2026-10-09.json),
-[method](evidence/folder-cache-probe-method-2026-10-09.txt) and
-[final verification](evidence/folder-cache-verification-2026-10-09.json).
+See the query and semantic proof,
+method and
+final verification.
 
 ## Measurement limits
 

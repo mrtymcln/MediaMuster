@@ -1,3 +1,5 @@
+#include "testfixtures.h"
+
 #include "bella/pmrparser.h"
 
 #include <QCryptographicHash>
@@ -1012,6 +1014,7 @@ void TestBellaPmr::genuineLittleEndianFixtures_data()
 
 void TestBellaPmr::genuineLittleEndianFixtures()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(QString, relativePath);
 	QFETCH(int, count);
 	QFETCH(QString, filename);

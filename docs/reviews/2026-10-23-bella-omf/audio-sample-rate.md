@@ -1,9 +1,12 @@
 # Bella audio Sample Rate from OMF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research 24 October 2026; acceptance 25 October. **OMF audio Sample Rate rules
 and implementation simplification accepted.**
 [Frame Rate is agreed](frame-rate.md), as recorded in the
-[approval](../../../Project%20Bella/evidence/omf-frame-rate-plan-2026-10-24.json).
+approval.
 This review concerns audio sampling frequency in Hz, displayed in kHz. It does
 not change the accepted OMF Duration count/unit clock, audio display EditRate
 or qualified DF rules. No runtime implementation/cutover, Bin Filter change,
@@ -150,7 +153,7 @@ priorities and reasons to open additional headers remain deferred as requested.
 
 The user's follow-up assent and move to the next field accepts the source/
 precision rules and their simplification, as recorded in the
-[approval](../../../Project%20Bella/evidence/omf-audio-sample-rate-plan-2026-10-25.json).
+approval.
 The simplification calls for a small implementation shape:
 
 - Use one small class switch to choose the concrete field/summary. No registry,
@@ -177,12 +180,12 @@ and file placement follow the requirements review. OldScanner already shares
 some decoded audio facts across fields. Bella should preserve that useful idea;
 this is not a newly measured speedup. Exact AIFF representability and unusual
 label precision retain their disclosed implementation boundary. The
-[refinement record](../../../Project%20Bella/evidence/omf-audio-sample-rate-simplification-2026-10-25.json)
+refinement record
 preserves the original proposal separately from the research and later approval.
 
 ## Evidence and verification
 
-The [curated evidence](../../../Project%20Bella/evidence/omf-audio-sample-rate-2026-10-24.json)
+The curated evidence
 contains fresh MPGA native evidence, reused class/summary traces, current source,
 MDVx boundaries and the two independently observed own-summary frequencies.
 Historical raw references that are unavailable are distinguished from extant

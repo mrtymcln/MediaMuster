@@ -1,5 +1,8 @@
 # Bella: MDB contents, encoding and retained values
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 **Current scope, 1 November 2026:** this dated research remains evidence, not a
 list of additional features to implement. The
 [scope reassessment and JPED approval](../../../Project%20Bella/README.md#mdb-audit-reassessment-and-jped-approval)
@@ -9,7 +12,7 @@ Unused channel/container/imported-status row values are not missing Bella
 requirements; temporary decoding needed for retained fields remains allowed.
 The user separately approved `JPED` as Video, making the current Kind map seven
 classes. Wider class/inheritance expansion remains research. The
-[post-JPED receipt](../../../artifacts/mdb-jped-kind-2026-11-01/validation.json)
+post-JPED receipt
 records the narrow change; the separate
 [damaged-input qualification findings](../2026-11-01-bella-mdb-review/VERDICT.md)
 remain open and within scope. No further production changes are made here.
@@ -222,7 +225,7 @@ support. Native/source limits and no-runtime-change boundaries remain.
 
 Exact binary/file hashes, native function addresses, compact actual-file
 observations and observer qualifications are in the
-[curated evidence](../../../Project%20Bella/evidence/mdb-research-2026-10-18.json).
+curated evidence.
 Temporary probes, copied binary slices, raw value indexes and disassembly remain
 outside the repository.
 
@@ -442,7 +445,7 @@ greater efficiency/elegance than OldScanner and MDVx-comparable efficiency while
 retaining Bella's extra agreed information. That is a comparison target; no
 speed or memory improvement has been measured. MDB supplies information about
 physical inventory; it must not become the gate that decides whether physical
-media are listed. The [approval receipt](../../../Project%20Bella/evidence/mdb-execution-plan-2026-10-21.json)
+media are listed. The approval receipt
 preserves that workflow scope. MDB version coverage was subsequently approved
 separately in the [versions review](versions.md).
 

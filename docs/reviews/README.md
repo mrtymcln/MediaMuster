@@ -4,6 +4,10 @@ These records describe their inspected source revisions and platforms. They do
 not certify later builds. Current ownership and behavior are in the
 [architecture](../architecture.md) and [application guide](../current-behaviour.md).
 
+Raw audit evidence, reproduction harnesses and shared test fixtures were retired
+on 1 November 2026. Written findings and approved decisions remain. Dated results
+describe their original runs; references to removed raw material are historical.
+
 | Record | Retained scope |
 | --- | --- |
 | [Bella MDB comparative verdict, 1 November](2026-11-01-bella-mdb-review/VERDICT.md) | Current scope reassessment and approved JPED Video change: 30 Kind values corrected, native-corpus membership/other values preserved, no measured performance regression. Separately retains and revalidates three authored relationship/category qualification findings; historical fixture-inclusive and fresh native corpora remain distinct. |

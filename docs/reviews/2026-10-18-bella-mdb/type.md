@@ -1,5 +1,8 @@
 # Bella: Type from MDB
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 20 October 2026. The user approved the separate
 [Resolution rules](resolution.md) and requested the next MDB field, Type.
 **The user approved these Type rules on 20 October 2026, specifying blank
@@ -102,7 +105,7 @@ directly target their selected physical files. One unresolved additional source
 claim, encountered for two physical rows, does not affect those unique PMR owner
 matches or require a whole-graph veto merely to read the selected master's scalar.
 
-[Curated evidence](../../../Project%20Bella/evidence/mdb-type-2026-10-20.json)
+Curated evidence
 retains owner-qualified IDs, counts, declared types, raw bytes/ranges and hash
 receipts. These real samples do not exercise absent-master recovery or bad/
 unsupported usage. Existing approval for unique-master recovery stays intact;

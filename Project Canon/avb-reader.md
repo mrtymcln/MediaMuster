@@ -1,5 +1,8 @@
 # Fresh MediaEngine AVB reader
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Recorded 4 October 2026. This document describes the new bin reader work and
 its evidence. The user confirmed **engine first**: implement and verify the
 reader and resolver now; do not change the live UI in this stage. Both engines
@@ -146,8 +149,8 @@ These are native-implementation and specimen findings, not a claim of a publishe
 Avid format specification or proof about every historical release.
 
 Archived evidence:
-[native-library receipt](evidence/avb-pcma-native-evidence-2026-10-04.json),
-[observed PCMA objects and offsets](evidence/avb-pcma-extension2-observations-2026-10-04.json).
+native-library receipt,
+observed PCMA objects and offsets.
 The native receipt includes a SHA-256 of the inspected library. The bin observation
 receipt identifies paths, object numbers and byte positions; it does not claim a
 cryptographic identity check of those bins.
@@ -205,9 +208,9 @@ Other MobID-valued fields must not inherit that dependency meaning:
 - Marker/MobRef/Position IDs remain recorded evidence. No blanket rule follows
   them merely because their bytes decode as a MobID.
 
-Archived evidence: [native receipt with SHA-256, addresses, file offsets and bytes](evidence/avb-reference-semantics-native-evidence-2026-10-04.json),
-[reference-context probe](evidence/avb-mobvalued-links-probe-2026-10-04.py), and
-[observed object IDs and parent fields](evidence/avb-mobvalued-links-observations-2026-10-04.json).
+Archived evidence: native receipt with SHA-256, addresses, file offsets and bytes,
+reference-context probe, and
+observed object IDs and parent fields.
 The probe contains no ASPI examples; the source-master meaning comes from native
 evidence. Controlled resolver tests now exercise its modern and legacy-only
 dependencies. The probe's
@@ -264,8 +267,8 @@ The probe intentionally did not treat other classes as supported. Its fixed
 first-object offset of 119 was independently checked with pyavb for these two
 files; it is a specimen-harness choice, not a production AVB framing rule.
 
-See the [probe source](evidence/avb-descriptor-probe-2026-10-04.cpp) and
-[per-class results and limitations](evidence/avb-descriptor-probe-results-2026-10-04.json).
+See the probe source and
+per-class results and limitations.
 The probe requires the normal Qt runtime environment. The sandboxed attempt
 failed during Qt CPU-feature detection before it read the bins; the normal-host
 read-only run completed successfully.
@@ -326,6 +329,6 @@ Avid-published specification or endorsement.
 
 **Copyright (c) 2022 Mark Reid.** pyavb is distributed under the MIT License.
 The complete required copyright, permission and warranty notice is archived in
-[pyavb-LICENSE.txt](evidence/pyavb-LICENSE.txt). Keep that notice with copies or
+pyavb-LICENSE.txt. Keep that notice with copies or
 substantial portions of the source-derived material. Avid native evidence is
 separately identified above and is not covered by pyavb's licence.

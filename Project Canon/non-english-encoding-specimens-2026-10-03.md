@@ -1,8 +1,11 @@
 # Non-English PMR, MDB and AVB specimens
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Inspected read-only on 3 October 2026 after the user supplied these three files
 from Apple Notes attachments. No source files were edited or copied into fixtures.
-The [focused evidence ledger](evidence/non-english-encoding-specimens-2026-10-03.json)
+The focused evidence ledger
 retains source paths, sizes, SHA-256 hashes, selected original bytes and locations.
 
 ## Observed values

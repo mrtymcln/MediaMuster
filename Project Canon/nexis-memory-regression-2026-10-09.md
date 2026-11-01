@@ -1,5 +1,8 @@
 # Windows/NEXIS memory regression
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Recorded 9 October 2026. This is a diagnosis and correction plan, not a claim
 that the crash has been reproduced or fixed. The original investigation did
 not change application code. A subsequent [RAM archive implementation and local
@@ -46,9 +49,9 @@ MediaEngine libraries. They establish storage cost; they are not Windows measure
   addition to the small set of metadata displayed in the table. Their identity
   contexts cannot simply be merged because the definitions look similar.
 
-The saved [graph comparisons](evidence/property-compaction-graph-summary-2026-10-08.json),
-[measured element sizes](evidence/performance-review-2026-10-08.json),
-[full-scan receipt](evidence/folder-cache-after-repeat1-2026-10-09.json) and
+The saved graph comparisons,
+measured element sizes,
+full-scan receipt and
 [earlier header-memory investigation](database-first-and-memory-2026-10-07.md)
 retain the underlying evidence. Do not extrapolate this small workload into a
 measured 300,000-file RAM figure: source sizes, header fallback and duplicate

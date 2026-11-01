@@ -1,5 +1,8 @@
 # Bella: Resolution from MDB
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 20 October 2026. The user likes MediaMuster's current Resolution
 implementation and requested native comparison and possible simplification.
 **The user approved the Bella rules below on 20 October 2026. They are not yet
@@ -121,7 +124,7 @@ that string alone does not establish the encoding or a proxy exception.
 The current MDB values reproduce the dated fixture configurations; physical
 header/ffprobe corroboration is historical evidence, not a newly run probe.
 
-[Curated evidence](../../../Project%20Bella/evidence/mdb-resolution-2026-10-20.json)
+Curated evidence
 retains typed values, counts, complete identities, owner references and byte
 ranges. The current corpus cannot exercise absence/defaults, nonzero offsets,
 damaged dimensions or ambiguous source rectangles. Existing controlled tests

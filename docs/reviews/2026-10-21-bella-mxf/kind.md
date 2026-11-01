@@ -1,5 +1,8 @@
 # Bella: Kind from MXF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 22 October 2026. **The user approved the MXF Kind rules below
 on this date; they remain unimplemented.** The preceding Project decision is agreed:
 header Project → file-owned Project → blank. The approved MDB Kind lookup,
@@ -160,12 +163,12 @@ reasons to open headers remain deferred as requested.
 
 ## Evidence and limits
 
-The [curated receipt](../../../Project%20Bella/evidence/mxf-kind-2026-10-22.json)
+The curated receipt
 records installed-binary/source hashes, native anchors, thirteen bounded-header
 observations and the class support table. Raw disassembly and independent
 probe artifacts remain in `/private/tmp`.
 
-The [approval receipt](../../../Project%20Bella/evidence/mxf-kind-plan-2026-10-22.json)
+The approval receipt
 records the explicit decision without approving the subsequent Duration review
 or other MXF navigation/field proposals. The research receipt's earlier proposal
 wording is historical where superseded by this approval.

@@ -1,5 +1,8 @@
 # MDVX scanning and MediaEngine performance review
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Recorded 9 October 2026. MDVX's installed Mac scanner uses buffered database
 bytes, small lookup indexes and independent scan operations. MediaEngine can adopt
 similar efficiency ideas while keeping its original properties, relationships,
@@ -60,12 +63,12 @@ they do not establish a Windows/NEXIS or MDVX timing result.
 The GitHub build script already selects Release on macOS and builds the Release
 configuration on Windows. This comparison corrects the interpretation of our
 earlier local Debug timings; it is not a newly applied shipping optimization.
-The [comparison receipt](evidence/canon-release-comparison-2026-10-09.json),
-[method](evidence/canon-release-comparison-method-2026-10-09.json) and
-[provenance](evidence/canon-release-comparison-provenance-2026-10-09.json) retain
+The comparison receipt,
+method and
+provenance retain
 the checks and exact process measurements.
 All six original reports, CSVs and logs are retained losslessly in the
-[trial evidence bundle](evidence/canon-release-comparison-trials-2026-10-09.zip).
+trial evidence bundle.
 The ZIP passes its CRC integrity check; SHA-256 is
 `93cd771f988042ea1d816a89d7cc08f95be309f224e95f5e51def9e298958f98`.
 
@@ -104,7 +107,7 @@ and compares **eight bytes** extracted from the wider identity. MediaEngine must
 its supported complete typed identities and collision/conflict handling. MDVX's
 code is evidence of MDVX's implementation, not an Avid format specification.
 
-The [binary evidence appendix](evidence/mdvx-binary-audit-2026-10-09.md) records
+The binary evidence appendix records
 method addresses, current orphan/header branches and the limits of static
 inspection. A possible orphan-header ordering issue is explicitly identified
 there as a static inference, not a demonstrated runtime failure.
@@ -134,9 +137,9 @@ The counts are vector instances, not allocator-call or network-transaction
 counts. The Round 3 MDB made 1,013,658 total `properties()` calls, including
 222,651 nonempty results across all callers. The 98,161 figure above is specifically
 96,250 nonempty `unique` results plus 1,911 `uniqueRaw` results. The
-[counting method](evidence/projection-counts-method-2026-10-09.json),
-[instrumentation diff](evidence/projection-counts-instrumentation-2026-10-09.patch)
-and [Round 3 results](evidence/projection-round3-counts-2026-10-09.jsonl) preserve
+counting method,
+instrumentation diff
+and Round 3 results preserve
 the original fixture/library hashes and diagnostic-only method. These are
 genuine fixture reads, not simulated performance cases.
 
@@ -169,16 +172,16 @@ completion of the user's 300,000-file workload.
 
 ## Additional evidence
 
-- [MDVX executable identity](evidence/mdvx-binary-identity-2026-10-09.json) and
-  [CFString extraction helper](evidence/mdvx-binary-extract-2026-10-09.py).
+- MDVX executable identity and
+  CFString extraction helper.
   The binary/disassembly itself is not copied into the repository; the appendix
   names the commands and unslid addresses for repeat inspection of the installed app.
-- [Isolated Release build receipt](evidence/canon-release-build-2026-10-09.json)
-  and [sequential comparison runner](evidence/canon-release-comparison-2026-10-09.py).
-- [Corpus MDB counts](evidence/projection-corpus-counts-2026-10-09.jsonl),
-  [Round 3 MDB counts](evidence/projection-round3-counts-2026-10-09.jsonl) and
-  [count-only diagnostic entry point](evidence/projection-counts-probe-2026-10-09.cpp).
+- Isolated Release build receipt
+  and sequential comparison runner.
+- Corpus MDB counts,
+  Round 3 MDB counts and
+  count-only diagnostic entry point.
   Apply the instrumentation diff to a temporary copy of the recorded source;
   this diagnostic does not belong in an application or production test target.
 - [Earlier small-read experiment](performance-review-2026-10-08.md) and
-  [complete archive preservation comparison](evidence/source-archive-full-proof-comparison-2026-10-09.json).
+  complete archive preservation comparison.

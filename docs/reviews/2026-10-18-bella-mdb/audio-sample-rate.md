@@ -1,5 +1,8 @@
 # Bella: audio Sample Rate from MDB
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 20 October 2026. **The user approved the source, retention and
 missing-value rules on 20 October 2026. They are not yet implemented.** Audio
 Sample Rate is an agreed column, displayed in kHz; video rows leave it blank.
@@ -93,7 +96,7 @@ The OMFI MDB contains two raw WAVD Summary properties, but only one belongs
 to the selected physical WAVD descriptor. Counting all matching property names
 would not establish physical-file coverage. Complete IDs, owner references,
 types, ranges, summary chunks and hash receipts are retained in the
-[curated evidence](../../../Project%20Bella/evidence/mdb-audio-sample-rate-2026-10-20.json).
+curated evidence.
 This corpus exercises 48 kHz only, with no disagreements or damaged/missing
 selected frequency. It does not exercise other byte orders or all MDB layouts.
 

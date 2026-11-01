@@ -1,3 +1,5 @@
+#include "testfixtures.h"
+
 #include <QtTest>
 #include <QBuffer>
 #include <QFile>
@@ -390,6 +392,7 @@ void TestMediaEnginePmr::realFixtures_data()
 }
 void TestMediaEnginePmr::realFixtures()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(QString, path);
 	QFETCH(int, records);
 	QFile source(QStringLiteral(FIXTURES_DIR "/") + path);

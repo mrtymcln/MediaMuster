@@ -1,12 +1,15 @@
 # Bella: Project from MXF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research and approval date: 22 October 2026. MXF identity and Clip Name rules
 are agreed. **The user approved Project's header → file-owned attributes →
 blank rule, with the text, availability and retention rules below. These are
 requirements, not yet implemented.** OldScanner stays active; Bin Filter is
 unchanged. Overall PMR/MDB/MXF priority and header-opening triggers remain for
 the final priority discussion as requested.
-See the [approval receipt](../../../Project%20Bella/evidence/mxf-project-plan-2026-10-22.json).
+See the approval receipt.
 The requested Kind review is separate and is not approved by this decision.
 
 ## Sources and encoding
@@ -161,13 +164,13 @@ permanent ancestry graph. No measured speed claim is made.
 
 ## Evidence and remaining scope
 
-The [curated Project evidence](../../../Project%20Bella/evidence/mxf-project-2026-10-22.json)
+The curated Project evidence
 preserves native, MDVx and actual-file/source receipts with hashes. The
-[simplification record](../../../Project%20Bella/evidence/mxf-project-simplification-2026-10-22.json)
+simplification record
 preserves the earlier proposal revision. The
-[Project approval receipt](../../../Project%20Bella/evidence/mxf-project-plan-2026-10-22.json)
+Project approval receipt
 supersedes its pending status without changing the native/corpus findings. The
-[Clip Name approval](../../../Project%20Bella/evidence/mxf-clip-name-plan-2026-10-22.json)
+Clip Name approval
 records the preceding decision separately. Overall source priority,
 header-opening reasons, other formats and scheduling remain deferred.
 No Bella code, cutover, app/private API, parser suite, essence read, whole-media

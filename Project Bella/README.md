@@ -1,5 +1,8 @@
 # Project Bella
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Started 18 October 2026. Status: first-release parser/source requirements and
 the eight registered scanner-workflow decisions are settled. Independent Bella
 implementation includes the shared ID helper and independent PMR and MDB parsers
@@ -76,15 +79,15 @@ The implemented exact lookup is now Audio for `PCMA`/`AIFD`/`WAVD`, Video for
 the original six-class decision; it does not authorize `MPGA`, `WAVE`, `TIFD`,
 automatic class-hierarchy expansion or a track-based fallback for MDB Kind.
 
-The [post-JPED validation](../artifacts/mdb-jped-kind-2026-11-01/validation.json)
-and [full-report comparison](../artifacts/mdb-jped-kind-2026-11-01/delta-verification.json)
+The post-JPED validation
+and full-report comparison
 record exactly 30 qualified JPED Kind changes from Unknown to Video, in both
 optional-detail modes, with every other returned value unchanged across the
 13 fresh inputs. The seven Avid MDBs still return 2,515 files and 1,420 masters;
 six unrelated MDB-extension inputs are rejected. Native MDVx and independent
 reader comparisons were rerun. The saved sanitizer run has 298 successful
 executions, including 136 newly generated malformed cases. The
-[before/after benchmark](../artifacts/mdb-jped-kind-2026-11-01/benchmark-delta.json)
+before/after benchmark
 shows no measurable regression in this corpus: aggregate medians 243.8 to
 243.3 ms, per-database timing variation below 1%, and no median peak-RSS increase.
 These are parser measurements, not a runnable Bella scanner benchmark.
@@ -95,8 +98,8 @@ stronger endian/framing controls. The generated-only run passed **155 Qt cases,
 0 failed**; the two checked-in-fixture selectors were not executed, so this is
 not a new full-suite result. JPED Video/MPGA Unknown timing coverage and the
 unsupported-layout negative controls remain. See the
-[cleanup receipt](../artifacts/mdb-scope-reassessment-2026-11-01/test-cleanup.json)
-and [scope amendment](evidence/mdb-scope-reassessment-2026-11-01.json).
+cleanup receipt
+and scope amendment.
 Earlier test totals below describe their dated runs.
 
 The remaining boundaries stay as agreed:
@@ -121,7 +124,7 @@ The remaining boundaries stay as agreed:
   scope when they preserve all approved behavior and lifetime/Cancel boundaries;
   this reassessment identifies no additional concrete performance patch.
 
-The [updated MDB audit](../artifacts/mdb-independent-audit-2026-11-01/report.txt)
+The updated MDB audit
 distinguishes those scope decisions from the fresh binary/corpus observations.
 Earlier dated six-class results and raw receipts remain historical evidence.
 
@@ -153,7 +156,7 @@ headers, then chose one background organiser with one shared reader team.
 All eight decisions in the current register are now resolved, including compact
 facts through matching, current progress delivery and current numeric timecode
 Duration order. New implementation choices still require check-ins. The
-[instruction record](evidence/decision-check-ins-2026-10-27.json) preserves this
+instruction record preserves this
 working agreement. Earlier statements that engineering defaults could be settled
 without a check-in are superseded.
 
@@ -167,7 +170,7 @@ C++17 and exact Qt 6.5.3 settings. The target now contains the shared ID helper;
 the later decisions below settle its files and contract. PMR parser signatures
 and report details are settled in the contract below. Root/test CMake lists are the initial
 existing-file touch points; app integration and cutover remain unapproved.
-See the [approval record](evidence/decision-check-ins-2026-10-27.json).
+See the approval record.
 
 **PMR entry boundary agreed, 27 October 2026:** the user chose “Option 2 -
 the PMR parser does both jobs.” Its entry point accepts a PMR file path and
@@ -201,7 +204,7 @@ PMR-specific answers are not automatically extended to MDB. Preserve
 the approved MDB version/damage rules, compact catalogue lifetime and shared
 four-source-job limit. No MDB runtime code, existing app integration or cutover
 is implemented by this record. See the
-[decision receipt](evidence/decision-check-ins-2026-10-27.json).
+decision receipt.
 
 **MDB whole-file reading agreed, 30 October 2026:** the user chose the
 recommended whole-file call, as for PMR. Request the MDB capture with one
@@ -346,7 +349,7 @@ All six original MDB hashes still match the prior owner-qualified audit,
 whose 1,513 audio records are all exactly 48,000 Hz. Selected PCMA/WAVD/AIFD
 frequency bytes were freshly rechecked; the earlier complete catalogue
 traversal was not rerun. See the
-[actual-value receipt](evidence/mdb-audio-frequency-values-2026-10-31.json).
+actual-value receipt.
 
 Correction to the earlier broad warning: a reduced **unsigned** 64-bit
 numerator/denominator can preserve every valid positive AIFF80 value from
@@ -652,7 +655,7 @@ check-ins; they are not silently selected by these retained source values.
 
 **MDB implementation verified, 31 October 2026:** `mdbparser.h/.cpp` now provide
 the independent reader and owned report, built only into `mediamuster_bella`
-and its tests. The [validation receipt](evidence/mdb-implementation-2026-10-31.json)
+and its tests. The validation receipt
 records exact source hashes, test results, byte evidence, comparison fingerprints
 and limits. The normal universal build and arm64 ASan/UBSan build pass the
 focused ID, PMR and MDB suites. Initial MDB verification had 107 substantive
@@ -685,7 +688,7 @@ MediaFile/table, progress, operations/journal/Unfinished Business/Undo and Bin
 Filter have no Bella integration in this step.
 
 **Fresh historical/current comparison, 31 October 2026:** the requested computer
-and EDIT review is recorded in the [comparison receipt](evidence/bella-oldscanner-comparison-2026-10-31.json).
+and EDIT review is recorded in the comparison receipt.
 A read-only search inspected 734,163 accessible directories, finding 27 PMRs and
 18 Avid/test MDBs; six unrelated application index databases were excluded.
 521 protected locations could not be inspected. Copies, archives and authored
@@ -721,7 +724,7 @@ failure labels that consumers handle identically, and reading the checked
 Project-owner attribute list once for reuse. Record the approval before edits.
 Keep all checks, returned values/qualifications, public outcomes and diagnostic
 text/order/count unchanged. Implementation and verification are complete; see the
-[cleanup receipt](evidence/mdb-internal-cleanup-2026-10-31.json). All 45 saved
+cleanup receipt. All 45 saved
 before/after report dumps are byte-for-byte identical, including diagnostics.
 The expanded MDB suite passes 123 Qt cases (121 substantive), normally and with
 ASan/UBSan; all 109 previous Qt cases remain, with 12 added audio sequences and
@@ -750,13 +753,13 @@ may say it is trying older records only after the existing Cancel checks allow
 that attempt. This approval changes Bella reader notes only; no app warning
 delivery, OldScanner cutover or Bin Filter change is included. Implementation
 and verification are complete. The
-[warning-combination receipt](evidence/reader-warning-combinations-2026-11-01.json)
+warning-combination receipt
 records 44 added focused cases, with 151 MDB, 73 PMR and 14 ID Qt passes normally
 and with ASan/UBSan. All public values and statuses match the saved readers on
 the 45 previously inventoried sources (63 comparisons including both MDB detail
 settings); those sources do not exercise the new combinations, which the authored
 cases check explicitly. No scan-speed or memory improvement is claimed. See the
-[approval record](evidence/decision-check-ins-2026-10-27.json).
+approval record.
 
 **Legacy MDB Length check approved, 1 November 2026:** the user chose Option 1
 and requested implementation, test correction and preservation of all other
@@ -782,9 +785,9 @@ owner records from `Length32` to `Long`; retain unsupported types and widths
 as explicit rejection controls. The prior fixture spelling was a test setup
 mistake, not evidence of a supported legacy alias. The approval is recorded
 before dependent edits in the
-[decision record](evidence/decision-check-ins-2026-10-27.json). Implementation
+decision record. Implementation
 and verification are complete; see the
-[Length-check receipt](evidence/mdb-length-check-2026-11-01.json). The corrected
+Length-check receipt. The corrected
 original 151 MDB Qt cases also pass against the saved pre-change reader. The
 expanded suite passes 157 MDB, 73 PMR and 14 ID Qt cases normally and with
 ASan/UBSan, including 74 new authored Length controls grouped into six endian
@@ -809,9 +812,9 @@ non-object entries keep their existing Unknown result. The existing all-Kind-3
 path, null payload, direct-track threshold and optional-details gate remain.
 No new category warning, public field or enum is introduced. All other checks,
 metadata, source/Cancel behavior and surrounding runtime remain unchanged.
-The [approval record](evidence/decision-check-ins-2026-10-27.json) was updated
+The approval record was updated
 before production edits. Implementation and verification are complete; see the
-[correction receipt](evidence/mdb-correctness-corrections-2026-11-01.json).
+correction receipt.
 All 157 prior MDB Qt cases pass against the corrected reader. The expanded
 161 MDB, 73 PMR and 14 ID cases pass normally and with ASan/UBSan. Four new
 endian rows exercise 256 authored parses, including both record orders and
@@ -833,9 +836,9 @@ tracks early. Keep every check, result, qualification and warning text/order/cou
 unchanged, including the two preceding correctness corrections. No public
 contract, source/Cancel opportunity, app integration or wider function
 rearrangement is included. OldScanner remains active and Bin Filter is unchanged.
-The [approval record](evidence/decision-check-ins-2026-10-27.json) was updated
+The approval record was updated
 before production edits. Implementation and verification are complete; see the
-[cleanup receipt](evidence/mdb-three-small-cleanups-2026-11-01.json). All 165 MDB,
+cleanup receipt. All 165 MDB,
 73 PMR and 14 ID Qt cases pass normally and with ASan/UBSan; the expanded MDB
 suite also passes against the saved pre-cleanup reader. Four new endian rows
 exercise 68 additional authored parses. Complete before/after reports match
@@ -933,7 +936,7 @@ code. Other settled rules, including supported-layout damaged-set fallback,
 physical inventory, reference-check meanings and unavailable size/date checks,
 remain unchanged. This decision does not authorise unknown-layout interpretation,
 raw-byte searching or an automatic reread. See the
-[decision receipt](evidence/decision-check-ins-2026-10-27.json).
+decision receipt.
 
 **Separate PMR result/check answers agreed, 27 October 2026:** keep two
 distinct answers inside the already-approved single report: how reading/parsing
@@ -963,7 +966,7 @@ fresh independent decoder and the previous enum classifications on all 27 prior
 paths / 3,582 selected records (including copies), with all source facts and
 explanatory reasons retained. No new full-machine search or active app consumer
 change was made. See `pmrBooleanReport` in the
-[validation receipt](evidence/decision-check-ins-2026-10-27.json).
+validation receipt.
 
 **Report consolidations agreed, 29 October 2026:** the user subsequently chose
 both proposed consolidations. Group `path` and `capturedStamp` in `PmrSource`
@@ -983,7 +986,7 @@ decoder and the previous classifications on all 27 prior paths / 3,582 records
 (including copies), with source facts and reason notes preserved. No new full
 filesystem discovery or active app integration was performed. See the
 `pmrGroupedReport` section of the
-[validation receipt](evidence/decision-check-ins-2026-10-27.json).
+validation receipt.
 
 **Internal cleanups agreed, 29 October 2026:** the user chose both internal
 cleanups: consolidate the repeated set-result/unsupported finalization, and keep
@@ -1004,7 +1007,7 @@ independent decoder on all 27 previously located paths and 3,582 selected record
 reason text after removing the repeated prefix. This is regression coverage of
 the prior inventory, not a new full-machine search. No actual GUI/log delivery
 is introduced or tested. See the `pmrCleanup` section of the
-[validation receipt](evidence/decision-check-ins-2026-10-27.json).
+validation receipt.
 
 On 28 October the user approved item 1 (the compact report/reference interface)
 and item 3 (the unchanged shared MacRoman table), then approved item 2: ordinary
@@ -1183,7 +1186,7 @@ No deterministic in-progress cancellation, concurrent source-change or read-erro
 injection hooks were introduced. Windows/x86_64 execution, real changed/unverified
 captures and blocked-read stopping remain unverified. No scanner integration,
 cutover, full existing-suite run or scan-time/peak-memory comparison is claimed.
-See the [PMR implementation receipt](evidence/decision-check-ins-2026-10-27.json).
+See the PMR implementation receipt.
 
 **Expanded PMR check, 28 October 2026:** at the user's request, a read-only
 filesystem traversal located 27 PMR paths: 21 on the computer and six on EDIT.
@@ -1202,7 +1205,7 @@ was edited for this audit. Two filesystem traversals, including an approved run
 outside the sandbox, retained 519 traversal errors, mostly protected locations.
 This establishes results for all located accessible files, not an exhaustive
 claim about protected folders. No speed or peak-memory comparison was made.
-The [expanded receipt](evidence/pmr-machine-validation-2026-10-28.json) retains
+The expanded receipt retains
 the full path inventory, errors, current source hashes and per-file comparisons.
 
 #### Agreed first ID-helper contract
@@ -1274,7 +1277,7 @@ PMR fixtures and explicitly authored opposite-endian examples. The generated
 link graph keeps Bella independent of OldScanner and out of the app. Windows,
 a runnable Bella scan, scan comparisons and performance/peak-memory measurements
 remain unverified. See the
-[implementation receipt](evidence/decision-check-ins-2026-10-27.json).
+implementation receipt.
 
 ## Evidence standard for improvement claims
 
@@ -1691,7 +1694,7 @@ Evaluate scan time, peak memory and required-field coverage against OldScanner
 and MDVx on representative local and attached/network media workloads. Separate
 the common metadata workload from Bella's additional required fields so the
 comparison is meaningful. No performance measurement or implementation was
-performed for this decision. The [approval receipt](evidence/mdb-execution-plan-2026-10-21.json)
+performed for this decision. The approval receipt
 records the user's instruction. MDB version scope was subsequently approved
 separately below. OldScanner remains active and Bin Filter remains unchanged.
 
@@ -1891,7 +1894,7 @@ they are not disagreements between `_PJ`, `PROJNAME` and `_USER._PJ`.
 
 **26 October update:** the [consolidated final table](../docs/reviews/2026-10-25-bella-source-priorities/REVIEW.md)
 and opening rules are approved in the
-[approval](evidence/source-priorities-plan-2026-10-26.json). They preserve the
+approval. They preserve the
 timing restrictions and already-read-header-first Compression exception.
 
 Confirmed by the user on **19 October 2026**: retain one small, fixed per-field
@@ -2028,7 +2031,7 @@ The original six-class lookup covered all 2,412 files in that October corpus
 while still using only one descriptor class as the field's source. The fresh
 November corpus includes 30 qualified JPED records; the user's JPED approval
 adds Video for them. The current seven-class mapping is implemented and
-[verified](../artifacts/mdb-jped-kind-2026-11-01/validation.json). Other wider
+verified. Other wider
 native-known classes remain research and are not silently added to this
 first-release mapping.
 
@@ -2213,7 +2216,7 @@ retain independently valid exact data and the physical file. Broken references
 are not proof of absence. Clearly unrelated different-clock source timecode
 does not invalidate a supported NDF-only Duration. Known NDF-only clocks need
 no DF lookup. Use colons for NDF and semicolons for DF, without a new indicator
-or column. The [22 October clarification](evidence/mxf-duration-format-revision-2026-10-22.json)
+or column. The 22 October clarification
 supersedes the earlier all-colon interpretation for every Bella Duration source.
 
 Known zero uses the selected numbering mode's separators; unavailable or missing
@@ -2685,7 +2688,7 @@ known NDF-only clocks need no DF lookup; use compatible qualified recorded
 modes, NDF fallback for proven absence, and blank display for unusable relevant
 numbering where the mode is required. Preserve exact values and physical files.
 These selection/error requirements are now agreed. The
-[approval receipt](evidence/mdb-duration-plan-2026-10-20.json) supersedes earlier
+approval receipt supersedes earlier
 proposal/pending wording in the historical research evidence. No runtime code
 changed.
 Type remains a separate master-level media/precompute
@@ -2711,7 +2714,7 @@ The [21 October MXF comparison](../docs/reviews/2026-10-21-bella-mxf/REVIEW.md)
 reviews installed Media Composer, MDVx, current OldScanner and ten actual initial
 headers. The standing approved scope remains Avid-compatible OP-Atom, including
 third-party media for Avid; this is not a general MXF/playback feature expansion.
-The [curated evidence](evidence/mxf-header-review-2026-10-21.json) separates native
+The curated evidence separates native
 paths, current-source capabilities, file observations and recommendations.
 
 Media Composer uses cached random-access AAF-MXF storage and linked typed
@@ -2762,7 +2765,7 @@ compares installed Media Composer and MDVx identity paths with current source
 and actual-header relationships. **The user approved all six focused MXF
 identity rules on 22 October 2026; no runtime implementation exists.** Full
 identities, the shared normalizer and KelpieId rules remain approved. The
-[approval receipt](evidence/mxf-identities-plan-2026-10-22.json) records the
+approval receipt records the
 decision without approving other MXF fields or navigation proposals.
 
 Use the essence-linked file SourcePackage's complete PackageUID for
@@ -2787,7 +2790,7 @@ The [Clip Name review](../docs/reviews/2026-10-21-bella-mxf/clip-name.md) traces
 native Media Composer and MDVx reading and compares ten actual linked master
 names with active MDB records. **The user approved all five Clip Name rules
 on 22 October 2026; no runtime implementation exists.** The preceding MXF
-identity rules remain agreed. The [approval receipt](evidence/mxf-clip-name-plan-2026-10-22.json)
+identity rules remain agreed. The approval receipt
 does not approve the new Project rules or other field/navigation proposals.
 
 Read `GenericPackage.Name` from the already selected MaterialPackage that
@@ -2813,7 +2816,7 @@ native header/attribute readers and compares thirteen actual headers with PMR
 and MDB. **The user approved header Project → file-owned Project → blank on
 22 October 2026, with the text, availability and retention rules below. No
 runtime implementation exists.** MXF identity and Clip Name rules remain
-agreed. The [approval receipt](evidence/mxf-project-plan-2026-10-22.json) does
+agreed. The approval receipt does
 not approve the new Kind review or other field/navigation proposals.
 
 Following the user's question about extra recovery work, the **agreed rule**
@@ -2889,7 +2892,7 @@ in this selected sample. Keep one compact enum with necessary availability,
 produce its label at display time, and release temporary header/class facts.
 C++17 enum/fixed-array building blocks suffice. Full cross-source priorities
 and header-opening decisions remain at the end of the plan. The
-[approval receipt](evidence/mxf-kind-plan-2026-10-22.json) supersedes the earlier
+approval receipt supersedes the earlier
 pending status without approving the subsequent Duration review or other MXF
 field/navigation proposals. OldScanner and Bin Filter stay unchanged.
 
@@ -2944,7 +2947,7 @@ file/master-only timecode search can discard recorded DF. It also suppresses
 zero labels. Bella corrects those zero/DF-selection gaps while preserving DF
 semicolons, as clarified by the user on 22 October. No live UI error count or
 benchmark is claimed.
-The [approval receipt](evidence/mxf-duration-plan-2026-10-22.json) supersedes
+The approval receipt supersedes
 the earlier pending status, including the corrected DF semicolon format.
 It does not approve new Frame Rate mappings or other MXF field/navigation
 proposals. Full source priorities/header-opening triggers remain at the end
@@ -2989,7 +2992,7 @@ The agreed source rule remains usable MDB first; use an independently already-
 read own header only if MDB is unusable, otherwise blank. Never open a header
 solely for Frame Rate or use its rate alone to repair MDB Duration. Full source
 priorities/header-opening discussion remains at the end of the plan. The
-[approval receipt](evidence/mxf-frame-rate-plan-2026-10-22.json) supersedes
+approval receipt supersedes
 the earlier pending status without approving the subsequent audio Sample Rate
 review or other new MXF proposals. OldScanner stays active and Bin Filter is unchanged.
 
@@ -3030,7 +3033,7 @@ non-48 kHz and damaged-value cases remain unobserved. MDVx's library preserves
 the fraction but its ordinary MXF wrapper does not retain it; Media Composer's
 bounded native import/publication trace does not prove every GUI/error policy.
 No performance gain is measured. No audio-only header opening/source priority
-is decided here. The [approval receipt](evidence/mxf-audio-sample-rate-plan-2026-10-22.json)
+is decided here. The approval receipt
 supersedes the earlier pending status without approving new Bit Depth mappings
 or other pending MXF proposals. OldScanner stays active and Bin Filter is unchanged.
 
@@ -3083,7 +3086,7 @@ facts. Small new C++17/Qt helpers and at most eight component entries suffice.
 Release temporary header/reference structures and preserve the separately
 agreed Compression behavior. No new dependency, visible column or measured
 performance gain is claimed. Bit Depth source priority and extra-read policy
-remain for the final table. The [approval receipt](evidence/mxf-bit-depth-plan-2026-10-22.json)
+remain for the final table. The approval receipt
 records this decision without settling the outstanding uncommon labels or
 other pending MXF proposals. OldScanner stays active and Bin Filter is unchanged.
 
@@ -3123,7 +3126,7 @@ evidence graph or additional naming framework.
 The existing Compression preference **eligible already-read MXF/OMF, then MDB**
 is part of the approved preservation contract. Conditions for extra header
 opens and the full priority table remain for the end of the plan. The
-[research record](evidence/mxf-compression-2026-10-22.json) retains fresh native
+research record retains fresh native
 audits and reused thirteen-file facts; no new media scan, runtime code, cutover
 or measured performance claim is introduced. OldScanner stays active and
 Bin Filter is unchanged.
@@ -3145,7 +3148,7 @@ continues checking raster, layout, depth and subsampling. Preserve recorded
 SampleRate and agreed Frame Rate/Duration interpretation; no tolerance,
 nearest-rate match, blanket conversion or extra read. The expected result for
 the four verified pairs is `J2K HD` from either source; the new adapter remains
-unimplemented. The [approval receipt](evidence/mxf-jpeg2000-consistency-plan-2026-10-22.json)
+unimplemented. The approval receipt
 records this deliberate exception to preserving every old source-specific
 output. No alpha inference or fallback is approved by the JPEG decision.
 
@@ -3164,7 +3167,7 @@ RLE mappings and unsupported-value handling. Metadata already being read is
 sufficient; no essence read, extra open or source-priority change is needed.
 Native conditional defaults and writer/key distinctions are documented with
 their limits; the complete native GUI/source-publication route was not traced.
-The [alpha approval receipt](evidence/mxf-alpha-identification-plan-2026-10-22.json)
+The alpha approval receipt
 records the agreed scope.
 
 ## MXF Resolution: agreed geometry and numeric retention
@@ -3203,9 +3206,9 @@ blank; bad/unsupported picture geometry supplies no Resolution at this source,
 retaining the file and other usable facts. The final source-priority and extra
 header-read decisions remain separate. Existing useful tests were inspected,
 not newly run; no runtime changes or performance gains are claimed.
-[Curated evidence](evidence/mxf-resolution-2026-10-22.json) retains native/raw
+Curated evidence retains native/raw
 receipts, source hashes and independent paired-count verification.
-The [Resolution approval receipt](evidence/mxf-resolution-plan-2026-10-22.json)
+The Resolution approval receipt
 records the agreed scope.
 
 ## MXF Type: agreed master classification
@@ -3242,9 +3245,9 @@ output parity is claimed. Retain a compact Media/Precompute/Unknown result with
 necessary origin/availability, display/export Unknown blank, and release temporary
 markers after consumers finish. No formatted Type label or permanent property
 graph is required solely for this field. Optional precompute details remain
-separate and retained. [Evidence](evidence/mxf-type-2026-10-22.json) records the
+separate and retained. Evidence records the
 native/source findings, raw examples and honest improvement assessment.
-The [Type approval receipt](evidence/mxf-type-plan-2026-10-22.json) records
+The Type approval receipt records
 the agreed scope.
 
 ## MXF Precompute Category: agreed rules
@@ -3288,9 +3291,9 @@ category are blank. Preserve explicit Unknown in the optional filter separately
 from blank/wildcard UI values. Optional Effect Category/Effect remain retained;
 Effect Sequence remains excluded. No new source priority/opening rule or
 measured performance improvement is introduced.
-[Evidence](evidence/mxf-precompute-category-2026-10-22.json) retains the native,
+Evidence retains the native,
 current-source, MDVx and raw-pair findings and limits.
-The [approval receipt](evidence/mxf-precompute-category-plan-2026-10-22.json)
+The approval receipt
 records the agreed scope without changing source priorities or header scheduling.
 
 ## MXF Effect Category: agreed shared lookup integration
@@ -3327,8 +3330,8 @@ categories and one Image result from `1730_8646_SUBMASTER,Stabilize,181`.
 Hashes and own-master ID/AppCode/Name ranges were checked, with no new physical
 media read, production lookup execution or final multi-source table comparison.
 The existing helper/index is already compact; no new speed saving is claimed.
-[Evidence](evidence/mxf-effect-category-2026-10-22.json) records the boundaries.
-The [approval receipt](evidence/mxf-effect-category-plan-2026-10-22.json) records
+Evidence records the boundaries.
+The approval receipt records
 this scope; the separate Effect review is linked below.
 
 ## MXF Effect: agreed preserved display contract
@@ -3360,8 +3363,8 @@ Eleven copied inputs were hash-checked, reusing prior own-master/range proof and
 the independent source-derived observer; no production C++ result or final
 multi-source table comparison was executed. Native registered effect names are
 separate from this editable-name inference. No new speed saving is claimed.
-[Evidence](evidence/mxf-effect-2026-10-22.json) records the focused review.
-The [approval receipt](evidence/mxf-effect-plan-2026-10-23.json) records the
+Evidence records the focused review.
+The approval receipt records the
 accepted output contract. The agreed MXF damage-handling rules follow, with
 supported layouts/header navigation still to review before OMF/WAV/AIFF.
 
@@ -3392,9 +3395,9 @@ This does not require a whole-file Complete flag, certify essence health,
 introduce automatic repair/footer searches or authorize extra header reads.
 Supported layouts and bounded navigation remain separate decisions. Use compact
 results and release temporary reading storage. No damaged-file execution or
-performance measurement was made. The [evidence record](evidence/mxf-damage-handling-2026-10-23.json)
+performance measurement was made. The evidence record
 retains native/source anchors and the static decoder-to-Boolean verification gap.
-The [approval receipt](evidence/mxf-damage-handling-plan-2026-10-23.json) records
+The approval receipt records
 the accepted scope.
 
 ## MXF supported layouts and navigation: agreed release-one scope
@@ -3438,7 +3441,7 @@ version 1.2 and pointed footers with zero Header Metadata bytes. Their four
 observed OP-Atom qualifier forms include legacy zero; they do not represent a
 universal corpus/layout guarantee. This removes an unconditional navigation
 step in the proposed design, with no measured speed or memory claim. The
-[evidence record](evidence/mxf-layouts-and-navigation-2026-10-23.json) retains
+evidence record retains
 native/source receipts, exact validation boundaries and the ten observations.
 
 **23 October clarification:** the historical 64 MiB check limited accumulated
@@ -3446,7 +3449,7 @@ metadata retained in RAM; it was not a first-64-MiB file window. The old parser
 already used the declared header length to stop. The user reports that ceiling
 worked. Declared-section navigation and a retained-memory ceiling are separate;
 that clarification made no cap decision. See the
-[source receipt](evidence/mxf-header-boundary-clarification-2026-10-23.json).
+source receipt.
 
 **Selective header reading and retention agreed and explicitly locked in,
 23 October:** read only the safely established defined Header Metadata section, extract the agreed fields
@@ -3458,8 +3461,8 @@ checking all declared extents, lengths and typed forms before reading or
 allocating; never allocate blindly from HeaderByteCount. The improvement is
 selective work/retention, with no measured benefit claimed. The remaining
 layout/admission/recovery scope was subsequently approved above. The
-[approval record](evidence/mxf-selective-header-plan-2026-10-23.json) records this
-focused scope. The [MXF scope approval](evidence/mxf-layouts-and-navigation-plan-2026-10-23.json)
+approval record records this
+focused scope. The MXF scope approval
 records the completed MXF requirements baseline. OMF is the next source review.
 
 ## OMF media reading: agreed first-release baseline
@@ -3496,8 +3499,8 @@ interpretations/useful tests in new C++17/Qt 6.5.3 helpers; no speed/memory bene
 is measured. Native WAVE/AIFF behaviour was subsequently preserved separately;
 full source priorities/extra reads/scheduling remain in the requirements
 sequence. See the
-[evidence record](evidence/omf-header-review-2026-10-23.json) and
-[reading approval](evidence/omf-reading-plan-2026-10-23.json).
+evidence record and
+reading approval.
 
 ## OMF versions and text: agreed release-one rules
 
@@ -3529,9 +3532,9 @@ Keep owned compact results and availability; release temporary parsing data.
 All five selected Avid files use Bento1.0/OMF1/II, including MacRoman `A7` in the
 known `ß` Project. The fetched toolkit example independently records Bento2.0
 and OMF2 but its selected names are ASCII; it is an exchange/editing example,
-not a managed-media corpus. The [evidence record](evidence/omf-versions-and-text-2026-10-23.json)
+not a managed-media corpus. The evidence record
 records native/current distinctions and coverage limits; the
-[approval record](evidence/omf-versions-and-text-plan-2026-10-23.json) preserves
+approval record preserves
 the accepted scope. Full IDs/ownership are reviewed next below; source priorities,
 extra reads and scheduling remain later.
 
@@ -3540,7 +3543,7 @@ extra reads and scheduling remain later.
 The [OMF identity review](../docs/reviews/2026-10-23-bella-omf/identities.md)
 compares fresh native Media Composer/MDVx traces, current source and five selected
 read-only media observations. **The user approved these OMF owner/association
-rules on 24 October 2026.** The [approval record](evidence/omf-identities-plan-2026-10-24.json)
+rules on 24 October 2026.** The approval record
 preserves the accepted scope and original research snapshot.
 The shared full-ID normalizer, duplicate rules, OMF versions/text and selective
 reading remain agreed. No runtime implementation or cutover is authorized here.
@@ -3572,7 +3575,7 @@ IDs and shortened catalogue keys. These do not become the physical file/master
 merely because they are longer. All five use II numeric order; genuine opposite-order
 OMF verification remains engineering work. Existing test cases were inspected,
 not run; similarly named MDB-default cases are not direct OMF proof. No measured
-time/memory benefit is claimed. See the [evidence record](evidence/omf-identities-2026-10-23.json).
+time/memory benefit is claimed. See the evidence record.
 
 KelpieId and Bin Filter remain unchanged. This review adds no same-path/conflicting-ID
 workflow. General OMF damage handling, source priorities, additional opens and
@@ -3583,7 +3586,7 @@ scheduling remain later decisions. Clip Name is agreed below.
 The [24 October Clip Name review](../docs/reviews/2026-10-23-bella-omf/clip-name.md)
 compares the native master/component-name routes, MDVx's generic string lookup,
 current source and five freshly rechecked stored master names. **The user approved
-these Clip Name rules on 24 October 2026.** The [approval record](evidence/omf-clip-name-plan-2026-10-24.json)
+these Clip Name rules on 24 October 2026.** The approval record
 preserves the accepted scope. OMF owner/ID and version/text rules remain agreed.
 
 Use the already selected associated master's exact legacy `OMFI:CPNT:Name`
@@ -3610,7 +3613,7 @@ rechecked master names differ from physical Filename. Three file-mob names have
 a `.PHYS` suffix and two have no name; all five master names are ASCII, which
 does not itself establish UTF-8 versus MacRoman. These are raw field observations,
 not a production parser/table run or measured speed/memory improvement. See the
-[evidence record](evidence/omf-clip-name-2026-10-24.json). No runtime code/cutover.
+evidence record. No runtime code/cutover.
 Project is reviewed next below.
 
 ## OMF Project: agreed rules
@@ -3619,7 +3622,7 @@ The [24 October OMF Project review](../docs/reviews/2026-10-23-bella-omf/project
 compares caller-specific native Project reading, MDVx's generic file/source lookup,
 current OMF aggregation and five fresh owner/attribute observations. **The user
 approved these OMF Project rules on 24 October 2026.** The
-[approval record](evidence/omf-project-plan-2026-10-24.json) preserves the accepted
+approval record preserves the accepted
 scope. Clip Name is agreed; this does not choose the
 final PMR/MDB/header priority or any new reason to open another file.
 
@@ -3656,7 +3659,7 @@ occurred in these five specimens. Current MediaMuster has no owner priority with
 OMF, lacks `PROJNAME`/Kind-4 projection and searches nested import settings.
 Its missing raw Project is empty but table/sidebar/CSV display `No project`;
 this review does not change that UI label. See the
-[evidence record](evidence/omf-project-2026-10-24.json). No runtime implementation,
+evidence record. No runtime implementation,
 cutover or measured time/memory gain. Original Bin is reviewed next below.
 
 ## OMF Original Bin: agreed rules
@@ -3665,7 +3668,7 @@ The [24 October OMF Original Bin review](../docs/reviews/2026-10-23-bella-omf/or
 compares native bin-reference handling, MDVx omission, current OMF projection,
 an 82-file presence survey and 35 positive owner/name checks. **The user's
 subsequent “Sounds ok!” accepts these OMF Original Bin rules on 24 October 2026.**
-The [approval record](evidence/omf-original-bin-plan-2026-10-24.json) preserves
+The approval record preserves
 that scope. Project is agreed. This is a name-only
 requirement inside an OMF already being read, with final source priorities and
 header-opening reasons still separate.
@@ -3699,7 +3702,7 @@ and `Media Slides`. No actual UTF-8 bin-name property occurred in this set;
 native read/write evidence and prior MDB pairs establish that supported form.
 The original five OMF examples are among the 47 without an association. This
 proves neither that all OMFs contain bin metadata nor that the header repeats
-every MDB association. See the [evidence record](evidence/omf-original-bin-2026-10-24.json).
+every MDB association. See the evidence record.
 No runtime implementation/cutover or measured time/memory gain. Kind is reviewed
 next below.
 
@@ -3709,7 +3712,7 @@ The [24 October OMF Kind review](../docs/reviews/2026-10-23-bella-omf/kind.md)
 reuses established physical ownership and actual metadata, checks focused native
 descriptor methods, and compares the current small lookup with MDVx's different
 usage-oriented Kind. **The user approved these OMF Kind rules on 24 October 2026.**
-The [approval record](evidence/omf-kind-plan-2026-10-24.json) preserves that scope.
+The approval record preserves that scope.
 Original Bin is agreed. This continues the user's direction to preserve trusted useful results
 while redesigning acquisition and temporary data, rather than invent new field
 interpretations.
@@ -3746,7 +3749,7 @@ AIFD own descriptor. This is reanalysis of prior metadata, not 40 new reads or
 a production/table test. The other supported classes rely on native/source
 evidence, with the WAVE compatibility qualification above. Current Kind already
 uses a small lookup; this field alone demonstrates no speed gain or new accuracy
-claim. See the [evidence record](evidence/omf-kind-2026-10-24.json).
+claim. See the evidence record.
 
 No new header-opening reason, final source priority, native WAV/AIFF precedence,
 Bin Filter change or runtime implementation/cutover. OMF timing is reviewed below.
@@ -3757,7 +3760,7 @@ The [24 October OMF Duration review](../docs/reviews/2026-10-23-bella-omf/durati
 compares native legacy descriptor/summary reading, MDVx's lack of an inventory
 Duration, current count/rate handling and five fresh bounded timing observations.
 **The user approved these OMF Duration rules on 24 October 2026.** The
-[approval record](evidence/omf-duration-plan-2026-10-24.json) preserves that scope.
+approval record preserves that scope.
 Kind is agreed. This carries the
 previously accepted exact maths, frame-timecode display and qualified DF principles
 into OMF-specific ownership/fields, without changing final source priorities or
@@ -3820,7 +3823,7 @@ their illustrative NDF label is `00:00:00:01`. The two fractional slates store
 2997/100 and have simple qualified source NDF flags at compatible FPS30. These
 are raw observations and independent arithmetic, not observed app output or new
 DF/damage/zero/long-duration coverage. All five are II legacy forms. See the
-[evidence record](evidence/omf-duration-2026-10-24.json).
+evidence record.
 
 No runtime implementation/cutover, Bin Filter change, new header-open reason,
 routine comparison, hybrid timing or measured scan-time/peak-memory gain.
@@ -3831,7 +3834,7 @@ Usable MDB Duration remains first; the final source table is deferred.
 The [24 October OMF Frame Rate review](../docs/reviews/2026-10-23-bella-omf/frame-rate.md)
 reuses native ownership/rate interpretation and the five preceding timing
 observations. **The user approved these OMF Frame Rate rules on 24 October 2026.**
-The [approval record](evidence/omf-frame-rate-plan-2026-10-24.json) preserves
+The approval record preserves
 that scope. Duration is agreed.
 No new media read, runtime implementation/cutover, Bin Filter change or new
 header-opening reason.
@@ -3871,7 +3874,7 @@ label and sorting from that label are the agreed presentation changes. MDVx's
 generic OMFI route instead uses the selected master EditRate and has limited
 fixed-label/numerator-only fallback formatting. Ordinary standalone physical
 OMF fallback and complete native Frame Rate GUI behavior remain unestablished.
-See the [evidence record](evidence/omf-frame-rate-2026-10-24.json).
+See the evidence record.
 
 Keep the already agreed Frame Rate priority: usable MDB first; eligible usable
 own-header rate only if MDB is unusable and the header was independently read.
@@ -3884,7 +3887,7 @@ The [24 October OMF audio Sample Rate review](../docs/reviews/2026-10-23-bella-o
 combines the native class sources, current/MDVx reading and two fresh bounded
 own-summary observations. **The user accepted these OMF audio Sample Rate rules
 and their simplification on 25 October 2026 by assenting and moving to the next
-field.** The [approval record](evidence/omf-audio-sample-rate-plan-2026-10-25.json)
+field.** The approval record
 preserves the contextual assent and scope.
 Frame Rate is agreed. No runtime implementation/cutover, Bin Filter change,
 final source-priority decision or new header-opening reason.
@@ -3946,7 +3949,7 @@ equal rank; disagreements would be unresolved by selection, not an observed
 wrong rate here. Its dedicated PCMA/MDAU fields are not projected. MDVx's generic
 helper reads PCMA or AIFD-presence-gated MDFL without summary decoding; its normal
 physical OMF fallback remains unestablished. See the
-[evidence record](evidence/omf-audio-sample-rate-2026-10-24.json).
+evidence record.
 
 The agreed single-source rule is explicit OMF policy, not a claim that native
 errors guarantee fallback or that the complete GUI has been traced. Final
@@ -3966,7 +3969,7 @@ summary decode or changing either field's source rule. This preserves useful
 sharing already present in OldScanner. Final helper names/signatures remain for
 implementation design; AIFF exact representability/unusual label precision retain
 their disclosed boundary. See the
-[refinement record](evidence/omf-audio-sample-rate-simplification-2026-10-25.json).
+refinement record.
 
 ## OMF Bit Depth: agreed rules
 
@@ -3974,7 +3977,7 @@ The [25 October OMF Bit Depth review](../docs/reviews/2026-10-23-bella-omf/bit-d
 reuses verified interpretation and adds narrow MPGA/JPED native ownership/type
 proof, with a separate TIFF limitation. **These OMF Bit Depth rules were approved
 on 25 October**, as recorded in the
-[approval](evidence/omf-bit-depth-plan-2026-10-25.json).
+approval.
 Audio Sample Rate and its simplification are agreed. No runtime implementation,
 cutover, Bin Filter change, extra column, Compression rename or new header open.
 
@@ -4022,7 +4025,7 @@ palette width and early labels are static limits rather than demonstrated
 wrong cells. MDVx stores an unsigned scalar and formats N bit without the same
 summary/representation/layout interpretation; its ordinary physical OMF fallback
 remains unestablished. Native full GUI behavior is also unproved. See the
-[evidence record](evidence/omf-bit-depth-2026-10-25.json).
+evidence record.
 
 Accepted Sample Rate/Frame Rate/Duration and Compression naming stay unchanged.
 Final priorities/read triggers and general OMF damage handling remain later.
@@ -4035,7 +4038,7 @@ Compression catalogue/resolver and DNx branding/qualified historical aliases,
 audio labels, family fallbacks, unknown handling and table/export behavior.
 The [OMF Compression review](../docs/reviews/2026-10-23-bella-omf/compression.md)
 records the acquisition/integration rules approved on 25 October, as saved in
-the [approval](evidence/omf-compression-plan-2026-10-25.json). No Bella runtime
+the approval. No Bella runtime
 change or cutover.
 
 Supply equivalent facts from the qualified physical file's own descriptor:
@@ -4067,7 +4070,7 @@ framework, per-column parser/class, duplicated raw graph, extra open, recording
 decode or new dependency. Existing eligible already-read OMF/MXF preference over
 MDB is unchanged; final opening/priorities/scheduling remain later decisions.
 No native GUI parity, universal MDB/OMF label equality or measured gain is claimed.
-See the [evidence](evidence/omf-compression-2026-10-25.json).
+See the evidence.
 
 ## OMF Resolution: agreed rules
 
@@ -4075,7 +4078,7 @@ The [25 October OMF Resolution review](../docs/reviews/2026-10-23-bella-omf/reso
 preserves current visible-picture-raster interpretation through a small fresh
 OMF adapter/shared geometry helper. **These OMF Resolution rules were approved
 on 25 October**, as recorded in the
-[approval](evidence/omf-resolution-plan-2026-10-25.json).
+approval.
 Compression's own acquisition/naming rules are agreed. No runtime change,
 cutover, Bin Filter change, extra open or final source-priority decision.
 
@@ -4114,14 +4117,14 @@ Stored 720x304/Display 720x288/Y 16/layout 1. These are byte-derived examples,
 not fresh file/app runs or broad absence/proxy/damage coverage. The existing
 visible/proxy tests explicitly exercise both OmfReader and MdbReader and remain
 preservation material, not newly executed tests. No measured gain is claimed.
-See the [evidence](evidence/omf-resolution-2026-10-25.json).
+See the evidence.
 
 ## OMF Type: agreed rules
 
 The [25 October OMF Type review](../docs/reviews/2026-10-23-bella-omf/type.md)
 extends the agreed MDB master-usage rule to supported legacy OMF.
 **These OMF Type rules were approved on 25 October**, as recorded in the
-[approval](evidence/omf-type-plan-2026-10-25.json). Resolution is agreed. No runtime
+approval. Resolution is agreed. No runtime
 implementation, cutover, Bin Filter change or extra file opening.
 
 Reuse the already selected qualified associated master from the agreed full-ID
@@ -4147,7 +4150,7 @@ Saved owner-qualified metadata has five masters with own four-byte code 7,
 while their physical files and immediate sources carry 0. This is reused-byte
 evidence, not new media/app execution, a genuine OMF Precompute specimen,
 damaged-case coverage or a measured improvement. See the
-[evidence](evidence/omf-type-2026-10-25.json). Final priorities/read triggers,
+evidence. Final priorities/read triggers,
 scheduling and general OMF damage handling remain later.
 
 ## OMF Precompute Category: agreed rules
@@ -4155,7 +4158,7 @@ scheduling and general OMF damage handling remain later.
 The [25 October OMF Precompute Category review](../docs/reviews/2026-10-23-bella-omf/precompute-category.md)
 preserves the native-derived group predicate through a small legacy adapter.
 **These OMF category rules were approved on 25 October**, as recorded in the
-[approval](evidence/omf-precompute-category-plan-2026-10-25.json). Type is agreed. No runtime
+approval. Type is agreed. No runtime
 implementation/cutover, Bin Filter change, extra header open or new source policy.
 
 Use only the same selected qualified Usage1 Precompute master. Exact direct
@@ -4187,14 +4190,14 @@ inapplicable cells are blank; retain explicit Unknown for the optional filter,
 distinct from its all-descendants choice. Effect Category/Effect remain separate;
 Effect Sequence stays excluded. Five saved ordinary masters are Usage7, so no
 genuine physical OMF category specimen is claimed. No measured gain. See the
-[evidence](evidence/omf-precompute-category-2026-10-25.json).
+evidence.
 
 ## OMF Effect Category: agreed integration
 
 The [25 October OMF Effect Category review](../docs/reviews/2026-10-23-bella-omf/effect-category.md)
 preserves the already agreed shared name-derived catalogue behaviour.
 **These OMF integration details were approved on 25 October**, as recorded in
-the [approval](evidence/omf-effect-category-plan-2026-10-25.json). Precompute Category is agreed.
+the approval. Precompute Category is agreed.
 No runtime implementation/cutover, Bin Filter change or extra media open.
 
 The OMF byte parser supplies the already-agreed qualified selected-master Clip
@@ -4224,13 +4227,13 @@ extra component graph or file open. The current resolver is already shared;
 no new index/caching performance gain is claimed. Final priorities/opening and
 scheduling remain later. Five saved OMF masters are ordinary Media, so no
 physical OMF effect-category specimen is asserted. See the
-[evidence](evidence/omf-effect-category-2026-10-25.json).
+evidence.
 
 ## OMF Effect: agreed integration
 
 The [25 October OMF Effect review](../docs/reviews/2026-10-23-bella-omf/effect.md)
 was **approved on 25 October**, as recorded in the
-[approval](evidence/omf-effect-plan-2026-10-25.json). Keep the already-agreed MDB/MXF Effect output
+approval. Keep the already-agreed MDB/MXF Effect output
 contract through the same common lookup as the accepted OMF Effect Category.
 No additional OMF property or independent Effect parser is required.
 
@@ -4255,13 +4258,13 @@ and combined lookup already work; no measured gain is claimed. Native
 registered effect-object names have different inputs from this editable-name
 inference. Five saved OMF masters are ordinary Media, so no physical OMF
 Precompute name corpus or live GUI parity is asserted. See the
-[evidence](evidence/omf-effect-2026-10-25.json).
+evidence.
 
 ## OMF damage handling: agreed boundaries
 
 The [25 October OMF damage review](../docs/reviews/2026-10-23-bella-omf/damage-handling.md)
 was **approved on 25 October**, as recorded in the
-[approval](evidence/omf-damage-handling-plan-2026-10-25.json).
+approval.
 Keep the physical file listed; preserve independently
 trustworthy metadata. No repair/rebuild, runtime implementation/cutover or new
 source priority/header-opening rule.
@@ -4298,7 +4301,7 @@ prove unchanged in-place content. Final acquisition/retry/scheduling stays later
 Native/default/catch and MDVx bounds gaps are not copied; OldScanner's partial
 source preservation is distinguished from demonstrated decoded-prefix output.
 No damaged-file experiment or measured gain is claimed. See the
-[evidence](evidence/omf-damage-handling-2026-10-25.json).
+evidence.
 
 The focused OMF requirements baseline is complete. Native WAVE/AIFF requirements
 were subsequently closed by preserving current behaviour below. This does
@@ -4313,7 +4316,7 @@ performance checks are future implementation verification, not expanded scope.
 
 On 25 October the user instructed: “Lets just keep the same rules/behaviour for
 WAVE and AIFF that we already have.” The
-[preservation decision](evidence/audio-preservation-plan-2026-10-25.json)
+preservation decision
 supersedes the earlier pending native-audio behaviour changes and further
 per-field review. Keep current native recognition, interpretation, useful
 results/labels and missing/unreadable/unsupported handling. No new formats,
@@ -4335,7 +4338,7 @@ scheduling/completeness heuristics. Native WAVE/AIFF requirements are now closed
 by preservation, with no further field-by-field planning. No runtime/cutover.
 
 The [audio research](../docs/reviews/2026-10-25-bella-audio/REVIEW.md) and
-[original evidence](evidence/audio-layouts-2026-10-25.json) remain as references;
+original evidence remain as references;
 the historical proposed FVER gate and additional field-review programme are
 withdrawn, not approved.
 
@@ -4343,7 +4346,7 @@ withdrawn, not approved.
 
 The [25 October consolidated table](../docs/reviews/2026-10-25-bella-source-priorities/REVIEW.md)
 was **approved on 26 October**, as recorded in the
-[approval](evidence/source-priorities-plan-2026-10-26.json).
+approval.
 Physical fields use the filesystem. Project uses
 PMR → MDB → eligible already-read header. Most other recorded fields use
 MDB → eligible already-read header, using the same qualified file/master.
@@ -4370,7 +4373,7 @@ Bin Filter change or runtime/cutover. On 27 October the user approved a combined
 ceiling of four PMR/MDB/required-header jobs total, followed by one background
 organiser and one shared reader team. Remaining scan-coordination choices still
 require review. See the
-[decision basis](evidence/source-priorities-2026-10-25.json).
+decision basis.
 
 The [26 October workflow proposal](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md)
 coordinates these sources and their lifetimes. The database maxima do not
@@ -4385,7 +4388,7 @@ On 26 October the user requested a thorough check of how Bella can implement
 the agreed rules elegantly using standard facilities, and which further
 questions require their input. The
 [design](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md) and
-[source record](evidence/scanner-design-2026-10-26.json) propose one GUI facade,
+source record propose one GUI facade,
 one background coordinator and one shared reader team, with a Qt thread pool
 as the proposed standard implementation. On 27 October the user approved both
 **four source jobs total**, shared by PMR/MDB/required headers, and **one
@@ -4594,18 +4597,18 @@ Implementation references:
 - [Metadata reference](../Project%20Copland/metadata-reference.md) explains fields
   and Avid relationships.
 - [Copland decisions](../Project%20Copland/README.md) record previous user choices.
-- [Verified MDVx findings from 18 October](evidence/mdvx-comparison-2026-10-18.json)
+- Verified MDVx findings from 18 October
   record the binary comparison and its limits. It identifies implementation
   differences; it is not a comparative timing benchmark.
 - [PMR research from 18 October](../docs/reviews/2026-10-18-bella-pmr/REVIEW.md)
   compares Media Composer's reader and writer, six genuine PMRs, the supplied
   GitHub project and an exact MDVx-style scanner with four concurrent jobs.
-  [Curated evidence](evidence/pmr-research-2026-10-18.json) preserves identities,
+  Curated evidence preserves identities,
   record counts, checks and the limits of the conclusions.
 - [MDB research from 18 October](../docs/reviews/2026-10-18-bella-mdb/REVIEW.md)
   records native MDB strings/attributes/IDs, MDVx's narrower enrichment and its
   actual-byte Project conversion discrepancy, six genuine database inventories
-  and proposed compact retained data. [Curated evidence](evidence/mdb-research-2026-10-18.json)
+  and proposed compact retained data. Curated evidence
   distinguishes stored values, current OldScanner interpretation and proposals.
 - [PMR text encoding](../docs/reviews/2026-10-18-bella-pmr/text-encoding.md) records
   the user's confirmed MacRoman Project, ten decompiled encoding helpers, the

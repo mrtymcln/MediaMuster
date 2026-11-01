@@ -1,5 +1,8 @@
 # PMR reader selection
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 On 4 October 2026 the user chose the independently written alternative PMR reader
 and requested removal of the first MediaEngine implementation.
 
@@ -47,8 +50,8 @@ the comparison's useful regression checks remain in the robustness suite.
 - Independent review and a direct source comparison confirmed the chosen parsing
   implementation was preserved. `git diff --check` passed.
 
-Evidence: [PMR contract](evidence/pmr-selection-contract-2026-10-04.txt),
-[robustness and real files](evidence/pmr-selection-robustness-2026-10-04.txt).
+Evidence: PMR contract,
+robustness and real files.
 
 Current checks can be run with:
 

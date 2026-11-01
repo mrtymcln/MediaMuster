@@ -2,6 +2,8 @@
 // OMF video and Avid WAV/AIF files exercise relationships and deferred samples
 // without loading or linking an MDB reader.
 
+#include "testfixtures.h"
+
 #include "oldscanner/mediaengine/omfreader.h"
 #include "oldscanner/mediaengine/projection.h"
 
@@ -37,21 +39,22 @@ void TestMediaEngineOmfIsolated::genuineMedia_data()
 	QTest::addColumn<QString>("compression");
 	using Container = MediaEngine::ParsedSource::Container;
 	QTest::newRow("OMF-DV-PAL") << QStringLiteral("omf/avid_supporting/BLACK_720x576x1_DV420.omf")
-		<< int(Container::Omf) << QString{} << QString{} << QStringLiteral("IEC-DV PAL 25Mbps 4:2:0");
+								<< int(Container::Omf) << QString{} << QString{} << QStringLiteral("IEC-DV PAL 25Mbps 4:2:0");
 	QTest::newRow("Avid-WAVE") << QStringLiteral("omf/mc2026_audio/TONE_100A01.6A972974.039700.wav")
-		<< int(Container::Wave)
-		<< QStringLiteral("060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80")
-		<< QStringLiteral("060a2b3401010101.01010f0013000000.7429976a4e397047.060e2b347f7f2a80")
-		<< QStringLiteral("PCM");
+							   << int(Container::Wave)
+							   << QStringLiteral("060a2b3401010101.01010f0013000000.7429976a70397047.060e2b347f7f2a80")
+							   << QStringLiteral("060a2b3401010101.01010f0013000000.7429976a4e397047.060e2b347f7f2a80")
+							   << QStringLiteral("PCM");
 	QTest::newRow("Avid-AIFC") << QStringLiteral("omf/mc2026_audio/TONE_100A01.6A972997.0C53E0.aif")
-		<< int(Container::Aiff)
-		<< QStringLiteral("060a2b3401010101.01010f0013000000.9729976a3ec57047.060e2b347f7f2a80")
-		<< QStringLiteral("060a2b3401010101.01010f0013000000.9729976a3dc57047.060e2b347f7f2a80")
-		<< QStringLiteral("PCM");
+							   << int(Container::Aiff)
+							   << QStringLiteral("060a2b3401010101.01010f0013000000.9729976a3ec57047.060e2b347f7f2a80")
+							   << QStringLiteral("060a2b3401010101.01010f0013000000.9729976a3dc57047.060e2b347f7f2a80")
+							   << QStringLiteral("PCM");
 }
 
 void TestMediaEngineOmfIsolated::genuineMedia()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(QString, path);
 	QFETCH(int, container);
 	QFETCH(QString, fileId);
@@ -130,7 +133,7 @@ void TestMediaEngineOmfIsolated::genuineMedia()
 		{
 			const auto rate = MediaEngine::mediaRate(observation.value);
 			rate48000 |= observation.eligible && observation.readState == PropertyReadState::Present &&
-				rate.numerator == 48000 && rate.denominator == 1;
+						 rate.numerator == 48000 && rate.denominator == 1;
 		}
 		QVERIFY(rate48000);
 	}

@@ -1,9 +1,12 @@
 # Bella Precompute Category from OMF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 25 October 2026. **OMF Precompute Category rules approved**, as recorded in the
-[approval](../../../Project%20Bella/evidence/omf-precompute-category-plan-2026-10-25.json).
+approval.
 [Type](type.md) is approved in its
-[approval record](../../../Project%20Bella/evidence/omf-type-plan-2026-10-25.json).
+approval record.
 Preserve the established [MDB category rule](../2026-10-18-bella-mdb/precompute-category.md)
 through a small legacy OMF adapter. [MXF](../2026-10-21-bella-mxf/precompute-category.md)
 shares the predicate but uses different attribute/track representations.
@@ -125,7 +128,7 @@ preservation cases. The null-payload, track-threshold and malformed-kind
 scanner controls identified in the current receipt are MDB+PMR inputs, inspected
 only; they are not executed genuine standalone OMF proof.
 
-The [curated record](../../../Project%20Bella/evidence/omf-precompute-category-2026-10-25.json)
+The curated record
 separates those sources and their limits. No media opens/modifications, native
 apps/private APIs, production parser, tests/builds, runtime changes or cutover.
 Type and other approved fields remain unchanged. Final source priorities/read

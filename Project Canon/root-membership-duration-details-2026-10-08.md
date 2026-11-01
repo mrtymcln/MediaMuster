@@ -1,5 +1,8 @@
 # Active roots and the 51 additional Clip Duration header reads
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Read-only bounded proof, 8 October 2026. This examines the 51 physical paths whose
 saved scan receipt changed from NotRead to Complete solely for missing/conflicting
 Clip Duration. It reads their three MDBs sequentially through the frozen MediaEngine
@@ -76,11 +79,11 @@ the displayed values after excluded database duration ownership is removed.
 
 ## Retained proof
 
-- [Exact root/component/file membership proof, lossless gzip](evidence/root-membership-duration-evidence-2026-10-08.jsonl.gz)
-- [Compact per-row matches](evidence/root-membership-duration-summary-2026-10-08.json)
-- [Source/artifact hashes and exact compile command](evidence/root-membership-duration-manifest-2026-10-08.json)
-- [Requested paths](evidence/root-membership-duration-requests-2026-10-08.json)
-- [Frozen probe source](evidence/root-membership-duration-probe-2026-10-08.cpp)
+- Exact root/component/file membership proof, lossless gzip
+- Compact per-row matches
+- Source/artifact hashes and exact compile command
+- Requested paths
+- Frozen probe source
 
 The manifest retains the original temporary artifact paths and maps their durable
 copies where retained. The implementation-only projector snapshot was removed;

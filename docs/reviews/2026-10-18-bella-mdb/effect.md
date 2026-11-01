@@ -1,5 +1,8 @@
 # Bella: Effect display and simpler integration
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Review date: 20 October 2026. The user likes the current Effect behaviour and
 asked whether it could be simpler or more elegant. **The user accepted these
 Effect rules on 20 October 2026; they are not yet implemented.** The shared
@@ -92,7 +95,7 @@ Sequence's later exclusion is recorded in the linked decision above.
 - [Existing cases](../../../tests/tst_avideffects.cpp): canonical/localized
   names, custom text, suffix variants, sequence commas, invalid/overflow suffixes
   and category ambiguity. Table/CSV sources share the display helper.
-- [Curated evidence](../../../Project%20Bella/evidence/mdb-effect-2026-10-20.json)
+- Curated evidence
   records unchanged source hashes and references the earlier native/live-MDB
   work without duplicating its raw ledgers.
 

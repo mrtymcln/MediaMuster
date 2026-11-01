@@ -1,5 +1,8 @@
 # Visible Resolution — revised policy, 7 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Resolution in the table and CSV describes the visible picture raster. The user
 revised the earlier stored-only choice: a valid crop removes storage padding,
 while verified small proxies keep their actual smaller dimensions. All original
@@ -74,11 +77,11 @@ use the exception. Other unexplained geometry remains unresolved rather than
 assuming every small raster is a proxy. This is a specimen-backed policy; it is
 not a claim that every possible Avid proxy profile has now been identified.
 
-[Proxy evidence](evidence/proxy-resolution-2026-10-07.json) retains all eight paths,
+Proxy evidence retains all eight paths,
 identities, source associations, raw dimensions, labels, ResolutionIDs and ffprobe
-results. [Padding evidence](evidence/stored-resolution-source-evidence-2026-10-11.json)
+results. Padding evidence
 records all 21 padded MDB descriptors. The earlier evidence remains unchanged.
-The supplementary [offset evidence](evidence/visible-resolution-offsets-2026-10-07.json)
+The supplementary offset evidence
 records 156 independently reread/decoded offsets across 39 descriptors: sixteen
 proxy MXF/MDB descriptors, 21 padded MDB descriptors and the JFIF OMF/MDB pair.
 All proxy/padding offsets are zero. Both JFIF sources record DisplayYOffset 5.
@@ -132,10 +135,10 @@ are nonzero and unique; copied files retain separate rows.
   single Debug harness run with uncontrolled filesystem-cache state; no speed
   or memory improvement over the preceding database-first run is claimed.
 
-[Production CSV](evidence/full-scan-visible-resolution-2026-10-07.csv),
-[every changed cell and hashes](evidence/visible-resolution-comparison-2026-10-07.json),
-[source receipts, identities and notices](live-scan-visible-resolution-2026-10-07.json),
-and [timing/memory log](evidence/visible-resolution-real-scan-2026-10-07.txt)
+Production CSV,
+every changed cell and hashes,
+source receipts, identities and notices,
+and timing/memory log
 preserve the result. The baseline SHA-256 remains
 `4fe76bc70bf1b2b048d8879f3d95a2a6c992b38e8a114da79dbe7397f4d89231`.
 The earlier stored-only evidence is retained with a superseded-policy label.

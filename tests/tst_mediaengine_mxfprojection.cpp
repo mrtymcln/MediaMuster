@@ -1,5 +1,7 @@
 // Independent authored graphs test ownership and semantics; reader tests cover binary framing.
 
+#include "testfixtures.h"
+
 #include "oldscanner/mediaengine/projection.h"
 #include "oldscanner/mediaengine/mxfreader.h"
 #include "oldscanner/mediaengine/scancoordinator.h"
@@ -371,9 +373,11 @@ private slots:
 		QCOMPARE(result.files.first().masterMobIds, QStringList{canonicalMxfId(umid('m'))});
 		QCOMPARE(selectedValue(result, result.files.first(), MediaProperty::ClipName).toString(), QStringLiteral("Clip m"));
 		QVERIFY(std::none_of(result.files.first().objects.cbegin(), result.files.first().objects.cend(),
-							[&](const auto &object) { return object.handle == duplicate || object.handle == orphanEcd || object.handle == orphanPackage; }));
+							 [&](const auto &object)
+							 { return object.handle == duplicate || object.handle == orphanEcd || object.handle == orphanPackage; }));
 		QVERIFY(std::any_of(result.files.first().objects.cbegin(), result.files.first().objects.cend(),
-							[&](const auto &object) { return object.handle == active; }));
+							[&](const auto &object)
+							{ return object.handle == active; }));
 	}
 
 	void contradictory_active_package_claimants_remain_conflicting()
@@ -439,7 +443,8 @@ private slots:
 		QVERIFY(!selectedIdentity(result).value.isValid());
 		QVERIFY(std::any_of(result.files.first().evidence.observations(MediaProperty::FileMobId).cbegin(),
 							result.files.first().evidence.observations(MediaProperty::FileMobId).cend(),
-							[](const auto &claim) { return claim.readState == PropertyReadState::Unreadable && !claim.eligible; }));
+							[](const auto &claim)
+							{ return claim.readState == PropertyReadState::Unreadable && !claim.eligible; }));
 	}
 
 	void absent_or_damaged_recorded_root_has_no_whole_header_recovery()
@@ -497,8 +502,10 @@ private slots:
 		component.master();
 		ObjectHandle track = 0, clip = 0;
 		for (const auto &object : component.source.objects)
-			if (object.mxf->name == QLatin1String("Track")) track = object.handle;
-			else if (object.mxf->name == QLatin1String("SourceClip")) clip = object.handle;
+			if (object.mxf->name == QLatin1String("Track"))
+				track = object.handle;
+			else if (object.mxf->name == QLatin1String("SourceClip"))
+				clip = object.handle;
 		const auto sequence = component.object("Sequence");
 		component.batch(sequence, "Sequence.StructuralComponents", {clip});
 		component.unresolved(sequence, "Sequence.StructuralComponents");
@@ -543,8 +550,10 @@ private slots:
 		const auto master = graph.master();
 		ObjectHandle track = 0, clip = 0;
 		for (const auto &object : graph.source.objects)
-			if (object.mxf->name == QLatin1String("Track")) track = object.handle;
-			else if (object.mxf->name == QLatin1String("SourceClip")) clip = object.handle;
+			if (object.mxf->name == QLatin1String("Track"))
+				track = object.handle;
+			else if (object.mxf->name == QLatin1String("SourceClip"))
+				clip = object.handle;
 		graph.appendToBatch(master, "GenericPackage.Tracks", track);
 		graph.batch(master, "GenericPackage.Tracks", {track, track});
 		const auto sequence = graph.object("Sequence");
@@ -585,6 +594,7 @@ private slots:
 
 	void genuine_rooted_metadata_copies()
 	{
+		REQUIRE_TEST_FIXTURES();
 		QFETCH(QString, path);
 		QFETCH(bool, excerpt);
 		QFile input(path);
@@ -713,7 +723,7 @@ private slots:
 		QCOMPARE(value(file, MediaProperty::Project).toString(), QStringLiteral("Physical project"));
 		QCOMPARE(mediaDuration(value(file, MediaProperty::FileDuration)).units, 240);
 		for (const auto property : {MediaProperty::ClipName, MediaProperty::Type,
-			MediaProperty::PrecomputeCategory, MediaProperty::SourcePath, MediaProperty::DropFrame})
+									MediaProperty::PrecomputeCategory, MediaProperty::SourcePath, MediaProperty::DropFrame})
 			QVERIFY(file.evidence.observations(property).isEmpty());
 		QCOMPARE(value(group, MediaProperty::ClipName).toString(), QStringLiteral("Clip m"));
 		QCOMPARE(value(group, MediaProperty::Project).toString(), QStringLiteral("Master project"));
@@ -869,8 +879,8 @@ private slots:
 			QCOMPARE(observations.size(), 1);
 			QCOMPARE(observations.first().value.toString(), expected);
 			QCOMPARE(observations.first().property, damage == QLatin1String("no-display")
-				? QStringLiteral("GenericPictureEssenceDescriptor.StoredWidth")
-				: QStringLiteral("GenericPictureEssenceDescriptor.DisplayWidth"));
+														? QStringLiteral("GenericPictureEssenceDescriptor.StoredWidth")
+														: QStringLiteral("GenericPictureEssenceDescriptor.DisplayWidth"));
 			QCOMPARE(observations.first().snapshot, graph.source.snapshot);
 		}
 		QCOMPARE(properties.size(), original.size());
@@ -902,7 +912,7 @@ private slots:
 		QFETCH(QString, expected);
 		Graph graph;
 		graph.picture(QByteArray::fromHex("060e2b340401010a0401020271010000"),
-			damage != QLatin1String("no-display"));
+					  damage != QLatin1String("no-display"));
 		graph.property(graph.descriptor, "GenericPictureEssenceDescriptor.SampledWidth", 1800u);
 		graph.property(graph.descriptor, "GenericPictureEssenceDescriptor.SampledHeight", 1080u);
 		graph.property(graph.descriptor, "GenericPictureEssenceDescriptor.SampledXOffset", 120);
@@ -924,7 +934,7 @@ private slots:
 			graph.replace(graph.descriptor, "GenericPictureEssenceDescriptor.DisplayYOffset", -1);
 		else if (damage == QLatin1String("huge-offset"))
 			graph.replace(graph.descriptor, "GenericPictureEssenceDescriptor.DisplayYOffset",
-				std::numeric_limits<qint64>::max());
+						  std::numeric_limits<qint64>::max());
 		else if (damage == QLatin1String("unreadable-offset"))
 		{
 			for (auto &property : graph.at(graph.descriptor).properties)
@@ -1002,11 +1012,21 @@ private slots:
 			Graph different = graph;
 			switch (damage)
 			{
-			case 0: different.replace(different.descriptor, "GenericPictureEssenceDescriptor.ResolutionID", 9999); break;
-			case 1: different.replace(different.descriptor, "GenericPictureEssenceDescriptor.PictureEssenceCoding", QByteArray(16, 'x')); break;
-			case 2: different.replace(different.descriptor, "GenericPictureEssenceDescriptor.SampledWidth", displayWidth + 1); break;
-			case 3: different.replace(different.descriptor, "GenericPictureEssenceDescriptor.DisplayXOffset", 1); break;
-			case 4: different.replace(different.descriptor, "GenericPictureEssenceDescriptor.FrameLayout", 4); break;
+			case 0:
+				different.replace(different.descriptor, "GenericPictureEssenceDescriptor.ResolutionID", 9999);
+				break;
+			case 1:
+				different.replace(different.descriptor, "GenericPictureEssenceDescriptor.PictureEssenceCoding", QByteArray(16, 'x'));
+				break;
+			case 2:
+				different.replace(different.descriptor, "GenericPictureEssenceDescriptor.SampledWidth", displayWidth + 1);
+				break;
+			case 3:
+				different.replace(different.descriptor, "GenericPictureEssenceDescriptor.DisplayXOffset", 1);
+				break;
+			case 4:
+				different.replace(different.descriptor, "GenericPictureEssenceDescriptor.FrameLayout", 4);
+				break;
 			}
 			QVERIFY(!value(project(different).files.first(), MediaProperty::Resolution).isValid());
 		}
@@ -1090,17 +1110,17 @@ private slots:
 		QTest::newRow("spaces") << QStringLiteral("file:///Macintosh%20HD/Users/editor/Apple%20ProRes%20422%20Proxy.mov")
 								<< QStringLiteral("/Users/editor/Apple ProRes 422 Proxy.mov") << QString{};
 		QTest::newRow("literal-percent-retained") << QStringLiteral("file:///source/Literal%2520Name.mov")
-													  << QStringLiteral("/source/Literal%20Name.mov") << QString{};
+												  << QStringLiteral("/source/Literal%20Name.mov") << QString{};
 		QTest::newRow("utf8") << QStringLiteral("file:///source/%E4%BD%A0%E5%A5%BD%20caf%C3%A9.mov")
 							  << QStringLiteral("/source/你好 café.mov") << QString{};
 		QTest::newRow("different-filenames") << QStringLiteral("file:///source/other.mov")
-											   << QStringLiteral("/source/recorded.mov") << QString{};
+											 << QStringLiteral("/source/recorded.mov") << QString{};
 		QTest::newRow("same-recorded-url") << QStringLiteral("file:///source/Recorded%20Name.mov")
-			<< QStringLiteral("file:///source/Recorded%20Name.mov") << QStringLiteral("file:///source/Recorded%20Name.mov");
+										   << QStringLiteral("file:///source/Recorded%20Name.mov") << QStringLiteral("file:///source/Recorded%20Name.mov");
 		QTest::newRow("windows-native") << QStringLiteral("file:///C:/Rushes/Camera%20Original.mov")
-			<< QStringLiteral("C:\\Rushes\\Camera Original.mov") << QString{};
+										<< QStringLiteral("C:\\Rushes\\Camera Original.mov") << QString{};
 		QTest::newRow("unc-native") << QStringLiteral("file://server/share/Camera%20Original.mov")
-			<< QStringLiteral("\\\\server\\share\\Camera Original.mov") << QString{};
+									<< QStringLiteral("\\\\server\\share\\Camera Original.mov") << QString{};
 	}
 
 	void recorded_import_paths_preserve_spelling_and_ambiguity()
@@ -1157,7 +1177,7 @@ private slots:
 		QCOMPARE(paths.size(), 1);
 		QCOMPARE(paths.first().readState, PropertyReadState::Unreadable);
 		const auto status = evidence.readStatus(MediaProperty::SourcePath, graph.source.snapshot,
-			QStringLiteral("object:%1").arg(locator));
+												QStringLiteral("object:%1").arg(locator));
 		QCOMPARE(status.state, PropertyReadState::Unreadable);
 		QCOMPARE(status.reason, PropertyReadReason::ValueUnreadable);
 		QVERIFY(!selectedValue(result, result.files.first(), MediaProperty::SourcePath).isValid());
@@ -1186,7 +1206,7 @@ private slots:
 		QVERIFY(!value(result.files.first(), MediaProperty::Compression).isValid());
 		QCOMPARE(result.files.first().evidence.observations(MediaProperty::CompressionLabel).first().readState, PropertyReadState::Unreadable);
 		const auto status = result.files.first().evidence.readStatus(MediaProperty::Compression, graph.source.snapshot,
-			QStringLiteral("object:%1").arg(graph.descriptor));
+																	 QStringLiteral("object:%1").arg(graph.descriptor));
 		QCOMPARE(status.state, PropertyReadState::Unreadable);
 		QCOMPARE(status.reason, PropertyReadReason::ValueUnreadable);
 	}
@@ -1216,7 +1236,7 @@ private slots:
 		graph.property(graph.descriptor, "CDCIEssenceDescriptor.ComponentDepth", 252u);
 		const auto result = project(graph);
 		const auto status = result.files.first().evidence.readStatus(MediaProperty::BitDepth, graph.source.snapshot,
-			QStringLiteral("object:%1").arg(graph.descriptor));
+																	 QStringLiteral("object:%1").arg(graph.descriptor));
 		QCOMPARE(status.state, PropertyReadState::NotRead);
 		QCOMPARE(status.reason, PropertyReadReason::UnsupportedInterpretation);
 		QCOMPARE(result.files.first().evidence.observations(MediaProperty::ComponentDepth).first().value.toUInt(), 252u);

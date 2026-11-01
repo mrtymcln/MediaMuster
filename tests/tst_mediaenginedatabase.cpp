@@ -2,6 +2,8 @@
 // reader output. Authored byte controls below exercise acquisition failures only;
 // they do not make claims about PMR or MDB framing.
 
+#include "testfixtures.h"
+
 #include "oldscanner/mediaengine/databaseimage.h"
 #include "oldscanner/mediaengine/databasesource.h"
 #include "oldscanner/mediaengine/mdbreader.h"
@@ -70,7 +72,8 @@ namespace
 	MediaEngine::Projection project(const MediaEngine::ParsedSource &source, const MediaEngine::Cancellation &cancellation)
 	{
 		return source.container == MediaEngine::ParsedSource::Container::Pmr
-			? MediaEngine::projectPmr(source, cancellation) : MediaEngine::projectMdb(source, cancellation);
+				   ? MediaEngine::projectPmr(source, cancellation)
+				   : MediaEngine::projectMdb(source, cancellation);
 	}
 
 	void addDatabaseFixtures()
@@ -107,7 +110,13 @@ namespace
 	class ControlledDevice final : public QIODevice
 	{
 	public:
-		enum class Failure { None, Eof, Error, Stall };
+		enum class Failure
+		{
+			None,
+			Eof,
+			Error,
+			Stall
+		};
 
 		explicit ControlledDevice(QByteArray bytes)
 			: reportedSize(bytes.size()), m_bytes(std::move(bytes))
@@ -132,7 +141,7 @@ namespace
 		bool atEnd() const override
 		{
 			return m_cursor >= m_bytes.size() ||
-				(failure == Failure::Eof && stopAt >= 0 && m_cursor >= stopAt);
+				   (failure == Failure::Eof && stopAt >= 0 && m_cursor >= stopAt);
 		}
 		bool seek(qint64 offset) override
 		{
@@ -193,6 +202,7 @@ private slots:
 	void genuineImagesAreByteExact_data() { addDatabaseFixtures(); }
 	void genuineImagesAreByteExact()
 	{
+		REQUIRE_TEST_FIXTURES();
 		QFETCH(QString, relative);
 		QFETCH(bool, pmr);
 		Q_UNUSED(pmr);
@@ -360,11 +370,16 @@ private slots:
 		for (int variant = 0; variant < 5; ++variant)
 		{
 			ControlledDevice input(bytes);
-			if (variant == 0) input.sequential = true;
-			if (variant == 1) input.setTextModeEnabled(true);
-			if (variant == 2) input.failSeek = true;
-			if (variant == 3) input.reportedSize = -1;
-			if (variant == 4) input.reportedSize = std::numeric_limits<qint64>::max();
+			if (variant == 0)
+				input.sequential = true;
+			if (variant == 1)
+				input.setTextModeEnabled(true);
+			if (variant == 2)
+				input.failSeek = true;
+			if (variant == 3)
+				input.reportedSize = -1;
+			if (variant == 4)
+				input.reportedSize = std::numeric_limits<qint64>::max();
 			const auto image = MediaEngine::DatabaseImage::read(input, cancellation);
 			QCOMPARE(image.outcome(), Outcome::IoError);
 			QVERIFY(!image.acquisitionComplete());
@@ -378,6 +393,7 @@ private slots:
 	void genuineDatabaseSourcesPreserveProjectedFacts_data() { addDatabaseFixtures(); }
 	void genuineDatabaseSourcesPreserveProjectedFacts()
 	{
+		REQUIRE_TEST_FIXTURES();
 		QFETCH(QString, relative);
 		QFETCH(bool, pmr);
 		QFile fixture(QStringLiteral(FIXTURES_DIR) + '/' + relative);

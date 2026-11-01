@@ -1,3 +1,5 @@
+#include "testfixtures.h"
+
 #include "bella/mobid.h"
 
 #include <QByteArray>
@@ -115,7 +117,9 @@ void TestBellaMobId::declared_order_is_not_guessed()
 void TestBellaMobId::wrong_widths_return_invalid_width()
 {
 	const std::array<std::pair<Layout, qsizetype>, 3> layouts{{
-		{Layout::PmrLegacy8, 8}, {Layout::OmfUid12, 12}, {Layout::Aaf32, 32},
+		{Layout::PmrLegacy8, 8},
+		{Layout::OmfUid12, 12},
+		{Layout::Aaf32, 32},
 	}};
 	const std::array<qsizetype, 13> widths{{0, 1, 7, 8, 9, 11, 12, 13, 31, 32, 33, 64, 4096}};
 	for (const auto &[layout, expectedWidth] : layouts)
@@ -166,12 +170,12 @@ void TestBellaMobId::zero_values_and_unfamiliar_labels_are_preserved()
 void TestBellaMobId::equivalent_layouts_share_one_hash_key()
 {
 	const auto pmr = Bella::normalizeMobId(QByteArray::fromHex("44332211d4c3b2a1"),
-		Layout::PmrLegacy8, Order::LittleEndian);
+										   Layout::PmrLegacy8, Order::LittleEndian);
 	const auto omf = Bella::normalizeMobId(QByteArray::fromHex("0000002a11223344a1b2c3d4"),
-		Layout::OmfUid12, Order::BigEndian);
+										   Layout::OmfUid12, Order::BigEndian);
 	const auto modern = Bella::normalizeMobId(QByteArray::fromHex(
-		"060a2b340101010101010f001300000011223344c3d4a1b2060e2b347f7f2a80"),
-		Layout::Aaf32, Order::BigEndian);
+												  "060a2b340101010101010f001300000011223344c3d4a1b2060e2b347f7f2a80"),
+											  Layout::Aaf32, Order::BigEndian);
 	const auto *pmrId = std::get_if<Bella::MobId>(&pmr);
 	const auto *omfId = std::get_if<Bella::MobId>(&omf);
 	const auto *modernId = std::get_if<Bella::MobId>(&modern);
@@ -232,11 +236,11 @@ void TestBellaMobId::every_modern_byte_participates_in_equality()
 void TestBellaMobId::unfamiliar_legacy_organization_is_part_of_the_key()
 {
 	const auto first = Bella::normalizeMobId(QByteArray::fromHex("0700000044332211d4c3b2a1"),
-		Layout::OmfUid12, Order::LittleEndian);
+											 Layout::OmfUid12, Order::LittleEndian);
 	const auto second = Bella::normalizeMobId(QByteArray::fromHex("0800000044332211d4c3b2a1"),
-		Layout::OmfUid12, Order::LittleEndian);
+											  Layout::OmfUid12, Order::LittleEndian);
 	const auto sameFirst = Bella::normalizeMobId(QByteArray::fromHex("0000000711223344a1b2c3d4"),
-		Layout::OmfUid12, Order::BigEndian);
+												 Layout::OmfUid12, Order::BigEndian);
 	const auto *firstId = std::get_if<Bella::MobId>(&first);
 	const auto *secondId = std::get_if<Bella::MobId>(&second);
 	const auto *sameFirstId = std::get_if<Bella::MobId>(&sameFirst);
@@ -338,6 +342,7 @@ void TestBellaMobId::genuine_little_endian_fixtures_data()
 
 void TestBellaMobId::genuine_little_endian_fixtures()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(QString, relativePath);
 	QFETCH(int, fileSize);
 	QFETCH(int, baseVersion);

@@ -1,5 +1,8 @@
 # Select sequences directly from an Avid bin
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Recorded 4 October 2026. Requested direction: let a user load an original AVB,
 see its sequences and select one or more to filter the scanned media table.
 This avoids first copying those sequences into temporary bins. The fresh reader
@@ -95,8 +98,8 @@ descriptor bytes contain `Avid Generic Plug-In` and `Q7_MediaContainer`, and the
 associated physical-source locators record an external `Scene04Rough.mp4` path.
 Those combined source-context observations support the linked-media finding for
 this specimen. They are not a universal, implemented `isAma` flag or a guarantee
-that the external file still exists. See the [descriptor evidence](evidence/avb-rough-descriptors-2026-10-04.json)
-and [parent/source locators](evidence/avb-rough-parent-locators-2026-10-04.json).
+that the external file still exists. See the descriptor evidence
+and parent/source locators.
 
 Do not infer AMA merely from a missing MSML locator, a filename extension or an
 old original-source path. Avid's [MXF AMA Plug-in Guide, pages 1–3](https://resources.avid.com/SupportFiles/attach/MXF_AMA_v6.0_v10.pdf)
@@ -198,10 +201,10 @@ and 684 legacy keys for `01_SEQ`; 517 full IDs and 189 legacy keys for
 `02_SEQ_LOCK`. Those sets may overlap and are not physical-file counts. Production
 filter readiness is narrower than complete format interpretation.
 
-Archived evidence: [pyavb probe](evidence/avb-sequence-probe-2026-10-04.py),
-[graph summary](evidence/avb-sequence-summary-2026-10-04.json),
-[representative locators](evidence/avb-sequence-locators-2026-10-04.json),
-[reader results](evidence/avb-reader-probe-results-2026-10-04.jsonl).
+Archived evidence: pyavb probe,
+graph summary,
+representative locators,
+reader results.
 The probe uses local input paths and writes its report to `/tmp`; the reported
 unchanged-file check compares size and modification time, not cryptographic hashes.
 

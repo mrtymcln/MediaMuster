@@ -1,5 +1,8 @@
 # Proxy resolution review, 7 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 **Historical stored-only decision, superseded later on 7 October.** The user
 subsequently chose visible dimensions with verified small proxies retained.
 See [the current geometry policy and verification](visible-resolution-2026-10-07.md).
@@ -69,12 +72,12 @@ display cropping. Both its header and matching MDB record stored/sampled
 720×248, display 720×243 with Y offset 5, and separate-fields layout 1.
 Its stored full-frame Resolution is therefore **720×496**, not the former
 cropped 720×486. The scanner integration expectations now reflect the approved
-meaning. [Raw fixture observations](evidence/jfif-stored-resolution-2026-10-07.json)
+meaning. Raw fixture observations
 were checked against all 22 recorded geometry byte ranges. For example,
 StoredHeight is little-endian `f8000000` at OMF offset 19124 and MDB offset
 560772; DisplayHeight is `f3000000` at offsets 19268 and 560916 respectively.
 
-[Raw evidence](evidence/proxy-resolution-2026-10-07.json) contains all eight paths,
+Raw evidence contains all eight paths,
 file size and modification timestamp, canonical file MobId, the matching MDB
 file-object-to-descriptor reference, the selected descriptor's raw bytes and
 source offsets, MXF equivalents, and the ffprobe command/version/results.
@@ -103,7 +106,7 @@ meaning. Each was checked individually against its matching MDB descriptor:
 
 The larger values preserve recorded storage padding; they do not claim that the
 visible image has 1088 active lines. Sampled/display geometry remains available
-in RAM. [Per-file evidence](evidence/stored-resolution-source-evidence-2026-10-11.json)
+in RAM. Per-file evidence
 contains every path, MobId association, descriptor reference and exact property
 bytes/offsets. The saved source ranges were reread and all dimension/layout
 integers independently decoded. No unexplained Resolution difference was found

@@ -1,5 +1,8 @@
 # Bella OMF media reading
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 23 October 2026. **The TOC-driven reading and compact-retention approach is
 agreed; release-one OMF version/text rules are also approved. Identity/ownership,
 Clip Name, Project, Original Bin, Kind, Duration and Frame Rate rules were accepted on 24 October.
@@ -7,7 +10,7 @@ Audio Sample Rate, Bit Depth, Compression, Resolution, Type, Precompute Category
 Effect Category, Effect and general damage handling were accepted on 25 October.
 The agreed first-release OMF requirements baseline is complete. Native WAVE/AIFF
 behaviour was subsequently preserved separately on 25 October.**
-The [reading approval](../../../Project%20Bella/evidence/omf-reading-plan-2026-10-23.json) records the accepted scope. The user has approved the completed
+The reading approval records the accepted scope. The user has approved the completed
 release-one MXF scope. Bella remains a fresh C++17/Qt 6.5.3 implementation to
 follow the requirements review; OldScanner is active and Bin Filter is separate.
 
@@ -47,57 +50,57 @@ MediaMuster likewise distinguishes Bento 1.0/2.0 from OMF object revision 1/2.
 The supported combinations and compatibility boundaries are settled by the focused review.
 The [versions/text follow-up](versions-and-text.md) now records that review and
 its first-release baseline, approved in the
-[version/text record](../../../Project%20Bella/evidence/omf-versions-and-text-plan-2026-10-23.json).
+version/text record.
 The [identity/ownership follow-up](identities.md) compares complete owner IDs,
 native compatibility matching and five direct media/master links. Its OMF-specific
 selection rules were approved on 24 October, as recorded in the
-[identity approval](../../../Project%20Bella/evidence/omf-identities-plan-2026-10-24.json).
+identity approval.
 The [Clip Name review](clip-name.md) now compares exact master-name reading,
 native/current text behavior and five bounded fresh name rechecks. Its field
 selection/blank/retention rules were approved on 24 October, as recorded in the
-[Clip Name approval](../../../Project%20Bella/evidence/omf-clip-name-plan-2026-10-24.json).
+Clip Name approval.
 The [Project review](project.md) compares native/current owner and text behavior
 with five fresh attribute/relationship observations. Its file-first, immediate-source
 fallback and exact-key rules were approved on 24 October, as recorded in the
-[Project approval](../../../Project%20Bella/evidence/omf-project-plan-2026-10-24.json).
+Project approval.
 The [Original Bin review](original-bin.md) compares the native reference/name
 route and current behavior with an 82-file presence survey and 35 selected-master
 associations. Its name-only owner/text/blank/retention rules were accepted by the
 user's subsequent “Sounds ok!”, as recorded in the
-[Original Bin approval](../../../Project%20Bella/evidence/omf-original-bin-plan-2026-10-24.json).
+Original Bin approval.
 The [Kind review](kind.md) preserves the current qualified-descriptor lookup,
 reuses prior actual metadata and distinguishes MDVx's usage labels. Kind was
 approved on 24 October, as recorded in the
-[Kind approval](../../../Project%20Bella/evidence/omf-kind-plan-2026-10-24.json).
+Kind approval.
 Native WAV/AIFF precedence and final cross-source priorities remain later decisions.
 The [Duration review](duration.md) now compares native summary behavior and
 current exact count/rate handling, checks five actual files, and records shared
 interpretation/formatting with OMF-specific ownership and compact timing facts.
 Duration was approved on 24 October, as recorded in the
-[Duration approval](../../../Project%20Bella/evidence/omf-duration-plan-2026-10-24.json).
+Duration approval.
 No new reason to open a header or native audio source-priority decision is introduced.
 The [Frame Rate review](frame-rate.md) now reuses the physical descriptor clock,
 distinguishes master/codec/timecode clocks and records the shared exact rate,
 late-label/numeric-sort design with no automatic interlace adjustment. Frame Rate
 was approved on 24 October, as recorded in the
-[Frame Rate approval](../../../Project%20Bella/evidence/omf-frame-rate-plan-2026-10-24.json),
+Frame Rate approval,
 and creates no new header-open trigger.
 The [audio Sample Rate review](audio-sample-rate.md) now establishes concrete
 PCMA/MPGA properties and AIFD/WAVD summary frequencies, compares current mixed
 frequency observations and records a single class-specific authority with
 exact values and late kHz labels. Audio Sample Rate and the small shared-helper
 simplification were accepted on 25 October, as recorded in the
-[approval](../../../Project%20Bella/evidence/omf-audio-sample-rate-plan-2026-10-25.json).
+approval.
 Duration's independently approved clock/count policy is unchanged.
 The [Bit Depth review](bit-depth.md) now compares class-specific scalar/summary/
 component sources, reuses existing interpretation and records compact numeric
 depth with shared audio decoding. Bit Depth was approved on 25 October, as
-recorded in the [approval](../../../Project%20Bella/evidence/omf-bit-depth-plan-2026-10-25.json).
+recorded in the approval.
 No timing, Compression naming or header-opening change is introduced.
 The [Compression review](compression.md) preserves the existing naming system
 reaffirmed by the user, and maps the complementary coding/legacy/format facts
 needed by its unchanged pure resolver. OMF acquisition/integration rules
-were approved on 25 October in the [approval](../../../Project%20Bella/evidence/omf-compression-plan-2026-10-25.json);
+were approved on 25 October in the approval;
 current source limits and native/MDVx naming
 boundaries are distinct from demonstrated wrong labels or an app comparison.
 The [Resolution review](resolution.md) now preserves the existing small geometry
@@ -105,14 +108,14 @@ calculation, distinguishes legacy Stored-relative Display from MXF nesting,
 reuses three typed picture/crop examples and proposes selective Sampled reading
 only for the exact proxy exception. Numeric retention and the explicit OMF
 adapter were approved on 25 October in the
-[approval](../../../Project%20Bella/evidence/omf-resolution-plan-2026-10-25.json);
+approval;
 no new native GUI parity or performance claim.
 The [Type review](type.md) now applies selected-master own numeric usage 1/7,
 keeps physical/source and MXF marker semantics separate, and proposes the
 existing small enum/helper with blank Unknown presentation. Five saved masters
 carry 7 while their file records carry 0; these are reused byte interpretations.
 OMF Type was approved on 25 October in the
-[approval](../../../Project%20Bella/evidence/omf-type-plan-2026-10-25.json);
+approval;
 optional details are separate.
 The [Precompute Category review](precompute-category.md) now preserves the exact
 direct import-object/immediate-picture-track predicate with compact shared
@@ -120,12 +123,12 @@ classification. It proposes consumer-driven optional decoding, blank unavailable
 cells with separate filter Unknown, and no settings-body traversal. The five
 saved OMF masters are ordinary Media, so no physical OMF category specimen or
 new runtime/performance result is claimed. These category details were approved
-on 25 October in the [approval](../../../Project%20Bella/evidence/omf-precompute-category-plan-2026-10-25.json).
+on 25 October in the approval.
 The [Effect Category review](effect-category.md) now preserves the agreed
 name-derived catalogue labels through common post-selection Type/name input,
 distinct from native effect-ID registration. Combined Effect/Category lookup,
 optional request/compact results and discarded Sequence were approved on
-25 October in the [approval](../../../Project%20Bella/evidence/omf-effect-category-plan-2026-10-25.json);
+25 October in the approval;
 no extra OMF field, graph or opening is required. The five saved Media masters do not
 provide an applicable OMF effect-category specimen.
 The [Effect review](effect.md) preserves the companion `Hit.name` from that same
@@ -134,7 +137,7 @@ nonempty custom tokens, lowercase `unknown` for empty/unavailable Precompute
 Effect and blank for other Types. Preserve suffix handling and table/export
 behaviour; retain owned names and discard Sequence. No further OMF property,
 effect graph or file read is required. Effect integration was approved on
-25 October in the [approval](../../../Project%20Bella/evidence/omf-effect-plan-2026-10-25.json);
+25 October in the approval;
 the five ordinary masters do not establish rendered OMF name results.
 The [damage-handling review](damage-handling.md) establishes complete shared TOC
 framing before publication, then isolation of bad values and dependent links,
@@ -142,7 +145,7 @@ retaining independent facts and the physical row. It distinguishes native
 defaults/rethrows, MDVx validation gaps and OldScanner's metadata-only deferred
 read/partial-source behaviour. No repair, extra read trigger or universal crash
 guarantee is claimed. These general OMF boundaries were approved on 25 October
-in the [approval](../../../Project%20Bella/evidence/omf-damage-handling-plan-2026-10-25.json).
+in the approval.
 
 ## What OMF can contribute
 
@@ -241,7 +244,7 @@ supported representations, malformed-input cases, output comparisons and time/
 memory measurements remain implementation verification work. OldScanner stays
 active until an explicitly approved cutover.
 
-The [curated evidence](../../../Project%20Bella/evidence/omf-header-review-2026-10-23.json)
+The curated evidence
 contains installed-native/source receipts and the five observations. Existing
 tests were inspected as source, not run. Some tests in the OMF-projection-named
 suite actually default to the MDB reader; they are not standalone OMF proof.

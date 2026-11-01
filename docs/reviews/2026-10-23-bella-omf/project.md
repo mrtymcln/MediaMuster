@@ -1,7 +1,10 @@
 # Bella Project from OMF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 24 October 2026. **The user approved these OMF Project rules.** The
-[approval record](../../../Project%20Bella/evidence/omf-project-plan-2026-10-24.json)
+approval record
 preserves the direct instruction and original research snapshot. The user has
 approved selective OMF reading, version/text, identity/ownership and Clip Name
 rules. This review proposes Project's owner/key order within an OMF already
@@ -142,10 +145,10 @@ folder, clip name or an invented Project. Cross-source reconciliation remains la
 
 ## Evidence and verification
 
-The [curated Project evidence](../../../Project%20Bella/evidence/omf-project-2026-10-24.json)
+The curated Project evidence
 contains bounded native receipts, exact current source anchors, fresh five-file
 attribute/owner observations and explicit limitations. The
-[Clip Name approval](../../../Project%20Bella/evidence/omf-clip-name-plan-2026-10-24.json)
+Clip Name approval
 records the preceding user decision without rewriting its original research.
 
 Tests were inspected only. A genuine direct OmfReader test expects the WAVE

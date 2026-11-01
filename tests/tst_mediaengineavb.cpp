@@ -1,6 +1,8 @@
 // Independent authored bins check that evidence bytes map to their source positions.
 // External bins are opt-in.
 
+#include "testfixtures.h"
+
 #include "mediaengine/avbreader.h"
 #include "testavb.h"
 
@@ -551,6 +553,7 @@ void TestMediaEngineAvb::realRepoBins_data()
 }
 void TestMediaEngineAvb::realRepoBins()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(QString, name);
 	QFETCH(QByteArray, fileMobId);
 	QFETCH(QByteArray, masterMobId);

@@ -1,5 +1,8 @@
 # Database lookup optimization
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Recorded 10 October 2026. MediaEngine now looks up individual MDB/OMF properties without
 building temporary matching-property lists, and reuses completed source-mob
 relationship lookups while projecting one source. The measured local Release
@@ -196,10 +199,10 @@ No worker count or speed improvement is established by the present evidence.
 
 ## Evidence
 
-- [Combined verification/build/timing receipt](evidence/database-lookup-verification-2026-10-10.json).
-- [Genuine MDB counts, provenance and cancellation controls](evidence/database-lookup-controls-2026-10-10.json).
-- [Six-MDB buffered-read experiment](evidence/database-buffer-experiment-2026-10-10.json).
-- [Lossless diagnostic sources, commands, reports, CSVs and logs](evidence/database-lookup-proof-2026-10-10.zip):
+- Combined verification/build/timing receipt.
+- Genuine MDB counts, provenance and cancellation controls.
+- Six-MDB buffered-read experiment.
+- Lossless diagnostic sources, commands, reports, CSVs and logs:
   190 text files plus a per-member SHA-256 manifest; ZIP CRC and all member
   hashes pass. Archive SHA-256:
   `66806e0c4d0736c894c7015293db00d5c9b89bd6e7138971271d794e9181579f`.

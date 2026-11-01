@@ -1,6 +1,8 @@
 // Genuine Avid database/header joins. Read each source independently and verify
 // matching identities, shared facts and explicitly recorded differences.
 // No source is an oracle for another source's bytes or clock.
+#include "testfixtures.h"
+
 #include "oldscanner/mediaengine/mdbreader.h"
 #include "oldscanner/mediaengine/mxfreader.h"
 #include "oldscanner/mediaengine/omfreader.h"
@@ -30,14 +32,14 @@ namespace
 	const MediaEngine::ProjectedFile *findFile(const QVector<MediaEngine::ProjectedFile> &files, const QString &identity)
 	{
 		const auto match = std::find_if(files.cbegin(), files.cend(), [&](const auto &file)
-									  { return file.fileMobId == identity; });
+										{ return file.fileMobId == identity; });
 		return match == files.cend() ? nullptr : &*match;
 	}
 
 	const MediaEngine::ProjectedFile *findMaster(const QVector<MediaEngine::ProjectedFile> &masters, const QString &identity)
 	{
 		const auto match = std::find_if(masters.cbegin(), masters.cend(), [&](const auto &master)
-									  { return master.masterMobIds.contains(identity); });
+										{ return master.masterMobIds.contains(identity); });
 		return match == masters.cend() ? nullptr : &*match;
 	}
 
@@ -45,14 +47,13 @@ namespace
 				const char *name, const QByteArray &bytes)
 	{
 		return std::any_of(source.objects.cbegin(), source.objects.cend(), [&](const auto &object)
-		{
+						   {
 			const bool linked = std::any_of(file.objects.cbegin(), file.objects.cend(), [&](const auto &reference)
 										   { return reference.handle == object.handle; });
 			return linked && std::any_of(object.properties.cbegin(), object.properties.cend(), [&](const auto &property)
 			{
 				return property.locator.name == QLatin1String(name) && property.state == PropertyReadState::Present && property.encoding == bytes;
-			});
-		});
+			}); });
 	}
 
 	QByteArray rateBytes(MediaRate rate, bool bigEndian)
@@ -106,6 +107,7 @@ void TestReaderRegressions::genuineDatabaseHeaderJoins_data()
 
 void TestReaderRegressions::genuineDatabaseHeaderJoins()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(QString, folder);
 	QFETCH(QString, pmrName);
 	QFETCH(QString, mdbName);
@@ -155,19 +157,13 @@ void TestReaderRegressions::genuineDatabaseHeaderJoins()
 			for (const auto &object : source.objects)
 			{
 				const bool mpeg = std::any_of(object.properties.cbegin(), object.properties.cend(), [](const auto &property)
-				{
-					return property.locator.name == QLatin1String("OMFI:ObjID") && property.encoding == "MPEG";
-				});
+											  { return property.locator.name == QLatin1String("OMFI:ObjID") && property.encoding == "MPEG"; });
 				if (!mpeg)
 					continue;
 				const bool listed = std::any_of(source.relationships.cbegin(), source.relationships.cend(), [&](const auto &edge)
-				{
-					return edge.origin == 1 && edge.target == object.handle && edge.locator.name == QLatin1String("OMFI:ObjectSpine");
-				});
+												{ return edge.origin == 1 && edge.target == object.handle && edge.locator.name == QLatin1String("OMFI:ObjectSpine"); });
 				const bool indexed = std::any_of(source.relationships.cbegin(), source.relationships.cend(), [&](const auto &edge)
-				{
-					return edge.origin == 1 && edge.target == object.handle && edge.locator.name == QLatin1String("OMFI:MediaData");
-				});
+												 { return edge.origin == 1 && edge.target == object.handle && edge.locator.name == QLatin1String("OMFI:MediaData"); });
 				for (const auto &property : object.properties)
 					if (listed && indexed && property.locator.name == QLatin1String("OMFI:MDAT:MobID") && property.bento)
 						retainedRootIdentity = MediaEngine::canonicalDatabaseId(property.encoding, property.bento->metadataBigEndian.value_or(false)) == record.fileMobId;
@@ -202,7 +198,7 @@ void TestReaderRegressions::genuineDatabaseHeaderJoins()
 			++missingCompression;
 		}
 		for (const auto property : {MediaProperty::Compression, MediaProperty::Resolution, MediaProperty::FrameRate,
-								   MediaProperty::BitDepth, MediaProperty::SampleRate, MediaProperty::Channels})
+									MediaProperty::BitDepth, MediaProperty::SampleRate, MediaProperty::Channels})
 		{
 			const auto fromDatabase = databaseEvidence.selected(property).value;
 			const auto fromHeader = headerEvidence.selected(property).value;
@@ -214,7 +210,8 @@ void TestReaderRegressions::genuineDatabaseHeaderJoins()
 				QCOMPARE(folder, QStringLiteral("corpus_headers"));
 				const auto databaseRate = MediaEngine::mediaRate(fromDatabase), headerRate = MediaEngine::mediaRate(fromHeader);
 				QVERIFY2((databaseRate.sameRate({2997, 100}) && headerRate.sameRate({30000, 1001})) ||
-						 (databaseRate.sameRate({23976, 1000}) && headerRate.sameRate({24000, 1001})), context.constData());
+							 (databaseRate.sameRate({23976, 1000}) && headerRate.sameRate({24000, 1001})),
+						 context.constData());
 				QVERIFY(hasRaw(mdb, *file, "OMFI:MDFL:SampleRate", rateBytes(databaseRate, false)));
 				QVERIFY(hasRaw(source, header.files.first(), "FileDescriptor.SampleRate", rateBytes(headerRate, true)));
 				++recordedRateDifferences;
@@ -256,9 +253,12 @@ void TestReaderRegressions::genuineDatabaseHeaderJoins()
 		++joined;
 	}
 	QCOMPARE(joined, records);
-	QCOMPARE(missingCompression, records == 435 ? 1 : records == 80 ? 3 : 0);
-	QCOMPARE(recordedRateDifferences, records == 435 ? 45 : records == 360 ? 113 : 0);
-	QCOMPARE(compressionDifferences, records == 360 ? 4 : records == 80 ? 3 : 0);
+	QCOMPARE(missingCompression, records == 435 ? 1 : records == 80 ? 3
+																	: 0);
+	QCOMPARE(recordedRateDifferences, records == 435 ? 45 : records == 360 ? 113
+																		   : 0);
+	QCOMPARE(compressionDifferences, records == 360 ? 4 : records == 80 ? 3
+																		: 0);
 	QCOMPARE(mpegOwnership, records == 80 ? 6 : 0);
 }
 

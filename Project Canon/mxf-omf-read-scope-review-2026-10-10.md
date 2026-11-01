@@ -1,5 +1,8 @@
 # MXF and OMF: metadata location and reading scope
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Reviewed 10 October 2026, before choosing a media-reading or retention change.
 This report records published format rules, Avid/workflow evidence, local
 observations and proposed classifications separately. The specification review
@@ -218,7 +221,7 @@ and identity source remain separate concepts.
 
 ## What the existing evidence establishes
 
-The saved [3,832-file framing inventory](evidence/fresh-mxf-klv-counts-2026-10-04.jsonl)
+The saved 3,832-file framing inventory
 was recounted for this review. Every entry has nonzero initial-header metadata,
 zero Body/Footer HeaderByteCount and one recording/system packet. All initial
 headers have status value 4. This is local/EDIT evidence, not a new Windows scan.

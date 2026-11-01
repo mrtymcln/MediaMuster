@@ -1,5 +1,8 @@
 # Independent PMR reader comparison
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 > Historical comparison, captured in commit `23a1ab5`. On 4 October 2026 the user
 > chose the alternative and requested removal of the first MediaEngine implementation.
 > The alternative is now `MediaEngine::PmrReader` in `src/mediaengine/pmrreader.h/.cpp`.
@@ -91,9 +94,9 @@ and verifies that retained byte ranges reproduce the truncated input.
 
 Proof files:
 
-- [Alternative contract and direct real-file checks](evidence/pmr-alternative-contract-2026-10-03.txt).
-- [Differential and I/O comparison](evidence/pmr-comparison-real-2026-10-03.txt).
-- [Release parsing benchmark](evidence/pmr-comparison-benchmark-2026-10-03.txt).
+- Alternative contract and direct real-file checks.
+- Differential and I/O comparison.
+- Release parsing benchmark.
 
 ## Benchmark scope and reproduction
 

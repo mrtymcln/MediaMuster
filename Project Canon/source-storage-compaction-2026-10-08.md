@@ -1,5 +1,8 @@
 # Reader storage compaction — 8 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Work began on 8 October; final verification completed just after midnight on
 9 October in Australia/Sydney. Evidence filenames retain the starting date.
 
@@ -60,7 +63,7 @@ media sources; database-first scheduling reads 116 media headers and skips 2,297
 No bins are loaded by this scan diagnostic, so the final AVB-only timing change
 does not affect these scan measurements.
 
-The [full-scan verification](evidence/source-storage-full-scan-verification-2026-10-08.json)
+The full-scan verification
 retains every trial, including the exploratory public-MDB-boundary measurements.
 Memory is captured before audit serialization and GUI model population.
 Physical footprint and peak resident memory are different macOS measurements;
@@ -129,8 +132,8 @@ verification. Independent
 review checks graph ownership, reference/index lifetimes and the early AVB cleanup
 boundary. No test implementation changes were needed for this storage-only work.
 
-See the [source/filter proof](evidence/source-storage-graph-summary-2026-10-08.json) and
-[verification receipt](evidence/source-storage-compaction-verification-2026-10-08.json).
+See the source/filter proof and
+verification receipt.
 
 ## Limits
 

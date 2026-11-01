@@ -1,9 +1,12 @@
 # Bella Type from OMF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 25 October 2026. **OMF Type rules approved**, as recorded in the
-[approval](../../../Project%20Bella/evidence/omf-type-plan-2026-10-25.json).
+approval.
 [Resolution](resolution.md) was approved in the
-[approval record](../../../Project%20Bella/evidence/omf-resolution-plan-2026-10-25.json).
+approval record.
 Type means **Media / Precompute**, independently of Audio/Video Kind. This
 review carries the already-agreed [MDB Type](../2026-10-18-bella-mdb/type.md)
 rule into supported legacy OMF; it does not introduce MXF's different marker
@@ -98,7 +101,7 @@ observed for this review. They provide no physical OMF Precompute, absent,
 unsupported or damaged-usage specimen. The earlier actual MDB precompute
 evidence and native role predicates remain distinct from OMF specimen coverage.
 
-The [curated evidence](../../../Project%20Bella/evidence/omf-type-2026-10-25.json)
+The curated evidence
 retains native/current/MDVx receipts, source/test boundaries and the five saved
 owner-qualified values. Tests inspected only; no builds/tests, native apps or
 private APIs executed. Resolution's approved rules and Compression names are

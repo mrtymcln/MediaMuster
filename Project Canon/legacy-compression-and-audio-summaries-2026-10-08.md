@@ -1,5 +1,8 @@
 # Legacy compression and database audio summaries
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Implementation and verification: 8 October 2026. This is the user-authorized
 follow-up for F17, F20 and F21, following a
 separate read-only investigation of their evidence.
@@ -70,7 +73,7 @@ The real `/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb` contains:
 | 68127 | AIFD | 726 | AIFF-C `in24`, recorded name `24-bit Integer`, mono, 48 kHz, 24-bit |
 
 The original bytes, property locations, metadata chunk payloads and hashes are
-preserved in [the genuine-source receipt](evidence/audio-summary-source-evidence-2026-10-08.json).
+preserved in the genuine-source receipt.
 The corresponding WAV/AIF tone files carry identical copies of two of these summaries.
 The WAV Summary's outer RIFF length describes the short copy. Its internal `data`
 header advertises 8,640,006 sound bytes which are deliberately absent. The decoder
@@ -111,8 +114,8 @@ repeated summaries whose rates agree or conflict. They do not establish new
 historical writer layouts. Existing guarded reader checks still prevent sound
 sample reads. No new corruption-recovery path was added.
 
-The [genuine MDB decoding receipt](evidence/audio-summary-decoded-evidence-2026-10-08.json)
-was produced by a [small read-only probe](evidence/audio-summary-decoded-probe-2026-10-08.cpp)
+The genuine MDB decoding receipt
+was produced by a small read-only probe
 linked against the rebuilt MediaEngine library. The three original summaries retain
 their exact hashes. It separately records AIFF-C's `24-bit Integer` at absolute
 MDB offset **10,523**, length **14**. The existing diagnostic about two ambiguous
@@ -151,16 +154,16 @@ These are Avid short names for the same supported encoding families, rather than
 evidence that the earlier rows described a different codec. The matched MDB's
 typed private properties can now refine those compatible coding labels despite
 the owning identity's 32-byte storage. Exact descriptor inputs and field locations
-are recorded in [the DV name receipt](evidence/legacy-audio-dv-name-evidence-2026-10-08.json).
+are recorded in the DV name receipt.
 Those two files' own MXF headers independently agree with the MDB identities and
 coding labels; the header-only names remain the longer DV descriptions.
 The two legacy tone rows remain PCM / 24-bit / 48 kHz.
 
-Evidence: [comparison receipt](evidence/legacy-audio-real-scan-comparison-2026-10-08.json),
-[current CSV](evidence/full-scan-legacy-audio-2026-10-08.csv),
-[scan log](evidence/legacy-audio-real-scan-2026-10-08.txt),
-[source/row/notice detail](evidence/legacy-audio-real-scan-2026-10-08.json),
-and [build/source verification receipt](evidence/legacy-audio-verification-2026-10-08.json).
+Evidence: comparison receipt,
+current CSV,
+scan log,
+source/row/notice detail,
+and build/source verification receipt.
 The filesystem cache was uncontrolled; these measurements are not a controlled
 speed or memory comparison. The inspected MDB hash is unchanged after the scan.
 
@@ -171,5 +174,5 @@ identity-width criterion is removed, supported audio fields survive separately,
 and unreadable extensions no longer certify unknown precision or erase readable
 independent facts. This does not certify every private compression mapping,
 audio subtype or writer. The genuine/authored boundaries above remain explicit.
-The [updated ledger](evidence/audit-closeout-ledger-2026-10-08.json) records
+The updated ledger records
 28 Resolved, 6 Partly resolved, 1 Open, 1 Needs evidence and 4 Accepted scope limits.

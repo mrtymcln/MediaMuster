@@ -1,11 +1,14 @@
 # Bella Effect Category from OMF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 25 October 2026. **OMF Effect Category integration approved**, as recorded in
-the [approval](../../../Project%20Bella/evidence/omf-effect-category-plan-2026-10-25.json). Preserve the already-agreed shared
+the approval. Preserve the already-agreed shared
 [MDB](../2026-10-18-bella-mdb/effect-category.md)/
 [MXF](../2026-10-21-bella-mxf/effect-category.md) name-derived behaviour.
 [Precompute Category](precompute-category.md) is approved in its
-[approval record](../../../Project%20Bella/evidence/omf-precompute-category-plan-2026-10-25.json).
+approval record.
 No runtime implementation/cutover or Bin Filter change.
 
 ## Input and meaning
@@ -121,7 +124,7 @@ corpus. Native/source/catalogue proof and authored pure-lookup/model/MXF scanner
 controls remain separate; no genuine OMF Effect Category example or live native
 cell comparison is claimed. Tests were inspected, not run.
 
-The [curated record](../../../Project%20Bella/evidence/omf-effect-category-2026-10-25.json)
+The curated record
 keeps those evidence boundaries and unchanged source hashes. No physical media
 was reopened/modified, native app/private API executed, build/test/production
 parser run or runtime code/cutover changed. Approved Type, Precompute Category,

@@ -1,6 +1,8 @@
 // Genuine PMR bytes establish Avid's legacy ID wrapper. General OMF UIDs keep
 // all three words, and full modern IDs remain unchanged.
 
+#include "testfixtures.h"
+
 #include "mobid.h"
 #include "omfuid.h"
 
@@ -68,6 +70,7 @@ void TestOmfUid::toMobIdBytes_matches_the_unicode_set_in_the_real_pmrs_data()
 
 void TestOmfUid::toMobIdBytes_matches_the_unicode_set_in_the_real_pmrs()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(QString, relativePath);
 	QFETCH(int, fileSize);
 	QFETCH(int, unicodeHeaderOffset);

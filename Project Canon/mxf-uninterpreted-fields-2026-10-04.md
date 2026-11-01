@@ -1,5 +1,8 @@
 # MXF properties retained without a selected interpretation
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Recorded 4 October 2026 from the fresh reader's 824-fixture audit. This is a
 review list, not a new whitelist. Every listed local value retains its original
 bytes, mapped identity, set/partition context and source location. These are
@@ -58,5 +61,5 @@ blocks and unsupported local-set encodings are retained by range only, as descri
 in the [implementation report](fresh-mxf-reader-2026-10-04.md). Their possible
 nested properties have not been enumerated.
 
-Evidence: [final summary](evidence/fresh-mxf-diagnostic-summary-2026-10-04.json),
-[per-file records](evidence/fresh-mxf-diagnostic-expanded-2026-10-04.jsonl).
+Evidence: final summary,
+per-file records.

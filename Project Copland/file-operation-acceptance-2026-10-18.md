@@ -1,5 +1,8 @@
 # Disposable file-operation verification — 18 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 The user approved checking the retained file operations with disposable media,
 including Undo after restarting and interrupted-job recovery. This checkpoint
 validates the existing implementation. It adds no application code or permanent
@@ -132,6 +135,6 @@ cover other formats; these standalone positive workflows use MXF. This is a
 correctness check, with no measured speed or memory improvement claimed.
 
 Raw results, source fingerprints, probe sources, commands and test logs are saved
-in [the evidence receipt](evidence/file-operation-acceptance-2026-10-18.json).
+in the evidence receipt.
 Scratch drivers and media remain under
 `/private/tmp/copland-file-operations-20261018/`.

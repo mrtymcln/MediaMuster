@@ -1,5 +1,8 @@
 # Fresh scanner, parser and metadata engines
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 MediaEngine implements the agreed MediaFile/evidence model independently of the
 UI and file-operation executor. Source readers retain recorded format distinctions;
 projection, matching and source selection are separate responsibilities.
@@ -134,7 +137,7 @@ locations, extension-only databases, quarantine marking, overlapping scan roots,
 separate same-name locations, session ID reset, unavailable scope and cancellation.
 It deliberately leaves parsing/reconciliation incomplete and metadata unread.
 
-Proof: [real discovery result](evidence/fresh-discovery-real-2026-10-03.txt).
+Proof: real discovery result.
 
 This discovery check does not establish parser correctness. The selected fresh PMR
 reader and its current checks are recorded in [PMR reader selection](pmr-reader-selection-2026-10-04.md).
@@ -173,9 +176,9 @@ and unavailable metadata. The same 2,413 physical rows and 2,425 parser candidat
 were retained on local/EDIT roots. The two new tests for the reproduced defects
 both fail against an isolated pre-fix engine and pass against the corrected one.
 
-Proof: [before-fix control](evidence/discovery-fixes-before-2026-10-04.txt),
-[corrected discovery](evidence/discovery-fixes-after-2026-10-04.txt),
-[affected suites](evidence/discovery-fixes-focused-2026-10-04.txt).
+Proof: before-fix control,
+corrected discovery,
+affected suites.
 Tests ran on macOS arm64; Windows runtime/ACL behaviour was not exercised here.
 This is error accounting, not an atomic filesystem snapshot or a speed claim;
 later file changes still require the planned freshness checks.

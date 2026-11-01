@@ -1,5 +1,8 @@
 # Fresh MDB reader
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Implemented 4 October 2026, alongside the existing production reader. This is the
 next replacement-engine component after the selected fresh PMR reader. It does
 not activate the replacement scanner or change table/CSV selection rules.
@@ -141,8 +144,8 @@ fixture, short reads, failed I/O, unsupported versions, changing length, borrowe
 device ownership and cancellation with partially acquired evidence.
 
 The native universal Debug build and final regression results are recorded in
-[build output](evidence/fresh-mdb-build-2026-10-04.txt),
-[MDB tests](evidence/fresh-mdb-tests-2026-10-04.txt). The focused MDB suite records
+build output,
+MDB tests. The focused MDB suite records
 **29 passing cases**, including its data variations and setup/cleanup checks.
 
 A separate read-only probe of the six MDBs actually present in local/EDIT managed

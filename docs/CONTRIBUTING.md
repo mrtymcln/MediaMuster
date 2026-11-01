@@ -185,4 +185,8 @@ saved [catalogue provenance](avid-effects-catalogue.md).
 
 Run focused tests during a pass and the full suite after integration. A passing Mac
 build does not establish Windows SDK compatibility or real NEXIS behaviour; keep
-those results explicit. Do not remove real-media fixtures just because they are large.
+those results explicit. Raw audit evidence and shared real-media fixtures were
+retired by user decision on 1 November 2026. Use generated disposable inputs for
+regressions, and state explicitly when a result depends on separately supplied
+real media. Dated reports remain historical records; their removed raw receipts
+and fixture paths are not available from this checkout.

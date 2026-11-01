@@ -1,5 +1,8 @@
 # Database-first scanning and retained memory
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 The 12.8 GB report exposed a real cost of the initial MediaEngine connection: it attempted
 every media header and retained the resulting metadata graphs. Most objects in
 sampled Avid MXF headers describe the embedded format dictionary. Each physical
@@ -64,6 +67,6 @@ records the final scheduling counts and whole-scan measurements. Avoiding
 unnecessary header graphs is the main reduction; the isolated allocation changes
 above must not be credited with the entire whole-scan gain.
 
-[Compact measurements, provenance and caveats](evidence/memory-retention-2026-10-07.json)
+Compact measurements, provenance and caveats
 retain the sample paths, exact counts, fingerprints, test result and source-log
 checksums without copying media fixtures into the repository.

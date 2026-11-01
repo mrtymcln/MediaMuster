@@ -2,6 +2,8 @@
 // and genuine Avid databases. The expectations come from their recorded
 // bytes; the production MDB parser is not used as an oracle.
 
+#include "testfixtures.h"
+
 #include "oldscanner/mediaengine/mdbreader.h"
 #include "oldscanner/mediaengine/mdbbentoreader_p.h"
 #include "testmediaenginebento.h"
@@ -15,98 +17,110 @@
 
 namespace
 {
-using Outcome = MediaEngine::ParsedSource::Outcome;
+	using Outcome = MediaEngine::ParsedSource::Outcome;
 
-using TestMediaEngineBento::number;
-using TestMediaEngineBento::TypedBento;
+	using TestMediaEngineBento::number;
+	using TestMediaEngineBento::TypedBento;
 
-MediaEngine::ParsedSource parse(QByteArray bytes)
-{
-	QBuffer source(&bytes);
-	source.open(QIODevice::ReadOnly);
-	MediaEngine::Cancellation cancellation;
-	return MediaEngine::MdbReader{}.read(source, {{}, cancellation});
-}
-
-MediaEngine::MdbDetail::BentoReadResult readCompact(const QByteArray &payload, const QByteArray &toc)
-{
-	QByteArray bytes = payload + toc + QByteArray::fromHex("a4434da5486472d7");
-	bytes += number<quint16>(0x0101) + number<quint16>(1) + number<quint16>(2) + number<quint16>(0);
-	bytes += number(quint32(payload.size())) + number(quint32(toc.size()));
-	QBuffer source(&bytes);
-	source.open(QIODevice::ReadOnly);
-	MediaEngine::Cancellation cancellation;
-	return MediaEngine::MdbDetail::readBento(source, cancellation);
-}
-
-const MediaEngine::AvidObject *object(const MediaEngine::ParsedSource &result, MediaEngine::ObjectHandle handle)
-{
-	for (const auto &candidate : result.objects)
-		if (candidate.handle == handle) return &candidate;
-	return nullptr;
-}
-
-QVector<const MediaEngine::RawProperty *> properties(const MediaEngine::AvidObject &object, const QString &name)
-{
-	QVector<const MediaEngine::RawProperty *> matches;
-	for (const auto &property : object.properties)
-		if (property.locator.name == name) matches.append(&property);
-	return matches;
-}
-
-const MediaEngine::RawProperty &recordedProperty(const MediaEngine::AvidObject &object, const QString &name)
-{
-	const auto matches = properties(object, name);
-	if (matches.size() != 1) qFatal("Expected exactly one preserved property: %s", qPrintable(name));
-	return *matches[0];
-}
-
-QByteArray readFixture(const QString &relative)
-{
-	QFile file(QStringLiteral(FIXTURES_DIR) + '/' + relative);
-	return file.open(QIODevice::ReadOnly) ? file.readAll() : QByteArray();
-}
-
-class SequentialBuffer final : public QBuffer
-{
-public:
-	using QBuffer::QBuffer;
-	bool isSequential() const override { return true; }
-};
-
-class ShortBuffer final : public QBuffer
-{
-public:
-	using QBuffer::QBuffer;
-	MediaEngine::Cancellation *cancellation = nullptr;
-	qint64 cancelAfterBytes = -1, readBytes = 0;
-	bool ioFailure = false;
-protected:
-	qint64 readData(char *destination, qint64 count) override
+	MediaEngine::ParsedSource parse(QByteArray bytes)
 	{
-		if (ioFailure) { setErrorString(QStringLiteral("Injected read failure")); return -1; }
-		const qint64 got = QBuffer::readData(destination, qMin(count, qint64(1)));
-		if (got > 0) readBytes += got;
-		if (cancellation && readBytes >= cancelAfterBytes) cancellation->cancel();
-		return got;
+		QBuffer source(&bytes);
+		source.open(QIODevice::ReadOnly);
+		MediaEngine::Cancellation cancellation;
+		return MediaEngine::MdbReader{}.read(source, {{}, cancellation});
 	}
-};
 
-class ChangingSizeBuffer final : public QBuffer
-{
-public:
-	using QBuffer::QBuffer;
-	qint64 size() const override { return QBuffer::size() + (readStarted ? 1 : 0); }
-protected:
-	qint64 readData(char *destination, qint64 count) override
+	MediaEngine::MdbDetail::BentoReadResult readCompact(const QByteArray &payload, const QByteArray &toc)
 	{
-		const qint64 got = QBuffer::readData(destination, count);
-		readStarted = true;
-		return got;
+		QByteArray bytes = payload + toc + QByteArray::fromHex("a4434da5486472d7");
+		bytes += number<quint16>(0x0101) + number<quint16>(1) + number<quint16>(2) + number<quint16>(0);
+		bytes += number(quint32(payload.size())) + number(quint32(toc.size()));
+		QBuffer source(&bytes);
+		source.open(QIODevice::ReadOnly);
+		MediaEngine::Cancellation cancellation;
+		return MediaEngine::MdbDetail::readBento(source, cancellation);
 	}
-private:
-	bool readStarted = false;
-};
+
+	const MediaEngine::AvidObject *object(const MediaEngine::ParsedSource &result, MediaEngine::ObjectHandle handle)
+	{
+		for (const auto &candidate : result.objects)
+			if (candidate.handle == handle)
+				return &candidate;
+		return nullptr;
+	}
+
+	QVector<const MediaEngine::RawProperty *> properties(const MediaEngine::AvidObject &object, const QString &name)
+	{
+		QVector<const MediaEngine::RawProperty *> matches;
+		for (const auto &property : object.properties)
+			if (property.locator.name == name)
+				matches.append(&property);
+		return matches;
+	}
+
+	const MediaEngine::RawProperty &recordedProperty(const MediaEngine::AvidObject &object, const QString &name)
+	{
+		const auto matches = properties(object, name);
+		if (matches.size() != 1)
+			qFatal("Expected exactly one preserved property: %s", qPrintable(name));
+		return *matches[0];
+	}
+
+	QByteArray readFixture(const QString &relative)
+	{
+		QFile file(QStringLiteral(FIXTURES_DIR) + '/' + relative);
+		return file.open(QIODevice::ReadOnly) ? file.readAll() : QByteArray();
+	}
+
+	class SequentialBuffer final : public QBuffer
+	{
+	public:
+		using QBuffer::QBuffer;
+		bool isSequential() const override { return true; }
+	};
+
+	class ShortBuffer final : public QBuffer
+	{
+	public:
+		using QBuffer::QBuffer;
+		MediaEngine::Cancellation *cancellation = nullptr;
+		qint64 cancelAfterBytes = -1, readBytes = 0;
+		bool ioFailure = false;
+
+	protected:
+		qint64 readData(char *destination, qint64 count) override
+		{
+			if (ioFailure)
+			{
+				setErrorString(QStringLiteral("Injected read failure"));
+				return -1;
+			}
+			const qint64 got = QBuffer::readData(destination, qMin(count, qint64(1)));
+			if (got > 0)
+				readBytes += got;
+			if (cancellation && readBytes >= cancelAfterBytes)
+				cancellation->cancel();
+			return got;
+		}
+	};
+
+	class ChangingSizeBuffer final : public QBuffer
+	{
+	public:
+		using QBuffer::QBuffer;
+		qint64 size() const override { return QBuffer::size() + (readStarted ? 1 : 0); }
+
+	protected:
+		qint64 readData(char *destination, qint64 count) override
+		{
+			const qint64 got = QBuffer::readData(destination, count);
+			readStarted = true;
+			return got;
+		}
+
+	private:
+		bool readStarted = false;
+	};
 }
 
 class TestMediaEngineMdb final : public QObject
@@ -230,7 +244,8 @@ void TestMediaEngineMdb::fragmentedValues()
 	QCOMPARE(values[0]->locator.ranges.size(), 2);
 	QCOMPARE(values[1]->decoded.toString(), QStringLiteral("another"));
 	QByteArray reconstructed;
-	for (const auto &range : values[0]->locator.ranges) reconstructed += bytes.mid(range.offset, range.length);
+	for (const auto &range : values[0]->locator.ranges)
+		reconstructed += bytes.mid(range.offset, range.length);
 	QCOMPARE(reconstructed, values[0]->encoding);
 }
 
@@ -278,13 +293,15 @@ void TestMediaEngineMdb::metadataAndContainerOrders()
 	QCOMPARE(rational.value("denominator").toInt(), 1001);
 	QVector<MediaEngine::ObjectHandle> links;
 	for (const auto &relationship : result.relationships)
-		if (relationship.origin == 101) links.append(relationship.target);
+		if (relationship.origin == 101)
+			links.append(relationship.target);
 	QCOMPARE(links, (QVector<MediaEngine::ObjectHandle>{102, 102, 0}));
 	for (const auto &relationship : result.relationships)
 	{
 		QVERIFY(!relationship.referenceEncoding.isEmpty());
 		QVERIFY(relationship.recordedReference.isValid());
-		if (relationship.target == 0) QVERIFY(!relationship.explanation.isEmpty());
+		if (relationship.target == 0)
+			QVERIFY(!relationship.explanation.isEmpty());
 	}
 }
 
@@ -447,7 +464,8 @@ void TestMediaEngineMdb::fragmentedReferenceLocations()
 	writer.add(102, "OMFI:ObjID", "omfi:ObjectTag", "TRAK", true);
 	constexpr quint16 count = 257;
 	QByteArray arrayBytes = number(count);
-	for (quint16 i = 0; i < count; ++i) arrayBytes += writer.reference(102, 1);
+	for (quint16 i = 0; i < count; ++i)
+		arrayBytes += writer.reference(102, 1);
 	// Seven-byte pieces deliberately cut through eight-byte references.
 	for (qsizetype offset = 0; offset < arrayBytes.size(); offset += 7)
 		writer.add(101, "Vendor:FragmentedRefs", "omfi:ObjRefArray", arrayBytes.mid(offset, 7), false, offset + 7 < arrayBytes.size());
@@ -461,7 +479,8 @@ void TestMediaEngineMdb::fragmentedReferenceLocations()
 		QCOMPARE(relationship.origin, MediaEngine::ObjectHandle(101));
 		QCOMPARE(relationship.target, MediaEngine::ObjectHandle(102));
 		QByteArray locatedBytes;
-		for (const auto &range : relationship.locator.ranges) locatedBytes += bytes.mid(range.offset, range.length);
+		for (const auto &range : relationship.locator.ranges)
+			locatedBytes += bytes.mid(range.offset, range.length);
 		QCOMPARE(locatedBytes, writer.reference(102, 1));
 		QCOMPARE(relationship.recordedReference.toMap().value("bytes").toByteArray(), locatedBytes);
 		QCOMPARE(relationship.recordedReference.toMap().value("index").toLongLong(), index);
@@ -516,12 +535,13 @@ void TestMediaEngineMdb::realFixtures_data()
 {
 	QTest::addColumn<QString>("path");
 	for (const auto *path : {"msmMMOB.mdb", "msmMMOB_macroman.mdb", "corpus_headers/msmMMOB.mdb",
-							  "corpus_headers/msmMMOB_round3.mdb", "omf/avid_supporting/msmMMOB.mdb", "omf/mc2026_audio/msmMMOB.mdb"})
+							 "corpus_headers/msmMMOB_round3.mdb", "omf/avid_supporting/msmMMOB.mdb", "omf/mc2026_audio/msmMMOB.mdb"})
 		QTest::newRow(path) << QString::fromLatin1(path);
 }
 
 void TestMediaEngineMdb::realFixtures()
 {
+	REQUIRE_TEST_FIXTURES();
 	QFETCH(QString, path);
 	const QByteArray bytes = readFixture(path);
 	QVERIFY(!bytes.isEmpty());
@@ -548,14 +568,13 @@ void TestMediaEngineMdb::realFixtures()
 				// entries. Require their recorded parent before excluding them.
 				++decodedFields;
 				QVERIFY(std::any_of(entry.properties.cbegin(), entry.properties.cend(), [&](const auto &parent)
-				{
-					return parent.bento == value.bento && parent.locator.key == number(value.bento->property, true) &&
-						value.locator.name.startsWith(parent.locator.name + QLatin1Char('.'));
-				}));
+									{ return parent.bento == value.bento && parent.locator.key == number(value.bento->property, true) &&
+											 value.locator.name.startsWith(parent.locator.name + QLatin1Char('.')); }));
 			}
 			QVERIFY(!value.bento->tocRanges.isEmpty());
 			QCOMPARE(value.locator.objectNumber, entry.handle);
-			if (!value.bytesRetained) continue;
+			if (!value.bytesRetained)
+				continue;
 			QByteArray reconstructed;
 			for (const auto &range : value.locator.ranges)
 			{
@@ -593,13 +612,15 @@ void TestMediaEngineMdb::realFixtures()
 
 void TestMediaEngineMdb::realNonEnglishEvidence()
 {
+	REQUIRE_TEST_FIXTURES();
 	const QByteArray bytes = readFixture("msmMMOB.mdb");
 	QVERIFY(!bytes.isEmpty());
 	const auto result = parse(bytes);
 	QCOMPARE(result.outcome, Outcome::Complete);
 	QCOMPARE(result.objects.size(), 875);
 	qsizetype totalProperties = 0;
-	for (const auto &entry : result.objects) totalProperties += entry.properties.size();
+	for (const auto &entry : result.objects)
+		totalProperties += entry.properties.size();
 	QCOMPARE(totalProperties, 1432);
 	const auto *bin = object(result, 68111);
 	QVERIFY(bin);
@@ -613,7 +634,8 @@ void TestMediaEngineMdb::realNonEnglishEvidence()
 	QCOMPARE(unicode.decoded.toString(), QString::fromUtf8(unicode.encoding.constData(), unicode.encoding.size() - 1));
 	QVERIFY(legacy.textEncoding == MediaEngine::TextEncoding::Unknown);
 	QVERIFY(unicode.textEncoding == MediaEngine::TextEncoding::Utf8);
-	for (const auto &set : result.recordSets) QVERIFY(!set.pmrFileSet.has_value());
+	for (const auto &set : result.recordSets)
+		QVERIFY(!set.pmrFileSet.has_value());
 }
 
 void TestMediaEngineMdb::borrowedDeviceAndReceipt()
@@ -642,11 +664,13 @@ void TestMediaEngineMdb::borrowedDeviceAndReceipt()
 	QCOMPARE(result.snapshot->readState, SourceReadState::Complete);
 	QCOMPARE(result.snapshot->path, inputReceipt->path);
 	QCOMPARE(result.snapshot->modified, inputReceipt->modified);
-	for (const auto &entry : result.objects) QCOMPARE(entry.snapshot, result.snapshot);
+	for (const auto &entry : result.objects)
+		QCOMPARE(entry.snapshot, result.snapshot);
 }
 
 void TestMediaEngineMdb::realOrderedRepeatedScalars()
 {
+	REQUIRE_TEST_FIXTURES();
 	const QByteArray bytes = readFixture("msmMMOB_macroman.mdb");
 	QVERIFY(!bytes.isEmpty());
 	const auto result = parse(bytes);
@@ -655,7 +679,8 @@ void TestMediaEngineMdb::realOrderedRepeatedScalars()
 	QVERIFY(descriptor);
 	QVector<const MediaEngine::RawProperty *> lines;
 	for (const auto &value : descriptor->properties)
-		if (value.bento && value.bento->property == 67810) lines.append(&value);
+		if (value.bento && value.bento->property == 67810)
+			lines.append(&value);
 	QCOMPARE(lines.size(), 2);
 	QCOMPARE(lines[0]->locator.name, QStringLiteral("OMFI:DIDD:VideoLineMap"));
 	QCOMPARE(lines[0]->encoding, QByteArray::fromHex("1a000000"));

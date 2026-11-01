@@ -1,5 +1,8 @@
 # Bella Effect from MXF
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Review date: 22 October 2026. The user approved MXF
 [Effect Category](effect-category.md) separately. **The user accepted these MXF
 Effect rules on 23 October 2026; they remain unimplemented.** The
@@ -99,7 +102,7 @@ generic unresolved derived-label conflict, though missing/unknown Effect alone
 does not do so. Bella's final-name derivation does not require that separate read.
 
 The shared resolver is already compact; no performance gain is measured here.
-[Curated evidence](../../../Project%20Bella/evidence/mxf-effect-2026-10-22.json)
+Curated evidence
 records four fresh narrow native functions, existing MDVx-route provenance,
 unchanged source hashes and eleven copied-header inputs. No product code changed.
 No app/private API, physical-media read, build, runtime test or benchmark was run.

@@ -1,5 +1,8 @@
 # MediaEngine AVB corpus check — 4 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 The fresh reader successfully read all nine supplied bins. It retained **132,165 objects and 2,988,319 object properties**, with no unreadable properties, unknown object layouts or reader diagnostics in these specimens. Object and class counts match the separate pyavb framing inventory. These are observations about this corpus, not proof of support for every AVB ever written.
 
 The probe read exactly **14,464,589 bytes**, equal to the combined bin sizes. It opened each source read-only and checked that its size and modification time stayed unchanged. No media payloads were opened. This count measures logical reads requested by the reader, not physical disk traffic.
@@ -50,9 +53,9 @@ Memory is the process high-water mark reported by macOS `getrusage`, in decimal 
 
 ## Reproducible evidence
 
-- [Final reader/reference probe source](evidence/avb-reader-probe-2026-10-04.cpp), [results](evidence/avb-reader-probe-results-2026-10-04.jsonl), [build and measurement context](evidence/avb-reader-probe-context-2026-10-04.json), and [exact supplied paths](evidence/avb-corpus-paths-2026-10-04.json).
-- [Independent framing inventory script](evidence/avb-framing-inventory-2026-10-04.py) and [results](evidence/avb-framing-inventory-2026-10-04.json).
-- [Six ROUGH descriptor observations](evidence/avb-rough-descriptors-2026-10-04.json), [narrow parent-locator probe](evidence/avb-rough-parent-probe-2026-10-04.py), and [parent-locator results](evidence/avb-rough-parent-locators-2026-10-04.json).
+- Final reader/reference probe source, results, build and measurement context, and exact supplied paths.
+- Independent framing inventory script and results.
+- Six ROUGH descriptor observations, narrow parent-locator probe, and parent-locator results.
 
 The following is the historical build command used for the retained probe. Its
 source includes the historical reader paths and names, and is preserved unchanged

@@ -1,8 +1,11 @@
 # Bella MDB review — 1 November 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 This is the retained pre-JPED audit of `20220f2`. Read the [current comparative verdict and scope reassessment](VERDICT.md#current-scope-and-approved-jped-change) for the approved JPED Video mapping, post-change native-corpus results and withdrawn feature/API recommendations. The three damaged-input findings below were separately [revalidated against post-JPED source](history-verification.md#post-jped-source-and-control-revalidation); they are not failures observed in the working native databases or authorization for another code change.
 
-The older [411-path verification](VERDICT.md#retained-pre-jped-audit) supersedes this report's 383-path snapshot; its additional paths are authored controls. Both include previous fixtures and temporary material, unlike the later seven-Avid-database independent corpus. The raw snapshots remain intact. The fresh binary verification also qualifies the older MDVX encoding label.
+The older [411-path verification](VERDICT.md#retained-pre-jped-audit) supersedes this report's 383-path snapshot; its additional paths are authored controls. Both included previous fixtures and temporary material, unlike the later seven-Avid-database independent corpus. Those raw snapshots have since been retired. The fresh binary verification also qualifies the older MDVX encoding label.
 
 Reviewed repository HEAD `20220f2b4c2b7ff6ef3d017a77568e5edf7de7cd`, scoped to MDB. Three actionable correctness gaps reproduce in authored damaged MDBs in both metadata byte orders. They concern qualifying relationships and categories; none was observed as a failure in the inventoried working media-folder databases. Production source and tests are unchanged.
 
@@ -18,7 +21,7 @@ The review includes fresh Bella execution, actual execution of MDVX's MDB machin
 
 These findings mix inherited weaknesses with lost safeguards. Follow-up execution of the same 28 controls through OldScanner confirms that it shares the invalid relationship routes and wrong-component category gap. It correctly withholds category for counted null attribute slots and wrong-track classes, where Bella has lost an existing safeguard. Earlier implementations varied; they were not uniformly protected. [Plain-language inheritance comparison and shared-input evidence](inherited-behaviour.md).
 
-The two retained harnesses contain 28 authored parses across II/MM, including ordinary controls and observations that are **not** classified as defects. An old stricter NUL-termination test exposes a historical difference, but the current approved text contract leaves that acceptance question unsettled; it is not a fourth finding. No crash, memory error or real-specimen metadata failure is asserted from these reproductions.
+The two original harnesses contained 28 authored parses across II/MM, including ordinary controls and observations that are **not** classified as defects. An old stricter NUL-termination test exposes a historical difference, but the current approved text contract leaves that acceptance question unsettled; it is not a fourth finding. No crash, memory error or real-specimen metadata failure is asserted from these reproductions.
 
 ## Computer and EDIT inventory and execution
 
@@ -37,13 +40,13 @@ Bella parsed every path with optional Precompute details both on and off: **766 
 
 Completed does not mean every field is available. Each of the two `corpus_headers` fixtures returns six unavailable-numbering notes and four unqualified-visible-rectangle notes; the modified MacRoman fixture returns one visible-rectangle note. Those 21 notes are preserved in the reports. MDVX does not provide the required numbering/raster facts, so its run cannot independently resolve those qualifications.
 
-MDVX was actually executed once per inventory path in an isolated process. All **383 exited normally**, with no timeout, exception or native stderr. A constructor in a temporary, ad-hoc-signed copy calls the installed `MDVxOMFI` implementation's `init`, `openFile:withIndicator:` and `addInfoToItem:` before application main. The installed app is unchanged. The original and runtime-copy arm64 `__text` sections have identical hashes; [validation](evidence/validation.json) records that check. This is direct native MDB-reader execution, not a GUI scan or an emulation of MDVX.
+MDVX was actually executed once per inventory path in an isolated process. All **383 exited normally**, with no timeout, exception or native stderr. A constructor in a temporary, ad-hoc-signed copy calls the installed `MDVxOMFI` implementation's `init`, `openFile:withIndicator:` and `addInfoToItem:` before application main. The installed app is unchanged. The original and runtime-copy arm64 `__text` sections have identical hashes; validation records that check. This is direct native MDB-reader execution, not a GUI scan or an emulation of MDVX.
 
 The harness supplied 4,304 file/master identity queries, including 3,921 specimen queries. **Query identities and links come from Bella**, so the native run tests lookup/enrichment for those selections, not independent proof of catalogue membership or association. Native composition counts are retained separately; they are not physical-file counts. MDVX's eight-byte identity key is weaker than Bella's full identity comparison. No distinct-full-ID collision on that key appeared among Bella's records in these inputs.
 
 ## Runtime comparison results
 
-The following counts are per specimen query, including duplicate paths and repeated masters. They are not counts of independent media files. [Complete differences and per-path outcomes](evidence/comparison.json) are retained.
+The following counts are per specimen query, including duplicate paths and repeated masters. They are not counts of independent media files. Complete differences and per-path outcomes were captured in the raw evidence, which has since been retired.
 
 | Overlapping fact | Equal | Different | Explanation of differences |
 | --- | ---: | ---: | --- |
@@ -73,13 +76,17 @@ The [online review](online.md) records 23 search queries, original Avid/Apple OM
 
 The [history review](history.md) records 46 source-path commits across 22 reachable local refs, spanning proximity/flat-stream heuristics, the original TOC parser, Canon/MediaEngine/OldScanner and Bella. It examines behavior in source and former tests rather than relying on commit titles. Approved scope reductions—legacy-only layouts, separate duplicate owners and compact reports—are not automatically treated as regressions. The historical tests helped reveal the currently missing damage qualifications above. Historical binaries/full suites and unreachable or unavailable history were not exhaustively executed.
 
-## Retained evidence and reproduction
+## Historical evidence and reproduction
 
-- [Inventory, content hashes, access failures and alias exclusions](evidence/inventory.json), [path list](evidence/mdb-paths.txt), and [inventory script](evidence/inventory.py).
-- [Complete compressed Bella reports](evidence/bella-reports.json.gz), [native MDVX outputs](evidence/mdvx-results.json.gz), [comparison](evidence/comparison.json), and [source/code hashes and test receipt](evidence/validation.json).
-- [Normal test output](evidence/bella-tests.txt), [sanitizer test output](evidence/bella-tests-asan.txt), [report serializer](evidence/probe.cpp), [CMake harness](evidence/CMakeLists.txt), [native constructor](evidence/mdvx_harness.m), [native runner](evidence/run_mdvx.py), and [comparison script](evidence/compare.py).
-- [Category/attribute repro source](evidence/history-repro.cpp) and [output](evidence/history-repro-results.txt); [relationship/Project repro source](evidence/history-graph-repro.cpp) and [output](evidence/history-graph-repro-results.txt).
+The original audit collected the following material. These raw files and
+harnesses have since been retired; this is an inventory of the historical work,
+not a set of reproduction inputs available from this checkout.
 
-The original review CMake directory built `report_probe` and `bella_mdb_tests` against pinned Qt 6.5.3. Its runner reads `evidence/bella-inputs.json`; the MDVX runner expects the separately signed temporary executable and constructor at its recorded paths. These reproduce the historical snapshot and should write new results elsewhere rather than overwrite retained evidence. Use the [post-JPED runners and receipts](../../../artifacts/mdb-jped-kind-2026-11-01/validation.json) for current native-corpus comparisons. Inventory is an ordinary recursive scan, not an atomic filesystem snapshot; source stamps were unchanged across every native run and all inventoried captures were stable. A final full-file rehash of all 383 historical input paths found **zero changed content hashes**. Reviewed production sources and tests matched `20220f2` at capture time.
+- Inventory, content hashes, access failures and alias exclusions, path list, and inventory script.
+- Complete compressed Bella reports, native MDVX outputs, comparison, and source/code hashes and test receipt.
+- Normal test output, sanitizer test output, report serializer, CMake harness, native constructor, native runner, and comparison script.
+- Category/attribute repro source and output; relationship/Project repro source and output.
+
+The original review CMake directory built `report_probe` and `bella_mdb_tests` against pinned Qt 6.5.3. Its runner read `evidence/bella-inputs.json`; the MDVX runner required a separately signed temporary executable and constructor at its recorded paths. Those runners, the later post-JPED runners and their receipts are no longer included. Inventory was an ordinary recursive scan, not an atomic filesystem snapshot; source stamps were unchanged across every native run and all inventoried captures were stable. A final full-file rehash of all 383 historical input paths found **zero changed content hashes**. Reviewed production sources and tests matched `20220f2` at capture time.
 
 This review does not establish every private version, codec, damaged graph, legacy Windows encoding, future display/selection integration or GUI workflow. The three findings are local to the current MDB parser and can be corrected without changing the public report contract or expanding MDB format scope.

@@ -1,5 +1,8 @@
 # MediaMuster metadata reference
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Maintained for Project Copland. Verified 11 October 2026, with source-path mapping
 clarified 12 October 2026, against app revision
 `3e7246a575f5b0247efbe007f271070cb597d306`, Media Composer 26.8.0.58987,
@@ -18,8 +21,8 @@ when its meaning or verified source mapping changes.
 
 Identity terminology was rechecked on 13 October 2026 against primary Avid
 documentation, the installed Media Composer library and genuine PMR/MDB bytes;
-see the [terminology evidence](evidence/identity-terminology-2026-10-13.json).
-The [role evidence](evidence/identity-roles-2026-10-13.json) adds sequence and
+see the terminology evidence.
+The role evidence adds sequence and
 mixed-object roles, fresh AVB/MDB specimens and an exported AAF from EDIT.
 
 ## Sources and authority
@@ -128,7 +131,7 @@ On EDIT, `1001.WAVA01.D8875D202DA97BA.mxf` exactly matches its local MDB's
 metadata ranges contain neither that name nor `_ORG_BIN` in the checked encodings.
 No identifiable Original Bin appeared in the 21 sampled MXFs. These samples are
 distinct from the broader path inventory; unknown private encodings and other
-producers remain unproven. See the [source/byte receipts and scope](evidence/original-bin-storage-2026-10-17.json).
+producers remain unproven. See the source/byte receipts and scope.
 The user subsequently chose to stop missing-bin-only MXF reads while retaining
 legacy OMF fallback. The exception changes scheduling, not the meaning of unknown
 coverage or the existing source preferences and other read triggers.
@@ -213,7 +216,7 @@ PMR uses packed positional IDs without embedded field-name labels; the native
 `ReadPmrRec` calls label both reads `mobID`. In MXF, the corresponding standard
 property is Package UID on objects with different package roles. The exact names,
 addresses, byte offsets and scope limits are in the
-[13 October receipt](evidence/identity-terminology-2026-10-13.json).
+13 October receipt.
 
 MediaMuster uses the user-selected spelling **FileMobId** for the file-role
 identity and **MasterMobId** for the master-role identity in code, table/CSV
@@ -269,7 +272,7 @@ The fresh inspection covered the installed Media Composer version, bounded
 discovery on Macintosh HD and EDIT, selected genuine specimens and relevant
 primary publications. Protected/skipped directories and depth limits remain;
 this is not an exhaustive claim about every file or Avid publication. The
-[receipt](evidence/identity-roles-2026-10-13.json) records counts, limits, binary
+receipt records counts, limits, binary
 addresses, source/probe hashes and source links.
 
 | Field/concept | Official name or role | Definition and place in MediaMuster |
@@ -287,7 +290,7 @@ records. A bit-for-bit filesystem copy shares embedded IDs but has a separate
 physical row. Avid-created new representations/assets can receive new IDs. Neither
 FileMobId nor MasterMobId proves byte equality or replaces operation-time file checks.
 
-The [17 October source-track audit](evidence/source-track-semantics-2026-10-17.json)
+The 17 October source-track audit
 corroborates number-plus-kind labels in native `GetSrcTrack()` and
 `FindTrackByLabel()`, including audio/video kind values 2/1. AVB SourceClip filtering
 uses those already-read fields to select a unique composition track. An unread or

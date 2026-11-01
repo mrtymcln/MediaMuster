@@ -1,2 +1,0 @@
-2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d  /Applications/MDVx.app/Contents/MacOS/MDVx
-a4a1d1b41f2f8b509781c3b8a50286c0cd7c9746cf85e609ec5a7bcbf45a727a  /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer

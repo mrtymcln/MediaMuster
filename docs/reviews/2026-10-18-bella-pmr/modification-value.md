@@ -1,5 +1,8 @@
 # PMR modification value and Avid identities
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 18 October 2026. The PMR modification value, labelled **DTM** by Avid's reader,
 helps Media Composer decide whether to reuse cached media information or scan
 the media file again. The inspected current Mac MXF writer stores Unix filesystem
@@ -183,7 +186,7 @@ and source preferences continue to apply until the user revises them.
 
 ## Evidence
 
-[Curated evidence](../../../Project%20Bella/evidence/pmr-modification-2026-10-18.json)
+Curated evidence
 contains binary identities, exact native reader/writer/comparison instructions,
 dispatch proofs, source receipts and the fresh filesystem recheck. New native
 findings are from static arm64 instruction inspection; no private Avid APIs,

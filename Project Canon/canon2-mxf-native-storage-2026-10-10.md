@@ -1,5 +1,8 @@
 # MediaEngine acquired MXF metadata storage
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 The user authorized this comparison stage on 10 October 2026 after the
 [media-source storage proposal](media-source-storage-proposal-2026-10-10.md).
 Native MXF storage was compared with the live archive strategy during this
@@ -174,8 +177,8 @@ separate approval.
 
 Saved evidence:
 
-- [Combined results and verification summary](evidence/canon2-mxf-native-summary-2026-10-10.json).
-- [Proof archive](evidence/canon2-mxf-native-proof-2026-10-10.zip): both full
+- Combined results and verification summary.
+- Proof archive: both full
   comparisons, all timing reports/CSVs, build receipts, byte-copy manifest,
   build/test logs and source snapshots. Its manifest records member sizes and
   SHA-256 checksums. It contains no copied media payloads or executable binaries.

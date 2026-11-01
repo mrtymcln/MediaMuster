@@ -1,5 +1,8 @@
 # Bella: Source Path from MDB
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 19 October 2026. Original Bin was approved this turn: Unicode
 name first, separate legacy name if empty, otherwise an empty table cell.
 The user subsequently approved **Filename** and **File Path**, using only the
@@ -231,7 +234,7 @@ for retained fields and scheduling remain under review.
 
 ## Evidence
 
-The [curated Source Path evidence](../../../Project%20Bella/evidence/mdb-source-path-2026-10-19.json)
+The curated Source Path evidence
 contains native addresses and qualifications, independent counts, redacted
 path shapes/hashes, proposed rules and artifact receipts. All 55 listed native
 artifacts, 16 current binary/MDB/PMR inputs and six raw indexes were checked.

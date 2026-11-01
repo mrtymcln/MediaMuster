@@ -1,5 +1,8 @@
 # RAM metadata design
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Status: proposed implementation, with the requirements in [README](README.md)
 accepted for v1. The names below are MediaMuster design terminology, not a claim
 that Avid defines these exact classes.

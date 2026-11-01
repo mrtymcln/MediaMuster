@@ -1,5 +1,8 @@
 # Bella: MDB damage handling
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 20 October 2026. **General Bella MDB damage policy approved by
 the user on 21 October 2026; not yet implemented.** Field-specific rules
 already agreed, including separate legacy text recovery and Duration's
@@ -185,7 +188,7 @@ concrete property/descriptor layout.
 
 ## Evidence and verification limits
 
-The [curated comparison](../../../Project%20Bella/evidence/mdb-damage-handling-2026-10-20.json)
+The curated comparison
 contains the three independent audit receipts, 69 verified native artifact,
 binary and current-source inputs, static boundary findings and useful test
 sources. Raw disassembly remains under `/private/tmp`.

@@ -2,6 +2,8 @@
 // The controlled device alters I/O timing and failures, never the MXF layout.
 // Genuine header excerpts also exercise incomplete-read outcomes.
 
+#include "testfixtures.h"
+
 #include "oldscanner/mediaengine/mxfsource.h"
 #include "oldscanner/mediaengine/mxfreader.h"
 #include "mediaenginefingerprint.h"
@@ -114,20 +116,21 @@ private slots:
 		};
 		add(QStringLiteral("full-Avid-tone"), QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"), true);
 		for (const auto &relative : {
-			QStringLiteral("avid_headers/A01.E683CD73_FF4BEFF4BE934A.mxf"),
-			QStringLiteral("avid_headers/A02.E683C414_F82F4F82F462CA.mxf"),
-			QStringLiteral("avid_headers/V01.E683CD72_FF4BEFF4BE92DV.mxf"),
-			QStringLiteral("avid_headers/V01.E684299A_4533345333DF2V.mxf"),
-			QStringLiteral("avid_headers/V01.E68429EE_4572545725368V.mxf"),
-			QStringLiteral("corpus_headers/A01.E68E86B6_CCE460CCE463DA.mxf"),
-			QStringLiteral("corpus_headers/A02.E69CEE7D_F99D0F99D03E7A.mxf"),
-			QStringLiteral("corpus_headers/V01.E68C0042_3ABA203ABA24EV.mxf"),
-			QStringLiteral("corpus_headers/V01.E69BC935_1B2851B28565FV.mxf")})
+				 QStringLiteral("avid_headers/A01.E683CD73_FF4BEFF4BE934A.mxf"),
+				 QStringLiteral("avid_headers/A02.E683C414_F82F4F82F462CA.mxf"),
+				 QStringLiteral("avid_headers/V01.E683CD72_FF4BEFF4BE92DV.mxf"),
+				 QStringLiteral("avid_headers/V01.E684299A_4533345333DF2V.mxf"),
+				 QStringLiteral("avid_headers/V01.E68429EE_4572545725368V.mxf"),
+				 QStringLiteral("corpus_headers/A01.E68E86B6_CCE460CCE463DA.mxf"),
+				 QStringLiteral("corpus_headers/A02.E69CEE7D_F99D0F99D03E7A.mxf"),
+				 QStringLiteral("corpus_headers/V01.E68C0042_3ABA203ABA24EV.mxf"),
+				 QStringLiteral("corpus_headers/V01.E69BC935_1B2851B28565FV.mxf")})
 			add(relative, relative, false);
 	}
 
 	void genuineSourcesPreserveProjectedFacts()
 	{
+		REQUIRE_TEST_FIXTURES();
 		QFETCH(QString, relative);
 		QFETCH(bool, complete);
 		QFile fixture(QStringLiteral(FIXTURES_DIR) + '/' + relative);
@@ -140,7 +143,7 @@ private slots:
 		const auto path = temporary.filePath(QFileInfo(relative).fileName());
 		QVERIFY(QFile::copy(fixture.fileName(), path));
 		const MediaEngine::SourceCandidate candidate{MediaEngine::SourceCandidate::ReaderHint::Mxf,
-			path, QFileInfo(path).lastModified(), 73};
+													 path, QFileInfo(path).lastModified(), 73};
 		const MediaEngine::Cancellation active;
 		const auto prepared = MediaEngine::prepareMxf(candidate, readReason, active);
 		QBuffer direct;
@@ -180,27 +183,37 @@ private slots:
 	{
 		QTest::addColumn<int>("control");
 		const QStringList names{QStringLiteral("short-reads"), QStringLiteral("I-O-failure"),
-			QStringLiteral("cancelled-read"), QStringLiteral("changing-length")};
+								QStringLiteral("cancelled-read"), QStringLiteral("changing-length")};
 		for (int control = 0; control < names.size(); ++control)
 			QTest::newRow(qPrintable(names[control])) << control;
 	}
 
 	void controlledAcquisitionPreservesActualOutcome()
 	{
+		REQUIRE_TEST_FIXTURES();
 		QFETCH(int, control);
 		const auto bytes = fixtureBytes();
 		QVERIFY(!bytes.isEmpty());
 		MediaEngine::Cancellation acquisition, expectedAcquisition;
 		ControlledDevice input(bytes), direct(bytes);
-		const auto configure = [&](ControlledDevice &device, MediaEngine::Cancellation &cancellation) {
-			if (control == 1) device.failAt = 1024;
-			if (control == 2) { device.cancelAt = 1024; device.cancellation = &cancellation; }
-			if (control == 3) device.changeSize = true;
+		const auto configure = [&](ControlledDevice &device, MediaEngine::Cancellation &cancellation)
+		{
+			if (control == 1)
+				device.failAt = 1024;
+			if (control == 2)
+			{
+				device.cancelAt = 1024;
+				device.cancellation = &cancellation;
+			}
+			if (control == 3)
+				device.changeSize = true;
 		};
 		configure(input, acquisition);
 		configure(direct, expectedAcquisition);
 		const MediaEngine::SourceCandidate candidate{MediaEngine::SourceCandidate::ReaderHint::Mxf,
-			QStringLiteral("/unavailable/original-tone.mxf"), {}, 73};
+													 QStringLiteral("/unavailable/original-tone.mxf"),
+													 {},
+													 73};
 		auto expected = MediaEngine::MxfReader{}.read(direct, {receipt(candidate), expectedAcquisition});
 		expected.readReason = readReason;
 		const auto prepared = MediaEngine::prepareMxf(input, candidate, readReason, acquisition);
@@ -229,7 +242,9 @@ private slots:
 		MediaEngine::Cancellation cancelled;
 		cancelled.cancel();
 		const MediaEngine::SourceCandidate candidate{MediaEngine::SourceCandidate::ReaderHint::Mxf,
-			QStringLiteral("/unavailable/tone.mxf"), {}, 73};
+													 QStringLiteral("/unavailable/tone.mxf"),
+													 {},
+													 73};
 		const auto prepared = MediaEngine::prepareMxf(input, candidate, readReason, cancelled);
 		QCOMPARE(input.acquired, qint64(0));
 		QCOMPARE(prepared.source.outcome, Outcome::Cancelled);

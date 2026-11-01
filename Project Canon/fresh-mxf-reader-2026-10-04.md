@@ -1,5 +1,8 @@
 # Fresh MXF reader
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Implemented 4 October 2026 as another independent MediaEngine reader. This is the
 container/property-reading stage; it does not activate the replacement scanner,
 select displayed values or replace the existing file-operation executor.
@@ -144,7 +147,7 @@ remains subsequent work; it does not require reading every frame.
 
 ## Verification and genuine observations
 
-The committed fixture corpus contains **824 MXF paths**: 795 excerpts of 512 KiB,
+The retired fixture corpus contained **824 MXF paths**: 795 excerpts of 512 KiB,
 28 excerpts of 256 KiB and one complete 8,909,409-byte Avid tone file. The small
 excerpts stop 32 bytes before the declared final header Fill ends; the larger
 excerpts end within the later recording KLV. These are useful metadata fixtures,
@@ -210,19 +213,19 @@ pending. This implementation changes no agreed admission scope or OmfScan policy
 
 ## Evidence and primary sources
 
-- [Final build](evidence/fresh-mxf-build-2026-10-04.txt),
-  [detailed MXF tests](evidence/fresh-mxf-tests-2026-10-04.txt).
-- [Full-file probe source](evidence/fresh-mxf-reader-probe-2026-10-04.cpp),
-  [results](evidence/fresh-mxf-reader-probe-2026-10-04.jsonl),
-  [summary](evidence/fresh-mxf-reader-probe-summary-2026-10-04.json).
-- [Fixture diagnostic probe](evidence/fresh-mxf-diagnostic-probe-2026-10-04.cpp),
-  [per-file diagnostics](evidence/fresh-mxf-diagnostic-expanded-2026-10-04.jsonl),
-  [summary](evidence/fresh-mxf-diagnostic-summary-2026-10-04.json).
-- [Framing-only inventory](evidence/fresh-mxf-klv-counts-2026-10-04.jsonl),
-  [its post-run receipts](evidence/fresh-mxf-klv-receipts-2026-10-04.json),
-  [reproduction notes](evidence/fresh-mxf-reproduction-2026-10-04.txt),
-  [tested source/fixture receipts](evidence/fresh-mxf-receipts-2026-10-04.json).
-- [BBC schema licence notice](evidence/mxf-schema-third-party-notice.txt); include
+- Final build,
+  detailed MXF tests.
+- Full-file probe source,
+  results,
+  summary.
+- Fixture diagnostic probe,
+  per-file diagnostics,
+  summary.
+- Framing-only inventory,
+  its post-run receipts,
+  reproduction notes,
+  tested source/fixture receipts.
+- BBC schema licence notice; include
   this notice with distributions containing the adapted catalogue.
 - [SMPTE ST 377-1:2019](https://pub.smpte.org/latest/st377-1/st377-1-2019.pdf):
   KLV, byte order, run-in, partition/count scope, Primers, references and RIP.

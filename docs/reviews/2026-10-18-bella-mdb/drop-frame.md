@@ -1,5 +1,8 @@
 # Bella: MDB timecode and drop-frame numbering
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Research date: 20 October 2026. **The wire interpretation and observed source
 relationships below are established research. The user subsequently approved
 the discussed Duration design: verified maths, correctly linked DF, NDF when
@@ -155,7 +158,7 @@ for NDF, preserving hours beyond 24. The full priority-table discussion
 remains at the end of the requirements plan. The discussed audio editing-clock
 design and verified rounding maths are accepted with this Duration approval;
 supported ownership/layout and numeric edge coverage still need implementation
-verification. The [approval receipt](../../../Project%20Bella/evidence/mdb-duration-plan-2026-10-20.json)
+verification. The approval receipt
 records the user decision and supersedes pending status in historical evidence.
 
 ## Current code and evidence
@@ -213,7 +216,7 @@ before declaring that physical file's displayed Duration wrong.
 No accuracy percentage is established. No complete runtime/corpus comparison,
 new parser test execution or production fix was performed for this follow-up.
 
-The [curated evidence](../../../Project%20Bella/evidence/mdb-drop-frame-2026-10-20.json)
+The curated evidence
 preserves native disassembly receipts, live MDB hashes, index census, the
 positive binding and selected raw-byte verification. Native flags/FPS meaning
 is established; complete native Duration-cell selection/default behaviour is

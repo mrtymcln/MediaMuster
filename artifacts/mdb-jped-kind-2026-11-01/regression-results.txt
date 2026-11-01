@@ -1,8 +1,0 @@
-********* Start testing of TestBellaMdb *********
-Config: Using QtTest library 6.5.3, Qt 6.5.3 (arm64-little_endian-lp64 shared (dynamic) release build; by Apple LLVM 14.0.0 (clang-1400.0.29.202)), macos 15.8
-PASS   : TestBellaMdb::initTestCase()
-PASS   : TestBellaMdb::descriptorKindKeepsQualifiedTiming(JPED keeps picture timing with Video Kind)
-PASS   : TestBellaMdb::descriptorKindKeepsQualifiedTiming(MPGA keeps audio editing clock with Unknown Kind)
-PASS   : TestBellaMdb::cleanupTestCase()
-Totals: 4 passed, 0 failed, 0 skipped, 0 blacklisted, 2ms
-********* Finished testing of TestBellaMdb *********

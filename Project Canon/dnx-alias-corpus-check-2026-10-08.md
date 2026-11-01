@@ -1,12 +1,15 @@
 # Nine inherited DNx aliases: actual corpus check
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Checked 8 October 2026. **No matching files were found in the checked corpus.** None of the nine identifiers appeared in a parsed compression property, another retained metadata value, or the independent byte searches described below. That investigation did not change production mappings.
 
 The user subsequently **approved removing these nine unsupported mapping rows**
 from the supported compression lookup. Removal verification passes 40/40 native suites and
 both universal Debug app builds. The repeat scan keeps all 2,413 rows and every
 exported metadata value unchanged, including all 806 DNx names. See the
-[removal verification receipt](evidence/dnx-alias-removal-verification-2026-10-08.json).
+removal verification receipt.
 The original corpus and byte-search receipts remain unchanged.
 
 These are nine extra identifier-to-name rules in the old code. They are not nine missing codecs or nine affected files. Their assigned names are familiar DNx profiles; the unsupported part is the claim that these exact identifiers mean those profiles.
@@ -54,11 +57,11 @@ the builds, regression tests and exported-value comparison after removal.
 
 Live MXF picture/audio payloads, padding and range-only opaque data were not searched byte-for-byte. The check targets compression properties and retained metadata; arbitrary bytes in a recording would not establish a codec identity. Header archives cannot speak for omitted original footers. This result applies to the explicit manifest, not every possible historical Avid file.
 
-- [Summary, per-alias results and verified examples](evidence/dnx-alias-corpus-check-2026-10-08.json)
-- [Exact source-path manifest](evidence/dnx-alias-corpus-manifest-2026-10-08.json)
-- [Per-source property results](evidence/dnx-alias-corpus-properties-2026-10-08.jsonl)
-- [Independent full-byte fixture search](evidence/dnx-alias-fixture-byte-search-2026-10-08.json)
-- [Independent full-byte live non-MXF/bin search](evidence/dnx-alias-live-nonmxf-byte-search-2026-10-08.json)
-- [Read-only diagnostic probe source](evidence/dnx-alias-corpus-probe-2026-10-08.cpp)
-- [Earlier bounded Avid-definition review](evidence/dnx-unproven-aliases-2026-10-08.json)
-- [Subsequent approved removal verification](evidence/dnx-alias-removal-verification-2026-10-08.json)
+- Summary, per-alias results and verified examples
+- Exact source-path manifest
+- Per-source property results
+- Independent full-byte fixture search
+- Independent full-byte live non-MXF/bin search
+- Read-only diagnostic probe source
+- Earlier bounded Avid-definition review
+- Subsequent approved removal verification

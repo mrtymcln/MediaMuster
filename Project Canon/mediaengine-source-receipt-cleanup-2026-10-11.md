@@ -1,5 +1,8 @@
 # MediaEngine source receipts and scoped reading — 11 October 2026
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Source reading now has one permanent path: read the source, extract supported
 metadata and evidence, return those facts and a small `SourceReceipt`, then let
 Qt values and ordinary C++ scope lifetimes release the temporary reading data.
@@ -136,6 +139,6 @@ real consumers and contracts; this review found no reason to remove them.
 
 Source/build hashes, per-dataset fingerprints, all timing/RAM trials, test results,
 receipt sizes and application signature validation are in the
-[verification receipt](evidence/mediaengine-source-receipt-cleanup-verification-2026-10-11.json).
+verification receipt.
 The current read-only profiler accepts `mediaengine_compare --expected-rows N
 --output REPORT.json --csv REPORT.csv ROOT...`; it has no engine/storage-mode option.

@@ -1,5 +1,8 @@
 # Fresh PMR reader — implementation and proof
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 > Historical implementation report. On 4 October 2026 the user selected the
 > independently written alternative. It now occupies `src/mediaengine/pmrreader.h/.cpp`
 > as `MediaEngine::PmrReader`; the first implementation described here was removed.
@@ -53,19 +56,19 @@ The inspected binary is installed Media Composer **26.8.0.58987**, arm64 slice o
 These are static instruction observations, not execution of private Avid APIs and
 not a claim about all historical/future versions.
 
-- [`LoadPMR` evidence](../docs/reviews/2026-10-03-format-audit/evidence/libame-excerpts.txt):
+- `LoadPMR` evidence:
   `0x444bac–0x444c10`, magic `0x7a9`, signed base-version check below 9;
   `0x445154–0x4452ec`, separately counted version-16 Unicode set.
-- [`ReadPmrRec` evidence](../docs/reviews/2026-10-03-format-audit/evidence/libame-excerpts.txt):
+- `ReadPmrRec` evidence:
   `0x447544–0x44758c`, versions through 7 use OMF IDs, subsequent accepted versions
   use AAF IDs; `0x4476c8–0x4477f4`, version 1 omits stored project/master fields.
   Filename MBCS capacity is `0x800`, Unicode input capacity `0x400`; the project
   MBCS capacity is `0x40`. These are compatibility checks, not application RAM caps.
-- [`AStream` Unicode evidence](../docs/reviews/2026-10-03-format-audit/evidence/avidcore-utf8-excerpt.txt):
+- `AStream` Unicode evidence:
   counted UTF-8 after two reserved bytes; first reserved byte checked for zero,
   second retained without a new constraint. `0xffff` is a null-string marker;
   signed payload length and input capacity are checked.
-- [`ReadPmrRec` MBCS conversion](../docs/reviews/2026-10-03-format-audit/evidence/libame-excerpts.txt):
+- `ReadPmrRec` MBCS conversion:
   `0x4475f0` calls the current Mac MBCS conversion. The file does not thereby declare
   a universal UTF-8 or MacRoman codepage. The replacement reader decodes only the
   ASCII subset of these untagged fields, retaining everything else for an explicit
@@ -97,7 +100,7 @@ The new suite `tst_mediaenginepmr` checks:
   allocating from that count; unsupported structures retained as ranges.
 - Short reads, injected I/O failure, cancellation before/during parsing and
   immutable supplied receipts; rejection of text-mode and sequential inputs.
-- Five checked-in genuine PMRs: 878 records per set, **1,756 source records retained**.
+- Five genuine PMRs in the original fixture set: 878 records per set, **1,756 source records retained**.
   Every property range reproduces its exact fixture encoding.
 
 The opt-in read-only local/EDIT check used the same three managed roots as the fresh
@@ -106,7 +109,7 @@ records**, with both sets independently counted. File size/modification time wer
 checked before/after as test safeguards. These are source records, not a physical
 media count. Source-level completeness is not yet proof of reconciliation correctness.
 
-Proof: [PMR test/real-drive output](evidence/fresh-pmr-tests-2026-10-03.txt).
+Proof: PMR test/real-drive output.
 The universal Debug build includes arm64 and x86_64; these test runs executed on the
 host architecture. The whole app still uses its comparison engines, so no full-scan
 performance or memory improvement is claimed at this stage.

@@ -1,5 +1,8 @@
 # Metadata evidence states: implementation and proof
 
+> Raw audit evidence and shared test fixtures were retired on 1 November 2026.
+> Dated results and file references below describe the original investigations.
+
 Implemented 7 October 2026. This pass finishes the logical read-state bookkeeping
 around retained metadata; it does not add a detail UI, change source priorities,
 expand discovery, decode essence, or settle unknown/private meanings.
@@ -99,11 +102,11 @@ It ran alongside the native suite with uncontrolled filesystem-cache state;
 these numbers do not establish a comparative performance change. The user has
 accepted current resource usage; no cap or evidence-discard policy was added.
 
-- [Explicit real-scan log](evidence/metadata-evidence-real-scan-2026-10-07.txt)
-- [Fresh CSV](evidence/full-scan-metadata-evidence-2026-10-07.csv)
-- [Every-cell/path comparison and hashes](evidence/metadata-evidence-comparison-2026-10-07.json)
-- [Source receipts, inventory and notices](live-scan-metadata-evidence-2026-10-07.json)
-- [Build/source verification receipt](evidence/metadata-evidence-verification-2026-10-07.json)
+- Explicit real-scan log
+- Fresh CSV
+- Every-cell/path comparison and hashes
+- Source receipts, inventory and notices
+- Build/source verification receipt
 
 The original audit's remaining semantic gaps are tracked in the
 [40-entry closeout ledger](audit-closeout-2026-10-07.md), not hidden by these states.
