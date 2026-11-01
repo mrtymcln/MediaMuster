@@ -1,0 +1,12 @@
+{
+  "id": 4,
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "text": "\n\n        ; ================ B E G I N N I N G   O F   P R O C E D U R E ================\n\n\n                     __ZN12CoreAttrList10FindObjectEPKcPh:        // CoreAttrList::FindObject(char const*, unsigned char*)\n000000000006e818         mov        x3, x2                                      ; DATA XREF=0x3973e0\n000000000006e81c         mov        x2, x1\n000000000006e820         ldr        x8, [x0]\n000000000006e824         ldr        x4, [x8, #0x140]\n000000000006e828         mov        w1, #0x3\n000000000006e82c         br         x4\n                        ; endp\n",
+        "type": "text"
+      }
+    ]
+  }
+}

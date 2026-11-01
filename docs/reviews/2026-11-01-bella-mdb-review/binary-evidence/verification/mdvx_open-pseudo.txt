@@ -1,0 +1,92 @@
+/* @class MDVxOMFI */
+-(bool)openFile:(void *)arg2 withIndicator:(void *)arg3 {
+    r3 = arg3;
+    r31 = r31 - 0x50;
+    var_30 = r24;
+    decomp_var_28 = r23;
+    var_20 = r22;
+    decomp_var_18 = r21;
+    var_10 = r20;
+    decomp_var_8 = r19;
+    saved_fp = r29;
+    decomp_var_m8 = r30;
+    r22 = r3;
+    r21 = self;
+    r19 = [arg2 retain];
+    r20 = [r22 retain];
+    objc_storeStrong(r21 + 0x80, r22);
+    r0 = r21[0xd];
+    r21[0xd] = 0x0;
+    [r0 release];
+    r0 = [MDVxRBTree alloc];
+    r0 = [r0 init];
+    r8 = r21[0xd];
+    r21[0xd] = r0;
+    [r8 release];
+    [r21[0xd] setEQBlock:*_ViewItems_tree_EQ_block];
+    [r21[0xd] setLTBlock:*_ViewItems_tree_LT_block];
+    [r21[0xd] setAllowEQNodes:0x0];
+    if (r19 != 0x0) {
+            r0 = [NSData dataWithContentsOfURL:r19];
+            r0 = [r0 retain];
+            r8 = r21[0x1];
+            r21[0x1] = r0;
+            [r8 release];
+            r0 = r21[0x1];
+            if (r0 != 0x0) {
+                    if ([r0 length] >= 0x80) {
+                            r22 = [r21[0x1] bytes];
+                            r0 = r21[0x1];
+                            r0 = [r0 length];
+                            r8 = r22 + r0 - 0x18;
+                            r21[0x4] = r8;
+                            if (*(r22 + r0 + 0xffffffffffffffe8) == 0xd7726448a54d43a4) {
+                                    r9 = r8[0x5];
+                                    if (r9 == 0x4949) {
+                                            r9 = 0x1;
+                                    }
+                                    r21[0x28] = r9;
+                                    if (r8[0x6] == 0x2) {
+                                            r24 = [[r19 path] retain];
+                                            r23 = [[NSString stringWithFormat:@"OMF 2 found at %@", r3] retain];
+                                            [xConsole xNSLog:"/Volumes/MyHome/Programming/Xcode_projects/MDVx/MDVx1/MDVxCore/MDVxOMFI.m" :0x15e :"-[MDVxOMFI openFile:withIndicator:]" :r23];
+                                            [r23 release];
+                                            [r24 release];
+                                            [r21 OMFiTOCReader02];
+                                            r21 = 0x0;
+                                    }
+                                    else {
+                                            if ([r21[0x1] length] < r8[0x5]) {
+                                                    r21 = 0x0;
+                                            }
+                                            else {
+                                                    r21[0x3] = [r21[0x1] bytes] + *(int32_t *)(r21[0x4] + 0x10);
+                                                    r21[0x2] = [r21[0x1] bytes];
+                                                    [r21 OMFiTOCReader01];
+                                                    if (r21[0x7] != 0x0) {
+                                                            r21 = 0x1;
+                                                    }
+                                            }
+                                    }
+                            }
+                            else {
+                                    r21 = 0x0;
+                            }
+                    }
+                    else {
+                            r21 = 0x0;
+                    }
+            }
+            else {
+                    r21 = 0x0;
+            }
+    }
+    else {
+            r21 = 0x0;
+    }
+    [r20 release];
+    [r19 release];
+    r0 = r21;
+    return r0;
+}
+

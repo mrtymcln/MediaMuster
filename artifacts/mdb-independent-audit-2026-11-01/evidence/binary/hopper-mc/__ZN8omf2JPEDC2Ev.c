@@ -1,0 +1,6 @@
+    r0 = omf2CDCI::omf2CDCI();
+    *r0 = 0x12d2ef0;
+    r0[0x21] = 0x0;
+    r0[0x22] = 0x0;
+    r0[0x46] = 0x0;
+    return r0;

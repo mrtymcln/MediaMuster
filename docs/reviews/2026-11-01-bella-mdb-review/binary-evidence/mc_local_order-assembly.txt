@@ -1,0 +1,171 @@
+
+
+        ; ================ B E G I N N I N G   O F   P R O C E D U R E ================
+
+
+                     __ZN14omfiDualStream15LoadBentoObjectEi:        // omfiDualStream::LoadBentoObject(int)
+00000000000b2680         sub        sp, sp, #0xd0                               ; Begin of try block, CODE XREF=__ZN14omfiDualStream23GetValueLengthAndOffsetEiiPiS0_+136, __ZN12omfiHPDomain15InitHPDomainOldEP7AStreamh+476, __ZN12omfiHPDomain13GetObjectByIDEi+112, __ZN12omfiHPDomain13FindMediaDataE13_aafMCMobID_tPi+96, __ZN12AControlClip7GetOMFIEP7AStreamP7AIODesc+428, __ZN12AControlClip7GetOMFIEP7AStreamP7AIODesc+968, __ZN9AAttrList7GetOMFIEP7AStreamP7AIODesc+360, __ZN16ANotSoSimpleList7GetOMFIEP7AStreamP7AIODesc+448, __ZN16ANotSoSimpleList7GetOMFIEP7AStreamP7AIODesc+568, __ZN10AParamClip7GetOMFIEP7AStreamP7AIODesc+300, __ZN10AParamClip7GetOMFIEP7AStreamP7AIODesc+744
+00000000000b2684         stp        x28, x27, [sp, #0x70]
+00000000000b2688         stp        x26, x25, [sp, #0x80]
+00000000000b268c         stp        x24, x23, [sp, #0x90]
+00000000000b2690         stp        x22, x21, [sp, #0xa0]
+00000000000b2694         stp        x20, x19, [sp, #0xb0]
+00000000000b2698         stp        fp, lr, [sp, #0xc0]
+00000000000b269c         add        fp, sp, #0xc0
+00000000000b26a0         mov        x20, x1
+00000000000b26a4         mov        x19, x0
+00000000000b26a8         ldr        w24, [x0, #0x1f8]
+00000000000b26ac         ldr        w25, [x0, #0x200]
+00000000000b26b0         ldrh       w26, [x0, #0x1e0]
+00000000000b26b4         ldr        w27, [x0, #0x1e8]
+00000000000b26b8         cmp        w1, #0x1
+00000000000b26bc         b.ne       loc_b26d0
+
+00000000000b26c0         ldr        w21, [x19, #0x208]
+00000000000b26c4         ldr        w22, [x19, #0x1d0]
+00000000000b26c8         mov        x8, x24
+00000000000b26cc         b          loc_b2708
+
+                     loc_b26d0:
+00000000000b26d0         add        x0, sp, #0x48                               ; CODE XREF=__ZN14omfiDualStream15LoadBentoObjectEi+60
+00000000000b26d4         bl         imp___stubs___ZN6XErrorC1Ev                 ; XError::XError()
+00000000000b26d8         add        w1, w20, #0x1                               ; End of try block started at 0xb2680, Begin of try block (catch block at 0xb28b8)
+00000000000b26dc         mov        x0, x19                                     ; argument #1 for method __ZN14omfiDualStream19GetNearestTOCOffsetEi
+00000000000b26e0         bl         __ZN14omfiDualStream19GetNearestTOCOffsetEi ; omfiDualStream::GetNearestTOCOffset(int)
+00000000000b26e4         ldr        x8, [x19, #0x1c8]                           ; End of try block started at 0xb26d8, Begin of try block
+00000000000b26e8         ldr        x8, [x8]
+00000000000b26ec         ldr        w9, [x19, #0x20c]
+00000000000b26f0         sub        w9, w20, w9
+00000000000b26f4         ldr        w22, [x8, w9, sxtw #2]
+00000000000b26f8         sub        w21, w0, w22
+00000000000b26fc         add        x0, sp, #0x48
+00000000000b2700         bl         imp___stubs___ZN6XErrorD1Ev                 ; XError::~XError()
+00000000000b2704         ldr        w8, [x19, #0x1f8]
+
+                     loc_b2708:
+00000000000b2708         ldr        w9, [x19, #0x204]                           ; CODE XREF=__ZN14omfiDualStream15LoadBentoObjectEi+76
+00000000000b270c         add        w8, w8, w9
+00000000000b2710         add        w9, w8, w21
+00000000000b2714         str        w8, [x19, #0x1f8]
+00000000000b2718         ldr        w8, [x19, #0x1fc]
+00000000000b271c         cmp        w9, w8
+00000000000b2720         b.le       loc_b273c
+
+00000000000b2724         add        w8, w8, w21, lsl #2
+00000000000b2728         str        w8, [x19, #0x1fc]
+00000000000b272c         ldr        x0, [x19, #0x1f0]
+00000000000b2730         sxtw       x1, w8
+00000000000b2734         bl         imp___stubs___Z14AvResizeHandlePvm          ; AvResizeHandle(void*, unsigned long)
+00000000000b2738         str        x0, [x19, #0x1f0]
+
+                     loc_b273c:
+00000000000b273c         add        x0, sp, #0x48                               ; CODE XREF=__ZN14omfiDualStream15LoadBentoObjectEi+160
+00000000000b2740         bl         imp___stubs___ZN6XErrorC1Ev                 ; XError::XError()
+00000000000b2744         ldr        x0, [x19, #0x278]
+00000000000b2748         sxtw       x1, w22
+00000000000b274c         ldr        x8, [x0]
+00000000000b2750         ldr        x8, [x8, #0xb0]
+00000000000b2754         blr        x8                                          ; End of try block started at 0xb26e4, Begin of try block (catch block at 0xb2ac0)
+00000000000b2758         ldr        x0, [x19, #0x278]
+00000000000b275c         ldr        x8, [x19, #0x1f0]
+00000000000b2760         ldr        x8, [x8]
+00000000000b2764         ldrsw      x9, [x19, #0x1f8]
+00000000000b2768         ldr        x10, [x0]
+00000000000b276c         ldr        x10, [x10, #0x208]
+00000000000b2770         adrp       x1, #0xfc1000                               ; aTocForAnObject@PAGE
+00000000000b2774         add        x1, x1, #0xa8e                              ; aTocForAnObject@PAGEOFF, "TOC for an object"
+00000000000b2778         add        x2, x8, x9
+00000000000b277c         mov        x3, x21
+00000000000b2780         blr        x10
+00000000000b2784         add        x0, sp, #0x48                               ; End of try block started at 0xb2754, Begin of try block
+00000000000b2788         bl         imp___stubs___ZN6XErrorD1Ev                 ; XError::~XError()
+00000000000b278c         strh       wzr, [x19, #0x1e0]
+00000000000b2790         ldr        x8, [x19, #0x250]
+00000000000b2794         ldr        x8, [x8]
+00000000000b2798         mov        w9, #0x1
+00000000000b279c         strb       w9, [x8, #0x3]
+00000000000b27a0         ldr        x8, [x19, #0x248]
+00000000000b27a4         ldr        x8, [x8]
+00000000000b27a8         ldr        w8, [x8, #0xc]
+00000000000b27ac         ldr        x10, [x19, #0x250]
+00000000000b27b0         ldr        x10, [x10]
+00000000000b27b4         strb       w9, [x10, #0xd]
+00000000000b27b8         ldr        x9, [x19, #0x248]
+00000000000b27bc         ldr        x9, [x9]
+00000000000b27c0         ldr        w9, [x9, #0x34]
+00000000000b27c4         str        w21, [x19, #0x204]
+00000000000b27c8         mov        w10, #0xaaab
+00000000000b27cc         movk       w10, #0x2aaa, lsl #16
+00000000000b27d0         smull      x10, w21, w10
+00000000000b27d4         lsr        x11, x10, #0x3f
+00000000000b27d8         asr        x10, x10, #0x22
+00000000000b27dc         add        w10, w10, w11
+00000000000b27e0         str        w10, [x19, #0x200]
+00000000000b27e4         cmp        w21, #0x18
+00000000000b27e8         b.lt       loc_b2834
+
+00000000000b27ec         ldr        x11, [x19, #0x1f0]
+00000000000b27f0         ldr        x11, [x11]
+00000000000b27f4         ldrsw      x12, [x19, #0x1f8]
+00000000000b27f8         add        x11, x12, x11
+00000000000b27fc         add        x11, x11, #0xc
+
+                     loc_b2800:
+00000000000b2800         ldur       w12, [x11, #-0x8]                           ; CODE XREF=__ZN14omfiDualStream15LoadBentoObjectEi+432
+00000000000b2804         cmp        w12, w8
+00000000000b2808         b.ne       loc_b2818
+
+00000000000b280c         ldrh       w12, [x11]
+00000000000b2810         strh       w12, [x19, #0x1e0]
+00000000000b2814         b          loc_b2828
+
+                     loc_b2818:
+00000000000b2818         cmp        w12, w9                                     ; CODE XREF=__ZN14omfiDualStream15LoadBentoObjectEi+392
+00000000000b281c         b.ne       loc_b2828
+
+00000000000b2820         ldr        w12, [x11]
+00000000000b2824         str        w12, [x19, #0x1e8]
+
+                     loc_b2828:
+00000000000b2828         add        x11, x11, #0x18                             ; CODE XREF=__ZN14omfiDualStream15LoadBentoObjectEi+404, __ZN14omfiDualStream15LoadBentoObjectEi+412
+00000000000b282c         subs       x10, x10, #0x1
+00000000000b2830         b.ne       loc_b2800
+
+                     loc_b2834:
+00000000000b2834         ldrh       w8, [x19, #0x1e0]                           ; CODE XREF=__ZN14omfiDualStream15LoadBentoObjectEi+360
+00000000000b2838         cbz        w8, loc_b284c
+
+00000000000b283c         cmp        w20, #0x1
+00000000000b2840         b.ne       loc_b287c
+
+00000000000b2844         strh       w8, [x19, #0x1e2]
+00000000000b2848         b          loc_b287c
+
+                     loc_b284c:
+00000000000b284c         ldrh       w8, [x19, #0x1e2]                           ; CODE XREF=__ZN14omfiDualStream15LoadBentoObjectEi+440
+00000000000b2850         strh       w8, [x19, #0x1e0]
+00000000000b2854         cbnz       w8, loc_b287c
+
+00000000000b2858         str        xzr, [sp, #-0x10 + 16]
+00000000000b285c         adrp       x1, #0xfc1000                               ; aIllegalOmfiFil@PAGE
+00000000000b2860         add        x1, x1, #0xaa0                              ; aIllegalOmfiFil@PAGEOFF, "/../Frameworks/HWcommon.framework/Versions/A/HWcommon","Illegal OMFI File: No byte order specified"
+00000000000b2864         add        x0, sp, #0x48
+00000000000b2868         bl         imp___stubs___ZN6XErrorC1EPKcz              ; XError::XError(char const*, ...)
+00000000000b286c         add        x0, sp, #0x48                               ; End of try block started at 0xb2784, Begin of try block (catch block at 0xb28a4)
+00000000000b2870         bl         imp___stubs___ZpsRK6XError                  ; operator+(XError const&)
+00000000000b2874         add        x0, sp, #0x48                               ; End of try block started at 0xb286c, Begin of try block
+00000000000b2878         bl         imp___stubs___ZN6XErrorD1Ev                 ; XError::~XError()
+
+                     loc_b287c:
+00000000000b287c         orr        x0, x24, x25, lsl #32                       ; CODE XREF=__ZN14omfiDualStream15LoadBentoObjectEi+448, __ZN14omfiDualStream15LoadBentoObjectEi+456, __ZN14omfiDualStream15LoadBentoObjectEi+468
+00000000000b2880         orr        x1, x26, x27, lsl #32
+00000000000b2884         ldp        fp, lr, [sp, #0xc0]
+00000000000b2888         ldp        x20, x19, [sp, #0xb0]
+00000000000b288c         ldp        x22, x21, [sp, #0xa0]
+00000000000b2890         ldp        x24, x23, [sp, #0x90]
+00000000000b2894         ldp        x26, x25, [sp, #0x80]
+00000000000b2898         ldp        x28, x27, [sp, #0x70]
+00000000000b289c         add        sp, sp, #0xd0
+00000000000b28a0         ret
+                        ; endp
+

@@ -1,0 +1,525 @@
+__ZN8LocalMDB19MobConflictResolverEP12ACompositionS1_Pv:
+000000000041dd84	sub	sp, sp, #0x120
+000000000041dd88	stp	x28, x27, [sp, #0xc0]
+000000000041dd8c	stp	x26, x25, [sp, #0xd0]
+000000000041dd90	stp	x24, x23, [sp, #0xe0]
+000000000041dd94	stp	x22, x21, [sp, #0xf0]
+000000000041dd98	stp	x20, x19, [sp, #0x100]
+000000000041dd9c	stp	x29, x30, [sp, #0x110]
+000000000041dda0	add	x29, sp, #0x110
+000000000041dda4	mov	x19, x2
+000000000041dda8	mov	x20, x1
+000000000041ddac	mov	x21, x0
+000000000041ddb0	adrp	x8, 3571 ; 0x1210000
+000000000041ddb4	ldr	x8, [x8, #0xdc0] ; literal pool symbol address: ___stack_chk_guard
+000000000041ddb8	ldr	x8, [x8]
+000000000041ddbc	stur	x8, [x29, #-0x58]
+000000000041ddc0	mov	x0, x1
+000000000041ddc4	bl	__Z17CompIsPendingFMobP12AComposition
+000000000041ddc8	mov	x22, x0
+000000000041ddcc	mov	x0, x21
+000000000041ddd0	bl	__Z17CompIsPendingFMobP12AComposition
+000000000041ddd4	cbz	w22, 0x41ddf0
+000000000041ddd8	cbnz	w0, 0x41ddf0
+000000000041dddc	mov	x0, x20
+000000000041dde0	mov	x1, x21
+000000000041dde4	bl	__Z32MigrateSomePendingInfoToFinalMobP12ACompositionS0_
+000000000041dde8	mov	w0, #0x2
+000000000041ddec	b	0x41e000
+000000000041ddf0	cbz	w0, 0x41de30
+000000000041ddf4	cbnz	w22, 0x41de30
+000000000041ddf8	mov	x0, x21
+000000000041ddfc	mov	x1, x20
+000000000041de00	bl	__Z32MigrateSomePendingInfoToFinalMobP12ACompositionS0_
+000000000041de04	cbz	x19, 0x41dffc
+000000000041de08	sub	x8, x29, #0x78
+000000000041de0c	mov	x0, x20
+000000000041de10	bl	__ZNK12AComposition8GetMobIDEv
+000000000041de14	ldr	x8, [x19]
+000000000041de18	ldr	x8, [x8, #0x68]
+000000000041de1c	sub	x1, x29, #0x78
+000000000041de20	mov	x0, x19
+000000000041de24	mov	w2, #0x7fffffff
+000000000041de28	blr	x8
+000000000041de2c	b	0x41dffc
+000000000041de30	ldr	x8, [x21]
+000000000041de34	ldr	x8, [x8, #0xa30]
+000000000041de38	mov	x0, x21
+000000000041de3c	blr	x8
+000000000041de40	mov	x22, x0
+000000000041de44	ldr	x8, [x20]
+000000000041de48	ldr	x8, [x8, #0xa30]
+000000000041de4c	mov	x0, x20
+000000000041de50	blr	x8
+000000000041de54	mov	x23, x0
+000000000041de58	mov	x0, x21
+000000000041de5c	bl	__Z15CMGetGenerationP12AComposition
+000000000041de60	mov	x24, x0
+000000000041de64	mov	x0, x20
+000000000041de68	bl	__Z15CMGetGenerationP12AComposition
+000000000041de6c	mov	x25, x0
+000000000041de70	ldr	x8, [x20]
+000000000041de74	ldr	x8, [x8, #0x9e0]
+000000000041de78	mov	x0, x20
+000000000041de7c	blr	x8
+000000000041de80	cmp	w0, #0x3
+000000000041de84	b.ne	0x41dea4
+000000000041de88	mov	x0, x20
+000000000041de8c	bl	__ZNK12AComposition12GetMediaDescEv
+000000000041de90	cbz	x0, 0x41dea4
+000000000041de94	bl	__ZN10AMediaDesc14GetPhysMobTypeEv
+000000000041de98	cmp	w0, #0x2
+000000000041de9c	cset	w26, eq
+000000000041dea0	b	0x41dea8
+000000000041dea4	mov	w26, #0x0
+000000000041dea8	cmp	w25, w24
+000000000041deac	b.hi	0x41ded0
+000000000041deb0	ldr	x8, [x20]
+000000000041deb4	ldr	x8, [x8, #0x9e0]
+000000000041deb8	mov	x0, x20
+000000000041debc	blr	x8
+000000000041dec0	cmp	w0, #0x2
+000000000041dec4	cset	w8, ne
+000000000041dec8	bic	w8, w8, w26
+000000000041decc	tbnz	w8, #0x0, 0x41e038
+000000000041ded0	add	x0, sp, #0x70
+000000000041ded4	bl	0xe92790 ; symbol stub for: __ZN6XErrorC1Ev
+000000000041ded8	orr	x8, x22, x23
+000000000041dedc	cbnz	x8, 0x41df34
+000000000041dee0	ldr	x8, [x20]
+000000000041dee4	ldr	x8, [x8, #0x1f8]
+000000000041dee8	mov	x0, x20
+000000000041deec	blr	x8
+000000000041def0	mov	x22, x0
+000000000041def4	ldr	x8, [x21]
+000000000041def8	ldr	x8, [x8, #0x1f8]
+000000000041defc	mov	x0, x21
+000000000041df00	blr	x8
+000000000041df04	cmp	w22, w0
+000000000041df08	b.le	0x41df34
+000000000041df0c	ldr	x8, [x20]
+000000000041df10	ldr	x8, [x8, #0xae8]
+000000000041df14	mov	x0, x20
+000000000041df18	blr	x8
+000000000041df1c	cbnz	w0, 0x41df34
+000000000041df20	ldr	x8, [x21]
+000000000041df24	ldr	x8, [x8, #0xae8]
+000000000041df28	mov	x0, x21
+000000000041df2c	blr	x8
+000000000041df30	cbz	w0, 0x41e0f0
+000000000041df34	add	x0, sp, #0x48
+000000000041df38	bl	0xe92790 ; symbol stub for: __ZN6XErrorC1Ev
+000000000041df3c	ldr	x8, [x21]
+000000000041df40	ldr	x8, [x8, #0xb40]
+000000000041df44	mov	x0, x21
+000000000041df48	blr	x8
+000000000041df4c	mov	x23, x0
+000000000041df50	add	x0, sp, #0x48
+000000000041df54	bl	0xe9279c ; symbol stub for: __ZN6XErrorD1Ev
+000000000041df58	mov	x0, x20
+000000000041df5c	mov	x1, x23
+000000000041df60	mov	w2, #0x1
+000000000041df64	bl	__Z12ResolveMergeP12ACompositionS0_h
+000000000041df68	mov	x22, x0
+000000000041df6c	add	x0, sp, #0x48
+000000000041df70	add	x1, sp, #0x70
+000000000041df74	bl	0xe91770 ; symbol stub for: __ZN21StSetCurrentExceptionC1EPK6XError
+000000000041df78	cbz	w22, 0x41df84
+000000000041df7c	ldr	x8, [sp, #0x80]
+000000000041df80	cbz	x8, 0x41df9c
+000000000041df84	cbz	x23, 0x41df9c
+000000000041df88	ldr	x8, [x23]
+000000000041df8c	ldr	x8, [x8]
+000000000041df90	mov	x0, x23
+000000000041df94	blr	x8
+000000000041df98	mov	x23, #0x0
+000000000041df9c	ldr	x8, [sp, #0x80]
+000000000041dfa0	cbz	x8, 0x41dfac
+000000000041dfa4	add	x0, sp, #0x70
+000000000041dfa8	bl	0xe8e9e0 ; symbol stub for: __Z12xraisexerrorRK6XError
+000000000041dfac	add	x0, sp, #0x48
+000000000041dfb0	bl	0xe9177c ; symbol stub for: __ZN21StSetCurrentExceptionD1Ev
+000000000041dfb4	add	x0, sp, #0x70
+000000000041dfb8	bl	0xe9279c ; symbol stub for: __ZN6XErrorD1Ev
+000000000041dfbc	cbz	w22, 0x41e038
+000000000041dfc0	bl	__Z17GetMobManProtocolv
+000000000041dfc4	ldr	x8, [x0]
+000000000041dfc8	ldr	x8, [x8, #0xe0]
+000000000041dfcc	mov	x1, x23
+000000000041dfd0	blr	x8
+000000000041dfd4	cbz	x19, 0x41dffc
+000000000041dfd8	sub	x8, x29, #0x78
+000000000041dfdc	mov	x0, x20
+000000000041dfe0	bl	__ZNK12AComposition8GetMobIDEv
+000000000041dfe4	ldr	x8, [x19]
+000000000041dfe8	ldr	x8, [x8, #0x68]
+000000000041dfec	sub	x1, x29, #0x78
+000000000041dff0	mov	x0, x19
+000000000041dff4	mov	w2, #0x7fffffff
+000000000041dff8	blr	x8
+000000000041dffc	mov	w0, #0x3
+000000000041e000	ldur	x8, [x29, #-0x58]
+000000000041e004	adrp	x9, 3570 ; 0x1210000
+000000000041e008	ldr	x9, [x9, #0xdc0] ; literal pool symbol address: ___stack_chk_guard
+000000000041e00c	ldr	x9, [x9]
+000000000041e010	cmp	x9, x8
+000000000041e014	b.ne	0x41e10c
+000000000041e018	ldp	x29, x30, [sp, #0x110]
+000000000041e01c	ldp	x20, x19, [sp, #0x100]
+000000000041e020	ldp	x22, x21, [sp, #0xf0]
+000000000041e024	ldp	x24, x23, [sp, #0xe0]
+000000000041e028	ldp	x26, x25, [sp, #0xd0]
+000000000041e02c	ldp	x28, x27, [sp, #0xc0]
+000000000041e030	add	sp, sp, #0x120
+000000000041e034	ret
+000000000041e038	ldr	x8, [x20]
+000000000041e03c	ldr	x8, [x8, #0x9e0]
+000000000041e040	mov	x0, x20
+000000000041e044	blr	x8
+000000000041e048	cmp	w0, #0x3
+000000000041e04c	b.ne	0x41dde8
+000000000041e050	mov	x0, x20
+000000000041e054	bl	__ZNK12AComposition12GetMediaDescEv
+000000000041e058	cbz	x0, 0x41dde8
+000000000041e05c	adrp	x1, 3603 ; 0x1231000
+000000000041e060	add	x1, x1, #0x4c8
+000000000041e064	adrp	x2, 3600 ; 0x122e000
+000000000041e068	add	x2, x2, #0x338
+000000000041e06c	mov	x3, #0x0
+000000000041e070	bl	0xe95088 ; symbol stub for: ___dynamic_cast
+000000000041e074	cbz	x0, 0x41dde8
+000000000041e078	ldr	x8, [x0]
+000000000041e07c	ldr	x8, [x8, #0x2a0]
+000000000041e080	blr	x8
+000000000041e084	cmp	w0, #0x1
+000000000041e088	b.lt	0x41dde8
+000000000041e08c	mov	x0, x21
+000000000041e090	bl	__ZNK12AComposition12GetMediaDescEv
+000000000041e094	cbz	x0, 0x41dde8
+000000000041e098	adrp	x1, 3603 ; 0x1231000
+000000000041e09c	add	x1, x1, #0x4c8
+000000000041e0a0	adrp	x2, 3600 ; 0x122e000
+000000000041e0a4	add	x2, x2, #0x338
+000000000041e0a8	mov	x3, #0x0
+000000000041e0ac	bl	0xe95088 ; symbol stub for: ___dynamic_cast
+000000000041e0b0	cbz	x0, 0x41dde8
+000000000041e0b4	ldr	x8, [x0]
+000000000041e0b8	ldr	x8, [x8, #0x2a0]
+000000000041e0bc	blr	x8
+000000000041e0c0	cbnz	w0, 0x41dde8
+000000000041e0c4	cbz	x19, 0x41dffc
+000000000041e0c8	sub	x8, x29, #0x78
+000000000041e0cc	mov	x0, x20
+000000000041e0d0	bl	__ZNK12AComposition8GetMobIDEv
+000000000041e0d4	ldr	x8, [x19]
+000000000041e0d8	ldr	x8, [x8, #0x68]
+000000000041e0dc	sub	x1, x29, #0x78
+000000000041e0e0	mov	x0, x19
+000000000041e0e4	mov	w2, #0x7fffffff
+000000000041e0e8	blr	x8
+000000000041e0ec	b	0x41dffc
+000000000041e0f0	mov	x0, x21
+000000000041e0f4	mov	x1, x20
+000000000041e0f8	mov	w2, #0x0
+000000000041e0fc	bl	__Z12ResolveMergeP12ACompositionS0_h
+000000000041e100	mov	x22, x0
+000000000041e104	mov	x23, #0x0
+000000000041e108	b	0x41df6c
+000000000041e10c	bl	0xe950d0 ; symbol stub for: ___stack_chk_fail
+000000000041e110	mov	x22, x0
+000000000041e114	cbz	w1, 0x41e5ac
+000000000041e118	mov	x24, x1
+000000000041e11c	b	0x41e3c0
+000000000041e120	mov	x23, x1
+000000000041e124	mov	x22, x0
+000000000041e128	cbz	w23, 0x41e5ac
+000000000041e12c	mov	x0, x22
+000000000041e130	cmp	w23, #0x3
+000000000041e134	b.ne	0x41e188
+000000000041e138	bl	0xe95010 ; symbol stub for: ___cxa_begin_catch
+000000000041e13c	mov	x22, x0
+000000000041e140	add	x8, sp, #0x48
+000000000041e144	add	x0, x8, #0x8
+000000000041e148	add	x1, x22, #0x8
+000000000041e14c	bl	__ZN11RefCountPtrI13ErrorStackObj16SplittablePolicyEaSERKS2_
+000000000041e150	ldr	q0, [x22, #0x10]
+000000000041e154	ldr	w8, [x22, #0x20]
+000000000041e158	str	w8, [sp, #0x68]
+000000000041e15c	stur	q0, [sp, #0x58]
+000000000041e160	ldr	x8, [x22]
+000000000041e164	ldr	x8, [x8, #0x10]
+000000000041e168	mov	x0, x22
+000000000041e16c	blr	x8
+000000000041e170	adrp	x1, 3049 ; 0x1007000
+000000000041e174	add	x1, x1, #0xb40 ; literal pool for: "/Volumes/Media/Builds/workspace/MC/MCRelease_Installer/Mac_Build/coresw/ame/src/msmdb/LocalMDB.c"
+000000000041e178	mov	w2, #0x93d
+000000000041e17c	bl	0xe8f88c ; symbol stub for: __Z27xLogCaughtXErrorAsCoreEventPKcS0_i
+000000000041e180	bl	0xe95028 ; symbol stub for: ___cxa_end_catch
+000000000041e184	b	0x41e2a4
+000000000041e188	bl	0xe95010 ; symbol stub for: ___cxa_begin_catch
+000000000041e18c	cmp	w23, #0x2
+000000000041e190	b.ne	0x41e234
+000000000041e194	mov	x22, x0
+000000000041e198	ldr	x8, [x0]
+000000000041e19c	ldr	x8, [x8, #0x10]
+000000000041e1a0	blr	x8
+000000000041e1a4	stp	x0, xzr, [sp, #0x8]
+000000000041e1a8	adrp	x8, 2961 ; 0xfaf000
+000000000041e1ac	add	x8, x8, #0x14f ; literal pool for: "str what"
+000000000041e1b0	str	x8, [sp]
+000000000041e1b4	adrp	x1, 2961 ; 0xfaf000
+000000000041e1b8	add	x1, x1, #0x140 ; literal pool for: "std::exception"
+000000000041e1bc	add	x23, sp, #0x20
+000000000041e1c0	add	x0, sp, #0x20
+000000000041e1c4	bl	0xe92784 ; symbol stub for: __ZN6XErrorC1EPKcz
+000000000041e1c8	add	x8, sp, #0x48
+000000000041e1cc	add	x0, x8, #0x8
+000000000041e1d0	add	x1, x23, #0x8
+000000000041e1d4	bl	__ZN11RefCountPtrI13ErrorStackObj16SplittablePolicyEaSERKS2_
+000000000041e1d8	ldr	q0, [sp, #0x30]
+000000000041e1dc	stur	q0, [sp, #0x58]
+000000000041e1e0	ldr	w8, [sp, #0x40]
+000000000041e1e4	str	w8, [sp, #0x68]
+000000000041e1e8	add	x0, sp, #0x20
+000000000041e1ec	bl	0xe9279c ; symbol stub for: __ZN6XErrorD1Ev
+000000000041e1f0	ldr	x8, [x22]
+000000000041e1f4	ldr	x8, [x8, #0x10]
+000000000041e1f8	mov	x0, x22
+000000000041e1fc	blr	x8
+000000000041e200	adrp	x1, 3049 ; 0x1007000
+000000000041e204	add	x1, x1, #0xb40 ; literal pool for: "/Volumes/Media/Builds/workspace/MC/MCRelease_Installer/Mac_Build/coresw/ame/src/msmdb/LocalMDB.c"
+000000000041e208	mov	w2, #0x93d
+000000000041e20c	bl	0xe8f9a0 ; symbol stub for: __Z33xLogCaughtStdExceptionAsCoreEventPKcS0_i
+000000000041e210	adrp	x8, 3568 ; 0x120e000
+000000000041e214	ldr	x8, [x8, #0xd00] ; literal pool symbol address: ___logFunc
+000000000041e218	ldr	x8, [x8]
+000000000041e21c	cbz	x8, 0x41e22c
+000000000041e220	adrp	x0, 2962 ; 0xfb0000
+000000000041e224	add	x0, x0, #0x83 ; literal pool for: "Caught non-xraise exception!\n"
+000000000041e228	blr	x8
+000000000041e22c	bl	0xe95028 ; symbol stub for: ___cxa_end_catch
+000000000041e230	b	0x41e2a4
+000000000041e234	str	xzr, [sp]
+000000000041e238	adrp	x1, 2961 ; 0xfaf000
+000000000041e23c	add	x1, x1, #0xd4 ; literal pool for: "A serious error has occurred!\nIt is recommended that you immediately save your work and restart the system."
+000000000041e240	add	x22, sp, #0x20
+000000000041e244	add	x0, sp, #0x20
+000000000041e248	bl	0xe92784 ; symbol stub for: __ZN6XErrorC1EPKcz
+000000000041e24c	add	x8, sp, #0x48
+000000000041e250	add	x0, x8, #0x8
+000000000041e254	add	x1, x22, #0x8
+000000000041e258	bl	__ZN11RefCountPtrI13ErrorStackObj16SplittablePolicyEaSERKS2_
+000000000041e25c	ldr	q0, [sp, #0x30]
+000000000041e260	stur	q0, [sp, #0x58]
+000000000041e264	ldr	w8, [sp, #0x40]
+000000000041e268	str	w8, [sp, #0x68]
+000000000041e26c	add	x0, sp, #0x20
+000000000041e270	bl	0xe9279c ; symbol stub for: __ZN6XErrorD1Ev
+000000000041e274	adrp	x0, 3049 ; 0x1007000
+000000000041e278	add	x0, x0, #0xb40 ; literal pool for: "/Volumes/Media/Builds/workspace/MC/MCRelease_Installer/Mac_Build/coresw/ame/src/msmdb/LocalMDB.c"
+000000000041e27c	mov	w1, #0x93d
+000000000041e280	bl	0xe8fa18 ; symbol stub for: __Z37xLogCaughtUnknownExceptionAsCoreEventPKci
+000000000041e284	adrp	x8, 3568 ; 0x120e000
+000000000041e288	ldr	x8, [x8, #0xd00] ; literal pool symbol address: ___logFunc
+000000000041e28c	ldr	x8, [x8]
+000000000041e290	cbz	x8, 0x41e2a0
+000000000041e294	adrp	x0, 2962 ; 0xfb0000
+000000000041e298	add	x0, x0, #0x83 ; literal pool for: "Caught non-xraise exception!\n"
+000000000041e29c	blr	x8
+000000000041e2a0	bl	0xe95028 ; symbol stub for: ___cxa_end_catch
+000000000041e2a4	add	x0, sp, #0x20
+000000000041e2a8	add	x1, sp, #0x48
+000000000041e2ac	bl	0xe91770 ; symbol stub for: __ZN21StSetCurrentExceptionC1EPK6XError
+000000000041e2b0	add	x0, sp, #0x20
+000000000041e2b4	bl	0xe9177c ; symbol stub for: __ZN21StSetCurrentExceptionD1Ev
+000000000041e2b8	add	x0, sp, #0x48
+000000000041e2bc	bl	0xe9279c ; symbol stub for: __ZN6XErrorD1Ev
+000000000041e2c0	mov	w22, #0x0
+000000000041e2c4	b	0x41e104
+000000000041e2c8	b	0x41e350
+000000000041e2cc	mov	x22, x0
+000000000041e2d0	cbz	w1, 0x41e5ac
+000000000041e2d4	mov	x24, x1
+000000000041e2d8	add	x0, sp, #0x20
+000000000041e2dc	bl	0xe9279c ; symbol stub for: __ZN6XErrorD1Ev
+000000000041e2e0	b	0x41e2f0
+000000000041e2e4	mov	x24, x1
+000000000041e2e8	mov	x22, x0
+000000000041e2ec	cbz	w24, 0x41e5ac
+000000000041e2f0	b	0x41e330
+000000000041e2f4	b	0x41e350
+000000000041e2f8	mov	x22, x0
+000000000041e2fc	cbz	w1, 0x41e5ac
+000000000041e300	mov	x23, x1
+000000000041e304	add	x0, sp, #0x20
+000000000041e308	bl	0xe9279c ; symbol stub for: __ZN6XErrorD1Ev
+000000000041e30c	b	0x41e31c
+000000000041e310	mov	x23, x1
+000000000041e314	mov	x22, x0
+000000000041e318	cbz	w23, 0x41e5ac
+000000000041e31c	mov	x24, x23
+000000000041e320	b	0x41e344
+000000000041e324	mov	x24, x1
+000000000041e328	mov	x22, x0
+000000000041e32c	cbz	w24, 0x41e5ac
+000000000041e330	bl	0xe95028 ; symbol stub for: ___cxa_end_catch
+000000000041e334	b	0x41e370
+000000000041e338	mov	x24, x1
+000000000041e33c	mov	x22, x0
+000000000041e340	cbz	w24, 0x41e5ac
+000000000041e344	bl	0xe95028 ; symbol stub for: ___cxa_end_catch
+000000000041e348	b	0x41e370
+000000000041e34c	b	0x41e350
+000000000041e350	mov	x22, x0
+000000000041e354	cbz	w1, 0x41e5ac
+000000000041e358	mov	x24, x1
+000000000041e35c	b	0x41e370
+000000000041e360	mov	x22, x0
+000000000041e364	cbz	w1, 0x41e5ac
+000000000041e368	mov	x24, x1
+000000000041e36c	bl	0xe95028 ; symbol stub for: ___cxa_end_catch
+000000000041e370	add	x0, sp, #0x48
+000000000041e374	bl	0xe9279c ; symbol stub for: __ZN6XErrorD1Ev
+000000000041e378	b	0x41e388
+000000000041e37c	mov	x22, x0
+000000000041e380	cbz	w1, 0x41e5ac
+000000000041e384	mov	x24, x1
+000000000041e388	mov	x23, #0x0
+000000000041e38c	b	0x41e3c0
+000000000041e390	mov	x22, x0
+000000000041e394	b	0x41e3a4
+000000000041e398	mov	x22, x0
+000000000041e39c	add	x0, sp, #0x48
+000000000041e3a0	bl	0xe9177c ; symbol stub for: __ZN21StSetCurrentExceptionD1Ev
+000000000041e3a4	add	x0, sp, #0x70
+000000000041e3a8	bl	0xe9279c ; symbol stub for: __ZN6XErrorD1Ev
+000000000041e3ac	b	0x41e5ac
+000000000041e3b0	mov	x24, x1
+000000000041e3b4	mov	x22, x0
+000000000041e3b8	cbz	w24, 0x41e5ac
+000000000041e3bc	mov	x23, #0x0
+000000000041e3c0	mov	x0, x22
+000000000041e3c4	cmp	w24, #0x3
+000000000041e3c8	b.ne	0x41e41c
+000000000041e3cc	bl	0xe95010 ; symbol stub for: ___cxa_begin_catch
+000000000041e3d0	mov	x22, x0
+000000000041e3d4	add	x8, sp, #0x70
+000000000041e3d8	add	x0, x8, #0x8
+000000000041e3dc	add	x1, x22, #0x8
+000000000041e3e0	bl	__ZN11RefCountPtrI13ErrorStackObj16SplittablePolicyEaSERKS2_
+000000000041e3e4	ldr	q0, [x22, #0x10]
+000000000041e3e8	ldr	w8, [x22, #0x20]
+000000000041e3ec	str	w8, [sp, #0x90]
+000000000041e3f0	str	q0, [sp, #0x80]
+000000000041e3f4	ldr	x8, [x22]
+000000000041e3f8	ldr	x8, [x8, #0x10]
+000000000041e3fc	mov	x0, x22
+000000000041e400	blr	x8
+000000000041e404	adrp	x1, 3049 ; 0x1007000
+000000000041e408	add	x1, x1, #0xb40 ; literal pool for: "/Volumes/Media/Builds/workspace/MC/MCRelease_Installer/Mac_Build/coresw/ame/src/msmdb/LocalMDB.c"
+000000000041e40c	mov	w2, #0x949
+000000000041e410	bl	0xe8f88c ; symbol stub for: __Z27xLogCaughtXErrorAsCoreEventPKcS0_i
+000000000041e414	bl	0xe95028 ; symbol stub for: ___cxa_end_catch
+000000000041e418	b	0x41e538
+000000000041e41c	bl	0xe95010 ; symbol stub for: ___cxa_begin_catch
+000000000041e420	cmp	w24, #0x2
+000000000041e424	b.ne	0x41e4c8
+000000000041e428	mov	x22, x0
+000000000041e42c	ldr	x8, [x0]
+000000000041e430	ldr	x8, [x8, #0x10]
+000000000041e434	blr	x8
+000000000041e438	stp	x0, xzr, [sp, #0x8]
+000000000041e43c	adrp	x8, 2961 ; 0xfaf000
+000000000041e440	add	x8, x8, #0x14f ; literal pool for: "str what"
+000000000041e444	str	x8, [sp]
+000000000041e448	adrp	x1, 2961 ; 0xfaf000
+000000000041e44c	add	x1, x1, #0x140 ; literal pool for: "std::exception"
+000000000041e450	add	x24, sp, #0x48
+000000000041e454	add	x0, sp, #0x48
+000000000041e458	bl	0xe92784 ; symbol stub for: __ZN6XErrorC1EPKcz
+000000000041e45c	add	x8, sp, #0x70
+000000000041e460	add	x0, x8, #0x8
+000000000041e464	add	x1, x24, #0x8
+000000000041e468	bl	__ZN11RefCountPtrI13ErrorStackObj16SplittablePolicyEaSERKS2_
+000000000041e46c	ldur	q0, [sp, #0x58]
+000000000041e470	str	q0, [sp, #0x80]
+000000000041e474	ldr	w8, [sp, #0x68]
+000000000041e478	str	w8, [sp, #0x90]
+000000000041e47c	add	x0, sp, #0x48
+000000000041e480	bl	0xe9279c ; symbol stub for: __ZN6XErrorD1Ev
+000000000041e484	ldr	x8, [x22]
+000000000041e488	ldr	x8, [x8, #0x10]
+000000000041e48c	mov	x0, x22
+000000000041e490	blr	x8
+000000000041e494	adrp	x1, 3049 ; 0x1007000
+000000000041e498	add	x1, x1, #0xb40 ; literal pool for: "/Volumes/Media/Builds/workspace/MC/MCRelease_Installer/Mac_Build/coresw/ame/src/msmdb/LocalMDB.c"
+000000000041e49c	mov	w2, #0x949
+000000000041e4a0	bl	0xe8f9a0 ; symbol stub for: __Z33xLogCaughtStdExceptionAsCoreEventPKcS0_i
+000000000041e4a4	adrp	x8, 3568 ; 0x120e000
+000000000041e4a8	ldr	x8, [x8, #0xd00] ; literal pool symbol address: ___logFunc
+000000000041e4ac	ldr	x8, [x8]
+000000000041e4b0	cbz	x8, 0x41e4c0
+000000000041e4b4	adrp	x0, 2962 ; 0xfb0000
+000000000041e4b8	add	x0, x0, #0x83 ; literal pool for: "Caught non-xraise exception!\n"
+000000000041e4bc	blr	x8
+000000000041e4c0	bl	0xe95028 ; symbol stub for: ___cxa_end_catch
+000000000041e4c4	b	0x41e538
+000000000041e4c8	str	xzr, [sp]
+000000000041e4cc	adrp	x1, 2961 ; 0xfaf000
+000000000041e4d0	add	x1, x1, #0xd4 ; literal pool for: "A serious error has occurred!\nIt is recommended that you immediately save your work and restart the system."
+000000000041e4d4	add	x22, sp, #0x48
+000000000041e4d8	add	x0, sp, #0x48
+000000000041e4dc	bl	0xe92784 ; symbol stub for: __ZN6XErrorC1EPKcz
+000000000041e4e0	add	x8, sp, #0x70
+000000000041e4e4	add	x0, x8, #0x8
+000000000041e4e8	add	x1, x22, #0x8
+000000000041e4ec	bl	__ZN11RefCountPtrI13ErrorStackObj16SplittablePolicyEaSERKS2_
+000000000041e4f0	ldur	q0, [sp, #0x58]
+000000000041e4f4	str	q0, [sp, #0x80]
+000000000041e4f8	ldr	w8, [sp, #0x68]
+000000000041e4fc	str	w8, [sp, #0x90]
+000000000041e500	add	x0, sp, #0x48
+000000000041e504	bl	0xe9279c ; symbol stub for: __ZN6XErrorD1Ev
+000000000041e508	adrp	x0, 3049 ; 0x1007000
+000000000041e50c	add	x0, x0, #0xb40 ; literal pool for: "/Volumes/Media/Builds/workspace/MC/MCRelease_Installer/Mac_Build/coresw/ame/src/msmdb/LocalMDB.c"
+000000000041e510	mov	w1, #0x949
+000000000041e514	bl	0xe8fa18 ; symbol stub for: __Z37xLogCaughtUnknownExceptionAsCoreEventPKci
+000000000041e518	adrp	x8, 3568 ; 0x120e000
+000000000041e51c	ldr	x8, [x8, #0xd00] ; literal pool symbol address: ___logFunc
+000000000041e520	ldr	x8, [x8]
+000000000041e524	cbz	x8, 0x41e534
+000000000041e528	adrp	x0, 2962 ; 0xfb0000
+000000000041e52c	add	x0, x0, #0x83 ; literal pool for: "Caught non-xraise exception!\n"
+000000000041e530	blr	x8
+000000000041e534	bl	0xe95028 ; symbol stub for: ___cxa_end_catch
+000000000041e538	mov	w22, #0x0
+000000000041e53c	b	0x41df6c
+000000000041e540	b	0x41e390
+000000000041e544	mov	x22, x0
+000000000041e548	add	x0, sp, #0x48
+000000000041e54c	bl	0xe9279c ; symbol stub for: __ZN6XErrorD1Ev
+000000000041e550	b	0x41e574
+000000000041e554	b	0x41e570
+000000000041e558	b	0x41e390
+000000000041e55c	mov	x22, x0
+000000000041e560	add	x0, sp, #0x48
+000000000041e564	bl	0xe9279c ; symbol stub for: __ZN6XErrorD1Ev
+000000000041e568	b	0x41e580
+000000000041e56c	b	0x41e57c
+000000000041e570	mov	x22, x0
+000000000041e574	bl	0xe95028 ; symbol stub for: ___cxa_end_catch
+000000000041e578	b	0x41e3a4
+000000000041e57c	mov	x22, x0
+000000000041e580	bl	0xe95028 ; symbol stub for: ___cxa_end_catch
+000000000041e584	b	0x41e3a4
+000000000041e588	b	0x41e390
+000000000041e58c	mov	x22, x0
+000000000041e590	bl	0xe95028 ; symbol stub for: ___cxa_end_catch
+000000000041e594	b	0x41e3a4
+000000000041e598	mov	x22, x0
+000000000041e59c	cbz	w1, 0x41e5ac
+000000000041e5a0	mov	x0, x22
+000000000041e5a4	bl	___clang_call_terminate
+000000000041e5a8	mov	x22, x0
+000000000041e5ac	mov	x0, x22
+000000000041e5b0	bl	0xe8e560 ; symbol stub for: __Unwind_Resume

@@ -1,0 +1,64 @@
+diff --git a/src/bella/mdbparser.cpp b/src/bella/mdbparser.cpp
+index f2ede2a..2703f6e 100644
+--- a/src/bella/mdbparser.cpp
++++ b/src/bella/mdbparser.cpp
+@@ -574,7 +574,7 @@ namespace Bella
+ 			return valueOf(read) ? std::optional<T>(*valueOf(read)) : std::nullopt;
+ 		}
+ 
+-		// These known format/unit meanings are independent of the six-tag Kind rule.
++		// These known format/unit meanings are independent of the Kind rule.
+ 		bool audioDescriptor(QByteArrayView tag)
+ 		{
+ 			return named(tag, {"PCMA", "AIFD", "WAVD", "MPGA", "WAVE"});
+@@ -1901,7 +1901,7 @@ namespace Bella
+ 			file.ownDescriptorQualified = true;
+ 			if (named(cls, {"PCMA", "AIFD", "WAVD"}))
+ 				file.kind = MdbKind::Audio;
+-			else if (named(cls, {"CDCI", "RGBA", "MPGI"}))
++			else if (named(cls, {"CDCI", "RGBA", "MPGI", "JPED"}))
+ 				file.kind = MdbKind::Video;
+ 			const auto length = integerValue(image, descriptor, "OMFI:MDFL:Length");
+ 			if (length && *length >= 0)
+diff --git a/tests/tst_bellamdb.cpp b/tests/tst_bellamdb.cpp
+index 212fb73..572d39b 100644
+--- a/tests/tst_bellamdb.cpp
++++ b/tests/tst_bellamdb.cpp
+@@ -396,8 +396,8 @@ private slots:
+ 	void damagedSharedFoundation();
+ 	void ownedVideoFacts_data();
+ 	void ownedVideoFacts();
+-	void unknownKindKeepsQualifiedTiming_data();
+-	void unknownKindKeepsQualifiedTiming();
++	void descriptorKindKeepsQualifiedTiming_data();
++	void descriptorKindKeepsQualifiedTiming();
+ 	void originalRateEncoding_data();
+ 	void originalRateEncoding();
+ 	void zeroLengthIsKnown();
+@@ -629,14 +629,14 @@ void TestBellaMdb::ownedVideoFacts()
+ 	QCOMPARE(clip.type, Bella::MdbType::Media);
+ }
+ 
+-void TestBellaMdb::unknownKindKeepsQualifiedTiming_data()
++void TestBellaMdb::descriptorKindKeepsQualifiedTiming_data()
+ {
+ 	QTest::addColumn<bool>("audioFormat");
+-	QTest::newRow("JPED keeps picture timing with Unknown Kind") << false;
++	QTest::newRow("JPED keeps picture timing with Video Kind") << false;
+ 	QTest::newRow("MPGA keeps audio editing clock with Unknown Kind") << true;
+ }
+ 
+-void TestBellaMdb::unknownKindKeepsQualifiedTiming()
++void TestBellaMdb::descriptorKindKeepsQualifiedTiming()
+ {
+ 	QFETCH(bool, audioFormat);
+ 	auto writer = audioFormat ? audio("MPGA") : video();
+@@ -645,7 +645,7 @@ void TestBellaMdb::unknownKindKeepsQualifiedTiming()
+ 	const auto checked = parse(writer);
+ 	QCOMPARE(checked.reading, Bella::MdbReadResult::Completed);
+ 	const auto &facts = checked.catalogue.files.first();
+-	QCOMPARE(facts.kind, Bella::MdbKind::Unknown);
++	QCOMPARE(facts.kind, audioFormat ? Bella::MdbKind::Unknown : Bella::MdbKind::Video);
+ 	QVERIFY(facts.ownDescriptorQualified);
+ 	QVERIFY(facts.length);
+ 	QVERIFY(facts.sampleRate);

@@ -1,0 +1,18 @@
+int __ZN11ATrackGroup14NumVideoTracksEv() {
+    r31 = r31 + 0xffffffffffffffd0;
+    arg_10 = r20;
+    arg_18 = r19;
+    arg_20 = r29;
+    arg_28 = r30;
+    r19 = r0;
+    if ((*(*r0 + 0x708))() >= 0x1) {
+            r21 = 0x0;
+            do {
+                    (*(*r19 + 0x728))(r19, sign_extend_64(r21));
+                    asm { cinc       w20, w20, eq };
+                    r21 = sign_extend_64(r21 + 0x1);
+            } while (r21 < (*(*r19 + 0x708))(r19));
+    }
+    return 0x0;
+}
+

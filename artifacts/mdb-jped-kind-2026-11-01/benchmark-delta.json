@@ -1,0 +1,1369 @@
+{
+  "method": "Same Release harness before and after JPED-only fix; seven original Avid MDBs, one warmup then nine alternating-order isolated process repetitions, count-only output; peak process RSS. No heavy comparison jobs intentionally running concurrently.",
+  "runs": [
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 0,
+      "parse_ms": 21.656375,
+      "rss_bytes": 23740416,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 0,
+      "parse_ms": 21.057125,
+      "rss_bytes": 23740416,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 0,
+      "parse_ms": 0.659708,
+      "rss_bytes": 8339456,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 0,
+      "parse_ms": 0.641375,
+      "rss_bytes": 8388608,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 0,
+      "parse_ms": 4.527666,
+      "rss_bytes": 10502144,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 0,
+      "parse_ms": 4.557583,
+      "rss_bytes": 10420224,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 0,
+      "parse_ms": 20.892041,
+      "rss_bytes": 27967488,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 0,
+      "parse_ms": 20.792,
+      "rss_bytes": 27852800,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 0,
+      "parse_ms": 89.728666,
+      "rss_bytes": 104890368,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 0,
+      "parse_ms": 82.935291,
+      "rss_bytes": 104169472,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 0,
+      "parse_ms": 58.691375,
+      "rss_bytes": 77922304,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 0,
+      "parse_ms": 58.753125,
+      "rss_bytes": 77971456,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 0,
+      "parse_ms": 54.03275,
+      "rss_bytes": 74268672,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 0,
+      "parse_ms": 54.140166,
+      "rss_bytes": 74170368,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 1,
+      "parse_ms": 21.248416,
+      "rss_bytes": 23707648,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 1,
+      "parse_ms": 22.058,
+      "rss_bytes": 23773184,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 1,
+      "parse_ms": 0.676083,
+      "rss_bytes": 8339456,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 1,
+      "parse_ms": 0.645833,
+      "rss_bytes": 8323072,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 1,
+      "parse_ms": 4.532041,
+      "rss_bytes": 10354688,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 1,
+      "parse_ms": 4.503,
+      "rss_bytes": 10420224,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 1,
+      "parse_ms": 21.064583,
+      "rss_bytes": 27869184,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 1,
+      "parse_ms": 20.920166,
+      "rss_bytes": 27820032,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 1,
+      "parse_ms": 83.021,
+      "rss_bytes": 104136704,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 1,
+      "parse_ms": 83.284333,
+      "rss_bytes": 104136704,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 1,
+      "parse_ms": 58.62525,
+      "rss_bytes": 77889536,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 1,
+      "parse_ms": 58.682583,
+      "rss_bytes": 77971456,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 1,
+      "parse_ms": 54.491916,
+      "rss_bytes": 74203136,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 1,
+      "parse_ms": 66.0125,
+      "rss_bytes": 74203136,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 2,
+      "parse_ms": 21.141708,
+      "rss_bytes": 23789568,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 2,
+      "parse_ms": 21.452875,
+      "rss_bytes": 23724032,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 2,
+      "parse_ms": 0.656291,
+      "rss_bytes": 8372224,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 2,
+      "parse_ms": 0.647208,
+      "rss_bytes": 8323072,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 2,
+      "parse_ms": 4.515625,
+      "rss_bytes": 10436608,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 2,
+      "parse_ms": 4.62475,
+      "rss_bytes": 10371072,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 2,
+      "parse_ms": 20.954833,
+      "rss_bytes": 27869184,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 2,
+      "parse_ms": 20.898916,
+      "rss_bytes": 27934720,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 2,
+      "parse_ms": 82.189708,
+      "rss_bytes": 104202240,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 2,
+      "parse_ms": 82.288958,
+      "rss_bytes": 104103936,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 2,
+      "parse_ms": 58.7685,
+      "rss_bytes": 77955072,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 2,
+      "parse_ms": 58.731208,
+      "rss_bytes": 77987840,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 2,
+      "parse_ms": 54.211041,
+      "rss_bytes": 74153984,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 2,
+      "parse_ms": 54.47975,
+      "rss_bytes": 74186752,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 3,
+      "parse_ms": 21.153916,
+      "rss_bytes": 23691264,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 3,
+      "parse_ms": 21.282875,
+      "rss_bytes": 23642112,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 3,
+      "parse_ms": 0.6775,
+      "rss_bytes": 8323072,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 3,
+      "parse_ms": 0.661708,
+      "rss_bytes": 8339456,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 3,
+      "parse_ms": 4.549166,
+      "rss_bytes": 10436608,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 3,
+      "parse_ms": 4.612875,
+      "rss_bytes": 10518528,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 3,
+      "parse_ms": 20.840458,
+      "rss_bytes": 27836416,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 3,
+      "parse_ms": 20.9075,
+      "rss_bytes": 27901952,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 3,
+      "parse_ms": 82.524458,
+      "rss_bytes": 104087552,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 3,
+      "parse_ms": 83.420541,
+      "rss_bytes": 104120320,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 3,
+      "parse_ms": 58.33575,
+      "rss_bytes": 77873152,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 3,
+      "parse_ms": 58.443541,
+      "rss_bytes": 77971456,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 3,
+      "parse_ms": 54.288458,
+      "rss_bytes": 74170368,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 3,
+      "parse_ms": 54.385041,
+      "rss_bytes": 74186752,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 4,
+      "parse_ms": 22.78825,
+      "rss_bytes": 23838720,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 4,
+      "parse_ms": 21.267333,
+      "rss_bytes": 23658496,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 4,
+      "parse_ms": 0.665416,
+      "rss_bytes": 8323072,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 4,
+      "parse_ms": 0.659625,
+      "rss_bytes": 8306688,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 4,
+      "parse_ms": 4.543083,
+      "rss_bytes": 10403840,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 4,
+      "parse_ms": 4.573833,
+      "rss_bytes": 10387456,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 4,
+      "parse_ms": 21.487458,
+      "rss_bytes": 27951104,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 4,
+      "parse_ms": 21.034833,
+      "rss_bytes": 27869184,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 4,
+      "parse_ms": 83.689833,
+      "rss_bytes": 104153088,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 4,
+      "parse_ms": 83.099375,
+      "rss_bytes": 104169472,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 4,
+      "parse_ms": 59.314125,
+      "rss_bytes": 77922304,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 4,
+      "parse_ms": 58.552833,
+      "rss_bytes": 77889536,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 4,
+      "parse_ms": 54.910625,
+      "rss_bytes": 74153984,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 4,
+      "parse_ms": 54.19975,
+      "rss_bytes": 74203136,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 5,
+      "parse_ms": 21.408,
+      "rss_bytes": 23691264,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 5,
+      "parse_ms": 21.199666,
+      "rss_bytes": 23822336,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 5,
+      "parse_ms": 0.675958,
+      "rss_bytes": 8372224,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 5,
+      "parse_ms": 0.675916,
+      "rss_bytes": 8421376,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 5,
+      "parse_ms": 4.592083,
+      "rss_bytes": 10502144,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 5,
+      "parse_ms": 4.530708,
+      "rss_bytes": 10420224,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 5,
+      "parse_ms": 21.110541,
+      "rss_bytes": 27918336,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 5,
+      "parse_ms": 20.934875,
+      "rss_bytes": 27901952,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 5,
+      "parse_ms": 83.064375,
+      "rss_bytes": 104120320,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 5,
+      "parse_ms": 83.585375,
+      "rss_bytes": 104169472,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 5,
+      "parse_ms": 58.414916,
+      "rss_bytes": 77824000,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 5,
+      "parse_ms": 58.5655,
+      "rss_bytes": 77955072,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 5,
+      "parse_ms": 54.133458,
+      "rss_bytes": 74235904,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 5,
+      "parse_ms": 54.347541,
+      "rss_bytes": 74235904,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 6,
+      "parse_ms": 21.288541,
+      "rss_bytes": 23707648,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 6,
+      "parse_ms": 21.306916,
+      "rss_bytes": 23740416,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 6,
+      "parse_ms": 0.681583,
+      "rss_bytes": 8323072,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 6,
+      "parse_ms": 0.667125,
+      "rss_bytes": 8323072,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 6,
+      "parse_ms": 4.550666,
+      "rss_bytes": 10485760,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 6,
+      "parse_ms": 4.613708,
+      "rss_bytes": 10420224,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 6,
+      "parse_ms": 21.004791,
+      "rss_bytes": 27836416,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 6,
+      "parse_ms": 21.203708,
+      "rss_bytes": 27869184,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 6,
+      "parse_ms": 83.148666,
+      "rss_bytes": 104169472,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 6,
+      "parse_ms": 83.350416,
+      "rss_bytes": 104169472,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 6,
+      "parse_ms": 58.604208,
+      "rss_bytes": 77955072,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 6,
+      "parse_ms": 58.130125,
+      "rss_bytes": 77971456,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 6,
+      "parse_ms": 54.356416,
+      "rss_bytes": 74219520,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 6,
+      "parse_ms": 54.208166,
+      "rss_bytes": 74268672,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 7,
+      "parse_ms": 21.217958,
+      "rss_bytes": 23724032,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 7,
+      "parse_ms": 21.177416,
+      "rss_bytes": 23674880,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 7,
+      "parse_ms": 0.663375,
+      "rss_bytes": 8355840,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 7,
+      "parse_ms": 0.659041,
+      "rss_bytes": 8323072,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 7,
+      "parse_ms": 4.5495,
+      "rss_bytes": 10420224,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 7,
+      "parse_ms": 4.561041,
+      "rss_bytes": 10436608,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 7,
+      "parse_ms": 21.004583,
+      "rss_bytes": 27852800,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 7,
+      "parse_ms": 20.961416,
+      "rss_bytes": 27934720,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 7,
+      "parse_ms": 83.075958,
+      "rss_bytes": 104120320,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 7,
+      "parse_ms": 82.877541,
+      "rss_bytes": 104169472,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 7,
+      "parse_ms": 58.576458,
+      "rss_bytes": 77873152,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 7,
+      "parse_ms": 58.815958,
+      "rss_bytes": 77905920,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 7,
+      "parse_ms": 53.846375,
+      "rss_bytes": 74153984,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 7,
+      "parse_ms": 54.054791,
+      "rss_bytes": 74235904,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 8,
+      "parse_ms": 21.440958,
+      "rss_bytes": 23707648,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 8,
+      "parse_ms": 21.397583,
+      "rss_bytes": 23724032,
+      "files": 359,
+      "masters": 124
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 8,
+      "parse_ms": 0.667083,
+      "rss_bytes": 8339456,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 8,
+      "parse_ms": 0.676208,
+      "rss_bytes": 8372224,
+      "files": 2,
+      "masters": 2
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 8,
+      "parse_ms": 4.549166,
+      "rss_bytes": 10436608,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 8,
+      "parse_ms": 4.579458,
+      "rss_bytes": 10403840,
+      "files": 80,
+      "masters": 80
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 8,
+      "parse_ms": 21.247375,
+      "rss_bytes": 27885568,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 8,
+      "parse_ms": 21.061875,
+      "rss_bytes": 27934720,
+      "files": 392,
+      "masters": 153
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 8,
+      "parse_ms": 82.47625,
+      "rss_bytes": 104071168,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 8,
+      "parse_ms": 82.369708,
+      "rss_bytes": 104087552,
+      "files": 686,
+      "masters": 415
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 8,
+      "parse_ms": 58.689708,
+      "rss_bytes": 77955072,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 8,
+      "parse_ms": 58.388875,
+      "rss_bytes": 77922304,
+      "files": 525,
+      "masters": 353
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "before",
+      "repeat": 8,
+      "parse_ms": 54.82325,
+      "rss_bytes": 74186752,
+      "files": 471,
+      "masters": 293
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "version": "after",
+      "repeat": 8,
+      "parse_ms": 54.651666,
+      "rss_bytes": 74186752,
+      "files": 471,
+      "masters": 293
+    }
+  ],
+  "summary": [
+    {
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "before": {
+        "parse_ms_median": 21.288541,
+        "rss_bytes_median": 23740416
+      },
+      "after": {
+        "parse_ms_median": 21.267333,
+        "rss_bytes_median": 23724032
+      },
+      "time_change_percent": -0.09962166970483022,
+      "rss_change_bytes": -16384
+    },
+    {
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "before": {
+        "parse_ms_median": 0.661708,
+        "rss_bytes_median": 8339456
+      },
+      "after": {
+        "parse_ms_median": 0.667125,
+        "rss_bytes_median": 8339456
+      },
+      "time_change_percent": 0.8186390371583752,
+      "rss_change_bytes": 0
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "before": {
+        "parse_ms_median": 4.543083,
+        "rss_bytes_median": 10436608
+      },
+      "after": {
+        "parse_ms_median": 4.573833,
+        "rss_bytes_median": 10420224
+      },
+      "time_change_percent": 0.6768531413579693,
+      "rss_change_bytes": -16384
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "before": {
+        "parse_ms_median": 20.954833,
+        "rss_bytes_median": 27901952
+      },
+      "after": {
+        "parse_ms_median": 21.034833,
+        "rss_bytes_median": 27869184
+      },
+      "time_change_percent": 0.38177350303865154,
+      "rss_change_bytes": -32768
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "before": {
+        "parse_ms_median": 83.284333,
+        "rss_bytes_median": 104169472
+      },
+      "after": {
+        "parse_ms_median": 83.021,
+        "rss_bytes_median": 104120320
+      },
+      "time_change_percent": -0.3161855183495321,
+      "rss_change_bytes": -49152
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "before": {
+        "parse_ms_median": 58.689708,
+        "rss_bytes_median": 77955072
+      },
+      "after": {
+        "parse_ms_median": 58.552833,
+        "rss_bytes_median": 77889536
+      },
+      "time_change_percent": -0.2332180626967939,
+      "rss_change_bytes": -65536
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "before": {
+        "parse_ms_median": 54.356416,
+        "rss_bytes_median": 74203136
+      },
+      "after": {
+        "parse_ms_median": 54.208166,
+        "rss_bytes_median": 74186752
+      },
+      "time_change_percent": -0.2727368927340712,
+      "rss_change_bytes": -16384
+    }
+  ],
+  "sum_median_ms": {
+    "before": 243.778622,
+    "after": 243.325123
+  }
+}

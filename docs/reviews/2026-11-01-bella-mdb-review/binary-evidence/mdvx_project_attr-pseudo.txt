@@ -1,0 +1,90 @@
+/* @class MDVxOMFI */
+-(void *)getProjectAttributeForObjectAt:(unsigned int)arg2 {
+    r2 = arg2;
+    r0 = self;
+    var_40 = r26;
+    decomp_var_38 = r25;
+    r31 = r31 + 0xffffffffffffffb0;
+    var_30 = r24;
+    decomp_var_28 = r23;
+    var_20 = r22;
+    decomp_var_18 = r21;
+    var_10 = r20;
+    decomp_var_8 = r19;
+    saved_fp = r29;
+    decomp_var_m8 = r30;
+    if (r2 != -0x1) {
+            r19 = r0;
+            r0 = [r0 lookForProperty:0x1028e At:r2];
+            if (r0 != 0x0) {
+                    r0 = [r19 pDataFor:r0];
+                    if (r0 != 0x0) {
+                            r0 = [r19[0xe] TreefindNode:*(int32_t *)r0];
+                            if (r0 != -0x1) {
+                                    r0 = [r19 lookForProperty:0x1026b At:r0];
+                                    if (r0 != 0x0) {
+                                            r0 = [r19 pDataFor:r0];
+                                            if (r0 != 0x0) {
+                                                    r8 = *(int16_t *)r0;
+                                                    r20 = r0 + 0x2;
+                                                    r9 = r19[0x28];
+                                                    asm { rev        w10, w8 };
+                                                    r10 = r10 >> 0x10;
+                                                    if (r9 == 0x0) {
+                                                            r8 = r10;
+                                                    }
+                                                    if ((r8 & 0xffff) != 0x0) {
+                                                            r21 = 0x0;
+                                                            r23 = r8 & 0xffff;
+                                                            do {
+                                                                    r0 = r19[0xe];
+                                                                    r0 = [r0 TreefindNode:*(int32_t *)r20];
+                                                                    if (r0 != -0x1) {
+                                                                            r0 = [r19 lookForProperty:0x10257 At:r0];
+                                                                            if (r0 != 0x0) {
+                                                                                    r22 = r0;
+                                                                                    r0 = [r19 pDataFor:r22];
+                                                                                    if (r0 != 0x0) {
+                                                                                            if ((*(int16_t *)r0 ^ 0x505f | r0[0x2] ^ 0x4a) == 0x0) {
+                                                                                                    r22 = [[r19 GetStringForObjectAt:r22 + 0x1] retain];
+                                                                                                    [r21 release];
+                                                                                                    r21 = r22;
+                                                                                            }
+                                                                                    }
+                                                                            }
+                                                                    }
+                                                                    r20 = r20 + 0x8;
+                                                                    r23 = r23 - 0x1;
+                                                            } while (r23 != 0x0);
+                                                    }
+                                                    else {
+                                                            r21 = 0x0;
+                                                    }
+                                            }
+                                            else {
+                                                    r21 = 0x0;
+                                            }
+                                    }
+                                    else {
+                                            r21 = 0x0;
+                                    }
+                            }
+                            else {
+                                    r21 = 0x0;
+                            }
+                    }
+                    else {
+                            r21 = 0x0;
+                    }
+            }
+            else {
+                    r21 = 0x0;
+            }
+    }
+    else {
+            r21 = 0x0;
+    }
+    r0 = [r21 autorelease];
+    return r0;
+}
+

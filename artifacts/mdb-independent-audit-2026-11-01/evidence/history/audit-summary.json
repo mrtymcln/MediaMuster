@@ -1,0 +1,44 @@
+{
+  "scope": "Fresh native corpus only. No previous documentation, evidence, or fixtures used. Git source and current native MDB inputs only.",
+  "originalParserSnapshots": 27,
+  "modularSnapshots": 21,
+  "previousBellaSnapshots": 1,
+  "nativeInputsPerSnapshot": 13,
+  "historicalProcessRuns": 637,
+  "allProcessExitZero": true,
+  "coverageLimits": [
+    "Source-changing revisions of the original parser and MDB modules plus early shared Canon Bento/object/projection code were selected. Not every repository commit changing any transitive presentation helper was separately rebuilt.",
+    "Historical APIs expose different representations. Differences of raw coding labels, inferred labels, bit-depth representation, or absent dimensions must not automatically be treated as decoding errors.",
+    "Oct4 generic Canon readers were compared as object-graph APIs; application projection did not yet exist."
+  ],
+  "findings": [
+    {
+      "finding": "Original May heuristic clips do not follow owning objects",
+      "activeMasters": 1420,
+      "joined": 1236,
+      "missing": 184,
+      "clipNameDifferencesAmongJoined": 761,
+      "binDifferencesAmongJoined": 602,
+      "evidence": "heuristic-vs-current.json"
+    },
+    {
+      "finding": "Aug22 e15ec15 misses OMF entries and EDIT/1 legacy entries",
+      "files": 2156,
+      "masters": 1237,
+      "comparedToOct2Files": 2515,
+      "comparedToOct2Masters": 1421
+    },
+    {
+      "finding": "Original Oct2 merges inactive objects and returns retired SLATE; adds stale bin8645_v2 to active clip with no _ORG_BIN",
+      "evidence": "retired-object-findings.json"
+    },
+    {
+      "finding": "Oct7 shared Canon emits duplicate records and retired SLATE; Oct8 af25b2d onward corrects native active membership",
+      "evidence": "modular-membership-summary.json"
+    },
+    {
+      "finding": "Previous Bella f287b1d and current20220f2 reports equal on all13 native inputs, excluding timing",
+      "evidence": "bella-f287b1d/run-summary.json"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "date": "2026-11-01",
+  "change": "Bella MDB: classify qualified JPED descriptors as Video; update affected generated-control test. Other classifications unchanged.",
+  "modified_code": [
+    "src/bella/mdbparser.cpp",
+    "tests/tst_bellamdb.cpp"
+  ],
+  "git_head": "20220f2b4c2b7ff6ef3d017a77568e5edf7de7cd",
+  "source_sha256": {
+    "src/bella/mdbparser.cpp": "c06bb67e5d04f5473a9f70ea967d5896fee52d0f3abcacd545c7c2cfcf62bc45",
+    "tests/tst_bellamdb.cpp": "479fd66b83533a52479c1c277bd1c0d965540fb5b2be218d9432475f7788a363"
+  },
+  "before_baseline_executable_sha256": "6c539e38cdafda2585ee085204414ced8f326d6cef19e80e885a453460cdf11f",
+  "after_executable_sha256": "06e40f4e8211f5c0cc0075d5ea5d6dc6b614fffbfb0aeb8b6c4b338f52235231",
+  "fresh_original_inputs": 13,
+  "avid_databases": 7,
+  "unrelated_mdb_rejection_checks": 6,
+  "input_hashes_unchanged": true,
+  "report_comparisons": 26,
+  "only_semantic_change": {
+    "record_count": 30,
+    "descriptor": "JPED",
+    "Kind_before": "Unknown",
+    "Kind_after": "Video",
+    "parser_modes": [
+      "includePrecomputeDetails=true",
+      "includePrecomputeDetails=false"
+    ]
+  },
+  "live_file_records": 2515,
+  "live_master_records": 1420,
+  "oldscanner_kind_disagreements": 0,
+  "oldscanner_project_disagreements_unchanged": 86,
+  "native_mdvx": {
+    "inputs": 13,
+    "exits_zero": true,
+    "input_hashes_unchanged": true,
+    "avid_accepted": 7,
+    "unrelated_rejected": 6,
+    "live_composition_count": 1420,
+    "comparison_equals_previous": true,
+    "identity_join_files": 2515,
+    "identity_join_masters": 1420,
+    "comparison_differences_by_field": {
+      "project": 469
+    }
+  },
+  "independent_pymdb": {
+    "avid_inputs": 7,
+    "comparison_equals_previous": true,
+    "live_files": 2515,
+    "live_masters": 1420,
+    "mismatch_count": 0
+  },
+  "sanitizer": {
+    "runs": 298,
+    "original_inputs": 13,
+    "newly_generated_mutations": 136,
+    "failures": 0
+  },
+  "affected_regression_test": {
+    "selector": "descriptorKindKeepsQualifiedTiming",
+    "data_rows": [
+      "JPED Video with qualified picture timing",
+      "MPGA Unknown with qualified audio editing clock"
+    ],
+    "passed": true,
+    "checked_in_fixture_files_used": false,
+    "FIXTURES_DIR": "/tmp/mediamuster-mdb-jped-20261101/unused-fixtures"
+  },
+  "performance": {
+    "method": "Same Release harness before and after JPED-only fix; seven original Avid MDBs, one warmup then nine alternating-order isolated process repetitions, count-only output; peak process RSS. No heavy comparison jobs intentionally running concurrently.",
+    "repetitions_per_database_per_version": 9,
+    "before_sum_median_ms": 243.778622,
+    "after_sum_median_ms": 243.325123,
+    "per_database_time_change_percent_range": [
+      -0.3161855183495321,
+      0.8186390371583752
+    ],
+    "median_rss_change_bytes_range": [
+      -65536,
+      0
+    ],
+    "conclusion": "No measurable performance regression in this corpus; timing variations under 1%, no median peak RSS increase."
+  },
+  "prior_fresh_evidence_archive": "../mdb-independent-audit-2026-11-01/evidence.tar.gz",
+  "prior_archive_sha256": "1717a9b3366591a7bfbb18ca920a699c990a45f3a65d469b0bd9c2b03709f9b8",
+  "raw_rerun_directory": "/tmp/mediamuster-mdb-jped-20261101",
+  "scope": "Only JPED Kind fixed; other proposed improvements deferred."
+}

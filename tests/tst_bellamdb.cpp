@@ -396,8 +396,8 @@ private slots:
 	void damagedSharedFoundation();
 	void ownedVideoFacts_data();
 	void ownedVideoFacts();
-	void unknownKindKeepsQualifiedTiming_data();
-	void unknownKindKeepsQualifiedTiming();
+	void descriptorKindKeepsQualifiedTiming_data();
+	void descriptorKindKeepsQualifiedTiming();
 	void originalRateEncoding_data();
 	void originalRateEncoding();
 	void zeroLengthIsKnown();
@@ -629,14 +629,14 @@ void TestBellaMdb::ownedVideoFacts()
 	QCOMPARE(clip.type, Bella::MdbType::Media);
 }
 
-void TestBellaMdb::unknownKindKeepsQualifiedTiming_data()
+void TestBellaMdb::descriptorKindKeepsQualifiedTiming_data()
 {
 	QTest::addColumn<bool>("audioFormat");
-	QTest::newRow("JPED keeps picture timing with Unknown Kind") << false;
+	QTest::newRow("JPED keeps picture timing with Video Kind") << false;
 	QTest::newRow("MPGA keeps audio editing clock with Unknown Kind") << true;
 }
 
-void TestBellaMdb::unknownKindKeepsQualifiedTiming()
+void TestBellaMdb::descriptorKindKeepsQualifiedTiming()
 {
 	QFETCH(bool, audioFormat);
 	auto writer = audioFormat ? audio("MPGA") : video();
@@ -645,7 +645,7 @@ void TestBellaMdb::unknownKindKeepsQualifiedTiming()
 	const auto checked = parse(writer);
 	QCOMPARE(checked.reading, Bella::MdbReadResult::Completed);
 	const auto &facts = checked.catalogue.files.first();
-	QCOMPARE(facts.kind, Bella::MdbKind::Unknown);
+	QCOMPARE(facts.kind, audioFormat ? Bella::MdbKind::Unknown : Bella::MdbKind::Video);
 	QVERIFY(facts.ownDescriptorQualified);
 	QVERIFY(facts.length);
 	QVERIFY(facts.sampleRate);

@@ -1,0 +1,4314 @@
+[
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/category-BE-0.mdb",
+    "sha256": "91a06add88a2df194488437a9e8d8fa02e0bec0fc5e923cb963797f993117c22",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Precompute Category": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 1
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 1
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 44,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/category-BE-0.mdb",
+      "projectionDiagnostics": [],
+      "properties": 68,
+      "relationships": 6
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/category-BE-1.mdb",
+    "sha256": "2038ef5a470e052a61c5aa0eeeca5000c6b3ca4e477bad5a2674739dc1961082",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 1
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 44,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/category-BE-1.mdb",
+      "projectionDiagnostics": [
+        "OMFI:ATTR:AttrRefs on object 18000 is not a complete resolved reference list; dependent metadata remains unknown and recorded relationships are retained."
+      ],
+      "properties": 68,
+      "relationships": 7
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/category-BE-2.mdb",
+    "sha256": "510d3bc081392eba78ae47c187eea66c6162c526c9cfdd515a8d4857cc2d1e38",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 1
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 51,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/category-BE-2.mdb",
+      "projectionDiagnostics": [
+        "OMFI:ATTR:AttrRefs on object 18000 is not a complete resolved reference list; dependent metadata remains unknown and recorded relationships are retained."
+      ],
+      "properties": 82,
+      "relationships": 11
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/category-BE-3.mdb",
+    "sha256": "40f7120c9f9b9820f94ca3e05ad60786b7ff82ef0e61a0a154bc5013f290bfd6",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 1
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 51,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/category-BE-3.mdb",
+      "projectionDiagnostics": [
+        "OMFI:ATTB:ObjAttribute on object 18001 is not a complete resolved reference list; dependent metadata remains unknown and recorded relationships are retained."
+      ],
+      "properties": 82,
+      "relationships": 10
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/category-BE-4.mdb",
+    "sha256": "2bddb454fdb7421a9157d28b0ee444465b3e5e0183e33ee62aca38161ac1b5ba",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Precompute Category": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 2
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 1
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 51,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/category-BE-4.mdb",
+      "projectionDiagnostics": [
+        "OMFI:ATTB:ObjAttribute on object 18001 is not a complete resolved reference list; dependent metadata remains unknown and recorded relationships are retained."
+      ],
+      "properties": 82,
+      "relationships": 10
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/category-BE-5.mdb",
+    "sha256": "72207e8a9c04697a5f090d23b0aec29b38dbcaf21da0ce472348c48ce070f59d",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Precompute Category": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 2
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 1
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 51,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/category-BE-5.mdb",
+      "projectionDiagnostics": [
+        "OMFI:ATTB:ObjAttribute on object 18001 is not a complete resolved reference list; dependent metadata remains unknown and recorded relationships are retained."
+      ],
+      "properties": 82,
+      "relationships": 10
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/category-BE-6.mdb",
+    "sha256": "051a412f7558a13840cc650b2e1cbcd143ed5577c593a16c49a0fd1ac6ac03a9",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Precompute Category": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 2
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 1
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 51,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/category-BE-6.mdb",
+      "projectionDiagnostics": [
+        "OMFI:ATTB:ObjAttribute on object 18001 is not a complete resolved reference list; dependent metadata remains unknown and recorded relationships are retained."
+      ],
+      "properties": 82,
+      "relationships": 10
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/category-LE-0.mdb",
+    "sha256": "9de8c09e1c98f9594c089658974f5fe5413e28c6c96450cd78e46ec205b758a6",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Precompute Category": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 1
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 1
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 44,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/category-LE-0.mdb",
+      "projectionDiagnostics": [],
+      "properties": 68,
+      "relationships": 6
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/category-LE-1.mdb",
+    "sha256": "946a8d7dfd74a0f1179049424535f9a367b94aa6dc83a8e9ebf5a59b22e36830",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 1
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 44,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/category-LE-1.mdb",
+      "projectionDiagnostics": [
+        "OMFI:ATTR:AttrRefs on object 18000 is not a complete resolved reference list; dependent metadata remains unknown and recorded relationships are retained."
+      ],
+      "properties": 68,
+      "relationships": 7
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/category-LE-2.mdb",
+    "sha256": "40a6abdd0d43cc3d89909f7fb065b52f539352bfe96d8f3f544b13e84ff72070",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 1
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 51,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/category-LE-2.mdb",
+      "projectionDiagnostics": [
+        "OMFI:ATTR:AttrRefs on object 18000 is not a complete resolved reference list; dependent metadata remains unknown and recorded relationships are retained."
+      ],
+      "properties": 82,
+      "relationships": 11
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/category-LE-3.mdb",
+    "sha256": "710d6c39c907e7acff07d7802022f7fab3be5fccf035b1b6737abc900ef3ad78",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 1
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 51,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/category-LE-3.mdb",
+      "projectionDiagnostics": [
+        "OMFI:ATTB:ObjAttribute on object 18001 is not a complete resolved reference list; dependent metadata remains unknown and recorded relationships are retained."
+      ],
+      "properties": 82,
+      "relationships": 10
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/category-LE-4.mdb",
+    "sha256": "9bd4018f9bf5cfb4c19024b40c2060ff62b4c1d0124bac5e541c99966eaf23c7",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Precompute Category": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 2
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 1
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 51,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/category-LE-4.mdb",
+      "projectionDiagnostics": [
+        "OMFI:ATTB:ObjAttribute on object 18001 is not a complete resolved reference list; dependent metadata remains unknown and recorded relationships are retained."
+      ],
+      "properties": 82,
+      "relationships": 10
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/category-LE-5.mdb",
+    "sha256": "e472f933a65b49d48d379f0bf92e2dc9fce730fb0910f7701f3255bdcbbf134e",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Precompute Category": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 2
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 1
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 51,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/category-LE-5.mdb",
+      "projectionDiagnostics": [
+        "OMFI:ATTB:ObjAttribute on object 18001 is not a complete resolved reference list; dependent metadata remains unknown and recorded relationships are retained."
+      ],
+      "properties": 82,
+      "relationships": 10
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/category-LE-6.mdb",
+    "sha256": "d7f7e2b89dd3c6d1b6a024b02f0d5911c7b3f488b63e675bbb2f8250f01a23b2",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Precompute Category": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 2
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 1
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 51,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/category-LE-6.mdb",
+      "projectionDiagnostics": [
+        "OMFI:ATTB:ObjAttribute on object 18001 is not a complete resolved reference list; dependent metadata remains unknown and recorded relationships are retained."
+      ],
+      "properties": 82,
+      "relationships": 10
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/graph-BE-0.mdb",
+    "sha256": "7604979de6fd44db3db7fbe450a2f32be2d74189827ad8f838f96f4e3f1b03b8",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 0
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 41,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/graph-BE-0.mdb",
+      "projectionDiagnostics": [],
+      "properties": 63,
+      "relationships": 5
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/graph-BE-1.mdb",
+    "sha256": "9484bb2a05c129d6468e0bdb2ca6eee03b3cb29a5cad89a7969ee95d24bad676",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 0
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 41,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/graph-BE-1.mdb",
+      "projectionDiagnostics": [],
+      "properties": 63,
+      "relationships": 5
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/graph-BE-2.mdb",
+    "sha256": "270b79b25c96a1f68e82055fff5faf8d2a1d49c144ae2a0cbb8ce61294bc9f34",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 0
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 41,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/graph-BE-2.mdb",
+      "projectionDiagnostics": [],
+      "properties": 63,
+      "relationships": 5
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/graph-BE-3.mdb",
+    "sha256": "7d9dfa4ed8ac8aea3499f3c6288975775a2b244a951a5acf76b14832fce98e5c",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 0
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 43,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/graph-BE-3.mdb",
+      "projectionDiagnostics": [],
+      "properties": 67,
+      "relationships": 6
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/graph-BE-4.mdb",
+    "sha256": "0c12cff07b764f9686f9e878538e5227ef7f68399b966cc0553e25ae13c8d8ea",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 0
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 43,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/graph-BE-4.mdb",
+      "projectionDiagnostics": [],
+      "properties": 67,
+      "relationships": 6
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/graph-BE-5.mdb",
+    "sha256": "90498a8877f92e57855999eb374cec8e0b26850542554bd644c9930ebc749f64",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": false,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Project": [
+              {
+                "eligible": true,
+                "object": "object:31217",
+                "property": "OMFI:ATTB:StringAttribute",
+                "state": 1,
+                "value": "Unexpected-route Project"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 0
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 52,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/graph-BE-5.mdb",
+      "projectionDiagnostics": [
+        "MDB file-reference coverage is incomplete: a required root, source-file role, identity or media-descriptor interpretation is not established; absence cannot be determined."
+      ],
+      "properties": 82,
+      "relationships": 9
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/graph-BE-6.mdb",
+    "sha256": "338a36fe24d7b36171d515357a6b065709c99f5b1ff17a62971977196a8adbbd",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": false,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Project": [
+              {
+                "eligible": true,
+                "object": "object:31217",
+                "property": "OMFI:ATTB:StringAttribute",
+                "state": 1,
+                "value": "Unexpected-route Project"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 0
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 52,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/graph-BE-6.mdb",
+      "projectionDiagnostics": [
+        "MDB file-reference coverage is incomplete: a required root, source-file role, identity or media-descriptor interpretation is not established; absence cannot be determined."
+      ],
+      "properties": 83,
+      "relationships": 10
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/graph-LE-0.mdb",
+    "sha256": "7763c8a782b509a04912faaacbbd367f85348acb158d2ef740651660dcc7fdcf",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 0
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 41,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/graph-LE-0.mdb",
+      "projectionDiagnostics": [],
+      "properties": 63,
+      "relationships": 5
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/graph-LE-1.mdb",
+    "sha256": "bbed036d262448d8ded94120ca345451079a8e8acf933e61099b5eda7bbc3c29",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 0
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 41,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/graph-LE-1.mdb",
+      "projectionDiagnostics": [],
+      "properties": 63,
+      "relationships": 5
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/graph-LE-2.mdb",
+    "sha256": "ce3860ad0b3f2e6baf58ed5f4724521aebafe334c3de5dfccbe875264e02f8cf",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 0
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 41,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/graph-LE-2.mdb",
+      "projectionDiagnostics": [],
+      "properties": 63,
+      "relationships": 5
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/graph-LE-3.mdb",
+    "sha256": "1f9c426778a196193a36c5ea4ad6e2b7da86400c4d4989eaca036f4a259483e8",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 0
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 43,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/graph-LE-3.mdb",
+      "projectionDiagnostics": [],
+      "properties": 67,
+      "relationships": 6
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/graph-LE-4.mdb",
+    "sha256": "c8ea0f1718d2ba3f5b3a96c571708040a9feabd34bcb293d9fcaca13e6c6d28a",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": true,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 0
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 43,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/graph-LE-4.mdb",
+      "projectionDiagnostics": [],
+      "properties": 67,
+      "relationships": 6
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/graph-LE-5.mdb",
+    "sha256": "3e9711f94fc5f60cb80ecdd39957f3314cf6d429a6d03bb21c80a8bb6a9bd386",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": false,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Project": [
+              {
+                "eligible": true,
+                "object": "object:31217",
+                "property": "OMFI:ATTB:StringAttribute",
+                "state": 1,
+                "value": "Unexpected-route Project"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 0
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 52,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/graph-LE-5.mdb",
+      "projectionDiagnostics": [
+        "MDB file-reference coverage is incomplete: a required root, source-file role, identity or media-descriptor interpretation is not established; absence cannot be determined."
+      ],
+      "properties": 82,
+      "relationships": 9
+    },
+    "stderr": ""
+  },
+  {
+    "path": "/tmp/bella-mdb-inheritance-controls/graph-LE-6.mdb",
+    "sha256": "d8bc42b6ab852d7f4df2ca616e9e27964f05f5658784649f529518cf361dce39",
+    "exitCode": 0,
+    "report": {
+      "diagnostics": [],
+      "fileReferencesComplete": false,
+      "files": [
+        {
+          "fields": {
+            "Bit Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": "10-bit"
+              }
+            ],
+            "Component Depth": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:CDCI:ComponentWidth",
+                "state": 1,
+                "value": 10
+              }
+            ],
+            "File Duration": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:Length",
+                "state": 1,
+                "value": {
+                  "DisplayRate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Rate": {
+                    "Denominator": 1,
+                    "Numerator": 25
+                  },
+                  "Source": 1,
+                  "Units": 250
+                }
+              }
+            ],
+            "FileMobId": [
+              {
+                "eligible": true,
+                "object": "object:101",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Frame Rate": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:MDFL:SampleRate",
+                "state": 1,
+                "value": {
+                  "Denominator": 1,
+                  "Numerator": 25
+                }
+              }
+            ],
+            "Kind": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:ObjID",
+                "state": 1,
+                "value": 0
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Project": [
+              {
+                "eligible": true,
+                "object": "object:31217",
+                "property": "OMFI:ATTB:StringAttribute",
+                "state": 1,
+                "value": "Unexpected-route Project"
+              }
+            ],
+            "Resolution": [
+              {
+                "eligible": true,
+                "object": "object:201",
+                "property": "OMFI:DIDD:StoredWidth",
+                "state": 1,
+                "value": "1920x1080"
+              }
+            ]
+          },
+          "fileId": "060a2b3401010101.01010f0013000000.0b00000084030000.060e2b347f7f2a80",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "masters": [
+        {
+          "fields": {
+            "Clip Name": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:CPNT:Name",
+                "state": 1,
+                "value": "Master"
+              }
+            ],
+            "MasterMobId": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:MobID",
+                "state": 1,
+                "value": "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+              }
+            ],
+            "Type": [
+              {
+                "eligible": true,
+                "object": "object:301",
+                "property": "OMFI:MOBJ:UsageCode",
+                "state": 1,
+                "value": 0
+              }
+            ]
+          },
+          "fileId": "",
+          "masterIds": [
+            "060a2b3401010101.01010f0013000000.1600000084030000.060e2b347f7f2a80"
+          ]
+        }
+      ],
+      "objects": 52,
+      "outcome": 1,
+      "path": "/tmp/bella-mdb-inheritance-controls/graph-LE-6.mdb",
+      "projectionDiagnostics": [
+        "MDB file-reference coverage is incomplete: a required root, source-file role, identity or media-descriptor interpretation is not established; absence cannot be determined."
+      ],
+      "properties": 83,
+      "relationships": 10
+    },
+    "stderr": ""
+  }
+]

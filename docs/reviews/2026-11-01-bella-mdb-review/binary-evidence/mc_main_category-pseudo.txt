@@ -1,0 +1,909 @@
+int __Z13brDisplayableP5brRecPP7objinfoPb(void * arg0, void * * arg1, bool * arg2) {
+    r31 = r31 - 0x70;
+    var_20 = r22;
+    decomp_var_18 = r21;
+    var_10 = r20;
+    decomp_var_8 = r19;
+    saved_fp = r29;
+    decomp_var_m8 = r30;
+    r21 = arg2;
+    r19 = arg1;
+    r20 = arg0;
+    var_28 = **___stack_chk_guard;
+    if (arg2 != 0x0) {
+            *(int8_t *)r21 = 0x0;
+    }
+    r22 = *(*r19 + 0x30);
+    var_58 = r22;
+    r0 = GetMobManProtocol();
+    if (r0 == 0x0) goto loc_100db6038;
+    goto loc_100db5fb0;
+
+loc_100db6038:
+    *(*r19 + 0x30) = r22;
+    goto loc_100db61ec;
+
+loc_100db5fb0:
+    r0 = (*(*r0 + 0x58))();
+    *(*r19 + 0x30) = var_58;
+    if (r0 == 0x0) goto loc_100db61ec;
+    goto loc_100db5fe0;
+
+loc_100db61ec:
+    if (**___stack_chk_guard != var_28) {
+            __stack_chk_fail();
+    }
+    return r0;
+
+loc_100db5fe0:
+    r22 = r0;
+    r0 = (*(*r0 + 0x9e0))();
+    if (r20[0x16] == 0x0) goto loc_100db6044;
+    goto .l2;
+
+loc_100db6044:
+    r9 = *(int8_t *)(*r19 + 0x53);
+    r8 = r20[0x1b];
+    if (r9 == 0x0) goto loc_100db6098;
+    goto loc_100db6054;
+
+.l2:
+    if (r0 == 0x1) goto loc_100db605c;
+    goto loc_100db6000;
+
+loc_100db6098:
+    if ((r8 & 0x400) == 0x0) {
+            if (r0 != 0x3) {
+                    if ((r0 & 0xff) == 0x2) {
+                            if (AComposition::GetAppCode() == 0x1) {
+                                    if (AComposition::GetAppCode() == 0x1) {
+                                            var_50 = 0x0;
+                                            r0 = GetImportSettingAttrList(r22, &var_50);
+                                            if (r0 != 0x0 && ATrackGroup::NumVideoTracks() >= 0x2) {
+                                                    r8 = r20[0x1b];
+                                                    r8 = r8 >> 0xb;
+                                            }
+                                            else {
+                                                    r8 = r20[0x6c];
+                                                    r8 = r8 >> 0x6;
+                                            }
+                                            r8 = r8 & 0x1;
+                                            if (r21 != 0x0 && r8 != 0x0) {
+                                                    *(int8_t *)r21 = 0x1;
+                                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                                            }
+                                            else {
+                                                    if (r8 != 0x0) {
+                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                    }
+                                                    else {
+                                                            r0 = 0x0;
+                                                    }
+                                            }
+                                            if (**___stack_chk_guard != var_28) {
+                                                    __stack_chk_fail();
+                                            }
+                                    }
+                                    else {
+                                            if (AComposition::GetAppCode() != 0xc) {
+                                                    if (AComposition::GetAppCode() != 0xb) {
+                                                            r0 = AnyMediaIsAMA(r22);
+                                                            r8 = r20[0x1b];
+                                                            if (r0 != 0x0) {
+                                                                    asm { ubfx       w8, w8, #0x10, #0x1 };
+                                                            }
+                                                            else {
+                                                                    r8 = r8 & 0x1;
+                                                            }
+                                                            if (r21 != 0x0) {
+                                                                    if (r8 != 0x0) {
+                                                                            *(int8_t *)r21 = 0x1;
+                                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                                    }
+                                                                    else {
+                                                                            if (r8 != 0x0) {
+                                                                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                                            }
+                                                                            else {
+                                                                                    r0 = 0x0;
+                                                                            }
+                                                                    }
+                                                            }
+                                                            else {
+                                                                    if (r8 != 0x0) {
+                                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                                    }
+                                                                    else {
+                                                                            r0 = 0x0;
+                                                                    }
+                                                            }
+                                                            if (**___stack_chk_guard != var_28) {
+                                                                    __stack_chk_fail();
+                                                            }
+                                                    }
+                                                    else {
+                                                            r0 = 0x0;
+                                                            if (**___stack_chk_guard != var_28) {
+                                                                    r0 = 0x0;
+                                                                    __stack_chk_fail();
+                                                            }
+                                                    }
+                                            }
+                                            else {
+                                                    r0 = 0x0;
+                                                    if (**___stack_chk_guard != var_28) {
+                                                            r0 = 0x0;
+                                                            __stack_chk_fail();
+                                                    }
+                                            }
+                                    }
+                            }
+                            else {
+                                    r0 = 0x0;
+                                    if (**___stack_chk_guard != var_28) {
+                                            r0 = 0x0;
+                                            __stack_chk_fail();
+                                    }
+                            }
+                    }
+                    else {
+                            r0 = 0x0;
+                            if (**___stack_chk_guard != var_28) {
+                                    r0 = 0x0;
+                                    __stack_chk_fail();
+                            }
+                    }
+            }
+            else {
+                    r0 = AComposition::GetMediaDesc();
+                    if (r0 != 0x0) {
+                            if (AMediaDesc::GetPhysMobType() == 0x1) {
+                                    r0 = 0x0;
+                                    if (**___stack_chk_guard != var_28) {
+                                            r0 = 0x0;
+                                            __stack_chk_fail();
+                                    }
+                            }
+                            else {
+                                    r0 = AComposition::GetMediaDesc();
+                                    if (r0 != 0x0) {
+                                            r0 = AMediaDesc::GetPhysMobType();
+                                            r8 = r20[0x1b];
+                                            if (r0 == 0x1) {
+                                                    asm { ubfx       w8, w8, #0x8, #0x1 };
+                                            }
+                                            else {
+                                                    asm { ubfx       w8, w8, #0x3, #0x1 };
+                                            }
+                                            if (r21 != 0x0) {
+                                                    if (r8 != 0x0) {
+                                                            *(int8_t *)r21 = 0x1;
+                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                    }
+                                                    else {
+                                                            if (r8 != 0x0) {
+                                                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                            }
+                                                            else {
+                                                                    r0 = 0x0;
+                                                            }
+                                                    }
+                                            }
+                                            else {
+                                                    if (r8 != 0x0) {
+                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                    }
+                                                    else {
+                                                            r0 = 0x0;
+                                                    }
+                                            }
+                                    }
+                                    if (**___stack_chk_guard != var_28) {
+                                            __stack_chk_fail();
+                                    }
+                            }
+                    }
+                    else {
+                            if (**___stack_chk_guard != var_28) {
+                                    __stack_chk_fail();
+                            }
+                    }
+            }
+    }
+    else {
+            if (r0 != 0x1) {
+                    r8 = r0 & 0xff;
+                    if (r8 != 0x2) {
+                            if (r8 == 0x3) {
+                                    r0 = AComposition::GetMediaDesc();
+                                    if (r0 != 0x0) {
+                                            r0 = AMediaDesc::GetPhysMobType();
+                                            r8 = r20[0x1b];
+                                            if (r0 == 0x1) {
+                                                    asm { ubfx       w8, w8, #0x8, #0x1 };
+                                            }
+                                            else {
+                                                    asm { ubfx       w8, w8, #0x3, #0x1 };
+                                            }
+                                            if (r21 != 0x0) {
+                                                    if (r8 != 0x0) {
+                                                            *(int8_t *)r21 = 0x1;
+                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                    }
+                                                    else {
+                                                            if (r8 != 0x0) {
+                                                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                            }
+                                                            else {
+                                                                    r0 = 0x0;
+                                                            }
+                                                    }
+                                            }
+                                            else {
+                                                    if (r8 != 0x0) {
+                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                    }
+                                                    else {
+                                                            r0 = 0x0;
+                                                    }
+                                            }
+                                            if (**___stack_chk_guard != var_28) {
+                                                    __stack_chk_fail();
+                                            }
+                                    }
+                                    else {
+                                            if (**___stack_chk_guard != var_28) {
+                                                    __stack_chk_fail();
+                                            }
+                                    }
+                            }
+                            else {
+                                    r0 = 0x0;
+                                    if (**___stack_chk_guard != var_28) {
+                                            r0 = 0x0;
+                                            __stack_chk_fail();
+                                    }
+                            }
+                    }
+                    else {
+                            if (AComposition::GetAppCode() == 0x1) {
+                                    var_50 = 0x0;
+                                    r0 = GetImportSettingAttrList(r22, &var_50);
+                                    if (r0 != 0x0 && ATrackGroup::NumVideoTracks() >= 0x2) {
+                                            r8 = r20[0x1b];
+                                            r8 = r8 >> 0xb;
+                                    }
+                                    else {
+                                            r8 = r20[0x6c];
+                                            r8 = r8 >> 0x6;
+                                    }
+                                    r8 = r8 & 0x1;
+                                    if (r21 != 0x0) {
+                                            if (r8 != 0x0) {
+                                                    *(int8_t *)r21 = 0x1;
+                                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                                            }
+                                            else {
+                                                    if (r8 != 0x0) {
+                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                    }
+                                                    else {
+                                                            r0 = 0x0;
+                                                    }
+                                            }
+                                    }
+                                    else {
+                                            if (r8 != 0x0) {
+                                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                                            }
+                                            else {
+                                                    r0 = 0x0;
+                                            }
+                                    }
+                                    if (**___stack_chk_guard != var_28) {
+                                            __stack_chk_fail();
+                                    }
+                            }
+                            else {
+                                    if (AComposition::GetAppCode() != 0xc) {
+                                            if (AComposition::GetAppCode() != 0xb) {
+                                                    r0 = AnyMediaIsAMA(r22);
+                                                    r8 = r20[0x1b];
+                                                    if (r0 != 0x0) {
+                                                            asm { ubfx       w8, w8, #0x10, #0x1 };
+                                                    }
+                                                    else {
+                                                            r8 = r8 & 0x1;
+                                                    }
+                                                    if (r21 != 0x0) {
+                                                            if (r8 != 0x0) {
+                                                                    *(int8_t *)r21 = 0x1;
+                                                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                            }
+                                                            else {
+                                                                    if (r8 != 0x0) {
+                                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                                    }
+                                                                    else {
+                                                                            r0 = 0x0;
+                                                                    }
+                                                            }
+                                                    }
+                                                    else {
+                                                            if (r8 != 0x0) {
+                                                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                            }
+                                                            else {
+                                                                    r0 = 0x0;
+                                                            }
+                                                    }
+                                                    if (**___stack_chk_guard != var_28) {
+                                                            __stack_chk_fail();
+                                                    }
+                                            }
+                                            else {
+                                                    r0 = 0x0;
+                                                    if (**___stack_chk_guard != var_28) {
+                                                            r0 = 0x0;
+                                                            __stack_chk_fail();
+                                                    }
+                                            }
+                                    }
+                                    else {
+                                            r0 = 0x0;
+                                            if (**___stack_chk_guard != var_28) {
+                                                    r0 = 0x0;
+                                                    __stack_chk_fail();
+                                            }
+                                    }
+                            }
+                    }
+            }
+            else {
+                    r8 = AComposition::GetAppCode();
+                    r0 = 0x0;
+                    if (r8 > 0x3) {
+                            if (r8 <= 0xe) {
+                                    if (r8 != 0x4) {
+                                            if (r8 == 0x6) {
+                                                    r8 = r20[0x6c];
+                                                    r8 = r8 >> 0x7;
+                                                    if (r21 != 0x0 && r8 != 0x0) {
+                                                            *(int8_t *)r21 = 0x1;
+                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                    }
+                                                    else {
+                                                            if (r8 != 0x0) {
+                                                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                            }
+                                                            else {
+                                                                    r0 = 0x0;
+                                                            }
+                                                    }
+                                                    if (**___stack_chk_guard != var_28) {
+                                                            __stack_chk_fail();
+                                                    }
+                                            }
+                                            else {
+                                                    if (**___stack_chk_guard != var_28) {
+                                                            r0 = 0x0;
+                                                            __stack_chk_fail();
+                                                    }
+                                            }
+                                    }
+                                    else {
+                                            r8 = r20[0x6c];
+                                            asm { ubfx       w8, w8, #0x5, #0x1 };
+                                            if (r21 != 0x0) {
+                                                    if (r8 != 0x0) {
+                                                            *(int8_t *)r21 = 0x1;
+                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                    }
+                                                    else {
+                                                            if (r8 != 0x0) {
+                                                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                            }
+                                                            else {
+                                                                    r0 = 0x0;
+                                                            }
+                                                    }
+                                            }
+                                            else {
+                                                    if (r8 != 0x0) {
+                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                    }
+                                                    else {
+                                                            r0 = 0x0;
+                                                    }
+                                            }
+                                            if (**___stack_chk_guard != var_28) {
+                                                    __stack_chk_fail();
+                                            }
+                                    }
+                            }
+                            else {
+                                    asm { ccmp       w8, #0x11, #0x4, ne };
+                                    if (!asm { ccmp       w8, #0x11, #0x4, ne }) {
+                                            r8 = r20[0x1b];
+                                            asm { ubfx       w8, w8, #0xf, #0x1 };
+                                            if (r21 != 0x0) {
+                                                    if (r8 != 0x0) {
+                                                            *(int8_t *)r21 = 0x1;
+                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                    }
+                                                    else {
+                                                            if (r8 != 0x0) {
+                                                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                            }
+                                                            else {
+                                                                    r0 = 0x0;
+                                                            }
+                                                    }
+                                            }
+                                            else {
+                                                    if (r8 != 0x0) {
+                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                    }
+                                                    else {
+                                                            r0 = 0x0;
+                                                    }
+                                            }
+                                            if (**___stack_chk_guard != var_28) {
+                                                    __stack_chk_fail();
+                                            }
+                                    }
+                                    else {
+                                            if (**___stack_chk_guard != var_28) {
+                                                    r0 = 0x0;
+                                                    __stack_chk_fail();
+                                            }
+                                    }
+                            }
+                    }
+                    else {
+                            switch (r8) {
+                                case 0:
+                                    r8 = r20[0x6c];
+                                    asm { ubfx       w8, w8, #0x2, #0x1 };
+                                    if (r21 != 0x0) {
+                                            if (r8 != 0x0) {
+                                                    *(int8_t *)r21 = 0x1;
+                                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                                            }
+                                            else {
+                                                    if (r8 != 0x0) {
+                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                    }
+                                                    else {
+                                                            r0 = 0x0;
+                                                    }
+                                            }
+                                    }
+                                    else {
+                                            if (r8 != 0x0) {
+                                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                                            }
+                                            else {
+                                                    r0 = 0x0;
+                                            }
+                                    }
+                                    if (**___stack_chk_guard != var_28) {
+                                            __stack_chk_fail();
+                                    }
+                                    break;
+                                case 2:
+                                    r8 = r20[0x6c];
+                                    asm { ubfx       w8, w8, #0x1, #0x1 };
+                                    if (r21 != 0x0) {
+                                            if (r8 != 0x0) {
+                                                    *(int8_t *)r21 = 0x1;
+                                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                                            }
+                                            else {
+                                                    if (r8 != 0x0) {
+                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                    }
+                                                    else {
+                                                            r0 = 0x0;
+                                                    }
+                                            }
+                                    }
+                                    else {
+                                            if (r8 != 0x0) {
+                                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                                            }
+                                            else {
+                                                    r0 = 0x0;
+                                            }
+                                    }
+                                    if (**___stack_chk_guard != var_28) {
+                                            __stack_chk_fail();
+                                    }
+                                    break;
+                                default:
+                                    if (r8 == 0x3) {
+                                            r8 = r20[0x6c];
+                                            asm { ubfx       w8, w8, #0x4, #0x1 };
+                                            if (r21 != 0x0) {
+                                                    if (r8 != 0x0) {
+                                                            *(int8_t *)r21 = 0x1;
+                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                    }
+                                                    else {
+                                                            if (r8 != 0x0) {
+                                                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                            }
+                                                            else {
+                                                                    r0 = 0x0;
+                                                            }
+                                                    }
+                                            }
+                                            else {
+                                                    if (r8 != 0x0) {
+                                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                                    }
+                                                    else {
+                                                            r0 = 0x0;
+                                                    }
+                                            }
+                                            if (**___stack_chk_guard != var_28) {
+                                                    __stack_chk_fail();
+                                            }
+                                    }
+                                    else {
+                                            if (**___stack_chk_guard != var_28) {
+                                                    r0 = 0x0;
+                                                    __stack_chk_fail();
+                                            }
+                                    }
+                                    break;
+                            }
+                    }
+            }
+    }
+    return r0;
+
+loc_100db6054:
+    if ((r8 & 0x200) != 0x0) goto .l2;
+    goto loc_100db6058;
+
+loc_100db605c:
+    r8 = AComposition::GetAppCode();
+    r0 = 0x0;
+    if (r8 <= 0x3) goto loc_100db6138;
+    goto loc_100db6074;
+
+loc_100db6000:
+    r8 = r0 & 0xff;
+    if (r8 == 0x2) goto loc_100db60c0;
+    goto loc_100db600c;
+
+loc_100db6058:
+    r0 = 0x0;
+    if (**___stack_chk_guard != var_28) {
+            r0 = 0x0;
+            __stack_chk_fail();
+    }
+    return r0;
+
+loc_100db6138:
+    switch (r8) {
+        case 0:
+            r8 = r20[0x6c];
+            asm { ubfx       w8, w8, #0x2, #0x1 };
+            if (r21 != 0x0) {
+                    if (r8 != 0x0) {
+                            *(int8_t *)r21 = 0x1;
+                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                    }
+                    else {
+                            if (r8 != 0x0) {
+                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                            }
+                            else {
+                                    r0 = 0x0;
+                            }
+                    }
+            }
+            else {
+                    if (r8 != 0x0) {
+                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                    }
+                    else {
+                            r0 = 0x0;
+                    }
+            }
+            if (**___stack_chk_guard != var_28) {
+                    __stack_chk_fail();
+            }
+            break;
+        case 2:
+            r8 = r20[0x6c];
+            asm { ubfx       w8, w8, #0x1, #0x1 };
+            if (r21 != 0x0) {
+                    if (r8 != 0x0) {
+                            *(int8_t *)r21 = 0x1;
+                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                    }
+                    else {
+                            if (r8 != 0x0) {
+                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                            }
+                            else {
+                                    r0 = 0x0;
+                            }
+                    }
+            }
+            else {
+                    if (r8 != 0x0) {
+                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                    }
+                    else {
+                            r0 = 0x0;
+                    }
+            }
+            if (**___stack_chk_guard != var_28) {
+                    __stack_chk_fail();
+            }
+            break;
+        default:
+            if (r8 == 0x3) {
+                    r8 = r20[0x6c];
+                    asm { ubfx       w8, w8, #0x4, #0x1 };
+                    if (r21 != 0x0) {
+                            if (r8 != 0x0) {
+                                    *(int8_t *)r21 = 0x1;
+                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                            }
+                            else {
+                                    if (r8 != 0x0) {
+                                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                                    }
+                                    else {
+                                            r0 = 0x0;
+                                    }
+                            }
+                    }
+                    else {
+                            if (r8 != 0x0) {
+                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                            }
+                            else {
+                                    r0 = 0x0;
+                            }
+                    }
+                    if (**___stack_chk_guard != var_28) {
+                            __stack_chk_fail();
+                    }
+            }
+            else {
+                    if (**___stack_chk_guard != var_28) {
+                            r0 = 0x0;
+                            __stack_chk_fail();
+                    }
+            }
+            break;
+    }
+    return r0;
+
+loc_100db6074:
+    if (r8 > 0xe) goto loc_100db6170;
+    goto loc_100db607c;
+
+loc_100db60c0:
+    if (AComposition::GetAppCode() != 0x1) goto loc_100db6100;
+    goto loc_100db60d0;
+
+loc_100db600c:
+    if (r8 != 0x3) goto .l18;
+    goto loc_100db6014;
+
+loc_100db6170:
+    asm { ccmp       w8, #0x11, #0x4, ne };
+    if (!asm { ccmp       w8, #0x11, #0x4, ne }) {
+            r8 = r20[0x1b];
+            asm { ubfx       w8, w8, #0xf, #0x1 };
+            if (r21 != 0x0) {
+                    if (r8 != 0x0) {
+                            *(int8_t *)r21 = 0x1;
+                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                    }
+                    else {
+                            if (r8 != 0x0) {
+                                    r0 = brQFF::MeetsNameFilter(r20, r19);
+                            }
+                            else {
+                                    r0 = 0x0;
+                            }
+                    }
+            }
+            else {
+                    if (r8 != 0x0) {
+                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                    }
+                    else {
+                            r0 = 0x0;
+                    }
+            }
+            if (**___stack_chk_guard != var_28) {
+                    __stack_chk_fail();
+            }
+    }
+    else {
+            if (**___stack_chk_guard != var_28) {
+                    r0 = 0x0;
+                    __stack_chk_fail();
+            }
+    }
+    return r0;
+
+loc_100db607c:
+    if (r8 == 0x4) goto loc_100db6194;
+    goto loc_100db6084;
+
+loc_100db6100:
+    if (AComposition::GetAppCode() == 0xc) goto .l19;
+    goto loc_100db6110;
+
+loc_100db60d0:
+    var_50 = 0x0;
+    r0 = GetImportSettingAttrList(r22, &var_50);
+    if (r0 != 0x0 && ATrackGroup::NumVideoTracks() >= 0x2) {
+            r8 = r20[0x1b];
+            r8 = r8 >> 0xb;
+    }
+    else {
+            r8 = r20[0x6c];
+            r8 = r8 >> 0x6;
+    }
+    r8 = r8 & 0x1;
+    if (r21 != 0x0) {
+            if (r8 != 0x0) {
+                    *(int8_t *)r21 = 0x1;
+                    r0 = brQFF::MeetsNameFilter(r20, r19);
+            }
+            else {
+                    if (r8 != 0x0) {
+                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                    }
+                    else {
+                            r0 = 0x0;
+                    }
+            }
+    }
+    else {
+            if (r8 != 0x0) {
+                    r0 = brQFF::MeetsNameFilter(r20, r19);
+            }
+            else {
+                    r0 = 0x0;
+            }
+    }
+    if (**___stack_chk_guard != var_28) {
+            __stack_chk_fail();
+    }
+    return r0;
+
+.l18:
+    r0 = 0x0;
+    if (**___stack_chk_guard != var_28) {
+            r0 = 0x0;
+            __stack_chk_fail();
+    }
+    return r0;
+
+loc_100db6014:
+    r0 = AComposition::GetMediaDesc();
+    if (r0 == 0x0) goto .l11;
+    goto loc_100db6020;
+
+loc_100db6194:
+    r8 = r20[0x6c];
+    asm { ubfx       w8, w8, #0x5, #0x1 };
+    if (r21 != 0x0) {
+            if (r8 != 0x0) {
+                    *(int8_t *)r21 = 0x1;
+                    r0 = brQFF::MeetsNameFilter(r20, r19);
+            }
+            else {
+                    if (r8 != 0x0) {
+                            r0 = brQFF::MeetsNameFilter(r20, r19);
+                    }
+                    else {
+                            r0 = 0x0;
+                    }
+            }
+    }
+    else {
+            if (r8 != 0x0) {
+                    r0 = brQFF::MeetsNameFilter(r20, r19);
+            }
+            else {
+                    r0 = 0x0;
+            }
+    }
+    if (**___stack_chk_guard != var_28) {
+            __stack_chk_fail();
+    }
+    return r0;
+
+loc_100db6084:
+    if (r8 != 0x6) goto .l14;
+    goto loc_100db608c;
+
+.l19:
+    r0 = 0x0;
+    if (**___stack_chk_guard != var_28) {
+            r0 = 0x0;
+            __stack_chk_fail();
+    }
+    return r0;
+
+loc_100db6110:
+    if (AComposition::GetAppCode() == 0xb) goto .l20;
+    goto loc_100db6120;
+
+.l11:
+    if (**___stack_chk_guard != var_28) {
+            __stack_chk_fail();
+    }
+    return r0;
+
+loc_100db6020:
+    r0 = AMediaDesc::GetPhysMobType();
+    r8 = r20[0x1b];
+    if (r0 == 0x1) {
+            asm { ubfx       w8, w8, #0x8, #0x1 };
+    }
+    else {
+            asm { ubfx       w8, w8, #0x3, #0x1 };
+    }
+    goto .l6;
+
+.l14:
+    if (**___stack_chk_guard != var_28) {
+            r0 = 0x0;
+            __stack_chk_fail();
+    }
+    return r0;
+
+loc_100db608c:
+    r8 = r20[0x6c];
+    r8 = r8 >> 0x7;
+    goto .l6;
+
+.l20:
+    r0 = 0x0;
+    if (**___stack_chk_guard != var_28) {
+            r0 = 0x0;
+            __stack_chk_fail();
+    }
+    return r0;
+
+loc_100db6120:
+    r0 = AnyMediaIsAMA(r22);
+    r8 = r20[0x1b];
+    if (r0 != 0x0) {
+            asm { ubfx       w8, w8, #0x10, #0x1 };
+    }
+    else {
+            r8 = r8 & 0x1;
+    }
+    goto .l6;
+
+.l6:
+    if (r21 != 0x0 && r8 != 0x0) {
+            *(int8_t *)r21 = 0x1;
+            r0 = brQFF::MeetsNameFilter(r20, r19);
+    }
+    else {
+            if (r8 != 0x0) {
+                    r0 = brQFF::MeetsNameFilter(r20, r19);
+            }
+            else {
+                    r0 = 0x0;
+            }
+    }
+    goto loc_100db61ec;
+}
+

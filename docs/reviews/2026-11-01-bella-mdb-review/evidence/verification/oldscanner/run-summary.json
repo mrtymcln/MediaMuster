@@ -1,0 +1,14 @@
+{
+  "paths": 411,
+  "exitCodes": {
+    "0": 411
+  },
+  "outcomes": {
+    "1": 369,
+    "3": 7,
+    "4": 1,
+    "2": 34
+  },
+  "elapsedSecondsTotal": 10.093828,
+  "errors": []
+}

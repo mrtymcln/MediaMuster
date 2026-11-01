@@ -1,0 +1,293 @@
+{
+  "commits": [
+    {
+      "commit": "65ca1f519f2d33c13f3da021f30dc21466ce073e",
+      "metadata": "65ca1f519f2d33c13f3da021f30dc21466ce073e 2026-05-08T12:26:28+10:00 \ud83d\udc77\ud83c\udffb\u200d\u2642\ufe0f Update build workflows.",
+      "resultFingerprint": "48fd1554022acf76868a73741b0b3dd60cd771d184ee5fe04ac8c5e4ece47b87",
+      "files": 0,
+      "masters": 5462,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "b5bbc653ed695be132e7749d27181d212d3dfb23",
+      "metadata": "b5bbc653ed695be132e7749d27181d212d3dfb23 2026-05-05T18:40:08+10:00 \ud83c\udf89 Initial commit.",
+      "resultFingerprint": "48fd1554022acf76868a73741b0b3dd60cd771d184ee5fe04ac8c5e4ece47b87",
+      "files": 0,
+      "masters": 5462,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "97988ed26febc957514416c7743a80077bfb319d",
+      "metadata": "97988ed26febc957514416c7743a80077bfb319d 2026-05-14T20:10:18+10:00 \ud83d\udc1b Tighten small correctness gaps.",
+      "resultFingerprint": "48fd1554022acf76868a73741b0b3dd60cd771d184ee5fe04ac8c5e4ece47b87",
+      "files": 0,
+      "masters": 5462,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "a5c258a69d248859fb120dd47f33a3b36e658d5e",
+      "metadata": "a5c258a69d248859fb120dd47f33a3b36e658d5e 2026-05-20T19:10:09+10:00 \ud83c\udfa8 Clean up formatting.",
+      "resultFingerprint": "48fd1554022acf76868a73741b0b3dd60cd771d184ee5fe04ac8c5e4ece47b87",
+      "files": 0,
+      "masters": 5462,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "e15ec15df06ac1391af3738ab9966c25164b10be",
+      "metadata": "e15ec15df06ac1391af3738ab9966c25164b10be 2026-08-22T22:30:23+10:00 MdbParser: read msmMMOB.mdb through its Bento table of contents.",
+      "resultFingerprint": "c62c819e24bacb39ff4737672c86a7a90e253b9cf77d505d9efb85dc7e645d60",
+      "files": 2156,
+      "masters": 1237,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "8533baf31751f5fa6f0cf7992e92f8925e802c33",
+      "metadata": "8533baf31751f5fa6f0cf7992e92f8925e802c33 2026-09-24T15:09:12+10:00 Add diagnostics and accessibility enhancements",
+      "resultFingerprint": "b0af53370da597bc202437d23af69ec31ff41b32f03de857eeaf5209e1d2bd58",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "ad6fe3805252cb643c2161e413465bd78e64ce94",
+      "metadata": "ad6fe3805252cb643c2161e413465bd78e64ce94 2026-09-25T21:14:12+10:00 Refactor media scanner and operation recovery components",
+      "resultFingerprint": "b0af53370da597bc202437d23af69ec31ff41b32f03de857eeaf5209e1d2bd58",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "5c39e6112ca3b072799812b252efe952b1e95de5",
+      "metadata": "5c39e6112ca3b072799812b252efe952b1e95de5 2026-09-25T22:15:11+10:00 Refactor effect filter dialog to precompute filter dialog",
+      "resultFingerprint": "b0af53370da597bc202437d23af69ec31ff41b32f03de857eeaf5209e1d2bd58",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "09aeb20001d553bfc3b859b732cf0e00297c6bf4",
+      "metadata": "09aeb20001d553bfc3b859b732cf0e00297c6bf4 2026-09-28T17:50:53+10:00 Refactor folder handling to use NumberedMxfFolder",
+      "resultFingerprint": "b0af53370da597bc202437d23af69ec31ff41b32f03de857eeaf5209e1d2bd58",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "1253c785c826e24fdf263aa79222dd362403355f",
+      "metadata": "1253c785c826e24fdf263aa79222dd362403355f 2026-09-29T16:06:20+10:00 Refactor OMF and MXF parsers to enhance handling of large metadata and deep attribute graphs",
+      "resultFingerprint": "b0af53370da597bc202437d23af69ec31ff41b32f03de857eeaf5209e1d2bd58",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "f0bd154eeca55910877a63d46d155b1bfe7b1160",
+      "metadata": "f0bd154eeca55910877a63d46d155b1bfe7b1160 2026-09-30T18:25:06+10:00 Refactor OMF and MobId handling for improved clarity and consistency",
+      "resultFingerprint": "b0af53370da597bc202437d23af69ec31ff41b32f03de857eeaf5209e1d2bd58",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "d0d628588ee27165aeda51c06bed35dd4a09b2bc",
+      "metadata": "d0d628588ee27165aeda51c06bed35dd4a09b2bc 2026-09-30T23:35:11+10:00 Add parser audit files and media duration structures",
+      "resultFingerprint": "60c559783061bf2a7a0489e240376e13d23bd4db4aa536e083a6512bd4c0a4ff",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "a00892c89b859c7a31ff3481b0b230381838913b",
+      "metadata": "a00892c89b859c7a31ff3481b0b230381838913b 2026-10-01T21:55:01+10:00 Refactor naming conventions and improve error handling in MDB parser",
+      "resultFingerprint": "60c559783061bf2a7a0489e240376e13d23bd4db4aa536e083a6512bd4c0a4ff",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "75824395fd15329bacc6401039b7c2b704ac6f67",
+      "metadata": "75824395fd15329bacc6401039b7c2b704ac6f67 2026-10-02T00:28:06+10:00 Refactor OMF property handling and improve clarity in OMF parsing",
+      "resultFingerprint": "60c559783061bf2a7a0489e240376e13d23bd4db4aa536e083a6512bd4c0a4ff",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "864d21fe33fcafe27b9b53a4d9c8cb02c8105878",
+      "metadata": "864d21fe33fcafe27b9b53a4d9c8cb02c8105878 2026-10-02T00:46:58+10:00 Refactor BentoFile structure and update related methods for improved clarity and consistency",
+      "resultFingerprint": "60c559783061bf2a7a0489e240376e13d23bd4db4aa536e083a6512bd4c0a4ff",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "92b69db58358be52ee644e88b9ded464bf708ca9",
+      "metadata": "92b69db58358be52ee644e88b9ded464bf708ca9 2026-10-03T20:35:17+10:00 Implement foundation for Project Canon with initial RAM evidence handling",
+      "resultFingerprint": "725c6033033d2b08457b5488aafd85a41ec9c6baf386f09b5bae683f21583a85",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "64e9497b78edeb7665db6c12ed73cf8a75e152d9",
+      "metadata": "64e9497b78edeb7665db6c12ed73cf8a75e152d9 2026-05-25T17:35:06+10:00 \ud83d\udd0a Centralised logging categories.",
+      "resultFingerprint": "48fd1554022acf76868a73741b0b3dd60cd771d184ee5fe04ac8c5e4ece47b87",
+      "files": 0,
+      "masters": 5462,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "b61d8b4eb7cab44baf569f6cdc2bd905968f64bb",
+      "metadata": "b61d8b4eb7cab44baf569f6cdc2bd905968f64bb 2026-05-25T23:35:25+10:00 \u267b\ufe0f Move ScannerWorker into MediaScanner.",
+      "resultFingerprint": "608835c891fb410377ea0628d12a8b0c1ecff1034da8483be9c28ef628b746a3",
+      "files": 0,
+      "masters": 5462,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "9837d20cee0d2637eb5025eed71b215dd90e1b2b",
+      "metadata": "9837d20cee0d2637eb5025eed71b215dd90e1b2b 2026-08-15T22:05:08+10:00 \ud83d\ude80 Public beta v0.0.2",
+      "resultFingerprint": "44c6ae73a6863c8937993dd4eb86476919a10ce474220c19356624cd9c6ee960",
+      "files": 0,
+      "masters": 5462,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "73987f612b165da47c3922b7a1fe986bf07452aa",
+      "metadata": "73987f612b165da47c3922b7a1fe986bf07452aa 2026-08-18T11:01:48+10:00 Pin the wholesale-rollback exceptions, and clear out dead code and stale comments.",
+      "resultFingerprint": "44c6ae73a6863c8937993dd4eb86476919a10ce474220c19356624cd9c6ee960",
+      "files": 0,
+      "masters": 5462,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "695df540d1595d5b1fff09fe823b52cccddbfabf",
+      "metadata": "695df540d1595d5b1fff09fe823b52cccddbfabf 2026-08-31T21:55:32+10:00 Refactor folder handling and logging in Rebalancer.",
+      "resultFingerprint": "c62c819e24bacb39ff4737672c86a7a90e253b9cf77d505d9efb85dc7e645d60",
+      "files": 2156,
+      "masters": 1237,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "3e7f62ac9f94962ccaf373129846d7d9249fb3fc",
+      "metadata": "3e7f62ac9f94962ccaf373129846d7d9249fb3fc 2026-09-02T18:55:47+10:00 Add OMF / OMFI MediaFiles support",
+      "resultFingerprint": "ab35dc4b0db02a627ebb24183922702b72a66b7496a0d8ae0b5d1aa7d34bbda0",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "f96626ceaa41ffdef3e41bae1efd15c4f86918fc",
+      "metadata": "f96626ceaa41ffdef3e41bae1efd15c4f86918fc 2026-09-05T12:16:37+10:00 Add tests for MediaTableModel and MxfParser; implement avid effects extraction tools",
+      "resultFingerprint": "b0af53370da597bc202437d23af69ec31ff41b32f03de857eeaf5209e1d2bd58",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "2342d07478166981c16d9860a2f19efdd565878d",
+      "metadata": "2342d07478166981c16d9860a2f19efdd565878d 2026-09-05T23:03:07+10:00 Add tests and functionality for precompute categories in media handling",
+      "resultFingerprint": "b0af53370da597bc202437d23af69ec31ff41b32f03de857eeaf5209e1d2bd58",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "ed3a9fdb52f73e8915db5dbb0d6b31f7ec4b38a7",
+      "metadata": "ed3a9fdb52f73e8915db5dbb0d6b31f7ec4b38a7 2026-09-06T00:20:21+10:00 Refactor test code for improved readability and consistency",
+      "resultFingerprint": "b0af53370da597bc202437d23af69ec31ff41b32f03de857eeaf5209e1d2bd58",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "9c908c61a020fd2c98ee461cb73ac1498a3b068d",
+      "metadata": "9c908c61a020fd2c98ee461cb73ac1498a3b068d 2026-09-12T14:07:10+10:00 Add operation planning and recovery functionality",
+      "resultFingerprint": "b0af53370da597bc202437d23af69ec31ff41b32f03de857eeaf5209e1d2bd58",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    },
+    {
+      "commit": "314cd2da4edd5690566a03542c078d002a9e4e73",
+      "metadata": "314cd2da4edd5690566a03542c078d002a9e4e73 2026-09-20T15:02:19+10:00 feat: Introduce support for quarantined media folders in MXF and OMF layouts",
+      "resultFingerprint": "b0af53370da597bc202437d23af69ec31ff41b32f03de857eeaf5209e1d2bd58",
+      "files": 2515,
+      "masters": 1421,
+      "inputRuns": 13,
+      "nonzeroExits": []
+    }
+  ],
+  "groups": {
+    "48fd1554022acf76868a73741b0b3dd60cd771d184ee5fe04ac8c5e4ece47b87": [
+      "65ca1f5",
+      "b5bbc65",
+      "97988ed",
+      "a5c258a",
+      "64e9497"
+    ],
+    "c62c819e24bacb39ff4737672c86a7a90e253b9cf77d505d9efb85dc7e645d60": [
+      "e15ec15",
+      "695df54"
+    ],
+    "b0af53370da597bc202437d23af69ec31ff41b32f03de857eeaf5209e1d2bd58": [
+      "8533baf",
+      "ad6fe38",
+      "5c39e61",
+      "09aeb20",
+      "1253c78",
+      "f0bd154",
+      "f96626c",
+      "2342d07",
+      "ed3a9fd",
+      "9c908c6",
+      "314cd2d"
+    ],
+    "60c559783061bf2a7a0489e240376e13d23bd4db4aa536e083a6512bd4c0a4ff": [
+      "d0d6285",
+      "a00892c",
+      "7582439",
+      "864d21f"
+    ],
+    "725c6033033d2b08457b5488aafd85a41ec9c6baf386f09b5bae683f21583a85": [
+      "92b69db"
+    ],
+    "608835c891fb410377ea0628d12a8b0c1ecff1034da8483be9c28ef628b746a3": [
+      "b61d8b4"
+    ],
+    "44c6ae73a6863c8937993dd4eb86476919a10ce474220c19356624cd9c6ee960": [
+      "9837d20",
+      "73987f6"
+    ],
+    "ab35dc4b0db02a627ebb24183922702b72a66b7496a0d8ae0b5d1aa7d34bbda0": [
+      "3e7f62a"
+    ]
+  },
+  "deletionCommit": "9c286ee removed src/mdbparser.cpp; not a parser implementation"
+}

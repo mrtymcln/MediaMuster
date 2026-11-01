@@ -1,0 +1,12 @@
+{
+  "id": 30,
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "text": "{\"basicblock_count\": 18, \"basicblocks\": [{\"from\": \"0xb2680\", \"to\": \"0xb26bc\"}, {\"from\": \"0xb26c0\", \"to\": \"0xb26cc\"}, {\"from\": \"0xb2708\", \"to\": \"0xb2720\"}, {\"from\": \"0xb2724\", \"to\": \"0xb2738\"}, {\"from\": \"0xb27ec\", \"to\": \"0xb27fc\"}, {\"from\": \"0xb280c\", \"to\": \"0xb2814\"}, {\"from\": \"0xb2828\", \"to\": \"0xb2830\"}, {\"from\": \"0xb2800\", \"to\": \"0xb2808\"}, {\"from\": \"0xb2834\", \"to\": \"0xb2838\"}, {\"from\": \"0xb283c\", \"to\": \"0xb2840\"}, {\"from\": \"0xb2844\", \"to\": \"0xb2848\"}, {\"from\": \"0xb287c\", \"to\": \"0xb28a0\"}, {\"from\": \"0xb284c\", \"to\": \"0xb2854\"}, {\"from\": \"0xb2858\", \"to\": \"0xb2878\"}, {\"from\": \"0xb2818\", \"to\": \"0xb281c\"}, {\"from\": \"0xb2820\", \"to\": \"0xb2824\"}, {\"from\": \"0xb273c\", \"to\": \"0xb27e8\"}, {\"from\": \"0xb26d0\", \"to\": \"0xb2704\"}], \"entrypoint\": \"0xb2680\", \"length\": 548, \"locals\": [], \"name\": \"__ZN14omfiDualStream15LoadBentoObjectEi\", \"signature\": \"int __ZN14omfiDualStream15LoadBentoObjectEi(int arg0)\"}",
+        "type": "text"
+      }
+    ]
+  }
+}

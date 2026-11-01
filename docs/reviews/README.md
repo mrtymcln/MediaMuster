@@ -6,6 +6,7 @@ not certify later builds. Current ownership and behavior are in the
 
 | Record | Retained scope |
 | --- | --- |
+| [Bella MDB comparative verdict, 1 November](2026-11-01-bella-mdb-review/VERDICT.md) | Three reproduced relationship/category qualification gaps; fresh 411-path Bella/OldScanner/MDVX execution, MDB-focused native decompilation, public references and Git history. |
 | [AVB binary findings](2026-09-05-avb/binary-findings.md) | Direct Media Composer serialization and object-reference evidence. |
 | [File operations](2026-09-06-current-code/file-operations.md) and [coverage](2026-09-06-current-code/file-operation-coverage.md) | Operation-engine findings and validation boundaries. |
 | [Primary format sources](2026-09-20-media-scope/public-specs.md), [binary dispatch](2026-09-20-media-scope/binary-dispatch.md), [audio extensions](2026-09-20-media-scope/audio-extensions.md) | Avid/SMPTE/OMF sources and independently inspected Media Composer behavior. |

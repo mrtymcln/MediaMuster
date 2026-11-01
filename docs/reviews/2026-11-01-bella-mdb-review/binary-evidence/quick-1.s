@@ -1,0 +1,96 @@
+-[MDVxOMFI init]:
+00000001000619f4	sub	sp, sp, #0x40
+00000001000619f8	stp	x22, x21, [sp, #0x10]
+00000001000619fc	stp	x20, x19, [sp, #0x20]
+0000000100061a00	stp	x29, x30, [sp, #0x30]
+0000000100061a04	add	x29, sp, #0x30
+0000000100061a08	nop
+0000000100061a0c	ldr	x8, #0x9b6d4 ; Objc class ref: MDVxOMFI
+0000000100061a10	stp	x0, x8, [sp]
+0000000100061a14	nop
+0000000100061a18	ldr	x1, #0x9a0b0 ; Objc selector ref: init
+0000000100061a1c	mov	x0, sp
+0000000100061a20	bl	0x100069d0c ; Objc message: -[[x0 super] init]
+0000000100061a24	mov	x19, x0
+0000000100061a28	cbz	x0, 0x100061b58
+0000000100061a2c	nop
+0000000100061a30	ldr	x0, #0x9b580 ; Objc class ref: MDVxRBTree_u32t_u32t
+0000000100061a34	bl	_objc_msgSend$alloc
+0000000100061a38	bl	_objc_msgSend$init
+0000000100061a3c	ldr	x8, [x19, #0x70]
+0000000100061a40	str	x0, [x19, #0x70]
+0000000100061a44	mov	x0, x8
+0000000100061a48	bl	0x100069d18 ; symbol stub for: _objc_release
+0000000100061a4c	ldr	x0, [x19, #0x70]
+0000000100061a50	mov	w2, #0x0
+0000000100061a54	bl	"_objc_msgSend$setAllowEQkeys:"
+0000000100061a58	adrp	x20, 155 ; 0x1000fc000
+0000000100061a5c	ldr	x0, [x20, #0xf40] ; Objc class ref: MDVxRBTree
+0000000100061a60	bl	_objc_msgSend$alloc
+0000000100061a64	bl	_objc_msgSend$init
+0000000100061a68	ldr	x8, [x19, #0x50]
+0000000100061a6c	str	x0, [x19, #0x50]
+0000000100061a70	mov	x0, x8
+0000000100061a74	bl	0x100069d18 ; symbol stub for: _objc_release
+0000000100061a78	adrp	x21, 157 ; 0x1000fe000
+0000000100061a7c	ldr	x2, [x21, #0xa50]
+0000000100061a80	ldr	x0, [x19, #0x50]
+0000000100061a84	bl	"_objc_msgSend$setEQBlock:"
+0000000100061a88	adrp	x22, 157 ; 0x1000fe000
+0000000100061a8c	ldr	x2, [x22, #0xa58]
+0000000100061a90	ldr	x0, [x19, #0x50]
+0000000100061a94	bl	"_objc_msgSend$setLTBlock:"
+0000000100061a98	ldr	x0, [x20, #0xf40]
+0000000100061a9c	bl	_objc_msgSend$alloc
+0000000100061aa0	bl	_objc_msgSend$init
+0000000100061aa4	ldr	x8, [x19, #0x58]
+0000000100061aa8	str	x0, [x19, #0x58]
+0000000100061aac	mov	x0, x8
+0000000100061ab0	bl	0x100069d18 ; symbol stub for: _objc_release
+0000000100061ab4	ldr	x2, [x21, #0xa50]
+0000000100061ab8	ldr	x0, [x19, #0x58]
+0000000100061abc	bl	"_objc_msgSend$setEQBlock:"
+0000000100061ac0	ldr	x2, [x22, #0xa58]
+0000000100061ac4	ldr	x0, [x19, #0x58]
+0000000100061ac8	bl	"_objc_msgSend$setLTBlock:"
+0000000100061acc	ldr	x0, [x20, #0xf40]
+0000000100061ad0	bl	_objc_msgSend$alloc
+0000000100061ad4	bl	_objc_msgSend$init
+0000000100061ad8	ldr	x8, [x19, #0x60]
+0000000100061adc	str	x0, [x19, #0x60]
+0000000100061ae0	mov	x0, x8
+0000000100061ae4	bl	0x100069d18 ; symbol stub for: _objc_release
+0000000100061ae8	ldr	x2, [x21, #0xa50]
+0000000100061aec	ldr	x0, [x19, #0x60]
+0000000100061af0	bl	"_objc_msgSend$setEQBlock:"
+0000000100061af4	ldr	x2, [x22, #0xa58]
+0000000100061af8	ldr	x0, [x19, #0x60]
+0000000100061afc	bl	"_objc_msgSend$setLTBlock:"
+0000000100061b00	ldr	x0, [x20, #0xf40]
+0000000100061b04	bl	_objc_msgSend$alloc
+0000000100061b08	bl	_objc_msgSend$init
+0000000100061b0c	ldr	x8, [x19, #0x68]
+0000000100061b10	str	x0, [x19, #0x68]
+0000000100061b14	mov	x0, x8
+0000000100061b18	bl	0x100069d18 ; symbol stub for: _objc_release
+0000000100061b1c	nop
+0000000100061b20	ldr	x2, #0x9cf48
+0000000100061b24	ldr	x0, [x19, #0x68]
+0000000100061b28	bl	"_objc_msgSend$setEQBlock:"
+0000000100061b2c	nop
+0000000100061b30	ldr	x2, #0x9cf30
+0000000100061b34	ldr	x0, [x19, #0x68]
+0000000100061b38	bl	"_objc_msgSend$setLTBlock:"
+0000000100061b3c	ldr	x0, [x19, #0x68]
+0000000100061b40	mov	w2, #0x0
+0000000100061b44	bl	"_objc_msgSend$setAllowEQNodes:"
+0000000100061b48	stp	xzr, xzr, [x19, #0x18]
+0000000100061b4c	ldr	x0, [x19, #0x8]
+0000000100061b50	stp	xzr, xzr, [x19, #0x8]
+0000000100061b54	bl	0x100069d18 ; symbol stub for: _objc_release
+0000000100061b58	mov	x0, x19
+0000000100061b5c	ldp	x29, x30, [sp, #0x30]
+0000000100061b60	ldp	x20, x19, [sp, #0x20]
+0000000100061b64	ldp	x22, x21, [sp, #0x10]
+0000000100061b68	add	sp, sp, #0x40
+0000000100061b6c	ret

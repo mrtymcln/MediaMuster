@@ -1,0 +1,54 @@
+int __ZN12CoreAttrList8FindAttrEiPKcPh(int arg0, int * arg1, int * arg2) {
+    r31 = r31 - 0x90;
+    arg_60 = r22;
+    arg_68 = r21;
+    arg_70 = r20;
+    arg_78 = r19;
+    arg_80 = r29;
+    arg_88 = r30;
+    r20 = r3;
+    r19 = arg1;
+    decomp_var_28 = arg2;
+    r0 = boost::multi_index::detail::bidir_node_iterator<boost::multi_index::detail::ordered_index_node<boost::multi_index::detail::null_augment_policy, boost::multi_index::detail::index_node_base<AttributeInfo, std::__1::allocator<AttributeInfo> > > > boost::multi_index::detail::ordered_index_impl<boost::multi_index::member<AttributeInfo, char [33], &AttributeInfo::name>, attrNameLess, boost::multi_index::detail::nth_layer<2, AttributeInfo, boost::multi_index::indexed_by<boost::multi_index::random_access<boost::multi_index::tag<mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na> >, boost::multi_index::ordered_unique<boost::multi_index::tag<attrNameIndex, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na>, boost::multi_index::member<AttributeInfo, char [33], &AttributeInfo::name>, attrNameLess>, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na, mpl_::na>, std::__1::allocator<AttributeInfo> >, boost::mpl::v_item<attrNameIndex, boost::mpl::vector0<mpl_::na>, 0>, boost::multi_index::detail::ordered_unique_tag, boost::multi_index::detail::null_augment_policy>::find<char const*>(arg0[0x3] + 0x10);
+    if (*(arg0[0x3] + 0x8) != r0) {
+            r8 = *(int32_t *)r0;
+            if (r20 != 0x0) {
+                    bool_5 = r8 == r19;
+                    if (r8 == r19) {
+                            r8 = 0x1;
+                    }
+                    *(int8_t *)r20 = r8;
+                    if (!bool_5) {
+                            r0 = 0x0;
+                    }
+                    else {
+                            r0 = r0[0x5];
+                    }
+            }
+            else {
+                    if (r8 == r19) {
+                            r0 = r0[0x5];
+                    }
+                    else {
+                            XError::XError(&arg_30);
+                            operator+(&arg_30);
+                            XError::~XError();
+                            r0 = 0x0;
+                    }
+            }
+    }
+    else {
+            if (r20 != 0x0) {
+                    r0 = 0x0;
+                    *(int8_t *)r20 = 0x0;
+            }
+            else {
+                    XError::XError(&arg_30);
+                    operator+(&arg_30);
+                    XError::~XError();
+                    r0 = 0x0;
+            }
+    }
+    return r0;
+}
+

@@ -1,0 +1,37 @@
+
+
+        ; ================ B E G I N N I N G   O F   P R O C E D U R E ================
+
+        ; Variables:
+        ;      0 : saved_fp
+        ;    -16 : var_10
+
+
+                     -[MDVxOMFI OMFiTOCReader02]:
+0000000100061e48         stp        x20, x19, [sp, #-0x20]!                     ; Objective C Implementation defined at 0x100072918 (instance method), DATA XREF=0x100072918
+0000000100061e4c         stp        fp, lr, [sp, #0x10]
+0000000100061e50         add        fp, sp, #0x10
+0000000100061e54         nop
+0000000100061e58         ldr        x19, =_OBJC_CLASS_$_xConsole                ; @class(xConsole)
+0000000100061e5c         nop
+0000000100061e60         ldr        x0, =_OBJC_CLASS_$_NSString                 ; argument #1 for method _objc_msgSend$stringWithFormat:, _OBJC_CLASS_$_NSString
+0000000100061e64         adr        x2, #0x1000ed478                            ; @"OMF 2 not supported"
+0000000100061e68         nop
+0000000100061e6c         bl         _objc_msgSend$stringWithFormat:             ; _objc_msgSend$stringWithFormat:
+0000000100061e70         mov        fp, fp
+0000000100061e74         bl         imp___stubs__objc_retainAutoreleasedReturnValue ; objc_retainAutoreleasedReturnValue
+0000000100061e78         mov        x20, x0
+0000000100061e7c         adr        x2, #0x1000c4e99                            ; "/Volumes/MyHome/Programming/Xcode_projects/MDVx/MDVx1/MDVxCore/MDVxOMFI.m"
+0000000100061e80         nop
+0000000100061e84         adr        x4, #0x1000c4f88                            ; "-[MDVxOMFI OMFiTOCReader02]"
+0000000100061e88         nop
+0000000100061e8c         mov        x0, x19                                     ; argument #1 for method _objc_msgSend$xNSLog::::
+0000000100061e90         mov        w3, #0x16d
+0000000100061e94         mov        x5, x20
+0000000100061e98         bl         _objc_msgSend$xNSLog::::                    ; _objc_msgSend$xNSLog::::
+0000000100061e9c         mov        x0, x20                                     ; argument "instance" for method imp___stubs__objc_release
+0000000100061ea0         ldp        fp, lr, [sp, #0x10]
+0000000100061ea4         ldp        x20, x19, [sp], #0x20
+0000000100061ea8         b          imp___stubs__objc_release                   ; objc_release
+                        ; endp
+

@@ -1,0 +1,122 @@
+[
+  {
+    "commit": "b4c6c49",
+    "counts": {
+      "files": 4177,
+      "filesUniquePerDB": 2515,
+      "filesDuplicateRecords": 1662,
+      "filesMissingActiveId": 0,
+      "filesExtraId": 0,
+      "masters": 2482,
+      "mastersUniquePerDB": 1421,
+      "mastersDuplicateRecords": 1061,
+      "mastersMissingActiveId": 0,
+      "mastersExtraId": 1
+    }
+  },
+  {
+    "commit": "da87337",
+    "counts": {
+      "files": 4177,
+      "filesUniquePerDB": 2515,
+      "filesDuplicateRecords": 1662,
+      "filesMissingActiveId": 0,
+      "filesExtraId": 0,
+      "masters": 2482,
+      "mastersUniquePerDB": 1421,
+      "mastersDuplicateRecords": 1061,
+      "mastersMissingActiveId": 0,
+      "mastersExtraId": 1
+    }
+  },
+  {
+    "commit": "af25b2d",
+    "counts": {
+      "files": 2515,
+      "filesUniquePerDB": 2515,
+      "filesDuplicateRecords": 0,
+      "filesMissingActiveId": 0,
+      "filesExtraId": 0,
+      "masters": 1420,
+      "mastersUniquePerDB": 1420,
+      "mastersDuplicateRecords": 0,
+      "mastersMissingActiveId": 0,
+      "mastersExtraId": 0
+    }
+  },
+  {
+    "commit": "5443141",
+    "counts": {
+      "files": 2515,
+      "filesUniquePerDB": 2515,
+      "filesDuplicateRecords": 0,
+      "filesMissingActiveId": 0,
+      "filesExtraId": 0,
+      "masters": 1420,
+      "mastersUniquePerDB": 1420,
+      "mastersDuplicateRecords": 0,
+      "mastersMissingActiveId": 0,
+      "mastersExtraId": 0
+    }
+  },
+  {
+    "commit": "2d96ac2",
+    "counts": {
+      "files": 2515,
+      "filesUniquePerDB": 2515,
+      "filesDuplicateRecords": 0,
+      "filesMissingActiveId": 0,
+      "filesExtraId": 0,
+      "masters": 1420,
+      "mastersUniquePerDB": 1420,
+      "mastersDuplicateRecords": 0,
+      "mastersMissingActiveId": 0,
+      "mastersExtraId": 0
+    }
+  },
+  {
+    "commit": "14c0ddc",
+    "counts": {
+      "files": 2515,
+      "filesUniquePerDB": 2515,
+      "filesDuplicateRecords": 0,
+      "filesMissingActiveId": 0,
+      "filesExtraId": 0,
+      "masters": 1420,
+      "mastersUniquePerDB": 1420,
+      "mastersDuplicateRecords": 0,
+      "mastersMissingActiveId": 0,
+      "mastersExtraId": 0
+    }
+  },
+  {
+    "commit": "628eb61",
+    "counts": {
+      "files": 2515,
+      "filesUniquePerDB": 2515,
+      "filesDuplicateRecords": 0,
+      "filesMissingActiveId": 0,
+      "filesExtraId": 0,
+      "masters": 1420,
+      "mastersUniquePerDB": 1420,
+      "mastersDuplicateRecords": 0,
+      "mastersMissingActiveId": 0,
+      "mastersExtraId": 0
+    }
+  },
+  {
+    "commit": "c854186",
+    "counts": {
+      "files": 2515,
+      "filesUniquePerDB": 2515,
+      "filesDuplicateRecords": 0,
+      "filesMissingActiveId": 0,
+      "filesExtraId": 0,
+      "masters": 1420,
+      "mastersUniquePerDB": 1420,
+      "mastersDuplicateRecords": 0,
+      "mastersMissingActiveId": 0,
+      "mastersExtraId": 0
+    }
+  }
+]

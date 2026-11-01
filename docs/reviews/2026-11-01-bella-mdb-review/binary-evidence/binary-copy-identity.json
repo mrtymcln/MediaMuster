@@ -1,0 +1,20 @@
+[
+  {
+    "path": "/private/tmp/bella-mdb-review-binaries-20261101/MDBReview_MediaComposer",
+    "bytes": 215615984,
+    "sha256": "a4a1d1b41f2f8b509781c3b8a50286c0cd7c9746cf85e609ec5a7bcbf45a727a",
+    "method": "Unmodified byte-for-byte copy for unique Hopper document names; not executed."
+  },
+  {
+    "path": "/private/tmp/bella-mdb-review-binaries-20261101/MDBReview_MDVx",
+    "bytes": 3204640,
+    "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+    "method": "Unmodified byte-for-byte copy for unique Hopper document names; not executed."
+  },
+  {
+    "path": "/private/tmp/bella-mdb-review-binaries-20261101/MDBReview_AvidCore",
+    "bytes": 14340208,
+    "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+    "method": "Unmodified byte-for-byte copy for unique Hopper document names; not executed."
+  }
+]

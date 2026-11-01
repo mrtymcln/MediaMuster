@@ -1,0 +1,280 @@
+{
+  "scope": "Independent full serialized Bella reports; elapsed parseNs excluded; only expected JPED Unknown0 to Video2 permitted. Old baseline receipts preserved.",
+  "input_paths": 13,
+  "report_comparisons": 26,
+  "affected_databases": 1,
+  "affected_unique_records": 30,
+  "failures": [],
+  "reports": [
+    {
+      "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+      "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+      "mode": "bella",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+      "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+      "mode": "bella-fast",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+      "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+      "mode": "bella",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+      "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+      "mode": "bella-fast",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "mode": "bella",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+      "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "mode": "bella-fast",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "mode": "bella",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+      "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+      "mode": "bella-fast",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+      "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+      "mode": "bella",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+      "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+      "mode": "bella-fast",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+      "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+      "mode": "bella",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+      "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+      "mode": "bella-fast",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+      "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+      "mode": "bella",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+      "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+      "mode": "bella-fast",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "mode": "bella",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 30,
+      "changed_ids": [
+        "060a2b340101010101010f0013000000dd91e536b0c8b005060e2b347f7f2a80",
+        "060a2b340101010101010f00130000006dca2938f8a53c05060e2b347f7f2a80",
+        "060a2b340101010101010f001300000052ca2938823a3c05060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000a3c0503509b11f00060e2b347f7f2a80",
+        "060a2b340101010101010f00130000007a76e536c9ce4505060e2b347f7f2a80",
+        "060a2b340101010101010f00130000008c9650357e05a528060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000de91e53639cdb005060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000cbc05035d44b2000060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000c7cb29389aeb4105060e2b347f7f2a80",
+        "060a2b340101010101010f001300000019945035de759b28060e2b347f7f2a80",
+        "060a2b340101010101010f001300000068cc2938e8604405060e2b347f7f2a80",
+        "060a2b340101010101010f00130000007c96503545c8a428060e2b347f7f2a80",
+        "060a2b340101010101010f001300000041cd293860b04705060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000c1c05035bb232000060e2b347f7f2a80",
+        "060a2b340101010101010f001300000079cc2938d5a54405060e2b347f7f2a80",
+        "060a2b340101010101010f00130000009ac05035c98d1f00060e2b347f7f2a80",
+        "060a2b340101010101010f001300000076ca293865c63c05060e2b347f7f2a80",
+        "060a2b340101010101010f001300000074cc2938eb914405060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000cecb293875074205060e2b347f7f2a80",
+        "060a2b340101010101010f00130000007396503557a3a428060e2b347f7f2a80",
+        "060a2b340101010101010f001300000032cd29388a754705060e2b347f7f2a80",
+        "060a2b340101010101010f00130000007876e5365bc54505060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000c9935035153b9a28060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000b2c05035f8ea1f00060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000dc91e53626c4b005060e2b347f7f2a80",
+        "060a2b340101010101010f001300000076c05035f6fe1e00060e2b347f7f2a80",
+        "060a2b340101010101010f00130000007976e53621ca4505060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000bacb29388db84105060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000129450353c599b28060e2b347f7f2a80",
+        "060a2b340101010101010f001300000039cd2938f1914705060e2b347f7f2a80"
+      ]
+    },
+    {
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "mode": "bella-fast",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 30,
+      "changed_ids": [
+        "060a2b340101010101010f0013000000dd91e536b0c8b005060e2b347f7f2a80",
+        "060a2b340101010101010f00130000006dca2938f8a53c05060e2b347f7f2a80",
+        "060a2b340101010101010f001300000052ca2938823a3c05060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000a3c0503509b11f00060e2b347f7f2a80",
+        "060a2b340101010101010f00130000007a76e536c9ce4505060e2b347f7f2a80",
+        "060a2b340101010101010f00130000008c9650357e05a528060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000de91e53639cdb005060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000cbc05035d44b2000060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000c7cb29389aeb4105060e2b347f7f2a80",
+        "060a2b340101010101010f001300000019945035de759b28060e2b347f7f2a80",
+        "060a2b340101010101010f001300000068cc2938e8604405060e2b347f7f2a80",
+        "060a2b340101010101010f00130000007c96503545c8a428060e2b347f7f2a80",
+        "060a2b340101010101010f001300000041cd293860b04705060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000c1c05035bb232000060e2b347f7f2a80",
+        "060a2b340101010101010f001300000079cc2938d5a54405060e2b347f7f2a80",
+        "060a2b340101010101010f00130000009ac05035c98d1f00060e2b347f7f2a80",
+        "060a2b340101010101010f001300000076ca293865c63c05060e2b347f7f2a80",
+        "060a2b340101010101010f001300000074cc2938eb914405060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000cecb293875074205060e2b347f7f2a80",
+        "060a2b340101010101010f00130000007396503557a3a428060e2b347f7f2a80",
+        "060a2b340101010101010f001300000032cd29388a754705060e2b347f7f2a80",
+        "060a2b340101010101010f00130000007876e5365bc54505060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000c9935035153b9a28060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000b2c05035f8ea1f00060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000dc91e53626c4b005060e2b347f7f2a80",
+        "060a2b340101010101010f001300000076c05035f6fe1e00060e2b347f7f2a80",
+        "060a2b340101010101010f00130000007976e53621ca4505060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000bacb29388db84105060e2b347f7f2a80",
+        "060a2b340101010101010f0013000000129450353c599b28060e2b347f7f2a80",
+        "060a2b340101010101010f001300000039cd2938f1914705060e2b347f7f2a80"
+      ]
+    },
+    {
+      "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+      "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+      "mode": "bella",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+      "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+      "mode": "bella-fast",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "mode": "bella",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+      "mode": "bella-fast",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "mode": "bella",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "mode": "bella-fast",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "mode": "bella",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "mode": "bella-fast",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "mode": "bella",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    },
+    {
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "mode": "bella-fast",
+      "full_report_matches_only_expected_kind_change": true,
+      "expected_changed_records": 0,
+      "changed_ids": []
+    }
+  ]
+}

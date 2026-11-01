@@ -1,0 +1,34 @@
+[
+  {
+    "label": "MDVx",
+    "path": "/Applications/MDVx.app/Contents/MacOS/MDVx",
+    "bytes": 3204640,
+    "sha256": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+    "file": "/Applications/MDVx.app/Contents/MacOS/MDVx: Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64] [arm64]\n/Applications/MDVx.app/Contents/MacOS/MDVx (for architecture x86_64):\tMach-O 64-bit executable x86_64\n/Applications/MDVx.app/Contents/MacOS/MDVx (for architecture arm64):\tMach-O 64-bit executable arm64",
+    "lipo": "x86_64 arm64"
+  },
+  {
+    "label": "libameLibrary",
+    "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib",
+    "bytes": 73527536,
+    "sha256": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22",
+    "file": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib: Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit dynamically linked shared library x86_64] [arm64]\n/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib (for architecture x86_64):\tMach-O 64-bit dynamically linked shared library x86_64\n/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib (for architecture arm64):\tMach-O 64-bit dynamically linked shared library arm64",
+    "lipo": "x86_64 arm64"
+  },
+  {
+    "label": "AvidCore",
+    "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore",
+    "bytes": 14340208,
+    "sha256": "b3e046bfc19eea285a330121727fa800ca3a22a0427047512fcf7429e66be1bb",
+    "file": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore: Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit dynamically linked shared library x86_64] [arm64]\n/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore (for architecture x86_64):\tMach-O 64-bit dynamically linked shared library x86_64\n/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/Frameworks/AvidCore.framework/Versions/A/AvidCore (for architecture arm64):\tMach-O 64-bit dynamically linked shared library arm64",
+    "lipo": "x86_64 arm64"
+  },
+  {
+    "label": "AvidMediaComposer",
+    "path": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer",
+    "bytes": 215615984,
+    "sha256": "a4a1d1b41f2f8b509781c3b8a50286c0cd7c9746cf85e609ec5a7bcbf45a727a",
+    "file": "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer: Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64] [arm64]\n/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer (for architecture x86_64):\tMach-O 64-bit executable x86_64\n/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer (for architecture arm64):\tMach-O 64-bit executable arm64",
+    "lipo": "x86_64 arm64"
+  }
+]

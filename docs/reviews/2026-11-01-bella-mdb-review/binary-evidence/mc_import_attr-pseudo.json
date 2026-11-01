@@ -1,0 +1,12 @@
+{
+  "id": 17,
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "text": "int __Z24GetImportSettingAttrListP12ACompositionPP9AAttrList(void * arg0, void * * arg1) {\n    r31 = r31 - 0x30;\n    arg_10 = r20;\n    arg_18 = r19;\n    arg_20 = r29;\n    arg_28 = r30;\n    r19 = arg1;\n    arg_f = 0x0;\n    r0 = (*(*arg0 + 0x250))(arg0, arg1);\n    if (r0 != 0x0) {\n            r8 = (*(*r0 + 0x208))();\n            r0 = arg_f;\n            if (r0 == 0x0) {\n                    r8 = 0x0;\n            }\n            *r19 = r8;\n    }\n    return r0;\n}\n",
+        "type": "text"
+      }
+    ]
+  }
+}

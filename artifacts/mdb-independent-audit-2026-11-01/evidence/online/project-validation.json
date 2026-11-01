@@ -1,0 +1,5721 @@
+{
+  "method": "Independent pymdb raw current-file own attributes and walk from file MOBJ tracks to immediate SCLP SourceID, resolved only live source mobs; exact selected project verified against file-owned _PJ attributes; different upstream source project values recorded separately. Master metadata recorded separately and not used as a source. No MDVX reliance. All project names here ASCII, avoiding pymdb legacy-text weakness.",
+  "stats": {
+    "rows": 86,
+    "valid_independent_own_file_value": 86,
+    "own_file_has_project": 86,
+    "selected_as_OwnFile": 86,
+    "selected_as_ImmediateSources": 0,
+    "selected_key_Pj": 86,
+    "immediate_source_names_differ_from_selected": 86,
+    "linked_master_has_project": 0
+  },
+  "names": {
+    "PeleSympProj": 3,
+    "BLOCK_1729_PS_DG": 34,
+    "BLOCK_1730_PB_PA": 49
+  },
+  "selected_keys": {
+    "own/_PJ": 86
+  },
+  "examples": {
+    "PeleSympProj": {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "bella_id": "060a2b340101010101010f0013000000a4f97f3cfb7d6d01060e2b347f7f2a80",
+      "file_object_id": 69314,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 69306,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "PeleSympProj",
+          "raw_string_values": [
+            "50656c6553796d7050726f6a00"
+          ]
+        }
+      ],
+      "bella_project": "PeleSympProj",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 69310,
+          "sclp_source_id": "2a00000076d4503540cbd301",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 68544,
+              "source_mob_id": "2a00000076d4503540cbd301",
+              "source_name": "Black 720x486.PICT",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 68536,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "New Project",
+                  "raw_string_values": [
+                    "4e65772050726f6a65637400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 68535,
+          "mob_id": "2a00000076d450353ecbd301",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "PeleSympProj"
+      ],
+      "source_values": [
+        "New Project"
+      ],
+      "valid": true
+    },
+    "BLOCK_1729_PS_DG": {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f10130000000946be167311069607b17c57583610fa",
+      "file_object_id": 144971,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 144937,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 144965,
+          "sclp_source_id": "060a2b340101010501010f101300000039308f080195059615746451062c95b3",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 156503,
+              "source_mob_id": "060a2b340101010501010f101300000039308f080195059615746451062c95b3",
+              "source_name": "5511410T",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDTP",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 156370,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1551_PS_DG",
+                  "raw_string_values": [
+                    "424c4f434b5f313535315f50535f444700"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 178614,
+          "mob_id": "060a2b340101010501010f10130000008f942b1573110696b3ba7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1551_PS_DG"
+      ],
+      "valid": true
+    },
+    "BLOCK_1730_PB_PA": {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f101300000001a17a0873110696e6627c57583610fa",
+      "file_object_id": 123736,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 123712,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 123730,
+          "sclp_source_id": "060a2b340101010501010f10130000007042ea11270806968b777c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 143139,
+              "source_mob_id": "060a2b340101010501010f10130000007042ea11270806968b777c57583610fa",
+              "source_name": "Phone Text_Sent.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 143111,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_ASSISTS",
+                  "raw_string_values": [
+                    "4841415f4153534953545300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 134732,
+          "mob_id": "060a2b340101010501010f1013000000407c7a087311069615ef7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_ASSISTS"
+      ],
+      "valid": true
+    }
+  },
+  "rows": [
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "bella_id": "060a2b340101010101010f0013000000a4f97f3cfb7d6d01060e2b347f7f2a80",
+      "file_object_id": 69314,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 69306,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "PeleSympProj",
+          "raw_string_values": [
+            "50656c6553796d7050726f6a00"
+          ]
+        }
+      ],
+      "bella_project": "PeleSympProj",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 69310,
+          "sclp_source_id": "2a00000076d4503540cbd301",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 68544,
+              "source_mob_id": "2a00000076d4503540cbd301",
+              "source_name": "Black 720x486.PICT",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 68536,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "New Project",
+                  "raw_string_values": [
+                    "4e65772050726f6a65637400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 68535,
+          "mob_id": "2a00000076d450353ecbd301",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "PeleSympProj"
+      ],
+      "source_values": [
+        "New Project"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "bella_id": "060a2b340101010101010f0013000000fa9e833c98550c00060e2b347f7f2a80",
+      "file_object_id": 69496,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 69488,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "PeleSympProj",
+          "raw_string_values": [
+            "50656c6553796d7050726f6a00"
+          ]
+        }
+      ],
+      "bella_project": "PeleSympProj",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 69492,
+          "sclp_source_id": "2a0000006ad45035f89ed301",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 68405,
+              "source_mob_id": "2a0000006ad45035f89ed301",
+              "source_name": "WRONG FORMAT 720x486.PICT",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 68397,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "New Project",
+                  "raw_string_values": [
+                    "4e65772050726f6a65637400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 68396,
+          "mob_id": "2a0000006ad45035f69ed301",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "PeleSympProj"
+      ],
+      "source_values": [
+        "New Project"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+      "bella_id": "060a2b340101010101010f00130000004ea1833c4e6f1500060e2b347f7f2a80",
+      "file_object_id": 70520,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 70512,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "PeleSympProj",
+          "raw_string_values": [
+            "50656c6553796d7050726f6a00"
+          ]
+        }
+      ],
+      "bella_project": "PeleSympProj",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 70516,
+          "sclp_source_id": "2a00000070d450354eb5d301",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 68514,
+              "source_mob_id": "2a00000070d450354eb5d301",
+              "source_name": "MEDIA OFFLINE 720x486.PICT",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 68506,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "New Project",
+                  "raw_string_values": [
+                    "4e65772050726f6a65637400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 68505,
+          "mob_id": "2a00000070d450354cb5d301",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "PeleSympProj"
+      ],
+      "source_values": [
+        "New Project"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f10130000000946be167311069607b17c57583610fa",
+      "file_object_id": 144971,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 144937,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 144965,
+          "sclp_source_id": "060a2b340101010501010f101300000039308f080195059615746451062c95b3",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 156503,
+              "source_mob_id": "060a2b340101010501010f101300000039308f080195059615746451062c95b3",
+              "source_name": "5511410T",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDTP",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 156370,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1551_PS_DG",
+                  "raw_string_values": [
+                    "424c4f434b5f313535315f50535f444700"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 178614,
+          "mob_id": "060a2b340101010501010f10130000008f942b1573110696b3ba7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1551_PS_DG"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f10130000000afc6615731106963ea97c57583610fa",
+      "file_object_id": 145539,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 145521,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 145532,
+          "sclp_source_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 149074,
+              "source_mob_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+              "source_name": "FF CREDITS",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 149047,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 160281,
+          "mob_id": "060a2b340101010501010f1013000000486d2b157311069662d67c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f10130000002dfc66157311069631db7c57583610fa",
+      "file_object_id": 154506,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 154488,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 154499,
+          "sclp_source_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 149074,
+              "source_mob_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+              "source_name": "FF CREDITS",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 149047,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 160281,
+          "mob_id": "060a2b340101010501010f1013000000486d2b157311069662d67c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f10130000003d4a741573110696a0b27c57583610fa",
+      "file_object_id": 157407,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 157389,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 157400,
+          "sclp_source_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 146364,
+              "source_mob_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+              "source_name": "FF TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 146337,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 150453,
+          "mob_id": "060a2b340101010501010f10130000001d6f2b1573110696237f7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f101300000042ee4b15731106964e9a7c57583610fa",
+      "file_object_id": 159279,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 159261,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 159272,
+          "sclp_source_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 152165,
+              "source_mob_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+              "source_name": "AFC NO TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 152138,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 154643,
+          "mob_id": "060a2b340101010501010f10130000002e692b1573110696f4757c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f101300000049fc66157311069691697c57583610fa",
+      "file_object_id": 160565,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 160544,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 160555,
+          "sclp_source_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 149074,
+              "source_mob_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+              "source_name": "FF CREDITS",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 149047,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 160281,
+          "mob_id": "060a2b340101010501010f1013000000486d2b157311069662d67c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000521a2f157311069693307c57583610fa",
+      "file_object_id": 162852,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 162834,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 162845,
+          "sclp_source_id": "060a2b34010101050101051213a1ebb3005f9f6505979606a6db7c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 132190,
+              "source_mob_id": "060a2b34010101050101051213a1ebb3005f9f6505979606a6db7c57583610fa",
+              "source_name": "Opener C_8sec",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 132164,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_PROGRAMME_BUILD",
+                  "raw_string_values": [
+                    "4841415f50524f4752414d4d455f4255494c4400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 183314,
+          "mob_id": "060a2b340101010501010f1013000000a2642b1573110696954e7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f101300000056252d15731106965e367c57583610fa",
+      "file_object_id": 164530,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 164511,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 164523,
+          "sclp_source_id": "060a2b340101010001010f00130000006c64ea51a237a77f1e9c87e58e14f4bb",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 128348,
+              "source_mob_id": "060a2b340101010001010f00130000006c64ea51a237a77f1e9c87e58e14f4bb",
+              "source_name": "beach_day_surfers_to_headland",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 128322,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_STOCKS",
+                  "raw_string_values": [
+                    "4841415f53544f434b5300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 155964,
+          "mob_id": "060a2b340101010501010f101300000036642b1573110696a3167c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "HAA_STOCKS"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f10130000005c4a741573110696112b7c57583610fa",
+      "file_object_id": 166015,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 165994,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 166005,
+          "sclp_source_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 146364,
+              "source_mob_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+              "source_name": "FF TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 146337,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 150453,
+          "mob_id": "060a2b340101010501010f10130000001d6f2b1573110696237f7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f101300000061ee4b15731106965ddf7c57583610fa",
+      "file_object_id": 167942,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 167924,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 167935,
+          "sclp_source_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 152165,
+              "source_mob_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+              "source_name": "AFC NO TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 152138,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 154643,
+          "mob_id": "060a2b340101010501010f10130000002e692b1573110696f4757c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000789c161673110696531a7c57583610fa",
+      "file_object_id": 173553,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 173535,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 173546,
+          "sclp_source_id": "060a2b340101010501010d1213a12a7604faed8609089606fc2fa08cfdc50271",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 132338,
+              "source_mob_id": "060a2b340101010501010d1213a12a7604faed8609089606fc2fa08cfdc50271",
+              "source_name": "B061C047_250821_D60F_M_0745T7",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 132293,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1730_PB_PA",
+                  "raw_string_values": [
+                    "424c4f434b5f313733305f50425f504100"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 173092,
+          "mob_id": "060a2b340101010501010f101300000077832b1573110696eae37c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000ad0d2f15731106968c5d7c57583610fa",
+      "file_object_id": 186091,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 186065,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 186085,
+          "sclp_source_id": "2a000000ec60b65c1a74c800",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 128399,
+              "source_mob_id": "2a000000ec60b65c1a74c800",
+              "source_name": "FIGHTING.WAV",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 128377,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1440_JC_DR",
+                  "raw_string_values": [
+                    "424c4f434b5f313434305f4a435f445200"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 182732,
+          "mob_id": "060a2b340101010501010f10130000009e642b157311069659a47c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1440_JC_DR"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000aef52e157311069638897c57583610fa",
+      "file_object_id": 186396,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 186370,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 186390,
+          "sclp_source_id": "2a000000ec60b65c1a74c800",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 128399,
+              "source_mob_id": "2a000000ec60b65c1a74c800",
+              "source_name": "FIGHTING.WAV",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 128377,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1440_JC_DR",
+                  "raw_string_values": [
+                    "424c4f434b5f313434305f4a435f445200"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 178507,
+          "mob_id": "060a2b340101010501010f10130000008f642b1573110696a38f7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1440_JC_DR"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000baafb91673110696898c7c57583610fa",
+      "file_object_id": 189127,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 189109,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 189120,
+          "sclp_source_id": "060a2b340101010501010f10130000009dc211a453070696ce237c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 182644,
+              "source_mob_id": "060a2b340101010501010f10130000009dc211a453070696ce237c57583610fa",
+              "source_name": "TEXTLESS OPENERS",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 182617,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 153964,
+          "mob_id": "060a2b340101010501010f10130000002c942b1573110696febb7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000c94727167311069615237c57583610fa",
+      "file_object_id": 192248,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 192222,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 192242,
+          "sclp_source_id": "060a2b340101010501010f1013000000978afdd243950596b8b1dc4a3e7ded56",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 180899,
+              "source_mob_id": "060a2b340101010501010f1013000000978afdd243950596b8b1dc4a3e7ded56",
+              "source_name": "41 GTO High Revs And Peel O.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 180871,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "03_HAA_SFX",
+                  "raw_string_values": [
+                    "30335f4841415f53465800"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 186632,
+          "mob_id": "060a2b340101010501010f1013000000b0852b1573110696f8567c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "03_HAA_SFX"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000cca2bf167311069690b17c57583610fa",
+      "file_object_id": 192868,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 192840,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 192862,
+          "sclp_source_id": "060a2b340101010501010f10130000006e165c5b2808069631ce7c575836139a",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 171154,
+              "source_mob_id": "060a2b340101010501010f10130000006e165c5b2808069631ce7c575836139a",
+              "source_name": "SKID_SHORT_DP.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 171132,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1718_PB_IW",
+                  "raw_string_values": [
+                    "424c4f434b5f313731385f50425f495700"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 197094,
+          "mob_id": "060a2b340101010501010f1013000000df942b15731106968a1f7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1718_PB_IW"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000ce6f2c1573110696ab807c57583610fa",
+      "file_object_id": 193426,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 193407,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 193419,
+          "sclp_source_id": "060a2b340101010001010f0013000000966985b5fd562ab4aa071b7343824798",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 128376,
+              "source_mob_id": "060a2b340101010001010f0013000000966985b5fd562ab4aa071b7343824798",
+              "source_name": "DJI_20250724092658_0005_D",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 128350,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1728_SH_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313732385f53485f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 148544,
+          "mob_id": "060a2b340101010501010f101300000016642b157311069627027c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1728_SH_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000d3ee4b157311069626da7c57583610fa",
+      "file_object_id": 194608,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 194587,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 194598,
+          "sclp_source_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 152165,
+              "source_mob_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+              "source_name": "AFC NO TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 152138,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 154643,
+          "mob_id": "060a2b340101010501010f10130000002e692b1573110696f4757c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000db49741573110696d2417c57583610fa",
+      "file_object_id": 195894,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 195876,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 195887,
+          "sclp_source_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 146364,
+              "source_mob_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+              "source_name": "FF TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 146337,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 150453,
+          "mob_id": "060a2b340101010501010f10130000001d6f2b1573110696237f7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000defd2f157311069645e47c57583610fa",
+      "file_object_id": 196781,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 196763,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 196774,
+          "sclp_source_id": "060a2b34010101050101051213a1ebb3006d5c4b05979606a6db7c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 132218,
+              "source_mob_id": "060a2b34010101050101051213a1ebb3006d5c4b05979606a6db7c57583610fa",
+              "source_name": "Ident_2sec",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 132192,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_PROGRAMME_BUILD",
+                  "raw_string_values": [
+                    "4841415f50524f4752414d4d455f4255494c4400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 186815,
+          "mob_id": "060a2b340101010501010f1013000000b1642b15731106963bd57c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000e0afb916731106962deb7c57583610fa",
+      "file_object_id": 197151,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 197133,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 197144,
+          "sclp_source_id": "060a2b340101010501010f10130000009dc211a453070696ce237c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 182644,
+              "source_mob_id": "060a2b340101010501010f10130000009dc211a453070696ce237c57583610fa",
+              "source_name": "TEXTLESS OPENERS",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 182617,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 153964,
+          "mob_id": "060a2b340101010501010f10130000002c942b1573110696febb7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000e74727167311069653d37c57583610fa",
+      "file_object_id": 198488,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 198462,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 198482,
+          "sclp_source_id": "060a2b340101010501010f1013000000978afdd243950596b8b1dc4a3e7ded56",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 180899,
+              "source_mob_id": "060a2b340101010501010f1013000000978afdd243950596b8b1dc4a3e7ded56",
+              "source_name": "41 GTO High Revs And Peel O.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 180871,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "03_HAA_SFX",
+                  "raw_string_values": [
+                    "30335f4841415f53465800"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 186632,
+          "mob_id": "060a2b340101010501010f1013000000b0852b1573110696f8567c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "03_HAA_SFX"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000ec45be167311069643cb7c57583610fa",
+      "file_object_id": 199348,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 199314,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 199342,
+          "sclp_source_id": "060a2b340101010501010f101300000039308f080195059615746451062c95b3",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 156503,
+              "source_mob_id": "060a2b340101010501010f101300000039308f080195059615746451062c95b3",
+              "source_name": "5511410T",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDTP",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 156370,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1551_PS_DG",
+                  "raw_string_values": [
+                    "424c4f434b5f313535315f50535f444700"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 178614,
+          "mob_id": "060a2b340101010501010f10130000008f942b1573110696b3ba7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1551_PS_DG"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000fbafb9167311069684547c57583610fa",
+      "file_object_id": 200465,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 200444,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 200455,
+          "sclp_source_id": "060a2b340101010501010f10130000009dc211a453070696ce237c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 182644,
+              "source_mob_id": "060a2b340101010501010f10130000009dc211a453070696ce237c57583610fa",
+              "source_name": "TEXTLESS OPENERS",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 182617,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 153964,
+          "mob_id": "060a2b340101010501010f10130000002c942b1573110696febb7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000157a2e1573110696e0627c57583610fa",
+      "file_object_id": 202644,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 202618,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 202638,
+          "sclp_source_id": "2a00000022ac69529211db00",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 200936,
+              "source_mob_id": "2a00000022ac69529211db00",
+              "source_name": "elevator - lift - doors open - enter - ride -digifxf1 tk84.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 200908,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1188 SW",
+                  "raw_string_values": [
+                    "424c4f434b5f3131383820535700"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 203062,
+          "mob_id": "060a2b340101010501010f10130000004b642b157311069673777c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1188 SW"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f101300000031bf2e157311069641fb7c57583610fa",
+      "file_object_id": 202896,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 202868,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 202890,
+          "sclp_source_id": "2a00000072177651c262e101",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 200988,
+              "source_mob_id": "2a00000072177651c262e101",
+              "source_name": "car tire squeal, short -premed07 tk43.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 200960,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1164",
+                  "raw_string_values": [
+                    "424c4f434b5f3131363400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 203469,
+          "mob_id": "060a2b340101010501010f10130000006f642b15731106968da97c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1164"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000377a2e15731106962ed37c57583610fa",
+      "file_object_id": 202923,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 202897,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 202917,
+          "sclp_source_id": "2a00000022ac69529211db00",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 200936,
+              "source_mob_id": "2a00000022ac69529211db00",
+              "source_name": "elevator - lift - doors open - enter - ride -digifxf1 tk84.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 200908,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1188 SW",
+                  "raw_string_values": [
+                    "424c4f434b5f3131383820535700"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 203062,
+          "mob_id": "060a2b340101010501010f10130000004b642b157311069673777c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1188 SW"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f10130000004ebf2e1573110696023e7c57583610fa",
+      "file_object_id": 203091,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 203063,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 203085,
+          "sclp_source_id": "2a00000072177651c262e101",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 200988,
+              "source_mob_id": "2a00000072177651c262e101",
+              "source_name": "car tire squeal, short -premed07 tk43.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 200960,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1164",
+                  "raw_string_values": [
+                    "424c4f434b5f3131363400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 203469,
+          "mob_id": "060a2b340101010501010f10130000006f642b15731106968da97c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1164"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f10130000006272b9167311069658847c57583610fa",
+      "file_object_id": 203290,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 203264,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 203284,
+          "sclp_source_id": "060a2b340101010501010f1013000000ebd745c743950596d21bdc4a3e7ded56",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 204399,
+              "source_mob_id": "060a2b340101010501010f1013000000ebd745c743950596d21bdc4a3e7ded56",
+              "source_name": "15 Office, Med.oices, Tel.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 204371,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "03_HAA_SFX",
+                  "raw_string_values": [
+                    "30335f4841415f53465800"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 202570,
+          "mob_id": "060a2b340101010501010f101300000008942b157311069647d47c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "03_HAA_SFX"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f101300000066e22e1573110696be6e7c57583610fa",
+      "file_object_id": 203317,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 203291,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 203311,
+          "sclp_source_id": "2a000000bd0eb45c280afc01",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 201017,
+              "source_mob_id": "2a000000bd0eb45c280afc01",
+              "source_name": "441 45  hit, body heavy body hit with.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 200989,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1440_JC_DR",
+                  "raw_string_values": [
+                    "424c4f434b5f313434305f4a435f445200"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 203586,
+          "mob_id": "060a2b340101010501010f101300000080642b15731106960a017c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "BLOCK_1440_JC_DR"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f10130000008172b91673110696f7417c57583610fa",
+      "file_object_id": 203668,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 203642,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 203662,
+          "sclp_source_id": "060a2b340101010501010f1013000000ebd745c743950596d21bdc4a3e7ded56",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 204399,
+              "source_mob_id": "060a2b340101010501010f1013000000ebd745c743950596d21bdc4a3e7ded56",
+              "source_name": "15 Office, Med.oices, Tel.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 204371,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "03_HAA_SFX",
+                  "raw_string_values": [
+                    "30335f4841415f53465800"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 202570,
+          "mob_id": "060a2b340101010501010f101300000008942b157311069647d47c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "03_HAA_SFX"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000a55c4a16731106966eae7c57583610fa",
+      "file_object_id": 203852,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 203824,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 203846,
+          "sclp_source_id": "060a2b340101010501010f10130000007282af0332010696d7eb5065f335eb2c",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 203534,
+              "source_mob_id": "060a2b340101010501010f10130000007282af0332010696d7eb5065f335eb2c",
+              "source_name": "THEME_A_10sec.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 203506,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_PROGRAMME_BUILD",
+                  "raw_string_values": [
+                    "4841415f50524f4752414d4d455f4255494c4400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 204259,
+          "mob_id": "060a2b340101010501010f1013000000de892b1573110696a7c87c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000c25c4a167311069618a27c57583610fa",
+      "file_object_id": 203991,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 203963,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 203985,
+          "sclp_source_id": "060a2b340101010501010f10130000007282af0332010696d7eb5065f335eb2c",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 203534,
+              "source_mob_id": "060a2b340101010501010f10130000007282af0332010696d7eb5065f335eb2c",
+              "source_name": "THEME_A_10sec.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 203506,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_PROGRAMME_BUILD",
+                  "raw_string_values": [
+                    "4841415f50524f4752414d4d455f4255494c4400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 204259,
+          "mob_id": "060a2b340101010501010f1013000000de892b1573110696a7c87c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+      "bella_id": "060a2b340101010501010f1013000000e8ab2e15731106962f9f7c57583610fa",
+      "file_object_id": 204351,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 204324,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1729_PS_DG",
+          "raw_string_values": [
+            "424c4f434b5f313732395f50535f444700"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1729_PS_DG",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 204345,
+          "sclp_source_id": "2a00000055df4c5683390702",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 200959,
+              "source_mob_id": "2a00000055df4c5683390702",
+              "source_name": "Body drop.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 200937,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA Stock Footage",
+                  "raw_string_values": [
+                    "4841412053746f636b20466f6f7461676500"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 203227,
+          "mob_id": "060a2b340101010501010f10130000005d642b1573110696a9027c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "source_values": [
+        "HAA Stock Footage"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f101300000001a17a0873110696e6627c57583610fa",
+      "file_object_id": 123736,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 123712,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 123730,
+          "sclp_source_id": "060a2b340101010501010f10130000007042ea11270806968b777c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 143139,
+              "source_mob_id": "060a2b340101010501010f10130000007042ea11270806968b777c57583610fa",
+              "source_name": "Phone Text_Sent.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 143111,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_ASSISTS",
+                  "raw_string_values": [
+                    "4841415f4153534953545300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 134732,
+          "mob_id": "060a2b340101010501010f1013000000407c7a087311069615ef7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_ASSISTS"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f10130000000b7695087311069615987c57583610fa",
+      "file_object_id": 125569,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 125545,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 125563,
+          "sclp_source_id": "060a2b340101010501010f101300000042d7e8112708069681767c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 135108,
+              "source_mob_id": "060a2b340101010501010f101300000042d7e8112708069681767c57583610fa",
+              "source_name": "Phone Lock.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 135080,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_ASSISTS",
+                  "raw_string_values": [
+                    "4841415f4153534953545300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 125381,
+          "mob_id": "060a2b340101010501010f101300000009877a0873110696172d7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_ASSISTS"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f10130000000fcbc8087311069668bb7c57583610fa",
+      "file_object_id": 126779,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 126761,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 126772,
+          "sclp_source_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 130342,
+              "source_mob_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+              "source_name": "AFC NO TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 130315,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 153088,
+          "mob_id": "060a2b340101010501010f1013000000a624a70873110696926e7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f10130000001173a30873110696c01b7c57583610fa",
+      "file_object_id": 126859,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 126835,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 126853,
+          "sclp_source_id": "060a2b340101010501010f10130000006cffe91127080696e7577c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 142587,
+              "source_mob_id": "060a2b340101010501010f10130000006cffe91127080696e7577c57583610fa",
+              "source_name": "Phone Text_Notification.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 142559,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_ASSISTS",
+                  "raw_string_values": [
+                    "4841415f4153534953545300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 133196,
+          "mob_id": "060a2b340101010501010f101300000036897a0873110696cd507c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_ASSISTS"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f101300000017a17a087311069613987c57583610fa",
+      "file_object_id": 127442,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 127418,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 127436,
+          "sclp_source_id": "060a2b340101010501010f10130000007042ea11270806968b777c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 143139,
+              "source_mob_id": "060a2b340101010501010f10130000007042ea11270806968b777c57583610fa",
+              "source_name": "Phone Text_Sent.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 143111,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_ASSISTS",
+                  "raw_string_values": [
+                    "4841415f4153534953545300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 134732,
+          "mob_id": "060a2b340101010501010f1013000000407c7a087311069615ef7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_ASSISTS"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f10130000002b7695087311069666967c57583610fa",
+      "file_object_id": 130834,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 130810,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 130828,
+          "sclp_source_id": "060a2b340101010501010f101300000042d7e8112708069681767c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 135108,
+              "source_mob_id": "060a2b340101010501010f101300000042d7e8112708069681767c57583610fa",
+              "source_name": "Phone Lock.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 135080,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_ASSISTS",
+                  "raw_string_values": [
+                    "4841415f4153534953545300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 125381,
+          "mob_id": "060a2b340101010501010f101300000009877a0873110696172d7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_ASSISTS"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f101300000030cbc80873110696ec737c57583610fa",
+      "file_object_id": 132190,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 132172,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 132183,
+          "sclp_source_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 130342,
+              "source_mob_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+              "source_name": "AFC NO TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 130315,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 153088,
+          "mob_id": "060a2b340101010501010f1013000000a624a70873110696926e7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f10130000003473a3087311069643b17c57583610fa",
+      "file_object_id": 132890,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 132866,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 132884,
+          "sclp_source_id": "060a2b340101010501010f10130000006cffe91127080696e7577c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 142587,
+              "source_mob_id": "060a2b340101010501010f10130000006cffe91127080696e7577c57583610fa",
+              "source_name": "Phone Text_Notification.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 142559,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_ASSISTS",
+                  "raw_string_values": [
+                    "4841415f4153534953545300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 133196,
+          "mob_id": "060a2b340101010501010f101300000036897a0873110696cd507c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_ASSISTS"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f10130000003a5aaa0873110696e0c27c57583610fa",
+      "file_object_id": 133862,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 133844,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 133855,
+          "sclp_source_id": "060a2b34010101050101051213a1ebb304efdd7c06079606a6db7c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 114828,
+              "source_mob_id": "060a2b34010101050101051213a1ebb304efdd7c06079606a6db7c57583610fa",
+              "source_name": "Opener A_8sec",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 114802,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_PROGRAMME_BUILD",
+                  "raw_string_values": [
+                    "4841415f50524f4752414d4d455f4255494c4400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 165116,
+          "mob_id": "060a2b340101010501010f1013000000ef21a70873110696f08a7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f101300000041be9308731106968ffd7c57583610fa",
+      "file_object_id": 135007,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 134981,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 135001,
+          "sclp_source_id": "060a2b340101010501010f10130000007282af0332010696d7eb5065f335eb2c",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 143345,
+              "source_mob_id": "060a2b340101010501010f10130000007282af0332010696d7eb5065f335eb2c",
+              "source_name": "THEME_A_10sec.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 143317,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_PROGRAMME_BUILD",
+                  "raw_string_values": [
+                    "4841415f50524f4752414d4d455f4255494c4400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 131877,
+          "mob_id": "060a2b340101010501010f10130000002f867a0873110696d8267c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f10130000004a17e10873110696b61f7c57583610fa",
+      "file_object_id": 136103,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 136085,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 136096,
+          "sclp_source_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 127678,
+              "source_mob_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+              "source_name": "FF CREDITS",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 127651,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 128587,
+          "mob_id": "060a2b340101010501010f10130000001d26a70873110696fef07c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f101300000054a1880873110696808e7c57583610fa",
+      "file_object_id": 138904,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 138871,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 138898,
+          "sclp_source_id": "060a2b340101010101010f0013a10000927d3477bc9fd258e9e8b1063a21e4df",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 113334,
+              "source_mob_id": "060a2b340101010101010f0013a10000927d3477bc9fd258e9e8b1063a21e4df",
+              "source_name": "7280108SM",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDTP",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 113304,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1729_PS_DG",
+                  "raw_string_values": [
+                    "424c4f434b5f313732395f50535f444700"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 159059,
+          "mob_id": "060a2b340101010501010f1013000000ca827a0873110696f1757c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f10130000005eb58f087311069626497c57583610fa",
+      "file_object_id": 140162,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 140138,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 140156,
+          "sclp_source_id": "060a2b340101010501010f10130000000df4e81127080696ff807c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 126375,
+              "source_mob_id": "060a2b340101010501010f10130000000df4e81127080696ff807c57583610fa",
+              "source_name": "Phone Payment.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 126353,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_ASSISTS",
+                  "raw_string_values": [
+                    "4841415f4153534953545300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 164197,
+          "mob_id": "060a2b340101010501010f1013000000e8847a0873110696eb667c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_ASSISTS"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f101300000061be930873110696a1287c57583610fa",
+      "file_object_id": 140448,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 140422,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 140442,
+          "sclp_source_id": "060a2b340101010501010f10130000007282af0332010696d7eb5065f335eb2c",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 143345,
+              "source_mob_id": "060a2b340101010501010f10130000007282af0332010696d7eb5065f335eb2c",
+              "source_name": "THEME_A_10sec.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 143317,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_PROGRAMME_BUILD",
+                  "raw_string_values": [
+                    "4841415f50524f4752414d4d455f4255494c4400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 131877,
+          "mob_id": "060a2b340101010501010f10130000002f867a0873110696d8267c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f10130000006c17e10873110696bbe07c57583610fa",
+      "file_object_id": 142324,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 142306,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 142317,
+          "sclp_source_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 127678,
+              "source_mob_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+              "source_name": "FF CREDITS",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 127651,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 128587,
+          "mob_id": "060a2b340101010501010f10130000001d26a70873110696fef07c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f101300000074a188087311069699457c57583610fa",
+      "file_object_id": 143638,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 143605,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 143632,
+          "sclp_source_id": "060a2b340101010101010f0013a10000927d3477bc9fd258e9e8b1063a21e4df",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 113334,
+              "source_mob_id": "060a2b340101010101010f0013a10000927d3477bc9fd258e9e8b1063a21e4df",
+              "source_name": "7280108SM",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDTP",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 113304,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1729_PS_DG",
+                  "raw_string_values": [
+                    "424c4f434b5f313732395f50535f444700"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 159059,
+          "mob_id": "060a2b340101010501010f1013000000ca827a0873110696f1757c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f101300000084cbc808731106968b447c57583610fa",
+      "file_object_id": 146655,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 146634,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 146645,
+          "sclp_source_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 130342,
+              "source_mob_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+              "source_name": "AFC NO TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 130315,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 153088,
+          "mob_id": "060a2b340101010501010f1013000000a624a70873110696926e7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f10130000008517e1087311069685337c57583610fa",
+      "file_object_id": 146677,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 146656,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 146667,
+          "sclp_source_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 127678,
+              "source_mob_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+              "source_name": "FF CREDITS",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 127651,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 128587,
+          "mob_id": "060a2b340101010501010f10130000001d26a70873110696fef07c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f1013000000940aaa0873110696d69c7c57583610fa",
+      "file_object_id": 149740,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 149722,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 149733,
+          "sclp_source_id": "060a2b34010101050101051213a1ebb3006d5c4b05979606a6db7c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 114800,
+              "source_mob_id": "060a2b34010101050101051213a1ebb3006d5c4b05979606a6db7c57583610fa",
+              "source_name": "Ident_2sec",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 114774,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_PROGRAMME_BUILD",
+                  "raw_string_values": [
+                    "4841415f50524f4752414d4d455f4255494c4400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 162227,
+          "mob_id": "060a2b340101010501010f1013000000dd21a7087311069666e07c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f10130000009cfd980873110696ad2d7c57583610fa",
+      "file_object_id": 151293,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 151269,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 151287,
+          "sclp_source_id": "060a2b340101010501010f10130000004008e9112708069676587c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 134646,
+              "source_mob_id": "060a2b340101010501010f10130000004008e9112708069676587c57583610fa",
+              "source_name": "Phone Ring_Default_Reflection.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 134618,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_ASSISTS",
+                  "raw_string_values": [
+                    "4841415f4153534953545300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 149807,
+          "mob_id": "060a2b340101010501010f101300000094877a08731106964f1b7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_ASSISTS"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f1013000000ace4ef0873110696403e7c57583610fa",
+      "file_object_id": 153801,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 153783,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 153794,
+          "sclp_source_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 126493,
+              "source_mob_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+              "source_name": "FF TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 126466,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 152801,
+          "mob_id": "060a2b340101010501010f1013000000a527a708731106967ad67c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f1013000000cce4ef0873110696fee17c57583610fa",
+      "file_object_id": 159309,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 159291,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 159302,
+          "sclp_source_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 126493,
+              "source_mob_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+              "source_name": "FF TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 126466,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 152801,
+          "mob_id": "060a2b340101010501010f1013000000a527a708731106967ad67c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f1013000000d9fd9808731106965fe87c57583610fa",
+      "file_object_id": 161741,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 161717,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 161735,
+          "sclp_source_id": "060a2b340101010501010f10130000004008e9112708069676587c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 134646,
+              "source_mob_id": "060a2b340101010501010f10130000004008e9112708069676587c57583610fa",
+              "source_name": "Phone Ring_Default_Reflection.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 134618,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_ASSISTS",
+                  "raw_string_values": [
+                    "4841415f4153534953545300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 149807,
+          "mob_id": "060a2b340101010501010f101300000094877a08731106964f1b7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_ASSISTS"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+      "bella_id": "060a2b340101010501010f1013000000e7e4ef0873110696c8fe7c57583610fa",
+      "file_object_id": 164123,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 164102,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 164113,
+          "sclp_source_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 126493,
+              "source_mob_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+              "source_name": "FF TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 126466,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 152801,
+          "mob_id": "060a2b340101010501010f1013000000a527a708731106967ad67c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f10130000000494950b7311069640fc7c57583610fa",
+      "file_object_id": 121467,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 121441,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 121461,
+          "sclp_source_id": "2a0000001d6b3454148ba100",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 109384,
+              "source_mob_id": "2a0000001d6b3454148ba100",
+              "source_name": "sea waves against rocks with some lapping. good for sea against boat. -filefx01 tk14.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 109356,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1231",
+                  "raw_string_values": [
+                    "424c4f434b5f3132333100"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 158395,
+          "mob_id": "060a2b340101010501010f1013000000dbdc940b731106967fec7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1231"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f101300000016a8cf0b73110696e7ba7c57583610fa",
+      "file_object_id": 124444,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 124423,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 124434,
+          "sclp_source_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 125288,
+              "source_mob_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+              "source_name": "FF CREDITS",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 125261,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 142047,
+          "mob_id": "060a2b340101010501010f101300000083e1940b73110696713b7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f1013000000170add0b73110696740d7c57583610fa",
+      "file_object_id": 124540,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 124519,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 124530,
+          "sclp_source_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 123372,
+              "source_mob_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+              "source_name": "FF TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 123345,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 163349,
+          "mob_id": "060a2b340101010501010f1013000000fce2940b73110696bc987c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f10130000001a94950b731106969c5c7c57583610fa",
+      "file_object_id": 125353,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 125327,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 125347,
+          "sclp_source_id": "2a0000001d6b3454148ba100",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 109384,
+              "source_mob_id": "2a0000001d6b3454148ba100",
+              "source_name": "sea waves against rocks with some lapping. good for sea against boat. -filefx01 tk14.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 109356,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1231",
+                  "raw_string_values": [
+                    "424c4f434b5f3132333100"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 158395,
+          "mob_id": "060a2b340101010501010f1013000000dbdc940b731106967fec7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1231"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f10130000002c4b960b7311069645e97c57583610fa",
+      "file_object_id": 128701,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 128683,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 128694,
+          "sclp_source_id": "060a2b34010101050101051213a1ebb304efdd7c06079606a6db7c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 112366,
+              "source_mob_id": "060a2b34010101050101051213a1ebb304efdd7c06079606a6db7c57583610fa",
+              "source_name": "Opener A_8sec",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 112340,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_PROGRAMME_BUILD",
+                  "raw_string_values": [
+                    "4841415f50524f4752414d4d455f4255494c4400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 123877,
+          "mob_id": "060a2b340101010501010f101300000013dd940b73110696f7bb7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f101300000038ccbf0b73110696453a7c57583610fa",
+      "file_object_id": 130916,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 130895,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 130906,
+          "sclp_source_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 127529,
+              "source_mob_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+              "source_name": "AFC NO TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 127502,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 153647,
+          "mob_id": "060a2b340101010501010f1013000000c0df940b7311069632807c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f10130000003ea7cf0b73110696ffd17c57583610fa",
+      "file_object_id": 131870,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 131852,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 131863,
+          "sclp_source_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 125288,
+              "source_mob_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+              "source_name": "FF CREDITS",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 125261,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 142047,
+          "mob_id": "060a2b340101010501010f101300000083e1940b73110696713b7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f10130000003ee4d20b7311069670dd7c57583610fa",
+      "file_object_id": 132029,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 132003,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 132023,
+          "sclp_source_id": "060a2b340101010501010f1013000000d10825331687059669136451062c87f7",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 156626,
+              "source_mob_id": "060a2b340101010501010f1013000000d10825331687059669136451062c87f7",
+              "source_name": "07. Australian atmos - Beach_ Vers 2 - Day -Surf C!P - Diamond Beach - Tasmania.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 156598,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1455_JC_DG",
+                  "raw_string_values": [
+                    "424c4f434b5f313435355f4a435f444700"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 157901,
+          "mob_id": "060a2b340101010501010f1013000000d9e1940b7311069602eb7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1455_JC_DG"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f10130000004309dd0b7311069611337c57583610fa",
+      "file_object_id": 132499,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 132481,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 132492,
+          "sclp_source_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 123372,
+              "source_mob_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+              "source_name": "FF TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 123345,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 163349,
+          "mob_id": "060a2b340101010501010f1013000000fce2940b73110696bc987c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f1013000000507c8b0c73110696a3ab7c57583610fa",
+      "file_object_id": 134411,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 134383,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 134405,
+          "sclp_source_id": "060a2b340101010501010f10130000007282af0332010696d7eb5065f335eb2c",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 139229,
+              "source_mob_id": "060a2b340101010501010f10130000007282af0332010696d7eb5065f335eb2c",
+              "source_name": "THEME_A_10sec.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 139201,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_PROGRAMME_BUILD",
+                  "raw_string_values": [
+                    "4841415f50524f4752414d4d455f4255494c4400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 143903,
+          "mob_id": "060a2b340101010501010f10130000008cf2940b73110696b7037c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f101300000054e4d20b7311069666af7c57583610fa",
+      "file_object_id": 134693,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 134667,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 134687,
+          "sclp_source_id": "060a2b340101010501010f1013000000d10825331687059669136451062c87f7",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 156626,
+              "source_mob_id": "060a2b340101010501010f1013000000d10825331687059669136451062c87f7",
+              "source_name": "07. Australian atmos - Beach_ Vers 2 - Day -Surf C!P - Diamond Beach - Tasmania.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 156598,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1455_JC_DG",
+                  "raw_string_values": [
+                    "424c4f434b5f313435355f4a435f444700"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 157901,
+          "mob_id": "060a2b340101010501010f1013000000d9e1940b7311069602eb7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1455_JC_DG"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f101300000061a7cf0b73110696fb067c57583610fa",
+      "file_object_id": 136408,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 136390,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 136401,
+          "sclp_source_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 125288,
+              "source_mob_id": "060a2b340101010501010f1013000000191349a4530706961fa87c57583610fa",
+              "source_name": "FF CREDITS",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 125261,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 142047,
+          "mob_id": "060a2b340101010501010f101300000083e1940b73110696713b7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f101300000064cbbf0b7311069636817c57583610fa",
+      "file_object_id": 137071,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 137053,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 137064,
+          "sclp_source_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 127529,
+              "source_mob_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+              "source_name": "AFC NO TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 127502,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 153647,
+          "mob_id": "060a2b340101010501010f1013000000c0df940b7311069632807c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f10130000006509dd0b73110696ad327c57583610fa",
+      "file_object_id": 137219,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 137201,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 137212,
+          "sclp_source_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 123372,
+              "source_mob_id": "060a2b340101010501010f10130000000ed4eea754070696d4d67c57583610fa",
+              "source_name": "FF TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 123345,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 163349,
+          "mob_id": "060a2b340101010501010f1013000000fce2940b73110696bc987c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f101300000068e4d20b731106964cb67c57583610fa",
+      "file_object_id": 137767,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 137741,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 137761,
+          "sclp_source_id": "060a2b340101010501010f1013000000d10825331687059669136451062c87f7",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 156626,
+              "source_mob_id": "060a2b340101010501010f1013000000d10825331687059669136451062c87f7",
+              "source_name": "07. Australian atmos - Beach_ Vers 2 - Day -Surf C!P - Diamond Beach - Tasmania.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 156598,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1455_JC_DG",
+                  "raw_string_values": [
+                    "424c4f434b5f313435355f4a435f444700"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 157901,
+          "mob_id": "060a2b340101010501010f1013000000d9e1940b7311069602eb7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1455_JC_DG"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f101300000069dffa0b73110696161d7c57583610fa",
+      "file_object_id": 138365,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 138338,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 138359,
+          "sclp_source_id": "060a2b340101010501010f10130000004c99b856690306968a7f6451062c95f9",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 133509,
+              "source_mob_id": "060a2b340101010501010f10130000004c99b856690306968a7f6451062c95f9",
+              "source_name": "ATMOSPHERIC_SUB_HIT_(A)_CHRISTOPHER_HARDWICK_(PRS)_West_One_Music_WOM_618_159.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 133481,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1662_PB_PA",
+                  "raw_string_values": [
+                    "424c4f434b5f313636325f50425f504100"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 130782,
+          "mob_id": "060a2b340101010501010f101300000037e5940b7311069697437c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1662_PB_PA"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f10130000006d7c8b0c731106963c497c57583610fa",
+      "file_object_id": 138831,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 138803,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 138825,
+          "sclp_source_id": "060a2b340101010501010f10130000007282af0332010696d7eb5065f335eb2c",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 139229,
+              "source_mob_id": "060a2b340101010501010f10130000007282af0332010696d7eb5065f335eb2c",
+              "source_name": "THEME_A_10sec.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 139201,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_PROGRAMME_BUILD",
+                  "raw_string_values": [
+                    "4841415f50524f4752414d4d455f4255494c4400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 143903,
+          "mob_id": "060a2b340101010501010f10130000008cf2940b73110696b7037c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f10130000007ce4d20b73110696c2b37c57583610fa",
+      "file_object_id": 141034,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 141008,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 141028,
+          "sclp_source_id": "060a2b340101010501010f1013000000d10825331687059669136451062c87f7",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 156626,
+              "source_mob_id": "060a2b340101010501010f1013000000d10825331687059669136451062c87f7",
+              "source_name": "07. Australian atmos - Beach_ Vers 2 - Day -Surf C!P - Diamond Beach - Tasmania.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 156598,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1455_JC_DG",
+                  "raw_string_values": [
+                    "424c4f434b5f313435355f4a435f444700"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 157901,
+          "mob_id": "060a2b340101010501010f1013000000d9e1940b7311069602eb7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1455_JC_DG"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f101300000083cbbf0b7311069699157c57583610fa",
+      "file_object_id": 141912,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 141894,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 141905,
+          "sclp_source_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 127529,
+              "source_mob_id": "060a2b340101010501010f1013000000262a11a55307069687c57c57583610fa",
+              "source_name": "AFC NO TEASER",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 127502,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1707_SW_AC",
+                  "raw_string_values": [
+                    "424c4f434b5f313730375f53575f414300"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 153647,
+          "mob_id": "060a2b340101010501010f1013000000c0df940b7311069632807c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1707_SW_AC"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f101300000087dffa0b73110696320a7c57583610fa",
+      "file_object_id": 142968,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 142941,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 142962,
+          "sclp_source_id": "060a2b340101010501010f10130000004c99b856690306968a7f6451062c95f9",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 133509,
+              "source_mob_id": "060a2b340101010501010f10130000004c99b856690306968a7f6451062c95f9",
+              "source_name": "ATMOSPHERIC_SUB_HIT_(A)_CHRISTOPHER_HARDWICK_(PRS)_West_One_Music_WOM_618_159.wav",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 133481,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1662_PB_PA",
+                  "raw_string_values": [
+                    "424c4f434b5f313636325f50425f504100"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 130782,
+          "mob_id": "060a2b340101010501010f101300000037e5940b7311069697437c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1662_PB_PA"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f10130000008ee4d20b73110696d90c7c57583610fa",
+      "file_object_id": 144115,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 144089,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 144109,
+          "sclp_source_id": "060a2b340101010501010f1013000000d10825331687059669136451062c87f7",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 156626,
+              "source_mob_id": "060a2b340101010501010f1013000000d10825331687059669136451062c87f7",
+              "source_name": "07. Australian atmos - Beach_ Vers 2 - Day -Surf C!P - Diamond Beach - Tasmania.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 156598,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1455_JC_DG",
+                  "raw_string_values": [
+                    "424c4f434b5f313435355f4a435f444700"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 157901,
+          "mob_id": "060a2b340101010501010f1013000000d9e1940b7311069602eb7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1455_JC_DG"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f1013000000aeeecf0b7311069640d97c57583610fa",
+      "file_object_id": 150461,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 150435,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 150455,
+          "sclp_source_id": "060a2b340101010501010f1013000000d48a851b78080696cb3c7c575836139a",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 157227,
+              "source_mob_id": "060a2b340101010501010f1013000000d48a851b78080696cb3c7c575836139a",
+              "source_name": "25-04 Door Knocks.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 157199,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1726_PB_DR",
+                  "raw_string_values": [
+                    "424c4f434b5f313732365f50425f445200"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 144776,
+          "mob_id": "060a2b340101010501010f101300000093e1940b731106961ad17c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1726_PB_DR"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f1013000000ccb9950b7311069637c77c57583610fa",
+      "file_object_id": 155596,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 155578,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 155589,
+          "sclp_source_id": "060a2b34010101050101051213a1ebb3006d5c4b05979606a6db7c57583610fa",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 112338,
+              "source_mob_id": "060a2b34010101050101051213a1ebb3006d5c4b05979606a6db7c57583610fa",
+              "source_name": "Ident_2sec",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 112312,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "HAA_PROGRAMME_BUILD",
+                  "raw_string_values": [
+                    "4841415f50524f4752414d4d455f4255494c4400"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 121171,
+          "mob_id": "060a2b340101010501010f101300000002dd940b731106969cd47c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f1013000000d0eecf0b731106969a5c7c57583610fa",
+      "file_object_id": 156597,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 156571,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 156591,
+          "sclp_source_id": "060a2b340101010501010f1013000000d48a851b78080696cb3c7c575836139a",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 157227,
+              "source_mob_id": "060a2b340101010501010f1013000000d48a851b78080696cb3c7c575836139a",
+              "source_name": "25-04 Door Knocks.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 157199,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1726_PB_DR",
+                  "raw_string_values": [
+                    "424c4f434b5f313732365f50425f445200"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 144776,
+          "mob_id": "060a2b340101010501010f101300000093e1940b731106961ad17c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1726_PB_DR"
+      ],
+      "valid": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+      "bella_id": "060a2b340101010501010f1013000000f6e3d20b7311069651547c57583610fa",
+      "file_object_id": 162543,
+      "file_project_attributes": [
+        {
+          "scope": "own",
+          "attribute_object_id": 162517,
+          "key": "_PJ",
+          "kind": 2,
+          "value": "BLOCK_1730_PB_PA",
+          "raw_string_values": [
+            "424c4f434b5f313733305f50425f504100"
+          ]
+        }
+      ],
+      "bella_project": "BLOCK_1730_PB_PA",
+      "old_project": "",
+      "bella_selection": 2,
+      "bella_key": 1,
+      "source_links": [
+        {
+          "sclp_object_id": 162537,
+          "sclp_source_id": "060a2b340101010501010f1013000000d10825331687059669136451062c87f7",
+          "source_candidate_count": 1,
+          "sources": [
+            {
+              "source_object_id": 156626,
+              "source_mob_id": "060a2b340101010501010f1013000000d10825331687059669136451062c87f7",
+              "source_name": "07. Australian atmos - Beach_ Vers 2 - Day -Surf C!P - Diamond Beach - Tasmania.mp3",
+              "source_usage_code": 0,
+              "source_descriptor_class": "MDES",
+              "project_attributes": [
+                {
+                  "scope": "own",
+                  "attribute_object_id": 156598,
+                  "key": "_PJ",
+                  "kind": 2,
+                  "value": "BLOCK_1455_JC_DG",
+                  "raw_string_values": [
+                    "424c4f434b5f313435355f4a435f444700"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linked_masters_for_distinction_only": [
+        {
+          "object_id": 157901,
+          "mob_id": "060a2b340101010501010f1013000000d9e1940b7311069602eb7c57583610fa",
+          "project_attributes": []
+        }
+      ],
+      "own_values": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "source_values": [
+        "BLOCK_1455_JC_DG"
+      ],
+      "valid": true
+    }
+  ]
+}

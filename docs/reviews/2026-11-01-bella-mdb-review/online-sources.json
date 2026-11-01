@@ -1,0 +1,71 @@
+{
+  "date": "2026-11-01",
+  "timezone": "Australia/Sydney",
+  "scope": "MDB documentation source receipts, static inspection only",
+  "repositories": {
+    "omfkt22": "4216021db63f3ef6f094b24f260fbdd67f4cb7e2",
+    "pymdb": "04380153a98580b7097de30520ed5a05005aaf2d"
+  },
+  "artifacts": [
+    {
+      "repository": "omfkt22",
+      "path": "bento/Containr.h",
+      "sha256": "3755dba2c93839ee09ec67d89876c347139aa3517d6bfaefa05c0c4fa02f175d"
+    },
+    {
+      "repository": "omfkt22",
+      "path": "bento/TOCIO.h",
+      "sha256": "34f80af7035d487a74ad369bc8aac8a2afa87260b725732b9ea941c0e9da3b0e"
+    },
+    {
+      "repository": "omfkt22",
+      "path": "kitomfi/omFile.c",
+      "sha256": "ddeb8da392f4e41688db3e9824b729281fadce6a78e4152b2f33a5dd18e1201f"
+    },
+    {
+      "repository": "omfkt22",
+      "path": "kitomfi/omAcces.c",
+      "sha256": "075ec5b04ae79a5107e4885e8ce66f3be2136d485642b59afaa00cb3e5941757"
+    },
+    {
+      "repository": "omfkt22",
+      "path": "kitomfi/omfansic.c",
+      "sha256": "d4ba65a30f2d3ab49c6111a3b38fba12bd81cb921fd90fcffa65d3c1246d7eb2"
+    },
+    {
+      "repository": "pymdb",
+      "path": "src/mdb/bento.py",
+      "sha256": "19194d9a647fbcfe6671a7355b03732be6dff4a06528b014d21e84279c946665"
+    },
+    {
+      "repository": "pymdb",
+      "path": "src/mdb/datatypes.py",
+      "sha256": "dc8e11eed91b8db371d22e3e6363956fc62b104c733fd0e674d1e1de5461b6e4"
+    },
+    {
+      "repository": "pymdb",
+      "path": "src/mdb/objects/descriptors.py",
+      "sha256": "b0bb855c43026ef7fe22848abe85970c82163c3d7bf4f426d5d7da59371caddc"
+    },
+    {
+      "repository": "pymdb",
+      "path": "src/mdb/objects/attributes.py",
+      "sha256": "5c25e1f6aa5a7959838bd60118933169ea333cf0f525a8b6a5da25314a35c73b"
+    },
+    {
+      "repository": "pymdb",
+      "path": "src/mdb/core.py",
+      "sha256": "2a21c0a0f35d9037d9af795a6e17311a946ab8900d1842a7dd0b8a4bb5e473f5"
+    },
+    {
+      "repository": "pymdb",
+      "path": "src/mdb/file.py",
+      "sha256": "c4c1c75ea39595097502953f4079101502302ca7abfcddef76bf132e826fd228"
+    },
+    {
+      "url": "https://www.cubase.it/wp/wp-content/uploads/2014/12/omfspec21.pdf",
+      "bytes": 1081300,
+      "sha256": "62dd18226aee3fda27c4ac25cf50ab1764b7776d4a42eac8f00d3e5b07909794"
+    }
+  ]
+}

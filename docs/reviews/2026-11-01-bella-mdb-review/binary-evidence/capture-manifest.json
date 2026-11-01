@@ -1,0 +1,1144 @@
+{
+  "date": "2026-11-01",
+  "scope": "MDB-relevant arm64 procedures only",
+  "procedureCount": 27,
+  "successfulInfoAssemblyPseudoResults": 81,
+  "allRawHashesVerified": true,
+  "allTextMatchesRawToolContent": true,
+  "procedures": [
+    {
+      "label": "mc_bento_label",
+      "entrypoint": "0xdda24",
+      "name": "__ZN12omfiHPDomain15CheckBentoLabelEP7AStreamPiS2_",
+      "length": 508,
+      "basicblock_count": 10,
+      "captures": [
+        {
+          "label": "mc_bento_label",
+          "image": "libameLibrary",
+          "address": "0xdda24",
+          "tool": "procedure_info",
+          "path": "mc_bento_label-info.json",
+          "sha256": "69b5e32c68cf0a1bddc39355625760c1b0c28c170e31d25e5aa336bb81f0d040",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_bento_label",
+          "image": "libameLibrary",
+          "address": "0xdda24",
+          "tool": "procedure_assembly",
+          "path": "mc_bento_label-assembly.json",
+          "sha256": "db696a36e04c05147841d07f31078a5df7c0137dbf0e27aa8b9bf8109fcc0156",
+          "seconds": 0.008,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_bento_label",
+          "image": "libameLibrary",
+          "address": "0xdda24",
+          "tool": "procedure_pseudo_code",
+          "path": "mc_bento_label-pseudo.json",
+          "sha256": "0fd04222cf9d7a431676d35af9d9e8d5c5552c0d344f4c98b41858e95d77d9db",
+          "seconds": 0.027,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mc_bin_record",
+      "entrypoint": "0x2d5b48",
+      "name": "__ZN9AMCBinRef3GetEP7AStreamP7AIODesc",
+      "length": 632,
+      "basicblock_count": 17,
+      "captures": [
+        {
+          "label": "mc_bin_record",
+          "image": "libameLibrary",
+          "address": "0x2d5b48",
+          "tool": "procedure_info",
+          "path": "mc_bin_record-info.json",
+          "sha256": "ae3c7ff41b41ce88b87709e648c226f7ecc91c3d0c6a518719fb3522925f13de",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_bin_record",
+          "image": "libameLibrary",
+          "address": "0x2d5b48",
+          "tool": "procedure_assembly",
+          "path": "mc_bin_record-assembly.json",
+          "sha256": "56d7fb10e2552bbeb8ec5ea2b222fe88019565bb034b10e16ffab73b44d35cf6",
+          "seconds": 0.011,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_bin_record",
+          "image": "libameLibrary",
+          "address": "0x2d5b48",
+          "tool": "procedure_pseudo_code",
+          "path": "mc_bin_record-pseudo.json",
+          "sha256": "efff5f626e3c4b7d41c0178bdc9c1132aa7ef89c49e227e1ff0aec209e23e9ec",
+          "seconds": 0.041,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mc_core_find",
+      "entrypoint": "0x6cc7c",
+      "name": "__ZN12CoreAttrList8FindAttrEiPKcPh",
+      "length": 216,
+      "basicblock_count": 11,
+      "captures": [
+        {
+          "label": "mc_core_find",
+          "image": "AvidCore",
+          "address": "0x6cc7c",
+          "tool": "procedure_info",
+          "path": "mc_core_find-info.json",
+          "sha256": "8d2d4112a8eef330657dbeb2ae6f7d3ca90b7a2afacf0282f762c801d7c722eb",
+          "seconds": 0.003,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_core_find",
+          "image": "AvidCore",
+          "address": "0x6cc7c",
+          "tool": "procedure_assembly",
+          "path": "mc_core_find-assembly.json",
+          "sha256": "638c732a476b9ab5a209db38917bdb4d3b8a1b64c8cb9a9db2079d01f376d5fe",
+          "seconds": 0.005,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_core_find",
+          "image": "AvidCore",
+          "address": "0x6cc7c",
+          "tool": "procedure_pseudo_code",
+          "path": "mc_core_find-pseudo.json",
+          "sha256": "7ea09ad094d16d3d02e3b7cefff47aebeba9ddc3c09ca7568943ef049998cb8e",
+          "seconds": 0.02,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mc_core_find_impl",
+      "entrypoint": "0x6cd68",
+      "name": "__ZNK5boost11multi_index6detail18ordered_index_implINS0_6memberI13AttributeInfoA33_cXadL_ZNS4_4nameEEEEE12attrNameLessNS1_9nth_layerILi2ES4_NS0_10indexed_byINS0_13random_accessINS0_3tagIN4mpl_2naESD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_EEEENS0_14ordered_uniqueINSB_I13attrNameIndexSD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_EES6_S7_EESD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_SD_EENSt3__19allocatorIS4_EEEENS_3mpl6v_itemISH_NSP_7vector0ISD_EELi0EEENS1_18ordered_unique_tagENS1_19null_augment_policyEE4findIPKcEENS1_19bidir_node_iteratorINS1_18ordered_index_nodeISV_NS1_15index_node_baseIS4_SN_EEEEEERKT_",
+      "length": 128,
+      "basicblock_count": 9,
+      "captures": [
+        {
+          "label": "mc_core_find_impl",
+          "image": "AvidCore",
+          "address": "0x6cd68",
+          "tool": "procedure_info",
+          "path": "mc_core_find_impl-info.json",
+          "sha256": "96331ac0c70185d5e78105ba4f2df691100c5f9952e2eac9ac7283b98a851cad",
+          "seconds": 0.003,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_core_find_impl",
+          "image": "AvidCore",
+          "address": "0x6cd68",
+          "tool": "procedure_assembly",
+          "path": "mc_core_find_impl-assembly.json",
+          "sha256": "adeeec94e08b18f25776fac5ab6595097e58d6850e72b70cddd97553d593c6cc",
+          "seconds": 0.003,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_core_find_impl",
+          "image": "AvidCore",
+          "address": "0x6cd68",
+          "tool": "procedure_pseudo_code",
+          "path": "mc_core_find_impl-pseudo.json",
+          "sha256": "aa491db4b63b587cf57233507e850d81abb18d8edd5363d4bc601997af6ccebe",
+          "seconds": 0.011,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mc_core_object",
+      "entrypoint": "0x6e818",
+      "name": "__ZN12CoreAttrList10FindObjectEPKcPh",
+      "length": 24,
+      "basicblock_count": 1,
+      "captures": [
+        {
+          "label": "mc_core_object",
+          "image": "AvidCore",
+          "address": "0x6e818",
+          "tool": "procedure_info",
+          "path": "mc_core_object-info.json",
+          "sha256": "1a225a20b3bc70a5e2b37f0e26332ae3aee6d6b1e3d1381acfb37787fdede5f5",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_core_object",
+          "image": "AvidCore",
+          "address": "0x6e818",
+          "tool": "procedure_assembly",
+          "path": "mc_core_object-assembly.json",
+          "sha256": "c0d327082201fc20a266261f8b77db225c1fb57b5853c563ecb9646c41889c8d",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_core_object",
+          "image": "AvidCore",
+          "address": "0x6e818",
+          "tool": "procedure_pseudo_code",
+          "path": "mc_core_object-pseudo.json",
+          "sha256": "42976f1cca5cd260d30f734e99e18b9bc458de99d5e9acb6952fd492cb846ff7",
+          "seconds": 0.007,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mc_descriptor",
+      "entrypoint": "0x17c018",
+      "name": "__ZN14AFileMediaDesc3GetEP7AStreamP7AIODesc",
+      "length": 480,
+      "basicblock_count": 15,
+      "captures": [
+        {
+          "label": "mc_descriptor",
+          "image": "libameLibrary",
+          "address": "0x17c018",
+          "tool": "procedure_info",
+          "path": "mc_descriptor-info.json",
+          "sha256": "3fe0b92c08752cec3a4600455010d716e640a70a6325644c5455004558f1f092",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_descriptor",
+          "image": "libameLibrary",
+          "address": "0x17c018",
+          "tool": "procedure_assembly",
+          "path": "mc_descriptor-assembly.json",
+          "sha256": "684adcf6b22d3e63896409ae3a1b5af914f6904d151326219a4e12d8a2ebfdb1",
+          "seconds": 0.007,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_descriptor",
+          "image": "libameLibrary",
+          "address": "0x17c018",
+          "tool": "procedure_pseudo_code",
+          "path": "mc_descriptor-pseudo.json",
+          "sha256": "389ecc0a7f9a8cc18dacaf148ccabb6718ef2bde8b82277b7fdcae00bd5d0d21",
+          "seconds": 0.04,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mc_import_attr",
+      "entrypoint": "0x2ab7c0",
+      "name": "__Z24GetImportSettingAttrListP12ACompositionPP9AAttrList",
+      "length": 100,
+      "basicblock_count": 3,
+      "captures": [
+        {
+          "label": "mc_import_attr",
+          "image": "libameLibrary",
+          "address": "0x2ab7c0",
+          "tool": "procedure_info",
+          "path": "mc_import_attr-info.json",
+          "sha256": "2275973bf922b3a33803f82d3ed0f42bb9f6f3531e29025f6e15fd42c77af70f",
+          "seconds": 0.004,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_import_attr",
+          "image": "libameLibrary",
+          "address": "0x2ab7c0",
+          "tool": "procedure_assembly",
+          "path": "mc_import_attr-assembly.json",
+          "sha256": "4aa48f0bf27733823d1763002de7bd09c325e674598030b04bf1ecf52df597f1",
+          "seconds": 0.002,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_import_attr",
+          "image": "libameLibrary",
+          "address": "0x2ab7c0",
+          "tool": "procedure_pseudo_code",
+          "path": "mc_import_attr-pseudo.json",
+          "sha256": "b458ae62ec04f2793085660a8c36cf369b8c382f943c81784bda8cffbfac5dc3",
+          "seconds": 0.007,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mc_local_order",
+      "entrypoint": "0xb2680",
+      "name": "__ZN14omfiDualStream15LoadBentoObjectEi",
+      "length": 548,
+      "basicblock_count": 18,
+      "captures": [
+        {
+          "label": "mc_local_order",
+          "image": "libameLibrary",
+          "address": "0xb2680",
+          "tool": "procedure_info",
+          "path": "mc_local_order-info.json",
+          "sha256": "fc527b43afd6112c0824640e29297e7b21538d6bc71698e8d503e7dcd03d2276",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_local_order",
+          "image": "libameLibrary",
+          "address": "0xb2680",
+          "tool": "procedure_assembly",
+          "path": "mc_local_order-assembly.json",
+          "sha256": "189c1032157c2c0ac30bde6d9a6c27e9c6e3b8a3f1754dcff177539084996e08",
+          "seconds": 0.009,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_local_order",
+          "image": "libameLibrary",
+          "address": "0xb2680",
+          "tool": "procedure_pseudo_code",
+          "path": "mc_local_order-pseudo.json",
+          "sha256": "35887c9843b269f9c0d27ef5b8bc6f7c0a52c3dd15f0e495b94faecdc6a893ba",
+          "seconds": 0.038,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mc_long",
+      "entrypoint": "0xb7294",
+      "name": "__ZN14omfiDualStream9ReadInt32EPKc",
+      "length": 380,
+      "basicblock_count": 29,
+      "captures": [
+        {
+          "label": "mc_long",
+          "image": "libameLibrary",
+          "address": "0xb7294",
+          "tool": "procedure_info",
+          "path": "mc_long-info.json",
+          "sha256": "8157ba21b05eb96a9e974e755132bb164b77e946d8d48e913431f85cb0a886ef",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_long",
+          "image": "libameLibrary",
+          "address": "0xb7294",
+          "tool": "procedure_assembly",
+          "path": "mc_long-assembly.json",
+          "sha256": "54853d6815083c4b903926e1a291d2890c48f6250f763935450486a1d3cf9d2e",
+          "seconds": 0.008,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_long",
+          "image": "libameLibrary",
+          "address": "0xb7294",
+          "tool": "procedure_pseudo_code",
+          "path": "mc_long-pseudo.json",
+          "sha256": "f028c27b2afed40e6e8d25b16fe66795048628a33cc11e1b1e41489c4d31883a",
+          "seconds": 0.07,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mc_main_category",
+      "entrypoint": "0x100db5f64",
+      "name": "__Z13brDisplayableP5brRecPP7objinfoPb",
+      "length": 696,
+      "basicblock_count": 55,
+      "captures": [
+        {
+          "label": "mc_main_category",
+          "image": "AvidMediaComposer",
+          "address": "0x100db5f64",
+          "tool": "procedure_info",
+          "path": "mc_main_category-info.json",
+          "sha256": "f835ff9bd71a6f65a2879de108fe780754608c26ad10cd3d080e353fc08aa28d",
+          "seconds": 0.002,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_main_category",
+          "image": "AvidMediaComposer",
+          "address": "0x100db5f64",
+          "tool": "procedure_assembly",
+          "path": "mc_main_category-assembly.json",
+          "sha256": "d5e28a6598830b2a71efaf602930d6e867276f71413fc85d775e7dee7212995b",
+          "seconds": 0.023,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_main_category",
+          "image": "AvidMediaComposer",
+          "address": "0x100db5f64",
+          "tool": "procedure_pseudo_code",
+          "path": "mc_main_category-pseudo.json",
+          "sha256": "0c3432120d6cbd77098080d8db01f5f487db6950d401029dcd627a11456f32b3",
+          "seconds": 0.581,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mc_original_bin",
+      "entrypoint": "0x282aa4",
+      "name": "__Z16CMGetOrigBinInfoP12ACompositionP7avuid_tPDss",
+      "length": 188,
+      "basicblock_count": 10,
+      "captures": [
+        {
+          "label": "mc_original_bin",
+          "image": "libameLibrary",
+          "address": "0x282aa4",
+          "tool": "procedure_info",
+          "path": "mc_original_bin-info.json",
+          "sha256": "5903c3646ef1b40baadfbe0b52a6ff12485e45f4b0fdd3168e20c52b2d234ecf",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_original_bin",
+          "image": "libameLibrary",
+          "address": "0x282aa4",
+          "tool": "procedure_assembly",
+          "path": "mc_original_bin-assembly.json",
+          "sha256": "a2ffb9eb43544942407c4c2999d270fcc39d3e5c3d5fce56f273c421dfbe53c5",
+          "seconds": 0.004,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_original_bin",
+          "image": "libameLibrary",
+          "address": "0x282aa4",
+          "tool": "procedure_pseudo_code",
+          "path": "mc_original_bin-pseudo.json",
+          "sha256": "6208eb7fc9f0c44e492e8115c91035f67bb63af25c3fdc9aa486e3806393bea6",
+          "seconds": 0.012,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mc_project",
+      "entrypoint": "0x282b9c",
+      "name": "__Z16CMGetProjectNameP12ACompositionPcm",
+      "length": 168,
+      "basicblock_count": 6,
+      "captures": [
+        {
+          "label": "mc_project",
+          "image": "libameLibrary",
+          "address": "0x282b9c",
+          "tool": "procedure_info",
+          "path": "mc_project-info.json",
+          "sha256": "7d0d5df5e56734a86f6980ec010fd4a0087f7299ea2242d4573fefcc36a5322c",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_project",
+          "image": "libameLibrary",
+          "address": "0x282b9c",
+          "tool": "procedure_assembly",
+          "path": "mc_project-assembly.json",
+          "sha256": "31b02932641403eb771e34316fbcb2dcc993ccb3ff5ecbb34ca52e0046e9bb4f",
+          "seconds": 0.003,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_project",
+          "image": "libameLibrary",
+          "address": "0x282b9c",
+          "tool": "procedure_pseudo_code",
+          "path": "mc_project-pseudo.json",
+          "sha256": "fb781b3059a3b19a1c305fda080ba97dbcee2c59911dc3c316185bcaa248874e",
+          "seconds": 0.014,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mc_project_search",
+      "entrypoint": "0x29e974",
+      "name": "__Z15FindProjectNameP12ACompositioniPcm",
+      "length": 388,
+      "basicblock_count": 14,
+      "captures": [
+        {
+          "label": "mc_project_search",
+          "image": "libameLibrary",
+          "address": "0x29e974",
+          "tool": "procedure_info",
+          "path": "mc_project_search-info.json",
+          "sha256": "49ffc3ea2f229c3dbb5f90aee78faad15773d58134add0f3368e4e6d97893507",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_project_search",
+          "image": "libameLibrary",
+          "address": "0x29e974",
+          "tool": "procedure_assembly",
+          "path": "mc_project_search-assembly.json",
+          "sha256": "eca6b521f5249333ea8e9bdde05837bfa34d56442eff00bb87b6e8cf5e38371e",
+          "seconds": 0.007,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_project_search",
+          "image": "libameLibrary",
+          "address": "0x29e974",
+          "tool": "procedure_pseudo_code",
+          "path": "mc_project_search-pseudo.json",
+          "sha256": "e61b9f0dc685adcc01c3c310ccc661a74d49501f7038c194d24b08dc5f7d34d1",
+          "seconds": 0.05,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mc_rate",
+      "entrypoint": "0x257af0",
+      "name": "__Z18Read_ExactEditRateP7AStreamPKc",
+      "length": 148,
+      "basicblock_count": 4,
+      "captures": [
+        {
+          "label": "mc_rate",
+          "image": "libameLibrary",
+          "address": "0x257af0",
+          "tool": "procedure_info",
+          "path": "mc_rate-info.json",
+          "sha256": "a600f95e632b3f6c5d47b1aaa4ee9a19c0a743bbaf9cfe892320ecf298664dfb",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_rate",
+          "image": "libameLibrary",
+          "address": "0x257af0",
+          "tool": "procedure_assembly",
+          "path": "mc_rate-assembly.json",
+          "sha256": "c4361b31cb38ece3b57d7a0ffea5a9f07b5c53f1e14dbef7c1afa0982781c683",
+          "seconds": 0.003,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_rate",
+          "image": "libameLibrary",
+          "address": "0x257af0",
+          "tool": "procedure_pseudo_code",
+          "path": "mc_rate-pseudo.json",
+          "sha256": "4753765f9690c422aa53bd7e56476e3a8498bafb305a7da44e1d92273a27016b",
+          "seconds": 0.012,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mc_rational",
+      "entrypoint": "0xb84e4",
+      "name": "__ZN14omfiDualStream12ReadRationalEPKcP8Rational",
+      "length": 140,
+      "basicblock_count": 5,
+      "captures": [
+        {
+          "label": "mc_rational",
+          "image": "libameLibrary",
+          "address": "0xb84e4",
+          "tool": "procedure_info",
+          "path": "mc_rational-info.json",
+          "sha256": "4c8096ea08b8b6f33a18547af99a56361620d027afd046175e2c2d82b9ef4c43",
+          "seconds": 0.006,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_rational",
+          "image": "libameLibrary",
+          "address": "0xb84e4",
+          "tool": "procedure_assembly",
+          "path": "mc_rational-assembly.json",
+          "sha256": "694cf32104fc85a3eb19005126515793c38d4693c11629c4d76a989b73b4e723",
+          "seconds": 0.003,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_rational",
+          "image": "libameLibrary",
+          "address": "0xb84e4",
+          "tool": "procedure_pseudo_code",
+          "path": "mc_rational-pseudo.json",
+          "sha256": "79231f322bea4b7fbd9b8981766e025ccfbb231a9a87c845270cbbfdd4884313",
+          "seconds": 0.009,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mc_video_tracks",
+      "entrypoint": "0x2197f0",
+      "name": "__ZN11ATrackGroup14NumVideoTracksEv",
+      "length": 140,
+      "basicblock_count": 6,
+      "captures": [
+        {
+          "label": "mc_video_tracks",
+          "image": "libameLibrary",
+          "address": "0x2197f0",
+          "tool": "procedure_info",
+          "path": "mc_video_tracks-info.json",
+          "sha256": "5057e702841faeb106d8a0b19c7ae9c7a62d90b68add5fdaea65855f3f00d48b",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_video_tracks",
+          "image": "libameLibrary",
+          "address": "0x2197f0",
+          "tool": "procedure_assembly",
+          "path": "mc_video_tracks-assembly.json",
+          "sha256": "c19a4f4f2b55196f80b50a3b3e9382f68e5abfd9c702b3a4f7e5b29ee92ed55a",
+          "seconds": 0.002,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mc_video_tracks",
+          "image": "libameLibrary",
+          "address": "0x2197f0",
+          "tool": "procedure_pseudo_code",
+          "path": "mc_video_tracks-pseudo.json",
+          "sha256": "fec084bf78b044f8fcf93d9c156b232580f90884bf428b0330c21f7c712a6dc0",
+          "seconds": 0.008,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mdvx_compression",
+      "entrypoint": "0x100064b60",
+      "name": "-[MDVxOMFI getCompression_data:forObjAt:]",
+      "length": 612,
+      "basicblock_count": 31,
+      "captures": [
+        {
+          "label": "mdvx_compression",
+          "image": "MDVx",
+          "address": "0x100064b60",
+          "tool": "procedure_info",
+          "path": "mdvx_compression-info.json",
+          "sha256": "fbed02895f8318a497e7fb09f722e35911130c47d50a0a6a65d3621ec9fb2b1a",
+          "seconds": 0.002,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_compression",
+          "image": "MDVx",
+          "address": "0x100064b60",
+          "tool": "procedure_assembly",
+          "path": "mdvx_compression-assembly.json",
+          "sha256": "02bc480b40d5edff3a5d2faefdaa8f52d1917e3a4034b6fb574a3c07b0dd3807",
+          "seconds": 0.007,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_compression",
+          "image": "MDVx",
+          "address": "0x100064b60",
+          "tool": "procedure_pseudo_code",
+          "path": "mdvx_compression-pseudo.json",
+          "sha256": "5cfce1a11a9695638bc453a08e583c468de40271f9288d2173f792fe5395cbce",
+          "seconds": 0.172,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mdvx_data",
+      "entrypoint": "0x100061eac",
+      "name": "-[MDVxOMFI pDataFor:]",
+      "length": 184,
+      "basicblock_count": 12,
+      "captures": [
+        {
+          "label": "mdvx_data",
+          "image": "MDVx",
+          "address": "0x100061eac",
+          "tool": "procedure_info",
+          "path": "mdvx_data-info.json",
+          "sha256": "c98a76ce900290bc59d4d14f92d44def6f7bb02e80560f93b2c11187ebc32780",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_data",
+          "image": "MDVx",
+          "address": "0x100061eac",
+          "tool": "procedure_assembly",
+          "path": "mdvx_data-assembly.json",
+          "sha256": "7dcb3d8917bd33accfa81816f5f65ef379b536effc3ddef4873720e5eddc692b",
+          "seconds": 0.002,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_data",
+          "image": "MDVx",
+          "address": "0x100061eac",
+          "tool": "procedure_pseudo_code",
+          "path": "mdvx_data-pseudo.json",
+          "sha256": "bcec0dec1aa9ff9ebfd9bcb6e97112afdc0a4df53721b9cf7cf9e95ef187b0fb",
+          "seconds": 0.016,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mdvx_dictionary",
+      "entrypoint": "0x1000625e4",
+      "name": "-[MDVxOMFI InitDictionary]",
+      "length": 1352,
+      "basicblock_count": 1,
+      "captures": [
+        {
+          "label": "mdvx_dictionary",
+          "image": "MDVx",
+          "address": "0x1000625e4",
+          "tool": "procedure_info",
+          "path": "mdvx_dictionary-info.json",
+          "sha256": "73ff9b159ee7d765f8098624e940b659315b6bfcbb280a8e31f6c388f1ffaa90",
+          "seconds": 0.019,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_dictionary",
+          "image": "MDVx",
+          "address": "0x1000625e4",
+          "tool": "procedure_assembly",
+          "path": "mdvx_dictionary-assembly.json",
+          "sha256": "f3ced28886b6d955b2fa4e388b51b3bce744d3376585a848b6155fa564534202",
+          "seconds": 0.018,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_dictionary",
+          "image": "MDVx",
+          "address": "0x1000625e4",
+          "tool": "procedure_pseudo_code",
+          "path": "mdvx_dictionary-pseudo.json",
+          "sha256": "52e4e3511338593f1520c439ade0440a7504e0a6d1f53952740d4216401eb572",
+          "seconds": 0.213,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mdvx_enrich",
+      "entrypoint": "0x100064794",
+      "name": "-[MDVxOMFI addInfoToItem:]",
+      "length": 972,
+      "basicblock_count": 38,
+      "captures": [
+        {
+          "label": "mdvx_enrich",
+          "image": "MDVx",
+          "address": "0x100064794",
+          "tool": "procedure_info",
+          "path": "mdvx_enrich-info.json",
+          "sha256": "5ffb13eacff519ed61bddb36841509edc5eab0e27d1009ccd07e6f941ea06ca1",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_enrich",
+          "image": "MDVx",
+          "address": "0x100064794",
+          "tool": "procedure_assembly",
+          "path": "mdvx_enrich-assembly.json",
+          "sha256": "752305a2b30c3a46f8cbc83a4f62189eebdfb55364dde5d4e825645d24275a27",
+          "seconds": 0.01,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_enrich",
+          "image": "MDVx",
+          "address": "0x100064794",
+          "tool": "procedure_pseudo_code",
+          "path": "mdvx_enrich-pseudo.json",
+          "sha256": "84684a7e083ef35aa608fa843490020c257cdc49b6d04b4e8ae9495558bc2434",
+          "seconds": 0.068,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mdvx_open",
+      "entrypoint": "0x100061c10",
+      "name": "-[MDVxOMFI openFile:withIndicator:]",
+      "length": 568,
+      "basicblock_count": 10,
+      "captures": [
+        {
+          "label": "mdvx_open",
+          "image": "MDVx",
+          "address": "0x100061c10",
+          "tool": "procedure_info",
+          "path": "mdvx_open-info.json",
+          "sha256": "dddf042a4e9632b666016cbfc3e8e4a87db0b91e601c8ace427caa60aa9d00cc",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_open",
+          "image": "MDVx",
+          "address": "0x100061c10",
+          "tool": "procedure_assembly",
+          "path": "mdvx_open-assembly.json",
+          "sha256": "9ae06d724242a181995b77e8f510b0ebdb0da1e02ce6868916a6f9992f5c0b97",
+          "seconds": 0.019,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_open",
+          "image": "MDVx",
+          "address": "0x100061c10",
+          "tool": "procedure_pseudo_code",
+          "path": "mdvx_open-pseudo.json",
+          "sha256": "347e079091666cde30138a7e66a1294d6a9e3dfd84796e14e3fc45f904270cae",
+          "seconds": 0.04,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mdvx_project",
+      "entrypoint": "0x100064dc4",
+      "name": "-[MDVxOMFI getProjectNameForObjAt:]",
+      "length": 1048,
+      "basicblock_count": 35,
+      "captures": [
+        {
+          "label": "mdvx_project",
+          "image": "MDVx",
+          "address": "0x100064dc4",
+          "tool": "procedure_info",
+          "path": "mdvx_project-info.json",
+          "sha256": "20234d5124c51abe08cea80449dc15084c705d3985bfe789e90e567a0db7f21f",
+          "seconds": 0.005,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_project",
+          "image": "MDVx",
+          "address": "0x100064dc4",
+          "tool": "procedure_assembly",
+          "path": "mdvx_project-assembly.json",
+          "sha256": "f7ccd5def3a29cac4d52811c210c1895f5d60d140c56aab9a0de129b00209dc3",
+          "seconds": 0.01,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_project",
+          "image": "MDVx",
+          "address": "0x100064dc4",
+          "tool": "procedure_pseudo_code",
+          "path": "mdvx_project-pseudo.json",
+          "sha256": "afacff1ae9f387dbd6ae3ce86f9e1831f8b66b2d4c3408b4e60b2837ad11fb89",
+          "seconds": 0.15,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mdvx_project_attr",
+      "entrypoint": "0x1000651dc",
+      "name": "-[MDVxOMFI getProjectAttributeForObjectAt:]",
+      "length": 360,
+      "basicblock_count": 17,
+      "captures": [
+        {
+          "label": "mdvx_project_attr",
+          "image": "MDVx",
+          "address": "0x1000651dc",
+          "tool": "procedure_info",
+          "path": "mdvx_project_attr-info.json",
+          "sha256": "cf4ab1ffbf0b72aec90b36d0c04a60d29a14ab703cd0dc713dc4f48391dcabdd",
+          "seconds": 0.007,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_project_attr",
+          "image": "MDVx",
+          "address": "0x1000651dc",
+          "tool": "procedure_assembly",
+          "path": "mdvx_project_attr-assembly.json",
+          "sha256": "320d4e1690d5e7ec3d91c78f26ec30372b182f8864c40243fb53e0f054ff5554",
+          "seconds": 0.004,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_project_attr",
+          "image": "MDVx",
+          "address": "0x1000651dc",
+          "tool": "procedure_pseudo_code",
+          "path": "mdvx_project_attr-pseudo.json",
+          "sha256": "83978301d87ddda48cdbfb98f24f084ebf6b8208c3b1594e8968a17e5f8baeac",
+          "seconds": 0.031,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mdvx_toc01",
+      "entrypoint": "0x100061fc0",
+      "name": "-[MDVxOMFI OMFiTOCReader01]",
+      "length": 1368,
+      "basicblock_count": 50,
+      "captures": [
+        {
+          "label": "mdvx_toc01",
+          "image": "MDVx",
+          "address": "0x100061fc0",
+          "tool": "procedure_info",
+          "path": "mdvx_toc01-info.json",
+          "sha256": "72fd948112a51b394052c398271441690611d5e8cfdc4696d7517bd88e03193c",
+          "seconds": 0.002,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_toc01",
+          "image": "MDVx",
+          "address": "0x100061fc0",
+          "tool": "procedure_assembly",
+          "path": "mdvx_toc01-assembly.json",
+          "sha256": "7e70a11daef3a11b3a5039ed2f9d1cc379a818398f78b6ba3043ce23643280ac",
+          "seconds": 0.016,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_toc01",
+          "image": "MDVx",
+          "address": "0x100061fc0",
+          "tool": "procedure_pseudo_code",
+          "path": "mdvx_toc01-pseudo.json",
+          "sha256": "048d3ac1bb5c8d1057727be2ca843a370829d71cded4b5c1d852b63883fa069e",
+          "seconds": 0.115,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mdvx_toc02",
+      "entrypoint": "0x100061e48",
+      "name": "-[MDVxOMFI OMFiTOCReader02]",
+      "length": 100,
+      "basicblock_count": 1,
+      "captures": [
+        {
+          "label": "mdvx_toc02",
+          "image": "MDVx",
+          "address": "0x100061e48",
+          "tool": "procedure_info",
+          "path": "mdvx_toc02-info.json",
+          "sha256": "984d63e79596a42fd539b48a192ea73cdae1444c41379e6752f291485177cf04",
+          "seconds": 0.008,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_toc02",
+          "image": "MDVx",
+          "address": "0x100061e48",
+          "tool": "procedure_assembly",
+          "path": "mdvx_toc02-assembly.json",
+          "sha256": "d84c8c5aeb2c0f8699758446f833adcd4a4ab44bc0a6f34239e109ad20b67bcf",
+          "seconds": 0.002,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_toc02",
+          "image": "MDVx",
+          "address": "0x100061e48",
+          "tool": "procedure_pseudo_code",
+          "path": "mdvx_toc02-pseudo.json",
+          "sha256": "991a40650c86c792a9336c0db9ea238214768ffa33e97433d26c6340ec3e5cc7",
+          "seconds": 0.004,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mdvx_uid",
+      "entrypoint": "0x10006163c",
+      "name": "-[UIDtoBentoObj initWithUID:]",
+      "length": 76,
+      "basicblock_count": 3,
+      "captures": [
+        {
+          "label": "mdvx_uid",
+          "image": "MDVx",
+          "address": "0x10006163c",
+          "tool": "procedure_info",
+          "path": "mdvx_uid-info.json",
+          "sha256": "109e0041ddaa9692dd7944f27185aa0ee868829a01c52f8a494c1da67322edc7",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_uid",
+          "image": "MDVx",
+          "address": "0x10006163c",
+          "tool": "procedure_assembly",
+          "path": "mdvx_uid-assembly.json",
+          "sha256": "35d126c9ca4586a2824f8935ef3acb04d23479ec4919ba3fb79952e591ff3c63",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_uid",
+          "image": "MDVx",
+          "address": "0x10006163c",
+          "tool": "procedure_pseudo_code",
+          "path": "mdvx_uid-pseudo.json",
+          "sha256": "5a6b8d8508b49301660c6b39b0446e7e196db227a94143b7425e52a3f522ffdd",
+          "seconds": 0.004,
+          "error": null,
+          "isError": false
+        }
+      ]
+    },
+    {
+      "label": "mdvx_uid_eq",
+      "entrypoint": "0x1000616c8",
+      "name": "_UID_to_bentotree_EQ_block_block_invoke",
+      "length": 144,
+      "basicblock_count": 8,
+      "captures": [
+        {
+          "label": "mdvx_uid_eq",
+          "image": "MDVx",
+          "address": "0x1000616c8",
+          "tool": "procedure_info",
+          "path": "mdvx_uid_eq-info.json",
+          "sha256": "8732d6c4e10c6bb66a13af5d7cb277e9f4e6086be1eb535891bbac2443721f91",
+          "seconds": 0.001,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_uid_eq",
+          "image": "MDVx",
+          "address": "0x1000616c8",
+          "tool": "procedure_assembly",
+          "path": "mdvx_uid_eq-assembly.json",
+          "sha256": "1dfdd29e05a66748e1db2a96d3f814ae450d775ffe757db7b51aaa4d22f01dcb",
+          "seconds": 0.002,
+          "error": null,
+          "isError": false
+        },
+        {
+          "label": "mdvx_uid_eq",
+          "image": "MDVx",
+          "address": "0x1000616c8",
+          "tool": "procedure_pseudo_code",
+          "path": "mdvx_uid_eq-pseudo.json",
+          "sha256": "01923267c653ce3e5703cf3f678b9749e105630da4cf171949686e7b039db03c",
+          "seconds": 0.015,
+          "error": null,
+          "isError": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+[  8%] Building CXX object CMakeFiles/probe.dir/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbreader.cpp.o
+[ 16%] Building CXX object CMakeFiles/probe.dir/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbobjects_p.cpp.o
+[ 33%] Building CXX object CMakeFiles/probe.dir/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbbentoreader_p.cpp.o
+[ 33%] Building CXX object CMakeFiles/probe.dir/probe.cpp.o
+[ 41%] Building CXX object CMakeFiles/probe.dir/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbaudiosummary_p.cpp.o
+[ 50%] Building CXX object CMakeFiles/probe.dir/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/mdbprojection.cpp.o
+[ 58%] Building CXX object CMakeFiles/probe.dir/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/projection.cpp.o
+[ 66%] Building CXX object CMakeFiles/probe.dir/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/compressionnames_p.cpp.o
+[ 75%] Building CXX object CMakeFiles/probe.dir/Users/martymclean/Developer/MediaMuster/src/oldscanner/mediaengine/metadataselectionpolicy.cpp.o
+[ 83%] Building CXX object CMakeFiles/probe.dir/Users/martymclean/Developer/MediaMuster/src/effectcatalogue.cpp.o
+[ 91%] Building CXX object CMakeFiles/probe.dir/Users/martymclean/Developer/MediaMuster/src/diagnostics.cpp.o
+[100%] Linking CXX executable probe
+[100%] Built target probe

@@ -1,0 +1,3 @@
+encoding 1 => é
+encoding 5 => é
+encoding 30 => ÄéÈ

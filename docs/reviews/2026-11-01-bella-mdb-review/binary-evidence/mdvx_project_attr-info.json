@@ -1,0 +1,12 @@
+{
+  "id": 27,
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "text": "{\"basicblock_count\": 17, \"basicblocks\": [{\"from\": \"0x1000651dc\", \"to\": \"0x1000651f8\"}, {\"from\": \"0x1000651fc\", \"to\": \"0x100065214\"}, {\"from\": \"0x100065218\", \"to\": \"0x100065224\"}, {\"from\": \"0x100065228\", \"to\": \"0x10006523c\"}, {\"from\": \"0x100065240\", \"to\": \"0x100065250\"}, {\"from\": \"0x100065254\", \"to\": \"0x100065260\"}, {\"from\": \"0x100065264\", \"to\": \"0x100065284\"}, {\"from\": \"0x100065288\", \"to\": \"0x100065294\"}, {\"from\": \"0x1000652ac\", \"to\": \"0x1000652c0\"}, {\"from\": \"0x1000652c4\", \"to\": \"0x1000652d4\"}, {\"from\": \"0x1000652d8\", \"to\": \"0x1000652ec\"}, {\"from\": \"0x1000652f0\", \"to\": \"0x100065310\"}, {\"from\": \"0x100065298\", \"to\": \"0x1000652a8\"}, {\"from\": \"0x100065320\", \"to\": \"0x100065320\"}, {\"from\": \"0x100065328\", \"to\": \"0x100065340\"}, {\"from\": \"0x100065314\", \"to\": \"0x10006531c\"}, {\"from\": \"0x100065324\", \"to\": \"0x100065324\"}], \"entrypoint\": \"0x1000651dc\", \"length\": 360, \"locals\": [{\"displacement\": 0, \"name\": \"saved_fp\"}, {\"displacement\": -16, \"name\": \"var_10\"}, {\"displacement\": -32, \"name\": \"var_20\"}, {\"displacement\": -48, \"name\": \"var_30\"}, {\"displacement\": -64, \"name\": \"var_40\"}], \"name\": \"-[MDVxOMFI getProjectAttributeForObjectAt:]\", \"signature\": \"/* @class MDVxOMFI */\\n-(void *)getProjectAttributeForObjectAt:(unsigned int)arg2\"}",
+        "type": "text"
+      }
+    ]
+  }
+}

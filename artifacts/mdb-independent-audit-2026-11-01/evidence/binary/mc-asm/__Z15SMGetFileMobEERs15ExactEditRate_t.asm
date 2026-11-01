@@ -1,0 +1,29 @@
+__Z15SMGetFileMobEERs15ExactEditRate_t:
+00000000002c5a04	stp	x20, x19, [sp, #-0x20]!
+00000000002c5a08	stp	x29, x30, [sp, #0x10]
+00000000002c5a0c	add	x29, sp, #0x10
+00000000002c5a10	mov	x19, x1
+00000000002c5a14	mov	x20, x0
+00000000002c5a18	bl	__Z16Ame_gFilmEditingv
+00000000002c5a1c	cmp	w20, #0x2
+00000000002c5a20	b.ne	0x2c5a64
+00000000002c5a24	cbz	w0, 0x2c5a64
+00000000002c5a28	adrp	x0, 4716 ; 0x1531000
+00000000002c5a2c	add	x0, x0, #0x448
+00000000002c5a30	bl	__ZNK16CheckedCBPointerI28Ame_AGeneralSettingInterfaceEptEv
+00000000002c5a34	ldr	x8, [x0]
+00000000002c5a38	ldr	x8, [x8, #0x18]
+00000000002c5a3c	blr	x8
+00000000002c5a40	bl	0xe8eab8 ; symbol stub for: __Z13ECGetNumPerfs10filmType_t
+00000000002c5a44	mov	x20, x0
+00000000002c5a48	mov	x0, x19
+00000000002c5a4c	bl	__Z25EditRateFromExactEditRate15ExactEditRate_t
+00000000002c5a50	scvtf	d1, w20
+00000000002c5a54	fmul	d0, d0, d1
+00000000002c5a58	ldp	x29, x30, [sp, #0x10]
+00000000002c5a5c	ldp	x20, x19, [sp], #0x20
+00000000002c5a60	b	__Z22ExactEditRateFromFloatd
+00000000002c5a64	mov	x0, x19
+00000000002c5a68	ldp	x29, x30, [sp, #0x10]
+00000000002c5a6c	ldp	x20, x19, [sp], #0x20
+00000000002c5a70	ret

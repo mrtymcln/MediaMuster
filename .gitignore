@@ -9,3 +9,6 @@ CMakeLists.txt.user*
 ._*
 Thumbs.db
 Desktop.ini
+
+# Keep the large audit evidence archive local.
+/artifacts/mdb-independent-audit-2026-11-01/evidence.tar.gz

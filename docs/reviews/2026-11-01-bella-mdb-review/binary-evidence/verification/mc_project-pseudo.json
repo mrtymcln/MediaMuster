@@ -1,0 +1,12 @@
+{
+  "id": 11,
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "text": "int __Z16CMGetProjectNameP12ACompositionPcm(void * arg0, int * arg1, long arg2) {\n    r2 = arg2;\n    r1 = arg1;\n    r0 = arg0;\n    r31 = r31 - 0x40;\n    arg_10 = r22;\n    arg_18 = r21;\n    arg_20 = r20;\n    arg_28 = r19;\n    arg_30 = r29;\n    arg_38 = r30;\n    if (r0 != 0x0) {\n            r20 = r2;\n            r19 = r1;\n            r0 = (*(*r0 + 0x250))();\n            if (r0 != 0x0) {\n                    r21 = r0;\n                    *(int8_t *)r19 = 0x0;\n                    (*(*r0 + 0x1e8))();\n                    if (arg_f == 0x0) {\n                            (*(*r21 + 0x1e8))(r21, \"PROJNAME\", r19, r20, &arg_f);\n                            if (arg_f == 0x0) {\n                                    r19 = 0x0;\n                            }\n                    }\n            }\n            else {\n                    r19 = 0x0;\n            }\n    }\n    else {\n            r19 = 0x0;\n    }\n    r0 = r19;\n    return r0;\n}\n",
+        "type": "text"
+      }
+    ]
+  }
+}

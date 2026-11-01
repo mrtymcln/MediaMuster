@@ -1,0 +1,116 @@
+{
+  "counts": [
+    {
+      "group": "authored",
+      "field": "bits",
+      "result": "different",
+      "count": 379
+    },
+    {
+      "group": "authored",
+      "field": "clipName",
+      "result": "different",
+      "count": 379
+    },
+    {
+      "group": "authored",
+      "field": "clipName",
+      "result": "equal",
+      "count": 8
+    },
+    {
+      "group": "authored",
+      "field": "project",
+      "result": "different",
+      "count": 332
+    },
+    {
+      "group": "authored",
+      "field": "project",
+      "result": "equal",
+      "count": 55
+    },
+    {
+      "group": "authored",
+      "field": "typeUsage",
+      "result": "different",
+      "count": 387
+    },
+    {
+      "group": "specimenOrSpecimenDerivative",
+      "field": "bits",
+      "result": "different",
+      "count": 73
+    },
+    {
+      "group": "specimenOrSpecimenDerivative",
+      "field": "bits",
+      "result": "equal",
+      "count": 3846
+    },
+    {
+      "group": "specimenOrSpecimenDerivative",
+      "field": "clipName",
+      "result": "different",
+      "count": 30
+    },
+    {
+      "group": "specimenOrSpecimenDerivative",
+      "field": "clipName",
+      "result": "equal",
+      "count": 3876
+    },
+    {
+      "group": "specimenOrSpecimenDerivative",
+      "field": "legacyCompression",
+      "result": "equal",
+      "count": 1541
+    },
+    {
+      "group": "specimenOrSpecimenDerivative",
+      "field": "pcmaFrequency",
+      "result": "equal",
+      "count": 2374
+    },
+    {
+      "group": "specimenOrSpecimenDerivative",
+      "field": "project",
+      "result": "different",
+      "count": 1807
+    },
+    {
+      "group": "specimenOrSpecimenDerivative",
+      "field": "project",
+      "result": "equal",
+      "count": 2114
+    },
+    {
+      "group": "specimenOrSpecimenDerivative",
+      "field": "resolutionId",
+      "result": "equal",
+      "count": 1541
+    },
+    {
+      "group": "specimenOrSpecimenDerivative",
+      "field": "typeUsage",
+      "result": "different",
+      "count": 3662
+    },
+    {
+      "group": "specimenOrSpecimenDerivative",
+      "field": "typeUsage",
+      "result": "equal",
+      "count": 244
+    }
+  ],
+  "reasonCounts": {
+    "MDVX import-setting usage override15; Bella retains own numeric master Type": 3662,
+    "Bella immediate-source Project recovery; MDVX own-file lookup leaves blank": 184,
+    "Bella MacRoman vs MDVX II Foundation decoding (observed Latin-1-like output)": 1653,
+    "MDVX raw ComponentWidth254; Bella qualified numeric precision": 40,
+    "Bella audio Summary depth; MDVX helper leaves depth zero": 4,
+    "Bella RGBA component-array depth; MDVX helper leaves depth zero": 29
+  },
+  "unexpectedToggleChanges": [],
+  "eightByteKeyCollisionGroups": 0
+}

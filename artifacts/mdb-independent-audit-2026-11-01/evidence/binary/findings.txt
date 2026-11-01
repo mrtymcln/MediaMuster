@@ -1,0 +1,103 @@
+Fresh MDB binary investigation — 2026-11-01
+
+Scope and independence
+Only installed executable code, source currently under review, the newly inventoried native MDB files, and newly generated outputs were used. Previous repository documentation, evidence and fixtures were not consulted. This is targeted decompilation of MDB-related routines, not full source reconstruction of either application. No application source or installed binary was modified.
+
+Binary identities
+MDVx /Applications/MDVx.app/Contents/MacOS/MDVx
+Version 0.2, build 4073; universal arm64/x86_64.
+SHA256 2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d
+
+Media Composer /Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer
+Version 26.8.0.58987 (bundle version 26.8.0).
+SHA256 a4a1d1b41f2f8b509781c3b8a50286c0cd7c9746cf85e609ec5a7bcbf45a727a
+MDB routines are in sibling libameLibrary.dylib:
+SHA256 659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22
+
+Reproducible MDVx execution
+prepare_mdvx.py extracts the arm64 slice to a temporary COPY, changes Mach-O filetype MH_EXECUTE to MH_BUNDLE and clears MH_PIE, then ad-hoc signs the COPY. The installed original is untouched. mdvx_probe.m dlopens that copy and calls original MDVxOMFI methods. This executes MDVx's original parsing machine code, not a replacement parser or a guessed clone. No PMR data or previous fixtures are supplied.
+Original openFile:withIndicator: calls NSData dataWithContentsOfURL:; no write path is called. Each of the 13 fresh corpus inputs ran in its own subprocess, timeout 90 seconds. SHA256 was checked before and after every run: all 13 unchanged. runtime/index.json contains exact paths, hashes, exit status and native return values. No timeout, exception or process crash occurred.
+
+Native results
+Seven Avid MDBs accepted; six unrelated LMDB .mdb files rejected.
+Native compositions/master count by path:
+/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb: 124
+/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb: 2
+/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb: 80
+/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb: 153
+/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb: 415
+/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb: 353
+/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb: 293
+Total 1420 (not 1520).
+
+The raw MOBJ table also contains obsolete records. The final adapter queries the original native CompositionMobsTree, SourceMobsTree and MediaDataMobsTree, recording which object ID MDVx actually selects for each identity. Comparisons filter to these native live selections. Counting all raw MOBJ records would produce false duplicates and false discrepancies.
+
+Current Bella versus original native MDVx, live records
+All 2515 Bella file identities and 1420 Bella master identities join uniquely using the native live selections. No live key collision in this corpus.
+All 1420 master names match MDVx GetStringForObjectAt:.
+All 1002 comparable stored video legacy FourCCs match.
+All 1002 comparable resolution IDs match.
+All 2484 available raw component-width/bit-depth values match; this raw agreement does not mean native sentinel 254 is a literal 254-bit pixel depth. Bella derives meaningful 16-/32-bit values for those encodings. Native lacks bit-depth results for 31 records (29 RGBA and two legacy OMF audio descriptors).
+All 1511 comparable audio frequencies match after normalizing shape and rational value. Comparison uses Bella audioFrequency, not a duration clock substituted for audio frequency. Native has no comparable frequency for the two legacy OMF audio records.
+Native _AUD FourCC is a synthetic audio category marker, not evidence that Bella lost a stored FourCC.
+
+Projects: 2046 / 2515 match directly. The other 469 are:
+361 actual text-decoding disagreements: 359 shared MXF and two shared OMF projects use zTeßt_... in Bella, zTe§t_... in MDVx. Original bytes include MacRoman A7. MDVx explicitly chooses NSString encoding 1 (NSASCIIStringEncoding) for II files and 30 (NSMacOSRomanStringEncoding) otherwise. The observed II result is mojibake; do not claim these bytes necessarily cause a rejected or empty NSString.
+108 native nil results where Bella supplies a project: 75 installed supporting-media files and 33 EDIT/1 files. These represent differing traversal/fallback capability, rather than 108 conflicting nonempty names. Native source/project traversal methods and raw property bytes are exported for inspection.
+Exact pair-by-pair values: native-vs-bella.json.
+
+Native unavailable fields / comparison limits
+MDVxOMFI's MDB-only summary has no duration, start timecode, stored/display-dimension, kind/type, original-bin, or standalone source-filename summary equivalent. Its app primarily enriches PMR-derived database rows using MDB. The adapter exports raw MDB properties, but raw-property availability must not be misrepresented as an original native summary computation. These fields cannot be certified by the MDVx summary oracle.
+The runtime comparison did not import the corpus into Media Composer bins, and no claim is made that it did. Media Composer contributes targeted original-binary semantic evidence.
+
+MDVx targeted decompilation (12 arm64 methods)
+Hopper output files are under hopper-mdvx; addresses are unslid virtual addresses in the installed arm64 slice:
+openFile.c              -[MDVxOMFI openFile:withIndicator:]         0x100061c10
+TOCReader01.c           -[MDVxOMFI OMFiTOCReader01]                 0x100061fc0
+TOCReader02.c           -[MDVxOMFI OMFiTOCReader02]                 0x100061e48
+pDataFor.c              -[MDVxOMFI pDataFor:]                      0x100061eac
+GetStringForObject.c    -[MDVxOMFI GetStringForObjectAt:]           0x100063a58
+GetNameForObject.c      -[MDVxOMFI GetNameForObjectAt:]             0x1000637b0
+addInfoToItem.c         -[MDVxOMFI addInfoToItem:]                 0x100064794
+getCompression.c        -[MDVxOMFI getCompression_data:forObjAt:]  0x100064b60
+getProjectName.c        -[MDVxOMFI getProjectNameForObjAt:]         0x100064dc4
+getProjectAttribute.c   -[MDVxOMFI getProjectAttributeForObjectAt:]0x1000651dc
+UIDinit.c               -[UIDtoBentoObj initWithUID:]              0x10006163c
+UIDisLess.c             -[UIDtoBentoObj isLiteThan:]               0x1000616a8
+Raw complete disassembly: mdvx-arm64.asm. Objective-C layout: mdvx-objc-layout.txt.
+
+MDVx implementation lessons
+The native parser hardcodes numeric property IDs for extraction; runtime dictionaries label inspection data but do not make these extraction routes schema-independent.
+OMFiTOCReader02 is a log-only stub. openFile returns false for that version path.
+pDataFor permits index == TOCItemsCount (off-by-one); unbounded object-property scans rely on a following object sentinel. These are unsuitable safety patterns to copy.
+UIDtoBentoObj stores and compares only eight bytes. Legacy 12-byte IDs use bytes4..11; full32 IDs use bytes16..23 in native lookup. Preserve fuller identity in the new parser. This corpus does not contain a live collision demonstrating a runtime loss, so do not report a measured live collision.
+getProjectAttributeForObjectAt checks the '_PJ' prefix and does not provide Media Composer's PROJNAME fallback. getProjectNameForObjAt follows source clips to source mobs and can overwrite the previously found project as it traverses further source IDs. A deterministic selection policy and conflict reporting are preferable to copying last-write behavior.
+
+Media Composer targeted decompilation (10 arm64 functions)
+Hopper output filenames are the exact mangled symbols under hopper-mc. Matching complete function disassembly under mc-asm. mc-asm/targets.json records exact symbol/address mapping.
+SMGetFileMobEER                                  0x2c5a04
+CMGetProjectName                                 0x282b9c
+ExactEditRateFromFloat                           0x257680
+RationalFromExactEditRate                        0x258148
+LocalMDB::LoadMobsFromMDB                         0x413718
+LocalMDB::MobConflictResolver                     0x41dd84
+LocalMDB::ScanOMFFileToMobManager                  0x414fd8
+omf2DIDD::IsInstanceOf                            0x4c5b68
+omf2JPED::IsInstanceOf                            0x4ebbd0
+omf2JPED::omf2JPED()                              0x4ebd2c
+SMGetFileMobEER's decompiler output is incomplete; the .asm file is authoritative for that function. All decompiler output has unresolved register/asm fragments and is evidence to inspect alongside machine code, not recovered original source. Hopper demo blocked saving .hop databases, but allowed the requested pseudocode exports through its documented Python API.
+
+Concrete Media Composer rules
+1. CMGetProjectName checks '_PJ' first, then 'PROJNAME'. The raw disassembly supplies the argument that Hopper occasionally omits from the first virtual call.
+2. JPED is an image descriptor. Its IsInstanceOf fallback calls omf2DIDD::IsInstanceOf (0x4ebbfc); its default constructor calls omf2CDCI::omf2CDCI (0x4ebd34). A parser classifying JPED as unknown while accepting comparable DIDD/CDCI as video is missing this picture-descriptor family.
+3. RationalFromExactEditRate recognizes internal decimal 23976*k*10^-3 and 2997*k*10^-2 representations, then constructs (24000*k)/1001 and (30000*k)/1001 respectively (0x258318..0x258340). This proves an internal Avid conversion policy. It is NOT, by itself, proof that every arbitrary MDB rational must be normalized. Keep stored rate and canonical timing interpretation distinct and verify the path from deserialized MDB rate to timing display.
+4. LocalMDB uses omfiHPDomain to read separate physical/source and logical/composition mob sets; loading raw objects without the live graph/domain distinction is not equivalent to loading the MDB.
+
+Artifacts to retain
+binary-summary.json, findings.txt, native-vs-bella.json, runtime/index.json,
+runtime/<SHA>.json.gz (full raw/native output), runtime/<SHA>.mobs.json.gz (compact live-role/mob metadata), runtime/<SHA>.stderr,
+mdvx_probe.m, prepare_mdvx.py, run_mdvx.py, compare_native.py,
+mdvx-arm64.asm, mdvx-objc-layout.txt, mdvx-symbols.txt,
+hopper-mdvx/*.c, hopper-mc/*.c, mc-asm/*.asm, mc-asm/targets.json,
+hopper_mdvx.py, hopper_mc.py, extract_mc_asm.py.
+Do not package the patched MDVx.bundle copy or original application binaries. mdvx-first.json and mdvx-first.txt are exploratory pre-membership outputs; final results are in runtime/.

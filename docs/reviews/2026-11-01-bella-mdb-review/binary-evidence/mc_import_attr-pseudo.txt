@@ -1,0 +1,20 @@
+int __Z24GetImportSettingAttrListP12ACompositionPP9AAttrList(void * arg0, void * * arg1) {
+    r31 = r31 - 0x30;
+    arg_10 = r20;
+    arg_18 = r19;
+    arg_20 = r29;
+    arg_28 = r30;
+    r19 = arg1;
+    arg_f = 0x0;
+    r0 = (*(*arg0 + 0x250))(arg0, arg1);
+    if (r0 != 0x0) {
+            r8 = (*(*r0 + 0x208))();
+            r0 = arg_f;
+            if (r0 == 0x0) {
+                    r8 = 0x0;
+            }
+            *r19 = r8;
+    }
+    return r0;
+}
+

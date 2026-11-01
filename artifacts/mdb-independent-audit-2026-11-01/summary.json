@@ -1,0 +1,48 @@
+{
+  "review_date": "2026-11-01",
+  "git_head": "20220f2b4c2b7ff6ef3d017a77568e5edf7de7cd",
+  "previous_documentation_evidence_fixtures_ignored": true,
+  "application_source_changed": false,
+  "directories_walked": 577305,
+  "access_errors": 449,
+  "inventoried_mdb_paths": 411,
+  "excluded_existing_fixture_evidence_temporary_paths": 398,
+  "fresh_inputs": 13,
+  "avid_inputs": 7,
+  "unrelated_lmdb_inputs": 6,
+  "bella_files": 2515,
+  "bella_masters": 1420,
+  "current_oldscanner_common_semantic_disagreements": {
+    "kind": 30,
+    "project": 86
+  },
+  "oldscanner_fields_absent_from_bella_api": {
+    "Source Path": 411,
+    "Source Container": 581,
+    "Imported": 2381,
+    "Channels": 1513
+  },
+  "historical_snapshots": 49,
+  "historical_runs": 637,
+  "sanitizer_runs": 298,
+  "sanitizer_failures": 0,
+  "new_mutations": 136,
+  "mdvx_project_disagreements": {
+    "encoding_mojibake": 361,
+    "native_nil_with_bella_value": 108,
+    "total": 469
+  },
+  "targeted_decompilation_exports": {
+    "MDVx": 12,
+    "MediaComposer": 10
+  },
+  "verdict": "Prefer Bella core, fix JPED Kind omission, restore selected older fields and bounded cancellation. No universal superiority claim.",
+  "scope_limits": [
+    "Inaccessible locations not searched; access errors logged.",
+    "Old fixtures and prior-generated temporary evidence excluded even though paths inventoried.",
+    "Historical source-family revisions selected; not each transitive presentation helper commit rebuilt.",
+    "Targeted MDB decompilation; no full application decompilation or Media Composer full runtime field oracle.",
+    "47 documented fresh web searches; no claim entire web exhausted.",
+    "Finite native corpus and generated mutations cannot establish universal correctness."
+  ]
+}

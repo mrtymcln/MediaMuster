@@ -1,0 +1,47 @@
+int __ZN12omfiHPDomain15CheckBentoLabelEP7AStreamPiS2_(void * arg0, int * arg1, int * arg2) {
+    r31 = r31 - 0x70;
+    arg_30 = r24;
+    arg_38 = r23;
+    arg_40 = r22;
+    arg_48 = r21;
+    arg_50 = r20;
+    arg_58 = r19;
+    arg_60 = r29;
+    arg_68 = r30;
+    r20 = r3;
+    r22 = arg2;
+    r19 = arg1;
+    r23 = arg0;
+    if (arg1 == 0x0 && __FtlAssertFailed("(strm)!=0", "/Volumes/Media/Builds/workspace/MC/MCRelease_Installer/Mac_Build/coresw/ame/src/ameOMFI/omfiHPDomain.c", 0x1cc) != 0x0) {
+            DebugStr("\x11FtlAssert called.");
+    }
+    r21 = AStream::IsSwapBytesOn(r19);
+    AStream::SetSwapBytes(r19);
+    if ((*(*r19 + 0x98))(r19) <= 0x17) {
+            XError::XError(&arg_8, "omfiHPDomain_BAD_MAGIC");
+            operator+(&arg_8);
+            r0 = XError::~XError(&arg_8);
+    }
+    if (IsOMFIFile(r19) == 0x0) {
+            XError::XError(&arg_8, "omfiHPDomain_BAD_MAGIC");
+            operator+(&arg_8);
+            r0 = XError::~XError(&arg_8);
+    }
+    (*(*r19 + 0x88))(r19, 0x2);
+    r23[0x1f] = (*(*r19 + 0x230))(r19, "byte encoding");
+    (*(*r19 + 0x230))(r19, "Bento Major Version");
+    (*(*r19 + 0x230))(r19, "Bento Minor Version");
+    asm { ccmp       w0, #0x0, #0x0, eq };
+    if (!asm { ccmp       w0, #0x0, #0x0, eq }) {
+            XError::XError(&arg_8, "omfiHPDomain_UNKNOWN_VERSION");
+            operator+(&arg_8);
+            XError::~XError(&arg_8);
+    }
+    *(int32_t *)r22 = (*(*r19 + 0x250))(r19, "Bento TOC Offset");
+    *(int32_t *)r20 = (*(*r19 + 0x250))(r19, "Bento TOC Length");
+    (*(*r19 + 0xb0))(r19, 0x0);
+    (*(*r19 + 0x250))(r19, "init buffer");
+    r0 = AStream::SetSwapBytes(r19, r21);
+    return r0;
+}
+

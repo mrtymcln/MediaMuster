@@ -1,0 +1,47 @@
+Avid msmMMOB.mdb format Bento OMF MDV MDVX
+site:avid.com msmMMOB.mdb msmFMID.pmr database Media Composer
+MDVX source Avid media database download
+"msmMMOB" format parser source github
+"Bento" "OMF" specification toolkit github
+"MDB" "OMFI:MMOB"
+"OMF Interchange Specification" "1.0" Avid
+"Bento Specification" "1.0d5" pdf
+"msmMMOB.mdb" "OMFI"
+"MDV" "MDVx" "format"
+"OMF toolkit" github avi omfkt22
+"Bento" "Container Label" "1.0d5"
+"msmMMOB.mdb" "format" -site:reddit.com -site:creativecow.net -site:justanswer.com -site:hwupgrade.it
+github "omfkt22"
+github "OMFToolkit"
+"OMF Interchange" "omfspec" avid.com
+"MDVx" "manual" pdf
+"omfkt22" -MDVx
+"OMF toolkit" github.com -filmcraft -wabcut
+"Bento toolkit" github.com Apple
+"OMF" "Toolkit" "LWKS"
+"omfkt22" Avid source
+"Bento Specification" "Apple" 1993 pdf -site:citeseerx.ist.psu.edu -site:link.springer.com
+"msmMMOB.mdb" "github.com" -filmcraft
+omfkt github
+omfToolkit source code
+"BentoSpec1_0d5.pdf"
+"MDVx-theManual.pdf"
+site:github.com "OMFI:CPNT:EditRate" "omf"
+site:github.com "omfsReadRational"
+site:github.com "CMReadContainerLabel"
+"msmMMOB.mdb" "MobID"
+site:avid.com Media Tool project column original project media files master clips precomputes
+site:avid.com "Media File" "Duration" "Audio SR" "FPS" bin column
+site:avid.com "MDB" "OMF" "Bento"
+"OMFI:TRKG:GroupLength"
+site:resources.avid.com "Audio SR" "FPS" "Duration" "Project" "Source File"
+site:resources.avid.com "Media Tool" "Project" "created" "associated"
+site:kb.avid.com "msmMMOB.mdb" "Manager"
+"Bento Specification" "1.0d5" filetype:pdf -citeseerx -filmcraft -genome -omf -davic -CORBA -NIST -State -Preservation -Trustworthy -Research
+"bento" "1.0d5" "github.com"
+"OMF Interchange Specification" "1.0" pdf -researchgate -filmcraft -wabcut
+"msmMMOB" parser -pythonmdb -site:reddit.com -site:creativecow.net -site:avid.com -site:resources.avid.com
+"JPED" "JPEG" OMF descriptor
+"OMFI:JPED" JPEG descriptor
+"JPEG Image Descriptor" OMF
+"OMF" "JPED" "DIDD"

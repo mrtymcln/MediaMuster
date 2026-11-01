@@ -1,0 +1,12 @@
+{
+  "id": 18,
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "text": "{\"basicblock_count\": 8, \"basicblocks\": [{\"from\": \"0x1000616c8\", \"to\": \"0x1000616d4\"}, {\"from\": \"0x1000616d8\", \"to\": \"0x1000616d8\"}, {\"from\": \"0x1000616dc\", \"to\": \"0x1000616ec\"}, {\"from\": \"0x10006174c\", \"to\": \"0x100061754\"}, {\"from\": \"0x1000616f0\", \"to\": \"0x1000616f0\"}, {\"from\": \"0x1000616f4\", \"to\": \"0x1000616f4\"}, {\"from\": \"0x1000616f8\", \"to\": \"0x100061744\"}, {\"from\": \"0x100061748\", \"to\": \"0x100061748\"}], \"entrypoint\": \"0x1000616c8\", \"length\": 144, \"locals\": [{\"displacement\": 0, \"name\": \"saved_fp\"}, {\"displacement\": -16, \"name\": \"var_10\"}], \"name\": \"_UID_to_bentotree_EQ_block_block_invoke\", \"signature\": \"bool _UID_to_bentotree_EQ_block_block_invoke(void * _block, void * arg1, void * arg2)\"}",
+        "type": "text"
+      }
+    ]
+  }
+}

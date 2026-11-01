@@ -1,0 +1,333 @@
+
+
+        ; ================ B E G I N N I N G   O F   P R O C E D U R E ================
+
+        ; Variables:
+        ;       0 : saved_fp
+        ;     -16 : var_10
+        ;     -32 : var_20
+        ;     -48 : var_30
+        ;     -64 : var_40
+        ;     -80 : var_50
+        ;     -88 : int64_t var_58
+        ;     -96 : var_60
+        ;    -104 : int64_t var_68
+        ;    -112 : int64_t var_70
+        ;    -120 : int64_t var_78
+        ;    -144 : int64_t var_90
+
+
+                     -[MDVxOMFI getProjectNameForObjAt:]:
+0000000100064dc4         sub        sp, sp, #0xa0                               ; Objective C Implementation defined at 0x100072a50 (instance method), DATA XREF=0x100072a50
+0000000100064dc8         stp        x28, x27, [sp, #0x40]
+0000000100064dcc         stp        x26, x25, [sp, #0x50]
+0000000100064dd0         stp        x24, x23, [sp, #0x60]
+0000000100064dd4         stp        x22, x21, [sp, #0x70]
+0000000100064dd8         stp        x20, x19, [sp, #0x80]
+0000000100064ddc         stp        fp, lr, [sp, #0x90]
+0000000100064de0         add        fp, sp, #0x90
+0000000100064de4         cmn        w2, #0x1
+0000000100064de8         b.eq       loc_100064e14
+
+0000000100064dec         mov        x22, x2
+0000000100064df0         mov        x25, x1
+0000000100064df4         mov        x20, x0
+0000000100064df8         bl         _objc_msgSend$getProjectAttributeForObjectAt: ; _objc_msgSend$getProjectAttributeForObjectAt:
+0000000100064dfc         mov        fp, fp
+0000000100064e00         bl         imp___stubs__objc_retainAutoreleasedReturnValue ; objc_retainAutoreleasedReturnValue
+0000000100064e04         cbz        x0, loc_100064e1c
+
+0000000100064e08         mov        x21, x0
+0000000100064e0c         str        xzr, [sp, #0x90 + var_58]
+0000000100064e10         b          loc_1000651b0
+
+                     loc_100064e14:
+0000000100064e14         mov        x21, #0x0                                   ; CODE XREF=-[MDVxOMFI getProjectNameForObjAt:]+36
+0000000100064e18         b          loc_1000651b8
+
+                     loc_100064e1c:
+0000000100064e1c         mov        w26, #0x356                                 ; CODE XREF=-[MDVxOMFI getProjectNameForObjAt:]+64
+0000000100064e20         movk       w26, #0x1, lsl #16
+0000000100064e24         add        w2, w26, #0xb9
+0000000100064e28         mov        x0, x20                                     ; argument #1 for method _objc_msgSend$lookForProperty:At:
+0000000100064e2c         mov        x3, x22
+0000000100064e30         bl         _objc_msgSend$lookForProperty:At:           ; _objc_msgSend$lookForProperty:At:
+0000000100064e34         cbz        w0, loc_1000651a8
+
+0000000100064e38         mov        x2, x0
+0000000100064e3c         mov        x0, x20                                     ; argument #1 for method _objc_msgSend$pDataFor:
+0000000100064e40         bl         _objc_msgSend$pDataFor:                     ; _objc_msgSend$pDataFor:
+0000000100064e44         cbz        x0, loc_1000651a8
+
+0000000100064e48         mov        x19, x0
+0000000100064e4c         ldrh       w8, [x19], #0x2
+0000000100064e50         ldrb       w9, [x20, #0x28]
+0000000100064e54         rev        w10, w8
+0000000100064e58         lsr        w10, w10, #0x10
+0000000100064e5c         cmp        w9, #0x0
+0000000100064e60         csel       w8, w10, w8, eq
+0000000100064e64         tst        w8, #0xffff
+0000000100064e68         b.eq       loc_1000651a8
+
+0000000100064e6c         mov        x22, #0x0
+0000000100064e70         mov        x21, #0x0
+0000000100064e74         stp        x19, xzr, [sp, #0x30]
+0000000100064e78         and        x28, x8, #0xffff
+0000000100064e7c         str        x25, [sp, #0x90 + var_78]
+0000000100064e80         str        x28, [sp, #0x90 + var_68]
+
+                     loc_100064e84:
+0000000100064e84         ldr        x0, [x20, #0x70]                            ; argument #1 for method _objc_msgSend$TreefindNode:, CODE XREF=-[MDVxOMFI getProjectNameForObjAt:]+988
+0000000100064e88         lsl        x8, x22, #0x3
+0000000100064e8c         ldr        w2, [x19, x8]
+0000000100064e90         bl         _objc_msgSend$TreefindNode:                 ; _objc_msgSend$TreefindNode:
+0000000100064e94         cmn        w0, #0x1
+0000000100064e98         b.eq       loc_100065198
+
+0000000100064e9c         mov        x3, x0
+0000000100064ea0         add        w2, w26, #0xa0
+0000000100064ea4         mov        x0, x20                                     ; argument #1 for method _objc_msgSend$lookForProperty:At:
+0000000100064ea8         bl         _objc_msgSend$lookForProperty:At:           ; _objc_msgSend$lookForProperty:At:
+0000000100064eac         cbz        w0, loc_100065198
+
+0000000100064eb0         mov        x2, x0
+0000000100064eb4         mov        x0, x20                                     ; argument #1 for method _objc_msgSend$pDataFor:
+0000000100064eb8         bl         _objc_msgSend$pDataFor:                     ; _objc_msgSend$pDataFor:
+0000000100064ebc         cbz        x0, loc_100065198
+
+0000000100064ec0         ldr        x8, [x20, #0x70]
+0000000100064ec4         ldr        w2, [x0]
+0000000100064ec8         mov        x0, x8                                      ; argument #1 for method _objc_msgSend$TreefindNode:
+0000000100064ecc         bl         _objc_msgSend$TreefindNode:                 ; _objc_msgSend$TreefindNode:
+0000000100064ed0         cmn        w0, #0x1
+0000000100064ed4         b.eq       loc_100065198
+
+0000000100064ed8         mov        x3, x0
+0000000100064edc         add        w2, w26, #0x1e
+0000000100064ee0         mov        x0, x20                                     ; argument #1 for method _objc_msgSend$lookForProperty:At:
+0000000100064ee4         bl         _objc_msgSend$lookForProperty:At:           ; _objc_msgSend$lookForProperty:At:
+0000000100064ee8         cbz        w0, loc_100065198
+
+0000000100064eec         mov        x2, x0
+0000000100064ef0         mov        x0, x20                                     ; argument #1 for method _objc_msgSend$pDataFor:
+0000000100064ef4         bl         _objc_msgSend$pDataFor:                     ; _objc_msgSend$pDataFor:
+0000000100064ef8         cbz        x0, loc_100065198
+
+0000000100064efc         mov        x24, x0
+0000000100064f00         ldrh       w8, [x24], #0x2
+0000000100064f04         ldrb       w9, [x20, #0x28]
+0000000100064f08         rev        w10, w8
+0000000100064f0c         lsr        w10, w10, #0x10
+0000000100064f10         cmp        w9, #0x0
+0000000100064f14         csel       w8, w10, w8, eq
+0000000100064f18         tst        w8, #0xffff
+0000000100064f1c         b.eq       loc_100065198
+
+0000000100064f20         and        x23, x8, #0xffff
+
+                     loc_100064f24:
+0000000100064f24         ldr        x0, [x20, #0x70]                            ; argument #1 for method _objc_msgSend$TreefindNode:, CODE XREF=-[MDVxOMFI getProjectNameForObjAt:]+976
+0000000100064f28         ldr        w2, [x24]
+0000000100064f2c         bl         _objc_msgSend$TreefindNode:                 ; _objc_msgSend$TreefindNode:
+0000000100064f30         cmn        w0, #0x1
+0000000100064f34         b.eq       loc_10006518c
+
+0000000100064f38         mov        x3, x0
+0000000100064f3c         mov        x0, x20                                     ; argument #1 for method _objc_msgSend$lookForProperty:At:
+0000000100064f40         mov        w2, #0x356
+0000000100064f44         movk       w2, #0x1, lsl #16
+0000000100064f48         bl         _objc_msgSend$lookForProperty:At:           ; _objc_msgSend$lookForProperty:At:
+0000000100064f4c         cbz        w0, loc_10006518c
+
+0000000100064f50         mov        x27, x0
+0000000100064f54         ldr        x8, [x20, #0x18]
+0000000100064f58         mov        w9, #0x18
+0000000100064f5c         umaddl     x8, w0, w9, x8
+0000000100064f60         ldr        w19, [x8, #0x10]
+0000000100064f64         mov        x0, x20                                     ; argument #1 for method _objc_msgSend$pDataFor:
+0000000100064f68         mov        x2, x27
+0000000100064f6c         bl         _objc_msgSend$pDataFor:                     ; _objc_msgSend$pDataFor:
+0000000100064f70         cbz        x0, loc_100065188
+
+0000000100064f74         mov        x28, x0
+0000000100064f78         cmp        w19, #0x20
+0000000100064f7c         b.eq       loc_100064f9c
+
+0000000100064f80         cmp        w19, #0xc
+0000000100064f84         b.ne       loc_100065014
+
+0000000100064f88         nop
+0000000100064f8c         ldr        x0, =_OBJC_CLASS_$_UIDtoBentoObj            ; argument #1 for method _objc_msgSend$alloc, @class(UIDtoBentoObj)
+0000000100064f90         bl         _objc_msgSend$alloc                         ; _objc_msgSend$alloc
+0000000100064f94         add        x2, x28, #0x4
+0000000100064f98         b          loc_100064fb0
+
+                     loc_100064f9c:
+0000000100064f9c         add        x27, x28, #0x10                             ; CODE XREF=-[MDVxOMFI getProjectNameForObjAt:]+440
+0000000100064fa0         nop
+0000000100064fa4         ldr        x0, =_OBJC_CLASS_$_UIDtoBentoObj            ; argument #1 for method _objc_msgSend$alloc, @class(UIDtoBentoObj)
+0000000100064fa8         bl         _objc_msgSend$alloc                         ; _objc_msgSend$alloc
+0000000100064fac         mov        x2, x27
+
+                     loc_100064fb0:
+0000000100064fb0         bl         _objc_msgSend$initWithUID:                  ; _objc_msgSend$initWithUID:, CODE XREF=-[MDVxOMFI getProjectNameForObjAt:]+468
+0000000100064fb4         mov        x27, x0
+0000000100064fb8         ldr        x0, [sp, #0x90 + var_58]                    ; argument "instance" for method imp___stubs__objc_release
+0000000100064fbc         bl         imp___stubs__objc_release                   ; objc_release
+0000000100064fc0         ldr        x0, [x20, #0x58]                            ; argument #1 for method _objc_msgSend$TreefindNode:
+0000000100064fc4         mov        x2, x27
+0000000100064fc8         bl         _objc_msgSend$TreefindNode:                 ; _objc_msgSend$TreefindNode:
+0000000100064fcc         mov        fp, fp
+0000000100064fd0         bl         imp___stubs__objc_retainAutoreleasedReturnValue ; objc_retainAutoreleasedReturnValue
+0000000100064fd4         mov        x19, x0
+0000000100064fd8         mov        x0, x27                                     ; argument "instance" for method imp___stubs__objc_release
+0000000100064fdc         bl         imp___stubs__objc_release                   ; objc_release
+0000000100064fe0         cbz        x19, loc_100065184
+
+0000000100064fe4         ldr        x0, [x20, #0x70]                            ; argument #1 for method _objc_msgSend$TreefindNode:
+0000000100064fe8         str        x19, [sp, #0x90 + var_58]
+0000000100064fec         ldr        w2, [x19, #0x10]
+0000000100064ff0         bl         _objc_msgSend$TreefindNode:                 ; _objc_msgSend$TreefindNode:
+0000000100064ff4         mov        x2, x0
+0000000100064ff8         mov        x0, x20                                     ; argument #1 for method _objc_msgSend$getProjectAttributeForObjectAt:
+0000000100064ffc         bl         _objc_msgSend$getProjectAttributeForObjectAt: ; _objc_msgSend$getProjectAttributeForObjectAt:
+0000000100065000         mov        fp, fp
+0000000100065004         bl         imp___stubs__objc_retainAutoreleasedReturnValue ; objc_retainAutoreleasedReturnValue
+0000000100065008         mov        x27, x21
+000000010006500c         mov        x21, x0
+0000000100065010         b          loc_100065174
+
+                     loc_100065014:
+0000000100065014         mov        w8, w27                                     ; CODE XREF=-[MDVxOMFI getProjectNameForObjAt:]+448
+0000000100065018         str        x8, [sp, #0x90 + var_70]
+000000010006501c         adrp       x27, #0x1000fc000                           ; &@selector(pushFilterSelectAllButton:)
+0000000100065020         ldr        x28, [x27, #0xd28]                          ; objc_cls_ref_xConsole,@class(xConsole)
+0000000100065024         mov        x26, x27
+0000000100065028         nop
+000000010006502c         ldr        x0, [x27, #0xd30]                           ; argument #1 for method _objc_msgSend$stringWithFormat:, objc_cls_ref_NSString,_OBJC_CLASS_$_NSString
+0000000100065030         str        x19, [sp, #0x90 + var_90]
+0000000100065034         adr        x2, #0x1000edbf8                            ; @"ERROR IN OMFI PARSER. UID capacity is::%ul\\n"
+0000000100065038         nop
+000000010006503c         bl         _objc_msgSend$stringWithFormat:             ; _objc_msgSend$stringWithFormat:
+0000000100065040         mov        fp, fp
+0000000100065044         bl         imp___stubs__objc_retainAutoreleasedReturnValue ; objc_retainAutoreleasedReturnValue
+0000000100065048         mov        x25, x0
+000000010006504c         mov        x0, x28                                     ; argument #1 for method _objc_msgSend$xNSLog::::
+0000000100065050         adr        x2, #0x1000c4e99                            ; "/Volumes/MyHome/Programming/Xcode_projects/MDVx/MDVx1/MDVxCore/MDVxOMFI.m"
+0000000100065054         nop
+0000000100065058         mov        w3, #0x614
+000000010006505c         adr        x4, #0x1000c552b                            ; "-[MDVxOMFI getProjectNameForObjAt:]"
+0000000100065060         nop
+0000000100065064         mov        x5, x25
+0000000100065068         bl         _objc_msgSend$xNSLog::::                    ; _objc_msgSend$xNSLog::::
+000000010006506c         mov        x0, x25                                     ; argument "instance" for method imp___stubs__objc_release
+0000000100065070         bl         imp___stubs__objc_release                   ; objc_release
+0000000100065074         ldr        x25, [x26, #0xd28]                          ; objc_cls_ref_xConsole,@class(xConsole)
+0000000100065078         ldr        x28, [x27, #0xd30]                          ; objc_cls_ref_NSString,_OBJC_CLASS_$_NSString
+000000010006507c         mov        x0, x20                                     ; argument #1 for method _objc_msgSend$class
+0000000100065080         bl         _objc_msgSend$class                         ; _objc_msgSend$class
+0000000100065084         bl         imp___stubs__NSStringFromClass              ; NSStringFromClass
+0000000100065088         mov        fp, fp
+000000010006508c         bl         imp___stubs__objc_retainAutoreleasedReturnValue ; objc_retainAutoreleasedReturnValue
+0000000100065090         mov        x26, x0
+0000000100065094         ldr        x0, [sp, #0x90 + var_78]                    ; argument "aSelector" for method imp___stubs__NSStringFromSelector
+0000000100065098         bl         imp___stubs__NSStringFromSelector           ; NSStringFromSelector
+000000010006509c         mov        fp, fp
+00000001000650a0         bl         imp___stubs__objc_retainAutoreleasedReturnValue ; objc_retainAutoreleasedReturnValue
+00000001000650a4         mov        x19, x0
+00000001000650a8         stp        x26, x0, [sp]
+00000001000650ac         mov        x0, x28                                     ; argument #1 for method _objc_msgSend$stringWithFormat:
+00000001000650b0         adr        x2, #0x1000e9778                            ; @"[%@ %@]"
+00000001000650b4         nop
+00000001000650b8         bl         _objc_msgSend$stringWithFormat:             ; _objc_msgSend$stringWithFormat:
+00000001000650bc         mov        fp, fp
+00000001000650c0         bl         imp___stubs__objc_retainAutoreleasedReturnValue ; objc_retainAutoreleasedReturnValue
+00000001000650c4         mov        x28, x0
+00000001000650c8         mov        x0, x25                                     ; argument #1 for method _objc_msgSend$xNSLog::::
+00000001000650cc         adr        x2, #0x1000c4e99                            ; "/Volumes/MyHome/Programming/Xcode_projects/MDVx/MDVx1/MDVxCore/MDVxOMFI.m"
+00000001000650d0         nop
+00000001000650d4         mov        w3, #0x615
+00000001000650d8         adr        x4, #0x1000c552b                            ; "-[MDVxOMFI getProjectNameForObjAt:]"
+00000001000650dc         nop
+00000001000650e0         mov        x5, x28
+00000001000650e4         bl         _objc_msgSend$xNSLog::::                    ; _objc_msgSend$xNSLog::::
+00000001000650e8         mov        x0, x28                                     ; argument "instance" for method imp___stubs__objc_release
+00000001000650ec         bl         imp___stubs__objc_release                   ; objc_release
+00000001000650f0         mov        x0, x19                                     ; argument "instance" for method imp___stubs__objc_release
+00000001000650f4         bl         imp___stubs__objc_release                   ; objc_release
+00000001000650f8         mov        x0, x26                                     ; argument "instance" for method imp___stubs__objc_release
+00000001000650fc         mov        w26, #0x356
+0000000100065100         movk       w26, #0x1, lsl #16
+0000000100065104         bl         imp___stubs__objc_release                   ; objc_release
+0000000100065108         nop
+000000010006510c         ldr        x19, =_OBJC_CLASS_$_xConsole                ; @class(xConsole)
+0000000100065110         ldr        x25, [x27, #0xd30]                          ; objc_cls_ref_NSString,_OBJC_CLASS_$_NSString
+0000000100065114         mov        x0, x20                                     ; argument #1 for method _objc_msgSend$StringForTocIndexItem:
+0000000100065118         ldr        x2, [sp, #0x90 + var_70]
+000000010006511c         bl         _objc_msgSend$StringForTocIndexItem:        ; _objc_msgSend$StringForTocIndexItem:
+0000000100065120         mov        fp, fp
+0000000100065124         bl         imp___stubs__objc_retainAutoreleasedReturnValue ; objc_retainAutoreleasedReturnValue
+0000000100065128         mov        x27, x0
+000000010006512c         str        x0, [sp, #0x90 + var_90]
+0000000100065130         mov        x0, x25                                     ; argument #1 for method _objc_msgSend$stringWithFormat:
+0000000100065134         adr        x2, #0x1000edc18                            ; @"%@\\n"
+0000000100065138         nop
+000000010006513c         bl         _objc_msgSend$stringWithFormat:             ; _objc_msgSend$stringWithFormat:
+0000000100065140         mov        fp, fp
+0000000100065144         bl         imp___stubs__objc_retainAutoreleasedReturnValue ; objc_retainAutoreleasedReturnValue
+0000000100065148         mov        x25, x0
+000000010006514c         mov        x0, x19                                     ; argument #1 for method _objc_msgSend$xNSLog::::
+0000000100065150         adr        x2, #0x1000c4e99                            ; "/Volumes/MyHome/Programming/Xcode_projects/MDVx/MDVx1/MDVxCore/MDVxOMFI.m"
+0000000100065154         nop
+0000000100065158         mov        w3, #0x616
+000000010006515c         adr        x4, #0x1000c552b                            ; "-[MDVxOMFI getProjectNameForObjAt:]"
+0000000100065160         nop
+0000000100065164         mov        x5, x25
+0000000100065168         bl         _objc_msgSend$xNSLog::::                    ; _objc_msgSend$xNSLog::::
+000000010006516c         mov        x0, x25                                     ; argument "instance" for method imp___stubs__objc_release
+0000000100065170         bl         imp___stubs__objc_release                   ; objc_release
+
+                     loc_100065174:
+0000000100065174         ldp        x28, x19, [sp, #0x28]                       ; CODE XREF=-[MDVxOMFI getProjectNameForObjAt:]+588
+0000000100065178         mov        x0, x27                                     ; argument "instance" for method imp___stubs__objc_release
+000000010006517c         bl         imp___stubs__objc_release                   ; objc_release
+0000000100065180         b          loc_10006518c
+
+                     loc_100065184:
+0000000100065184         str        xzr, [sp, #0x90 + var_58]                   ; CODE XREF=-[MDVxOMFI getProjectNameForObjAt:]+540
+
+                     loc_100065188:
+0000000100065188         ldp        x28, x19, [sp, #0x28]                       ; CODE XREF=-[MDVxOMFI getProjectNameForObjAt:]+428
+
+                     loc_10006518c:
+000000010006518c         add        x24, x24, #0x8                              ; CODE XREF=-[MDVxOMFI getProjectNameForObjAt:]+368, -[MDVxOMFI getProjectNameForObjAt:]+392, -[MDVxOMFI getProjectNameForObjAt:]+956
+0000000100065190         subs       x23, x23, #0x1
+0000000100065194         b.ne       loc_100064f24
+
+                     loc_100065198:
+0000000100065198         add        x22, x22, #0x1                              ; CODE XREF=-[MDVxOMFI getProjectNameForObjAt:]+212, -[MDVxOMFI getProjectNameForObjAt:]+232, -[MDVxOMFI getProjectNameForObjAt:]+248, -[MDVxOMFI getProjectNameForObjAt:]+272, -[MDVxOMFI getProjectNameForObjAt:]+292, -[MDVxOMFI getProjectNameForObjAt:]+308, -[MDVxOMFI getProjectNameForObjAt:]+344
+000000010006519c         cmp        x22, x28
+00000001000651a0         b.ne       loc_100064e84
+
+00000001000651a4         b          loc_1000651b0
+
+                     loc_1000651a8:
+00000001000651a8         str        xzr, [sp, #0x90 + var_58]                   ; CODE XREF=-[MDVxOMFI getProjectNameForObjAt:]+112, -[MDVxOMFI getProjectNameForObjAt:]+128, -[MDVxOMFI getProjectNameForObjAt:]+164
+00000001000651ac         mov        x21, #0x0
+
+                     loc_1000651b0:
+00000001000651b0         ldr        x0, [sp, #0x90 + var_58]                    ; argument "instance" for method imp___stubs__objc_release, CODE XREF=-[MDVxOMFI getProjectNameForObjAt:]+76, -[MDVxOMFI getProjectNameForObjAt:]+992
+00000001000651b4         bl         imp___stubs__objc_release                   ; objc_release
+
+                     loc_1000651b8:
+00000001000651b8         mov        x0, x21                                     ; argument "instance" for method imp___stubs__objc_autoreleaseReturnValue, CODE XREF=-[MDVxOMFI getProjectNameForObjAt:]+84
+00000001000651bc         ldp        fp, lr, [sp, #0x90]
+00000001000651c0         ldp        x20, x19, [sp, #0x80]
+00000001000651c4         ldp        x22, x21, [sp, #0x70]
+00000001000651c8         ldp        x24, x23, [sp, #0x60]
+00000001000651cc         ldp        x26, x25, [sp, #0x50]
+00000001000651d0         ldp        x28, x27, [sp, #0x40]
+00000001000651d4         add        sp, sp, #0xa0
+00000001000651d8         b          imp___stubs__objc_autoreleaseReturnValue    ; objc_autoreleaseReturnValue
+                        ; endp
+

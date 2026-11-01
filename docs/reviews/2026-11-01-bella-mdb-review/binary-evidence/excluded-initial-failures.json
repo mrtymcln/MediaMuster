@@ -1,0 +1,77 @@
+{
+  "excludedFromSuccessfulCounts": true,
+  "reason": "Initial attempts included concurrent XPC clients and restored empty Hopper documents and returned empty/error responses; all final targets were successfully recaptured sequentially.",
+  "attempts": [
+    {
+      "label": "mdvx_project_attr",
+      "document": "MDVx",
+      "address": "0x1000651dc",
+      "tool": "procedure_info",
+      "failure": "Expecting value: line 1 column 1 (char 0)"
+    },
+    {
+      "label": "mc_local_order",
+      "document": "libameLibrary",
+      "address": "0xb2680",
+      "tool": "procedure_info",
+      "failure": "Expecting value: line 1 column 1 (char 0)"
+    },
+    {
+      "label": "mc_local_order",
+      "document": "libameLibrary",
+      "address": "0xb2680",
+      "tool": "procedure_assembly",
+      "failure": "Expecting value: line 1 column 1 (char 0)"
+    },
+    {
+      "label": "mc_local_order",
+      "document": "libameLibrary",
+      "address": "0xb2680",
+      "tool": "procedure_pseudo_code",
+      "failure": "Expecting value: line 1 column 1 (char 0)"
+    },
+    {
+      "label": "mc_original_bin",
+      "document": "libameLibrary",
+      "address": "0x282aa4",
+      "tool": "procedure_assembly",
+      "failure": "Expecting value: line 1 column 1 (char 0)"
+    },
+    {
+      "label": "mc_original_bin",
+      "document": "libameLibrary",
+      "address": "0x282aa4",
+      "tool": "procedure_pseudo_code",
+      "failure": "Expecting value: line 1 column 1 (char 0)"
+    },
+    {
+      "label": "mc_bin_record",
+      "document": "libameLibrary",
+      "address": "0x2d5b48",
+      "tool": "procedure_assembly",
+      "failure": "Expecting value: line 1 column 1 (char 0)"
+    },
+    {
+      "label": "mc_bin_record",
+      "document": "libameLibrary",
+      "address": "0x2d5b48",
+      "tool": "procedure_pseudo_code",
+      "failure": "Expecting value: line 1 column 1 (char 0)"
+    },
+    {
+      "label": "mc_core_object",
+      "document": "AvidCore",
+      "address": "0x6e818",
+      "tool": "procedure_info",
+      "exit": 0,
+      "seconds": 10.218,
+      "path": "mc_core_object-info.json",
+      "sha256": "358cc9758c4b07721be6276013d4e944f0a7dcb75838e405a2ac6467aa694061",
+      "error": {
+        "code": -32000,
+        "message": "The document has no content."
+      },
+      "stderr": ""
+    }
+  ]
+}

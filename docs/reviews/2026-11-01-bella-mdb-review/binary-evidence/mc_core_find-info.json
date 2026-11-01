@@ -1,0 +1,12 @@
+{
+  "id": 6,
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "text": "{\"basicblock_count\": 11, \"basicblocks\": [{\"from\": \"0x6cc7c\", \"to\": \"0x6ccbc\"}, {\"from\": \"0x6ccc0\", \"to\": \"0x6ccc4\"}, {\"from\": \"0x6ccc8\", \"to\": \"0x6ccd4\"}, {\"from\": \"0x6ccd8\", \"to\": \"0x6ccd8\"}, {\"from\": \"0x6cd3c\", \"to\": \"0x6cd3c\"}, {\"from\": \"0x6ccf4\", \"to\": \"0x6ccf8\"}, {\"from\": \"0x6cd40\", \"to\": \"0x6cd50\"}, {\"from\": \"0x6ccec\", \"to\": \"0x6ccf0\"}, {\"from\": \"0x6ccfc\", \"to\": \"0x6cd38\"}, {\"from\": \"0x6ccdc\", \"to\": \"0x6ccdc\"}, {\"from\": \"0x6cce0\", \"to\": \"0x6cce8\"}], \"entrypoint\": \"0x6cc7c\", \"length\": 216, \"locals\": [], \"name\": \"__ZN12CoreAttrList8FindAttrEiPKcPh\", \"signature\": \"int __ZN12CoreAttrList8FindAttrEiPKcPh(int arg0, int * arg1, int * arg2)\"}",
+        "type": "text"
+      }
+    ]
+  }
+}

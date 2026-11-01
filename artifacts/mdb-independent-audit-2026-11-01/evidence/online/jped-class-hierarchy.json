@@ -1,0 +1,37 @@
+[
+  {
+    "class": "JPED",
+    "object_id": 70579,
+    "properties": {
+      "OMFI:ObjID": "CLSD",
+      "OMFI:CLSD:ClassID": "JPED",
+      "OMFI:CLSD:ParentClass": 70578
+    }
+  },
+  {
+    "class": "CDCI",
+    "object_id": 70578,
+    "properties": {
+      "OMFI:ObjID": "CLSD",
+      "OMFI:CLSD:ClassID": "CDCI",
+      "OMFI:CLSD:ParentClass": 70577
+    }
+  },
+  {
+    "class": "DIDD",
+    "object_id": 70577,
+    "properties": {
+      "OMFI:ObjID": "CLSD",
+      "OMFI:CLSD:ClassID": "DIDD",
+      "OMFI:CLSD:ParentClass": 70576
+    }
+  },
+  {
+    "class": "MDFL",
+    "object_id": 70576,
+    "properties": {
+      "OMFI:ObjID": "CLSD",
+      "OMFI:CLSD:ClassID": "MDFL"
+    }
+  }
+]

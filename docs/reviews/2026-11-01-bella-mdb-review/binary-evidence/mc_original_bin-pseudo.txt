@@ -1,0 +1,35 @@
+int __Z16CMGetOrigBinInfoP12ACompositionP7avuid_tPDss(void * arg0, void * arg1, int * arg2, int arg3) {
+    r31 = r31 - 0x40;
+    arg_10 = r22;
+    arg_18 = r21;
+    arg_20 = r20;
+    arg_28 = r19;
+    arg_30 = r29;
+    arg_38 = r30;
+    r19 = arg3;
+    r20 = arg2;
+    r21 = arg1;
+    r22 = arg0;
+    arg_f = 0x0;
+    if (arg1 != 0x0) {
+            MakeNilUid(r21);
+    }
+    if (r22 != 0x0) {
+            r0 = (*(*r22 + 0x250))(r22);
+            if (r0 != 0x0) {
+                    r0 = (*(*r0 + 0x208))();
+                    if (arg_f != 0x0) {
+                            r22 = r0;
+                            if (r21 != 0x0) {
+                                    *r21 = (*(*r22 + 0x148))(r22);
+                            }
+                            if (r20 != 0x0) {
+                                    (*(*r22 + 0x150))(r22, r20, r19);
+                            }
+                    }
+            }
+    }
+    r0 = arg_f;
+    return r0;
+}
+

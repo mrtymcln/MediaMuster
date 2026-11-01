@@ -1,0 +1,126 @@
+{
+  "purpose": "Supplement initial inventory with system volume trees, pruning only Data directories proven to alias already walked root paths by device+inode.",
+  "elapsed_s": 0.18555378913879395,
+  "directories": 4432,
+  "mdb_paths": [],
+  "errors": [
+    {
+      "path": "/System/Volumes/Update/msutargetcontroller-mount-gGpuMi",
+      "error": "[Errno 13] Permission denied: '/System/Volumes/Update/msutargetcontroller-mount-gGpuMi'"
+    },
+    {
+      "path": "/System/Volumes/Update/Hardware",
+      "error": "[Errno 13] Permission denied: '/System/Volumes/Update/Hardware'"
+    },
+    {
+      "path": "/System/Volumes/Update/Controller",
+      "error": "[Errno 13] Permission denied: '/System/Volumes/Update/Controller'"
+    },
+    {
+      "path": "/System/Volumes/Update/.TemporaryItems",
+      "error": "[Errno 1] Operation not permitted: '/System/Volumes/Update/.TemporaryItems'"
+    },
+    {
+      "path": "/System/Volumes/Preboot/.TemporaryItems",
+      "error": "[Errno 1] Operation not permitted: '/System/Volumes/Preboot/.TemporaryItems'"
+    },
+    {
+      "path": "/System/Volumes/Preboot/com.apple.security.cryptexd",
+      "error": "[Errno 1] Operation not permitted: '/System/Volumes/Preboot/com.apple.security.cryptexd'"
+    },
+    {
+      "path": "/System/Volumes/Data/.Spotlight-V100",
+      "error": "[Errno 1] Operation not permitted: '/System/Volumes/Data/.Spotlight-V100'"
+    },
+    {
+      "path": "/System/Volumes/Data/.fseventsd",
+      "error": "[Errno 13] Permission denied: '/System/Volumes/Data/.fseventsd'"
+    },
+    {
+      "path": "/System/Volumes/Data/.DocumentRevisions-V100",
+      "error": "[Errno 1] Operation not permitted: '/System/Volumes/Data/.DocumentRevisions-V100'"
+    },
+    {
+      "path": "/System/Volumes/Data/.TemporaryItems",
+      "error": "[Errno 1] Operation not permitted: '/System/Volumes/Data/.TemporaryItems'"
+    },
+    {
+      "path": "/System/Volumes/iSCPreboot/.TemporaryItems",
+      "error": "[Errno 1] Operation not permitted: '/System/Volumes/iSCPreboot/.TemporaryItems'"
+    }
+  ],
+  "same_inode_prunes": [
+    {
+      "path": "/System/Volumes/Data/home",
+      "same_inode_as": "/home"
+    },
+    {
+      "path": "/System/Volumes/Data/Library",
+      "same_inode_as": "/Library"
+    },
+    {
+      "path": "/System/Volumes/Data/private",
+      "same_inode_as": "/private"
+    },
+    {
+      "path": "/System/Volumes/Data/Users",
+      "same_inode_as": "/Users"
+    },
+    {
+      "path": "/System/Volumes/Data/Applications",
+      "same_inode_as": "/Applications"
+    },
+    {
+      "path": "/System/Volumes/Data/opt",
+      "same_inode_as": "/opt"
+    },
+    {
+      "path": "/System/Volumes/Data/Volumes",
+      "same_inode_as": "/Volumes"
+    },
+    {
+      "path": "/System/Volumes/Data/cores",
+      "same_inode_as": "/cores"
+    },
+    {
+      "path": "/System/Volumes/Data/usr/local",
+      "same_inode_as": "/usr/local"
+    },
+    {
+      "path": "/System/Volumes/Data/usr/libexec/cups",
+      "same_inode_as": "/usr/libexec/cups"
+    },
+    {
+      "path": "/System/Volumes/Data/usr/share/snmp",
+      "same_inode_as": "/usr/share/snmp"
+    },
+    {
+      "path": "/System/Volumes/Data/System/Library/PreinstalledAssetsV2",
+      "same_inode_as": "/System/Library/PreinstalledAssetsV2"
+    },
+    {
+      "path": "/System/Volumes/Data/System/Library/Speech",
+      "same_inode_as": "/System/Library/Speech"
+    },
+    {
+      "path": "/System/Volumes/Data/System/Library/AssetsV2",
+      "same_inode_as": "/System/Library/AssetsV2"
+    },
+    {
+      "path": "/System/Volumes/Data/System/Library/PreinstalledAssets",
+      "same_inode_as": "/System/Library/PreinstalledAssets"
+    },
+    {
+      "path": "/System/Volumes/Data/System/Library/Assets",
+      "same_inode_as": "/System/Library/Assets"
+    },
+    {
+      "path": "/System/Volumes/Data/System/Library/Caches",
+      "same_inode_as": "/System/Library/Caches"
+    },
+    {
+      "path": "/System/Volumes/Data/System/Library/CoreServices/CoreTypes.bundle/Contents/Library",
+      "same_inode_as": "/System/Library/CoreServices/CoreTypes.bundle/Contents/Library"
+    }
+  ]
+}

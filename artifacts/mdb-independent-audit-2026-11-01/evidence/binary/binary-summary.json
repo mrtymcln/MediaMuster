@@ -1,0 +1,64 @@
+{
+  "fresh_investigation": true,
+  "binaries": {
+    "/Applications/MDVx.app/Contents/MacOS/MDVx": "2c0032276f7f50fe398e061db8a5ed2c4264d017bf9682642197e3c55d5e424d",
+    "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/AvidMediaComposer": "a4a1d1b41f2f8b509781c3b8a50286c0cd7c9746cf85e609ec5a7bcbf45a727a",
+    "/Applications/Avid Media Composer/AvidMediaComposer.app/Contents/MacOS/libameLibrary.dylib": "659e3b6d07c9ae0d54f5741a153244e4a9c554d030c28e0cc7f4c73dba65ba22"
+  },
+  "mdvx_version": "0.2 (4073)",
+  "media_composer_version": "26.8.0.58987",
+  "runtime_count": 13,
+  "avid_accept_count": 7,
+  "nonavid_reject_count": 6,
+  "all_inputs_unchanged": true,
+  "native_compositions_total": 1420,
+  "comparisons": {
+    "files.project": 2515,
+    "files.stored_legacy_fourcc": 1002,
+    "files.resolution_id": 1002,
+    "files.raw_bit_depth_or_width": 2484,
+    "files.audio_frequency": 1511,
+    "masters.clipName": 1420
+  },
+  "matching": {
+    "files.stored_legacy_fourcc": 1002,
+    "files.resolution_id": 1002,
+    "files.raw_bit_depth_or_width": 2484,
+    "files.audio_frequency": 1511,
+    "masters.clipName": 1420,
+    "files.project": 2046
+  },
+  "native_unavailable": {
+    "files.bit_depth": 31,
+    "files.audio_frequency": 2
+  },
+  "runtime_scope": "Direct invocation of original MDVx arm64 MDVxOMFI methods from converted Mach-O copy; not UI export or reimplementation; native HEAD membership filters obsolete objects. File paths/size from PMR intentionally excluded. All13 fresh corpus entries run in individually isolated subprocesses timeout90s.",
+  "decompilation_scope": "Targeted MDB routines:12 MDVx methods,10 MediaComposer library methods. Original otool disassembly retained. Hopper demo allows scripting pseudocode export but blocks .hop saving. Decompiler output has unresolved asm fragments and must be checked against disassembly. No claim of full application decompilation.",
+  "native_identity_scope": "MDVx UIDtoBentoObj comparison retains8bytes:legacy12[4:12],full32[16:24]. No collisions after native HEAD live membership in tested2515file+1420master joins. Duplicate obsolete MOBJ records are not separate active rows.",
+  "rate_scope": "MC RationalFromExactEditRate normalizes recognized internal decimal rates to N/1001. This alone does not prove all arbitrary MDB rationals should normalize; preserve raw rate and verify serialization/conversion route.",
+  "fresh_evidence_directories": [
+    "runtime",
+    "hopper-mdvx",
+    "hopper-mc",
+    "mc-asm"
+  ],
+  "reproduce": [
+    "python3 binary/prepare_mdvx.py",
+    "python3 binary/run_mdvx.py",
+    "python3 binary/compare_native.py"
+  ],
+  "findings_text": "findings.txt",
+  "project_disagreements": {
+    "encoding_mojibake": 361,
+    "native_nil_with_bella_value": 108,
+    "total": 469
+  },
+  "native_unavailable_summary_fields": [
+    "duration",
+    "start_timecode",
+    "stored/display dimensions",
+    "kind/type",
+    "original bin",
+    "source filename without PMR"
+  ]
+}

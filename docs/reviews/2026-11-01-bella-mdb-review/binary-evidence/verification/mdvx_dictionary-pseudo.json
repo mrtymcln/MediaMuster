@@ -1,0 +1,12 @@
+{
+  "id": 35,
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "text": "/* @class MDVxOMFI */\n-(void)InitDictionary {\n    var_C8 = [@(0x1) retain];\n    var_60 = [@(0x2) retain];\n    var_68 = [@(0x3) retain];\n    var_70 = [@(0x4) retain];\n    var_D0 = [@(0x5) retain];\n    var_78 = [@(0x6) retain];\n    var_80 = [@(0x7) retain];\n    var_D8 = [@(0x8) retain];\n    var_88 = [@(0x9) retain];\n    var_90 = [@(0xa) retain];\n    var_E0 = [@(0x13) retain];\n    var_98 = [@(0x15) retain];\n    var_E8 = [@(0x16) retain];\n    var_A0 = [@(0x17) retain];\n    var_A8 = [@(0x18) retain];\n    var_B0 = [@(0x19) retain];\n    r27 = [@(0x1a) retain];\n    r19 = [@(0x1b) retain];\n    r0 = @(0x1c);\n    r0 = [r0 retain];\n    var_F0 = r0;\n    r0 = @(0x1d);\n    r0 = [r0 retain];\n    var_F8 = r0;\n    r0 = @(0x1e);\n    r0 = [r0 retain];\n    var_100 = r0;\n    r0 = @(0x1f);\n    r0 = [r0 retain];\n    var_108 = r0;\n    r0 = @(0x20);\n    r0 = [r0 retain];\n    var_110 = r0;\n    r23 = [@(0x28) retain];\n    r24 = [@(0x29) retain];\n    r25 = [@(0x2a) retain];\n    r22 = r19;\n    r21 = r27;\n    r20 = var_E8;\n    r19 = var_E0;\n    r28 = var_D8;\n    r27 = var_D0;\n    r26 = var_C8;\n    r0 = [NSMutableDictionary dictionaryWithObjectsAndKeys:@\"CM_StdObjID_TOC\"];\n    r0 = [r0 retain];\n    r8 = self[0x9];\n    self[0x9] = r0;\n    [r8 release];\n    [r25 release];\n    [r24 release];\n    [r23 release];\n    [var_110 release];\n    [var_108 release];\n    [var_100 release];\n    [var_F8 release];\n    [var_F0 release];\n    [r22 release];\n    [r21 release];\n    [var_B0 release];\n    [var_A8 release];\n    [var_A0 release];\n    [r20 release];\n    [var_98 release];\n    [r19 release];\n    [var_90 release];\n    [var_88 release];\n    [r28 release];\n    [var_80 release];\n    [var_78 release];\n    [r27 release];\n    [var_70 release];\n    [var_68 release];\n    [var_60 release];\n    [r26 release];\n    return;\n}\n",
+        "type": "text"
+      }
+    ]
+  }
+}

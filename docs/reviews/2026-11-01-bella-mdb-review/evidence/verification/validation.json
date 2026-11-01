@@ -1,0 +1,58 @@
+{
+  "dateTimeUtc": "2026-11-01T04:19:42.487019+00:00",
+  "head": "20220f2b4c2b7ff6ef3d017a77568e5edf7de7cd",
+  "sourceSha256": {
+    "src/bella/mdbparser.cpp": "b5868966652a7c992b4dab3b111c9502b3994371d7b067a9e92b5166db537fbf",
+    "src/bella/mdbparser.h": "38cface04f16dd9572dac0be2af9e85d6f67875c9444fc304c6dc4eb6e1a7569",
+    "src/bella/mobid.cpp": "cf4718e1a68d0f5cffb3e958983a9ce729c102e1a807885ad57f03a89ffca969",
+    "src/bella/mobid.h": "95ba2ca6f8f315beb729fedd0cf91f35f53d6a5dce793e1da15b6dfbd4c833a8",
+    "tests/tst_bellamdb.cpp": "79ad43ae634252da09f4f051280cecdbe61de2e7c5d659d7a1c4bbe44c6e71be"
+  },
+  "productionMatchesHead": {
+    "src/bella/mdbparser.cpp": true,
+    "src/bella/mdbparser.h": true,
+    "src/bella/mobid.cpp": true,
+    "src/bella/mobid.h": true,
+    "tests/tst_bellamdb.cpp": true
+  },
+  "paths": 411,
+  "contentHashes": 235,
+  "directoryAccessFailures": 437,
+  "fileReadFailures": 0,
+  "byRoot": {
+    "/": 405,
+    "/Volumes/EDIT": 6
+  },
+  "bellaReports": 822,
+  "bellaReadings": {
+    "1": 402,
+    "2": 8,
+    "3": 1
+  },
+  "nativeExit0": 411,
+  "nativeOpenTrue": 404,
+  "nativeExceptions": 0,
+  "nativeTimeouts": 0,
+  "nativeStderrPaths": 0,
+  "sourceStampsUnchanged": true,
+  "postAllReadersChangedInputHashes": [],
+  "normalMdbQtPasses": 165,
+  "asanUbsanMdbQtPasses": 165,
+  "normalSanitizerCompleteReportsIdentical": true,
+  "sanitizerTestStderrBytes": 0,
+  "sanitizerCorpusStderrBytes": 0,
+  "priorBellaReportsCompared": 766,
+  "priorBellaReportsChanged": 0,
+  "priorMdvxNativeReportsCompared": 383,
+  "priorMdvxNativeReportsChanged": 0,
+  "originalMdvxArm64Text": {
+    "address": "0x100003b28",
+    "size": 417424,
+    "sha256": "86237188eb6e3c71eeadd752a069020d66c908993df345c36c96e39f3e0647f4"
+  },
+  "runtimeMdvxArm64Text": {
+    "address": "0x100003b28",
+    "size": 417424,
+    "sha256": "86237188eb6e3c71eeadd752a069020d66c908993df345c36c96e39f3e0647f4"
+  }
+}

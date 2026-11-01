@@ -1,0 +1,2926 @@
+[
+  {
+    "commit": "00cc50c01db76173e92f0547e8b3db70fa2d62ec",
+    "metadata": "00cc50c01db76173e92f0547e8b3db70fa2d62ec 2026-10-16T23:12:17+11:00 Add source path handling and related tests",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.2450903749995632,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.015399000003526453,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.498500999994576,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.023052499993355013,
+        "files": 2,
+        "masters": 2,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.015665041995816864,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.014802083998802118,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.016419833002146333,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.08645004199934192,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.015315709002607036,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5604914590003318,
+        "files": 392,
+        "masters": 153,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.516017207999539,
+        "files": 686,
+        "masters": 415,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.9161448330050916,
+        "files": 525,
+        "masters": 353,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.6509390830033226,
+        "files": 471,
+        "masters": 293,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "33fb9594c8cd30139e16237e6e307f9da1e6b13b4c8dea900b480ddb5d0efb53"
+  },
+  {
+    "commit": "0427ddca7a21e5c708944640482ba83771c2eeb5",
+    "metadata": "0427ddca7a21e5c708944640482ba83771c2eeb5 2026-10-17T00:09:29+11:00 Enhance MediaTableModel and OperationUI Tests",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.2744857920042705,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.015060999998240732,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.4487671250026324,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.023632332995475736,
+        "files": 2,
+        "masters": 2,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.01651920800213702,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.014929459000995848,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.015589041999191977,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.0885848750040168,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.01625712500390364,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5445365409977967,
+        "files": 392,
+        "masters": 153,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.373820207998506,
+        "files": 686,
+        "masters": 415,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.7678485840006033,
+        "files": 525,
+        "masters": 353,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.7088493329938501,
+        "files": 471,
+        "masters": 293,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "de3c31b4969ee8f24086165fcda644b48f195c8df2df00ee9fd6c44c1832e937"
+  },
+  {
+    "commit": "10e2aaeff26976750c5c1c20161150f007fb1b42",
+    "metadata": "10e2aaeff26976750c5c1c20161150f007fb1b42 2026-10-14T21:27:15+11:00 Refactor media engine tests and CSV handling",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.27436375000252156,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.01567083300324157,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.4865977500012377,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.023248499994224403,
+        "files": 2,
+        "masters": 2,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.01637829199898988,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.01682012500532437,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.016122042005008552,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.09126416600338416,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.016618459005258046,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5847928329967544,
+        "files": 392,
+        "masters": 153,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.451902708002308,
+        "files": 686,
+        "masters": 415,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.8980667499999981,
+        "files": 525,
+        "masters": 353,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.6971122919931076,
+        "files": 471,
+        "masters": 293,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "c239a34472980bcc4012e0becc4763d3e3f7c9ebd55acd62b02b7599c465cbe5"
+  },
+  {
+    "commit": "14c0ddc5fc25d5355ccff64cb18eef69c669e795",
+    "metadata": "14c0ddc5fc25d5355ccff64cb18eef69c669e795 2026-10-10T09:29:40+11:00 Add performance review and diagnostic instrumentation for Canon",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.2875311660027364,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.018998500003363006,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5239595840030233,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.021929957998509053,
+        "files": 2,
+        "masters": 2,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.013710041996091604,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.01435483400564408,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.013829165996867232,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.09301500000583474,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.013963165998575278,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.6078570829995442,
+        "files": 392,
+        "masters": 153,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.530464583003777,
+        "files": 686,
+        "masters": 415,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.914379582995025,
+        "files": 525,
+        "masters": 353,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.733164041004784,
+        "files": 471,
+        "masters": 293,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "b6b03cb868a50be937900342bf77a7fbf6a45e3d61c8a848c4ef5feea2ef387b"
+  },
+  {
+    "commit": "2d5772ea2488d809a482948e4a8ded515d09d2d3",
+    "metadata": "2d5772ea2488d809a482948e4a8ded515d09d2d3 2026-10-18T11:47:37+11:00 Refactor test descriptions for clarity and accuracy",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.26088154099852545,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.016047167002398055,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.4535637500011944,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.02358904200082179,
+        "files": 2,
+        "masters": 2,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.016149792005307972,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.016456041994388215,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.01816583400068339,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.08631791600055294,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.015151249994232785,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5496861249994254,
+        "files": 392,
+        "masters": 153,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.392932249997102,
+        "files": 686,
+        "masters": 415,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.7631152920002933,
+        "files": 525,
+        "masters": 353,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.6541870000000927,
+        "files": 471,
+        "masters": 293,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "b5960e07cccdc213dd6e4817d6478bd24a6bc1b24e2f814948f22cf1f8f0130d"
+  },
+  {
+    "commit": "2d96ac2450795d164d2f44ec79cf0c9c1a43713e",
+    "metadata": "2d96ac2450795d164d2f44ec79cf0c9c1a43713e 2026-10-09T00:03:40+11:00 Implement storage compaction for MDB/OMF properties and reader sources",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.2457248749997234,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.012607124997884966,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5386499169981107,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.020427000003110152,
+        "files": 2,
+        "masters": 2,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.013953667003079318,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.012803041005099658,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.012389250005071517,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.09056266699917614,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.012475167000957299,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.624309416001779,
+        "files": 392,
+        "masters": 153,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.7687006250052946,
+        "files": 686,
+        "masters": 415,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.8551502500049537,
+        "files": 525,
+        "masters": 353,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.7514840840012766,
+        "files": 471,
+        "masters": 293,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "78017c49e302b34d8fcfe8fccd0006731ba11fad76877b668c93cef00491a113"
+  },
+  {
+    "commit": "5026f9469855e325f36c8bdff803ba6e27472a59",
+    "metadata": "5026f9469855e325f36c8bdff803ba6e27472a59 2026-10-13T21:42:21+11:00 Refactor media identity handling and update tests",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.2601664169997093,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.015156082998146303,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5489935420046095,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.02245658299943898,
+        "files": 2,
+        "masters": 2,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.014858208000077866,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.014023040996107738,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.013541624997742474,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.09313025000301423,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.014710541996464599,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.6138893749957788,
+        "files": 392,
+        "masters": 153,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.661629542002629,
+        "files": 686,
+        "masters": 415,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.830132875002164,
+        "files": 525,
+        "masters": 353,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.7233954579933197,
+        "files": 471,
+        "masters": 293,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "bc912b512db84a9da4389ce8de21f5ddc5465928352b2d2d296a71b610e15b67"
+  },
+  {
+    "commit": "5443141d557f0286e15b1c6aa2c7b481659f60ef",
+    "metadata": "5443141d557f0286e15b1c6aa2c7b481659f60ef 2026-10-08T19:37:37+11:00 Enhance audio summary tests and improve codec label accuracy",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.25468891699711094,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.011589583999011666,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5340812089998508,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.02035533299931558,
+        "files": 2,
+        "masters": 2,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.013048125001660082,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.012282791998586617,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.012472540998714976,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.09015883400570601,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.01503075000073295,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.6173325839990866,
+        "files": 392,
+        "masters": 153,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.477050457993755,
+        "files": 686,
+        "masters": 415,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.82082858299691,
+        "files": 525,
+        "masters": 353,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.7200393329985673,
+        "files": 471,
+        "masters": 293,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "a1a64aa2576c4ca99dc70e8110fc23c592d57c10a83f335af4b15a8896e25fae"
+  },
+  {
+    "commit": "5e4fbd17a024ee070a9d479fec303d3693fbb214",
+    "metadata": "5e4fbd17a024ee070a9d479fec303d3693fbb214 2026-10-11T08:55:16+11:00 Add documentation for MediaEngine database lifetimes and source retention policies",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.27056308399914997,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.014761292004550342,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5221505000008619,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.02235925000422867,
+        "files": 2,
+        "masters": 2,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.014538291994540486,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.014454999996814877,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.014798042000620626,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.09266129200113937,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.016131374999531545,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.6189188749995083,
+        "files": 392,
+        "masters": 153,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.576717166004528,
+        "files": 686,
+        "masters": 415,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.8252061250022962,
+        "files": 525,
+        "masters": 353,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.779044041999441,
+        "files": 471,
+        "masters": 293,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "3b54170f79d4faff3500178c922b0b69c9d63b6fa3f7b2e6f2bf8170965d1da3"
+  },
+  {
+    "commit": "628eb615112e3ab774f5a3684cd59d21438e5c6a",
+    "metadata": "628eb615112e3ab774f5a3684cd59d21438e5c6a 2026-10-10T13:42:50+11:00 Isolate the OMF and MDB readers.",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.2586830420041224,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.01578516700101318,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5533140830011689,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.023032625002088025,
+        "files": 2,
+        "masters": 2,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.016873749998921994,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.015339417004724964,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.016129125004226808,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.10781770900211995,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.015252249999321066,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.6466516250002314,
+        "files": 392,
+        "masters": 153,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.646771291998448,
+        "files": 686,
+        "masters": 415,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.932839832996251,
+        "files": 525,
+        "masters": 353,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.856975374998001,
+        "files": 471,
+        "masters": 293,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "37a3431a594179b0a4ead37b5467d1c1bd532ebe6cf7508db24226301de2e497"
+  },
+  {
+    "commit": "91f773262b271d71381c61e44cec8b25fedc2e4e",
+    "metadata": "91f773262b271d71381c61e44cec8b25fedc2e4e 2026-10-04T10:32:51+11:00 Add OMF object interpretation and legacy reader tests",
+    "projection": false,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.27045645900216186,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.015103541998541914,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.33667674999742303,
+        "files": 0,
+        "masters": 0,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.017980500000703614,
+        "files": 0,
+        "masters": 0,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.011954124995099846,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.01130974999978207,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.010855458000150975,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.05549379200238036,
+        "files": 0,
+        "masters": 0,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.012118415994336829,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.41752745800476987,
+        "files": 0,
+        "masters": 0,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.0710021659979247,
+        "files": 0,
+        "masters": 0,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.6307105000014417,
+        "files": 0,
+        "masters": 0,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.4445580829997198,
+        "files": 0,
+        "masters": 0,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "b1a2bf0fb60416c78938b505cdfe26ea57d86fec7157226d681dd66cb53cc8c3"
+  },
+  {
+    "commit": "9c286ee092ccb028f214b38676169ff43fa86e66",
+    "metadata": "9c286ee092ccb028f214b38676169ff43fa86e66 2026-10-11T00:47:02+11:00 Add regression tests for reader functionality in media engine",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.2969092499988619,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.015222792004351504,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5572712919965852,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.023179458003141917,
+        "files": 2,
+        "masters": 2,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.015035874996101484,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.015068500004417729,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.015699458002927713,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.09715904200129444,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.014953792000596877,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.6511190419987543,
+        "files": 392,
+        "masters": 153,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.665268249998917,
+        "files": 686,
+        "masters": 415,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.8774055410030996,
+        "files": 525,
+        "masters": 353,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.7383812499974738,
+        "files": 471,
+        "masters": 293,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "d6685ee8f0d6d66a09cefe0b5c082752e5c9743a67fcfb020579dd9acba34488"
+  },
+  {
+    "commit": "a7774acce0279df96f381a50a5e2e2268493c35f",
+    "metadata": "a7774acce0279df96f381a50a5e2e2268493c35f 2026-10-04T01:19:38+10:00 Implement alternative PMR reader and enhance robustness testing",
+    "build": "header only; no implementation"
+  },
+  {
+    "commit": "a8f28373687b116af233dd09a4c4edb42e4132d0",
+    "metadata": "a8f28373687b116af233dd09a4c4edb42e4132d0 2026-10-15T19:23:49+11:00 Add tests and adjustments for MasterMobId handling in media processing",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.2538619170009042,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.01543604199832771,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.4786507079988951,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.024702124996110797,
+        "files": 2,
+        "masters": 2,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.016536292001546826,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.016036540997447446,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.016076207997684833,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.09023537499888334,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.01593887500348501,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5554787909932202,
+        "files": 392,
+        "masters": 153,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.480295875000593,
+        "files": 686,
+        "masters": 415,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.8849204580037622,
+        "files": 525,
+        "masters": 353,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.6549955409936956,
+        "files": 471,
+        "masters": 293,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "71d47e382aa004016e4ab5a0e861cd66dc11a439641156e45496921864c21456"
+  },
+  {
+    "commit": "af25b2dda40430273fc3b4842391d0a2ab2bee03",
+    "metadata": "af25b2dda40430273fc3b4842391d0a2ab2bee03 2026-10-08T12:54:51+11:00 Implement shared metadata selection policy and associated tests",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.24965545899613062,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.012292500003241003,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5444250420041499,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.0210546250018524,
+        "files": 2,
+        "masters": 2,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.012767082997015677,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.012286208999285009,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.012929625001561362,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.09168533299816772,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.012822667005821131,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.6232837499992456,
+        "files": 392,
+        "masters": 153,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.432708584005013,
+        "files": 686,
+        "masters": 415,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.7791315830036183,
+        "files": 525,
+        "masters": 353,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.6853397500017309,
+        "files": 471,
+        "masters": 293,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "2542df08583564b20b495496d0d5fc86a5d4db5794c90297182fe39b50bbb166"
+  },
+  {
+    "commit": "b02d5d181d2505c9557ba439fcaf72540c0dc3b4",
+    "metadata": "b02d5d181d2505c9557ba439fcaf72540c0dc3b4 2026-10-11T07:57:56+11:00 Implement MediaEngine Steps 1 and 2: Optimise Metadata Matching and Evidence Storage",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.2707809589992394,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.016367332995287143,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5470533330008038,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.027065542002674192,
+        "files": 2,
+        "masters": 2,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.016661041001498234,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.01722979199985275,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.016466000000946224,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.09660229099972639,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.01732458300102735,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.6491067909955746,
+        "files": 392,
+        "masters": 153,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 3.0197554999977,
+        "files": 686,
+        "masters": 415,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.8570660420009517,
+        "files": 525,
+        "masters": 353,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.741190374996222,
+        "files": 471,
+        "masters": 293,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "9cb108f5abdd1272b23464dbff0c5a0f42a26838d42074cac256ab810745a8c6"
+  },
+  {
+    "commit": "b4c6c49b16527ed2c460f646527f3f5226232884",
+    "metadata": "b4c6c49b16527ed2c460f646527f3f5226232884 2026-10-07T22:01:57+11:00 Add unit tests for Canon scan engine functionality",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.25526266700035194,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.012948166004207451,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.4685766250040615,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.018877499998779967,
+        "files": 3,
+        "masters": 3,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.01206024999555666,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.011561666004126891,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.011062333003792446,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.08011958299903199,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.012397916994814295,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5789354590015137,
+        "files": 392,
+        "masters": 154,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.9239103750005597,
+        "files": 1373,
+        "masters": 831,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.1338600419985596,
+        "files": 1036,
+        "masters": 704,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.994258541999443,
+        "files": 934,
+        "masters": 586,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "24e1d86884c14d7763310144afe9a3574742427502623d916c081c35330e3c8d"
+  },
+  {
+    "commit": "c8541868b10334ad0fddd5928a960202008768c9",
+    "metadata": "c8541868b10334ad0fddd5928a960202008768c9 2026-10-18T19:25:17+11:00 PREP FOR PROJECT BELLA - Added ScanCoordinator class to manage the scanning process, including reading databases and handling unmatched files. - Implemented ScanEngine class to serve as the entry point for scanning, delegating tasks to ScanCoordinator. - Created source preparation structures to manage projected facts and source receipts. - Developed media engine adapter functions to apply resolved metadata and format media files. - Established OldScanner class to handle background scanning operations, including folder discovery and scan completion reporting. - Enhanced logging and error handling throughout the scanning process.",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.2789472919976106,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.015341083002567757,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.45586324999749195,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.0231980000025942,
+        "files": 2,
+        "masters": 2,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.016334542000549845,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.014954582999052946,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.016910042002564296,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.08983087499655085,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.01594404200295685,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5583510829965235,
+        "files": 392,
+        "masters": 153,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.569600041999365,
+        "files": 686,
+        "masters": 415,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.7414481660016463,
+        "files": 525,
+        "masters": 353,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.6255670839964296,
+        "files": 471,
+        "masters": 293,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "1cd5dc39a09938db6d1675a8f45485a7aadf1716b56da268f63e45c0c7a1b524"
+  },
+  {
+    "commit": "cae5f4b340d3a4819f77cb714881964f5e3f1407",
+    "metadata": "cae5f4b340d3a4819f77cb714881964f5e3f1407 2026-10-04T12:36:05+11:00 Add MXF reader implementation and corresponding unit tests",
+    "projection": false,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.48607129100128077,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.013603416999103501,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.32185862500045914,
+        "files": 0,
+        "masters": 0,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.018638125002325978,
+        "files": 0,
+        "masters": 0,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.012690458999713883,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.013908000000810716,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.01258195799891837,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.05971404199954122,
+        "files": 0,
+        "masters": 0,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.013641582998388913,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5804397089959821,
+        "files": 0,
+        "masters": 0,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.2677369999946677,
+        "files": 0,
+        "masters": 0,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.5575165000045672,
+        "files": 0,
+        "masters": 0,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.4467650829974446,
+        "files": 0,
+        "masters": 0,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "72a9979a6e3ad1c5afc924b4bb6a2829c6cbc961ca5fd809a0834688bdcfd54f"
+  },
+  {
+    "commit": "da87337098c1ba2fb817ada1dda4e160c34e527d",
+    "metadata": "da87337098c1ba2fb817ada1dda4e160c34e527d 2026-10-07T23:45:10+11:00 Implement revised visible resolution policy and associated diagnostics",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.6901602919970173,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.01243683399661677,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.505378624999139,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.05936449999717297,
+        "files": 3,
+        "masters": 3,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.014242167002521455,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.013231791999714915,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.01417720800236566,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.08800179199897684,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.013226417002442759,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5924854580007377,
+        "files": 392,
+        "masters": 154,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.9528813750002882,
+        "files": 1373,
+        "masters": 831,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.1618651669996325,
+        "files": 1036,
+        "masters": 704,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.043268707995594,
+        "files": 934,
+        "masters": 586,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "0040e69f1c8e15290a4f7a118028ad29f8d401a1781aab8028ad39308fbf13a6"
+  },
+  {
+    "commit": "f7d84dfd4f5c91c39b9ba8cc9a0afcd8def5eb10",
+    "metadata": "f7d84dfd4f5c91c39b9ba8cc9a0afcd8def5eb10 2026-10-11T11:44:16+11:00 Refactor code structure for improved readability and maintainability",
+    "projection": true,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.15831233299832093,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.015139249997446314,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.5314299169986043,
+        "files": 359,
+        "masters": 124,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.02579975000116974,
+        "files": 2,
+        "masters": 2,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.01751779199548764,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.016867458994966,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.017259708998608403,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.10983837499952642,
+        "files": 80,
+        "masters": 80,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.01819320800132118,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.6264051250036573,
+        "files": 392,
+        "masters": 153,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.481358958000783,
+        "files": 686,
+        "masters": 415,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.8393838330011931,
+        "files": 525,
+        "masters": 353,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.761062875004427,
+        "files": 471,
+        "masters": 293,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "3b54170f79d4faff3500178c922b0b69c9d63b6fa3f7b2e6f2bf8170965d1da3"
+  },
+  {
+    "commit": "f9558b0fe9d1065d4e4bf72f7ba57f32ff94300b",
+    "metadata": "f9558b0fe9d1065d4e4bf72f7ba57f32ff94300b 2026-10-04T01:43:38+10:00 Add MDB reader tests and enhance property context handling",
+    "projection": false,
+    "build": "success",
+    "inputs": [
+      {
+        "sha256": "ae71e2bb25f72d1fd52cc809e698319cb4767fcb9ed95318b54bfcda8ef47b7c",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/lock.mdb",
+        "exit": 0,
+        "seconds": 0.47799174999818206,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "68a620c1e7c601b5b13c386fb249ad472b11a0d99900b78801582aae7da8b6d1",
+        "path": "/private/var/folders/kp/n5njy8cd429d06xrqzmb9r9m0000gn/C/com.apple.MTLAssetUpgraderD/upgraderWork.db/data.mdb",
+        "exit": 0,
+        "seconds": 0.010500999997020699,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "eb737789d7099219778efba688f3031e5f537b58450374efa67e7e7365c36ae7",
+        "path": "/Users/Shared/AvidMediaComposer/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.31617100000585197,
+        "files": 0,
+        "masters": 0,
+        "objects": 20328,
+        "outcome": 1
+      },
+      {
+        "sha256": "7b30fd0acf8fcb1c3314cde8ed6130803a8f4c8a55164eefca1be93c32d1c8b8",
+        "path": "/Users/Shared/AvidMediaComposer/OMFI MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.019478415997582488,
+        "files": 0,
+        "masters": 0,
+        "objects": 859,
+        "outcome": 1
+      },
+      {
+        "sha256": "c5a9f322765288426a9d6682e0a2024c1699684f06128120c02bb8a032e64eb4",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/lock.mdb",
+        "exit": 0,
+        "seconds": 0.012167250002676155,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "d535604426b68b354c56f5e849dd73165dd8a085693dbd222ff24263da6a9c59",
+        "path": "/Users/martymclean/Library/Developer/Xcode/DerivedData/PostCode-ccdlkcyjkmyfkwhbkjpewwmvpyxp/Index.noindex/UniDB/PostCode.xcindex/v13/saved/data.mdb",
+        "exit": 0,
+        "seconds": 0.01099758299824316,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "04cdf89150f1f679c4c8f96fe18ae9157b46e520b820c5c30566a220eec16c25",
+        "path": "/Applications/Xcode.app/Contents/SharedFrameworks/DNTDocumentationSupport.framework/Versions/A/Resources/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.011017750002793036,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "2fa7ebd421423bb5be7f3910d8e3f11e3c44f3b44bd2f23528a318cccf85a936",
+        "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.05678862499917159,
+        "files": 0,
+        "masters": 0,
+        "objects": 2795,
+        "outcome": 1
+      },
+      {
+        "sha256": "71e556994e7fa303238ee2dca328ac6634661ebe34083daacb259582cec1ac65",
+        "path": "/Applications/Swift Playground.app/Contents/Resources/Documentation/external/index/data.mdb",
+        "exit": 0,
+        "seconds": 0.012155459000496194,
+        "files": 0,
+        "masters": 0,
+        "objects": 0,
+        "outcome": 3
+      },
+      {
+        "sha256": "c88db90d3082829a55320b8565a033edebca3abb4387b9ccb25b02fa12ad5df0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/1/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 0.4076251670048805,
+        "files": 0,
+        "masters": 0,
+        "objects": 26434,
+        "outcome": 1
+      },
+      {
+        "sha256": "3ff64055a67e0a261e545e0e1e032995ffe341484a5ff2196f0e45b0d8131d1c",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 2.0940273340020212,
+        "files": 0,
+        "masters": 0,
+        "objects": 140448,
+        "outcome": 1
+      },
+      {
+        "sha256": "518ab64782e812c811e00e4170b8e334a191d0fbaa6dfa05ccebfa4601d87ef0",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.5107357909946586,
+        "files": 0,
+        "masters": 0,
+        "objects": 101546,
+        "outcome": 1
+      },
+      {
+        "sha256": "2c1f6cc65551025d82769c8b789ed30073e3ef4244c0dcf9ac678f0ca7cadffd",
+        "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+        "exit": 0,
+        "seconds": 1.4283628330013016,
+        "files": 0,
+        "masters": 0,
+        "objects": 96835,
+        "outcome": 1
+      }
+    ],
+    "probeSha256": "7c717034322aa5bae40e86c8befefe37a5684790b92dacb024d37e209ccf27a6"
+  }
+]

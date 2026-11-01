@@ -1,0 +1,12 @@
+{
+  "id": 16,
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "text": "\n\n        ; ================ B E G I N N I N G   O F   P R O C E D U R E ================\n\n        ; Variables:\n        ;      0 : saved_fp\n        ;    -16 : var_10\n        ;    -32 : var_20\n\n\n                     -[UIDtoBentoObj initWithUID:]:\n000000010006163c         sub        sp, sp, #0x30                               ; Objective C Implementation defined at 0x100072ab0 (instance method), DATA XREF=0x100072ab0\n0000000100061640         stp        x20, x19, [sp, #0x10]\n0000000100061644         stp        fp, lr, [sp, #0x20]\n0000000100061648         add        fp, sp, #0x20\n000000010006164c         mov        x19, x2\n0000000100061650         nop\n0000000100061654         ldr        x8, =_OBJC_CLASS_$_UIDtoBentoObj            ; @class(UIDtoBentoObj)\n0000000100061658         stp        x0, x8, [sp]\n000000010006165c         nop\n0000000100061660         ldr        x1, =aInit                                  ; argument \"selector\" for method imp___stubs__objc_msgSendSuper2, \"init\",@selector(init)\n0000000100061664         mov        x0, sp                                      ; argument \"super\" for method imp___stubs__objc_msgSendSuper2\n0000000100061668         bl         imp___stubs__objc_msgSendSuper2             ; objc_msgSendSuper2\n000000010006166c         cbz        x0, loc_100061678\n\n0000000100061670         ldr        x8, [x19]\n0000000100061674         str        x8, [x0, #0x8]\n\n                     loc_100061678:\n0000000100061678         ldp        fp, lr, [sp, #0x20]                         ; CODE XREF=-[UIDtoBentoObj initWithUID:]+48\n000000010006167c         ldp        x20, x19, [sp, #0x10]\n0000000100061680         add        sp, sp, #0x30\n0000000100061684         ret\n                        ; endp\n",
+        "type": "text"
+      }
+    ]
+  }
+}

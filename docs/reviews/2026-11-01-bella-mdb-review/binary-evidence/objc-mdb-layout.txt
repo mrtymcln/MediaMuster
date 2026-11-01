@@ -1,0 +1,764 @@
+        name           0x1000e41bd MDVxDatabaseItem
+        baseMethods    0x1000712c8 __OBJC_$_INSTANCE_METHODS_MDVxDatabaseItem
+            entsize 12 (relative)
+            count   62
+            name    0x8a7f8 (0x1000fbac8 extends past end of file)
+            types   0x73183 (0x1000e4457 extends past end of file)
+            imp     0xfffbee08 (0x1000300e0 extends past end of file)
+            name    0x8a75c (0x1000fba38 extends past end of file)
+            types   0x731d0 (0x1000e44b0 extends past end of file)
+            imp     0xfffbee5c (0x100030140 extends past end of file)
+            name    0x8a748 (0x1000fba30 extends past end of file)
+            types   0x7316b (0x1000e4457 extends past end of file)
+            imp     0xfffbee5c (0x10003014c extends past end of file)
+            name    0x8a934 (0x1000fbc28 extends past end of file)
+            types   0x7314c (0x1000e4444 extends past end of file)
+            imp     0xfffbeeb4 (0x1000301b0 extends past end of file)
+            name    0x8a930 (0x1000fbc30 extends past end of file)
+            types   0x73140 (0x1000e4444 extends past end of file)
+            imp     0xfffbefd8 (0x1000302e0 extends past end of file)
+            name    0x8a974 (0x1000fbc80 extends past end of file)
+            types   0x73134 (0x1000e4444 extends past end of file)
+            imp     0xfffbf07c (0x100030390 extends past end of file)
+            name    0x8b640 (0x1000fc958 extends past end of file)
+            types   0x73efa (0x1000e5216 extends past end of file)
+            imp     0xfffbf130 (0x100030450 extends past end of file)
+            name    0x8b144 (0x1000fc468 extends past end of file)
+            types   0x731c9 (0x1000e44f1 extends past end of file)
+            imp     0xfffbf404 (0x100030730 extends past end of file)
+            name    0x8b2c8 (0x1000fc5f8 extends past end of file)
+            types   0x731bd (0x1000e44f1 extends past end of file)
+            imp     0xfffbf48c (0x1000307c4 extends past end of file)
+            name    0x89ac4 (0x1000fae00 extends past end of file)
+            types   0x731b1 (0x1000e44f1 extends past end of file)
+            imp     0xfffbf514 (0x100030858 extends past end of file)
+            name    0x89a20 (0x1000fad68 extends past end of file)
+            types   0x7310b (0x1000e4457 extends past end of file)
+            imp     0xfffbf514 (0x100030864 extends past end of file)
+            name    0x8a094 (0x1000fb3e8 extends past end of file)
+            types   0x73216 (0x1000e456e extends past end of file)
+            imp     0xfffbf5d0 (0x10003092c extends past end of file)
+            name    0x8b600 (0x1000fc960 extends past end of file)
+            types   0x73262 (0x1000e45c6 extends past end of file)
+            imp     0xfffbf6ac (0x100030a14 extends past end of file)
+            name    0x8a214 (0x1000fb580 extends past end of file)
+            types   0x731fe (0x1000e456e extends past end of file)
+            imp     0xfffbf8c0 (0x100030c34 extends past end of file)
+            name    0x8b8d8 (0x1000fcc50 extends past end of file)
+            types   0x731f2 (0x1000e456e extends past end of file)
+            imp     0xfffbf974 (0x100030cf4 extends past end of file)
+            name    0x8a23c (0x1000fb5c0 extends past end of file)
+            types   0x73101 (0x1000e4489 extends past end of file)
+            imp     0xfffbfc28 (0x100030fb4 extends past end of file)
+            name    0x8b170 (0x1000fc500 extends past end of file)
+            types   0x73e97 (0x1000e522b extends past end of file)
+            imp     0xfffbfcf8 (0x100031090 extends past end of file)
+            name    0x8b3d4 (0x1000fc770 extends past end of file)
+            types   0x73e8b (0x1000e522b extends past end of file)
+            imp     0xfffbfcf4 (0x100031098 extends past end of file)
+            name    0x8a5f8 (0x1000fb9a0 extends past end of file)
+            types   0x730ab (0x1000e4457 extends past end of file)
+            imp     0xfffbfcf0 (0x1000310a0 extends past end of file)
+            name    0x8a61c (0x1000fb9d0 extends past end of file)
+            types   0x7309f (0x1000e4457 extends past end of file)
+            imp     0xfffbfcec (0x1000310a8 extends past end of file)
+            name    0x8a650 (0x1000fba10 extends past end of file)
+            types   0x73e75 (0x1000e5239 extends past end of file)
+            imp     0xfffbfce8 (0x1000310b0 extends past end of file)
+            name    0x8a384 (0x1000fb750 extends past end of file)
+            types   0x73087 (0x1000e4457 extends past end of file)
+            imp     0xfffbfe70 (0x100031244 extends past end of file)
+            name    0x89950 (0x1000fad28 extends past end of file)
+            types   0x73e8c (0x1000e5268 extends past end of file)
+            imp     0xfffc005c (0x10003143c extends past end of file)
+            name    0x8993c (0x1000fad20 extends past end of file)
+            types   0x73e80 (0x1000e5268 extends past end of file)
+            imp     0xfffc0068 (0x100031454 extends past end of file)
+            name    0x899e8 (0x1000fadd8 extends past end of file)
+            types   0x73095 (0x1000e4489 extends past end of file)
+            imp     0xfffc0074 (0x10003146c extends past end of file)
+            name    0x8afb4 (0x1000fc3b0 extends past end of file)
+            types   0x735df (0x1000e49df extends past end of file)
+            imp     0xfffc0074 (0x100031478 extends past end of file)
+            name    0x899c8 (0x1000fadd0 extends past end of file)
+            types   0x7307d (0x1000e4489 extends past end of file)
+            imp     0xfffc0070 (0x100031480 extends past end of file)
+            name    0x8af94 (0x1000fc3a8 extends past end of file)
+            types   0x735c7 (0x1000e49df extends past end of file)
+            imp     0xfffc0070 (0x10003148c extends past end of file)
+            name    0x89988 (0x1000fada8 extends past end of file)
+            types   0x73065 (0x1000e4489 extends past end of file)
+            imp     0xfffc006c (0x100031494 extends past end of file)
+            name    0x8af6c (0x1000fc398 extends past end of file)
+            types   0x735af (0x1000e49df extends past end of file)
+            imp     0xfffc006c (0x1000314a0 extends past end of file)
+            name    0x89990 (0x1000fadc8 extends past end of file)
+            types   0x7304d (0x1000e4489 extends past end of file)
+            imp     0xfffc0068 (0x1000314a8 extends past end of file)
+            name    0x8af5c (0x1000fc3a0 extends past end of file)
+            types   0x73597 (0x1000e49df extends past end of file)
+            imp     0xfffc0068 (0x1000314b4 extends past end of file)
+            name    0x89960 (0x1000fadb0 extends past end of file)
+            types   0x73035 (0x1000e4489 extends past end of file)
+            imp     0xfffc0064 (0x1000314bc extends past end of file)
+            name    0x8995c (0x1000fadb8 extends past end of file)
+            types   0x73029 (0x1000e4489 extends past end of file)
+            imp     0xfffc0064 (0x1000314c8 extends past end of file)
+            name    0x89958 (0x1000fadc0 extends past end of file)
+            types   0x7301d (0x1000e4489 extends past end of file)
+            imp     0xfffc0064 (0x1000314d4 extends past end of file)
+            name    0x8990c (0x1000fad80 extends past end of file)
+            types   0x736a7 (0x1000e4b1f extends past end of file)
+            imp     0xfffc0064 (0x1000314e0 extends past end of file)
+            name    0x89970 (0x1000fadf0 extends past end of file)
+            types   0x72fd3 (0x1000e4457 extends past end of file)
+            imp     0xfffc0060 (0x1000314e8 extends past end of file)
+            name    0x898b4 (0x1000fad40 extends past end of file)
+            types   0x72fc7 (0x1000e4457 extends past end of file)
+            imp     0xfffc0060 (0x1000314f4 extends past end of file)
+            name    0x8aee8 (0x1000fc380 extends past end of file)
+            types   0x73055 (0x1000e44f1 extends past end of file)
+            imp     0xfffc0060 (0x100031500 extends past end of file)
+            name    0x8993c (0x1000fade0 extends past end of file)
+            types   0x72faf (0x1000e4457 extends past end of file)
+            imp     0xfffc0060 (0x10003150c extends past end of file)
+            name    0x8af08 (0x1000fc3b8 extends past end of file)
+            types   0x7303d (0x1000e44f1 extends past end of file)
+            imp     0xfffc0060 (0x100031518 extends past end of file)
+            name    0x898b4 (0x1000fad70 extends past end of file)
+            types   0x72fc9 (0x1000e4489 extends past end of file)
+            imp     0xfffc005c (0x100031520 extends past end of file)
+            name    0x8aea8 (0x1000fc370 extends past end of file)
+            types   0x73513 (0x1000e49df extends past end of file)
+            imp     0xfffc005c (0x10003152c extends past end of file)
+            name    0x898c4 (0x1000fad98 extends past end of file)
+            types   0x72f7f (0x1000e4457 extends past end of file)
+            imp     0xfffc0058 (0x100031534 extends past end of file)
+            name    0x8aeb0 (0x1000fc390 extends past end of file)
+            types   0x7300d (0x1000e44f1 extends past end of file)
+            imp     0xfffc0058 (0x100031540 extends past end of file)
+            name    0x898a4 (0x1000fad90 extends past end of file)
+            types   0x73d84 (0x1000e5274 extends past end of file)
+            imp     0xfffc0054 (0x100031548 extends past end of file)
+            name    0x898f0 (0x1000fade8 extends past end of file)
+            types   0x73d78 (0x1000e5274 extends past end of file)
+            imp     0xfffc0050 (0x100031550 extends past end of file)
+            name    0x89874 (0x1000fad78 extends past end of file)
+            types   0x72f4f (0x1000e4457 extends past end of file)
+            imp     0xfffc004c (0x100031558 extends past end of file)
+            name    0x8ae68 (0x1000fc378 extends past end of file)
+            types   0x72fdd (0x1000e44f1 extends past end of file)
+            imp     0xfffc004c (0x100031564 extends past end of file)
+            name    0x898ec (0x1000fae08 extends past end of file)
+            types   0x735ff (0x1000e4b1f extends past end of file)
+            imp     0xfffc0048 (0x10003156c extends past end of file)
+            name    0x8ae98 (0x1000fc3c0 extends past end of file)
+            types   0x735fb (0x1000e4b27 extends past end of file)
+            imp     0xfffc0044 (0x100031574 extends past end of file)
+            name    0x8982c (0x1000fad60 extends past end of file)
+            types   0x72f1f (0x1000e4457 extends past end of file)
+            imp     0xfffc0040 (0x10003157c extends past end of file)
+            name    0x89810 (0x1000fad50 extends past end of file)
+            types   0x72f13 (0x1000e4457 extends past end of file)
+            imp     0xfffc0040 (0x100031588 extends past end of file)
+            name    0x8ae14 (0x1000fc360 extends past end of file)
+            types   0x72fa1 (0x1000e44f1 extends past end of file)
+            imp     0xfffc0040 (0x100031594 extends past end of file)
+            name    0x897f0 (0x1000fad48 extends past end of file)
+            types   0x73d44 (0x1000e52a0 extends past end of file)
+            imp     0xfffc003c (0x10003159c extends past end of file)
+            name    0x897f4 (0x1000fad58 extends past end of file)
+            types   0x735b7 (0x1000e4b1f extends past end of file)
+            imp     0xfffc0038 (0x1000315a4 extends past end of file)
+            name    0x8adf8 (0x1000fc368 extends past end of file)
+            types   0x735b3 (0x1000e4b27 extends past end of file)
+            imp     0xfffc0034 (0x1000315ac extends past end of file)
+            name    0x89824 (0x1000fada0 extends past end of file)
+            types   0x73d39 (0x1000e52b9 extends past end of file)
+            imp     0xfffc0030 (0x1000315b4 extends past end of file)
+            name    0x89870 (0x1000fadf8 extends past end of file)
+            types   0x73d2d (0x1000e52b9 extends past end of file)
+            imp     0xfffc0058 (0x1000315e8 extends past end of file)
+            name    0x897f4 (0x1000fad88 extends past end of file)
+            types   0x73587 (0x1000e4b1f extends past end of file)
+            imp     0xfffc0080 (0x10003161c extends past end of file)
+            name    0x8ade8 (0x1000fc388 extends past end of file)
+            types   0x73583 (0x1000e4b27 extends past end of file)
+            imp     0xfffc007c (0x100031624 extends past end of file)
+            name    0x8961c (0x1000fabc8 extends past end of file)
+            types   0x72fbe (0x1000e456e extends past end of file)
+            imp     0xfffc0078 (0x10003162c extends past end of file)
+        baseProtocols  0x0
+        ivars          0x1000f3ff0 __OBJC_$_INSTANCE_VARIABLES_MDVxDatabaseItem
+            entsize   32
+            count     29
+            offset    0x1000fd230 _OBJC_IVAR_$_MDVxDatabaseItem.filePackageUID 8
+            name      0x1000e0380 filePackageUID
+            type      0x1000e52c6 (MDVxUUID="UMIDx"[32C]"octet"[8(MDVxOctet="UMIDx"[4C]"UMIDx32t"I)])
+            alignment 2
+            size      32
+            offset    0x1000fd234 _OBJC_IVAR_$_MDVxDatabaseItem.materialPackageUID 40
+            name      0x1000e038f materialPackageUID
+            type      0x1000e52c6 (MDVxUUID="UMIDx"[32C]"octet"[8(MDVxOctet="UMIDx"[4C]"UMIDx32t"I)])
+            alignment 2
+            size      32
+            offset    0x1000fd238 _OBJC_IVAR_$_MDVxDatabaseItem._CompressionFourCC 72
+            name      0x1000e03a2 _CompressionFourCC
+            type      0x1000e530a (MDVxOctet="UMIDx"[4C]"UMIDx32t"I)
+            alignment 2
+            size      4
+            offset    0x1000fd23c _OBJC_IVAR_$_MDVxDatabaseItem._DB_Date_String 80
+            name      0x1000e03b5 _DB_Date_String
+            type      0x1000e49ec @"NSString"
+            alignment 3
+            size      8
+            offset    0x1000fd240 _OBJC_IVAR_$_MDVxDatabaseItem._DB_isValid_initial 88
+            name      0x1000e03c5 _DB_isValid_initial
+            type      0x1000e49ea B
+            alignment 0
+            size      1
+            offset    0x1000fd244 _OBJC_IVAR_$_MDVxDatabaseItem._DB_isValid 89
+            name      0x1000e03d9 _DB_isValid
+            type      0x1000e49ea B
+            alignment 0
+            size      1
+            offset    0x1000fd248 _OBJC_IVAR_$_MDVxDatabaseItem._DB_isAMA 90
+            name      0x1000e03e5 _DB_isAMA
+            type      0x1000e49ea B
+            alignment 0
+            size      1
+            offset    0x1000fd24c _OBJC_IVAR_$_MDVxDatabaseItem._DB_isUME 91
+            name      0x1000e03ef _DB_isUME
+            type      0x1000e49ea B
+            alignment 0
+            size      1
+            offset    0x1000fd250 _OBJC_IVAR_$_MDVxDatabaseItem._DB_isGoodUUID 92
+            name      0x1000e03f9 _DB_isGoodUUID
+            type      0x1000e49ea B
+            alignment 0
+            size      1
+            offset    0x1000fd254 _OBJC_IVAR_$_MDVxDatabaseItem._DB_isPortableFilename 93
+            name      0x1000e0408 _DB_isPortableFilename
+            type      0x1000e49ea B
+            alignment 0
+            size      1
+            offset    0x1000fd258 _OBJC_IVAR_$_MDVxDatabaseItem._DB_isReferenced 94
+            name      0x1000e041f _DB_isReferenced
+            type      0x1000e49ea B
+            alignment 0
+            size      1
+            offset    0x1000fd25c _OBJC_IVAR_$_MDVxDatabaseItem._DB_FileExists 95
+            name      0x1000e0430 _DB_FileExists
+            type      0x1000e49ea B
+            alignment 0
+            size      1
+            offset    0x1000fd260 _OBJC_IVAR_$_MDVxDatabaseItem._DB_SizeofUID 96
+            name      0x1000e043f _DB_SizeofUID
+            type      0x1000e4b32 I
+            alignment 2
+            size      4
+            offset    0x1000fd264 _OBJC_IVAR_$_MDVxDatabaseItem._DB_usageCode 100
+            name      0x1000e044d _DB_usageCode
+            type      0x1000e4b32 I
+            alignment 2
+            size      4
+            offset    0x1000fd268 _OBJC_IVAR_$_MDVxDatabaseItem._DB_DIDResolutionID 104
+            name      0x1000e045b _DB_DIDResolutionID
+            type      0x1000e4b32 I
+            alignment 2
+            size      4
+            offset    0x1000fd26c _OBJC_IVAR_$_MDVxDatabaseItem._DB_bits 108
+            name      0x1000e046f _DB_bits
+            type      0x1000e4b32 I
+            alignment 2
+            size      4
+            offset    0x1000fd270 _OBJC_IVAR_$_MDVxDatabaseItem._DB_pmrField 112
+            name      0x1000e0478 _DB_pmrField
+            type      0x1000e532d @"NSMutableData"
+            alignment 3
+            size      8
+            offset    0x1000fd274 _OBJC_IVAR_$_MDVxDatabaseItem._DB_ClipName 120
+            name      0x1000e0485 _DB_ClipName
+            type      0x1000e49ec @"NSString"
+            alignment 3
+            size      8
+            offset    0x1000fd278 _OBJC_IVAR_$_MDVxDatabaseItem._DB_ProjectName 128
+            name      0x1000e0492 _DB_ProjectName
+            type      0x1000e49ec @"NSString"
+            alignment 3
+            size      8
+            offset    0x1000fd27c _OBJC_IVAR_$_MDVxDatabaseItem._DB_itemPath 136
+            name      0x1000e04a2 _DB_itemPath
+            type      0x1000e533e @"NSURL"
+            alignment 3
+            size      8
+            offset    0x1000fd280 _OBJC_IVAR_$_MDVxDatabaseItem._DB_filesize 144
+            name      0x1000e04af _DB_filesize
+            type      0x1000e4b13 @"NSNumber"
+            alignment 3
+            size      8
+            offset    0x1000fd284 _OBJC_IVAR_$_MDVxDatabaseItem._DB_filePackageUID 152
+            name      0x1000e04bc _DB_filePackageUID
+            type      0x1000e5347 ^(MDVxUUID=[32C][8(MDVxOctet=[4C]I)])
+            alignment 3
+            size      8
+            offset    0x1000fd288 _OBJC_IVAR_$_MDVxDatabaseItem._DB_materialPackageUID 160
+            name      0x1000e04cf _DB_materialPackageUID
+            type      0x1000e5347 ^(MDVxUUID=[32C][8(MDVxOctet=[4C]I)])
+            alignment 3
+            size      8
+            offset    0x1000fd28c _OBJC_IVAR_$_MDVxDatabaseItem._DB_NameInBin 168
+            name      0x1000e04e6 _DB_NameInBin
+            type      0x1000e49ec @"NSString"
+            alignment 3
+            size      8
+            offset    0x1000fd290 _OBJC_IVAR_$_MDVxDatabaseItem._DB_Date 176
+            name      0x1000e04f4 _DB_Date
+            type      0x1000e536d @"NSDate"
+            alignment 3
+            size      8
+            offset    0x1000fd294 _OBJC_IVAR_$_MDVxDatabaseItem._DB_CompressionString 184
+            name      0x1000e04fd _DB_CompressionString
+            type      0x1000e49ec @"NSString"
+            alignment 3
+            size      8
+            offset    0x1000fd298 _OBJC_IVAR_$_MDVxDatabaseItem._DB_CompressionFourCC 192
+            name      0x1000e0513 _DB_CompressionFourCC
+            type      0x1000e5377 ^(MDVxOctet=[4C]I)
+            alignment 3
+            size      8
+            offset    0x1000fd29c _OBJC_IVAR_$_MDVxDatabaseItem._DB_framerate 200
+            name      0x1000e0529 _DB_framerate
+            type      0x1000e538a {?="numerator"I"denominator"I}
+            alignment 2
+            size      8
+            offset    0x1000fd2a0 _OBJC_IVAR_$_MDVxDatabaseItem._DB_samplerate 208
+            name      0x1000e0537 _DB_samplerate
+            type      0x1000e538a {?="numerator"I"denominator"I}
+            alignment 2
+            size      8
+        weakIvarLayout 0x0
+        baseProperties 0x1000f4398 __OBJC_$_PROP_LIST_MDVxDatabaseItem
+            entsize    16
+            count      26
+            name       0x1000e0144 DB_isValid_initial
+            attributes 0x1000e0546 TB,V_DB_isValid_initial
+            name       0x1000e016e DB_isValid
+            attributes 0x1000e055e TB,V_DB_isValid
+            name       0x1000e0188 DB_isAMA
+            attributes 0x1000e056e TB,V_DB_isAMA
+            name       0x1000e019e DB_isUME
+            attributes 0x1000e057c TB,V_DB_isUME
+            name       0x1000e01b4 DB_isGoodUUID
+            attributes 0x1000e058a TB,R,V_DB_isGoodUUID
+            name       0x1000e01c2 DB_isPortableFilename
+            attributes 0x1000e059f TB,R,V_DB_isPortableFilename
+            name       0x1000e01d8 DB_isReferenced
+            attributes 0x1000e05bc TB,R,V_DB_isReferenced
+            name       0x1000e01e8 DB_SizeofUID
+            attributes 0x1000e05d3 TI,R,V_DB_SizeofUID
+            name       0x1000e01f5 DB_pmrField
+            attributes 0x1000e05e7 T@"NSMutableData",R,V_DB_pmrField
+            name       0x1000e0201 DB_ClipName
+            attributes 0x1000e0609 T@"NSString",R,V_DB_ClipName
+            name       0x1000e0626 DB_ProjectName
+            attributes 0x1000e0635 T@"NSString",&,N,Gget_DB_ProjectName,V_DB_ProjectName
+            name       0x1000e0220 DB_itemPath
+            attributes 0x1000e066b T@"NSURL",&,V_DB_itemPath
+            name       0x1000e023c DB_FileExists
+            attributes 0x1000e0685 TB,V_DB_FileExists
+            name       0x1000e025c DB_filesize
+            attributes 0x1000e0698 T@"NSNumber",&,V_DB_filesize
+            name       0x1000e0278 DB_filePackageUID
+            attributes 0x1000e06b5 T^(MDVxUUID=[32C][8(MDVxOctet=[4C]I)]),R,V_DB_filePackageUID
+            name       0x1000e028a DB_materialPackageUID
+            attributes 0x1000e06f2 T^(MDVxUUID=[32C][8(MDVxOctet=[4C]I)]),R,V_DB_materialPackageUID
+            name       0x1000e02a0 DB_NameInBin
+            attributes 0x1000e0733 T@"NSString",&,V_DB_NameInBin
+            name       0x1000e02be DB_usageCode
+            attributes 0x1000e0751 TI,V_DB_usageCode
+            name       0x1000e02dc DB_Date
+            attributes 0x1000e0763 T@"NSDate",R,V_DB_Date
+            name       0x1000e0011 DB_Date_String
+            attributes 0x1000e077a T@"NSString",R,GDB_Date_String
+            name       0x1000e02e4 DB_CompressionString
+            attributes 0x1000e0799 T@"NSString",&,V_DB_CompressionString
+            name       0x1000e0312 DB_CompressionFourCC
+            attributes 0x1000e07bf T^(MDVxOctet=[4C]I),R,GDB_CompressionFourCC,V_DB_CompressionFourCC
+            name       0x1000e0327 DB_DIDResolutionID
+            attributes 0x1000e0802 TI,V_DB_DIDResolutionID
+            name       0x1000e0351 DB_framerate
+            attributes 0x1000e081a T{?=II},R,V_DB_framerate
+            name       0x1000e035e DB_samplerate
+            attributes 0x1000e0833 T{?=II},R,V_DB_samplerate
+            name       0x1000e036c DB_bits
+            attributes 0x1000e084d TI,V_DB_bits
+
+        name           0x1000e440c MDVxOMFI
+        baseMethods    0x1000728e0 __OBJC_$_INSTANCE_METHODS_MDVxOMFI
+            entsize 12 (relative)
+            count   37
+            name    0x891e0 (0x1000fbac8 extends past end of file)
+            types   0x71b6b (0x1000e4457 extends past end of file)
+            imp     0xfffef104 (0x1000619f4 extends past end of file)
+            name    0x88e1c (0x1000fb710 extends past end of file)
+            types   0x71c76 (0x1000e456e extends past end of file)
+            imp     0xfffef274 (0x100061b70 extends past end of file)
+            name    0x89120 (0x1000fba20 extends past end of file)
+            types   0x71bac (0x1000e44b0 extends past end of file)
+            imp     0xfffef300 (0x100061c08 extends past end of file)
+            name    0x895f4 (0x1000fbf00 extends past end of file)
+            types   0x72224 (0x1000e4b34 extends past end of file)
+            imp     0xfffef2fc (0x100061c10 extends past end of file)
+            name    0x88680 (0x1000faf98 extends past end of file)
+            types   0x71c52 (0x1000e456e extends past end of file)
+            imp     0xfffef528 (0x100061e48 extends past end of file)
+            name    0x89634 (0x1000fbf58 extends past end of file)
+            types   0x74173 (0x1000e6a9b extends past end of file)
+            imp     0xfffef580 (0x100061eac extends past end of file)
+            name    0x89150 (0x1000fba80 extends past end of file)
+            types   0x71b7c (0x1000e44b0 extends past end of file)
+            imp     0xfffef62c (0x100061f64 extends past end of file)
+            name    0x8908c (0x1000fb9c8 extends past end of file)
+            types   0x71b70 (0x1000e44b0 extends past end of file)
+            imp     0xfffef674 (0x100061fb8 extends past end of file)
+            name    0x88648 (0x1000faf90 extends past end of file)
+            types   0x71c22 (0x1000e456e extends past end of file)
+            imp     0xfffef670 (0x100061fc0 extends past end of file)
+            name    0x8859c (0x1000faef0 extends past end of file)
+            types   0x71c16 (0x1000e456e extends past end of file)
+            imp     0xfffefc88 (0x1000625e4 extends past end of file)
+            name    0x88d68 (0x1000fb6c8 extends past end of file)
+            types   0x74144 (0x1000e6aa8 extends past end of file)
+            imp     0xffff01c4 (0x100062b2c extends past end of file)
+            name    0x894dc (0x1000fbe48 extends past end of file)
+            types   0x7210d (0x1000e4a7d extends past end of file)
+            imp     0xffff0304 (0x100062c78 extends past end of file)
+            name    0x894d8 (0x1000fbe50 extends past end of file)
+            types   0x74140 (0x1000e6abc extends past end of file)
+            imp     0xffff03f0 (0x100062d70 extends past end of file)
+            name    0x88c44 (0x1000fb5c8 extends past end of file)
+            types   0x72a35 (0x1000e53bd extends past end of file)
+            imp     0xffff04bc (0x100062e48 extends past end of file)
+            name    0x88c40 (0x1000fb5d0 extends past end of file)
+            types   0x74133 (0x1000e6ac7 extends past end of file)
+            imp     0xffff0624 (0x100062fbc extends past end of file)
+            name    0x892d4 (0x1000fbc70 extends past end of file)
+            types   0x71aa4 (0x1000e4444 extends past end of file)
+            imp     0xffff0780 (0x100063124 extends past end of file)
+            name    0x89318 (0x1000fbcc0 extends past end of file)
+            types   0x74129 (0x1000e6ad5 extends past end of file)
+            imp     0xffff077c (0x10006312c extends past end of file)
+            name    0x8882c (0x1000fb1e0 extends past end of file)
+            types   0x71b44 (0x1000e44fc extends past end of file)
+            imp     0xffff07f8 (0x1000631b4 extends past end of file)
+            name    0x88828 (0x1000fb1e8 extends past end of file)
+            types   0x73aff (0x1000e64c3 extends past end of file)
+            imp     0xffff07f4 (0x1000631bc extends past end of file)
+            name    0x89044 (0x1000fba10 extends past end of file)
+            types   0x73af3 (0x1000e64c3 extends past end of file)
+            imp     0xffff0cb8 (0x10006368c extends past end of file)
+            name    0x884d0 (0x1000faea8 extends past end of file)
+            types   0x73ae7 (0x1000e64c3 extends past end of file)
+            imp     0xffff0dd0 (0x1000637b0 extends past end of file)
+            name    0x884e4 (0x1000faec8 extends past end of file)
+            types   0x73adb (0x1000e64c3 extends past end of file)
+            imp     0xffff106c (0x100063a58 extends past end of file)
+            name    0x89388 (0x1000fbd78 extends past end of file)
+            types   0x740ec (0x1000e6ae0 extends past end of file)
+            imp     0xffff11b8 (0x100063bb0 extends past end of file)
+            name    0x88fdc (0x1000fb9d8 extends past end of file)
+            types   0x71afc (0x1000e44fc extends past end of file)
+            imp     0xffff11ec (0x100063bf0 extends past end of file)
+            name    0x88f90 (0x1000fb998 extends past end of file)
+            types   0x71af0 (0x1000e44fc extends past end of file)
+            imp     0xffff13f0 (0x100063e00 extends past end of file)
+            name    0x88f74 (0x1000fb988 extends past end of file)
+            types   0x73aab (0x1000e64c3 extends past end of file)
+            imp     0xffff14e0 (0x100063efc extends past end of file)
+            name    0x89048 (0x1000fba68 extends past end of file)
+            types   0x73a9f (0x1000e64c3 extends past end of file)
+            imp     0xffff1bc0 (0x1000645e8 extends past end of file)
+            name    0x89034 (0x1000fba60 extends past end of file)
+            types   0x727a5 (0x1000e51d5 extends past end of file)
+            imp     0xffff1c44 (0x100064678 extends past end of file)
+            name    0x88940 (0x1000fb378 extends past end of file)
+            types   0x71ab5 (0x1000e44f1 extends past end of file)
+            imp     0xffff1d54 (0x100064794 extends past end of file)
+            name    0x88f3c (0x1000fb980 extends past end of file)
+            types   0x740a6 (0x1000e6aee extends past end of file)
+            imp     0xffff2114 (0x100064b60 extends past end of file)
+            name    0x88fa0 (0x1000fb9f0 extends past end of file)
+            types   0x740c5 (0x1000e6b19 extends past end of file)
+            imp     0xffff236c (0x100064dc4 extends past end of file)
+            name    0x88f8c (0x1000fb9e8 extends past end of file)
+            types   0x740b9 (0x1000e6b19 extends past end of file)
+            imp     0xffff2778 (0x1000651dc extends past end of file)
+            name    0x884e8 (0x1000faf50 extends past end of file)
+            types   0x71a1d (0x1000e4489 extends past end of file)
+            imp     0xffff28d4 (0x100065344 extends past end of file)
+            name    0x89bd4 (0x1000fc648 extends past end of file)
+            types   0x71f67 (0x1000e49df extends past end of file)
+            imp     0xffff28d4 (0x100065350 extends past end of file)
+            name    0x892d8 (0x1000fbd58 extends past end of file)
+            types   0x719d3 (0x1000e4457 extends past end of file)
+            imp     0xffff28d0 (0x100065358 extends past end of file)
+            name    0x89b54 (0x1000fc5e0 extends past end of file)
+            types   0x71a61 (0x1000e44f1 extends past end of file)
+            imp     0xffff28d0 (0x100065364 extends past end of file)
+            name    0x88130 (0x1000fabc8 extends past end of file)
+            types   0x71ad2 (0x1000e456e extends past end of file)
+            imp     0xffff28cc (0x10006536c extends past end of file)
+        baseProtocols  0x1000fa690 __OBJC_CLASS_PROTOCOLS_$_MDVxOMFI
+            count    1
+            list[0]  0x1000fe790 __OBJC_PROTOCOL_$_MDVxMediafileDataSource
+                isa       0x0
+                name      0x1000e41fa MDVxMediafileDataSource
+                protocols 0x1000f4a18 __OBJC_$_PROTOCOL_REFS_MDVxMediafileDataSource
+                    count    1
+                    list[0]  0x1000fe488 __OBJC_PROTOCOL_$_NSObject
+                        isa       0x0
+                        name      0x1000e3fd8 NSObject
+                        protocols 0x0
+                        instanceMethods 0x1000f0350 __OBJC_$_PROTOCOL_INSTANCE_METHODS_NSObject
+                            entsize 24
+                            count   19
+                            name    0x1000dd917 isEqual:
+                            types   0x1000e4444 B24@0:8@16
+                            imp     0x0
+                            name    0x1000dd920 class
+                            types   0x1000e444f #16@0:8
+                            imp     0x0
+                            name    0x1000dd926 self
+                            types   0x1000e4457 @16@0:8
+                            imp     0x0
+                            name    0x1000dd92b performSelector:
+                            types   0x1000e445f @24@0:8:16
+                            imp     0x0
+                            name    0x1000dd93c performSelector:withObject:
+                            types   0x1000e446a @32@0:8:16@24
+                            imp     0x0
+                            name    0x1000dd958 performSelector:withObject:withObject:
+                            types   0x1000e4478 @40@0:8:16@24@32
+                            imp     0x0
+                            name    0x1000dd97f isProxy
+                            types   0x1000e4489 B16@0:8
+                            imp     0x0
+                            name    0x1000dd987 isKindOfClass:
+                            types   0x1000e4491 B24@0:8#16
+                            imp     0x0
+                            name    0x1000dd996 isMemberOfClass:
+                            types   0x1000e4491 B24@0:8#16
+                            imp     0x0
+                            name    0x1000dd9a7 conformsToProtocol:
+                            types   0x1000e4444 B24@0:8@16
+                            imp     0x0
+                            name    0x1000dd9bb respondsToSelector:
+                            types   0x1000e449c B24@0:8:16
+                            imp     0x0
+                            name    0x1000dd9cf retain
+                            types   0x1000e4457 @16@0:8
+                            imp     0x0
+                            name    0x1000dd9d6 release
+                            types   0x1000e44a7 Vv16@0:8
+                            imp     0x0
+                            name    0x1000dd9de autorelease
+                            types   0x1000e4457 @16@0:8
+                            imp     0x0
+                            name    0x1000dd9ea retainCount
+                            types   0x1000e44b0 Q16@0:8
+                            imp     0x0
+                            name    0x1000dd9f6 zone
+                            types   0x1000e44b8 ^{_NSZone=}16@0:8
+                            imp     0x0
+                            name    0x1000dd9fb hash
+                            types   0x1000e44b0 Q16@0:8
+                            imp     0x0
+                            name    0x1000dda00 superclass
+                            types   0x1000e444f #16@0:8
+                            imp     0x0
+                            name    0x1000dda0b description
+                            types   0x1000e4457 @16@0:8
+                            imp     0x0
+                        classMethods 0x0
+                        optionalInstanceMethods 0x1000f0520 __OBJC_$_PROTOCOL_INSTANCE_METHODS_OPT_NSObject
+                            entsize 24
+                            count   1
+                            name    0x1000dda17 debugDescription
+                            types   0x1000e4457 @16@0:8
+                            imp     0x0
+                        optionalClassMethods 0x0
+                        instanceProperties 0x1000f0540 __OBJC_$_PROP_LIST_NSObject
+                            entsize    16
+                            count      4
+                            name       0x1000dd9fb hash
+                            attributes 0x1000dda28 TQ,R
+                            name       0x1000dda00 superclass
+                            attributes 0x1000dda2d T#,R
+                            name       0x1000dda0b description
+                            attributes 0x1000dda32 T@"NSString",R,C
+                            name       0x1000dda17 debugDescription
+                            attributes 0x1000dda32 T@"NSString",R,C
+                instanceMethods 0x1000f4a30 __OBJC_$_PROTOCOL_INSTANCE_METHODS_MDVxMediafileDataSource
+                    entsize 24
+                    count   2
+                    name    0x1000e08ec openFile:withIndicator:
+                    types   0x1000e4b34 B32@0:8@16@24
+                    imp     0x0
+                    name    0x1000e0904 getType
+                    types   0x1000e44b0 Q16@0:8
+                    imp     0x0
+                classMethods 0x0
+                optionalInstanceMethods 0x1000f4a68 __OBJC_$_PROTOCOL_INSTANCE_METHODS_OPT_MDVxMediafileDataSource
+                    entsize 24
+                    count   7
+                    name    0x1000e090c getMDBCompositionsCount
+                    types   0x1000e44b0 Q16@0:8
+                    imp     0x0
+                    name    0x1000e0924 addInfoToItem:
+                    types   0x1000e44f1 v24@0:8@16
+                    imp     0x0
+                    name    0x1000e0933 numberOfChildrenOfItem:
+                    types   0x1000e4a7d Q24@0:8@16
+                    imp     0x0
+                    name    0x1000e094b child:ofItem:
+                    types   0x1000e53bd @32@0:8q16@24
+                    imp     0x0
+                    name    0x1000e0959 isItemExpandable:
+                    types   0x1000e4444 B24@0:8@16
+                    imp     0x0
+                    name    0x1000e096b StringForItem:
+                    types   0x1000e44fc @24@0:8@16
+                    imp     0x0
+                    name    0x1000e097a getNSViewWithContentsFor:
+                    types   0x1000e44fc @24@0:8@16
+                    imp     0x0
+                optionalClassMethods 0x0
+                instanceProperties 0x0
+        ivars          0x1000fa6f0 __OBJC_$_INSTANCE_VARIABLES_MDVxOMFI
+            entsize   32
+            count     16
+            offset    0x1000fd498 _OBJC_IVAR_$_MDVxOMFI._filedata 8
+            name      0x1000e3daa _filedata
+            type      0x1000e6134 @"NSData"
+            alignment 3
+            size      8
+            offset    0x1000fd49c _OBJC_IVAR_$_MDVxOMFI._filedatabytes 16
+            name      0x1000e3db4 _filedatabytes
+            type      0x1000e6b24 r^v
+            alignment 3
+            size      8
+            offset    0x1000fd4a0 _OBJC_IVAR_$_MDVxOMFI._toc 24
+            name      0x1000e3dc3 _toc
+            type      0x1000e6b28 r^{TOC=[0{?=IIIIII}]}
+            alignment 3
+            size      8
+            offset    0x1000fd4a4 _OBJC_IVAR_$_MDVxOMFI._bentoheader 32
+            name      0x1000e3dc8 _bentoheader
+            type      0x1000e6b3e r^{?=[8C]b16SSSII}
+            alignment 3
+            size      8
+            offset    0x1000fd4a8 _OBJC_IVAR_$_MDVxOMFI._isII 40
+            name      0x1000e3dd5 _isII
+            type      0x1000e49ea B
+            alignment 0
+            size      1
+            offset    0x1000fd4ac _OBJC_IVAR_$_MDVxOMFI.TOCItemsCount 48
+            name      0x1000e3ddb TOCItemsCount
+            type      0x1000e4a18 Q
+            alignment 3
+            size      8
+            offset    0x1000fd4b0 _OBJC_IVAR_$_MDVxOMFI.BentoObjectsCount 56
+            name      0x1000e3de9 BentoObjectsCount
+            type      0x1000e4a18 Q
+            alignment 3
+            size      8
+            offset    0x1000fd4b4 _OBJC_IVAR_$_MDVxOMFI.CompositionsCount 64
+            name      0x1000e3dfb CompositionsCount
+            type      0x1000e4a18 Q
+            alignment 3
+            size      8
+            offset    0x1000fd4b8 _OBJC_IVAR_$_MDVxOMFI.OMFIDictionary 72
+            name      0x1000e3e0d OMFIDictionary
+            type      0x1000e4ae4 @"NSMutableDictionary"
+            alignment 3
+            size      8
+            offset    0x1000fd4bc _OBJC_IVAR_$_MDVxOMFI.CompositionMobsTree 80
+            name      0x1000e3e1c CompositionMobsTree
+            type      0x1000e6b51 @"MDVxRBTree"
+            alignment 3
+            size      8
+            offset    0x1000fd4c0 _OBJC_IVAR_$_MDVxOMFI.SourceMobsTree 88
+            name      0x1000e3e30 SourceMobsTree
+            type      0x1000e6b51 @"MDVxRBTree"
+            alignment 3
+            size      8
+            offset    0x1000fd4c4 _OBJC_IVAR_$_MDVxOMFI.MediaDataMobsTree 96
+            name      0x1000e3e3f MediaDataMobsTree
+            type      0x1000e6b51 @"MDVxRBTree"
+            alignment 3
+            size      8
+            offset    0x1000fd4c8 _OBJC_IVAR_$_MDVxOMFI.ViewItemsTree 104
+            name      0x1000e3e51 ViewItemsTree
+            type      0x1000e6b51 @"MDVxRBTree"
+            alignment 3
+            size      8
+            offset    0x1000fd4cc _OBJC_IVAR_$_MDVxOMFI.BentoObjectsTree 112
+            name      0x1000e3e5f BentoObjectsTree
+            type      0x1000e6b5f @"MDVxRBTree_u32t_u32t"
+            alignment 3
+            size      8
+            offset    0x1000fd4d0 _OBJC_IVAR_$_MDVxOMFI._MustReadDictionary 120
+            name      0x1000e3e70 _MustReadDictionary
+            type      0x1000e49ea B
+            alignment 0
+            size      1
+            offset    0x1000fd4d4 _OBJC_IVAR_$_MDVxOMFI._localWorkInProgressIndicator 128
+            name      0x1000e15f1 _localWorkInProgressIndicator
+            type      0x1000e4998 @"NSProgressIndicator"
+            alignment 3
+            size      8
+        weakIvarLayout 0x0
+        baseProperties 0x1000fa8f8 __OBJC_$_PROP_LIST_MDVxOMFI
+            entsize    16
+            count      6
+            name       0x1000e15aa localWorkInProgressIndicator
+            attributes 0x1000e160f T@"NSProgressIndicator",&,V_localWorkInProgressIndicator
+            name       0x1000e3d80 MustReadDictionary
+            attributes 0x1000e3e84 TB,V_MustReadDictionary
+            name       0x1000dd9fb hash
+            attributes 0x1000dda28 TQ,R
+            name       0x1000dda00 superclass
+            attributes 0x1000dda2d T#,R
+            name       0x1000dda0b description
+            attributes 0x1000dda32 T@"NSString",R,C
+            name       0x1000dda17 debugDescription
+            attributes 0x1000dda32 T@"NSString",R,C
+
+        name           0x1000e43fe UIDtoBentoObj
+        baseMethods    0x100072aa8 __OBJC_$_INSTANCE_METHODS_UIDtoBentoObj
+            entsize 12 (relative)
+            count   4
+            name    0x89100 (0x1000fbbb0 extends past end of file)
+            types   0x73f87 (0x1000e6a3b extends past end of file)
+            imp     0xfffeeb84 (0x10006163c extends past end of file)
+            name    0x89e7c (0x1000fc938 extends past end of file)
+            types   0x71aae (0x1000e456e extends past end of file)
+            imp     0xfffeebc4 (0x100061688 extends past end of file)
+            name    0x89e68 (0x1000fc930 extends past end of file)
+            types   0x73f84 (0x1000e6a50 extends past end of file)
+            imp     0xfffeebc4 (0x100061694 extends past end of file)
+            name    0x891bc (0x1000fbc90 extends past end of file)
+            types   0x7196c (0x1000e4444 extends past end of file)
+            imp     0xfffeebcc (0x1000616a8 extends past end of file)
+        baseProtocols  0x0
+        ivars          0x1000fa200 __OBJC_$_INSTANCE_VARIABLES_UIDtoBentoObj
+            entsize   32
+            count     1
+            offset    0x1000fd494 _OBJC_IVAR_$_UIDtoBentoObj.data 8
+            name      0x1000e3bb4 data
+            type      0x1000e6a6a {?="OM_UID64"{?="UIDHi"b32"UIDLo"b32}"BentoID"I}
+            alignment 2
+            size      12
+        weakIvarLayout 0x0
+        baseProperties 0x0

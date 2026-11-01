@@ -1,0 +1,298 @@
+    r3 = arg3;
+    r2 = arg2;
+    r0 = self;
+    var_30 = r24;
+    decomp_var_28 = r23;
+    r31 = r31 + 0xffffffffffffffc0;
+    var_20 = r22;
+    decomp_var_18 = r21;
+    var_10 = r20;
+    decomp_var_8 = r19;
+    saved_fp = r29;
+    decomp_var_m8 = r30;
+    if (r2 != 0x0) {
+            if (r3 != -0x1) {
+                    r19 = r2;
+                    r20 = r0;
+                    *r2 = 0x0;
+                    r2[0x1] = 0x0;
+                    r2[0x4] = 0x0;
+                    r0 = [r0 lookForProperty:0x10333 At:r3];
+                    if (r0 != 0x0) {
+                            r0 = [r20 pDataFor:r0];
+                            if (r0 != 0x0) {
+                                    r0 = [r20[0xe] TreefindNode:*(int32_t *)r0];
+                                    if (r0 != -0x1) {
+                                            r21 = r0;
+                                            r0 = [r20 lookForProperty:0x1074d At:r21];
+                                            r22 = r0;
+                                            if (r0 != 0x0) {
+                                                    *(int32_t *)r19 = 0x4455415f;
+                                                    r0 = [r20 pDataFor:r22];
+                                                    if (r0 != 0x0) {
+                                                            r8 = r20[0x3];
+                                                            asm { umaddl     x8, w22, w9, x8 };
+                                                            if (r8[0x4] >= 0x8) {
+                                                                    r9 = r20[0x28];
+                                                                    r8 = *(int32_t *)r0;
+                                                                    if (r9 != 0x0) {
+                                                                            r9 = r0[0x1];
+                                                                    }
+                                                                    else {
+                                                                            asm { rev        w8, w8 };
+                                                                            r9 = r0[0x1];
+                                                                            asm { rev        w9, w9 };
+                                                                    }
+                                                                    *(r19 + 0x4) = r8;
+                                                                    r19[0x1] = r9;
+                                                            }
+                                                    }
+                                                    r0 = [r20 lookForProperty:0x10749 At:r21];
+                                                    if (r0 != 0x0) {
+                                                            r0 = [r20 pDataFor:r0];
+                                                            if (r0 != 0x0) {
+                                                                    r8 = r20[0x28];
+                                                                    r9 = *(int32_t *)r0;
+                                                                    asm { rev        w10, w9 };
+                                                                    if (r8 != 0x0) {
+                                                                            r8 = r9;
+                                                                    }
+                                                                    else {
+                                                                            r8 = r10;
+                                                                    }
+                                                                    r19[0x4] = r8;
+                                                            }
+                                                            r0 = 0x1;
+                                                    }
+                                                    else {
+                                                            r0 = 0x1;
+                                                    }
+                                            }
+                                            else {
+                                                    if ([r20 lookForProperty:0x1022f At:r21] != 0x0) {
+                                                            r0 = [r20 lookForProperty:0x1031a At:r21];
+                                                            r22 = r0;
+                                                            if (r0 == 0x0) {
+                                                                    r24 = 0x1031a;
+                                                                    r0 = [r20 lookForProperty:0x108d9 At:r21];
+                                                                    if (r0 != 0x0) {
+                                                                            r0 = [r20 pDataFor:r0];
+                                                                            if (r0 != 0x0) {
+                                                                                    *(int32_t *)r19 = *(int32_t *)r0;
+                                                                            }
+                                                                            r0 = [r20 lookForProperty:r24 + 0x5dd At:r21];
+                                                                            if (r0 != 0x0) {
+                                                                                    r0 = [r20 pDataFor:r0];
+                                                                                    r8 = r20[0x28];
+                                                                                    r9 = *(int32_t *)r0;
+                                                                                    asm { rev        w10, w9 };
+                                                                                    if (r8 != 0x0) {
+                                                                                            r8 = r9;
+                                                                                    }
+                                                                                    else {
+                                                                                            r8 = r10;
+                                                                                    }
+                                                                                    r19[0x3] = r8;
+                                                                            }
+                                                                            r0 = [r20 lookForProperty:0x108ed At:r21];
+                                                                            if (r0 != 0x0) {
+                                                                                    r22 = r0;
+                                                                                    r23 = [r20 pDataFor:r22];
+                                                                                    if ([r20 lookForProperty:0x1031a At:r21] != 0x0) {
+                                                                                            if ([r20 pDataFor:r22] != 0x0) {
+                                                                                                    if (r23 != 0x0) {
+                                                                                                            r8 = r20[0x28];
+                                                                                                            r9 = *(int32_t *)r23;
+                                                                                                            asm { rev        w10, w9 };
+                                                                                                            if (r8 != 0x0) {
+                                                                                                                    r8 = r9;
+                                                                                                            }
+                                                                                                            else {
+                                                                                                                    r8 = r10;
+                                                                                                            }
+                                                                                                            *(r19 + 0x4) = r8;
+                                                                                                            r19[0x1] = 0x1;
+                                                                                                            r0 = [r20 lookForProperty:0x10919 At:r21];
+                                                                                                            if (r0 == 0x0) {
+                                                                                                                    r0 = 0x1;
+                                                                                                            }
+                                                                                                            else {
+                                                                                                                    r0 = [r20 pDataFor:r0];
+                                                                                                                    if (r0 != 0x0) {
+                                                                                                                            r8 = r20[0x28];
+                                                                                                                            r9 = *(int32_t *)r0;
+                                                                                                                            asm { rev        w10, w9 };
+                                                                                                                            if (r8 != 0x0) {
+                                                                                                                                    r8 = r9;
+                                                                                                                            }
+                                                                                                                            else {
+                                                                                                                                    r8 = r10;
+                                                                                                                            }
+                                                                                                                            r19[0x4] = r8;
+                                                                                                                    }
+                                                                                                                    r0 = 0x1;
+                                                                                                            }
+                                                                                                    }
+                                                                                                    else {
+                                                                                                            r0 = 0x1;
+                                                                                                    }
+                                                                                            }
+                                                                                            else {
+                                                                                                    r0 = 0x1;
+                                                                                            }
+                                                                                    }
+                                                                                    else {
+                                                                                            r0 = 0x1;
+                                                                                    }
+                                                                            }
+                                                                            else {
+                                                                                    r0 = 0x1;
+                                                                            }
+                                                                    }
+                                                                    else {
+                                                                            r0 = 0x0;
+                                                                    }
+                                                            }
+                                                            else {
+                                                                    *(int32_t *)r19 = 0x4455415f;
+                                                                    r0 = [r20 pDataFor:r22];
+                                                                    if (r0 != 0x0) {
+                                                                            r8 = r20[0x3];
+                                                                            asm { umaddl     x8, w22, w9, x8 };
+                                                                            if (r8[0x4] >= 0x8) {
+                                                                                    r9 = r20[0x28];
+                                                                                    r8 = *(int32_t *)r0;
+                                                                                    if (r9 != 0x0) {
+                                                                                            r9 = r0[0x1];
+                                                                                    }
+                                                                                    else {
+                                                                                            asm { rev        w8, w8 };
+                                                                                            r9 = r0[0x1];
+                                                                                            asm { rev        w9, w9 };
+                                                                                    }
+                                                                                    *(r19 + 0x4) = r8;
+                                                                                    r19[0x1] = r9;
+                                                                            }
+                                                                    }
+                                                                    r0 = [r20 lookForProperty:0x10749 At:r21];
+                                                                    if (r0 != 0x0) {
+                                                                            r0 = [r20 pDataFor:r0];
+                                                                            if (r0 != 0x0) {
+                                                                                    r8 = r20[0x28];
+                                                                                    r9 = *(int32_t *)r0;
+                                                                                    asm { rev        w10, w9 };
+                                                                                    if (r8 != 0x0) {
+                                                                                            r8 = r9;
+                                                                                    }
+                                                                                    else {
+                                                                                            r8 = r10;
+                                                                                    }
+                                                                                    r19[0x4] = r8;
+                                                                            }
+                                                                    }
+                                                                    r0 = 0x1;
+                                                            }
+                                                    }
+                                                    else {
+                                                            r0 = [r20 lookForProperty:0x108d9 At:r21];
+                                                            if (r0 != 0x0) {
+                                                                    r0 = [r20 pDataFor:r0];
+                                                                    if (r0 != 0x0) {
+                                                                            *(int32_t *)r19 = *(int32_t *)r0;
+                                                                    }
+                                                                    r0 = [r20 lookForProperty:0x108f7 At:r21];
+                                                                    if (r0 != 0x0) {
+                                                                            r0 = [r20 pDataFor:r0];
+                                                                            r8 = r20[0x28];
+                                                                            r9 = *(int32_t *)r0;
+                                                                            asm { rev        w10, w9 };
+                                                                            if (r8 != 0x0) {
+                                                                                    r8 = r9;
+                                                                            }
+                                                                            else {
+                                                                                    r8 = r10;
+                                                                            }
+                                                                            r19[0x3] = r8;
+                                                                    }
+                                                                    r24 = 0x1031a;
+                                                                    r0 = [r20 lookForProperty:0x108ed At:r21];
+                                                                    if (r0 != 0x0) {
+                                                                            r22 = r0;
+                                                                            r23 = [r20 pDataFor:r22];
+                                                                            if ([r20 lookForProperty:0x1031a At:r21] != 0x0) {
+                                                                                    if ([r20 pDataFor:r22] != 0x0) {
+                                                                                            if (r23 != 0x0) {
+                                                                                                    r8 = r20[0x28];
+                                                                                                    r9 = *(int32_t *)r23;
+                                                                                                    asm { rev        w10, w9 };
+                                                                                                    if (r8 != 0x0) {
+                                                                                                            r8 = r9;
+                                                                                                    }
+                                                                                                    else {
+                                                                                                            r8 = r10;
+                                                                                                    }
+                                                                                                    *(r19 + 0x4) = r8;
+                                                                                                    r19[0x1] = 0x1;
+                                                                                                    r0 = [r20 lookForProperty:r24 + 0x5ff At:r21];
+                                                                                                    if (r0 == 0x0) {
+                                                                                                            r0 = 0x1;
+                                                                                                    }
+                                                                                                    else {
+                                                                                                            r0 = [r20 pDataFor:r0];
+                                                                                                            if (r0 != 0x0) {
+                                                                                                                    r8 = r20[0x28];
+                                                                                                                    r9 = *(int32_t *)r0;
+                                                                                                                    asm { rev        w10, w9 };
+                                                                                                                    if (r8 != 0x0) {
+                                                                                                                            r8 = r9;
+                                                                                                                    }
+                                                                                                                    else {
+                                                                                                                            r8 = r10;
+                                                                                                                    }
+                                                                                                                    r19[0x4] = r8;
+                                                                                                            }
+                                                                                                            r0 = 0x1;
+                                                                                                    }
+                                                                                            }
+                                                                                            else {
+                                                                                                    r0 = 0x1;
+                                                                                            }
+                                                                                    }
+                                                                                    else {
+                                                                                            r0 = 0x1;
+                                                                                    }
+                                                                            }
+                                                                            else {
+                                                                                    r0 = 0x1;
+                                                                            }
+                                                                    }
+                                                                    else {
+                                                                            r0 = 0x1;
+                                                                    }
+                                                            }
+                                                            else {
+                                                                    r0 = 0x0;
+                                                            }
+                                                    }
+                                            }
+                                    }
+                                    else {
+                                            r0 = 0x0;
+                                    }
+                            }
+                            else {
+                                    r0 = 0x0;
+                            }
+                    }
+                    else {
+                            r0 = 0x0;
+                    }
+            }
+            else {
+                    r0 = 0x0;
+            }
+    }
+    else {
+            r0 = 0x0;
+    }
+    return r0;

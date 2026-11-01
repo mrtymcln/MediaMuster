@@ -1,0 +1,1977 @@
+{
+  "specimenDifferenceCount": 137,
+  "reasonCounts": {
+    "Bella approved owner/key selection chooses one retained OldScanner observation": 89,
+    "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category": 48
+  },
+  "allProjectSelectionsPresentInOldObservations": true,
+  "allCategoryDifferencesHaveExistingAttrWithoutAttrRefs": true,
+  "rows": [
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "identity": "060a2b340101010101010f0013000000fa9e833c98550c00060e2b347f7f2a80",
+      "field": "Project",
+      "oldscanner": [
+        "New Project",
+        "PeleSympProj"
+      ],
+      "bella": [
+        "PeleSympProj"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "identity": "060a2b340101010101010f00130000004ea1833c4e6f1500060e2b347f7f2a80",
+      "field": "Project",
+      "oldscanner": [
+        "New Project",
+        "PeleSympProj"
+      ],
+      "bella": [
+        "PeleSympProj"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Applications/Avid Media Composer/SupportingFiles/Avid_MediaFiles/msmMMOB.mdb",
+      "identity": "060a2b340101010101010f0013000000a4f97f3cfb7d6d01060e2b347f7f2a80",
+      "field": "Project",
+      "oldscanner": [
+        "New Project",
+        "PeleSympProj"
+      ],
+      "bella": [
+        "PeleSympProj"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000093ba7d04912069003b44a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 80412,
+      "attributeListObject": 80409,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000009d3f4a0b47120690bdb34a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 76642,
+      "attributeListObject": 76639,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000622505d149120690a1f94a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 80463,
+      "attributeListObject": 80460,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000003ba7eeec511206902783c22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91411,
+      "attributeListObject": 91408,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000f042c8d049120690ed7d4a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 80467,
+      "attributeListObject": 80464,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000009f458edd511206905e84c22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91293,
+      "attributeListObject": 91290,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000217524d14912069041e04a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 80423,
+      "attributeListObject": 80420,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000005540d8d04912069088f54a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 80445,
+      "attributeListObject": 80442,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000002ac715d14912069007924a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 80434,
+      "attributeListObject": 80431,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000006a6c86dd511206907adfc22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91282,
+      "attributeListObject": 91279,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000dedb93dd51120690b97bc22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91304,
+      "attributeListObject": 91301,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000d265130647120690029c4a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 71191,
+      "attributeListObject": 71188,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000bb1e77ec5112069001fac22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91479,
+      "attributeListObject": 91476,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000e332e4ec5112069038d5c22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91532,
+      "attributeListObject": 91529,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000da9affeb511206907729c22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91515,
+      "attributeListObject": 91512,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000000f2204ec511206908fe2c22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91394,
+      "attributeListObject": 91391,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000652380dd51120690adefc22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91271,
+      "attributeListObject": 91268,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000005fef91dd5112069095fec22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91260,
+      "attributeListObject": 91257,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000487ee9ec51120690d2c5c22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91462,
+      "attributeListObject": 91459,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000bbfde6ec51120690ad8bc22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91483,
+      "attributeListObject": 91480,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000098979d084712069011264a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 73504,
+      "attributeListObject": 73501,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000047d208ec51120690d441c22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91432,
+      "attributeListObject": 91429,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000fccafbeb51120690a1ccc22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91349,
+      "attributeListObject": 91346,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000477b0dec511206908185c22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91428,
+      "attributeListObject": 91425,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f1013000000093ba7d04912069003b44a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 80412,
+      "attributeListObject": 80409,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f10130000009d3f4a0b47120690bdb34a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 76642,
+      "attributeListObject": 76639,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f1013000000622505d149120690a1f94a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 80463,
+      "attributeListObject": 80460,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f10130000003ba7eeec511206902783c22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91411,
+      "attributeListObject": 91408,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f1013000000f042c8d049120690ed7d4a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 80467,
+      "attributeListObject": 80464,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f10130000009f458edd511206905e84c22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91293,
+      "attributeListObject": 91290,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f1013000000217524d14912069041e04a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 80423,
+      "attributeListObject": 80420,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f10130000005540d8d04912069088f54a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 80445,
+      "attributeListObject": 80442,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f10130000002ac715d14912069007924a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 80434,
+      "attributeListObject": 80431,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f10130000006a6c86dd511206907adfc22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91282,
+      "attributeListObject": 91279,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f1013000000dedb93dd51120690b97bc22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91304,
+      "attributeListObject": 91301,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f1013000000d265130647120690029c4a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 71191,
+      "attributeListObject": 71188,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f1013000000bb1e77ec5112069001fac22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91479,
+      "attributeListObject": 91476,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f1013000000e332e4ec5112069038d5c22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91532,
+      "attributeListObject": 91529,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f1013000000da9affeb511206907729c22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91515,
+      "attributeListObject": 91512,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f10130000000f2204ec511206908fe2c22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91394,
+      "attributeListObject": 91391,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f1013000000652380dd51120690adefc22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91271,
+      "attributeListObject": 91268,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f10130000005fef91dd5112069095fec22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91260,
+      "attributeListObject": 91257,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f1013000000487ee9ec51120690d2c5c22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91462,
+      "attributeListObject": 91459,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f1013000000bbfde6ec51120690ad8bc22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91483,
+      "attributeListObject": 91480,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f101300000098979d084712069011264a963681a3eb",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 73504,
+      "attributeListObject": 73501,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f101300000047d208ec51120690d441c22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91432,
+      "attributeListObject": 91429,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f1013000000fccafbeb51120690a1ccc22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91349,
+      "attributeListObject": 91346,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/corpus_headers/msmMMOB_round3.mdb",
+      "identity": "060a2b340101010501010f1013000000477b0dec511206908185c22704e88b34",
+      "field": "Precompute Category",
+      "oldscanner": [
+        0
+      ],
+      "bella": [
+        1
+      ],
+      "classification": "Bella treats existing ATTR without AttrRefs as empty; OldScanner conservatively withholds category",
+      "ownerObject": 91428,
+      "attributeListObject": 91425,
+      "attributeListHasAttrRefs": false
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "identity": "060a2b340101010101010f0013000000fa9e833c98550c00060e2b347f7f2a80",
+      "field": "Project",
+      "oldscanner": [
+        "New Project",
+        "PeleSympProj"
+      ],
+      "bella": [
+        "PeleSympProj"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "identity": "060a2b340101010101010f00130000004ea1833c4e6f1500060e2b347f7f2a80",
+      "field": "Project",
+      "oldscanner": [
+        "New Project",
+        "PeleSympProj"
+      ],
+      "bella": [
+        "PeleSympProj"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Users/martymclean/Developer/MediaMuster/tests/fixtures/omf/avid_supporting/msmMMOB.mdb",
+      "identity": "060a2b340101010101010f0013000000a4f97f3cfb7d6d01060e2b347f7f2a80",
+      "field": "Project",
+      "oldscanner": [
+        "New Project",
+        "PeleSympProj"
+      ],
+      "bella": [
+        "PeleSympProj"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000ad0d2f15731106968c5d7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1440_JC_DR",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000061ee4b15731106965ddf7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000cca2bf167311069690b17c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1718_PB_IW",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000004ebf2e1573110696023e7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1164",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000aef52e157311069638897c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1440_JC_DR",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000baafb91673110696898c7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000c25c4a167311069618a27c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1729_PS_DG",
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000d3ee4b157311069626da7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000157a2e1573110696e0627c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1188 SW",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000008172b91673110696f7417c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "03_HAA_SFX",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000006272b9167311069658847c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "03_HAA_SFX",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000049fc66157311069691697c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000c94727167311069615237c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "03_HAA_SFX",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000002dfc66157311069631db7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000521a2f157311069693307c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1729_PS_DG",
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000e74727167311069653d37c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "03_HAA_SFX",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000000946be167311069607b17c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1551_PS_DG",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000056252d15731106965e367c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1729_PS_DG",
+        "HAA_STOCKS"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000a55c4a16731106966eae7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1729_PS_DG",
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000e0afb916731106962deb7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000defd2f157311069645e47c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1729_PS_DG",
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000fbafb9167311069684547c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000ce6f2c1573110696ab807c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1728_SH_AC",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000000afc6615731106963ea97c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000003d4a741573110696a0b27c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000042ee4b15731106964e9a7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000db49741573110696d2417c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000377a2e15731106962ed37c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1188 SW",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000e8ab2e15731106962f9f7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1729_PS_DG",
+        "HAA Stock Footage"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000066e22e1573110696be6e7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1440_JC_DR",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000789c161673110696531a7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1729_PS_DG",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000005c4a741573110696112b7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000ec45be167311069643cb7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1551_PS_DG",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/86452/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000031bf2e157311069641fb7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1164",
+        "BLOCK_1729_PS_DG"
+      ],
+      "bella": [
+        "BLOCK_1729_PS_DG"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000000fcbc8087311069668bb7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000cce4ef0873110696fee17c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000003a5aaa0873110696e0c27c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000041be9308731106968ffd7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000001173a30873110696c01b7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_ASSISTS"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000005eb58f087311069626497c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_ASSISTS"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000006c17e10873110696bbe07c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000000b7695087311069615987c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_ASSISTS"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000e7e4ef0873110696c8fe7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000017a17a087311069613987c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_ASSISTS"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000940aaa0873110696d69c7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000001a17a0873110696e6627c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_ASSISTS"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000061be930873110696a1287c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000030cbc80873110696ec737c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000002b7695087311069666967c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_ASSISTS"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000ace4ef0873110696403e7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000004a17e10873110696b61f7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000074a188087311069699457c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1729_PS_DG",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000009cfd980873110696ad2d7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_ASSISTS"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000003473a3087311069643b17c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_ASSISTS"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000054a1880873110696808e7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1729_PS_DG",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000084cbc808731106968b447c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000008517e1087311069685337c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8646/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000d9fd9808731106965fe87c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_ASSISTS"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000087dffa0b73110696320a7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1662_PB_PA",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000003ee4d20b7311069670dd7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1455_JC_DG",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000170add0b73110696740d7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000061a7cf0b73110696fb067c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000008ee4d20b73110696d90c7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1455_JC_DG",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000f6e3d20b7311069651547c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1455_JC_DG",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000064cbbf0b7311069636817c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000000494950b7311069640fc7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1231",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000d0eecf0b731106969a5c7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1726_PB_DR",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000016a8cf0b73110696e7ba7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000006509dd0b73110696ad327c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000507c8b0c73110696a3ab7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000002c4b960b7311069645e97c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000038ccbf0b73110696453a7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000083cbbf0b7311069699157c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000003ea7cf0b73110696ffd17c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000069dffa0b73110696161d7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1662_PB_PA",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000004309dd0b7311069611337c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1707_SW_AC",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000054e4d20b7311069666af7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1455_JC_DG",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000aeeecf0b7311069640d97c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1726_PB_DR",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f101300000068e4d20b731106964cb67c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1455_JC_DG",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000006d7c8b0c731106963c497c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f1013000000ccb9950b7311069637c77c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1730_PB_PA",
+        "HAA_PROGRAMME_BUILD"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000007ce4d20b73110696c2b37c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1455_JC_DG",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    },
+    {
+      "path": "/Volumes/EDIT/Avid MediaFiles/MXF/8647/msmMMOB.mdb",
+      "identity": "060a2b340101010501010f10130000001a94950b731106969c5c7c57583610fa",
+      "field": "Project",
+      "oldscanner": [
+        "BLOCK_1231",
+        "BLOCK_1730_PB_PA"
+      ],
+      "bella": [
+        "BLOCK_1730_PB_PA"
+      ],
+      "classification": "Bella approved owner/key selection chooses one retained OldScanner observation",
+      "selectedValuePresentAmongOldObservations": true
+    }
+  ]
+}

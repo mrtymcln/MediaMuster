@@ -1,0 +1,12 @@
+{
+  "id": 29,
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "text": "int __ZN14omfiDualStream12ReadRationalEPKcP8Rational(int * arg0, void * arg1) {\n    r31 = r31 + 0xffffffffffffffe0;\n    arg_10 = r29;\n    arg_18 = r30;\n    r19 = r2;\n    r20 = arg0;\n    r0 = omfiDualStream::TranslateProperty(arg0);\n    if (r0 != 0x0) {\n            if (omfiDualStream::GetValueData(r20, r0, r19) < 0x8) {\n                    r0 = 0x0;\n            }\n            else {\n                    r8 = *r19;\n                    r9 = *(r19 + 0x4);\n                    r10 = r20[0xf0];\n                    r11 = 0x4949;\n                    asm { rev        w12, w8 };\n                    if (r10 == r11) {\n                            r12 = r8;\n                    }\n                    if (r10 != 0x0) {\n                            r8 = r12;\n                    }\n                    r11 = 0x4949;\n                    asm { rev        w12, w9 };\n                    if (r10 != r11) {\n                            r11 = r12;\n                    }\n                    else {\n                            r11 = r9;\n                    }\n                    if (r10 != 0x0) {\n                            r9 = r11;\n                    }\n                    *r19 = r8;\n                    *(r19 + 0x4) = r9;\n                    r0 = 0x1;\n            }\n    }\n    return r0;\n}\n",
+        "type": "text"
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "native_mdvx": {
+    "inputs": 13,
+    "exits_zero": true,
+    "input_hashes_unchanged": true,
+    "avid_accepted": 7,
+    "unrelated_rejected": 6,
+    "live_composition_count": 1420,
+    "comparison_equals_previous": true,
+    "identity_join_files": 2515,
+    "identity_join_masters": 1420,
+    "comparison_differences_by_field": {
+      "project": 469
+    }
+  },
+  "pymdb": {
+    "avid_inputs": 7,
+    "comparison_equals_previous": true,
+    "live_files": 2515,
+    "live_masters": 1420,
+    "mismatch_count": 0
+  },
+  "source_diff_scope": "Only MDB descriptorFacts adds JPED to existing video whitelist, plus stale numeric comment removed. No broader helper reuse.",
+  "kind_fix_full_report_qa": "independent-qa.json"
+}

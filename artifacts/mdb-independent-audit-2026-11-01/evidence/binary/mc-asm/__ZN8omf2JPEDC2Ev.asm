@@ -1,0 +1,11 @@
+__ZN8omf2JPEDC2Ev:
+00000000004ebd2c	stp	x29, x30, [sp, #-0x10]!
+00000000004ebd30	mov	x29, sp
+00000000004ebd34	bl	__ZN8omf2CDCIC2Ev
+00000000004ebd38	adrp	x8, 3559 ; 0x12d2000
+00000000004ebd3c	add	x8, x8, #0xef0
+00000000004ebd40	str	x8, [x0]
+00000000004ebd44	stp	xzr, xzr, [x0, #0x108]
+00000000004ebd48	str	wzr, [x0, #0x118]
+00000000004ebd4c	ldp	x29, x30, [sp], #0x10
+00000000004ebd50	ret

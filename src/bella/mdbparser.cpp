@@ -574,7 +574,7 @@ namespace Bella
 			return valueOf(read) ? std::optional<T>(*valueOf(read)) : std::nullopt;
 		}
 
-		// These known format/unit meanings are independent of the six-tag Kind rule.
+		// These known format/unit meanings are independent of the Kind rule.
 		bool audioDescriptor(QByteArrayView tag)
 		{
 			return named(tag, {"PCMA", "AIFD", "WAVD", "MPGA", "WAVE"});
@@ -1901,7 +1901,7 @@ namespace Bella
 			file.ownDescriptorQualified = true;
 			if (named(cls, {"PCMA", "AIFD", "WAVD"}))
 				file.kind = MdbKind::Audio;
-			else if (named(cls, {"CDCI", "RGBA", "MPGI"}))
+			else if (named(cls, {"CDCI", "RGBA", "MPGI", "JPED"}))
 				file.kind = MdbKind::Video;
 			const auto length = integerValue(image, descriptor, "OMFI:MDFL:Length");
 			if (length && *length >= 0)
