@@ -31,6 +31,8 @@ mediamuster_add_test(tst_mobid core)
 mediamuster_add_test(tst_bellamobid core)
 target_link_libraries(tst_bellamobid PRIVATE mediamuster_bella)
 target_compile_definitions(tst_bellamobid PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+mediamuster_add_test(tst_bellatiming core)
+target_link_libraries(tst_bellatiming PRIVATE mediamuster_bella)
 mediamuster_add_test(tst_pathkey core)
 mediamuster_add_test(tst_format core)
 mediamuster_add_test(tst_mediaevidence core)
@@ -49,6 +51,15 @@ target_compile_definitions(tst_bellapmr PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR
 mediamuster_add_test(tst_bellamdb media)
 target_link_libraries(tst_bellamdb PRIVATE mediamuster_bella)
 target_compile_definitions(tst_bellamdb PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
+
+mediamuster_add_test(tst_bellamxf media)
+target_link_libraries(tst_bellamxf PRIVATE mediamuster_bella)
+
+mediamuster_add_test(tst_bellaomf media)
+target_link_libraries(tst_bellaomf PRIVATE mediamuster_bella)
+
+mediamuster_add_test(tst_bellaaudio media)
+target_link_libraries(tst_bellaaudio PRIVATE mediamuster_bella)
 
 # Discovery and physical-file record model.
 mediamuster_add_test(tst_mediaenginediscovery media)

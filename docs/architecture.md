@@ -9,8 +9,10 @@ under `src/oldscanner/` with its existing behavior and internal `MediaEngine`
 namespace. The AVB reader/reference resolver and shared reading types remain
 under `src/mediaengine/`; Bin Filter stays unchanged. [Bella](../Project%20Bella/README.md)
 is a new, independent C++17 / Qt 6.5.3 implementation. Its shared ID helper and
-PMR parser live under `src/bella/`, in a separate `mediamuster_bella` library
-linked only to their focused tests. Its scanner and other source readers remain pending.
+PMR, MDB, MXF and OMF/native-audio readers live under `src/bella/`, in a separate
+`mediamuster_bella` library linked only to their focused tests. MDB/OMF share
+bounded audio-format decoding; the scanner and later interpretation/formatting
+integration remain pending.
 The app continues using OldScanner until the user approves switching to Bella.
 
 ## From storage to table

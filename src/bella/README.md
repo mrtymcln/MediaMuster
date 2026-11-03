@@ -12,8 +12,41 @@ preserving current behaviour. The first implemented component is the shared
 `MobId` normalizer in `mobid.h/.cpp`, built as `mediamuster_bella` and exercised
 by `tests/tst_bellamobid.cpp`. The first independent PMR reader/report is now in
 `pmrparser.h/.cpp`. The independent MDB reader/report is now in
-`mdbparser.h/.cpp`. Focused normal and sanitizer tests pass for all three
-components. The scanner and MXF/OMF/native-audio readers remain to implement.
+`mdbparser.h/.cpp`. The independent MXF reader/report is in `mxfparser.h/.cpp`.
+The independent OMF/native-audio reader/report is in `omfparser.h/.cpp`, with
+private `audioreader_p.h/.cpp` and shared Summary-format helpers in
+`audioformat_p.h/.cpp`. The shared exact rate/duration/timecode helpers are in
+`timing.h/.cpp`. Focused normal and sanitizer tests pass for all seven components.
+Scanner matching and later interpretation/formatting integration
+remain to implement; OldScanner remains active.
+
+On 4 November the user chose shared timing helpers as the next component and
+approved one `timing.h/.cpp` with separate pure rate, exact-duration and timecode
+operations, plus `tests/tst_bellatiming.cpp`. Count/rate values remain simple;
+unavailable is distinct from zero, and the formatter receives a qualified display
+clock and DF/NDF mode. No file search or new diagnostic report is introduced.
+The required [actual-file/specification/native-binary reconfirmation](../../docs/reviews/2026-11-04-bella-timing-reconfirmation/REVIEW.md)
+completed before implementation. Only new Bella source/tests and root/test CMake
+lists are approved touch points for this component; existing readers and app
+integration remain unchanged.
+
+The timing component is now implemented independently: `TimingRate` holds the
+approved positive unsigned-64 fraction, `ExactDuration` retains its original
+nonnegative signed-64 count and calculation rate, and `TimecodeMode` explicitly
+selects DF or NDF. Checked optional results keep zero distinct from unavailable.
+`interpretAvidEditRate` accepts original signed32 words only in a qualified Avid
+video/editing-clock context; literal fractions bypass it. `displayFrameCount`
+uses bounded fixed-width integer working data and rounds only once at display.
+`formatDuration` receives a caller-qualified clock and explicit nominal base,
+checks the supported exact DF combinations, preserves separators and unlimited
+hours, and adds no per-file report or source lookup. Existing reader source and
+public reports are unchanged by this step.
+
+Timing verification: 102 focused cases, normally and under ASan/UBSan; all seven
+Bella suites total 851 passed and 14 existing fixture skips per mode, zero failed.
+An independent Fraction oracle matches 75,034 arithmetic inputs, including genuine
+file timing and full-width boundaries. No scan-time/memory improvement is claimed.
+See the [component receipt](../../docs/reviews/2026-11-04-bella-timing-reconfirmation/IMPLEMENTATION.md).
 
 On 1 November the user approved adding `JPED` to MDB Video Kind. The current
 exact mapping is Audio for `PCMA`/`AIFD`/`WAVD`, Video for
@@ -102,6 +135,211 @@ probe does not justify a required Bella fix, backlog item, new conflict
 machinery, tests or removal of compatibility paths. The three qualification
 fixes and JPED change above remain approved and implemented. See the
 [SEQU reassessment](../../docs/reviews/2026-11-01-bella-mdb-review/VERDICT.md#sequ-conflict-finding-withdrawn).
+
+On 1 November the user chose a path-based MXF reader: it opens the file,
+performs the required metadata reads, interprets them and closes the file,
+returning compact owned results. The caller does not open the file or acquire
+its bytes first. The agreed selective initial-header scope remains unchanged;
+PMR/MDB's whole-file `readAll()` choice does not apply to MXF. This settles
+ownership only. The user then chose fresh Qt-only size and modification-time
+checks before and after the required MXF metadata reading, as for PMR and MDB,
+over adding native filesystem-identity checks. An observed difference excludes
+that MXF read under the agreed changed-read/manual-rescan rule. The user also
+chose to retain otherwise usable MXF metadata and mark the check Unverified
+when it cannot be completed, preserving the reason. An unavailable measurement
+alone is not evidence of change or damage; any detected difference still
+excludes the read. The user then chose MXF Cancel checks before and after each
+file-read operation and between major parsing stages, using the shared stop
+flag. This does not require a new chunked-read loop or per-field/link polling
+inside in-memory stages. An active OS read must return before stopping; the
+existing metadata-qualification rules still apply. The user also chose ordinary
+checked replies for expected MXF input failures, as for PMR and MDB, rather than
+private parsing exceptions. Callers must check each relevant answer. Existing
+damage boundaries and independent facts remain; unexpected resource/program
+failures are distinct. The user then chose one owned MXF report containing the
+compact metadata, reading outcome, size/date check qualification and necessary
+explanations, rather than separate outputs. This settles packaging without
+adding diagnostics. Inside that report the user chose two small metadata groups:
+file information and associated clip information. Keep only the selected file
+and uniquely established associated-master facts, preserving independently
+usable file facts when master information is unavailable. This introduces no
+candidate catalogue or new group-wide validity policy. Exact members/types,
+availability and helper replies remain for the concrete MXF
+contract. The user also chose one named True/False input,
+`includePrecomputeDetails`, carrying the scan's fixed optional-details request,
+rather than a one-field options record. It gates extra Precompute Category work;
+core facts and validation remain. Effect/Effect Category still derive later
+after final source selection. On 2 November the user chose two major MXF stages:
+safely read/map the selected header with necessary temporary information, then
+resolve file/master ownership, extract/qualify the values and assemble the two
+groups before releasing workspace. Every actual file read retains its Cancel
+checks, with another checkpoint between the major stages. Selective reading
+remains; no whole-file/header RAM image or repeated read is required by this
+arrangement. The user then chose to return only the size/date check result and
+explanation, releasing its temporary before/after measurements, as for MDB.
+Required physical-file inventory and file-operation verification facts remain
+required separately and must survive the later scanner handoff. Exact report
+and group member types remain for the concrete contract. On 2 November the user
+approved the [MXF entry/report contract](../../Project%20Bella/README.md#agreed-mxf-entry-and-report-contract):
+the concrete files, synchronous signature, six report members and MXF-owned
+read/check answer lists. The user then approved the
+[file/clip value contract](../../Project%20Bella/README.md#agreed-mxf-file-and-clip-value-contract)
+and requested implementation of the independent MXF reader and focused tests,
+using C++17/Qt 6.5.3 and checking in before any further decisions. The independent
+reader and focused tests are implemented and verified; the active app remains
+on OldScanner and Bin Filter is unchanged.
+The user also approved accepting numerically equivalent duplicate MXF rate
+fractions while retaining the first original pair; unequal numeric rates stay
+conflicting. Authored coverage includes both orders. MDB behavior is unchanged.
+See the [MXF implementation decisions](../../Project%20Bella/README.md#implementation-decisions).
+
+The [2 November MXF verification](../../Project%20Bella/README.md#mxf-implementation-verification)
+records **135 authored Qt cases passing normally and with ASan/UBSan**, without
+failures or skips. The existing ID/PMR/MDB suites also pass their available
+cases; 14 retired-fixture cases remain skipped. For seven genuine MXFs and both
+detail modes, each normal-build report matches its sanitizer counterpart
+byte-for-byte, agreeing with 868 independent public-field/group checks. External authored-file
+checks cover in-flight Cancel, size/date changes and Unverified retention after
+unlinking an already-open file. The reader remains independent of the app; the
+scanner, later formatting/naming adapters and other source readers are separate
+work. No performance improvement is claimed.
+
+On 2 November the user chose a path-based OMF reader that opens, selectively
+reads, interprets and closes the file itself, like PMR, MDB and MXF. The caller
+does not supply an already-open device or captured bytes. The approved one-time
+TOC read and required-value-only acquisition remain; do not load the whole media
+file. Native WAVE/AIFF and embedded OMF still form one physical row. Their
+shared-file arrangement, entry/report and detailed metadata values were
+subsequently agreed below. The
+user then chose fresh Qt-only size and modification-time observations before
+and after the required OMF metadata reading, matching PMR, MDB and MXF, over
+additional native file-identity checks. An observed difference in either excludes
+that read under the agreed changed-read/manual-rescan rule. The user then chose
+to retain otherwise usable OMF metadata and mark the check Unverified, preserving
+the reason, when a size/date measurement is unavailable. An observed difference
+in either available measurement still excludes that read. Existing OMF damage
+boundaries remain. The user then chose Cancel checks before and after every
+file-read operation and between major parsing stages, matching MXF, using the
+shared stop flag. No chunked-read loop or per-field/link polling is required;
+an active operating-system read must return before the next check. The major
+stages are agreed below. The user then chose ordinary checked
+replies for expected OMF open/read/format/source-check problems, matching PMR,
+MDB and MXF, over private parsing exceptions. Callers must check each relevant
+reply; the agreed damage boundaries and independent facts remain. Unexpected
+allocation/programming failures stay distinct. The user then chose one owned
+OMF report containing compact metadata, the reading outcome, size/date check
+qualification and necessary explanations, like the other Bella readers, over
+separate outputs. The user then chose two small metadata groups inside that
+report, matching MXF: file information (FileMobId, Project, own timing/technical
+values) and associated clip information (selected MasterMobId, Clip Name,
+Original Bin, Type and optional Category). A flat metadata record was declined.
+This grouping preserves the agreed field/ownership qualifications and independent
+usable facts, without a group-wide validity gate or candidate catalogue. The
+user then chose one named True/False input, `includePrecomputeDetails`, matching
+MDB and MXF, over a one-flag options record. It carries the scan's fixed request:
+True permits the extra category work for a confirmed Precompute; False skips
+category-only work while required metadata and checks still run. Effect and
+Effect Category remain later derivations after final source selection. The user
+then chose two major stages: validate/map the supported label and complete TOC,
+then qualify the correct file/clip records, selectively read/check needed values,
+assemble the owned groups and release workspace. The second stage may read
+required payloads from disk; no whole-file/header capture is implied. Existing
+read/stage Cancel checks and damage boundaries remain. The user then chose to
+return only the OMF size/date check result and necessary explanation, releasing
+its temporary before/after measurements, as for MDB and MXF. Required physical
+inventory/scan-stamp/identity/file-operation facts still need their preserved
+scanner handoff. After fresh actual-file/specification checks, the user then
+chose separate native-audio and OMF helpers sharing one open physical file.
+The path-based entry owns opening/closing; helpers borrow the same file and
+preserve established embedded locations and physical offset bases. Native and
+OMF facts remain independently qualified, the OMF contribution keeps its two
+agreed groups, and the physical file still produces one row. Do not open it
+separately for each contribution. Existing native behaviour, including FVER
+compatibility, and approved OMF/source-selection rules remain. The user then
+chose separate native-audio and OMF reading answers inside the one report,
+sharing one physical path, size/date check and necessary explanation list. A
+normal absence of OMF is separate from successful native-audio reading; this
+does not change independent-fact qualification or add per-field statuses. The
+[concrete OMF entry/report contract](../../Project%20Bella/README.md#agreed-omf-entry-and-report-contract)
+was approved on 2 November: `parseOmf(path, stopRequested,
+includePrecomputeDetails)`, the public/private source files and focused tests,
+eight report members, the shared eight-answer `OmfReadResult` list and four-answer
+`OmfCheckResult`. Changed is recorded only in the shared check and excludes both
+contributions. The user then chose an exact fraction for native-audio sampling
+rates, following the current native code, releasing original WAVE/AIFF frequency
+bytes after decoding. Preserve current native acceptance/representability;
+OMF's original source-value rules are unchanged. The
+[native five-value contract](../../Project%20Bella/README.md#agreed-native-audio-value-contract)
+was approved on 3 November: Kind, optional sample-frame count, optional exact
+native sampling-rate fraction, optional usable bit depth and encoding
+(Unknown/Pcm/IeeeFloat), with the specified names/types and current native
+qualifications. Temporary decoding-only details are released. OMF file value
+members, shared-helper extraction and single-container support limit were
+subsequently agreed below. The
+[OMF associated-clip value contract](../../Project%20Bella/README.md#agreed-omf-associated-clip-value-contract)
+was approved on 3 November: selected MasterMobId, Clip Name, Original Bin, Type
+and optional Precompute Category, with concrete ordinary types, two small enums
+and the already-agreed selected-master/independence rules.
+The [OMF Project-selection representation](../../Project%20Bella/README.md#agreed-omf-project-selection-representation)
+was approved on 3 November: separate `projectSelection` and `projectKey` answers,
+following MDB, with the specified answer lists and unchanged selection/check
+rules. The user also requested MXF/PMR alignment; the
+[format-specific alignment](../../Project%20Bella/README.md#agreed-mxf-and-pmr-project-answer-alignment)
+was approved on 3 November: MXF uses separate `projectSelection` and
+`projectKey`, with Preface plus None for its direct header Project and OwnFile
+plus the selected Pj/ProjName/UserPj key for its editorial fallback. Unavailable
+and Conflict also use None. PMR keeps its four-member entry and direct Project
+field unchanged. Project text, source priorities, checks and warning text remain
+unchanged by the representation change. The MXF change is implemented and
+verified: all 135 cases pass normally and with ASan/UBSan; 14 complete reports
+from seven selected genuine files match the old results after only the approved
+answer mapping. PMR source/header/tests are unchanged; its regression run has
+70 passes and five existing retired-fixture skips, with no failures.
+This does not alter selective reading or file-operation verification. See the
+[OMF entry decision](../../Project%20Bella/README.md#implementation-decisions).
+The OMF implementation is verified below; OldScanner and Bin Filter are unchanged.
+
+The [OMF file-information value contract](../../Project%20Bella/README.md#agreed-omf-file-information-value-contract)
+was approved on 3 November. It specifies fifteen
+members, including the already-approved two Project answers, and lean numeric
+timing/format context. It retains one qualified Duration-clock selection
+answer and release of decoding-only storage widths/RGBA arrays after validation,
+keeping only necessary depth/format facts and proven sole-alpha depth for
+unchanged naming. Existing metadata/source rules are not reopened. The report
+and its three metadata value groups are now agreed; the single-container limit
+is agreed below. The shared-helper extraction was subsequently approved and
+implemented with the reader, as recorded below.
+The [single-container OMF support boundary](../../Project%20Bella/README.md#agreed-single-container-omf-support-boundary)
+was approved on 3 November after the user's scope question and history/corpus
+reassessment found no demonstrated need for merging. Support one distinct
+discovered OMF location; defer multiple-location reconciliation, retain usable
+native facts and report the OMF contribution as Unsupported when several
+locations are found. Do not choose the first/last location. The user also
+reaffirmed that existing OldScanner code or authored tests alone do not justify
+Bella capabilities: proposals must meet actual file/format needs. No runtime
+code or approved single-container checks have changed in this record.
+The [shared audio-format extraction within OMF implementation](../../Project%20Bella/README.md#agreed-shared-audio-format-extraction-within-omf-implementation)
+was approved on 3 November. The user chose to include the required MDB/OMF WAVE
+fmt and AIFF COMM extraction into private `audioformat_p.h/.cpp` within the larger
+OMF/native implementation, rather than a separate refactor first. This touches
+`mdbparser.cpp` and the root/test CMake lists along with the previously agreed
+new reader/helper/tests. Keep existing public MDB/PMR/MXF types, reports, checks
+and warning text unchanged. Native acquisition/qualification remains separate;
+no new capability is inferred from OldScanner. Implementation and verification
+are now authorized within these recorded contracts and boundaries.
+
+The [3 November OMF/native implementation verification](../../Project%20Bella/README.md#omf-and-native-audio-implementation-verification)
+records implementation completion: **261 OMF and 68 native Qt cases pass normally
+and with ASan/UBSan**, without failures, skips or sanitizer findings. ID/PMR/MDB/MXF
+regressions pass their available cases, retaining 14 existing retired-fixture
+skips. For eleven selected real files and both detail modes, normal/sanitizer
+reports are identical and match 2,116 independent public-value checks. All 26
+MDB before/after reports from thirteen inputs match exactly, including notes.
+Five external authored-file controls verify in-flight Cancel, size/date changes
+and Unverified retention. Temporary receipts remain outside the checkout.
+The reader supports one OMF location and skips native sample payloads; the
+standalone identification-probe limit is documented with the verification.
+No scan-performance improvement, full-drive scan or app cutover is claimed.
 
 On 30 October the user chose a path-based MDB parser that handles both reading
 and interpretation, as PMR does. It will capture each source once, extract the
@@ -265,7 +503,8 @@ gain is claimed. OldScanner remains active and Bin Filter is unchanged.
 On 27 October the user approved a separate `mediamuster_bella` static library
 in the existing CMake build, using Qt Core and initially linked only to Bella's
 focused tests. Parser signatures and result details still require check-ins
-before dependent implementation. The target contains the ID helper, PMR and MDB parsers.
+before dependent implementation. The target contains the ID helper and PMR,
+MDB and MXF parsers.
 See the
 [implementation decision](../../Project%20Bella/README.md#implementation-decisions).
 
@@ -386,7 +625,8 @@ validate their formats and return compact values. Shared interpretation helpers
 remain small and reusable. Names/signatures and preserved WAVE/AIFF placement
 follow the brief scanner design. See the
 [agreed separation](../../Project%20Bella/README.md#agreed-separation-of-scanner-and-parsers).
-The shared ID helper and PMR parser are implemented; the other parsers remain pending.
+The shared ID helper and PMR, MDB, MXF and OMF/native readers are implemented;
+scanner matching and later interpretation/formatting integration remain pending.
 
 The app continues using [OldScanner](../oldscanner/README.md). Bin Filter stays
 outside Bella's scope. A switch to Bella requires the user's explicit approval.

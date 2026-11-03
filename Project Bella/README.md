@@ -5,10 +5,10 @@
 
 Started 18 October 2026. Status: first-release parser/source requirements and
 the eight registered scanner-workflow decisions are settled. Independent Bella
-implementation includes the shared ID helper and independent PMR and MDB parsers
-in their separate library/test targets. Their focused tests pass normally and
-with ASan/UBSan on arm64. The scanner and
-remaining source parsers remain to implement; new concrete choices still require
+implementation includes the shared ID helper and independent PMR, MDB, MXF and
+OMF/native-audio readers, plus shared exact-timing helpers, in their separate
+library/test targets. Their focused tests pass normally and with ASan/UBSan on arm64. The scanner and later
+interpretation/formatting integration remain to implement; new concrete choices still require
 user check-ins.
 
 Bella is a fresh start for MediaMuster's scanner and parser. The motivation is to
@@ -58,6 +58,16 @@ Prefer direct source choices, shared small helpers, compact owned values and
 clear lifetimes. Add complexity only for a concrete supported case or required
 behavior. Preserve necessary ownership/type/bounds checks and agreed metadata;
 judge the implementation by correct results and measured scan time/peak memory.
+
+**Scope discipline reaffirmed, 3 November 2026:** the user instructed Bella
+not to inherit superfluous OldScanner capabilities. Ground new implementation
+proposals in factual format behaviour and demonstrated needs of actual
+PMR/MDB/MXF/OMF files. Existing code or an authored test alone does not establish
+a product requirement. Keep the agreed fields, necessary validation and checks;
+do not add speculative metadata, reconciliation machinery or compatibility
+branches merely because OldScanner contains them. Identify a concrete need
+before proposing an addition, and keep unobserved cases distinct from real-file
+evidence. The single-container OMF decision below applies this rule.
 
 ## MDB audit reassessment and JPED approval
 
@@ -223,6 +233,55 @@ without a check-in are superseded.
 
 ### Implementation decisions
 
+**Next component agreed, 4 November 2026:** the user selected timing helpers
+before scanner matching: source-aware rate interpretation, exact physical
+Duration calculations and timecode presentation, retaining the recorded source
+values and the distinction between known zero and unavailable. Before building,
+the user explicitly requested fresh reconfirmation against files on this computer
+and mounted EDIT drives, format specifications, and static reverse engineering of
+the installed Media Composer and MDVx binaries. This authorizes the evidence
+check; it does not change the settled source/numbering rules or approve new
+contracts by implication. New discrepancies or concrete implementation choices
+still require a plain-English check-in. No timing helper or app integration has
+been added at this checkpoint; OldScanner remains active and Bin Filter unchanged.
+
+**Timing arrangement agreed, 4 November 2026:** the user approved one shared
+`src/bella/timing.h/.cpp` component with separate pure operations for source-aware
+Avid rate interpretation, exact count/rate Duration and timecode presentation,
+plus `tests/tst_bellatiming.cpp`. Keep a simple two-word fraction and original
+count/calculation-rate value; unavailable is distinct from zero. Formatting
+receives an already-qualified display clock and explicit DF/NDF mode. It performs
+no file search and adds no per-file diagnostic report. The approved touch points
+are new Bella source/tests and the existing root/test CMake lists; existing
+readers, MediaFile/table, progress, journal, Undo and Bin Filter are unchanged.
+The rejected arrangement was three separate rate/duration/timecode components.
+The required pre-build [fresh evidence review](../docs/reviews/2026-11-04-bella-timing-reconfirmation/REVIEW.md)
+confirms the applicable source rules without claiming universal native UI parity.
+
+**Timing component implemented, 4 November 2026:** the approved independent
+component now preserves a nonnegative signed-64 count and positive unsigned-64
+calculation fraction, including the existing MDB/OMF AIFF summary-frequency range.
+`interpretAvidEditRate` validates signed source words and applies only the agreed
+finite Avid editing/video aliases. Generic/audio calculation fractions remain
+literal. `makeExactDuration` retains the count; `displayFrameCount` rounds once
+with positive halves up, returning no value for invalid or unrepresentable
+results. Known zero and positive durations that display as zero remain values.
+`formatDuration` takes the already-qualified display clock, explicit nominal
+base and DF/NDF mode, uses the approved separators and never wraps hours.
+It performs no source selection, graph work, file I/O or warning generation.
+Existing readers and their private qualification helpers remain unchanged.
+
+The 102 focused timing cases pass normally and with ASan/UBSan. All seven Bella
+suites pass: 851 successful Qt Test cases per mode, 14 existing retired-fixture
+skips and zero failures; sanitizer stderr is empty. The normal build includes
+arm64/x86_64; execution and sanitizer testing were arm64. An independent Python
+Fraction oracle matches 75,034 arithmetic cases, including genuine timing bundles,
+wide intermediate products and signed-64 output boundaries. The pre-build
+21,735 source comparisons and this post-build math verification are distinct;
+see the [implementation receipt](../docs/reviews/2026-11-04-bella-timing-reconfirmation/IMPLEMENTATION.md).
+This establishes the component, not a runnable Bella scanner, native UI parity
+or a measured performance gain. OldScanner remains active; Bin Filter unchanged.
+
 **Build boundary agreed, 27 October 2026:** add a separate
 `mediamuster_bella` static library to the existing CMake build, using Qt Core
 and initially linked only to Bella's focused tests. The user chose this over
@@ -246,6 +305,1335 @@ Bella's agreed cancellation, changed-source, read-once/lifetime, whole-set,
 text and identity rules remain authoritative; the historical parser's other
 behaviour is not adopted. Exact files, signatures, result details and
 capture/check mechanisms still require their concrete check-ins.
+
+**OMF entry boundary agreed, 2 November 2026:** the user chose the recommended
+option: the OMF reader opens the file, just like PMR, MDB and MXF. Give it the
+physical file path; it owns opening, the required metadata reads, interpretation
+and closing, and returns compact owned results. The caller does not open a
+device or supply captured bytes first. Small private helpers remain possible.
+The declined alternative was a caller-owned open file passed to the reader.
+
+Keep the already-agreed OMF acquisition method: read the label and complete
+supported table of contents once, then fetch only required metadata values;
+leave recording payloads on disk and release temporary storage. This ownership
+choice does not extend PMR/MDB's whole-file `readAll()` approach to OMF. Embedded
+OMF and native WAVE/AIFF still contribute to one physical row under the settled
+source rules; their shared-file arrangement and concrete entry/report contract
+are agreed below. Detailed metadata values remain for their contract review.
+The size/date check mechanism, unavailable-check handling, Cancel checkpoints
+and expected-failure replies are agreed below, followed by the approved entry
+and report members. This record adds documentation only;
+OldScanner remains active and Bin Filter is unchanged.
+
+**OMF size/modification-time check agreed, 2 November 2026:** the user chose
+the recommended size and modification-time check for OMF, just like PMR, MDB
+and MXF. Observe the physical source path's available size and modification
+time freshly before and after the required OMF metadata reading, using Qt-only
+`QFileInfo` code. An observed difference in either excludes that OMF read under
+the already-approved changed-read rule. Keep the physical row and independently
+valid information; another attempt remains a manual rescan.
+
+The declined alternative was adding operating-system file-identity checks.
+Size/date checks can miss a rewrite or replacement preserving both facts and
+do not prove an atomic snapshot. The agreed selective label/TOC/needed-value
+reading, embedded/native source rules and file-operation verification are
+unchanged. Unavailable-check handling and Cancel checkpoints are agreed below;
+exact report representation remains for its check-in. This record changes
+documentation only; OldScanner stays active and Bin Filter is unchanged.
+
+**Readable but unverified OMF agreed, 2 November 2026:** the user chose to
+keep otherwise usable OMF metadata and mark the size/modification-time check
+Unverified when that check cannot be completed, just like PMR, MDB and MXF.
+Preserve the unavailable-check reason and qualification. An unavailable
+measurement alone does not establish changed or damaged content. The declined
+alternative was withholding that otherwise usable OMF metadata.
+
+An observed difference in an available size or modification-time measurement
+still excludes that read, even if the other measurement is unavailable. Failed
+reads, unusable fields and unqualified relationships remain subject to the
+agreed OMF shared-structure/local-damage and source-selection rules. This adds
+no automatic retry, extra metadata-read trigger, native file-identity check or
+change to file-operation verification. Cancel checkpoints are agreed below;
+exact report types remain for their check-ins. This record changes documentation only;
+OldScanner stays active and Bin Filter is unchanged.
+
+**OMF Cancel checkpoints agreed, 2 November 2026:** the user chose the
+recommended option: check the shared stop flag before and after each file-read
+operation, and between major parsing stages, matching MXF. The shared flag and
+stop-before-opening rule remain as already agreed for Bella. The selective
+label/TOC/required-value approach supplies the read boundaries; this choice
+does not introduce a chunked-read loop or per-field, record or relationship
+polling inside in-memory stages.
+
+A Cancel request during a parsing stage may wait until its next boundary;
+a blocked operating-system read must return before Bella can check again.
+No stopping-time improvement has been measured. Cancellation cannot make
+unfinished shared framing usable or report an unfinished job as successful;
+retain only independently qualified facts under the existing rules. The
+two-major-stage arrangement is agreed below. PMR/MDB/MXF
+checkpoints and file-operation verification are unchanged. This record changes
+documentation only; OldScanner stays active and Bin Filter is unchanged.
+
+**OMF expected-failure replies agreed, 2 November 2026:** the user chose
+ordinary checked replies for OMF, just like PMR, MDB and MXF. Helpers return a
+usable value or a failure/unavailability answer, and callers check it. Use this
+route for expected file-open, read, format and source-check problems rather
+than private parsing exceptions caught at the reader entry point. The latter
+was the declined alternative and is used by the current OldScanner OMF reader
+for some expected failures.
+
+This settles control flow only. Preserve the agreed shared-structure/local-damage
+boundaries, independently usable facts and separate I/O, unsupported, changed
+and cancelled outcomes. Unexpected allocation or programming failures remain
+distinct from damaged input; do not add a blanket catch or promise that an
+allocating reader cannot throw. Exact helper/result types and the report
+contract remain for their check-ins. This record changes documentation only;
+OldScanner stays active and Bin Filter is unchanged.
+
+**OMF returned report agreed, 2 November 2026:** the user chose the recommended
+one OMF report, like the other Bella readers, instead of separate metadata,
+status and explanation outputs. Keep the compact owned metadata, reading
+outcome, size/modification-time check qualification and necessary explanatory
+notes together in that report. For example, reading can complete while the
+check is Unverified and otherwise usable metadata is retained.
+
+This settles packaging only. It adds no diagnostic requirements or retained
+fields. Metadata grouping and the major stages are agreed below; exact
+member/type names and native-versus-OMF result representation remain for their
+check-ins. The shared-file arrangement is agreed below. The agreed
+OMF ownership, field-selection, local/shared damage and source-check rules
+remain authoritative. This record changes documentation only; OldScanner
+stays active and Bin Filter is unchanged.
+
+**OMF metadata groups agreed, 2 November 2026:** the user chose two small
+groups inside the one OMF report, matching MXF: file information and associated
+clip information. File information contains the selected FileMobId, Project,
+duration, resolution and other own technical values. Associated clip information
+contains the qualified selected master's MasterMobId, Clip Name, Original Bin,
+Type and optional Precompute Category. The declined alternative was one flat
+metadata record with the same fields alongside each other.
+
+Keep only the facts selected under the agreed OMF ownership and field rules.
+An unavailable master association leaves its dependent clip facts unavailable
+while independently usable file information survives. Grouping adds no
+group-wide validity gate, multi-file/master catalogue or candidate history and
+does not alter source priorities, retained fields or selective-reading scope.
+Exact members/types and native-versus-OMF result representation remain for
+their concrete check-ins. This record changes documentation only; OldScanner
+stays active and Bin Filter is unchanged.
+
+**OMF optional-details input agreed, 2 November 2026:** the user chose one
+named True/False input, `includePrecomputeDetails`, matching MDB and MXF. Use an
+explicit `bool` argument carrying the optional-details request fixed for the
+scan, with a clearly named value at call sites, rather than an options record
+containing that one flag.
+
+True permits the extra Precompute Category work when the qualified selected
+clip is a Precompute; False skips category-only work. Required metadata and
+checks still run, including identities, ownership, Clip Name, Original Bin,
+Type and shared reads needed by other fields. Effect and Effect Category still
+derive later through the agreed shared resolver after final Type/name source
+selection. This settles the input representation for already-approved optional
+work, without adding a setting, retained field or header-opening reason. The
+major stages are agreed below; the concrete entry/report contract remains for
+its check-in.
+This record changes documentation only; OldScanner stays active and Bin Filter
+is unchanged.
+
+**OMF two-major-stage arrangement agreed, 2 November 2026:** the user chose
+the recommended two stages:
+
+1. Build the map: read and validate the supported file label and complete table
+   of contents, establishing the necessary definitions and checked locations of
+   required metadata. Keep only necessary temporary indexes/ranges/references.
+2. Extract the information: identify the qualified own-file and associated-clip
+   records, selectively fetch and qualify the needed values, assemble the two
+   owned report groups and release temporary working data.
+
+The declined alternative split record/owner selection into a separate middle
+stage before extraction. The two-stage choice changes organization, not the
+agreed checks, owner selection or independently usable facts. Required payload
+reads may occur in the second stage; this is not a whole-file or all-metadata
+RAM capture. Keep the single temporary TOC read, selective needed-value reads,
+Cancel checks before/after each actual file read and between the major stages.
+Size/date observations surround all required metadata reading. Complete required
+lookup and ownership foundations still precede publishing facts; independently
+bounded unrelated bad values remain local under the agreed OMF damage rules.
+Exact entry/report types and helper details remain for their check-ins. This
+record changes documentation only; OldScanner stays active and Bin Filter is
+unchanged.
+
+**OMF source-check measurements temporary, agreed 2 November 2026:** the
+user chose to keep just the OMF size/date check result and necessary explanation,
+and release the temporary before/after measurements, just like MDB and MXF.
+Keep the source path with the report context. An explanation of a detected
+difference can retain the actual available before/after values; unavailable
+checks keep their reason and the agreed Unverified qualification.
+
+The declined alternative was also returning both original sets of measurements
+for later inspection. This choice concerns the parser's comparison observations
+only. Required physical-file inventory facts, scan stamps, identities and
+file-operation verification facts remain required and need their preserved
+scanner handoff; do not lose a required fact merely because it originated as a
+parser observation. No memory improvement is claimed. The shared-file arrangement
+is agreed below; the concrete entry/report, including native-versus-OMF result
+representation, remains for its check-in. This record
+changes documentation only; OldScanner stays active and Bin Filter is unchanged.
+
+**Native-audio and OMF shared-file arrangement agreed, 2 November 2026:**
+after checking actual WAV/AIF files and their specifications, the user chose
+separate native-audio and OMF helpers sharing one open physical file. A
+path-based entry owns opening and closing that file; small format helpers
+borrow it for their required selective reads. Native chunk navigation supplies
+the established embedded-OMF locations to the OMF helper, preserving original
+physical-file offset bases and avoiding duplicate inspection of the same label.
+Do not open the file separately for each contribution.
+
+Keep native-audio and OMF facts independently qualified so missing or unusable
+embedded OMF cannot erase usable native information. The OMF contribution keeps
+its agreed file-information and associated-clip-information groups; the physical
+file still produces one row. Preserve the existing native-audio behaviour and
+approved OMF field, damage, source-priority, header-opening and selective-reading
+rules, including the existing FVER compatibility decision. This does not select
+new formats, a first-embedded-container winner, conflicting-container handling
+or exact native-versus-OMF report members/outcome lists. Separate reading
+answers are agreed below; the remaining concrete contract details still need
+their check-ins.
+
+The declined staging alternative was standalone OMF first, deferring the
+embedded/native arrangement. Fresh checks observed one embedded OMF container
+in each of the two genuine Avid tone files and many ordinary audio files with
+none; no multiple-container specimen was observed. Sharing one open file is an
+implementation choice, not a native format-specification mandate or a measured
+performance improvement. This record changes documentation only; OldScanner
+stays active and Bin Filter is unchanged.
+
+**Separate native-audio and OMF reading answers agreed, 2 November 2026:**
+the user chose the recommended separate native-audio and OMF reading answers
+inside one owned physical-file report, rather than a single combined reading
+answer supplemented by explanations. Keep one shared path, size/date check and
+necessary explanation list; the OMF contribution retains its agreed two
+information groups.
+
+This makes source-level reading outcomes explicit without changing the agreed
+independent-fact rules. A normal native-audio file can be read successfully
+while no OMF is present; unusable embedded OMF does not erase independently
+usable native information. Exact member names and answer lists are agreed in
+the contract below; detailed metadata values remain for review. This record
+adds no per-field diagnostic
+framework, extra retained metadata or multiple-container selection policy.
+This record changes documentation only; OldScanner stays active and Bin Filter
+is unchanged.
+
+#### Agreed OMF entry and report contract
+
+**Approved 2 November 2026:** the user approved the recommended entry/report
+packet, including its files, three inputs, eight report members, shared reading
+answer list and source-check answers. It makes the agreed ownership, shared-file
+helpers and source-level answers concrete. Detailed native/OMF metadata values
+and distinct embedded-container combination/conflict rules remain for their
+bounded review before dependent implementation. Existing format requirements
+and the explicit OldScanner cutover boundary remain unchanged.
+
+**Agreed files:** public `src/bella/omfparser.h/.cpp`, private independent
+native-audio helpers in `src/bella/audioreader_p.h/.cpp`, and focused
+`tests/tst_bellaomf.cpp` / `tests/tst_bellaaudio.cpp`. Add only their explicit
+source/target entries to the existing root/test CMake lists for
+`mediamuster_bella`. Continue C++17, exact Qt 6.5.3 and Qt Core. These two CMake
+lists are the planned existing-code touch points. No OldScanner, Bin Filter,
+MediaFile/table, progress, journal, Unfinished Business, Undo or active app
+integration is included. The native helpers borrow the same file owned by the
+public entry; these files do not introduce a second public file-opening call.
+
+**Agreed synchronous entry:**
+
+```cpp
+OmfReport parseOmf(const QString &path,
+                   const std::atomic_bool &stopRequested,
+                   bool includePrecomputeDetails);
+```
+
+The caller keeps inputs alive until the call returns. The function opens/closes
+one physical file, uses the shared stop flag and fixed optional-details request,
+and returns owned values. It has no GUI, thread or worker-pool responsibility.
+
+**Agreed report members:**
+
+| Member | C++ value | Meaning |
+| --- | --- | --- |
+| `path` | `QString` | Physical source path, once. |
+| `nativeAudioReading` | `OmfReadResult` | Native-audio reading answer. |
+| `omfReading` | `OmfReadResult` | OMF reading answer, independent of native audio. |
+| `sizeDateCheck` | `OmfCheckResult` | Shared physical-source check qualification. |
+| `nativeAudioInformation` | `OmfNativeAudioInformation` | Compact qualified native-audio facts; exact values subsequently agreed below. |
+| `fileInformation` | `OmfFileInformation` | OMF file-information group; exact values subsequently agreed below. |
+| `associatedClipInformation` | `OmfAssociatedClipInformation` | Selected-OMF-clip group; exact values subsequently agreed below. |
+| `problemNotes` | `QStringList` | Necessary reason text, with source context and no repeated path prefix. |
+
+Keep the three fact groups as ordinary owned values, with the existing
+field-specific availability rules and no group-wide validity flag. There is
+no additional combined reading answer, duplicated path/check record, public
+container-location list, candidate graph or per-field status wrapper.
+
+**Agreed reader-owned `OmfReadResult` answers**, defined beside this
+report and reused for its two independent reading fields:
+
+| Answer | Meaning |
+| --- | --- |
+| `NotRead` | That contribution has not been read; this does not establish absence. |
+| `NotPresent` | Complete relevant supported checks establish no such contribution: for example, native audio in a standalone OMF, or OMF in an ordinary audio file. |
+| `Completed` | Required work for that contribution finished; optional fields can still be missing or locally unusable. |
+| `Incomplete` | Required traversal/bytes could not be completed, such as a truncated source. This is not permission to salvage unsafe framing. |
+| `Malformed` | Required structure or values violate the supported layout. |
+| `Unsupported` | The contribution's established layout is outside agreed support. |
+| `IoError` | An open, seek or read operation failed. |
+| `Cancelled` | The work was stopped by the shared request. |
+
+`Incomplete`, `Malformed`, `Unsupported` and `IoError` can accompany
+independently qualified retained facts under the already-agreed damage rules.
+`NotPresent` must not be inferred from unfinished native navigation or an
+unresolved relevant OMF location. Source explanations preserve the actual
+cause; this list does not select a precedence or winner among distinct OMF
+containers.
+
+**Agreed `OmfCheckResult` answers:** `NotChecked` (default), `Verified`,
+`Unverified`, `Changed`. Record source change here once rather than duplicating
+`Changed` in both reading answers. A detected change excludes both contributions;
+their reading answers can still describe what work occurred. Callers must check
+the shared check as well as each reading answer. Preserve required inventory/
+operation handoff facts separately; retain no temporary before/after members.
+
+**Tradeoff and approval scope:** the user accepted this packet, which uses the familiar Bella entry
+pattern, one reader-local reading enum for two source answers and one shared
+check. The private native-audio helper files keep the two formats' work separate
+without sharing mutable parser objects. The alternative offered was to revise
+particular names, files, members or answer lists before agreeing the packet. Exact native
+and OMF field values, necessary qualifications and distinct embedded-container
+combination/conflict rules still need their bounded review before dependent
+implementation. Other Bella public types remain unchanged.
+
+**Native-audio sampling-rate representation agreed, 2 November 2026:** the
+user chose the recommended exact fraction for native WAV/AIFF sampling rates,
+following the current native code. For example, either format's usable
+48,000 Hz frequency returns 48000/1 with no rounding. Release the original
+WAVE integer/AIFF ten-byte frequency encoding after decoding rather than
+returning a source-encoding variant alongside the result.
+
+Preserve current native frequency validation and representability, including
+its existing signed-32-bit exact-rate limits. This is a representation choice,
+not permission to widen accepted native rates, approximate an unrepresentable
+frequency or adopt MDB's wider arithmetic as new native admission. Keep one
+usable exact rate without duplicate double, label or source-byte copies.
+OMF's separately agreed original source-value and interpretation rules remain
+unchanged. Native member names/types were subsequently agreed below; the
+remaining OMF value contract still needs its check-in. This record changes
+documentation only; OldScanner stays active and Bin Filter is unchanged.
+
+#### Agreed native-audio value contract
+
+**Approved 3 November 2026:** the user chose the recommended five-field
+native-audio contract proposed on 2 November, including the member names/types,
+small types and preserved qualifications below. This is the compact
+`OmfNativeAudioInformation` portion of the agreed one-file report. It preserves
+the current native useful results and does not change native/OMF/database source
+priorities. The OMF file/clip value contract and distinct embedded-container
+handling remain for their separate check-ins before dependent implementation.
+
+**Agreed five members:**
+
+| Member | C++ value | Meaning |
+| --- | --- | --- |
+| `kind` | `OmfKind`, default Unknown | Reuse the OMF Kind enum (Unknown/Audio/Video); native decoding supplies only qualified Audio or Unknown. |
+| `sampleFrameCount` | `std::optional<qint64>` | A qualified nonnegative sample-frame count, including known zero. |
+| `samplingRate` | `std::optional<OmfNativeRate>` | The approved exact positive native fraction, within preserved native acceptance limits. |
+| `bitDepth` | `std::optional<quint16>` | Usable sample precision, preserving the current 1–64-bit range and format qualifications. |
+| `encoding` | `OmfAudioEncoding`, default Unknown | Unknown, Pcm or IeeeFloat; enough for the current PCM/IEEE-float Compression labels and Integer/Float meaning. |
+
+**Agreed small types:** `OmfNativeRate` has signed-32-bit `numerator` and
+`denominator`, used only for a positive usable native rate. `OmfAudioEncoding`
+has Unknown, Pcm and IeeeFloat. Both live beside the report; the OMF/native Kind
+enum is shared within this reader. There is no extra native representation
+string or enum duplicating the encoding, no group-wide validity flag, and no
+per-field status wrapper. An unavailable number is an empty optional value;
+source reading answers and necessary `problemNotes` retain the agreed reasons.
+
+**Preserved qualifications, not new format choices:**
+
+- Establish native Audio Kind from usable native format fields, not a filename,
+  outer signature or Completed reading answer alone.
+- WAVE/RF64 count uses only known PCM/IEEE-float encoding, one usable `data`
+  extent, positive block alignment and exact divisibility. Do not sum several
+  data chunks or substitute RF64 `ds64.sampleCount` as a new count authority.
+- AIFF/AIFC count comes from its recorded `COMM.numSampleFrames`, including
+  zero, rather than SSND byte length. Count and frequency form native timing;
+  do not invent a display clock or supplement it from a different contribution.
+- Keep independent frequency, precision, Kind and AIFF count when encoding is
+  unknown and those facts remain qualified. Unknown encoding does not authorize
+  a WAVE data-derived count.
+- Preserve exact extensible-WAVE subtype/precision checks and current AIFF
+  encoding/precision behaviour. Storage width, channels, complete GUID/fourCC,
+  block alignment, SSND and RF64 navigation facts remain necessary temporary
+  validation context, not automatic returned fields. Retain original locations
+  only as needed to finish the shared-file job, then release workspace.
+- No native FileMobId from a chunk named `umid`, video frame/display clock,
+  Project, new XML/private metadata field, channel-count/source-container UI
+  copy, formatted Duration/Sample Rate/Bit Depth string or restored excluded
+  column is introduced.
+
+**Tradeoff and scope:** the user accepted five useful values and release of
+decoding-only details. The alternative offered was to revise these members or
+request specific additional retained format context before agreeing the packet;
+that would need a concrete consumer and would add fields. OMF file/clip value
+types and distinct embedded-container handling remain separate check-ins. This
+approval record adds no runtime code or existing-reader changes and makes no
+measured performance claim.
+
+#### Agreed OMF associated-clip value contract
+
+**Approved 3 November 2026:** the user approved the recommended five-field
+selected-master contract as `OmfAssociatedClipInformation`, including the
+member names/types, two small enums and preserved qualifications below. The OMF file
+value contract is separate; this packet does not choose its remaining
+qualifications or distinct embedded-container combination rules.
+
+**Agreed five members:**
+
+| Member | C++ value | Meaning |
+| --- | --- | --- |
+| `masterMobId` | `std::optional<MobId>` | One qualified selected master's complete normalized identity; empty when no usable unique master is established. |
+| `clipName` | `QString` | That same master's selected name, preserving the agreed spelling and whitespace. Empty when unavailable. |
+| `originalBin` | `QString` | That master's directly qualified Original Bin name, under the agreed Unicode/legacy rules. Empty when unavailable. |
+| `type` | `OmfType`, default Unknown | Unknown, Media or Precompute, under the agreed own-usage interpretation. |
+| `precomputeCategory` | `OmfPrecomputeCategory`, default Unknown | Unknown, RenderedEffects or TitlesAndMatteKeys; extra work requires the fixed request and qualified Precompute Type. |
+
+Define the two small OMF-owned enums beside the report. Reuse the existing Bella
+`MobId`; return selected owned `QString` text. No native-audio ID, zero sentinel,
+raw master/bin object, source graph, alternate-name history or extra validity
+flag is introduced. Display/filter presentation remains separate from these
+internal values.
+
+**Preserved selection and independence:** all five facts come from the same
+qualified selected OMF master. Do not substitute another master, Filename,
+native-audio metadata or a source/track name to fill a blank. A missing/unusable
+name or bin does not erase a qualified MasterMobId or Type; unavailable Category
+does not erase Precompute Type. No usable unique master leaves dependent clip
+facts unavailable while independently qualified file/native facts survive.
+Keep the approved local damage boundaries and necessary explanations in the
+report's shared notes. Category is unused for ordinary Media and is presented
+according to the existing blank/Unknown rules.
+
+**Tradeoff and scope:** the user accepted making the five already-agreed fields
+concrete with ordinary values, empty optionals/text and small Unknown defaults,
+matching the existing Bella report style. The alternative offered was to revise
+particular member names/types before agreeing the packet. This does not reopen the selected-
+master, text, bin, Type or Category rules. The OMF file-value contract and
+distinct-container handling still need their check-ins before dependent
+implementation. This approval record changes documentation only; OldScanner remains
+active and Bin Filter is unchanged.
+
+#### Agreed OMF Project-selection representation
+
+**Approved 3 November 2026:** the user chose the alternative: two separate
+answers, following Bella's MDB parser. Keep these beside the selected
+`QString project` in the eventual OMF file-information group:
+
+| Member | Answers | Meaning |
+| --- | --- | --- |
+| `projectSelection` | `OmfProjectSelection`: Unavailable, Conflict, OwnFile, ImmediateSources | Where the selected Project came from, or why no usable selection exists. Default Unavailable. |
+| `projectKey` | `OmfProjectKey`: None, Pj, ProjName, UserPj, Mixed | The selected `_PJ`, `PROJNAME` or nested `_USER._PJ` key. Mixed is only for agreeing immediate sources using different supported keys. Default None. |
+
+For example, Project `Example` from the file's own `_PJ` returns OwnFile plus
+Pj. Unavailable or Conflict has no selected key and uses None. Return only
+consistent combinations; OwnFile plus Mixed is not a permitted result.
+Necessary failure explanations stay in the shared notes. An ordinary
+successful source answer does not create a warning. Release temporary source
+relationships and alternative values after selection.
+
+This makes concrete the compact owner/key context already required by the
+[agreed OMF Project rules](../docs/reviews/2026-10-23-bella-omf/project.md#agreed-bella-availability-and-retention).
+Project text, owner/key priority, agreement/conflict checks and availability
+rules remain settled. It adds no Project history, source-owner ID list or
+per-field wrapper. The declined recommendation combined source and key in one
+nine-answer enum, following MXF's original arrangement. Two fields are separately
+inspectable but must stay consistent. No performance advantage is claimed.
+
+Remaining file-information types and distinct embedded-container handling still
+need their check-ins before dependent implementation. This OMF approval record
+changes documentation only; OldScanner stays active and Bin Filter is unchanged.
+
+**Related MXF/PMR request, 3 November 2026:** the user also requested that the
+existing Bella MXF and PMR readers match the separate-answer arrangement. MXF's
+current combined answer can be split without changing its Project selection
+rules. PMR currently returns one direct Project string per record, has no
+owner/key selection fields and retains the approved four-member entry. The
+format-specific representation below was subsequently approved; do not invent
+PMR editorial attribute keys or expand its entry.
+
+#### Agreed MXF and PMR Project-answer alignment
+
+**Approved 3 November 2026:** the user chose both recommendations: split MXF's
+combined answer, with Preface plus None for a direct header Project, and keep
+PMR's existing four-member entry unchanged.
+
+- **MXF agreed arrangement:** use `MxfProjectSelection` with Unavailable, Conflict,
+  Preface and OwnFile, plus `MxfProjectKey` with None, Pj, ProjName and UserPj.
+  Map OwnFilePj/OwnFileProjName/OwnFileUserPj to OwnFile plus the corresponding
+  key. Unavailable/Conflict use None. Preface uses None because no editorial
+  attribute key was selected; the source already identifies the direct
+  `Preface.ProjectName` property. The declined alternative was an explicit
+  ProjectName key for that direct property, rather than defining key as
+  editorial-attribute key. None does not make the selected Project unavailable.
+- **PMR agreed arrangement:** keep the approved four-member entry unchanged. Its
+  Project, when recorded, comes from that record's fixed counted Project field;
+  version 1 has no Project field. There is no owner/key lookup to split. The parser/format already establishes this
+  constant context. The declined alternative was to add `PmrProjectSelection`
+  (Unavailable/Record) and `PmrProjectKey` (None/Project), defaulting both to
+  Unavailable/None and returning Record/Project for nonempty decoded Project.
+  Empty/null Project would remain empty and use Unavailable/None. This would make
+  the entry six members and repeat the same source/key for every usable value;
+  it would not add another search, decode or conflict-resolution rule.
+
+MXF implementation touches existing Bella `mxfparser.h/.cpp`, its focused
+test and the two Bella READMEs. PMR source, public types and tests stay unchanged.
+Preserve Project text, selection
+priority, all checks, other returned metadata and warning text. No shared
+cross-format enum, MDB refactor, OldScanner, Bin Filter, MediaFile/table,
+progress, journal, Unfinished Business or Undo changes are included. This
+approval authorizes the narrow MXF representation change and focused test
+updates; it does not change OMF's remaining pending value/combination choices.
+
+**Implemented and verified, 3 November 2026:** MXF now returns the approved
+separate source/key pair. The production diff changes only the enum/member
+representation and the three own-file success assignments; reading, selection
+order, validation, text and warning calls are unchanged. Existing authored
+fixtures/case counts remain intact, with pair assertions added to their
+Project/default controls. All **135 MXF Qt cases pass normally and with
+ASan/UBSan**, with no failures, skips or sanitizer findings. C++17 and exact
+Qt 6.5.3 remain in use; the normal universal target builds both architectures
+and these tests execute on arm64.
+
+Seven selected genuine MXFs from the computer and EDIT, in both optional-detail
+modes, produce **14 complete reports identical to their prior baseline** after
+only mapping the old combined Project answer to the new pair. Every other
+public value and exact note is unchanged, and observed input size/date facts
+remain stable. These genuine examples use Preface; authored cases cover the
+own-file keys, conflicts and unavailable results. PMR header/source/tests are
+byte-identical to the pre-change copies; its normal regression run passes
+**70 cases**, with **five existing retired-fixture skips** and no failures.
+No other reader, app code or CMake list changed in this step. No performance
+improvement or full-drive scan is claimed.
+
+#### Agreed OMF file-information value contract
+
+**Approved 3 November 2026:** the user approved the recommended fifteen-member
+`OmfFileInformation` contract proposed on the same date, including the member
+types, small types and preserved qualifications below. This completes the three
+metadata value groups of the agreed report, following the native and clip
+contracts. The two Project-answer members were already approved and are included
+for completeness, not reopened. Native information remains in its separate group.
+
+**Agreed fifteen members:**
+
+| Member | C++ value | Meaning |
+| --- | --- | --- |
+| `fileMobId` | `std::optional<MobId>` | One qualified selected physical-file identity, normalized completely; empty when unavailable. |
+| `project` | `QString` | Selected Project text, preserving spelling and whitespace. Empty when unavailable. |
+| `projectSelection` | `OmfProjectSelection`, default Unavailable | Already-approved source/conflict answer: Unavailable, Conflict, OwnFile or ImmediateSources. |
+| `projectKey` | `OmfProjectKey`, default None | Already-approved key answer: None, Pj, ProjName, UserPj or Mixed. |
+| `kind` | `OmfKind`, default Unknown | Unknown, Audio or Video, using the agreed OMF-specific descriptor mapping. Shared with the native group. |
+| `descriptorClass` | `std::optional<std::array<quint8, 4>>` | Own qualified legacy descriptor class, needed for class-specific frequency, timing and Compression interpretation. |
+| `length` | `std::optional<qint64>` | Original usable nonnegative MDFL Length, including known zero; this storage type does not add wider on-disk Length support. |
+| `sampleRate` | `std::optional<OmfRate>` | Original positive MDFL rate words plus their supported ExactEditRate/Rational encoding context. |
+| `audioEditRate` | `std::optional<OmfRate>` | Qualified own-file CPNT EditRate for audio's separate display clock. |
+| `durationClockSource` | `OmfDurationClockSource`, default Unavailable | Which retained rate is permitted to supply Duration: Unavailable, DescriptorSampleRate or SummaryFrequency. No duplicated rate. |
+| `numbering` | `OmfNumbering`, default Unavailable | Unavailable, NotRequired, MissingNdfFallback, RecordedNdf or RecordedDf, under the agreed timecode lookup rules. |
+| `audioFrequency` | `std::optional<OmfAudioSourceValue>` | Original class-specific audio-frequency form: a fraction pair, WAVE integer Hz or AIFF ten-byte frequency. |
+| `resolution` | `std::optional<OmfRaster>` | Selected numeric width/height plus Stored, Display or VerifiedProxy origin. |
+| `bitDepth` | `OmfBitDepth` | Usable numeric precision, necessary representation and original coded component width where needed. |
+| `compression` | `OmfCompression` | Compact qualified inputs for the unchanged naming boundary; no preformatted numeric cell or raw object graph. |
+
+**Agreed small types, all defined beside this report:**
+
+```cpp
+enum class OmfRateEncoding { ExactEditRate, Rational };
+struct OmfRateWords {
+    qint32 numerator = 0;
+    qint32 denominator = 0;
+};
+struct OmfRate {
+    OmfRateWords words;
+    OmfRateEncoding encoding = OmfRateEncoding::Rational;
+};
+using OmfAudioSourceValue =
+    std::variant<OmfRateWords, quint32, std::array<quint8, 10>>;
+
+enum class OmfDurationClockSource {
+    Unavailable, DescriptorSampleRate, SummaryFrequency
+};
+enum class OmfNumbering {
+    Unavailable, NotRequired, MissingNdfFallback, RecordedNdf, RecordedDf
+};
+
+struct OmfDimensions {
+    qint64 width = 0;
+    qint64 height = 0;
+};
+enum class OmfRasterOrigin { Stored, Display, VerifiedProxy };
+struct OmfRaster {
+    OmfDimensions dimensions;
+    OmfRasterOrigin origin = OmfRasterOrigin::Stored;
+};
+
+enum class OmfDepthRepresentation {
+    Unknown, Integer, HalfFloat, Float, S2_14Fixed, Fixed10_6, Fixed12_4
+};
+struct OmfBitDepth {
+    std::optional<quint32> bits;
+    OmfDepthRepresentation representation = OmfDepthRepresentation::Unknown;
+    std::optional<qint32> rawComponentWidth;
+};
+
+enum class OmfCodingState { Unavailable, Absent, Present };
+struct OmfCompression {
+    OmfCodingState codingState = OmfCodingState::Unavailable;
+    std::array<quint8, 16> codingLabel{}; // Meaningful only for Present.
+    std::optional<std::array<quint8, 4>> legacyCompression;
+    std::optional<qint64> resolutionId;
+    std::optional<OmfDimensions> namingGeometry;
+    std::optional<quint16> frameLayout;
+    std::optional<qint32> horizontalSubsampling;
+    std::optional<qint32> verticalSubsampling;
+    OmfAudioEncoding audioEncoding = OmfAudioEncoding::Unknown;
+    std::optional<quint16> alphaDepth;
+};
+```
+
+Reuse the already-approved reader-local Kind and audio-encoding enums and the
+existing Bella `MobId`. Strings are owned; unavailable numbers/identities are
+empty optionals. There is no file-group validity flag, MDB matching catalogue,
+generic per-field status/source wrapper or alternative-value history.
+
+**Why the one Duration-clock answer is retained:** the parser knows whether
+the already-agreed summary recovery is permitted while its temporary lookup
+results are available. An empty rate optional alone cannot distinguish a
+missing/unusable rate from contradictory required timing. Record that qualified
+choice once, using the original `sampleRate` or `audioFrequency` already kept.
+SummaryFrequency is limited to the agreed same-owner WAVD/AIFD/contextual-WAVE
+summary recovery; it is not permission to use a PCMA/MPGA frequency, native
+sample count or another source's clock. Unavailable can coexist with an
+independently usable audio-frequency value. This represents the
+[agreed compact fallback origin/status](../docs/reviews/2026-10-23-bella-omf/duration.md#agreed-bella-reading-and-retention)
+without inventing another timing fallback, warning or rate copy.
+
+**Lean retained depth/Compression context:** validate WAVE storage/precision
+and OMF's bounded parallel RGBA arrays before releasing their working values.
+The current naming boundary consumes qualified depth/representation and a
+proven sole-alpha depth, not storage width or the arrays themselves. Keep
+`alphaDepth` only after the existing complete sole-alpha, explicit NONE and
+established-coding-absence checks qualify it; common RGB depth alone is not that
+proof. Retain raw component width/full coding/representation for supported coded
+depth meanings and the already-open uncommon fixed-point naming context. Do
+not add `storageBits`, retained pixel arrays or a second format parse merely to
+copy MDB's report shape. The generic 10.6/12.4 Bit Depth label remains unsettled
+and unavailable; its qualified Compression context survives independently.
+
+**Preserved field boundaries:** original count/rate/frequency values are not
+overwritten by interpreted clocks, rounded labels or a summary substitute.
+Native audio retains its separately approved normalized fraction; this packet
+preserves OMF's separately approved original-source forms. Rate encoding keeps
+video ExactEditRate aliases separate from generic Rational/audio frequency.
+Descriptor ownership, narrow class maps, timecode qualifications, independent
+field availability, OMF Stored-relative Display/proxy rules and existing
+Compression naming remain unchanged. Naming geometry is separate from selected
+visible Resolution. A present unknown/unreadable coding claim is not established
+absence. No new format version, source priority, retained excluded column or
+header-open trigger is introduced.
+
+**Tradeoff and scope:** the user accepted this compact qualified-value packet. The
+parser completes required checks before releasing temporary data; later pure
+timing/naming helpers receive their needed inputs without repeated graph work.
+The tradeoff is that the compact report cannot answer arbitrary new questions
+about discarded decoding details. The alternative offered was to revise particular
+members/types before approval, identifying a concrete consumer for any extra
+retained context. For the Duration-clock representation specifically, the
+alternative offered was to retain the necessary timing-eligibility distinctions and
+derive the choice later; a bare empty rate plus frequency is not equivalent.
+No memory/speed improvement is claimed without measurements.
+
+This approval record changes documentation only and does not start OMF implementation.
+Multiple-container support was subsequently bounded below; any extraction of
+existing MDB helpers still needs its disclosed concrete decision before
+dependent code. No other reader or app code changes are included. OldScanner
+stays active and Bin Filter is unchanged.
+
+#### Agreed single-container OMF support boundary
+
+**Approved 3 November 2026:** the user chose to support one OMF container for
+now and defer merging multiple containers, following the revised recommendation.
+The earlier carryover recommendation had been withdrawn after the user's scope
+question: existence in OldScanner does not establish a concrete Bella use case.
+No OMF runtime implementation has begun.
+
+**Evidence reassessment:** commit `91f7732` introduced traversal of several
+`omfi` chunks and an authored two-graph test on 4 October. Its real-file examples
+were the same two Avid tones, each with one graph. Commit `b4c6c49` later added
+identity-gated combination and an authored conflicting-identity test. These
+establish implemented behaviour, not a real producer/user requirement. No such
+requirement or genuine multiple-container specimen was found in the reviewed
+history. The 2 November survey examined 1,817 selected paths, completed 1,715
+native walks and observed two embedded containers total, one in each tone;
+none had observed multiple containers. Incomplete walks and the selected scope
+prevent a universal absence claim.
+
+**Agreed boundary:** defer multiple-container reconciliation for the
+first release. Support ordinary native audio and one distinct discovered OMF
+location with the agreed checks. Continue native chunk navigation and same-label
+deduplication; do not require the sole OMF chunk to be last or confuse later
+ordinary chunks with a second OMF. If more than one distinct OMF location is
+discovered, return Unsupported for that OMF contribution with a clear reason,
+leave its two OMF information groups unavailable and retain independently usable
+native facts and the physical row. Do not silently select the first/last
+location or parse several and call the first usable one the sole source.
+Unfinished location discovery cannot establish absence or exactly one location;
+the existing read/cancellation/damage qualifications still apply.
+
+This is an explicit approved support limit, not a claim that multiple-container
+files are damaged. It withholds OMF metadata that OldScanner may use even
+when several containers agree, or one is usable beside another. The benefit is
+avoiding cross-container identity, Project-origin, master, timing and Compression
+reconciliation without a demonstrated real-file need. All checks for the supported
+single-container path remain. Revisit the limit if a genuine supported workflow
+provides such a specimen; no speed/memory improvement is claimed.
+
+**Declined alternative:** implement qualified multiple-container combination now,
+preserving OldScanner's broader capability with additional code and tests. Its
+broad evidence model is not a requirement to reproduce that machinery in Bella.
+The existing authored tests can verify a chosen policy but cannot establish that
+the feature is needed. The user accepted the narrower boundary and its loss of
+that unneeded-for-observed-files capability. OldScanner, Bin Filter and all
+runtime code are unchanged by this approval record.
+
+#### Agreed shared audio-format extraction within OMF implementation
+
+**Approved 3 November 2026:** the user chose the alternative workflow: include
+the shared-helper extraction in the larger OMF/native reader implementation,
+rather than a separate refactor/review step first. The report/value contracts
+and single-container support boundary are agreed. Implement their independent
+reader and focused tests together with the bounded MDB/OMF helper extraction.
+This is reuse of existing required decoding, not a new metadata field or a
+reason to copy OldScanner machinery. Bring genuinely new choices back before
+dependent code, preserving the stronger scope discipline above.
+
+**Actual need:** the genuine Avid WAVE and AIFF-C tones contain format fields
+both in native chunks and in their own OMF descriptor summaries. The approved
+MDB/OMF fields also consume WAVE `fmt` and AIFF `COMM` summary fields for exact
+frequency, precision and encoding. Bella's existing MDB parser already has the
+bounded field decoders (`mdbWaveFormat` / `mdbAiffCommon`). The 25 October audio
+Sample Rate and Bit Depth decisions explicitly called for sharing these small
+functions between MDB and OMF, rather than separate per-column decoding.
+
+**Agreed extraction:** move the needed existing summary-format decoding into
+private `src/bella/audioformat_p.h/.cpp` within the OMF implementation. Use ordinary private
+decoded values and small report adapters; keep all existing public MDB/PMR/MXF
+types unchanged. The helper interprets bounded WAVE fmt / AIFF COMM bytes and
+necessary exact AIFF frequency representation. It opens no file, owns no graph,
+selects no metadata source and supplies no new warning category or report field.
+Preserve existing MDB checks, returned facts, exact warning text and order.
+
+Keep MDB's outer Summary traversal, repeated-claim handling and MDB report
+assignment in its parser initially. OMF will retain its own selective acquisition
+and qualified ownership. Do not reuse a short Summary walker as the physical
+WAV/AIFF reader: native traversal can continue after sound data, whereas a
+Summary may deliberately omit sound data. Likewise, MDB/OMF summary qualification
+is not a drop-in replacement for the separately approved native precision and
+frequency rules. No universal audio-policy abstraction is proposed.
+
+**Existing-code touch points disclosed before changes:**
+
+- `src/bella/mdbparser.cpp`: move only the relevant format decoding and adapt its
+  private result back to the existing MDB values. Keep independent MDB container,
+  relationship, summary-framing and field-selection logic.
+- Root `CMakeLists.txt`: list the two new private helper files in the independent
+  Bella static library. Existing focused MDB tests remain the public regression
+  boundary; change neither their expected results nor warnings to fit a refactor.
+- The two Bella READMEs: record the implementation and bounded verification.
+
+The native helper files and OMF public reader/tests have their agreed names and
+are included in this implementation step; their explicit source/target entries
+also touch the root/test CMake lists as previously disclosed. PMR, MXF, OldScanner,
+Bin Filter, table/MediaFile, progress, journal, Unfinished Business, Undo and app
+integration are outside this change.
+
+**Accepted tradeoff:** perform the helper extraction together with the
+OMF/native reader implementation. This uses fewer review steps, but produces a
+larger change in which an MDB regression would be harder to separate from new
+OMF work. The declined separate-extraction recommendation would have made
+unchanged MDB behaviour reviewable first, with one additional step before OMF. This
+does not reopen the approved direction to share the necessary functions or
+claim a measured speed/memory improvement. Verify unchanged MDB reports and
+warnings alongside the OMF/native focused tests before reporting completion.
+
+#### OMF and native-audio implementation verification
+
+**Implemented and verified, 3 November 2026:** `omfparser.h/.cpp`, private
+`audioreader_p.h/.cpp` and focused `tst_bellaomf.cpp` / `tst_bellaaudio.cpp`
+implement the agreed report/value and single-container contracts. Shared bounded
+Summary decoding lives in `audioformat_p.h/.cpp`; MDB uses a small adapter without
+changing its public types. The root/test CMake lists add the new sources/targets
+to the independent test-only library. C++17 and exact Qt 6.5.3 remain in use.
+OldScanner stays active; Bin Filter, MediaFile/table, progress, journal,
+Unfinished Business and Undo are unchanged.
+
+The entry owns one unbuffered read-only file. Native helpers borrow it; OMF
+indexes the complete supported Bento 1 TOC once and fetches needed metadata.
+A previously read trailer label is reused. Sample extents/unrelated payloads
+are skipped; temporary TOC, dictionaries, needed payloads and linkage workspace
+are released when the call returns. There is no retained raw graph, general
+importer, new codec registry or multiple-container reconciliation. More than
+one distinct OMF location produces Unsupported, unavailable OMF groups and
+retained independently usable native facts. Unfinished discovery does not
+establish absence or justify choosing an early location.
+
+**Focused Qt results:**
+
+| Suite | Normal | ASan/UBSan |
+| --- | --- | --- |
+| OMF | 261 passed, 0 failed, 0 skipped | 261 passed, 0 failed, 0 skipped |
+| Native audio | 68 passed, 0 failed, 0 skipped | 68 passed, 0 failed, 0 skipped |
+| Shared ID | 12 passed, 0 failed, 2 skipped | 12 passed, 0 failed, 2 skipped |
+| PMR | 70 passed, 0 failed, 5 skipped | 70 passed, 0 failed, 5 skipped |
+| MDB | 203 passed, 0 failed, 7 skipped | 203 passed, 0 failed, 7 skipped |
+| MXF | 135 passed, 0 failed, 0 skipped | 135 passed, 0 failed, 0 skipped |
+
+No sanitizer findings or runtime stderr were observed. The 14 existing skips
+refer to retired real-media fixtures; none was restored or counted as a pass.
+The normal target compiles arm64 and x86_64, executing on arm64; the separate
+sanitizer build executes arm64. Authored cases cover supported typed layouts,
+full identities/active ownership, field independence, text/bin/Project/category,
+technical values, physical timecode intervals and local/global damage boundaries.
+Native controls include guarded sample skipping, large RF64 navigation and
+deterministic read-boundary Cancel/I/O. This is not universal damaged-file proof.
+
+**Genuine inputs:** eleven selected files comprise the two Avid WAVE/AIFF-C
+tones, three Avid OMF support slates, three real float AIFF-C mixes, an ordinary
+PCM WAVE, an ordinary AIFF and a float WAVE. Their overlap supplies eight native
+files and five OMF contributions. Independent bounded byte reading checks native
+fields and OMF label/TOC, dictionaries, selected owners/relationships and required
+values. Both detail modes and both builds produce **44 complete reports** with
+**2,116 public-value checks, zero mismatches**. Normal/sanitizer report bytes are
+identical. Observed input stamps remain unchanged and match the oracle inputs.
+The float WAVE preserves its existing native malformed fmt-extension answer
+while retaining independently readable 48 kHz/32-bit/count facts.
+
+The public standalone OMF route uses a twelve-byte identification probe; for
+the three slates this overlaps their declared image-data range. No frames are
+decoded and native sound/alignment payloads remain unread. Do not claim literally
+zero essence-range bytes for every identification probe. These are bounded
+selected-file/parser checks, not an exhaustive computer/EDIT scan or playback
+certification.
+
+**MDB preservation:** all 26 complete reports from thirteen genuine/rejection
+inputs in both optional-detail modes are byte-identical to the frozen
+pre-extraction library, including exact note text/order and QString nullness.
+The inputs are seven genuine Avid MDBs and six unrelated-extension controls;
+their hashes/stamps remain stable. Static comparison also confirms unchanged
+Summary traversal, repeated-claim handling and warning sequence. Public MDB
+header/test and PMR/MXF source/public types are unchanged in this step.
+
+**External source-check controls:** all five authored temporary-file scenarios
+pass: populated Verified baseline; in-flight Cancel; size increase; mtime-only
+change; and unlink after opening. Actions follow an observed read-only descriptor
+within native header navigation. Both observed changes produce Changed and clear
+all three metadata groups. Unlink produces Unverified with otherwise qualified
+groups equal to baseline. No user media is modified; this establishes observed
+outcomes, not a scheduling or cancellation-latency promise.
+
+Disposable receipts stay outside the checkout under
+`/private/tmp/bella-omf-implementation-20261103/`: `suite-results.json`,
+`shared-audio-extraction/receipt.json`, `genuine/final/run-receipt.json` and
+`io-stress/receipt.json`. No scan-time or peak-memory improvement is claimed.
+Scanner matching, shared semantic/formatting adapters and app cutover remain
+separate work under the recorded check-in rules.
+
+**MXF entry boundary agreed, 1 November 2026:** the user chose the recommended
+option: the MXF reader opens the file, just like PMR and MDB. Give the reader a
+file path; it owns opening, the required metadata reads, interpretation and
+closing, and returns compact owned results. The caller does not open a device
+or supply captured bytes first. Small private helpers remain possible; this
+does not require another public byte-reader interface or a shared capture layer.
+
+This settles file ownership only. The already-agreed selective MXF header rules
+remain authoritative: read the required bounded initial metadata region, skip
+unneeded payloads and release temporary storage. PMR/MDB's whole-file
+`readAll()` choice is not extended to MXF. The source-check mechanism is agreed
+below, as are Cancel checkpoints; concrete signatures and report members still
+need their check-ins.
+No MXF runtime code, existing app integration or cutover is authorized by this
+record alone. OldScanner remains active and Bin Filter is unchanged.
+
+**MXF size/modification-time check agreed, 1 November 2026:** the user chose
+the recommended size and modification-time check for MXF, just like PMR and
+MDB. Observe the source path's available size and modification time freshly
+before and after the required metadata reading, using Qt-only `QFileInfo`
+code. An observed difference in either excludes that MXF read under the
+already-approved changed-read rule. Keep the physical row and independently
+valid information, and leave another attempt to manual rescan.
+
+The user chose this over adding native filesystem-identity checks. These facts
+can miss a rewrite or replacement that preserves both size and modification
+time; they do not prove an atomic snapshot or certify media content. This does
+not change the selective header-reading boundary or existing file-operation
+verification. The unavailable-check and Cancel decisions are recorded below;
+exact report representation remains to review. No MXF runtime code or
+app integration is added by this record; OldScanner stays active and Bin Filter
+is unchanged.
+
+**Readable but unverified MXF agreed, 1 November 2026:** the user chose to
+keep otherwise usable MXF metadata and mark the size/modification-time check
+Unverified when that check cannot be completed, just like PMR and MDB. Preserve
+the unavailable-check reason and qualification; an unavailable measurement alone
+does not establish changed or damaged content. The declined alternative was to
+withhold that otherwise usable MXF metadata.
+
+An observed difference in an available size or modification-time measurement
+still excludes that read, even if the other measurement is unavailable. Failed
+reads and unusable fields or relationships do not become usable through this
+choice. Keep the approved shared-structure/local-damage boundaries and source
+priorities. This adds no automatic retry, extra header-read trigger, native
+identity check or change to file-operation verification. The Cancel decision
+follows; exact report types remain to review. This record changes documentation only;
+OldScanner stays active and Bin Filter is unchanged.
+
+**MXF Cancel checkpoints agreed, 1 November 2026:** the user chose the
+recommended option: check the shared stop flag before and after each file-read
+operation, and between major parsing stages. This gives the selective MXF
+reader a stop opportunity between its existing reads, rather than checking only
+around the complete header-reading stage. The shared flag and the stop-before-
+opening rule remain as already agreed for Bella.
+
+This does not require a new chunked-read loop or polling every decoded field,
+record or relationship inside in-memory parsing stages. A request during one
+of those stages may wait until its next boundary; a blocked operating-system
+read must return before Bella can check again. No stopping-time improvement has
+been measured. Cancellation does not make unfinished shared framing usable or
+permit a half-finished job to be reported as successful; retain only facts
+qualified under the existing cancellation/damage rules. The two major stages
+are agreed below; concrete helper boundaries remain for implementation review.
+PMR/MDB checkpoints, the selective MXF header scope, OldScanner and Bin Filter
+are unchanged. This
+record adds no runtime code.
+
+**MXF expected-failure replies agreed, 1 November 2026:** the user chose
+ordinary checked replies for MXF, just like PMR and MDB. Helpers return a usable
+value or a failure/unavailability answer, and callers check it. Use this route
+for expected file-open, read, format and source-check problems rather than
+private parsing exceptions caught at the reader entry point.
+
+This settles control flow only. Keep the agreed shared-structure/local-damage
+boundaries, independent usable facts and separate I/O, unsupported, changed and
+cancelled outcomes. Unexpected allocation or programming failures remain
+distinct from damaged input; do not introduce a blanket catch or promise that
+an allocating reader cannot throw. Exact helper/result types and the concrete
+report contract remain to review. This record adds no runtime code or app
+integration; OldScanner stays active and Bin Filter is unchanged.
+
+**MXF returned report agreed, 1 November 2026:** the user chose one owned
+MXF report, just like PMR and MDB, instead of returning the information with
+separate status/detail outputs. Keep the compact extracted metadata, reading
+outcome, size/modification-time check qualification and necessary explanatory
+notes together in that report. For example, reading can complete while the
+check is Unverified and otherwise usable metadata is retained.
+
+This settles packaging only, not extra diagnostics, exact member/type names
+or the major-stage contract. Metadata grouping is agreed below. The approved MXF ownership,
+field-selection, local/shared damage and source-check rules remain authoritative;
+PMR's whole-set model and MDB's multi-file catalogue are not automatically
+adopted. This record adds no runtime code or app integration. OldScanner stays
+active and Bin Filter is unchanged.
+
+**MXF metadata groups agreed, 1 November 2026:** the user chose two small
+groups inside the one MXF report: file information and associated clip
+information. File information contains the selected results for this physical
+MXF, such as FileMobId, resolution and timing; associated clip information keeps
+the selected master's MasterMobId, Clip Name, Type and optional category
+together. The declined alternative was one flat metadata record with all these
+fields alongside each other.
+
+Both groups contain only facts selected under the existing ownership rules;
+this is not an MDB-style multi-file/master catalogue or a list of ambiguous
+candidates. An unavailable master association leaves its dependent clip facts
+unavailable while independently usable file information survives. Grouping
+does not add group-wide validity rules or change field-level qualifications,
+source priorities, retained fields or header-reading scope. Exact C++ members,
+types and availability representation remain for the concrete contract. This
+record adds no runtime code or app integration; OldScanner stays active and
+Bin Filter is unchanged.
+
+**MXF optional-details input agreed, 1 November 2026:** the user chose one
+named True/False input for optional precompute details, just like MDB. Use an
+explicit `bool includePrecomputeDetails` argument carrying the request fixed
+for the scan, with a clearly named value at call sites, rather than a new
+options record containing that one flag. The reader does not consult changing
+GUI or global settings.
+
+This carries the already-agreed optional demand. It controls extra Precompute
+Category interpretation; ordinary identities, Clip Name, Type and required
+framing/ownership validation remain required. Effect and Effect Category still
+derive later through the existing shared resolver after final Type/name source
+selection. This adds no new field, header-opening reason or setting. Remaining
+entry/report types belong in the concrete contract; the two major stages are
+agreed below.
+This record adds no runtime code or app integration; OldScanner stays active
+and Bin Filter is unchanged.
+
+**MXF two-major-stage arrangement agreed, 2 November 2026:** the user chose
+the recommended two major stages:
+
+1. Safely read and map the selected header: establish its supported layout,
+   complete trustworthy framing and required Primer/property mappings, retaining
+   only necessary temporary object/property/reference information.
+2. Resolve the approved physical-file and associated-master ownership, extract
+   and qualify the agreed values, assemble the two owned information groups,
+   then release temporary storage.
+
+The declined alternative split ownership selection into a separate middle
+stage before value extraction. The two-stage choice changes organization, not
+the required checks, owner selection or independently usable facts. Preserve
+the approved Cancel checks before/after every file-read operation and between
+the major stages. The size/date observations surround all required metadata
+reading. This does not require a whole-file/header RAM image, a repeated header
+read or an extra retained evidence graph; selective bounded reading and compact
+temporary storage remain authoritative. It does not copy MDB's two in-memory
+stages after a whole-file capture. Exact entry/report types and helper details
+remain for the concrete MXF contract. No runtime code or app integration is
+added; OldScanner stays active and Bin Filter is unchanged.
+
+**MXF source-check measurements temporary, agreed 2 November 2026:** the
+user chose to keep just the MXF size/date check result and explanation, and
+release the temporary before/after measurements, just like MDB. Keep the source
+path with the report context. Use fresh measurements for the agreed comparison;
+an explanation of a detected difference can retain the actual available
+before/after values. Unverified checks keep their reason, and otherwise usable
+metadata remains eligible under the approved rule.
+
+The declined alternative was also returning those original measurements for
+later inspection. This choice is limited to the parser's temporary check
+readings: required physical-file inventory facts, scan stamps and identities
+needed for file-operation verification remain required. The later scanner
+handoff must preserve those facts; this does not authorize losing a required
+fact if its source is a parser observation. No memory improvement is claimed.
+Exact report/group member types remain for the concrete contract. This record
+adds no runtime code or app integration; OldScanner stays active and Bin Filter
+is unchanged.
+
+#### Agreed MXF entry and report contract
+
+**Approved 2 November 2026:** the user approved the recommended MXF entry/report
+contract below. This makes the already-agreed reader boundary concrete.
+The file/clip value contract and implementation were subsequently approved
+below; this entry approval alone did not select its members or qualifications.
+
+**Agreed files:** `src/bella/mxfparser.h/.cpp` for the entry, its report
+and small private helpers; `tests/tst_bellamxf.cpp` for focused tests. A later
+implementation would add these to the existing explicit root/test CMake lists
+for `mediamuster_bella`, using C++17 and exact Qt 6.5.3 / Qt Core. Those two
+CMake files are existing-file touch points. No progress, MediaFile/table,
+journal, Unfinished Business, Undo, Bin Filter or active app integration is
+included.
+
+**Agreed synchronous entry:**
+
+```cpp
+MxfReport parseMxf(const QString &path,
+                   const std::atomic_bool &stopRequested,
+                   bool includePrecomputeDetails);
+```
+
+The caller keeps the inputs alive until the call returns. The reader opens and
+closes its own file, uses the shared scan stop flag and receives the fixed
+optional-details request. It returns owned values rather than views into
+released workspace; no GUI, pool or new thread is part of this function.
+
+**Agreed report members:**
+
+| Member | C++ value | Meaning |
+| --- | --- | --- |
+| `path` | `QString` | Source path, retained once. |
+| `reading` | `MxfReadResult` | How the attempt finished. |
+| `sizeDateCheck` | `MxfCheckResult` | Independent source-check answer. |
+| `fileInformation` | `MxfFileInformation` | Selected results for this physical MXF; exact members follow in the value contract. |
+| `associatedClipInformation` | `MxfAssociatedClipInformation` | Selected associated-master facts; exact members follow in the value contract. |
+| `problemNotes` | `QStringList` | Necessary explanatory reasons; combine with `path` when displaying/logging. |
+
+**Agreed read answers:** `NotRead` (default), `Completed`, `Malformed`,
+`Unsupported`, `IoError`, `Changed`, `Cancelled`. `Completed` means the planned
+pass finished, not that every field is available or that essence/footer health
+was checked. Unusable local values remain unavailable with their necessary
+explanations; unsafe shared framing/ownership foundations exclude the dependent
+metadata under the approved MXF damage rules. Unsupported initial layouts or
+header states remain distinct from malformed content. No PMR set answer or MDB
+catalogue is introduced.
+
+**Agreed check answers:** `NotChecked` (default), `Verified`, `Unverified`,
+`Changed`. The reading and check answers remain separate: a completed attempt
+can retain otherwise usable metadata with an Unverified check. Use
+MXF-owned enums beside its report, following the existing reader arrangement;
+no completed PMR/MDB public type is changed. Return no retained before/after
+measurement members, as just approved. Required inventory/operation facts still
+need their independent, preserved scanner handoff.
+
+Use the two approved major stages, selective bounded reads, checked replies and
+Cancel checkpoints. Keep only independently qualified completed facts on Cancel;
+no unfinished dependency becomes usable. Exact file/clip values, availability
+types and necessary qualifications remain the next bounded contract review.
+
+**Approval scope and tradeoff:** the user accepted this familiar entry/report
+arrangement as a packet, following MDB's calling pattern while keeping MXF's two
+selected information groups. The small MXF-owned status definitions repeat
+familiar labels. The alternative offered was to revise particular names,
+members or answer lists before agreeing the packet. No new product behavior
+or shared type framework is approved.
+
+#### Agreed MXF file and clip value contract
+
+**Approved 2 November 2026:** the user approved the recommended MXF value
+contract and requested implementation of the independent reader and its tests,
+keeping the code elegant and bringing any further decisions back before
+dependent changes. The agreed values below follow the approved MXF field rules;
+this does not authorize changing those rules or switching the active scanner.
+
+**Agreed shape:** simple MXF-owned values, `std::optional` for unavailable
+numbers/identities and separate `problemNotes`. Keep only the specific
+qualifications below. The groups always exist with empty/unknown defaults;
+neither has a blanket validity flag. In particular, usable Preface Project can
+survive unavailable file identity. Reuse the shared Bella `MobId` and unchanged
+interpretation/naming rules; do not reuse MDB-specific rate encodings, audio
+summary variants, Project inheritance or four-byte class tags.
+
+**Agreed `MxfFileInformation`:**
+
+| Member | C++ value | Meaning |
+| --- | --- | --- |
+| `fileMobId` | `std::optional<MobId>` | Complete normalized own-file identity, only after approved essence/role/ownership qualification. |
+| `project` | `QString` | Selected Project text, preserving spelling and whitespace; empty when unavailable. |
+| `projectSelection` | `MxfProjectSelection` | Unavailable, Conflict, Preface or OwnFile. Separate from the key under the 3 November alignment approval above. |
+| `projectKey` | `MxfProjectKey` | None, Pj, ProjName or UserPj. None for Preface, Unavailable and Conflict; an own-file selection has its corresponding editorial key. Default None. |
+| `kind` | `MxfKind` | Unknown, Audio or Video from the qualified own descriptor. |
+| `descriptorClass` | `std::optional<std::array<quint8, 16>>` | Complete own descriptor class identity, not a legacy MDB tag. |
+| `containerDuration` | `std::optional<qint64>` | Original nonnegative ContainerDuration, including known zero; unavailable is separate. |
+| `sampleRate` | `std::optional<MxfRate>` | Original positive own descriptor SampleRate rational; independently retained when count is unavailable. |
+| `frameRateQualified` | `bool`, default false | Whether that same SampleRate has supported physical-video frame units and can supply Frame Rate. No duplicate FPS pair. |
+| `projectEditRate` | `std::optional<MxfRate>` | Same-header Preface.ProjectEditRate when needed as audio's display frame clock. |
+| `numbering` | `MxfNumbering` | Qualified Duration numbering result; distinct missing, recorded and unusable cases below. |
+| `audioSamplingRate` | `std::optional<MxfRate>` | Own audio frequency, separate from the container-unit rate and display clock. |
+| `resolution` | `std::optional<MxfRaster>` | Selected numeric physical raster and compact origin. |
+| `bitDepth` | `MxfBitDepth` | Interpreted precision and necessary compact source/representation context. |
+| `compression` | `MxfCompression` | Compact inputs to the preserved naming boundary, not a preformatted label or raw graph. |
+
+**Agreed `MxfAssociatedClipInformation`:**
+
+| Member | C++ value | Meaning |
+| --- | --- | --- |
+| `masterMobId` | `std::optional<MobId>` | One distinct fully qualified associated master; absence does not erase independent file facts. |
+| `clipName` | `QString` | That selected master's name, preserving its spelling/whitespace; unavailable stays empty. No file/source-name substitute. |
+| `type` | `MxfType` | Unknown, Media or Precompute. |
+| `precomputeCategory` | `MxfPrecomputeCategory` | Unknown, RenderedEffects or TitlesAndMatteKeys; extra work follows the approved request flag. |
+
+Presence of `fileMobId` means the approved physical-file ownership checks
+succeeded, independently of whether a master can be established. Presence of
+`masterMobId` means the approved unique associated-master checks succeeded;
+zero/ambiguous identities are not manufactured into a value. One readable
+master candidate plus an unresolved relevant candidate does not prove unique
+ownership. With no candidate catalogue returned, no separate public master-link
+completeness flag is returned. Editorial values must describe `masterMobId`;
+they cannot fill a different final selected master's blanks. MXF category keeps
+its own conservative supported object/wrapper rules; MDB's separately approved
+non-object import-setting handling is not automatically extended to MXF.
+
+**Agreed exact numbers and qualifications:**
+
+- `MxfRate` has `qint32 numerator` and `qint32 denominator`, both positive for a
+  retained rate, preserving the original explicit MXF rational without reducing
+  or converting it through decimal text. No MDB ExactEditRate discriminator or
+  alias conversion is attached. Count, rate, audio frequency and display clock
+  remain independent source facts; only compatible complete bundles yield
+  derived Duration. Raw ContainerDuration remains in its established container
+  units, never relabelled as audio samples without the supported unit meaning.
+- `frameRateQualified` concerns video FPS interpretation only. It is false for
+  audio and unestablished video unit mappings; it is not a validity flag for the
+  whole file group or permission to use a raw pair with unsupported units.
+- `MxfNumbering` has Unavailable (default), NotRequired, MissingNdfFallback,
+  RecordedNdf and RecordedDf. MissingNdfFallback requires a complete relevant
+  lookup establishing genuine absence; damaged/unresolved required numbering
+  stays Unavailable. Return no timing graph, raw track lists or flag histories.
+- The later display-clock input comes from qualified video `sampleRate`, or
+  audio's same-header `projectEditRate`. The formatter's explicit nominal frame
+  base must be uniquely derived/validated from the retained exact supported
+  clock and qualified numbering under the approved timing rules, never from a
+  formatted label, rounded elapsed seconds or another project's clock. This
+  avoids another stored copy where that derivation is sufficient. If an
+  approved supported case requires an additional non-derivable fact, retain
+  it through an explicit contract amendment before discarding workspace;
+  do not silently guess the base or drop an otherwise required result.
+- `MxfDimensions` contains positive `qint64 width` and `height`. `MxfRaster`
+  combines those dimensions with `MxfRasterOrigin`: Stored, Sampled, Display or
+  VerifiedProxy. Apply the approved MXF nested-rectangle defaults and
+  SeparateFields height conversion before returning it. Keep naming geometry
+  separate from this table raster; raw crop inputs remain temporary.
+- `MxfBitDepth` has optional `quint32 bits`, `MxfDepthRepresentation
+  representation`, optional `quint32 rawComponentDepth` and optional
+  `std::array<quint8, 16> pixelLayout`. Keep the latter source facts only where
+  required by the approved depth/Compression interpretation. Representation
+  values are Unknown, Integer, HalfFloat, Float, S2_14Fixed, Fixed10_6 and
+  Fixed12_4, without adding unapproved generic fixed-point display labels.
+  Unsupported generic depth stays unavailable while useful naming context
+  survives. Audio QuantizationBits needs no duplicate stored-width copy.
+- `MxfCompression` has `MxfCodingState codingState`, a complete 16-byte
+  `codingLabel`, optional `MxfDimensions namingGeometry`, optional
+  `quint8 frameLayout`, optional `quint32 horizontalSubsampling` and
+  `verticalSubsampling`, plus `MxfNamingFallback namingFallback`. Reuse the own
+  `sampleRate`, descriptor class and depth context rather than duplicating them.
+  CodingState is Unavailable (default), Absent or Present; label bytes are
+  meaningful only for Present. A typed unknown present label is not absence.
+- NamingFallback is None (default), Pcm or UncompressedAlpha8. Set a fallback
+  only after its already-approved proof succeeds: qualified absent sound coding
+  for PCM, or the exact supported header container evidence, own A8 layout and
+  genuine coding absence for uncompressed alpha. It does not fabricate a
+  recorded coding label, legacy `NONE` or ResolutionID. Keep existing RLE
+  mappings and unknown handling; do not retain container batches just for this
+  proof. Apply the approved absent-vertical default only after proving absence.
+
+Defaults are empty strings, empty optionals, Unknown/Unavailable enums, false
+frame-rate qualification and no established naming fallback. Required local
+missing/damage/conflict distinctions remain explicit where they affect source
+selection, absence defaults or calculations; other bad values use their
+unavailable answer plus the necessary contextual explanation. No generic
+per-field status/source/history wrapper is introduced.
+
+No Original Bin, recorded Source Path, duplicate Filename/filesystem stamps,
+raw markers/import-setting bodies, alternative candidates or formatted numeric
+labels are added. The report's approved source path remains. KelpieId belongs
+to the later physical inventory. Effect/Effect Category still derive once after
+final Type/name source selection. Required physical inventory and operation
+facts remain governed by their separate handoff contract.
+
+**Approval scope and tradeoff:** the user approved these contents and small
+representations as one value packet. Some compact facts support qualified timing or existing
+Compression names rather than visible columns; they avoid losing the agreed
+results when the generic table value is unavailable. The offered alternative
+was to refine particular members/representations before approval. No new
+field-source behavior, generic framework or measured improvement is approved.
+The existing Compression resolver remains the agreed naming authority for a
+later small Bella adapter. The reader returns its compact facts and naming
+proof without editing that resolver. Any shared-helper change needed by the
+later adapter must be identified and reviewed before making it. Implement the
+reader and focused tests in the agreed files, adding only their explicit
+root/test CMake entries. OldScanner stays active and Bin Filter is unchanged.
+
+**Equivalent duplicate MXF rates agreed, 2 November 2026:** if a repeated rate
+property contains different original fractions with exactly the same positive
+numeric value, accept them as agreeing and retain the first original fraction.
+For example, `25/1` and `50/2` both mean 25; their order determines which
+original numerator/denominator is retained, not the numeric result. The user
+chose this over withholding the rate unless the original words match exactly.
+Compare with checked exact arithmetic, without floating point or rewriting the
+retained pair. Genuinely different rates such as `25/1` and `30/1` remain
+conflicting and unavailable. This MXF choice does not change MDB comparison
+rules. No such duplicate-form specimen was found in the reviewed real files;
+authored tests must cover agreement, reversed order and disagreement.
+
+#### MXF implementation verification
+
+**Implemented and verified, 2 November 2026:** the independent
+[`mxfparser.h/.cpp`](../src/bella/mxfparser.h) and
+[`tst_bellamxf.cpp`](../tests/tst_bellamxf.cpp) now implement the approved
+entry/report/value contracts. The only existing code/build edits are the
+explicit root/test CMake source/target entries. Existing ID, PMR and MDB sources
+and public headers are byte-unchanged. OldScanner remains the app's active
+scanner; Bin Filter, MediaFile/table, progress delivery, journal, Unfinished
+Business and Undo are unchanged. Architecture/source notes reflect the new
+standalone component.
+
+The implementation uses C++17 and exactly Qt 6.5.3 / Qt Core, checked replies,
+scoped `QFile` ownership and two major stages. It frames the complete selected
+region before returning facts, fetches/caches only required property payloads,
+and releases object/reference/byte workspace before returning the owned report.
+Actual read calls and stage boundaries check Cancel. Fresh size/date checks
+exclude observed changed reads or retain otherwise usable Unverified metadata,
+as agreed. No active scanner, display formatter or Compression naming adapter
+is added by this increment.
+
+The normal macOS build compiles arm64 and x86_64; tests execute on arm64. A
+separate arm64 build uses AddressSanitizer and UndefinedBehaviorSanitizer with
+halt-on-error enabled. All test programs exit successfully with empty stderr
+and no sanitizer findings. Totals include Qt setup/cleanup:
+
+| Suite | Passed in each normal/sanitizer run | Failed | Skipped in each run |
+| --- | ---: | ---: | ---: |
+| Bella MXF | 135 | 0 | 0 |
+| Shared ID | 12 | 0 | 2 |
+| Bella PMR | 70 | 0 | 5 |
+| Bella MDB | 203 | 0 | 7 |
+
+The 14 skips are pre-existing genuine-fixture cases whose shared assets were
+retired; they are not counted as passes. The new MXF suite is entirely authored
+wire data, with independent expected identities/values. It covers both local
+length encodings and relocated Primer tags; OP-Atom admission and selected
+header boundaries; recording/index/partition/RIP exclusion; unknown-payload
+skipping; late required metadata after an 80 MiB sparse opaque region; full
+file/master and target-track qualification; ambiguity and conflicting UID
+claimants; local field independence; Unicode/Project priority; exact clocks and
+equivalent duplicate fractions; own/immediate-source timecode spans, conflicting
+modes and known zero; checked timing overflow; nested geometry, exact proxies,
+depth/layout/padding and qualified PCM/alpha naming inputs; and optional
+Type/category work. These controls are not a claim that those damaged cases
+were observed in user files.
+
+A bounded independent wire-data probe checked seven distinct genuine MXFs on
+the computer and EDIT, including three SingleField proxies, audio with separate
+physical/display clocks, recorded-DF video and an A8 alpha precompute. Both
+optional-detail settings produce 14 reports per build. All **868 explicit
+public-field/group checks** across normal and sanitizer builds agree with the
+independent source oracle. Each of the 14 normal-build reports matches its
+sanitizer-build counterpart byte-for-byte, with no problem notes. Full file IDs
+also match the previously recorded
+PMR/MDB references. Input sizes/dates remain unchanged; repeated selected-header
+observations match. This is a selected seven-file comparison, not an exhaustive
+computer/drive inventory, full media-content hash or essence-health test.
+
+Fresh own-descriptor/track observations for proxy ResolutionIDs 3472, 3470 and
+3491 establish raw FrameLayout 2 with SampleRate and own EditRate 30000/1001,
+ContainerDuration and own sequence count 917, and paired MDB Length 917 with
+the separately qualified legacy rate 2997/100. Their exact existing proxy
+configurations therefore retain frame-unit qualification without halving. This
+does not establish a generic conversion for every SingleField writer/context.
+
+External public-API checks used only temporary authored files, with 250,000
+safe Fill packets providing a reading window. The parser's open read-only
+descriptor was observed before each action. The unchanged baseline completed;
+in-flight Cancel returned Cancelled; append and same-size modification-date
+changes returned Changed and cleared both information groups; unlink after
+opening returned Completed/Unverified with both entire usable groups equal to
+the baseline. All five observations passed without retries. These are bounded
+external filesystem observations, not permanent test hooks or latency promises.
+No user's media was rewritten. Read requests stay within the selected metadata
+path; physical disk/readahead traffic was not measured. One earlier research
+debug read may have included an essence prefix; it was not used for the timing
+proof or by the production reader.
+
+Normal/sanitizer raw-value checks do not prove every private MXF variant,
+unobserved source-clock mapping, nonzero origin or unsupported wrapper. The
+agreed first-release admission/recovery limits remain. Uncommon generic depth
+labels and later source-aware formatting/naming integration stay separate; no
+speed or memory improvement is claimed. Disposable snapshots, probes and logs
+remain outside the checkout; retired audit assets were not restored.
+
+Verified reader SHA-256:
+`e506178b5cfe0f9d901bf4ffeccf2b00f24ceb58b6d379efd907d8bb3356868a`.
+Header SHA-256:
+`1945d94a2a18dc0903ee2afa780f58e79fdc181a934542aaf9ec9fa6e56cda30`.
+The final suite receipt separately pins the test source, including the sparse-file
+case and rejection of zero/undersized declared metadata regions before lookahead.
 
 **MDB entry boundary agreed, 30 October 2026:** the user chose “MDB parser
 does both (just like PMR).” Give the MDB parser a file path; it opens and

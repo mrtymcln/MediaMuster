@@ -88,10 +88,20 @@ find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Widgets Core Gui Concurrent)
 add_library(mediamuster_bella STATIC
     src/bella/mobid.cpp
     src/bella/mobid.h
+    src/bella/timing.cpp
+    src/bella/timing.h
+    src/bella/audioformat_p.cpp
+    src/bella/audioformat_p.h
     src/bella/pmrparser.cpp
     src/bella/pmrparser.h
     src/bella/mdbparser.cpp
     src/bella/mdbparser.h
+    src/bella/mxfparser.cpp
+    src/bella/mxfparser.h
+    src/bella/omfparser.cpp
+    src/bella/omfparser.h
+    src/bella/audioreader_p.cpp
+    src/bella/audioreader_p.h
 )
 set_target_properties(mediamuster_bella PROPERTIES AUTOMOC OFF)
 target_include_directories(mediamuster_bella PUBLIC ${CMAKE_SOURCE_DIR}/src)
