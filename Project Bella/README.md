@@ -282,6 +282,33 @@ see the [implementation receipt](../docs/reviews/2026-11-04-bella-timing-reconfi
 This establishes the component, not a runnable Bella scanner, native UI parity
 or a measured performance gain. OldScanner remains active; Bin Filter unchanged.
 
+**Post-reader timing connections selected, 4 November 2026:** the user chose
+Option 1: connect existing reader results to the shared timing helper as a
+bounded step before matching/row assembly. Use one already-selected physical
+file's returned metadata, applying the agreed source-specific count/rate,
+display-clock and numbering rules. Exercise real reader result shapes against
+the shared calculator; do not add file reads, reader report fields, source
+selection, master/clip length substitutions or a new diagnostic report.
+The alternative was including the same work in the larger matching/row-assembly
+implementation. The proposed touch points are the existing Bella timing component
+and its tests, plus this decision record; existing reader source/reports,
+MediaFile/table, progress, journal, Unfinished Business, Undo and Bin Filter
+remain unchanged. OldScanner remains active. The [concrete function/result proposal](../docs/reviews/2026-11-04-bella-timing-reconfirmation/CONNECTIONS.md)
+was subsequently approved: one `FileTiming` containing independent optional
+`duration` and `display` groups, with display settings in `TimecodeInputs`.
+Four `timingFor` overloads accept already-selected MDB/MXF/OMF/native values;
+MDB/MXF/OMF take an explicit caller-qualified optional nominal base. Native
+audio returns exact timing only. No additional diagnostic/status report or
+source-selection layer is introduced. The four overloads are now implemented in
+`timing.h/.cpp`, with 65 new connection cases in `tst_bellatiming.cpp`. Its 167
+cases pass normally and with ASan/UBSan; all seven Bella suites total 916 passed,
+14 existing fixture skips and zero failures per mode. Final real-file integration
+checks 5,104 timing groups / 61,638 leaf comparisons per build, with zero
+differences. All 60 complete reader reports per build are byte-identical to the
+fresh baseline, including warnings. Existing reader/helper/build-list sources
+are unchanged. See the [connection receipt](../docs/reviews/2026-11-04-bella-timing-reconfirmation/CONNECTIONS.md#implementation-and-verification).
+This is bounded component integration, not app cutover or a measured scan gain.
+
 **Build boundary agreed, 27 October 2026:** add a separate
 `mediamuster_bella` static library to the existing CMake build, using Qt Core
 and initially linked only to Bella's focused tests. The user chose this over

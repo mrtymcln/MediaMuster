@@ -1,6 +1,9 @@
 // Independent arithmetic and timecode boundary expectations. No reader, old
 // formatter, native executable or floating-point calculation is used as oracle.
 #include "bella/timing.h"
+#include "bella/mdbparser.h"
+#include "bella/mxfparser.h"
+#include "bella/omfparser.h"
 
 #include <QtTest>
 #include <limits>
@@ -23,6 +26,54 @@ namespace
 		const auto rightCommon = std::gcd(right.numerator, right.denominator);
 		return left.numerator / leftCommon == right.numerator / rightCommon &&
 			left.denominator / leftCommon == right.denominator / rightCommon;
+	}
+
+	Bella::MobId connectionIdentity()
+	{
+		QByteArray bytes(32, '\0');
+		bytes[31] = '\1';
+		return std::get<Bella::MobId>(Bella::normalizeMobId(bytes, Bella::MobIdLayout::Aaf32,
+			Bella::ByteOrder::BigEndian));
+	}
+
+	std::array<quint8, 4> descriptorTag(QByteArrayView bytes)
+	{
+		return {quint8(bytes[0]), quint8(bytes[1]), quint8(bytes[2]), quint8(bytes[3])};
+	}
+
+	Bella::MdbFileRecord mdbPictureTiming()
+	{
+		Bella::MdbFileRecord file{connectionIdentity()};
+		file.kind = Bella::MdbKind::Video;
+		file.descriptorClass = descriptorTag("CDCI");
+		file.ownDescriptorQualified = true;
+		file.length = 1800;
+		file.sampleRate = Bella::MdbRate{{2997, 100}, Bella::MdbRateEncoding::ExactEditRate};
+		file.numbering = Bella::MdbNumbering::RecordedNdf;
+		return file;
+	}
+
+	Bella::MxfFileInformation mxfPictureTiming()
+	{
+		Bella::MxfFileInformation file;
+		file.kind = Bella::MxfKind::Video;
+		file.containerDuration = 1800;
+		file.sampleRate = Bella::MxfRate{30000, 1001};
+		file.frameRateQualified = true;
+		file.numbering = Bella::MxfNumbering::RecordedNdf;
+		return file;
+	}
+
+	Bella::OmfFileInformation omfPictureTiming()
+	{
+		Bella::OmfFileInformation file;
+		file.kind = Bella::OmfKind::Video;
+		file.descriptorClass = descriptorTag("CDCI");
+		file.length = 1800;
+		file.sampleRate = Bella::OmfRate{{2997, 100}, Bella::OmfRateEncoding::ExactEditRate};
+		file.durationClockSource = Bella::OmfDurationClockSource::DescriptorSampleRate;
+		file.numbering = Bella::OmfNumbering::RecordedNdf;
+		return file;
 	}
 }
 
@@ -49,6 +100,30 @@ private slots:
 	void dfBoundaries();
 	void zeroIsDistinctFromUnavailable();
 	void invalidPresentation();
+	void mdbPictureRateContext_data();
+	void mdbPictureRateContext();
+	void mdbAudioRateContext_data();
+	void mdbAudioRateContext();
+	void mdbRequiresOwnedDescriptorPair();
+	void mxfContainerClockStaysLiteral();
+	void mxfAudioClockIsNotSampleFrequency();
+	void mxfVideoDisplayRequiresQualification();
+	void omfDurationClockSelection_data();
+	void omfDurationClockSelection();
+	void omfDescriptorRateContext_data();
+	void omfDescriptorRateContext();
+	void omfAiff80ClockPreservesUnsigned64();
+	void nativeAudioTiming_data();
+	void nativeAudioTiming();
+	void readerDisplayModes_data();
+	void readerDisplayModes();
+	void missingDisplayInputsPreserveDuration_data();
+	void missingDisplayInputsPreserveDuration();
+	void missingCountPreservesDisplay_data();
+	void missingCountPreservesDisplay();
+	void connectedZeroAndRoundedZero_data();
+	void connectedZeroAndRoundedZero();
+	void connectionsPreserveInputFactsAndNotes();
 };
 
 void TestBellaTiming::avidAliases_data()
@@ -328,6 +403,495 @@ void TestBellaTiming::invalidPresentation()
 	QVERIFY(Bella::formatDuration({1800, {30, 1}}, {30, 1}, 30, Mode::DropFrame).isEmpty());
 	QVERIFY(Bella::formatDuration({3600, {60, 1}}, {60, 1}, 60, Mode::DropFrame).isEmpty());
 	QVERIFY(Bella::formatDuration({3600, {60000, 1001}}, {60000, 1001}, 30, Mode::DropFrame).isEmpty());
+}
+
+void TestBellaTiming::mdbPictureRateContext_data()
+{
+	QTest::addColumn<QByteArray>("descriptor");
+	QTest::addColumn<bool>("exactEncoding");
+	QTest::addColumn<bool>("unknownKind");
+	QTest::newRow("typed CDCI uses the exact Avid convention") << QByteArray("CDCI") << true << false;
+	QTest::newRow("generic CDCI Rational remains literal") << QByteArray("CDCI") << false << false;
+	QTest::newRow("TIFD picture context survives Unknown Kind") << QByteArray("TIFD") << true << true;
+	QTest::newRow("TIFD Rational remains literal despite picture context") << QByteArray("TIFD") << false << true;
+}
+void TestBellaTiming::mdbPictureRateContext()
+{
+	QFETCH(QByteArray, descriptor); QFETCH(bool, exactEncoding); QFETCH(bool, unknownKind);
+	auto file = mdbPictureTiming();
+	file.descriptorClass = descriptorTag(descriptor);
+	file.kind = unknownKind ? Bella::MdbKind::Unknown : Bella::MdbKind::Video;
+	file.length = 1000000;
+	file.sampleRate->encoding = exactEncoding ? Bella::MdbRateEncoding::ExactEditRate : Bella::MdbRateEncoding::Rational;
+	// An editing clock's presence cannot turn a picture descriptor into audio.
+	file.audioEditRate = Bella::MdbRate{{25, 1}, Bella::MdbRateEncoding::ExactEditRate};
+	const auto timing = Bella::timingFor(file, quint16(30));
+	QVERIFY(timing.duration); QVERIFY(timing.display);
+	QCOMPARE(timing.duration->count, qint64(1000000));
+	QVERIFY(sameRate(timing.duration->rate, exactEncoding ? Rate{30000, 1001} : Rate{2997, 100}));
+	QVERIFY(sameRate(timing.display->displayRate, timing.duration->rate));
+	QCOMPARE(Bella::displayFrameCount(*timing.duration, {30, 1}),
+		std::optional<qint64>(exactEncoding ? 1001000 : 1001001));
+	QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
+		timing.display->nominalBase, timing.display->mode), QStringLiteral("09:15:33:10"));
+	QCOMPARE(file.sampleRate->words.numerator, qint32(2997));
+	QCOMPARE(file.sampleRate->words.denominator, qint32(100));
+}
+
+void TestBellaTiming::mdbAudioRateContext_data()
+{
+	QTest::addColumn<QByteArray>("descriptor");
+	QTest::addColumn<bool>("exactEditingClock");
+	for (const QByteArray &descriptor : {QByteArray("PCMA"), QByteArray("MPGA"), QByteArray("WAVE")})
+		for (const bool exact : {false, true})
+			QTest::newRow(qPrintable(QString::fromLatin1(descriptor) + (exact ? " exact editing clock" : " literal editing clock")))
+				<< descriptor << exact;
+}
+void TestBellaTiming::mdbAudioRateContext()
+{
+	QFETCH(QByteArray, descriptor); QFETCH(bool, exactEditingClock);
+	auto file = mdbPictureTiming();
+	file.kind = descriptor == "PCMA" ? Bella::MdbKind::Audio : Bella::MdbKind::Unknown;
+	file.descriptorClass = descriptorTag(descriptor);
+	file.length = 1000000;
+	// ExactEditRate on this audio descriptor is the physical count divisor,
+	// not the qualified video/editing-clock convention.
+	file.sampleRate = Bella::MdbRate{{2997, 100}, Bella::MdbRateEncoding::ExactEditRate};
+	file.audioEditRate = Bella::MdbRate{{2997, 100}, exactEditingClock
+		? Bella::MdbRateEncoding::ExactEditRate : Bella::MdbRateEncoding::Rational};
+	file.audioFrequency = Bella::MdbAudioSourceValue(quint32(48000));
+	const auto timing = Bella::timingFor(file, quint16(30));
+	QVERIFY(timing.duration); QVERIFY(timing.display);
+	QVERIFY(sameRate(timing.duration->rate, {2997, 100}));
+	QVERIFY(sameRate(timing.display->displayRate, exactEditingClock ? Rate{30000, 1001} : Rate{2997, 100}));
+	QCOMPARE(Bella::displayFrameCount(*timing.duration, timing.display->displayRate),
+		std::optional<qint64>(exactEditingClock ? 1000001 : 1000000));
+	QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
+		timing.display->nominalBase, timing.display->mode),
+		exactEditingClock ? QStringLiteral("09:15:33:11") : QStringLiteral("09:15:33:10"));
+	QCOMPARE(std::get<quint32>(*file.audioFrequency), quint32(48000));
+}
+
+void TestBellaTiming::mdbRequiresOwnedDescriptorPair()
+{
+	auto file = mdbPictureTiming();
+	file.kind = Bella::MdbKind::Audio;
+	file.descriptorClass = descriptorTag("WAVD");
+	file.length = 2880002;
+	file.sampleRate = Bella::MdbRate{{48000, 1}, Bella::MdbRateEncoding::ExactEditRate};
+	file.audioEditRate = Bella::MdbRate{{25, 1}, Bella::MdbRateEncoding::ExactEditRate};
+	file.audioFrequency = Bella::MdbAudioSourceValue(quint32(48000));
+	const auto complete = Bella::timingFor(file, quint16(25));
+	QVERIFY(complete.duration); QVERIFY(complete.display);
+	QCOMPARE(complete.duration->count, qint64(2880002));
+	QCOMPARE(Bella::formatDuration(*complete.duration, complete.display->displayRate,
+		complete.display->nominalBase, complete.display->mode), QStringLiteral("00:01:00:00"));
+	file.sampleRate.reset();
+	const auto noDescriptorClock = Bella::timingFor(file, quint16(25));
+	QVERIFY(!noDescriptorClock.duration); // Readable concrete frequency is not an MDB fallback.
+	QVERIFY(noDescriptorClock.display);
+	file.sampleRate = Bella::MdbRate{{0, 1}, Bella::MdbRateEncoding::ExactEditRate};
+	QVERIFY(!Bella::timingFor(file, quint16(25)).duration);
+	file.sampleRate = Bella::MdbRate{{48000, 1}, Bella::MdbRateEncoding::ExactEditRate};
+	file.ownDescriptorQualified = false;
+	const auto unowned = Bella::timingFor(file, quint16(25));
+	QVERIFY(!unowned.duration); QVERIFY(!unowned.display);
+}
+
+void TestBellaTiming::mxfContainerClockStaysLiteral()
+{
+	auto file = mxfPictureTiming();
+	file.containerDuration = 1000000;
+	file.sampleRate = Bella::MxfRate{2997, 100};
+	const auto timing = Bella::timingFor(file, quint16(30));
+	QVERIFY(timing.duration); QVERIFY(timing.display);
+	QCOMPARE(timing.duration->count, qint64(1000000));
+	QVERIFY(sameRate(timing.duration->rate, {2997, 100}));
+	QVERIFY(sameRate(timing.display->displayRate, {2997, 100}));
+	QCOMPARE(Bella::displayFrameCount(*timing.duration, {30, 1}), std::optional<qint64>(1001001));
+	QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
+		timing.display->nominalBase, timing.display->mode), QStringLiteral("09:15:33:10"));
+}
+
+void TestBellaTiming::mxfAudioClockIsNotSampleFrequency()
+{
+	Bella::MxfFileInformation file;
+	file.kind = Bella::MxfKind::Audio;
+	file.containerDuration = 1500;
+	file.sampleRate = Bella::MxfRate{25, 1};
+	file.projectEditRate = Bella::MxfRate{25, 1};
+	file.audioSamplingRate = Bella::MxfRate{48000, 1};
+	file.numbering = Bella::MxfNumbering::NotRequired;
+	const auto timing = Bella::timingFor(file, quint16(25));
+	QVERIFY(timing.duration); QVERIFY(timing.display);
+	QCOMPARE(timing.duration->count, qint64(1500));
+	QVERIFY(sameRate(timing.duration->rate, {25, 1}));
+	QVERIFY(sameRate(timing.display->displayRate, {25, 1}));
+	QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
+		timing.display->nominalBase, timing.display->mode), QStringLiteral("00:01:00:00"));
+	file.projectEditRate = Bella::MxfRate{2997, 100};
+	const auto literalProjectClock = Bella::timingFor(file, quint16(30));
+	QVERIFY(literalProjectClock.duration); QVERIFY(literalProjectClock.display);
+	QVERIFY(sameRate(literalProjectClock.display->displayRate, {2997, 100}));
+	file.sampleRate.reset();
+	QVERIFY(!Bella::timingFor(file, quint16(25)).duration);
+}
+
+void TestBellaTiming::mxfVideoDisplayRequiresQualification()
+{
+	auto file = mxfPictureTiming();
+	file.frameRateQualified = false;
+	file.projectEditRate = Bella::MxfRate{25, 1};
+	file.audioSamplingRate = Bella::MxfRate{48000, 1};
+	const auto timing = Bella::timingFor(file, quint16(30));
+	QVERIFY(timing.duration); QVERIFY(!timing.display);
+	QCOMPARE(timing.duration->count, qint64(1800));
+	QVERIFY(sameRate(timing.duration->rate, {30000, 1001}));
+}
+
+void TestBellaTiming::omfDurationClockSelection_data()
+{
+	QTest::addColumn<int>("variation");
+	QTest::newRow("descriptor pair wins over separate frequency") << 0;
+	QTest::newRow("qualified SummaryFrequency wins over retained descriptor pair") << 1;
+	QTest::newRow("Unavailable cannot be repaired by readable frequency") << 2;
+	QTest::newRow("missing selected summary frequency is unavailable") << 3;
+	QTest::newRow("missing selected descriptor clock cannot use frequency") << 4;
+	QTest::newRow("zero selected summary frequency is unavailable") << 5;
+}
+void TestBellaTiming::omfDurationClockSelection()
+{
+	QFETCH(int, variation);
+	Bella::OmfFileInformation file;
+	file.kind = Bella::OmfKind::Audio;
+	file.descriptorClass = descriptorTag("WAVD");
+	file.length = 2880002;
+	file.sampleRate = Bella::OmfRate{{48000, 1}, Bella::OmfRateEncoding::ExactEditRate};
+	file.audioFrequency = Bella::OmfAudioSourceValue(quint32(variation == 0 ? 44100 : 48000));
+	file.audioEditRate = Bella::OmfRate{{25, 1}, Bella::OmfRateEncoding::ExactEditRate};
+	file.numbering = Bella::OmfNumbering::NotRequired;
+	file.durationClockSource = variation == 0 || variation == 4 ? Bella::OmfDurationClockSource::DescriptorSampleRate
+		: variation == 2 ? Bella::OmfDurationClockSource::Unavailable : Bella::OmfDurationClockSource::SummaryFrequency;
+	if (variation == 1)
+		file.sampleRate = Bella::OmfRate{{44100, 1}, Bella::OmfRateEncoding::ExactEditRate};
+	if (variation == 3)
+		file.audioFrequency.reset();
+	if (variation == 4)
+		file.sampleRate.reset();
+	if (variation == 5)
+		file.audioFrequency = Bella::OmfAudioSourceValue(quint32(0));
+	const auto timing = Bella::timingFor(file, quint16(25));
+	QCOMPARE(bool(timing.duration), variation <= 1);
+	QVERIFY(timing.display); // A separately qualified display clock is not the duration divisor.
+	if (timing.duration)
+	{
+		QCOMPARE(timing.duration->count, qint64(2880002));
+		QVERIFY(sameRate(timing.duration->rate, {48000, 1}));
+		QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
+			timing.display->nominalBase, timing.display->mode), QStringLiteral("00:01:00:00"));
+	}
+}
+
+void TestBellaTiming::omfDescriptorRateContext_data()
+{
+	QTest::addColumn<bool>("picture"); QTest::addColumn<bool>("exactEncoding");
+	QTest::newRow("OMF typed picture uses the Avid convention") << true << true;
+	QTest::newRow("OMF picture Rational stays literal") << true << false;
+	QTest::newRow("OMF typed audio divisor stays literal") << false << true;
+	QTest::newRow("OMF audio Rational stays literal") << false << false;
+}
+void TestBellaTiming::omfDescriptorRateContext()
+{
+	QFETCH(bool, picture); QFETCH(bool, exactEncoding);
+	auto file = omfPictureTiming();
+	file.kind = picture ? Bella::OmfKind::Video : Bella::OmfKind::Audio;
+	file.descriptorClass = descriptorTag(picture ? QByteArrayView("CDCI") : QByteArrayView("WAVD"));
+	file.length = 1000000;
+	file.sampleRate->encoding = exactEncoding ? Bella::OmfRateEncoding::ExactEditRate : Bella::OmfRateEncoding::Rational;
+	file.audioEditRate = Bella::OmfRate{{25, 1}, Bella::OmfRateEncoding::ExactEditRate};
+	const auto timing = Bella::timingFor(file, picture ? quint16(30) : quint16(25));
+	QVERIFY(timing.duration); QVERIFY(timing.display);
+	const bool applyAlias = picture && exactEncoding;
+	QVERIFY(sameRate(timing.duration->rate, applyAlias ? Rate{30000, 1001} : Rate{2997, 100}));
+	QCOMPARE(Bella::displayFrameCount(*timing.duration, {30, 1}),
+		std::optional<qint64>(applyAlias ? 1001000 : 1001001));
+	QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
+		timing.display->nominalBase, timing.display->mode),
+		picture ? QStringLiteral("09:15:33:10") : QStringLiteral("09:16:06:18"));
+}
+
+void TestBellaTiming::omfAiff80ClockPreservesUnsigned64()
+{
+	Bella::OmfFileInformation file;
+	file.kind = Bella::OmfKind::Audio;
+	file.descriptorClass = descriptorTag("AIFD");
+	file.length = 2880002;
+	file.durationClockSource = Bella::OmfDurationClockSource::SummaryFrequency;
+	file.audioEditRate = Bella::OmfRate{{25, 1}, Bella::OmfRateEncoding::ExactEditRate};
+	file.numbering = Bella::OmfNumbering::NotRequired;
+	const std::array<quint8, 10> frequency48000{0x40, 0x0e, 0xbb, 0x80, 0, 0, 0, 0, 0, 0};
+	file.audioFrequency = Bella::OmfAudioSourceValue(frequency48000);
+	const auto tone = Bella::timingFor(file, quint16(25));
+	QVERIFY(tone.duration); QVERIFY(tone.display);
+	QVERIFY(sameRate(tone.duration->rate, {48000, 1}));
+	QCOMPARE(Bella::formatDuration(*tone.duration, tone.display->displayRate,
+		tone.display->nominalBase, tone.display->mode), QStringLiteral("00:01:00:00"));
+	// Exact normalized IEEE80 value 1 + 2^-63. Both rational words require U64.
+	const std::array<quint8, 10> wideFrequency{0x3f, 0xff, 0x80, 0, 0, 0, 0, 0, 0, 1};
+	file.length = 1;
+	file.audioFrequency = Bella::OmfAudioSourceValue(wideFrequency);
+	const auto wide = Bella::timingFor(file, quint16(25));
+	QVERIFY(wide.duration); QVERIFY(wide.display);
+	QVERIFY(sameRate(wide.duration->rate, {Q_UINT64_C(9223372036854775809), Q_UINT64_C(9223372036854775808)}));
+	QCOMPARE(Bella::formatDuration(*wide.duration, wide.display->displayRate,
+		wide.display->nominalBase, wide.display->mode), QStringLiteral("00:00:01:00"));
+	const auto retainedFrequency = std::get<std::array<quint8, 10>>(*file.audioFrequency);
+	QCOMPARE(retainedFrequency, wideFrequency);
+}
+
+void TestBellaTiming::nativeAudioTiming_data()
+{
+	QTest::addColumn<int>("variation");
+	QTest::newRow("native exact tone retains two extra samples") << 0;
+	QTest::newRow("native known zero remains exact") << 1;
+	QTest::newRow("native decimal sampling fraction stays literal") << 2;
+	QTest::newRow("native missing count leaves exact unavailable") << 3;
+	QTest::newRow("native missing rate leaves exact unavailable") << 4;
+	QTest::newRow("native invalid rate leaves exact unavailable") << 5;
+}
+void TestBellaTiming::nativeAudioTiming()
+{
+	QFETCH(int, variation);
+	Bella::OmfNativeAudioInformation file;
+	file.kind = Bella::OmfKind::Audio;
+	file.sampleFrameCount = variation == 1 ? 0 : variation == 2 ? 1000000 : 2880002;
+	file.samplingRate = variation == 2 ? Bella::OmfNativeRate{2997, 100} : Bella::OmfNativeRate{48000, 1};
+	if (variation == 3)
+		file.sampleFrameCount.reset();
+	if (variation == 4)
+		file.samplingRate.reset();
+	if (variation == 5)
+		file.samplingRate = Bella::OmfNativeRate{-48000, 1};
+	const auto timing = Bella::timingFor(file);
+	QVERIFY(!timing.display); // No display clock or numbering exists in this value.
+	QCOMPARE(bool(timing.duration), variation < 3);
+	if (timing.duration)
+	{
+		QCOMPARE(timing.duration->count, variation == 1 ? qint64(0) : variation == 2 ? qint64(1000000) : qint64(2880002));
+		QVERIFY(sameRate(timing.duration->rate, variation == 2 ? Rate{2997, 100} : Rate{48000, 1}));
+	}
+}
+
+void TestBellaTiming::readerDisplayModes_data()
+{
+	QTest::addColumn<int>("reader"); QTest::addColumn<int>("numbering");
+	for (int reader = 0; reader < 3; ++reader)
+		for (int numbering = 0; numbering < 5; ++numbering)
+			QTest::newRow(qPrintable(QStringLiteral("reader-%1-numbering-%2").arg(reader).arg(numbering)))
+				<< reader << numbering;
+}
+void TestBellaTiming::readerDisplayModes()
+{
+	QFETCH(int, reader); QFETCH(int, numbering);
+	Bella::FileTiming timing;
+	if (reader == 0)
+	{
+		auto file = mdbPictureTiming();
+		file.numbering = std::array{Bella::MdbNumbering::Unavailable, Bella::MdbNumbering::NotRequired,
+			Bella::MdbNumbering::MissingNdfFallback, Bella::MdbNumbering::RecordedNdf, Bella::MdbNumbering::RecordedDf}[numbering];
+		timing = Bella::timingFor(file, quint16(30));
+	}
+	else if (reader == 1)
+	{
+		auto file = mxfPictureTiming();
+		file.numbering = std::array{Bella::MxfNumbering::Unavailable, Bella::MxfNumbering::NotRequired,
+			Bella::MxfNumbering::MissingNdfFallback, Bella::MxfNumbering::RecordedNdf, Bella::MxfNumbering::RecordedDf}[numbering];
+		timing = Bella::timingFor(file, quint16(30));
+	}
+	else
+	{
+		auto file = omfPictureTiming();
+		file.numbering = std::array{Bella::OmfNumbering::Unavailable, Bella::OmfNumbering::NotRequired,
+			Bella::OmfNumbering::MissingNdfFallback, Bella::OmfNumbering::RecordedNdf, Bella::OmfNumbering::RecordedDf}[numbering];
+		timing = Bella::timingFor(file, quint16(30));
+	}
+	QVERIFY(timing.duration);
+	QCOMPARE(bool(timing.display), numbering != 0);
+	if (timing.display)
+	{
+		QVERIFY(sameRate(timing.display->displayRate, {30000, 1001}));
+		QCOMPARE(timing.display->nominalBase, quint16(30));
+		QCOMPARE(timing.display->mode, numbering == 4 ? Mode::DropFrame : Mode::NonDropFrame);
+		QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
+			timing.display->nominalBase, timing.display->mode),
+			numbering == 4 ? QStringLiteral("00;01;00;02") : QStringLiteral("00:01:00:00"));
+	}
+}
+
+void TestBellaTiming::missingDisplayInputsPreserveDuration_data()
+{
+	QTest::addColumn<int>("reader"); QTest::addColumn<int>("missing");
+	for (int reader = 0; reader < 3; ++reader)
+		for (int missing = 0; missing < 3; ++missing)
+			QTest::newRow(qPrintable(QStringLiteral("reader-%1-missing-%2").arg(reader).arg(missing)))
+				<< reader << missing;
+}
+void TestBellaTiming::missingDisplayInputsPreserveDuration()
+{
+	QFETCH(int, reader); QFETCH(int, missing);
+	const auto base = missing == 0 ? std::optional<quint16>{} : std::optional<quint16>(missing == 1 ? 0 : 25);
+	Bella::FileTiming timing;
+	if (reader == 0)
+	{
+		auto file = mdbPictureTiming();
+		file.kind = Bella::MdbKind::Audio; file.descriptorClass = descriptorTag("PCMA");
+		file.length = 2880002;
+		file.sampleRate = Bella::MdbRate{{48000, 1}, Bella::MdbRateEncoding::ExactEditRate};
+		file.audioEditRate = Bella::MdbRate{{25, 1}, Bella::MdbRateEncoding::ExactEditRate};
+		if (missing == 2) file.audioEditRate.reset();
+		timing = Bella::timingFor(file, base);
+	}
+	else if (reader == 1)
+	{
+		Bella::MxfFileInformation file;
+		file.kind = Bella::MxfKind::Audio; file.containerDuration = 2880002;
+		file.sampleRate = Bella::MxfRate{48000, 1}; file.projectEditRate = Bella::MxfRate{25, 1};
+		file.audioSamplingRate = Bella::MxfRate{48000, 1}; file.numbering = Bella::MxfNumbering::RecordedNdf;
+		if (missing == 2) file.projectEditRate.reset();
+		timing = Bella::timingFor(file, base);
+	}
+	else
+	{
+		Bella::OmfFileInformation file;
+		file.kind = Bella::OmfKind::Audio; file.descriptorClass = descriptorTag("PCMA");
+		file.length = 2880002;
+		file.sampleRate = Bella::OmfRate{{48000, 1}, Bella::OmfRateEncoding::ExactEditRate};
+		file.durationClockSource = Bella::OmfDurationClockSource::DescriptorSampleRate;
+		file.audioEditRate = Bella::OmfRate{{25, 1}, Bella::OmfRateEncoding::ExactEditRate};
+		file.numbering = Bella::OmfNumbering::RecordedNdf;
+		if (missing == 2) file.audioEditRate.reset();
+		timing = Bella::timingFor(file, base);
+	}
+	QVERIFY(timing.duration); QVERIFY(!timing.display);
+	QCOMPARE(timing.duration->count, qint64(2880002));
+	QVERIFY(sameRate(timing.duration->rate, {48000, 1}));
+}
+
+void TestBellaTiming::missingCountPreservesDisplay_data()
+{
+	QTest::addColumn<int>("reader");
+	QTest::newRow("MDB display does not require Length") << 0;
+	QTest::newRow("MXF display does not require ContainerDuration") << 1;
+	QTest::newRow("OMF display does not require Length") << 2;
+}
+void TestBellaTiming::missingCountPreservesDisplay()
+{
+	QFETCH(int, reader);
+	Bella::FileTiming timing;
+	if (reader == 0)
+	{
+		auto file = mdbPictureTiming(); file.length.reset(); file.numbering = Bella::MdbNumbering::NotRequired;
+		timing = Bella::timingFor(file, quint16(30));
+	}
+	else if (reader == 1)
+	{
+		auto file = mxfPictureTiming(); file.containerDuration.reset(); file.numbering = Bella::MxfNumbering::NotRequired;
+		timing = Bella::timingFor(file, quint16(30));
+	}
+	else
+	{
+		auto file = omfPictureTiming(); file.length.reset(); file.numbering = Bella::OmfNumbering::NotRequired;
+		timing = Bella::timingFor(file, quint16(30));
+	}
+	QVERIFY(!timing.duration); QVERIFY(timing.display);
+	QVERIFY(sameRate(timing.display->displayRate, {30000, 1001}));
+	QCOMPARE(timing.display->nominalBase, quint16(30));
+	QCOMPARE(timing.display->mode, Mode::NonDropFrame);
+}
+
+void TestBellaTiming::connectedZeroAndRoundedZero_data()
+{
+	QTest::addColumn<int>("reader"); QTest::addColumn<qint64>("count");
+	for (int reader = 0; reader < 3; ++reader)
+		for (qint64 count = 0; count < 2; ++count)
+			QTest::newRow(qPrintable(QStringLiteral("reader-%1-count-%2").arg(reader).arg(count))) << reader << count;
+}
+void TestBellaTiming::connectedZeroAndRoundedZero()
+{
+	QFETCH(int, reader); QFETCH(qint64, count);
+	Bella::FileTiming timing;
+	if (reader == 0)
+	{
+		auto file = mdbPictureTiming();
+		file.kind = Bella::MdbKind::Audio; file.descriptorClass = descriptorTag("PCMA");
+		file.length = count;
+		file.sampleRate = Bella::MdbRate{{48000, 1}, Bella::MdbRateEncoding::ExactEditRate};
+		file.audioEditRate = Bella::MdbRate{{25, 1}, Bella::MdbRateEncoding::ExactEditRate};
+		file.numbering = Bella::MdbNumbering::NotRequired;
+		timing = Bella::timingFor(file, quint16(25));
+	}
+	else if (reader == 1)
+	{
+		Bella::MxfFileInformation file;
+		file.kind = Bella::MxfKind::Audio; file.containerDuration = count;
+		file.sampleRate = Bella::MxfRate{48000, 1}; file.projectEditRate = Bella::MxfRate{25, 1};
+		file.numbering = Bella::MxfNumbering::NotRequired;
+		timing = Bella::timingFor(file, quint16(25));
+	}
+	else
+	{
+		Bella::OmfFileInformation file;
+		file.kind = Bella::OmfKind::Audio; file.descriptorClass = descriptorTag("PCMA");
+		file.length = count;
+		file.sampleRate = Bella::OmfRate{{48000, 1}, Bella::OmfRateEncoding::ExactEditRate};
+		file.durationClockSource = Bella::OmfDurationClockSource::DescriptorSampleRate;
+		file.audioEditRate = Bella::OmfRate{{25, 1}, Bella::OmfRateEncoding::ExactEditRate};
+		file.numbering = Bella::OmfNumbering::NotRequired;
+		timing = Bella::timingFor(file, quint16(25));
+	}
+	QVERIFY(timing.duration); QVERIFY(timing.display);
+	QCOMPARE(timing.duration->count, count);
+	QCOMPARE(Bella::displayFrameCount(*timing.duration, timing.display->displayRate), std::optional<qint64>(0));
+	QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
+		timing.display->nominalBase, timing.display->mode), QStringLiteral("00:00:00:00"));
+}
+
+void TestBellaTiming::connectionsPreserveInputFactsAndNotes()
+{
+	Bella::OmfReport report;
+	report.path = QStringLiteral("/a/path/that/the/timing/connection/does/not/read");
+	report.nativeAudioReading = Bella::OmfReadResult::Incomplete;
+	report.omfReading = Bella::OmfReadResult::Malformed;
+	report.problemNotes = {QStringLiteral("Earlier native note."), QStringLiteral("Later OMF note.")};
+	report.nativeAudioInformation.kind = Bella::OmfKind::Audio;
+	report.nativeAudioInformation.sampleFrameCount = 1;
+	report.nativeAudioInformation.samplingRate = Bella::OmfNativeRate{48000, 1};
+	report.fileInformation = omfPictureTiming();
+	report.fileInformation.length = 0;
+	const auto notes = report.problemNotes;
+	const auto path = report.path;
+	const auto native = Bella::timingFor(report.nativeAudioInformation);
+	const auto omf = Bella::timingFor(report.fileInformation, quint16(30));
+	QVERIFY(native.duration); QVERIFY(!native.display);
+	QCOMPARE(native.duration->count, qint64(1));
+	QVERIFY(omf.duration); QVERIFY(omf.display);
+	QCOMPARE(omf.duration->count, qint64(0));
+	QCOMPARE(Bella::formatDuration(*omf.duration, omf.display->displayRate,
+		omf.display->nominalBase, omf.display->mode), QStringLiteral("00:00:00:00"));
+	QCOMPARE(report.problemNotes, notes); QCOMPARE(report.path, path);
+	QCOMPARE(report.nativeAudioReading, Bella::OmfReadResult::Incomplete);
+	QCOMPARE(report.omfReading, Bella::OmfReadResult::Malformed);
+	QCOMPARE(report.nativeAudioInformation.sampleFrameCount, std::optional<qint64>(1));
+	QCOMPARE(report.nativeAudioInformation.samplingRate->numerator, qint32(48000));
+	QCOMPARE(report.fileInformation.length, std::optional<qint64>(0));
+	QCOMPARE(report.fileInformation.sampleRate->words.numerator, qint32(2997));
+	QCOMPARE(report.fileInformation.sampleRate->words.denominator, qint32(100));
+	QCOMPARE(report.fileInformation.numbering, Bella::OmfNumbering::RecordedNdf);
+	// Returned values are owned and do not change when the source value changes.
+	report.nativeAudioInformation.sampleFrameCount = 999;
+	report.fileInformation.sampleRate->words.numerator = 25;
+	QCOMPARE(native.duration->count, qint64(1));
+	QVERIFY(sameRate(omf.duration->rate, {30000, 1001}));
 }
 
 QTEST_GUILESS_MAIN(TestBellaTiming)

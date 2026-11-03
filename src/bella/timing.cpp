@@ -1,4 +1,8 @@
 #include "timing.h"
+#include "audioformat_p.h"
+#include "mdbparser.h"
+#include "mxfparser.h"
+#include "omfparser.h"
 
 #include <algorithm>
 #include <array>
@@ -22,6 +26,88 @@ namespace Bella
 			const auto rightCommon = std::gcd(right.numerator, right.denominator);
 			return left.numerator / leftCommon == right.numerator / rightCommon &&
 				   left.denominator / leftCommon == right.denominator / rightCommon;
+		}
+
+		bool dropFrameClock(TimingRate rate, quint16 base) noexcept
+		{
+			return (base == 30 && sameRate(rate, {30000, 1001})) || (base == 60 && sameRate(rate, {60000, 1001}));
+		}
+
+		std::optional<TimingRate> literalRate(qint32 numerator, qint32 denominator) noexcept
+		{
+			if (numerator <= 0 || denominator <= 0)
+				return std::nullopt;
+			return TimingRate{quint64(numerator), quint64(denominator)};
+		}
+
+		template <typename Rate>
+		std::optional<TimingRate> legacyRate(const std::optional<Rate> &rate, bool interpretAvid) noexcept
+		{
+			if (!rate)
+				return std::nullopt;
+			using Encoding = decltype(rate->encoding);
+			if (interpretAvid && rate->encoding == Encoding::ExactEditRate)
+				return interpretAvidEditRate(rate->words.numerator, rate->words.denominator);
+			return literalRate(rate->words.numerator, rate->words.denominator);
+		}
+
+		std::optional<TimingRate> mxfRate(const std::optional<MxfRate> &rate) noexcept
+		{
+			return rate ? literalRate(rate->numerator, rate->denominator) : std::nullopt;
+		}
+
+		QByteArrayView descriptorTag(const std::optional<std::array<quint8, 4>> &tag) noexcept
+		{
+			return tag ? QByteArrayView(reinterpret_cast<const char *>(tag->data()), 4) : QByteArrayView{};
+		}
+
+		// The readers establish these unit contexts separately from the Kind column.
+		bool audioDescriptor(QByteArrayView tag) noexcept
+		{
+			return tag == "PCMA" || tag == "AIFD" || tag == "WAVD" || tag == "MPGA" || tag == "WAVE";
+		}
+
+		bool pictureDescriptor(QByteArrayView tag) noexcept
+		{
+			return tag == "CDCI" || tag == "RGBA" || tag == "MPGI" || tag == "JPED" || tag == "TIFD";
+		}
+
+		template <typename Numbering>
+		std::optional<TimecodeInputs> displayFor(std::optional<TimingRate> clock, std::optional<quint16> nominalBase,
+												 Numbering numbering) noexcept
+		{
+			if (!clock || !nominalBase || *nominalBase == 0)
+				return std::nullopt;
+			TimecodeMode mode;
+			switch (numbering)
+			{
+			case Numbering::NotRequired:
+			case Numbering::MissingNdfFallback:
+			case Numbering::RecordedNdf:
+				mode = TimecodeMode::NonDropFrame;
+				break;
+			case Numbering::RecordedDf:
+				if (!dropFrameClock(*clock, *nominalBase))
+					return std::nullopt;
+				mode = TimecodeMode::DropFrame;
+				break;
+			case Numbering::Unavailable:
+			default:
+				return std::nullopt;
+			}
+			return TimecodeInputs{*clock, *nominalBase, mode};
+		}
+
+		std::optional<TimingRate> summaryFrequency(const std::optional<OmfAudioSourceValue> &frequency)
+		{
+			if (!frequency)
+				return std::nullopt;
+			if (const auto *hz = std::get_if<quint32>(&*frequency))
+				return *hz ? std::optional<TimingRate>(TimingRate{*hz, 1}) : std::nullopt;
+			if (const auto *extended = std::get_if<std::array<quint8, 10>>(&*frequency))
+				if (const auto exact = Detail::exactAiffFrequency(*extended))
+					return TimingRate{exact->numerator, exact->denominator};
+			return std::nullopt;
 		}
 
 		// A nonnegative signed64 count times two unsigned64 fraction words needs at
@@ -162,6 +248,78 @@ namespace Bella
 		return roundedQuotient(numerator, denominator);
 	}
 
+	FileTiming timingFor(const MdbFileRecord &file, std::optional<quint16> nominalBase)
+	{
+		if (!file.ownDescriptorQualified)
+			return {};
+		const auto tag = descriptorTag(file.descriptorClass);
+		const bool picture = pictureDescriptor(tag);
+		const auto rate = legacyRate(file.sampleRate, picture);
+		FileTiming result;
+		if (file.length && rate)
+			result.duration = makeExactDuration(*file.length, *rate);
+		std::optional<TimingRate> clock;
+		if (audioDescriptor(tag))
+			clock = legacyRate(file.audioEditRate, true);
+		else if (picture)
+			clock = rate;
+		result.display = displayFor(clock, nominalBase, file.numbering);
+		return result;
+	}
+
+	FileTiming timingFor(const MxfFileInformation &file, std::optional<quint16> nominalBase)
+	{
+		const auto rate = mxfRate(file.sampleRate);
+		FileTiming result;
+		if (file.containerDuration && rate)
+			result.duration = makeExactDuration(*file.containerDuration, *rate);
+		std::optional<TimingRate> clock;
+		if (file.kind == MxfKind::Audio)
+			clock = mxfRate(file.projectEditRate);
+		else if (file.kind == MxfKind::Video && file.frameRateQualified)
+			clock = rate;
+		result.display = displayFor(clock, nominalBase, file.numbering);
+		return result;
+	}
+
+	FileTiming timingFor(const OmfFileInformation &file, std::optional<quint16> nominalBase)
+	{
+		const auto tag = descriptorTag(file.descriptorClass);
+		const bool picture = pictureDescriptor(tag);
+		const auto sampleClock = legacyRate(file.sampleRate, picture);
+		std::optional<TimingRate> rate;
+		switch (file.durationClockSource)
+		{
+		case OmfDurationClockSource::DescriptorSampleRate:
+			rate = sampleClock;
+			break;
+		case OmfDurationClockSource::SummaryFrequency:
+			rate = summaryFrequency(file.audioFrequency);
+			break;
+		case OmfDurationClockSource::Unavailable:
+			break;
+		}
+		FileTiming result;
+		if (file.length && rate)
+			result.duration = makeExactDuration(*file.length, *rate);
+		std::optional<TimingRate> clock;
+		if (audioDescriptor(tag))
+			clock = legacyRate(file.audioEditRate, true);
+		else if (picture)
+			clock = sampleClock;
+		result.display = displayFor(clock, nominalBase, file.numbering);
+		return result;
+	}
+
+	FileTiming timingFor(const OmfNativeAudioInformation &file)
+	{
+		FileTiming result;
+		if (file.sampleFrameCount && file.samplingRate)
+			if (const auto rate = literalRate(file.samplingRate->numerator, file.samplingRate->denominator))
+				result.duration = makeExactDuration(*file.sampleFrameCount, *rate);
+		return result;
+	}
+
 	QString formatDuration(const ExactDuration &duration, TimingRate displayRate, quint16 nominalBase,
 						   TimecodeMode mode)
 	{
@@ -170,8 +328,7 @@ namespace Bella
 		const qint64 base = nominalBase;
 		if (mode == TimecodeMode::DropFrame)
 		{
-			if (!((base == 30 && sameRate(displayRate, {30000, 1001})) ||
-				  (base == 60 && sameRate(displayRate, {60000, 1001}))))
+			if (!dropFrameClock(displayRate, nominalBase))
 				return {};
 		}
 		else if (mode != TimecodeMode::NonDropFrame)

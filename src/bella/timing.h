@@ -27,6 +27,32 @@ namespace Bella
 		DropFrame
 	};
 
+	struct TimecodeInputs
+	{
+		TimingRate displayRate;
+		quint16 nominalBase = 0;
+		TimecodeMode mode = TimecodeMode::NonDropFrame;
+	};
+
+	struct FileTiming
+	{
+		std::optional<ExactDuration> duration;
+		std::optional<TimecodeInputs> display;
+	};
+
+	struct MdbFileRecord;
+	struct MxfFileInformation;
+	struct OmfFileInformation;
+	struct OmfNativeAudioInformation;
+
+	// One already-selected eligible reader value. No source lookup or new reads.
+	// The caller qualifies the nominal base; a missing base withholds display,
+	// independently of exact Duration. Native audio supplies exact Duration only.
+	[[nodiscard]] FileTiming timingFor(const MdbFileRecord &, std::optional<quint16> nominalBase);
+	[[nodiscard]] FileTiming timingFor(const MxfFileInformation &, std::optional<quint16> nominalBase);
+	[[nodiscard]] FileTiming timingFor(const OmfFileInformation &, std::optional<quint16> nominalBase);
+	[[nodiscard]] FileTiming timingFor(const OmfNativeAudioInformation &);
+
 	// Only for a qualified Avid ExactEditRate video/editing clock, never an audio
 	// sampling frequency or a generic Rational. Other positive fractions stay literal.
 	[[nodiscard]] std::optional<TimingRate> interpretAvidEditRate(qint32 numerator, qint32 denominator) noexcept;

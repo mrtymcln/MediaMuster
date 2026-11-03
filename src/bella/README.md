@@ -42,11 +42,30 @@ checks the supported exact DF combinations, preserves separators and unlimited
 hours, and adds no per-file report or source lookup. Existing reader source and
 public reports are unchanged by this step.
 
-Timing verification: 102 focused cases, normally and under ASan/UBSan; all seven
+Initial timing verification, before reader connections: 102 focused cases, normally
+and under ASan/UBSan; all seven
 Bella suites total 851 passed and 14 existing fixture skips per mode, zero failed.
 An independent Fraction oracle matches 75,034 arithmetic inputs, including genuine
 file timing and full-width boundaries. No scan-time/memory improvement is claimed.
 See the [component receipt](../../docs/reviews/2026-11-04-bella-timing-reconfirmation/IMPLEMENTATION.md).
+
+The user next chose **post-reader timing connections first** on 4 November:
+translate one already-selected MDB/MXF/OMF/native result into the existing timing
+operations and test its Duration independently of the future matcher. The
+proposed touch points are `timing.h/.cpp` and `tests/tst_bellatiming.cpp`.
+Existing reader reports and source priorities remain unchanged, and this step
+adds no file reads or app integration. The [concrete function/result contract](../../docs/reviews/2026-11-04-bella-timing-reconfirmation/CONNECTIONS.md)
+is now approved: `FileTiming` has independent optional exact Duration and
+`TimecodeInputs` display groups. Four `timingFor` overloads use the already-read
+source values, with an explicit caller-qualified nominal base for MDB/MXF/OMF
+and exact Duration only for native audio. No new timing policy is introduced.
+These connections are now implemented in the same timing files. The focused
+suite adds 65 connection cases, for 167 passed normally and with ASan/UBSan;
+all seven Bella suites total 916 passed and the same 14 retired-fixture skips
+per mode. Genuine integration matches 5,104 timing groups / 61,638 field checks
+per build; all 60 complete reader reports per build, including warnings, are
+byte-identical to baseline. No reader/helper/build-list or app source changed.
+See the [connection verification](../../docs/reviews/2026-11-04-bella-timing-reconfirmation/CONNECTIONS.md#implementation-and-verification).
 
 On 1 November the user approved adding `JPED` to MDB Video Kind. The current
 exact mapping is Audio for `PCMA`/`AIFD`/`WAVD`, Video for
