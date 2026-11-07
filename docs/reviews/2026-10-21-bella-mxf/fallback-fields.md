@@ -41,7 +41,7 @@ conversion is not applied indiscriminately to them. This approval does not
 assert that every MXF timing layout is already verified.
 
 The full source-priority table, MXF concurrency and unrelated header recovery
-remain separate decisions. OldScanner stays active until explicit cutover
+remain separate decisions. previous scanner stays active until explicit cutover
 approval and Bin Filter is unchanged. This revision changes documentation only.
 
 The approval receipt

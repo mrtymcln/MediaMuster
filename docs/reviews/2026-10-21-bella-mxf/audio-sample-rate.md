@@ -42,7 +42,7 @@ numbering has no effect on audio sampling frequency.
 | --- | --- | --- |
 | Media Composer | Imports the own SoundDescriptor.AudioSamplingRate through its typed getter and stores separate audio-frequency state; audio metadata publication/export uses it. | Native internal conversions and a publication-specific alternative are not a raw missing-property policy or fully traced GUI column. |
 | MDVx | The library reads the selected file sound descriptor's AudioSamplingRate as the original fraction, without Hz rounding or kHz scaling. | Its ordinary MXF wrapper discards this value; it supplies only names, Project and IDs. |
-| OldScanner | Reads the own descriptor's positive AudioSamplingRate fraction, keeps it separate from other clocks and generates kHz labels later. | It also carries a rounded whole-Hz compatibility integer. Table/CSV and sorting normally prefer the preserved ratio. |
+| previous scanner | Reads the own descriptor's positive AudioSamplingRate fraction, keeps it separate from other clocks and generates kHz labels later. | It also carries a rounded whole-Hz compatibility integer. Table/CSV and sorting normally prefer the preserved ratio. |
 
 ### Media Composer
 
@@ -75,7 +75,7 @@ a malformed present value fails the broader library read. The ordinary wrapper
 does not set the item's sample-rate pair. Its table can format a separately
 stored `DB_samplerate`, but that is not an ordinary MXF contribution.
 
-OldScanner projects the dedicated property only when it decodes as a valid
+previous scanner projects the dedicated property only when it decodes as a valid
 positive rate. It supplies no guessed default, project/track clock or
 FileDescriptor.SampleRate fallback for this audio frequency. The adapter retains
 the fraction in `sampleRateRatio` and a rounded whole-Hz compatibility copy.
@@ -125,7 +125,7 @@ evidence, not claims of real-file coverage. No new production tests were run.
    priority and extra-read policy remain for the final priority-table review.
 
 This carries verified interpretation and useful tests into fresh small helpers;
-it does not adapt OldScanner into Bella or claim a measured performance gain.
+it does not adapt previous scanner into Bella or claim a measured performance gain.
 
 ## Evidence and planning status
 
@@ -146,4 +146,4 @@ PMR/MDB are substantially settled; remaining work is MXF technical/navigation
 review, OMF/WAV/AIFF, consolidated priorities/read triggers and scanner
 coordination design. `src/bella` still contains documentation only. Fresh
 implementation, correctness/speed/memory comparison and explicit cutover follow
-the completed plan. OldScanner stays active and Bin Filter is unchanged.
+the completed plan. previous scanner stays active and Bin Filter is unchanged.

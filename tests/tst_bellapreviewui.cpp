@@ -99,9 +99,6 @@ void TestBellaPreviewUi::checkTableAndCsv(MainWindow &window, const QString &exp
 {
 	using Column = MediaTableModel::Column;
 	const auto &model = *window.m_model;
-	QCOMPARE(model.presentation(), MediaPresentation::Bella);
-	QCOMPARE(model.columnIndex(Column::SourcePath), -1);
-	QCOMPARE(model.columnIndex(Column::EffectSequence), -1);
 	const int filePath = model.columnIndex(Column::Location);
 	QVERIFY(filePath >= 0 && filePath < model.columnCount());
 	QCOMPARE(model.columnAt(filePath), Column::Location);
@@ -111,7 +108,7 @@ void TestBellaPreviewUi::checkTableAndCsv(MainWindow &window, const QString &exp
 	QCOMPARE(model.data(model.index(0, filePath), Qt::DisplayRole).toString(),
 			 model.fileAt(0).mediaFilePath);
 
-	const MediaCsv::Options options{model.precomputesEnabled(), model.presentation()};
+	const MediaCsv::Options options{model.precomputesEnabled()};
 	QVERIFY(MediaCsv::write(exportPath, model.allFiles(), options));
 	QFile csv(exportPath);
 	QVERIFY(csv.open(QIODevice::ReadOnly));

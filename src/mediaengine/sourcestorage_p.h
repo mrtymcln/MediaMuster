@@ -20,15 +20,12 @@ namespace MediaEngine::Detail
 		}
 		for (auto &set : source.recordSets)
 			set.objects.squeeze();
-		for (auto &embedded : source.embeddedSources)
-			squeezeSourceStorage(embedded, cancellation);
 		if (cancellation.cancelled())
 			return;
 		source.unownedProperties.squeeze();
 		source.objects.squeeze();
 		source.relationships.squeeze();
 		source.recordSets.squeeze();
-		source.embeddedSources.squeeze();
 		source.diagnostics.squeeze();
 	}
 }

@@ -150,7 +150,7 @@ void PrecomputeFilterDialog::buildTree(const QVector<MediaFile> &files)
 	{
 		if (file.type != MediaFile::Type::Precompute)
 			continue;
-		const QString precomputeCategory = file.precomputeCategoryDisplay();
+		const QString precomputeCategory = file.precomputeCategoryFilterLabel();
 		const QString category = precomputeCategory == rendered ? file.effectCategoryDisplay() : QString{};
 		const QString effect = file.effectDisplay();
 		auto *parent = precomputeCategoryItems.value(precomputeCategory);

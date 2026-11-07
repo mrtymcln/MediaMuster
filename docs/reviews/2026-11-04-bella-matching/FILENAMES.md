@@ -12,13 +12,13 @@ come from the filesystem. Only full qualified file/master IDs join metadata.
 The agreed workflow preserves existing path semantics and adds no new symlink
 resolution or normalization policy. The user has now explicitly selected exact
 decoded PMR-to-physical-basename spelling for Bella, including case and Unicode
-code points, instead of OldScanner's guarded normalization fallback.
+code points, instead of previous scanner's guarded normalization fallback.
 
-Current OldScanner uses exact names first. If no exact spelling exists, it can
+Current previous scanner uses exact names first. If no exact spelling exists, it can
 use `PmrKey::primary` (NFC normalization followed by lowercase). It accepts that
 fallback only when the normalized physical filename is unique in the folder;
 exact-name and identity qualifications still apply. See `src/pmrkey.h` and
-`src/oldscanner/mediaengine/scancoordinator.cpp`, `matchFile`.
+`removed source scancoordinator.cpp`, `matchFile`.
 UI Search's case/accent rules are not PMR association requirements.
 
 ## Fresh actual-name observation
@@ -51,7 +51,7 @@ directory, retaining the original spelling. For example, `Clip001.mxf` matches
 `Clip001.mxf`; `CLIP001.MXF` is not the same PMR-name match under this option.
 Do not trim, rewrite underscores, case-convert or normalize the strings for
 this association. This changes the proposed Bella association algorithm; it
-does not alter filesystem path resolution or current OldScanner behavior.
+does not alter filesystem path resolution or current previous scanner behavior.
 
 Benefit: the rule is direct and sufficient for every checked PMR entry. It
 does not require additional sibling-name uniqueness information solely for a
@@ -63,7 +63,7 @@ Both comparison strategies give the same filename associations in this sample.
 No scanner runtime comparison of header counts or final results was performed;
 no speed or memory improvement is claimed.
 
-## Declined alternative: retain OldScanner's guarded normalized-name fallback
+## Declined alternative: retain previous scanner's guarded normalized-name fallback
 
 Keep exact-name preference, then the existing NFC/lowercase fallback when it
 unambiguously identifies one captured physical basename. Benefit: retains
@@ -89,4 +89,4 @@ flag is needed for the selected exact association. Do not add another complete M
 or change reader reports for these facts. Matching performs no filesystem reads.
 
 No runtime matching, reader, MediaFile/table, progress, journal, Unfinished
-Business, Undo or Bin Filter code is changed. OldScanner remains active.
+Business, Undo or Bin Filter code is changed. previous scanner remains active.

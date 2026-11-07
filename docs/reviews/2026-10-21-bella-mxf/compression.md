@@ -34,7 +34,7 @@ from the formatted table columns.
 | --- | --- | --- |
 | Media Composer | Imports the own picture/audio compression property through typed descriptor access, converts the identifier into its internal coding representation and publishes the corresponding coding facts. Picture import also reads Avid ResolutionID and constructs dynamic compression information. | Native playback/import and codec configuration cover more machinery than Bella needs. These traces do not establish identical table labels for every codec. |
 | MDVx | Its bundled MXF library classifies essence using wrapping, picture coding and optional Avid ResolutionID. The library has an older fixed essence map; PCM comes from BWF/AES3 wrapping in that route. | The ordinary MXF wrapper does not transfer this compression result to the app item. Its Compression column reads a separately stored name, with ResolutionID/FourCC naming and an audio shortcut. Do not confuse bundled-library capability with the ordinary app result. |
-| MediaMuster / OldScanner | Reads the own class-specific coding label and passes validated format facts to the shared Compression naming resolver. It preserves exact catalogue names, DNx branding/numbered aliases and qualified uncompressed descriptions. | This is the behavior Bella must preserve. The resolver reads no files and chooses no metadata source. |
+| MediaMuster / previous scanner | Reads the own class-specific coding label and passes validated format facts to the shared Compression naming resolver. It preserves exact catalogue names, DNx branding/numbered aliases and qualified uncompressed descriptions. | This is the behavior Bella must preserve. The resolver reads no files and chooses no metadata source. |
 
 Media Composer's installed CodecToolkit configuration supplies readable codec
 definitions as well as the native implementation. The existing MediaMuster
@@ -46,9 +46,9 @@ that does not change MediaMuster's approved exact catalogue matching.
 
 ## Current MXF input contract
 
-Keep the existing [CompressionFacts boundary](../../../src/oldscanner/mediaengine/compressionnames_p.h)
-and [name resolver](../../../src/oldscanner/mediaengine/compressionnames_p.cpp)
-unchanged, with the existing [DNx rules](../../../src/oldscanner/mediaengine/dnxnames_p.h).
+Keep the existing [CompressionFacts boundary](../../../src/mediaengine/compressionnames_p.h)
+and [name resolver](../../../src/mediaengine/compressionnames_p.cpp)
+unchanged, with the existing [DNx rules](../../../src/mediaengine/dnxnames_p.h).
 Bella supplies equivalent facts through a small adapter:
 
 | Required fact | Preservation detail |
@@ -137,4 +137,4 @@ records the independent native/source audits, exact input contract and reused
 sample facts. Raw disassembly remains in `/private/tmp`. This is requirements
 research: no runtime files changed, no production tests or app/private APIs
 were run, and no timing/memory gain or universal native GUI parity is claimed.
-OldScanner remains active and Bin Filter is unchanged.
+previous scanner remains active and Bin Filter is unchanged.

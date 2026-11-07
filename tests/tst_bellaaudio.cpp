@@ -1,4 +1,4 @@
-// Native audio wire controls. No OldScanner reader, graph or projection is used.
+// Native audio wire controls. Only the native-audio reader is used.
 #include "bella/audioreader_p.h"
 
 #include <QFile>

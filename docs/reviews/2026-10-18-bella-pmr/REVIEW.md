@@ -40,9 +40,9 @@ An undecoded or empty PMR Project can fall back to another eligible source, but
 contradictory usable PMR Project values are not settled by lower-ranked MDB/header
 Project observations. This differs from Media Composer's whole-set preference.
 
-Source references: [version gate](../../../src/oldscanner/mediaengine/pmrreader.cpp),
-[PMR projection](../../../src/oldscanner/mediaengine/pmrprojection.cpp) and
-[text inference](../../../src/oldscanner/mediaengine/projection.cpp), with
+Source references: version gate (removed source),
+PMR projection (removed source) and
+text inference (removed source), with
 [source-ranked resolution](../../../src/mediaevidence.h). Existing documentation
 previously described a UTF-8/MacRoman heuristic without distinguishing PMR from
 MDB/OMF. The compatibility reference now describes the actual PMR call path.
@@ -278,7 +278,7 @@ be agreed before implementation; a request for this hypothetical does not silent
 adopt every MDVx limitation.
 
 The [21 October memory follow-up](memory-lifetime.md) compares the current
-OldScanner buffered path and retained state with MDVx's full-file read and
+previous scanner buffered path and retained state with MDVx's full-file read and
 per-item record copies. The user approved the explicit read-once/extract/release
 lifetime for Bella PMR on 21 October 2026, using the agreed whole-set selection/fallback
 from the same capture. This adds no runtime implementation or performance

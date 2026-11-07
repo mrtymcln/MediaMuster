@@ -40,7 +40,7 @@ that this marker prevents the identity from using MXF serialization.
 
 ## Correction and proof
 
-[The MXF projection helper](../src/oldscanner/mediaengine/projection.cpp) now converts those numeric
+The MXF projection helper (removed source) now converts those numeric
 fields for this family too. Original source bytes remain in the evidence.
 PMR/MDB and OMF wrapping keep their existing database representation. Comments in
 [omfuid.h](../src/omfuid.h) now distinguish the identity family from its encoding.

@@ -119,7 +119,7 @@ records the scope. No Bella runtime code or cutover is introduced.
 1. **Keep the supported Avid-compatible OP-Atom family.** Include the verified
    qualifier variants, including legacy zero, and existing supported descriptor,
    Unicode and local-set forms. Do not expand to generic OP1a/streaming because
-   a library or OldScanner accepts some of their structure. A filename, folder
+   a library or previous scanner accepts some of their structure. A filename, folder
    or all-zero operational-pattern label alone does not prove support. The
    all-zero operational-pattern compatibility case is outside this agreed scope
    until a needed Avid variant has been established.

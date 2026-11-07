@@ -10,7 +10,7 @@ current physical path and ignoring recorded Source Path in Bella. The native
 findings and counts below remain preserved research. The former recorded-path
 extraction proposal is **superseded, not for implementation**. Existing text
 decoding, complete IDs and master selection remain agreed. No Bella runtime,
-OldScanner, Bin Filter or media changes were made.
+previous scanner, Bin Filter or media changes were made.
 
 ## What the researched field describes
 
@@ -154,7 +154,7 @@ This is a bounded ordinary-inventory result, not a whole-app impossibility claim
 
 The independent raw probe checked current MDB/PMR/index hashes, qualified owners
 by complete IDs and catalogue membership, and followed actual local references.
-It did not use OldScanner's projected Source Path as its oracle.
+It did not use previous scanner's projected Source Path as its oracle.
 
 | MDB folder | Physical file rows | Master import locator | Qualified source-file fallback adds | Combined |
 | --- | ---: | ---: | ---: | ---: |

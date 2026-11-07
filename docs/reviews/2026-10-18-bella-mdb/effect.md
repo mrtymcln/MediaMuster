@@ -10,7 +10,7 @@ Review date: 20 October 2026. The user likes the current Effect behaviour and
 asked whether it could be simpler or more elegant. **The user accepted these
 Effect rules on 20 October 2026; they are not yet implemented.** The shared
 [Effect Category integration](effect-category.md#agreed-bella-integration) is
-already agreed. OldScanner remains active and Bin Filter is unchanged. The user
+already agreed. previous scanner remains active and Bin Filter is unchanged. The user
 subsequently [excluded Effect Sequence](effect-sequence-exclusion.md) from
 Bella's columns and stored results on 20 October 2026.
 
@@ -66,7 +66,7 @@ value for its associated physical rows during processing. Recompute if those
 selected inputs change. Keep the required Effect text as an owned QString;
 its ordinary Qt value/implicit-sharing semantics allow reuse without retaining
 the MDB read buffer. Keep the existing shared table and useful regression
-cases. This does not require linking Bella to OldScanner's reader.
+cases. This does not require linking Bella to previous scanner's reader.
 
 The useful simplification is the fresh small-result adapter, without repeated
 full source histories for the retained derived labels. The current suffix parser
@@ -93,7 +93,7 @@ Sequence's later exclusion is recorded in the linked decision above.
   extracted token; a hit uses the first indexed English name.
 - [Shared display](../../../src/mediafile.h): Precompute-only output and
   lowercase `unknown` for an empty stored Effect.
-- [Current derivation](../../../src/oldscanner/mediaengine/projection.cpp):
+- Current derivation (removed source):
   one lookup supplies all three related labels.
 - [Existing cases](../../../tests/tst_avideffects.cpp): canonical/localized
   names, custom text, suffix variants, sequence commas, invalid/overflow suffixes

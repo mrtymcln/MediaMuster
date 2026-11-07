@@ -15,7 +15,7 @@ source-state and validation limits.
 
 This folder records the user's requirements, RAM metadata design and the evidence
 behind MediaMuster's Avid-format interpretation. Canon's engine is retained under
-`src/oldscanner/mediaengine/` in namespace `MediaEngine`; its media readers and
+`removed source mediaengine` in namespace `MediaEngine`; its media readers and
 projectors still serve live operation checks. The active AVB reader remains under
 `src/mediaengine/`. Current ownership is explained in
 [engine terminology](../docs/media-engine.md).
@@ -501,11 +501,11 @@ Only the selected implementation remains in the current MediaEngine source.
 
 ## Current implementation
 
-This section describes the retained Canon/OldScanner implementation. Normal app
+This section describes the retained Canon/previous scanner implementation. Normal app
 scans use Bella's independent compact-result pipeline; see
 [current ownership](../docs/media-engine.md).
 
-The OldScanner pipeline creates one `MediaFile` per admitted physical location.
+The previous scanner pipeline creates one `MediaFile` per admitted physical location.
 It retains supported property observations and per-field selection explanations in RAM;
 unused source records are released under the [lifetime contract](source-lifetimes.md).
 Database entries without a local media match produce scoped `ScanIssue` records,

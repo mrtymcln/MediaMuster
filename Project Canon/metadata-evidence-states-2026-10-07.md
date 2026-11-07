@@ -48,22 +48,22 @@ existing qualified derived presentation; their presence is not codec certificati
   defined field. Defaults do not allocate an empty observation per source/field.
   Original observations remain separate. Repeated attachment merges checked
   fields, preserves earlier coverage and deduplicates source/object receipts.
-- [Projection helpers](../src/oldscanner/mediaengine/projection.cpp) preserve the named inputs in
+- Projection helpers (removed source) preserve the named inputs in
   coverage explanations. A null unique-value lookup is not used as absence proof.
   Original raw properties and relationships remain in the source graph.
-- [PMR projection](../src/oldscanner/mediaengine/pmrprojection.cpp) uses the established layout for
+- PMR projection (removed source) uses the established layout for
   format omissions, retains v1 omission reasons, and distinguishes an unread or
   failed modification word from one whose timestamp meaning is unsupported.
-- [MXF projection](../src/oldscanner/mediaengine/mxfprojection.cpp) qualifies recognized descriptor
+- MXF projection (removed source) qualifies recognized descriptor
   inputs. Object-local absence requires complete mapped framing; partial or
   unsupported objects stay unknown. Missing compression cannot imply PCM unless
   the owning Wave/AES3 descriptor is complete. This is a deliberate correctness
   correction, covered by a malformed/incomplete-object regression.
-- [OMF/MDB/native audio projection](../src/oldscanner/mediaengine/omfprojection.cpp) keeps empty and
+- OMF/MDB/native audio projection (removed source) keeps empty and
   unreadable text, failures deriving a source filename, descriptor input coverage
   and native fmt/COMM coverage. Local omission proof requires complete enumeration
   and identified native property names. Dependency-heavy mappings remain conservative.
-- [Scan attachment](../src/oldscanner/mediaengine/scancoordinator.cpp) registers the actual header
+- Scan attachment (removed source) registers the actual header
   receipt even when skipped, failed or unable to establish ownership. A later
   read replaces its unobserved unopened receipt; distinct observed snapshots stay
   distinct. Changed header coverage is ineligible and retains Changed freshness.

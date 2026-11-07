@@ -44,8 +44,8 @@ for those values.
 
 ## Why the result changed
 
-MediaEngine's [MDB/OMF projection](../src/oldscanner/mediaengine/omfprojection.cpp) and
-[MXF projection](../src/oldscanner/mediaengine/mxfprojection.cpp) initially preferred display
+MediaEngine's MDB/OMF projection (removed source) and
+MXF projection (removed source) initially preferred display
 geometry, then sampled, then stored. That produced the larger values in the
 comparison above.
 

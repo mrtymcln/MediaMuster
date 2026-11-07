@@ -56,10 +56,10 @@ Neither path calls the old production parsers.
 
 Implementation files:
 
-- [`omfreader.h/.cpp`](../src/oldscanner/mediaengine/omfreader.cpp): public reader and native/embedded source coordination.
-- [`audioreader_p.h/.cpp`](../src/oldscanner/mediaengine/audioreader_p.cpp): bounded native audio chunk reader.
-- [`omfbentoreader_p.h/.cpp`](../src/oldscanner/mediaengine/omfbentoreader_p.cpp): OMF-owned container framing and selective value reads.
-- [`omfobjects_p.h/.cpp`](../src/oldscanner/mediaengine/omfobjects_p.cpp): OMF-owned object interpretation.
+- `omfreader.h/.cpp` (removed source): public reader and native/embedded source coordination.
+- `audioreader_p.h/.cpp` (removed source): bounded native audio chunk reader.
+- `omfbentoreader_p.h/.cpp` (removed source): OMF-owned container framing and selective value reads.
+- `omfobjects_p.h/.cpp` (removed source): OMF-owned object interpretation.
 - [`scanmodel.h`](../src/mediaengine/scanmodel.h): embedded source contexts and original embedding locations.
 - [`tst_mediaenginelegacy.cpp`](../tests/tst_mediaenginelegacy.cpp): real specimens and independently authored failure/boundary cases.
 

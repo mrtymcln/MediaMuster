@@ -3,7 +3,7 @@
 #include "effectcatalogue.h"
 #include "mdbparser.h"
 #include "mxfparser.h"
-#include "oldscanner/mediaengine/compressionnames_p.h"
+#include "mediaengine/compressionnames_p.h"
 #include "omfparser.h"
 
 #include <QByteArrayView>

@@ -30,6 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "mxfparser.h"
+#include "identitycheck_p.h"
 
 #include <QByteArrayView>
 #include <QDateTime>
@@ -156,7 +157,7 @@ namespace Bella
 		};
 
 		// Static wire vocabulary is populated from the primary definitions used
-		// in the recorded format review, not from an OldScanner runtime object.
+		// in the recorded format review, not from a retired runtime object.
 		const ClassDefinition classes[] = {
 			{"root", "root", "00000000000000000000000000000000"},
 			{"root", "InterchangeObject", "060e2b34025301010d01010101010100"},
@@ -202,6 +203,7 @@ namespace Bella
 			{"FileDescriptor.LinkedTrackID", "060e2b34010101050601010305000000", Wire::Unsigned, 4},
 			{"InterchangeObject.InstanceUID", "060e2b34010101010101150200000000", Wire::Bytes, 16},
 			{"Preface.ContentStorage", "060e2b34010101020601010402010000", Wire::Reference, 16},
+			{"Preface.EssenceFileMobID", "8b2f680dff611381abf1b7718efd4802", Wire::Bytes, 32},
 			{"Preface.EssenceContainers", "060e2b34010101050102021002010000", Wire::Bytes, 0},
 			{"ContentStorage.Packages", "060e2b34010101020601010405010000", Wire::References, 16},
 			{"ContentStorage.EssenceContainerData", "060e2b34010101020601010405020000", Wire::References, 16},
@@ -1729,7 +1731,7 @@ namespace Bella
 			return owner;
 		}
 
-		FileSelection selectFile(Image &image, MxfFileInformation &file)
+		FileSelection selectFile(Image &image, MxfFileInformation &file, bool identityOnly = false)
 		{
 			FileSelection selected;
 			for (int object = 0; object < image.objects.size(); ++object)
@@ -1782,14 +1784,17 @@ namespace Bella
 					complete = false;
 					continue;
 				}
-				const auto sid = image.integer(ecd, "EssenceContainerData.BodySID");
-				if (!valueOf(sid))
+				if (!identityOnly)
 				{
-					complete = false;
-					continue;
+					const auto sid = image.integer(ecd, "EssenceContainerData.BodySID");
+					if (!valueOf(sid))
+					{
+						complete = false;
+						continue;
+					}
+					if (*valueOf(sid) == 0 || (image.bodySid && *valueOf(sid) != image.bodySid))
+						continue;
 				}
-				if (*valueOf(sid) == 0 || (image.bodySid && *valueOf(sid) != image.bodySid))
-					continue;
 				const auto id = packageId(image, ecd, "EssenceContainerData.LinkedPackageUID");
 				if (!valueOf(id))
 				{
@@ -1833,11 +1838,14 @@ namespace Bella
 								  "The essence identity does not resolve to one qualified active file SourcePackage."));
 				return selected;
 			}
-			selected.descriptor = selectedDescriptor(image, selected.file);
-			if (selected.descriptor < 0)
+			if (!identityOnly)
 			{
-				selected.file = -1;
-				return selected;
+				selected.descriptor = selectedDescriptor(image, selected.file);
+				if (selected.descriptor < 0)
+				{
+					selected.file = -1;
+					return selected;
+				}
 			}
 			file.fileMobId = essenceIds.first();
 			return selected;
@@ -1849,7 +1857,7 @@ namespace Bella
 			bool complete = true;
 		};
 
-		Components mediaComponents(const Image &image, int root, EditorialDataKind kind)
+		Components mediaComponents(const Image &image, int root, std::optional<EditorialDataKind> kind)
 		{
 			Components result;
 			QVector<QPair<int, bool>> pending{{root, false}};
@@ -1871,7 +1879,8 @@ namespace Bella
 					continue;
 				colour[item.first] = 1;
 				pending.append({item.first, true});
-				if (!image.is(item.first, "StructuralComponent") || editorialDataDefinition(image, item.first) != kind)
+				if (!image.is(item.first, "StructuralComponent") ||
+					(kind && editorialDataDefinition(image, item.first) != *kind))
 				{
 					result.complete = false;
 					continue;
@@ -1899,7 +1908,7 @@ namespace Bella
 							result.complete = false;
 					}
 				}
-				else if (!image.is(item.first, "Filler"))
+				else if (kind && !image.is(item.first, "Filler"))
 					result.complete = false;
 			}
 			return result;
@@ -2016,6 +2025,84 @@ namespace Bella
 			}
 			clip.masterMobId = *valueOf(id);
 			readClip(image, candidates.first(), details, clip);
+		}
+
+		Detail::FileIdentity fileIdentity(Image &image)
+		{
+			MxfFileInformation file;
+			const auto selected = selectFile(image, file, true);
+			if (selected.file < 0 || !file.fileMobId)
+				return {};
+			Detail::FileIdentity identity{Detail::identityText(*file.fileMobId), {}};
+			// A readable recorded Preface claim must agree, even though its
+			// presence is not required to identify the essence-linked package.
+			const auto claims = image.objects[selected.preface].properties.constFind("Preface.EssenceFileMobID");
+			if (claims != image.objects[selected.preface].properties.cend())
+				for (const auto &span : *claims)
+				{
+					const auto raw = image.input.read(span.offset, span.length);
+					if (valueOf(raw) && valueOf(raw)->size() == 32 &&
+						std::any_of(valueOf(raw)->cbegin(), valueOf(raw)->cend(), [](char byte)
+									{ return byte != 0; }))
+					{
+						const auto id = normalizeMobId(QByteArrayView(*valueOf(raw)), MobIdLayout::Aaf32, ByteOrder::BigEndian);
+						if (std::get<MobId>(id) != *file.fileMobId)
+							return {};
+					}
+				}
+			for (const int master : selected.packages)
+			{
+				if (!image.is(master, "MaterialPackage"))
+					continue;
+				const auto id = packageId(image, master, "GenericPackage.PackageUID");
+				if (!valueOf(id))
+					continue;
+				int owners = 0;
+				bool unique = true;
+				for (const int package : selected.packages)
+				{
+					const auto other = packageId(image, package, "GenericPackage.PackageUID");
+					if (!valueOf(other))
+						unique = false;
+					else if (*valueOf(other) == *valueOf(id))
+						++owners;
+				}
+				if (!unique || owners != 1)
+					continue;
+				const auto tracks = image.refs(master, "GenericPackage.Tracks");
+				if (!valueOf(tracks))
+					continue;
+				bool complete = true, linked = false;
+				for (const int track : *valueOf(tracks))
+				{
+					const auto root = image.target(track, "GenericTrack.Sequence");
+					if (!image.is(track, "GenericTrack") || !valueOf(root))
+					{
+						complete = false;
+						continue;
+					}
+					// Identity needs the complete class-qualified source graph,
+					// independently of technical clock/descriptor qualification.
+					const auto walk = mediaComponents(image, *valueOf(root), std::nullopt);
+					complete &= walk.complete;
+					for (const int clip : walk.sourceClips)
+					{
+						const auto raw = image.bytes(clip, "SourceClip.SourcePackageID");
+						if (valueOf(raw) && valueOf(raw)->size() == 32 &&
+							std::all_of(valueOf(raw)->cbegin(), valueOf(raw)->cend(), [](char byte)
+										{ return byte == 0; }))
+							continue;
+						const auto source = packageId(image, clip, "SourceClip.SourcePackageID");
+						if (!valueOf(source))
+							complete = false;
+						else if (*valueOf(source) == *file.fileMobId)
+							linked = true;
+					}
+				}
+				if (complete && linked)
+					identity.masterIds.insert(Detail::identityText(*valueOf(id)));
+			}
+			return image.input.failure == MxfReadResult::NotRead ? identity : Detail::FileIdentity{};
 		}
 
 		// Private exact numbering qualification; it does not format Duration.
@@ -2489,6 +2576,17 @@ namespace Bella
 								 : Stamp{};
 		}
 	} // namespace
+
+	bool mxfIdentityMatches(QFile &source, const QString &expectedFileId, const QStringList &expectedMasterIds)
+	{
+		return Detail::checkOpenedIdentity(source, expectedFileId, expectedMasterIds, [&]
+										   {
+			const std::atomic_bool stop{false};
+			Input input(source, stop);
+			QStringList notes;
+			Image image(input, notes);
+			return input.extent >= 0 && readHeader(image) ? fileIdentity(image) : Detail::FileIdentity{}; });
+	}
 
 	MxfReport parseMxf(const QString &path, const std::atomic_bool &stopRequested, bool includePrecomputeDetails)
 	{

@@ -13,7 +13,7 @@ of opening every media header. It does not impose a memory cap.
 
 ## When the header is needed
 
-[The MediaEngine scheduler](../src/oldscanner/mediaengine/scancoordinator.cpp) first reads discovered PMR/MDB
+The MediaEngine scheduler (removed source) first reads discovered PMR/MDB
 sources. A skip requires a complete, unchanged local PMR with an unambiguous
 filename-to-FileMobId match, joined to a complete, unchanged MDB file projection.
 Master metadata alone is insufficient. Exact filenames take precedence over
@@ -88,7 +88,7 @@ from `CLIP:Length`, track-group lengths from `TRKG:GroupLength`, and sequence
 lengths through that calculation. The locally inspected toolkit source contains
 these functions at lines 1206–1240 and 1275–1310 respectively.
 
-[MediaEngine's projection](../src/oldscanner/mediaengine/omfprojection.cpp) now follows that rule for
+MediaEngine's projection (removed source) now follows that rule for
 supported components, requiring complete references, established lengths and
 equivalent exact component clocks. It guards cycles, overflow and negative
 totals; repeated references count once per occurrence. Transition lengths use

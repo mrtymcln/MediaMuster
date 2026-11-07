@@ -7,7 +7,7 @@ Research: 23 October 2026. **The user approved these identity/ownership rules
 on 24 October 2026.** The approval record
 preserves the direct instruction and the original research snapshot.
 The user has approved OMF selective reading and the release-one version/text
-rules. This review adds no runtime code or app cutover. OldScanner and Bin Filter
+rules. This review adds no runtime code or app cutover. previous scanner and Bin Filter
 remain unchanged; the shared complete-ID normalizer and KelpieId rules are
 already agreed.
 
@@ -108,7 +108,7 @@ handling is additionally supported by native/source traces, not claimed as a
    Recognized organization-42 values use the verified mapping; other legacy
    organizations remain complete and distinctly represented. For 32-byte values,
    apply the known numeric-field conversion without reversing or truncating
-   the whole ID. Do not copy OldScanner's opposite-order pass-through.
+   the whole ID. Do not copy previous scanner's opposite-order pass-through.
 3. Find active legacy masters qualified by their role: a supported MOBJ with no
    physical descriptor and usage 1 or 7. Follow only the established complete
    track/component/source-clip relationships to the selected file ID, retaining

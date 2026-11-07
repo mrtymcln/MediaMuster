@@ -6,7 +6,7 @@
 Research date: 20 October 2026. **General Bella MDB damage policy approved by
 the user on 21 October 2026; not yet implemented.** Field-specific rules
 already agreed, including separate legacy text recovery and Duration's
-missing/damaged behaviour, remain in force. OldScanner stays active and Bin
+missing/damaged behaviour, remain in force. previous scanner stays active and Bin
 Filter stays unchanged.
 
 **Current reassessment, 1 November 2026:** the approved qualification fixes are
@@ -190,7 +190,7 @@ Preserve these distinctions:
   values/records rather than a permanent per-row graph of every rejected byte.
 
 This is an agreed requirement for fresh C++17/Qt 6.5.3 helpers, not a patch to
-OldScanner. No measured scan-time or memory improvement is claimed. Supported
+previous scanner. No measured scan-time or memory improvement is claimed. Supported
 MDB version scope was subsequently agreed in the [versions review](versions.md);
 generic structural failure handling does not itself establish support for every
 concrete property/descriptor layout.

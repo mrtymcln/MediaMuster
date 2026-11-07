@@ -13,7 +13,7 @@ Avid properties where practical. Separate Frame Rate and Sample Rate columns,
 blank Frame Rate for audio, blank Sample Rate for video, and the fixed
 Kind lookup are already agreed. The later JPED-only Kind amendment is recorded
 in [Kind](kind.md); it does not broaden this field's independent source/layout
-rules. OldScanner remains active; Bin Filter is outside
+rules. previous scanner remains active; Bin Filter is outside
 this replacement.
 
 **Duration source revision, 21 October 2026:** Frame Rate's rule remains as
@@ -203,11 +203,11 @@ code, rather than a newly observed scan of the installed app.
 | Sorting | Converts the rounded label back to `double`, then uses text as a tie breaker. It does not sort from the retained fraction. |
 
 The decisive source points are
-[MDB numeric decoding](../../../src/oldscanner/mediaengine/mdbobjects_p.cpp),
-[MDB technical projection](../../../src/oldscanner/mediaengine/mdbprojection.cpp),
-[source selection](../../../src/oldscanner/mediaengine/metadataselectionpolicy.cpp),
-[header scheduling](../../../src/oldscanner/mediaengine/scancoordinator.cpp),
-[row adaptation](../../../src/oldscanner/mediaengineadapter.cpp),
+MDB numeric decoding (removed source),
+MDB technical projection (removed source),
+source selection (removed source),
+header scheduling (removed source),
+row adaptation (removed source),
 [row storage](../../../src/mediafile.h),
 [table display](../../../src/mediatablemodel.cpp),
 [CSV](../../../src/mediacsv.cpp) and

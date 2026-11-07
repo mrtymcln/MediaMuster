@@ -7,7 +7,7 @@
 > refer to the reviewed revision. Removed components are identified as retired.
 
 Implemented the approved **3 > 2 > 1 > 0** plan. There is one handwritten,
-commented [C++ policy table](../src/oldscanner/mediaengine/metadataselectionpolicy.cpp), with an
+commented C++ policy table (removed source), with an
 explicit row for each of the 41 defined metadata properties, including internal
 RAM-only properties. Adding a property without its policy row stops the build.
 
@@ -27,7 +27,7 @@ preferences are MediaMuster product decisions; they do not establish an Avid
 format interpretation or permit a join to the wrong file.
 
 Scanning and bin enrichment now use this same table. The
-[presentation adapter](../src/oldscanner/mediaengineadapter.cpp) refreshes chosen semantic values,
+presentation adapter (removed source) refreshes chosen semantic values,
 including replacing nonempty cells and clearing unresolved ones. Table display,
 filters and CSV consume those refreshed values. Physical paths, KelpieIds and
 operation stamps keep their existing lifecycle. Identical bin reapplication does

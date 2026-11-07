@@ -21,10 +21,10 @@ selection belong to the caller. No new cache, source search, file read,
 catalogue, public diagnostic or evidence flag is added.
 
 Existing runtime sources are unchanged: reader implementations/headers, timing,
-Compression/DNx helpers, Effect catalogue, OldScanner and app wiring. The only
+Compression/DNx helpers, Effect catalogue, previous scanner and app wiring. The only
 existing build-file edits add Bella naming/lookup sources to the Bella target
 and register the Bella naming test. No existing compilation owner is removed.
-OldScanner remains active. Bin Filter, MediaFile/table, progress, journal,
+previous scanner remains active. Bin Filter, MediaFile/table, progress, journal,
 Unfinished Business and Undo are unchanged.
 
 ## Focused checks
@@ -65,7 +65,7 @@ paths on this computer and EDIT: seven MDBs, nine MXFs and fourteen OMF/native
 audio files, with optional details both off and on. This is a bounded component
 comparison, not an exhaustive filesystem scan or app scanner cutover.
 
-The independent reference runs the unmodified active OldScanner reader,
+The independent reference runs the unmodified active previous scanner reader,
 projector and source-local selection pipeline, rather than calling the new
 Bella adapter as its oracle. It includes 2,515 MDB file records and 1,420 MDB
 master records. Per normal/sanitizer mode:
@@ -81,7 +81,7 @@ master records. Per normal/sanitizer mode:
 The baseline explicitly accounts for previously approved Bella differences:
 four original-byte-qualified MDB J2K records and one MXF alpha path. Across
 both detail modes these produce ten per-source Compression differences from
-OldScanner. They are not introduced naming policies. All eighteen EDIT MDB RGBA
+previous scanner. They are not introduced naming policies. All eighteen EDIT MDB RGBA
 A16 records retain the existing family-only `Avid DNxUncompressed` label; no
 unsupported numeric suffix is inferred from their generic Bit Depth value.
 

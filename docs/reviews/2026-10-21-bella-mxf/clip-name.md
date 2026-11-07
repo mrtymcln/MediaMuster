@@ -6,7 +6,7 @@
 Research and approval date: 22 October 2026. The user approved the
 [MXF FileMobId/MasterMobId rules](identities.md), then **approved all five Clip
 Name owner/text/blank/retention rules below. They are requirements, not yet
-implemented.** OldScanner remains active and Bin Filter is unchanged. The
+implemented.** previous scanner remains active and Bin Filter is unchanged. The
 approval receipt
 records this decision separately from the next, unapproved Project review.
 

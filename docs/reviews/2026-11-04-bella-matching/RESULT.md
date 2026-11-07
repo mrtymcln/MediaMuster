@@ -77,4 +77,4 @@ still require check-ins before dependent code. No numerical display label,
 common type declaration, input/check packet, lookup lifetime/layout or file
 placement is implemented by this record.
 No measured speed or memory claim is made. Existing MediaFile/table, progress,
-journal, Unfinished Business, Undo, OldScanner and Bin Filter code is unchanged.
+journal, Unfinished Business, Undo, previous scanner and Bin Filter code is unchanged.

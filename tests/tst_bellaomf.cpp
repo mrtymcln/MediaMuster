@@ -1,6 +1,7 @@
 // Fresh authored OMF1 graphs. These are standalone/embedded OMF inputs, never
 // MDB-mode calls. Native wrappers contain only tiny authored dummy sound extents.
 #include "bella/omfparser.h"
+#include "omfuid.h"
 #include "testmediaenginebento.h"
 
 #include <QFile>
@@ -247,6 +248,8 @@ class TestBellaOmf final : public QObject
 {
 	Q_OBJECT
 private slots:
+	void openedIdentity_data();
+	void openedIdentity();
 	void reportDefaults();
 	void cancellationAndIo();
 	void supportedOrdersAndVersions_data();
@@ -1175,6 +1178,91 @@ void TestBellaOmf::completeIdentities()
 			: variation == 1 ? canonicalUid(22) : masterCanonical;
 		QCOMPARE(report.associatedClipInformation.masterMobId->bytes().toByteArray(), expectedMaster);
 	}
+}
+
+void TestBellaOmf::openedIdentity_data()
+{
+	QTest::addColumn<bool>("big");
+	QTest::addColumn<int>("variation");
+	const std::array<const char *, 14> names{
+		"complete identity", "wrong full file identity", "two saved masters", "one missing saved master",
+		"broken second master", "technical values not required", "unsupported OMF revision",
+		"multiple embedded containers", "single embedded container", "unlinked master",
+		"noncanonical expected spelling", "broken container", "descriptor not required", "unknown descriptor class"};
+	for (const bool big : {false, true})
+		for (int i = 0; i < int(names.size()); ++i)
+			QTest::newRow(qPrintable(QStringLiteral("%1 %2").arg(big ? "MM" : "II", names[std::size_t(i)]))) << big << i;
+}
+
+void TestBellaOmf::openedIdentity()
+{
+	QFETCH(bool, big);
+	QFETCH(int, variation);
+	auto writer = specimen(big);
+	QString expectedFile = OmfUid::toIdText(canonicalUid(11));
+	QStringList masters{OmfUid::toIdText(canonicalUid(22))};
+	const bool expected = variation == 0 || variation == 2 || variation == 5 || variation == 8 || variation >= 12;
+	if (variation == 1)
+	{
+		auto different = canonicalUid(11);
+		different[0] ^= char(0x40);
+		expectedFile = OmfUid::toIdText(different);
+	}
+	if (variation >= 2 && variation <= 4)
+	{
+		erase(writer, 1, "OMFI:CompositionMobs");
+		object(writer, 700, "MOBJ");
+		put(writer, 700, "OMFI:MOBJ:MobID", "omfi:UID", uid(23, big));
+		scalar(writer, 700, "OMFI:MOBJ:UsageCode", "omfi:UsageCodeType", qint32(7));
+		references(writer, 700, "OMFI:TRKG:Tracks", {710});
+		track(writer, 710, 720);
+		sourceClip(writer, 720, uid(11, big));
+		members(writer, {100, 300, 600, 700});
+		masters.append(OmfUid::toIdText(canonicalUid(23)));
+		if (variation == 3)
+			masters.append(OmfUid::toIdText(canonicalUid(24)));
+		if (variation == 4)
+			reference(writer, 710, "OMFI:TRAK:TrackComponent", 999);
+	}
+	if (variation == 5)
+	{
+		erase(writer, 200, "OMFI:MDFL:SampleRate");
+		erase(writer, 200, "OMFI:MDFL:Length");
+	}
+	if (variation == 6)
+		put(writer, 1, "OMFI:Version", "omfi:VersionType", QByteArray::fromHex("0002"), true);
+	if (variation == 9)
+		put(writer, 320, "OMFI:SCLP:SourceID", "omfi:UID", uid(99, big));
+	if (variation == 10)
+		expectedFile.remove(QLatin1Char('.'));
+	if (variation == 12 || variation == 13)
+	{
+		masters.clear();
+		if (variation == 12)
+			erase(writer, 100, "OMFI:MOBJ:PhysicalMedia");
+		else
+			put(writer, 200, "OMFI:ObjID", "omfi:ObjectTag", "????", true);
+	}
+	auto content = variation == 7 ? embeddedWave({writer, writer}) : variation == 8 ? embeddedWave({writer}) : writer.build();
+	if (variation == 11)
+		content.chop(1);
+	QTemporaryFile source;
+	QVERIFY(source.open());
+	QCOMPARE(source.write(content), qint64(content.size()));
+	QVERIFY(source.flush());
+	QVERIFY(source.seek(7));
+	const auto handle = source.handle();
+	QCOMPARE(Bella::omfIdentityMatches(source, expectedFile, masters), expected);
+	QVERIFY(source.isOpen());
+	QCOMPARE(source.handle(), handle);
+	QCOMPARE(source.pos(), qint64(7));
+	if (variation == 2)
+	{
+		QVERIFY(!parse(writer).associatedClipInformation.masterMobId);
+		QVERIFY(Bella::omfIdentityMatches(source, {}, masters));
+	}
+	source.close();
+	QVERIFY(!Bella::omfIdentityMatches(source, expectedFile, masters));
 }
 
 QTEST_GUILESS_MAIN(TestBellaOmf)

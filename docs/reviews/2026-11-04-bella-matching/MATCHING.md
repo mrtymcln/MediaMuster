@@ -10,7 +10,7 @@ code is introduced by this record.
 Implement and test the matching part of the independent scanner using
 already-read Bella reports. Physical discovery, four-job scheduling and app
 integration follow separately. The alternative was building those parts
-together in one larger change. OldScanner remains active; Bin Filter is
+together in one larger change. previous scanner remains active; Bin Filter is
 unchanged. Concrete inputs/outputs, placement and index ownership
 still require approval before dependent implementation.
 

@@ -6,12 +6,13 @@
 ## Current implementation
 
 Bella is the default scanner in the normal macOS and Windows application.
-`CMakeLists.txt` defines `MEDIAMUSTER_USE_BELLA` for both platforms, and
 `BellaAppScanner` connects Bella's synchronous organiser to the Qt UI. The
 separate `MEDIAMUSTER_BELLA_PREVIEW` build is a scan/export rehearsal with file
 operations disabled; it is not required to use Bella in the normal application.
-OldScanner remains in focused tests and operation identity checks; Bin Filter
-retains its existing AVB readers. See [current behaviour](../../docs/current-behaviour.md).
+File Check verifies operation identities using Bella's parser helpers through
+already-open files. Its format scope and verification are in the
+[implementation record](../../docs/reviews/2026-11-07-file-check/README.md).
+Bin Filter retains its existing AVB readers. See [current behaviour](../../docs/current-behaviour.md).
 
 The implementation contains separate PMR, MDB, MXF and OMF/native-audio parsers,
 shared MobId, timing and naming helpers, the no-I/O matcher, physical discovery
@@ -29,8 +30,7 @@ file or no safely matched MDB descriptor describes it. Missing individual
 columns do not trigger a read. PMR filename matching is exact, legacy PMR text
 uses MacRoman, and the PMR modification word is ignored. Bella's MDB and OMF
 baseline is legacy OMF 1 in Bento 1.0; its MXF reader uses the supported initial
-metadata header. Wider retained OldScanner capabilities do not expand Bella's
-scope.
+metadata header. Earlier wider format capabilities do not expand Bella's scope.
 
 Bella's table/CSV use File Path and omit recorded Source Path and Effect
 Sequence. Optional precompute details add Precompute Category, Effect Category
@@ -44,7 +44,7 @@ organiser and pool finish; another scan or final close waits for readiness.
 
 The entries below preserve component decisions, implementation stages and the
 results of their dated runs. Statements such as “not implemented” or
-“OldScanner remains active” describe those stages, before the 7 November
+“previous scanner remains active” describe those stages, before the 7 November
 cutover. They are not the current implementation status. Historical pass counts
 and retired-fixture skips do not establish the outcome of a later build.
 
@@ -100,11 +100,11 @@ reader facts into the existing Compression resolver and derive Effect/Effect
 Category together using the existing lookup on final Precompute Type/name.
 Naming behavior and reader reports remain as agreed. The [shared build boundary](../../docs/reviews/2026-11-04-bella-naming/SHARING.md)
 was reviewed: the user selected compiling the same unchanged lookup files
-separately into Bella, keeping current OldScanner/app/test build owners intact.
+separately into Bella, keeping current previous scanner/app/test build owners intact.
 No shared naming target or helper move is selected. The root Bella CMake list
 now compiles the unchanged existing naming files; other build owners stay intact.
 Existing Compression/Effect suites pass 31+36 cases before/after, and the same
-unmodified tests pass linked only to Bella/Qt without OldScanner. Concrete
+unmodified tests pass linked only to Bella/Qt without previous scanner. Concrete
 [adapter function/results](../../docs/reviews/2026-11-04-bella-naming/CONTRACT.md)
 are now approved: Bella-owned four-string `CompressionNames`, two-string
 `EffectNames`, four `compressionFor` overloads and one `effectNamesFor` using a
@@ -115,7 +115,7 @@ the same 14 fixture skips in both normal and ASan+UBSan modes. Per mode, genuine
 checks cover 5,104 Compression and 1,443 requested Effect results with no
 unexpected differences; 60 full reader reports/warnings are byte-identical.
 See the [scope and approved reference differences](../../docs/reviews/2026-11-04-bella-naming/VERIFICATION.md).
-OldScanner remains active and Bin Filter unchanged.
+previous scanner remains active and Bin Filter unchanged.
 
 On 4 November the user next approved **matching and source selection first**:
 test the agreed joins and source/header-opening rules using already-read Bella
@@ -260,11 +260,11 @@ the GUI thread before another scan may start with fresh state. Keeping the
 pool object between scans was declined; the earlier persistent-pool proposal is
 withdrawn. Setup repeats per scan and its cost is unmeasured. Remaining concrete
 scanner declarations, other session/GUI lifetime and physical qualification
-still need review. OldScanner/Bin Filter and runtime/app code remain unchanged.
+still need review. previous scanner/Bin Filter and runtime/app code remain unchanged.
 
 On **5 November** the user approved a **Qt existence, size and modification-date
 recheck against discovery** before captured physical-media facts are used in
-matching. OldScanner's modification-date-only alternative was declined. A
+matching. previous scanner's modification-date-only alternative was declined. A
 detected change is reported; keep the entry and exclude facts tied to the old
 capture. This does not change reader-local checks, matching's no-I/O contract
 or file-operation policy. Unavailable/unperformed-check handling remains an
@@ -420,7 +420,7 @@ read/check answer lists. The user then approved the
 and requested implementation of the independent MXF reader and focused tests,
 using C++17/Qt 6.5.3 and checking in before any further decisions. The independent
 reader and focused tests are implemented and verified; the active app remains
-on OldScanner and Bin Filter is unchanged.
+on previous scanner and Bin Filter is unchanged.
 The user also approved accepting numerically equivalent duplicate MXF rate
 fractions while retaining the first original pair; unequal numeric rates stay
 conflicting. Authored coverage includes both orders. MDB behavior is unchanged.
@@ -530,7 +530,7 @@ answer mapping. PMR source/header/tests are unchanged; its regression run has
 70 passes and five existing retired-fixture skips, with no failures.
 This does not alter selective reading or file-operation verification. See the
 [OMF entry decision](../../Project%20Bella/README.md#implementation-decisions).
-The OMF implementation is verified below; OldScanner and Bin Filter are unchanged.
+The OMF implementation is verified below; previous scanner and Bin Filter are unchanged.
 
 The [OMF file-information value contract](../../Project%20Bella/README.md#agreed-omf-file-information-value-contract)
 was approved on 3 November. It specifies fifteen
@@ -548,7 +548,7 @@ reassessment found no demonstrated need for merging. Support one distinct
 discovered OMF location; defer multiple-location reconciliation, retain usable
 native facts and report the OMF contribution as Unsupported when several
 locations are found. Do not choose the first/last location. The user also
-reaffirmed that existing OldScanner code or authored tests alone do not justify
+reaffirmed that existing previous scanner code or authored tests alone do not justify
 Bella capabilities: proposals must meet actual file/format needs. No runtime
 code or approved single-container checks have changed in this record.
 The [shared audio-format extraction within OMF implementation](../../Project%20Bella/README.md#agreed-shared-audio-format-extraction-within-omf-implementation)
@@ -558,7 +558,7 @@ OMF/native implementation, rather than a separate refactor first. This touches
 `mdbparser.cpp` and the root/test CMake lists along with the previously agreed
 new reader/helper/tests. Keep existing public MDB/PMR/MXF types, reports, checks
 and warning text unchanged. Native acquisition/qualification remains separate;
-no new capability is inferred from OldScanner. Implementation and verification
+no new capability is inferred from previous scanner. Implementation and verification
 are now authorized within these recorded contracts and boundaries.
 
 The [3 November OMF/native implementation verification](../../Project%20Bella/README.md#omf-and-native-audio-implementation-verification)
@@ -689,7 +689,7 @@ The corrected prior 151 MDB Qt cases pass against the saved reader. The current
 suite passes 157 MDB, 73 PMR and 14 ID cases normally and with ASan/UBSan; six new
 endian rows exercise 74 authored Length controls and preservation of independent
 facts. All 63 full reports from the 45 prior paths match byte-for-byte before
-and after. No active runtime, OldScanner or Bin Filter changes are included.
+and after. No active runtime, previous scanner or Bin Filter changes are included.
 
 On 1 November the user approved two narrow MDB corrections after the native
 and source review. Stop Original Bin selection on the existing `binNameUTF8`
@@ -711,7 +711,7 @@ optional details off/on; the new groups fail as expected against the saved
 pre-correction reader. All 63 complete reports from the 45 prior paths remain
 byte-identical, including notes; those prior inputs do not exercise the two
 corrected cases. Those corrections did not include the three internal cleanups;
-their subsequent approval is recorded below. OldScanner remains active and Bin
+their subsequent approval is recorded below. previous scanner remains active and Bin
 Filter is unchanged.
 
 On 1 November the user separately approved all three small internal MDB cleanups:
@@ -731,7 +731,7 @@ expanded MDB suite also passes against the saved pre-cleanup reader. Four new
 endian rows exercise 68 additional authored parses. All 63 prior and 324 authored
 full before/after reports are byte-identical, including diagnostic text/order/count;
 authored invocations include repeated byte contents. No measured speed or memory
-gain is claimed. OldScanner remains active and Bin Filter is unchanged.
+gain is claimed. previous scanner remains active and Bin Filter is unchanged.
 
 On 27 October the user approved a separate `mediamuster_bella` static library
 in the existing CMake build, using Qt Core and initially linked only to Bella's
@@ -834,7 +834,7 @@ recommendations are not approvals. See
 Bella will use C++17 and the project's pinned Qt 6.5.3 building blocks, applying
 the attached C++ guidance through scoped ownership, type and bounds safety,
 compact value records and explicit lifetimes. It must not be produced by
-patching or adapting OldScanner.
+patching or adapting previous scanner.
 
 The user's 24 October clarification makes the existing trusted metadata results
 the behavioral reference: preserve verified interpretation rules and the specific
@@ -864,7 +864,7 @@ and problems after the organiser collects accepted replies and joins its pool;
 the app adapter subsequently prepares MediaFile table rows. See the
 [scanner contract](../../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#starting-source-layout).
 
-At this stage the app still used [OldScanner](../oldscanner/README.md), and the
+At this stage the app still used the previous scan implementation, and the
 cutover required explicit approval. The user subsequently approved Bella as the
 normal macOS and Windows scanner on 7 November; Bin Filter retains its existing
 reader implementation.
@@ -889,4 +889,4 @@ coalescing. Duration sorting is settled too: keep numeric displayed HH/MM/SS/FF
 order, current blank grouping and Kind ties, preserving earlier Bella zero-display
 corrections. All eight registered choices are resolved; other new implementation
 choices still need review before affected work. The full comparison with
-OldScanner and app integration are separate steps.
+previous scanner and app integration are separate steps.

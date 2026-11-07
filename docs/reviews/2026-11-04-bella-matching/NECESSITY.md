@@ -107,7 +107,7 @@ from every multiple-object layout or from human-readable warning text.
 Keep the current Bella reader boundary while the compact matching checks are
 reviewed. Reuse established own-file identity and existing read/change
 qualifications. Do not add candidate histories, an all-master list or a new
-conflict flag solely to mirror OldScanner or its tests.
+conflict flag solely to mirror previous scanner or its tests.
 
 ## Existing approvals and implementation limits
 
@@ -120,7 +120,7 @@ not be claimed to reproduce every current receipt field.
 
 This turn changes documentation only. Bella readers, matching runtime, app
 operation engine, MediaFile/table, progress, journal, Unfinished Business, Undo
-and Bin Filter remain unchanged. OldScanner remains active.
+and Bin Filter remain unchanged. previous scanner remains active.
 
 ## Local receipts
 

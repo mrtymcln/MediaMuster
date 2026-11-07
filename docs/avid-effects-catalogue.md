@@ -7,7 +7,7 @@ Recognition from a clip name is **not a definitive effect ID**. Clip names are e
 Normal Bella scans call this shared catalogue through `src/bella/naming.cpp` and
 retain Effect and Effect Category when precompute details are requested. Bella
 does not retain or export the separate Effect Sequence value returned by the
-shared lookup; the retained OldScanner presentation still supports that field.
+shared lookup; the retained previous scanner presentation still supports that field.
 
 ## Provenance and scope
 

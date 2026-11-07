@@ -99,7 +99,7 @@ inline std::optional<ConflictPolicy> conflictPolicyFromName(const QString &name)
 // MARK: - OpItem
 
 /// Captured header identities to recheck independently of the selected MasterMobId.
-/// Bella supplies its qualified FileMobId; OldScanner can also retain header master IDs.
+/// Bella supplies its qualified FileMobId; saved jobs can also require header master IDs.
 /// Database-only master associations are not requirements imposed on the header.
 struct OpHeaderIdentity
 {

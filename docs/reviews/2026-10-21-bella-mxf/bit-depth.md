@@ -37,7 +37,7 @@ representation context rather than displaying every raw code as a bit count.
 | --- | --- | --- |
 | Media Composer | Imports the own audio quantization width, picture component width and typed RGBA roles/widths. Publishes depth/layout facts separately from total pixel size and alpha depth. | Bounded native import/publication paths, not a fully traced universal Bit Depth GUI/default policy. |
 | MDVx | Its bundled MXF reader reads optional own sound QuantizationBits as a raw UInt32. | No CDCI ComponentDepth or RGBA PixelLayout read in this route; ordinary MXF wrapper retains no Bit Depth. |
-| OldScanner | Reads the class-specific scalar/layout, interprets ordinary and special picture values with coding context, and produces depth/representation labels. | Stores labels early; mixed/unsupported RGBA handling and a native-padding compatibility gap need explicit Bella rules. |
+| previous scanner | Reads the class-specific scalar/layout, interprets ordinary and special picture values with coding context, and produces depth/representation labels. | Stores labels early; mixed/unsupported RGBA handling and a native-padding compatibility gap need explicit Bella rules. |
 
 ### Media Composer native evidence
 
@@ -74,7 +74,7 @@ the broader library read. It performs no special picture-depth interpretation.
 The ordinary wrapper still transfers names, Project and IDs only. Its table
 formats separately populated `DB_bits` as an unsigned bit count, blank for zero.
 
-OldScanner's own scalar handling already supports ordinary widths, standard
+previous scanner's own scalar handling already supports ordinary widths, standard
 picture 253/254/255 interpretation and full-coding-qualified DNxUncompressed
 refinements. It keeps alpha distinct. Its BitDepth observations and final row
 are strings, with numeric sorting extracted from the label. Bella's already
@@ -121,7 +121,7 @@ The original thirteen qualified files supply:
 
 The RGBA file is `NOV_78D9V02.22180610.586550.mxf`. Its own 16-byte layout is
 `41080000300030003000300030003000`: A8, a null pair, then six ASCII-zero/zero
-pairs. OldScanner withholds an MXF depth from this layout; this is not a claim
+pairs. previous scanner withholds an MXF depth from this layout; this is not a claim
 that a live table must be blank, since another source may supply it. The native
 count/get trace establishes how that meaningful A8 prefix is imported.
 
@@ -186,5 +186,5 @@ and probes remain in `/private/tmp`.
 
 No Bella runtime code, production test suite, app/private API or scan benchmark
 was run. These are bounded reader/format findings, not universal native UI
-parity or a measured speed/memory gain. OldScanner remains active and Bin Filter
+parity or a measured speed/memory gain. previous scanner remains active and Bin Filter
 is unchanged. All prior Sample Rate/Frame Rate/Duration decisions remain agreed.

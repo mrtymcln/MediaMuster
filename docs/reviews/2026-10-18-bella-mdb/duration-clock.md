@@ -13,7 +13,7 @@ approved on 20 October. The user subsequently locked in the discussed verified
 Duration maths and linked DF selection, NDF for genuine absence and blank
 Duration for damaged required information. This resolves the interpretation question
 left by the [Duration](duration.md) and [Frame Rate](frame-rate.md) reviews.
-OldScanner remains active; Bin Filter is unchanged.
+previous scanner remains active; Bin Filter is unchanged.
 
 **Separator revision approved on 22 October 2026:** DF uses `HH;MM;SS;FF`;
 NDF uses `HH:MM:SS:FF`. This supersedes the earlier colon-for-both interpretation.
@@ -165,7 +165,7 @@ while permitting the separately required database-unavailable MXF fallback.
 
 ## Comparison with current MediaMuster
 
-The current app uses OldScanner. Its MDB projection reads the owned Length and
+The current app uses previous scanner. Its MDB projection reads the owned Length and
 the original SampleRate fraction literally; it does not apply this Avid video
 rate interpretation. When media-header values are available, its current
 selection table prefers them over MDB Duration. A sufficiently complete database
@@ -229,7 +229,7 @@ zero/blank behaviour and long-duration formatting remain unverified. The
 separate interpreter/formatter organisation and checked integer arithmetic
 are Bella design choices. Keep the approved native interpreter mappings and
 user-selected format distinct from those implementation proposals. Existing
-OldScanner display code is not evidence of Media Composer's UI behaviour.
+previous scanner display code is not evidence of Media Composer's UI behaviour.
 
 Accepted organisation: keep a pure **DurationFormatter** separate from
 **AvidDurationInterpreter**. The interpreter supplies exact timing meaning;
@@ -244,7 +244,7 @@ or per-row strings are required merely to define this boundary.
 For audio, use the own-file `CPNT:EditRate`, or the corresponding supported
 own-slot `MSLT:EditRate` representation when applicable; no master/project clock
 guess. The current source demonstrates this distinction at
-[own-file selection](../../../src/oldscanner/mediaengine/mdbprojection.cpp)
+own-file selection (removed source)
 and [count-to-display-frame conversion](../../../src/mediaduration.h).
 The user's subsequent approval accepts the discussed own-file editing-clock
 design and source-aware supported interpretation as Bella requirements. The
@@ -267,7 +267,7 @@ timing error. Do not divide to elapsed seconds and append a separately guessed
 frame field. Unknown/custom-rate label coverage remains to establish.
 
 The DF flag must come from timecode correctly associated with this physical
-file and compatible with its display clock. Current OldScanner gathers flags
+file and compatible with its display clock. Current previous scanner gathers flags
 through the source graph; that is evidence of existing behaviour, not proof
 every such flag belongs to Bella's Duration display. Correct owner/track/range
 qualification is now agreed following the investigation below. A missing flag

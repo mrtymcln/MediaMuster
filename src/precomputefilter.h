@@ -26,7 +26,7 @@ struct PrecomputeFilterPath
 	bool matches(const MediaFile &file) const
 	{
 		return file.type == MediaFile::Type::Precompute &&
-			   (precomputeCategory.isEmpty() || precomputeCategory == file.precomputeCategoryDisplay()) &&
+			   (precomputeCategory.isEmpty() || precomputeCategory == file.precomputeCategoryFilterLabel()) &&
 			   (effectCategory.isEmpty() || effectCategory == file.effectCategoryDisplay()) &&
 			   (effect.isEmpty() || effect == file.effectDisplay());
 	}

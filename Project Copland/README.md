@@ -13,7 +13,7 @@ describe the Copland checkpoints. Normal macOS and Windows application scans now
 use the independent Bella scanner. [Project Bella](../Project%20Bella/README.md)
 records later field, source-priority and lifecycle decisions, including removal
 of recorded Source Path and Effect Sequence from Bella results and renaming the
-physical Location presentation to File Path. The retained OldScanner readers
+physical Location presentation to File Path. The retained previous scanner readers
 still support live operation identity checks. Use the
 [current behavior guide](../docs/current-behaviour.md) and
 [ownership map](../docs/media-engine.md) for the current app; this ledger preserves
@@ -342,18 +342,18 @@ These describe today's code, not Copland requirements:
   projection use temporary decoded records; source images and unused graphs are
   released afterward. Supported facts, alternatives and receipts remain in the
   working scan until row preparation, then the scanner releases that result.
-  See [database preparation](../src/oldscanner/mediaengine/databasesource.cpp) and
+  See database preparation (removed source) and
   [source lifetimes](../Project%20Canon/source-lifetimes.md).
 - Database-first scheduling can open a media header because required metadata is
   missing or conflicting. Enabled precompute category detail can affect that
   decision; Clip Duration and its sufficiency check have been removed under C13.
   Hiding a remaining column does not necessarily remove its
   parsing, retention or fallback cost. See
-  [scan coordination](../src/oldscanner/mediaengine/scancoordinator.cpp).
+  scan coordination (removed source).
 - Source preferences are compiled per-property rules. The current resolver also
   retains observations from sources that cannot supply the selected value during
   scanning. Prepared UI rows keep only selected values and compact conclusions. See
-  [selection policy](../src/oldscanner/mediaengine/metadataselectionpolicy.cpp).
+  selection policy (removed source).
 - Ordinary UI rows keep selected values, `MediaMetadataStatus`, `MediaScanStamp`
   and the optional frozen `OpScanReceipt`. The inline checklist distinguishes
   availability, applicability, agreement and source freshness without retaining
@@ -684,8 +684,8 @@ as invented percentages. No technical column or naming variant has been removed
 from the app during this review.
 
 Compression naming consumers were checked in
-[the name builder](../src/oldscanner/mediaengine/compressionnames_p.cpp),
-[the numbered-name rules](../src/oldscanner/mediaengine/dnxnames_p.h), the projections and
+[the name builder](../src/mediaengine/compressionnames_p.cpp),
+[the numbered-name rules](../src/mediaengine/dnxnames_p.h), the projections and
 the table/CSV adapter. The example describes a supported naming operating point,
 not a newly scanned file. Dropping a displayed alias alone would not establish
 that its separate permanent record or derivation work had also been removed.
@@ -705,7 +705,7 @@ operations and Rebalance's scope; reviewing helpers does not reopen those decisi
 
 Verified in [row predicates](../src/mediafilterproxy.cpp),
 [selection/export/UI paths](../src/mainwindow.cpp) and
-[association adapter](../src/oldscanner/mediaengineadapter.cpp). Linear row filtering/tallying,
+association adapter (removed source). Linear row filtering/tallying,
 selection tracking, export row capture and writing are costs to measure. No percentage
 saving is established by removing a view or helper, and retaining these features does not
 require reinstating Canon's complete evidence histories.
@@ -720,7 +720,7 @@ text cache or background export remains. Ordinary rows now also contain no scan
 owner or evidence history, so their copies cannot retain the complete inventory.
 Actual process-memory changes and large export wait time remain to be measured.
 See [row ownership](../src/mediafile.h),
-[temporary working scan](../src/oldscanner/oldscanner.cpp),
+temporary working scan (removed source),
 [direct export](../src/mainwindow.cpp) and [CSV writer](../src/mediacsv.cpp).
 
 ### Scan lifecycle: current facts for review
@@ -739,8 +739,8 @@ Cancellation and peak-memory outcomes have not been benchmarked in this review.
 See [new scan](../src/mainwindow.cpp),
 [completion](../src/mainwindow.cpp),
 [filter reset](../src/mainwindow.cpp),
-[temporary header/database projections and final matching](../src/oldscanner/mediaengine/scancoordinator.cpp),
-[source freshness](../src/oldscanner/mediaengine/scancoordinator.cpp) and
+temporary header/database projections and final matching (removed source),
+source freshness (removed source) and
 [cancelled bin loading](../src/avbbinloader.cpp).
 
 Cancellation acceptance must cover discovery, database/header reading, final
@@ -752,7 +752,7 @@ After acceptance, cancellation is rejected and does not log a new stop request.
 Cancellation
 is cooperative: an in-flight operating-system call must return before its worker
 can stop. This does not authorize hiding a running worker or discarding metadata
-already resolved. See [formatting/reporting](../src/oldscanner/oldscanner.cpp) and
+already resolved. See formatting/reporting (removed source) and
 [cooperative job cancellation](../src/backgroundjob.h).
 
 ### Undo, recovery and diagnostics: retained behavior and costs
@@ -807,7 +807,7 @@ inventing a disk-size limit. Keep the necessary Undo/recovery journal rules
 separate; ordinary diagnostic cleanup cannot prune protected operation records.
 
 See [Console limit](../src/mainwindow.cpp),
-[scan log batching](../src/oldscanner/oldscanner.cpp),
+scan log batching (removed source),
 [synchronous disk logging](../src/diagnostics.cpp),
 [log age check](../src/diagnostics.cpp) and
 [crash collection](../src/diagnostics.cpp).
@@ -866,11 +866,11 @@ and report an unavailable/unsupported
 scope. C72 retains the current session list without a removal control or saved
 preferences. No new unavailable-entry lifetime policy has been requested. See
 [known bases](../src/volumemanager.cpp),
-[manual entry admission](../src/oldscanner/oldscanner.cpp),
+manual entry admission (removed source),
 [directory drop](../src/volumelistwidget.cpp),
 [duplicate entry](../src/mainwindow.cpp),
 [manual refresh restoration](../src/mainwindow.cpp) and
-[prepared scan scopes](../src/oldscanner/oldscanner.cpp).
+prepared scan scopes (removed source).
 
 Counts and size totals operate on retained selected fields, without media rereads.
 Status file count uses proxy/model row counts; visible size traverses visible rows,
@@ -1106,7 +1106,7 @@ exhaustive certification of every parser or identity variant.
 The example is illustrative, not a reported file. Source Path's cell and tooltip
 show the recorded path or URL. It may be old or unavailable, and does not prove
 the source still exists. See the [table mapping](../src/mediatablemodel.cpp) and
-[import metadata extraction](../src/oldscanner/mediaengine/mxfprojection.cpp).
+import metadata extraction (removed source).
 
 Clarified at the 12 October baseline: MediaMuster rows retained source filename
 and source path separately. The supported MDB/OMF/MXF mappings derived the filename
@@ -1120,7 +1120,7 @@ revised the requirement under C94: retain Source Path only and remove the separa
 Source Filename value/column. C95/C96 confirm Source Path's table/CSV presentation
 and Search use; C92/C93 settle the precompute controls.
 
-The 15 October Source Path change updates the [header-completeness gate](../src/oldscanner/mediaengine/scancoordinator.cpp)
+The 15 October Source Path change updates the header-completeness gate (removed source)
 from the former SourceFilename-only disagreement check to SourcePath usability
 under C12/C35. Basename observations/coverage, policy, adapter assignment and
 presentation consumers are removed together. A recorded path can
@@ -1176,7 +1176,7 @@ and [media-decomposer structure, recorded line 102](/Users/martymclean/Downloads
 corroborate the modern 32-byte structure. These are implementation references,
 not normative specifications. App ID text uses a comparison byte-order convention;
 it need not equal a raw MXF byte dump or a library's formatted UMID URN.
-See [conversion](../src/oldscanner/mediaengine/projection.cpp).
+See conversion (removed source).
 
 The supplied [Python PMR reader, recorded line 95](/Users/martymclean/Downloads/python-PMRReader-master/PMR.py)
 calls the first UID `materialPackageUID`, the second `physicalSourcePackageUID`,

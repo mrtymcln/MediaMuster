@@ -57,7 +57,7 @@ facts tied to the earlier capture.
 The OMF1/MDB reader checks the direct attribute's two-byte kind (3, including a null object payload) and the direct `CPNT:TrackKind` values. The MXF reader follows the selected master's mapped MobAttributeList and the verified `__AttributeList` conversion to an object attribute, then counts direct segment data definitions. Nested imports and nested video tracks do not substitute for these tests.
 
 Bella reports OMF 2 as unsupported; its active OMF baseline is legacy OMF 1
-in Bento 1.0. The retained OldScanner implementation can read OMF 2 but leaves
+in Bento 1.0. The retained previous scanner implementation can read OMF 2 but leaves
 its precompute subcategory unknown, because UserAttributes is not a verified
 equivalent of the required direct import-attribute list. The combined Titles
 and Matte Keys category does not separately identify Title Tool, Marquee or a

@@ -7,8 +7,8 @@
 #include <QString>
 #include <QVector>
 
-/// One row per MediaFile. Presentation selects the column schema; optional
-/// columns are appended and the view positions precompute details beside Type.
+/// One row per MediaFile. Optional columns are appended and the view positions
+/// precompute details beside Type.
 class MediaTableModel : public QAbstractTableModel
 {
 	Q_OBJECT
@@ -31,7 +31,6 @@ public:
 		Type,
 		Created,
 		FileName,
-		SourcePath,
 		Location,
 		NoDatabase,
 		NoReference,
@@ -41,14 +40,11 @@ public:
 		PrecomputeCategory,
 		EffectCategory,
 		Effect,
-		EffectSequence,
 		Count_
 	};
 
-	explicit MediaTableModel(QObject *parent = nullptr,
-							 MediaPresentation presentation = MediaPresentation::OldScanner);
+	explicit MediaTableModel(QObject *parent = nullptr);
 
-	MediaPresentation presentation() const { return m_presentation; }
 	// Logical positions before feature gating. Excluded columns have no index.
 	int columnIndex(Column column) const;
 	Column columnAt(int index) const;
@@ -64,8 +60,6 @@ public:
 
 	/// Rows arrive with table values prepared by the scanner adapter.
 	void setMediaFiles(const QVector<MediaFile> &files);
-	void setScanIssues(const QVector<ScanIssue> &issues) { m_scanIssues = issues; }
-	const QVector<ScanIssue> &scanIssues() const { return m_scanIssues; }
 	/// Confirmed transfers only: moves retain identity; copies allocate a new one.
 	void applyTransfer(const QString &source, const QString &destination, bool copy);
 	void setOmfScanEnabled(bool enabled);
@@ -85,10 +79,8 @@ public:
 	bool precomputesEnabled() const { return m_precomputesEnabled; }
 
 private:
-	MediaPresentation m_presentation;
 	QVector<MediaFile> m_files;
 	bool m_precomputesEnabled = false;
 	bool m_omfScanEnabled = false;
 	KelpieIdAllocator m_ids;
-	QVector<ScanIssue> m_scanIssues;
 };

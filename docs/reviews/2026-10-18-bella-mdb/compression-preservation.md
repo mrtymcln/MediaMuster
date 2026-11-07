@@ -28,11 +28,11 @@ the earlier compact-retention decisions.
 
 | Component | Existing responsibility |
 | --- | --- |
-| [compressionnames_p.h](../../../src/oldscanner/mediaengine/compressionnames_p.h) | Small `CompressionFacts` input and `CompressionNames` output contract |
-| [compressionnames_p.cpp](../../../src/oldscanner/mediaengine/compressionnames_p.cpp) | Exact codec catalogue, qualified legacy refinements and readable names |
-| [dnxnames_p.h](../../../src/oldscanner/mediaengine/dnxnames_p.h) | DNx profiles, branding and exact historical operating-point aliases |
-| [MDB projection](../../../src/oldscanner/mediaengine/mdbprojection.cpp) and [OMF projection](../../../src/oldscanner/mediaengine/omfprojection.cpp) | Validated source facts, typed legacy identifiers, coding-label normalization, supported naming-only clock spelling and audio-summary interpretation |
-| [MXF projection](../../../src/oldscanner/mediaengine/mxfprojection.cpp) | Qualified descriptor coding/geometry/rate/depth/representation inputs |
+| [compressionnames_p.h](../../../src/mediaengine/compressionnames_p.h) | Small `CompressionFacts` input and `CompressionNames` output contract |
+| [compressionnames_p.cpp](../../../src/mediaengine/compressionnames_p.cpp) | Exact codec catalogue, qualified legacy refinements and readable names |
+| [dnxnames_p.h](../../../src/mediaengine/dnxnames_p.h) | DNx profiles, branding and exact historical operating-point aliases |
+| MDB projection (removed source) and OMF projection (removed source) | Validated source facts, typed legacy identifiers, coding-label normalization, supported naming-only clock spelling and audio-summary interpretation |
+| MXF projection (removed source) | Qualified descriptor coding/geometry/rate/depth/representation inputs |
 | [Naming tests](../../../tests/tst_mediaengine_compressionnames.cpp) | Existing codec, legacy-context, exact-alias and qualified-description cases |
 
 `MediaEngine::Detail::compressionNames(const CompressionFacts&)` reads no files
@@ -67,5 +67,5 @@ memory improvement measured for this decision. Existing naming tests are
 preservation material, not a newly reported passing run. The
 curated record
 retains the approved scope and source hashes. Requirements review continues
-before Bella implementation. OldScanner remains active until explicit cutover
+before Bella implementation. previous scanner remains active until explicit cutover
 approval, and Bin Filter stays unchanged. Resolution is the next field review.

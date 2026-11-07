@@ -135,17 +135,17 @@ recommended addition is approved. Other common declarations and source-file
 placement will be grouped in the final matching contract, rather than reopening
 already-settled behavior in separate microdecisions.
 
-No timing or matching code is implemented by this proposal. OldScanner remains
+No timing or matching code is implemented by this proposal. previous scanner remains
 active; readers, Bin Filter, MediaFile/table, progress, journal, Unfinished
 Business, Undo and the operation engine remain unchanged.
 
 ## Historical behavior requested before a decision
 
-The user asked what historical code/OldScanner does instead of approving the
+The user asked what historical code/previous scanner does instead of approving the
 proposal. **Nominal-base qualification remains undecided.**
 
-Current OldScanner's `applyResolvedMetadata` in
-`src/oldscanner/mediaengineadapter.cpp:58` sets the row base to
+Current previous scanner's `applyResolvedMetadata` in
+`removed source mediaengineadapter.cpp:58` sets the row base to
 `qRound(row.duration.displayRate.value())` after selecting Duration. This is
 general nearest-integer rounding of the selected display clock, not a finite
 known-clock table. `MediaFile::effectiveTimecodeBase` uses a positive stored

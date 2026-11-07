@@ -61,7 +61,7 @@ that distinction were encoded elsewhere.
 
 Basis: [approved source/flag rules](../2026-10-25-bella-source-priorities/REVIEW.md),
 Copland C48/C49, current `MediaFile::DbStatus`, and the reference-coverage
-qualifications already returned by Bella PMR/MDB. OldScanner's implementation
+qualifications already returned by Bella PMR/MDB. previous scanner's implementation
 is a cross-check, not authority to add capabilities. No reader extension,
 operation-policy change, new read or extra diagnostic/history is proposed.
 This representation is approved; no matching runtime code is implemented yet.
@@ -104,10 +104,10 @@ Evidence in current production code:
   ID records a refusal. An observed changed physical source also records refusal.
 - `src/oprunner.cpp`, `mediaIdentityMatches`: corroborate every captured header
   master ID, separately from the selected metadata master.
-- `src/oldscanner/mediaengine/mxfprojection.cpp`, `projectMasters`: publish each
+- `removed source mxfprojection.cpp`, `projectMasters`: publish each
   independently qualified linked MaterialPackage identity; final metadata
   uniqueness does not erase the other established header claims.
-- `src/oldscanner/mediaengine/omfprojection.cpp`: likewise retain qualified
+- `removed source omfprojection.cpp`: likewise retain qualified
   active linked masters and conflicting active own-file identity claims.
 
 Existing authored controls include
@@ -187,5 +187,5 @@ physical-stamp contracts are not selected by this finding. Physical path, volume
 identity, size/time captures belong to discovery/handoff, not fabricated database
 metadata. Do not add per-column evidence/history or a redundant keep-file flag.
 
-OldScanner remains active. Bin Filter, MediaFile/table, progress, file-operation
+previous scanner remains active. Bin Filter, MediaFile/table, progress, file-operation
 engine, journal, Unfinished Business and Undo code remain unchanged.

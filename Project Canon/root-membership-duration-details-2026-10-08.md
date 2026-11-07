@@ -42,7 +42,7 @@ with retained deleted records but does not prove their deletion history.
 
 The current active graphs contain nine mono and nineteen two-track masters,
 with 47 top-level PVOL components. The current
-[legacy component-length evaluator](../src/oldscanner/mediaengine/omfprojection.cpp)
+legacy component-length evaluator (removed source)
 does not claim PVOL GroupLength semantics. Active master membership, resolved
 references, or an inner SCLP with a readable length does not authorize replacing
 the outer effect's timeline semantics. Unsupported effect duration remains part

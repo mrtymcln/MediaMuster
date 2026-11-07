@@ -3,13 +3,8 @@
 #include "managemediadialog.h"
 #include "mediafile.h"
 #include "mediafilterproxy.h"
-#ifdef MEDIAMUSTER_USE_BELLA
 #include "bellaappscanner.h"
 using AppScanner = BellaAppScanner;
-#else
-#include "oldscanner/oldscanner.h"
-using AppScanner = OldScanner;
-#endif
 #include "mediatablemodel.h"
 #include "fileoperationcontroller.h"
 #include "volumelistwidget.h"
@@ -55,11 +50,9 @@ public:
 	explicit MainWindow(QWidget *parent = nullptr, StartupMode startup = StartupMode::Normal);
 	~MainWindow();
 
-#ifdef MEDIAMUSTER_USE_BELLA
 protected:
 	bool eventFilter(QObject *watched, QEvent *event) override;
 	void closeEvent(QCloseEvent *event) override;
-#endif
 
 private slots:
 
@@ -69,7 +62,6 @@ private slots:
 	void scanSelected();
 	void scanEverything();
 	void onScanDiscovering(const QString &path);
-	void onScanProgress(int current, int total, const QString &currentPath);
 	void onScanLogBatch(const QVector<LogMessage> &batch);
 	void onScanFinished(const QVector<MediaFile> &results);
 	void onScanFailed(const QString &message);
@@ -114,7 +106,6 @@ private:
 	void rescanPaths(const QStringList &paths);
 	void startScan(const QVector<AppScanner::Location> &locations);
 	void addLog(QtMsgType level, const QString &module, const QString &message);
-#ifdef MEDIAMUSTER_USE_BELLA
 	enum class BellaClose
 	{
 		None,
@@ -124,7 +115,6 @@ private:
 	void requestBellaClose(BellaClose close);
 	void finishBellaClose();
 	void onBellaScanProgress(const QString &stage, qsizetype completed, qsizetype total, const QString &path);
-#endif
 
 	/// Adapt the selected media rows to the controller's request format.
 	bool dispatchOperation(OpKind kind, QVector<MediaFile> files,
@@ -246,10 +236,8 @@ private:
 	// MARK: - Scan state
 
 	QElapsedTimer m_scanTimer;
-#ifdef MEDIAMUSTER_USE_BELLA
 	BellaClose m_bellaClose = BellaClose::None;
 	bool m_bellaCancelling = false;
-#endif
 	bool m_omfScanEnabled = false;
 	bool m_precomputesEnabled = false;
 	class QAction *m_precomputeFilterAction = nullptr;

@@ -610,15 +610,7 @@ void TestRebalancePlanner::file_identity_survives_plan_and_request()
 	QCOMPARE(request.items.first().masterMobId, moved.masterMobId);
 
 	moved.scanStamp = {moved.mediaFilePath, QStringLiteral("uuid:scanned-volume"), QDateTime::fromMSecsSinceEpoch(123456), moved.fileMobId, QStringLiteral("database-only-master")};
-	MetadataObservation observation;
-	observation.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mxf,
-																				 moved.mediaFilePath, moved.scanStamp.modified, SourceReadState::Complete});
-	observation.readState = PropertyReadState::Present;
-	observation.value = moved.masterMobId;
-	MediaEvidence evidence;
-	evidence.observe(MediaProperty::MasterMobId, observation);
-	moved.operationScanReceipt = makeOpScanReceipt(evidence, moved.scanStamp, ScanRowLookup{});
-	evidence = {};
+	moved.operationScanReceipt = OpScanReceipt{OpHeaderIdentity{{}, {moved.masterMobId}, {}}, {}};
 	const auto stampedPlan = RebalancePlanner::computePlan(root, "Test",
 														   {makeMxf(root, "1", "home.mxf", "same"), moved});
 	const auto stampedRequest = RebalancePlanner::requestForPlan(stampedPlan);

@@ -111,7 +111,7 @@ linked-source start-timecode walk reads StartTimecode and RoundedTimecodeBase;
 no DropFrame read was found in `ami_read_info`. Its diagnostic formatter uses
 nominal NDF numbering. That diagnostic is not an ordinary table Duration.
 
-### Current MediaMuster / OldScanner
+### Current MediaMuster / previous scanner
 
 Current MXF projection already reads the qualified own descriptor's
 ContainerDuration/SampleRate as one exact count/rate pair. It uses the raw
@@ -191,7 +191,7 @@ a claim of complete range qualification for every source path.
 2. **Keep the first release's physical-count rule small.** If that pair is
    missing, damaged, conflicting or not safely owned, leave MXF Duration
    unavailable while retaining the file and independent metadata. No new
-   track-duration recovery is approved here. OldScanner's absent-descriptor
+   track-duration recovery is approved here. previous scanner's absent-descriptor
    fallback is retained as research; its equivalence to complete physical
    container coverage needs evidence before adoption.
 3. **Use a separate qualified display clock.** For video, use the supported
@@ -228,7 +228,7 @@ Unknown/damaged required values stay
 blank; hours can exceed 24. Use exact MXF rationals directly: no formatted-rate
 parsing, decimal detour, universal MDB alias conversion, byte-size estimate,
 codec/essence decode or extra open solely for Duration. Existing Compression,
-other field priorities, OldScanner and Bin Filter remain unchanged.
+other field priorities, previous scanner and Bin Filter remain unchanged.
 
 ## Evidence and verification limits
 

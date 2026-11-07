@@ -11,7 +11,7 @@ The later [SEQU conflict proposal is withdrawn](VERDICT.md#sequ-conflict-finding
 
 Verified against HEAD `20220f2b4c2b7ff6ef3d017a77568e5edf7de7cd` on 1 November 2026. This addendum checks the existing review's historical findings against source and fresh execution. Production source and tests are unchanged.
 
-The current Bella implementation is **not uniformly more correct than every predecessor**. Fresh execution confirms two lost safeguards, one additional category qualification gap shared with OldScanner, and invalid relationship routes shared with OldScanner. These are damaged-input reproductions; they do not establish a failure in the ordinary working-media corpus.
+The current Bella implementation is **not uniformly more correct than every predecessor**. Fresh execution confirms two lost safeguards, one additional category qualification gap shared with previous scanner, and invalid relationship routes shared with previous scanner. These are damaged-input reproductions; they do not establish a failure in the ordinary working-media corpus.
 
 ## Fresh execution
 
@@ -20,9 +20,9 @@ Both retained Bella reproduction programs were compiled anew with `clang++ -std=
 - Category/attribute output.
 - Relationship/Project output.
 
-A separate fresh arm64 Release CMake build of the retained OldScanner probe also succeeded, using the current repository sources. It ran all 28 standalone controls from `/tmp/bella-mdb-inheritance-controls`, with every process exiting zero. Complete fresh outputs with input hashes and source/output receipt are retained.
+A separate fresh arm64 Release CMake build of the retained previous scanner probe also succeeded, using the current repository sources. It ran all 28 standalone controls from `/tmp/bella-mdb-inheritance-controls`, with every process exiting zero. Complete fresh outputs with input hashes and source/output receipt are retained.
 
-| Authored case, in both byte orders | Fresh Bella | Fresh OldScanner | Consequence |
+| Authored case, in both byte orders | Fresh Bella | Fresh previous scanner | Consequence |
 | --- | --- | --- | --- |
 | Explicit empty attribute list | Rendered Effects | Rendered Effects | Valid absence control. |
 | Counted attribute list containing only a null slot | Rendered Effects | Category unavailable | Bella loses incomplete-list qualification. |
@@ -40,7 +40,7 @@ In the wrong-class category cases Bella's general relationship walker does emit 
 - `src/bella/mdbparser.cpp:665–674` traverses the union of supported relationship-property names on every encountered class. The earlier class recognition at lines 638–642 is not a class-specific relationship dispatch or target-role check. Required-property checks at lines 650–662 do not constrain the edges subsequently followed.
 - `src/bella/mdbparser.cpp:709–710` skips a counted null attribute slot. `ownerAttributes()` consequently returns a complete value to Project, Original Bin and category consumers.
 - `src/bella/mdbparser.cpp:949–955` reads TrackComponent and TrackKind without checking that the first owner is a TRAK and the second is a supported component class.
-- `src/oldscanner/mediaengine/mdbprojection.cpp:741–752` has the generic relationship union. Its category path at lines 953–956 requires complete attribute references, and lines 986–989 check TRAK. It does not check the component's class before reading TrackKind at line 990.
+- `removed source mdbprojection.cpp:741–752` has the generic relationship union. Its category path at lines 953–956 requires complete attribute references, and lines 986–989 check TRAK. It does not check the component's class before reading TrackKind at line 990.
 
 ## Git history findings independently checked
 
@@ -61,7 +61,7 @@ The old stricter `unterminated-name` test is a historical difference, not an add
 
 Keep Bella's complete normalized identities, distinct duplicate owners, exact original rates and compact returned records. Reintroducing proximity ownership, first-nonempty owner merging, broad recursive attributes or structural-prefix salvage would conflict with its approved MDB contract. Wider OMF2/Bento2 support is also a deliberate scope difference, not evidence that the current legacy MDB implementation regressed.
 
-No historical application checkout was compiled by this addendum, no historical full suite was executed, and no speed/peak-memory superiority claim is justified. Its freshly built executable baseline is current active OldScanner. Reachable history was inspected as source; claims that every historical implementation returns the same output remain unsupported.
+No historical application checkout was compiled by this addendum, no historical full suite was executed, and no speed/peak-memory superiority claim is justified. Its freshly built executable baseline is current active previous scanner. Reachable history was inspected as source; claims that every historical implementation returns the same output remain unsupported.
 
 ## Post-JPED source and control revalidation
 

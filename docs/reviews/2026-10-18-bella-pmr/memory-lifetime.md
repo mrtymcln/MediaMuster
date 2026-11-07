@@ -24,7 +24,7 @@ opportunity here is to reduce interpretation work and temporary allocations,
 not to eliminate per-row disk rereads that these inspected paths already avoid.
 No speed or memory improvement has been measured by this review.
 
-## Current MediaMuster / OldScanner
+## Current MediaMuster / previous scanner
 
 The active scan path uses `prepareDatabase`, which opens the PMR and captures
 its complete bytes through `DatabaseImage::read`. Capture uses bounded reads
@@ -39,11 +39,11 @@ temporary parsed-object structures are released when preparation finishes.
 The source receipt preserves outcome/snapshot/diagnostics rather than the full
 parsed source. Some selected raw field values and evidence can survive in
 projected observations; this is distinct from retaining the whole PMR image.
-Those per-field observations can survive until `OldScanner::doScan` finishes
+Those per-field observations can survive until `former scan entry point` finishes
 formatting rows. The final table rows do not own the full `ScanResult` or its
 per-field evidence. The normal database-preparation loop is currently
 sequential; Bella's approved four-PMR and four-MDB maxima concern the future
-replacement, not current OldScanner execution.
+replacement, not current previous scanner execution.
 
 Qt implicit sharing means multiple references to a string/byte array do not
 automatically mean separate physical copies of its contents. The meaningful
@@ -116,6 +116,6 @@ does not measure temporary object overhead or bound other users' PMR sizes.
 The curated evidence
 records source/native findings, file-size observations, applied C++ principles
 and the approved workflow. No scan benchmark, parser suite, app/private API execution
-or live database write was performed. OldScanner remains active and Bin Filter
+or live database write was performed. previous scanner remains active and Bin Filter
 is unchanged. The MDB-version baseline was subsequently approved in the
 [separate review](../2026-10-18-bella-mdb/versions.md).

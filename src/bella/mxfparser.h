@@ -8,6 +8,8 @@
 #include <atomic>
 #include <optional>
 
+class QFile;
+
 namespace Bella
 {
 	enum class MxfReadResult
@@ -187,4 +189,10 @@ namespace Bella
 	/// The caller keeps the shared stop flag alive for this synchronous call.
 	[[nodiscard]] MxfReport parseMxf(const QString &path, const std::atomic_bool &stopRequested,
 									 bool includePrecomputeDetails);
+
+	/// Checks identity in the caller's already-open binary file, without reopening
+	/// or closing it. Uses the same supported layout as the path reader; verifies
+	/// every supplied master independently of the table's selected clip.
+	[[nodiscard]] bool mxfIdentityMatches(QFile &source, const QString &expectedFileId,
+										  const QStringList &expectedMasterIds);
 } // namespace Bella

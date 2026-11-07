@@ -5,16 +5,14 @@ media discovery, an in-memory inventory, and a shared file-operation engine.
 For what the user sees, start with [How MediaMuster works](current-behaviour.md).
 
 The normal macOS and Windows application uses [Bella](../src/bella/README.md).
-CMake defines `MEDIAMUSTER_USE_BELLA` on both supported platforms, selecting
-[BellaAppScanner](../src/bellaappscanner.cpp) and the Bella table/CSV schema.
+[BellaAppScanner](../src/bellaappscanner.cpp) connects the organiser to the UI.
 `MEDIAMUSTER_BELLA_PREVIEW` is a separate scan/export-only build option; normal
 Bella builds include file operations and Rebalance.
 
-[OldScanner](../src/oldscanner/README.md) remains under `src/oldscanner/` for its
-scan tests/probe, shared location-admission helpers and the retained readers used
-by live operation identity checks. Its internals use namespace `MediaEngine`.
-The AVB reader/reference resolver and shared reading types in `src/mediaengine/`
-continue to implement Bin Filter. Bella does not replace the AVB or operation engine.
+[File Check](../src/filecheck.cpp) verifies operation inputs using Bella's parser
+helpers and the existing native file safeguards. File Operations owns execution,
+journalling, Undo and recovery. The AVB reader/reference resolver in
+`src/mediaengine/` continues to implement Bin Filter independently.
 
 ## From storage to table
 
@@ -23,8 +21,8 @@ continue to implement Bin Filter. Bella does not replace the AVB or operation en
    The main window retains the last detected paths and session manual locations;
    scan commands use those paths without rediscovering drives.
 2. [MainWindow](../src/mainwindow.cpp) passes selected/all locations and the OMF
-   and precompute gates to `BellaAppScanner`. Admission and trusted-rescan location
-   helpers are shared with OldScanner. Starting a scan clears the old inventory,
+   and precompute gates to `BellaAppScanner`, which owns location admission and
+   trusted-rescan preparation. Starting a scan clears the old inventory,
    filters and selection.
 3. `BellaAppScanner` starts one organiser `QThread`. [Bella discovery](../src/bella/discovery_p.cpp)
    inventories admitted physical files and database paths. The organiser then
@@ -88,7 +86,7 @@ states follow the same inventory, selection and activity rules.
 | [Naming](../src/bella/naming.cpp) | Interprets selected compression facts and derives effects from a confirmed precompute name using shared catalogues. |
 | [BellaAppScanner](../src/bellaappscanner.cpp) | Owns background result preparation, event-driven progress, warning/log batches and final delivery on the GUI thread. |
 
-The fixed source rules are implemented in the matcher, not OldScanner's compiled
+The fixed source rules are implemented in the matcher, independently of any former
 policy table. Project prefers eligible PMR, then MDB, then an eligible already-read
 header. Most technical/master details prefer MDB with qualified header fallback;
 Compression prefers an eligible already-read header result before MDB. Duration
@@ -119,30 +117,30 @@ stays blank. Sorting compares displayed HH/MM/SS/FF, then Audio/Video/Unknown ki
 for ties. Bella omits recorded Source Path and the separate Effect Sequence value
 from rows, table schema, search and CSV. Ordinary physical paths remain searchable.
 
-`MediaMetadataStatus` is retained in the shared row type for OldScanner; Bella
-leaves its interpretation checklist uncaptured. It is separate from the operation
-receipt, which Bella always supplies, including an explicit physical-only receipt.
-Confirmed transfers refresh physical fields/status and mark destination membership
-unverified, or No Database when the destination listing contains no database.
-They do not reread or reselect the media metadata.
+Every Bella row supplies an operation receipt, including an explicit physical-only
+receipt. Confirmed transfers refresh physical facts and mark destination
+membership unverified, or No Database when the destination listing contains no
+database. They do not reread or reselect the media metadata.
 
-## Retained OldScanner pipeline
+## File Check and format reading
 
-OldScanner's QObject facade, `MediaEngine::ScanEngine` and sequential
-`ScanCoordinator` remain available to the legacy scan tests and
-`mediaengine_compare` probe. The working pipeline uses parsed source graphs,
-`Projection.masters`, `MediaEvidence`, `SourceReceipt` and the compiled
-field-selection policy. Its adapter prepares selected scalar values,
-`MediaMetadataStatus` and frozen operation checks before releasing working scan
-storage. These observations, source-priority rules, required-field header checks
-and retained Source Path/Effect Sequence schema describe OldScanner, not Bella.
-The detailed [engine reference](media-engine.md) explains those boundaries.
+[File Check](../src/filecheck.h) owns the source-verification policy formerly
+inside the operation runner: native identity and size/date comparisons, scan
+path/volume qualification, required Avid identities and final opened-file/path
+agreement. It borrows the operation's already-open file. Bella's MXF and OMF
+helpers reuse their mapping/graph code to confirm the required file identity and
+every supplied saved master identity, independently of the selected table clip.
+No second format decoder or scan is started. The approved Bella format limits
+apply; an unsupported required identity refuses the affected operation.
 
-Live operations still use OldScanner's MXF/OMF readers and projectors on protected
-handles. AVB loading also uses `MediaEngine` types, but parsed bin graphs remain
-local to loading; loaded bins retain compact file references and warnings.
-Neither legacy scan working evidence nor parsed AVB graphs become owners in
-ordinary Bella rows.
+[OpRunner](../src/oprunner.cpp) calls File Check at the existing source gate.
+Native checks at copy/publication/removal/restore checkpoints stay in place;
+[OpFile](../src/opfile.cpp) owns the actual native file handles. Ordinary Undo
+uses saved physical identities and does not gain an Avid-header requirement.
+Journals and recovery keep their existing schema and captured requirements.
+
+AVB loading uses its own shared graph types, but parsed bin graphs remain local
+to loading; loaded bins retain compact file references and warnings.
 
 ## Filters, selection and export
 
@@ -235,59 +233,24 @@ files receive a rescan refusal. A physical-only instruction supplies an explicit
 empty receipt. Bella does not add the selected MasterMobId as a required header
 master identity.
 
-The retained OldScanner adapter instead uses `ScanRowLookup` to capture its
-header-established IDs, refusal reasons and skipped-header database identity.
-That legacy receipt can include multiple header MasterMobIds. The operation engine
-continues to enforce whichever checks the captured receipt supplies.
-`opItemFromMediaFile()` combines the receipt with current row path/time/volume
-and selected Avid claims; it does not consult scan evidence. A row without a
-captured receipt is refused with a rescan request. Metadata status and operation
-receipts remain separate: the first describes interpretation, the second supplies
-live-operation checks.
-
-Confirmed copies and moves preserve the frozen record while updating the current
-row path, modification time and volume stamp. Destination paths cannot borrow
-another source's original scan checks. Requests and journals carry those values,
-so recovery and Undo remain independent of the original inventory.
-
-The interface serializes scans, recovery, ordinary file jobs and the Rebalance
-dialog through its activity state. The engine additionally uses the journal lock
-to prevent concurrent execution/recovery through another manager. This does not
-lock out changes made by Avid, Finder or another application.
-
-The runner remains one class and one operation engine. Its focused functions live
-in `oprunner.cpp`, organized with `// MARK: -` headings for coordination, journal
-preparation, Rebalance, execution, Trash, source removal/restoration, recovery and
-Undo. Shared operation helpers have file-local linkage in anonymous namespaces.
-
-Inside the runner, `run()` owns the operation lock, request and journal and orders
-private helpers for journal preparation, pending-item execution, copied-original
-removal, Undo copy disposal, Trash fallback and final cleanup. Rebalance group
-preparation checks destinations and folder durability before retiring databases.
-`RunState` holds per-call bookkeeping, including an initial entry snapshot for group
-planning; execution and recovery checks continue to read the live journal.
-`executeWithRetries()` owns the bounded retry policy around one item, while
-`copiesReadyForRemoval()` evaluates the whole-job barrier before Move removal or
-Undo copy disposal. `execute()` validates each source and routes it to system
-Trash restoration, a system Trash move, same-volume relocation or copy transfer.
-The Trash-move helper owns the source handle and closes it after saving intent,
-before calling the native provider. The relocation helper owns collision retries
-and post-move durability checks; the caller handles unavailable relocation.
-These helpers use the same journal and recovery state machine.
-
-## Operation rules that must survive changes
+Saved jobs can require multiple independently captured header MasterMobIds.
+File Check continues to enforce every supplied requirement. An absent saved
+header receipt retains its existing fallback meaning; an explicit empty receipt
+retains its physical-only meaning.
+`opItemFromMediaFile()` combines the receipt with the row path/time/volume and
+selected Avid claims; it does not consult scan evidence. A row without a captured
+receipt is refused with a rescan request.
 
 - Save intent before the corresponding file mutation. Preserve uncertain outcomes
   for recovery rather than reporting a completed job without evidence.
 - Recheck native source identity, size and supplied modification time. New scan
-  receipts also check path and persistent volume identity. Fresh MediaEngine MXF/legacy
-  readers recheck applicable header-established Avid identities through the opened
+  receipts also check path and persistent volume identity. File Check uses Bella
+  to recheck applicable header-established Avid identities through the opened
   source. If scanning deliberately skipped the header, the selected PMR/MDB
   FileMobId must instead be confirmed at operation time. Database-only master
   associations are not imposed as header requirements.
   Detected physical media/header changes require a rescan; any captured refusal reason blocks
-  execution. The retained OldScanner path also records contradictory header IDs
-  as a refusal reason.
+  execution. Saved contradictory-header refusal reasons also remain binding.
   A missing captured row safety record cannot authorize an operation either.
 - Never replace an occupied destination. Keep Both chooses a free name; explicit
   Skip leaves the file alone. An unapproved conflict fails the item. A confirmed
@@ -355,7 +318,7 @@ messages received through `addLog()`. Qt diagnostics also go to the file. The
 Console does not read the saved log.
 
 [BackgroundJob](../src/backgroundjob.h) owns a worker thread with cooperative
-cancellation for OldScanner and operation workers. BellaAppScanner owns its separate
+cancellation for operation workers. BellaAppScanner owns its separate
 organiser thread and asynchronously waits for readiness; each Bella scan owns a
 fresh four-job reader pool. Bin Filter has a private two-worker pool. Destination/
 Rebalance previews and history reads use Qt's shared pool. Owners must preserve
@@ -386,9 +349,5 @@ used by the table, sorter and CSV. It also retains original selected rate forms,
 including extended rates from MDB/OMF AIFF summaries. Native AIFF rates are decoded
 to a supported fraction before matching.
 
-OldScanner uses `MediaDuration`, `frameRateRatio` and `sampleRateRatio` in its
-observations and compatibility rows. Its own display/selection and track/timecode
-scope limits remain documented in [engine terminology](media-engine.md) and the
-dated Canon reports. Neither scanner sums sibling durations or substitutes a
-master clip's length for a physical file's duration. Frame rounding belongs at
+Frame rounding belongs at
 the display boundary; source counts and rates remain distinct from display labels.

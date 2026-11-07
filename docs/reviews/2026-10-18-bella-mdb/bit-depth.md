@@ -11,7 +11,7 @@ Depth interpretation rules and useful tests into small new Bella helpers,
 keeping depth numeric with necessary format information and generating labels
 at display.** Uncommon coverage choices marked as proposals below remain under
 review. Nothing is implemented in Bella yet. The separate
-[audio Sample Rate rules](audio-sample-rate.md) are also agreed. OldScanner
+[audio Sample Rate rules](audio-sample-rate.md) are also agreed. previous scanner
 remains active; Bin Filter and the agreed Duration rules are unchanged.
 
 ## What this column describes
@@ -66,7 +66,7 @@ automatically a Bella requirement.
 ## Actual six-database findings
 
 Fresh hashes and an independent owner-qualified probe checked the current MDB
-byte ranges using the established hashed value indexes. No OldScanner output
+byte ranges using the established hashed value indexes. No previous scanner output
 or physical media header was used. Counts refer to the 2,412 PMR physical-file
 rows and their own descriptors:
 
@@ -162,35 +162,35 @@ MDVx's formatter would show `254 bit`; no live UI/export was executed here.
 
 ## Current MediaMuster and reuse assessment
 
-Source inspection on 20 October 2026 finds that OldScanner already implements
+Source inspection on 20 October 2026 finds that previous scanner already implements
 much of the required interpretation. Its MDB numeric decoder checks declared
 two-/four-byte types and byte order, including the actual PCMA Ushort. Its
 projector reads WAV/AIFF summaries, handles the full-coding-qualified DNx
 253/254 cases, and uses the two RGBA arrays to obtain a common component width.
 It does not sum RGBA widths into this column. See the
-[typed reader](../../../src/oldscanner/mediaengine/mdbobjects_p.cpp),
-[audio handling](../../../src/oldscanner/mediaengine/mdbprojection.cpp),
-[coded depths](../../../src/oldscanner/mediaengine/mdbprojection.cpp)
-and [RGBA handling](../../../src/oldscanner/mediaengine/mdbprojection.cpp).
+typed reader (removed source),
+audio handling (removed source),
+coded depths (removed source)
+and RGBA handling (removed source).
 
 The projector retains raw values in its evidence and creates interpreted
 labels such as `24-bit`. The adapter stores the selected label in
 `MediaFile::QString bitDepth`; the table and CSV use that same string.
 Unavailable selection becomes empty text. Sorting extracts the number from
 an `N-bit` label rather than comparing a stored depth integer. See the
-[adapter](../../../src/oldscanner/mediaengineadapter.cpp),
+adapter (removed source),
 [row](../../../src/mediafile.h),
 [table](../../../src/mediatablemodel.cpp),
 [CSV](../../../src/mediacsv.cpp) and
 [sort helper](../../../src/mediafilterproxy.cpp).
 
-The current [selection policy](../../../src/oldscanner/mediaengine/metadataselectionpolicy.cpp)
+The current selection policy (removed source)
 prefers an eligible media-header result over MDB when that header was read.
 Missing Bit Depth is one of the current
-[extra-read triggers](../../../src/oldscanner/mediaengine/scancoordinator.cpp);
+extra-read triggers (removed source);
 a usable complete database match can avoid opening the header. Reading a
 header for another missing field can also supply a preferred depth. This
-describes OldScanner; Bella's source/header policy is still pending.
+describes previous scanner; Bella's source/header policy is still pending.
 
 The verified interpretation rules and useful existing fixtures/test cases are
 good references for independent Bella helpers. Keep numeric depth and necessary

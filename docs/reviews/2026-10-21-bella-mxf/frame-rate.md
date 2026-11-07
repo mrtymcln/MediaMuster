@@ -34,7 +34,7 @@ caveat does not expand Bella into a general MXF reader.
 | --- | --- | --- |
 | Media Composer | Imports the physical source mob's own descriptor SampleRate, stores its native rate and publishes a rational SampleRate at the physical metadata boundary. | This is an import/publication trace, not a complete GUI Frame Rate-cell trace. Separate codec-wrapper conversions use their own context. |
 | MDVx | Its library reads project and material-track editing rates and file-track rates for other timing work. The ordinary MXF wrapper does not retain Frame Rate. | It does not read FileDescriptor.SampleRate in that ordinary library route; its table's separately stored rate is not supplied by this MXF wrapper. |
-| Current MediaMuster / OldScanner | Reads the qualified own descriptor SampleRate directly for video, with no frame/field conversion. Audio produces no Frame Rate observation. | It formats a three-decimal text label early and later sorts from that rounded label; its global priority prefers headers over MDB. |
+| Current MediaMuster / previous scanner | Reads the qualified own descriptor SampleRate directly for video, with no frame/field conversion. Audio produces no Frame Rate observation. | It formats a three-decimal text label early and later sorts from that rounded label; its global priority prefers headers over MDB. |
 
 ### Media Composer: distinguish physical and codec clocks
 
@@ -73,7 +73,7 @@ retained rate pairs into a physical-video Frame Rate was found in this route.
 The ordinary wrapper still transfers only names, Project and IDs. Its table
 formats a separately stored `DB_framerate` pair; the MXF wrapper does not set it.
 
-OldScanner's `projectDescriptor` emits FrameRate from the video descriptor's
+previous scanner's `projectDescriptor` emits FrameRate from the video descriptor's
 SampleRate and separately reads AudioSamplingRate for audio. It shares the
 exact descriptor clock with physical Duration. The adapter stores a text label
 rounded to three decimals with trailing zeros removed; table/CSV use that
@@ -167,4 +167,4 @@ probe artifacts remain in `/private/tmp`.
 No app/private API, production test suite, scan benchmark, recording-payload
 read or production-code edit was performed. This is an agreed small mapping
 within the existing Avid-compatible scope, without complete native GUI parity.
-Duration remains agreed; OldScanner stays active and Bin Filter is unchanged.
+Duration remains agreed; previous scanner stays active and Bin Filter is unchanged.

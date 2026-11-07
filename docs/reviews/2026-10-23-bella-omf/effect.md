@@ -89,7 +89,7 @@ the separately joined ambiguous category list remain distinct outputs.
    source selection/opening/scheduling and OMF damage remain separate decisions.
 
 The [existing resolver](../../../src/effectcatalogue.cpp) and
-[Hit value](../../../src/effectcatalogue.h) are outside OldScanner's parsers.
+[Hit value](../../../src/effectcatalogue.h) are outside previous scanner's parsers.
 The useful Bella change is the small shared result adapter and shorter
 temporary lifetimes, preserving the already compact catalogue/index/parser.
 No measured time, memory or reliability improvement is claimed.

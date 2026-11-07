@@ -12,7 +12,7 @@ No runtime implementation or app cutover. The preceding
 approval record.
 
 The simplest implementation is to call the existing pure
-[Compression resolver](../../../src/oldscanner/mediaengine/compressionnames_p.cpp)
+[Compression resolver](../../../src/mediaengine/compressionnames_p.cpp)
 with equivalent validated facts. Keep its catalogue, names, exact aliases,
 qualifications, unknown/ambiguous outcomes and table/export behavior. Bella
 changes how the facts are acquired and how long temporary data lives.
@@ -139,4 +139,4 @@ Existing pure naming controls, direct OmfReader cases and historical genuine
 receipts are distinguished from MDB-default authored matrices. No tests/builds,
 production parser, native app/private APIs or Bella runtime were executed for
 this review; no media was modified. Bit Depth approval changes documentation
-only. OldScanner remains active; Bin Filter stays outside scope.
+only. previous scanner remains active; Bin Filter stays outside scope.

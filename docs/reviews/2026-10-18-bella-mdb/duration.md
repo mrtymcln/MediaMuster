@@ -13,7 +13,7 @@ Duration; the earlier removal of Clip
 Duration remains in force. The fixed Kind lookup is separately agreed, with
 JPED added to Video on 1 November 2026; that narrow amendment does not change
 these independent typed timing rules.
-This review adds no runtime parser, OldScanner change, media write or Bin Filter
+This review adds no runtime parser, previous scanner change, media write or Bin Filter
 work. **The user originally agreed MDB-only Duration on 19 October 2026; the
 21 October source revision below supersedes that blanket restriction.**
 The user subsequently also approved preserving Length/SampleRate and a separate
@@ -163,7 +163,7 @@ There is no ordinary MDVx Duration selection or formatting rule to copy.
 
 An independent read-only probe checked six MDBs, sibling PMRs and raw value
 indexes. It resolved full-ID, catalogue-qualified physical-file owners and
-their own descriptors. OldScanner projections and physical media headers were
+their own descriptors. previous scanner projections and physical media headers were
 not the oracle. Descriptor/clip/master comparisons were research only.
 
 | MDB folder | Physical files | Usable descriptor length/rate pair |

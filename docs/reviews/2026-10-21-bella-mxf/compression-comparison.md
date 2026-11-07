@@ -1,11 +1,11 @@
-# OldScanner: actual MDB versus MXF Compression labels
+# previous scanner: actual MDB versus MXF Compression labels
 
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
 Comparison date: 22 October 2026. This follows the user's request for an actual
 same-file comparison after the earlier hypothetical missing-information example.
-**The current OldScanner does not always produce the same Compression label
+**The current previous scanner does not always produce the same Compression label
 from MDB and MXF.**
 
 ## Verified results
@@ -33,7 +33,7 @@ These are results for this inspected corpus, not a universal guarantee.
 
 ## Method and checks
 
-A temporary C++17 / Qt 6.5.3 probe linked the current built OldScanner core.
+A temporary C++17 / Qt 6.5.3 probe linked the current built previous scanner core.
 The build reported no work required for the relevant existing targets. Each
 MDB was read through **prepareDatabase**; each actual physical MXF was read
 through **prepareMxf**, including its real file extent rather than a truncated
@@ -68,7 +68,7 @@ was changed. Immediate checks are not an atomic cross-file snapshot.
 
 For the independently checked `NOV_78D9V02.22180610.586550.mxf`, the current MDB
 has an explicit own RGBA descriptor with legacy `Compression = NONE`, alpha
-layout `A` and depth 8. OldScanner's MDB route recognises those facts and
+layout `A` and depth 8. previous scanner's MDB route recognises those facts and
 produces `1:1 Alpha 8bit`.
 
 Its own MXF descriptor has no PictureEssenceCoding. The current MXF picture
@@ -91,7 +91,7 @@ representation:
 | Two | 2997/100 (29.97) | 30000/1001 (approximately 29.97003) |
 | Two | 23976/1000 (23.976) | 24000/1001 (approximately 23.976024) |
 
-OldScanner's JPEG 2000 helper requires an exact supported rate for `J2K HD`.
+previous scanner's JPEG 2000 helper requires an exact supported rate for `J2K HD`.
 The MXF fractions pass that test; the MDB decimal representations do not, so
 its name remains `JPEG2000`. The existing special legacy rate conversion is
 qualified to DNx naming and is not applied here. No field is missing in this

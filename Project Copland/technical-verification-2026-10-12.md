@@ -64,7 +64,7 @@ contain no `_ORG_BIN`. Current MXF projection has no Original Bin mapping. This
 does not establish universal absence in MXF. A complete parse alone also does not
 prove a particular property was checked and found absent.
 
-The [current fallback gate](../src/oldscanner/mediaengine/scancoordinator.cpp) schedules
+The current fallback gate (removed source) schedules
 Original Bin fallback only for a conflict. C12/C40 require missing applicable
 values to advance to the next source, even if an earlier source establishes
 absence. Established **inapplicability** can stop reading. Unsupported or

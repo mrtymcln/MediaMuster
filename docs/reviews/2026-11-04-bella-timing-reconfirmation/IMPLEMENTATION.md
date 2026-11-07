@@ -52,8 +52,8 @@ The pre-existing PMR/MDB/MXF/OMF/native-reader source and public reports are
 unchanged by this step; their source hashes match the pre-build evidence.
 Private parser numbering helpers have not yet been replaced. Existing dirty
 worktree changes from earlier work remain intact. No MediaFile/table, progress,
-journal, Unfinished Business, Undo, OldScanner or Bin Filter source was edited.
-The app still runs OldScanner. This is a tested component, not a runnable Bella
+journal, Unfinished Business, Undo, previous scanner or Bin Filter source was edited.
+The app still runs previous scanner. This is a tested component, not a runnable Bella
 scanner or complete reader/row integration.
 
 ## Verification

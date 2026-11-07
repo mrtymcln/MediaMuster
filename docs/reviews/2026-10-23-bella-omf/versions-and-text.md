@@ -74,7 +74,7 @@ downloaded for inspection, not used as a metadata-only acquisition benchmark.
 1. Support Bento 1.0 with the known OMF1/Avid record layout. Recognize canonical
    `01 00` and the evidenced legacy `00 01` only in its supported legacy HEAD
    context. Do not swap arbitrary version bytes or accept every `01 xx` merely
-   because OldScanner's broad test did.
+   because previous scanner's broad test did.
 2. Keep both recognized numeric metadata orders, `II` and `MM`, through checked
    typed helpers. The current Mac examples use `II`; actual opposite-order OMF
    media coverage remains an engineering verification requirement. Conflicting

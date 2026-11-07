@@ -87,7 +87,7 @@ is a separate review; an independently valid Type remains Precompute.
 2. Request category-only decoding when optional precompute details are needed
    and Type is Precompute. Reuse direct master attribute facts already obtained
    for retained metadata such as Original Bin. Skip category track counting
-   when object absence is established. Current OldScanner extraction is not
+   when object absence is established. Current previous scanner extraction is not
    already internally gated this way; exact configuration plumbing remains
    implementation design, with no new opening/scheduling policy implied.
 3. When present, establish the immediate master picture-track threshold while
@@ -101,7 +101,7 @@ is a separate review; an independently valid Type remains Precompute.
    Keep no settings body, ancestry graph, name history or formatted category.
 5. Retain RenderedEffects/TitlesAndMatteKeys/Unknown as a small enum plus
    necessary availability. Generate the two current labels at display/export.
-   Ordinary Media and unavailable category are blank, replacing OldScanner's
+   Ordinary Media and unavailable category are blank, replacing previous scanner's
    lowercase `unknown` for the latter, as already agreed for Bella.
 6. Preserve an explicit Unknown category for the optional Precompute Filter,
    distinct from blank table/CSV presentation and the filter's all-descendants

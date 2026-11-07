@@ -15,7 +15,7 @@ Keep the current native WAVE/AIFF format support, interpretation rules, useful
 results/labels and missing/unreadable/unsupported handling. Express those rules
 in small fresh C++17/Qt 6.5.3 helpers with compact results and scoped temporary
 storage. Preserve useful behaviour while improving how the work is organised;
-do not carry the whole OldScanner pipeline into Bella. No extra formats,
+do not carry the whole previous scanner pipeline into Bella. No extra formats,
 metadata features, columns or per-field redesign are required.
 
 **Do not add the proposed FVER admission/version gate.** Keep the existing
@@ -23,11 +23,11 @@ handling, including Avid AIFF-C without FVER. The earlier proposal to reject
 dependent native interpretation for an unknown/damaged present FVER is withdrawn.
 Skip sound samples as the current reader already does; avoid unused metadata
 copying only while preserving useful outputs and required availability/error
-behaviour. Compare with OldScanner and measure benefits during implementation.
+behaviour. Compare with previous scanner and measure benefits during implementation.
 
 Previously approved OMF rules still govern the separate embedded OMF parser.
 Final source priorities, extra-read triggers and scheduling remain for the end;
-native behaviour preservation does not adopt OldScanner's overall scheduling
+native behaviour preservation does not adopt previous scanner's overall scheduling
 heuristics. The native WAVE/AIFF requirements review is now closed by preservation,
 with no further per-field planning required. No runtime/cutover approval.
 
@@ -151,7 +151,7 @@ or permanent full chunk/raw-evidence catalogue is proposed. Keep only selected
 facts and temporary necessary sizes/OMF locators, then release the job storage.
 
 The concrete planned simplification is reading fewer unused metadata bytes and
-constructing fewer raw records. Current OldScanner already skips audio samples;
+constructing fewer raw records. Current previous scanner already skips audio samples;
 do not claim it loads whole recordings. Time/peak-memory benefits remain
 unmeasured. Embedded OMF and native audio are already separate contributions in
 one physical row. Their final priorities and reasons to open a header remain

@@ -6,7 +6,7 @@
 Research and approval date: 22 October 2026. MXF identity and Clip Name rules
 are agreed. **The user approved Project's header → file-owned attributes →
 blank rule, with the text, availability and retention rules below. These are
-requirements, not yet implemented.** OldScanner stays active; Bin Filter is
+requirements, not yet implemented.** previous scanner stays active; Bin Filter is
 unchanged. Overall PMR/MDB/MXF priority and header-opening triggers remain for
 the final priority discussion as requested.
 See the approval receipt.

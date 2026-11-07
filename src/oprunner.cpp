@@ -1,12 +1,8 @@
 #include "oprunner.h"
+#include "filecheck.h"
 #include "operationplan.h"
 #include "conventions.h"
-#include "mobid.h"
 #include "opscanreceipt.h"
-#include "oldscanner/mediaengine/mxfreader.h"
-#include "oldscanner/mediaengine/omfreader.h"
-#include "oldscanner/mediaengine/projection.h"
-#include "oldscanner/mediaengine/scancoordinator.h"
 #include "pathkey.h"
 #include <QDateTime>
 #include <QDir>
@@ -98,68 +94,6 @@ namespace
 				break;
 		}
 		return QFileInfo(source).dir().filePath(Conventions::kMediaMusterTrashDir);
-	}
-	bool mediaIdentityMatches(const OpItem &item, OpFile &source, QString &error)
-	{
-		if (item.headerIdentity && !item.headerIdentity->unavailableReason.isEmpty())
-		{
-			error = item.headerIdentity->unavailableReason;
-			return false;
-		}
-		const bool mxf = Conventions::hasMxfExtension(item.src);
-		if (!mxf && !Conventions::hasOmfEraExtension(item.src))
-			return true;
-		const QString fileId = !item.databaseFileMobIdToVerify.isEmpty() ? item.databaseFileMobIdToVerify
-							   : item.headerIdentity					 ? item.headerIdentity->fileMobId
-																		 : item.fileMobId;
-		QStringList expectedMasters = item.headerIdentity						 ? item.headerIdentity->masterMobIds
-									  : item.databaseFileMobIdToVerify.isEmpty() ? QStringList{item.masterMobId}
-																				 : QStringList{};
-		expectedMasters.removeIf([](const QString &id)
-								 { return id.isEmpty() || MobId::isAllZero(id); });
-		const bool fileKnown = !fileId.isEmpty() && !MobId::isAllZero(fileId);
-		if (!fileKnown && expectedMasters.isEmpty())
-			return true;
-		const MediaEngine::Cancellation cancellation;
-		const auto receipt = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
-			mxf ? MetadataSource::Mxf : MetadataSource::Omf, item.src, QFileInfo(item.src).lastModified(), SourceReadState::NotRead});
-		const auto parsed = mxf ? MediaEngine::MxfReader{}.read(source.io(), {receipt, cancellation})
-								: MediaEngine::OmfReader{}.read(source.io(), {receipt, cancellation});
-		const auto projection = mxf ? MediaEngine::projectMxf(parsed, cancellation) : MediaEngine::projectOmf(parsed, cancellation);
-		MediaEvidence evidence;
-		for (const auto &file : projection.files)
-			MediaEngine::appendEvidence(evidence, file.evidence);
-		MediaEngine::selectMetadata(evidence);
-		const QString actualFile = evidence.selected(MediaProperty::FileMobId).value.toString();
-		// Ordinary metadata selects one master; safety still corroborates every
-		// captured header identity against all eligible claims in the live header.
-		const auto liveHeader = makeOpScanReceipt(evidence, {}).headerIdentity;
-		const auto &masters = liveHeader.masterMobIds;
-		const bool mastersMatch = std::all_of(expectedMasters.cbegin(), expectedMasters.cend(),
-											  [&](const QString &id)
-											  { return masters.contains(id); });
-		if ((fileKnown && fileId != actualFile) || !mastersMatch)
-		{
-			error = item.databaseFileMobIdToVerify.isEmpty()
-						? QStringLiteral("The file's Avid identity is missing or differs from the scan. Rescan before proceeding.")
-						: QStringLiteral("The opened media header cannot confirm the PMR/MDB FileMobId selected during scanning. The identity is missing, unreadable or different; rescan before proceeding.");
-			return false;
-		}
-		return true;
-	}
-	bool scanLocationMatches(const OpItem &item, QString &error)
-	{
-		if (item.scanPath.isEmpty())
-			return true; // Non-scanned inputs and operation-only maintenance have no scan receipt.
-		if (QDir::cleanPath(item.scanPath) != QDir::cleanPath(item.src))
-			error = QStringLiteral("The selected path differs from its scan receipt. Rescan before proceeding.");
-		else if (item.scanVolumeIdentifier.isEmpty())
-			error = QStringLiteral("The scan did not establish the source volume identity. Rescan before proceeding.");
-		else if (item.modifiedMs < 0)
-			error = QStringLiteral("The scan did not establish the source modification time. Rescan before proceeding.");
-		else if (VolumeIdentity::capture(item.src).identifier() != item.scanVolumeIdentifier)
-			error = QStringLiteral("The source volume identity is unavailable or differs from the scan. Rescan before proceeding.");
-		return error.isEmpty();
 	}
 	void keepArtifact(OpJournal::Entry &e, const QString &path)
 	{
@@ -753,15 +687,8 @@ OpResult OpRunner::execute(OpJournal &j, OpJournal::Entry &e, OpKind kind, int i
 		return result(e, State::Failed, error);
 	}
 	const auto current = source->stamp();
-	if (!e.source.valid() || !e.source.unchanged(current) ||
-		(e.item.bytes >= 0 && e.item.bytes != current.size) ||
-		(e.item.modifiedMs >= 0 &&
-		 QFileInfo(e.item.src).lastModified().toMSecsSinceEpoch() != e.item.modifiedMs) ||
-		!scanLocationMatches(e.item, error) || !mediaIdentityMatches(e.item, *source, error) || !source->stillAt(e.item.src, current))
+	if (!FileCheck::sourceMatches(e.item, *source, e.source, current, error))
 	{
-		if (error.isEmpty())
-			error =
-				"The file changed since it was selected or journalled; rescan before proceeding.";
 		e.error = error;
 		save(j, e, Step::Failed);
 		return result(e, State::Failed, error);

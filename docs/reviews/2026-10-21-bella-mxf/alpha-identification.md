@@ -20,7 +20,7 @@ identifying these files as uncompressed 8-bit alpha without consulting MDB.
 The earlier investigation checked the own descriptor's generic AAF-KLV
 container identifier and correctly found no PictureEssenceCoding. Its wider
 conclusion was incomplete: it had missed the separate coding-specific header
-container lists. The original bytes and actual OldScanner blank outputs remain
+container lists. The original bytes and actual previous scanner blank outputs remain
 correct; the claim that no useful encoding marker had been established is
 superseded by this follow-up.
 
@@ -129,5 +129,5 @@ header copies and scripts remain in `/private/tmp`.
 No physical RLE-alpha control was identified in these inspected files. RLE's
 distinction is supported by native keys and installed codec definitions, not
 an actual RLE playback experiment. No Media Composer app/private API was run,
-no final native GUI label was observed, and no runtime code changed. OldScanner
+no final native GUI label was observed, and no runtime code changed. previous scanner
 remains active; Bella implementation follows the requirements review.

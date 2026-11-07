@@ -9,6 +9,8 @@
 #include <optional>
 #include <variant>
 
+class QFile;
+
 namespace Bella
 {
 	enum class OmfReadResult
@@ -216,4 +218,10 @@ namespace Bella
 	/// facts.
 	[[nodiscard]] OmfReport parseOmf(const QString &path, const std::atomic_bool &stopRequested,
 									 bool includePrecomputeDetails);
+
+	/// Checks identity in the caller's already-open binary file, without reopening
+	/// or closing it. Uses the same supported layout as the path reader; verifies
+	/// every supplied master independently of the table's selected clip.
+	[[nodiscard]] bool omfIdentityMatches(QFile &source, const QString &expectedFileId,
+										  const QStringList &expectedMasterIds);
 } // namespace Bella

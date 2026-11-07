@@ -5,17 +5,15 @@
 #include "oprunner.h"
 #include "opmanager.h"
 #include "opscanreceipt.h"
-#include "mediaevidence.h"
 #include "rebalancer.h"
 #include "rebalanceplanner.h"
 #include "mobid.h"
 #include "operationplan.h"
 #include "operationrecovery.h"
 #include "optrash.h"
-#include "oldscanner/mediaengine/mxfreader.h"
-#include "oldscanner/mediaengine/omfreader.h"
-#include "oldscanner/mediaengine/projection.h"
-#include "oldscanner/mediaengine/scancoordinator.h"
+#include "bella/mxfparser.h"
+#include "bella/omfparser.h"
+#include "omfuid.h"
 #include <QTest>
 #include <QSignalSpy>
 #include <QRegularExpression>
@@ -40,29 +38,22 @@
 
 namespace
 {
-	MediaEngine::ParsedSource readMxf(QIODevice &input, const QString &path)
+	OpHeaderIdentity readHeaderIdentity(const QString &path, bool omf = false)
 	{
-		const auto receipt = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
-			MetadataSource::Mxf, path, QFileInfo(path).lastModified(), SourceReadState::NotRead});
-		const MediaEngine::Cancellation cancellation;
-		return MediaEngine::MxfReader{}.read(input, {receipt, cancellation});
-	}
-
-	MediaEngine::ParsedSource readMxf(const QString &path)
-	{
-		QFile input(path);
-		input.open(QIODevice::ReadOnly);
-		return readMxf(input, path);
-	}
-
-	MediaEvidence mxfEvidence(const MediaEngine::ParsedSource &source)
-	{
-		MediaEvidence evidence;
-		const MediaEngine::Cancellation cancellation;
-		for (const auto &file : MediaEngine::projectMxf(source, cancellation).files)
-			MediaEngine::appendEvidence(evidence, file.evidence);
-		MediaEngine::selectMetadata(evidence);
-		return evidence;
+		const std::atomic_bool stop{false};
+		OpHeaderIdentity identity;
+		const auto capture = [&](const auto &report)
+		{
+			if (report.fileInformation.fileMobId)
+				identity.fileMobId = OmfUid::toIdText(report.fileInformation.fileMobId->bytes());
+			if (report.associatedClipInformation.masterMobId)
+				identity.masterMobIds.append(OmfUid::toIdText(report.associatedClipInformation.masterMobId->bytes()));
+		};
+		if (omf)
+			capture(Bella::parseOmf(path, stop, false));
+		else
+			capture(Bella::parseMxf(path, stop, false));
+		return identity;
 	}
 
 	void put(const QString &path, const QByteArray &bytes)
@@ -357,7 +348,7 @@ private slots:
 	void partial_group_failure_keeps_every_file_recorded();
 	void same_volume_keep_both_handles_late_conflict();
 	void real_mxf_identity_is_checked();
-	void mediaengine_scan_receipt_checks_location_and_header_subset();
+	void saved_scan_receipt_checks_location_and_header_subset();
 	void header_checks_remain_independent_of_selected_master_data();
 	void header_checks_remain_independent_of_selected_master();
 	void bella_handoff_checks_copy_move_delete_data();
@@ -1630,9 +1621,9 @@ void TestFileOperations::real_mxf_identity_is_checked()
 	REQUIRE_TEST_FIXTURES();
 	Fixture f;
 	const QString sample = QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf");
-	const auto header = mxfEvidence(readMxf(sample));
-	QVERIFY(!header.selected(MediaProperty::MasterMobId).value.toString().isEmpty());
-	QVERIFY(!header.selected(MediaProperty::FileMobId).value.toString().isEmpty());
+	const auto header = readHeaderIdentity(sample);
+	QVERIFY(!header.masterMobIds.value(0).isEmpty());
+	QVERIFY(!header.fileMobId.isEmpty());
 	OpRequest request;
 	request.destRoot = f.dest;
 	OpItem item;
@@ -1640,8 +1631,8 @@ void TestFileOperations::real_mxf_identity_is_checked()
 	item.name = "sample.mxf";
 	item.bytes = QFileInfo(sample).size();
 	// Operation requests use the canonical database-order IDs stored by the scan.
-	item.fileMobId = header.selected(MediaProperty::FileMobId).value.toString();
-	item.masterMobId = header.selected(MediaProperty::MasterMobId).value.toString();
+	item.fileMobId = header.fileMobId;
+	item.masterMobId = header.masterMobIds.value(0);
 	request.items.append(item);
 	Sink sink;
 	std::atomic<bool> cancel{false};
@@ -1653,34 +1644,24 @@ void TestFileOperations::real_mxf_identity_is_checked()
 	QCOMPARE(runner.run(request, f.journals).failed, 1);
 	QVERIFY(!QFile::exists(f.dest + "/refused.mxf"));
 }
-void TestFileOperations::mediaengine_scan_receipt_checks_location_and_header_subset()
+void TestFileOperations::saved_scan_receipt_checks_location_and_header_subset()
 {
 	REQUIRE_TEST_FIXTURES();
 	Fixture f;
 	const QString sample = QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf");
-	const auto header = mxfEvidence(readMxf(sample));
-	const QString fileId = header.selected(MediaProperty::FileMobId).value.toString();
-	const QString headerMaster = header.selected(MediaProperty::MasterMobId).value.toString();
+	const auto header = readHeaderIdentity(sample);
+	const QString fileId = header.fileMobId;
+	const QString headerMaster = header.masterMobIds.value(0);
 	MediaFile file;
-	MediaEvidence evidence;
 	file.mediaFilePath = sample;
 	file.fileName = QStringLiteral("sample.mxf");
 	file.sizeBytes = QFileInfo(sample).size();
 	file.scanStamp = {sample, VolumeIdentity::capture(sample).identifier(), QFileInfo(sample).lastModified(), fileId, QStringLiteral("database-only-master")};
 	QVERIFY(!file.scanStamp.volumeIdentifier.isEmpty());
-	const auto receipt = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mxf, sample,
-																			   file.scanStamp.modified, SourceReadState::Complete});
-	for (const auto property : {MediaProperty::FileMobId, MediaProperty::MasterMobId})
-	{
-		MetadataObservation observation;
-		observation.snapshot = receipt;
-		observation.readState = PropertyReadState::Present;
-		observation.value = property == MediaProperty::FileMobId ? fileId : headerMaster;
-		evidence.observe(property, observation);
-	}
-	file.operationScanReceipt = makeOpScanReceipt(evidence, file.scanStamp, ScanRowLookup{});
+	// Historical journal receipts may retain independently confirmed masters.
+	// The operation gate must preserve and verify them after parser data is gone.
+	file.operationScanReceipt = OpScanReceipt{OpHeaderIdentity{fileId, {headerMaster}, {}}, {}};
 	QVERIFY(file.operationScanReceipt);
-	evidence = {};
 	OpRequest request;
 	request.destRoot = f.dest;
 	request.items = OpManager::itemsFromMediaFiles({file}, {});
@@ -1729,24 +1710,9 @@ void TestFileOperations::header_checks_remain_independent_of_selected_master()
 	file.mediaFilePath = QStringLiteral("/source/clip.mxf");
 	file.masterMobId = selectedMasterMobId;
 	file.scanStamp = {file.mediaFilePath, {}, {}, QStringLiteral("file-id"), selectedMasterMobId};
-	{
-		MediaEvidence evidence;
-		MetadataObservation header;
-		header.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
-			MetadataSource::Mxf, file.mediaFilePath, {}, SourceReadState::Complete});
-		header.readState = PropertyReadState::Present;
-		header.value = QStringLiteral("file-id");
-		evidence.observe(MediaProperty::FileMobId, header);
-		header.value = QStringList{QStringLiteral("header-b"), QStringLiteral("header-a"), QStringLiteral("header-b")};
-		evidence.observe(MediaProperty::MasterMobId, header);
-		MetadataObservation database;
-		database.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
-			MetadataSource::Mdb, QStringLiteral("/source/index.mdb"), {}, SourceReadState::Complete});
-		database.readState = PropertyReadState::Present;
-		database.value = QStringLiteral("database-only-master");
-		evidence.observe(MediaProperty::MasterMobId, database);
-		file.operationScanReceipt = makeOpScanReceipt(evidence, file.scanStamp);
-	}
+	file.operationScanReceipt = OpScanReceipt{
+		OpHeaderIdentity{QStringLiteral("file-id"),
+			{QStringLiteral("header-a"), QStringLiteral("header-b")}, {}}, {}};
 	const auto item = OpManager::itemsFromMediaFiles({file}, {}).front();
 	QCOMPARE(item.masterMobId, selectedMasterMobId);
 	QVERIFY(item.headerIdentity);
@@ -1860,15 +1826,10 @@ void TestFileOperations::bella_handoff_checks_copy_move_delete()
 	{
 		// Validate the independently authored live ID so a wrong-ID test cannot
 		// pass merely because the live reader returned an unreadable header.
-		QFile input(path);
-		QVERIFY(input.open(QIODevice::ReadOnly));
-		const MediaEngine::Cancellation cancellation;
-		const auto parsed = MediaEngine::OmfReader{}.read(input, {{}, cancellation});
-		const auto projected = MediaEngine::projectOmf(parsed, cancellation);
-		QCOMPARE(projected.files.size(), qsizetype(1));
+		const auto identity = readHeaderIdentity(path, true);
 		const auto liveId = !mismatch ? expectedFileId : fromHeader ? QStringLiteral("060a2b3401010105.01010f1013000000.0102030405060708.191a1b1c1d1e1f21")
 																	: QStringLiteral("omf:08000000443322110b000000");
-		QCOMPARE(projected.files.front().fileMobId, liveId);
+		QCOMPARE(identity.fileMobId, liveId);
 	}
 	const QFileInfo info(path);
 	entry.sizeBytes = info.size();
@@ -2025,7 +1986,7 @@ void TestFileOperations::operation_scan_receipt_is_required()
 
 	// Explicitly captured unknown identity is usable; an absent capture is not.
 	file.scanStamp = {f.src, VolumeIdentity::capture(f.src).identifier(), QFileInfo(f.src).lastModified(), {}, {}};
-	file.operationScanReceipt = makeOpScanReceipt(MediaEvidence{}, file.scanStamp, ScanRowLookup{});
+	file.operationScanReceipt = OpScanReceipt{};
 	QVERIFY(file.operationScanReceipt);
 	QVERIFY(file.operationScanReceipt->headerIdentity.fileMobId.isEmpty());
 	QVERIFY(file.operationScanReceipt->headerIdentity.masterMobIds.isEmpty());
@@ -2048,13 +2009,22 @@ void TestFileOperations::compact_scan_receipt_operations_and_recovery_data()
 {
 	QTest::addColumn<int>("kind");
 	QTest::addColumn<bool>("resume");
-	for (const auto kind : {OpKind::Copy, OpKind::Move, OpKind::Delete, OpKind::Rename})
-		for (const bool resume : {false, true})
-		{
-			const QString name = opKindName(kind) +
-								 (resume ? QStringLiteral("-resume") : QStringLiteral("-complete"));
-			QTest::newRow(qPrintable(name)) << int(kind) << resume;
-		}
+	QTest::addColumn<QString>("sampleRelative");
+	const QStringList samples{
+		QStringLiteral("TONE_100A01.EA7D504A.611740.mxf"),
+		QStringLiteral("omf/mc2026_audio/TONE_100A01.6A972974.039700.wav"),
+		QStringLiteral("omf/mc2026_audio/TONE_100A01.6A972997.0C53E0.aif")};
+	for (const auto &sample : samples)
+		for (const auto kind : {OpKind::Copy, OpKind::Move, OpKind::Delete, OpKind::Rename})
+			for (const bool resume : {false, true})
+			{
+				// Rebalance accepts only modern MXF folders.
+				if (kind == OpKind::Rename && !sample.endsWith(QStringLiteral(".mxf")))
+					continue;
+				const QString name = QFileInfo(sample).suffix() + '-' + opKindName(kind) +
+					(resume ? QStringLiteral("-resume") : QStringLiteral("-complete"));
+				QTest::newRow(qPrintable(name)) << int(kind) << resume << sample;
+			}
 }
 
 void TestFileOperations::compact_scan_receipt_operations_and_recovery()
@@ -2062,60 +2032,44 @@ void TestFileOperations::compact_scan_receipt_operations_and_recovery()
 	REQUIRE_TEST_FIXTURES();
 	QFETCH(int, kind);
 	QFETCH(bool, resume);
+	QFETCH(QString, sampleRelative);
 	Fixture f;
-	const QString sample = QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf");
+	const QString sample = QStringLiteral(FIXTURES_DIR "/") + sampleRelative;
+	const bool omf = !sample.endsWith(QStringLiteral(".mxf"));
 	const QByteArray original = get(sample);
 	QVERIFY(!original.isEmpty());
 	const QString mxfRoot = f.root + QStringLiteral("/Avid MediaFiles/MXF");
-	const QString sourcePath = mxfRoot + QStringLiteral("/2/clip.mxf");
+	const QString sourcePath = omf ? f.root + QStringLiteral("/OMFI MediaFiles/clip.") + QFileInfo(sample).suffix()
+								   : mxfRoot + QStringLiteral("/2/clip.mxf");
 	const QString homePath = mxfRoot + QStringLiteral("/1/home.mxf");
 	put(sourcePath, original);
 	if (OpKind(kind) == OpKind::Rename)
 		put(homePath, original);
 
-	QWeakPointer<MediaEngine::ScanResult> scanOwner;
-	QWeakPointer<const SourceSnapshot> sourceOwner;
 	MediaFile file;
 	MediaFile home;
 	{
-		const auto scan = QSharedPointer<MediaEngine::ScanResult>::create();
-		scanOwner = scan;
-		struct ScannedRow
-		{
-			MediaFile file;
-			MediaEvidence evidence;
-		};
 		const auto scannedRow = [&](const QString &path)
 		{
-			auto parsed = readMxf(path);
+			const auto identity = readHeaderIdentity(path, omf);
 			MediaFile row;
 			row.mediaFilePath = path;
+			row.omfEra = omf;
 			row.fileName = QFileInfo(path).fileName();
 			row.mediaFolderName = QFileInfo(path).dir().dirName();
 			row.sizeBytes = QFileInfo(path).size();
-			auto evidence = mxfEvidence(parsed);
-			row.fileMobId = evidence.selected(MediaProperty::FileMobId).value.toString();
-			row.masterMobId = evidence.selected(MediaProperty::MasterMobId).value.toString();
+			row.fileMobId = identity.fileMobId;
+			row.masterMobId = identity.masterMobIds.value(0);
 			row.scanStamp = {path, VolumeIdentity::capture(path).identifier(), QFileInfo(path).lastModified(),
 							 row.fileMobId, row.masterMobId};
-			scan->sources.append(MediaEngine::SourceReceipt::fromParsed(std::move(parsed)));
-			return ScannedRow{std::move(row), std::move(evidence)};
+			row.operationScanReceipt = OpScanReceipt{identity, {}};
+			return row;
 		};
-		auto scannedFile = scannedRow(sourcePath);
-		auto scannedHome = OpKind(kind) == OpKind::Rename ? scannedRow(homePath) : ScannedRow{};
-		sourceOwner = scan->sources.front().snapshot;
-		const ScanRowLookup lookup(*scan);
-		file = std::move(scannedFile.file);
-		file.operationScanReceipt = makeOpScanReceipt(scannedFile.evidence, file.scanStamp, lookup);
+		file = scannedRow(sourcePath);
 		if (OpKind(kind) == OpKind::Rename)
-		{
-			home = std::move(scannedHome.file);
-			home.operationScanReceipt = makeOpScanReceipt(scannedHome.evidence, home.scanStamp, lookup);
-		}
+			home = scannedRow(homePath);
 	}
-	// Prepared rows retain neither the temporary scan nor its source snapshots.
-	QVERIFY(scanOwner.isNull());
-	QVERIFY(sourceOwner.isNull());
+	// Prepared rows contain only the captured safety values, with no reader owner.
 	QVERIFY(file.operationScanReceipt);
 	QVERIFY(!file.operationScanReceipt->headerIdentity.fileMobId.isEmpty());
 	QVERIFY(!file.operationScanReceipt->headerIdentity.masterMobIds.isEmpty());
@@ -2220,7 +2174,7 @@ void TestFileOperations::skipped_header_checks_database_file_identity()
 	QFETCH(QString, condition);
 	Fixture f;
 	const QString sample = QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf");
-	const QString fileId = mxfEvidence(readMxf(sample)).selected(MediaProperty::FileMobId).value.toString();
+	const QString fileId = readHeaderIdentity(sample).fileMobId;
 	QVERIFY(!fileId.isEmpty());
 	const QString path = f.root + QStringLiteral("/source/managed.mxf");
 	if (condition == QLatin1String("unreadable"))
@@ -2229,34 +2183,12 @@ void TestFileOperations::skipped_header_checks_database_file_identity()
 		QVERIFY(QFile::copy(sample, path));
 	const QByteArray original = get(path);
 	MediaFile file;
-	MediaEvidence evidence;
 	file.mediaFilePath = path;
 	file.fileName = QFileInfo(path).fileName();
 	file.sizeBytes = QFileInfo(path).size();
 	file.scanStamp = {path, VolumeIdentity::capture(path).identifier(), QFileInfo(path).lastModified(), condition == QLatin1String("different") ? QStringLiteral("another-database-file-id") : fileId, QStringLiteral("database-only-master")};
-	auto scan = QSharedPointer<MediaEngine::ScanResult>::create();
-	MediaEngine::SourceReceipt unread;
-	unread.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mxf, path,
-																			file.scanStamp.modified, SourceReadState::NotRead});
-	unread.readReason = QStringLiteral("Header not read: usable database match supplies required table metadata");
-	scan->sources.append(unread);
-	MetadataObservation identity;
-	identity.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mdb,
-																			  f.root + QStringLiteral("/source/index.mdb"),
-																			  {},
-																			  SourceReadState::Complete});
-	identity.value = file.scanStamp.fileMobId;
-	identity.readState = PropertyReadState::Present;
-	evidence.observe(MediaProperty::FileMobId, identity);
-	MetadataObservation location;
-	location.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Filesystem, path,
-																			  file.scanStamp.modified, SourceReadState::Complete});
-	location.value = path;
-	location.readState = PropertyReadState::Present;
-	evidence.observe(MediaProperty::Location, location);
-	file.operationScanReceipt = makeOpScanReceipt(evidence, file.scanStamp, ScanRowLookup{*scan});
-	QVERIFY(file.operationScanReceipt);
-	auto compact = file;
+	file.operationScanReceipt = OpScanReceipt{{}, file.scanStamp.fileMobId};
+	const auto compact = file;
 	auto request = f.request(OpKind(kind));
 	request.items = OpManager::itemsFromMediaFiles({compact}, {});
 	const auto &item = request.items.front();
@@ -2265,20 +2197,15 @@ void TestFileOperations::skipped_header_checks_database_file_identity()
 	QVERIFY(item.headerIdentity);
 	QVERIFY(item.headerIdentity->fileMobId.isEmpty());
 	QVERIFY(item.headerIdentity->masterMobIds.isEmpty());
-	// Transfer updates the row's path but preserves its original receipt and
-	// captured header decision. Subsequent operations retain the same check.
+	// A transferred row preserves its frozen instruction. Replacing another
+	// row's scan answer cannot change an already prepared operation request.
 	auto transferred = compact;
 	transferred.mediaFilePath = f.dest + '/' + file.fileName;
 	transferred.scanStamp.path = transferred.mediaFilePath;
 	QCOMPARE(OpManager::itemsFromMediaFiles({transferred}, {}).front().databaseFileMobIdToVerify, file.scanStamp.fileMobId);
-	// An attempted read represents a later completed scan. The captured skipped
-	// receipt remains unchanged until that scan supplies a replacement.
-	scan->sources[0].outcome = MediaEngine::ParsedSource::Outcome::IoError;
-	QCOMPARE(OpManager::itemsFromMediaFiles({compact}, {}).front().databaseFileMobIdToVerify, file.scanStamp.fileMobId);
-	file.operationScanReceipt = makeOpScanReceipt(evidence, file.scanStamp, ScanRowLookup{*scan});
-	evidence = {};
-	scan.clear();
+	file.operationScanReceipt = OpScanReceipt{};
 	QVERIFY(OpManager::itemsFromMediaFiles({file}, {}).front().databaseFileMobIdToVerify.isEmpty());
+	QCOMPARE(request.items.front().databaseFileMobIdToVerify, compact.scanStamp.fileMobId);
 	Sink sink;
 	std::atomic<bool> cancel{false};
 	OpRunner runner(sink, cancel);
@@ -2299,73 +2226,32 @@ void TestFileOperations::skipped_header_checks_database_file_identity()
 void TestFileOperations::transferred_row_does_not_borrow_another_headers_receipt()
 {
 	MediaFile file;
-	MediaEvidence evidence;
-	const QString originalPath = QStringLiteral("/source/first.mxf");
 	file.mediaFilePath = QStringLiteral("/destination/reused.mxf");
 	file.fileName = QStringLiteral("reused.mxf");
 	file.scanStamp.path = file.mediaFilePath;
 	file.scanStamp.fileMobId = QStringLiteral("database-file-id");
-	auto scan = QSharedPointer<MediaEngine::ScanResult>::create();
-	const QWeakPointer<MediaEngine::ScanResult> scanOwner(scan);
-	for (const auto &path : {originalPath, file.mediaFilePath})
-	{
-		MediaEngine::SourceReceipt source;
-		source.outcome = path == originalPath ? MediaEngine::ParsedSource::Outcome::IoError : MediaEngine::ParsedSource::Outcome::NotRead;
-		source.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mxf, path, {}, path == originalPath ? SourceReadState::Unreadable : SourceReadState::NotRead});
-		scan->sources.append(source);
-		MetadataObservation location;
-		location.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Filesystem, path, {}, SourceReadState::Complete});
-		location.readState = PropertyReadState::Present;
-		location.value = path;
-		location.eligible = path != originalPath;
-		evidence.observe(MediaProperty::Location, location);
-	}
-	MetadataObservation identity;
-	identity.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mdb, QStringLiteral("/source/index.mdb"), {}, SourceReadState::Complete});
-	identity.readState = PropertyReadState::Present;
-	identity.value = file.scanStamp.fileMobId;
-	evidence.observe(MediaProperty::FileMobId, identity);
-	ScanIssue unrelatedChange;
-	unrelatedChange.kind = ScanIssue::Kind::SourceChanged;
-	unrelatedChange.source = scan->sources[1].snapshot;
-	scan->reconciliationIssues.append(unrelatedChange);
-	file.operationScanReceipt = makeOpScanReceipt(evidence, file.scanStamp, ScanRowLookup{*scan});
-	auto compact = file;
+	file.operationScanReceipt = OpScanReceipt{};
+	const auto compact = file;
+	MediaFile other = file;
+	other.operationScanReceipt = OpScanReceipt{OpHeaderIdentity{{}, {}, QStringLiteral("Other file changed")}, {}};
 	const auto item = OpManager::itemsFromMediaFiles({compact}, {}).front();
 	QVERIFY(item.headerIdentity);
 	QVERIFY(item.databaseFileMobIdToVerify.isEmpty());
 	QVERIFY(item.headerIdentity->unavailableReason.isEmpty());
-	// This row's own changed-source receipt remains applicable after transfer.
-	scan->reconciliationIssues[0].source = scan->sources[0].snapshot;
-	QVERIFY(OpManager::itemsFromMediaFiles({compact}, {}).front().headerIdentity->unavailableReason.isEmpty());
-	file.operationScanReceipt = makeOpScanReceipt(evidence, file.scanStamp, ScanRowLookup{*scan});
-	evidence = {};
-	scan.clear();
-	QVERIFY(scanOwner.isNull());
-	QVERIFY(!OpManager::itemsFromMediaFiles({file}, {}).front().headerIdentity->unavailableReason.isEmpty());
+	QCOMPARE(OpManager::itemsFromMediaFiles({other}, {}).front().headerIdentity->unavailableReason,
+			 QStringLiteral("Other file changed"));
 }
 
 void TestFileOperations::changed_scan_header_cannot_become_unknown()
 {
 	Fixture f;
 	MediaFile file;
-	MediaEvidence evidence;
 	file.mediaFilePath = f.src;
 	file.fileName = QFileInfo(f.src).fileName();
-	file.sizeBytes = QFileInfo(f.src).size();
+	file.sizeBytes = f.bytes.size();
 	file.scanStamp = {f.src, VolumeIdentity::capture(f.src).identifier(), QFileInfo(f.src).lastModified(), {}, {}};
-	const auto receipt = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Mxf, f.src,
-																			   file.scanStamp.modified, SourceReadState::Incomplete});
-	MetadataObservation observation;
-	observation.snapshot = receipt;
-	observation.readState = PropertyReadState::Present;
-	observation.value = QStringLiteral("excluded-file-id");
-	observation.eligible = false;
-	observation.freshness = SourceFreshness::Changed;
-	evidence.observe(MediaProperty::FileMobId, observation);
-	file.operationScanReceipt = makeOpScanReceipt(evidence, file.scanStamp, ScanRowLookup{});
+	file.operationScanReceipt = OpScanReceipt{OpHeaderIdentity{{}, {}, QStringLiteral("The media header changed during scanning. Rescan before proceeding.")}, {}};
 	QVERIFY(file.operationScanReceipt);
-	evidence = {};
 	auto request = f.request(OpKind::Move);
 	request.items = OpManager::itemsFromMediaFiles({file}, {});
 	QVERIFY(request.items[0].headerIdentity);
@@ -2376,33 +2262,20 @@ void TestFileOperations::changed_scan_header_cannot_become_unknown()
 	QCOMPARE(runner.run(request, f.journals).failed, 1);
 	QCOMPARE(get(f.src), f.bytes);
 	QVERIFY(!QFile::exists(f.dest + '/' + file.fileName));
+	QVERIFY(!sink.results.isEmpty());
+	QCOMPARE(sink.results.last().message, file.operationScanReceipt->headerIdentity.unavailableReason);
 }
 
 void TestFileOperations::conflicting_scan_header_is_refused_without_history()
 {
 	Fixture f;
 	MediaFile file;
-	MediaEvidence evidence;
 	file.mediaFilePath = f.src;
 	file.fileName = QFileInfo(f.src).fileName();
 	file.sizeBytes = f.bytes.size();
 	file.scanStamp = {f.src, VolumeIdentity::capture(f.src).identifier(), QFileInfo(f.src).lastModified(), {}, {}};
-	auto scan = QSharedPointer<MediaEngine::ScanResult>::create();
-	const QWeakPointer<MediaEngine::ScanResult> scanOwner(scan);
-	for (const auto *id : {"first-header-id", "second-header-id"})
-	{
-		MetadataObservation observation;
-		observation.snapshot = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
-			MetadataSource::Mxf, f.src, file.scanStamp.modified, SourceReadState::Complete});
-		observation.readState = PropertyReadState::Present;
-		observation.value = QString::fromLatin1(id);
-		evidence.observe(MediaProperty::FileMobId, observation);
-	}
-	file.operationScanReceipt = makeOpScanReceipt(evidence, file.scanStamp, ScanRowLookup{*scan});
+	file.operationScanReceipt = OpScanReceipt{OpHeaderIdentity{{}, {}, QStringLiteral("The media header has conflicting file identities. Rescan before proceeding.")}, {}};
 	QVERIFY(file.operationScanReceipt);
-	evidence = {};
-	scan.clear();
-	QVERIFY(scanOwner.isNull());
 	auto request = f.request(OpKind::Move);
 	request.items = OpManager::itemsFromMediaFiles({file}, {});
 	QVERIFY(request.items.front().headerIdentity);
@@ -2423,9 +2296,12 @@ void TestFileOperations::real_legacy_header_identity_is_checked_data()
 	QTest::addColumn<QString>("sample");
 	QTest::addColumn<bool>("compact");
 	const QString wave = QStringLiteral(FIXTURES_DIR "/omf/mc2026_audio/TONE_100A01.6A972974.039700.wav");
+	const QString aiff = QStringLiteral(FIXTURES_DIR "/omf/mc2026_audio/TONE_100A01.6A972997.0C53E0.aif");
 	const QString omf = QStringLiteral(FIXTURES_DIR "/omf/avid_supporting/BLACK_720x486x1_MPEG50.omf");
 	QTest::newRow("Avid-WAVE") << wave << false;
 	QTest::newRow("Avid-WAVE-compact") << wave << true;
+	QTest::newRow("Avid-AIFF") << aiff << false;
+	QTest::newRow("Avid-AIFF-compact") << aiff << true;
 	QTest::newRow("Avid-MPEG50") << omf << false;
 	QTest::newRow("Avid-MPEG50-compact") << omf << true;
 }
@@ -2436,21 +2312,12 @@ void TestFileOperations::real_legacy_header_identity_is_checked()
 	Fixture f;
 	QFETCH(QString, sample);
 	QFETCH(bool, compact);
-	QFile media(sample);
-	QVERIFY(media.open(QIODevice::ReadOnly));
-	const auto receipt = QSharedPointer<SourceSnapshot>::create(SourceSnapshot{MetadataSource::Omf, sample,
-																			   QFileInfo(sample).lastModified(), SourceReadState::NotRead});
-	const MediaEngine::Cancellation cancellation;
-	const auto parsed = MediaEngine::OmfReader{}.read(media, {receipt, cancellation});
-	MediaEvidence evidence;
-	for (const auto &file : MediaEngine::projectOmf(parsed, cancellation).files)
-		MediaEngine::appendEvidence(evidence, file.evidence);
-	MediaEngine::selectMetadata(evidence);
+	const auto identity = readHeaderIdentity(sample, true);
 	OpItem item;
 	item.src = sample;
 	item.name = QStringLiteral("legacy.") + QFileInfo(sample).suffix();
 	item.bytes = QFileInfo(sample).size();
-	item.headerIdentity = makeOpScanReceipt(evidence, {}).headerIdentity;
+	item.headerIdentity = identity;
 	if (compact)
 	{
 		MediaFile file;
@@ -2459,10 +2326,8 @@ void TestFileOperations::real_legacy_header_identity_is_checked()
 		file.sizeBytes = item.bytes;
 		file.omfEra = true;
 		file.scanStamp = {sample, VolumeIdentity::capture(sample).identifier(), QFileInfo(sample).lastModified(),
-						  item.headerIdentity->fileMobId, evidence.selected(MediaProperty::MasterMobId).value.toString()};
-		file.operationScanReceipt = makeOpScanReceipt(evidence, file.scanStamp, ScanRowLookup{});
-		QVERIFY(file.operationScanReceipt);
-		evidence = {};
+						  identity.fileMobId, identity.masterMobIds.value(0)};
+		file.operationScanReceipt = OpScanReceipt{identity, {}};
 		item = OpManager::itemsFromMediaFiles({file}, {}).front();
 	}
 	QVERIFY(item.headerIdentity);
@@ -2485,7 +2350,8 @@ void TestFileOperations::mxf_parser_borrows_protected_handle()
 	REQUIRE_TEST_FIXTURES();
 	Fixture f;
 	const QString sample = QStringLiteral(FIXTURES_DIR "/TONE_100A01.EA7D504A.611740.mxf");
-	const auto expected = mxfEvidence(readMxf(sample));
+	const auto expected = readHeaderIdentity(sample);
+	QVERIFY(!expected.fileMobId.isEmpty());
 	const QString path = f.root + "/protected.mxf";
 	QVERIFY(QFile::copy(sample, path));
 	QString error;
@@ -2494,12 +2360,8 @@ void TestFileOperations::mxf_parser_borrows_protected_handle()
 	const auto before = file->stamp();
 	const int descriptor = file->io().handle();
 	QVERIFY(file->io().seek(128));
-	const auto parsed = readMxf(file->io(), path);
-	QCOMPARE(parsed.outcome, MediaEngine::ParsedSource::Outcome::Complete);
-	const auto actual = mxfEvidence(parsed);
-	QCOMPARE(actual.selected(MediaProperty::FileMobId).value, expected.selected(MediaProperty::FileMobId).value);
-	QCOMPARE(actual.selected(MediaProperty::MasterMobId).value, expected.selected(MediaProperty::MasterMobId).value);
-	QVERIFY(!parsed.objects.isEmpty());
+	QVERIFY(Bella::mxfIdentityMatches(file->io(), expected.fileMobId, expected.masterMobIds));
+	QCOMPARE(file->io().pos(), qint64(128));
 	QVERIFY(file->io().isOpen());
 	QCOMPARE(file->io().handle(), descriptor);
 	QVERIFY(file->stillAt(path, before));
@@ -2509,9 +2371,7 @@ void TestFileOperations::mxf_parser_borrows_protected_handle()
 	QVERIFY(!writer.open(QIODevice::ReadWrite));
 #endif
 	QFile closed;
-	const auto unavailable = readMxf(closed, path);
-	QCOMPARE(unavailable.outcome, MediaEngine::ParsedSource::Outcome::IoError);
-	QVERIFY(unavailable.objects.isEmpty());
+	QVERIFY(!Bella::mxfIdentityMatches(closed, expected.fileMobId, expected.masterMobIds));
 }
 void TestFileOperations::journal_volume_paths_survive_two_resolutions()
 {
@@ -2866,10 +2726,15 @@ void TestFileOperations::bella_rebalance_live_checks_and_recovery()
 	auto entry = operationEntryFor(source);
 	if (checkId)
 	{
-		// Prove the live header has the intended ID even on the failure path.
-		const auto liveEvidence = mxfEvidence(readMxf(source));
-		QCOMPARE(liveEvidence.selected(MediaProperty::FileMobId).value.toString(),
-				 MobId::format(liveId));
+		// This identity-only header deliberately has no technical descriptor.
+		// Validate its authored ID through the borrowed-file safety entry point.
+		QFile liveSource(source);
+		QVERIFY(liveSource.open(QIODevice::ReadOnly));
+		QVERIFY(Bella::mxfIdentityMatches(liveSource, MobId::format(liveId), {}));
+		auto wrongId = liveId;
+		wrongId[31] = char(quint8(wrongId[31]) ^ 1u);
+		QVERIFY(!Bella::mxfIdentityMatches(liveSource, MobId::format(wrongId), {}));
+		liveSource.close();
 		const auto id = Bella::normalizeMobId(expectedId, Bella::MobIdLayout::Aaf32,
 											  Bella::ByteOrder::BigEndian);
 		QVERIFY(std::holds_alternative<Bella::MobId>(id));
@@ -2976,7 +2841,7 @@ void TestFileOperations::invalid_mxf_claims_are_refused_by_adapter()
 			("mob" + name.toUpper()).toUtf8(), QCryptographicHash::Sha256));
 		file.sizeBytes = 1000;
 		put(file.mediaFilePath, QByteArray(int(file.sizeBytes), '\0'));
-		file.operationScanReceipt = makeOpScanReceipt(MediaEvidence{}, file.scanStamp, ScanRowLookup{});
+		file.operationScanReceipt = OpScanReceipt{};
 		files.append(file);
 	}
 	QVERIFY(QDir().mkpath(root + "/2"));
@@ -3014,12 +2879,12 @@ void TestFileOperations::rebalance_refuses_different_file_from_same_master()
 	// Keeping only the master claim would let the wrong track pass validation.
 	const QString first = QStringLiteral(FIXTURES_DIR "/avid_headers/A01.E683CD73_FF4BEFF4BE934A.mxf");
 	const QString second = QStringLiteral(FIXTURES_DIR "/avid_headers/A02.E683CD74_FF4BEFF4BE93AA.mxf");
-	const auto firstHeader = mxfEvidence(readMxf(first));
-	const auto secondHeader = mxfEvidence(readMxf(second));
-	const QString firstFileId = firstHeader.selected(MediaProperty::FileMobId).value.toString();
-	const QString secondFileId = secondHeader.selected(MediaProperty::FileMobId).value.toString();
-	const QString firstMaster = firstHeader.selected(MediaProperty::MasterMobId).value.toString();
-	const QString secondMaster = secondHeader.selected(MediaProperty::MasterMobId).value.toString();
+	const auto firstHeader = readHeaderIdentity(first);
+	const auto secondHeader = readHeaderIdentity(second);
+	const QString firstFileId = firstHeader.fileMobId;
+	const QString secondFileId = secondHeader.fileMobId;
+	const QString firstMaster = firstHeader.masterMobIds.value(0);
+	const QString secondMaster = secondHeader.masterMobIds.value(0);
 	QVERIFY(!firstMaster.isEmpty());
 	QVERIFY(!secondMaster.isEmpty());
 	QVERIFY(!firstFileId.isEmpty());
@@ -3038,7 +2903,7 @@ void TestFileOperations::rebalance_refuses_different_file_from_same_master()
 	home.fileMobId = firstFileId;
 	put(home.mediaFilePath, get(first));
 	home.sizeBytes = QFileInfo(home.mediaFilePath).size();
-	home.operationScanReceipt = makeOpScanReceipt(firstHeader, home.scanStamp, ScanRowLookup{});
+	home.operationScanReceipt = OpScanReceipt{firstHeader, {}};
 	MediaFile moved = home;
 	moved.mediaFilePath = root + "/2/track.mxf";
 	moved.mediaFolderName = "2";

@@ -10,7 +10,7 @@ Research date: 20 October 2026. The user approved the separate
 [Type rules](type.md): selected-master usage 1 is Precompute, 7 is Media and
 unknown/unreadable Type is displayed/exported blank. **The user approved these
 Precompute Category rules on 20 October 2026, including blank unreadable values.
-They are not yet implemented.** OldScanner remains active and Bin Filter is
+They are not yet implemented.** previous scanner remains active and Bin Filter is
 unchanged.
 
 ## Meaning and owner
@@ -127,7 +127,7 @@ rows, including both picture and sound media for renders.
 The audit verified 1,037,588 relevant retained property rows against actual
 MDB ranges. It uses retained, hashed Bento indexes and independent owner/input
 logic. It is not a newly independent entire TOC
-decoder and does not use OldScanner classification or physical media headers
+decoder and does not use previous scanner classification or physical media headers
 as an oracle. These clean current inputs do not exercise damaged category
 records, unsupported layouts or absent-master recovery.
 
@@ -140,7 +140,7 @@ remain outside the repository.
 
 The current [pure classifier](../../../src/precompute.h) already expresses the
 verified decision in a small C++17 function. The
-[MDB adapter](../../../src/oldscanner/mediaengine/mdbprojection.cpp)
+MDB adapter (removed source)
 establishes attribute presence and, only when present, direct video-track count.
 It additionally requires complete references and preserves Type when the
 subcategory is unavailable. Some completeness checks are broader than this
@@ -150,7 +150,7 @@ building a lasting graph of unrelated properties.
 Current `precomputeCategoryDisplay()` shows Rendered Effects, Titles and Matte
 Keys or lowercase `unknown` for precomputes; ordinary Media is blank. The
 optional precompute feature gate controls the detail columns and controls.
-When that feature is enabled, OldScanner can request a media-header read for
+When that feature is enabled, previous scanner can request a media-header read for
 missing category. This describes the existing implementation, not a Bella
 extra-read requirement. Source precedence and header scheduling are later
 decisions.
@@ -172,7 +172,7 @@ For Bella, the user agreed:
 4. Generate the two labels at display/export. Use blank for unavailable
    category and for ordinary Media; an unavailable category must preserve the
    independently established Precompute Type. Blank unavailable category
-   changes OldScanner's current lowercase `unknown`, as approved.
+   changes previous scanner's current lowercase `unknown`, as approved.
    Preserve an explicit Unknown value for the optional category filter. A blank
    table cell must not turn an unknown-category choice into a wildcard; current
    filter paths use empty strings to mean all descendants. Filter presentation

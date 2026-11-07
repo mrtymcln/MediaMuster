@@ -7,7 +7,7 @@ Research date: 19 October 2026. Project text decoding is already approved in the
 [text review](text-encoding.md). The user also approved the owner, key,
 blank-value and immediate-source fallback rules here on **19 October 2026**.
 This is requirements research; no Bella
-parser, OldScanner, Bin Filter or media files were changed.
+parser, previous scanner, Bin Filter or media files were changed.
 
 ## What Project describes
 
@@ -100,7 +100,7 @@ An independent read-only probe compared Project on correctly qualified file,
 master and immediate-source objects against the sibling PMR's stored Project.
 It reused the prior raw MDB value indexes from hash-matched databases, followed
 actual object/component references and compared complete normalized identities.
-It did not use OldScanner's projected Project as its answer.
+It did not use previous scanner's projected Project as its answer.
 
 | MDB folder | Files | Usable file-owned Project | File Project absent | Usable immediate-source Project | Source Project differs from usable file Project |
 | --- | ---: | ---: | ---: | ---: | ---: |

@@ -90,6 +90,7 @@ find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Widgets Core Gui Concurrent)
 add_library(mediamuster_bella STATIC
     src/bella/mobid.cpp
     src/bella/mobid.h
+    src/bella/identitycheck_p.h
     src/bella/timing.cpp
     src/bella/timing.h
     src/bella/naming.cpp
@@ -118,10 +119,10 @@ add_library(mediamuster_bella STATIC
     src/bella/audioreader_p.cpp
     src/bella/audioreader_p.h
     # Selected naming boundary: compile the unchanged lookups separately here.
-    # Existing OldScanner, app and test compilation owners remain in place.
-    src/oldscanner/mediaengine/compressionnames_p.cpp
-    src/oldscanner/mediaengine/compressionnames_p.h
-    src/oldscanner/mediaengine/dnxnames_p.h
+    # Scanner and operation verification share the same lookup implementation.
+    src/mediaengine/compressionnames_p.cpp
+    src/mediaengine/compressionnames_p.h
+    src/mediaengine/dnxnames_p.h
     src/effectcatalogue.cpp
     src/effectcatalogue.h
 )
@@ -129,69 +130,17 @@ set_target_properties(mediamuster_bella PROPERTIES AUTOMOC OFF)
 target_include_directories(mediamuster_bella PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(mediamuster_bella PUBLIC Qt6::Core)
 
-# Retain OldScanner readers for live operation checks and the legacy scan tests/probe.
-# Keep MDB and OMF implementations separate for isolated reader tests.
-set(OLDSCANNER_MDB_SOURCES
-    src/oldscanner/mediaengine/mdbreader.cpp
-    src/oldscanner/mediaengine/mdbbentoreader_p.cpp
-    src/oldscanner/mediaengine/mdbobjects_p.cpp
-    src/oldscanner/mediaengine/mdbaudiosummary_p.cpp
-    src/oldscanner/mediaengine/mdbprojection.cpp
-)
-set(OLDSCANNER_OMF_SOURCES
-    src/oldscanner/mediaengine/omfreader.cpp
-    src/oldscanner/mediaengine/omfbentoreader_p.cpp
-    src/oldscanner/mediaengine/omfobjects_p.cpp
-    src/oldscanner/mediaengine/audioreader_p.cpp
-    src/oldscanner/mediaengine/omfprojection.cpp
-)
-
-add_library(mediamuster_oldscanner_core STATIC
-    src/oldscanner/mediaengine/discoveryengine.cpp
-    src/oldscanner/mediaengine/pmrreader.cpp
-    ${OLDSCANNER_MDB_SOURCES}
-    ${OLDSCANNER_OMF_SOURCES}
-    src/oldscanner/mediaengine/mxfreader.cpp
-    src/oldscanner/mediaengine/mxfobjects_p.cpp
+# Bin Filter keeps its existing AVB reader and reference resolver.
+add_library(mediamuster_binreader STATIC
     src/mediaengine/avbreader.cpp
     src/mediaengine/avbobjects_p.cpp
     src/mediaengine/avbcomponents_p.cpp
     src/mediaengine/avbdescriptors_p.cpp
     src/mediaengine/avbreferences.cpp
-    src/oldscanner/mediaengine/projection.cpp
-    src/oldscanner/mediaengine/compressionnames_p.cpp
-    src/oldscanner/mediaengine/metadataselectionpolicy.cpp
-    src/oldscanner/mediaengine/metadataselectionpolicy.h
-    src/mediaengine/sourcestorage_p.h
-    src/oldscanner/mediaengine/databaseimage.cpp
-    src/oldscanner/mediaengine/databaseimage.h
-    src/oldscanner/mediaengine/databasesource.cpp
-    src/oldscanner/mediaengine/databasesource.h
-    src/oldscanner/mediaengine/mxfsource.cpp
-    src/oldscanner/mediaengine/mxfsource.h
-    src/oldscanner/mediaengine/sourcepreparation.h
-    src/oldscanner/mediaengine/pmrprojection.cpp
-    src/oldscanner/mediaengine/mxfprojection.cpp
-    src/oldscanner/mediaengine/picturegeometry_p.h
-    src/oldscanner/mediaengine/scancoordinator.cpp
-    src/effectcatalogue.cpp
-    src/mediametadatastatus.cpp
-    src/diagnostics.cpp
-    src/volumeidentity.cpp
-    src/nativefile.cpp
 )
-set_target_properties(mediamuster_oldscanner_core PROPERTIES AUTOMOC OFF)
-target_include_directories(mediamuster_oldscanner_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
-target_link_libraries(mediamuster_oldscanner_core PUBLIC Qt6::Core)
-
-# Public scan entry point; preparation and coordination share the core library.
-add_library(mediamuster_oldscanner STATIC
-    src/oldscanner/mediaengine/scanengine.cpp
-    src/oldscanner/mediaengine/scanengine.h
-)
-set_target_properties(mediamuster_oldscanner PROPERTIES AUTOMOC OFF)
-target_include_directories(mediamuster_oldscanner PUBLIC ${CMAKE_SOURCE_DIR}/src)
-target_link_libraries(mediamuster_oldscanner PUBLIC mediamuster_oldscanner_core Qt6::Core)
+set_target_properties(mediamuster_binreader PROPERTIES AUTOMOC OFF)
+target_include_directories(mediamuster_binreader PUBLIC ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(mediamuster_binreader PUBLIC Qt6::Core)
 
 message(STATUS "Using Qt6 ${Qt6_VERSION}")
 
@@ -217,8 +166,6 @@ set(SOURCES
     src/revealinfinder.cpp
     src/volumelistwidget.cpp
     src/volumemanager.cpp
-    src/oldscanner/oldscanner.cpp
-    src/oldscanner/mediaengineadapter.cpp
     src/effectcatalogue.cpp
     src/mediacsv.cpp
     src/volumeidentity.cpp
@@ -228,6 +175,7 @@ set(SOURCES
     src/opjournal.cpp
     src/opcopier.cpp
     src/oprunner.cpp
+    src/filecheck.cpp
     src/operationplan.cpp
     src/opscanreceipt.cpp
     src/opmanager.cpp
@@ -295,25 +243,20 @@ target_include_directories(MediaMuster PRIVATE
 )
 
 target_link_libraries(MediaMuster PRIVATE
-    mediamuster_oldscanner
+    mediamuster_bella
+    mediamuster_binreader
     Qt6::Widgets
     Qt6::Core
     Qt6::Gui
     Qt6::Concurrent
 )
 
-set(MEDIAMUSTER_USE_BELLA OFF)
-if(APPLE OR WIN32)
-    set(MEDIAMUSTER_USE_BELLA ON)
-    set(_bella_app_sources
-        ${CMAKE_SOURCE_DIR}/src/bellaappscanner.cpp
-        ${CMAKE_SOURCE_DIR}/src/bellaoperationhandoff.cpp
-        ${CMAKE_SOURCE_DIR}/src/bellarowpresentation.cpp
-    )
-    target_sources(MediaMuster PRIVATE ${_bella_app_sources})
-    target_compile_definitions(MediaMuster PRIVATE MEDIAMUSTER_USE_BELLA)
-    target_link_libraries(MediaMuster PRIVATE mediamuster_bella)
-endif()
+set(_bella_app_sources
+    ${CMAKE_SOURCE_DIR}/src/bellaappscanner.cpp
+    ${CMAKE_SOURCE_DIR}/src/bellaoperationhandoff.cpp
+    ${CMAKE_SOURCE_DIR}/src/bellarowpresentation.cpp
+)
+target_sources(MediaMuster PRIVATE ${_bella_app_sources})
 if(MEDIAMUSTER_BELLA_PREVIEW)
     target_compile_definitions(MediaMuster PRIVATE MEDIAMUSTER_BELLA_PREVIEW)
     set_target_properties(MediaMuster PROPERTIES OUTPUT_NAME "${MEDIAMUSTER_BELLA_PREVIEW_NAME}")

@@ -11,7 +11,7 @@ Research date: 20 October 2026. The user approved the separate
 values, and asked to preserve current Effect Category behaviour while reviewing
 simpler implementation choices. **The user subsequently agreed to preserving
 current behaviour with the simpler Bella integration on 20 October 2026.
-No Bella runtime code is implemented.** OldScanner stays active and Bin Filter
+No Bella runtime code is implemented.** previous scanner stays active and Bin Filter
 is unchanged. Effect has its own agreed display review. The user subsequently
 [excluded Effect Sequence](effect-sequence-exclusion.md) from Bella's columns
 and stored data on 20 October 2026.
@@ -195,12 +195,12 @@ Preserve the existing rules:
   consistent with the current labels. Effect-name recognition remains
   independent of master Type and the parent Precompute Category.
 
-The [existing projection](../../../src/oldscanner/mediaengine/projection.cpp)
+The existing projection (removed source)
 already calls the resolver once per derived-metadata pass for all three outputs.
 It then creates three derived observations with copied source context and
 reconciles them through the general evidence machinery. The single shared
 index and combined lookup are existing strengths, not new Bella improvements.
-OldScanner also does not request a header merely because this derived label is
+previous scanner also does not request a header merely because this derived label is
 unknown; other retained fields can independently require reading.
 
 ## Agreed Bella integration
@@ -213,9 +213,9 @@ result for physical rows sharing that selected master/name during processing.
 If later source selection changes the name or Type, derive from the new final
 inputs rather than retaining stale name-derived labels.
 
-The reusable catalogue files are outside OldScanner and depend on Qt Core,
+The reusable catalogue files are outside previous scanner and depend on Qt Core,
 not the old MDB parser. Bella can use them with the new reader's selected
-values without retaining the old scanner architecture. This field uses the
+values without retaining the previous scan architecture. This field uses the
 final selected name; it does not settle the later cross-source priority review.
 
 The selected name and Type supply the input context; no additional MDB graph

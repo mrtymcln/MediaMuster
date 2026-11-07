@@ -53,7 +53,7 @@ rows must not acquire working scan/evidence owners. Loaded bins keep resolved
 file references and warnings; parsed graphs stay local to loading. Make performance claims
 only when supported by measurements.
 
-In the retained OldScanner pipeline, keep master-owned details grouped in
+In the retained previous scanner pipeline, keep master-owned details grouped in
 temporary `Projection.masters` records until
 the associated MasterMobId is selected. A group's canonical identity identifies
 that object; it must not create a new file-to-master association. Use
@@ -162,9 +162,9 @@ CMake. Preserve the small Objective-C++ Mac Trash bridge. GitHub YAML and native
 resource/metadata formats retain their platform roles; avoid adding shell or
 PowerShell recipes around CMake commands.
 
-The retained scanner/parser belongs under `src/oldscanner/`. Its QObject facade
-is `OldScanner`; its existing media readers, projections, source preparation and
-coordination remain in namespace `MediaEngine` under `src/oldscanner/mediaengine/`.
+The retained scanner/parser belongs under `removed source previous scanner`. Its QObject facade
+is `previous scanner`; its existing media readers, projections, source preparation and
+coordination remain in namespace `MediaEngine` under `removed source mediaengine`.
 Bin Filter's existing AVB implementation and shared reading types remain under
 `src/mediaengine/`. UI, application value types and the file-operation engine
 remain under `src/`. Preserve the existing reader interfaces used for live
@@ -176,7 +176,7 @@ discovery and organiser in `mediamuster_bella`; focused component tests link Bel
 and Qt. `BellaAppScanner` supplies the app boundary, row preparation and responsive
 cleanup. The optional `MEDIAMUSTER_BELLA_PREVIEW` build limits the app to scanning
 and export; it is separate from selecting Bella as the normal scanner.
-OldScanner remains for legacy scan tests/probes, shared location admission and
+previous scanner remains for legacy scan tests/probes, shared location admission and
 the existing readers used by operation checks; AVB/Bin Filter remains independent.
 Bring new implementation choices to the user before dependent work when the Bella
 decision record requires it. See the [Bella requirements](../Project%20Bella/README.md)

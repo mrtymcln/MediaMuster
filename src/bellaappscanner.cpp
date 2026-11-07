@@ -2,15 +2,19 @@
 
 #include "bella/bellascanner.h"
 #include "bellarowpresentation.h"
+#include "app_avidmedialayout.h"
 #include "conventions.h"
 #include "diagnostics.h"
 
 #include <QElapsedTimer>
+#include <QDir>
 #include <QFileInfo>
 #include <QHash>
+#include <QStorageInfo>
 #include <QThread>
 #include <QTimer>
 #include <exception>
+#include <filesystem>
 #include <new>
 #include <utility>
 
@@ -30,18 +34,38 @@ namespace
 		QString failure;
 	};
 
-	Bella::ScanLocation::Kind bellaKind(OldScanner::Location::Kind kind)
+	QString scannerFolderKey(const QString &path)
 	{
-		switch (kind)
+		const QFileInfo info(path);
+		const QString canonical = info.canonicalFilePath();
+		return QDir::cleanPath(canonical.isEmpty() ? info.absoluteFilePath() : canonical);
+	}
+
+	QString childDirectory(const QString &parent, QLatin1String name)
+	{
+		const QDir dir(parent);
+		const QString expected = dir.filePath(name);
+		if (QFileInfo(expected).isDir())
+			return expected;
+		std::error_code error;
+		std::filesystem::directory_iterator current(dir.filesystemPath(), error), end;
+		while (!error && current != end)
 		{
-		case OldScanner::Location::Kind::MediaBase:
-			return Bella::ScanLocation::Kind::MediaBase;
-		case OldScanner::Location::Kind::RequiredMediaBase:
-			return Bella::ScanLocation::Kind::RequiredMediaBase;
-		case OldScanner::Location::Kind::MediaTree:
-			return Bella::ScanLocation::Kind::MediaTree;
+			const QFileInfo child(current->path());
+			if (child.fileName().compare(name, Qt::CaseInsensitive) == 0)
+			{
+				std::error_code statusError;
+				if (current->is_directory(statusError))
+					return child.absoluteFilePath();
+			}
+			current.increment(error);
 		}
-		Q_UNREACHABLE();
+		return {};
+	}
+
+	bool isAvidTree(const QString &path)
+	{
+		return QFileInfo(path).fileName().compare(Conventions::kAvidMediaFilesDir, Qt::CaseInsensitive) == 0;
 	}
 
 	QString stageName(Bella::ScanStage stage)
@@ -218,12 +242,46 @@ BellaAppScanner::~BellaAppScanner()
 
 std::optional<BellaAppScanner::Location> BellaAppScanner::addedLocation(const QString &path)
 {
-	return OldScanner::addedLocation(path);
+	if (path.isEmpty())
+		return std::nullopt;
+	const QFileInfo requested(path);
+	if (!requested.isDir() || !requested.isReadable())
+		return std::nullopt;
+	const QString folder = scannerFolderKey(path);
+	if (AvidMediaLayout::isInsideUmeRoot(path) || AvidMediaLayout::isInsideUmeRoot(folder))
+		return std::nullopt;
+	const auto hasMxfTree = [](const QString &tree)
+	{
+		const QString root = childDirectory(tree, Conventions::kMxfDir);
+		return !root.isEmpty() && AvidMediaLayout::isMxfRoot(scannerFolderKey(root));
+	};
+	if ((isAvidTree(folder) && hasMxfTree(folder)) || AvidMediaLayout::isOmfRoot(folder))
+		return Location{Location::Kind::MediaTree, folder};
+	const QStorageInfo storage(folder);
+	if (!storage.isValid() || !storage.isReady() || storage.rootPath().isEmpty())
+		return std::nullopt;
+	const QString volumeRoot = scannerFolderKey(storage.rootPath());
+#ifdef Q_OS_WIN
+	if (volumeRoot.compare(folder, Qt::CaseInsensitive) != 0)
+#else
+	if (volumeRoot != folder)
+#endif
+		return std::nullopt;
+	const QString avid = childDirectory(folder, Conventions::kAvidMediaFilesDir);
+	const QString omf = childDirectory(folder, Conventions::kOmfMediaFilesDir);
+	if ((!avid.isEmpty() && hasMxfTree(avid)) ||
+		(!omf.isEmpty() && AvidMediaLayout::isOmfRoot(scannerFolderKey(omf))))
+		return Location{Location::Kind::RequiredMediaBase, folder};
+	return std::nullopt;
 }
 
 BellaAppScanner::Location BellaAppScanner::rescanLocation(const QString &path)
 {
-	return OldScanner::rescanLocation(path);
+	QString folder = path.isEmpty() ? QString{} : QDir::cleanPath(QDir::fromNativeSeparators(path));
+	if (AvidMediaLayout::isMxfRoot(folder))
+		folder = QFileInfo(folder).absolutePath();
+	const bool tree = isAvidTree(folder) || AvidMediaLayout::isOmfRoot(folder);
+	return {tree ? Location::Kind::MediaTree : Location::Kind::RequiredMediaBase, folder};
 }
 
 void BellaAppScanner::startScan(const Options &options)
@@ -238,9 +296,7 @@ void BellaAppScanner::startScan(const Options &options)
 		Bella::ScanRequest request;
 		request.includeOmf = options.includeOmf;
 		request.includePrecomputeDetails = options.includePrecomputeDetails;
-		request.locations.reserve(options.locations.size());
-		for (const auto &location : options.locations)
-			request.locations.append({bellaKind(location.kind), location.path});
+		request.locations = options.locations;
 
 		const auto run = std::make_shared<Run>();
 		thread.reset(QThread::create([run, owner, request = std::move(request)]

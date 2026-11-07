@@ -14,7 +14,6 @@
 namespace
 {
 	using Col = MediaTableModel::Column;
-	constexpr auto preview = MediaPresentation::Bella;
 
 	Bella::ScanEntry named(const QString &name)
 	{
@@ -50,33 +49,26 @@ private slots:
 
 void TestBellaPresentation::schema_data()
 {
-	QTest::addColumn<bool>("bella");
 	QTest::addColumn<bool>("details");
-	QTest::newRow("legacy core") << false << false;
-	QTest::newRow("legacy details") << false << true;
-	QTest::newRow("Bella core") << true << false;
-	QTest::newRow("Bella details") << true << true;
+	QTest::newRow("core") << false;
+	QTest::newRow("details") << true;
 }
 
 void TestBellaPresentation::schema()
 {
-	QFETCH(bool, bella);
 	QFETCH(bool, details);
-	const auto presentation = bella ? preview : MediaPresentation::OldScanner;
-	MediaTableModel model(nullptr, presentation);
+	MediaTableModel model;
 	model.setMediaFiles({MediaFile{}});
 	model.setOmfScanEnabled(true);
 	const QPersistentModelIndex physicalPath(model.index(0, model.columnIndex(Col::Location)));
 	const QPersistentModelIndex omf(model.index(0, model.omfScanColumn()));
 	model.setPrecomputesEnabled(details);
-	QCOMPARE(model.columnCount(), (bella ? 21 : 22) + (details ? bella ? 3 : 4 : 0));
+	QCOMPARE(model.columnCount(), 21 + (details ? 3 : 0));
 	QCOMPARE(physicalPath.column(), model.columnIndex(Col::Location));
 	QCOMPARE(omf.column(), model.omfScanColumn());
 	QCOMPARE(model.headerData(omf.column(), Qt::Horizontal, Qt::DisplayRole).toString(), QStringLiteral("OmfScan"));
 	QCOMPARE(model.headerData(physicalPath.column(), Qt::Horizontal, Qt::DisplayRole).toString(),
-			 bella ? QStringLiteral("File Path") : QStringLiteral("Location"));
-	QCOMPARE(model.columnIndex(Col::SourcePath) < 0, bella);
-	QCOMPARE(model.columnIndex(Col::EffectSequence) < 0, bella);
+			 QStringLiteral("File Path"));
 	for (int i = 0; i < model.omfScanColumn(); ++i)
 		QCOMPARE(model.columnIndex(model.columnAt(i)), i);
 
@@ -84,13 +76,11 @@ void TestBellaPresentation::schema()
 	if (details)
 	{
 		expected += QStringLiteral("Precompute Category,Effect Category,Effect,");
-		if (!bella)
-			expected += QStringLiteral("Effect Sequence,");
 	}
 	expected += QStringLiteral("Date Created,Filename,");
-	expected += bella ? QStringLiteral("File Path,") : QStringLiteral("Source Path,Location,");
+	expected += QStringLiteral("File Path,");
 	expected += QStringLiteral("No Database,No Reference,FileMobId,MasterMobId,KelpieId,OmfScan\n");
-	const MediaCsv::Options options{details, presentation};
+	const MediaCsv::Options options{details};
 	QCOMPARE(MediaCsv::headerLine(options), expected);
 	QCOMPARE(MediaCsv::rowLine(model.fileAt(0), options).count(QLatin1Char(',')), expected.count(QLatin1Char(',')));
 }
@@ -145,7 +135,7 @@ void TestBellaPresentation::rendersAndExportsOneRow()
 	QCOMPARE(row.bellaValues->frameRateValue->denominator, quint64(1001));
 	QCOMPARE(row.bellaValues->timing.duration->count, qint64(0));
 
-	MediaTableModel model(nullptr, preview);
+	MediaTableModel model;
 	model.setPrecomputesEnabled(true);
 	model.setMediaFiles({row});
 	QCOMPARE(cell(model, 0, Col::Location), entry.path);
@@ -158,7 +148,7 @@ void TestBellaPresentation::rendersAndExportsOneRow()
 	QVERIFY(cell(model, 0, Col::SizeMB).isEmpty());
 	QVERIFY(cell(model, 0, Col::PrecomputeCategory).isEmpty());
 
-	const MediaCsv::Options options{true, preview};
+	const MediaCsv::Options options{true};
 	const auto line = MediaCsv::rowLine(row, options);
 	const auto headers = MediaCsv::headerLine(options).chopped(1).split(QLatin1Char(','));
 	const auto fields = line.chopped(1).split(QLatin1Char(','));
@@ -191,7 +181,7 @@ void TestBellaPresentation::durationZeroBlankAndSort()
 	longVideo.match.metadata.timing.duration->count = 100 * 3600 * 25;
 	const auto rounded = bellaMediaFile(audio);
 	QCOMPARE(rounded.bellaValues->timing.duration->count, qint64(1));
-	MediaTableModel model(nullptr, preview);
+	MediaTableModel model;
 	model.setMediaFiles({bellaMediaFile(longVideo), bellaMediaFile(video), rounded, bellaMediaFile(unclocked)});
 	QCOMPARE(cell(model, 0, Col::Duration), QStringLiteral("100:00:00:00"));
 	QCOMPARE(cell(model, 1, Col::Duration), QStringLiteral("00:00:00:00"));
@@ -215,7 +205,7 @@ void TestBellaPresentation::ratesSortExactly()
 	auto avid = literal;
 	avid.match.metadata.clipName = QStringLiteral("Avid alias");
 	avid.match.metadata.frameRate->meaning = Bella::MatchRateMeaning::AvidExactEditRate;
-	MediaTableModel model(nullptr, preview);
+	MediaTableModel model;
 	model.setMediaFiles({bellaMediaFile(avid), bellaMediaFile(literal)});
 	QCOMPARE(cell(model, 0, Col::FrameRate), QStringLiteral("29.97"));
 	QCOMPARE(cell(model, 1, Col::FrameRate), QStringLiteral("29.97"));
@@ -252,11 +242,11 @@ void TestBellaPresentation::fixedPointDepthRendersExportsAndSorts()
 	auto fixed10 = named(QStringLiteral("fixed10.mxf"));
 	fixed10.match.metadata.bitDepth = {std::nullopt, 16, Depth::Fixed10_6};
 
-	MediaTableModel model(nullptr, preview);
+	MediaTableModel model;
 	model.setMediaFiles({bellaMediaFile(fixed12), bellaMediaFile(fixed10)});
 	const std::array formats{Depth::Fixed12_4, Depth::Fixed10_6};
 	const QStringList labels{QStringLiteral("12-bit"), QStringLiteral("10-bit")};
-	const MediaCsv::Options options{false, preview};
+	const MediaCsv::Options options{false};
 	const auto headers = MediaCsv::headerLine(options).chopped(1).split(QLatin1Char(','));
 	const auto csvColumn = headers.indexOf(QStringLiteral("Bit Depth"));
 	QVERIFY(csvColumn >= 0);
@@ -289,13 +279,11 @@ void TestBellaPresentation::filtersKeepFullIdentityAndExplicitUnknown()
 		QByteArray::fromHex("060a2b340101010501010f10130000001122334455667788060e2b347f7f2a80"),
 		Bella::MobIdLayout::Aaf32, Bella::ByteOrder::LittleEndian));
 	auto unknown = bellaMediaFile(entry);
-	unknown.sourceFilePath = QStringLiteral("retired-source-text");
-	unknown.effectSequence = QStringLiteral("retired-sequence-text");
 	entry = named(QStringLiteral("Two.mxf"));
 	entry.match.metadata.type = Bella::MatchType::Precompute;
 	entry.match.metadata.precomputeCategory = Bella::MatchPrecomputeCategory::RenderedEffects;
 	const auto rendered = bellaMediaFile(entry);
-	MediaTableModel model(nullptr, preview);
+	MediaTableModel model;
 	model.setPrecomputesEnabled(true);
 	model.setMediaFiles({unknown, rendered});
 	MediaFilterProxy proxy;
@@ -307,10 +295,6 @@ void TestBellaPresentation::filtersKeepFullIdentityAndExplicitUnknown()
 	QCOMPARE(proxy.rowCount(), 1);
 	QCOMPARE(firstClip(proxy, model), QStringLiteral("One.mxf"));
 	proxy.setPrecomputeTreeFilter({});
-	proxy.setSearchText(QStringLiteral("retired-source-text"));
-	QCOMPARE(proxy.rowCount(), 0);
-	proxy.setSearchText(QStringLiteral("retired-sequence-text"));
-	QCOMPARE(proxy.rowCount(), 0);
 	proxy.setSearchText(QStringLiteral("One.mxf"));
 	QCOMPARE(proxy.rowCount(), 1);
 	proxy.setSearchText({});

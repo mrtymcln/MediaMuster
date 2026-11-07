@@ -7,7 +7,7 @@ Research date: 22 October 2026. The user approved MXF
 [Precompute Category](precompute-category.md) separately. **The user approved
 these MXF Effect Category rules on 22 October 2026; they remain unimplemented.**
 The [MDB Effect Category contract](../2026-10-18-bella-mdb/effect-category.md)
-and its simpler shared lookup are already agreed. OldScanner remains active;
+and its simpler shared lookup are already agreed. previous scanner remains active;
 Bin Filter is unchanged.
 
 Effect Category is the effect group, such as Image, Blend, Key,
@@ -97,7 +97,7 @@ identifier or plug-in variant. A recognised name does not establish Type or
 Precompute Category.
 
 Current unknown/absent derived category alone does not require a header read.
-OldScanner has a generic unresolved derived-label conflict branch that can
+previous scanner has a generic unresolved derived-label conflict branch that can
 request a header. Bella's simpler final-name derivation does not need another
 source read solely for this label; general priority/opening decisions remain
 separate.
@@ -128,7 +128,7 @@ separate.
    still serve Effect/Category extraction. No additional header opening or
    import-settings retention is introduced solely for this field.
 
-The current resolver is already compact and independent of OldScanner's parsers.
+The current resolver is already compact and independent of previous scanner's parsers.
 The useful Bella change is a small adapter around its selected inputs, using
 C++17 value returns and Qt 6.5.3 QString/shared lookup facilities. No performance
 gain is measured by this source review.

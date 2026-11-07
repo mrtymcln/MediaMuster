@@ -8,7 +8,7 @@ approval record
 preserves the direct instruction and original research snapshot. The user has
 approved the OMF reading, version/text and FileMobId/MasterMobId rules. This is
 a focused field review for the supported Bento1/legacy-OMF1 media layout, not
-an implementation or app cutover. OldScanner and Bin Filter remain unchanged.
+an implementation or app cutover. previous scanner and Bin Filter remain unchanged.
 
 Use the already selected associated master's stored name. The physical filename,
 file mob name and original source name have different roles. Establish the

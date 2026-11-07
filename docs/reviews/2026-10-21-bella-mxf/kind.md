@@ -33,7 +33,7 @@ These format meanings do not make every class a Bella release-one requirement.
 | --- | --- | --- |
 | Media Composer | Imports the selected source mob's own typed EssenceDescriptor, constructs its native descriptor, and distinguishes sound and picture descriptor families. | Follow physical ownership and explicit class meaning. Recreating its editing object model is unnecessary for Kind. |
 | MDVx | Its bundled MXF library tests picture/sound descriptor classes for technical reads. A separate linked material-track DataDefinition route sets an internal video boolean. The ordinary wrapper does not copy that classification to the table item. | Library capability must be distinguished from visible table behavior. |
-| Current MediaMuster / OldScanner | Uses the file-owned descriptor family, or the presence of registered sound/picture properties, including on an unknown class. | The core owner/family idea is useful; the property-based inference is an additional behavior Bella can omit explicitly. |
+| Current MediaMuster / previous scanner | Uses the file-owned descriptor family, or the presence of registered sound/picture properties, including on an unknown class. | The core owner/family idea is useful; the property-based inference is an additional behavior Bella can omit explicitly. |
 
 ### Media Composer native trace
 
@@ -139,7 +139,7 @@ a genuinely new class deliberately after establishing its semantics.
    a separate DataDefinition vote to fill Kind.
 2. Use the explicit known class mapping. Do not carry over property-presence
    inference for unrecognised classes. A new class can consequently remain
-   `unknown` where OldScanner would infer Audio or Video; this is a deliberate
+   `unknown` where previous scanner would infer Audio or Video; this is a deliberate
    coverage tradeoff, not a claim of identical results for every producer.
 3. Broken ownership or ambiguous/unusable descriptor selection supplies no
    MXF Kind. Damage to an unrelated rate/depth/geometry value need not erase a
@@ -176,4 +176,4 @@ wording is historical where superseded by this approval.
 No runtime implementation, app/private API execution, production test run,
 malformed-input campaign or performance benchmark was performed. Reduced
 inference and compact retention are design choices; no speed or memory gain
-has been measured. OldScanner remains active and Bin Filter is unchanged.
+has been measured. previous scanner remains active and Bin Filter is unchanged.

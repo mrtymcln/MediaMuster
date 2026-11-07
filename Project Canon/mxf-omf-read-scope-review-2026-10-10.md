@@ -248,7 +248,7 @@ RAM representation is therefore a distinct concern from narrowing read scope.
 
 ## Current MediaEngine limitations relevant to this decision
 
-- [MxfReader](../src/oldscanner/mediaengine/mxfreader.cpp) physically visits KLV headings to EOF
+- MxfReader (removed source) physically visits KLV headings to EOF
   and skips recording/index payloads. It retains metadata by partition and keeps
   framing/range observations.
 - Unknown header KLV values and unsupported local-set payloads can be retained
@@ -256,12 +256,12 @@ RAM representation is therefore a distinct concern from narrowing read scope.
   Current MediaEngine therefore does not retain every possible original header byte.
 - Body/System/ANC payloads are not comprehensively interpreted. Walking the
   full physical structure is not equivalent to preserving every metadata stream.
-- [MxfProjection](../src/oldscanner/mediaengine/mxfprojection.cpp) preserves separate partition
+- MxfProjection (removed source) preserves separate partition
   candidates; it does not automatically select closed/latest-generation metadata
   under the general MXF authority rules. No affected local sample is established;
   handling actual open/growing files needs focused qualification before a change.
-- [OmfReader](../src/oldscanner/mediaengine/omfreader.cpp) uses metadata-only Bento reading.
-  [Bento metadata reading](../src/oldscanner/mediaengine/omfbentoreader_p.cpp) skips seven
+- OmfReader (removed source) uses metadata-only Bento reading.
+  Bento metadata reading (removed source) skips seven
   toolkit-identified recording properties, but reads other values, including
   unfamiliar ones. A private DataValue can be large recording data; its generic
   type alone cannot establish that it is small metadata.

@@ -34,7 +34,7 @@ variants. Empty unavailable strings stay empty. They are not four competing
 metadata sources. Effect and Effect Category come from one existing lookup.
 No status enum, reason list, source history, Effect Sequence, instance or
 matched flag is added. The existing helper's `legacyIdentifiersUsed` flag is
-used by OldScanner evidence explanations; no current Bella consumer needs it.
+used by previous scanner evidence explanations; no current Bella consumer needs it.
 
 Approved functions in namespace `Bella`:
 
@@ -63,7 +63,7 @@ master/name inputs under the existing processing-lifetime rule, not a permanent
 cache inside these functions.
 
 **Benefit:** Bella's public types expose only required names and remain
-independent of OldScanner's private helper type. **Cost:** two small result
+independent of previous scanner's private helper type. **Cost:** two small result
 types and mapping the existing strings.
 
 **Alternative:** alias/reuse the existing five-member Compression result,
@@ -106,7 +106,7 @@ remain within these agreed rules; any genuine new choice returns to the user.
 Approved runtime touch points: new Bella naming files/tests and root/test
 CMake registration. The selected separate-compilation boundary is described in
 [SHARING.md](SHARING.md). Existing lookup code/headers/tables, reader reports and
-warning messages remain unchanged. OldScanner remains active; Bin Filter,
+warning messages remain unchanged. previous scanner remains active; Bin Filter,
 MediaFile/table, progress, journal, Unfinished Business and Undo are outside
 this step. No performance improvement is claimed. See [verification](VERIFICATION.md)
 for the focused suites, genuine-file comparison and preserved-source checks.

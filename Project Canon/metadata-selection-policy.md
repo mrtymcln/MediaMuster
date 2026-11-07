@@ -5,7 +5,7 @@
 > refer to the reviewed revision. Removed components are identified as retired.
 
 Status: implemented 8 October 2026. The shared
-[policy table](../src/oldscanner/mediaengine/metadataselectionpolicy.cpp) selects displayed values
+policy table (removed source) selects displayed values
 from retained source observations; scanning and bin enrichment use the same rules.
 MediaEngine-backed rows refresh their semantic values from the final selections.
 Verification results are recorded separately after the coordinated build.
@@ -199,8 +199,8 @@ filter and export results. A selection update does not change KelpieIds or fold 
 
 ## Shared C++17 policy table
 
-The [header](../src/oldscanner/mediaengine/metadataselectionpolicy.h) and
-[implementation](../src/oldscanner/mediaengine/metadataselectionpolicy.cpp) define one
+The header (removed source) and
+implementation (removed source) define one
 developer-controlled constant table. Its 41 explicit rows cover every defined
 `MediaProperty`, including properties kept only in RAM. `MediaProperty::Count`
 sizes the array; compile-time validation requires exactly one row in catalogue
@@ -209,7 +209,7 @@ validation rather than receiving a default rule.
 
 Four illustrative rows are shown below. Read the named source groups from left
 to right; no numeric source positions or preference legend are needed. The linked
-[production table](../src/oldscanner/mediaengine/metadataselectionpolicy.cpp) is the complete
+production table (removed source) is the complete
 41-row definition; this excerpt does not duplicate it:
 
 ```cpp
@@ -287,7 +287,7 @@ bool applyResolvedMetadata(::MediaFile &file);
 
 The policy accessors and resolution functions are in `MediaEngine`;
 `applyResolvedMetadata` is the presentation helper in
-[MediaEngine adapter](../src/oldscanner/mediaengineadapter.h). `MediaEvidence::resolve` accepts a callable
+MediaEngine adapter (removed source). `MediaEvidence::resolve` accepts a callable
 for table-backed ranking, retaining its equivalent-value and unresolved-conflict
 rules. Ownership, association and freshness qualification remain separate from
 ranking. Checked lookup throws `std::out_of_range` for an invalid property enum.

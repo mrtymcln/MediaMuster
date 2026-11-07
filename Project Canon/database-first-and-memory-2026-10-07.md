@@ -24,7 +24,7 @@ were definitions, with 3,352 of its 3,511 object properties belonging to them.
 The expanded structures, decoded values, byte ranges and repeated text explain
 why a small header can occupy several megabytes.
 
-UI rows share the scan receipt; [the adapter](../src/oldscanner/mediaengineadapter.cpp) does not
+UI rows share the scan receipt; the adapter (removed source) does not
 copy the entire scan into each row. Essence payloads are skipped. This evidence
 supports excessive retained graph overhead; it does not establish a memory leak.
 
@@ -36,8 +36,8 @@ file-specific facts rather than merge dictionaries by assumption.
 
 | Change | Isolated result |
 | --- | --- |
-| Release unused vector capacity after parsing in [mxfreader.cpp](../src/oldscanner/mediaengine/mxfreader.cpp) | 1,238,944 bytes of spare property slots removed across the three files; all properties remain. |
-| Assign an explanation directly when its destination is empty in [mxfobjects_p.cpp](../src/oldscanner/mediaengine/mxfobjects_p.cpp) | One sample's repeated explanation text occupies 36,544 character-payload bytes instead of 243,088, with the same 11 distinct values. |
+| Release unused vector capacity after parsing in mxfreader.cpp (removed source) | 1,238,944 bytes of spare property slots removed across the three files; all properties remain. |
+| Assign an explanation directly when its destination is empty in mxfobjects_p.cpp (removed source) | One sample's repeated explanation text occupies 36,544 character-payload bytes instead of 243,088, with the same 11 distinct values. |
 | Share the two literal reference descriptions in that same file | 280 character-payload bytes instead of 142,792, with the same two descriptions. |
 
 Text measurements count each distinct underlying QString storage pointer once.

@@ -36,7 +36,7 @@ Frame Rate and Duration interpretation. No extra file read is needed.
 
 This deliberately corrects four source-specific outputs while preserving the
 naming system. It is an exception to literal preservation of every existing
-output, not a claim that OldScanner already supplies the consistent result.
+output, not a claim that previous scanner already supplies the consistent result.
 
 ## Alpha: keep established knowledge; do not infer uncompressed
 
@@ -81,4 +81,4 @@ are documented in the [Compression review](compression.md).
 
 No runtime source, naming catalogue, duration rule, Bit Depth rule, source
 priority or extra-header-read policy changed. Independent Bella implementation
-remains after requirements review; OldScanner stays active.
+remains after requirements review; previous scanner stays active.

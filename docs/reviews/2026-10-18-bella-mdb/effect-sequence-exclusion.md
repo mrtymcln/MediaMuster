@@ -6,7 +6,7 @@
 Decision date: 20 October 2026. **The user explicitly excluded Effect Sequence:
 no column and no stored sequence information in Bella.** This supersedes its
 earlier inclusion in the optional precompute details. No runtime code changed;
-OldScanner stays active and Bin Filter is unchanged.
+previous scanner stays active and Bin Filter is unchanged.
 
 ## Agreed scope
 
@@ -33,7 +33,7 @@ Effect Sequence is inferred text from an editable Clip Name, rather than proof
 of membership in a sequence. Its current consumers are its table/CSV field,
 sorting and general search. General search already includes Clip Name.
 File operations, Bin Filter and the precompute category/effect filter do not
-depend on the separate sequence value. OldScanner's generic derived-field
+depend on the separate sequence value. previous scanner's generic derived-field
 conflict bookkeeping does not create a Bella retention requirement.
 
 Dropping it reduces stored data and table/export clutter. The gain is modest
@@ -42,7 +42,7 @@ requirements decision, not an implemented change or a benchmark.
 
 Decision evidence
 records the scope and source references. Existing field research/native/data
-receipts remain historical evidence; their descriptions of OldScanner's
+receipts remain historical evidence; their descriptions of previous scanner's
 three-field helper do not override this later exclusion.
 
 ## Next requirements

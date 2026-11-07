@@ -8,7 +8,7 @@ relationships below are established research. The user subsequently approved
 the discussed Duration design: verified maths, correctly linked DF, NDF when
 genuinely missing and blank Duration when required information is damaged.**
 Recorded qualified DF, exact arithmetic, frame-numbered timecode, sample
-preservation, zero/blank and hours beyond 24 are already agreed. OldScanner
+preservation, zero/blank and hours beyond 24 are already agreed. previous scanner
 remains active; this adds no runtime implementation or Bin Filter change.
 
 **Separator revision approved on 22 October 2026:** DF uses `HH;MM;SS;FF` and
@@ -163,10 +163,10 @@ records the user decision and supersedes pending status in historical evidence.
 
 ## Current code and evidence
 
-Current [timecode projection](../../../src/oldscanner/mediaengine/mdbprojection.cpp)
+Current timecode projection (removed source)
 sweeps the recursively linked source graph, accepts whole Flags/Drop values
 only equal to 0/1, and does not qualify FPS or timecode ranges. The
-[row adapter](../../../src/oldscanner/mediaengineadapter.cpp) converts an
+row adapter (removed source) converts an
 unavailable flag to false. Its existing association and DF arithmetic tests
 provide useful facts, but their incomplete ownership/clock checks and unavailable
 to false conversion are not Bella requirements.
@@ -185,9 +185,9 @@ same-owner slot rates, as its display clock. The
 [integer conversion](../../../src/mediaduration.h) rounds only the final frame
 count, with positive halves upward. Original audio samples remain unchanged.
 When available, header Duration and DF outrank MDB under the current
-[selection table](../../../src/oldscanner/mediaengine/metadataselectionpolicy.cpp).
+selection table (removed source).
 The two fields are selected separately; display-clock supplementation requires
-an equivalent count/unit-rate pair. These are OldScanner behaviours, not changes
+an equivalent count/unit-rate pair. These are previous scanner behaviours, not changes
 to Bella's agreed source rules.
 
 The definite limitations are:

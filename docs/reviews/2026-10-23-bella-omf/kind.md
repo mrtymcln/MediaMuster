@@ -9,7 +9,7 @@ preserve trusted useful metadata while redesigning reading, intermediate data
 and lifetimes. No runtime code/cutover, Bin Filter change, final source priority
 or extra reason to open a media header.
 
-Kind can keep OldScanner's simple approach: identify the qualified physical
+Kind can keep previous scanner's simple approach: identify the qualified physical
 file's own media descriptor, then translate its known class to Audio or Video.
 The selected Clip Name master may contain multiple tracks; it does not decide
 what kind of physical file this row describes.
@@ -100,7 +100,7 @@ coverage, a new 40-file read, a production parser run or an app/table comparison
    Native WAV/AIFF facts, final source preferences and header-opening rules remain
    separate decisions. No extra header open is approved here.
 
-This preserves a rule OldScanner already handles simply. It is not evidence of
+This preserves a rule previous scanner already handles simply. It is not evidence of
 a Kind-specific speed gain or a newly discovered accuracy improvement. Bella's
 larger acquisition/retention design still needs implementation and measured
 comparisons of required results, scan time and peak memory.

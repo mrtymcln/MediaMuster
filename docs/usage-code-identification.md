@@ -34,7 +34,7 @@ MXF can carry both Avid's private integer and a standard 16-byte AAF/MXF usage i
 
 In `AComposition::AddAttributesToAAFMob` at `0x1881b4`, integer **1, 4 and 6 all branch to the same standard `LowerLevel` identifier**: comparisons at `0x18831c`, `0x18832c` and `0x18838c` converge at `0x188400`, which uses `kAAFUsage_LowerLevel` at `0x10eb358`. Therefore `LowerLevel` alone cannot distinguish a render from a group or motion clip. The private integer is written separately at `0x18848c–0x1884b0`. The import path in `ConvertCompositionFromAAF` reads the private integer first at `0x193768–0x193784`; the inspected fallback branches do not provide a unique `LowerLevel → 1` rule. See `usage-add-aaf-attributes.asm` and `usage-composition-from-aaf.asm`.
 
-The retained OldScanner readers/projectors use the shared definitions in
+The retained previous scanner readers/projectors use the shared definitions in
 `src/avidusage.h`. Their classification rules are:
 
 - For a selected master, integer 1 identifies Precompute and 7 identifies Media. Other, malformed or conflicting integers leave classification Unknown. OMF1 master-role selection and OMF2 `MMOB` class selection remain distinct; an OMF2 master with no Avid usage integer has a known role but unknown render classification.
@@ -44,7 +44,7 @@ The retained OldScanner readers/projectors use the shared definitions in
 
 Normal application scans use Bella's independent MDB/OMF/MXF parsers. They apply
 the same 1/7 master classification and qualified MXF missing-usage convention
-within Bella's supported layouts; they do not call the retained OldScanner
+within Bella's supported layouts; they do not call the retained previous scanner
 classification helper. Bella's MXF parser checks the supported complete UsageCode
 labels directly. See `src/bella/mdbparser.cpp`, `omfparser.cpp` and `mxfparser.cpp`
 for that implementation and [Project Bella](../Project%20Bella/README.md) for its

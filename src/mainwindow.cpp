@@ -76,13 +76,7 @@ namespace
 	constexpr bool kBellaPreview = false;
 #endif
 
-#ifdef MEDIAMUSTER_USE_BELLA
-	constexpr auto kPresentation = MediaPresentation::Bella;
 	constexpr auto kScanConnection = Qt::AutoConnection;
-#else
-	constexpr auto kPresentation = MediaPresentation::OldScanner;
-	constexpr auto kScanConnection = Qt::QueuedConnection;
-#endif
 
 	/// Monospaced font for the Console.
 	QFont monoFont()
@@ -192,7 +186,7 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	  m_volumeManager(new VolumeManager(this)),
 	  m_scanner(new AppScanner(this)),
 	  m_operations(new FileOperationController(this)),
-	  m_model(new MediaTableModel(this, kPresentation)),
+	  m_model(new MediaTableModel(this)),
 	  m_proxy(new MediaFilterProxy(this))
 {
 	m_proxy->setSourceModel(m_model);
@@ -208,9 +202,7 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 
 	setWindowTitle(QStringLiteral(APP_NAME));
 	resize(1200, 750);
-#ifdef MEDIAMUSTER_USE_BELLA
 	qApp->installEventFilter(this);
-#endif
 	if (startup == StartupMode::UiOnly)
 		return;
 
@@ -249,7 +241,6 @@ MainWindow::~MainWindow()
 		disconnect(child, nullptr, this, nullptr);
 }
 
-#ifdef MEDIAMUSTER_USE_BELLA
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
 	if (watched == qApp && event->type() == QEvent::Quit && m_scanner->isActive())
@@ -291,7 +282,6 @@ void MainWindow::finishBellaClose()
 		else if (pending == BellaClose::Window)
 			close(); }, Qt::QueuedConnection);
 }
-#endif
 
 // MARK: - Crash recovery
 
@@ -525,7 +515,6 @@ void MainWindow::buildTable()
 	setW(Col::Type, 100);
 	setW(Col::Created, 150);
 	setW(Col::FileName, 250);
-	setW(Col::SourcePath, 250);
 	setW(Col::Location, 250);
 	setW(Col::NoDatabase, 130);
 	setW(Col::NoReference, 130);
@@ -776,7 +765,6 @@ void MainWindow::setupConnections()
 {
 	connect(m_scanner, &AppScanner::scanDiscovering, this, &MainWindow::onScanDiscovering, kScanConnection);
 	connect(m_scanner, &AppScanner::scanLogBatch, this, &MainWindow::onScanLogBatch, kScanConnection);
-#ifdef MEDIAMUSTER_USE_BELLA
 	connect(m_scanner, &AppScanner::scanProgress, this, &MainWindow::onBellaScanProgress);
 	connect(m_scanner, &AppScanner::scanFinished, this,
 			[this](const QVector<MediaFile> &results, bool cancelled, bool discoveryComplete)
@@ -799,23 +787,12 @@ void MainWindow::setupConnections()
 			m_operations->setActivity(FileOperationController::Activity::Idle);
 			finishBellaClose();
 		} });
-#else
-	connect(m_scanner, &OldScanner::scanProgress, this, &MainWindow::onScanProgress,
-			Qt::QueuedConnection);
-	connect(m_scanner, &OldScanner::scanIssuesFinished, m_model, &MediaTableModel::setScanIssues, Qt::QueuedConnection);
-	connect(m_scanner, &OldScanner::scanFinished, this, &MainWindow::onScanFinished,
-			Qt::QueuedConnection);
-	connect(m_scanner, &OldScanner::scanFailed, this, &MainWindow::onScanFailed,
-			Qt::QueuedConnection);
-#endif
 	connect(
 		m_scanner, &AppScanner::scanFinalising, this,
 		[this]
 		{
-#ifdef MEDIAMUSTER_USE_BELLA
 			if (m_bellaCancelling)
 				return;
-#endif
 			// Show finalisation separately so a slow finish doesn't look stuck at 100%.
 			auto *dlg = progressDialog();
 			dlg->setProgress(0, 0);
@@ -995,7 +972,7 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 		auto *header = m_tableView->horizontalHeader();
 		int position = header->visualIndex(m_model->columnIndex(MediaTableModel::Column::Type)) + 1;
 		for (auto column : {MediaTableModel::Column::PrecomputeCategory, MediaTableModel::Column::EffectCategory,
-							MediaTableModel::Column::Effect, MediaTableModel::Column::EffectSequence})
+							MediaTableModel::Column::Effect})
 		{
 			const int logical = m_model->columnIndex(column);
 			if (logical < 0)
@@ -1454,17 +1431,13 @@ void MainWindow::startScan(const QVector<AppScanner::Location> &locations)
 {
 	if (!m_operations->isIdle() || locations.isEmpty())
 		return;
-#ifdef MEDIAMUSTER_USE_BELLA
 	if (m_bellaClose != BellaClose::None)
 		return;
 	m_bellaCancelling = false;
-#endif
 	AppScanner::Options opts;
 	opts.includeOmf = m_omfScanEnabled;
 	opts.locations = locations;
-#ifdef MEDIAMUSTER_USE_BELLA
 	opts.includePrecomputeDetails = m_precomputesEnabled;
-#endif
 
 	m_operations->setActivity(FileOperationController::Activity::Scanning);
 	// Release the previous inventory and issue snapshots before building another.
@@ -1481,16 +1454,13 @@ void MainWindow::startScan(const QVector<AppScanner::Location> &locations)
 
 void MainWindow::onScanDiscovering(const QString &path)
 {
-#ifdef MEDIAMUSTER_USE_BELLA
 	if (m_bellaCancelling)
 		return;
-#endif
 	auto *dlg = progressDialog();
 	dlg->setProgress(0, 0);
 	dlg->setDetail(tr("Finding media files… %1").arg(QDir::toNativeSeparators(path)));
 }
 
-#ifdef MEDIAMUSTER_USE_BELLA
 void MainWindow::onBellaScanProgress(const QString &stage, qsizetype completed, qsizetype total, const QString &path)
 {
 	if (m_bellaCancelling)
@@ -1498,26 +1468,6 @@ void MainWindow::onBellaScanProgress(const QString &stage, qsizetype completed, 
 	auto *dlg = progressDialog();
 	dlg->setProgress(completed, total);
 	dlg->setDetail(path.isEmpty() ? stage : tr("%1 — %2").arg(stage, QDir::toNativeSeparators(path)));
-}
-#endif
-
-void MainWindow::onScanProgress(int current, int total, const QString &currentPath)
-{
-	auto *dlg = progressDialog();
-	dlg->setProgress(current, total);
-
-	QString displayPath = currentPath;
-
-#ifdef Q_OS_MAC
-	// Drop the leading slash on /Volumes/ paths so the drive name leads; other
-	// (system-volume) paths are shown exactly as they are.
-	if (displayPath.startsWith("/Volumes/"))
-		displayPath.remove(0, 1);
-#else // Q_OS_WIN
-	displayPath = QDir::toNativeSeparators(displayPath);
-#endif
-
-	dlg->setDetail(displayPath);
 }
 
 void MainWindow::onScanLogBatch(const QVector<LogMessage> &batch)
@@ -1837,7 +1787,7 @@ void MainWindow::onExportCsv()
 	}
 
 	const int count = rows.size();
-	const MediaCsv::Options csvOptions{m_model->precomputesEnabled(), m_model->presentation()};
+	const MediaCsv::Options csvOptions{m_model->precomputesEnabled()};
 	const QString label = exportSelected ? "selected" : "visible";
 	addLog(QtInfoMsg, QStringLiteral("app"), QStringLiteral("CSV export of %1 %2 rows to %3.").arg(count).arg(label, path));
 	m_exportInProgress = true;
@@ -2147,11 +2097,9 @@ ProgressDialog *MainWindow::progressDialog()
 				{
 					if (m_scanner->cancelScan())
 					{
-#ifdef MEDIAMUSTER_USE_BELLA
 						m_bellaCancelling = true;
 						m_progressDialog->setProgress(0, 0);
 						m_progressDialog->setDetail(tr("Cancelling…"));
-#endif
 						addLog(QtWarningMsg, QStringLiteral("scanner"), "Cancel requested");
 					}
 				});

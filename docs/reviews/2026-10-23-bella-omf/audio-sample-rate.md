@@ -73,7 +73,7 @@ required by this review.
 MDVx retains raw words but formats through a fixed label dictionary. It can
 substitute denominator one for zero; missing/unmatched frequency has no generic
 numeric label fallback in this route. These are static control-flow findings,
-not observed bad OMF rows. OldScanner's possible MDFL/summary disagreement is
+not observed bad OMF rows. previous scanner's possible MDFL/summary disagreement is
 also a source-level selection outcome, not a newly observed mislabel.
 
 ## Fresh own-summary observations
@@ -176,7 +176,7 @@ The simplification calls for a small implementation shape:
   Summary again for Duration or reverse that fallback into the Sample Rate column.
 
 Ordinary functions and a small value struct suffice; final names, signatures
-and file placement follow the requirements review. OldScanner already shares
+and file placement follow the requirements review. previous scanner already shares
 some decoded audio facts across fields. Bella should preserve that useful idea;
 this is not a newly measured speedup. Exact AIFF representability and unusual
 label precision retain their disclosed implementation boundary. The

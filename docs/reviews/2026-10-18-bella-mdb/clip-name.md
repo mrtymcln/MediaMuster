@@ -6,7 +6,7 @@
 Research date: 18 October 2026. This follows the [MDB identity review](identities-and-pmr.md).
 Complete-ID normalization and MDB text decoding are approved. The user also
 approved the master-selection and missing-name rules below on **19 October 2026**.
-These are requirements, not implemented behaviour; no Bella code, OldScanner or
+These are requirements, not implemented behaviour; no Bella code, previous scanner or
 Bin Filter changes were made.
 
 ## Where Clip Name lives

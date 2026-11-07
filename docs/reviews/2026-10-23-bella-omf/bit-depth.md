@@ -26,7 +26,7 @@ interpretation, reusing audio facts already decoded for Sample Rate.
 | AIFD | Own AIFD Summary COMM sampleSize | Big-endian signed16 at payload offset 6, with required AIFF/AIFF-C encoding context |
 | CDCI, MPGI, JPED | `OMFI:CDCI:ComponentWidth` | Signed32 in established object numeric order; known coded values need coding context |
 | RGBA | Own `PixelLayout` and `PixelStructure` | Separate small parallel arrays, not MXF interleaved pairs |
-| TIFD | Native uses its own TIFF summary/IFD route | No verified small existing Bella/OldScanner depth route or actual specimen established here; unavailable for release one |
+| TIFD | Native uses its own TIFF summary/IFD route | No verified small existing Bella/previous scanner depth route or actual specimen established here; unavailable for release one |
 
 Numeric depth fields need no UTF-8/MacRoman conversion. WAV/AIFF summary
 internal byte order remains independent of enclosing OMF numeric order.
@@ -74,7 +74,7 @@ otherwise reuse the earlier native work.
   coding identifier. Do not copy a generic MXF sentinel table into arbitrary
   legacy OMF properties. Raw 255/unknown combinations are unavailable unless their
   specific legacy meaning is established. The already open uncommon fixed 10.6/
-  12.4 label choice is not silently settled by OldScanner's 16-bit storage label;
+  12.4 label choice is not silently settled by previous scanner's 16-bit storage label;
   retain necessary raw/format context and leave that unestablished generic OMF
   label unavailable until the shared presentation rule is agreed.
 - **RGBA:** interpret at most eight described entries in the two bounded

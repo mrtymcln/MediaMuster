@@ -96,8 +96,8 @@ guarantee that every arbitrary file supplies those fields.
 
 Expected associations come from independent raw full-ID/PMR/MDB indexing and
 the frozen source rules. Timing labels are independently calculated with Python
-fractions. Naming expectations reuse the previously verified OldScanner-based
-naming evidence and recorded approved differences; fresh OldScanner references
+fractions. Naming expectations reuse the previously verified previous scanner-based
+naming evidence and recorded approved differences; fresh previous scanner references
 also cover the two header-only MXF paths with no MDB owner. This does not claim
 a new independent codec audit of all 4,279 files.
 
@@ -121,7 +121,7 @@ The final aggregate receipt is `genuine/RECEIPT.json`: across both builds,
 
 Existing runtime changes are confined to Bella timing and root/test CMake
 entries. Reader, ID, audio helper, naming adapter and existing lookup source
-hashes match the pre-implementation pins. OldScanner remains the active app
+hashes match the pre-implementation pins. previous scanner remains the active app
 implementation. Bin Filter, MediaFile/table, progress and operation/journal/
 Unfinished Business/Undo code are unchanged. Earlier uncommitted naming work
 was preserved.

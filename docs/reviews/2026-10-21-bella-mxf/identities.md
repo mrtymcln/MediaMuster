@@ -9,7 +9,7 @@
 Research date: 21 October 2026; approval: 22 October 2026. Complete identities,
 the shared normalizer and KelpieId rules were already approved. **The user now
 approved all six MXF ownership, selection, normalization, retention and
-availability rules below. They are requirements, not yet implemented.** OldScanner
+availability rules below. They are requirements, not yet implemented.** previous scanner
 remains active and Bin Filter is unchanged. The user's
 [Duration/Original Bin revision](fallback-fields.md) remains in force.
 See the approval receipt.
@@ -116,11 +116,11 @@ immediate file stability, freshly checked PMR/MDB data and compared complete
 identities. These are ten examples, not every file or writer, and the research
 comparisons do not become extra per-file production reads.
 
-Current [file ownership](../../../src/oldscanner/mediaengine/mxfprojection.cpp),
-[master association](../../../src/oldscanner/mediaengine/mxfprojection.cpp)
-and [MXF identity conversion](../../../src/oldscanner/mediaengine/projection.cpp)
+Current file ownership (removed source),
+master association (removed source)
+and MXF identity conversion (removed source)
 provide useful verified interpretation rules. Express them in fresh small
-Bella helpers rather than copying OldScanner's retained evidence machinery.
+Bella helpers rather than copying previous scanner's retained evidence machinery.
 
 ## Agreed Bella reading and retention
 

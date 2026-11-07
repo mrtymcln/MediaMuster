@@ -5,9 +5,10 @@ files from that inventory, and copies, moves, trashes or reorganises them.
 This guide describes the current implementation. It is not a record of proposed
 features or a claim that every storage system has been tested.
 
-The macOS and Windows app uses Bella for media scanning. The retained OldScanner
-readers still perform operation-time Avid identity checks, and the separate AVB
-reader supplies Bin Filter references. The optional MediaMuster Bella Test build
+The macOS and Windows app uses Bella for media scanning and format reading.
+File Check verifies operation inputs through the opened files; File Operations
+performs the jobs and maintains Undo/recovery. The separate AVB reader supplies
+Bin Filter references. The optional MediaMuster Bella Test build
 uses the same scanner and presentation with file operations disabled.
 
 For confirmed requirements and their history, see
@@ -74,9 +75,7 @@ The Console and diagnostic log use the same bare category labels:
 The diagnostic log additionally receives AVB parse failures under `avb` and Qt
 messages from other categories. Bella sends scan problems and source paths under
 `scanner`; operation-time reader failures are reported through `operations`.
-The retained OldScanner facade uses `mediaengine` for its reader/reconciliation
-warnings when exercised by legacy tests or tools. Neither output adds a
-`console/` or `mediamuster.` prefix. The category identifies a message's source;
+These outputs add no `console/` or `mediamuster.` prefix. The category identifies a message's source;
 its severity is separate.
 
 OMF support, precompute details/filtering and file-operation Undo are
@@ -227,16 +226,15 @@ file's descriptor. A source detected as changed is excluded; a changed physical
 media file requires a rescan before operations can use it.
 
 Bella's first-release MDB/embedded OMF baseline is the supported legacy OMF1/Bento
-1.0 layout. Generic OMF2/Bento 2.0 reading remains in the retained OldScanner
-readers. Native WAVE/AIFF information is handled separately from embedded OMF.
+1.0 layout. File Check follows that same supported layout scope; generic
+OMF2/Bento 2.0 reading is unsupported. Native WAVE/AIFF information is handled separately from embedded OMF.
 This describes implemented format scope, not certification of every file in
 those families.
 
 Source buffers and parser workspace are temporary. Bella keeps compact database
 catalogues through matching, then publishes owned selected values, physical facts,
 reference status and a compact operation-safety instruction. Ordinary rows retain
-no parsed graph, raw source bytes or observation history. Bella does not populate
-the OldScanner per-field metadata checklist or retain its explanation history.
+no parsed graph, raw source bytes or observation history. Rows retain no per-field metadata checklist or explanation history.
 Loaded AVB bins likewise keep resolved identities and warnings after their parsed
 graphs are released. Readers skip recording payloads and do not invent meanings
 for unknown properties.
@@ -571,12 +569,12 @@ Before acting on a scanned row, operation checks compare the applicable scan pat
 volume identifier and modification time. Scanning captures the necessary safety
 facts in a small record per row. If that record was never captured, the operation
 refuses the row and asks for a rescan. Bella rows with a qualified FileMobId require
-its confirmation by the retained MXF or legacy reader through the opened source
-handle. When no usable ID was captured, the explicit physical-only instruction
+its confirmation by File Check using Bella's MXF or OMF reader through the
+opened source handle. When no usable ID was captured, the explicit physical-only instruction
 still requires the ordinary live filesystem checks. A detected change or
 unconfirmed physical presence requires a rescan. Bella does not impose the
-selected MasterMobId on the header. Retained OldScanner rows can additionally
-carry captured header master IDs, which the same runner corroborates. These
+selected MasterMobId on the header. Saved jobs can additionally require captured
+header master IDs, all of which File Check corroborates. These
 scan checks remain separate from the native
 operation-time file/volume/size/time safeguards. They are not proof of byte equality;
 see [file-operation checks](../Project%20Canon/file-operation-checks.md).

@@ -49,7 +49,7 @@ the original bytes and property locator, `EvidenceBasis::Derived`, interpreted
 `TextEncoding`, and an explanation that the source does not declare that encoding.
 Declared encodings retain their recorded basis. See the
 [live connection text rules](live-connection-2026-10-04.md#text-interpretation) and
-[projection helper](../src/oldscanner/mediaengine/projection.cpp).
+projection helper (removed source).
 
 | Encoding | Meaning | Established application/example |
 | --- | --- | --- |
@@ -114,7 +114,7 @@ properties remain raw; they do not inherit a guessed text encoding. See the
 
 Evidence and limits: [fresh PMR reader](fresh-pmr-reader-2026-10-03.md),
 [non-English specimens](non-english-encoding-specimens-2026-10-03.md), and
-[MediaEngine MXF property interpretation](../src/oldscanner/mediaengine/mxfobjects_p.cpp).
+MediaEngine MXF property interpretation (removed source).
 The older PMR/MDB helper tried UTF-8 followed by MacRoman without retaining the
 same distinction. Those parsers remain historical comparison-test code. MediaEngine
 separates raw reader evidence from the approved projected inference; a successful

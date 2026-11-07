@@ -106,7 +106,7 @@ The normal macOS and Windows targets define `MEDIAMUSTER_USE_BELLA` in CMake.
 with file operations disabled; it is independent of the feature flags below.
 Normal Bella builds retain file operations and their live identity checks.
 Bella's active MDB/OMF baseline is legacy OMF 1/Bento 1.0. The retained
-OldScanner readers' OMF 2/Bento 2 support is not active Bella scan support.
+previous scanner readers' OMF 2/Bento 2 support is not active Bella scan support.
 
 [`src/featureflags.h`](../src/featureflags.h) contains the independent compile-time
 switches and their current values. Rebuild after changing a value.

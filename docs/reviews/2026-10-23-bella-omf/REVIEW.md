@@ -12,7 +12,7 @@ The agreed first-release OMF requirements baseline is complete. Native WAVE/AIFF
 behaviour was subsequently preserved separately on 25 October.**
 The reading approval records the accepted scope. The user has approved the completed
 release-one MXF scope. Bella remains a fresh C++17/Qt 6.5.3 implementation to
-follow the requirements review; OldScanner is active and Bin Filter is separate.
+follow the requirements review; previous scanner is active and Bin Filter is separate.
 
 OMF needs a table-of-contents-driven metadata reader. Read the container label
 and contents list, locate the required records and values, extract compact
@@ -142,7 +142,7 @@ the five ordinary masters do not establish rendered OMF name results.
 The [damage-handling review](damage-handling.md) establishes complete shared TOC
 framing before publication, then isolation of bad values and dependent links,
 retaining independent facts and the physical row. It distinguishes native
-defaults/rethrows, MDVx validation gaps and OldScanner's metadata-only deferred
+defaults/rethrows, MDVx validation gaps and previous scanner's metadata-only deferred
 read/partial-source behaviour. No repair, extra read trigger or universal crash
 guarantee is claimed. These general OMF boundaries were approved on 25 October
 in the approval.
@@ -241,7 +241,7 @@ Depth labels remain bounded follow-ups. The accepted OMF depth rules already
 leave unestablished generic combinations unavailable; this closure does not
 silently choose labels or expand OMF support. Opposite numeric order, uncommon
 supported representations, malformed-input cases, output comparisons and time/
-memory measurements remain implementation verification work. OldScanner stays
+memory measurements remain implementation verification work. previous scanner stays
 active until an explicitly approved cutover.
 
 The curated evidence

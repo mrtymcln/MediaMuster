@@ -1,6 +1,7 @@
 // Authored MXF wire fixtures: KLV, Primer and local sets, not production reader objects.
 // Registered property ULs are literal source vocabulary; expected facts are authored here.
 #include "bella/mxfparser.h"
+#include "omfuid.h"
 
 #include <QByteArray>
 #include <QFile>
@@ -105,6 +106,7 @@ namespace
 	const Definition definitions[] = {
 	    {"InterchangeObject.InstanceUID", "060e2b34010101010101150200000000"},
 	    {"Preface.ContentStorage", "060e2b34010101020601010402010000"},
+	    {"Preface.EssenceFileMobID", "8b2f680dff611381abf1b7718efd4802"},
 	    {"Preface.OperationalPattern", "060e2b34010101050102020300000000"},
 	    {"Preface.EssenceContainers", "060e2b34010101050102021002010000"},
 	    {"Preface.ProjectName", "a5fb7b25f61594b962fc3717492d42bf"},
@@ -374,6 +376,8 @@ class TestBellaMxf final : public QObject
 {
 	Q_OBJECT
   private slots:
+	void openedIdentity_data();
+	void openedIdentity();
 	void defaults();
 	void preCancelledDoesNotOpen();
 	void missingFileIsIoError();
@@ -1385,6 +1389,88 @@ void TestBellaMxf::typeAndCategory()
 		                                       : Bella::MxfPrecomputeCategory::RenderedEffects;
 		QCOMPARE(report.associatedClipInformation.precomputeCategory, category);
 	}
+}
+
+void TestBellaMxf::openedIdentity_data()
+{
+	QTest::addColumn<int>("variation");
+	const std::array<const char *, 14> names{
+		"complete identity", "wrong full file identity", "two saved masters", "one missing saved master",
+		"broken second master", "descriptor not required", "technical stream ID not required",
+		"unsupported layout", "malformed header", "unlinked master", "conflicting file owners",
+		"conflicting Preface claim", "agreeing Preface claim", "noncanonical expected spelling"};
+	for (int i = 0; i < int(names.size()); ++i)
+		QTest::newRow(names[std::size_t(i)]) << i;
+}
+
+void TestBellaMxf::openedIdentity()
+{
+	QFETCH(int, variation);
+	auto f = fixture();
+	QString expectedFile = OmfUid::toIdText(expectedId(fileId));
+	QStringList masters{OmfUid::toIdText(expectedId(masterId))};
+	bool expected = variation == 0 || variation == 2 || variation == 5 || variation == 6 || variation == 12;
+	if (variation == 1)
+	{
+		auto different = expectedId(fileId);
+		different[0] ^= char(0x40); // Identical material suffix is insufficient.
+		expectedFile = OmfUid::toIdText(different);
+	}
+	if (variation >= 2 && variation <= 4)
+	{
+		f.add(30, 0x36);
+		f.append(30, "GenericPackage.PackageUID", packageId(masterId + 1));
+		f.append(30, "GenericPackage.Tracks", references({31}));
+		track(f, 31, 32, 1, rational(25));
+		sequence(f, 32, 33, picture, 250);
+		sourceClip(f, 33, packageId(fileId), 3, picture, 250);
+		f.put(2, "ContentStorage.Packages", references({4, 6, 30}));
+		masters.append(OmfUid::toIdText(expectedId(masterId + 1)));
+		if (variation == 3)
+			masters.append(OmfUid::toIdText(expectedId(masterId + 2)));
+		if (variation == 4)
+			f.put(31, "GenericTrack.Sequence", uid(999));
+	}
+	if (variation == 5)
+		f.remove(4, "SourcePackage.Descriptor");
+	if (variation == 6)
+		f.remove(3, "EssenceContainerData.BodySID");
+	if (variation == 7)
+		f.status = 1;
+	if (variation == 8)
+		f.headerSizeDelta = 1000;
+	if (variation == 9)
+		f.put(9, "SourceClip.SourcePackageID", packageId(fileId + 1));
+	if (variation == 10)
+	{
+		f.add(30, 0x37);
+		f.append(30, "GenericPackage.PackageUID", packageId(fileId));
+		f.put(2, "ContentStorage.Packages", references({4, 6, 30}));
+	}
+	if (variation == 11 || variation == 12)
+		f.append(1, "Preface.EssenceFileMobID", packageId(fileId + (variation == 11)));
+	if (variation == 13)
+		expectedFile.remove(QLatin1Char('.'));
+	const auto content = f.bytes();
+	QTemporaryFile source;
+	QVERIFY(source.open());
+	QCOMPARE(source.write(content), qint64(content.size()));
+	QVERIFY(source.flush());
+	QVERIFY(source.seek(7));
+	const auto handle = source.handle();
+	QCOMPARE(Bella::mxfIdentityMatches(source, expectedFile, masters), expected);
+	QVERIFY(source.isOpen());
+	QCOMPARE(source.handle(), handle);
+	QCOMPARE(source.pos(), qint64(7));
+	if (variation == 2)
+	{
+		// Table selection intentionally has no single master. Both saved
+		// operation claims still have independently established live links.
+		QVERIFY(!parse(f).associatedClipInformation.masterMobId);
+		QVERIFY(Bella::mxfIdentityMatches(source, {}, masters));
+	}
+	source.close();
+	QVERIFY(!Bella::mxfIdentityMatches(source, expectedFile, masters));
 }
 
 QTEST_APPLESS_MAIN(TestBellaMxf)

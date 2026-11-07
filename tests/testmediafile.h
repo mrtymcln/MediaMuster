@@ -1,79 +1,63 @@
 #pragma once
 
-// UI fixtures describe selected facts, not another parser or metadata engine.
-// Use temporary authored evidence to prepare values/statuses and safety checks.
-// Effect names are derived by the real catalogue; display-only labels cannot
-// override the recorded clip-name evidence.
+#include "bella/naming.h"
+#include "mediafile.h"
 
-#include "oldscanner/mediaengineadapter.h"
-#include "oldscanner/mediaengine/projection.h"
-#include "oldscanner/mediaengine/scancoordinator.h"
-#include <optional>
 #include <utility>
 
+// UI fixtures contain Bella's already selected values. They neither invoke a
+// reader nor manufacture source evidence for presentation-only tests.
 namespace TestMediaFile
 {
-	inline QVector<MediaFile> seeded(QVector<MediaFile> files, std::optional<MetadataSource> nameSource = {})
+	inline BellaRowValues &values(MediaFile &file)
+	{
+		if (!file.bellaValues)
+			file.bellaValues.emplace();
+		return *file.bellaValues;
+	}
+
+	inline void setFrameRate(MediaFile &file, quint64 numerator, quint64 denominator = 1)
+	{
+		values(file).frameRateValue = numerator && denominator
+			? std::optional<Bella::TimingRate>{{numerator, denominator}} : std::nullopt;
+	}
+
+	inline void setSampleRate(MediaFile &file, quint64 rate)
+	{
+		values(file).sampleRateValue = rate
+			? std::optional<Bella::TimingRate>{{rate, 1}} : std::nullopt;
+	}
+
+	inline void setBitDepth(MediaFile &file, std::optional<quint32> bits)
+	{
+		values(file).bitDepth.bits = bits;
+		values(file).bitDepth.representation = Bella::MatchDepthRepresentation::Integer;
+	}
+
+	inline void setDuration(MediaFile &file, qint64 count, quint16 base = 25, bool drop = false)
+	{
+		auto &row = values(file);
+		const Bella::TimingRate rate = drop ? Bella::TimingRate{quint64(base) * 1000, 1001}
+											 : Bella::TimingRate{base, 1};
+		row.timing.duration = Bella::makeExactDuration(count, rate);
+		row.timing.display = base ? std::optional<Bella::TimecodeInputs>{{rate, base,
+			drop ? Bella::TimecodeMode::DropFrame : Bella::TimecodeMode::NonDropFrame}} : std::nullopt;
+		row.durationTimecode = row.timing.duration && row.timing.display
+			? Bella::durationTimecode(*row.timing.duration, rate, base, row.timing.display->mode).value_or(
+				std::tuple<qint64, int, int, int>{-1, 0, 0, 0})
+			: std::tuple<qint64, int, int, int>{-1, 0, 0, 0};
+	}
+
+	inline QVector<MediaFile> seeded(QVector<MediaFile> files)
 	{
 		for (auto &file : files)
 		{
-			if (file.metadataStatus.field(MediaProperty::ClipName).captured)
-				continue; // Already prepared rows, including intentionally missing safety records.
-			MediaEvidence evidence;
-			const auto source = [&](MetadataSource kind)
-			{
-				return QSharedPointer<SourceSnapshot>::create(SourceSnapshot{
-					kind, file.mediaFilePath, {}, SourceReadState::Complete});
-			};
-			const auto header = source(file.omfEra ? MetadataSource::Omf : MetadataSource::Mxf);
-			const auto filesystem = source(MetadataSource::Filesystem);
-			const auto add = [&](MediaProperty property, const QVariant &value, const SourceSnapshotRef &snapshot)
-			{
-				if (!value.isValid() || !evidence.observations(property).isEmpty())
-					return;
-				if (value.metaType().id() == QMetaType::QString && value.toString().isEmpty())
-					return;
-				MetadataObservation observation;
-				observation.snapshot = snapshot;
-				observation.property = mediaPropertyName(property);
-				observation.objectIdentity = QStringLiteral("UI fixture");
-				observation.value = value;
-				observation.readState = PropertyReadState::Present;
-				evidence.observe(property, std::move(observation));
-			};
-			const auto names = nameSource ? source(*nameSource) : header;
-			add(MediaProperty::ClipName, file.clipName, names);
-			add(MediaProperty::OriginalBin, file.originalBin, names);
-			add(MediaProperty::FileMobId, file.fileMobId, header);
-			add(MediaProperty::MasterMobId, file.masterMobId, header);
-			add(MediaProperty::Project, file.project, header);
-			add(MediaProperty::Compression, file.compression, header);
-			add(MediaProperty::Resolution, file.resolution, header);
-			if (file.kind != MediaFile::Kind::Unknown)
-				add(MediaProperty::Kind, int(file.kind), header);
-			if (file.type != MediaFile::Type::Unknown)
-				add(MediaProperty::Type, int(file.type), header);
-			add(MediaProperty::PrecomputeCategory, int(file.precomputeCategory), header);
-			MediaRate frameRate = file.frameRateRatio;
-			if (!frameRate.valid() && !file.frameRate.isEmpty())
-				frameRate = {qRound(file.frameRate.toDouble() * 1000), 1000};
-			if (frameRate.valid())
-				add(MediaProperty::FrameRate, MediaEngine::rateValue(frameRate), header);
-			const MediaRate sampleRate = file.sampleRateRatio.valid() ? file.sampleRateRatio : MediaRate{file.sampleRate, 1};
-			if (sampleRate.valid())
-				add(MediaProperty::SampleRate, MediaEngine::rateValue(sampleRate), header);
-			add(MediaProperty::BitDepth, file.bitDepth, header);
-			add(MediaProperty::DropFrame, file.dropFrame, header);
-			if (file.duration.known())
-				add(MediaProperty::FileDuration, MediaEngine::durationValue(file.duration), header);
-			add(MediaProperty::SourcePath, file.sourceFilePath, header);
-			add(MediaProperty::DatabaseStatus, int(file.dbStatus), filesystem);
-			MediaEngine::selectMetadata(evidence);
-			applyResolvedMetadata(file, evidence);
-			file.metadataStatus = makeMediaMetadataStatus(evidence);
 			if (!file.operationScanReceipt)
-				file.operationScanReceipt = makeOpScanReceipt(evidence, file.scanStamp);
+				file.operationScanReceipt.emplace();
+			const auto names = Bella::effectNamesFor(file.type == MediaFile::Type::Precompute, file.clipName);
+			file.effect = names.effect;
+			file.effectCategory = names.category;
 		}
 		return files;
 	}
-}
+} // namespace TestMediaFile

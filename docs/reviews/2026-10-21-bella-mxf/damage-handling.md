@@ -27,7 +27,7 @@ retains binary hashes, native addresses, source anchors and inspected tests.
 | --- | --- | --- |
 | Media Composer | Storage/header restoration can throw; required descriptor Length/SampleRate failures can invalidate import. Typed getters distinguish successful values, valid empty text and failure. Some unknown properties are skipped. A per-file rejection can let the directory scan continue; memory and directory-level errors can propagate. | Keep explicit failure states and ownership checks. Do not infer a universal field-salvage or continue-after-any-error rule. |
 | MDVx | Its embedded reader rejects many structural, required-reference and accessed-value failures, and cleans up temporary objects. Unknown sets/items can be skipped. Its app wrapper ultimately returns whether the file opened, even after metadata parsing failed; the caller proceeds without gating on that return. | Reuse the selective reading/cleanup idea. Report actual parse availability; never treat file-open success or initialized zero IDs as valid metadata. |
-| OldScanner | It checks many bounds and typed values, retains objects parsed before framing failure, then interprets/projects them. Projection is not globally gated on a Complete outcome. It also checks many duplicate/ambiguous owner relationships and uses complete-set checks for absence/defaults. | Preserve useful validation rules in new helpers, but establish the selected region's framing before publishing. Avoid both accepting an unsafe prefix and suppressing unrelated fields merely because another value failed decoding. |
+| previous scanner | It checks many bounds and typed values, retains objects parsed before framing failure, then interprets/projects them. Projection is not globally gated on a Complete outcome. It also checks many duplicate/ambiguous owner relationships and uses complete-set checks for absence/defaults. | Preserve useful validation rules in new helpers, but establish the selected region's framing before publishing. Avoid both accepting an unsafe prefix and suppressing unrelated fields merely because another value failed decoding. |
 
 MDVx also has bounded static validation gaps: a BER indefinite-form byte can
 become zero length; its Primer reader lacks an explicit stride check in the
@@ -58,7 +58,7 @@ Structural completeness and successful decoding are separate: a fully bounded
 bad optional value need not prevent proving that a different property is absent.
 Conversely, a readable reference prefix does not prove its containing set was
 fully examined. This distinction can live in small parser helpers; it does not
-require retaining OldScanner's raw evidence graph.
+require retaining previous scanner's raw evidence graph.
 
 ## Unknown and missing information
 

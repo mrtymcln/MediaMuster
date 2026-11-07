@@ -1,4 +1,5 @@
 #include "omfparser.h"
+#include "identitycheck_p.h"
 #include "audioformat_p.h"
 #include "audioreader_p.h"
 #include "avidtext.h"
@@ -2220,7 +2221,14 @@ namespace Bella
 			return image.identity(object, name);
 		}
 
-		void extract(const Image &image, bool details, OmfReport &report)
+		struct FileOwners
+		{
+			std::optional<MobId> id;
+			QVector<quint32> files;
+			Owners owners;
+		};
+
+		FileOwners fileOwners(const Image &image, bool identityOnly = false)
 		{
 			Owners owners;
 			for (const auto owner : image.activeMobs())
@@ -2251,7 +2259,7 @@ namespace Bella
 				image.problem(1, "OMFI:MediaData",
 							  QStringLiteral("Active media data does not establish one "
 											 "unambiguous physical file identity."));
-				return;
+				return {};
 			}
 			QVector<quint32> files;
 			const auto candidates = owners.constFind(*physicalId);
@@ -2270,8 +2278,20 @@ namespace Bella
 			{
 				image.problem(1, "OMFI:MediaData",
 							  QStringLiteral("Physical media identity has no qualified active file owner."));
-				return;
+				if (!identityOnly)
+					return {};
 			}
+			return {physicalId, std::move(files), std::move(owners)};
+		}
+
+		void extract(const Image &image, bool details, OmfReport &report)
+		{
+			const auto selected = fileOwners(image);
+			if (!selected.id)
+				return;
+			const auto &physicalId = selected.id;
+			const auto &files = selected.files;
+			const auto &owners = selected.owners;
 			report.fileInformation.fileMobId = physicalId;
 			if (files.size() == 1)
 			{
@@ -2402,45 +2422,46 @@ namespace Bella
 											 "affected clip values are unavailable."));
 		}
 
-		struct Stamp
+		Detail::FileIdentity fileIdentity(const Image &image)
 		{
-			std::optional<qint64> size;
-			QDateTime modified;
-		};
-		Stamp observe(const QString &path)
-		{
-			const QFileInfo info(path);
-			return info.exists()
-					   ? Stamp{info.size() >= 0 ? std::optional<qint64>(info.size()) : std::nullopt, info.lastModified()}
-					   : Stamp{};
+			const auto selected = fileOwners(image, true);
+			if (!selected.id)
+				return {};
+			Detail::FileIdentity identity{Detail::identityText(*selected.id), {}};
+			// Root-listed MediaData can identify the file independently of a
+			// descriptor. A master association still needs a qualified file owner.
+			if (selected.files.isEmpty())
+				return identity;
+			for (const auto master : image.activeMobs())
+			{
+				if (image.disputed(master) || image.has(master, "OMFI:MOBJ:PhysicalMedia"))
+					continue;
+				const auto usage = image.integer(master, "OMFI:MOBJ:UsageCode");
+				const auto id = image.identity(master);
+				if (!valueOf(usage) || (*valueOf(usage) != 1 && *valueOf(usage) != 7) || !valueOf(id))
+					continue;
+				const auto walk = components(image, master);
+				bool complete = walk.complete, linked = false;
+				for (const auto component : walk.objects)
+				{
+					const auto cls = image.tag(component);
+					if (!valueOf(cls) || *valueOf(cls) != "SCLP" || !image.has(component, "OMFI:SCLP:SourceID"))
+						continue;
+					const auto source = sourceIdentity(image, component);
+					if (!valueOf(source))
+						complete = false;
+					else if (*valueOf(source) && **valueOf(source) == *selected.id)
+						linked = true;
+				}
+				if (complete && linked)
+					identity.masterIds.insert(Detail::identityText(*valueOf(id)));
+			}
+			return image.failure() == OmfReadResult::Completed ? identity : Detail::FileIdentity{};
 		}
-	} // namespace
 
-	OmfReport parseOmf(const QString &path, const std::atomic_bool &stopRequested, bool includePrecomputeDetails)
-	{
-		OmfReport report;
-		report.path = path;
-		const auto stopped = [&]
-		{
-			if (!stopRequested.load(std::memory_order_relaxed))
-				return false;
-			if (report.nativeAudioReading == OmfReadResult::NotRead)
-				report.nativeAudioReading = OmfReadResult::Cancelled;
-			report.omfReading = OmfReadResult::Cancelled;
-			report.problemNotes.append(QStringLiteral("OMF/native reading cancelled at a major stage boundary."));
-			return true;
-		};
-		if (stopped())
-			return report;
-		QFile file(path);
-		if (!file.open(QIODevice::ReadOnly | QIODevice::Unbuffered))
-		{
-			report.nativeAudioReading = report.omfReading = OmfReadResult::IoError;
-			report.problemNotes.append(QStringLiteral("Cannot open OMF/native audio file: %1").arg(file.errorString()));
-			return report;
-		}
-		const auto before = observe(path);
-		const auto work = [&]
+		template <class Stopped, class ExtractValues>
+		void readOpenedOmf(QFile &file, const std::atomic_bool &stopRequested, OmfReport &report,
+						   Stopped stopped, ExtractValues extractValues)
 		{
 			if (stopped())
 				return;
@@ -2540,7 +2561,7 @@ namespace Bella
 			report.omfReading = image.failure() == OmfReadResult::Completed ? established : image.failure();
 			if (stopped() || report.omfReading != OmfReadResult::Completed)
 				return;
-			extract(image, includePrecomputeDetails, report);
+			extractValues(image);
 			if (image.failure() != OmfReadResult::Completed)
 				report.omfReading = image.failure();
 			if (stopRequested.load(std::memory_order_relaxed))
@@ -2548,8 +2569,61 @@ namespace Bella
 				report.omfReading = OmfReadResult::Cancelled;
 				report.problemNotes.append(QStringLiteral("OMF extraction cancelled at its major stage boundary."));
 			}
+		}
+
+		struct Stamp
+		{
+			std::optional<qint64> size;
+			QDateTime modified;
 		};
-		work();
+		Stamp observe(const QString &path)
+		{
+			const QFileInfo info(path);
+			return info.exists()
+					   ? Stamp{info.size() >= 0 ? std::optional<qint64>(info.size()) : std::nullopt, info.lastModified()}
+					   : Stamp{};
+		}
+	} // namespace
+
+	bool omfIdentityMatches(QFile &source, const QString &expectedFileId, const QStringList &expectedMasterIds)
+	{
+		return Detail::checkOpenedIdentity(source, expectedFileId, expectedMasterIds, [&]
+										   {
+			const std::atomic_bool stop{false};
+			OmfReport report;
+			Detail::FileIdentity identity;
+			readOpenedOmf(source, stop, report, [] { return false; },
+				[&](const Image &image) { identity = fileIdentity(image); });
+			return report.omfReading == OmfReadResult::Completed ? identity : Detail::FileIdentity{}; });
+	}
+
+	OmfReport parseOmf(const QString &path, const std::atomic_bool &stopRequested, bool includePrecomputeDetails)
+	{
+		OmfReport report;
+		report.path = path;
+		const auto stopped = [&]
+		{
+			if (!stopRequested.load(std::memory_order_relaxed))
+				return false;
+			if (report.nativeAudioReading == OmfReadResult::NotRead)
+				report.nativeAudioReading = OmfReadResult::Cancelled;
+			report.omfReading = OmfReadResult::Cancelled;
+			report.problemNotes.append(QStringLiteral("OMF/native reading cancelled at a major stage boundary."));
+			return true;
+		};
+		if (stopped())
+			return report;
+		QFile file(path);
+		if (!file.open(QIODevice::ReadOnly | QIODevice::Unbuffered))
+		{
+			report.nativeAudioReading = report.omfReading = OmfReadResult::IoError;
+			report.problemNotes.append(QStringLiteral("Cannot open OMF/native audio file: %1").arg(file.errorString()));
+			return report;
+		}
+		const auto before = observe(path);
+		readOpenedOmf(file, stopRequested, report, stopped,
+					  [&](const Image &image)
+					  { extract(image, includePrecomputeDetails, report); });
 		const auto after = observe(path);
 		const bool sizes = before.size && after.size;
 		const bool dates = before.modified.isValid() && after.modified.isValid();

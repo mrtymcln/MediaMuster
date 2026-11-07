@@ -8,7 +8,7 @@ Complete identities, the KelpieId duplicate rules and the shared normalization
 component below are approved. The subsequent Clip Name review's master-selection
 rule was approved on 19 October 2026. Broader MDB layout/damage treatment remains
 under review. These are requirements, not implemented Bella behaviour.
-OldScanner and Bin Filter are unchanged.
+previous scanner and Bin Filter are unchanged.
 
 ## Recommended reading and matching
 

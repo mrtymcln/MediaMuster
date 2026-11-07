@@ -7,7 +7,7 @@
 > refer to the reviewed revision. Removed components are identified as retired.
 
 Research date: 22 October 2026. **The user approved these MXF Precompute Category
-rules on 22 October 2026; they remain unimplemented.** MXF Type is approved separately. OldScanner remains active;
+rules on 22 October 2026; they remain unimplemented.** MXF Type is approved separately. previous scanner remains active;
 Bin Filter is unchanged. The [MDB category rule](../2026-10-18-bella-mdb/precompute-category.md)
 is already approved.
 
@@ -104,7 +104,7 @@ or bundled library capability; no live app/export ran.
 
 ## Current MediaMuster and actual examples
 
-Current [MXF projection](../../../src/oldscanner/mediaengine/mxfprojection.cpp)
+Current MXF projection (removed source)
 already feeds the small [pure category helper](../../../src/precompute.h).
 It checks the direct master, typed supported object wrapper and complete outer
 references; only then does it count immediate picture tracks. A confirmed
@@ -127,7 +127,7 @@ same-full-ID/master MDB facts. Two MDB hashes and relevant original byte
 ranges were freshly checked; the MXF metadata captures were reused, with no
 new MXF read.
 
-These are independent raw interpretations, not newly executed OldScanner
+These are independent raw interpretations, not newly executed previous scanner
 category outputs. The earlier 2,411-file Compression probe did not capture this
 field. No actual damaged wrapper, valid-empty wrapper, scalar, PortableObject,
 duplicate attribute or unreadable-track specimen was present in this sample.

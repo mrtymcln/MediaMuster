@@ -52,7 +52,7 @@ agreed exact selected-master Clip Name rule remains unchanged.
 ## Existing behaviour to preserve
 
 Use the existing [catalogue and resolver](../../../src/effectcatalogue.cpp)
-and [value result](../../../src/effectcatalogue.h), already outside OldScanner's
+and [value result](../../../src/effectcatalogue.h), already outside previous scanner's
 parsers. Do not rebuild the catalogue or suffix parser for OMF.
 
 - Preserve exact case-sensitive lookup, known localized spellings, the existing
@@ -91,7 +91,7 @@ observer and MXF captured-name examples retain their original separate scope.
    details are requested. Keep it outside the OMF byte parser; all format
    adapters already supply those facts. Current common derivation has no
    internal optional-feature guard, so this proposed request gating is not an
-   already-measured OldScanner saving.
+   already-measured previous scanner saving.
 2. Call the existing resolver once for the selected master/name input during
    processing and use its combined **Effect and Effect Category** result.
    Share that result across rows with the same selected inputs; derive again

@@ -6,7 +6,7 @@
 Research date: 18 October 2026. This follows the [MDB overview](REVIEW.md).
 The user approved the Bella text rule below on 18 October 2026, explicitly
 including deliberate recovery through the separate legacy value when Unicode is
-damaged. It is a requirement, not implemented behaviour. OldScanner and Bin
+damaged. It is a requirement, not implemented behaviour. previous scanner and Bin
 Filter are unchanged.
 
 ## Answer

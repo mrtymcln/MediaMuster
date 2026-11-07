@@ -5,7 +5,7 @@
 
 Research date: 21 October 2026. **Release-one support range approved by the user
 on 21 October 2026; not yet implemented.** General MDB damage handling is
-already agreed. OldScanner remains active until explicit cutover approval;
+already agreed. previous scanner remains active until explicit cutover approval;
 Bin Filter is unchanged.
 
 **Current reassessment, 1 November 2026:** the legacy release-one parser is now
@@ -106,7 +106,7 @@ legacy OMF-1-style catalogue enrichment:
 Nine routines were freshly disassembled and matched the retained native text.
 The application was not run on synthetic or live databases during this review.
 
-## Current MediaMuster / OldScanner
+## Current MediaMuster / previous scanner
 
 The source implements these independent layers:
 
@@ -183,7 +183,7 @@ approval does. Native/source limits and future implementation checks remain.
 
 This agreed scope covers every observed working MDB and inspected fixture
 family. It deliberately omits generic capabilities currently present in
-OldScanner; uninspected collections could need them. The expected benefit is
+previous scanner; uninspected collections could need them. The expected benefit is
 a smaller implementation and verification scope, not a measured speed or
 memory improvement. A format-version check is not itself evidence of bloat.
 

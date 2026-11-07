@@ -214,7 +214,7 @@ These findings are bounded to the traced inventory, filter and table paths.
 An independent probe checked the six current MDBs, their sibling PMRs and raw
 value-index hashes. It resolved catalogue-qualified physical file owners by
 full IDs and followed their own descriptor and source-clip references.
-OldScanner's projected Kind, filenames and master labels were not the oracle.
+previous scanner's projected Kind, filenames and master labels were not the oracle.
 
 | MDB folder | Physical file rows | Audio | Video |
 | --- | ---: | ---: | ---: |

@@ -9,7 +9,7 @@ Implementation follows that contract within the selected timing component.
 The changed runtime/test files are the existing `src/bella/timing.h/.cpp` and
 `tests/tst_bellatiming.cpp`, plus the decision documentation. Existing reader
 source/reports, source priorities and app integration remain unchanged.
-OldScanner remains active; Bin Filter remains unchanged.
+previous scanner remains active; Bin Filter remains unchanged.
 
 ## Approved lean contract
 
@@ -179,8 +179,8 @@ Only `src/bella/timing.h`, `src/bella/timing.cpp`,
 `tests/tst_bellatiming.cpp` and decision/implementation documentation changed for
 this step. Existing reader/helper and build-list hashes are unchanged. No CMake
 change was needed. No row/table, matching/coordinator, progress, journal,
-Unfinished Business, Undo, OldScanner or Bin Filter source was changed.
-The app still uses OldScanner; this component still awaits later matching/row
+Unfinished Business, Undo, previous scanner or Bin Filter source was changed.
+The app still uses previous scanner; this component still awaits later matching/row
 integration. No scan-time or peak-memory improvement has been measured.
 
 Reproduction uses the same focused build/CTest commands in

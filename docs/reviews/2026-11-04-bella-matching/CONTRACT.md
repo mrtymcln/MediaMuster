@@ -20,7 +20,7 @@ Extend existing `src/bella/timing.h/.cpp` and `tests/tst_bellatiming.cpp` with
 the approved automatic qualified-base convenience calls described below.
 All existing explicit-base results/checks stay unchanged. No PMR/MDB/MXF/OMF/
 native reader source/header, naming resolver/catalogue or warning text changes.
-OldScanner stays active. Bin Filter, MediaFile/table, progress, journal,
+previous scanner stays active. Bin Filter, MediaFile/table, progress, journal,
 Unfinished Business, Undo and the operation engine are untouched.
 
 Benefit: pure matching and its tests have one clear component before the
@@ -244,7 +244,7 @@ approved rules; they do not establish new format requirements.
 Run focused normal and ASan/UBSan Bella suites. Compare the agreed selected
 values against independent expectations from genuine PMR/MDB/MXF/OMF/native
 inputs, retaining input/source pins and accounting explicitly for recorded
-intentional OldScanner differences. Confirm existing reader values/warnings
+intentional previous scanner differences. Confirm existing reader values/warnings
 and explicit-base results are unchanged. This is component verification, not
 an app scan/cutover or a performance/memory improvement claim.
 

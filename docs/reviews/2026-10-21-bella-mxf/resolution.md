@@ -7,7 +7,7 @@
 > refer to the reviewed revision. Removed components are identified as retired.
 
 Research date: 22 October 2026. **The user approved these MXF Resolution rules
-on 22 October 2026. They remain unimplemented; OldScanner stays active.**
+on 22 October 2026. They remain unimplemented; previous scanner stays active.**
 The alpha identification rule was approved separately.
 The [MDB Resolution rules](../2026-10-18-bella-mdb/resolution.md) already preserve
 MediaMuster's useful physical-raster behaviour. This review establishes the MXF
@@ -88,11 +88,11 @@ to copy. Its `ResolutionID` dictionary feeds Compression names; that format
 identifier is distinct from measured picture dimensions. This is a bounded
 static finding, not an exhaustive claim about every embedded library feature.
 
-## MediaMuster / OldScanner and actual paired results
+## MediaMuster / previous scanner and actual paired results
 
-Current [MXF projection](../../../src/oldscanner/mediaengine/mxfprojection.cpp)
+Current MXF projection (removed source)
 constructs source-specific nested rectangles and calls the small value-only
-[geometry selector](../../../src/oldscanner/mediaengine/picturegeometry_p.h).
+geometry selector (removed source).
 It checks dimensions, offsets and parent containment before checked field-height
 conversion, then emits the selected `widthxheight` string. Only supported
 FrameLayout codes 0–4 qualify. The known exact proxy configurations remain
@@ -109,7 +109,7 @@ or final GUI/source-selection claim is made.
 The original temporary probe independently asserted the Compression adapter
 field, not a separate Resolution adapter field. Its retained selected Resolution
 values support the comparison directly. Current
-[table adapter](../../../src/oldscanner/mediaengineadapter.cpp) assigns that
+table adapter (removed source) assigns that
 Resolution string and the [table model](../../../src/mediatablemodel.cpp)
 returns it unchanged; that source fact is separate from observed live app use.
 

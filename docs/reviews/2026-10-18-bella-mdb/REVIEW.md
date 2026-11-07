@@ -32,7 +32,7 @@ Research date: 18 October 2026. This is a requirements review, not a Bella
 implementation. The user subsequently approved the [MDB text rule](text-encoding.md)
 and [Clip Name/master-selection rule](clip-name.md). Other recommendations below
 are dated proposals; the later agreed scope linked above controls implementation.
-OldScanner remains the active scanner. Bin Filter is outside
+previous scanner remains the active scanner. Bin Filter is outside
 this review's implementation scope.
 
 **Source revision approved on 21 October 2026:** MDB remains first for Duration.
@@ -229,7 +229,7 @@ support. Native/source limits and no-runtime-change boundaries remain.
   media folders and local Shared Avid folders. Raw Bento tables, dictionaries,
   value ranges, attribute types and identities were examined without changing
   the media. Size, modification-time and inode checks were stable.
-- A separate read-only observer used the retained OldScanner reader/projector
+- A separate read-only observer used the retained previous scanner reader/projector
   to check which current result fields these databases can supply. Its results
   describe existing interpretation, not Bella policy or independent conformance.
   Full-file hashes before and after that read agreed for all six MDBs.
@@ -288,7 +288,7 @@ object's complete identity; other objects can also carry the same full ID.
 
 These counts include attributes, descriptors, tracks, dictionaries, references
 and repeated values. They are not counts of physical media or distinct clips.
-OldScanner's observer additionally exposes 24 decoded audio-summary subfields;
+previous scanner's observer additionally exposes 24 decoded audio-summary subfields;
 those are not extra stored Bento values.
 
 All six actual MDBs use Bento 1.0 with a fixed 24-byte table-of-contents layout
@@ -451,8 +451,8 @@ unrelated user column, private effect payload, duplicate text representation,
 database image or complete object graph as a lasting scan result.
 
 This is an approved workflow requirement for the fresh Bella implementation,
-not a change to OldScanner or a complete architecture decision. The user wants
-greater efficiency/elegance than OldScanner and MDVx-comparable efficiency while
+not a change to previous scanner or a complete architecture decision. The user wants
+greater efficiency/elegance than previous scanner and MDVx-comparable efficiency while
 retaining Bella's extra agreed information. That is a comparison target; no
 speed or memory improvement has been measured. MDB supplies information about
 physical inventory; it must not become the gate that decides whether physical

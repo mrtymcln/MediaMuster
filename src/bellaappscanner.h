@@ -1,18 +1,27 @@
 #pragma once
 
-#include "oldscanner/oldscanner.h"
+#include "bella/bellascanner.h"
+#include "mediafile.h"
 
+#include <QObject>
 #include <QPointer>
 #include <memory>
 
 class QThread;
+
+struct LogMessage
+{
+	QtMsgType level = QtInfoMsg;
+	QString module;
+	QString message;
+};
 
 // App-side owner-thread connection to Bella's synchronous organiser.
 class BellaAppScanner : public QObject
 {
 	Q_OBJECT
 public:
-	using Location = OldScanner::Location;
+	using Location = Bella::ScanLocation;
 	struct Options
 	{
 		QVector<Location> locations;

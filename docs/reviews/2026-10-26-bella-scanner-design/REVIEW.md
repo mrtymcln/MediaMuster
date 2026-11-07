@@ -10,7 +10,7 @@ Initial proposal: 26 October 2026. All eight registered decisions resolved:
 27 October 2026. Bella will use C++17 and the project's pinned Qt 6.5.3 to
 implement the agreed parser and source rules. The register distinguishes the
 chosen policies from rejected recommendations. Detailed implementation proposals
-below still require check-ins when concrete. OldScanner remains active during
+below still require check-ins when concrete. previous scanner remains active during
 development/comparison; cutover requires the user's explicit approval.
 
 **Decision check-ins, 27 October:** the user requires every new decision to be
@@ -35,13 +35,13 @@ approved; measurements must be presented first. No runtime or cutover is implied
 
 | Decision | Options and recommendation | Basis |
 | --- | --- | --- |
-| 1. How many reads at once? **Agreed 27 October.** | **Four reads total**, shared by PMR, MDB and required headers. The four slots may be used by one format or a mixture; no more than four source jobs together. The user chose this option explicitly. | The current [database loop](../../../src/oldscanner/mediaengine/scancoordinator.cpp) reads sequentially. The new combined limit is approved; runtime benefit remains unmeasured. |
-| 2. Who organises the work? **Agreed 27 October.** | **One background organiser with one reusable shared team of readers.** The organiser assigns work and collects results; all formats share no more than four source-reader jobs total. The organiser sits outside those four reader slots. | The user chose this option explicitly. Current [OldScanner](../../../src/oldscanner/oldscanner.cpp) already has one background organiser; shared concurrent readers are new work. Further lifetime/queue policies remain separate decisions. |
-| 3. When to release extracted database information? **Agreed 27 October.** | **Keep the required compact matching facts until all files have been matched, then release them.** Full database buffers/parser workspace still go after extraction. The user approved this following the book/notes explanation. Keep completed table values and required compact operation/status facts; the temporary matching catalogue is not a permanent cache. | Current [scan-wide indexes](../../../src/oldscanner/mediaengine/scancoordinator.cpp) feed [file/master matching](../../../src/oldscanner/mediaengine/scancoordinator.cpp) without a folder restriction. The earlier folder-release recommendation was corrected before approval. Matching scope is not changed by this lifetime decision. |
-| 4. What if databases are large? **Agreed 27 October.** | **Measure and report findings; no added memory caps or automatic memory controls.** The separate four-job maximum stays. Add no RAM quota, database-size policy limit or automatic reader reductions. Findings must come back to the user before any proposed change; approval does not pre-authorise later controls. | Captures [reserve the declared extent](../../../src/oldscanner/mediaengine/databaseimage.cpp). Four jobs do not impose a fixed byte ceiling. No Bella measurements exist yet; existing bounds/type/extent checks remain. |
-| 5. What if a file changes during reading? **Agreed 27 October.** | **Report the changed read and let the user rescan.** Exclude that read, keep the physical row and independently valid facts, and use only already-approved fallback rules. Add no automatic fresh source retry. Changed physical media invalidates facts tied to the earlier identity. This leaves PMR DTM exclusion, in-memory set fallback and other opening rules unchanged. | Current [change checks](../../../src/oldscanner/mediaengine/scancoordinator.cpp) exclude captured facts. Its [bounded fallback pass](../../../src/oldscanner/mediaengine/scancoordinator.cpp) reconsiders unopened headers; it does not reread changed databases. Cheap checks still do not guarantee an atomic snapshot. |
-| 6. How to wait for Cancel or closing to finish? **Agreed 27 October.** | **Responsive safe cleanup.** Preserve responsive Cancel and keep the window responsive while readers stop safely and release working data. Permit another scan/final app close only once cleanup finishes. Keep partial results as already agreed. Blocked drive reads may still delay safe completion; detailed API/lifetime mechanisms remain to review. | Current [Cancel](../../../src/oldscanner/oldscanner.cpp) sets a state/flag without joining; [the progress sheet](../../../src/progressdialog.cpp) already shows Cancelling. [BackgroundJob restart/shutdown](../../../src/backgroundjob.h) joins on the calling thread and can wait indefinitely. The new behaviour extends responsiveness through cleanup/closing. |
-| 7. How often to update progress and warnings? **Agreed 27 October.** | **Keep current progress delivery.** Preserve event-driven ordinary progress, existing full warning/path details, diagnostic logging and batched Console delivery. The proposed 200 ms timer/latest-snapshot coalescing was not selected. Add no warning summaries/suppression or new history cap. Any later change needs findings and another decision. | Current [callbacks](../../../src/oldscanner/oldscanner.cpp) persist each full log line then send batches, accumulate warnings to 50 entries and throttle header checkpoints to 10 seconds; progress is emitted per callback. The [Console](../../../src/mainwindow.cpp) appends a combined batch and already has an existing visible-history limit. No measured reporting gain is claimed. |
+| 1. How many reads at once? **Agreed 27 October.** | **Four reads total**, shared by PMR, MDB and required headers. The four slots may be used by one format or a mixture; no more than four source jobs together. The user chose this option explicitly. | The current database loop (removed source) reads sequentially. The new combined limit is approved; runtime benefit remains unmeasured. |
+| 2. Who organises the work? **Agreed 27 October.** | **One background organiser with one reusable shared team of readers.** The organiser assigns work and collects results; all formats share no more than four source-reader jobs total. The organiser sits outside those four reader slots. | The user chose this option explicitly. Current previous scanner (removed source) already has one background organiser; shared concurrent readers are new work. Further lifetime/queue policies remain separate decisions. |
+| 3. When to release extracted database information? **Agreed 27 October.** | **Keep the required compact matching facts until all files have been matched, then release them.** Full database buffers/parser workspace still go after extraction. The user approved this following the book/notes explanation. Keep completed table values and required compact operation/status facts; the temporary matching catalogue is not a permanent cache. | Current scan-wide indexes (removed source) feed file/master matching (removed source) without a folder restriction. The earlier folder-release recommendation was corrected before approval. Matching scope is not changed by this lifetime decision. |
+| 4. What if databases are large? **Agreed 27 October.** | **Measure and report findings; no added memory caps or automatic memory controls.** The separate four-job maximum stays. Add no RAM quota, database-size policy limit or automatic reader reductions. Findings must come back to the user before any proposed change; approval does not pre-authorise later controls. | Captures reserve the declared extent (removed source). Four jobs do not impose a fixed byte ceiling. No Bella measurements exist yet; existing bounds/type/extent checks remain. |
+| 5. What if a file changes during reading? **Agreed 27 October.** | **Report the changed read and let the user rescan.** Exclude that read, keep the physical row and independently valid facts, and use only already-approved fallback rules. Add no automatic fresh source retry. Changed physical media invalidates facts tied to the earlier identity. This leaves PMR DTM exclusion, in-memory set fallback and other opening rules unchanged. | Current change checks (removed source) exclude captured facts. Its bounded fallback pass (removed source) reconsiders unopened headers; it does not reread changed databases. Cheap checks still do not guarantee an atomic snapshot. |
+| 6. How to wait for Cancel or closing to finish? **Agreed 27 October.** | **Responsive safe cleanup.** Preserve responsive Cancel and keep the window responsive while readers stop safely and release working data. Permit another scan/final app close only once cleanup finishes. Keep partial results as already agreed. Blocked drive reads may still delay safe completion; detailed API/lifetime mechanisms remain to review. | Current Cancel (removed source) sets a state/flag without joining; [the progress sheet](../../../src/progressdialog.cpp) already shows Cancelling. [BackgroundJob restart/shutdown](../../../src/backgroundjob.h) joins on the calling thread and can wait indefinitely. The new behaviour extends responsiveness through cleanup/closing. |
+| 7. How often to update progress and warnings? **Agreed 27 October.** | **Keep current progress delivery.** Preserve event-driven ordinary progress, existing full warning/path details, diagnostic logging and batched Console delivery. The proposed 200 ms timer/latest-snapshot coalescing was not selected. Add no warning summaries/suppression or new history cap. Any later change needs findings and another decision. | Current callbacks (removed source) persist each full log line then send batches, accumulate warnings to 50 entries and throttle header checkpoints to 10 seconds; progress is emitted per callback. The [Console](../../../src/mainwindow.cpp) appends a combined batch and already has an existing visible-history limit. No measured reporting gain is claimed. |
 | 8. How should Duration sort? **Agreed 27 October.** | **Current timecode-number order.** Compare numeric displayed HH/MM/SS/FF components. Equal displayed tuples use Audio/Video/Unknown, then existing equivalent-row behaviour; blank grouping stays as today. Preserve earlier Bella known-zero/rounded-zero display corrections. No elapsed-time sort key, string-lexical sort, extra reads or new Duration display/export convention. | Current [Duration sort](../../../src/mediafilterproxy.cpp) implements this tuple/Kind order. [Unavailable display](../../../src/mediafile.h) groups first ascending. Existing [CSV](../../../src/mediacsv.cpp) exports the displayed label. The user chose this alternative rather than the elapsed-time recommendation. |
 
 Illustrative decision 8 example, using NDF and matching display clocks:
@@ -58,7 +58,7 @@ Video, Unknown); equivalent rows keep existing behaviour without a new filename
 tie-break. Unavailable Duration remains a separate group, first ascending as
 today. Descending reverses these orders. Known zero and rounding
 to a zero display frame use the already-agreed Bella display rules, rather than
-restoring OldScanner's zero-as-unavailable limitation.
+restoring previous scanner's zero-as-unavailable limitation.
 
 The requested check-ins are about choices, not repeated approval of already
 agreed requirements. Reading source and gathering evidence may continue while
@@ -100,7 +100,7 @@ progress delivery and compact-fact lifetime remain unchanged.
 This records sequencing approval only. Concrete scanner input/result types,
 physical-fact qualification, worker lifetime/queue declarations and their tests
 still need review before dependent implementation. No runtime code, reader,
-app integration, OldScanner activation or Bin Filter change is included.
+app integration, previous scanner activation or Bin Filter change is included.
 
 ## Small components and standard facilities
 
@@ -135,7 +135,7 @@ information. The flat matching-field alternative was declined.
 This approves contents and reuse of the existing matching value. Concrete
 physical-member names/types, capture/qualification policy, scanner interfaces
 and worker lifetime remain to review before dependent implementation. Existing
-reader reports, matching behavior, app MediaFile/table/operation code, OldScanner
+reader reports, matching behavior, app MediaFile/table/operation code, previous scanner
 activation and Bin Filter are unchanged. No runtime code is added by this record.
 
 **Reader-team mechanism approved, 4 November 2026:** the user chose Bella's own
@@ -170,7 +170,7 @@ required PMR/MDB facts remain owned through matching as already agreed. The
 four simultaneous-reader ceiling is unchanged. This is job accounting, not a
 RAM cap or a measured performance claim. Completion delivery, safe worker return
 and pool/session lifetime still need their concrete contract before runtime
-implementation. Readers, matching, app integration, OldScanner and Bin Filter
+implementation. Readers, matching, app integration, previous scanner and Bin Filter
 remain unchanged by this documentation update.
 
 **Reply delivery approved, 4 November 2026:** the user selected one shared
@@ -188,7 +188,7 @@ database facts retain their approved scan-wide lifetime. Receiving replies is
 not a substitute for waiting for dispatched workers to actually return and
 clean up. Exact inbox/completion declarations and safe session/pool lifetime
 remain part of the concrete implementation contract to review. No runtime,
-reader, matching, app/operation, OldScanner or Bin Filter code changes are made
+reader, matching, app/operation, previous scanner or Bin Filter code changes are made
 by this approval record; no measured performance gain is claimed.
 
 **Pool lifetime approved, 5 November 2026:** the user chose a fresh Bella-owned
@@ -212,12 +212,12 @@ or early release of data readers still use. Existing responsive cleanup, Cancel,
 partial results and final publication rules remain agreed. Concrete scanner/
 completion declarations, other session/GUI lifetime details and physical-fact
 qualification remain to review. No runtime/app code or measured gain is added
-by this decision record. OldScanner remains active and Bin Filter unchanged.
+by this decision record. previous scanner remains active and Bin Filter unchanged.
 
 **Physical-file recheck approved, 5 November 2026:** the user chose to compare
 both filesystem size and modification date with the discovery capture, using
 Qt, and confirm that the physical media file still exists before matching uses
-the captured information. The alternative of preserving OldScanner's existence/
+the captured information. The alternative of preserving previous scanner's existence/
 modification-date-only check was declined. This supplies the discovery-to-matching
 qualification producer; matching itself still performs no filesystem I/O.
 
@@ -234,7 +234,7 @@ Handling unavailable/unperformed checks is explicitly still undecided and must
 be presented before producer implementation. Do not silently map those cases
 to either verified/eligible or Changed. Exact physical-member/checkpoint and
 remaining scanner declarations also remain to review. This records the selected
-measurements, not new runtime code or a measured performance gain. OldScanner,
+measurements, not new runtime code or a measured performance gain. previous scanner,
 Bin Filter, app records and operation code are unchanged.
 
 **Incomplete attempted recheck approved, 5 November 2026:** when a physical-file
@@ -258,7 +258,7 @@ Skipped/unperformed checks (including Cancel) and uncertain file presence are
 outside this approval and remain to review. No automatic retry, new public
 physical-status enum, reader/matching change or file-operation permission is
 introduced. Exact scanner declarations/reporting remain to review; this record
-adds no runtime/app code. OldScanner and Bin Filter remain unchanged.
+adds no runtime/app code. previous scanner and Bin Filter remain unchanged.
 
 | Responsibility | Proposed implementation |
 | --- | --- |
@@ -364,12 +364,12 @@ representative scan time and peak memory under the agreed design before any
 new policy proposal. A job-count limit is not a fixed memory-byte limit.
 
 The current app already uses the same broad lifetime pattern. Its
-[database preparation](../../../src/oldscanner/mediaengine/databasesource.cpp)
+database preparation (removed source)
 releases the full image/parsed records after returning extracted projections
 and a source receipt. Projections/indexes survive matching; the working session
-survives [row preparation](../../../src/oldscanner/oldscanner.cpp), then is
+survives row preparation (removed source), then is
 released on return. Final rows retain values and compact status/operation checks.
-OldScanner's extracted observations also include raw field values, source
+previous scanner's extracted observations also include raw field values, source
 references and explanations. Bella's intended simplification is in the retained
 representation and fields; no saving has yet been measured.
 
@@ -449,14 +449,14 @@ approved baseline; the rejected timer/coalescing proposal is not a requirement.
 
 **Reconciliation audit omitted by approval, 7 November 2026.** Bella keeps the
 per-file local reference and metadata qualification checks, including reporting
-detected changes and excluding affected facts. Leave OldScanner's routine
+detected changes and excluding affected facts. Leave previous scanner's routine
 reconciliation audit out of Bella. That includes the reverse check for database
 entries without local media and the separate notices comparing eligible source
 values. Keep full paths and explanations for the problems Bella does check.
 Preserve the changed-source safety handoff and live operation revalidation as
 part of the later app integration review.
 
-The EDIT and Shared rerun reproduced 255 OldScanner notices. There were 220
+The EDIT and Shared rerun reproduced 255 previous scanner notices. There were 220
 import path disagreements, 23 MDB file IDs without a match in the scanned
 folders, ten pixel layout disagreements and two timing disagreements for one
 video. None was a changed-source notice. The scanners agreed on local database
@@ -565,16 +565,16 @@ four outstanding jobs, out-of-order replies, worker cleanup after Cancel,
 physical-file rechecks and unexpected callback failures.
 
 On the managed EDIT and Shared locations with OMF and optional precompute
-details enabled, Bella and OldScanner discovery agreed on all 2,413 physical
+details enabled, Bella and previous scanner discovery agreed on all 2,413 physical
 paths and their common filesystem fields, plus the same six PMR and six MDB
 paths. Bella completed all six folder listings. Its standalone scan returned
 all 2,413 rows after 12 database reads and one required MXF header read, with
 all local references listed and zero warnings. Every matching result agreed
 with the earlier Bella matching verification for the same paths and options.
 Two physical paths sharing one Avid file ID retained separate rows. The later
-metadata comparison with OldScanner on the same paths agreed on all retained
+metadata comparison with previous scanner on the same paths agreed on all retained
 table values for 2,409 rows. Four Shared rows used the approved `J2K HD` name
-where OldScanner used `JPEG2000`. The approved exact clock interpretations
+where previous scanner used `JPEG2000`. The approved exact clock interpretations
 preserved the displayed durations. The app handoff still needs verification.
 
 **App handoff review approved, 7 November 2026.** Review first how Bella's
@@ -651,7 +651,7 @@ and the original MXF and databases retained their hashes and file stamps.
 
 **Separate Bella preview package approved, 7 November 2026.** Build an opt-in
 MediaMuster Bella Test app with its own application identity, diagnostic logs
-and recovery storage. The ordinary build selects OldScanner until an explicit
+and recovery storage. The ordinary build selects previous scanner until an explicit
 switch approval. The preview covers scanning, filtering and CSV export.
 Verify it on EDIT and Shared. Use the existing table and CSV writer with
 the approved Bella columns and exact values. Use current rate label precision
@@ -698,7 +698,7 @@ to Bella requires separate approval.
 
 The [Rebalance preparation step](../../../src/rebalancer.cpp) now reports the
 first blocked file and stops before dispatching the job. It uses the shared
-scan receipt, so a new plan based on OldScanner also stops early if its receipt
+scan receipt, so a new plan based on previous scanner also stops early if its receipt
 already requires a rescan. Delete uses the same operation runner and journal
 fields as Copy and Move.
 
@@ -723,9 +723,9 @@ Shared media and databases retained their file stamps and SHA-256 hashes.
 ordinary app workflows enabled in a separate build with its own identity and
 operation history. Scan disposable media, exercise Copy, Move, Delete and
 Rebalance through the app, then verify rescans and Undo. Restart the app with
-interrupted jobs prepared from OldScanner and Bella scans and verify that
+interrupted jobs prepared from previous scanner and Bella scans and verify that
 Unfinished Business resumes them. Measure memory across repeated scans in one
-process. The ordinary app keeps OldScanner pending explicit switch approval.
+process. The ordinary app keeps previous scanner pending explicit switch approval.
 
 The signed macOS arm64 Release rehearsal uses Qt 6.5.3 and a scratch copy of
 the current source. Its distinct bundle identity keeps operation history
@@ -742,7 +742,7 @@ UI check confirmed that Manage Media and Rebalance were disabled during a scan,
 available after Cancel and rescan, and that Quit waited for scan cleanup.
 
 For startup recovery, the normal-startup rehearsal opened Unfinished Business
-for a two-file Move started by the ordinary OldScanner build and again for a
+for a two-file Move started by the ordinary previous scanner build and again for a
 Move started by Bella. Each job was interrupted after one file landed. Resume
 moved only the pending file, and Undo restored both files byte for byte. The
 automatic rescan showed both restored rows. Original Shared files and databases
@@ -761,7 +761,7 @@ similar final readings. These measurements describe the observed session.
 
 | Check | Required evidence |
 | --- | --- |
-| Useful outputs | Compare real files with OldScanner by path and full ID; retain an explicit list of the agreed differences. Cover database-backed, unmatched and database-free files, with optional details both on and off. |
+| Useful outputs | Compare real files with previous scanner by path and full ID; retain an explicit list of the agreed differences. Cover database-backed, unmatched and database-free files, with optional details both on and off. |
 | Parser safety | Known text/ID/timing cases, truncated/oversized declarations, overflow, invalid offsets, unsupported layouts and local damage boundaries. Reuse useful genuine fixtures and interpretation tests. |
 | Scheduling | Instrumented tests prove no more than four source jobs and a bounded completion store. Reordered completions must produce the same matches and values. |
 | Cancellation and lifecycle | Cancel during discovery, read, parse, matching and queued publication; late progress/completion, close, I/O failure and a deliberately blocked source. Prove every dispatched job releases its state and produces a terminal outcome. |
@@ -769,7 +769,7 @@ similar final readings. These measurements describe the observed session.
 | Performance | Compare the same release build, roots, media and options on local and attached/network storage, including warm/cold-cache conditions where practical. Record total time, header opens, bytes read and GUI finalisation cost alongside output agreement. |
 
 Set numeric performance expectations from that baseline rather than promising
-a speedup from architecture alone. OldScanner remains the app's scanner until
+a speedup from architecture alone. previous scanner remains the app's scanner until
 the independent Bella implementation has been compared and the user approves
 the switch. The design record
 preserves source anchors, standard-library references and the proposal's status.
@@ -797,7 +797,7 @@ The Qt 6.5.3 preview was rebuilt and signed. All seven targeted suites passed,
 including presentation, preview UI, CSV, table, filtering, Bin Filter and
 naming. The preview UI suite included a read-only Cancel and rescan on EDIT
 and Shared, returning all 2,413 rows and verifying CSV export. The ordinary
-build still selects OldScanner.
+build still selects previous scanner.
 
 ### Mac cutover
 
@@ -824,7 +824,7 @@ separate preview UI suite.
 Six smoke tests used the normal app's compiled objects, disposable Shared
 copies and isolated journals. Copy, Move, Delete, Rebalance and Undo passed
 through the app controls. Startup Unfinished Business resumed jobs started
-by OldScanner and Bella, then Undo restored the files byte for byte. Original
+by previous scanner and Bella, then Undo restored the files byte for byte. Original
 Shared media and database files retained their hashes and file stamps.
 
 ### Windows cutover
@@ -832,7 +832,7 @@ Shared media and database files retained their hashes and file stamps.
 **Approved, 7 November 2026.** Make Bella the default in the normal Windows
 app and its GitHub Actions Release package. Keep the `MediaMuster.exe` name,
 normal file actions and startup recovery, and Bin Filter's existing full-ID
-behavior. The preview remains a separate scan/export build. OldScanner
+behavior. The preview remains a separate scan/export build. previous scanner
 retirement is a separate change.
 
 The normal Windows target now selects Bella through the same app wiring as
@@ -840,6 +840,20 @@ macOS. The existing GitHub Actions workflow builds that target and packages
 the standard executable. A CMake selection check passed for the normal
 Windows configuration, and five focused Mac suites passed, including the
 read-only EDIT and Shared scan of 2,413 files. The previous published Windows
-build passed 49 test suites with Bella components and the OldScanner app.
+build passed 49 test suites with Bella components and the previous scanner app.
 Native Windows build, packaging and genuine Windows media verification of
 this cutover are pending.
+
+### File Check separation and retirement
+
+**Approved, 7 November 2026.** Bella remains the scanner/parser engine. A separate
+File Check component verifies operation inputs using Bella's parser helpers;
+File Operations continues Copy, Move, Delete, Undo, Rebalance and recovery.
+Preserve existing checks and messages, saved-job requirements and operation
+checkpoints; keep Bin Filter unchanged. Test operations/recovery before removing
+the retired scanner. The [implementation record](../2026-11-07-file-check/README.md)
+records the decoder compatibility choice separately from this responsibility
+boundary. The user chose matching Bella's existing simplified format support
+rather than retaining broader decoding paths. Required identities outside that
+support safely refuse the affected operation; no physical check, saved identity
+requirement, warning message or operation checkpoint is dropped.

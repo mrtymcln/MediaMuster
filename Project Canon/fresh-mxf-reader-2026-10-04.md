@@ -48,11 +48,11 @@ The reader does not automatically choose the first header or the footer as a win
 
 Implementation:
 
-- [`mxfreader.h/.cpp`](../src/oldscanner/mediaengine/mxfreader.cpp): framing, partitions, Primers,
+- `mxfreader.h/.cpp` (removed source): framing, partitions, Primers,
   local property boundaries and raw evidence collection.
-- [`mxfobjects_p.h/.cpp`](../src/oldscanner/mediaengine/mxfobjects_p.cpp): verified type decoding,
+- `mxfobjects_p.h/.cpp` (removed source): verified type decoding,
   schema names, identities and qualified reference resolution.
-- [`mxfcatalogue_p.h`](../src/oldscanner/mediaengine/mxfcatalogue_p.h): static source vocabulary
+- `mxfcatalogue_p.h` (removed source): static source vocabulary
   derived from BBC libMXF's baseline, extension and Avid data-model definitions.
 - [`scanmodel.h`](../src/mediaengine/scanmodel.h): optional MXF set/property contexts.
 - [`tst_mediaenginemxf.cpp`](../tests/tst_mediaenginemxf.cpp): independently authored cases,

@@ -5,7 +5,7 @@
 - [Project Bella](../Project%20Bella/README.md): requirements and decision history
   for the scanner/parser used by the current macOS and Windows app. The
   [implementation map](../src/bella/README.md) covers its readers, matcher,
-  organiser and app integration. [OldScanner](../src/oldscanner/README.md) remains
+  organiser and app integration. previous scanner (removed source) remains
   for legacy tests/probes, shared admission and live operation readers; Bin Filter
   continues using its existing AVB implementation.
 - [Project Copland](../Project%20Copland/README.md): earlier V1 scope and confirmed
@@ -134,7 +134,7 @@ implementation to check what is built; dated reports retain their original scope
   comparisons, reused thirteen-header facts and the equivalent input contract
   for preserving the existing names, refinements, fallbacks and source preference.
 - [Actual MDB/MXF Compression comparison](reviews/2026-10-21-bella-mxf/compression-comparison.md):
-  current OldScanner execution on 2,411 same-file pairs; 2,397 exact matches and
+  current previous scanner execution on 2,411 same-file pairs; 2,397 exact matches and
   14 differences, with all differing files and a full CSV.
 - [Compression consistency](reviews/2026-10-21-bella-mxf/compression-consistency.md):
   preserve the naming module; the verified J2K rate-form correction is approved,

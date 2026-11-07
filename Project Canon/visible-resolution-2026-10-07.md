@@ -91,10 +91,10 @@ All proxy/padding offsets are zero. Both JFIF sources record DisplayYOffset 5.
 
 ## Implementation and verification
 
-The shared private [geometry selector](../src/oldscanner/mediaengine/picturegeometry_p.h) performs
+The shared private geometry selector (removed source) performs
 bounds checks and the narrow proxy comparison. The
-[MXF projection](../src/oldscanner/mediaengine/mxfprojection.cpp) and
-[MDB/OMF projection](../src/oldscanner/mediaengine/omfprojection.cpp) supply their format-specific
+MXF projection (removed source) and
+MDB/OMF projection (removed source) supply their format-specific
 coordinate systems and defaults. Parsing and database-first scheduling stay in
 their existing engines.
 

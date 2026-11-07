@@ -1,5 +1,5 @@
 // Authored, already-read report values exercise the approved matching contract.
-// No file, reader, old scanner or alternate selector supplies expected results.
+// Expected results are authored independently of readers and selectors.
 #include "bella/matching.h"
 
 #include <QDir>

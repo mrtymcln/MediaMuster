@@ -7,7 +7,7 @@ Review date: 22 October 2026. The user approved MXF
 [Effect Category](effect-category.md) separately. **The user accepted these MXF
 Effect rules on 23 October 2026; they remain unimplemented.** The
 [MDB Effect contract](../2026-10-18-bella-mdb/effect.md) and shared catalogue
-integration are already agreed. OldScanner remains active; Bin Filter is unchanged.
+integration are already agreed. previous scanner remains active; Bin Filter is unchanged.
 
 Effect uses the same selected Precompute Clip Name and the same combined lookup
 as Effect Category. It is the returned readable Effect name, not another MXF
@@ -97,7 +97,7 @@ helper. An unknown Effect does not change Type or Precompute Category.
 The label remains inferred from editable names. A match can change after a rename
 and does not prove effect identity or execution variant. This field introduces no
 new media-header opening reason or cross-source priority; the already read
-Clip Name/Type supply its input. Current OldScanner can request a header for a
+Clip Name/Type supply its input. Current previous scanner can request a header for a
 generic unresolved derived-label conflict, though missing/unknown Effect alone
 does not do so. Bella's final-name derivation does not require that separate read.
 

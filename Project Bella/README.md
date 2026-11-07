@@ -16,8 +16,9 @@ Bella now supplies scans in the normal macOS and Windows app through
 `BellaAppScanner`; the separate optional Bella preview build restricts the app
 to scan/export rehearsal. Normal builds retain file operations. The scanner,
 matcher, reader helpers and row/operation adapters are implemented under
-[`src/bella`](../src/bella/README.md) and `src/bella*.cpp`. OldScanner remains
-available to tests and operation identity checks; Bin Filter retains its
+[`src/bella`](../src/bella/README.md) and `src/bella*.cpp`. File Check now verifies operation inputs using
+Bella's parser helpers; see the [implementation record](../docs/reviews/2026-11-07-file-check/README.md)
+for its approved format scope and verification. Bin Filter retains its
 existing AVB readers.
 
 Each scan completes physical discovery, reads PMR/MDB sources with one fresh
@@ -30,7 +31,7 @@ and compact operation checks; working reports and indexes are released.
 Bella uses the approved PMR → MDB → already-read-header Project priority,
 MDB-first technical/editorial values and the already-read-header Compression
 exception. Missing a displayed field alone does not open a header. File Path
-replaces the OldScanner Source Path/Location pair; Effect Sequence is excluded.
+replaces the previous scanner Source Path/Location pair; Effect Sequence is excluded.
 Exact Duration retains known zero, and sorting uses numeric displayed timecode.
 The implementation map and active format limits are in
 [the Bella source README](../src/bella/README.md#current-implementation) and
@@ -40,7 +41,7 @@ The implementation map and active format limits are in
 
 The following sections preserve the requirements review and each dated stage.
 References to the “current app”, unfinished components, pending runtime work or
-OldScanner remaining active refer to the source state discussed in that entry.
+previous scanner remaining active refer to the source state discussed in that entry.
 Later approvals and the current implementation summary above take precedence
 when reading status claims. Historical test totals and measurements retain their
 original scope; they are not fresh validation of the current build.
@@ -50,17 +51,17 @@ reduce scan time and memory use after the Canon and Copland iterations and the
 comparison with the installed MDVx executable.
 
 Confirmed goal on 21 October 2026: make Bella more efficient and elegant than
-OldScanner, targeting MDVx-comparable efficiency while retaining Bella's
+previous scanner, targeting MDVx-comparable efficiency while retaining Bella's
 additional agreed metadata. This is a design and comparison target, not a
 measured result or permission to drop required fields for speed.
 
-Clarified by the user on 24 October 2026: OldScanner's useful metadata results
+Clarified by the user on 24 October 2026: previous scanner's useful metadata results
 are the trusted behavioral reference; the main motivation is the cost and
 structure of obtaining those results. Bella is an implementation redesign,
 preserving verified interpretations through small new helpers and honoring the
 specific field/interpretation changes already agreed. Concentrate on acquisition,
 traversal, intermediate allocations, data lifetimes and scheduling. Compare
-required outputs against OldScanner, making deliberate agreed differences explicit,
+required outputs against previous scanner, making deliberate agreed differences explicit,
 alongside scan time and peak memory. The user's confidence in the existing results
 is not a claim that every format/corruption case has been exhaustively verified.
 
@@ -83,7 +84,7 @@ required compact matching facts through matching, then release them. New concret
 implementation/label/API choices still need a plain-English check-in before
 dependent work; completion of this register is not approval of every proposal
 or app cutover. The shared ID helper, PMR parser and MDB parser are implemented;
-there is no runnable Bella scanner or measured scan improvement yet. OldScanner
+there is no runnable Bella scanner or measured scan improvement yet. previous scanner
 stays active until explicit cutover approval.
 
 Standing design principle reaffirmed by the user on 25 October 2026: actively
@@ -94,12 +95,12 @@ behavior. Preserve necessary ownership/type/bounds checks and agreed metadata;
 judge the implementation by correct results and measured scan time/peak memory.
 
 **Scope discipline reaffirmed, 3 November 2026:** the user instructed Bella
-not to inherit superfluous OldScanner capabilities. Ground new implementation
+not to inherit superfluous previous scanner capabilities. Ground new implementation
 proposals in factual format behaviour and demonstrated needs of actual
 PMR/MDB/MXF/OMF files. Existing code or an authored test alone does not establish
 a product requirement. Keep the agreed fields, necessary validation and checks;
 do not add speculative metadata, reconciliation machinery or compatibility
-branches merely because OldScanner contains them. Identify a concrete need
+branches merely because previous scanner contains them. Identify a concrete need
 before proposing an addition, and keep unobserved cases distinct from real-file
 evidence. The single-container OMF decision below applies this rule.
 
@@ -175,7 +176,7 @@ pass **203 Qt cases, 0 failed**, with retired real-media fixture selectors
 excluded. The fresh corpus rerun returns identical complete Bella reports in
 both detail modes across all 13 original inputs, excluding elapsed timing only:
 2,515 files, 1,420 masters and all 30 JPED Video records remain. Input hashes,
-OldScanner comparisons, native MDVx comparisons and the independent reader's
+previous scanner comparisons, native MDVx comparisons and the independent reader's
 results are unchanged. The corpus/random-mutation sanitizer run passes all
 298 executions; targeted sanitizer results are recorded with the current
 [audit verification](../docs/reviews/2026-11-01-bella-mdb-review/VERDICT.md).
@@ -277,7 +278,7 @@ the installed Media Composer and MDVx binaries. This authorizes the evidence
 check; it does not change the settled source/numbering rules or approve new
 contracts by implication. New discrepancies or concrete implementation choices
 still require a plain-English check-in. No timing helper or app integration has
-been added at this checkpoint; OldScanner remains active and Bin Filter unchanged.
+been added at this checkpoint; previous scanner remains active and Bin Filter unchanged.
 
 **Timing arrangement agreed, 4 November 2026:** the user approved one shared
 `src/bella/timing.h/.cpp` component with separate pure operations for source-aware
@@ -314,7 +315,7 @@ wide intermediate products and signed-64 output boundaries. The pre-build
 21,735 source comparisons and this post-build math verification are distinct;
 see the [implementation receipt](../docs/reviews/2026-11-04-bella-timing-reconfirmation/IMPLEMENTATION.md).
 This establishes the component, not a runnable Bella scanner, native UI parity
-or a measured performance gain. OldScanner remains active; Bin Filter unchanged.
+or a measured performance gain. previous scanner remains active; Bin Filter unchanged.
 
 **Post-reader timing connections selected, 4 November 2026:** the user chose
 Option 1: connect existing reader results to the shared timing helper as a
@@ -327,7 +328,7 @@ The alternative was including the same work in the larger matching/row-assembly
 implementation. The proposed touch points are the existing Bella timing component
 and its tests, plus this decision record; existing reader source/reports,
 MediaFile/table, progress, journal, Unfinished Business, Undo and Bin Filter
-remain unchanged. OldScanner remains active. The [concrete function/result proposal](../docs/reviews/2026-11-04-bella-timing-reconfirmation/CONNECTIONS.md)
+remain unchanged. previous scanner remains active. The [concrete function/result proposal](../docs/reviews/2026-11-04-bella-timing-reconfirmation/CONNECTIONS.md)
 was subsequently approved: one `FileTiming` containing independent optional
 `duration` and `display` groups, with display settings in `TimecodeInputs`.
 Four `timingFor` overloads accept already-selected MDB/MXF/OMF/native values;
@@ -352,18 +353,18 @@ use final selected confirmed Precompute Type and Clip Name. Do not add a new
 codec catalogue, suffix parser, effect-identity claim, Effect Sequence output,
 source search or permanent name cache. The alternative was starting matching
 first and completing these connections later or within that larger change.
-The existing naming implementations are currently compiled with OldScanner and
+The existing naming implementations are currently compiled with previous scanner and
 some other consumers. The [concrete sharing proposal](../docs/reviews/2026-11-04-bella-naming/SHARING.md)
 was reviewed and the user selected the alternative: compile the same unchanged
-lookup files separately for Bella and OldScanner. Add their current source/header
-paths to `mediamuster_bella`; retain all existing OldScanner/app/test compilation
+lookup files separately for Bella and previous scanner. Add their current source/header
+paths to `mediamuster_bella`; retain all existing previous scanner/app/test compilation
 owners and introduce no shared naming target. The files, namespaces, algorithms
-and catalogue tables remain unchanged. Removing OldScanner later requires
+and catalogue tables remain unchanged. Removing previous scanner later requires
 retaining or moving the naming files currently inside its folder either way;
-this choice does not approve removal or cutover. OldScanner remains active and
+this choice does not approve removal or cutover. previous scanner remains active and
 Bin Filter unchanged. The selected root CMake addition is implemented. Existing
 Compression/Effect suites pass 31+36 cases before/after and the same unmodified
-tests pass when linked only to Bella/Qt, with no OldScanner library. Lookup and
+tests pass when linked only to Bella/Qt, with no previous scanner library. Lookup and
 header/table/test hashes stay unchanged; all other current build owners remain
 intact. The [naming function/result proposal](../docs/reviews/2026-11-04-bella-naming/CONTRACT.md)
 is now approved: one `naming.h/.cpp` and `tst_bellanaming.cpp`; Bella-owned
@@ -377,7 +378,7 @@ instance or matched field is returned. The approved component is implemented.
 All eight Bella suites pass 980 cases with 14 existing fixture skips per normal/
 ASan+UBSan mode; the new naming suite contributes 64 passes. Genuine-file checks
 cover 5,104 Compression results and 1,443 requested Effect results per mode,
-with no unexpected differences from the independent OldScanner reference and
+with no unexpected differences from the independent previous scanner reference and
 all 60 complete reader reports/warnings unchanged. The four previously approved
 MDB J2K refinements and one approved MXF alpha path are explicitly accounted for.
 See the [naming verification](../docs/reviews/2026-11-04-bella-naming/VERIFICATION.md).
@@ -418,7 +419,7 @@ preserving original numeric meaning and unavailable versus zero. Exact compact
 checks, inputs, bounded helper declarations, lookup ownership and placement
 remain to review.
 The user then asked to confirm the proposed extra header-identity checks from
-actual need, rather than OldScanner/authored tests. The [necessity review](../docs/reviews/2026-11-04-bella-matching/NECESSITY.md)
+actual need, rather than previous scanner/authored tests. The [necessity review](../docs/reviews/2026-11-04-bella-matching/NECESSITY.md)
 independently inspected 4,188 MXF and 82 OMF/embedded carriers: each had one
 applicable complete file ID and one linked master; each MXF had one material
 package. Primary OP-Atom/OMF evidence did not establish an all-master
@@ -447,7 +448,7 @@ rule. This adds no raw database retention, permanent cache or second mutable
 matching-report collection; source paths/qualifications and warning delivery
 remain required. Physical input and remaining concrete declarations are pending.
 Before fixing that physical input, the [PMR filename comparison](../docs/reviews/2026-11-04-bella-matching/FILENAMES.md)
-needs an explicit choice: exact spelling versus OldScanner's guarded
+needs an explicit choice: exact spelling versus previous scanner's guarded
 exact-first/NFC/lowercase fallback. Fresh read-only observation found all 2,492
 entries in seven PMRs matched physical basenames exactly; no normalized-only
 match, collision or non-ASCII PMR filename was observed. This does not establish
@@ -455,7 +456,7 @@ all-producer behavior. The user approved **exact PMR filename spelling**,
 including case/Unicode code points, and declined the guarded normalized fallback.
 Implement same-folder association without case conversion, NFC normalization or
 sibling-name uniqueness machinery. This does not change filesystem path
-resolution, reader reports or active OldScanner behavior. Physical/folder input
+resolution, reader reports or active previous scanner behavior. Physical/folder input
 members remain to review before matching code.
 The user then approved the **existing full physical path** as each call's
 read-only file identifier, rather than a position in captured inventory. Matching
@@ -504,7 +505,7 @@ both native and embedded OMF timing are usable on header fallback. OMF timing
 is used only when native exact Duration is unavailable; no display clock is
 borrowed between contributions. Usable MDB timing still wins. A hypothetical
 cross-database equivalent-fraction arbitration was not established as an actual
-problem; no special mechanism is added. OldScanner remains active and Bin
+problem; no special mechanism is added. previous scanner remains active and Bin
 Filter unchanged. Any proposed progress, MediaFile/table, journal, Unfinished
 Business or Undo integration must be disclosed before that work.
 
@@ -532,7 +533,7 @@ entries independently. Database reports, shared folder facts and problems keep
 their existing scan-level ownership. The visible table still publishes at the
 end. This chooses Bella's internal entry arrangement, not existing MediaFile/
 table or operation integration. Exact members and remaining scanner contracts
-still require review before implementation. OldScanner remains active and Bin
+still require review before implementation. previous scanner remains active and Bin
 Filter unchanged. See the [entry-layout record](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#small-components-and-standard-facilities).
 
 **Entry contents approved, 4 November 2026:** the user chose physical facts plus
@@ -546,7 +547,7 @@ remain scan-level information, and the visible table still publishes at the end.
 This approves the contents/representation; exact physical-member declarations,
 capture/qualification policy and remaining scanner interfaces/lifetimes still
 require review before implementation. Existing readers, matching, app records,
-operations, OldScanner and Bin Filter are unchanged by this documentation update.
+operations, previous scanner and Bin Filter are unchanged by this documentation update.
 
 **Qt reader pool approved, 4 November 2026:** the user chose Bella's own
 `QThreadPool` to provide the shared team of up to four source-reading jobs,
@@ -594,13 +595,13 @@ setup repeats per scan; its cost is unmeasured. Responsive GUI cleanup, shared
 Cancel, partial results and final table publication stay agreed. Other concrete
 scanner declarations, session/GUI lifetime and physical qualification still need
 review before dependent implementation. This update changes no runtime/app
-code. OldScanner remains active and Bin Filter unchanged. See the [pool-lifetime
+code. previous scanner remains active and Bin Filter unchanged. See the [pool-lifetime
 record](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#small-components-and-standard-facilities).
 
 **Physical-file size/date recheck approved, 5 November 2026:** before using
 discovery-captured media facts for matching, confirm existence and compare fresh
 Qt filesystem size and modification date with discovery. The user selected
-both measurements rather than OldScanner's modification-date-only check.
+both measurements rather than previous scanner's modification-date-only check.
 Report a detected change, retain the physical row and exclude metadata tied
 to the earlier capture under the existing changed-file/manual-rescan rule.
 This is separate from each parser's own capture checks; matching remains free
@@ -676,7 +677,7 @@ the handoff using the app's existing operation record. See the
 and export preview with its own identity and storage. Use the existing table,
 CSV and progress window, the agreed Bella columns, completed stage counts and
 responsive Cancel and Quit. Verify on EDIT and Shared. The normal app continues
-using OldScanner pending the explicit switch decision. See the
+using previous scanner pending the explicit switch decision. See the
 [approved preview package](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#verification-before-cutover).
 
 **Delete and Rebalance safety approved, 7 November 2026.** Apply the same
@@ -684,7 +685,7 @@ three safety instructions already approved for Copy and Move. Before starting
 Rebalance, refuse the whole proposed plan if any planned move already requires
 a rescan. Show the file and reason so the user can rescan and make a fresh plan.
 Keep the existing live checks for each move. Verify Delete and Rebalance on
-disposable files, including Undo and interrupted-job recovery. OldScanner
+disposable files, including Undo and interrupted-job recovery. previous scanner
 remains the ordinary app scanner pending explicit switch approval. See the
 [operation review](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#verification-before-cutover).
 
@@ -693,7 +694,7 @@ with Bella, the normal file operations and startup recovery enabled. Use
 disposable media and isolated operation history to test the whole app workflow,
 including Undo and recovery of jobs started with either scanner. Measure memory
 across repeated scans in one app session. The normal app continues with
-OldScanner until explicit switch approval. See the
+previous scanner until explicit switch approval. See the
 [rehearsal record](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#verification-before-cutover).
 
 **Fixed-point Bit Depth labels approved, 7 November 2026.** Show `10-bit`
@@ -754,7 +755,7 @@ are agreed below. Detailed metadata values remain for their contract review.
 The size/date check mechanism, unavailable-check handling, Cancel checkpoints
 and expected-failure replies are agreed below, followed by the approved entry
 and report members. This record adds documentation only;
-OldScanner remains active and Bin Filter is unchanged.
+previous scanner remains active and Bin Filter is unchanged.
 
 **OMF size/modification-time check agreed, 2 November 2026:** the user chose
 the recommended size and modification-time check for OMF, just like PMR, MDB
@@ -770,7 +771,7 @@ do not prove an atomic snapshot. The agreed selective label/TOC/needed-value
 reading, embedded/native source rules and file-operation verification are
 unchanged. Unavailable-check handling and Cancel checkpoints are agreed below;
 exact report representation remains for its check-in. This record changes
-documentation only; OldScanner stays active and Bin Filter is unchanged.
+documentation only; previous scanner stays active and Bin Filter is unchanged.
 
 **Readable but unverified OMF agreed, 2 November 2026:** the user chose to
 keep otherwise usable OMF metadata and mark the size/modification-time check
@@ -786,7 +787,7 @@ agreed OMF shared-structure/local-damage and source-selection rules. This adds
 no automatic retry, extra metadata-read trigger, native file-identity check or
 change to file-operation verification. Cancel checkpoints are agreed below;
 exact report types remain for their check-ins. This record changes documentation only;
-OldScanner stays active and Bin Filter is unchanged.
+previous scanner stays active and Bin Filter is unchanged.
 
 **OMF Cancel checkpoints agreed, 2 November 2026:** the user chose the
 recommended option: check the shared stop flag before and after each file-read
@@ -803,14 +804,14 @@ unfinished shared framing usable or report an unfinished job as successful;
 retain only independently qualified facts under the existing rules. The
 two-major-stage arrangement is agreed below. PMR/MDB/MXF
 checkpoints and file-operation verification are unchanged. This record changes
-documentation only; OldScanner stays active and Bin Filter is unchanged.
+documentation only; previous scanner stays active and Bin Filter is unchanged.
 
 **OMF expected-failure replies agreed, 2 November 2026:** the user chose
 ordinary checked replies for OMF, just like PMR, MDB and MXF. Helpers return a
 usable value or a failure/unavailability answer, and callers check it. Use this
 route for expected file-open, read, format and source-check problems rather
 than private parsing exceptions caught at the reader entry point. The latter
-was the declined alternative and is used by the current OldScanner OMF reader
+was the declined alternative and is used by the current previous scanner OMF reader
 for some expected failures.
 
 This settles control flow only. Preserve the agreed shared-structure/local-damage
@@ -819,7 +820,7 @@ and cancelled outcomes. Unexpected allocation or programming failures remain
 distinct from damaged input; do not add a blanket catch or promise that an
 allocating reader cannot throw. Exact helper/result types and the report
 contract remain for their check-ins. This record changes documentation only;
-OldScanner stays active and Bin Filter is unchanged.
+previous scanner stays active and Bin Filter is unchanged.
 
 **OMF returned report agreed, 2 November 2026:** the user chose the recommended
 one OMF report, like the other Bella readers, instead of separate metadata,
@@ -833,7 +834,7 @@ fields. Metadata grouping and the major stages are agreed below; exact
 member/type names and native-versus-OMF result representation remain for their
 check-ins. The shared-file arrangement is agreed below. The agreed
 OMF ownership, field-selection, local/shared damage and source-check rules
-remain authoritative. This record changes documentation only; OldScanner
+remain authoritative. This record changes documentation only; previous scanner
 stays active and Bin Filter is unchanged.
 
 **OMF metadata groups agreed, 2 November 2026:** the user chose two small
@@ -850,7 +851,7 @@ while independently usable file information survives. Grouping adds no
 group-wide validity gate, multi-file/master catalogue or candidate history and
 does not alter source priorities, retained fields or selective-reading scope.
 Exact members/types and native-versus-OMF result representation remain for
-their concrete check-ins. This record changes documentation only; OldScanner
+their concrete check-ins. This record changes documentation only; previous scanner
 stays active and Bin Filter is unchanged.
 
 **OMF optional-details input agreed, 2 November 2026:** the user chose one
@@ -868,7 +869,7 @@ selection. This settles the input representation for already-approved optional
 work, without adding a setting, retained field or header-opening reason. The
 major stages are agreed below; the concrete entry/report contract remains for
 its check-in.
-This record changes documentation only; OldScanner stays active and Bin Filter
+This record changes documentation only; previous scanner stays active and Bin Filter
 is unchanged.
 
 **OMF two-major-stage arrangement agreed, 2 November 2026:** the user chose
@@ -891,7 +892,7 @@ Size/date observations surround all required metadata reading. Complete required
 lookup and ownership foundations still precede publishing facts; independently
 bounded unrelated bad values remain local under the agreed OMF damage rules.
 Exact entry/report types and helper details remain for their check-ins. This
-record changes documentation only; OldScanner stays active and Bin Filter is
+record changes documentation only; previous scanner stays active and Bin Filter is
 unchanged.
 
 **OMF source-check measurements temporary, agreed 2 November 2026:** the
@@ -909,7 +910,7 @@ scanner handoff; do not lose a required fact merely because it originated as a
 parser observation. No memory improvement is claimed. The shared-file arrangement
 is agreed below; the concrete entry/report, including native-versus-OMF result
 representation, remains for its check-in. This record
-changes documentation only; OldScanner stays active and Bin Filter is unchanged.
+changes documentation only; previous scanner stays active and Bin Filter is unchanged.
 
 **Native-audio and OMF shared-file arrangement agreed, 2 November 2026:**
 after checking actual WAV/AIF files and their specifications, the user chose
@@ -936,7 +937,7 @@ embedded/native arrangement. Fresh checks observed one embedded OMF container
 in each of the two genuine Avid tone files and many ordinary audio files with
 none; no multiple-container specimen was observed. Sharing one open file is an
 implementation choice, not a native format-specification mandate or a measured
-performance improvement. This record changes documentation only; OldScanner
+performance improvement. This record changes documentation only; previous scanner
 stays active and Bin Filter is unchanged.
 
 **Separate native-audio and OMF reading answers agreed, 2 November 2026:**
@@ -953,7 +954,7 @@ usable native information. Exact member names and answer lists are agreed in
 the contract below; detailed metadata values remain for review. This record
 adds no per-field diagnostic
 framework, extra retained metadata or multiple-container selection policy.
-This record changes documentation only; OldScanner stays active and Bin Filter
+This record changes documentation only; previous scanner stays active and Bin Filter
 is unchanged.
 
 #### Agreed OMF entry and report contract
@@ -964,14 +965,14 @@ answer list and source-check answers. It makes the agreed ownership, shared-file
 helpers and source-level answers concrete. Detailed native/OMF metadata values
 and distinct embedded-container combination/conflict rules remain for their
 bounded review before dependent implementation. Existing format requirements
-and the explicit OldScanner cutover boundary remain unchanged.
+and the explicit previous scanner cutover boundary remain unchanged.
 
 **Agreed files:** public `src/bella/omfparser.h/.cpp`, private independent
 native-audio helpers in `src/bella/audioreader_p.h/.cpp`, and focused
 `tests/tst_bellaomf.cpp` / `tests/tst_bellaaudio.cpp`. Add only their explicit
 source/target entries to the existing root/test CMake lists for
 `mediamuster_bella`. Continue C++17, exact Qt 6.5.3 and Qt Core. These two CMake
-lists are the planned existing-code touch points. No OldScanner, Bin Filter,
+lists are the planned existing-code touch points. No previous scanner, Bin Filter,
 MediaFile/table, progress, journal, Unfinished Business, Undo or active app
 integration is included. The native helpers borrow the same file owned by the
 public entry; these files do not introduce a second public file-opening call.
@@ -1058,7 +1059,7 @@ usable exact rate without duplicate double, label or source-byte copies.
 OMF's separately agreed original source-value and interpretation rules remain
 unchanged. Native member names/types were subsequently agreed below; the
 remaining OMF value contract still needs its check-in. This record changes
-documentation only; OldScanner stays active and Bin Filter is unchanged.
+documentation only; previous scanner stays active and Bin Filter is unchanged.
 
 #### Agreed native-audio value contract
 
@@ -1159,7 +1160,7 @@ matching the existing Bella report style. The alternative offered was to revise
 particular member names/types before agreeing the packet. This does not reopen the selected-
 master, text, bin, Type or Category rules. The OMF file-value contract and
 distinct-container handling still need their check-ins before dependent
-implementation. This approval record changes documentation only; OldScanner remains
+implementation. This approval record changes documentation only; previous scanner remains
 active and Bin Filter is unchanged.
 
 #### Agreed OMF Project-selection representation
@@ -1190,7 +1191,7 @@ inspectable but must stay consistent. No performance advantage is claimed.
 
 Remaining file-information types and distinct embedded-container handling still
 need their check-ins before dependent implementation. This OMF approval record
-changes documentation only; OldScanner stays active and Bin Filter is unchanged.
+changes documentation only; previous scanner stays active and Bin Filter is unchanged.
 
 **Related MXF/PMR request, 3 November 2026:** the user also requested that the
 existing Bella MXF and PMR readers match the separate-answer arrangement. MXF's
@@ -1228,7 +1229,7 @@ MXF implementation touches existing Bella `mxfparser.h/.cpp`, its focused
 test and the two Bella READMEs. PMR source, public types and tests stay unchanged.
 Preserve Project text, selection
 priority, all checks, other returned metadata and warning text. No shared
-cross-format enum, MDB refactor, OldScanner, Bin Filter, MediaFile/table,
+cross-format enum, MDB refactor, previous scanner, Bin Filter, MediaFile/table,
 progress, journal, Unfinished Business or Undo changes are included. This
 approval authorizes the narrow MXF representation change and focused test
 updates; it does not change OMF's remaining pending value/combination choices.
@@ -1394,7 +1395,7 @@ No memory/speed improvement is claimed without measurements.
 This approval record changes documentation only and does not start OMF implementation.
 Multiple-container support was subsequently bounded below; any extraction of
 existing MDB helpers still needs its disclosed concrete decision before
-dependent code. No other reader or app code changes are included. OldScanner
+dependent code. No other reader or app code changes are included. previous scanner
 stays active and Bin Filter is unchanged.
 
 #### Agreed single-container OMF support boundary
@@ -1402,7 +1403,7 @@ stays active and Bin Filter is unchanged.
 **Approved 3 November 2026:** the user chose to support one OMF container for
 now and defer merging multiple containers, following the revised recommendation.
 The earlier carryover recommendation had been withdrawn after the user's scope
-question: existence in OldScanner does not establish a concrete Bella use case.
+question: existence in previous scanner does not establish a concrete Bella use case.
 No OMF runtime implementation has begun.
 
 **Evidence reassessment:** commit `91f7732` introduced traversal of several
@@ -1429,7 +1430,7 @@ Unfinished location discovery cannot establish absence or exactly one location;
 the existing read/cancellation/damage qualifications still apply.
 
 This is an explicit approved support limit, not a claim that multiple-container
-files are damaged. It withholds OMF metadata that OldScanner may use even
+files are damaged. It withholds OMF metadata that previous scanner may use even
 when several containers agree, or one is usable beside another. The benefit is
 avoiding cross-container identity, Project-origin, master, timing and Compression
 reconciliation without a demonstrated real-file need. All checks for the supported
@@ -1437,11 +1438,11 @@ single-container path remain. Revisit the limit if a genuine supported workflow
 provides such a specimen; no speed/memory improvement is claimed.
 
 **Declined alternative:** implement qualified multiple-container combination now,
-preserving OldScanner's broader capability with additional code and tests. Its
+preserving previous scanner's broader capability with additional code and tests. Its
 broad evidence model is not a requirement to reproduce that machinery in Bella.
 The existing authored tests can verify a chosen policy but cannot establish that
 the feature is needed. The user accepted the narrower boundary and its loss of
-that unneeded-for-observed-files capability. OldScanner, Bin Filter and all
+that unneeded-for-observed-files capability. previous scanner, Bin Filter and all
 runtime code are unchanged by this approval record.
 
 #### Agreed shared audio-format extraction within OMF implementation
@@ -1452,7 +1453,7 @@ rather than a separate refactor/review step first. The report/value contracts
 and single-container support boundary are agreed. Implement their independent
 reader and focused tests together with the bounded MDB/OMF helper extraction.
 This is reuse of existing required decoding, not a new metadata field or a
-reason to copy OldScanner machinery. Bring genuinely new choices back before
+reason to copy previous scanner machinery. Bring genuinely new choices back before
 dependent code, preserving the stronger scope discipline above.
 
 **Actual need:** the genuine Avid WAVE and AIFF-C tones contain format fields
@@ -1491,7 +1492,7 @@ frequency rules. No universal audio-policy abstraction is proposed.
 
 The native helper files and OMF public reader/tests have their agreed names and
 are included in this implementation step; their explicit source/target entries
-also touch the root/test CMake lists as previously disclosed. PMR, MXF, OldScanner,
+also touch the root/test CMake lists as previously disclosed. PMR, MXF, previous scanner,
 Bin Filter, table/MediaFile, progress, journal, Unfinished Business, Undo and app
 integration are outside this change.
 
@@ -1512,7 +1513,7 @@ implement the agreed report/value and single-container contracts. Shared bounded
 Summary decoding lives in `audioformat_p.h/.cpp`; MDB uses a small adapter without
 changing its public types. The root/test CMake lists add the new sources/targets
 to the independent test-only library. C++17 and exact Qt 6.5.3 remain in use.
-OldScanner stays active; Bin Filter, MediaFile/table, progress, journal,
+previous scanner stays active; Bin Filter, MediaFile/table, progress, journal,
 Unfinished Business and Undo are unchanged.
 
 The entry owns one unbuffered read-only file. Native helpers borrow it; OMF
@@ -1600,7 +1601,7 @@ unneeded payloads and release temporary storage. PMR/MDB's whole-file
 below, as are Cancel checkpoints; concrete signatures and report members still
 need their check-ins.
 No MXF runtime code, existing app integration or cutover is authorized by this
-record alone. OldScanner remains active and Bin Filter is unchanged.
+record alone. previous scanner remains active and Bin Filter is unchanged.
 
 **MXF size/modification-time check agreed, 1 November 2026:** the user chose
 the recommended size and modification-time check for MXF, just like PMR and
@@ -1616,7 +1617,7 @@ time; they do not prove an atomic snapshot or certify media content. This does
 not change the selective header-reading boundary or existing file-operation
 verification. The unavailable-check and Cancel decisions are recorded below;
 exact report representation remains to review. No MXF runtime code or
-app integration is added by this record; OldScanner stays active and Bin Filter
+app integration is added by this record; previous scanner stays active and Bin Filter
 is unchanged.
 
 **Readable but unverified MXF agreed, 1 November 2026:** the user chose to
@@ -1633,7 +1634,7 @@ choice. Keep the approved shared-structure/local-damage boundaries and source
 priorities. This adds no automatic retry, extra header-read trigger, native
 identity check or change to file-operation verification. The Cancel decision
 follows; exact report types remain to review. This record changes documentation only;
-OldScanner stays active and Bin Filter is unchanged.
+previous scanner stays active and Bin Filter is unchanged.
 
 **MXF Cancel checkpoints agreed, 1 November 2026:** the user chose the
 recommended option: check the shared stop flag before and after each file-read
@@ -1650,7 +1651,7 @@ been measured. Cancellation does not make unfinished shared framing usable or
 permit a half-finished job to be reported as successful; retain only facts
 qualified under the existing cancellation/damage rules. The two major stages
 are agreed below; concrete helper boundaries remain for implementation review.
-PMR/MDB checkpoints, the selective MXF header scope, OldScanner and Bin Filter
+PMR/MDB checkpoints, the selective MXF header scope, previous scanner and Bin Filter
 are unchanged. This
 record adds no runtime code.
 
@@ -1666,7 +1667,7 @@ cancelled outcomes. Unexpected allocation or programming failures remain
 distinct from damaged input; do not introduce a blanket catch or promise that
 an allocating reader cannot throw. Exact helper/result types and the concrete
 report contract remain to review. This record adds no runtime code or app
-integration; OldScanner stays active and Bin Filter is unchanged.
+integration; previous scanner stays active and Bin Filter is unchanged.
 
 **MXF returned report agreed, 1 November 2026:** the user chose one owned
 MXF report, just like PMR and MDB, instead of returning the information with
@@ -1679,7 +1680,7 @@ This settles packaging only, not extra diagnostics, exact member/type names
 or the major-stage contract. Metadata grouping is agreed below. The approved MXF ownership,
 field-selection, local/shared damage and source-check rules remain authoritative;
 PMR's whole-set model and MDB's multi-file catalogue are not automatically
-adopted. This record adds no runtime code or app integration. OldScanner stays
+adopted. This record adds no runtime code or app integration. previous scanner stays
 active and Bin Filter is unchanged.
 
 **MXF metadata groups agreed, 1 November 2026:** the user chose two small
@@ -1697,7 +1698,7 @@ unavailable while independently usable file information survives. Grouping
 does not add group-wide validity rules or change field-level qualifications,
 source priorities, retained fields or header-reading scope. Exact C++ members,
 types and availability representation remain for the concrete contract. This
-record adds no runtime code or app integration; OldScanner stays active and
+record adds no runtime code or app integration; previous scanner stays active and
 Bin Filter is unchanged.
 
 **MXF optional-details input agreed, 1 November 2026:** the user chose one
@@ -1714,7 +1715,7 @@ derive later through the existing shared resolver after final Type/name source
 selection. This adds no new field, header-opening reason or setting. Remaining
 entry/report types belong in the concrete contract; the two major stages are
 agreed below.
-This record adds no runtime code or app integration; OldScanner stays active
+This record adds no runtime code or app integration; previous scanner stays active
 and Bin Filter is unchanged.
 
 **MXF two-major-stage arrangement agreed, 2 November 2026:** the user chose
@@ -1737,7 +1738,7 @@ read or an extra retained evidence graph; selective bounded reading and compact
 temporary storage remain authoritative. It does not copy MDB's two in-memory
 stages after a whole-file capture. Exact entry/report types and helper details
 remain for the concrete MXF contract. No runtime code or app integration is
-added; OldScanner stays active and Bin Filter is unchanged.
+added; previous scanner stays active and Bin Filter is unchanged.
 
 **MXF source-check measurements temporary, agreed 2 November 2026:** the
 user chose to keep just the MXF size/date check result and explanation, and
@@ -1754,7 +1755,7 @@ needed for file-operation verification remain required. The later scanner
 handoff must preserve those facts; this does not authorize losing a required
 fact if its source is a parser observation. No memory improvement is claimed.
 Exact report/group member types remain for the concrete contract. This record
-adds no runtime code or app integration; OldScanner stays active and Bin Filter
+adds no runtime code or app integration; previous scanner stays active and Bin Filter
 is unchanged.
 
 #### Agreed MXF entry and report contract
@@ -1959,7 +1960,7 @@ later small Bella adapter. The reader returns its compact facts and naming
 proof without editing that resolver. Any shared-helper change needed by the
 later adapter must be identified and reviewed before making it. Implement the
 reader and focused tests in the agreed files, adding only their explicit
-root/test CMake entries. OldScanner stays active and Bin Filter is unchanged.
+root/test CMake entries. previous scanner stays active and Bin Filter is unchanged.
 
 **Equivalent duplicate MXF rates agreed, 2 November 2026:** if a repeated rate
 property contains different original fractions with exactly the same positive
@@ -1980,7 +1981,7 @@ authored tests must cover agreement, reversed order and disagreement.
 [`tst_bellamxf.cpp`](../tests/tst_bellamxf.cpp) now implement the approved
 entry/report/value contracts. The only existing code/build edits are the
 explicit root/test CMake source/target entries. Existing ID, PMR and MDB sources
-and public headers are byte-unchanged. OldScanner remains the app's active
+and public headers are byte-unchanged. previous scanner remains the app's active
 scanner; Bin Filter, MediaFile/table, progress delivery, journal, Unfinished
 Business and Undo are unchanged. Architecture/source notes reflect the new
 standalone component.
@@ -2189,7 +2190,7 @@ temporary matching catalogue after matching under the agreed lifetime rule;
 retain completed row values and required compact operation/status facts.
 
 The alternative was combining clip information into per-file entries earlier,
-while still needing independent master lookup. Current OldScanner and
+while still needing independent master lookup. Current previous scanner and
 `86c500c` use the broad separate-catalogue/combined-row arrangement; this is
 not a claim of a new measured efficiency gain. The following decision settles
 the value/qualification style; exact containers, value/availability types,
@@ -2524,7 +2525,7 @@ unchanged `AvidText::kMacRomanHigh` table, as PMR does; this existing-code
 dependency is approved with this packet. Compression-resolver preservation is
 already agreed. Bella-owned Kind/Type/category enums avoid depending on the
 app's row/evidence types. Root/test CMake lists are the existing files to edit.
-Verify genuine MDB outputs against the recorded field evidence/OldScanner
+Verify genuine MDB outputs against the recorded field evidence/previous scanner
 reference and independent source checks, plus meaningful authored boundary and
 local/shared-damage cases and normal/sanitizer builds. No new fault-injection
 framework, active app integration, cutover or performance claim is approved.
@@ -2563,7 +2564,7 @@ timestamps and mid-stage Cancel were not forced with new fault-injection hooks.
 No scan-time or peak-memory improvement has been measured.
 
 Existing build-file edits are limited to the approved root/test CMake additions.
-The immutable MacRoman table is read unchanged. OldScanner remains active;
+The immutable MacRoman table is read unchanged. previous scanner remains active;
 MediaFile/table, progress, operations/journal/Unfinished Business/Undo and Bin
 Filter have no Bella integration in this step.
 
@@ -2574,7 +2575,7 @@ A read-only search inspected 734,163 accessible directories, finding 27 PMRs and
 521 protected locations could not be inspected. Copies, archives and authored
 controls are identified separately from managed originals.
 
-Unchanged `86c500c` and current OldScanner full scans found the same 3,848 physical
+Unchanged `86c500c` and current previous scanner full scans found the same 3,848 physical
 paths (1,796 computer and 2,052 EDIT), with matching full file/master IDs. Their
 other metadata is not wholly identical; the receipt preserves per-column changes.
 All 45 selected database hashes and 3,892 source/folder observations stayed
@@ -2631,7 +2632,7 @@ separate. Preserve all parsing checks, values, availability, qualifications,
 public reading/check results and existing Cancel opportunities. A PMR report
 may say it is trying older records only after the existing Cancel checks allow
 that attempt. This approval changes Bella reader notes only; no app warning
-delivery, OldScanner cutover or Bin Filter change is included. Implementation
+delivery, previous scanner cutover or Bin Filter change is included. Implementation
 and verification are complete. The
 warning-combination receipt
 records 44 added focused cases, with 151 MDB, 73 PMR and 14 ID Qt passes normally
@@ -2673,7 +2674,7 @@ expanded suite passes 157 MDB, 73 PMR and 14 ID Qt cases normally and with
 ASan/UBSan, including 74 new authored Length controls grouped into six endian
 rows. All 63 full before/after reports from the 45 prior sources are byte-for-byte
 identical, including diagnostic text and qualifications. Public headers and
-PMR/MobId code are unchanged. OldScanner remains active and Bin Filter is unchanged.
+PMR/MobId code are unchanged. previous scanner remains active and Bin Filter is unchanged.
 
 **Two narrow MDB corrections approved, 1 November 2026:** the user approved
 recording, implementing and testing the two findings from the subsequent source
@@ -2715,7 +2716,7 @@ states and pass it by const reference; do not read optional category bodies or
 tracks early. Keep every check, result, qualification and warning text/order/count
 unchanged, including the two preceding correctness corrections. No public
 contract, source/Cancel opportunity, app integration or wider function
-rearrangement is included. OldScanner remains active and Bin Filter is unchanged.
+rearrangement is included. previous scanner remains active and Bin Filter is unchanged.
 The approval record was updated
 before production edits. Implementation and verification are complete; see the
 cleanup receipt. All 165 MDB,
@@ -2741,7 +2742,7 @@ Record this as confirmation of the existing implementation, without expanding
 format support or changing the public report. Keep all other checks, results and
 warning messages unchanged, including their order and count. Verify the existing
 regression coverage and complete reports; no further parser cleanup is included.
-OldScanner stays active and Bin Filter is unchanged. The
+previous scanner stays active and Bin Filter is unchanged. The
 [retention verification](../docs/reviews/2026-11-01-bella-mdb-review/VERDICT.md#safeguards-retained-verification)
 records the checks for this instruction separately from earlier dated runs.
 
@@ -2994,7 +2995,7 @@ The implementation choices and their current status are:
 | --- | --- | --- |
 | Compact interface/reference protocol — agreed 28 October | Use the report above with one whole validated `knownSet`, separate read/check answers and explicit metadata/format-coverage qualifications. Both metadata and positive reference consumers can inspect those same owned records according to their qualification. | Keep separate metadata and reference record lists inside the report. This makes their roles separate, but adds two list representations and their bookkeeping. Neither option changes the agreed reference-check meanings. |
 | Expected-failure mechanism — agreed 28 October | Ordinary open/read/format/check failures return named report results and explanations; small parsing helpers use checked return values. This follows `86c500c`'s ordinary-return approach, with richer status. | A private parsing exception caught once at the reader entry can produce the same report, but adds exception-based control flow for expected input failures. Unexpected allocation/program failures remain distinct in either design. |
-| MacRoman table dependency — agreed 28 October | Reuse only the immutable `AvidText::kMacRomanHigh[128]` table in unchanged `src/avidtext.h`, through a fresh unconditional MacRoman decoder in Bella. No existing file is edited or OldScanner library linked. | Keep a separate fixed mapping table inside Bella. It removes this shared-header dependency but requires maintaining another copy of the same mapping. No measured performance difference is asserted. |
+| MacRoman table dependency — agreed 28 October | Reuse only the immutable `AvidText::kMacRomanHigh[128]` table in unchanged `src/avidtext.h`, through a fresh unconditional MacRoman decoder in Bella. No existing file is edited or previous scanner library linked. | Keep a separate fixed mapping table inside Bella. It removes this shared-header dependency but requires maintaining another copy of the same mapping. No measured performance difference is asserted. |
 
 Contract details implementing settled behaviour:
 
@@ -3172,7 +3173,7 @@ compiled arm64 and x86_64; the native arm64 test run passed all 14 QtTest checks
 (including setup/cleanup). A separate arm64 AddressSanitizer/UndefinedBehaviorSanitizer
 build passed the same checks. Coverage includes the two genuine little-endian
 PMR fixtures and explicitly authored opposite-endian examples. The generated
-link graph keeps Bella independent of OldScanner and out of the app. Windows,
+link graph keeps Bella independent of previous scanner and out of the app. Windows,
 a runnable Bella scan, scan comparisons and performance/peak-memory measurements
 remain unverified. See the
 implementation receipt.
@@ -3183,7 +3184,7 @@ Clarified 22 October 2026 after the user explicitly requested an honest
 assessment: Bella then had no runtime implementation/build target. At the later
 ID-helper checkpoint recorded here, there was still no runnable Bella scanner
 or demonstrated scan-time, peak-memory or crash-rate improvement. Many per-field
-reviews preserve sound OldScanner interpretation rather than improve it. Current
+reviews preserve sound previous scanner interpretation rather than improve it. Current
 PMR preparation already buffers a source once and releases its raw image; do not
 invent per-row disk rereads or physical copies from Qt-shared assignments.
 
@@ -3205,7 +3206,7 @@ records the detailed assessment and limits. This adds no new feature or cutover.
 - Build Bella as a new, independent scanner/parser using C++17 and the project's
   pinned Qt 6.5.3 building blocks. Do not modify, adapt or rename the existing
   scanner/parser into Bella. Clarified 18 October 2026.
-- Isolate the existing implementation as **OldScanner**, keeping it active in
+- Isolate the existing implementation as **previous scanner**, keeping it active in
   the app until the user explicitly approves switching to Bella. The isolation
   changes its organization and entry-point name, not its scanning behavior.
   Clarified 18 October 2026.
@@ -3246,7 +3247,7 @@ records the detailed assessment and limits. This adds no new feature or cutover.
   can describe their user-facing meaning. Clarified 19 October 2026.
 
 At this initial component checkpoint, the app still used
-[OldScanner](../src/oldscanner/README.md), and `mediamuster_bella` held only the
+previous scanner (removed source), and `mediamuster_bella` held only the
 independent ID helper. Its retained readers and the then-available genuine-media
 fixtures supplied behavioral references, not Bella's implementation. The scanner,
 parsers and normal-app cutover were subsequently completed as recorded above.
@@ -3258,7 +3259,7 @@ all of MDVx's format and behavior limitations as Bella requirements.
 Confirmed by the user on 18 October 2026:
 
 1. Move the current scanner facade, presentation adapter and media-scanning
-   engine into `src/oldscanner/`. Name the active facade `OldScanner`.
+   engine into `removed source previous scanner`. Name the active facade `previous scanner`.
    Its existing internal `MediaEngine` namespace remains in place.
 2. Keep Bin Filter, its AVB reader/reference resolver and their shared reading
    types outside this move at `src/mediaengine/`. The file-operation engine
@@ -3273,10 +3274,10 @@ Confirmed by the user on 18 October 2026:
    compact value records, scoped ownership, checked reads and clear lifetimes
    within C++17 and Qt 6.5.3. The attached C++ guidance applies within those
    versions, rather than introducing C++20/23-only facilities.
-5. Keep the app on OldScanner during Bella's development and comparison.
+5. Keep the app on previous scanner during Bella's development and comparison.
    Switching the app to Bella requires the user's explicit approval.
 
-OldScanner is the retained implementation, not a foundation to patch into the
+previous scanner is the retained implementation, not a foundation to patch into the
 Bella requirements. This staging kept it active until the subsequently approved
 7 November macOS and Windows cutover. The rules below preserve the approved
 replacement contract and its development history.
@@ -3316,7 +3317,7 @@ WAV/AIFF reading remains in Bella's scope, preserving current behaviour. The
 26 October design proposes a small native-audio implementation alongside these
 four parsers. The final cross-source priority/opening table is approved.
 This records the user's organisational direction only: finish requirements
-before writing Bella runtime code, and leave OldScanner and Bin Filter active
+before writing Bella runtime code, and leave previous scanner and Bin Filter active
 under the existing cutover rules.
 
 ## Requirements review
@@ -3435,7 +3436,7 @@ Confirmed by the user on 18 October 2026:
 This records an approved component for later implementation, not permission to
 start Bella code before the requirements review is finished. The exact filename
 and function signature are routine implementation details. The existing
-OldScanner/Bin Filter identity helpers remain unchanged.
+previous scanner/Bin Filter identity helpers remain unchanged.
 
 No further identity-representation or comparison decision blocks reviewing the
 other MDB values. Choosing a master when PMR supplies none, especially if MDB
@@ -3465,8 +3466,8 @@ extract only the required information, and release the buffer. This is now an
 approved requirement alongside the equivalent MDB workflow.
 
 The [PMR memory comparison](../docs/reviews/2026-10-18-bella-pmr/memory-lifetime.md)
-on 21 October 2026 confirms that ordinary OldScanner and MDVx PMR jobs already
-read a full PMR into memory and parse that capture. OldScanner builds detailed
+on 21 October 2026 confirms that ordinary previous scanner and MDVx PMR jobs already
+read a full PMR into memory and parse that capture. previous scanner builds detailed
 per-field objects before projection and releases the source image afterward;
 MDVx also retains copied record slices in its items and interprets both sets.
 
@@ -3550,7 +3551,7 @@ PMR's older/v16 record sets.
 The current result fields below remain approved. The research recommends
 extracting their useful values and required owner relationships into compact
 records, with bounded temporary reading/index storage. It does not approve
-retaining every raw object/property or adapting OldScanner into Bella.
+retaining every raw object/property or adapting previous scanner into Bella.
 
 MDB's release-one layout baseline, general damage handling, the four-MDB-job
 limit and the read-once memory workflow are agreed below. Remaining source
@@ -3589,13 +3590,13 @@ Confirmed by the user on 21 October 2026, following the MDVx workflow review:
    captures use the agreed failure handling; no speculative repair, repeated
    per-row reads or broader header fallback is introduced by this approval.
 
-Evaluate scan time, peak memory and required-field coverage against OldScanner
+Evaluate scan time, peak memory and required-field coverage against previous scanner
 and MDVx on representative local and attached/network media workloads. Separate
 the common metadata workload from Bella's additional required fields so the
 comparison is meaningful. No performance measurement or implementation was
 performed for this decision. The approval receipt
 records the user's instruction. MDB version scope was subsequently approved
-separately below. OldScanner remains active and Bin Filter remains unchanged.
+separately below. previous scanner remains active and Bin Filter remains unchanged.
 
 ### Agreed MDB damage handling
 
@@ -3624,7 +3625,7 @@ repetition or an unused ambiguous dictionary entry with global corruption.
 
 Approved per-field text and Duration rules remain authoritative. General damage
 handling must not authorize new header reads, auto-repair/rebuild Avid databases
-or import OldScanner's retained evidence graph. Unsupported layout, cancellation,
+or import previous scanner's retained evidence graph. Unsupported layout, cancellation,
 I/O failure and source change remain distinct reasons for unavailability.
 The release-one MDB version baseline is agreed below. No runtime code changed.
 
@@ -3697,7 +3698,7 @@ expanded owner/key/blank fallback on 19 October 2026 in the
 Historical terminator acceptance,
 source precedence and additional media-header reads remain separate requirements.
 PMR's approved whole-set selection is unchanged. These are future Bella rules;
-OldScanner and Bin Filter remain unchanged.
+previous scanner and Bin Filter remain unchanged.
 
 ## MDB identity review
 
@@ -3810,7 +3811,7 @@ below; this defers the full-table discussion rather than reopening those rules.
 A preferred source does not itself require opening that source. Stop further
 search for a field once its agreed rule is satisfied; other fields can still
 require the same database or media header. Implement straightforward decisions
-and compact selected values/status, without importing OldScanner's surrounding
+and compact selected values/status, without importing previous scanner's surrounding
 evidence machinery or routinely collecting every alternative for comparison.
 
 Populate other cross-source order and extra-read entries after the remaining
@@ -3891,7 +3892,7 @@ The labels follow Apple's one-word
 and [title-style table headings](https://developer.apple.com/design/human-interface-guidelines/lists-and-tables).
 Folder/directory means the containing folder without the filename. Other fields
 still need their own MDB/header reading; no speed or memory saving amount has
-been measured. These are requirements for Bella. OldScanner remains active and
+been measured. These are requirements for Bella. previous scanner remains active and
 no runtime code or current UI was changed.
 
 ## Agreed MDB Kind reading
@@ -4107,7 +4108,7 @@ first round elapsed seconds or parse a Frame Rate label.
 use only a correctly linked, applicable and clock-compatible recorded DF flag.
 The [DF investigation](../docs/reviews/2026-10-18-bella-mdb/drop-frame.md)
 establishes legacy Flags bit 0, OMF2 Boolean Drop and the qualified linked-source
-path. Do not copy OldScanner's unrestricted source-graph sweep or infer DF
+path. Do not copy previous scanner's unrestricted source-graph sweep or infer DF
 from 29.97/59.94. Genuinely missing applicable flag after a complete supported
 lookup uses NDF, with missing status distinct from recorded false. Damaged,
 contradictory or unresolved required timing/numbering leaves Duration blank;
@@ -4295,8 +4296,8 @@ current names and DNx aliases, format-specific fallbacks, table/CSV presentation
 and useful existing tests. Do not redesign the naming scheme or substitute a
 new catalogue during the Bella replacement.
 
-The existing [name resolver](../src/oldscanner/mediaengine/compressionnames_p.cpp)
-and [DNx rules](../src/oldscanner/mediaengine/dnxnames_p.h) can be called unchanged
+The existing [name resolver](../src/mediaengine/compressionnames_p.cpp)
+and [DNx rules](../src/mediaengine/dnxnames_p.h) can be called unchanged
 by Bella. New readers must supply equivalent validated format facts through a
 small boundary adapter. Keep the companion audio-summary naming logic and the
 source-to-catalogue qualifications as well, including exact supported legacy
@@ -4368,7 +4369,7 @@ Bin. Read its own `OMFI:MOBJ:UsageCode`, a typed four-byte numeric value in
 object byte order. For the reviewed MDB context, map 1 to Precompute, 7 to
 Media and missing/unreadable/conflicting/unsupported values to Unknown while
 keeping the physical file. Display/export `Precompute` for 1, `Media` for 7 and
-blank when unavailable. This deliberately changes OldScanner's unknown em dash
+blank when unavailable. This deliberately changes previous scanner's unknown em dash
 for Bella. Type is separate from the physical descriptor's Audio/Video Kind.
 
 Native broader-context master predicates can accept zero only with an
@@ -4416,7 +4417,7 @@ object branch, and keep a compact category enum with necessary availability.
 Carry over verified interpretation and useful cases in a small C++17 pure
 helper; generate labels at display/export and release temporary reading data.
 Display/export blank when category is unavailable or inapplicable. This replaces
-OldScanner's lowercase `unknown` for Bella's category cells. Keep an explicit
+previous scanner's lowercase `unknown` for Bella's category cells. Keep an explicit
 Unknown filter value so blank table/CSV cells
 do not become a filter wildcard. The optional precompute feature and separate
 effect-detail requirements remain retained. Layout coverage and header/source
@@ -4500,7 +4501,7 @@ suffixes; preserve those rules without retaining the inferred sequence prefix.
 The current shared resolver's legacy Sequence return is not a Bella output
 requirement. Bella can avoid materialising that separate string while producing
 the same retained Effect/Category values. No extra graph walk or media read
-is needed for this excluded field. OldScanner and Bin Filter stay unchanged
+is needed for this excluded field. previous scanner and Bin Filter stay unchanged
 until the separately approved implementation/cutover stages. No runtime code
 changed and no performance improvement is measured.
 
@@ -4527,7 +4528,7 @@ header reading and release-one navigation. Three planning blocks remain:
    cancellation, progress and publishing results within the agreed limits.
 
 Then build fresh Bella and compare correctness, scan time and memory against
-OldScanner/reference behavior. App cutover remains separately approved. Rare
+previous scanner/reference behavior. App cutover remains separately approved. Rare
 layouts, overflow and malformed-input coverage are engineering verification,
 not reasons to repeat settled user decisions. No delivery ETA is established.
 At that checkpoint Bella had documentation only. The 27 October first increment
@@ -4601,7 +4602,7 @@ The user asked to leave the full priority-table discussion until the end of
 the requirements plan. At that stage consolidate the already agreed entries
 and complete the remaining source precedence and conditions for extra header
 reads, then finish scan scheduling and the new scanner's design. Those decisions precede independent
-Bella implementation and comparison. The app stays on OldScanner until the user
+Bella implementation and comparison. The app stays on previous scanner until the user
 explicitly approves cutover; Bin Filter remains outside this replacement.
 The separate limits of four PMR and four MDB jobs and the read-once/extract/release
 memory lifetime for both types are already agreed; remaining scheduling work
@@ -4610,7 +4611,7 @@ must respect them.
 ## MXF header requirements review
 
 The [21 October MXF comparison](../docs/reviews/2026-10-21-bella-mxf/REVIEW.md)
-reviews installed Media Composer, MDVx, current OldScanner and ten actual initial
+reviews installed Media Composer, MDVx, current previous scanner and ten actual initial
 headers. The standing approved scope remains Avid-compatible OP-Atom, including
 third-party media for Avid; this is not a general MXF/playback feature expansion.
 The curated evidence separates native
@@ -4619,7 +4620,7 @@ paths, current-source capabilities, file observations and recommendations.
 Media Composer uses cached random-access AAF-MXF storage and linked typed
 objects. MDVx's ordinary reader uses the initial partition's declared metadata
 extent and early dictionary-definition filters, then copies only Clip Name,
-Project and full file/material IDs to ordinary results. OldScanner already
+Project and full file/material IDs to ordinary results. previous scanner already
 skips recording payloads and releases its raw graph after projection, but walks
 all top-level KLV framing through EOF and materializes broad header properties.
 These are bounded native/source findings, not measured comparative scan times.
@@ -4681,7 +4682,7 @@ one MaterialPackage in the parsed header. Bella must qualify the master-to-file
 relationship as well. Do not persist redundant Avid summary ID copies,
 adopt MDVx's downstream eight-byte matching, invent zero IDs or select by object
 order. Header-opening rules, cross-source disagreement priorities and abnormal
-layout coverage remain separate reviews. OldScanner and Bin Filter stay unchanged.
+layout coverage remain separate reviews. previous scanner and Bin Filter stay unchanged.
 
 ## MXF Clip Name: agreed rules
 
@@ -4706,7 +4707,7 @@ source Name and all ten differ from Filename. Actual sampled names are ASCII;
 non-ASCII capability has separate format/decoder/test-source evidence. The
 native reader's internal Unicode conversion is not a requirement to recreate
 its locale conversions. Cross-source priority and header-opening reasons
-remain deferred. OldScanner and Bin Filter stay unchanged.
+remain deferred. previous scanner and Bin Filter stay unchanged.
 
 ## MXF Project: agreed rules
 
@@ -4743,7 +4744,7 @@ header alone, so no benefit from master/source recovery was demonstrated.
 Dropping those paths can leave blank when only a master/source Project exists;
 this is a simplicity tradeoff, not a measured speed gain. The remaining
 header-to-file fallback is Bella design, not a universal native rule.
-Overall source priority/header-opening discussion remains deferred. OldScanner
+Overall source priority/header-opening discussion remains deferred. previous scanner
 and Bin Filter stay unchanged.
 
 ## MXF Kind: agreed rules
@@ -4751,7 +4752,7 @@ and Bin Filter stay unchanged.
 The [MXF Kind review](../docs/reviews/2026-10-21-bella-mxf/kind.md) connects
 Media Composer's physical descriptor import to its sound/picture families,
 separates MDVx's internal classification from its different visible Kind/usage
-column, and compares OldScanner with thirteen actual headers. **The user approved
+column, and compares previous scanner with thirteen actual headers. **The user approved
 these MXF Kind rules on 22 October 2026; they were unimplemented at that review.** The preceding simplified
 Project rule is agreed. These MXF rules do not expand MDB Kind beyond its
 separate exact mapping and the later approved JPED addition.
@@ -4768,7 +4769,7 @@ agreed small explicit mapping is:
 
 Keep full class identity and existing MXF label/version handling; do not infer
 Kind from extension, codec text, master-track mixture or the presence of audio/
-picture properties on an unrecognised class. OldScanner currently permits
+picture properties on an unrecognised class. previous scanner currently permits
 that property-based inference, so this rule deliberately leaves a genuinely
 new class unknown until its meaning is verified and a mapping is added. It
 does not claim identical coverage or a measured speed improvement. Current
@@ -4793,13 +4794,13 @@ C++17 enum/fixed-array building blocks suffice. Full cross-source priorities
 and header-opening decisions remain at the end of the plan. The
 approval receipt supersedes the earlier
 pending status without approving the subsequent Duration review or other MXF
-field/navigation proposals. OldScanner and Bin Filter stay unchanged.
+field/navigation proposals. previous scanner and Bin Filter stay unchanged.
 
 ## MXF Duration: agreed rules
 
 The [MXF Duration review](../docs/reviews/2026-10-21-bella-mxf/duration.md)
 traces Media Composer's own descriptor count/rate import, separates MDVx's
-library clip/segment lengths from its ordinary table, and compares OldScanner
+library clip/segment lengths from its ordinary table, and compares previous scanner
 with thirteen checked headers. **The user approved the detailed MXF Duration
 rules on 22 October 2026; they were unimplemented at that review.** Kind is agreed. Existing
 Duration arithmetic/display and MDB-first/database-unavailable MXF fallback
@@ -4815,7 +4816,7 @@ samples where these are sample units, and exact native units otherwise.
 
 For the first release, leave MXF Duration blank if this physical pair is
 missing, damaged, conflicting or not safely owned, keeping the row and other
-facts. Do not substitute master/source segment lengths. OldScanner's own-track
+facts. Do not substitute master/source segment lengths. previous scanner's own-track
 fallback on genuinely absent ContainerDuration remains research rather than
 an approved Bella recovery: its equality to complete physical container
 coverage needs evidence. No new recovery path is silently adopted here.
@@ -4850,13 +4851,13 @@ The approval receipt supersedes
 the earlier pending status, including the corrected DF semicolon format.
 It does not approve new Frame Rate mappings or other MXF field/navigation
 proposals. Full source priorities/header-opening triggers remain at the end
-of the plan; OldScanner stays active and Bin Filter is unchanged.
+of the plan; previous scanner stays active and Bin Filter is unchanged.
 
 ## MXF Frame Rate: agreed rules
 
 The [MXF Frame Rate review](../docs/reviews/2026-10-21-bella-mxf/frame-rate.md)
 traces Media Composer's own descriptor rate import/publication, distinguishes
-its codec-wrapper conversions, and compares MDVx, OldScanner, eight previously
+its codec-wrapper conversions, and compares MDVx, previous scanner, eight previously
 checked video headers and two repository interlaced header controls. **The user
 approved these MXF Frame Rate rules on 22 October 2026; they were unimplemented at that review.** Duration,
 including DF semicolons/NDF colons, is now agreed. Existing Frame Rate numeric
@@ -4883,7 +4884,7 @@ Keep one small exact rate record/availability, share numeric comparison and
 late-formatting helpers, and release temporary header/layout/reference facts.
 Generate familiar labels such as 23.976, 25 and 29.97 from the value; sort numerically
 without reparsing the label. Uncommon label precision remains the existing
-presentation follow-up. OldScanner already reads the own rate correctly for
+presentation follow-up. previous scanner already reads the own rate correctly for
 these controls but stores a rounded text label and sorts from it. No measured
 speed improvement or complete native GUI parity is claimed.
 
@@ -4893,13 +4894,13 @@ solely for Frame Rate or use its rate alone to repair MDB Duration. Full source
 priorities/header-opening discussion remains at the end of the plan. The
 approval receipt supersedes
 the earlier pending status without approving the subsequent audio Sample Rate
-review or other new MXF proposals. OldScanner stays active and Bin Filter is unchanged.
+review or other new MXF proposals. previous scanner stays active and Bin Filter is unchanged.
 
 ## MXF audio Sample Rate: agreed rules
 
 The [MXF audio Sample Rate review](../docs/reviews/2026-10-21-bella-mxf/audio-sample-rate.md)
 compares native sound-frequency import, MDVx's library/wrapper distinction and
-OldScanner's numeric/display path. **The user approved these MXF audio Sample
+previous scanner's numeric/display path. **The user approved these MXF audio Sample
 Rate rules on 22 October 2026; they were unimplemented at that review.** Frame Rate is agreed;
 audio priority and extra-header-read rules remain for the final table.
 
@@ -4917,7 +4918,7 @@ Missing, damaged, conflicting, unsupported, not safely owned or distinguished
 and other facts; no invented 48 kHz default or standard-frequency whitelist.
 Video's Sample Rate remains blank and audio's Frame Rate remains blank.
 
-OldScanner already preserves the fraction, uses it in preference to its
+previous scanner already preserves the fraction, uses it in preference to its
 whole-Hz compatibility copy, generates kHz labels later and sorts numerically
 from frequency rather than the label. Carry those useful rules into new small
 C++17/Qt helpers, keeping one exact numeric record and necessary availability;
@@ -4934,13 +4935,13 @@ bounded native import/publication trace does not prove every GUI/error policy.
 No performance gain is measured. No audio-only header opening/source priority
 is decided here. The approval receipt
 supersedes the earlier pending status without approving new Bit Depth mappings
-or other pending MXF proposals. OldScanner stays active and Bin Filter is unchanged.
+or other pending MXF proposals. previous scanner stays active and Bin Filter is unchanged.
 
 ## MXF Bit Depth: agreed rules
 
 The [MXF Bit Depth review](../docs/reviews/2026-10-21-bella-mxf/bit-depth.md)
 compares native audio/picture/RGBA import, MDVx's limited library result and
-OldScanner's format-aware interpretation. **The user approved the focused MXF
+previous scanner's format-aware interpretation. **The user approved the focused MXF
 Bit Depth rules on 22 October 2026; they were unimplemented at that review.** Audio Sample
 Rate is agreed. The existing Bit Depth numeric-storage/late-label core and
 verified-rule reuse remain agreed; uncommon coverage choices stay explicitly
@@ -4959,13 +4960,13 @@ Use common interpreted RGBA depth only when every meaningful non-fill
 component has a supported interpretation and their widths agree, including
 alpha-only media. Mixed widths, palettes, unverified LSB-extension combinations
 or other unsupported meanings leave this single numeric cell unavailable.
-Keep only the required small layout/context. This differs from OldScanner's
+Keep only the required small layout/context. This differs from previous scanner's
 mixed strings and possible omission of unsupported components. The earlier
 fixed10.6/12.4 generic-label choices remain unresolved; this review does not
 silently settle them or change Compression naming.
 
 A real alpha-only header has A8, then a null pair and ASCII-`0`/zero padding.
-OldScanner rejects its nonzero tail; native toolkit SetPixelLayout explicitly
+previous scanner rejects its nonzero tail; native toolkit SetPixelLayout explicitly
 writes ASCII-zero padding and the count/get path imports this example as A8.
 For Bella, require a meaningful prefix followed only by numeric-zero/zero or
 native ASCII-zero/zero padding. Accept both known end/padding forms, preserve
@@ -4987,7 +4988,7 @@ agreed Compression behavior. No new dependency, visible column or measured
 performance gain is claimed. Bit Depth source priority and extra-read policy
 remain for the final table. The approval receipt
 records this decision without settling the outstanding uncommon labels or
-other pending MXF proposals. OldScanner stays active and Bin Filter is unchanged.
+other pending MXF proposals. previous scanner stays active and Bin Filter is unchanged.
 
 ## MXF Compression: preserve the existing behavior
 
@@ -5027,11 +5028,11 @@ is part of the approved preservation contract. Conditions for extra header
 opens and the full priority table remain for the end of the plan. The
 research record retains fresh native
 audits and reused thirteen-file facts; no new media scan, runtime code, cutover
-or measured performance claim is introduced. OldScanner stays active and
+or measured performance claim is introduced. previous scanner stays active and
 Bin Filter is unchanged.
 
 The [actual same-file Compression comparison](../docs/reviews/2026-10-21-bella-mxf/compression-comparison.md)
-executed current OldScanner MDB/MXF readers, source-local selection and table
+executed current previous scanner MDB/MXF readers, source-local selection and table
 adapter for 2,411 physical MXFs on 22 October 2026. It found 2,397 exact matches
 and 14 differences: ten MDB `1:1 Alpha 8bit` versus blank MXF, and four MDB
 `JPEG2000` versus MXF `J2K HD`. Every compared DNx label matched. These are
@@ -5131,7 +5132,7 @@ Read AppCode as signed four-byte big-endian Int32 and present standard UsageCode
 as exactly 16 bytes, using selected-header Primer mapping. Tighten the existing
 present-empty-UID boundary: an empty recorded value is damaged, never absence.
 This gap is verified static control flow, not an observed real-file failure or
-executed regression. Existing OldScanner Type already uses a compact enum and
+executed regression. Existing previous scanner Type already uses a compact enum and
 projects/reuses master facts once; those are useful existing behaviours to
 preserve, not new performance gains.
 
@@ -5179,7 +5180,7 @@ examples each have two master picture tracks but one physical-file-linked
 picture track, and qualify Titles and Matte Keys. One render example has no
 direct attribute list and qualifies Rendered Effects. All 11 agree with own
 same-ID/master MDB facts; these are raw source-derived interpretations, not
-newly executed OldScanner category outputs or a full-corpus comparison.
+newly executed previous scanner category outputs or a full-corpus comparison.
 Two MDBs were freshly hash/range checked; no new MXF read was needed.
 
 Preserve the already good small helper/enum/per-master fact reuse in fresh
@@ -5270,7 +5271,7 @@ supported layouts/header navigation still to review before OMF/WAV/AIFF.
 ## MXF damage handling: agreed boundaries
 
 The [23 October damage review](../docs/reviews/2026-10-21-bella-mxf/damage-handling.md)
-compares installed Media Composer/MDVx failure paths with OldScanner's partial
+compares installed Media Composer/MDVx failure paths with previous scanner's partial
 projection and typed/relationship checks. **The user approved these Bella
 boundaries on 23 October 2026; they were unimplemented at that review.**
 
@@ -5462,7 +5463,7 @@ and established metadata order. Preserve all three words of legacy UIDs; bridge
 only the known organization-42 family and preserve unfamiliar organizations
 distinctly. Retain complete modern labels/instance/material/tail and apply their
 required numeric-field order conversion. Do not copy native shortened compatibility
-comparison, MDVx's eight-byte key or OldScanner's opposite-order 32-byte pass-through.
+comparison, MDVx's eight-byte key or previous scanner's opposite-order 32-byte pass-through.
 Keep compact owned IDs/availability and only necessary temporary ownership/index
 context, releasing it after the job. Arbitrary native-audio `umid` is not an OMF
 MobID by name alone; native audio remains the following format review.
@@ -5617,7 +5618,7 @@ while redesigning acquisition and temporary data, rather than invent new field
 interpretations.
 
 Use the qualified physical file's own descriptor class as the sole OMF Kind
-authority. The agreed supported mapping preserves OldScanner:
+authority. The agreed supported mapping preserves previous scanner:
 
 | Exact descriptor class | Kind |
 | --- | --- |
@@ -5681,7 +5682,7 @@ display clock, using the agreed qualified Avid display-rate interpretation.
 Audio Frame Rate stays blank. No master/project clock guess or other-source
 timing supplement.
 
-Preserve OldScanner's bounded same-owner summary-frequency recovery when MDFL
+Preserve previous scanner's bounded same-owner summary-frequency recovery when MDFL
 rate is unusable and a valid unambiguous supported WAVD:Summary.fmt /AIFD:Summary.COMM
 frequency is already decoded, including the accepted contextual WAVE descriptor
 compatibility. Keep the OMF Length unchanged, with compact raw-rate availability
@@ -5865,7 +5866,7 @@ retained Summary solely for this column. Do not pre-parse unapproved fields or
 assume future native-audio container support. Reuse the already decoded frequency
 for Duration's accepted recovery when its MDFL clock is unusable, without a second
 summary decode or changing either field's source rule. This preserves useful
-sharing already present in OldScanner. Final helper names/signatures remain for
+sharing already present in previous scanner. Final helper names/signatures remain for
 implementation design; AIFF exact representability/unusual label precision retain
 their disclosed boundary. See the
 refinement record.
@@ -6197,7 +6198,7 @@ diagnostics. Release temporary buffers/indexes. I/O/source-change/cancellation,
 unsupported scope and resource failure retain their actual reasons; no blanket
 catch hiding programming errors or cancelled-job success. Length checks do not
 prove unchanged in-place content. Final acquisition/retry/scheduling stays later.
-Native/default/catch and MDVx bounds gaps are not copied; OldScanner's partial
+Native/default/catch and MDVx bounds gaps are not copied; previous scanner's partial
 source preservation is distinguished from demonstrated decoded-prefix output.
 No damaged-file experiment or measured gain is claimed. See the
 evidence.
@@ -6226,13 +6227,13 @@ Build fresh C++17/Qt 6.5.3 internals using small shared format helpers, compact
 results and scoped temporary storage. Keep sound samples on disk as today;
 avoid unused payload copying while preserving required useful outputs and
 availability/error behaviour. This is not a whole-pipeline copy or modification
-of OldScanner. Compare results with OldScanner and measure time/peak memory
+of previous scanner. Compare results with previous scanner and measure time/peak memory
 when implementing; no gains are established yet.
 
 Previously approved OMF rules remain authoritative for the separate embedded
 OMF parser. Native and embedded contributions still form one physical row.
 Final source priorities, extra-header-read triggers and scheduling remain to
-settle; preserving native behaviour does not adopt OldScanner's overall
+settle; preserving native behaviour does not adopt previous scanner's overall
 scheduling/completeness heuristics. Native WAVE/AIFF requirements are now closed
 by preservation, with no further field-by-field planning. No runtime/cutover.
 
@@ -6279,7 +6280,7 @@ coordinates these sources and their lifetimes. The database maxima do not
 require eight database jobs to run simultaneously or reserve dedicated CPUs.
 The visible choices were settled on 27 October. Review new engineering choices
 with the user before implementing them, then build/test/measure independent
-Bella. OldScanner remains active until explicit cutover approval.
+Bella. previous scanner remains active until explicit cutover approval.
 
 ## Scanner workflow proposal
 
@@ -6313,7 +6314,7 @@ The current app already follows this broad lifetime pattern: database preparatio
 releases the whole-file image and parsed objects after extracting its projection;
 matching retains projections/indexes, then the final row adapter produces owned
 rows and compact checks before the working session is released. Bella's planned
-change is to reduce and simplify the retained facts, not to claim OldScanner
+change is to reduce and simplify the retained facts, not to claim previous scanner
 currently keeps every whole database alive or repeatedly reads it per row.
 No memory improvement is measured by this source check.
 
@@ -6410,18 +6411,18 @@ reassessment does not reinstate them or recorded Source Path.
 | Optional precompute details | Precompute Category, Effect Category and Effect. Effect labels are inferred from the precompute name. Effect Sequence is excluded from Bella's columns, exports and stored data. |
 | Operation and metadata checks | Compact availability/change/conflict status, scan stamps and captured identities needed to verify files before operations. Some required facts are not visible columns. |
 
-OldScanner's current header-read checklist requires usable applicable metadata
-before skipping a media header. In OldScanner, missing Source Path can request a
+previous scanner's current header-read checklist requires usable applicable metadata
+before skipping a media header. In previous scanner, missing Source Path can request a
 read; missing Original Bin alone does not request MXF reading. Bella ignores
 recorded Source Path, so its absence must not request a read. See the historical
-[current checklist](../src/oldscanner/mediaengine/scancoordinator.cpp) and
+current checklist (removed source) and
 [field reference](../Project%20Copland/metadata-reference.md). Deciding to retain
 a displayed field and deciding whether its absence must trigger another read are
 separate requirements choices.
 
 ## Source capabilities
 
-This historical comparison matrix records the OldScanner mappings used during
+This historical comparison matrix records the previous scanner mappings used during
 Bella's requirements review. It is not Bella's active format/field contract;
 see the current implementation summary above. In particular, Bella does not
 implement the MXF linked-file-track Duration fallback listed here.
@@ -6452,7 +6453,7 @@ Source Path row is preserved research capability, explicitly excluded from Bella
 PMR additionally supplies a managed-media filename for matching. That filename is
 not Clip Name or Source Path; discovery supplies the current physical Filename.
 Its legacy and Unicode sets are independent record sets, not separate file and
-master catalogues. The OldScanner reader described by this review preserves a modification word
+master catalogues. The previous scanner reader described by this review preserves a modification word
 without interpreting it as a timestamp; Bella consumes and discards that word. Native research establishes that the current Mac
 writer takes it from filesystem modification seconds; genuine older records use
 a different clock convention. It is not a universal Date Created or freshness
@@ -6476,11 +6477,11 @@ Project column resolves composition/source attributes and uses the same decoder.
 This establishes native behavior; Bella's agreed text rule is recorded above.
 
 Filename, File Path, physical Size, filesystem Date Created and volume facts come
-from the filesystem. OldScanner currently labels the full physical path Location.
+from the filesystem. previous scanner currently labels the full physical path Location.
 No Database and No Reference are app conclusions from local
 database checks. Effect and Effect Category are inferred after selection from
 the precompute name and catalogue, rather than read as independent recorded
-effect identities. OldScanner also derives Effect Sequence; Bella excludes
+effect identities. previous scanner also derives Effect Sequence; Bella excludes
 that separate value. KelpieId is allocated by the app.
 
 Source Path's supported MDB/MXF mappings remain research and do not require Bella
@@ -6489,10 +6490,10 @@ established MXF equivalent and stays blank on MXF fallback. OMF/WAV/AIFF remain 
 their individual capability review follows the same approach.
 
 Implementation references:
-[PMR record projection](../src/oldscanner/mediaengine/pmrprojection.cpp),
-[MDB projection](../src/oldscanner/mediaengine/mdbprojection.cpp),
-[MXF projection](../src/oldscanner/mediaengine/mxfprojection.cpp),
-[effect derivation](../src/oldscanner/mediaengine/projection.cpp), and the
+PMR record projection (removed source),
+MDB projection (removed source),
+MXF projection (removed source),
+effect derivation (removed source), and the
 [metadata reference](../Project%20Copland/metadata-reference.md).
 
 ## Starting references
@@ -6514,7 +6515,7 @@ Implementation references:
   records native MDB strings/attributes/IDs, MDVx's narrower enrichment and its
   actual-byte Project conversion discrepancy, six genuine database inventories
   and proposed compact retained data. Curated evidence
-  distinguishes stored values, current OldScanner interpretation and proposals.
+  distinguishes stored values, current previous scanner interpretation and proposals.
 - [PMR text encoding](../docs/reviews/2026-10-18-bella-pmr/text-encoding.md) records
   the user's confirmed MacRoman Project, ten decompiled encoding helpers, the
   system-codec probe and official Avid/Apple sources. This establishes facts for

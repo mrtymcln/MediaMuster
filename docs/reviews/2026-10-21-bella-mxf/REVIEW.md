@@ -28,7 +28,7 @@ path for release one. The user approved its scope on 23 October; source-priority
 and extra-opening decisions remain separate.
 The user approved the separate MDB version baseline in this turn. Existing
 PMR/MDB memory, identity, field and source-opening rules remain authoritative.
-OldScanner stays active; Bin Filter is unchanged.
+previous scanner stays active; Bin Filter is unchanged.
 
 ## Scope and practical result
 
@@ -52,7 +52,7 @@ these header fields.
 | --- | --- | --- |
 | Media Composer 26.8.0.58987 | Cached random-access AAF-MXF storage, typed dictionary and linked mob/descriptor objects. | A substantial editing-oriented object model; this bounded trace does not establish a universal byte quota, footer rule or malformed-input guarantee. |
 | MDVx 0.2 build 4073 | Bundled libMXF OP-Atom information reader; first partition, Primer and declared header metadata, with early definition filters. | Ordinary output copies only Clip Name, Project and file/material IDs, despite the library parsing additional technical facts. |
-| Current MediaMuster / OldScanner | Seekable KLV reader, per-partition Primer, typed local-set graph, qualified projection. | Skips large recording payloads but walks top-level KLV framing through EOF and materializes broad header properties. |
+| Current MediaMuster / previous scanner | Seekable KLV reader, per-partition Primer, typed local-set graph, qualified projection. | Skips large recording payloads but walks top-level KLV framing through EOF and materializes broad header properties. |
 
 ### Media Composer
 
@@ -126,7 +126,7 @@ can last until the scan finishes; final table rows are compact.
 Useful rules to carry into fresh helpers include Primer mapping, strict typed
 decoding, complete IDs, active file ownership, linked master selection, crop/
 field/proxy geometry, audio/video depth interpretation and current Compression
-catalogue behavior. This does not approve adapting OldScanner into Bella.
+catalogue behavior. This does not approve adapting previous scanner into Bella.
 
 Current tests were inspected as source, including relocated/ambiguous Primers,
 reference ownership, Unicode/rational/indirect types, sparse large essence,

@@ -62,7 +62,7 @@ Bella's agreed field policy below keeps its own recorded Length and treats
 a genuine zero as a valid zero. It deliberately does not copy these native
 summary count repairs or unconditional frequency overrides. Supported same-owner
 summary-frequency recovery when MDFL rate is unusable preserves an existing
-OldScanner compatibility branch. No actual missing-rate/summary-repair case
+previous scanner compatibility branch. No actual missing-rate/summary-repair case
 was found in the five fresh examples; no lossless coverage claim is made for
 every native audio layout. Summary decoder details continue with audio Sample
 Rate/native WAV/AIFF review.

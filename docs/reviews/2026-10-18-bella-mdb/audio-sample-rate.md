@@ -6,7 +6,7 @@
 Research date: 20 October 2026. **The user approved the source, retention and
 missing-value rules on 20 October 2026. They are not yet implemented.** Audio
 Sample Rate is an agreed column, displayed in kHz; video rows leave it blank.
-OldScanner remains active. Bin Filter is outside this replacement.
+previous scanner remains active. Bin Filter is outside this replacement.
 
 ## What the value means
 
@@ -70,7 +70,7 @@ not a claim to have executed every Media Composer Sample Rate UI path.
 Fresh hashes of all six MDBs, their six PMRs and six cached value indexes match
 the earlier inventory. An independent read-only probe checked 413,830 relevant
 retained property rows against their actual MDB byte ranges before resolving
-full identities and the own descriptor. It used no OldScanner result or
+full identities and the own descriptor. It used no previous scanner result or
 physical media header.
 
 | Own descriptor class | Physical files | Concrete frequency found |
@@ -156,4 +156,4 @@ payload. AIFF's ten-byte representation needs a small format-specific decoder.
 `std::gcd` can help reduce a derived runtime fraction without destroying the
 original pair. `std::ratio` is compile-time machinery, not a runtime rate
 container. This is independent Bella design guidance, not code copied from
-OldScanner. No runtime code, active scanner or Bin Filter was changed.
+previous scanner. No runtime code, active scanner or Bin Filter was changed.

@@ -327,4 +327,4 @@ The [approved entry workflow](MATCHING.md#approved-entry-workflow), [common
 result](RESULT.md), [local-reference answer](CHECKS.md#approved-local-reference-answer)
 and [reader-unchanged decision](NECESSITY.md) remain in force. Existing
 MediaFile/table, progress, operation engine, journal, Unfinished Business, Undo
-and Bin Filter code is unchanged. OldScanner remains active.
+and Bin Filter code is unchanged. previous scanner remains active.

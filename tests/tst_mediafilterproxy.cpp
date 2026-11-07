@@ -62,15 +62,15 @@ private slots:
 	// Equal rounded sizes still sort by exact byte counts.
 	void size_column_sorts_on_exact_bytes();
 	void sample_rate_column_sorts_numerically();
-	void bit_depth_column_sorts_numbers_before_labels();
+	void bit_depth_column_sorts_numbers_with_unavailable_first();
 	void duration_column_sorts_displayed_timecode();
 	void master_column_sorts_selected_identity();
-	void source_path_column_sorts_recorded_path();
+	void file_path_column_sorts_physical_path();
 
-	// Location search also covers its filename and folder components.
-	void search_matches_the_path_shown_in_the_location_column();
-	void source_path_search_uses_recorded_text_data();
-	void source_path_search_uses_recorded_text();
+	// File Path search also covers its filename and folder components.
+	void search_matches_the_path_shown_in_the_file_path_column();
+	void file_path_search_uses_physical_text_data();
+	void file_path_search_uses_physical_text();
 	void unknown_classification_does_not_match_known_filters();
 	void database_filters_use_the_four_membership_results();
 	void database_filters_intersect_existing_filters_data();
@@ -141,7 +141,7 @@ void TestMediaFilterProxy::plain_ascii_never_matches_accents()
 	QCOMPARE(proxy.rowCount(), 2);
 }
 
-void TestMediaFilterProxy::search_matches_the_path_shown_in_the_location_column()
+void TestMediaFilterProxy::search_matches_the_path_shown_in_the_file_path_column()
 {
 	MediaTableModel model;
 	MediaFile a = rowNamed(QStringLiteral("Scene 1"));
@@ -172,9 +172,9 @@ void TestMediaFilterProxy::search_matches_the_path_shown_in_the_location_column(
 	QCOMPARE(proxy.rowCount(), 1);
 }
 
-void TestMediaFilterProxy::source_path_search_uses_recorded_text_data()
+void TestMediaFilterProxy::file_path_search_uses_physical_text_data()
 {
-	QTest::addColumn<QString>("sourcePath");
+	QTest::addColumn<QString>("filePath");
 	QTest::addColumn<QString>("search");
 	QTest::addColumn<bool>("matched");
 	const QString url = QStringLiteral("file:///Recorded%20Imports/Camera%20A/interview.mov");
@@ -194,48 +194,45 @@ void TestMediaFilterProxy::source_path_search_uses_recorded_text_data()
 	QTest::newRow("unavailable") << QString{} << QStringLiteral("interview.mov") << false;
 }
 
-void TestMediaFilterProxy::source_path_search_uses_recorded_text()
+void TestMediaFilterProxy::file_path_search_uses_physical_text()
 {
-	QFETCH(QString, sourcePath);
+	QFETCH(QString, filePath);
 	QFETCH(QString, search);
 	QFETCH(bool, matched);
 	auto file = rowNamed(QStringLiteral("Managed media"));
-	file.sourceFilePath = sourcePath;
+	file.mediaFilePath = filePath;
 	MediaTableModel model;
 	model.setMediaFiles(TestMediaFile::seeded({file}));
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	proxy.setSearchText(search);
 	QCOMPARE(proxy.rowCount(), matched ? 1 : 0);
-	QCOMPARE(model.fileAt(0).sourceFilePath, sourcePath);
+	QCOMPARE(model.fileAt(0).mediaFilePath, filePath);
 }
 
-void TestMediaFilterProxy::source_path_column_sorts_recorded_path()
+void TestMediaFilterProxy::file_path_column_sorts_physical_path()
 {
 	auto later = rowNamed(QStringLiteral("Same clip name"));
-	later.sourceFilePath = QStringLiteral("/Z-directory/A.mov");
-	later.mediaFilePath = QStringLiteral("/vol/later.mxf");
+	later.mediaFilePath = QStringLiteral("/Z-directory/A.mov");
 	auto earlier = later;
-	earlier.sourceFilePath = QStringLiteral("/a-directory/z.mov");
-	earlier.mediaFilePath = QStringLiteral("/vol/earlier.mxf");
+	earlier.mediaFilePath = QStringLiteral("/a-directory/z.mov");
 	auto unknown = later;
-	unknown.sourceFilePath.clear();
-	unknown.mediaFilePath = QStringLiteral("/vol/unknown.mxf");
+	unknown.mediaFilePath.clear();
 	MediaTableModel model;
 	model.setMediaFiles(TestMediaFile::seeded({later, earlier, unknown}));
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
-	const int column = int(MediaTableModel::Column::SourcePath);
+	const int column = int(MediaTableModel::Column::Location);
 	proxy.sort(column, Qt::AscendingOrder);
 	QCOMPARE(proxy.index(0, column).data().toString(), QString{});
-	QCOMPARE(proxy.index(1, column).data().toString(), earlier.sourceFilePath);
-	QCOMPARE(proxy.index(2, column).data().toString(), later.sourceFilePath);
+	QCOMPARE(proxy.index(1, column).data().toString(), earlier.mediaFilePath);
+	QCOMPARE(proxy.index(2, column).data().toString(), later.mediaFilePath);
 	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 2);
 	QCOMPARE(proxy.mapToSource(proxy.index(1, 0)).row(), 1);
 	QCOMPARE(proxy.mapToSource(proxy.index(2, 0)).row(), 0);
 	proxy.sort(column, Qt::DescendingOrder);
-	QCOMPARE(proxy.index(0, column).data().toString(), later.sourceFilePath);
-	QCOMPARE(proxy.index(1, column).data().toString(), earlier.sourceFilePath);
+	QCOMPARE(proxy.index(0, column).data().toString(), later.mediaFilePath);
+	QCOMPARE(proxy.index(1, column).data().toString(), earlier.mediaFilePath);
 	QCOMPARE(proxy.index(2, column).data().toString(), QString{});
 }
 
@@ -310,7 +307,7 @@ void TestMediaFilterProxy::sample_rate_column_sorts_numerically()
 	{
 		auto file = rowNamed(QString::number(rate));
 		file.kind = MediaFile::Kind::Audio;
-		file.sampleRate = rate;
+		TestMediaFile::setSampleRate(file, rate);
 		files.append(file);
 	}
 	MediaTableModel model;
@@ -324,19 +321,20 @@ void TestMediaFilterProxy::sample_rate_column_sorts_numerically()
 		proxy.sort(column, direction);
 		QVector<int> actual;
 		for (int row = 0; row < proxy.rowCount(); ++row)
-			actual.append(model.fileAt(proxy.mapToSource(proxy.index(row, column)).row()).sampleRate);
+			actual.append(qRound(model.fileAt(proxy.mapToSource(proxy.index(row, column)).row()).sampleRateHz()));
 		QCOMPARE(actual, expected);
 		std::reverse(expected.begin(), expected.end());
 	}
 }
 
-void TestMediaFilterProxy::bit_depth_column_sorts_numbers_before_labels()
+void TestMediaFilterProxy::bit_depth_column_sorts_numbers_with_unavailable_first()
 {
 	QVector<MediaFile> files;
-	for (const auto *depth : {"Float", "24-bit", "Unknown", "8-bit", "32-bit", "", "16-bit", "10-bit"})
+	const std::array<std::optional<quint32>, 6> depths{32, 24, std::nullopt, 8, 16, 10};
+	for (const auto bits : depths)
 	{
 		auto file = rowNamed(QString::number(files.size()));
-		file.bitDepth = QString::fromLatin1(depth);
+		TestMediaFile::setBitDepth(file, bits);
 		files.append(file);
 	}
 	MediaTableModel model;
@@ -344,7 +342,7 @@ void TestMediaFilterProxy::bit_depth_column_sorts_numbers_before_labels()
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	const int column = int(MediaTableModel::Column::BitDepth);
-	QStringList expected{"", "8-bit", "10-bit", "16-bit", "24-bit", "32-bit", "Float", "Unknown"};
+	QStringList expected{"", "8-bit", "10-bit", "16-bit", "24-bit", "32-bit"};
 	for (const auto direction : {Qt::AscendingOrder, Qt::DescendingOrder})
 	{
 		proxy.sort(column, direction);
@@ -577,11 +575,11 @@ void TestMediaFilterProxy::duration_column_sorts_displayed_timecode()
 		bool drop;
 		Kind kind;
 		const char *display;
-		const char *frameRate = "";
 	} cases[] = {
-		{"blank frames", 0, 25, false, Kind::Audio, ""},
+		{"missing duration", -1, 25, false, Kind::Audio, ""},
 		{"blank rate", 250, 0, false, Kind::Video, ""},
 		{"negative frames", -25, 25, false, Kind::Unknown, ""},
+		{"known zero", 0, 25, false, Kind::Audio, "00:00:00:00"},
 		{"30 frames/s", 10, 30, false, Kind::Video, "00:00:00:10"},
 		{"25 frames/s", 11, 25, false, Kind::Video, "00:00:00:11"},
 		{"equal audio", 12, 24, false, Kind::Audio, "00:00:00:12"},
@@ -591,7 +589,7 @@ void TestMediaFilterProxy::duration_column_sorts_displayed_timecode()
 		{"60 frames/s", 20, 60, false, Kind::Video, "00:00:00:20"},
 		{"two digit frame field", 99, 120, false, Kind::Video, "00:00:00:99"},
 		{"three digit frame field", 100, 120, false, Kind::Video, "00:00:00:100"},
-		{"frameRate fallback", 25, 0, false, Kind::Video, "00:00:01:00", "25"},
+		{"selected 25 fps clock", 25, 25, false, Kind::Video, "00:00:01:00"},
 		{"60 DF before drop", 3599, 60, true, Kind::Video, "00;00;59;59"},
 		{"60 NDF at drop", 3603, 60, false, Kind::Video, "00:01:00:03"},
 		{"60 DF at drop", 3600, 60, true, Kind::Audio, "00;01;00;04"},
@@ -608,12 +606,8 @@ void TestMediaFilterProxy::duration_column_sorts_displayed_timecode()
 	for (const auto &c : cases)
 	{
 		MediaFile row = rowNamed(QString::fromLatin1(c.name));
-		const int durationBase = c.base > 0 ? c.base : QString::fromLatin1(c.frameRate).toInt();
-		row.duration = {c.frames, {durationBase, 1}, {durationBase, 1}, MediaDuration::Source::Descriptor};
-		row.timecodeBase = c.base;
-		row.dropFrame = c.drop;
+		TestMediaFile::setDuration(row, c.frames, c.base, c.drop);
 		row.kind = c.kind;
-		row.frameRate = QString::fromLatin1(c.frameRate);
 		QCOMPARE(row.durationDisplay(), QString::fromLatin1(c.display));
 		rows.append(row);
 		ascending.append(row.clipName);
@@ -648,8 +642,7 @@ void TestMediaFilterProxy::three_state_classification_sort_is_consistent()
 	std::array<MediaFile, 3> rows{audio, video, unknown};
 	for (auto &row : rows)
 	{
-		row.duration = {250, {25, 1}, {25, 1}, MediaDuration::Source::Descriptor};
-		row.timecodeBase = 25;
+		TestMediaFile::setDuration(row, 250, 25);
 	}
 	std::array<int, 3> order{0, 1, 2};
 	do
@@ -770,7 +763,6 @@ void TestMediaFilterProxy::precomputes_gate_resets_filters_and_hidden_search()
 	render.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
 	render.effect = QStringLiteral("3D Warp");
 	render.effectCategory = QStringLiteral("Blend");
-	render.effectSequence = QStringLiteral("render");
 	render.volumePath = QStringLiteral("/Volumes/EDIT");
 	MediaFile media = rowNamed(QStringLiteral("ordinary"));
 	media.type = MediaFile::Type::Media;
@@ -810,9 +802,8 @@ void TestMediaFilterProxy::precomputes_gate_resets_filters_and_hidden_search()
 		proxy.setPrecomputesEnabled(false);
 		QCOMPARE(proxy.rowCount(), 0);
 	}
-	// The sequence spelling already appears in the visible clip name, so hiding
-	// its derived detail column must not remove that existing search match.
-	proxy.setSearchText(render.effectSequence);
+	// Hiding optional details keeps matches in the visible clip name.
+	proxy.setSearchText(QStringLiteral("render"));
 	QCOMPARE(proxy.rowCount(), 1);
 	proxy.setPrecomputesEnabled(true);
 	QCOMPARE(proxy.rowCount(), 1);
@@ -873,9 +864,9 @@ void TestMediaFilterProxy::effect_columns_sort_displayed_values()
 	proxy.setSourceModel(&model);
 	model.setPrecomputesEnabled(true);
 	proxy.setPrecomputesEnabled(true);
-	const std::array columns{MediaTableModel::Column::Effect, MediaTableModel::Column::EffectCategory, MediaTableModel::Column::EffectSequence};
-	const QStringList alphaValues{QStringLiteral("3D Warp"), QStringLiteral("Blend"), QStringLiteral("Alpha")};
-	const QStringList zuluValues{QStringLiteral("Color Correction"), QStringLiteral("Image"), QStringLiteral("Zulu")};
+	const std::array columns{MediaTableModel::Column::Effect, MediaTableModel::Column::EffectCategory};
+	const QStringList alphaValues{QStringLiteral("3D Warp"), QStringLiteral("Blend")};
+	const QStringList zuluValues{QStringLiteral("Color Correction"), QStringLiteral("Image")};
 	for (std::size_t index = 0; index < columns.size(); ++index)
 	{
 		const auto column = columns[index];
@@ -890,7 +881,7 @@ void TestMediaFilterProxy::effect_columns_sort_displayed_values()
 	}
 	model.setPrecomputesEnabled(false);
 	proxy.setPrecomputesEnabled(false);
-	QCOMPARE(proxy.columnCount(), 21);
+	QCOMPARE(proxy.columnCount(), 20);
 	QCOMPARE(proxy.rowCount(), 3);
 }
 

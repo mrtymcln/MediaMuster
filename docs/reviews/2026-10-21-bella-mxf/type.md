@@ -8,7 +8,7 @@
 
 Research date: 22 October 2026. **The user approved these MXF Type rules on
 22 October 2026; they remain unimplemented.** Resolution is approved separately.
-OldScanner stays active; Bin Filter is unchanged. Type means **Media** or
+previous scanner stays active; Bin Filter is unchanged. Type means **Media** or
 **Precompute**, independently of Audio/Video Kind. Optional Precompute Category,
 Effect Category and Effect remain separate retained features.
 
@@ -86,7 +86,7 @@ Type. There is no demonstrated ordinary MDVx MXF Type algorithm to copy.
 
 ## Current MediaMuster
 
-The [MXF classifier](../../../src/oldscanner/mediaengine/mxfprojection.cpp)
+The MXF classifier (removed source)
 uses the qualified associated master. The small
 [shared helper](../../../src/avidusage.h) already distinguishes AppCode from
 standard UsageCode and returns a compact classification:
@@ -126,7 +126,7 @@ relationships:
 
 Applying the supported source rules gives 11 Precompute and 24 Media, agreeing
 with those MDB masters. These are independent interpretations of raw recorded
-facts, **not newly executed OldScanner Type outputs**. The 11 LowerLevel values
+facts, **not newly executed previous scanner Type outputs**. The 11 LowerLevel values
 include ten exchanged-half and one SMPTE-UL serialization. Five current MDB
 hashes and the relevant original identity/usage bytes were verified. Two audio
 initial headers were freshly read; the other 33 examples reuse qualified saved
@@ -190,7 +190,7 @@ There are concrete differences in the agreed design:
 
 - Preferred PMR-set extraction avoids constructing the older set's decoded
   values when usable v16 is available. Selected compact results replace much
-  of OldScanner's general per-property observations carried during a scan.
+  of previous scanner's general per-property observations carried during a scan.
 - Shared numeric timing and geometry facts avoid storing formatted rate/size
   labels and parsing those labels back for sort. This is a data-model
   simplification; some formatting cost moves to presentation rather than
@@ -205,7 +205,7 @@ There are concrete differences in the agreed design:
 
 Important limits and costs:
 
-- OldScanner already captures each PMR into memory for parsing and releases
+- previous scanner already captures each PMR into memory for parsing and releases
   its raw image after preparation. Read-once is not a new elimination of
   hypothetical per-row disk rereads, nor does every shared Qt value imply
   another full data copy.
@@ -219,7 +219,7 @@ Important limits and costs:
 
 The next proof must be a working Bella implementation with required-field
 coverage/output comparisons and measured scan time/peak memory against the
-current OldScanner, on representative local and attached/network workloads.
+current previous scanner, on representative local and attached/network workloads.
 The current per-field review mainly specifies what must be preserved and where
 unnecessary work can be removed. Calling each completed review a demonstrated
 speed improvement would overstate the evidence.

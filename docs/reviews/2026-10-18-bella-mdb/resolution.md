@@ -10,7 +10,7 @@ implemented.**
 The existing app's visible-raster policy remains documented in the
 [7 October review](../../../Project%20Canon/visible-resolution-2026-10-07.md).
 Compression's [preservation requirement](compression-preservation.md) is agreed.
-OldScanner remains active and Bin Filter stays unchanged.
+previous scanner remains active and Bin Filter stays unchanged.
 
 ## What the MDB records
 
@@ -93,7 +93,7 @@ database-browser capability lacks geometry support. No app scan/export ran.
 All six MDBs, six sibling PMRs and six retained value indexes freshly match
 their earlier hashes. An independent full-ID/own-descriptor probe verified
 440,939 relevant retained property rows against actual MDB byte ranges. It
-used no OldScanner projection or physical media header.
+used no previous scanner projection or physical media header.
 
 All **899 video descriptors** have complete positive Stored, Sampled and
 Display dimensions, all four optional offsets and FrameLayout. All offsets
@@ -132,7 +132,7 @@ cover those separate cases.
 
 ## Current MediaMuster and agreed Bella rules
 
-The current [geometry selector](../../../src/oldscanner/mediaengine/picturegeometry_p.h)
+The current geometry selector (removed source)
 is already a small, value-only helper. MDB/OMF and MXF callers supply their own
 defaults and coordinate conventions. It validates positive sizes, offsets and
 containment before checked field-height conversion, using subtraction to avoid

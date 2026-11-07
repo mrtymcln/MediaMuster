@@ -11,7 +11,7 @@ The user subsequently approved one shared `src/bella/timing.h/.cpp`, separate
 pure rate/duration/formatting operations, lean values and
 `tests/tst_bellatiming.cpp`. The alternative was three separate components.
 Only new Bella source/tests and root/test CMake lists are approved touch points.
-Existing readers, app integration, OldScanner and Bin Filter remain unchanged.
+Existing readers, app integration, previous scanner and Bin Filter remain unchanged.
 
 ## Fresh actual-file evidence
 

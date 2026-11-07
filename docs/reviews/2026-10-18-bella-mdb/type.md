@@ -10,7 +10,7 @@ Research date: 20 October 2026. The user approved the separate
 [Resolution rules](resolution.md) and requested the next MDB field, Type.
 **The user approved these Type rules on 20 October 2026, specifying blank
 display/export for unknown or unreadable values. They are not yet implemented.**
-OldScanner remains active; Bin Filter is unchanged. Type is the ordinary
+previous scanner remains active; Bin Filter is unchanged. Type is the ordinary
 Media/Precompute classification. Optional category/effect details remain a
 separate review.
 
@@ -75,7 +75,7 @@ classification predicates, not every Media Composer UI column.
 
 Fresh hashes agree for all six MDBs, six PMRs and six retained value indexes.
 An independent full-ID/owner probe verified 471,965 relevant retained property
-rows against actual MDB byte ranges. It used no OldScanner output or physical
+rows against actual MDB byte ranges. It used no previous scanner output or physical
 media header.
 
 | Selected master's recorded usage | Physical files | Distinct selected master objects, summed by MDB |
@@ -149,7 +149,7 @@ Its Type row stores a small enum; `typeDisplay()` emits **Media**,
 **Precompute**, or **—** for unknown, shared by table and CSV. The
 [shared usage definitions](../../../src/avidusage.h) already provide a small
 constexpr master-classification function. The
-[MDB classifier](../../../src/oldscanner/mediaengine/mdbprojection.cpp)
+MDB classifier (removed source)
 then separately inspects attributes/tracks for optional precompute category.
 That extra work is not required to decide basic Type.
 
@@ -161,7 +161,7 @@ For Bella, the user agreed:
 2. Map 1 to Precompute, 7 to Media and other/missing/unusable values to Unknown
    for this supported MDB context. Keep the physical file even when unknown.
    Generate Media/Precompute labels at presentation; display/export unknown
-   values as blank, as explicitly requested, instead of OldScanner's em dash.
+   values as blank, as explicitly requested, instead of previous scanner's em dash.
 3. Keep the compact result enum and necessary availability information. The
    numeric UsageCode can remain in temporary master data for any other retained
    consumer, without retaining a formatted label, all source usages or a

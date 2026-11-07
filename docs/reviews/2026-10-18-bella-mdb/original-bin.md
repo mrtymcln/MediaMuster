@@ -9,7 +9,7 @@ approved the Original Bin rules below on **19 October 2026**, restating the
 name choice simply: `binNameUTF8` first, then `binName` if empty, then an empty
 table cell if neither supplies a name. Existing MDB text decoding and
 selected-master requirements remain approved. This review
-adds no Bella runtime code, OldScanner changes, media writes or Bin Filter work.
+adds no Bella runtime code, previous scanner changes, media writes or Bin Filter work.
 
 **MXF fallback decision, 21 October 2026:** when the scan falls back to MXF
 because usable database information is unavailable, leave Original Bin blank.
@@ -108,7 +108,7 @@ There is no MDVx Original Bin owner, codec or missing-value fallback to copy.
 An independent probe used raw MDB value indexes after checking all six current
 MDBs, sibling PMRs and cached-index hashes. It selected catalogue-qualified file
 and associated-master owners by full normalized IDs and followed explicit
-references. OldScanner's projected field was not the oracle.
+references. previous scanner's projected field was not the oracle.
 
 | MDB folder | Physical file rows | Original Bin through selected master | Association absent |
 | --- | ---: | ---: | ---: |
