@@ -977,7 +977,7 @@ QString TestOperationUi::makeRetainedOriginal(const QString &name)
 	entry.landed = OpFile::inspect(entry.dst);
 	entry.copyDurable = true;
 	entry.metadataComplete = true;
-	entry.step = OpJournal::Step::SourceRetained;
+	entry.step = OpJournal::Step::RemovingSource;
 	if (!journal.save(entry) || !journal.markCopiesComplete() || !journal.finish(true))
 		qFatal("Cannot save retained-original journal");
 	return journal.path();
