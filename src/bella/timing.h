@@ -3,6 +3,7 @@
 #include <QString>
 #include <QtGlobal>
 #include <optional>
+#include <tuple>
 
 namespace Bella
 {
@@ -53,6 +54,13 @@ namespace Bella
 	[[nodiscard]] FileTiming timingFor(const OmfFileInformation &, std::optional<quint16> nominalBase);
 	[[nodiscard]] FileTiming timingFor(const OmfNativeAudioInformation &);
 
+	// Reuse the qualified source display clock and derive its nearest positive
+	// quint16 base exactly, with positive halves upward. An unavailable base
+	// withholds display only; native audio remains exact-only above.
+	[[nodiscard]] FileTiming timingFor(const MdbFileRecord &);
+	[[nodiscard]] FileTiming timingFor(const MxfFileInformation &);
+	[[nodiscard]] FileTiming timingFor(const OmfFileInformation &);
+
 	// Only for a qualified Avid ExactEditRate video/editing clock, never an audio
 	// sampling frequency or a generic Rational. Other positive fractions stay literal.
 	[[nodiscard]] std::optional<TimingRate> interpretAvidEditRate(qint32 numerator, qint32 denominator) noexcept;
@@ -63,6 +71,10 @@ namespace Bella
 	// Converts exact duration to display frames, rounding once, positive halves up.
 	// Zero is a value; invalid inputs or an unrepresentable result return no value.
 	[[nodiscard]] std::optional<qint64> displayFrameCount(const ExactDuration &duration, TimingRate displayRate) noexcept;
+
+	// The displayed hours, minutes, seconds and frames, before choosing separators.
+	[[nodiscard]] std::optional<std::tuple<qint64, int, int, int>> durationTimecode(
+		const ExactDuration &duration, TimingRate displayRate, quint16 nominalBase, TimecodeMode mode) noexcept;
 
 	// The caller has already established the applicable clock, nominal base and mode.
 	// Returns an empty string when they cannot form a supported label. Hours do not wrap.

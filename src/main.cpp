@@ -16,7 +16,12 @@ int main(int argc, char *argv[])
 	app.setApplicationName(APP_NAME);
 	app.setApplicationVersion(APP_VERSION);
 	app.setOrganizationName("Martin McLean");
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+	app.setApplicationDisplayName(APP_NAME);
+	app.setOrganizationDomain("com.McLean.MediaMuster.BellaTest");
+#else
 	app.setOrganizationDomain("com.McLean.MediaMuster");
+#endif
 	app.setWindowIcon(QIcon(":/res/mediamuster.png"));
 
 	// Start logging after setting the app details used in the path and header.

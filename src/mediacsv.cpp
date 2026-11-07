@@ -40,35 +40,45 @@ namespace MediaCsv
 {
 	QString headerLine(Options options)
 	{
+		const bool legacy = options.presentation == MediaPresentation::OldScanner;
 		QString line = QStringLiteral("Clip Name,Project,Bin,Kind,Duration,");
 		line += QStringLiteral("Size (MB),Compression,Resolution,Frame Rate,Sample Rate,Bit Depth,Type,");
 		if (options.includePrecomputeDetails)
-			line += QStringLiteral("Precompute Category,Effect Category,Effect,Effect Sequence,");
-		line += QStringLiteral("Date Created,Filename,Source Path,Location,No Database,No Reference,FileMobId,MasterMobId,KelpieId,OmfScan");
+		{
+			line += QStringLiteral("Precompute Category,Effect Category,Effect,");
+			if (legacy)
+				line += QStringLiteral("Effect Sequence,");
+		}
+		line += QStringLiteral("Date Created,Filename,");
+		line += legacy ? QStringLiteral("Source Path,Location,") : QStringLiteral("File Path,");
+		line += QStringLiteral("No Database,No Reference,FileMobId,MasterMobId,KelpieId,OmfScan");
 		return line + QLatin1Char('\n');
 	}
 
 	QString rowLine(const MediaFile &f, Options options)
 	{
+		const auto presentation = options.presentation;
+		const bool legacy = presentation == MediaPresentation::OldScanner;
 		QString line;
 		QTextStream out(&line);
 		out << CsvUtil::quoted(f.clipName) << ',' << CsvUtil::quoted(f.projectDisplay()) << ','
-			<< CsvUtil::quoted(f.originalBin) << ',' << CsvUtil::quoted(f.kindDisplay()) << ','
+			<< CsvUtil::quoted(f.originalBin) << ',' << CsvUtil::quoted(f.kindDisplay(presentation)) << ','
 			<< CsvUtil::quoted(f.durationDisplay()) << ',';
-		out << f.sizeMBDisplay() << ',' << CsvUtil::quoted(f.compression) << ',' << CsvUtil::quoted(f.resolution) << ','
-			<< CsvUtil::quoted(f.frameRate) << ',' << CsvUtil::quoted(f.sampleRateDisplay()) << ','
-			<< CsvUtil::quoted(f.bitDepth) << ',' << CsvUtil::quoted(f.typeDisplay()) << ',';
+		out << f.sizeMBDisplay(presentation) << ',' << CsvUtil::quoted(f.compression) << ',' << CsvUtil::quoted(f.resolutionDisplay()) << ','
+			<< CsvUtil::quoted(f.frameRateDisplay()) << ',' << CsvUtil::quoted(f.sampleRateDisplay()) << ','
+			<< CsvUtil::quoted(f.bitDepthDisplay()) << ',' << CsvUtil::quoted(f.typeDisplay(presentation)) << ',';
 		if (options.includePrecomputeDetails)
 		{
-			const bool precompute = f.type == MediaFile::Type::Precompute;
-			out << CsvUtil::quoted(f.precomputeCategoryDisplay()) << ','
+			out << CsvUtil::quoted(f.precomputeCategoryDisplay(presentation)) << ','
 				<< CsvUtil::quoted(f.effectCategoryDisplay()) << ','
-				<< CsvUtil::quoted(f.effectDisplay()) << ','
-				<< CsvUtil::quoted(precompute ? f.effectSequence : QString()) << ',';
+				<< CsvUtil::quoted(f.effectDisplay()) << ',';
+			if (legacy)
+				out << CsvUtil::quoted(f.type == MediaFile::Type::Precompute ? f.effectSequence : QString()) << ',';
 		}
-		out << f.createdDisplay() << ','
-			<< CsvUtil::quoted(f.fileName) << ',' << CsvUtil::quoted(f.sourceFilePath) << ','
-			<< CsvUtil::quoted(f.mediaFilePath) << ','
+		out << f.createdDisplay() << ',' << CsvUtil::quoted(f.fileName) << ',';
+		if (legacy)
+			out << CsvUtil::quoted(f.sourceFilePath) << ',';
+		out << CsvUtil::quoted(f.mediaFilePath) << ','
 			<< (f.isNoDatabase() ? QStringLiteral("true") : QStringLiteral("false")) << ','
 			<< (f.isNoReference() ? QStringLiteral("true") : QStringLiteral("false")) << ','
 			<< CsvUtil::quoted(f.fileMobId) << ',' << CsvUtil::quoted(f.masterMobId) << ',' << f.kelpieId << ','

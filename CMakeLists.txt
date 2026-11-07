@@ -80,6 +80,8 @@ endif()
 
 ### Test suite; disable with -DMEDIAMUSTER_BUILD_TESTS=OFF ###
 option(MEDIAMUSTER_BUILD_TESTS "Build the MediaMuster test suite" ON)
+option(MEDIAMUSTER_BELLA_PREVIEW "Build the separate Bella scan and export test app" OFF)
+set(MEDIAMUSTER_BELLA_PREVIEW_NAME "MediaMuster Bella Test")
 
 ### Pin to Qt version ###
 find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Widgets Core Gui Concurrent)
@@ -90,6 +92,19 @@ add_library(mediamuster_bella STATIC
     src/bella/mobid.h
     src/bella/timing.cpp
     src/bella/timing.h
+    src/bella/naming.cpp
+    src/bella/naming.h
+    src/bella/matching.cpp
+    src/bella/matching.h
+    src/bella/bellascanner.cpp
+    src/bella/bellascanner.h
+    src/bella/bellascanner_p.h
+    src/bella/discovery_p.cpp
+    src/bella/discovery_p.h
+    src/bella/readjobs_p.cpp
+    src/bella/readjobs_p.h
+    src/volumeidentity.cpp
+    src/volumeidentity.h
     src/bella/audioformat_p.cpp
     src/bella/audioformat_p.h
     src/bella/pmrparser.cpp
@@ -102,6 +117,13 @@ add_library(mediamuster_bella STATIC
     src/bella/omfparser.h
     src/bella/audioreader_p.cpp
     src/bella/audioreader_p.h
+    # Selected naming boundary: compile the unchanged lookups separately here.
+    # Existing OldScanner, app and test compilation owners remain in place.
+    src/oldscanner/mediaengine/compressionnames_p.cpp
+    src/oldscanner/mediaengine/compressionnames_p.h
+    src/oldscanner/mediaengine/dnxnames_p.h
+    src/effectcatalogue.cpp
+    src/effectcatalogue.h
 )
 set_target_properties(mediamuster_bella PROPERTIES AUTOMOC OFF)
 target_include_directories(mediamuster_bella PUBLIC ${CMAKE_SOURCE_DIR}/src)
@@ -235,6 +257,10 @@ if(APPLE)
     set(MACOSX_BUNDLE_GUI_IDENTIFIER       "com.McLean.MediaMuster")
     set(MACOSX_BUNDLE_ICON_FILE            "mediamuster-mac.icns")
     set(MACOSX_BUNDLE_COPYRIGHT            "${MEDIAMUSTER_COPYRIGHT}")
+    if(MEDIAMUSTER_BELLA_PREVIEW)
+        set(MACOSX_BUNDLE_BUNDLE_NAME "${MEDIAMUSTER_BELLA_PREVIEW_NAME}")
+        set(MACOSX_BUNDLE_GUI_IDENTIFIER "com.McLean.MediaMuster.BellaTest")
+    endif()
 
     add_executable(MediaMuster MACOSX_BUNDLE ${SOURCES})
     set_target_properties(MediaMuster PROPERTIES
@@ -275,6 +301,18 @@ target_link_libraries(MediaMuster PRIVATE
     Qt6::Gui
     Qt6::Concurrent
 )
+
+if(MEDIAMUSTER_BELLA_PREVIEW)
+    set(_bella_preview_sources
+        ${CMAKE_SOURCE_DIR}/src/bellaappscanner.cpp
+        ${CMAKE_SOURCE_DIR}/src/bellaoperationhandoff.cpp
+        ${CMAKE_SOURCE_DIR}/src/bellarowpresentation.cpp
+    )
+    target_sources(MediaMuster PRIVATE ${_bella_preview_sources})
+    target_compile_definitions(MediaMuster PRIVATE MEDIAMUSTER_BELLA_PREVIEW)
+    target_link_libraries(MediaMuster PRIVATE mediamuster_bella)
+    set_target_properties(MediaMuster PROPERTIES OUTPUT_NAME "${MEDIAMUSTER_BELLA_PREVIEW_NAME}")
+endif()
 
 function(mediamuster_link_native_operations target)
     if(APPLE)

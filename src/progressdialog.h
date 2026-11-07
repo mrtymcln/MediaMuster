@@ -22,7 +22,7 @@ public:
 	void begin();
 
 	/// A positive total enables determinate progress; otherwise keep it indeterminate.
-	void setProgress(int current, int total);
+	void setProgress(qsizetype current, qsizetype total);
 
 	/// Include the current work unit's percentage (0–100) in overall progress.
 	/// Work units may include separate copy/removal phases for one file.
@@ -33,6 +33,9 @@ public:
 
 	/// Hide the dialog. Caller is responsible for any final logging.
 	void finish();
+
+	/// Disable Cancel and emit once per run, whichever entry point requests it.
+	void requestCancel();
 
 signals:
 	/// The owner requests cooperative cancellation, then calls finish() when done.
@@ -46,9 +49,6 @@ protected:
 	void reject() override;
 
 private:
-	/// Disable Cancel and emit once per run, whichever entry point requests it.
-	void requestCancel();
-
 	QLabel *m_detailLabel;
 	QLabel *m_counterLabel;
 	QProgressBar *m_bar;

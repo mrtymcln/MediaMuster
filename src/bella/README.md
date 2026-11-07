@@ -67,6 +67,192 @@ per build; all 60 complete reader reports per build, including warnings, are
 byte-identical to baseline. No reader/helper/build-list or app source changed.
 See the [connection verification](../../docs/reviews/2026-11-04-bella-timing-reconfirmation/CONNECTIONS.md#implementation-and-verification).
 
+The user next selected **naming connections first** on 4 November: feed selected
+reader facts into the existing Compression resolver and derive Effect/Effect
+Category together using the existing lookup on final Precompute Type/name.
+Naming behavior and reader reports remain as agreed. The [shared build boundary](../../docs/reviews/2026-11-04-bella-naming/SHARING.md)
+was reviewed: the user selected compiling the same unchanged lookup files
+separately into Bella, keeping current OldScanner/app/test build owners intact.
+No shared naming target or helper move is selected. The root Bella CMake list
+now compiles the unchanged existing naming files; other build owners stay intact.
+Existing Compression/Effect suites pass 31+36 cases before/after, and the same
+unmodified tests pass linked only to Bella/Qt without OldScanner. Concrete
+[adapter function/results](../../docs/reviews/2026-11-04-bella-naming/CONTRACT.md)
+are now approved: Bella-owned four-string `CompressionNames`, two-string
+`EffectNames`, four `compressionFor` overloads and one `effectNamesFor` using a
+confirmed-Precompute bool plus final selected Clip Name. Implemented in
+`naming.h/.cpp` with `tst_bellanaming.cpp`, preserving all established rules.
+The naming suite passes 64 cases; all eight Bella suites total 980 passed with
+the same 14 fixture skips in both normal and ASan+UBSan modes. Per mode, genuine
+checks cover 5,104 Compression and 1,443 requested Effect results with no
+unexpected differences; 60 full reader reports/warnings are byte-identical.
+See the [scope and approved reference differences](../../docs/reviews/2026-11-04-bella-naming/VERIFICATION.md).
+OldScanner remains active and Bin Filter unchanged.
+
+On 4 November the user next approved **matching and source selection first**:
+test the agreed joins and source/header-opening rules using already-read Bella
+reports before implementing physical discovery and shared read scheduling.
+Use eligible scan-wide database facts, retain one result per physical file,
+and preserve the approved full-ID, master, source-coherence and lifetime rules.
+The user then approved one repeatable matching function, called initially with
+eligible completed database context and again with the attempted header report
+only if required. The same full-ID/master/source rules apply on both passes;
+an attempted failed or ID-less header is not an unattempted read. The user next
+approved returning owned selected values, rather than temporary report/record
+bookmarks. Reuse existing timing/naming groups; retain necessary numeric meaning
+and compact checks without whole report copies or per-column evidence wrappers.
+The user then approved the [common metadata fields/forms](../../docs/reviews/2026-11-04-bella-matching/RESULT.md),
+choosing common selected values over reader-specific value forms in the answer.
+Original numeric meanings and required format context remain intact. No matching
+code is implemented yet. Exact compact checks, input/context contracts, bounded
+helper declarations and lookup ownership remain to review. See also the
+[matching scope/workflow](../../docs/reviews/2026-11-04-bella-matching/MATCHING.md).
+The user requested actual-need confirmation of an extra header-identity group.
+The [real-file/primary-format reassessment](../../docs/reviews/2026-11-04-bella-matching/NECESSITY.md)
+found one applicable file and linked master ID in each of 4,270 inspected
+carriers, with one material package in every MXF, and no demonstrated need for
+the proposed all-master list. That reader-extension recommendation is withdrawn;
+the generic multiple-ID conflict interpretation was also too broad for OMF.
+Current readers and operation policy are unchanged; any future operation-check
+simplification needs an explicit decision before integration/cutover.
+The user then approved leaving Bella's readers unchanged: no proposed extra
+header-identity capture is added for matching. The user then approved one
+[four-choice localReference enum](../../docs/reviews/2026-11-04-bella-matching/CHECKS.md),
+defaulting to Unresolved, with Listed, NoReference and NoDatabase as the other
+answers. This uses the already-agreed membership/absence/unresolved meanings.
+The user then approved the [three-way HeaderInput](../../docs/reviews/2026-11-04-bella-matching/INPUTS.md):
+no attempt, existing read-only MXF report or existing read-only OMF/native report.
+The call borrows the report; its failed/cancelled/ID-less reply still counts as
+an attempt. No extra attempt/success flag or reader change is introduced.
+The user then approved **MatchContext owning reports and lookups together**,
+with reports handed over once and read-only use during matching. Release the
+context after all matching/dependent checks; keep required failed/cancelled
+source replies and source qualifications. No raw database buffers or permanent
+cache are added. Physical input and remaining concrete declarations are pending.
+The next [filename-association proposal](../../docs/reviews/2026-11-04-bella-matching/FILENAMES.md)
+is exact PMR spelling versus the current guarded normalized-name fallback.
+All 2,492 entries from seven freshly checked PMRs matched exactly; no non-ASCII
+name or normalized-only match was observed. The user approved exact spelling,
+including case/Unicode code points, and declined normalized fallback. Matching
+therefore needs no sibling-name roster/uniqueness flag for PMR association.
+Physical/folder input members are the next review; no matching code is added yet.
+The user then approved the existing absolute physical path as the per-call
+identifier, borrowed read-only rather than an inventory position. The user
+then approved one shared `QSet<QString> completedFolders` in MatchContext;
+missing membership is unproven completion, not proof of database absence.
+The user then approved one entry per discovered database: actual report if
+called, otherwise its path with existing NotRead defaults and no facts. Known
+unread sources remain present; they prove no completed positive/negative check.
+The user then approved one required [physicalFactsEligible input](../../docs/reviews/2026-11-04-bella-matching/INPUTS.md),
+the organiser's final qualification rather than raw physical-check details.
+No default/producer policy or operation permission is implied. Source checks
+remain independent: permitted Unverified reader facts survive, and Changed
+header facts cannot be restored by true. Exact common declarations and source
+placement remain to review before matching code.
+The next substantive [timing-input proposal](../../docs/reviews/2026-11-04-bella-matching/TIMECODE.md)
+is nearest-integer nominal-base qualification after coherent timing selection, rather than
+adding source-aware caller base inputs. The recommended timing helper extension
+would touch timing.h/.cpp and its tests, preserve existing explicit-base calls,
+and leave readers unchanged. Primary SMPTE ST 377-1 B.17 supports nearest-integer
+base calculation; the earlier finite-map recommendation was withdrawn. The user
+explicitly approved the corrected source-aware rounding rule, preserving
+recorded rates, exact Duration and existing numbering checks. The [full matching
+declaration/placement proposal](../../docs/reviews/2026-11-04-bella-matching/CONTRACT.md)
+is approved with `matching.h/.cpp` placement. The owning MatchContext, repeatable
+no-I/O matchFile and automatic timing overloads are implemented. All nine Bella
+suites pass 1,096 cases with zero failures and the same 14 retired-fixture skips
+in both normal and ASan/UBSan builds; matching has 74 passes and timing 209.
+Final real-file component comparisons cover 4,279 paths in both detail modes
+per build, with zero differences and all 67 reader reports/warnings unchanged.
+Normal and sanitizer serialized outputs are byte-identical.
+Whole native timing has priority over embedded OMF timing on database-unavailable
+header fallback, as additionally approved; no clock is borrowed between them.
+See the [implementation/verification receipt](../../docs/reviews/2026-11-04-bella-matching/VERIFICATION.md).
+App MediaFile/table, progress and operation integration remain separate work.
+
+The user then approved **discovery first** on 4 November: finish finding the
+supported physical files and local PMR/MDB sources before starting source reads.
+Use the already-agreed shared four-reader team for databases, settle eligible
+database replies and freeze MatchContext, then match and read only required
+headers. Preserve incomplete listings and Cancel's discovered/usable partial
+results. The alternative of reading databases while discovery continues was
+declined; no runtime or measured speed/memory result is implied. Concrete
+scanner input/result, physical qualification and reader-lifetime declarations
+remain to review. See the [sequencing decision](../../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#discoveryread-sequencing-approved-4-november-2026).
+
+The user then chose **one eventual result entry per physical file**, created
+during discovery with physical facts and later filled with matching's selected
+metadata by the organiser. The separate discovery-inventory recommendation is
+withdrawn. Parser reports/shared folder facts keep their existing ownership;
+workers do not update entries independently. Entries remain internal until the
+agreed final table publication. Exact entry members and the remaining scanner
+contract still need review; no runtime/app integration is implemented by this
+layout decision. See the [approved entry arrangement](../../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#small-components-and-standard-facilities).
+
+The user then approved **physical facts plus the existing MatchResult** inside
+each entry: KelpieId, full path, size, filesystem dates, necessary volume/location
+facts and OMF/quarantine flags, alongside the matching value's selected metadata,
+local-reference and header-needed answers. Do not duplicate/flatten MatchResult's
+fields. Shared database reports, completed folders and problems stay at scan
+level; the organiser populates the same entries through final publication.
+Exact physical-member declarations, capture/qualification and remaining scanner
+interfaces/lifetimes are still to review. This record adds no runtime code.
+
+The user then approved **Bella's own QThreadPool** for the shared four-reader
+team, declining a custom C++17 worker implementation. The organiser remains
+outside the reader slots. Report collection, cooperative Cancel, dispatch/
+completion details and safe pool/session lifetime still need their concrete
+implementation contract; selecting the pool does not supply them automatically.
+Use a Bella-owned pool rather than the application-global pool. Discovery-first
+order, the single-entry layout and final table publication are unchanged. This
+approval record changes no runtime/app code and claims no measured gain.
+
+The user then approved **up to four submitted jobs with uncollected replies**:
+collect a reply, then submit the next pending job. Enqueueing every stage job
+at once was declined. Running work and completed replies awaiting collection
+both occupy that allowance. Cancel stops further submission; undispatched
+databases retain their discovered paths/NotRead defaults. Required collected
+database facts remain available through matching, independently of submission
+slots. Completion delivery and worker/pool lifetime still need their concrete
+contract. This is job accounting, not a RAM cap or runtime/app change.
+
+The user then approved a **shared reply inbox with QMutex/QWaitCondition**.
+Readers put owned reports there and wake the organiser; Cancel also wakes it.
+The organiser collects replies and feeds the next jobs under the existing
+four-uncollected-job allowance. Queued replies to an organiser event loop were
+declined. GUI progress/final table delivery and required database-fact retention
+are unchanged. Inbox delivery does not establish that workers have actually
+returned/cleaned up. Exact completion declarations and safe session/pool lifetime
+remain to review; this record adds no runtime/app code or measured gain.
+
+On **5 November** the user approved a **fresh QThreadPool per scan**, owned and
+cleaned up by the background organiser. One pool is shared by all that scan's
+source jobs. Workers actually return and cleanup/pool destruction finish off
+the GUI thread before another scan may start with fresh state. Keeping the
+pool object between scans was declined; the earlier persistent-pool proposal is
+withdrawn. Setup repeats per scan and its cost is unmeasured. Remaining concrete
+scanner declarations, other session/GUI lifetime and physical qualification
+still need review. OldScanner/Bin Filter and runtime/app code remain unchanged.
+
+On **5 November** the user approved a **Qt existence, size and modification-date
+recheck against discovery** before captured physical-media facts are used in
+matching. OldScanner's modification-date-only alternative was declined. A
+detected change is reported; keep the entry and exclude facts tied to the old
+capture. This does not change reader-local checks, matching's no-I/O contract
+or file-operation policy. Unavailable/unperformed-check handling remains an
+explicit pending decision before the producer is implemented; it is not silently
+eligible or Changed. Exact declarations/checkpoints remain to review. This
+documentation update changes no runtime/app code.
+
+The user then approved **retaining otherwise usable metadata after an attempted
+but unverified physical recheck**, provided file presence is confirmed and no
+available size/date comparison detects a difference. Report the incomplete
+recheck and its explanation; do not claim verified unchanged. Any detected
+difference still wins as Changed. This explicitly permits qualification under
+that narrow policy, not a default for absent checks. Skipped/unperformed checks
+and uncertain presence remain pending; reader rules, matching behavior and
+operation policy are unchanged. This record adds no runtime/app code.
+
 On 1 November the user approved adding `JPED` to MDB Video Kind. The current
 exact mapping is Audio for `PCMA`/`AIFD`/`WAVD`, Video for
 `CDCI`/`RGBA`/`MPGI`/`JPED`, and Unknown for other classes. The original
@@ -644,8 +830,10 @@ validate their formats and return compact values. Shared interpretation helpers
 remain small and reusable. Names/signatures and preserved WAVE/AIFF placement
 follow the brief scanner design. See the
 [agreed separation](../../Project%20Bella/README.md#agreed-separation-of-scanner-and-parsers).
-The shared ID helper and PMR, MDB, MXF and OMF/native readers are implemented;
-scanner matching and later interpretation/formatting integration remain pending.
+The standalone `scan` entry point connects discovery, PMR/MDB reading, matching
+and required MXF or OMF/native header reading. It returns owned rows and problems
+after the organiser collects accepted replies and joins its pool. See the
+[scanner contract](../../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#starting-source-layout).
 
 The app continues using [OldScanner](../oldscanner/README.md). Bin Filter stays
 outside Bella's scope. A switch to Bella requires the user's explicit approval.
@@ -655,8 +843,8 @@ staging, parser behaviour and final field-source/header-opening rules. Result
 timing and Cancel are settled, and the user approved **four source-reading jobs
 total** on 27 October, shared by PMR/MDB/required headers. The user also chose
 **one background organiser with one shared reader team**, with the organiser
-outside the four reader slots. A scanner-owned Qt pool is the proposed standard
-implementation. The user also approved retaining required compact matching facts
+outside the four reader slots. Each scan owns one Qt QThreadPool and a bounded
+reply inbox. The user also approved retaining required compact matching facts
 until all files are matched, then releasing them; raw buffers/parser workspace
 go after extraction. Decision 4 is agreed: measure and report findings with no
 added RAM caps or automatic memory controls; the four-job maximum remains.
@@ -669,6 +857,5 @@ updates and warning/logging behaviour; no added 200 ms refresh timer or progress
 coalescing. Duration sorting is settled too: keep numeric displayed HH/MM/SS/FF
 order, current blank grouping and Kind ties, preserving earlier Bella zero-display
 corrections. All eight registered choices are resolved; other new implementation
-choices still need review before affected work,
-then build and compare the independent replacement. The shared ID helper does
-not yet provide a runnable scanner or establish a scan-time/memory improvement.
+choices still need review before affected work. The full comparison with
+OldScanner and app integration are separate steps.

@@ -29,9 +29,28 @@ namespace
 	}
 }
 
-MediaTableModel::MediaTableModel(QObject *parent)
-	: QAbstractTableModel(parent)
+MediaTableModel::MediaTableModel(QObject *parent, MediaPresentation presentation)
+	: QAbstractTableModel(parent), m_presentation(presentation)
 {
+}
+
+int MediaTableModel::columnIndex(Column column) const
+{
+	const int index = Enum::to_underlying(column);
+	if (m_presentation == MediaPresentation::OldScanner)
+		return index;
+	if (column == Column::SourcePath || column == Column::EffectSequence)
+		return -1;
+	return index - (column > Column::SourcePath) - (column > Column::EffectSequence);
+}
+
+MediaTableModel::Column MediaTableModel::columnAt(int index) const
+{
+	if (index < 0 || index >= omfScanColumn())
+		return Column::Count_;
+	if (m_presentation == MediaPresentation::Bella && index >= Enum::to_underlying(Column::SourcePath))
+		++index;
+	return static_cast<Column>(index);
 }
 
 int MediaTableModel::rowCount(const QModelIndex &parent) const
@@ -47,7 +66,7 @@ int MediaTableModel::columnCount(const QModelIndex &parent) const
 
 int MediaTableModel::omfScanColumn() const
 {
-	return Enum::to_underlying(m_precomputesEnabled ? Column::Count_ : Column::PrecomputeCategory);
+	return columnIndex(m_precomputesEnabled ? Column::Count_ : Column::PrecomputeCategory);
 }
 
 void MediaTableModel::setOmfScanEnabled(bool enabled)
@@ -114,7 +133,7 @@ void MediaTableModel::applyTransfer(const QString &source, const QString &destin
 		transferred.isQuarantined = info.dir().dirName().compare(QStringLiteral("Quarantined Files"), Qt::CaseInsensitive) == 0;
 		// Refresh physical facts; selected metadata and frozen operation checks still apply.
 		for (const auto property : {MediaProperty::Location, MediaProperty::Filename, MediaProperty::Size,
-			MediaProperty::Modified})
+									MediaProperty::Modified})
 			transferred.metadataStatus.field(property) = filesystemStatus(true);
 		transferred.metadataStatus.field(MediaProperty::Created) = filesystemStatus(transferred.created.isValid());
 		transferred.metadataStatus.field(MediaProperty::VolumeIdentifier) = filesystemStatus(!transferred.scanStamp.volumeIdentifier.isEmpty());
@@ -188,8 +207,8 @@ void MediaTableModel::setPrecomputesEnabled(bool enabled)
 {
 	if (m_precomputesEnabled == enabled)
 		return;
-	const int first = Enum::to_underlying(Column::PrecomputeCategory);
-	const int last = Enum::to_underlying(Column::Count_) - 1;
+	const int first = columnIndex(Column::PrecomputeCategory);
+	const int last = columnIndex(Column::Count_) - 1;
 	if (enabled)
 	{
 		beginInsertColumns({}, first, last);
@@ -213,9 +232,10 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 		return role == Qt::DisplayRole ? QVariant(f.omfEra ? QStringLiteral("true") : QStringLiteral("false")) : role == Qt::UserRole ? QVariant(f.omfEra)
 																																	  : QVariant{};
 
+	const auto column = columnAt(index.column());
 	if (role == Qt::DisplayRole)
 	{
-		switch (static_cast<Column>(index.column()))
+		switch (column)
 		{
 		case Column::ClipName:
 			return f.clipNameDisplay();
@@ -224,23 +244,23 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 		case Column::OriginalBin:
 			return f.originalBin;
 		case Column::Kind:
-			return f.kindDisplay();
+			return f.kindDisplay(m_presentation);
 		case Column::Duration:
 			return f.durationDisplay();
 		case Column::SizeMB:
-			return f.sizeMBDisplay();
+			return f.sizeMBDisplay(m_presentation);
 		case Column::Compression:
 			return f.compression;
 		case Column::Resolution:
-			return f.resolution;
+			return f.resolutionDisplay();
 		case Column::FrameRate:
-			return f.frameRate;
+			return f.frameRateDisplay();
 		case Column::SampleRate:
 			return f.sampleRateDisplay();
 		case Column::BitDepth:
-			return f.bitDepth;
+			return f.bitDepthDisplay();
 		case Column::Type:
-			return f.typeDisplay();
+			return f.typeDisplay(m_presentation);
 		case Column::Created:
 			return f.createdDisplay();
 		case Column::FileName:
@@ -260,7 +280,7 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 		case Column::KelpieId:
 			return QVariant::fromValue(f.kelpieId);
 		case Column::PrecomputeCategory:
-			return f.precomputeCategoryDisplay();
+			return f.precomputeCategoryDisplay(m_presentation);
 		case Column::EffectCategory:
 			return f.effectCategoryDisplay();
 		case Column::Effect:
@@ -271,20 +291,18 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			break;
 		}
 	}
-	if (role == Qt::ToolTipRole &&
-		(static_cast<Column>(index.column()) == Column::NoDatabase ||
-		 static_cast<Column>(index.column()) == Column::NoReference))
+	if (role == Qt::ToolTipRole && (column == Column::NoDatabase || column == Column::NoReference))
 	{
 		QString explanation = f.dbStatusText().why;
 		if (f.dbStatus == MediaFile::DbStatus::Listed)
 			explanation = QStringLiteral("A validated local PMR or MDB entry references this physical file. "
 										 "This does not establish database freshness or sequence usage.");
-		if (static_cast<Column>(index.column()) == Column::NoReference && f.isNoDatabase())
+		if (column == Column::NoReference && f.isNoDatabase())
 			explanation += QStringLiteral(" No Reference is false because absence was not established; "
 										  "this does not confirm that the file is listed.");
 		return explanation;
 	}
-	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::Project)
+	if (role == Qt::ToolTipRole && column == Column::Project)
 	{
 		// Share missing-project and database explanations with the filter tabs.
 		QStringList lines;
@@ -295,27 +313,27 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 		if (!lines.isEmpty())
 			return lines.join(QStringLiteral("\n\n"));
 	}
-	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::SourcePath)
+	if (role == Qt::ToolTipRole && column == Column::SourcePath)
 		return f.sourceFilePath;
-	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::Kind &&
+	if (role == Qt::ToolTipRole && column == Column::Kind &&
 		f.kind == MediaFile::Kind::Unknown)
 		return QStringLiteral("The available metadata has not identified this file as audio or video.");
-	if (role == Qt::ToolTipRole && static_cast<Column>(index.column()) == Column::Type &&
+	if (role == Qt::ToolTipRole && column == Column::Type &&
 		f.type == MediaFile::Type::Unknown)
 		return QStringLiteral("The available metadata has not identified this file as media or a precompute.");
-	if (role == Qt::TextAlignmentRole && static_cast<Column>(index.column()) == Column::SizeMB)
+	if (role == Qt::TextAlignmentRole && column == Column::SizeMB)
 		return QVariant(int(Qt::AlignRight | Qt::AlignVCenter));
 	if (role == Qt::UserRole)
 	{
-		if (static_cast<Column>(index.column()) == Column::SizeMB)
-			return f.sizeBytes;
-		if (static_cast<Column>(index.column()) == Column::SampleRate)
+		if (column == Column::SizeMB)
+			return m_presentation == MediaPresentation::Bella && f.sizeBytes < 0 ? QVariant{} : QVariant(f.sizeBytes);
+		if (column == Column::SampleRate)
 			return f.sampleRateHz() > 0 ? QVariant(f.sampleRateHz()) : QVariant();
-		if (static_cast<Column>(index.column()) == Column::Created)
+		if (column == Column::Created)
 			return f.created;
-		if (static_cast<Column>(index.column()) == Column::NoDatabase)
+		if (column == Column::NoDatabase)
 			return f.isNoDatabase();
-		if (static_cast<Column>(index.column()) == Column::NoReference)
+		if (column == Column::NoReference)
 			return f.isNoReference();
 		return data(index, Qt::DisplayRole);
 	}
@@ -329,6 +347,9 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 
 	if (m_omfScanEnabled && section == omfScanColumn())
 		return QStringLiteral("OmfScan");
+	const auto column = columnAt(section);
+	if (column == Column::Location && m_presentation == MediaPresentation::Bella)
+		return QStringLiteral("File Path");
 
 	const char *headers[] = {"Clip Name", "Project", "Bin", "Kind", "Duration", "Size (MB)",
 							 "Compression", "Resolution", "Frame Rate", "Sample Rate", "Bit Depth", "Type",
@@ -337,7 +358,7 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 	static_assert(sizeof(headers) / sizeof(headers[0]) == Enum::to_underlying(Column::Count_),
 				  "Column enum and headers[] array got out of sync — "
 				  "add or remove a header string when changing the Column enum");
-	if (section >= 0 && section < Enum::to_underlying(Column::Count_))
-		return QString(headers[section]);
+	if (column != Column::Count_)
+		return QString(headers[Enum::to_underlying(column)]);
 	return {};
 }

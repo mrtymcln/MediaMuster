@@ -1,4 +1,8 @@
 #pragma once
 
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+#define APP_NAME "@MEDIAMUSTER_BELLA_PREVIEW_NAME@"
+#else
 #define APP_NAME "@PROJECT_NAME@"
+#endif
 #define APP_VERSION "@PROJECT_VERSION@"

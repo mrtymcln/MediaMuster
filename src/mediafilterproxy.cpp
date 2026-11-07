@@ -84,6 +84,38 @@ namespace
 			return QSize(0, 0);
 		return QSize(res.left(x).toInt(), res.mid(x + 1).toInt());
 	}
+
+	bool exactRateLess(const std::optional<Bella::TimingRate> &left, const std::optional<Bella::TimingRate> &right)
+	{
+		if (!left || !right)
+			return !left && right.has_value();
+		auto a = *left, b = *right;
+		bool reversed = false;
+		// Compare integer quotients, then reciprocate the remaining fractions.
+		// This avoids overflow when both original terms occupy all 64 bits.
+		for (;;)
+		{
+			const auto aWhole = a.numerator / a.denominator;
+			const auto bWhole = b.numerator / b.denominator;
+			if (aWhole != bWhole)
+				return reversed ? aWhole > bWhole : aWhole < bWhole;
+			a.numerator %= a.denominator;
+			b.numerator %= b.denominator;
+			if (!a.numerator || !b.numerator)
+				return reversed ? a.numerator > b.numerator : a.numerator < b.numerator;
+			std::swap(a.numerator, a.denominator);
+			std::swap(b.numerator, b.denominator);
+			reversed = !reversed;
+		}
+	}
+
+	std::pair<qint64, qint64> bellaResolutionSortValue(const MediaFile &file)
+	{
+		if (!file.bellaValues || !file.bellaValues->resolution)
+			return {0, 0};
+		const auto &resolution = *file.bellaValues->resolution;
+		return {resolution.width, resolution.height};
+	}
 } // namespace
 
 MediaFilterProxy::MediaFilterProxy(QObject *parent)
@@ -100,8 +132,8 @@ void MediaFilterProxy::setSourceModel(QAbstractItemModel *sourceModel)
 void MediaFilterProxy::setFilterMode(FilterMode mode)
 {
 	const FilterMode selected = !m_precomputesEnabled && mode == FilterMode::Precompute
-								   ? FilterMode::All
-								   : mode;
+									? FilterMode::All
+									: mode;
 	if (m_mode == selected)
 		return;
 	m_mode = selected;
@@ -228,15 +260,16 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 		const auto matches = [this](const QString &s)
 		{ return searchForm(s).contains(m_searchNfc, Qt::CaseInsensitive); };
 		// mediaFilePath covers the filename and the Avid folder — both are
-		// substrings of it — so the visible Location cell is searchable
+		// substrings of it — so the visible path cell is searchable
 		// and the two narrower fields need no separate pass. volumeName
 		// stays: a Windows path ("E:/...") need not contain the label.
+		const bool legacy = m_sourceModel->presentation() == MediaPresentation::OldScanner;
 		return matches(f.clipName) || matches(f.project) || matches(f.originalBin) ||
 			   matches(f.compression) || matches(f.volumeName) || matches(f.mediaFilePath) ||
-			   matches(f.sourceFilePath) ||
+			   (legacy && matches(f.sourceFilePath)) ||
 			   (m_precomputesEnabled && f.type == MediaFile::Type::Precompute &&
 				(matches(f.precomputeCategoryDisplay()) || matches(f.effectDisplay()) ||
-				 matches(f.effectCategoryDisplay()) || matches(f.effectSequence)));
+				 matches(f.effectCategoryDisplay()) || (legacy && matches(f.effectSequence))));
 	}
 	return true;
 }
@@ -254,7 +287,8 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 		return leftFile.omfEra < rightFile.omfEra;
 
 	using Col = MediaTableModel::Column;
-	switch (static_cast<Col>(left.column()))
+	const bool bella = m_sourceModel->presentation() == MediaPresentation::Bella;
+	switch (m_sourceModel->columnAt(left.column()))
 	{
 	case Col::SizeMB:
 		// Exact integer compare; the MB string is display-only.
@@ -299,6 +333,8 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 		return QString::compare(leftFile.originalBin, rightFile.originalBin, Qt::CaseInsensitive) < 0;
 	case Col::Resolution:
 	{
+		if (bella)
+			return bellaResolutionSortValue(leftFile) < bellaResolutionSortValue(rightFile);
 		// Width first, then height; a string tiebreak keeps equal-dimension or
 		// non-video rows in a stable, deterministic order.
 		const QSize ls = resolutionSortValue(leftFile.resolution);
@@ -311,6 +347,9 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 	}
 	case Col::FrameRate:
 	{
+		if (bella)
+			return exactRateLess(leftFile.bellaValues ? leftFile.bellaValues->frameRateValue : std::nullopt,
+								 rightFile.bellaValues ? rightFile.bellaValues->frameRateValue : std::nullopt);
 		const double lf = frameRateSortValue(leftFile.frameRate);
 		const double rf = frameRateSortValue(rightFile.frameRate);
 		if (lf != rf)
@@ -318,9 +357,14 @@ bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &righ
 		return QString::compare(leftFile.frameRate, rightFile.frameRate, Qt::CaseInsensitive) < 0;
 	}
 	case Col::SampleRate:
+		if (bella)
+			return exactRateLess(leftFile.bellaValues ? leftFile.bellaValues->sampleRateValue : std::nullopt,
+								 rightFile.bellaValues ? rightFile.bellaValues->sampleRateValue : std::nullopt);
 		return leftFile.sampleRateHz() < rightFile.sampleRateHz();
 	case Col::BitDepth:
 	{
+		if (bella)
+			return leftFile.bellaDepthBits() < rightFile.bellaDepthBits();
 		const auto ld = bitDepthSortValue(leftFile.bitDepth);
 		const auto rd = bitDepthSortValue(rightFile.bitDepth);
 		if (ld != rd)

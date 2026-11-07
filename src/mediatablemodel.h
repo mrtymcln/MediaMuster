@@ -45,7 +45,13 @@ public:
 		Count_
 	};
 
-	explicit MediaTableModel(QObject *parent = nullptr);
+	explicit MediaTableModel(QObject *parent = nullptr,
+							 MediaPresentation presentation = MediaPresentation::OldScanner);
+
+	MediaPresentation presentation() const { return m_presentation; }
+	// Logical positions before feature gating. Excluded columns have no index.
+	int columnIndex(Column column) const;
+	Column columnAt(int index) const;
 
 	// MARK: - QAbstractItemModel overrides
 
@@ -79,6 +85,7 @@ public:
 	bool precomputesEnabled() const { return m_precomputesEnabled; }
 
 private:
+	MediaPresentation m_presentation;
 	QVector<MediaFile> m_files;
 	bool m_precomputesEnabled = false;
 	bool m_omfScanEnabled = false;

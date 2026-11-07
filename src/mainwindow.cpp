@@ -4,7 +4,6 @@
 #include "diagnostics.h"
 #include "conventions.h"
 #include "avbfilterdialog.h"
-#include "enumutil.h"
 #include "precomputefilterdialog.h"
 #include "featureflags.h"
 #include "formatutil.h"
@@ -18,12 +17,14 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QCloseEvent>
 #include <QClipboard>
 #include <QDateTime>
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDialog>
 #include <QDir>
+#include <QEvent>
 #include <QFileDialog>
 #include <QFileIconProvider>
 #include <QFileInfo>
@@ -69,6 +70,16 @@
 
 namespace
 {
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+	constexpr bool kBellaPreview = true;
+	constexpr auto kPresentation = MediaPresentation::Bella;
+	constexpr auto kScanConnection = Qt::AutoConnection;
+#else
+	constexpr bool kBellaPreview = false;
+	constexpr auto kPresentation = MediaPresentation::OldScanner;
+	constexpr auto kScanConnection = Qt::QueuedConnection;
+#endif
+
 	/// Monospaced font for the Console.
 	QFont monoFont()
 	{
@@ -175,9 +186,9 @@ namespace
 MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	: QMainWindow(parent),
 	  m_volumeManager(new VolumeManager(this)),
-	  m_scanner(new OldScanner(this)),
+	  m_scanner(new AppScanner(this)),
 	  m_operations(new FileOperationController(this)),
-	  m_model(new MediaTableModel(this)),
+	  m_model(new MediaTableModel(this, kPresentation)),
 	  m_proxy(new MediaFilterProxy(this))
 {
 	m_proxy->setSourceModel(m_model);
@@ -191,8 +202,11 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	updateFilterCounts();
 	updateActivityUi();
 
-	setWindowTitle("MediaMuster");
+	setWindowTitle(QStringLiteral(APP_NAME));
 	resize(1200, 750);
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+	qApp->installEventFilter(this);
+#endif
 	if (startup == StartupMode::UiOnly)
 		return;
 
@@ -210,6 +224,8 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	addLog(QtInfoMsg, QStringLiteral("app"), QStringLiteral("%1 %2 initialised on %3").arg(APP_NAME, APP_VERSION, platform));
 
 	refreshVolumes();
+	if (kBellaPreview)
+		return; // The scan/export preview has no startup recovery actions.
 
 	// Show the window before recovery. Finish any crash-report notice first
 	// so it cannot overlap the recovery prompts.
@@ -228,6 +244,50 @@ MainWindow::~MainWindow()
 	for (auto *child : findChildren<QObject *>())
 		disconnect(child, nullptr, this, nullptr);
 }
+
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+	if (watched == qApp && event->type() == QEvent::Quit && m_scanner->isActive())
+	{
+		requestBellaClose(BellaClose::Quit);
+		event->ignore();
+		return true;
+	}
+	return QMainWindow::eventFilter(watched, event);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+	if (m_scanner->isActive())
+	{
+		requestBellaClose(BellaClose::Window);
+		event->ignore();
+		return;
+	}
+	QMainWindow::closeEvent(event);
+}
+
+void MainWindow::requestBellaClose(BellaClose close)
+{
+	if (m_bellaClose == BellaClose::None)
+		m_bellaClose = close;
+	progressDialog()->requestCancel();
+}
+
+void MainWindow::finishBellaClose()
+{
+	if (m_bellaClose == BellaClose::None)
+		return;
+	QMetaObject::invokeMethod(this, [this]()
+							  {
+		const auto pending = std::exchange(m_bellaClose, BellaClose::None);
+		if (pending == BellaClose::Quit)
+			qApp->quit();
+		else if (pending == BellaClose::Window)
+			close(); }, Qt::QueuedConnection);
+}
+#endif
 
 // MARK: - Crash recovery
 
@@ -442,7 +502,11 @@ void MainWindow::buildTable()
 	// provides Qt's native content fitting when requested.
 	using Col = MediaTableModel::Column;
 	auto setW = [this](Col c, int w)
-	{ m_tableView->setColumnWidth(Enum::to_underlying(c), w); };
+	{
+		const int column = m_model->columnIndex(c);
+		if (column >= 0)
+			m_tableView->setColumnWidth(column, w);
+	};
 	setW(Col::ClipName, 250);
 	setW(Col::Project, 150);
 	setW(Col::OriginalBin, 150);
@@ -548,7 +612,8 @@ void MainWindow::buildFileMenu()
 	fileMenu->addSeparator();
 
 	// One place for unfinished jobs and originals awaiting restoration.
-	fileMenu->addAction(m_operations->recoveryAction());
+	if (!kBellaPreview)
+		fileMenu->addAction(m_operations->recoveryAction());
 
 	fileMenu->addSeparator();
 
@@ -578,7 +643,8 @@ void MainWindow::buildEditMenu()
 
 	// Hidden and without a shortcut until Debug enables it, so ordinary
 	// text-field Undo keeps working throughout the default beta workflow.
-	editMenu->addAction(m_operations->undoAction());
+	if (!kBellaPreview)
+		editMenu->addAction(m_operations->undoAction());
 
 	auto *findAction = editMenu->addAction(tr("&Find"));
 	findAction->setShortcut(QKeySequence::Find);
@@ -704,27 +770,54 @@ void MainWindow::onAbout()
 
 void MainWindow::setupConnections()
 {
-	connect(m_scanner, &OldScanner::scanDiscovering, this, &MainWindow::onScanDiscovering,
-			Qt::QueuedConnection);
+	connect(m_scanner, &AppScanner::scanDiscovering, this, &MainWindow::onScanDiscovering, kScanConnection);
+	connect(m_scanner, &AppScanner::scanLogBatch, this, &MainWindow::onScanLogBatch, kScanConnection);
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+	connect(m_scanner, &AppScanner::scanProgress, this, &MainWindow::onBellaScanProgress);
+	connect(m_scanner, &AppScanner::scanFinished, this,
+			[this](const QVector<MediaFile> &results, bool cancelled, bool discoveryComplete)
+			{
+				onScanFinished(results);
+				if (cancelled || !discoveryComplete)
+				{
+					const auto label = cancelled ? tr("Scan cancelled: %1 ms") : tr("Scan incomplete: %1 ms");
+					m_statusScanTime->setText(label.arg(m_scanTimer.elapsed()));
+				}
+				finishBellaClose();
+			});
+	connect(m_scanner, &AppScanner::scanFailed, this, [this](const QString &message)
+			{
+		if (m_bellaClose == BellaClose::None)
+			onScanFailed(message);
+		else
+		{
+			m_statusScanTime->setText(tr("Scan failed"));
+			m_operations->setActivity(FileOperationController::Activity::Idle);
+			finishBellaClose();
+		} });
+#else
 	connect(m_scanner, &OldScanner::scanProgress, this, &MainWindow::onScanProgress,
-			Qt::QueuedConnection);
-	connect(m_scanner, &OldScanner::scanLogBatch, this, &MainWindow::onScanLogBatch,
 			Qt::QueuedConnection);
 	connect(m_scanner, &OldScanner::scanIssuesFinished, m_model, &MediaTableModel::setScanIssues, Qt::QueuedConnection);
 	connect(m_scanner, &OldScanner::scanFinished, this, &MainWindow::onScanFinished,
 			Qt::QueuedConnection);
 	connect(m_scanner, &OldScanner::scanFailed, this, &MainWindow::onScanFailed,
 			Qt::QueuedConnection);
+#endif
 	connect(
-		m_scanner, &OldScanner::scanFinalising, this,
+		m_scanner, &AppScanner::scanFinalising, this,
 		[this]
 		{
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+			if (m_bellaCancelling)
+				return;
+#endif
 			// Show finalisation separately so a slow finish doesn't look stuck at 100%.
 			auto *dlg = progressDialog();
 			dlg->setProgress(0, 0);
 			dlg->setDetail(tr("Finalising..."));
 		},
-		Qt::QueuedConnection);
+		kScanConnection);
 
 	connect(m_operations, &FileOperationController::activityChanged, this,
 			[this](FileOperationController::Activity)
@@ -875,9 +968,10 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 								   {
 		// A sort column that is about to disappear must not keep controlling
 		// the rows while its heading is no longer available to the editor.
-		if (!enabled && m_proxy->sortColumn() >= Enum::to_underlying(MediaTableModel::Column::PrecomputeCategory) &&
-			m_proxy->sortColumn() < Enum::to_underlying(MediaTableModel::Column::Count_))
-			m_tableView->sortByColumn(Enum::to_underlying(MediaTableModel::Column::ClipName), Qt::AscendingOrder);
+		const auto sortColumn = m_model->columnAt(m_proxy->sortColumn());
+		if (!enabled && sortColumn >= MediaTableModel::Column::PrecomputeCategory &&
+			sortColumn < MediaTableModel::Column::Count_)
+			m_tableView->sortByColumn(m_model->columnIndex(MediaTableModel::Column::ClipName), Qt::AscendingOrder);
 		const int tab = m_filterTabs->currentIndex();
 		if (!enabled && tab >= 0 && tab < static_cast<int>(kFilterDefs.size()) &&
 			kFilterDefs[tab].mode == MediaFilterProxy::FilterMode::Precompute)
@@ -895,11 +989,13 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 		// Put the newly enabled details together after Type, ahead of
 		// Date Created, without moving or resetting the existing columns.
 		auto *header = m_tableView->horizontalHeader();
-		int position = header->visualIndex(Enum::to_underlying(MediaTableModel::Column::Type)) + 1;
+		int position = header->visualIndex(m_model->columnIndex(MediaTableModel::Column::Type)) + 1;
 		for (auto column : {MediaTableModel::Column::PrecomputeCategory, MediaTableModel::Column::EffectCategory,
 							MediaTableModel::Column::Effect, MediaTableModel::Column::EffectSequence})
 		{
-			const int logical = Enum::to_underlying(column);
+			const int logical = m_model->columnIndex(column);
+			if (logical < 0)
+				continue;
 			header->moveSection(header->visualIndex(logical), position++);
 			m_tableView->setColumnWidth(logical,
 										column == MediaTableModel::Column::PrecomputeCategory || column == MediaTableModel::Column::EffectCategory ? 180 : 240);
@@ -1084,7 +1180,7 @@ namespace
 
 void MainWindow::onRebalance()
 {
-	if (!m_operations->isIdle() || m_model->allFiles().isEmpty() || !m_operations->resolvePreviousJob())
+	if (kBellaPreview || !m_operations->isIdle() || m_model->allFiles().isEmpty() || !m_operations->resolvePreviousJob())
 		return;
 
 	const auto inventory = prepareRebalanceInventory(m_model->allFiles());
@@ -1200,7 +1296,7 @@ void MainWindow::onPathsDropped(const QStringList &paths)
 
 void MainWindow::addVolumePath(const QString &requestedPath)
 {
-	const auto location = OldScanner::addedLocation(requestedPath);
+	const auto location = AppScanner::addedLocation(requestedPath);
 	if (!location)
 	{
 		const QString message = tr("Please add an Avid MediaFiles or OMFI MediaFiles folder, or a drive containing them at its root.");
@@ -1263,7 +1359,7 @@ void MainWindow::rebuildVolumeList(const QVector<VolumeInfo> &volumes)
 	manualPaths.sort();
 	for (const QString &path : manualPaths)
 	{
-		const auto location = OldScanner::addedLocation(path);
+		const auto location = AppScanner::addedLocation(path);
 		if (!location)
 			continue;
 		m_manualVolumes.insert(path, location->kind);
@@ -1328,35 +1424,43 @@ void MainWindow::scanEverything()
 
 void MainWindow::scanListedPaths(const QStringList &paths)
 {
-	QVector<OldScanner::Location> locations;
+	QVector<AppScanner::Location> locations;
 	for (const auto &path : paths)
-		locations.append({m_manualVolumes.value(path, OldScanner::Location::Kind::MediaBase), path});
+		locations.append({m_manualVolumes.value(path, AppScanner::Location::Kind::MediaBase), path});
 	startScan(locations);
 }
 
 void MainWindow::rescanPaths(const QStringList &paths)
 {
-	QVector<OldScanner::Location> locations;
+	QVector<AppScanner::Location> locations;
 	for (const auto &path : paths)
 	{
 		const auto manual = m_manualVolumes.constFind(path);
 		if (manual != m_manualVolumes.cend())
 			locations.append({manual.value(), path});
 		else if (m_detectedVolumePaths.contains(path))
-			locations.append({OldScanner::Location::Kind::MediaBase, path});
+			locations.append({AppScanner::Location::Kind::MediaBase, path});
 		else
-			locations.append(OldScanner::rescanLocation(path));
+			locations.append(AppScanner::rescanLocation(path));
 	}
 	startScan(locations);
 }
 
-void MainWindow::startScan(const QVector<OldScanner::Location> &locations)
+void MainWindow::startScan(const QVector<AppScanner::Location> &locations)
 {
 	if (!m_operations->isIdle() || locations.isEmpty())
 		return;
-	OldScanner::Options opts;
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+	if (m_bellaClose != BellaClose::None)
+		return;
+	m_bellaCancelling = false;
+#endif
+	AppScanner::Options opts;
 	opts.includeOmf = m_omfScanEnabled;
 	opts.locations = locations;
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+	opts.includePrecomputeDetails = m_precomputesEnabled;
+#endif
 
 	m_operations->setActivity(FileOperationController::Activity::Scanning);
 	// Release the previous inventory and issue snapshots before building another.
@@ -1373,10 +1477,25 @@ void MainWindow::startScan(const QVector<OldScanner::Location> &locations)
 
 void MainWindow::onScanDiscovering(const QString &path)
 {
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+	if (m_bellaCancelling)
+		return;
+#endif
 	auto *dlg = progressDialog();
 	dlg->setProgress(0, 0);
 	dlg->setDetail(tr("Finding media files… %1").arg(QDir::toNativeSeparators(path)));
 }
+
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+void MainWindow::onBellaScanProgress(const QString &stage, qsizetype completed, qsizetype total, const QString &path)
+{
+	if (m_bellaCancelling)
+		return;
+	auto *dlg = progressDialog();
+	dlg->setProgress(completed, total);
+	dlg->setDetail(path.isEmpty() ? stage : tr("%1 — %2").arg(stage, QDir::toNativeSeparators(path)));
+}
+#endif
 
 void MainWindow::onScanProgress(int current, int total, const QString &currentPath)
 {
@@ -1467,7 +1586,7 @@ void MainWindow::rebuildProjectList()
 	{
 		auto &stat = projectStats[file.projectDisplay()];
 		++stat.count;
-		stat.bytes += file.sizeBytes;
+		stat.bytes += qMax<qint64>(0, file.sizeBytes);
 		stat.hasProject = !file.hasNoProject();
 	}
 	QStringList names = projectStats.keys();
@@ -1607,7 +1726,7 @@ void MainWindow::onFileOperations()
 
 void MainWindow::openManageMedia(ManageMediaDialog::Operation initialOp)
 {
-	if (!m_operations->isIdle())
+	if (kBellaPreview || !m_operations->isIdle())
 		return;
 	auto files = selectedFiles();
 	if (files.isEmpty())
@@ -1637,6 +1756,8 @@ void MainWindow::openManageMedia(ManageMediaDialog::Operation initialOp)
 bool MainWindow::dispatchOperation(OpKind kind, QVector<MediaFile> files, const QString &dest,
 								   bool preserve, const QHash<QString, ConflictPolicy> &policies)
 {
+	if (kBellaPreview)
+		return false;
 	// Extract request fields and captured safety checks from the selection,
 	// then let the controller gate and dispatch the request.
 	OpRequest req;
@@ -1712,7 +1833,7 @@ void MainWindow::onExportCsv()
 	}
 
 	const int count = rows.size();
-	const MediaCsv::Options csvOptions{m_model->precomputesEnabled()};
+	const MediaCsv::Options csvOptions{m_model->precomputesEnabled(), m_model->presentation()};
 	const QString label = exportSelected ? "selected" : "visible";
 	addLog(QtInfoMsg, QStringLiteral("app"), QStringLiteral("CSV export of %1 %2 rows to %3.").arg(count).arg(label, path));
 	m_exportInProgress = true;
@@ -1944,7 +2065,7 @@ qint64 MainWindow::sumBytesInProxyRange(int first, int last) const
 {
 	qint64 sum = 0;
 	for (int row = first; row <= last; ++row)
-		sum += fileAtProxyRow(row).sizeBytes;
+		sum += qMax<qint64>(0, fileAtProxyRow(row).sizeBytes);
 	return sum;
 }
 
@@ -1975,11 +2096,11 @@ void MainWindow::updateActivityUi()
 	m_scanSelectedAction->setEnabled(!busy && m_volumeList->selectionModel()->hasSelection());
 	m_scanAllAction->setEnabled(!busy && m_volumeList->count() > 0);
 	m_binFilterAction->setEnabled(!busy);
-	m_rebalanceAction->setEnabled(!busy && !m_model->allFiles().isEmpty());
+	m_rebalanceAction->setEnabled(!kBellaPreview && !busy && !m_model->allFiles().isEmpty());
 	m_exportAction->setEnabled(!busy && !m_exportInProgress && m_proxy->rowCount() > 0);
 	m_precomputeFilterAction->setEnabled(!busy && m_precomputesEnabled && !m_model->allFiles().isEmpty());
 	const bool hasSelection = m_tableView->selectionModel()->hasSelection();
-	m_manageMediaAction->setEnabled(!busy && hasSelection);
+	m_manageMediaAction->setEnabled(!kBellaPreview && !busy && hasSelection);
 	m_revealAction->setEnabled(!busy && hasSelection);
 	m_selectInverseAction->setEnabled(!busy && m_proxy->rowCount() > 0);
 	m_selectRelativesAction->setEnabled(!busy && hasSelection && m_selectionHasMasterMob);
@@ -2021,7 +2142,14 @@ ProgressDialog *MainWindow::progressDialog()
 				[this]()
 				{
 					if (m_scanner->cancelScan())
+					{
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+						m_bellaCancelling = true;
+						m_progressDialog->setProgress(0, 0);
+						m_progressDialog->setDetail(tr("Cancelling…"));
+#endif
 						addLog(QtWarningMsg, QStringLiteral("scanner"), "Cancel requested");
+					}
 				});
 	}
 	return m_progressDialog;

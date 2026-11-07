@@ -3,7 +3,13 @@
 #include "managemediadialog.h"
 #include "mediafile.h"
 #include "mediafilterproxy.h"
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+#include "bellaappscanner.h"
+using AppScanner = BellaAppScanner;
+#else
 #include "oldscanner/oldscanner.h"
+using AppScanner = OldScanner;
+#endif
 #include "mediatablemodel.h"
 #include "fileoperationcontroller.h"
 #include "volumelistwidget.h"
@@ -36,6 +42,7 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 	friend class TestOperationUi;
+	friend class TestBellaPreviewUi;
 
 public:
 	/// UiOnly supports interface tests/previews without volume discovery,
@@ -47,6 +54,12 @@ public:
 	};
 	explicit MainWindow(QWidget *parent = nullptr, StartupMode startup = StartupMode::Normal);
 	~MainWindow();
+
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+protected:
+	bool eventFilter(QObject *watched, QEvent *event) override;
+	void closeEvent(QCloseEvent *event) override;
+#endif
 
 private slots:
 
@@ -99,8 +112,19 @@ private:
 	void setupConnections();
 	void scanListedPaths(const QStringList &paths);
 	void rescanPaths(const QStringList &paths);
-	void startScan(const QVector<OldScanner::Location> &locations);
+	void startScan(const QVector<AppScanner::Location> &locations);
 	void addLog(QtMsgType level, const QString &module, const QString &message);
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+	enum class BellaClose
+	{
+		None,
+		Window,
+		Quit
+	};
+	void requestBellaClose(BellaClose close);
+	void finishBellaClose();
+	void onBellaScanProgress(const QString &stage, qsizetype completed, qsizetype total, const QString &path);
+#endif
 
 	/// Adapt the selected media rows to the controller's request format.
 	bool dispatchOperation(OpKind kind, QVector<MediaFile> files,
@@ -165,7 +189,7 @@ private:
 	// MARK: - Owned services
 
 	VolumeManager *m_volumeManager;
-	OldScanner *m_scanner;
+	AppScanner *m_scanner;
 	FileOperationController *m_operations;
 
 	MediaTableModel *m_model;
@@ -222,13 +246,17 @@ private:
 	// MARK: - Scan state
 
 	QElapsedTimer m_scanTimer;
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+	BellaClose m_bellaClose = BellaClose::None;
+	bool m_bellaCancelling = false;
+#endif
 	bool m_omfScanEnabled = false;
 	bool m_precomputesEnabled = false;
 	class QAction *m_precomputeFilterAction = nullptr;
 	/// Paths found by the last startup/Refresh detection; empty is a valid result.
 	QStringList m_detectedVolumePaths;
 	/// Session-only manual paths and their admitted tree/base meaning.
-	QHash<QString, OldScanner::Location::Kind> m_manualVolumes;
+	QHash<QString, AppScanner::Location::Kind> m_manualVolumes;
 
 	// MARK: - Selection persistence
 

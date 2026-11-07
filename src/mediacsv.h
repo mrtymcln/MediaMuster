@@ -13,8 +13,9 @@ namespace MediaCsv
 {
 	struct Options
 	{
-		/// Adds four precompute detail columns after the always-present Type.
+		/// Adds the selected schema's precompute details after Type.
 		bool includePrecomputeDetails = false;
+		MediaPresentation presentation = MediaPresentation::OldScanner;
 	};
 
 	/// Column headings in emission order, using the same options as rows.

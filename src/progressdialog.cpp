@@ -9,6 +9,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QtMath>
+#include <limits>
 
 // MARK: - Construction
 
@@ -69,16 +70,18 @@ void ProgressDialog::begin()
 	raise();
 }
 
-void ProgressDialog::setProgress(int current, int total)
+void ProgressDialog::setProgress(qsizetype current, qsizetype total)
 {
 	if (total > 0)
 	{
-		if (m_bar->maximum() != total)
-			m_bar->setRange(0, total);
-		m_bar->setValue(current);
-		const int pct = qRound((100.0 * current) / total);
+		const int maximum = int(qMin<qsizetype>(total, std::numeric_limits<int>::max()));
+		const auto done = qBound<qsizetype>(0, current, total);
+		if (m_bar->maximum() != maximum)
+			m_bar->setRange(0, maximum);
+		m_bar->setValue(total == maximum ? int(done) : qRound(double(done) / total * maximum));
+		const int pct = qRound(100.0 * done / total);
 		m_counterLabel->setText(
-			tr("%1% — %2 of %3").arg(pct).arg(Format::count(current), Format::count(total)));
+			tr("%1% — %2 of %3").arg(pct).arg(Format::count(done), Format::count(total)));
 	}
 	else
 	{

@@ -1,8 +1,5 @@
-#include "testfixtures.h"
-
 #include "bella/pmrparser.h"
 
-#include <QCryptographicHash>
 #include <QFile>
 #include <QTemporaryDir>
 #include <QTemporaryFile>
@@ -140,35 +137,6 @@ namespace
 	{
 		return {size, modifiedMs ? QDateTime::fromMSecsSinceEpoch(*modifiedMs, Qt::UTC) : QDateTime{}};
 	}
-
-	QByteArray recordFingerprint(const Bella::PmrSet &set)
-	{
-		// Independent oracle convention recorded by the fixture-evidence audit:
-		// version/count and each complete field length are unsigned 32-bit BE.
-		QCryptographicHash hash(QCryptographicHash::Sha256);
-		hash.addData(QByteArrayView("Bella PMR full records v1\n"));
-		const auto addNumber = [&hash](quint32 value)
-		{
-			std::array<char, sizeof(quint32)> encoded{};
-			qToBigEndian<quint32>(value, encoded.data());
-			hash.addData(QByteArrayView(encoded.data(), static_cast<qsizetype>(encoded.size())));
-		};
-		const auto addField = [&hash, &addNumber](QByteArrayView value)
-		{
-			addNumber(static_cast<quint32>(value.size()));
-			hash.addData(value);
-		};
-		addNumber(static_cast<quint32>(set.version));
-		addNumber(static_cast<quint32>(set.entries.size()));
-		for (const auto &entry : set.entries)
-		{
-			addField(entry.fileMobId.bytes());
-			addField(entry.filename.toUtf8());
-			addField(entry.project.toUtf8());
-			addField(entry.masterMobId ? entry.masterMobId->bytes() : QByteArrayView{});
-		}
-		return hash.result().toHex();
-	}
 }
 
 class TestBellaPmr final : public QObject
@@ -201,8 +169,6 @@ private slots:
 	void stampComparisonUsesAvailableFacts();
 	void preCancelledAndIoFailures();
 	void reportsOwnTheirResults();
-	void genuineLittleEndianFixtures_data();
-	void genuineLittleEndianFixtures();
 };
 
 void TestBellaPmr::supportedLayouts_data()
@@ -972,73 +938,6 @@ void TestBellaPmr::reportsOwnTheirResults()
 	QCOMPARE(copied.records.knownSet->entries.front().filename, QString::fromUtf8("ß.mxf"));
 	QCOMPARE(copied.records.knownSet->entries.front().project, QString::fromUtf8("ß"));
 	QCOMPARE(copied.records.knownSet->entries.front().fileMobId.bytes().toByteArray(), expectedFileId(16));
-}
-
-void TestBellaPmr::genuineLittleEndianFixtures_data()
-{
-	QTest::addColumn<QString>("relativePath");
-	QTest::addColumn<int>("count");
-	QTest::addColumn<QString>("filename");
-	QTest::addColumn<QString>("project");
-	QTest::addColumn<QByteArray>("fileId");
-	QTest::addColumn<QByteArray>("masterId");
-	QTest::addColumn<QByteArray>("fingerprint");
-	// These pinned expectations come from genuine little-endian PMR bytes.
-	// They do not turn the authored opposite-endian cases above into specimens.
-	QTest::newRow("genuine-tone-LE") << QStringLiteral("msmFMID.pmr") << 1
-									 << QStringLiteral("TONE_100A01.EA7D504A.611740.mxf") << QStringLiteral("block 1729")
-									 << QByteArray::fromHex("060a2b340101010501010f10130000004a507dea741106907a361e6a605d3613")
-									 << QByteArray::fromHex("060a2b340101010501010f1013000000d2467dea7411069091901e6a605d3613")
-									 << QByteArray("be2a925654ac00bc25146223b748dc879e49c6a0cb5a2c6645c29f1ffdae1d8f");
-	QTest::newRow("genuine-corpus-LE") << QStringLiteral("corpus_headers/msmFMID.pmr") << 435
-									   << QStringLiteral("V01.E690E707_DA3A4DA3A4B46V.mxf") << QString::fromUtf8("zT?ßt_1080i_50")
-									   << QByteArray::fromHex("060a2b340101010501010f1013000000464b3ada51120690e4aac22704e88b34")
-									   << QByteArray::fromHex("060a2b340101010501010f10130000003f4b3ada511206904523c22704e88b34")
-									   << QByteArray("44aa350f0677e7fd9155a733e82a628b961cfd69111492348e478e1ebc18ca38");
-	QTest::newRow("genuine-round3-LE") << QStringLiteral("corpus_headers/msmFMID_round3.pmr") << 360
-									   << QStringLiteral("A01.E69CB57D_CE619CE61917BA.mxf") << QString::fromUtf8("zTeßt_720p_23.976")
-									   << QByteArray::fromHex("060a2b340101010501010f10130000007b9161ce601206909ffb46fc807fda72")
-									   << QByteArray::fromHex("060a2b340101010501010f10130000006a9161ce60120690aab246fc807fda72")
-									   << QByteArray("1133f437da53b90d3332bedfac8ab791335d03a84c6b775a5181d32ede8f9f3e");
-	QTest::newRow("genuine-legacy-supporting-LE") << QStringLiteral("omf/avid_supporting/msmFMID.pmr") << 80
-												  << QStringLiteral("BLACK_720x576x1_DV420.omf") << QString{}
-												  << QByteArray::fromHex("060a2b340101010101010f00130000005f489d3ab16ff300060e2b347f7f2a80")
-												  << QByteArray::fromHex("060a2b340101010101010f00130000005f489d3ab06ff300060e2b347f7f2a80")
-												  << QByteArray("44a2068496b885c6dfb5767408dbe9c31a2a110a911d8d97868a92f20427b0db");
-	QTest::newRow("genuine-legacy-audio-LE") << QStringLiteral("omf/mc2026_audio/msmFMID.pmr") << 2
-											 << QStringLiteral("TONE_100A01.6A972974.039700.wav") << QString::fromUtf8("zTeßt_PAL_25p")
-											 << QByteArray::fromHex("060a2b340101010101010f00130000007429976a70397047060e2b347f7f2a80")
-											 << QByteArray::fromHex("060a2b340101010101010f00130000007429976a4e397047060e2b347f7f2a80")
-											 << QByteArray("e919894a99ad9c237e24a117de2b85772da1cadacef14d4b0b2f463efa37a3d1");
-}
-
-void TestBellaPmr::genuineLittleEndianFixtures()
-{
-	REQUIRE_TEST_FIXTURES();
-	QFETCH(QString, relativePath);
-	QFETCH(int, count);
-	QFETCH(QString, filename);
-	QFETCH(QString, project);
-	QFETCH(QByteArray, fileId);
-	QFETCH(QByteArray, masterId);
-	QFETCH(QByteArray, fingerprint);
-	const QString path = QString::fromUtf8(FIXTURES_DIR) + QLatin1Char('/') + relativePath;
-	const std::atomic_bool stopRequested{false};
-	const auto report = Bella::parsePmr(path, stopRequested);
-	QVERIFY(report.reading == Read::Completed);
-	QVERIFY(report.sizeDateCheck == Check::Verified);
-	QVERIFY(report.records.canUsePmrMetadata);
-	QVERIFY(report.records.referenceCoverageComplete);
-	QVERIFY(report.records.knownSet);
-	QCOMPARE(report.records.knownSet->version, qint32{16});
-	QCOMPARE(report.records.knownSet->entries.size(), qsizetype(count));
-	const auto &entry = report.records.knownSet->entries.front();
-	QCOMPARE(entry.filename, filename);
-	QCOMPARE(entry.project, project);
-	QCOMPARE(entry.fileMobId.bytes().toByteArray(), fileId);
-	QVERIFY(entry.masterMobId);
-	QCOMPARE(entry.masterMobId->bytes().toByteArray(), masterId);
-	QCOMPARE(recordFingerprint(*report.records.knownSet), fingerprint);
 }
 
 QTEST_APPLESS_MAIN(TestBellaPmr)

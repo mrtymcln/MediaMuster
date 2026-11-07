@@ -25,7 +25,7 @@ namespace
 		const auto leftCommon = std::gcd(left.numerator, left.denominator);
 		const auto rightCommon = std::gcd(right.numerator, right.denominator);
 		return left.numerator / leftCommon == right.numerator / rightCommon &&
-			left.denominator / leftCommon == right.denominator / rightCommon;
+			   left.denominator / leftCommon == right.denominator / rightCommon;
 	}
 
 	Bella::MobId connectionIdentity()
@@ -33,7 +33,7 @@ namespace
 		QByteArray bytes(32, '\0');
 		bytes[31] = '\1';
 		return std::get<Bella::MobId>(Bella::normalizeMobId(bytes, Bella::MobIdLayout::Aaf32,
-			Bella::ByteOrder::BigEndian));
+															Bella::ByteOrder::BigEndian));
 	}
 
 	std::array<quint8, 4> descriptorTag(QByteArrayView bytes)
@@ -124,6 +124,14 @@ private slots:
 	void connectedZeroAndRoundedZero_data();
 	void connectedZeroAndRoundedZero();
 	void connectionsPreserveInputFactsAndNotes();
+	void automaticNominalBase_data();
+	void automaticNominalBase();
+	void automaticAudioDisplayClock_data();
+	void automaticAudioDisplayClock();
+	void automaticSourceQualifications();
+	void automaticNumberingAndMissingCount_data();
+	void automaticNumberingAndMissingCount();
+	void explicitBaseRemainsExplicit();
 };
 
 void TestBellaTiming::avidAliases_data()
@@ -147,7 +155,9 @@ void TestBellaTiming::avidAliases_data()
 }
 void TestBellaTiming::avidAliases()
 {
-	QFETCH(qint32, numerator); QFETCH(qint32, denominator); QFETCH(Rate, expected);
+	QFETCH(qint32, numerator);
+	QFETCH(qint32, denominator);
+	QFETCH(Rate, expected);
 	const auto interpreted = Bella::interpretAvidEditRate(numerator, denominator);
 	QVERIFY(interpreted);
 	QVERIFY(sameRate(*interpreted, expected));
@@ -155,7 +165,8 @@ void TestBellaTiming::avidAliases()
 
 void TestBellaTiming::literalRatesAreNotSnapped_data()
 {
-	QTest::addColumn<qint32>("numerator"); QTest::addColumn<qint32>("denominator");
+	QTest::addColumn<qint32>("numerator");
+	QTest::addColumn<qint32>("denominator");
 	const auto row = [](const char *name, qint32 numerator, qint32 denominator)
 	{
 		QTest::newRow(name) << numerator << denominator;
@@ -174,7 +185,8 @@ void TestBellaTiming::literalRatesAreNotSnapped_data()
 }
 void TestBellaTiming::literalRatesAreNotSnapped()
 {
-	QFETCH(qint32, numerator); QFETCH(qint32, denominator);
+	QFETCH(qint32, numerator);
+	QFETCH(qint32, denominator);
 	const auto interpreted = Bella::interpretAvidEditRate(numerator, denominator);
 	QVERIFY(interpreted);
 	QVERIFY(sameRate(*interpreted, {quint64(numerator), quint64(denominator)}));
@@ -182,7 +194,8 @@ void TestBellaTiming::literalRatesAreNotSnapped()
 
 void TestBellaTiming::invalidSignedRateWords_data()
 {
-	QTest::addColumn<qint32>("numerator"); QTest::addColumn<qint32>("denominator");
+	QTest::addColumn<qint32>("numerator");
+	QTest::addColumn<qint32>("denominator");
 	QTest::newRow("zero numerator") << qint32(0) << qint32(1);
 	QTest::newRow("zero denominator") << qint32(25) << qint32(0);
 	QTest::newRow("negative numerator") << qint32(-25) << qint32(1);
@@ -192,7 +205,8 @@ void TestBellaTiming::invalidSignedRateWords_data()
 }
 void TestBellaTiming::invalidSignedRateWords()
 {
-	QFETCH(qint32, numerator); QFETCH(qint32, denominator);
+	QFETCH(qint32, numerator);
+	QFETCH(qint32, denominator);
 	QVERIFY(!Bella::interpretAvidEditRate(numerator, denominator));
 }
 
@@ -232,8 +246,10 @@ void TestBellaTiming::physicalCountAndAudioSamplesArePreserved()
 
 void TestBellaTiming::finalFrameRounding_data()
 {
-	QTest::addColumn<qint64>("count"); QTest::addColumn<Rate>("sourceRate");
-	QTest::addColumn<Rate>("displayRate"); QTest::addColumn<qint64>("expected");
+	QTest::addColumn<qint64>("count");
+	QTest::addColumn<Rate>("sourceRate");
+	QTest::addColumn<Rate>("displayRate");
+	QTest::addColumn<qint64>("expected");
 	const auto row = [](const char *name, qint64 count, Rate source, Rate display, qint64 expected)
 	{
 		QTest::newRow(name) << count << source << display << expected;
@@ -252,7 +268,10 @@ void TestBellaTiming::finalFrameRounding_data()
 }
 void TestBellaTiming::finalFrameRounding()
 {
-	QFETCH(qint64, count); QFETCH(Rate, sourceRate); QFETCH(Rate, displayRate); QFETCH(qint64, expected);
+	QFETCH(qint64, count);
+	QFETCH(Rate, sourceRate);
+	QFETCH(Rate, displayRate);
+	QFETCH(qint64, expected);
 	const auto duration = Bella::makeExactDuration(count, sourceRate);
 	QVERIFY(duration);
 	QCOMPARE(Bella::displayFrameCount(*duration, displayRate), std::optional<qint64>(expected));
@@ -261,8 +280,10 @@ void TestBellaTiming::finalFrameRounding()
 
 void TestBellaTiming::wideExactConversion_data()
 {
-	QTest::addColumn<qint64>("count"); QTest::addColumn<Rate>("sourceRate");
-	QTest::addColumn<Rate>("displayRate"); QTest::addColumn<qint64>("expected");
+	QTest::addColumn<qint64>("count");
+	QTest::addColumn<Rate>("sourceRate");
+	QTest::addColumn<Rate>("displayRate");
+	QTest::addColumn<qint64>("expected");
 	const auto row = [](const char *name, qint64 count, Rate source, Rate display, qint64 expected)
 	{
 		QTest::newRow(name) << count << source << display << expected;
@@ -290,7 +311,10 @@ void TestBellaTiming::wideExactConversion_data()
 }
 void TestBellaTiming::wideExactConversion()
 {
-	QFETCH(qint64, count); QFETCH(Rate, sourceRate); QFETCH(Rate, displayRate); QFETCH(qint64, expected);
+	QFETCH(qint64, count);
+	QFETCH(Rate, sourceRate);
+	QFETCH(Rate, displayRate);
+	QFETCH(qint64, expected);
 	const auto duration = Bella::makeExactDuration(count, sourceRate);
 	QVERIFY(duration);
 	QCOMPARE(duration->count, count);
@@ -310,20 +334,23 @@ void TestBellaTiming::invalidAndOverflowAreUnavailable()
 	QVERIFY(!Bella::displayFrameCount({1, {25, 1}}, {0, 1}));
 	QVERIFY(!Bella::displayFrameCount({1, {25, 1}}, {25, 0}));
 	const auto exact = Bella::makeExactDuration(maximumCount, {1, 1});
-	QVERIFY(exact); QCOMPARE(exact->count, maximumCount);
+	QVERIFY(exact);
+	QCOMPARE(exact->count, maximumCount);
 	QVERIFY(!Bella::displayFrameCount(*exact, {2, 1}));
 	QVERIFY(!Bella::displayFrameCount({1, {1, maximumWord}}, {1, 1}));
 	QVERIFY(!Bella::displayFrameCount({maximumCount, {maximumWord - 1, maximumWord}},
-		{maximumWord, maximumWord - 1})); // Final half-up result is 2^63.
+									  {maximumWord, maximumWord - 1})); // Final half-up result is 2^63.
 	QVERIFY(!Bella::displayFrameCount({maximumCount, {maximumWord - 1, maximumWord}},
-		{1, 1})); // Exactly INT64_MAX + 1/2; rounding itself overflows.
-	QCOMPARE(exact->count, maximumCount); // Unavailable display is not unavailable source Duration.
+									  {1, 1})); // Exactly INT64_MAX + 1/2; rounding itself overflows.
+	QCOMPARE(exact->count, maximumCount);		// Unavailable display is not unavailable source Duration.
 }
 
 void TestBellaTiming::ndfLabels_data()
 {
-	QTest::addColumn<qint64>("frames"); QTest::addColumn<Rate>("clock");
-	QTest::addColumn<quint16>("nominal"); QTest::addColumn<QString>("expected");
+	QTest::addColumn<qint64>("frames");
+	QTest::addColumn<Rate>("clock");
+	QTest::addColumn<quint16>("nominal");
+	QTest::addColumn<QString>("expected");
 	QTest::newRow("film NTSC uses nominal24 not rounded elapsed seconds")
 		<< qint64(24000) << Rate{24000, 1001} << quint16(24) << QStringLiteral("00:16:40:00");
 	QTest::newRow("equivalent film clock")
@@ -337,7 +364,10 @@ void TestBellaTiming::ndfLabels_data()
 }
 void TestBellaTiming::ndfLabels()
 {
-	QFETCH(qint64, frames); QFETCH(Rate, clock); QFETCH(quint16, nominal); QFETCH(QString, expected);
+	QFETCH(qint64, frames);
+	QFETCH(Rate, clock);
+	QFETCH(quint16, nominal);
+	QFETCH(QString, expected);
 	const auto duration = Bella::makeExactDuration(frames, clock);
 	QVERIFY(duration);
 	QCOMPARE(Bella::formatDuration(*duration, clock, nominal, Mode::NonDropFrame), expected);
@@ -345,8 +375,10 @@ void TestBellaTiming::ndfLabels()
 
 void TestBellaTiming::dfBoundaries_data()
 {
-	QTest::addColumn<qint64>("frames"); QTest::addColumn<Rate>("clock");
-	QTest::addColumn<quint16>("nominal"); QTest::addColumn<QString>("expected");
+	QTest::addColumn<qint64>("frames");
+	QTest::addColumn<Rate>("clock");
+	QTest::addColumn<quint16>("nominal");
+	QTest::addColumn<QString>("expected");
 	const auto row = [](const char *name, qint64 frames, Rate clock, quint16 nominal, const char *expected)
 	{
 		QTest::newRow(name) << frames << clock << nominal << QString::fromLatin1(expected);
@@ -371,7 +403,10 @@ void TestBellaTiming::dfBoundaries_data()
 }
 void TestBellaTiming::dfBoundaries()
 {
-	QFETCH(qint64, frames); QFETCH(Rate, clock); QFETCH(quint16, nominal); QFETCH(QString, expected);
+	QFETCH(qint64, frames);
+	QFETCH(Rate, clock);
+	QFETCH(quint16, nominal);
+	QFETCH(QString, expected);
 	const auto duration = Bella::makeExactDuration(frames, clock);
 	QVERIFY(duration);
 	QCOMPARE(Bella::formatDuration(*duration, clock, nominal, Mode::DropFrame), expected);
@@ -380,7 +415,8 @@ void TestBellaTiming::dfBoundaries()
 void TestBellaTiming::zeroIsDistinctFromUnavailable()
 {
 	const auto zero = Bella::makeExactDuration(0, {25, 1});
-	QVERIFY(zero); QCOMPARE(zero->count, qint64(0));
+	QVERIFY(zero);
+	QCOMPARE(zero->count, qint64(0));
 	QCOMPARE(Bella::displayFrameCount(*zero, {25, 1}), std::optional<qint64>(0));
 	QCOMPARE(Bella::formatDuration(*zero, {25, 1}, 25, Mode::NonDropFrame), QStringLiteral("00:00:00:00"));
 	QCOMPARE(Bella::formatDuration(*zero, {30000, 1001}, 30, Mode::DropFrame), QStringLiteral("00;00;00;00"));
@@ -417,7 +453,9 @@ void TestBellaTiming::mdbPictureRateContext_data()
 }
 void TestBellaTiming::mdbPictureRateContext()
 {
-	QFETCH(QByteArray, descriptor); QFETCH(bool, exactEncoding); QFETCH(bool, unknownKind);
+	QFETCH(QByteArray, descriptor);
+	QFETCH(bool, exactEncoding);
+	QFETCH(bool, unknownKind);
 	auto file = mdbPictureTiming();
 	file.descriptorClass = descriptorTag(descriptor);
 	file.kind = unknownKind ? Bella::MdbKind::Unknown : Bella::MdbKind::Video;
@@ -426,14 +464,16 @@ void TestBellaTiming::mdbPictureRateContext()
 	// An editing clock's presence cannot turn a picture descriptor into audio.
 	file.audioEditRate = Bella::MdbRate{{25, 1}, Bella::MdbRateEncoding::ExactEditRate};
 	const auto timing = Bella::timingFor(file, quint16(30));
-	QVERIFY(timing.duration); QVERIFY(timing.display);
+	QVERIFY(timing.duration);
+	QVERIFY(timing.display);
 	QCOMPARE(timing.duration->count, qint64(1000000));
 	QVERIFY(sameRate(timing.duration->rate, exactEncoding ? Rate{30000, 1001} : Rate{2997, 100}));
 	QVERIFY(sameRate(timing.display->displayRate, timing.duration->rate));
 	QCOMPARE(Bella::displayFrameCount(*timing.duration, {30, 1}),
-		std::optional<qint64>(exactEncoding ? 1001000 : 1001001));
+			 std::optional<qint64>(exactEncoding ? 1001000 : 1001001));
 	QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
-		timing.display->nominalBase, timing.display->mode), QStringLiteral("09:15:33:10"));
+								   timing.display->nominalBase, timing.display->mode),
+			 QStringLiteral("09:15:33:10"));
 	QCOMPARE(file.sampleRate->words.numerator, qint32(2997));
 	QCOMPARE(file.sampleRate->words.denominator, qint32(100));
 }
@@ -449,7 +489,8 @@ void TestBellaTiming::mdbAudioRateContext_data()
 }
 void TestBellaTiming::mdbAudioRateContext()
 {
-	QFETCH(QByteArray, descriptor); QFETCH(bool, exactEditingClock);
+	QFETCH(QByteArray, descriptor);
+	QFETCH(bool, exactEditingClock);
 	auto file = mdbPictureTiming();
 	file.kind = descriptor == "PCMA" ? Bella::MdbKind::Audio : Bella::MdbKind::Unknown;
 	file.descriptorClass = descriptorTag(descriptor);
@@ -457,18 +498,18 @@ void TestBellaTiming::mdbAudioRateContext()
 	// ExactEditRate on this audio descriptor is the physical count divisor,
 	// not the qualified video/editing-clock convention.
 	file.sampleRate = Bella::MdbRate{{2997, 100}, Bella::MdbRateEncoding::ExactEditRate};
-	file.audioEditRate = Bella::MdbRate{{2997, 100}, exactEditingClock
-		? Bella::MdbRateEncoding::ExactEditRate : Bella::MdbRateEncoding::Rational};
+	file.audioEditRate = Bella::MdbRate{{2997, 100}, exactEditingClock ? Bella::MdbRateEncoding::ExactEditRate : Bella::MdbRateEncoding::Rational};
 	file.audioFrequency = Bella::MdbAudioSourceValue(quint32(48000));
 	const auto timing = Bella::timingFor(file, quint16(30));
-	QVERIFY(timing.duration); QVERIFY(timing.display);
+	QVERIFY(timing.duration);
+	QVERIFY(timing.display);
 	QVERIFY(sameRate(timing.duration->rate, {2997, 100}));
 	QVERIFY(sameRate(timing.display->displayRate, exactEditingClock ? Rate{30000, 1001} : Rate{2997, 100}));
 	QCOMPARE(Bella::displayFrameCount(*timing.duration, timing.display->displayRate),
-		std::optional<qint64>(exactEditingClock ? 1000001 : 1000000));
+			 std::optional<qint64>(exactEditingClock ? 1000001 : 1000000));
 	QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
-		timing.display->nominalBase, timing.display->mode),
-		exactEditingClock ? QStringLiteral("09:15:33:11") : QStringLiteral("09:15:33:10"));
+								   timing.display->nominalBase, timing.display->mode),
+			 exactEditingClock ? QStringLiteral("09:15:33:11") : QStringLiteral("09:15:33:10"));
 	QCOMPARE(std::get<quint32>(*file.audioFrequency), quint32(48000));
 }
 
@@ -482,10 +523,12 @@ void TestBellaTiming::mdbRequiresOwnedDescriptorPair()
 	file.audioEditRate = Bella::MdbRate{{25, 1}, Bella::MdbRateEncoding::ExactEditRate};
 	file.audioFrequency = Bella::MdbAudioSourceValue(quint32(48000));
 	const auto complete = Bella::timingFor(file, quint16(25));
-	QVERIFY(complete.duration); QVERIFY(complete.display);
+	QVERIFY(complete.duration);
+	QVERIFY(complete.display);
 	QCOMPARE(complete.duration->count, qint64(2880002));
 	QCOMPARE(Bella::formatDuration(*complete.duration, complete.display->displayRate,
-		complete.display->nominalBase, complete.display->mode), QStringLiteral("00:01:00:00"));
+								   complete.display->nominalBase, complete.display->mode),
+			 QStringLiteral("00:01:00:00"));
 	file.sampleRate.reset();
 	const auto noDescriptorClock = Bella::timingFor(file, quint16(25));
 	QVERIFY(!noDescriptorClock.duration); // Readable concrete frequency is not an MDB fallback.
@@ -495,7 +538,8 @@ void TestBellaTiming::mdbRequiresOwnedDescriptorPair()
 	file.sampleRate = Bella::MdbRate{{48000, 1}, Bella::MdbRateEncoding::ExactEditRate};
 	file.ownDescriptorQualified = false;
 	const auto unowned = Bella::timingFor(file, quint16(25));
-	QVERIFY(!unowned.duration); QVERIFY(!unowned.display);
+	QVERIFY(!unowned.duration);
+	QVERIFY(!unowned.display);
 }
 
 void TestBellaTiming::mxfContainerClockStaysLiteral()
@@ -504,13 +548,15 @@ void TestBellaTiming::mxfContainerClockStaysLiteral()
 	file.containerDuration = 1000000;
 	file.sampleRate = Bella::MxfRate{2997, 100};
 	const auto timing = Bella::timingFor(file, quint16(30));
-	QVERIFY(timing.duration); QVERIFY(timing.display);
+	QVERIFY(timing.duration);
+	QVERIFY(timing.display);
 	QCOMPARE(timing.duration->count, qint64(1000000));
 	QVERIFY(sameRate(timing.duration->rate, {2997, 100}));
 	QVERIFY(sameRate(timing.display->displayRate, {2997, 100}));
 	QCOMPARE(Bella::displayFrameCount(*timing.duration, {30, 1}), std::optional<qint64>(1001001));
 	QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
-		timing.display->nominalBase, timing.display->mode), QStringLiteral("09:15:33:10"));
+								   timing.display->nominalBase, timing.display->mode),
+			 QStringLiteral("09:15:33:10"));
 }
 
 void TestBellaTiming::mxfAudioClockIsNotSampleFrequency()
@@ -523,15 +569,18 @@ void TestBellaTiming::mxfAudioClockIsNotSampleFrequency()
 	file.audioSamplingRate = Bella::MxfRate{48000, 1};
 	file.numbering = Bella::MxfNumbering::NotRequired;
 	const auto timing = Bella::timingFor(file, quint16(25));
-	QVERIFY(timing.duration); QVERIFY(timing.display);
+	QVERIFY(timing.duration);
+	QVERIFY(timing.display);
 	QCOMPARE(timing.duration->count, qint64(1500));
 	QVERIFY(sameRate(timing.duration->rate, {25, 1}));
 	QVERIFY(sameRate(timing.display->displayRate, {25, 1}));
 	QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
-		timing.display->nominalBase, timing.display->mode), QStringLiteral("00:01:00:00"));
+								   timing.display->nominalBase, timing.display->mode),
+			 QStringLiteral("00:01:00:00"));
 	file.projectEditRate = Bella::MxfRate{2997, 100};
 	const auto literalProjectClock = Bella::timingFor(file, quint16(30));
-	QVERIFY(literalProjectClock.duration); QVERIFY(literalProjectClock.display);
+	QVERIFY(literalProjectClock.duration);
+	QVERIFY(literalProjectClock.display);
 	QVERIFY(sameRate(literalProjectClock.display->displayRate, {2997, 100}));
 	file.sampleRate.reset();
 	QVERIFY(!Bella::timingFor(file, quint16(25)).duration);
@@ -544,7 +593,8 @@ void TestBellaTiming::mxfVideoDisplayRequiresQualification()
 	file.projectEditRate = Bella::MxfRate{25, 1};
 	file.audioSamplingRate = Bella::MxfRate{48000, 1};
 	const auto timing = Bella::timingFor(file, quint16(30));
-	QVERIFY(timing.duration); QVERIFY(!timing.display);
+	QVERIFY(timing.duration);
+	QVERIFY(!timing.display);
 	QCOMPARE(timing.duration->count, qint64(1800));
 	QVERIFY(sameRate(timing.duration->rate, {30000, 1001}));
 }
@@ -571,7 +621,8 @@ void TestBellaTiming::omfDurationClockSelection()
 	file.audioEditRate = Bella::OmfRate{{25, 1}, Bella::OmfRateEncoding::ExactEditRate};
 	file.numbering = Bella::OmfNumbering::NotRequired;
 	file.durationClockSource = variation == 0 || variation == 4 ? Bella::OmfDurationClockSource::DescriptorSampleRate
-		: variation == 2 ? Bella::OmfDurationClockSource::Unavailable : Bella::OmfDurationClockSource::SummaryFrequency;
+							   : variation == 2					? Bella::OmfDurationClockSource::Unavailable
+																: Bella::OmfDurationClockSource::SummaryFrequency;
 	if (variation == 1)
 		file.sampleRate = Bella::OmfRate{{44100, 1}, Bella::OmfRateEncoding::ExactEditRate};
 	if (variation == 3)
@@ -588,13 +639,15 @@ void TestBellaTiming::omfDurationClockSelection()
 		QCOMPARE(timing.duration->count, qint64(2880002));
 		QVERIFY(sameRate(timing.duration->rate, {48000, 1}));
 		QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
-			timing.display->nominalBase, timing.display->mode), QStringLiteral("00:01:00:00"));
+									   timing.display->nominalBase, timing.display->mode),
+				 QStringLiteral("00:01:00:00"));
 	}
 }
 
 void TestBellaTiming::omfDescriptorRateContext_data()
 {
-	QTest::addColumn<bool>("picture"); QTest::addColumn<bool>("exactEncoding");
+	QTest::addColumn<bool>("picture");
+	QTest::addColumn<bool>("exactEncoding");
 	QTest::newRow("OMF typed picture uses the Avid convention") << true << true;
 	QTest::newRow("OMF picture Rational stays literal") << true << false;
 	QTest::newRow("OMF typed audio divisor stays literal") << false << true;
@@ -602,7 +655,8 @@ void TestBellaTiming::omfDescriptorRateContext_data()
 }
 void TestBellaTiming::omfDescriptorRateContext()
 {
-	QFETCH(bool, picture); QFETCH(bool, exactEncoding);
+	QFETCH(bool, picture);
+	QFETCH(bool, exactEncoding);
 	auto file = omfPictureTiming();
 	file.kind = picture ? Bella::OmfKind::Video : Bella::OmfKind::Audio;
 	file.descriptorClass = descriptorTag(picture ? QByteArrayView("CDCI") : QByteArrayView("WAVD"));
@@ -610,14 +664,15 @@ void TestBellaTiming::omfDescriptorRateContext()
 	file.sampleRate->encoding = exactEncoding ? Bella::OmfRateEncoding::ExactEditRate : Bella::OmfRateEncoding::Rational;
 	file.audioEditRate = Bella::OmfRate{{25, 1}, Bella::OmfRateEncoding::ExactEditRate};
 	const auto timing = Bella::timingFor(file, picture ? quint16(30) : quint16(25));
-	QVERIFY(timing.duration); QVERIFY(timing.display);
+	QVERIFY(timing.duration);
+	QVERIFY(timing.display);
 	const bool applyAlias = picture && exactEncoding;
 	QVERIFY(sameRate(timing.duration->rate, applyAlias ? Rate{30000, 1001} : Rate{2997, 100}));
 	QCOMPARE(Bella::displayFrameCount(*timing.duration, {30, 1}),
-		std::optional<qint64>(applyAlias ? 1001000 : 1001001));
+			 std::optional<qint64>(applyAlias ? 1001000 : 1001001));
 	QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
-		timing.display->nominalBase, timing.display->mode),
-		picture ? QStringLiteral("09:15:33:10") : QStringLiteral("09:16:06:18"));
+								   timing.display->nominalBase, timing.display->mode),
+			 picture ? QStringLiteral("09:15:33:10") : QStringLiteral("09:16:06:18"));
 }
 
 void TestBellaTiming::omfAiff80ClockPreservesUnsigned64()
@@ -632,19 +687,23 @@ void TestBellaTiming::omfAiff80ClockPreservesUnsigned64()
 	const std::array<quint8, 10> frequency48000{0x40, 0x0e, 0xbb, 0x80, 0, 0, 0, 0, 0, 0};
 	file.audioFrequency = Bella::OmfAudioSourceValue(frequency48000);
 	const auto tone = Bella::timingFor(file, quint16(25));
-	QVERIFY(tone.duration); QVERIFY(tone.display);
+	QVERIFY(tone.duration);
+	QVERIFY(tone.display);
 	QVERIFY(sameRate(tone.duration->rate, {48000, 1}));
 	QCOMPARE(Bella::formatDuration(*tone.duration, tone.display->displayRate,
-		tone.display->nominalBase, tone.display->mode), QStringLiteral("00:01:00:00"));
+								   tone.display->nominalBase, tone.display->mode),
+			 QStringLiteral("00:01:00:00"));
 	// Exact normalized IEEE80 value 1 + 2^-63. Both rational words require U64.
 	const std::array<quint8, 10> wideFrequency{0x3f, 0xff, 0x80, 0, 0, 0, 0, 0, 0, 1};
 	file.length = 1;
 	file.audioFrequency = Bella::OmfAudioSourceValue(wideFrequency);
 	const auto wide = Bella::timingFor(file, quint16(25));
-	QVERIFY(wide.duration); QVERIFY(wide.display);
+	QVERIFY(wide.duration);
+	QVERIFY(wide.display);
 	QVERIFY(sameRate(wide.duration->rate, {Q_UINT64_C(9223372036854775809), Q_UINT64_C(9223372036854775808)}));
 	QCOMPARE(Bella::formatDuration(*wide.duration, wide.display->displayRate,
-		wide.display->nominalBase, wide.display->mode), QStringLiteral("00:00:01:00"));
+								   wide.display->nominalBase, wide.display->mode),
+			 QStringLiteral("00:00:01:00"));
 	const auto retainedFrequency = std::get<std::array<quint8, 10>>(*file.audioFrequency);
 	QCOMPARE(retainedFrequency, wideFrequency);
 }
@@ -664,7 +723,8 @@ void TestBellaTiming::nativeAudioTiming()
 	QFETCH(int, variation);
 	Bella::OmfNativeAudioInformation file;
 	file.kind = Bella::OmfKind::Audio;
-	file.sampleFrameCount = variation == 1 ? 0 : variation == 2 ? 1000000 : 2880002;
+	file.sampleFrameCount = variation == 1 ? 0 : variation == 2 ? 1000000
+																: 2880002;
 	file.samplingRate = variation == 2 ? Bella::OmfNativeRate{2997, 100} : Bella::OmfNativeRate{48000, 1};
 	if (variation == 3)
 		file.sampleFrameCount.reset();
@@ -677,14 +737,16 @@ void TestBellaTiming::nativeAudioTiming()
 	QCOMPARE(bool(timing.duration), variation < 3);
 	if (timing.duration)
 	{
-		QCOMPARE(timing.duration->count, variation == 1 ? qint64(0) : variation == 2 ? qint64(1000000) : qint64(2880002));
+		QCOMPARE(timing.duration->count, variation == 1 ? qint64(0) : variation == 2 ? qint64(1000000)
+																					 : qint64(2880002));
 		QVERIFY(sameRate(timing.duration->rate, variation == 2 ? Rate{2997, 100} : Rate{48000, 1}));
 	}
 }
 
 void TestBellaTiming::readerDisplayModes_data()
 {
-	QTest::addColumn<int>("reader"); QTest::addColumn<int>("numbering");
+	QTest::addColumn<int>("reader");
+	QTest::addColumn<int>("numbering");
 	for (int reader = 0; reader < 3; ++reader)
 		for (int numbering = 0; numbering < 5; ++numbering)
 			QTest::newRow(qPrintable(QStringLiteral("reader-%1-numbering-%2").arg(reader).arg(numbering)))
@@ -692,27 +754,28 @@ void TestBellaTiming::readerDisplayModes_data()
 }
 void TestBellaTiming::readerDisplayModes()
 {
-	QFETCH(int, reader); QFETCH(int, numbering);
+	QFETCH(int, reader);
+	QFETCH(int, numbering);
 	Bella::FileTiming timing;
 	if (reader == 0)
 	{
 		auto file = mdbPictureTiming();
 		file.numbering = std::array{Bella::MdbNumbering::Unavailable, Bella::MdbNumbering::NotRequired,
-			Bella::MdbNumbering::MissingNdfFallback, Bella::MdbNumbering::RecordedNdf, Bella::MdbNumbering::RecordedDf}[numbering];
+									Bella::MdbNumbering::MissingNdfFallback, Bella::MdbNumbering::RecordedNdf, Bella::MdbNumbering::RecordedDf}[numbering];
 		timing = Bella::timingFor(file, quint16(30));
 	}
 	else if (reader == 1)
 	{
 		auto file = mxfPictureTiming();
 		file.numbering = std::array{Bella::MxfNumbering::Unavailable, Bella::MxfNumbering::NotRequired,
-			Bella::MxfNumbering::MissingNdfFallback, Bella::MxfNumbering::RecordedNdf, Bella::MxfNumbering::RecordedDf}[numbering];
+									Bella::MxfNumbering::MissingNdfFallback, Bella::MxfNumbering::RecordedNdf, Bella::MxfNumbering::RecordedDf}[numbering];
 		timing = Bella::timingFor(file, quint16(30));
 	}
 	else
 	{
 		auto file = omfPictureTiming();
 		file.numbering = std::array{Bella::OmfNumbering::Unavailable, Bella::OmfNumbering::NotRequired,
-			Bella::OmfNumbering::MissingNdfFallback, Bella::OmfNumbering::RecordedNdf, Bella::OmfNumbering::RecordedDf}[numbering];
+									Bella::OmfNumbering::MissingNdfFallback, Bella::OmfNumbering::RecordedNdf, Bella::OmfNumbering::RecordedDf}[numbering];
 		timing = Bella::timingFor(file, quint16(30));
 	}
 	QVERIFY(timing.duration);
@@ -723,14 +786,15 @@ void TestBellaTiming::readerDisplayModes()
 		QCOMPARE(timing.display->nominalBase, quint16(30));
 		QCOMPARE(timing.display->mode, numbering == 4 ? Mode::DropFrame : Mode::NonDropFrame);
 		QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
-			timing.display->nominalBase, timing.display->mode),
-			numbering == 4 ? QStringLiteral("00;01;00;02") : QStringLiteral("00:01:00:00"));
+									   timing.display->nominalBase, timing.display->mode),
+				 numbering == 4 ? QStringLiteral("00;01;00;02") : QStringLiteral("00:01:00:00"));
 	}
 }
 
 void TestBellaTiming::missingDisplayInputsPreserveDuration_data()
 {
-	QTest::addColumn<int>("reader"); QTest::addColumn<int>("missing");
+	QTest::addColumn<int>("reader");
+	QTest::addColumn<int>("missing");
 	for (int reader = 0; reader < 3; ++reader)
 		for (int missing = 0; missing < 3; ++missing)
 			QTest::newRow(qPrintable(QStringLiteral("reader-%1-missing-%2").arg(reader).arg(missing)))
@@ -738,41 +802,51 @@ void TestBellaTiming::missingDisplayInputsPreserveDuration_data()
 }
 void TestBellaTiming::missingDisplayInputsPreserveDuration()
 {
-	QFETCH(int, reader); QFETCH(int, missing);
+	QFETCH(int, reader);
+	QFETCH(int, missing);
 	const auto base = missing == 0 ? std::optional<quint16>{} : std::optional<quint16>(missing == 1 ? 0 : 25);
 	Bella::FileTiming timing;
 	if (reader == 0)
 	{
 		auto file = mdbPictureTiming();
-		file.kind = Bella::MdbKind::Audio; file.descriptorClass = descriptorTag("PCMA");
+		file.kind = Bella::MdbKind::Audio;
+		file.descriptorClass = descriptorTag("PCMA");
 		file.length = 2880002;
 		file.sampleRate = Bella::MdbRate{{48000, 1}, Bella::MdbRateEncoding::ExactEditRate};
 		file.audioEditRate = Bella::MdbRate{{25, 1}, Bella::MdbRateEncoding::ExactEditRate};
-		if (missing == 2) file.audioEditRate.reset();
+		if (missing == 2)
+			file.audioEditRate.reset();
 		timing = Bella::timingFor(file, base);
 	}
 	else if (reader == 1)
 	{
 		Bella::MxfFileInformation file;
-		file.kind = Bella::MxfKind::Audio; file.containerDuration = 2880002;
-		file.sampleRate = Bella::MxfRate{48000, 1}; file.projectEditRate = Bella::MxfRate{25, 1};
-		file.audioSamplingRate = Bella::MxfRate{48000, 1}; file.numbering = Bella::MxfNumbering::RecordedNdf;
-		if (missing == 2) file.projectEditRate.reset();
+		file.kind = Bella::MxfKind::Audio;
+		file.containerDuration = 2880002;
+		file.sampleRate = Bella::MxfRate{48000, 1};
+		file.projectEditRate = Bella::MxfRate{25, 1};
+		file.audioSamplingRate = Bella::MxfRate{48000, 1};
+		file.numbering = Bella::MxfNumbering::RecordedNdf;
+		if (missing == 2)
+			file.projectEditRate.reset();
 		timing = Bella::timingFor(file, base);
 	}
 	else
 	{
 		Bella::OmfFileInformation file;
-		file.kind = Bella::OmfKind::Audio; file.descriptorClass = descriptorTag("PCMA");
+		file.kind = Bella::OmfKind::Audio;
+		file.descriptorClass = descriptorTag("PCMA");
 		file.length = 2880002;
 		file.sampleRate = Bella::OmfRate{{48000, 1}, Bella::OmfRateEncoding::ExactEditRate};
 		file.durationClockSource = Bella::OmfDurationClockSource::DescriptorSampleRate;
 		file.audioEditRate = Bella::OmfRate{{25, 1}, Bella::OmfRateEncoding::ExactEditRate};
 		file.numbering = Bella::OmfNumbering::RecordedNdf;
-		if (missing == 2) file.audioEditRate.reset();
+		if (missing == 2)
+			file.audioEditRate.reset();
 		timing = Bella::timingFor(file, base);
 	}
-	QVERIFY(timing.duration); QVERIFY(!timing.display);
+	QVERIFY(timing.duration);
+	QVERIFY(!timing.display);
 	QCOMPARE(timing.duration->count, qint64(2880002));
 	QVERIFY(sameRate(timing.duration->rate, {48000, 1}));
 }
@@ -790,20 +864,27 @@ void TestBellaTiming::missingCountPreservesDisplay()
 	Bella::FileTiming timing;
 	if (reader == 0)
 	{
-		auto file = mdbPictureTiming(); file.length.reset(); file.numbering = Bella::MdbNumbering::NotRequired;
+		auto file = mdbPictureTiming();
+		file.length.reset();
+		file.numbering = Bella::MdbNumbering::NotRequired;
 		timing = Bella::timingFor(file, quint16(30));
 	}
 	else if (reader == 1)
 	{
-		auto file = mxfPictureTiming(); file.containerDuration.reset(); file.numbering = Bella::MxfNumbering::NotRequired;
+		auto file = mxfPictureTiming();
+		file.containerDuration.reset();
+		file.numbering = Bella::MxfNumbering::NotRequired;
 		timing = Bella::timingFor(file, quint16(30));
 	}
 	else
 	{
-		auto file = omfPictureTiming(); file.length.reset(); file.numbering = Bella::OmfNumbering::NotRequired;
+		auto file = omfPictureTiming();
+		file.length.reset();
+		file.numbering = Bella::OmfNumbering::NotRequired;
 		timing = Bella::timingFor(file, quint16(30));
 	}
-	QVERIFY(!timing.duration); QVERIFY(timing.display);
+	QVERIFY(!timing.duration);
+	QVERIFY(timing.display);
 	QVERIFY(sameRate(timing.display->displayRate, {30000, 1001}));
 	QCOMPARE(timing.display->nominalBase, quint16(30));
 	QCOMPARE(timing.display->mode, Mode::NonDropFrame);
@@ -811,19 +892,22 @@ void TestBellaTiming::missingCountPreservesDisplay()
 
 void TestBellaTiming::connectedZeroAndRoundedZero_data()
 {
-	QTest::addColumn<int>("reader"); QTest::addColumn<qint64>("count");
+	QTest::addColumn<int>("reader");
+	QTest::addColumn<qint64>("count");
 	for (int reader = 0; reader < 3; ++reader)
 		for (qint64 count = 0; count < 2; ++count)
 			QTest::newRow(qPrintable(QStringLiteral("reader-%1-count-%2").arg(reader).arg(count))) << reader << count;
 }
 void TestBellaTiming::connectedZeroAndRoundedZero()
 {
-	QFETCH(int, reader); QFETCH(qint64, count);
+	QFETCH(int, reader);
+	QFETCH(qint64, count);
 	Bella::FileTiming timing;
 	if (reader == 0)
 	{
 		auto file = mdbPictureTiming();
-		file.kind = Bella::MdbKind::Audio; file.descriptorClass = descriptorTag("PCMA");
+		file.kind = Bella::MdbKind::Audio;
+		file.descriptorClass = descriptorTag("PCMA");
 		file.length = count;
 		file.sampleRate = Bella::MdbRate{{48000, 1}, Bella::MdbRateEncoding::ExactEditRate};
 		file.audioEditRate = Bella::MdbRate{{25, 1}, Bella::MdbRateEncoding::ExactEditRate};
@@ -833,15 +917,18 @@ void TestBellaTiming::connectedZeroAndRoundedZero()
 	else if (reader == 1)
 	{
 		Bella::MxfFileInformation file;
-		file.kind = Bella::MxfKind::Audio; file.containerDuration = count;
-		file.sampleRate = Bella::MxfRate{48000, 1}; file.projectEditRate = Bella::MxfRate{25, 1};
+		file.kind = Bella::MxfKind::Audio;
+		file.containerDuration = count;
+		file.sampleRate = Bella::MxfRate{48000, 1};
+		file.projectEditRate = Bella::MxfRate{25, 1};
 		file.numbering = Bella::MxfNumbering::NotRequired;
 		timing = Bella::timingFor(file, quint16(25));
 	}
 	else
 	{
 		Bella::OmfFileInformation file;
-		file.kind = Bella::OmfKind::Audio; file.descriptorClass = descriptorTag("PCMA");
+		file.kind = Bella::OmfKind::Audio;
+		file.descriptorClass = descriptorTag("PCMA");
 		file.length = count;
 		file.sampleRate = Bella::OmfRate{{48000, 1}, Bella::OmfRateEncoding::ExactEditRate};
 		file.durationClockSource = Bella::OmfDurationClockSource::DescriptorSampleRate;
@@ -849,11 +936,13 @@ void TestBellaTiming::connectedZeroAndRoundedZero()
 		file.numbering = Bella::OmfNumbering::NotRequired;
 		timing = Bella::timingFor(file, quint16(25));
 	}
-	QVERIFY(timing.duration); QVERIFY(timing.display);
+	QVERIFY(timing.duration);
+	QVERIFY(timing.display);
 	QCOMPARE(timing.duration->count, count);
 	QCOMPARE(Bella::displayFrameCount(*timing.duration, timing.display->displayRate), std::optional<qint64>(0));
 	QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
-		timing.display->nominalBase, timing.display->mode), QStringLiteral("00:00:00:00"));
+								   timing.display->nominalBase, timing.display->mode),
+			 QStringLiteral("00:00:00:00"));
 }
 
 void TestBellaTiming::connectionsPreserveInputFactsAndNotes()
@@ -872,13 +961,17 @@ void TestBellaTiming::connectionsPreserveInputFactsAndNotes()
 	const auto path = report.path;
 	const auto native = Bella::timingFor(report.nativeAudioInformation);
 	const auto omf = Bella::timingFor(report.fileInformation, quint16(30));
-	QVERIFY(native.duration); QVERIFY(!native.display);
+	QVERIFY(native.duration);
+	QVERIFY(!native.display);
 	QCOMPARE(native.duration->count, qint64(1));
-	QVERIFY(omf.duration); QVERIFY(omf.display);
+	QVERIFY(omf.duration);
+	QVERIFY(omf.display);
 	QCOMPARE(omf.duration->count, qint64(0));
 	QCOMPARE(Bella::formatDuration(*omf.duration, omf.display->displayRate,
-		omf.display->nominalBase, omf.display->mode), QStringLiteral("00:00:00:00"));
-	QCOMPARE(report.problemNotes, notes); QCOMPARE(report.path, path);
+								   omf.display->nominalBase, omf.display->mode),
+			 QStringLiteral("00:00:00:00"));
+	QCOMPARE(report.problemNotes, notes);
+	QCOMPARE(report.path, path);
 	QCOMPARE(report.nativeAudioReading, Bella::OmfReadResult::Incomplete);
 	QCOMPARE(report.omfReading, Bella::OmfReadResult::Malformed);
 	QCOMPARE(report.nativeAudioInformation.sampleFrameCount, std::optional<qint64>(1));
@@ -892,6 +985,260 @@ void TestBellaTiming::connectionsPreserveInputFactsAndNotes()
 	report.fileInformation.sampleRate->words.numerator = 25;
 	QCOMPARE(native.duration->count, qint64(1));
 	QVERIFY(sameRate(omf.duration->rate, {30000, 1001}));
+}
+
+void TestBellaTiming::automaticNominalBase_data()
+{
+	QTest::addColumn<qint32>("numerator");
+	QTest::addColumn<qint32>("denominator");
+	QTest::addColumn<int>("expectedBase");
+	QTest::newRow("whole 25") << qint32(25) << qint32(1) << 25;
+	QTest::newRow("NTSC 30") << qint32(30000) << qint32(1001) << 30;
+	QTest::newRow("fractional film 24") << qint32(24000) << qint32(1001) << 24;
+	QTest::newRow("unlisted exact half rounds upward") << qint32(25) << qint32(2) << 13;
+	QTest::newRow("equivalent unreduced half") << qint32(50) << qint32(4) << 13;
+	QTest::newRow("just below half") << qint32(24999) << qint32(2000) << 12;
+	QTest::newRow("just above half") << qint32(25001) << qint32(2000) << 13;
+	QTest::newRow("positive clock rounded to zero") << qint32(49) << qint32(100) << -1;
+	QTest::newRow("half reaches first positive base") << qint32(1) << qint32(2) << 1;
+	QTest::newRow("odd denominator below first half") << qint32(1073741823) << qint32(2147483647) << -1;
+	QTest::newRow("odd denominator above first half") << qint32(1073741824) << qint32(2147483647) << 1;
+	QTest::newRow("largest nominal base") << qint32(65535) << qint32(1) << 65535;
+	QTest::newRow("round down at upper boundary") << qint32(1310709999) << qint32(20000) << 65535;
+	QTest::newRow("half would overflow nominal base") << qint32(131071) << qint32(2) << -1;
+	QTest::newRow("whole base outside UInt16") << qint32(65536) << qint32(1) << -1;
+	QTest::newRow("largest signed source word") << qint32(2147483647) << qint32(1) << -1;
+}
+
+void TestBellaTiming::automaticNominalBase()
+{
+	QFETCH(qint32, numerator);
+	QFETCH(qint32, denominator);
+	QFETCH(int, expectedBase);
+	auto mdb = mdbPictureTiming();
+	mdb.sampleRate = Bella::MdbRate{{numerator, denominator}, Bella::MdbRateEncoding::Rational};
+	mdb.numbering = Bella::MdbNumbering::NotRequired;
+	auto mxf = mxfPictureTiming();
+	mxf.sampleRate = Bella::MxfRate{numerator, denominator};
+	mxf.numbering = Bella::MxfNumbering::NotRequired;
+	auto omf = omfPictureTiming();
+	omf.sampleRate = Bella::OmfRate{{numerator, denominator}, Bella::OmfRateEncoding::Rational};
+	omf.numbering = Bella::OmfNumbering::NotRequired;
+	for (const auto &timing : {Bella::timingFor(mdb), Bella::timingFor(mxf), Bella::timingFor(omf)})
+	{
+		QVERIFY(timing.duration);
+		QCOMPARE(timing.duration->count, qint64(1800));
+		QCOMPARE(timing.duration->rate.numerator, quint64(numerator));
+		QCOMPARE(timing.duration->rate.denominator, quint64(denominator));
+		QCOMPARE(bool(timing.display), expectedBase > 0);
+		if (timing.display)
+		{
+			QCOMPARE(timing.display->nominalBase, quint16(expectedBase));
+			QCOMPARE(timing.display->displayRate.numerator, quint64(numerator));
+			QCOMPARE(timing.display->displayRate.denominator, quint64(denominator));
+			QCOMPARE(timing.display->mode, Mode::NonDropFrame);
+		}
+	}
+	QCOMPARE(mdb.sampleRate->words.numerator, numerator);
+	QCOMPARE(mxf.sampleRate->denominator, denominator);
+	QCOMPARE(omf.sampleRate->words.denominator, denominator);
+}
+
+void TestBellaTiming::automaticAudioDisplayClock_data()
+{
+	QTest::addColumn<int>("reader");
+	QTest::addColumn<int>("variation");
+	for (int reader = 0; reader != 3; ++reader)
+		for (int variation = 0; variation != 3; ++variation)
+			QTest::newRow(qPrintable(QStringLiteral("reader-%1-clock-%2").arg(reader).arg(variation)))
+				<< reader << variation;
+}
+
+void TestBellaTiming::automaticAudioDisplayClock()
+{
+	QFETCH(int, reader);
+	QFETCH(int, variation);
+	const qint32 numerator = variation == 1 ? 25 : 250;
+	const qint32 denominator = variation == 1 ? 2 : 10;
+	Bella::FileTiming timing;
+	if (reader == 0)
+	{
+		auto file = mdbPictureTiming();
+		file.kind = Bella::MdbKind::Unknown;
+		file.descriptorClass = descriptorTag("MPGA");
+		file.length = 96000;
+		file.sampleRate = Bella::MdbRate{{48000, 1}, Bella::MdbRateEncoding::ExactEditRate};
+		file.audioFrequency = Bella::MdbAudioSourceValue(quint32(96000));
+		file.audioEditRate = Bella::MdbRate{{numerator, denominator}, Bella::MdbRateEncoding::Rational};
+		file.numbering = Bella::MdbNumbering::NotRequired;
+		if (variation == 2)
+			file.audioEditRate.reset();
+		timing = Bella::timingFor(file);
+	}
+	else if (reader == 1)
+	{
+		Bella::MxfFileInformation file;
+		file.kind = Bella::MxfKind::Audio;
+		file.containerDuration = 96000;
+		file.sampleRate = Bella::MxfRate{48000, 1};
+		file.audioSamplingRate = Bella::MxfRate{96000, 1};
+		file.projectEditRate = Bella::MxfRate{numerator, denominator};
+		file.numbering = Bella::MxfNumbering::NotRequired;
+		if (variation == 2)
+			file.projectEditRate.reset();
+		timing = Bella::timingFor(file);
+	}
+	else
+	{
+		auto file = omfPictureTiming();
+		file.kind = Bella::OmfKind::Audio;
+		file.descriptorClass = descriptorTag("PCMA");
+		file.length = 96000;
+		file.sampleRate = Bella::OmfRate{{48000, 1}, Bella::OmfRateEncoding::ExactEditRate};
+		file.audioFrequency = Bella::OmfAudioSourceValue(quint32(96000));
+		file.audioEditRate = Bella::OmfRate{{numerator, denominator}, Bella::OmfRateEncoding::Rational};
+		file.numbering = Bella::OmfNumbering::NotRequired;
+		if (variation == 2)
+			file.audioEditRate.reset();
+		timing = Bella::timingFor(file);
+	}
+	QVERIFY(timing.duration);
+	QCOMPARE(timing.duration->count, qint64(96000));
+	QVERIFY(sameRate(timing.duration->rate, {48000, 1}));
+	QCOMPARE(bool(timing.display), variation != 2);
+	if (timing.display)
+	{
+		QCOMPARE(timing.display->nominalBase, quint16(variation == 1 ? 13 : 25));
+		QVERIFY(sameRate(timing.display->displayRate, {quint64(numerator), quint64(denominator)}));
+		QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
+									   timing.display->nominalBase, timing.display->mode),
+				 variation == 1 ? QStringLiteral("00:00:01:12") : QStringLiteral("00:00:02:00"));
+	}
+}
+
+void TestBellaTiming::automaticSourceQualifications()
+{
+	auto mdb = mdbPictureTiming();
+	mdb.ownDescriptorQualified = false;
+	const auto unowned = Bella::timingFor(mdb);
+	QVERIFY(!unowned.duration);
+	QVERIFY(!unowned.display);
+	mdb.ownDescriptorQualified = true;
+	mdb.kind = Bella::MdbKind::Unknown;
+	mdb.descriptorClass = descriptorTag("TIFD");
+	const auto knownPicture = Bella::timingFor(mdb);
+	QVERIFY(knownPicture.duration);
+	QVERIFY(knownPicture.display);
+	QVERIFY(sameRate(knownPicture.display->displayRate, {30000, 1001}));
+	QCOMPARE(knownPicture.display->nominalBase, quint16(30));
+
+	auto mxf = mxfPictureTiming();
+	mxf.frameRateQualified = false;
+	const auto unqualified = Bella::timingFor(mxf);
+	QVERIFY(unqualified.duration);
+	QVERIFY(!unqualified.display);
+
+	auto omf = omfPictureTiming();
+	omf.durationClockSource = Bella::OmfDurationClockSource::Unavailable;
+	const auto noDivisor = Bella::timingFor(omf);
+	QVERIFY(!noDivisor.duration);
+	QVERIFY(noDivisor.display);
+	QCOMPARE(noDivisor.display->nominalBase, quint16(30));
+}
+
+void TestBellaTiming::automaticNumberingAndMissingCount_data()
+{
+	QTest::addColumn<int>("reader");
+	QTest::addColumn<int>("variation");
+	for (int reader = 0; reader != 3; ++reader)
+		for (int variation = 0; variation != 5; ++variation)
+			QTest::newRow(qPrintable(QStringLiteral("reader-%1-numbering-%2").arg(reader).arg(variation)))
+				<< reader << variation;
+}
+
+void TestBellaTiming::automaticNumberingAndMissingCount()
+{
+	QFETCH(int, reader);
+	QFETCH(int, variation);
+	auto mdb = mdbPictureTiming();
+	auto mxf = mxfPictureTiming();
+	auto omf = omfPictureTiming();
+	mdb.numbering = Bella::MdbNumbering::RecordedDf;
+	mxf.numbering = Bella::MxfNumbering::RecordedDf;
+	omf.numbering = Bella::OmfNumbering::RecordedDf;
+	if (variation == 1)
+	{
+		mdb.sampleRate->words = {5994, 100};
+		mxf.sampleRate = Bella::MxfRate{60000, 1001};
+		omf.sampleRate->words = {5994, 100};
+		mdb.length = 3600;
+		mxf.containerDuration = 3600;
+		omf.length = 3600;
+	}
+	else if (variation == 2)
+	{
+		mdb.sampleRate->words = {25, 1};
+		mxf.sampleRate = Bella::MxfRate{25, 1};
+		omf.sampleRate->words = {25, 1};
+	}
+	else if (variation == 3)
+	{
+		mdb.numbering = Bella::MdbNumbering::Unavailable;
+		mxf.numbering = Bella::MxfNumbering::Unavailable;
+		omf.numbering = Bella::OmfNumbering::Unavailable;
+	}
+	else if (variation == 4)
+	{
+		mdb.length.reset();
+		mxf.containerDuration.reset();
+		omf.length.reset();
+	}
+	const auto timing = reader == 0	  ? Bella::timingFor(mdb)
+						: reader == 1 ? Bella::timingFor(mxf)
+									  : Bella::timingFor(omf);
+	QCOMPARE(bool(timing.duration), variation != 4);
+	QCOMPARE(bool(timing.display), variation != 2 && variation != 3);
+	if (timing.display)
+	{
+		QCOMPARE(timing.display->nominalBase, quint16(variation == 1 ? 60 : 30));
+		QCOMPARE(timing.display->mode, Mode::DropFrame);
+		if (timing.duration)
+			QCOMPARE(Bella::formatDuration(*timing.duration, timing.display->displayRate,
+										   timing.display->nominalBase, timing.display->mode),
+					 variation == 1 ? QStringLiteral("00;01;00;04") : QStringLiteral("00;01;00;02"));
+	}
+}
+
+void TestBellaTiming::explicitBaseRemainsExplicit()
+{
+	auto mdb = mdbPictureTiming();
+	mdb.sampleRate = Bella::MdbRate{{25, 2}, Bella::MdbRateEncoding::Rational};
+	auto mxf = mxfPictureTiming();
+	mxf.sampleRate = Bella::MxfRate{25, 2};
+	auto omf = omfPictureTiming();
+	omf.sampleRate = Bella::OmfRate{{25, 2}, Bella::OmfRateEncoding::Rational};
+	for (const auto &timing : {Bella::timingFor(mdb, std::nullopt), Bella::timingFor(mdb, quint16(0)),
+							   Bella::timingFor(mxf, std::nullopt), Bella::timingFor(mxf, quint16(0)),
+							   Bella::timingFor(omf, std::nullopt), Bella::timingFor(omf, quint16(0))})
+	{
+		QVERIFY(timing.duration);
+		QVERIFY(!timing.display);
+		QVERIFY(sameRate(timing.duration->rate, {25, 2}));
+	}
+	for (const auto &timing : {Bella::timingFor(mdb, quint16(7)), Bella::timingFor(mxf, quint16(7)),
+							   Bella::timingFor(omf, quint16(7))})
+	{
+		QVERIFY(timing.duration);
+		QVERIFY(timing.display);
+		QCOMPARE(timing.display->nominalBase, quint16(7));
+		QVERIFY(sameRate(timing.display->displayRate, {25, 2}));
+	}
+	for (const auto &timing : {Bella::timingFor(mdb), Bella::timingFor(mxf), Bella::timingFor(omf)})
+	{
+		QVERIFY(timing.duration);
+		QVERIFY(timing.display);
+		QCOMPARE(timing.display->nominalBase, quint16(13));
+	}
 }
 
 QTEST_GUILESS_MAIN(TestBellaTiming)

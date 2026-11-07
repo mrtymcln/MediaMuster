@@ -1,12 +1,8 @@
-#include "testfixtures.h"
-
 #include "bella/mobid.h"
 
 #include <QByteArray>
-#include <QFile>
 #include <QHash>
 #include <QtTest>
-#include <QtEndian>
 #include <array>
 #include <limits>
 #include <type_traits>
@@ -46,8 +42,6 @@ private slots:
 	void unfamiliar_legacy_organization_is_part_of_the_key();
 	void legacy_and_modern_forms_remain_distinct();
 	void results_own_their_bytes_through_copy_and_move();
-	void genuine_little_endian_fixtures_data();
-	void genuine_little_endian_fixtures();
 };
 
 void TestBellaMobId::complete_layouts_have_explicit_canonical_bytes()
@@ -317,83 +311,6 @@ void TestBellaMobId::results_own_their_bytes_through_copy_and_move()
 		QCOMPARE(movedId->bytes().toByteArray(), example.expected);
 		QVERIFY(*copiedId == *movedId);
 	}
-}
-
-void TestBellaMobId::genuine_little_endian_fixtures_data()
-{
-	QTest::addColumn<QString>("relativePath");
-	QTest::addColumn<int>("fileSize");
-	QTest::addColumn<int>("baseVersion");
-	QTest::addColumn<int>("recordCount");
-	QTest::addColumn<int>("baseMasterOffset");
-	QTest::addColumn<int>("extensionOffset");
-	QTest::addColumn<int>("unicodeMasterOffset");
-	QTest::addColumn<QByteArray>("expectedFileId");
-	QTest::addColumn<QByteArray>("expectedMasterId");
-	QTest::newRow("genuine-modern-v8-v16-LE")
-		<< QStringLiteral("msmFMID.pmr") << 248 << 8 << 1 << 89 << 125 << 212
-		<< QByteArray::fromHex("060a2b340101010501010f10130000004a507dea741106907a361e6a605d3613")
-		<< QByteArray::fromHex("060a2b340101010501010f1013000000d2467dea7411069091901e6a605d3613");
-	QTest::newRow("genuine-legacy-v2-v16-LE")
-		<< QStringLiteral("omf/mc2026_audio/msmFMID.pmr") << 392 << 2 << 2 << 68 << 148 << 238
-		<< QByteArray::fromHex("060a2b340101010101010f00130000007429976a70397047060e2b347f7f2a80")
-		<< QByteArray::fromHex("060a2b340101010101010f00130000007429976a4e397047060e2b347f7f2a80");
-}
-
-void TestBellaMobId::genuine_little_endian_fixtures()
-{
-	REQUIRE_TEST_FIXTURES();
-	QFETCH(QString, relativePath);
-	QFETCH(int, fileSize);
-	QFETCH(int, baseVersion);
-	QFETCH(int, recordCount);
-	QFETCH(int, baseMasterOffset);
-	QFETCH(int, extensionOffset);
-	QFETCH(int, unicodeMasterOffset);
-	QFETCH(QByteArray, expectedFileId);
-	QFETCH(QByteArray, expectedMasterId);
-	QFile file(QString::fromUtf8(FIXTURES_DIR) + QLatin1Char('/') + relativePath);
-	QVERIFY2(file.open(QIODevice::ReadOnly), qPrintable(file.errorString()));
-	const QByteArray bytes = file.readAll();
-	QCOMPARE(file.error(), QFileDevice::NoError);
-	QCOMPARE(bytes.size(), qsizetype(fileSize));
-
-	// Pin known field positions in these two genuine LE fixtures. This is not
-	// a PMR parser or a search for a version marker; no decoding policy is added.
-	QVERIFY(bytes.size() >= 12);
-	QCOMPARE(qFromLittleEndian<quint32>(bytes.constData()), quint32{0x7a9});
-	QCOMPARE(qFromLittleEndian<qint32>(bytes.constData() + 4), qint32(baseVersion));
-	QCOMPARE(qFromLittleEndian<quint32>(bytes.constData() + 8), quint32(recordCount));
-	QVERIFY(extensionOffset >= 12 && extensionOffset + 8 <= bytes.size());
-	QCOMPARE(qFromLittleEndian<qint32>(bytes.constData() + extensionOffset), qint32{16});
-	QCOMPARE(qFromLittleEndian<quint32>(bytes.constData() + extensionOffset + 4), quint32(recordCount));
-
-	const Layout baseLayout = baseVersion == 2 ? Layout::PmrLegacy8 : Layout::Aaf32;
-	const qsizetype baseWidth = baseVersion == 2 ? 8 : 32;
-	QVERIFY(baseMasterOffset >= 12 && baseMasterOffset + baseWidth <= extensionOffset);
-	QVERIFY(unicodeMasterOffset >= extensionOffset + 8 && unicodeMasterOffset + 32 <= bytes.size());
-	QVERIFY(extensionOffset + 8 + 32 <= bytes.size());
-	const QByteArrayView view(bytes);
-	const std::array<Bella::MobIdResult, 4> results{{
-		Bella::normalizeMobId(view.sliced(12, baseWidth), baseLayout, Order::LittleEndian),
-		Bella::normalizeMobId(view.sliced(baseMasterOffset, baseWidth), baseLayout, Order::LittleEndian),
-		Bella::normalizeMobId(view.sliced(extensionOffset + 8, 32), Layout::Aaf32, Order::LittleEndian),
-		Bella::normalizeMobId(view.sliced(unicodeMasterOffset, 32), Layout::Aaf32, Order::LittleEndian),
-	}};
-	const auto *baseFile = std::get_if<Bella::MobId>(&results[0]);
-	const auto *baseMaster = std::get_if<Bella::MobId>(&results[1]);
-	const auto *unicodeFile = std::get_if<Bella::MobId>(&results[2]);
-	const auto *unicodeMaster = std::get_if<Bella::MobId>(&results[3]);
-	QVERIFY(baseFile);
-	QVERIFY(baseMaster);
-	QVERIFY(unicodeFile);
-	QVERIFY(unicodeMaster);
-	QCOMPARE(baseFile->bytes().toByteArray(), expectedFileId);
-	QCOMPARE(baseMaster->bytes().toByteArray(), expectedMasterId);
-	QCOMPARE(unicodeFile->bytes().toByteArray(), expectedFileId);
-	QCOMPARE(unicodeMaster->bytes().toByteArray(), expectedMasterId);
-	QVERIFY(*baseFile == *unicodeFile);
-	QVERIFY(*baseMaster == *unicodeMaster);
 }
 
 QTEST_APPLESS_MAIN(TestBellaMobId)

@@ -110,6 +110,88 @@ namespace Bella
 			return std::nullopt;
 		}
 
+		std::optional<quint16> roundedBase(const std::optional<TimingRate> &clock) noexcept
+		{
+			if (!clock || !validRate(*clock))
+				return std::nullopt;
+			auto base = clock->numerator / clock->denominator;
+			constexpr auto maximum = std::numeric_limits<quint16>::max();
+			if (base > maximum)
+				return std::nullopt;
+			const auto remainder = clock->numerator % clock->denominator;
+			// ceil(denominator / 2), without overflowing an unsigned64 word.
+			if (remainder >= clock->denominator / 2 + clock->denominator % 2)
+			{
+				if (base == maximum)
+					return std::nullopt;
+				++base;
+			}
+			return base == 0 ? std::nullopt : std::optional<quint16>(quint16(base));
+		}
+
+		struct PreparedTiming
+		{
+			std::optional<ExactDuration> duration;
+			std::optional<TimingRate> displayClock;
+		};
+
+		PreparedTiming prepareTiming(const MdbFileRecord &file)
+		{
+			if (!file.ownDescriptorQualified)
+				return {};
+			const auto tag = descriptorTag(file.descriptorClass);
+			const bool picture = pictureDescriptor(tag);
+			const auto rate = legacyRate(file.sampleRate, picture);
+			PreparedTiming result;
+			if (file.length && rate)
+				result.duration = makeExactDuration(*file.length, *rate);
+			if (audioDescriptor(tag))
+				result.displayClock = legacyRate(file.audioEditRate, true);
+			else if (picture)
+				result.displayClock = rate;
+			return result;
+		}
+
+		PreparedTiming prepareTiming(const MxfFileInformation &file)
+		{
+			const auto rate = mxfRate(file.sampleRate);
+			PreparedTiming result;
+			if (file.containerDuration && rate)
+				result.duration = makeExactDuration(*file.containerDuration, *rate);
+			if (file.kind == MxfKind::Audio)
+				result.displayClock = mxfRate(file.projectEditRate);
+			else if (file.kind == MxfKind::Video && file.frameRateQualified)
+				result.displayClock = rate;
+			return result;
+		}
+
+		PreparedTiming prepareTiming(const OmfFileInformation &file)
+		{
+			const auto tag = descriptorTag(file.descriptorClass);
+			const bool picture = pictureDescriptor(tag);
+			const auto sampleClock = legacyRate(file.sampleRate, picture);
+			std::optional<TimingRate> rate;
+			switch (file.durationClockSource)
+			{
+			case OmfDurationClockSource::DescriptorSampleRate:
+				rate = sampleClock;
+				break;
+			case OmfDurationClockSource::SummaryFrequency:
+				rate = summaryFrequency(file.audioFrequency);
+				break;
+			case OmfDurationClockSource::Unavailable:
+				break;
+			}
+			PreparedTiming result;
+			if (file.length && rate)
+				result.duration = makeExactDuration(*file.length, *rate);
+			if (audioDescriptor(tag))
+				result.displayClock = legacyRate(file.audioEditRate, true);
+			else if (picture)
+				result.displayClock = sampleClock;
+			return result;
+		}
+
 		// A nonnegative signed64 count times two unsigned64 fraction words needs at
 		// most 191 bits. Fixed working words retain the approved exact AIFF frequency
 		// range without an arbitrary-precision dependency or compiler-specific types.
@@ -250,65 +332,38 @@ namespace Bella
 
 	FileTiming timingFor(const MdbFileRecord &file, std::optional<quint16> nominalBase)
 	{
-		if (!file.ownDescriptorQualified)
-			return {};
-		const auto tag = descriptorTag(file.descriptorClass);
-		const bool picture = pictureDescriptor(tag);
-		const auto rate = legacyRate(file.sampleRate, picture);
-		FileTiming result;
-		if (file.length && rate)
-			result.duration = makeExactDuration(*file.length, *rate);
-		std::optional<TimingRate> clock;
-		if (audioDescriptor(tag))
-			clock = legacyRate(file.audioEditRate, true);
-		else if (picture)
-			clock = rate;
-		result.display = displayFor(clock, nominalBase, file.numbering);
-		return result;
+		const auto prepared = prepareTiming(file);
+		return {prepared.duration, displayFor(prepared.displayClock, nominalBase, file.numbering)};
 	}
 
 	FileTiming timingFor(const MxfFileInformation &file, std::optional<quint16> nominalBase)
 	{
-		const auto rate = mxfRate(file.sampleRate);
-		FileTiming result;
-		if (file.containerDuration && rate)
-			result.duration = makeExactDuration(*file.containerDuration, *rate);
-		std::optional<TimingRate> clock;
-		if (file.kind == MxfKind::Audio)
-			clock = mxfRate(file.projectEditRate);
-		else if (file.kind == MxfKind::Video && file.frameRateQualified)
-			clock = rate;
-		result.display = displayFor(clock, nominalBase, file.numbering);
-		return result;
+		const auto prepared = prepareTiming(file);
+		return {prepared.duration, displayFor(prepared.displayClock, nominalBase, file.numbering)};
 	}
 
 	FileTiming timingFor(const OmfFileInformation &file, std::optional<quint16> nominalBase)
 	{
-		const auto tag = descriptorTag(file.descriptorClass);
-		const bool picture = pictureDescriptor(tag);
-		const auto sampleClock = legacyRate(file.sampleRate, picture);
-		std::optional<TimingRate> rate;
-		switch (file.durationClockSource)
-		{
-		case OmfDurationClockSource::DescriptorSampleRate:
-			rate = sampleClock;
-			break;
-		case OmfDurationClockSource::SummaryFrequency:
-			rate = summaryFrequency(file.audioFrequency);
-			break;
-		case OmfDurationClockSource::Unavailable:
-			break;
-		}
-		FileTiming result;
-		if (file.length && rate)
-			result.duration = makeExactDuration(*file.length, *rate);
-		std::optional<TimingRate> clock;
-		if (audioDescriptor(tag))
-			clock = legacyRate(file.audioEditRate, true);
-		else if (picture)
-			clock = sampleClock;
-		result.display = displayFor(clock, nominalBase, file.numbering);
-		return result;
+		const auto prepared = prepareTiming(file);
+		return {prepared.duration, displayFor(prepared.displayClock, nominalBase, file.numbering)};
+	}
+
+	FileTiming timingFor(const MdbFileRecord &file)
+	{
+		const auto prepared = prepareTiming(file);
+		return {prepared.duration, displayFor(prepared.displayClock, roundedBase(prepared.displayClock), file.numbering)};
+	}
+
+	FileTiming timingFor(const MxfFileInformation &file)
+	{
+		const auto prepared = prepareTiming(file);
+		return {prepared.duration, displayFor(prepared.displayClock, roundedBase(prepared.displayClock), file.numbering)};
+	}
+
+	FileTiming timingFor(const OmfFileInformation &file)
+	{
+		const auto prepared = prepareTiming(file);
+		return {prepared.duration, displayFor(prepared.displayClock, roundedBase(prepared.displayClock), file.numbering)};
 	}
 
 	FileTiming timingFor(const OmfNativeAudioInformation &file)
@@ -320,8 +375,8 @@ namespace Bella
 		return result;
 	}
 
-	QString formatDuration(const ExactDuration &duration, TimingRate displayRate, quint16 nominalBase,
-						   TimecodeMode mode)
+	std::optional<std::tuple<qint64, int, int, int>> durationTimecode(
+		const ExactDuration &duration, TimingRate displayRate, quint16 nominalBase, TimecodeMode mode) noexcept
 	{
 		if (!validRate(displayRate) || nominalBase == 0)
 			return {};
@@ -359,12 +414,22 @@ namespace Bella
 			minutes = (*count / base) / 60;
 			framesInMinute = *count % (base * 60);
 		}
+		return std::tuple{minutes / 60, int(minutes % 60), int(framesInMinute / base), int(framesInMinute % base)};
+	}
+
+	QString formatDuration(const ExactDuration &duration, TimingRate displayRate, quint16 nominalBase,
+						   TimecodeMode mode)
+	{
+		const auto timecode = durationTimecode(duration, displayRate, nominalBase, mode);
+		if (!timecode)
+			return {};
+		const auto [hours, minutes, seconds, frames] = *timecode;
 		const auto pattern =
 			mode == TimecodeMode::DropFrame ? QStringLiteral("%1;%2;%3;%4") : QStringLiteral("%1:%2:%3:%4");
-		return pattern.arg(minutes / 60, 2, 10, QLatin1Char('0'))
-			.arg(minutes % 60, 2, 10, QLatin1Char('0'))
-			.arg(framesInMinute / base, 2, 10, QLatin1Char('0'))
-			.arg(framesInMinute % base, 2, 10, QLatin1Char('0'));
+		return pattern.arg(hours, 2, 10, QLatin1Char('0'))
+			.arg(minutes, 2, 10, QLatin1Char('0'))
+			.arg(seconds, 2, 10, QLatin1Char('0'))
+			.arg(frames, 2, 10, QLatin1Char('0'));
 	}
 
 } // namespace Bella

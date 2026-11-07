@@ -1,6 +1,8 @@
 #include "rebalancer.h"
 #include "rebalanceplanner.h"
 
+#include <QDir>
+
 // MARK: - Construction
 
 Rebalancer::Rebalancer(QObject *parent) : QObject(parent)
@@ -51,26 +53,39 @@ void Rebalancer::executeAsync(const RebalancePlan &plan)
 	m_preflight.start(
 		[this, plan, requestId]
 		{
-			// MARK: Build the engine request, group-contiguously
-			//
-			// Keep relatives contiguous under one groupKey so cancellation cannot split them.
-			// I/O failures still stop the run and retain completed moves for recovery.
-			OpRequest req = RebalancePlanner::requestForPlan(plan);
+			QString refusal;
+			for (const auto &move : plan.ops)
+			{
+				const auto &item = move.scannedItem;
+				if (!item || !item->headerIdentity || item->headerIdentity->unavailableReason.isEmpty())
+					continue;
+				// Refuse before the runner can create folders or retire Avid databases.
+				refusal = tr("Rebalance needs a fresh scan before it can start.\n\n%1\n%2")
+						  .arg(QDir::toNativeSeparators(move.srcPath), item->headerIdentity->unavailableReason);
+				break;
+			}
+
+			OpRequest req;
+			if (refusal.isEmpty())
+			{
+				req = RebalancePlanner::requestForPlan(plan);
+				if (!plan.ops.isEmpty() && req.items.isEmpty())
+					refusal = tr("The media files are unavailable. Rescan and try again.");
+			}
 
 			const bool cancelled = m_preflight.isCancelled();
-			const bool unavailable = !plan.ops.isEmpty() && req.items.isEmpty();
 
 			// Deliver preparation outcomes on the owner thread so a replacement
 			// can invalidate both queued starts and queued failure messages.
 			QMetaObject::invokeMethod(
-				this, [this, requestId, cancelled, unavailable, req = std::move(req)]() mutable
+				this, [this, requestId, cancelled, refusal = std::move(refusal), req = std::move(req)]() mutable
 				{
 					if (requestId != m_preparationRequestId)
 						return;
 					if (cancelled)
 						emit finished(0, 0, /*cancelled=*/true);
-					else if (unavailable)
-						emit aborted(tr("The media files are unavailable. Rescan and try again."));
+					else if (!refusal.isEmpty())
+						emit aborted(refusal);
 					else
 						startEngineRun(std::move(req)); },
 				Qt::QueuedConnection);

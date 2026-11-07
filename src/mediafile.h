@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bella/matching.h"
 #include "precompute.h"
 #include "mediaduration.h"
 #include "mediaevidence.h"
@@ -14,6 +15,26 @@
 #include <tuple>
 
 // MARK: - MediaFile
+
+enum class MediaPresentation
+{
+	OldScanner,
+	Bella
+};
+
+struct BellaRowValues
+{
+	std::optional<Bella::MatchDimensions> resolution;
+	std::optional<Bella::MatchFrameRate> frameRate;
+	std::optional<Bella::MatchAudioFrequency> sampleRate;
+	Bella::MatchBitDepth bitDepth;
+	Bella::FileTiming timing;
+	// Exact interpreted rates and timecode components prepared by the Bella
+	// adapter. The common table and exporter need no Bella runtime linkage.
+	std::optional<Bella::TimingRate> frameRateValue;
+	std::optional<Bella::TimingRate> sampleRateValue;
+	std::tuple<qint64, int, int, int> durationTimecode{-1, 0, 0, 0};
+};
 
 /// One physical file in the scan inventory, identified by its path.
 /// FileMobId and MasterMobId connect it to Avid records, bins and relatives;
@@ -45,13 +66,13 @@ struct MediaFile
 
 	// MARK: MXF or MDB technical metadata
 
-	QString compression;		   ///< "Avid DNx SQ (DNxHD 145)", "PCM Audio", etc.
-	QString resolution;			   ///< "1920x1080". Video only; audio rows stay blank.
-	QString frameRate;			   ///< Display label: "23.976", "25". Video only; audio rows stay blank.
-	MediaRate frameRateRatio;	   ///< Original video fraction; never recovered from the display label.
-	QString bitDepth;			   ///< "10-bit", "24-bit".
-	int sampleRate = 0;			   ///< Whole-Hz compatibility value; prefer sampleRateRatio when available.
-	MediaRate sampleRateRatio;	   ///< Original audio sampling fraction, separate from duration's unit rate.
+	QString compression;	   ///< "Avid DNx SQ (DNxHD 145)", "PCM Audio", etc.
+	QString resolution;		   ///< "1920x1080". Video only; audio rows stay blank.
+	QString frameRate;		   ///< Display label: "23.976", "25". Video only; audio rows stay blank.
+	MediaRate frameRateRatio;  ///< Original video fraction; never recovered from the display label.
+	QString bitDepth;		   ///< "10-bit", "24-bit".
+	int sampleRate = 0;		   ///< Whole-Hz compatibility value; prefer sampleRateRatio when available.
+	MediaRate sampleRateRatio; ///< Original audio sampling fraction, separate from duration's unit rate.
 	/// File duration with exact source units/rate and provenance. Master and
 	/// sibling lengths may differ; association never depends on equal duration.
 	MediaDuration duration;
@@ -61,6 +82,7 @@ struct MediaFile
 	int timecodeBase = 0;
 	/// Drop-frame numbering (29.97/59.94). The stored frame count stays unchanged.
 	bool dropFrame = false;
+	std::optional<BellaRowValues> bellaValues;
 	QString sourceFilePath; ///< Selected recorded source/import path or URL; distinct from the current location.
 
 	// MARK: Precompute detail (table, CSV and filtering when enabled)
@@ -205,7 +227,7 @@ struct MediaFile
 		return effectCategory.isEmpty() ? QStringLiteral("unknown") : effectCategory;
 	}
 
-	QString precomputeCategoryDisplay() const
+	QString precomputeCategoryDisplay(MediaPresentation presentation = MediaPresentation::OldScanner) const
 	{
 		if (type != Type::Precompute)
 			return {};
@@ -216,13 +238,13 @@ struct MediaFile
 		case PrecomputeCategory::TitlesAndMatteKeys:
 			return QStringLiteral("Titles and Matte Keys");
 		case PrecomputeCategory::Unknown:
-			return QStringLiteral("unknown");
+			return presentation == MediaPresentation::Bella ? QString{} : QStringLiteral("unknown");
 		}
 		return QStringLiteral("unknown");
 	}
 
 	/// Shared Kind label for the table, sorting and CSV.
-	QString kindDisplay() const
+	QString kindDisplay(MediaPresentation presentation = MediaPresentation::OldScanner) const
 	{
 		switch (kind)
 		{
@@ -231,13 +253,13 @@ struct MediaFile
 		case Kind::Video:
 			return QStringLiteral("Video");
 		case Kind::Unknown:
-			return QString{};
+			return presentation == MediaPresentation::Bella ? QStringLiteral("unknown") : QString{};
 		}
 		return QString{};
 	}
 
 	/// Shared Type label for the table and CSV.
-	QString typeDisplay() const
+	QString typeDisplay(MediaPresentation presentation = MediaPresentation::OldScanner) const
 	{
 		switch (type)
 		{
@@ -246,13 +268,18 @@ struct MediaFile
 		case Type::Precompute:
 			return QStringLiteral("Precompute");
 		case Type::Unknown:
-			return QStringLiteral("\u2014");
+			return presentation == MediaPresentation::Bella ? QString{} : QStringLiteral("\u2014");
 		}
 		return QStringLiteral("\u2014");
 	}
 
 	/// Decimal MB for table/CSV display; sorting uses the exact byte count.
-	QString sizeMBDisplay() const { return QString::number(sizeBytes / 1'000'000.0, 'f', 1); }
+	QString sizeMBDisplay(MediaPresentation presentation = MediaPresentation::OldScanner) const
+	{
+		return presentation == MediaPresentation::Bella && sizeBytes < 0
+				   ? QString{}
+				   : QString::number(sizeBytes / 1'000'000.0, 'f', 1);
+	}
 
 	/// Shared Date Created format; blank when the filesystem records no birth time.
 	QString createdDisplay() const
@@ -268,9 +295,61 @@ struct MediaFile
 		return clipName;
 	}
 
+	QString resolutionDisplay() const
+	{
+		if (!bellaValues)
+			return resolution;
+		const auto &dimensions = bellaValues->resolution;
+		return dimensions ? QStringLiteral("%1x%2").arg(dimensions->width).arg(dimensions->height) : QString{};
+	}
+
+	QString frameRateDisplay() const
+	{
+		if (!bellaValues)
+			return frameRate;
+		const auto &rate = bellaValues->frameRateValue;
+		if (!rate)
+			return {};
+		auto label = QString::number(double(rate->numerator) / rate->denominator, 'f', 3);
+		while (label.endsWith(QLatin1Char('0')))
+			label.chop(1);
+		if (label.endsWith(QLatin1Char('.')))
+			label.chop(1);
+		return label;
+	}
+
+	std::optional<quint32> bellaDepthBits() const
+	{
+		if (!bellaValues)
+			return std::nullopt;
+		const auto &depth = bellaValues->bitDepth;
+		switch (depth.representation)
+		{
+		case Bella::MatchDepthRepresentation::Fixed10_6:
+			return 10;
+		case Bella::MatchDepthRepresentation::Fixed12_4:
+			return 12;
+		default:
+			return depth.bits;
+		}
+	}
+
+	QString bitDepthDisplay() const
+	{
+		if (!bellaValues)
+			return bitDepth;
+		const auto bits = bellaDepthBits();
+		return bits ? QStringLiteral("%1-bit").arg(*bits) : QString{};
+	}
+
 	/// Numeric audio rate for presentation; calculations use the original fraction.
 	double sampleRateHz() const
 	{
+		if (bellaValues)
+		{
+			const auto &rate = bellaValues->sampleRateValue;
+			return rate ? double(rate->numerator) / rate->denominator : 0.0;
+		}
 		return sampleRateRatio.valid() ? sampleRateRatio.value() : qMax(0, sampleRate);
 	}
 
@@ -293,6 +372,8 @@ struct MediaFile
 	/// Numeric HH, MM, SS, FF for display and sorting. Hour -1 means unknown.
 	std::tuple<qint64, int, int, int> durationTimecode() const
 	{
+		if (bellaValues)
+			return bellaValues->durationTimecode;
 		const qint64 durationFrames = duration.displayFrames();
 		if (durationFrames <= 0)
 			return {-1, 0, 0, 0};
@@ -343,7 +424,9 @@ struct MediaFile
 		if (hours < 0)
 			return {};
 		const int base = effectiveTimecodeBase();
-		const QChar sep = dropFrame && (base == 30 || base == 60) ? QLatin1Char(';') : QLatin1Char(':');
+		const bool df = bellaValues ? bellaValues->timing.display && bellaValues->timing.display->mode == Bella::TimecodeMode::DropFrame
+									: dropFrame && (base == 30 || base == 60);
+		const QChar sep = df ? QLatin1Char(';') : QLatin1Char(':');
 		// Separate placeholders keep separators from merging with numbered %N markers.
 		return QStringLiteral("%1%2%3%4%5%6%7")
 			.arg(hours, 2, 10, QChar('0'))

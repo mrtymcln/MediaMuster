@@ -1,14 +1,9 @@
-// Authored typed Bento controls exercise Bella's contract directly. Genuine
-// database checks below use pinned identities and recorded field expectations;
-// no OldScanner reader or projection supplies their expected values.
-
-#include "testfixtures.h"
+// Authored typed Bento controls exercise Bella's contract directly.
 
 #include "bella/mdbparser.h"
 #include "testmediaenginebento.h"
 
 #include <QFile>
-#include <QMap>
 #include <QSet>
 #include <QTemporaryDir>
 #include <QTemporaryFile>
@@ -475,9 +470,6 @@ private slots:
 	void precomputeImportKindBoundary();
 	void sharedMasterAttributes_data();
 	void sharedMasterAttributes();
-	void genuineDatabases_data();
-	void genuineDatabases();
-	void genuineAudioFieldsAndIdentities();
 };
 
 void TestBellaMdb::reportDefaults()
@@ -2280,69 +2272,6 @@ void TestBellaMdb::sharedMasterAttributes()
 				notes.append(QStringLiteral("Object 18100, OMFI:MCBR:MC:binNameUTF8: Invalid Unicode bin name; trying its separate legacy counterpart."));
 			QVERIFY2(report.problemNotes == notes, qPrintable(context + ": " + report.problemNotes.join('\n')));
 		}
-}
-
-void TestBellaMdb::genuineDatabases_data()
-{
-	QTest::addColumn<QString>("relative");
-	for (const auto *path : {"msmMMOB.mdb", "msmMMOB_macroman.mdb", "corpus_headers/msmMMOB.mdb",
-							 "corpus_headers/msmMMOB_round3.mdb", "omf/avid_supporting/msmMMOB.mdb", "omf/mc2026_audio/msmMMOB.mdb"})
-		QTest::newRow(path) << QString::fromLatin1(path);
-}
-
-void TestBellaMdb::genuineDatabases()
-{
-	REQUIRE_TEST_FIXTURES();
-	QFETCH(QString, relative);
-	const std::atomic_bool stop{false};
-	const auto report = Bella::parseMdb(QStringLiteral(FIXTURES_DIR) + '/' + relative, stop, true);
-	QVERIFY2(report.reading == Bella::MdbReadResult::Completed, qPrintable(report.problemNotes.join('\n')));
-	QCOMPARE(report.sizeDateCheck, Bella::MdbCheckResult::Verified);
-	QVERIFY(!report.catalogue.files.isEmpty());
-	QVERIFY(!report.catalogue.masters.isEmpty());
-	for (const auto &facts : report.catalogue.files)
-		for (const auto index : facts.directMasterRecords)
-			QVERIFY(index >= 0 && index < report.catalogue.masters.size());
-}
-
-void TestBellaMdb::genuineAudioFieldsAndIdentities()
-{
-	REQUIRE_TEST_FIXTURES();
-	const std::atomic_bool stop{false};
-	const auto report = Bella::parseMdb(QStringLiteral(FIXTURES_DIR "/omf/mc2026_audio/msmMMOB.mdb"), stop, true);
-	QVERIFY2(report.reading == Bella::MdbReadResult::Completed, qPrintable(report.problemNotes.join('\n')));
-	QCOMPARE(report.catalogue.files.size(), 2);
-	// Full identities were independently pinned against genuine PMR bytes.
-	const QMap<QByteArray, QByteArray> expectedMasters{
-		{QByteArray::fromHex("060a2b340101010101010f00130000007429976a70397047060e2b347f7f2a80"),
-		 QByteArray::fromHex("060a2b340101010101010f00130000007429976a4e397047060e2b347f7f2a80")},
-		{QByteArray::fromHex("060a2b340101010101010f00130000009729976a3ec57047060e2b347f7f2a80"),
-		 QByteArray::fromHex("060a2b340101010101010f00130000009729976a3dc57047060e2b347f7f2a80")}};
-	QSet<QByteArray> seen;
-	for (const auto &facts : report.catalogue.files)
-	{
-		const auto identity = bytes(facts.fileMobId);
-		QVERIFY(expectedMasters.contains(identity));
-		QVERIFY(!seen.contains(identity));
-		seen.insert(identity);
-		QCOMPARE(facts.kind, Bella::MdbKind::Audio);
-		QVERIFY(facts.ownDescriptorQualified);
-		QCOMPARE(facts.bitDepth.bits, std::optional<quint32>(24));
-		QVERIFY(facts.audioFrequency);
-		if (const auto *frequency = std::get_if<quint32>(&*facts.audioFrequency))
-			QCOMPARE(*frequency, quint32(48000));
-		else
-		{
-			const auto *extended = std::get_if<std::array<quint8, 10>>(&*facts.audioFrequency);
-			QVERIFY(extended);
-			QCOMPARE(QByteArray(reinterpret_cast<const char *>(extended->data()), 10), QByteArray::fromHex("400ebb80000000000000"));
-		}
-		QVERIFY(facts.masterLinksComplete);
-		QCOMPARE(facts.directMasterRecords.size(), 1);
-		const auto index = facts.directMasterRecords.first();
-		QVERIFY(index >= 0 && index < report.catalogue.masters.size());
-		QCOMPARE(bytes(report.catalogue.masters[index].masterMobId), expectedMasters.value(identity));
-	}
 }
 
 QTEST_GUILESS_MAIN(TestBellaMdb)

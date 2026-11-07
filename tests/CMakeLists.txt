@@ -30,9 +30,12 @@ mediamuster_add_test(tst_diagnostics core
 mediamuster_add_test(tst_mobid core)
 mediamuster_add_test(tst_bellamobid core)
 target_link_libraries(tst_bellamobid PRIVATE mediamuster_bella)
-target_compile_definitions(tst_bellamobid PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 mediamuster_add_test(tst_bellatiming core)
 target_link_libraries(tst_bellatiming PRIVATE mediamuster_bella)
+mediamuster_add_test(tst_bellanaming core)
+target_link_libraries(tst_bellanaming PRIVATE mediamuster_bella)
+mediamuster_add_test(tst_bellamatching core)
+target_link_libraries(tst_bellamatching PRIVATE mediamuster_bella)
 mediamuster_add_test(tst_pathkey core)
 mediamuster_add_test(tst_format core)
 mediamuster_add_test(tst_mediaevidence core)
@@ -46,11 +49,9 @@ mediamuster_add_test(tst_conventions core)
 
 mediamuster_add_test(tst_bellapmr media)
 target_link_libraries(tst_bellapmr PRIVATE mediamuster_bella)
-target_compile_definitions(tst_bellapmr PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
 mediamuster_add_test(tst_bellamdb media)
 target_link_libraries(tst_bellamdb PRIVATE mediamuster_bella)
-target_compile_definitions(tst_bellamdb PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 
 mediamuster_add_test(tst_bellamxf media)
 target_link_libraries(tst_bellamxf PRIVATE mediamuster_bella)
@@ -62,6 +63,8 @@ mediamuster_add_test(tst_bellaaudio media)
 target_link_libraries(tst_bellaaudio PRIVATE mediamuster_bella)
 
 # Discovery and physical-file record model.
+mediamuster_add_test(tst_bellascanner media)
+target_link_libraries(tst_bellascanner PRIVATE mediamuster_bella)
 mediamuster_add_test(tst_mediaenginediscovery media)
 target_link_libraries(tst_mediaenginediscovery PRIVATE mediamuster_oldscanner_core)
 
@@ -236,6 +239,7 @@ mediamuster_add_test(tst_rebalanceplanner operations
 # File-operation engine, coordinator and Rebalance adapter contracts, including
 # failures, retries, cancellation, recovery and Undo.
 mediamuster_add_test(tst_fileoperations operations
+    ${CMAKE_SOURCE_DIR}/src/bellaoperationhandoff.cpp
     ${CMAKE_SOURCE_DIR}/src/rebalancer.cpp
     ${CMAKE_SOURCE_DIR}/src/rebalanceplanner.cpp
     ${CMAKE_SOURCE_DIR}/src/opscanreceipt.cpp
@@ -251,7 +255,7 @@ mediamuster_add_test(tst_fileoperations operations
     ${CMAKE_SOURCE_DIR}/src/diagnostics.cpp
 )
 target_compile_definitions(tst_fileoperations PRIVATE FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
-target_link_libraries(tst_fileoperations PRIVATE mediamuster_oldscanner_core)
+target_link_libraries(tst_fileoperations PRIVATE mediamuster_oldscanner_core mediamuster_bella)
 target_sources(tst_fileoperations PRIVATE ${CMAKE_SOURCE_DIR}/src/optrash.cpp)
 if(APPLE)
     target_sources(tst_fileoperations PRIVATE ${CMAKE_SOURCE_DIR}/src/optrash_mac.mm)
@@ -312,6 +316,29 @@ elseif(WIN32)
     target_link_libraries(tst_operationui PRIVATE secur32)
 endif()
 set_tests_properties(tst_operationui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+if(MEDIAMUSTER_BELLA_PREVIEW)
+    mediamuster_add_test(tst_bellapreviewui ui ${_operation_ui_sources} ${_bella_preview_sources})
+    target_include_directories(tst_bellapreviewui PRIVATE ${CMAKE_BINARY_DIR})
+    target_compile_definitions(tst_bellapreviewui PRIVATE MEDIAMUSTER_BELLA_PREVIEW)
+    target_link_libraries(tst_bellapreviewui PRIVATE Qt6::Widgets Qt6::Gui Qt6::Concurrent mediamuster_oldscanner mediamuster_bella)
+    mediamuster_link_native_operations(tst_bellapreviewui)
+    if(APPLE)
+        target_link_libraries(tst_bellapreviewui PRIVATE "-framework AppKit")
+    elseif(WIN32)
+        target_link_libraries(tst_bellapreviewui PRIVATE secur32)
+    endif()
+    set_tests_properties(tst_bellapreviewui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+    mediamuster_add_test(tst_bellapresentation ui
+        ${CMAKE_SOURCE_DIR}/src/bellaoperationhandoff.cpp
+        ${CMAKE_SOURCE_DIR}/src/bellarowpresentation.cpp
+        ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp
+        ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
+        ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
+    )
+    target_link_libraries(tst_bellapresentation PRIVATE mediamuster_bella mediamuster_oldscanner_core)
+endif()
 
 # Model transfer receipts use the same native volume identity as operations.
 foreach(_model_test tst_mediatablemodel tst_mediafilterproxy tst_precomputefilterdialog tst_binfilterdialog)
