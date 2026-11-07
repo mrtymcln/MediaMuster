@@ -1,4 +1,4 @@
-// Prepares exact media roots, owns the background scan and forwards results.
+// Prepares exact media roots, owns a legacy background scan and forwards results.
 // MediaEngine owns source reading, matching and temporary working scan evidence.
 #include "oldscanner/oldscanner.h"
 #include "oldscanner/mediaengine/scanengine.h"

@@ -2,12 +2,14 @@
 
 ## Start here
 
-- [Project Bella](../Project%20Bella/README.md): fresh scanner and parser effort;
-  finish requirements before implementing new C++17 / Qt 6.5.3 code. The current
-  app uses [OldScanner](../src/oldscanner/README.md) until an explicitly approved
-  switch to Bella. Bin Filter stays unchanged.
-- [Project Copland](../Project%20Copland/README.md): active V1 scope, confirmed
-  decisions and remaining work. Proposals and open questions are not approval.
+- [Project Bella](../Project%20Bella/README.md): requirements and decision history
+  for the scanner/parser used by the current macOS and Windows app. The
+  [implementation map](../src/bella/README.md) covers its readers, matcher,
+  organiser and app integration. [OldScanner](../src/oldscanner/README.md) remains
+  for legacy tests/probes, shared admission and live operation readers; Bin Filter
+  continues using its existing AVB implementation.
+- [Project Copland](../Project%20Copland/README.md): earlier V1 scope and confirmed
+  decisions, with later Bella revisions identified. Proposals are not approval.
 - [How MediaMuster works](current-behaviour.md): current behaviour in plain English,
   including scan scope, labels, selection, file operations and recovery.
 - [Architecture map](architecture.md): who does what in the code and where to look.
@@ -17,8 +19,9 @@
 These are the starting points for current behaviour and responsibilities. Update
 them when those behaviours change. Comments beside code should explain the current
 rule and its reason; dated investigations belong in the records below.
-Copland's confirmed decisions take precedence where they revise earlier Canon
-requirements. Use the behaviour guide and implementation to check what is built.
+Copland revises earlier Canon requirements, and the later Bella decisions govern
+the Bella scanner where they revise Copland. Use the behaviour guide and
+implementation to check what is built; dated reports retain their original scope.
 
 ## Technical references and validation
 
@@ -30,7 +33,8 @@ requirements. Use the behaviour guide and implementation to check what is built.
   Copy/Move/Delete/Rebalance, fresh-process Undo and interrupted-job recovery.
 - [Native file-operation validation](file-operations-native-api-validation.md): tested behaviour and outstanding platform checks.
 - [Parser compatibility](parser-compatibility.md) and [engine terminology](media-engine.md).
-- [MediaEngine cleanup verification](media-engine-cleanup-2026-10-11.md): sole-engine integration and the genuine MPEG OMF ownership correction.
+- [11 October MediaEngine cleanup verification](media-engine-cleanup-2026-10-11.md):
+  the then-sole-engine integration and genuine MPEG OMF ownership correction.
 - [AVB parser](avb-parser.md) and [AVB error examples](avb-error-examples.md).
 - [Usage-code identification](usage-code-identification.md): provenance for Avid classification rules.
 - [PMR reader evidence](../Project%20Canon/fresh-pmr-reader-2026-10-03.md): framing, text and index coverage.
@@ -258,7 +262,8 @@ requirements. Use the behaviour guide and implementation to check what is built.
   token-boundary rules and original Clip Name.
 - [PMR Project display](reviews/2026-10-18-bella-pmr/project-display.md): the actual
   Project cache, chooser, encoding conversion and Qt drawing path.
-- [Precompute details](effect-details-preview.md): classification, display and filter design.
+- [Precompute details](effect-details-preview.md): current classification, display
+  and filter behaviour, followed by dated validation records.
 
 Validation records describe the source revision, platform and scenarios actually
 checked. They do not establish that a later build or another storage system passes.

@@ -1,6 +1,7 @@
 #pragma once
 
-// Returns working metadata and source receipts; retains no scan state.
+// Legacy scan API for regression tests and the read-only comparison probe.
+// Returns working metadata and source receipts; retains no scan state itself.
 // The coordinator handles discovery, scheduling, matching and selection.
 
 #include "oldscanner/mediaengine/scancoordinator.h"

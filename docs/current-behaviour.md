@@ -5,8 +5,14 @@ files from that inventory, and copies, moves, trashes or reorganises them.
 This guide describes the current implementation. It is not a record of proposed
 features or a claim that every storage system has been tested.
 
-For the active V1 scope and confirmed decisions, see
-[Project Copland](../Project%20Copland/README.md). For code responsibilities, see
+The macOS and Windows app uses Bella for media scanning. The retained OldScanner
+readers still perform operation-time Avid identity checks, and the separate AVB
+reader supplies Bin Filter references. The optional MediaMuster Bella Test build
+uses the same scanner and presentation with file operations disabled.
+
+For confirmed requirements and their history, see
+[Project Bella](../Project%20Bella/README.md) and the earlier
+[Copland decisions](../Project%20Copland/README.md). For code responsibilities, see
 the [architecture map](architecture.md). The
 [18 October workflow comparison](../Project%20Copland/local-workflow-comparison-2026-10-18.md)
 and [disposable file-operation check](../Project%20Copland/file-operation-acceptance-2026-10-18.md)
@@ -15,7 +21,7 @@ records further platform checks and their limits.
 
 ## Starting the app
 
-The app opens its main window, finds storage locations and checks for unfinished
+The normal app opens its main window, finds storage locations and checks for unfinished
 file operations. Use Refresh Volumes to update the drive list after startup.
 You start a media scan with the scan controls.
 
@@ -61,22 +67,22 @@ The Console and diagnostic log use the same bare category labels:
 | `app` | Startup, crashes, selection, CSV export, revealing files and background-task problems |
 | `volumes` | Finding, adding and refreshing storage locations |
 | `scanner` | Scanning, cancellation and completion notices |
-| `mediaengine` | Fresh-reader diagnostics, retained metadata conflicts and scoped reconciliation notices |
 | `operations` | File operations, Undo and startup recovery |
 | `rebalance` | Rebalance and its automatic rescan |
 | `filters` | Bin and Precompute filters |
 
-The diagnostic log also has `avb`, `pmr`, `mdb`, `mxf`, `omf` and `metadata`
-categories for parser and metadata details. The live MediaEngine scan forwards source
-reader and matching diagnostics to the Console under `mediaengine`. Neither output adds
-a `console/` or `mediamuster.` prefix to these labels. The category identifies the
-source of a message; its severity is separate.
+The diagnostic log additionally receives AVB parse failures under `avb` and Qt
+messages from other categories. Bella sends scan problems and source paths under
+`scanner`; operation-time reader failures are reported through `operations`.
+The retained OldScanner facade uses `mediaengine` for its reader/reconciliation
+warnings when exercised by legacy tests or tools. Neither output adds a
+`console/` or `mediamuster.` prefix. The category identifies a message's source;
+its severity is separate.
 
-OMF support, precompute classification/filtering and file-operation Undo are
+OMF support, precompute details/filtering and file-operation Undo are
 controlled independently by compile-time flags in `src/featureflags.h`. This build
 enables OmfScan, precompute details and Undo by default. Change a flag and rebuild
-to enable it; these controls do not
-appear in the Debug menu. Rendered media remains in ordinary scan results when
+to change its availability; these controls do not appear in the Debug menu. Rendered media remains in ordinary scan results when
 precompute details and filtering are disabled.
 
 The Debug menu contains **Fusion style** (off at launch). The menu has its own
@@ -151,11 +157,10 @@ are ignored by sidebar drops. Adding or dropping a location does not start a sca
 Resolved aliases of an accepted tree share one sidebar entry. Adding an OMF tree
 does not enable OMF reading when that build setting is off.
 
-The scan worker prepares each supplied location into exact MXF or OMFI roots
-once, keeps their location context for the resulting rows, and passes those exact
-roots to discovery. Discovery does not search arbitrary parent folders for more
-trees. Internal rescans after operations retain their known scope, including a
-Rebalance MXF root; they do not go through the Add Folder/drop admission gate.
+Discovery resolves each supplied location into its admitted MXF or OMFI scope;
+it does not search arbitrary parent folders for more trees. Internal rescans after
+operations retain their known scope, including a Rebalance MXF root; they do not
+go through the Add Folder/drop admission gate.
 
 | Media family | Recognised layout and files |
 | --- | --- |
@@ -188,107 +193,71 @@ The scanner combines information from three places:
 | Avid's folder databases | The PMR file index connects filenames to Avid identifiers. MDB records provide clip relationships, names and technical details. Project information can also come from these databases. |
 | Metadata inside the media file | Independent technical details, identifiers and other recorded information checked against matching database observations during scanning. |
 
-The live scanner uses MediaEngine discovery, PMR/MDB/MXF/legacy readers and
-metadata selection engine. It reads every `.pmr` and `.mdb` in admitted folders
-first, regardless of basename. It reads a media header when there is no usable
-database match or required table metadata is missing or conflicting. A deliberately
-unopened header keeps a `NotRead` receipt and the scheduling reason. Empty or malformed
-files remain physical inventory rows.
+Bella reads the discovered `.pmr` and `.mdb` files before matching media,
+regardless of database basename. A usable PMR filename/FileMobId mapping and a
+safely matched MDB file record with a qualified own descriptor allow its header
+to remain unopened. Otherwise Bella can read the required media header. Missing
+individual display fields or a missing master alone do not request a read.
+Source Path is excluded from Bella, and missing Original Bin does not independently
+request a header. A header-provided FileMobId can be matched against the already
+loaded MDB catalogue. Empty or malformed media remains a physical inventory row.
 
-Source Path is a requested field: a missing, empty, unreadable or unresolved
-applicable database path triggers the remaining header fallback. A usable database
-path does not force a header read just to obtain its preferred value. Current
-readers establish no Source Path inapplicability rule; missing import metadata
-therefore remains unavailable rather than being assumed inapplicable.
+The implemented source priorities are:
 
-For Original Bin, a missing, empty or unreadable database name requests fallback
-through the legacy OMF reader path. That missing name alone does not open an MXF
-header; a bin-name conflict or another existing scan requirement still can. A
-usable MDB name takes priority among the finally selected master's admitted
-details. Legacy OMF headers can supply recorded names through their linked master;
-the current MXF reader has no verified Original Bin mapping. Exhausted values
-remain blank, and unestablished coverage remains unknown rather than proving
-absence or inapplicability. No loaded-bin metadata is used to fill the cell.
+| Value | Preferred source and fallback |
+| --- | --- |
+| FileMobId | Usable local PMR match, then an eligible already-read own header. Conflicting PMR identities do not select a winner. |
+| MasterMobId | Explicit PMR association, then qualified direct MDB associations, then a compatible already-read header. |
+| Project | PMR, matching MDB file, eligible already-read header. |
+| Clip Name, Type and optional Precompute Category | The selected MDB master, then the same selected master in a compatible already-read header. |
+| Original Bin | The selected MDB master, then eligible same-master OMF header information. MXF header fallback supplies no Original Bin. |
+| Kind, Resolution, Frame Rate, Sample Rate and Bit Depth | Qualified matching MDB facts, then compatible already-read header facts. |
+| Compression | Eligible already-read header interpretation, then MDB interpretation. |
+| Duration and its display clock | The coherent MDB timing answer when a qualified own descriptor is available; otherwise the eligible header timing answer. Missing MDB Duration is not repaired from an isolated header value. |
 
-PMR/MDB/MXF/OMF reading storage and the working scan history are temporary.
-Databases are buffered in RAM while parsing. Observations, original bytes,
-alternatives and source receipts support matching and validation while the scanner
-works. Before rows reach the table, the app keeps the selected values, a fixed
-checklist of metadata status and the facts needed for operation checks, then
-discards the working scan result. Ordinary rows keep no observation history or
-scan owner. Reconciliation notices can retain their own source diagnostics.
-Loaded AVB bins retain resolved file identities and load warnings; their parsed
-graphs are temporary. Known recording payloads are skipped rather than loaded as
-metadata. Readers do not invent meanings for unknown properties.
+Conflicting values within the selected priority level stay unresolved rather than
+being replaced by a lower-priority value. Unknown clip names stay blank; filenames
+are not substitutes. Effect and Effect Category derive together from final Type
+and Clip Name when precompute details are enabled. Loaded bins supply filtering
+references only.
 
-When preparing the compact status record, a checked Audio result without an
-audio/video disagreement marks blank picture Resolution as not applicable.
-Conflicting Kind stays unknown even when the existing preference selects Audio.
-Unknown or unqualified Kind cannot inherit a not-applicable claim. Actual Present
-or Unreadable Resolution results keep their existing facts, and only applicability
-is derived for otherwise unavailable Resolution. The cell values and source-read
-decisions are unchanged; temporary reader notes are not rewritten.
+PMR matching uses the exact physical filename. MDB joins use complete file
+identities and qualified master associations. A master does not supply another
+file's descriptor. A source detected as changed is excluded; a changed physical
+media file requires a rescan before operations can use it.
 
-PMR association prefers an exact filename. A normalized spelling is a fallback only
-when it identifies one physical location; contradictory or ambiguous identities
-exclude the candidate metadata while preserving its observations for scan-time
-validation. MDB file facts
-join through complete file identities. Master-only editorial facts can join through
-an established master association, but cannot supply another file's descriptor.
-A source that changes while being read is excluded from selection; a changed media
-file cannot be made trustworthy by falling back to a database.
+Bella's first-release MDB/embedded OMF baseline is the supported legacy OMF1/Bento
+1.0 layout. Generic OMF2/Bento 2.0 reading remains in the retained OldScanner
+readers. Native WAVE/AIFF information is handled separately from embedded OMF.
+This describes implemented format scope, not certification of every file in
+those families.
 
-Technical fields prefer coherent file-owned header observations, then qualified
-matching MDB values. The editorial priorities are Clip Name: header, then MDB;
-Project: PMR, then MDB, then header; Original Bin: MDB, then header. Loaded bins
-supply filtering references only. The shared policy
-lists named source groups from first choice to final fallback. Sources in one
-group have equal preference; omitted sources cannot supply
-the selected value. Incompatible values in the preferred available group leave
-the cell blank with a Console explanation. Lower-priority editorial alternatives
-remain available during scanning without producing a warning for every resolved
-difference. Their histories do not reach the table. An
-unreadable header can use matching database values with freshness recorded as
-unknown; a raw PMR modification word is not treated as a proven filesystem timestamp.
-Unknown clip names stay blank; filenames are not substitutes.
+Source buffers and parser workspace are temporary. Bella keeps compact database
+catalogues through matching, then publishes owned selected values, physical facts,
+reference status and a compact operation-safety instruction. Ordinary rows retain
+no parsed graph, raw source bytes or observation history. Bella does not populate
+the OldScanner per-field metadata checklist or retain its explanation history.
+Loaded AVB bins likewise keep resolved identities and warnings after their parsed
+graphs are released. Readers skip recording payloads and do not invent meanings
+for unknown properties.
 
-For unlabelled text, valid UTF-8 may supply a displayed value as an explicit inference.
-Legacy OMF/MDB text may fall back to inferred MacRoman when UTF-8 is invalid. The
-original bytes and inferred encoding remain available during interpretation. The
-row checklist can retain a selected value's recorded or derived basis without
-keeping those bytes or an explanation history. This does not relabel a whole file
-set as having one proven encoding.
+Bella uses explicit field-specific text decoding. Legacy PMR text uses MacRoman;
+version-16 PMR filenames use UTF-8. Supported MDB/OMF Unicode fields keep their
+recorded Unicode encoding, while the supported legacy text paths use MacRoman.
+The PMR modification word is ignored rather than treated as a filesystem time.
 
-Every physical row receives a scan-session `KelpieId`. Copies with matching metadata
-still have separate rows and IDs. The five-field RAM scan receipt records path,
-volume identifier, modification timestamp, FileMobId and one selected MasterMobId.
-Operation requests carry these claims and separately preserve which
-Avid identities were established in a readable header. Scoped database reference
-issues distinguish local absence, matches elsewhere and unmatched MDB identities.
-An unmatched identity alone does not prove a missing physical file. Current checks
-and limits are recorded in the [live connection report](../Project%20Canon/live-connection-2026-10-04.md).
+Every physical row receives a scan-session `KelpieId`; physical copies remain
+separate rows even when their Avid IDs match. The operation handoff retains path,
+volume identifier, modification time and selected IDs. Bella additionally supplies
+one instruction: perform physical checks, verify a captured FileMobId, or require
+a rescan after a detected change or unconfirmed file presence. It captures no
+header MasterMobId verification list. Operation-time checks still apply to all
+files, including physical-only rows.
 
-The scanner prepares display values before passing rows to the table. The table
-stores those values without a second metadata-selection pass. Each row's status
-checklist distinguishes availability, applicability, agreement and freshness; it
-contains no metadata values, explanation strings or source owners. A temporary
-lookup supplies header outcomes and safety flags during preparation, then goes
-away with the working scan. No memory or scan-time saving has been measured.
-
-MasterMobId selection prefers an already-read media header, then matching MDB,
-then PMR. This does not open every indexed file merely to obtain a preferred
-header value. A unique preferred ID wins; conflicting IDs at that preferred rank
-leave it blank. Missing selection can trigger the existing required-field header
-fallback. Lower-priority disagreement retains status without forcing a read when
-the selected ID is usable.
-
-MDB/OMF/MXF projectors keep master details in temporary groups. The scanner chooses
-the association before admitting the selected master's name, bin, classification
-and other master-owned details. Same-ID groups in a header must also belong to the
-file's qualified source/object context. File/package-owned project, origin,
-descriptor duration/rates and timecode remain separate. Each field keeps its own
-source preference within those admitted facts; effects derive from final Clip Name
-and Type. The temporary groups are released with the working scan.
+One background organiser coordinates a fresh reader pool per scan, with at most
+four source jobs outstanding across PMR, MDB and required media headers. Parser
+results are selected by source rules, independently of completion order. The
+readers drain before the scan is delivered or another scan starts.
 
 `FileMobId` identifies the file media object, while `MasterMobId` identifies its
 associated master object. Related video and audio files can share a MasterMobId
@@ -302,21 +271,22 @@ keeps all files gathered so far and metadata from completed, qualified checks.
 Unfinished or unchecked work remains unavailable.
 While discovering folders, the progress dialog shows **Finding media files…**
 and the location being checked. Once source files are known, it reports the
-database or media file being processed. After observing Cancel, the worker stops
-starting new reads and freshness checks. It finishes in-memory matching from
-captured, checked results, without opening or checking more sources. An
-operating-system request already in progress may delay stopping, and preparing
-the retained table results may require finishing work after Cancel.
+database or media stage and the current source path. After observing Cancel, the
+organiser stops submitting new reads and physical rechecks, collects outstanding
+reader replies and prepares the retained inventory. An operating-system request
+already in progress can delay stopping, and formatting retained rows can require
+further work after Cancel.
 
 Cancel remains effective during row formatting and while prepared results are
 queued for delivery. The scanner's owning thread accepts the results for the
 table, freezes the outcome and reports it before publishing rows. Console says
-**Scan cancelled by user; results are incomplete** for a cancelled scan; retained
-issues cannot claim complete scope. A request after acceptance is too late and
-does not produce a misleading Cancel requested message. The temporary scan and
-its histories are released before the compact-row handoff.
-The Console records root lookup, discovery/source preparation and total worker
-times separately so shared-storage delays can be located.
+**Scan cancelled by user; results are incomplete** for a cancelled scan, even if
+folder discovery finished before cancellation. A request after acceptance is too late and
+does not produce a Cancel requested message. The temporary scan is released before
+the row handoff. Closing or quitting during a scan requests cancellation and keeps
+the window responsive until the organiser and readers have stopped safely.
+The Console records the total worker time including row formatting. A failed
+scan reports failure and leaves the cleared inventory empty.
 Loaded bins remain available after a rescan; they do not fill missing row metadata.
 
 ## Reading the labels
@@ -326,8 +296,8 @@ have no database reference.
 
 | Label | What it means in this app |
 | --- | --- |
-| Listed | An unchanged local PMR establishes an unambiguous compatible filename/identity reference, or an unchanged same-folder MDB has a qualified entry matching the physical FileMobId. An individually validated reference can count even when unrelated parts of that database are incomplete. |
-| No Reference | A completed local PMR or MDB reference check found no match, and no valid local reference was established. This result takes precedence over a failed sibling database; that problem still goes to Console. This is not a test of whether a sequence uses the file. |
+| Listed | An eligible local PMR entry matches the exact physical filename, or an eligible same-folder MDB file entry matches the selected FileMobId. Positive reference detection is separate from metadata usability and does not certify database freshness. |
+| No Reference | Verified complete local PMR or MDB reference coverage found no match, and no valid local reference was established. This result takes precedence over a failed sibling database; that problem still goes to Console. This is not a test of whether a sequence uses the file. |
 | No Database | No local PMR or MDB is available, or the local reference checks remain unresolved. Missing databases and unresolved checks retain distinct internal states while sharing this label and filter. |
 | No project | No project name was recovered for the file. This does not mean that the file is unused. |
 | Non-Portable | The filename contains a character outside MediaMuster's allowed character set. The app does not rename it automatically. |
@@ -340,13 +310,15 @@ that a file is absent. A nonempty MDB catalogue requires a usable physical
 FileMobId for this check; a verified empty file catalogue can establish absence
 without one. A recovered name, project or matching metadata from another folder
 does not establish a local reference. These results do not certify freshness or
-complete metadata, and detected source or physical-file changes exclude proof.
+complete metadata. Detected source or physical-file changes exclude identity-based
+positive and negative reference evidence; a completed directory listing can still
+establish that no local database was present.
 
-Reference status does not change metadata eligibility or header scheduling. In
-particular, a validated entry in a partial PMR does not supply its metadata or
-permit a header skip. The existing complete PMR/MDB match and required-field
-checks still control that decision. No Database and No Reference appear as
-`true`/`false` columns after Location, before the IDs, in both the table and CSV.
+Reference status does not itself authorize metadata or a header skip. A PMR entry
+can establish a positive local reference even when its set cannot supply metadata.
+The usable PMR identity and qualified MDB descriptor checks control header
+scheduling. No Database and No Reference appear as `true`/`false` columns after
+File Path, before the IDs, in both the table and CSV.
 Each has its own view, showing exactly the rows whose flag is true. Both flags
 derive from the compact internal status; the CSV no longer has Database Status.
 False No Reference on an unresolved row does not establish that the file is listed.
@@ -361,18 +333,17 @@ to delete.
 
 The default column order is Clip Name, Project, Bin, Kind, Duration, Size (MB),
 Compression, Resolution, Frame Rate, Sample Rate, Bit Depth, Type, Date Created, Filename,
-Source Path, Location, FileMobId, MasterMobId and KelpieId, followed by OmfScan
+File Path, No Database, No Reference, FileMobId, MasterMobId and KelpieId, followed by OmfScan
 when its flag is enabled. MasterMobId displays the one selected association,
 or stays blank when none can be selected.
 Compression is the readable format name, such as `Avid DNx HQX [DNxHD 175x]`.
-The selected property is `MediaProperty::Compression` and the row value is
-`MediaFile::compression`. `CompressionLabel` remains separate internal coding
-evidence used during scanning; recorded property names and raw observation histories
-remain temporary.
+Bella prepares the readable name from qualified descriptor and coding facts; the
+row keeps the resulting name rather than raw properties or observation histories.
 OmfScan is true for admitted legacy-folder media, including AIF/WAV; it is false
 for MXF-family media. Type is always visible. Enabling
-Precomputes inserts Precompute Category, Effect Category, Effect and Effect
-Sequence after Type and exposes the Filter Precomputes dialog.
+Precomputes inserts Precompute Category, Effect Category and Effect after Type
+and exposes the Filter Precomputes dialog. Source Path and Effect Sequence are
+absent from Bella table and CSV output.
 
 Columns start at their default widths each session. Dragging or resizing them
 affects the current window only; scans leave that layout alone. Nothing is saved.
@@ -383,18 +354,19 @@ or exported.
 
 The table and CSV include **Sample Rate** (for example, `48 kHz`) and
 **Bit Depth** (for example, `24-bit`) beside Frame Rate. Sample Rate describes audio;
-Bit Depth also shows established video depths. Sample Format is a temporary
-interpretation input for Compression, with no separate copy on each table row or
-table/CSV column. Unknown values, including Kind, stay blank.
+Bit Depth also shows established video depths. There is no standalone Sample
+Format string or column; Bella retains a compact bit-depth representation such
+as integer or float for rendering and interpretation. Unknown Kind displays `unknown`; unknown Type and Precompute
+Category stay blank, as do unavailable technical values.
 
 **Resolution** shows the visible picture raster, using valid descriptor crops and
 format-correct field handling. Recorded display geometry can remove storage padding
 (1920×1088 to 1920×1080). Verified Avid small-proxy configurations use their actual
 stored dimensions, such as 480×270 or 320×180, with the inference made during scanning.
-Unexplained invalid geometry stays unresolved and can trigger the database-first
-header fallback. Padding is never trimmed by a universal height rule. Stored,
-sampled and display rectangles, offsets and pixel aspect are interpretation inputs;
-the row keeps its selected resolution and status rather than those histories. See
+Unexplained invalid geometry stays unresolved; it does not independently trigger
+a header read. Padding is never trimmed by a universal height rule. Stored,
+sampled and display rectangles and offsets are interpretation inputs;
+the row keeps its selected dimensions rather than those histories. See
 [the geometry policy and proof](../Project%20Canon/visible-resolution-2026-10-07.md).
 
 **Duration** describes the selected physical file. Readers retain the original
@@ -406,15 +378,16 @@ values for both database and header results, including with OMF support disabled
 The Frame Rate and Sample Rate display labels are separate from the original
 fractions retained on each file, even when no duration is available. An MXF audio
 sampling rate is retained separately from its descriptor's edit-unit rate; those
-clocks need not be identical. Legacy AIFF rates retain their original ten-byte
-encoding; an exactly representable fraction is also kept. An unsupported fraction
+clocks need not be identical. AIFF rates from MDB/OMF summaries retain their original
+ten-byte encoding; an exactly representable fraction is also kept. Native AIFF
+rates are decoded to a supported fraction before matching. An unsupported fraction
 does not become an exact duration rate merely by rounding it to whole Hz.
 
 The selected descriptor/file-owned length describes the physical media. A master
 reference does not establish complete stored essence
-length. Duration provenance remains attached to the value. Equivalent fractions
-do not create false conflicts. A missing or conflicting display clock leaves the
-source measurement intact and the timecode blank.
+length. The selected exact measurement and display clock remain separate.
+Equivalent duration fractions do not create false conflicts. A missing or
+conflicting display clock leaves the source measurement intact and the timecode blank.
 
 A title/image can store one frame while its master holds it for minutes. A master
 can span several shorter files, and stored audio can extend past its reference.
@@ -434,16 +407,17 @@ counts, fractions or original rate bytes.
 Duration sorts by the displayed hours, minutes, seconds and frame number,
 including across different frame rates. Colons and semicolons do not affect
 the order. Blank durations come first when sorting upwards and last downwards.
+With a usable display clock, a known zero duration displays zero; a positive
+duration that rounds to zero also remains known rather than being shown as missing.
 
 The filter tabs are All, Video, Audio, No Database, No Reference, Non-Portable and Quarantined.
 Enabling precompute features also adds Precomputes. Project selection, including
 **No project**, is available in the sidebar. Database membership remains visible
 in the two flag columns and their tooltips, as well as Project tooltips. All enabled
 tabs remain visible at zero; feature-disabled Precomputes stays hidden. There is
-no Show All Filter Tabs override. The row retains selected identifiers and compact
-status notes, including the selected source of Clip Name. Invalid identities are
-examined during scanning and by operation safety checks; no unused invalid-ID flag
-or duplicate clip-name source tag is stored in the row.
+no Show All Filter Tabs override. Rows retain selected identifiers and the compact
+operation instruction. Invalid identities are examined during parsing and operation
+checks; Bella rows do not retain a per-field source/explanation checklist.
 
 The table's filters work on the current inventory. They do not modify disk files.
 Project, tab, search, bin and enabled precompute filters combine: a row must pass
@@ -532,21 +506,18 @@ waits until saving finishes; Console confirms the row count and destination afte
 a successful file commit, or reports failure. No background CSV export remains
 running when the user can start another scan.
 
-CSV retains its explicit export order, with Location followed by No Database,
+CSV retains its explicit export order, with File Path followed by No Database,
 No Reference, FileMobId, MasterMobId, KelpieId and OmfScan. Both database flags use
-unquoted lowercase `true`/`false`. Optional precompute details follow
-the table's setting: 22 columns without them and 26 with them. Disabled optional columns are absent,
-not exported as blank fields. CSV always includes OmfScan, even when its table
-column is hidden.
+unquoted lowercase `true`/`false`. Bella CSV has 21 columns without precompute
+details and 24 with them. Disabled optional columns are absent rather than exported
+as blank fields. CSV always includes OmfScan, even when its table column is hidden.
 Moving table columns does not change export order. The exporter maintains its
 own explicit column list; a UI test compares its headings against the table's
-visual order with precompute details enabled and disabled. Location is the managed
-media file's current full path; Source Path is the selected recorded source/import
-path or URL. The table, tooltip, CSV and Search use that recorded spelling without
-extracting or separately retaining its basename. Search also matches directory
-text and filenames within it. Conflicting preferred paths remain blank under the
-normal selector. Volume is not exported separately. Source Container and Imported
-are temporary engine facts, with no separate retained row values or CSV columns.
+visual order with precompute details enabled and disabled. File Path is the
+managed media file's current full path. Search matches that physical path and the
+other retained searchable fields; Bella does not retain or search a recorded
+source/import path. Volume is not exported separately. Source Container and
+Imported have no separate retained row values or CSV columns.
 
 ## Copy, Move and Delete
 
@@ -599,14 +570,13 @@ compare the complete source and destination contents after copying.
 Before acting on a scanned row, operation checks compare the applicable scan path,
 volume identifier and modification time. Scanning captures the necessary safety
 facts in a small record per row. If that record was never captured, the operation
-refuses the row and asks for a rescan. A captured record with unknown Avid identities
-still follows the existing checks. Header-established file/master identities
-are checked with the fresh MediaEngine MXF or legacy reader through the opened source.
-Database-only master associations remain retained claims; they are not imposed on a
-header that did not establish them. A changed or contradictory header cannot be used
-to authorize a stale scan record. When scanning deliberately skipped a header, the
-selected database file identity must be confirmed in the media file before acting.
-An attempted but unreadable header does not count as deliberately skipped. These
+refuses the row and asks for a rescan. Bella rows with a qualified FileMobId require
+its confirmation by the retained MXF or legacy reader through the opened source
+handle. When no usable ID was captured, the explicit physical-only instruction
+still requires the ordinary live filesystem checks. A detected change or
+unconfirmed physical presence requires a rescan. Bella does not impose the
+selected MasterMobId on the header. Retained OldScanner rows can additionally
+carry captured header master IDs, which the same runner corroborates. These
 scan checks remain separate from the native
 operation-time file/volume/size/time safeguards. They are not proof of byte equality;
 see [file-operation checks](../Project%20Canon/file-operation-checks.md).
@@ -633,11 +603,12 @@ their existing rescan/refresh paths.
 Every file job requires a writable journal: a saved record of its plan, file
 identities and progress. If the journal cannot be written, a new job cannot start.
 The current beta build reads and writes schema-4 journals. Older beta journals
-are unsupported and are not migrated. New jobs retain their normal recovery and
-Undo checks. Ordinary reporting carries scalar `masterMobId`; the separate
-header safety record retains every captured header ID, each of which must still
-be corroborated when the file is opened. Database-only master associations are
-not imposed on the header. Operation mechanism, Trash provider and
+are unsupported and are not migrated. Schema-4 folder-ledger records from earlier
+builds remain readable and are discarded; new jobs do not write that unused ledger.
+Resume reloads execution facts from the saved journal rather than retaining a
+second item payload in the recovery UI. Ordinary reporting carries scalar
+`masterMobId`; the separate captured safety IDs follow the checks above.
+Operation mechanism, Trash provider and
 Undo action are saved as explicit names; unset choices use
 `"none"`. Unknown names are rejected when loading.
 

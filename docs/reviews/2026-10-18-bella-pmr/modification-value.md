@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 18 October 2026. The PMR modification value, labelled **DTM** by Avid's reader,
 helps Media Composer decide whether to reuse cached media information or scan
 the media file again. The inspected current Mac MXF writer stores Unix filesystem
@@ -99,10 +102,10 @@ require converting DTM into a date or retaining it in final results.
 
 Current MediaMuster reads the raw number temporarily but does not select it as
 a timestamp. Its dates and operation checks use the physical filesystem's
-information. See [PMR reading](../../../src/oldscanner/mediaengine/pmrreader.cpp#L305),
-[projection](../../../src/oldscanner/mediaengine/pmrprojection.cpp#L40),
-[date selection](../../../src/oldscanner/mediaengine/metadataselectionpolicy.cpp#L164) and
-[operation checks](../../../src/opfile.cpp#L145).
+information. See [PMR reading](../../../src/oldscanner/mediaengine/pmrreader.cpp),
+[projection](../../../src/oldscanner/mediaengine/pmrprojection.cpp),
+[date selection](../../../src/oldscanner/mediaengine/metadataselectionpolicy.cpp) and
+[operation checks](../../../src/opfile.cpp).
 
 **User decision, 18 October 2026:** Bella's scanner and related parsers will
 ignore the PMR modification value. Skip its four bytes with bounds checking to
@@ -171,7 +174,7 @@ every internal storage detail. Current MediaMuster formats dotted hexadecimal
 strings; compact binary storage has not been implemented for Bella.
 
 There is a specific implementation check to resolve when writing the new reader:
-the current [database-ID helper](../../../src/oldscanner/mediaengine/projection.cpp#L59)
+the current [database-ID helper](../../../src/oldscanner/mediaengine/projection.cpp)
 adjusts 8/12-byte big-endian values but passes 32-byte values through unchanged.
 Native `Read_AAFMobID`, libame `0x235bf0`, instead reads the material's numeric
 fields through the stream's scalar readers, which apply numeric byte swapping.

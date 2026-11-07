@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 **Historical stored-only decision, superseded later on 7 October.** The user
 subsequently chose visible dimensions with verified small proxies retained.
 See [the current geometry policy and verification](visible-resolution-2026-10-07.md).
@@ -41,8 +44,8 @@ for those values.
 
 ## Why the result changed
 
-MediaEngine's [MDB/OMF projection](../src/mediaengine/omfprojection.cpp) and
-[MXF projection](../src/mediaengine/mxfprojection.cpp) initially preferred display
+MediaEngine's [MDB/OMF projection](../src/oldscanner/mediaengine/omfprojection.cpp) and
+[MXF projection](../src/oldscanner/mediaengine/mxfprojection.cpp) initially preferred display
 geometry, then sampled, then stored. That produced the larger values in the
 comparison above.
 

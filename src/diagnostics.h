@@ -44,10 +44,3 @@ namespace Diagnostics
 // Technical messages use the same category names as the Console where they overlap.
 Q_DECLARE_LOGGING_CATEGORY(lcApp)
 Q_DECLARE_LOGGING_CATEGORY(lcAvb)
-Q_DECLARE_LOGGING_CATEGORY(lcMdb)
-Q_DECLARE_LOGGING_CATEGORY(lcMetadata)
-Q_DECLARE_LOGGING_CATEGORY(lcMxf)
-Q_DECLARE_LOGGING_CATEGORY(lcOmf)
-Q_DECLARE_LOGGING_CATEGORY(lcPmr)
-Q_DECLARE_LOGGING_CATEGORY(lcScanner)
-Q_DECLARE_LOGGING_CATEGORY(lcVolumes)

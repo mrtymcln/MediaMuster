@@ -13,7 +13,7 @@
 namespace MediaEngine::Detail
 {
 	AvbFieldReader::AvbFieldReader(QByteArrayView bytes, qint64 offset, bool bigEndian,
-						 ParsedSource &source, AvidObject *object, const Cancellation &cancellation)
+								   ParsedSource &source, AvidObject *object, const Cancellation &cancellation)
 		: m_bytes(bytes), m_baseOffset(offset), m_bigEndian(bigEndian), m_source(source),
 		  m_currentObject(object), m_cancellation(cancellation)
 	{
@@ -233,28 +233,6 @@ namespace MediaEngine::Detail
 		return id;
 	}
 
-	QByteArray AvbFieldReader::readTypedUuid(const QString &name)
-	{
-		auto &p = captureField(name, 24);
-		const auto &b = p.encoding;
-		const auto size = m_bigEndian ? qFromBigEndian<qint32>(b.constData() + 12) : qFromLittleEndian<qint32>(b.constData() + 12);
-		if (quint8(b[0]) != 72 || quint8(b[5]) != 70 || quint8(b[8]) != 70 || quint8(b[11]) != 65 || size != 8)
-		{
-			p.state = PropertyReadState::Unreadable;
-			failMalformed(QStringLiteral("Invalid typed UUID in %1.").arg(name));
-		}
-		QByteArray value = b.mid(1, 4) + b.mid(6, 2) + b.mid(9, 2) + b.mid(16, 8);
-		if (m_bigEndian)
-		{
-			std::reverse(value.begin(), value.begin() + 4);
-			std::reverse(value.begin() + 4, value.begin() + 6);
-			std::reverse(value.begin() + 6, value.begin() + 8);
-		}
-		p.decoded = value;
-		p.interpretation = QStringLiteral("Typed AVB UUID; numeric fields normalized to little endian.");
-		return value;
-	}
-
 	QByteArray AvbFieldReader::readMobId(const QString &name)
 	{
 		auto &p = captureField(name, 49);
@@ -333,14 +311,6 @@ namespace MediaEngine::Detail
 		if (remainingBytes() == 0)
 			failMalformed(QStringLiteral("Missing AVB field at byte %1.").arg(fileOffset()));
 		return quint8(m_bytes[m_relativeOffset]);
-	}
-
-	void AvbFieldReader::retainUnparsedTail(const QString &reason)
-	{
-		if (remainingBytes() == 0)
-			return;
-		auto &p = captureField(QStringLiteral("UnparsedTail"), remainingBytes());
-		p.interpretation = reason;
 	}
 
 	void AvbFieldReader::setObjectRole(AvidObject::Role value)

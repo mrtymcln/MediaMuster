@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 The exported `mediamuster-naming-choices.txt` contained 166 decisions: 133 renames
 and 33 keeps. All decisions were applied, with the user's approved corrections
 below. Connected declarations, definitions, calls, includes and build entries
@@ -16,7 +19,7 @@ scan, metadata-selection, bin-filter and file-operation behaviour.
 | [`AvbReader`](../src/mediaengine/avbreader.h) | Reads the bin's format, objects, properties and relationships. |
 | [`AvbBinLoader`](../src/avbbinloader.h) | Loads a bin through that reader and prepares its clip metadata, evidence and media references for the app. |
 | [`AvbFilterDialog`](../src/avbfilterdialog.h) | Controls loaded bins and the ordered filter steps. |
-| [`AvbMetadataResolver`](../src/avbmetadataresolver.h) | Adds or retracts eligible metadata from the loaded bins. |
+| `AvbMetadataResolver` (retired `src/avbmetadataresolver.h`) | Adds or retracts eligible metadata from the loaded bins. |
 | [`AvbFilter`](../src/avbfilter.h) | Describes the applied filter steps and evaluates file membership. |
 | [`AvbFileReferences`](../src/avbfilereferences.h) | Keeps qualified file identities used by those filters. |
 | [`AvbReferenceIndex`](../src/mediaengine/avbreferences.h) | Lists sequences and resolves their media references. |

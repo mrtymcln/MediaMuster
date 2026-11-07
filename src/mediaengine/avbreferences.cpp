@@ -115,7 +115,7 @@ namespace MediaEngine
 		std::optional<AvbTerminalReference::Kind> terminal(const QByteArray &identity)
 		{
 			// Native IsNullMobID/IsFillerMobID values, in canonical material-LE form.
-			// See Project Canon/evidence/avb-reference-semantics-native-evidence-2026-10-04.json.
+			// See Project Canon/avb-reader.md, source-reference terminals and dependency meanings.
 			static const auto nullId = QByteArray::fromHex("060a2b340101010101010f00130000000000000000000000060e2b347f7f2a80");
 			static const auto fillerId = QByteArray::fromHex("060a2b340101010101010f00130000000000000001000000060e2b347f7f2a80");
 			if (identity.size() == 32 && (!nonzero(identity) || identity == nullId))
@@ -126,9 +126,9 @@ namespace MediaEngine
 		}
 
 		void issue(QVector<AvbResolutionIssue> &issues, AvbResolutionIssue::Kind kind, ObjectHandle handle,
-				   const QString &explanation, const PropertyLocator &property = {})
+				   const QString &explanation)
 		{
-			issues.append({kind, handle, property, explanation});
+			issues.append({kind, handle, explanation});
 		}
 	}
 
@@ -200,7 +200,7 @@ namespace MediaEngine
 			if (!indexKnown || itemIndices.contains(itemIndex) || (countKnown && itemIndex >= itemCount))
 			{
 				issue(m_membershipIssues, AvbResolutionIssue::Kind::IncompleteSource, root,
-					  QStringLiteral("The bin has an invalid or repeated item-list position."), edge.locator);
+					  QStringLiteral("The bin has an invalid or repeated item-list position."));
 				continue;
 			}
 			itemIndices.insert(itemIndex);
@@ -208,7 +208,7 @@ namespace MediaEngine
 			if (edge.referenceEncoding != QLatin1String("AVB.ObjectIndex"))
 			{
 				issue(m_membershipIssues, AvbResolutionIssue::Kind::UnresolvedReference, root,
-					  QStringLiteral("The listed item's object reference is not established."), edge.locator);
+					  QStringLiteral("The listed item's object reference is not established."));
 				continue;
 			}
 			if (!edge.recordedReference.toULongLong())
@@ -217,14 +217,14 @@ namespace MediaEngine
 			if (!edge.target || it == m_objectIndices.cend())
 			{
 				issue(m_membershipIssues, AvbResolutionIssue::Kind::UnresolvedReference, root,
-					  QStringLiteral("A listed clip or sequence is absent from this bin."), edge.locator);
+					  QStringLiteral("A listed clip or sequence is absent from this bin."));
 				continue;
 			}
 			const auto &object = m_source->objects[*it];
 			if (!object.avb || object.avb->classId != "CMPO")
 			{
 				issue(m_membershipIssues, AvbResolutionIssue::Kind::UnresolvedReference, edge.target,
-					  QStringLiteral("A listed item is not an established clip or sequence."), edge.locator);
+					  QStringLiteral("A listed item is not an established clip or sequence."));
 				continue;
 			}
 			if (listed.contains(edge.target))
@@ -394,8 +394,7 @@ namespace MediaEngine
 				const auto target = locator ? m_objectIndices.constFind(locator->decoded.toULongLong()) : m_objectIndices.cend();
 				if (target == m_objectIndices.cend() || !source.objects[*target].avb || source.objects[*target].avb->classId != "MSML")
 					issue(result.issues, AvbResolutionIssue::Kind::UnsupportedIdentity, key,
-						  QStringLiteral("File descriptor has no established MSML identity route. A path-only or absent locator does not prove empty media usage."),
-						  locator ? locator->locator : PropertyLocator{});
+						  QStringLiteral("File descriptor has no established MSML identity route. A path-only or absent locator does not prove empty media usage."));
 			}
 
 			if (object.avb && object.avb->classId == "MSML")
@@ -433,7 +432,7 @@ namespace MediaEngine
 							}
 						}
 						else
-							issue(result.issues, AvbResolutionIssue::Kind::UnsupportedIdentity, key, QStringLiteral("MSML records no usable file identity."), word0->locator);
+							issue(result.issues, AvbResolutionIssue::Kind::UnsupportedIdentity, key, QStringLiteral("MSML records no usable file identity."));
 					}
 					else
 						issue(result.issues, AvbResolutionIssue::Kind::UnsupportedIdentity, key, QStringLiteral("MSML file identity could not be read."));
@@ -471,7 +470,7 @@ namespace MediaEngine
 						edge.referenceEncoding != QLatin1String("AVB.MobId.MaterialLE"))
 					{
 						issue(result.issues, AvbResolutionIssue::Kind::UnsupportedIdentity, key,
-							  QStringLiteral("The SourceClip identity is not established; its source-track link was not included."), edge.locator);
+							  QStringLiteral("The SourceClip identity is not established; its source-track link was not included."));
 						continue;
 					}
 				}
@@ -502,8 +501,7 @@ namespace MediaEngine
 					{
 						issue(result.issues, AvbResolutionIssue::Kind::AmbiguousReference, key,
 							  sourceJump ? QStringLiteral("Multiple recorded objects have this MobID; the ambiguous source-track link was not included.")
-										 : QStringLiteral("Multiple recorded objects have this MobID. All candidate edges remain available; no first-wins selection."),
-							  edge.locator);
+										 : QStringLiteral("Multiple recorded objects have this MobID. All candidate edges remain available; no first-wins selection."));
 						if (sourceJump)
 							continue;
 					}
@@ -512,17 +510,17 @@ namespace MediaEngine
 						requestedTrack = sourceTrack(object);
 						if (requestedTrack.scope == TrackRequest::Scope::Unresolved)
 							issue(result.issues, AvbResolutionIssue::Kind::UnresolvedReference, key,
-								  QStringLiteral("The requested source-track number or audio/video kind is unavailable, conflicting or unsupported; unproven track branches were not included."), edge.locator);
+								  QStringLiteral("The requested source-track number or audio/video kind is unavailable, conflicting or unsupported; unproven track branches were not included."));
 					}
 				}
 				else
 				{
-					issue(result.issues, AvbResolutionIssue::Kind::UnresolvedReference, key, QStringLiteral("Reference encoding is not supported by the AVB resolver."), edge.locator);
+					issue(result.issues, AvbResolutionIssue::Kind::UnresolvedReference, key, QStringLiteral("Reference encoding is not supported by the AVB resolver."));
 					continue;
 				}
 				if (targets.isEmpty())
 					issue(result.issues, AvbResolutionIssue::Kind::UnresolvedReference, key,
-						  QStringLiteral("Reference has no established target in this bin; this is not a missing-media diagnosis."), edge.locator);
+						  QStringLiteral("Reference has no established target in this bin; this is not a missing-media diagnosis."));
 				for (const auto &target : targets)
 				{
 					if (cancellation.cancelled())

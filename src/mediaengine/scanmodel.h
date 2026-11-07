@@ -1,7 +1,8 @@
 #pragma once
 
-// Temporary scan records keep each physical copy separate from its source evidence.
-// UI rows retain selected values and captured safety checks instead of these records.
+// Working records for retained media readers and the active AVB reader. Legacy
+// scan results keep each physical copy separate from its source evidence; UI rows
+// retain selected values and captured safety checks instead of these records.
 
 #include "mediaevidence.h"
 #include <QByteArray>
@@ -125,8 +126,7 @@ namespace MediaEngine
 			Unknown,
 			Master,
 			FileSource,
-			PhysicalSource,
-			Composition,
+			Composition = 4,
 			Descriptor,
 			Track,
 			Component

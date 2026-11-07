@@ -1,6 +1,6 @@
-// Gives the fresh MXF graph file-owned meaning for the scan model. Package and
-// descriptor references establish ownership; file order and a matching name do
-// not. Header/footer copies remain separate observations for reconciliation.
+// Gives a retained-reader MXF graph file-owned meaning for the scan model.
+// Package and descriptor references establish ownership; file order and a matching
+// name do not. Header/footer copies remain separate observations for reconciliation.
 
 #include "projection.h"
 #include "compressionnames_p.h"

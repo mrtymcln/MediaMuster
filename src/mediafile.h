@@ -43,6 +43,7 @@ struct MediaFile
 {
 	// MARK: Identity
 	KelpieId kelpieId = 0; ///< Physical row identity within this scan session only.
+	/// OldScanner's interpretation checklist; Bella rows leave it uncaptured.
 	MediaMetadataStatus metadataStatus;
 	MediaScanStamp scanStamp;
 	/// Frozen operation checks; absence means they were never captured.
@@ -54,45 +55,46 @@ struct MediaFile
 
 	// MARK: MDB and PMR metadata
 
-	/// MediaEngine's shared policy chooses the name and captures its source in metadataStatus.
+	/// Associated-master name selected by the active scanner's source rules.
 	/// Source-package names do not establish a master clip name or a recorded source path.
 	/// Unknown clip names stay blank rather than falling back to filenames.
 	QString clipName;
 
-	/// Selected project name under MediaEngine's shared policy. Empty means unknown,
+	/// Selected project name under the active scanner's source rules. Empty means unknown,
 	/// independently of whether the folder's PMR currently lists this file.
 	QString project;
-	QString originalBin; ///< The recorded import-time _ORG_BIN, from scanned media metadata.
+	QString originalBin; ///< Recorded original-bin association from the selected master.
 
 	// MARK: MXF or MDB technical metadata
 
-	QString compression;	   ///< "Avid DNx SQ (DNxHD 145)", "PCM Audio", etc.
+	QString compression;	   ///< "Avid DNx HQX [DNxHD 175x]", "PCM", etc.
+	// OldScanner stores display inputs here; Bella uses the typed bellaValues group.
 	QString resolution;		   ///< "1920x1080". Video only; audio rows stay blank.
 	QString frameRate;		   ///< Display label: "23.976", "25". Video only; audio rows stay blank.
-	MediaRate frameRateRatio;  ///< Original video fraction; never recovered from the display label.
+	MediaRate frameRateRatio;  ///< OldScanner's original video fraction; Bella uses bellaValues.
 	QString bitDepth;		   ///< "10-bit", "24-bit".
 	int sampleRate = 0;		   ///< Whole-Hz compatibility value; prefer sampleRateRatio when available.
-	MediaRate sampleRateRatio; ///< Original audio sampling fraction, separate from duration's unit rate.
-	/// File duration with exact source units/rate and provenance. Master and
+	MediaRate sampleRateRatio; ///< OldScanner's audio sampling fraction; Bella uses bellaValues.
+	/// OldScanner duration with exact source units/rate and provenance. Master and
 	/// sibling lengths may differ; association never depends on equal duration.
 	MediaDuration duration;
-	/// Nominal timecode base for duration rendering (24, 25, 30, 60...).
+	/// OldScanner's nominal timecode base for rendering (24, 25, 30, 60...).
 	/// Parser-derived; 0 = unknown (durationDisplay falls back to the frameRate
 	/// display string, and shows blank when neither is available).
 	int timecodeBase = 0;
-	/// Drop-frame numbering (29.97/59.94). The stored frame count stays unchanged.
+	/// OldScanner drop-frame numbering; Bella keeps its display mode in bellaValues.
 	bool dropFrame = false;
 	std::optional<BellaRowValues> bellaValues;
-	QString sourceFilePath; ///< Selected recorded source/import path or URL; distinct from the current location.
+	QString sourceFilePath; ///< OldScanner recorded source/import path; excluded from Bella rows.
 
 	// MARK: Precompute detail (table, CSV and filtering when enabled)
 
 	/// Precompute details derived from the clip name and effect catalogue.
-	/// Unknown effects keep their token; sequence spelling follows the recorded name.
+	/// Unknown effects keep their token; OldScanner also retains sequence spelling.
 	/// Empty for ordinary media.
 	QString effect;
 	QString effectCategory;
-	QString effectSequence;
+	QString effectSequence; ///< OldScanner only; Bella excludes the separate sequence value.
 	using PrecomputeCategory = AvidPrecompute::Category;
 	PrecomputeCategory precomputeCategory = PrecomputeCategory::Unknown;
 
@@ -113,7 +115,7 @@ struct MediaFile
 	/// Filesystem creation (birth) time. Invalid when the file system
 	/// doesn't record one — displayed blank, never substituted.
 	QDateTime created;
-	/// Filesystem modification time, retained for database freshness and
+	/// Filesystem modification time, retained for physical source-change and
 	/// file-operation checks rather than displayed in the table or CSV.
 	QDateTime modified;
 

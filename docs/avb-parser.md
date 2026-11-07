@@ -5,7 +5,9 @@ identities, attributes and relationships. `AvbReferenceIndex` resolves reference
 inside one AVB at a time;
 `AvbBinLoader` loads a bin through that reader and prepares its app-facing results.
 `AvbFilterDialog` controls loaded bins and filter steps. The reader does not
-write bins or evaluate arbitrary timelines. [Reader evidence](../Project%20Canon/avb-reader.md)
+write bins or evaluate arbitrary timelines. This AVB path remains active with
+Bella inventory scanning; Bella does not replace the bin reader.
+[Reader evidence](../Project%20Canon/avb-reader.md)
 records format coverage and limits. The earlier
 [sequence investigation](../Project%20Canon/avb-sequence-selection.md) is research
 for deferred work, not an active sequence-selection feature.
@@ -88,9 +90,10 @@ rate and effect fields; reading those fields is separate from evaluating edit us
 Physical-file clocks, duration and timecode interpretation elsewhere in the scan
 remain part of their retained metadata workflows.
 
-The removed implementation, authored timeline controls and bounded angle/time/
-speed/link research are preserved in the
+The retained patch and written findings for the removed implementation, authored
+timeline controls and bounded angle/time/speed/link research are indexed in the
 [deferred sequence archive](../Project%20Copland/archive/deferred-sequence-2026-10-17/README.txt).
+Raw reproduction harnesses and evidence were retired on 1 November 2026.
 Those historical receipts do not describe the active resolver or certify a
 genuine Media Composer used-file set. No performance improvement is established
 by this removal. See [current behavior](current-behaviour.md) and

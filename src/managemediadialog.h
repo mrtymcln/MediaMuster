@@ -124,7 +124,7 @@ private:
 
 	/// Sweep output, index-aligned with m_pendingRows. `renamed` is null
 	/// unless the row needed a rename preview (on-disk conflict or later
-	/// duplicate); null-despite-needing-one means all 999 slots were taken.
+	/// duplicate); null-despite-needing-one means the numbered alternatives were exhausted.
 	struct DestCheckResult
 	{
 		QVector<bool> exists;

@@ -10,7 +10,7 @@ namespace MediaEngine
 	struct ScanResult;
 }
 
-/// The scan's safety conclusions, including all established header identities.
+/// The scan's safety conclusions and captured identities required for operations.
 /// Owns no evidence, parsed source or scan session.
 struct OpScanReceipt
 {

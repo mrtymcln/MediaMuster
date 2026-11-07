@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 Read-only bounded proof, 8 October 2026. This examines the 51 physical paths whose
 saved scan receipt changed from NotRead to Complete solely for missing/conflicting
 Clip Duration. It reads their three MDBs sequentially through the frozen MediaEngine
@@ -39,7 +42,7 @@ with retained deleted records but does not prove their deletion history.
 
 The current active graphs contain nine mono and nineteen two-track masters,
 with 47 top-level PVOL components. The current
-[legacy component-length evaluator](../src/mediaengine/omfprojection.cpp#L924)
+[legacy component-length evaluator](../src/oldscanner/mediaengine/omfprojection.cpp)
 does not claim PVOL GroupLength semantics. Active master membership, resolved
 references, or an inner SCLP with a readable length does not authorize replacing
 the outer effect's timeline semantics. Unsupported effect duration remains part

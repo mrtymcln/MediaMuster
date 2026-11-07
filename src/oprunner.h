@@ -87,7 +87,7 @@ private:
 					  int index, int total, bool directoryDurable, bool *retryableCopy);
 	OpResult removeOriginal(OpJournal &, OpJournal::Entry &, int index, int total);
 	OpResult restoreOriginal(OpJournal &, OpJournal::Entry &);
-	Totals restoreOriginals(const OpRequest &, const QString &directory);
+	Totals restoreOriginals(const OpRequest &);
 	OpRequest planUndo(OpJournal::Record &, const OpRequest &);
 	bool retireDatabases(OpJournal &journal, const QSet<QString> &folders, QString &error);
 	void checkpoint(const QString &name, const OpJournal::Entry &entry);

@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 Implemented 4 October 2026 as another independent MediaEngine reader. This is the
 container/property-reading stage; it does not activate the replacement scanner,
 select displayed values or replace the existing file-operation executor.
@@ -45,11 +48,11 @@ The reader does not automatically choose the first header or the footer as a win
 
 Implementation:
 
-- [`mxfreader.h/.cpp`](../src/mediaengine/mxfreader.cpp): framing, partitions, Primers,
+- [`mxfreader.h/.cpp`](../src/oldscanner/mediaengine/mxfreader.cpp): framing, partitions, Primers,
   local property boundaries and raw evidence collection.
-- [`mxfobjects_p.h/.cpp`](../src/mediaengine/mxfobjects_p.cpp): verified type decoding,
+- [`mxfobjects_p.h/.cpp`](../src/oldscanner/mediaengine/mxfobjects_p.cpp): verified type decoding,
   schema names, identities and qualified reference resolution.
-- [`mxfcatalogue_p.h`](../src/mediaengine/mxfcatalogue_p.h): static source vocabulary
+- [`mxfcatalogue_p.h`](../src/oldscanner/mediaengine/mxfcatalogue_p.h): static source vocabulary
   derived from BBC libMXF's baseline, extension and Avid data-model definitions.
 - [`scanmodel.h`](../src/mediaengine/scanmodel.h): optional MXF set/property contexts.
 - [`tst_mediaenginemxf.cpp`](../tests/tst_mediaenginemxf.cpp): independently authored cases,

@@ -7,8 +7,8 @@
 #include <QString>
 #include <QVector>
 
-/// One row per MediaFile. Optional columns are appended to keep logical indexes
-/// stable; the view positions precompute details beside Type.
+/// One row per MediaFile. Presentation selects the column schema; optional
+/// columns are appended and the view positions precompute details beside Type.
 class MediaTableModel : public QAbstractTableModel
 {
 	Q_OBJECT
@@ -79,8 +79,8 @@ public:
 	const MediaFile &fileAt(int row) const;
 	const QVector<MediaFile> &allFiles() const { return m_files; }
 
-	/// Appended experimental columns; changing the gate preserves rows,
-	/// existing column numbers and persistent indexes in those columns.
+	/// Appended precompute columns; changing the gate preserves rows and the
+	/// existing ordinary columns. An enabled OmfScan column follows the details.
 	void setPrecomputesEnabled(bool enabled);
 	bool precomputesEnabled() const { return m_precomputesEnabled; }
 

@@ -124,11 +124,10 @@ AvbBin AvbBinLoader::load(const QString &path, const std::atomic_bool *cancelled
 		else if (reference.legacyId.size() == 8)
 			bin.mediaFileIds.add(AvbFileId::fromLegacyWords(qFromLittleEndian<quint32>(reference.legacyId.constData()), qFromLittleEndian<quint32>(reference.legacyId.constData() + 4)));
 	}
-	if (cancel.cancelled() || resolution.cancelled || !bin.error.isEmpty() || changed())
+	if (cancel.cancelled() || resolution.cancelled || changed())
 	{
 		bin.mediaFileIds = {};
-		if (bin.error.isEmpty())
-			bin.error = changed() ? QStringLiteral("AVB file changed while reading; load it again.") : QStringLiteral("Bin reading cancelled.");
+		bin.error = changed() ? QStringLiteral("AVB file changed while reading; load it again.") : QStringLiteral("Bin reading cancelled.");
 		return bin;
 	}
 	bin.warnings.removeDuplicates();

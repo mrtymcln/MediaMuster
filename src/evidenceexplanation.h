@@ -27,8 +27,7 @@ public:
 		EqualRankConflict,
 		PreferredSource,
 		ExcludedSources,
-		AvbAssociationConflict,
-		DisplayClock
+		DisplayClock = 15
 	};
 
 	EvidenceExplanation() = default;
@@ -64,7 +63,7 @@ public:
 	bool isEmpty() const noexcept
 	{
 		return m_reason == Reason::None ||
-			(m_reason == Reason::Custom && (!m_parameter || m_parameter->text.isEmpty()));
+			   (m_reason == Reason::Custom && (!m_parameter || m_parameter->text.isEmpty()));
 	}
 	QString text() const
 	{
@@ -119,8 +118,6 @@ private:
 			return QStringLiteral("Selected by the field-specific source priority; alternatives retained");
 		case Reason::ExcludedSources:
 			return QStringLiteral("Read values retained; the policy excludes their sources from selection");
-		case Reason::AvbAssociationConflict:
-			return QStringLiteral("Matching AVB master or original-bin associations disagree; no value selected.");
 		case Reason::None:
 		case Reason::Custom:
 		case Reason::DisplayClock:

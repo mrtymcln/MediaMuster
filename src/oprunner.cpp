@@ -110,11 +110,11 @@ namespace
 		if (!mxf && !Conventions::hasOmfEraExtension(item.src))
 			return true;
 		const QString fileId = !item.databaseFileMobIdToVerify.isEmpty() ? item.databaseFileMobIdToVerify
-							   : item.headerIdentity				 ? item.headerIdentity->fileMobId
-																	 : item.fileMobId;
-		QStringList expectedMasters = item.headerIdentity					 ? item.headerIdentity->masterMobIds
+							   : item.headerIdentity					 ? item.headerIdentity->fileMobId
+																		 : item.fileMobId;
+		QStringList expectedMasters = item.headerIdentity						 ? item.headerIdentity->masterMobIds
 									  : item.databaseFileMobIdToVerify.isEmpty() ? QStringList{item.masterMobId}
-																			 : QStringList{};
+																				 : QStringList{};
 		expectedMasters.removeIf([](const QString &id)
 								 { return id.isEmpty() || MobId::isAllZero(id); });
 		const bool fileKnown = !fileId.isEmpty() && !MobId::isAllZero(fileId);
@@ -222,17 +222,19 @@ namespace
 		}
 		if (record.entries.isEmpty())
 			unfinished = std::count_if(job.items.cbegin(), job.items.cend(),
-									   [](const OpItem &item) { return !item.maintenance; });
+									   [](const OpItem &item)
+									   { return !item.maintenance; });
 		const bool incomplete = unfinished || totals.failed || totals.needsAttention || totals.retained ||
 								!journal.healthy() || !record.stopped;
 		const auto status = totals.cancelled ? QStringLiteral("cancelled")
-							: incomplete ? QStringLiteral("incomplete") : QStringLiteral("complete");
+							: incomplete	 ? QStringLiteral("incomplete")
+											 : QStringLiteral("complete");
 		const bool copy = job.kind == OpKind::Copy;
 		QString message = QStringLiteral("%1 %2: %3 %4 %5 to %6")
-			.arg(copy ? QStringLiteral("Copy") : QStringLiteral("Move"), status)
-			.arg(transferred)
-			.arg(transferred == 1 ? QStringLiteral("file") : QStringLiteral("files"),
-				 copy ? QStringLiteral("copied") : QStringLiteral("moved"), job.destRoot);
+							  .arg(copy ? QStringLiteral("Copy") : QStringLiteral("Move"), status)
+							  .arg(transferred)
+							  .arg(transferred == 1 ? QStringLiteral("file") : QStringLiteral("files"),
+								   copy ? QStringLiteral("copied") : QStringLiteral("moved"), job.destRoot);
 		if (skipped)
 			message += QStringLiteral("; %1 skipped").arg(skipped);
 		if (unchanged)
@@ -287,7 +289,7 @@ bool OpRunner::save(OpJournal &j, OpJournal::Entry &e, Step s)
 OpRunner::Totals OpRunner::run(const OpRequest &input, const QString &directory)
 {
 	if (!input.restoreJournalPath.isEmpty())
-		return restoreOriginals(input, directory);
+		return restoreOriginals(input);
 	RunState state;
 	const auto ownerPath = input.resumeJournalPath.isEmpty() ? input.undoJournalPath : input.resumeJournalPath;
 	const auto lockDirectory = ownerPath.isEmpty() ? directory : QFileInfo(ownerPath).absolutePath();
@@ -360,8 +362,7 @@ void OpRunner::executePendingItems(OpJournal &journal, const OpRequest &request,
 			state.undoDiscards.append(n);
 			continue;
 		}
-		if (removesAfterCopy(e, request) && (e.step == Step::Published ||
-											 e.step == Step::SourceRetained || e.step == Step::RemovingSource))
+		if (removesAfterCopy(e, request) && (e.step == Step::Published || e.step == Step::RemovingSource))
 		{
 			state.deferredRemovals.insert(n);
 			continue;
@@ -404,12 +405,6 @@ void OpRunner::executePendingItems(OpJournal &journal, const OpRequest &request,
 								  QFileInfo(e.item.renameDst).absolutePath()};
 			if (!retireDatabases(journal, folders, state.error))
 				throw std::runtime_error(state.error.toStdString());
-		}
-		if (request.kind == OpKind::Rename && !e.item.maintenance)
-		{
-			if (!journal.touchFolder(QFileInfo(e.item.src).absolutePath()) ||
-				!journal.touchFolder(QFileInfo(e.item.renameDst).absolutePath()))
-				throw std::runtime_error(journal.error().toStdString());
 		}
 		const auto outcome = executeWithRetries(
 			journal, e, request.kind, mediaIndex, state.workTotal, state.error);
@@ -723,11 +718,6 @@ bool OpRunner::retireDatabases(OpJournal &journal, const QSet<QString> &folders,
 					return false;
 				}
 			}
-			if (!journal.touchFolder(folder))
-			{
-				error = journal.error();
-				return false;
-			}
 			const auto outcome = execute(journal, entry, OpKind::Delete, 0, 0);
 			if (outcome.state != State::Completed)
 			{
@@ -979,9 +969,7 @@ OpResult OpRunner::transfer(OpJournal &j, OpJournal::Entry &e, OpKind kind, OpFi
 		e.cleanup.last().fileStamp = destination->stamp();
 		e.cleanup.last().removeFile = true;
 		e.error = why;
-		const auto step = state == State::Cancelled ? Step::Cancelled
-						  : state == State::Skipped ? Step::Skipped
-													: Step::Failed;
+		const auto step = state == State::Cancelled ? Step::Cancelled : Step::Failed;
 		if (!save(j, e, step))
 			return result(e, State::NeedsAttention, "Journal failure; temporary file retained at " + e.temp);
 		destination.reset();
@@ -1033,7 +1021,7 @@ OpResult OpRunner::transfer(OpJournal &j, OpJournal::Entry &e, OpKind kind, OpFi
 		if (moved == OpFile::Relocation::Exists)
 		{
 			if (e.item.policy != "keepboth")
-				return abandon(e.item.policy == "skip" ? State::Skipped : State::Failed,
+				return abandon(State::Failed,
 							   "The destination became occupied; source retained.");
 			const auto next = OperationPlan::findKeepBothPath(originalDestination);
 			if (!next)
@@ -1391,7 +1379,7 @@ bool OpRunner::copiesReadyForRemoval(const OpJournal &journal, const OpRequest &
 			continue;
 		}
 		if (!removesAfterCopy(e, request) ||
-			(e.step != Step::Published && e.step != Step::SourceRetained && e.step != Step::RemovingSource) ||
+			(e.step != Step::Published && e.step != Step::RemovingSource) ||
 			!e.copyDurable || !e.metadataComplete || !copiedDestinationUnchanged(e, error))
 			ready = false;
 		if (e.retirement.isEmpty() && !e.source.unchanged(OpFile::inspect(e.item.src)))
@@ -1581,13 +1569,11 @@ OpResult OpRunner::restoreOriginal(OpJournal &j, OpJournal::Entry &e)
 	return result(e, State::OriginalRestored, "Original restored to " + e.item.src + ". Completed copies were kept.");
 }
 
-OpRunner::Totals OpRunner::restoreOriginals(const OpRequest &request, const QString &directory)
+OpRunner::Totals OpRunner::restoreOriginals(const OpRequest &request)
 {
 	Totals totals;
 	QString error;
-	const QString journalDirectory = request.restoreJournalPath.isEmpty()
-										 ? directory
-										 : QFileInfo(request.restoreJournalPath).absolutePath();
+	const QString journalDirectory = QFileInfo(request.restoreJournalPath).absolutePath();
 	auto lock = OpJournal::acquire(journalDirectory, error);
 	OpJournal journal;
 	try
@@ -1644,8 +1630,9 @@ OpRunner::Totals OpRunner::restoreOriginals(const OpRequest &request, const QStr
 
 // MARK: - Recovery and cleanup
 
-// Recovery examines recorded identities and intent. It never performs a new
-// deletion; explicit Resume performs remaining filesystem mutations afterwards.
+// Reconciliation examines recorded identities and intent without starting a
+// new transfer or original removal. Private-artifact cleanup runs separately;
+// Resume performs unfinished forward work.
 bool OpRunner::reconcile(OpJournal &j, OpJournal::Entry &e, QString &error,
 						 const NativeFile::DirectorySync &directorySync)
 {
@@ -2005,7 +1992,7 @@ OpRequest OpRunner::planUndo(OpJournal::Record &forward, const OpRequest &input)
 		}
 		if (e.mechanism != "copy" || !e.landed.valid() ||
 			(e.step != Step::Published && e.step != Step::Publishing && e.step != Step::Done &&
-			 e.step != Step::SourceRetained && e.step != Step::RemovingSource &&
+			 e.step != Step::RemovingSource &&
 			 e.step != Step::RestoringSource && e.step != Step::SourceRestored &&
 			 e.step != Step::SourceRemoved && e.step != Step::NeedsAttention))
 			continue;

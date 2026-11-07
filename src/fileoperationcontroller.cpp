@@ -523,9 +523,6 @@ bool FileOperationController::resumeOperation(const OperationRecovery::Resumable
 {
 	OpRequest request;
 	request.kind = job.kind;
-	request.destRoot = job.dest;
-	request.preserve = job.preserve;
-	request.items = job.remaining;
 	request.resumeJournalPath = job.journalPath;
 	if (!dispatchRequest(std::move(request)))
 		return false;

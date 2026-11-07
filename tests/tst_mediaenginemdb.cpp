@@ -1,6 +1,6 @@
 // Checks the MDB reader against small, deliberately varied containers
 // and genuine Avid databases. The expectations come from their recorded
-// bytes; the production MDB parser is not used as an oracle.
+// bytes; the retained MDB reader under test is not used as an oracle.
 
 #include "testfixtures.h"
 

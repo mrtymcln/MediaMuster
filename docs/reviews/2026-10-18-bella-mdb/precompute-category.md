@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 Research date: 20 October 2026. The user approved the separate
 [Type rules](type.md): selected-master usage 1 is Precompute, 7 is Media and
 unknown/unreadable Type is displayed/exported blank. **The user approved these
@@ -137,7 +140,7 @@ remain outside the repository.
 
 The current [pure classifier](../../../src/precompute.h) already expresses the
 verified decision in a small C++17 function. The
-[MDB adapter](../../../src/oldscanner/mediaengine/mdbprojection.cpp#L932)
+[MDB adapter](../../../src/oldscanner/mediaengine/mdbprojection.cpp)
 establishes attribute presence and, only when present, direct video-track count.
 It additionally requires complete references and preserves Type when the
 subcategory is unavailable. Some completeness checks are broader than this

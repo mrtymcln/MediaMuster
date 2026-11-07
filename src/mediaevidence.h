@@ -431,7 +431,7 @@ public:
 	{
 		// All fields on this source object share its recorded owner text.
 		observation.objectIdentity = registerSourceContext(observation.snapshot, observation.objectIdentity,
-			PropertyReadReason::CoverageNotEstablished);
+														   PropertyReadReason::CoverageNotEstablished);
 		auto &values = m_observations[property];
 		for (auto &existing : values)
 			if (existing.snapshot == observation.snapshot && existing.property == observation.property &&
@@ -496,19 +496,6 @@ public:
 				}
 		m_resolved.clear();
 	}
-	void qualify(MediaProperty property, const SourceSnapshotRef &source, bool eligible, SourceFreshness freshness)
-	{
-		auto it = m_observations.find(property);
-		if (it == m_observations.end())
-			return;
-		for (auto &observation : it.value())
-			if (observation.snapshot == source)
-			{
-				observation.eligible = eligible;
-				observation.freshness = freshness;
-			}
-		m_resolved.remove(property);
-	}
 	const QVector<MetadataObservation> &observations(MediaProperty property) const
 	{
 		const auto it = m_observations.constFind(property);
@@ -525,17 +512,6 @@ public:
 			for (auto &observation : it.value())
 				if (observation.snapshot && (observation.snapshot->source == MetadataSource::Pmr ||
 											 observation.snapshot->source == MetadataSource::Mdb))
-					observation.eligible = false;
-		m_resolved.clear();
-	}
-	void excludeSource(MetadataSource source)
-	{
-		for (auto &coverage : m_coverage)
-			if (coverage.snapshot->source == source)
-				coverage.eligible = false;
-		for (auto it = m_observations.begin(); it != m_observations.end(); ++it)
-			for (auto &observation : it.value())
-				if (observation.snapshot && observation.snapshot->source == source)
 					observation.eligible = false;
 		m_resolved.clear();
 	}
@@ -604,11 +580,7 @@ public:
 				observation.value.metaType().id() == QMetaType::QString && observation.value.toString().isEmpty())
 				continue;
 			if (observation.readState != PropertyReadState::Present)
-			{
-				if (result.readState == PropertyReadState::NotRead || observation.readState == PropertyReadState::Unreadable)
-					result.readState = observation.readState;
 				continue;
-			}
 			if (present++ == 0)
 				first = observation.value;
 			else if (!equivalent(first, observation.value))
@@ -686,7 +658,8 @@ private:
 				// QString compares null and explicitly empty text equally. Preserve
 				// that original distinction while sharing identical owner encodings.
 				return coverage.objectIdentity.isNull() == objectIdentity.isNull()
-					? coverage.objectIdentity : objectIdentity;
+						   ? coverage.objectIdentity
+						   : objectIdentity;
 			}
 		}
 		m_coverage.append({snapshot, objectIdentity, defaultReason, {}, true, SourceFreshness::Unknown});

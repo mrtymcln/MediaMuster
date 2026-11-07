@@ -16,13 +16,6 @@
 
 Q_LOGGING_CATEGORY(lcApp, "app")
 Q_LOGGING_CATEGORY(lcAvb, "avb")
-Q_LOGGING_CATEGORY(lcMdb, "mdb")
-Q_LOGGING_CATEGORY(lcMetadata, "metadata")
-Q_LOGGING_CATEGORY(lcMxf, "mxf")
-Q_LOGGING_CATEGORY(lcOmf, "omf")
-Q_LOGGING_CATEGORY(lcPmr, "pmr")
-Q_LOGGING_CATEGORY(lcScanner, "scanner")
-Q_LOGGING_CATEGORY(lcVolumes, "volumes")
 
 namespace
 {

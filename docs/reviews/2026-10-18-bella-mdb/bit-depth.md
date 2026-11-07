@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 Research date: 20 October 2026. **The user approved carrying over verified Bit
 Depth interpretation rules and useful tests into small new Bella helpers,
 keeping depth numeric with necessary format information and generating labels
@@ -165,26 +168,26 @@ two-/four-byte types and byte order, including the actual PCMA Ushort. Its
 projector reads WAV/AIFF summaries, handles the full-coding-qualified DNx
 253/254 cases, and uses the two RGBA arrays to obtain a common component width.
 It does not sum RGBA widths into this column. See the
-[typed reader](../../../src/oldscanner/mediaengine/mdbobjects_p.cpp#L611),
-[audio handling](../../../src/oldscanner/mediaengine/mdbprojection.cpp#L1051),
-[coded depths](../../../src/oldscanner/mediaengine/mdbprojection.cpp#L1361)
-and [RGBA handling](../../../src/oldscanner/mediaengine/mdbprojection.cpp#L1449).
+[typed reader](../../../src/oldscanner/mediaengine/mdbobjects_p.cpp),
+[audio handling](../../../src/oldscanner/mediaengine/mdbprojection.cpp),
+[coded depths](../../../src/oldscanner/mediaengine/mdbprojection.cpp)
+and [RGBA handling](../../../src/oldscanner/mediaengine/mdbprojection.cpp).
 
 The projector retains raw values in its evidence and creates interpreted
 labels such as `24-bit`. The adapter stores the selected label in
 `MediaFile::QString bitDepth`; the table and CSV use that same string.
 Unavailable selection becomes empty text. Sorting extracts the number from
 an `N-bit` label rather than comparing a stored depth integer. See the
-[adapter](../../../src/oldscanner/mediaengineadapter.cpp#L47),
-[row](../../../src/mediafile.h#L52),
-[table](../../../src/mediatablemodel.cpp#L240),
-[CSV](../../../src/mediacsv.cpp#L60) and
-[sort helper](../../../src/mediafilterproxy.cpp#L66).
+[adapter](../../../src/oldscanner/mediaengineadapter.cpp),
+[row](../../../src/mediafile.h),
+[table](../../../src/mediatablemodel.cpp),
+[CSV](../../../src/mediacsv.cpp) and
+[sort helper](../../../src/mediafilterproxy.cpp).
 
-The current [selection policy](../../../src/oldscanner/mediaengine/metadataselectionpolicy.cpp#L109)
+The current [selection policy](../../../src/oldscanner/mediaengine/metadataselectionpolicy.cpp)
 prefers an eligible media-header result over MDB when that header was read.
 Missing Bit Depth is one of the current
-[extra-read triggers](../../../src/oldscanner/mediaengine/scancoordinator.cpp#L141);
+[extra-read triggers](../../../src/oldscanner/mediaengine/scancoordinator.cpp);
 a usable complete database match can avoid opening the header. Reading a
 header for another missing field can also supply a preferred depth. This
 describes OldScanner; Bella's source/header policy is still pending.

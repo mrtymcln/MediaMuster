@@ -25,4 +25,4 @@ reporting it as a failed load; late results cannot restore the removed row.
 Applied partial filters keep their file references and warning text independently
 of the loaded-bin list. Parsed object graphs and detailed reference-resolution
 records are released after loading. See [reader coverage](../Project%20Canon/avb-reader.md) and
-[sequence policies](../Project%20Canon/avb-sequence-selection.md).
+[deferred sequence research](../Project%20Canon/avb-sequence-selection.md).

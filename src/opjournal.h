@@ -9,8 +9,9 @@
 #include <QVector>
 #include <optional>
 
-// Each append contains the complete state of ONE item. A valid prefix survives
-// a torn last append. Journal errors stop the engine; recovery and Undo records
+// Each item update contains that item's complete state; other records capture
+// job-wide intent and progress. A valid prefix survives a torn last append.
+// Journal errors stop the engine; unresolved recovery and required Undo records
 // are protected from pruning.
 class OpJournal
 {
@@ -27,7 +28,6 @@ public:
 		SourceRemoved,
 		Done,
 		NoEffect,
-		SourceRetained,
 		Skipped,
 		Cancelled,
 		Failed,
@@ -83,7 +83,6 @@ public:
 		OpRequest request;
 		QVector<VolumeIdentity> volumes;
 		QVector<Entry> entries;
-		QStringList changedFolders;
 		bool stopped = false;
 		bool dismissed = false;
 		bool copiesComplete = false;
@@ -97,7 +96,6 @@ public:
 	bool create(const OpRequest &request, const QString &directory, QString &error);
 	bool resume(const Record &record, QString &error);
 	bool save(const Entry &entry);
-	bool touchFolder(const QString &folder);
 	bool finish(bool cancelled);
 	bool markCopiesComplete();
 	bool claimUndo(const QString &undoPath);

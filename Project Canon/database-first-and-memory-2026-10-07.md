@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 The 12.8 GB report exposed a real cost of the initial MediaEngine connection: it attempted
 every media header and retained the resulting metadata graphs. Most objects in
 sampled Avid MXF headers describe the embedded format dictionary. Each physical
@@ -21,7 +24,7 @@ were definitions, with 3,352 of its 3,511 object properties belonging to them.
 The expanded structures, decoded values, byte ranges and repeated text explain
 why a small header can occupy several megabytes.
 
-UI rows share the scan receipt; [the adapter](../src/mediaengineadapter.cpp) does not
+UI rows share the scan receipt; [the adapter](../src/oldscanner/mediaengineadapter.cpp) does not
 copy the entire scan into each row. Essence payloads are skipped. This evidence
 supports excessive retained graph overhead; it does not establish a memory leak.
 
@@ -33,8 +36,8 @@ file-specific facts rather than merge dictionaries by assumption.
 
 | Change | Isolated result |
 | --- | --- |
-| Release unused vector capacity after parsing in [mxfreader.cpp](../src/mediaengine/mxfreader.cpp) | 1,238,944 bytes of spare property slots removed across the three files; all properties remain. |
-| Assign an explanation directly when its destination is empty in [mxfobjects_p.cpp](../src/mediaengine/mxfobjects_p.cpp) | One sample's repeated explanation text occupies 36,544 character-payload bytes instead of 243,088, with the same 11 distinct values. |
+| Release unused vector capacity after parsing in [mxfreader.cpp](../src/oldscanner/mediaengine/mxfreader.cpp) | 1,238,944 bytes of spare property slots removed across the three files; all properties remain. |
+| Assign an explanation directly when its destination is empty in [mxfobjects_p.cpp](../src/oldscanner/mediaengine/mxfobjects_p.cpp) | One sample's repeated explanation text occupies 36,544 character-payload bytes instead of 243,088, with the same 11 distinct values. |
 | Share the two literal reference descriptions in that same file | 280 character-payload bytes instead of 142,792, with the same two descriptions. |
 
 Text measurements count each distinct underlying QString storage pointer once.

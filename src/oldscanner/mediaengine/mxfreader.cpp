@@ -343,7 +343,7 @@ namespace MediaEngine
 				property.decoded = QVariantMap{
 					{QStringLiteral("majorVersion"), u16(bytes, 0)}, {QStringLiteral("minorVersion"), u16(bytes, 2)}, {QStringLiteral("kagSize"), u32(bytes, 4)}, {QStringLiteral("thisPartition"), QVariant::fromValue(thisPartition)}, {QStringLiteral("previousPartition"), QVariant::fromValue(current.previous)}, {QStringLiteral("footerPartition"), QVariant::fromValue(current.footer)}, {QStringLiteral("headerByteCount"), QVariant::fromValue(current.headerBytes)}, {QStringLiteral("indexByteCount"), QVariant::fromValue(u64(bytes, 40))}, {QStringLiteral("indexSID"), u32(bytes, 48)}, {QStringLiteral("bodyOffset"), QVariant::fromValue(u64(bytes, 52))}, {QStringLiteral("bodySID"), u32(bytes, 60)}, {QStringLiteral("operationalPattern"), bytes.mid(64, 16)}, {QStringLiteral("kind"), quint8(packet.key[13])}, {QStringLiteral("status"), quint8(packet.key[14])}};
 				m_partition = std::move(current);
-				m_partitions.insert(packet.offset, packet.key);
+				m_partitions.insert(packet.offset);
 				m_pointerRecords.append({packet.offset, m_partition.previous, m_partition.footer});
 				if (thisPartition != quint64(packet.offset - m_runIn))
 					qualify(m_result, Outcome::Malformed, QStringLiteral("Partition ThisPartition disagrees with its physical key location at byte %1.").arg(packet.offset));
@@ -578,7 +578,7 @@ namespace MediaEngine
 			ParsedSource &m_result;
 			qint64 m_runIn = 0;
 			Partition m_partition;
-			QHash<qint64, QByteArray> m_partitions;
+			QSet<qint64> m_partitions;
 			QVector<Pointers> m_pointerRecords;
 		};
 	}

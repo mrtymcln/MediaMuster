@@ -64,9 +64,8 @@ std::optional<OperationRecovery::Resumable> OperationRecovery::resumableFrom(con
 	out.journalPath = rec.path;
 	out.kind = rec.request.kind;
 	out.dest = rec.request.destRoot;
-	out.preserve = rec.request.preserve;
-	out.copiesComplete = rec.copiesComplete;
 	out.started = rec.started;
+	bool hasIncomplete = false;
 	for (const auto &e : rec.entries)
 	{
 		if (!e.item.maintenance)
@@ -76,9 +75,9 @@ std::optional<OperationRecovery::Resumable> OperationRecovery::resumableFrom(con
 				++out.finished;
 		}
 		if (!e.complete())
-			out.remaining.append(e.item);
+			hasIncomplete = true;
 	}
-	return out.remaining.isEmpty() ? std::nullopt : std::optional<Resumable>(out);
+	return hasIncomplete ? std::optional<Resumable>(out) : std::nullopt;
 }
 OperationRecovery::Summary OperationRecovery::readSummary(const QString &directory)
 {

@@ -2,19 +2,24 @@
 
 **Historical validation record:** the results below describe the September 2026
 implementation tested at the stated dates. Verify copies and xxHash were removed
-on 22 September; Beta 3 reads and writes only schema 2, while released Beta 2 used
-schema 1. Earlier verification scenarios and test counts are
-preserved as evidence, not claims about the current build. See
+on 22 September. The Beta 3 note from that change records schema 2 and released
+Beta 2's schema 1; the schema-3 entries below describe other development snapshots.
+The current implementation uses schema 4 and compile-time Undo availability,
+with no Verify copies control. Earlier verification scenarios and test counts
+are preserved as evidence, not claims about the current build. See
 [current behaviour](current-behaviour.md#copy-move-and-delete).
 
 Implementation date: 12 September 2026. Current operation responsibilities are
 described in the [architecture guide](architecture.md#from-selection-to-a-file-job).
 
-Updated 13 September: Windows CI now compiles the application and every test target.
+Update recorded on 13 September: Windows CI compiled the application and every test target.
 One test assertion failed after compilation; its diagnosis and local correction are
 recorded [below](#windows-ci-move-test-follow-up).
 
-## What changed
+## September implementation changes
+
+The controls, schemas and behaviour in this section describe the September
+snapshots validated below. Current responsibilities are linked above.
 
 MediaMuster now delegates file copying to macOS `fcopyfile` and Windows `CopyFileExW`. MediaMuster still owns the saved plan, file identities, destination conflicts, progress, recovery and Undo. There is one active job and no queue interface.
 
@@ -32,7 +37,7 @@ Startup cleanup retains 30 days of completed journals, measured from each journa
 
 Validated 14 September on macOS: the Debug application builds, and `tst_opjournal`, `tst_fileoperations` and `tst_operationui` pass. The added coverage includes 31 pruning scenarios and a startup check with Undo disabled. It exercises the age boundary, recent updates to old jobs, unfinished and damaged records, linked Undo history, operation locking, skipped symbolic links, and preservation of media and Trash files.
 
-## Local validation
+## Recorded local validation
 
 The application and all test targets build on macOS 15.8 with pinned Qt 6.5.3, including the universal arm64/x86_64 application. Application signature verification passes. Runtime tests execute the arm64 build. **All 29 CTest targets pass** after the cleanup, including 92 file-operation checks, 18 journal checks and 18 interface checks (QtTest totals include setup/cleanup). `git diff --check` also passes.
 
@@ -48,7 +53,7 @@ ctest --test-dir build --output-on-failure
 codesign --verify --deep --strict build/MediaMuster.app
 ```
 
-## Platform checks still needed
+## Platform checks outstanding at that validation
 
 - A fully passing Windows CI test run after the Move-test correction below, plus Windows runtime acceptance including streams/attributes, sharing/cancellation and Recycle Bin disabled/full/oversize cases. Windows SDK compilation succeeded in the 12 September run; this does not establish all runtime behaviour.
 - Real SMB/NAS/NEXIS copying, disconnect/reconnect, remount and cancellation tests. Automated tests exercise routing and recorded identity rules, not a live NEXIS installation. A proprietary client exposing only an ambiguous workspace label remains unresolved rather than being matched by name alone.
@@ -64,7 +69,7 @@ The supplied Windows CI log fails at `opcopier.cpp`'s verification-progress limi
 
 The full Mac build, application signature check and all 29 CTest targets pass after this change, including 76 file-operation checks (QtTest totals include setup/cleanup). Added coverage exercises temporary failure followed by success, permanent/exhausted failure with continuation, whole-job Move retention, cancellation, journal failure and publication failure without recopy. Native error injection tests use the same classifier as production; they do not simulate a real NEXIS disconnect. Build signing and Qt tests required execution outside the tool sandbox. Windows compilation was still unvalidated at this point; the later CI result is recorded below. Windows/NEXIS runtime acceptance remains outstanding.
 
-## Cleanup validation
+## September cleanup validation
 
 The accepted cleanup removes the unused parked-file writer and old filename recognition,
 obsolete filter interfaces and unused helpers. Shared metadata, bin fallback rules,
@@ -97,8 +102,9 @@ Final validation: the full universal Mac application and all test targets build;
 **29/29 CTest targets pass** in 36.87 seconds; strict deep application signature
 verification and `git diff --check` pass. Windows compilation was still unvalidated at
 this point; the later CI result is recorded below. Real Windows/NEXIS storage acceptance
-remains outstanding. Deeper scanner/runner state decomposition is
-deferred until that platform baseline, as agreed in the cleanup sequence.
+remained outstanding at that validation. Deeper scanner/runner state decomposition
+was then deferred until that platform baseline; this is a historical sequencing
+decision, not a description of today's source structure.
 
 ## Windows CI Move-test follow-up
 

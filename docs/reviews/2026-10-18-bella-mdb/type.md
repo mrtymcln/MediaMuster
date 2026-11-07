@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 Research date: 20 October 2026. The user approved the separate
 [Resolution rules](resolution.md) and requested the next MDB field, Type.
 **The user approved these Type rules on 20 October 2026, specifying blank
@@ -146,7 +149,7 @@ Its Type row stores a small enum; `typeDisplay()` emits **Media**,
 **Precompute**, or **—** for unknown, shared by table and CSV. The
 [shared usage definitions](../../../src/avidusage.h) already provide a small
 constexpr master-classification function. The
-[MDB classifier](../../../src/oldscanner/mediaengine/mdbprojection.cpp#L932)
+[MDB classifier](../../../src/oldscanner/mediaengine/mdbprojection.cpp)
 then separately inspects attributes/tracks for optional precompute category.
 That extra work is not required to decide basic Type.
 

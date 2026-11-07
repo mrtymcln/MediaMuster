@@ -18,7 +18,7 @@ namespace MediaEngine::Detail
 	{
 	public:
 		AvbFieldReader(QByteArrayView bytes, qint64 offset, bool bigEndian, ParsedSource &source,
-				  AvidObject *object, const Cancellation &cancellation);
+					   AvidObject *object, const Cancellation &cancellation);
 		quint8 u8(const QString &name);
 		qint8 s8(const QString &name);
 		quint16 u16(const QString &name);
@@ -34,7 +34,6 @@ namespace MediaEngine::Detail
 		QString string(const QString &name, TextEncoding encoding = TextEncoding::MacRoman);
 		QString readText(const QString &name, qint64 count, TextEncoding encoding);
 		QByteArray readFourcc(const QString &name);
-		QByteArray readTypedUuid(const QString &name);
 		QByteArray readBinaryUuid(const QString &name);
 		QByteArray readMobId(const QString &name);
 		quint32 readObjectReference(const QString &name);
@@ -44,12 +43,10 @@ namespace MediaEngine::Detail
 		quint8 peek() const;
 		qint64 remainingBytes() const;
 		qint64 fileOffset() const;
-		bool isBigEndian() const { return m_bigEndian; }
 		void requireCount(qint64 count, qint64 minimumWidth) const;
 		void checkCancellation() const;
 		[[noreturn]] void failUnsupported(const QString &reason) const;
 		[[noreturn]] void failMalformed(const QString &reason) const;
-		void retainUnparsedTail(const QString &reason);
 		void setObjectRole(AvidObject::Role value);
 		void setObjectIdentity(const QByteArray &value, const QString &encoding);
 

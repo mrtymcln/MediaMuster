@@ -26,9 +26,8 @@ struct MediaDuration
 	enum class Source
 	{
 		Unknown,
-		Descriptor,		///< Stored essence length in the selected descriptor's units.
-		FileTrack,		///< File-track fallback; may include a held frame.
-		LegacyHeuristic ///< Graphless recovery with uncertain ownership/rate.
+		Descriptor, ///< Stored essence length in the selected descriptor's units.
+		FileTrack	///< File-track fallback; may include a held frame.
 	};
 
 	qint64 units = 0;	   ///< Original count in the declared clock: samples or frames/edit units.

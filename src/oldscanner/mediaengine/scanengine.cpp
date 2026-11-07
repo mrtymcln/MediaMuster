@@ -1,4 +1,4 @@
-// The app's scan entry point delegates scheduling and matching to the coordinator.
+// The legacy scan entry point delegates scheduling and matching to the coordinator.
 
 #include "scanengine.h"
 

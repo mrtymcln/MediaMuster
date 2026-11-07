@@ -86,7 +86,7 @@ set(MEDIAMUSTER_BELLA_PREVIEW_NAME "MediaMuster Bella Test")
 ### Pin to Qt version ###
 find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Widgets Core Gui Concurrent)
 
-# Independent Bella components are exercised by their own tests during development.
+# Bella supplies the app scanner and the focused reader/matcher tests.
 add_library(mediamuster_bella STATIC
     src/bella/mobid.cpp
     src/bella/mobid.h
@@ -129,7 +129,7 @@ set_target_properties(mediamuster_bella PROPERTIES AUTOMOC OFF)
 target_include_directories(mediamuster_bella PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(mediamuster_bella PUBLIC Qt6::Core)
 
-# OldScanner remains the active implementation until the approved Bella cutover.
+# Retain OldScanner readers for live operation checks and the legacy scan tests/probe.
 # Keep MDB and OMF implementations separate for isolated reader tests.
 set(OLDSCANNER_MDB_SOURCES
     src/oldscanner/mediaengine/mdbreader.cpp

@@ -23,11 +23,6 @@ namespace AvidUsage
 	};
 	inline constexpr qint32 kMissing = -1;
 	inline constexpr qint32 kInvalidOrConflicting = -2;
-	// Negative payload values are unknown, not our internal "missing" sentinel.
-	constexpr qint32 integerCode(quint32 raw)
-	{
-		return raw <= 0x7fffffffu ? qint32(raw) : kInvalidOrConflicting;
-	}
 	inline constexpr quint16 kPrivateMxfTag = 0xf003; // Internal canonical tag; requires a Primer mapping.
 	inline constexpr char kPrivateMxfPropertyHex[] = "a022006094eb75cb96c469924f6211d3";
 
@@ -37,12 +32,6 @@ namespace AvidUsage
 		Media,
 		Precompute
 	};
-	constexpr Classification masterClassification(qint32 code)
-	{
-		return code == qint32(Code::PrecomputeMaster) ? Classification::Precompute : code == qint32(Code::MasterMob) ? Classification::Media
-																													 : Classification::Unknown;
-	}
-	constexpr bool isMasterCode(qint32 code) { return masterClassification(code) != Classification::Unknown; }
 	constexpr qint32 merge(qint32 current, qint32 next)
 	{
 		return current == kMissing ? next : next == kMissing || current == next ? current

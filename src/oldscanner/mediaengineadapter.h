@@ -1,6 +1,7 @@
 #pragma once
 
-// Presentation boundary for the existing table, CSV and file-operation model.
+// Presentation boundary for legacy scan rows, CSV and frozen operation checks.
+// Normal Bella scans prepare rows through bellarowpresentation instead.
 // Matching and selection happen inside MediaEngine; this formats chosen facts
 // and captures the operation safety checks needed after the scan is released.
 #include "mediafile.h"

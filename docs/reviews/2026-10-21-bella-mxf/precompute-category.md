@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 Research date: 22 October 2026. **The user approved these MXF Precompute Category
 rules on 22 October 2026; they remain unimplemented.** MXF Type is approved separately. OldScanner remains active;
 Bin Filter is unchanged. The [MDB category rule](../2026-10-18-bella-mdb/precompute-category.md)
@@ -101,7 +104,7 @@ or bundled library capability; no live app/export ran.
 
 ## Current MediaMuster and actual examples
 
-Current [MXF projection](../../../src/oldscanner/mediaengine/mxfprojection.cpp:1234)
+Current [MXF projection](../../../src/oldscanner/mediaengine/mxfprojection.cpp)
 already feeds the small [pure category helper](../../../src/precompute.h).
 It checks the direct master, typed supported object wrapper and complete outer
 references; only then does it count immediate picture tracks. A confirmed

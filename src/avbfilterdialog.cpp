@@ -42,7 +42,7 @@ namespace
 			return AvbFilterDialog::tr("Results may be incomplete");
 		if (bin.mediaFileIds.isEmpty())
 			return AvbFilterDialog::tr("No media references.");
-		return bin.warnings.isEmpty() ? QString() : AvbFilterDialog::tr("Loaded with warnings.");
+		return {};
 	}
 
 	QString operationLabel(AvbFilterDialog::Operation op)
@@ -549,8 +549,6 @@ void AvbFilterDialog::removeBinRow(int row)
 void AvbFilterDialog::reportLoadFailure(const AvbBin &bin)
 {
 	QStringList reasons;
-	if (bin.usable)
-		reasons.append(tr("This bin contains data that MediaMuster does not yet support"));
 	if (!bin.error.isEmpty())
 		reasons.append(bin.error);
 	reasons.append(bin.warnings);

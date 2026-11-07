@@ -204,8 +204,6 @@ private slots:
 	{
 		REQUIRE_TEST_FIXTURES();
 		QFETCH(QString, relative);
-		QFETCH(bool, pmr);
-		Q_UNUSED(pmr);
 		QFile input(QStringLiteral(FIXTURES_DIR) + '/' + relative);
 		QVERIFY2(input.open(QIODevice::ReadOnly), qPrintable(input.errorString()));
 		const QByteArray expected = input.readAll(); // Fixtures only, independent of capture.

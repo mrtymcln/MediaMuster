@@ -448,7 +448,7 @@ namespace MediaEngine
 			// A skipped header needs the completed physical check; an attempted
 			// header also needs its preparation's post-read check to have finished.
 			const bool physicalUsable = headers.contains(file.kelpieId) && freshnessChecked[headerIndex] &&
-				unchanged[headerIndex] && (result.sources[headerIndex].outcome == ParsedSource::Outcome::NotRead || qualified[headerIndex]);
+										unchanged[headerIndex] && (result.sources[headerIndex].outcome == ParsedSource::Outcome::NotRead || qualified[headerIndex]);
 			if (headers.contains(file.kelpieId))
 			{
 				file.evidence.registerSource(result.sources[headers.value(file.kelpieId)].snapshot);
@@ -521,7 +521,7 @@ namespace MediaEngine
 				// A partial source can prove these two fields without supplying
 				// usable metadata or permitting a skipped media-header read.
 				listed |= sourceUsable(match.source) && match.referenceValid && chosenName && sameIdentity &&
-					!ambiguousName && compatibleReferenceIds.size() == 1 && physicalUsable;
+						  !ambiguousName && compatibleReferenceIds.size() == 1 && physicalUsable;
 				// A possible match that cannot be qualified is not proof of absence.
 				// A known different header identity does establish that this entry
 				// belongs to another file, even when its filename matches.
@@ -605,8 +605,9 @@ namespace MediaEngine
 					completedMiss = true;
 			}
 			// DatabaseStatus uses the UI's stable values: Listed/NoReference/NoDatabase/DbUnreadable.
-			const int status = listed ? 0 : completedMiss ? 1
-				: databases.value(folder).isEmpty() && !discoveryCancelled && folderKeys.contains(physicalFolder) ? 2 : 3;
+			const int status = listed ? 0 : completedMiss																				  ? 1
+										: databases.value(folder).isEmpty() && !discoveryCancelled && folderKeys.contains(physicalFolder) ? 2
+																																		  : 3;
 			MetadataObservation dbStatus;
 			dbStatus.snapshot = folderReceipt(folder);
 			dbStatus.property = QStringLiteral("Local PMR/MDB physical-file reference checks");
@@ -679,16 +680,15 @@ namespace MediaEngine
 			if (cancellation.cancelled())
 				return;
 			const QStringList missing = requiredTableMetadata(databaseFile.evidence, result.candidates[sourceIndex].hint);
-			if (current && matched && missing.isEmpty())
+			if (matched && missing.isEmpty())
 			{
 				result.sources[sourceIndex].readReason = QStringLiteral("Header not read: usable database match supplies required table metadata; database freshness remains unknown");
 				scheduled[sourceIndex] = true;
 			}
 			else
 			{
-				const QString reason = !current	  ? QStringLiteral("Header read: physical file changed after discovery")
-									   : !matched ? QStringLiteral("Header read: no usable database match")
-												  : QStringLiteral("Header read: required table metadata missing or conflicting: %1").arg(missing.join(QStringLiteral(", ")));
+				const QString reason = !matched ? QStringLiteral("Header read: no usable database match")
+												: QStringLiteral("Header read: required table metadata missing or conflicting: %1").arg(missing.join(QStringLiteral(", ")));
 				readCandidate(sourceIndex, reason);
 			}
 		};

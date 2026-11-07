@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 Reviewed 10 October 2026, before choosing a media-reading or retention change.
 This report records published format rules, Avid/workflow evidence, local
 observations and proposed classifications separately. The specification review
@@ -245,7 +248,7 @@ RAM representation is therefore a distinct concern from narrowing read scope.
 
 ## Current MediaEngine limitations relevant to this decision
 
-- [MxfReader](../src/mediaengine/mxfreader.cpp) physically visits KLV headings to EOF
+- [MxfReader](../src/oldscanner/mediaengine/mxfreader.cpp) physically visits KLV headings to EOF
   and skips recording/index payloads. It retains metadata by partition and keeps
   framing/range observations.
 - Unknown header KLV values and unsupported local-set payloads can be retained
@@ -253,16 +256,16 @@ RAM representation is therefore a distinct concern from narrowing read scope.
   Current MediaEngine therefore does not retain every possible original header byte.
 - Body/System/ANC payloads are not comprehensively interpreted. Walking the
   full physical structure is not equivalent to preserving every metadata stream.
-- [MxfProjection](../src/mediaengine/mxfprojection.cpp) preserves separate partition
+- [MxfProjection](../src/oldscanner/mediaengine/mxfprojection.cpp) preserves separate partition
   candidates; it does not automatically select closed/latest-generation metadata
   under the general MXF authority rules. No affected local sample is established;
   handling actual open/growing files needs focused qualification before a change.
-- [OmfReader](../src/mediaengine/omfreader.cpp) uses metadata-only Bento reading.
-  [Bento metadata reading](../src/mediaengine/omfbentoreader_p.cpp) skips seven
+- [OmfReader](../src/oldscanner/mediaengine/omfreader.cpp) uses metadata-only Bento reading.
+  [Bento metadata reading](../src/oldscanner/mediaengine/omfbentoreader_p.cpp) skips seven
   toolkit-identified recording properties, but reads other values, including
   unfamiliar ones. A private DataValue can be large recording data; its generic
   type alone cannot establish that it is small metadata.
-- [SourceArchive](../src/mediaengine/sourcearchive.cpp) compresses completed expanded
+- SourceArchive (retired `src/mediaengine/sourcearchive.cpp`) compresses completed expanded
   records and releases them. Native-byte storage can avoid some conversion and
   serialization overhead, but narrowing traversal alone cannot remove the
   representation cost of all the initial-header properties.

@@ -1,5 +1,5 @@
-// Drives the live MediaEngine scanner through OldScanner using disposable Avid
-// layouts and real format fixtures. Reader checks use the same verified format APIs.
+// Exercises the retained OldScanner pipeline using disposable Avid layouts and
+// optional real-format fixtures. Normal application scans use BellaAppScanner.
 
 #include "testfixtures.h"
 #include "conventions.h"
@@ -527,7 +527,7 @@ void TestScanner::scans_folder_with_pmr_mdb_and_audio_mxf()
 
 	const MediaFile &mf = results.first();
 
-	// Exercise the live adapter's prepared database facts and compact source kinds.
+	// Exercise the retained adapter's prepared database facts and compact source kinds.
 	QVERIFY(mf.metadataStatus.field(MediaProperty::FileMobId).presentSources.contains(MetadataSource::Pmr));
 	QVERIFY(mf.metadataStatus.field(MediaProperty::Compression).presentSources.contains(MetadataSource::Mdb));
 

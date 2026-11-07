@@ -4,10 +4,11 @@ MediaMuster is a C++17 / Qt Widgets application for macOS and Windows. Start wit
 [current behaviour](current-behaviour.md), [the architecture map](architecture.md)
 and [the documentation index](README.md).
 
-[Project Copland](../Project%20Copland/README.md) records the active V1 scope and
-confirmed decisions. Use those decisions where they revise earlier Canon plans;
-keep proposals and open questions distinct from approved work. Dated reports
-record their tested source state, rather than requirements to restore old code.
+[Project Bella](../Project%20Bella/README.md) records the implemented scanner's
+requirements and decision history. [Project Copland](../Project%20Copland/README.md)
+records the earlier V1 decisions that Bella builds on or explicitly revises. Keep
+proposals distinct from approvals. Dated reports describe their tested source
+state, rather than requirements to restore old code.
 
 ## Naming
 
@@ -52,7 +53,8 @@ rows must not acquire working scan/evidence owners. Loaded bins keep resolved
 file references and warnings; parsed graphs stay local to loading. Make performance claims
 only when supported by measurements.
 
-Keep master-owned details grouped in temporary `Projection.masters` records until
+In the retained OldScanner pipeline, keep master-owned details grouped in
+temporary `Projection.masters` records until
 the associated MasterMobId is selected. A group's canonical identity identifies
 that object; it must not create a new file-to-master association. Use
 `appendMasterMetadata()` for the detail join and `selectedProjectedEvidence()` for
@@ -168,15 +170,17 @@ Bin Filter's existing AVB implementation and shared reading types remain under
 remain under `src/`. Preserve the existing reader interfaces used for live
 operation identity checks.
 
-Bella must be a new, independent C++17 / Qt 6.5.3 scanner/parser, rather than an
-adaptation of OldScanner. The requirements review is complete; `src/bella/`
-now contains the shared ID helper and PMR parser in its independent `mediamuster_bella`
-library. Its focused tests link only Bella and Qt. Bring new implementation
-choices to the user before dependent work, as the Bella decision record requires.
-OldScanner remains active until the user explicitly approves the app's switch
-to Bella. See the
-[Bella requirements](../Project%20Bella/README.md#approved-staging) and
-[engine terminology](media-engine.md) for these boundaries. Dated written reviews live under
+Bella is the independent C++17 / Qt 6.5.3 scanner/parser used by the normal macOS
+and Windows app. `src/bella/` contains its readers, timing, naming, matcher,
+discovery and organiser in `mediamuster_bella`; focused component tests link Bella
+and Qt. `BellaAppScanner` supplies the app boundary, row preparation and responsive
+cleanup. The optional `MEDIAMUSTER_BELLA_PREVIEW` build limits the app to scanning
+and export; it is separate from selecting Bella as the normal scanner.
+OldScanner remains for legacy scan tests/probes, shared location admission and
+the existing readers used by operation checks; AVB/Bin Filter remains independent.
+Bring new implementation choices to the user before dependent work when the Bella
+decision record requires it. See the [Bella requirements](../Project%20Bella/README.md)
+and [engine terminology](media-engine.md) for these boundaries. Dated written reviews live under
 `docs/reviews/`. Keep temporary probes, copied code, generated output and logs out
 of the documentation tree; put durable regression coverage under `tests/`.
 The standalone Avid catalogue extractor has been retired. Future

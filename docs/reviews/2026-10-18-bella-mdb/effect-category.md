@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 Research date: 20 October 2026. The user approved the separate
 [Precompute Category rules](precompute-category.md), including blank unreadable
 values, and asked to preserve current Effect Category behaviour while reviewing
@@ -152,7 +155,7 @@ runtime-equivalence pass is claimed.
 
 ## Current behaviour to preserve
 
-The current [resolver](../../../src/effectcatalogue.cpp#L965) already returns
+The current [resolver](../../../src/effectcatalogue.cpp) already returns
 Effect, Effect Category and Effect Sequence together. Bella retains the first
 two values; its later Sequence exclusion supersedes the earlier three-field
 retention proposal. Its catalogue contains
@@ -192,7 +195,7 @@ Preserve the existing rules:
   consistent with the current labels. Effect-name recognition remains
   independent of master Type and the parent Precompute Category.
 
-The [existing projection](../../../src/oldscanner/mediaengine/projection.cpp#L157)
+The [existing projection](../../../src/oldscanner/mediaengine/projection.cpp)
 already calls the resolver once per derived-metadata pass for all three outputs.
 It then creates three derived observations with copied source context and
 reconciles them through the general evidence machinery. The single shared

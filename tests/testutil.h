@@ -16,10 +16,3 @@ inline bool tryWriteFile(const QString &path, const QByteArray &bytes)
 		return false;
 	return f.write(bytes) == bytes.size();
 }
-
-/// dir + name convenience returning the path written; empty on failure.
-inline QString writeFileIn(const QString &dir, const QString &name, const QByteArray &contents)
-{
-	const QString path = dir + QLatin1Char('/') + name;
-	return tryWriteFile(path, contents) ? path : QString();
-}

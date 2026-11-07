@@ -219,7 +219,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 		return plan;
 	}
 
-	// MARK: Pre-parse each file's mediaFolderName once
+	// MARK: Keep parsed source folders for packing
 
 	// Keep each file's parsed folder for the packing loops.
 	struct IndexedMedia

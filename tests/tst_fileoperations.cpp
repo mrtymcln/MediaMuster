@@ -124,14 +124,14 @@ namespace
 								"8105060e2b34010101020601010601000000"
 								"8106060e2b34010101010101151000000000");
 		const auto metadata = packet(hex("060e2b34020501010d01020101050100"), primer) +
-			localSet("060e2b34025301010d01010101012f00", QByteArray(16, 'p'), field(0x8102, storage)) +
-			localSet("060e2b34025301010d01010101011800", storage,
-					 field(0x8103, reference(package)) + field(0x8104, reference(essence))) +
-			localSet("060e2b34025301010d01010101013700", package, field(0x8106, fileId)) +
-			localSet("060e2b34025301010d01010101012300", essence, field(0x8105, fileId));
+							  localSet("060e2b34025301010d01010101012f00", QByteArray(16, 'p'), field(0x8102, storage)) +
+							  localSet("060e2b34025301010d01010101011800", storage,
+									   field(0x8103, reference(package)) + field(0x8104, reference(essence))) +
+							  localSet("060e2b34025301010d01010101013700", package, field(0x8106, fileId)) +
+							  localSet("060e2b34025301010d01010101012300", essence, field(0x8105, fileId));
 		const auto partition = hex("0001000300000001") + QByteArray(24, '\0') +
-			number(quint64(metadata.size()), true) + QByteArray(24, '\0') +
-			hex("060e2b34040101020d010201100300000000000000000010");
+							   number(quint64(metadata.size()), true) + QByteArray(24, '\0') +
+							   hex("060e2b34040101020d010201100300000000000000000010");
 		return packet(hex("060e2b34020501010d01020101020400"), partition) + metadata;
 	}
 	Bella::ScanEntry operationEntryFor(const QString &path)
@@ -1805,17 +1805,17 @@ void TestFileOperations::bella_handoff_checks_copy_move_delete()
 	if (fromHeader || fromDatabase)
 	{
 		const auto stored = QByteArray::fromHex(fromHeader
-			? "060a2b340101010501010f10130000000102030405060708191a1b1c1d1e1f20"
-			: "07000000443322110b000000");
+													? "060a2b340101010501010f10130000000102030405060708191a1b1c1d1e1f20"
+													: "07000000443322110b000000");
 		expectedFileId = fromHeader
-			? QStringLiteral("060a2b3401010105.01010f1013000000.0102030405060708.191a1b1c1d1e1f20")
-			: QStringLiteral("omf:07000000443322110b000000");
+							 ? QStringLiteral("060a2b3401010105.01010f1013000000.0102030405060708.191a1b1c1d1e1f20")
+							 : QStringLiteral("omf:07000000443322110b000000");
 		const auto layout = fromHeader ? Bella::MobIdLayout::Aaf32 : Bella::MobIdLayout::OmfUid12;
 		const auto id = Bella::normalizeMobId(stored, layout, Bella::ByteOrder::LittleEndian);
 		QVERIFY(std::holds_alternative<Bella::MobId>(id));
 		const auto &verify = std::get<Bella::MobId>(id);
 		entry.operationSafety = Bella::VerifyFileId{verify,
-			fromHeader ? Bella::FileIdOrigin::Header : Bella::FileIdOrigin::Database};
+													fromHeader ? Bella::FileIdOrigin::Header : Bella::FileIdOrigin::Database};
 		if (fromDatabase)
 		{
 			entry.match.metadata.fileMobId = verify;
@@ -1842,7 +1842,7 @@ void TestFileOperations::bella_handoff_checks_copy_move_delete()
 		const bool changed = scenario == BellaOperationCase::Changed;
 		entry.operationSafety = changed ? Bella::RescanReason::FileChanged : Bella::RescanReason::FilePresenceUnconfirmed;
 		refusal = changed ? QStringLiteral("The media file changed during scanning. Rescan before proceeding.")
-			: QStringLiteral("The scan could not confirm that the media file was still present. Rescan before proceeding.");
+						  : QStringLiteral("The scan could not confirm that the media file was still present. Rescan before proceeding.");
 	}
 	if (fromHeader || scenario == BellaOperationCase::PhysicalOnly)
 	{
@@ -1866,9 +1866,8 @@ void TestFileOperations::bella_handoff_checks_copy_move_delete()
 		const auto parsed = MediaEngine::OmfReader{}.read(input, {{}, cancellation});
 		const auto projected = MediaEngine::projectOmf(parsed, cancellation);
 		QCOMPARE(projected.files.size(), qsizetype(1));
-		const auto liveId = !mismatch ? expectedFileId : fromHeader
-			? QStringLiteral("060a2b3401010105.01010f1013000000.0102030405060708.191a1b1c1d1e1f21")
-			: QStringLiteral("omf:08000000443322110b000000");
+		const auto liveId = !mismatch ? expectedFileId : fromHeader ? QStringLiteral("060a2b3401010105.01010f1013000000.0102030405060708.191a1b1c1d1e1f21")
+																	: QStringLiteral("omf:08000000443322110b000000");
 		QCOMPARE(projected.files.front().fileMobId, liveId);
 	}
 	const QFileInfo info(path);
@@ -1915,8 +1914,10 @@ void TestFileOperations::bella_handoff_checks_copy_move_delete()
 		const auto recovery = OperationRecovery::run(journals);
 		QCOMPARE(recovery.resumable.size(), qsizetype(1));
 		const auto &pending = recovery.resumable.front();
-		QCOMPARE(pending.remaining.size(), qsizetype(1));
-		QCOMPARE(pending.remaining.front().databaseFileMobIdToVerify, expectedFileId);
+		QCOMPARE(pending.total - pending.finished, 1);
+		const auto saved = OpJournal::readOne(pending.journalPath);
+		QVERIFY(saved);
+		QCOMPARE(saved->entries.front().item.databaseFileMobIdToVerify, expectedFileId);
 		execution = {};
 		execution.resumeJournalPath = pending.journalPath;
 		runner.hooks.checkpoint = {};
@@ -2155,9 +2156,10 @@ void TestFileOperations::compact_scan_receipt_operations_and_recovery()
 		QCOMPARE(get(sourcePath), original);
 		const auto recovery = OperationRecovery::run(f.journals);
 		QCOMPARE(recovery.resumable.size(), 1);
-		QCOMPARE(recovery.resumable.front().remaining.size(), 1);
-		QVERIFY(recovery.resumable.front().remaining.front().headerIdentity);
-		QCOMPARE(recovery.resumable.front().remaining.front().headerIdentity->fileMobId, expectedIdentity.fileMobId);
+		QCOMPARE(recovery.resumable.front().total - recovery.resumable.front().finished, 1);
+		const auto saved = OpJournal::readOne(recovery.resumable.front().journalPath);
+		QVERIFY(saved && saved->entries.front().item.headerIdentity);
+		QCOMPARE(saved->entries.front().item.headerIdentity->fileMobId, expectedIdentity.fileMobId);
 		runner.hooks = {};
 		runner.hooks.forceCopy = OpKind(kind) == OpKind::Move;
 		runner.hooks.forceNetworkTrash = true;
@@ -2792,8 +2794,7 @@ void TestFileOperations::bella_rebalance_rescan_refuses_whole_plan()
 	{
 		MediaFile row;
 		applyBellaOperationHandoff(row, entry);
-		plan.ops.append({row.mediaFilePath, NumberedMxfFolder{{}, 3}, {}, row.sizeBytes,
-						 row.modified.toMSecsSinceEpoch(), {}, opItemFromMediaFile(row)});
+		plan.ops.append({row.mediaFilePath, NumberedMxfFolder{{}, 3}, {}, row.sizeBytes, row.modified.toMSecsSinceEpoch(), {}, opItemFromMediaFile(row)});
 	}
 	// The first file could move and its database could be retired if only the
 	// later per-file gate protected the stale file.
@@ -2870,17 +2871,16 @@ void TestFileOperations::bella_rebalance_live_checks_and_recovery()
 		QCOMPARE(liveEvidence.selected(MediaProperty::FileMobId).value.toString(),
 				 MobId::format(liveId));
 		const auto id = Bella::normalizeMobId(expectedId, Bella::MobIdLayout::Aaf32,
-											 Bella::ByteOrder::BigEndian);
+											  Bella::ByteOrder::BigEndian);
 		QVERIFY(std::holds_alternative<Bella::MobId>(id));
 		entry.operationSafety = Bella::VerifyFileId{std::get<Bella::MobId>(id),
-			database ? Bella::FileIdOrigin::Database : Bella::FileIdOrigin::Header};
+													database ? Bella::FileIdOrigin::Database : Bella::FileIdOrigin::Header};
 	}
 	MediaFile row;
 	applyBellaOperationHandoff(row, entry);
 	RebalancePlan plan;
 	plan.mxfRootPath = root;
-	plan.ops.append({source, NumberedMxfFolder{{}, 2}, {}, row.sizeBytes,
-					 row.modified.toMSecsSinceEpoch(), {}, opItemFromMediaFile(row)});
+	plan.ops.append({source, NumberedMxfFolder{{}, 2}, {}, row.sizeBytes, row.modified.toMSecsSinceEpoch(), {}, opItemFromMediaFile(row)});
 	const auto request = RebalancePlanner::requestForPlan(plan);
 	QCOMPARE(request.items.size(), 1);
 
@@ -2913,8 +2913,10 @@ void TestFileOperations::bella_rebalance_live_checks_and_recovery()
 		QVERIFY(!QFileInfo::exists(destination));
 		const auto recovery = OperationRecovery::run(journals);
 		QCOMPARE(recovery.resumable.size(), 1);
-		QCOMPARE(recovery.resumable.first().remaining.size(), 1);
-		QCOMPARE(recovery.resumable.first().remaining.first().databaseFileMobIdToVerify,
+		QCOMPARE(recovery.resumable.first().total - recovery.resumable.first().finished, 1);
+		const auto saved = OpJournal::readOne(recovery.resumable.first().journalPath);
+		QVERIFY(saved);
+		QCOMPARE(saved->entries.first().item.databaseFileMobIdToVerify,
 				 MobId::format(expectedId));
 		runner.hooks.checkpoint = {};
 		OpRequest continuation;

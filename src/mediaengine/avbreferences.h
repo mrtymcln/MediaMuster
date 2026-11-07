@@ -36,7 +36,6 @@ namespace MediaEngine
 		};
 		Kind kind;
 		ObjectHandle objectHandle = 0;
-		PropertyLocator propertyLocator;
 		QString explanation;
 	};
 
@@ -68,7 +67,6 @@ namespace MediaEngine
 	public:
 		explicit AvbReferenceIndex(QSharedPointer<const ParsedSource> source,
 								   const Cancellation &cancellation);
-		const QSharedPointer<const ParsedSource> &source() const { return m_source; }
 		AvbReferenceResult resolveReferences(const Cancellation &cancellation) const;
 
 	private:

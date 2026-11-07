@@ -1,7 +1,9 @@
 # Authored format-audit diagnostics
 
 These standalone diagnostics characterize findings
-F06/F07, F09/F10 and F17/F21 from the [original format audit](../../docs/reviews/2026-10-03-format-audit/format-audit.html).
+F06/F07, F09/F10 and F17/F21 from the 3 October 2026 format audit. The original
+HTML report was retired; the [retained review index](../../docs/reviews/README.md)
+describes the surviving research and the evidence-retirement boundary.
 They construct small in-memory packets or object graphs, print JSON observations,
 and never open or alter media originals. They establish no genuine-format
 certification, manufacturer serialization convention or universal correctness.
@@ -55,15 +57,16 @@ c++ -std=c++17 -arch arm64 -Wall -Wextra -I src -I tests \
 "$auditOutput/omfprojection" > "$auditOutput/omfprojection.json"
 ```
 
-The local Qt runtime's CPU-feature detection requires execution outside the
-restricted sandbox. Record source/archive hashes, compile commands, execution
+The recorded runs required execution outside their tool sandbox for local Qt's
+CPU-feature detection; this is not a universal runtime requirement. Record source/archive hashes, compile commands, execution
 status and results with a retained receipt. Do not substitute a later source hash
 for the source state actually compiled. JSON enum integers follow
 `ParsedSource::Outcome` and `PropertyReadState` in the same checkout; Complete is
 1, Incomplete is 2, Present is 1 and Unreadable is 3 at preservation time.
 
-The three diagnostic sources pass syntax-only checks with `-Wall -Wextra
--Wpedantic -Wconversion -Wsign-conversion`. Their synthetic graph handles and
+The retained source note records syntax-only checks with `-Wall -Wextra
+-Wpedantic -Wconversion -Wsign-conversion`; it does not establish a fresh result
+for a later checkout. Their synthetic graph handles and
 variable-length Primer/local-item/chunk sizes are checked before narrowing.
 Remaining fixed-size encodings are small authored constants; the Bento fixture
 writer is an existing test dependency, not an input processor introduced here.

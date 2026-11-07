@@ -208,7 +208,7 @@ void TestRebalancePlanner::consolidates_relatives_into_home_folder()
 	QVERIFY(tmp.isValid());
 	const QString root = stageMxfRoot(tmp);
 
-	// Master C1 has most of its files in '1', so the remaining file moves there.
+	// Folder '1' is this group's lowest-numbered home; the file in '2' moves there.
 	const QVector<MediaFile> files{
 		makeMxf(root, "1", "a.mxf", "C1"),
 		makeMxf(root, "1", "b.mxf", "C1"),

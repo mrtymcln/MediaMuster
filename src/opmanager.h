@@ -60,7 +60,7 @@ signals:
 
 	void operationLog(QtMsgType level, const QString &message);
 
-	/// Aggregated locations used by Delete in this run.
+	/// Aggregated MediaMuster Trash locations reported by this run.
 	void mediaMusterTrashUsed(const QString &trashFolderPath, int fileCount);
 	void trashFallbackRequested(quint64 requestId, const QVector<OpTrashFallbackItem> &items);
 	void trashFallbackFinished(quint64 requestId);

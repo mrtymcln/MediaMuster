@@ -763,8 +763,8 @@ void RebalanceDialog::finishDisplay(
 
 void RebalanceDialog::onAborted(const QString &reason)
 {
-	// Pre-flight refused; no files moved. Reset UI to planning
-	// state so the editor can fix the block and retry.
+	// Pre-flight refused before file changes. Restore the planning controls;
+	// the reported reason can require closing the dialog and rescanning.
 	m_running = false;
 	setBusy(false);
 

@@ -3,22 +3,50 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
-MediaMuster's new, independent scanner/parser is being built here. The source/field
-and header-opening requirements are agreed through 26 October 2026. The
-[scanner design proposal](../../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md)
-records standard coordination and lifetime choices. On 27 October the user
-confirmed final results at scan end and partial-result retention on Cancel,
-preserving current behaviour. The first implemented component is the shared
-`MobId` normalizer in `mobid.h/.cpp`, built as `mediamuster_bella` and exercised
-by `tests/tst_bellamobid.cpp`. The first independent PMR reader/report is now in
-`pmrparser.h/.cpp`. The independent MDB reader/report is now in
-`mdbparser.h/.cpp`. The independent MXF reader/report is in `mxfparser.h/.cpp`.
-The independent OMF/native-audio reader/report is in `omfparser.h/.cpp`, with
-private `audioreader_p.h/.cpp` and shared Summary-format helpers in
-`audioformat_p.h/.cpp`. The shared exact rate/duration/timecode helpers are in
-`timing.h/.cpp`. Focused normal and sanitizer tests pass for all seven components.
-Scanner matching and later interpretation/formatting integration
-remain to implement; OldScanner remains active.
+## Current implementation
+
+Bella is the default scanner in the normal macOS and Windows application.
+`CMakeLists.txt` defines `MEDIAMUSTER_USE_BELLA` for both platforms, and
+`BellaAppScanner` connects Bella's synchronous organiser to the Qt UI. The
+separate `MEDIAMUSTER_BELLA_PREVIEW` build is a scan/export rehearsal with file
+operations disabled; it is not required to use Bella in the normal application.
+OldScanner remains in focused tests and operation identity checks; Bin Filter
+retains its existing AVB readers. See [current behaviour](../../docs/current-behaviour.md).
+
+The implementation contains separate PMR, MDB, MXF and OMF/native-audio parsers,
+shared MobId, timing and naming helpers, the no-I/O matcher, physical discovery
+and the scan coordinator. Discovery finishes before database reading. One
+background organiser owns a fresh per-scan QThreadPool shared by at most four
+submitted source jobs with uncollected replies. It settles database replies,
+freezes MatchContext, matches files and reads only required headers. Parser
+workspace is temporary; matching owns the necessary reports/indexes until its
+work finishes, and final entries own their selected values and operation checks.
+
+Project uses eligible PMR, then MDB, then already-read header facts. Most other
+recorded fields prefer MDB; Compression prefers an eligible already-read header.
+A media header is required when no usable PMR FileMobId identifies the physical
+file or no safely matched MDB descriptor describes it. Missing individual
+columns do not trigger a read. PMR filename matching is exact, legacy PMR text
+uses MacRoman, and the PMR modification word is ignored. Bella's MDB and OMF
+baseline is legacy OMF 1 in Bento 1.0; its MXF reader uses the supported initial
+metadata header. Wider retained OldScanner capabilities do not expand Bella's
+scope.
+
+Bella's table/CSV use File Path and omit recorded Source Path and Effect
+Sequence. Optional precompute details add Precompute Category, Effect Category
+and Effect. Exact timing retains known zero, qualifies Avid video/editing-rate aliases in
+their source context and sorts Duration by displayed numeric HH/MM/SS/FF.
+Cancel keeps discovered files and usable completed metadata, stops further
+submission and drains accepted jobs. The GUI remains responsive while the
+organiser and pool finish; another scan or final close waits for readiness.
+
+## Development and verification record
+
+The entries below preserve component decisions, implementation stages and the
+results of their dated runs. Statements such as “not implemented” or
+“OldScanner remains active” describe those stages, before the 7 November
+cutover. They are not the current implementation status. Historical pass counts
+and retired-fixture skips do not establish the outcome of a later build.
 
 On 4 November the user chose shared timing helpers as the next component and
 approved one `timing.h/.cpp` with separate pure rate, exact-duration and timecode
@@ -831,12 +859,15 @@ remain small and reusable. Names/signatures and preserved WAVE/AIFF placement
 follow the brief scanner design. See the
 [agreed separation](../../Project%20Bella/README.md#agreed-separation-of-scanner-and-parsers).
 The standalone `scan` entry point connects discovery, PMR/MDB reading, matching
-and required MXF or OMF/native header reading. It returns owned rows and problems
-after the organiser collects accepted replies and joins its pool. See the
+and required MXF or OMF/native header reading. It returns owned ScanEntry values
+and problems after the organiser collects accepted replies and joins its pool;
+the app adapter subsequently prepares MediaFile table rows. See the
 [scanner contract](../../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#starting-source-layout).
 
-The app continues using [OldScanner](../oldscanner/README.md). Bin Filter stays
-outside Bella's scope. A switch to Bella requires the user's explicit approval.
+At this stage the app still used [OldScanner](../oldscanner/README.md), and the
+cutover required explicit approval. The user subsequently approved Bella as the
+normal macOS and Windows scanner on 7 November; Bin Filter retains its existing
+reader implementation.
 
 [Project Bella](../../Project%20Bella/README.md) records the approved scope,
 staging, parser behaviour and final field-source/header-opening rules. Result

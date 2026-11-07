@@ -1,6 +1,9 @@
 # Interrupted original restoration and temporary cleanup
 
-Repairs 3 and 4 address retained originals and working files from Copy/Move.
+This page describes restoration of retained originals and cleanup of private
+Copy/Move working files. The verification section preserves dated results;
+it does not certify the current build. See [current behaviour](current-behaviour.md)
+for the app's scanning and operation flow.
 
 ## Original restoration
 
@@ -69,7 +72,7 @@ are retained. A crash between directory creation and its identity append can
 leave an unproven directory requiring manual inspection. Journal pruning keeps
 pending cleanup and original-restoration evidence.
 
-## C++ review
+## Historical C++ review
 
 The follow-up review against the supplied C++ coding standards replaced manual
 native directory/ACL cleanup with scoped guards, retaining the required handle
@@ -78,7 +81,7 @@ their framework-managed ownership. Recovery journal write failures are reported
 and stop further cleanup for the affected job. Undo settlement uses named
 helpers and resolves its evidence once per forward job instead of once per file.
 
-## Verification
+## Historical verification
 
 Regression coverage includes cancellation before/after retirement, restoration
 with changed/missing destinations, occupied originals, durable restoration crash
@@ -124,6 +127,6 @@ The approved conditional Cancel Job explanations and table-style dates also pass
 the same 37 Mac operation-UI cases. Both explanation variants, date locations,
 and the shortened layout were rendered and visually checked with dummy data.
 
-These checks use local Mac storage and a hosted Windows runner, with interrupted
+These recorded checks used local Mac storage and a hosted Windows runner, with interrupted
 operations and storage failures exercised by controlled test hooks. Actual
-SMB/NEXIS hardware and an airgapped Avid system have not been tested directly.
+SMB/NEXIS hardware and an airgapped Avid system were not tested directly by those runs.

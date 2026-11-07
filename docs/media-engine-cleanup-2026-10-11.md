@@ -3,6 +3,10 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+This report describes the 11 October implementation, before OldScanner isolation
+and the Bella integration. Its sole-engine and source-path statements apply to
+that revision. The normal app now uses Bella; see the [current architecture](architecture.md).
+
 MediaEngine is now the application's only discovery, reading and metadata engine.
 Its code lives in `src/mediaengine/`, with the concrete component names recorded
 in [engine terminology](media-engine.md). The superseded implementation and its

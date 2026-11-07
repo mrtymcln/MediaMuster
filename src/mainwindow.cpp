@@ -645,8 +645,8 @@ void MainWindow::buildEditMenu()
 {
 	auto *editMenu = menuBar()->addMenu(tr("&Edit"));
 
-	// Hidden and without a shortcut until Debug enables it, so ordinary
-	// text-field Undo keeps working throughout the default beta workflow.
+	// The controller applies the independent Undo feature gate and enables
+	// the action only when a recorded job is eligible.
 	if (!kBellaPreview)
 		editMenu->addAction(m_operations->undoAction());
 

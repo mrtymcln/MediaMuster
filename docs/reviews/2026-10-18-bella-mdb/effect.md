@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 Review date: 20 October 2026. The user likes the current Effect behaviour and
 asked whether it could be simpler or more elegant. **The user accepted these
 Effect rules on 20 October 2026; they are not yet implemented.** The shared
@@ -86,11 +89,11 @@ Sequence's later exclusion is recorded in the linked decision above.
 
 ## Evidence and verification
 
-- [Resolver output](../../../src/effectcatalogue.cpp#L1031): a miss returns the
+- [Resolver output](../../../src/effectcatalogue.cpp): a miss returns the
   extracted token; a hit uses the first indexed English name.
-- [Shared display](../../../src/mediafile.h#L194): Precompute-only output and
+- [Shared display](../../../src/mediafile.h): Precompute-only output and
   lowercase `unknown` for an empty stored Effect.
-- [Current derivation](../../../src/oldscanner/mediaengine/projection.cpp#L157):
+- [Current derivation](../../../src/oldscanner/mediaengine/projection.cpp):
   one lookup supplies all three related labels.
 - [Existing cases](../../../tests/tst_avideffects.cpp): canonical/localized
   names, custom text, suffix variants, sequence commas, invalid/overflow suffixes

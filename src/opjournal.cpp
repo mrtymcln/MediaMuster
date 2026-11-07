@@ -145,8 +145,6 @@ QString OpJournal::stepName(Step s)
 		return "done";
 	case Step::NoEffect:
 		return "no-effect";
-	case Step::SourceRetained:
-		return "source-retained";
 	case Step::Skipped:
 		return "skipped";
 	case Step::Cancelled:
@@ -515,8 +513,7 @@ bool OpJournal::resume(const Record &record, QString &error)
 				 {"entries", entries},
 				 {"volumes", volumes},
 				 {"dest", record.request.destRoot},
-				 {"diagnosticTrashRoot", record.request.diagnosticTrashRoot},
-				 {"folders", QJsonArray::fromStringList(record.changedFolders)}}))
+				 {"diagnosticTrashRoot", record.request.diagnosticTrashRoot}}))
 	{
 		error = m_error;
 		return false;
@@ -537,15 +534,6 @@ bool OpJournal::save(const Entry &entry)
 		m_record.entries.append(entry);
 	else
 		m_record.entries[entry.id] = entry;
-	return true;
-}
-bool OpJournal::touchFolder(const QString &folder)
-{
-	if (m_record.changedFolders.contains(folder))
-		return true;
-	if (!append({{"record", "folder"}, {"path", folder}}))
-		return false;
-	m_record.changedFolders.append(folder);
 	return true;
 }
 bool OpJournal::finish(bool cancelled)
@@ -669,9 +657,6 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &path)
 				rec.volumes.append(VolumeIdentity::fromJson(a.toObject()));
 			rec.request.destRoot = v["dest"].toString();
 			rec.request.diagnosticTrashRoot = v["diagnosticTrashRoot"].toString();
-			rec.changedFolders.clear();
-			for (const auto &a : v["folders"].toArray())
-				rec.changedFolders.append(a.toString());
 		}
 		else if (type == "item")
 		{
@@ -688,7 +673,10 @@ std::optional<OpJournal::Record> OpJournal::readOne(const QString &path)
 				rec.entries[entry->id] = *entry;
 		}
 		else if (type == "folder")
-			rec.changedFolders.append(v["path"].toString());
+		{
+			// Earlier schema-4 jobs recorded an advisory folder ledger. It does
+			// not affect replay, but those journals must remain recoverable.
+		}
 		else if (type == "stop")
 			rec.stopped = true;
 		else if (type == "copies-complete")
@@ -779,7 +767,7 @@ namespace
 				if (entry.item.maintenance || entry.step == Step::NoEffect)
 					continue;
 				if (entry.step == Step::Done || entry.step == Step::SourceRemoved || entry.step == Step::SourceRestored ||
-					entry.step == Step::Published || entry.step == Step::SourceRetained ||
+					entry.step == Step::Published ||
 					(entry.mechanism == "copy" && entry.landed.valid() &&
 					 (entry.step == Step::RemovingSource || entry.step == Step::RestoringSource || entry.step == Step::Publishing ||
 					  entry.step == Step::NeedsAttention)) ||
@@ -1061,8 +1049,6 @@ namespace
 			if (!e.item.expectedFileId.isEmpty() && e.source.fileId == e.item.expectedFileId)
 				e.item.expectedVolumeId = e.source.volumeId;
 		}
-		for (auto &folder : rec.changedFolders)
-			folder = rewrite(folder);
 		for (auto &v : rec.volumes)
 			v.rootPath = roots.value(v.rootPath, v.rootPath);
 		for (int n = 0; n < rec.request.items.size() && n < rec.entries.size(); ++n)

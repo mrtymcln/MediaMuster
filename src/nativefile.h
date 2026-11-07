@@ -4,8 +4,8 @@
 class QFile;
 
 // Platform durability requests.
-// OpFile owns handles and no-overwrite relocation. All byte copying goes
-// through OpCopier using the native platform API.
+// OpFile owns handles and no-overwrite relocation. Operation payload copying
+// goes through OpCopier using the native platform API.
 namespace NativeFile
 {
 	enum class SyncResult

@@ -15,12 +15,9 @@ public:
 		QString journalPath;
 		OpKind kind = OpKind::Copy;
 		QString dest;
-		bool preserve = false;
-		bool copiesComplete = false;
 		QString started;
 		int total = 0;
 		int finished = 0;
-		QVector<OpItem> remaining;
 	};
 	struct Summary
 	{

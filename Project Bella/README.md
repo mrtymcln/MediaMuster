@@ -10,6 +10,41 @@ approved the default for Windows. See the
 and [Windows cutover decision](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#windows-cutover).
 The earlier decisions and evidence below are dated development records.
 
+## Current implementation
+
+Bella now supplies scans in the normal macOS and Windows app through
+`BellaAppScanner`; the separate optional Bella preview build restricts the app
+to scan/export rehearsal. Normal builds retain file operations. The scanner,
+matcher, reader helpers and row/operation adapters are implemented under
+[`src/bella`](../src/bella/README.md) and `src/bella*.cpp`. OldScanner remains
+available to tests and operation identity checks; Bin Filter retains its
+existing AVB readers.
+
+Each scan completes physical discovery, reads PMR/MDB sources with one fresh
+four-job pool, matches eligible database facts, then reads only required headers.
+The organiser and pool run off the GUI thread. Cancel retains discovered files
+and usable completed metadata, and another scan or final close waits for safe
+cleanup while the UI remains responsive. Final rows own their selected values
+and compact operation checks; working reports and indexes are released.
+
+Bella uses the approved PMR → MDB → already-read-header Project priority,
+MDB-first technical/editorial values and the already-read-header Compression
+exception. Missing a displayed field alone does not open a header. File Path
+replaces the OldScanner Source Path/Location pair; Effect Sequence is excluded.
+Exact Duration retains known zero, and sorting uses numeric displayed timecode.
+The implementation map and active format limits are in
+[the Bella source README](../src/bella/README.md#current-implementation) and
+[parser compatibility](../docs/parser-compatibility.md).
+
+## Decision and implementation chronology
+
+The following sections preserve the requirements review and each dated stage.
+References to the “current app”, unfinished components, pending runtime work or
+OldScanner remaining active refer to the source state discussed in that entry.
+Later approvals and the current implementation summary above take precedence
+when reading status claims. Historical test totals and measurements retain their
+original scope; they are not fresh validation of the current build.
+
 Bella is a fresh start for MediaMuster's scanner and parser. The motivation is to
 reduce scan time and memory use after the Canon and Copland iterations and the
 comparison with the installed MDVx executable.
@@ -3145,9 +3180,9 @@ implementation receipt.
 ## Evidence standard for improvement claims
 
 Clarified 22 October 2026 after the user explicitly requested an honest
-assessment: Bella then had no runtime implementation/build target. The first
-ID-helper increment now exists, but there is still no runnable Bella scanner or
-demonstrated scan-time, peak-memory or crash-rate improvement. Many per-field
+assessment: Bella then had no runtime implementation/build target. At the later
+ID-helper checkpoint recorded here, there was still no runnable Bella scanner
+or demonstrated scan-time, peak-memory or crash-rate improvement. Many per-field
 reviews preserve sound OldScanner interpretation rather than improve it. Current
 PMR preparation already buffers a source once and releases its raw image; do not
 invent per-row disk rereads or physical copies from Qt-shared assignments.
@@ -3210,13 +3245,13 @@ records the detailed assessment and limits. This adds no new feature or cutover.
   properties, such as `MDFL:SampleRate` and `PCMA:AudioSamplingRate`; table labels
   can describe their user-facing meaning. Clarified 19 October 2026.
 
-The current app uses [OldScanner](../src/oldscanner/README.md). Its existing
-MediaEngine readers and genuine-media fixtures provide references for reviewing
-behavior and comparing a replacement. They do not supply Bella's implementation.
-The [Bella source folder](../src/bella/README.md) now holds the independent shared
-ID helper in `mediamuster_bella`; the scanner and format readers remain pending.
-The requested examination of an exact MDVx-style PMR scanner/parser is hypothetical;
-it does not yet choose all of MDVx's format and behavior limitations for Bella.
+At this initial component checkpoint, the app still used
+[OldScanner](../src/oldscanner/README.md), and `mediamuster_bella` held only the
+independent ID helper. Its retained readers and the then-available genuine-media
+fixtures supplied behavioral references, not Bella's implementation. The scanner,
+parsers and normal-app cutover were subsequently completed as recorded above.
+The requested exact MDVx-style PMR comparison was hypothetical; it did not adopt
+all of MDVx's format and behavior limitations as Bella requirements.
 
 ## Approved staging
 
@@ -3242,8 +3277,9 @@ Confirmed by the user on 18 October 2026:
    Switching the app to Bella requires the user's explicit approval.
 
 OldScanner is the retained implementation, not a foundation to patch into the
-Bella requirements. Its existing behavior remains the app's behavior until that
-approved switch. Bella's approved PMR rules below describe the future replacement.
+Bella requirements. This staging kept it active until the subsequently approved
+7 November macOS and Windows cutover. The rules below preserve the approved
+replacement contract and its development history.
 
 ## Agreed separation of scanner and parsers
 
@@ -3453,7 +3489,7 @@ runtime code changed.
 
 The normal record fields, their text/identity treatment and whole-set fallback
 are settled. **The user approved the following damage and usability checks on
-18 October 2026. They are requirements, not implemented Bella behavior:**
+18 October 2026, before their Bella implementation:**
 
 - Establish a recognized PMR header, byte order and supported record layout.
   An unknown layout is unsupported, not proof of damage; do not guess its fields.
@@ -4325,7 +4361,7 @@ No performance gain is measured and no runtime code was changed.
 The [20 October Type review](../docs/reviews/2026-10-18-bella-mdb/type.md)
 traces Media Composer and MDVx and checks all 2,412 current MDB-associated
 physical rows. **The user approved these Type rules on 20 October 2026, with
-blank display for unknown/unreadable values. They are not yet implemented.**
+blank display for unknown/unreadable values. They were not yet implemented at that review.**
 
 Reuse the already selected qualified master used for Clip Name and Original
 Bin. Read its own `OMFI:MOBJ:UsageCode`, a typed four-byte numeric value in
@@ -4359,7 +4395,7 @@ The [20 October Precompute Category review](../docs/reviews/2026-10-18-bella-mdb
 establishes Media Composer's two documented groups, the native bin-display
 predicate and MDVx's ordinary omission.
 **The user approved these rules on 20 October 2026, including blank unreadable
-values. They are not yet implemented.**
+values. They were not yet implemented at that review.**
 
 Only the already selected master established as Precompute needs this work.
 Its exact direct `_IMPORTSETTING` object attribute (kind 3) plus at least two
@@ -4716,7 +4752,7 @@ The [MXF Kind review](../docs/reviews/2026-10-21-bella-mxf/kind.md) connects
 Media Composer's physical descriptor import to its sound/picture families,
 separates MDVx's internal classification from its different visible Kind/usage
 column, and compares OldScanner with thirteen actual headers. **The user approved
-these MXF Kind rules on 22 October 2026; they remain unimplemented.** The preceding simplified
+these MXF Kind rules on 22 October 2026; they were unimplemented at that review.** The preceding simplified
 Project rule is agreed. These MXF rules do not expand MDB Kind beyond its
 separate exact mapping and the later approved JPED addition.
 
@@ -4765,7 +4801,7 @@ The [MXF Duration review](../docs/reviews/2026-10-21-bella-mxf/duration.md)
 traces Media Composer's own descriptor count/rate import, separates MDVx's
 library clip/segment lengths from its ordinary table, and compares OldScanner
 with thirteen checked headers. **The user approved the detailed MXF Duration
-rules on 22 October 2026; they remain unimplemented.** Kind is agreed. Existing
+rules on 22 October 2026; they were unimplemented at that review.** Kind is agreed. Existing
 Duration arithmetic/display and MDB-first/database-unavailable MXF fallback
 decisions remain authoritative; no extra Duration-only header open is requested.
 
@@ -4822,7 +4858,7 @@ The [MXF Frame Rate review](../docs/reviews/2026-10-21-bella-mxf/frame-rate.md)
 traces Media Composer's own descriptor rate import/publication, distinguishes
 its codec-wrapper conversions, and compares MDVx, OldScanner, eight previously
 checked video headers and two repository interlaced header controls. **The user
-approved these MXF Frame Rate rules on 22 October 2026; they remain unimplemented.** Duration,
+approved these MXF Frame Rate rules on 22 October 2026; they were unimplemented at that review.** Duration,
 including DF semicolons/NDF colons, is now agreed. Existing Frame Rate numeric
 storage, late labels, sorting and source-opening rules remain agreed.
 
@@ -4864,7 +4900,7 @@ review or other new MXF proposals. OldScanner stays active and Bin Filter is unc
 The [MXF audio Sample Rate review](../docs/reviews/2026-10-21-bella-mxf/audio-sample-rate.md)
 compares native sound-frequency import, MDVx's library/wrapper distinction and
 OldScanner's numeric/display path. **The user approved these MXF audio Sample
-Rate rules on 22 October 2026; they remain unimplemented.** Frame Rate is agreed;
+Rate rules on 22 October 2026; they were unimplemented at that review.** Frame Rate is agreed;
 audio priority and extra-header-read rules remain for the final table.
 
 Use the qualified physical file's own supported sound descriptor's dedicated
@@ -4905,7 +4941,7 @@ or other pending MXF proposals. OldScanner stays active and Bin Filter is unchan
 The [MXF Bit Depth review](../docs/reviews/2026-10-21-bella-mxf/bit-depth.md)
 compares native audio/picture/RGBA import, MDVx's limited library result and
 OldScanner's format-aware interpretation. **The user approved the focused MXF
-Bit Depth rules on 22 October 2026; they remain unimplemented.** Audio Sample
+Bit Depth rules on 22 October 2026; they were unimplemented at that review.** Audio Sample
 Rate is agreed. The existing Bit Depth numeric-storage/late-label core and
 verified-rule reuse remain agreed; uncommon coverage choices stay explicitly
 separate.
@@ -5010,8 +5046,8 @@ and 23976/1000 to 24000/1001 for Compression naming only. The unchanged helper
 continues checking raster, layout, depth and subsampling. Preserve recorded
 SampleRate and agreed Frame Rate/Duration interpretation; no tolerance,
 nearest-rate match, blanket conversion or extra read. The expected result for
-the four verified pairs is `J2K HD` from either source; the new adapter remains
-unimplemented. The approval receipt
+the four verified pairs is `J2K HD` from either source; the adapter was not yet
+implemented at that review. The approval receipt
 records this deliberate exception to preserving every old source-specific
 output. No alpha inference or fallback is approved by the JPEG decision.
 
@@ -5020,7 +5056,7 @@ now finds positive Avid Uncompressed RGBA identifiers in the Header Partition
 and Preface of all ten alpha files. Their own supported RGBA descriptors have
 validated sole A8 layouts and genuinely absent coding. The earlier marker
 check examined only the generic descriptor wrapper and was too narrow.
-**Approved on 22 October 2026; unimplemented:** for this unambiguous supported single-container
+**Approved on 22 October 2026; unimplemented at that review:** for this unambiguous supported single-container
 OP-Atom form, require matching exact format identifiers, qualified own A8,
 known padding and no contradictory coding; then supply an established
 uncompressed-alpha naming fact and the existing `1:1 Alpha 8bit` label. Do not
@@ -5039,7 +5075,7 @@ The [MXF Resolution review](../docs/reviews/2026-10-21-bella-mxf/resolution.md)
 connects Media Composer's own descriptor geometry import and bounded composition
 size-string path, MDVx's library/ordinary-app distinction, current MediaMuster
 selection and actual matching source outputs. **The user approved these MXF
-rules on 22 October 2026; they remain unimplemented.** Existing MDB rules and the separately approved alpha
+rules on 22 October 2026; they were unimplemented at that review.** Existing MDB rules and the separately approved alpha
 Compression rule remain unchanged.
 
 Reanalysis of the earlier source-reader capture finds all 2,411 paired physical
@@ -5080,7 +5116,7 @@ The [MXF Type review](../docs/reviews/2026-10-21-bella-mxf/type.md) separates
 Avid's private numeric AppCode from standard 16-byte UsageCode, traces the native
 master role predicates, and confirms MDVx's ordinary MXF wrapper supplies no
 corresponding Type result. **The user approved these MXF Type rules on
-22 October 2026; they remain unimplemented.** They do not change Bin Filter or source/header scheduling.
+22 October 2026; they were unimplemented at that review.** They do not change Bin Filter or source/header scheduling.
 
 Use the already selected qualified associated MaterialPackage/master, preserving
 current conservative source-local combinations: AppCode 1 with absent/LowerLevel
@@ -5119,7 +5155,7 @@ The [MXF category review](../docs/reviews/2026-10-21-bella-mxf/precompute-catego
 traces Media Composer's group predicate and MXF attribute wrapper, rechecks
 MDVx's ordinary lack of this two-group result, and compares 11 qualified raw
 file/master pairs with their MDB facts. **The user approved these MXF category
-rules on 22 October 2026; they remain unimplemented.** MDB category and MXF Type
+rules on 22 October 2026; they were unimplemented at that review.** MDB category and MXF Type
 are approved separately.
 
 Use the same selected associated master already established Precompute. Exact
@@ -5164,7 +5200,7 @@ records the agreed scope without changing source priorities or header scheduling
 The [MXF Effect Category review](../docs/reviews/2026-10-21-bella-mxf/effect-category.md)
 checks Media Composer's actual effect-identifier/registration route, MDVx's
 ordinary MXF output and MediaMuster's final-name lookup. **The user approved
-these MXF Effect Category rules on 22 October 2026; they remain unimplemented.** The existing
+these MXF Effect Category rules on 22 October 2026; they were unimplemented at that review.** The existing
 MDB name/catalogue contract and Effect Sequence exclusion remain agreed.
 
 Use the already agreed qualified MXF master Clip Name and independently
@@ -5201,8 +5237,8 @@ this scope; the separate Effect review is linked below.
 
 The [MXF Effect review](../docs/reviews/2026-10-21-bella-mxf/effect.md) follows
 the same input and combined lookup as the approved MXF Effect Category rule.
-**The user accepted these MXF Effect rules on 23 October 2026; they remain
-unimplemented.** The MDB Effect contract is already agreed.
+**The user accepted these MXF Effect rules on 23 October 2026; they were
+unimplemented at that review.** The MDB Effect contract is already agreed.
 
 Use the final selected qualified master Clip Name and independently established
 Precompute Type. The MXF Name is decoded UTF-16BE under the agreed name rules;
@@ -5236,7 +5272,7 @@ supported layouts/header navigation still to review before OMF/WAV/AIFF.
 The [23 October damage review](../docs/reviews/2026-10-21-bella-mxf/damage-handling.md)
 compares installed Media Composer/MDVx failure paths with OldScanner's partial
 projection and typed/relationship checks. **The user approved these Bella
-boundaries on 23 October 2026; they remain unimplemented.**
+boundaries on 23 October 2026; they were unimplemented at that review.**
 
 Keep every discovered physical file. Establish complete trustworthy framing of
 the selected metadata region and required mapping/ownership foundations before
@@ -5269,7 +5305,7 @@ The [23 October navigation review](../docs/reviews/2026-10-21-bella-mxf/layouts-
 compares the installed Media Composer/MDVx routes and current MediaMuster's EOF
 framing walk. **The user approved the full release-one layout/admission/
 navigation/recovery scope on 23 October 2026, alongside selective reading and
-compact retention. These requirements remain unimplemented; no app cutover.**
+compact retention. These requirements were unimplemented at that review; no app cutover was approved by that entry.**
 
 Use supported Avid-compatible OP-Atom, including third-party Avid files and the
 verified legacy/standard qualifier variants. Select a closed, complete initial
@@ -6364,7 +6400,7 @@ temporary reader/projection facts needed for retained interpretations. Those
 removed copies are not missing Bella result fields; the 1 November MDB audit
 reassessment does not reinstate them or recorded Source Path.
 
-| Group | Current fields and purpose |
+| Group | Agreed fields and purpose |
 | --- | --- |
 | Physical file | Filename, File Path, Size, Date Created, volume and containing folder. File Path is the full current physical path including filename. |
 | Avid identification | Clip Name, FileMobId and one selected MasterMobId. KelpieId identifies the physical inventory row within a scan session. |
@@ -6385,7 +6421,10 @@ separate requirements choices.
 
 ## Source capabilities
 
-This matrix describes the current implemented mappings for supported layouts.
+This historical comparison matrix records the OldScanner mappings used during
+Bella's requirements review. It is not Bella's active format/field contract;
+see the current implementation summary above. In particular, Bella does not
+implement the MXF linked-file-track Duration fallback listed here.
 "Supported" means a reader can provide the field when the relevant information is
 recorded, readable and correctly associated with the physical file. It does not
 mean every source contains a usable value. These capabilities are separate from
@@ -6413,8 +6452,8 @@ Source Path row is preserved research capability, explicitly excluded from Bella
 PMR additionally supplies a managed-media filename for matching. That filename is
 not Clip Name or Source Path; discovery supplies the current physical Filename.
 Its legacy and Unicode sets are independent record sets, not separate file and
-master catalogues. The current reader preserves a modification word without
-interpreting it as a timestamp. Native research establishes that the current Mac
+master catalogues. The OldScanner reader described by this review preserves a modification word
+without interpreting it as a timestamp; Bella consumes and discards that word. Native research establishes that the current Mac
 writer takes it from filesystem modification seconds; genuine older records use
 a different clock convention. It is not a universal Date Created or freshness
 value. The version-16 set changes filename encoding; Project remains a legacy

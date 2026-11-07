@@ -427,7 +427,7 @@ namespace Bella
 						if (bytes.size() != 8)
 							return Issue::Unreadable;
 					}
-					else if (named(type, {"omfi:ObjRefArray", "omfi:MobIndex"}))
+					else
 					{
 						if (bytes.size() < 2)
 							return Issue::Unreadable;
@@ -443,8 +443,6 @@ namespace Bella
 						// prefix may be 0xffff; it does not truncate valid slots.
 						count = (bytes.size() - offset) / stride;
 					}
-					else
-						return Issue::Unreadable;
 					QVector<quint32> targets;
 					targets.reserve(count);
 					for (qsizetype i = 0; i < count; ++i)

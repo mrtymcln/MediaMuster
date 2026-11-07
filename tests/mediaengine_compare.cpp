@@ -1,5 +1,6 @@
-// Read-only scan probe. Each fresh process fingerprints the retained metadata
-// and measures scan time/RAM before producing proof hashes and CSV rows.
+// Read-only OldScanner probe, separate from the normal Bella application scan.
+// Each fresh process fingerprints retained metadata and measures scan time/RAM
+// before producing proof hashes and legacy-presentation CSV rows.
 // Only the requested report and CSV are written.
 #include "mediaenginefingerprint.h"
 #include "oldscanner/mediaengine/scanengine.h"

@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 Resolution in the table and CSV describes the visible picture raster. The user
 revised the earlier stored-only choice: a valid crop removes storage padding,
 while verified small proxies keep their actual smaller dimensions. All original
@@ -88,10 +91,10 @@ All proxy/padding offsets are zero. Both JFIF sources record DisplayYOffset 5.
 
 ## Implementation and verification
 
-The shared private [geometry selector](../src/mediaengine/picturegeometry_p.h) performs
+The shared private [geometry selector](../src/oldscanner/mediaengine/picturegeometry_p.h) performs
 bounds checks and the narrow proxy comparison. The
-[MXF projection](../src/mediaengine/mxfprojection.cpp) and
-[MDB/OMF projection](../src/mediaengine/omfprojection.cpp) supply their format-specific
+[MXF projection](../src/oldscanner/mediaengine/mxfprojection.cpp) and
+[MDB/OMF projection](../src/oldscanner/mediaengine/omfprojection.cpp) supply their format-specific
 coordinate systems and defaults. Parsing and database-first scheduling stay in
 their existing engines.
 

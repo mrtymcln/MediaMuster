@@ -8,6 +8,18 @@ complete; representative workload acceptance outstanding.
 Started 11 October 2026; decisions updated
 18 October 2026.
 
+**Reading this ledger today:** the implementation facts and test counts below
+describe the Copland checkpoints. Normal macOS and Windows application scans now
+use the independent Bella scanner. [Project Bella](../Project%20Bella/README.md)
+records later field, source-priority and lifecycle decisions, including removal
+of recorded Source Path and Effect Sequence from Bella results and renaming the
+physical Location presentation to File Path. The retained OldScanner readers
+still support live operation identity checks. Use the
+[current behavior guide](../docs/current-behaviour.md) and
+[ownership map](../docs/media-engine.md) for the current app; this ledger preserves
+the original approvals and validation limits rather than restating them as new
+requirements.
+
 Copland reviews the whole MediaMuster app and defines the smallest useful product
 contract before choosing its implementation. The agreed inventory, compact-row,
 Whole Bin and support simplifications are implemented. The dated checkpoints
@@ -100,6 +112,10 @@ affected work and bring the crossroad back to the user with options. The propose
 stages below do not authorize the AI to resolve new decisions autonomously.
 
 ## Product contract at a glance
+
+This is the Copland contract settled in October. Later Bella scanner decisions
+revise the inventory fields and acquisition rules noted above; the historical
+decision table remains intact below.
 
 The three required V1 jobs are a physical-media metadata inventory, existing file
 operations, and Whole Bin filtering. Exact chosen-sequence filtering is deferred
@@ -316,24 +332,28 @@ scan result. This direction targets retained storage; temporary parser peak memo
 
 ## Current implementation facts
 
+These facts describe the 18 October Copland implementation. Source links point
+to the retained implementations where available; later Bella code and field
+changes are described in the current guides linked above.
+
 These describe today's code, not Copland requirements:
 
 - PMR/MDB acquisition buffers the whole database temporarily. Reading and
   projection use temporary decoded records; source images and unused graphs are
   released afterward. Supported facts, alternatives and receipts remain in the
   working scan until row preparation, then the scanner releases that result.
-  See [database preparation](../src/mediaengine/databasesource.cpp) and
+  See [database preparation](../src/oldscanner/mediaengine/databasesource.cpp) and
   [source lifetimes](../Project%20Canon/source-lifetimes.md).
 - Database-first scheduling can open a media header because required metadata is
   missing or conflicting. Enabled precompute category detail can affect that
   decision; Clip Duration and its sufficiency check have been removed under C13.
   Hiding a remaining column does not necessarily remove its
   parsing, retention or fallback cost. See
-  [scan coordination](../src/mediaengine/scancoordinator.cpp).
+  [scan coordination](../src/oldscanner/mediaengine/scancoordinator.cpp).
 - Source preferences are compiled per-property rules. The current resolver also
   retains observations from sources that cannot supply the selected value during
   scanning. Prepared UI rows keep only selected values and compact conclusions. See
-  [selection policy](../src/mediaengine/metadataselectionpolicy.cpp).
+  [selection policy](../src/oldscanner/mediaengine/metadataselectionpolicy.cpp).
 - Ordinary UI rows keep selected values, `MediaMetadataStatus`, `MediaScanStamp`
   and the optional frozen `OpScanReceipt`. The inline checklist distinguishes
   availability, applicability, agreement and source freshness without retaining
@@ -433,7 +453,7 @@ private bytes are different counters. For example, the database-rich trial's
 current median resident memory is 941.9 MB and peak resident memory is 1,093.6 MB;
 the smaller footprint number above must not be presented as that peak.
 
-The existing [engine comparison tool](../tests/mediaengine_compare.cpp#L352)
+The existing [engine comparison tool](../tests/mediaengine_compare.cpp)
 reports scan time, read/skip counts and platform memory counters before adapting
 rows or running the GUI/export. Its preflight precedes timing and filesystem cache
 is uncontrolled. Production logs include discovery/preparation and total worker
@@ -482,8 +502,8 @@ the app build and all 40 registered test suites passed. The actual export-entry
 regressions cover selected/visible scopes, capture timing, column options, exact
 saved bytes, completion before return, Console confirmation and old-scan release
 on the next scan. A failed read-only replacement preserves the prior file and
-reports failure without success. See [export implementation](../src/mainwindow.cpp#L1808)
-and [UI regressions](../tests/tst_operationui.cpp#L269). Large-export UI wait time
+reports failure without success. See [export implementation](../src/mainwindow.cpp)
+and [UI regressions](../tests/tst_operationui.cpp). Large-export UI wait time
 and whole-process memory remain unmeasured for this change.
 
 ### Safety-check migration choice — 13 October 2026
@@ -664,8 +684,8 @@ as invented percentages. No technical column or naming variant has been removed
 from the app during this review.
 
 Compression naming consumers were checked in
-[the name builder](../src/mediaengine/compressionnames_p.cpp),
-[the numbered-name rules](../src/mediaengine/dnxnames_p.h), the projections and
+[the name builder](../src/oldscanner/mediaengine/compressionnames_p.cpp),
+[the numbered-name rules](../src/oldscanner/mediaengine/dnxnames_p.h), the projections and
 the table/CSV adapter. The example describes a supported naming operating point,
 not a newly scanned file. Dropping a displayed alias alone would not establish
 that its separate permanent record or derivation work had also been removed.
@@ -685,7 +705,7 @@ operations and Rebalance's scope; reviewing helpers does not reopen those decisi
 
 Verified in [row predicates](../src/mediafilterproxy.cpp),
 [selection/export/UI paths](../src/mainwindow.cpp) and
-[association adapter](../src/mediaengineadapter.cpp). Linear row filtering/tallying,
+[association adapter](../src/oldscanner/mediaengineadapter.cpp). Linear row filtering/tallying,
 selection tracking, export row capture and writing are costs to measure. No percentage
 saving is established by removing a view or helper, and retaining these features does not
 require reinstating Canon's complete evidence histories.
@@ -700,8 +720,8 @@ text cache or background export remains. Ordinary rows now also contain no scan
 owner or evidence history, so their copies cannot retain the complete inventory.
 Actual process-memory changes and large export wait time remain to be measured.
 See [row ownership](../src/mediafile.h),
-[temporary working scan](../src/mediascanner.cpp),
-[direct export](../src/mainwindow.cpp#L1789) and [CSV writer](../src/mediacsv.cpp).
+[temporary working scan](../src/oldscanner/oldscanner.cpp),
+[direct export](../src/mainwindow.cpp) and [CSV writer](../src/mediacsv.cpp).
 
 ### Scan lifecycle: current facts for review
 
@@ -716,12 +736,12 @@ Cancellation and peak-memory outcomes have not been benchmarked in this review.
 | Source changes during a scan | Detected changes make observations ineligible. The coordinator checks existence/discovery modification time; database acquisition also checks size. One bounded fallback pass can read headers previously skipped using changed databases. | C15 retains necessary validation. These stamps do not establish content coherence when size/timestamps stay unchanged. No automatic retry expansion is proposed by this review. |
 | Cancel/remove a loading bin | Commits no partial bin identities and removes the unusable loading entry; other successfully loaded bins remain. Destruction cancels and joins pending loads. | Retain this load lifecycle. C89 requires an unreadable failed load to preserve existing filters and report failure. C90/C91 separately allow established selections with empty match sets. User removal of a successfully loaded bin follows C11. |
 
-See [new scan](../src/mainwindow.cpp#L1447),
-[completion](../src/mainwindow.cpp#L1505),
-[filter reset](../src/mainwindow.cpp#L2364),
-[temporary header/database projections and final matching](../src/mediaengine/scancoordinator.cpp#L629),
-[source freshness](../src/mediaengine/scancoordinator.cpp#L281) and
-[cancelled bin loading](../src/avbbinloader.cpp#L306).
+See [new scan](../src/mainwindow.cpp),
+[completion](../src/mainwindow.cpp),
+[filter reset](../src/mainwindow.cpp),
+[temporary header/database projections and final matching](../src/oldscanner/mediaengine/scancoordinator.cpp),
+[source freshness](../src/oldscanner/mediaengine/scancoordinator.cpp) and
+[cancelled bin loading](../src/avbbinloader.cpp).
 
 Cancellation acceptance must cover discovery, database/header reading, final
 selection, row formatting and publication. The 17 October checkpoint observes the
@@ -732,8 +752,8 @@ After acceptance, cancellation is rejected and does not log a new stop request.
 Cancellation
 is cooperative: an in-flight operating-system call must return before its worker
 can stop. This does not authorize hiding a running worker or discarding metadata
-already resolved. See [formatting/reporting](../src/mediascanner.cpp#L280) and
-[cooperative job cancellation](../src/backgroundjob.h#L51).
+already resolved. See [formatting/reporting](../src/oldscanner/oldscanner.cpp) and
+[cooperative job cancellation](../src/backgroundjob.h).
 
 ### Undo, recovery and diagnostics: retained behavior and costs
 
@@ -755,11 +775,11 @@ loaded history while pruning and reconciling. Normal pruning can remove eligible
 records and the latest Undo candidate/stopping point. No timing or peak-memory
 impact has been measured here.
 
-See [history queries](../src/fileoperationcontroller.cpp#L20),
-[startup recovery](../src/fileoperationcontroller.cpp#L238),
-[new-operation gate](../src/fileoperationcontroller.cpp#L451),
-[latest Undo](../src/opjournal.cpp#L764) and
-[history pruning](../src/opjournal.cpp#L837).
+See [history queries](../src/fileoperationcontroller.cpp),
+[startup recovery](../src/fileoperationcontroller.cpp),
+[new-operation gate](../src/fileoperationcontroller.cpp),
+[latest Undo](../src/opjournal.cpp) and
+[history pruning](../src/opjournal.cpp).
 
 C59 retains current technical Console detail; C80 retains disk history across
 restarts through Reveal Diagnostics, and C81 retains local crash collection/notice.
@@ -786,11 +806,11 @@ specified 30 days and automatic cleanup. C88 records the final policy without
 inventing a disk-size limit. Keep the necessary Undo/recovery journal rules
 separate; ordinary diagnostic cleanup cannot prune protected operation records.
 
-See [Console limit](../src/mainwindow.cpp#L491),
-[scan log batching](../src/mediascanner.cpp#L219),
-[synchronous disk logging](../src/diagnostics.cpp#L32),
-[log age check](../src/diagnostics.cpp#L78) and
-[crash collection](../src/diagnostics.cpp#L128).
+See [Console limit](../src/mainwindow.cpp),
+[scan log batching](../src/oldscanner/oldscanner.cpp),
+[synchronous disk logging](../src/diagnostics.cpp),
+[log age check](../src/diagnostics.cpp) and
+[crash collection](../src/diagnostics.cpp).
 
 ### Remaining workflow and presentation: current facts for review
 
@@ -809,16 +829,16 @@ saving has been established for removing these controls.
 | Filter shortcuts | Chips clear their associated restriction; any bin chip clears the whole bin chain while keeping bins loaded. Main-window Escape clears Search only, preserving Project, view, bin and precompute restrictions. Separate dialogs keep their own dismissal/cancellation behavior. | C78 uses Qt's child-widget shortcut scope. C79 retains Bin-tag whole-chain clearing, leaving bins loaded. Sequence controls remain deferred under C100. |
 
 See [explicit volume discovery](../src/volumemanager.cpp),
-[sidebar rebuild](../src/mainwindow.cpp#L1348),
-[folder entry](../src/mainwindow.cpp#L1305),
-[table setup](../src/mainwindow.cpp#L433),
-[column fitting](../src/mainwindow.cpp#L2057),
-[tab counts](../src/mainwindow.cpp#L2154),
-[status totals](../src/mainwindow.cpp#L2138),
-[Reveal](../src/mainwindow.cpp#L1830),
-[clipboard helpers](../src/mainwindow.cpp#L1939),
-[Escape](../src/mainwindow.cpp#L845) and
-[filter chips](../src/mainwindow.cpp#L2254).
+[sidebar rebuild](../src/mainwindow.cpp),
+[folder entry](../src/mainwindow.cpp),
+[table setup](../src/mainwindow.cpp),
+[column fitting](../src/mainwindow.cpp),
+[tab counts](../src/mainwindow.cpp),
+[status totals](../src/mainwindow.cpp),
+[Reveal](../src/mainwindow.cpp),
+[clipboard helpers](../src/mainwindow.cpp),
+[Escape](../src/mainwindow.cpp) and
+[filter chips](../src/mainwindow.cpp).
 
 C60 removes both periodic monitoring and post-scan/operation catch-up checking.
 Startup and explicit Refresh detect locations, replace the main window's detected
@@ -846,11 +866,11 @@ and report an unavailable/unsupported
 scope. C72 retains the current session list without a removal control or saved
 preferences. No new unavailable-entry lifetime policy has been requested. See
 [known bases](../src/volumemanager.cpp),
-[manual entry admission](../src/mediascanner.cpp#L88),
-[directory drop](../src/volumelistwidget.cpp#L75),
-[duplicate entry](../src/mainwindow.cpp#L1210),
-[manual refresh restoration](../src/mainwindow.cpp#L1248) and
-[prepared scan scopes](../src/mediascanner.cpp#L259).
+[manual entry admission](../src/oldscanner/oldscanner.cpp),
+[directory drop](../src/volumelistwidget.cpp),
+[duplicate entry](../src/mainwindow.cpp),
+[manual refresh restoration](../src/mainwindow.cpp) and
+[prepared scan scopes](../src/oldscanner/oldscanner.cpp).
 
 Counts and size totals operate on retained selected fields, without media rereads.
 Status file count uses proxy/model row counts; visible size traverses visible rows,
@@ -861,10 +881,10 @@ These aggregates need no historical source evidence. C74/C75/C77 retain tab, sta
 and Project hover totals. Caching or reducing repeated
 traversals is an implementation choice to measure and present to the user under
 C98 before choosing an approach. See
-[status totals](../src/mainwindow.cpp#L2138),
-[selection totals](../src/mainwindow.cpp#L1621),
-[project aggregates](../src/mainwindow.cpp#L1537) and
-[tab counts](../src/mainwindow.cpp#L2154).
+[status totals](../src/mainwindow.cpp),
+[selection totals](../src/mainwindow.cpp),
+[project aggregates](../src/mainwindow.cpp) and
+[tab counts](../src/mainwindow.cpp).
 
 Main-window Escape is limited to Search under C78, using
 `Qt::WidgetWithChildrenShortcut` so the shortcut belongs to the main window and
@@ -874,17 +894,17 @@ Escape through their rejection/dismissal path, as documented in
 MediaMuster's ProgressDialog overrides that path to request cancellation and stay
 visible until the worker finishes; Rebalance does the same while running and
 otherwise dismisses. These existing safeguards are retained.
-See [current main-window shortcut](../src/mainwindow.cpp#L845),
-[scan/operation progress cancellation](../src/progressdialog.cpp#L166) and
-[Rebalance cancellation](../src/rebalancedialog.cpp#L659).
+See [current main-window shortcut](../src/mainwindow.cpp),
+[scan/operation progress cancellation](../src/progressdialog.cpp) and
+[Rebalance cancellation](../src/rebalancedialog.cpp).
 
 The bin dialog is a reused nonmodal `Qt::Tool`: hiding/dismissing it retains loaded
 bins, filter state and pending loads. Its Done action calls `hide()`; removing a
 loading row cancels that load, and destruction cancels/joins all pending loads.
 This fits C11's removal-based bin lifetime. See
-[bin dialog mode](../src/avbfilterdialog.cpp#L110),
-[Done action](../src/avbfilterdialog.cpp#L318) and
-[loading-row removal](../src/avbfilterdialog.cpp#L538).
+[bin dialog mode](../src/avbfilterdialog.cpp),
+[Done action](../src/avbfilterdialog.cpp) and
+[loading-row removal](../src/avbfilterdialog.cpp).
 
 Pinned Qt v6.5.3 source keeps parent `WindowShortcut` shortcuts eligible while a
 parented tool window is active. C78 therefore replaces that default scope with
@@ -908,8 +928,8 @@ clearing Search. See
 See [Help menu](../src/mainwindow.cpp),
 [crash notice](../src/mainwindow.cpp),
 [Debug controls](../src/mainwindow.cpp),
-[About dialog](../src/aboutdialog.cpp#L118) and
-[About animation](../src/aboutdialog.cpp#L49).
+[About dialog](../src/aboutdialog.cpp) and
+[About animation](../src/aboutdialog.cpp).
 
 ### Diagnostic history cleanup — 17 October 2026
 
@@ -1086,7 +1106,7 @@ exhaustive certification of every parser or identity variant.
 The example is illustrative, not a reported file. Source Path's cell and tooltip
 show the recorded path or URL. It may be old or unavailable, and does not prove
 the source still exists. See the [table mapping](../src/mediatablemodel.cpp) and
-[import metadata extraction](../src/mediaengine/mxfprojection.cpp).
+[import metadata extraction](../src/oldscanner/mediaengine/mxfprojection.cpp).
 
 Clarified at the 12 October baseline: MediaMuster rows retained source filename
 and source path separately. The supported MDB/OMF/MXF mappings derived the filename
@@ -1100,7 +1120,7 @@ revised the requirement under C94: retain Source Path only and remove the separa
 Source Filename value/column. C95/C96 confirm Source Path's table/CSV presentation
 and Search use; C92/C93 settle the precompute controls.
 
-The 15 October Source Path change updates the [header-completeness gate](../src/mediaengine/scancoordinator.cpp)
+The 15 October Source Path change updates the [header-completeness gate](../src/oldscanner/mediaengine/scancoordinator.cpp)
 from the former SourceFilename-only disagreement check to SourcePath usability
 under C12/C35. Basename observations/coverage, policy, adapter assignment and
 presentation consumers are removed together. A recorded path can
@@ -1149,16 +1169,16 @@ the older-journal compatibility constraint.
   and material number. Preserve the complete required identity; the material
   portion alone is not the full identifier.
 
-The supplied [pyavb type mapping](/Users/martymclean/Downloads/pyavb-main/src/avb/trackgroups.py:1149)
+The supplied [pyavb type mapping, recorded line 1149](/Users/martymclean/Downloads/pyavb-main/src/avb/trackgroups.py)
 uses one MobID type with separate composition/master/source roles. Its
-[identifier layout](/Users/martymclean/Downloads/pyavb-main/src/avb/mobid.py:176)
-and [media-decomposer structure](/Users/martymclean/Downloads/media-decomposer/trunk/source/AvTypes.h:102)
+[identifier layout, recorded line 176](/Users/martymclean/Downloads/pyavb-main/src/avb/mobid.py)
+and [media-decomposer structure, recorded line 102](/Users/martymclean/Downloads/media-decomposer/trunk/source/AvTypes.h)
 corroborate the modern 32-byte structure. These are implementation references,
 not normative specifications. App ID text uses a comparison byte-order convention;
 it need not equal a raw MXF byte dump or a library's formatted UMID URN.
-See [conversion](/Users/martymclean/Developer/MediaMuster/src/mediaengine/projection.cpp:46).
+See [conversion](../src/oldscanner/mediaengine/projection.cpp).
 
-The supplied [Python PMR reader](/Users/martymclean/Downloads/python-PMRReader-master/PMR.py:95)
+The supplied [Python PMR reader, recorded line 95](/Users/martymclean/Downloads/python-PMRReader-master/PMR.py)
 calls the first UID `materialPackageUID`, the second `physicalSourcePackageUID`,
 and the filename field "Clip Name". A bounded current-reader check of
 `/Volumes/EDIT/Avid MediaFiles/MXF/1/1042.WAVA01.D77B775B553A6FA.mxf` and its
@@ -1175,7 +1195,7 @@ conversion. This demonstrates a naming discrepancy in the supplied Python module
 for this specimen, rather than a current app mapping mismatch. Both source reads
 were complete, with no projection diagnostics and stable size/modification time.
 The attached Python module was inspected, not executed. The earlier
-[genuine byte-order comparison](</Users/martymclean/Developer/MediaMuster/Project Canon/mxf-identity-byte-order-2026-10-07.md:14>)
+[genuine byte-order comparison](../Project%20Canon/mxf-identity-byte-order-2026-10-07.md)
 also matches the first UID against PMR/MDB/MXF records.
 
 Temporary method, probe results and source hashes are under
@@ -1253,8 +1273,8 @@ eligible rows. Applied bin rules are snapshots and survive bin removal under the
 revised C11 decision. The current whole-bin dialog already accepts nonempty
 reference sets that match no scanned rows; it skips zero-identity operands.
 C90's sequence groundwork must preserve an active checked-empty restriction.
-See [operand application](../src/avbfilterdialog.cpp#L730) and
-[unmatched-reference test](../tests/tst_binfilterdialog.cpp#L293).
+See [operand application](../src/avbfilterdialog.cpp) and
+[unmatched-reference test](../tests/tst_binfilterdialog.cpp).
 
 A genuine inspected example is `reverse.avb` at
 `/Volumes/EDIT/2026/Desktop/mrtymcln/monday_NIGHT/reverse.avb` (SHA-256

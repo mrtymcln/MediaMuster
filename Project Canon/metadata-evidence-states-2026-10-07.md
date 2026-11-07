@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 Implemented 7 October 2026. This pass finishes the logical read-state bookkeeping
 around retained metadata; it does not add a detail UI, change source priorities,
 expand discovery, decode essence, or settle unknown/private meanings.
@@ -45,26 +48,26 @@ existing qualified derived presentation; their presence is not codec certificati
   defined field. Defaults do not allocate an empty observation per source/field.
   Original observations remain separate. Repeated attachment merges checked
   fields, preserves earlier coverage and deduplicates source/object receipts.
-- [Projection helpers](../src/mediaengine/projection.cpp) preserve the named inputs in
+- [Projection helpers](../src/oldscanner/mediaengine/projection.cpp) preserve the named inputs in
   coverage explanations. A null unique-value lookup is not used as absence proof.
   Original raw properties and relationships remain in the source graph.
-- [PMR projection](../src/mediaengine/pmrprojection.cpp) uses the established layout for
+- [PMR projection](../src/oldscanner/mediaengine/pmrprojection.cpp) uses the established layout for
   format omissions, retains v1 omission reasons, and distinguishes an unread or
   failed modification word from one whose timestamp meaning is unsupported.
-- [MXF projection](../src/mediaengine/mxfprojection.cpp) qualifies recognized descriptor
+- [MXF projection](../src/oldscanner/mediaengine/mxfprojection.cpp) qualifies recognized descriptor
   inputs. Object-local absence requires complete mapped framing; partial or
   unsupported objects stay unknown. Missing compression cannot imply PCM unless
   the owning Wave/AES3 descriptor is complete. This is a deliberate correctness
   correction, covered by a malformed/incomplete-object regression.
-- [OMF/MDB/native audio projection](../src/mediaengine/omfprojection.cpp) keeps empty and
+- [OMF/MDB/native audio projection](../src/oldscanner/mediaengine/omfprojection.cpp) keeps empty and
   unreadable text, failures deriving a source filename, descriptor input coverage
   and native fmt/COMM coverage. Local omission proof requires complete enumeration
   and identified native property names. Dependency-heavy mappings remain conservative.
-- [Scan attachment](../src/mediaengine/scancoordinator.cpp) registers the actual header
+- [Scan attachment](../src/oldscanner/mediaengine/scancoordinator.cpp) registers the actual header
   receipt even when skipped, failed or unable to establish ownership. A later
   read replaces its unobserved unopened receipt; distinct observed snapshots stay
   distinct. Changed header coverage is ineligible and retains Changed freshness.
-- [Bin enrichment](../src/avbmetadataresolver.cpp) registers associated AVB
+- Bin enrichment (retired `src/avbmetadataresolver.cpp`) registers associated AVB
   receipts without changing the approved name/bin priorities. Coverage propagates
   through source qualification, selection exclusion, scan attachment and copies.
 

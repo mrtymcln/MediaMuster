@@ -1,7 +1,8 @@
 #pragma once
 
-// Background/UI boundary for the MediaEngine scan engine. Only prepared compact
-// rows cross the result handoff; temporary scan owners stay in the worker.
+// Legacy background/UI boundary for the retained MediaEngine scan pipeline.
+// Normal macOS/Windows scans use BellaAppScanner. Only prepared compact rows
+// cross this facade's result handoff; temporary scan owners stay in the worker.
 #include "backgroundjob.h"
 #include "mediafile.h"
 #include <QObject>
@@ -94,7 +95,7 @@ private:
 	BackgroundJob m_job;
 	std::mutex m_stateMutex;
 	ScanState m_state = ScanState::Idle;
-	// Assigned before starting by deterministic boundary tests; empty in the app.
+	// Assigned before starting by deterministic legacy scan boundary tests.
 	std::function<void(Checkpoint, qsizetype)> m_testCheckpoint;
 	Options m_options;
 };

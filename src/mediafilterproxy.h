@@ -11,7 +11,8 @@ class MediaTableModel;
 struct MediaFile;
 
 /// Independent filters all have to pass: tab, projects, bin file identities,
-/// optional precompute categories/effect categories/effect names/volume, and free text in visible string fields.
+/// optional precompute categories/effect categories/effect names/volume, and free
+/// text in supported name, path, project, bin, compression and effect fields.
 class MediaFilterProxy : public QSortFilterProxyModel
 {
 	Q_OBJECT
@@ -38,9 +39,9 @@ public:
 	void setSearchText(const QString &text);
 	void setProjectFilter(const QSet<QString> &projects);
 
-	/// Experimental precompute features are off by default. Turning them off
-	/// resets Precompute mode to All and clears every detail selection;
-	/// setters cannot activate them while off.
+	/// Starts disabled; MainWindow applies FeatureFlags::kPrecomputeFilter.
+	/// Disabling resets Precompute mode to All and clears detail/volume filters;
+	/// setters cannot activate those filters while disabled.
 	void setPrecomputesEnabled(bool enabled);
 	bool precomputesEnabled() const { return m_precomputesEnabled; }
 	/// Whole checked paths are ORed; the other filters still have to pass.

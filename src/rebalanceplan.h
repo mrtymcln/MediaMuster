@@ -25,8 +25,8 @@ struct RebalanceMove
 
 // MARK: - FolderState
 
-/// Per-folder snapshot for the rebalance dialog: current on-disk count
-/// and bytes, plus the projected delta if the plan runs.
+/// Per-folder snapshot for the rebalance dialog: directory file count and
+/// eligible scan-row bytes, plus the projected delta if the plan runs.
 ///
 /// Folders outside Rebalance's numbered series are shown read-only.
 struct FolderState

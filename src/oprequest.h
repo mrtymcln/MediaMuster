@@ -38,8 +38,7 @@ enum class ConflictPolicy : int
 
 // MARK: - On-disk names
 //
-// Journal names are explicit. Changes require a new schema; unsupported
-// schemas are rejected.
+// Persisted names have schema-defined meanings; unsupported schemas are rejected.
 inline QString opKindName(OpKind k)
 {
 	switch (k)
@@ -99,8 +98,8 @@ inline std::optional<ConflictPolicy> conflictPolicyFromName(const QString &name)
 
 // MARK: - OpItem
 
-/// Header identities established during scanning. Every established header identity
-/// remains a safety requirement, independently of the row's selected MasterMobId.
+/// Captured header identities to recheck independently of the selected MasterMobId.
+/// Bella supplies its qualified FileMobId; OldScanner can also retain header master IDs.
 /// Database-only master associations are not requirements imposed on the header.
 struct OpHeaderIdentity
 {
@@ -159,7 +158,7 @@ struct OpItem
 struct OpRequest
 {
 	OpKind kind = OpKind::Copy;
-	QString destRoot;			 ///< Copy/Move destination root; empty for Delete/Rename/Undo.
+	QString destRoot;			 ///< Destination root used by Copy/Move.
 	bool preserve = false;		 ///< Recreate the MXF folder path or flat OMFI root under destRoot.
 	bool copyThenRemove = false; ///< Whole Move uses copy-then-remove, including mixed volumes.
 	bool undoEnabled = false;	 ///< Runtime permission to start a NEW Undo; not persisted.

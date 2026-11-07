@@ -142,8 +142,8 @@ namespace Conventions
 	// MARK: - What counts as media
 
 	/// True when a directory entry occupies Avid's per-folder file budget
-	/// (kFolderMax above): an .mxf that isn't dot-hidden. Used by the
-	/// rebalancer's packing and the Quarantined tally. Scanner admission
+	/// (kFolderMax above): an .mxf that isn't dot-hidden. Used by
+	/// Rebalance planning and execution folder budgets. Scanner admission
 	/// also requires a supported managed location and its matching family.
 	inline bool countsAsEssenceName(QStringView fileName)
 	{

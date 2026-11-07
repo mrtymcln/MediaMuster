@@ -405,9 +405,9 @@ namespace Bella::Detail
 						if (!extensionDamaged)
 							malformed(QStringLiteral("Native WAVE extensible format has incomplete required fields."));
 					}
-					else if (length >= 40 && qFromLittleEndian<quint16>(bytes.data() + 16) < 22)
+					else if (qFromLittleEndian<quint16>(bytes.data() + 16) < 22)
 						malformed(QStringLiteral("Native WAVE extensible format declares fewer than 22 extension bytes."));
-					else if (length >= 40)
+					else
 					{
 						constexpr std::array<quint8, 16> pcm{1, 0, 0, 0, 0, 0, 0x10, 0, 0x80, 0, 0, 0xaa, 0, 0x38, 0x9b, 0x71};
 						constexpr std::array<quint8, 16> floating{3, 0, 0, 0, 0, 0, 0x10, 0, 0x80, 0, 0, 0xaa, 0, 0x38, 0x9b, 0x71};

@@ -1,7 +1,8 @@
 #pragma once
 
-// Readers inspect already-open sources. The coordinator handles file access,
-// matching between sources and display selection.
+// Retained media readers and the active AVB reader inspect already-open sources.
+// Callers own file access; matching, operation checks and display selection live
+// outside these readers. Bella's independent readers do not use this interface.
 
 #include "scanmodel.h"
 #include <QIODevice>

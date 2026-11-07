@@ -4,6 +4,11 @@ The catalogue embedded in `src/effectcatalogue.cpp` contains **887 distinct name
 
 Recognition from a clip name is **not a definitive effect ID**. Clip names are editable, and a name does not identify a specific AlphaFlex execution variant. The application must first classify a row as a precompute using its usage metadata. Unmatched tokens retain their original text and an **unknown** category, including uppercase `TITLE`, `SLATE` and arbitrary template names.
 
+Normal Bella scans call this shared catalogue through `src/bella/naming.cpp` and
+retain Effect and Effect Category when precompute details are requested. Bella
+does not retain or export the separate Effect Sequence value returned by the
+shared lookup; the retained OldScanner presentation still supports that field.
+
 ## Provenance and scope
 
 The review read the installed application and its resources without loading or executing Avid code. It examined the built-in name/category registration routine, plug-in registration data and the shipped external-effects registry.

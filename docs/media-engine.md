@@ -1,22 +1,35 @@
-# OldScanner and MediaEngine ownership
+# Bella, OldScanner and MediaEngine ownership
 
-**OldScanner** is the retained scanner/parser used by the app. Its facade and
-presentation adapter live under `src/oldscanner/`; its discovery, media readers,
-interpretation and reconciliation live under `src/oldscanner/mediaengine/`.
-Those internals retain namespace `MediaEngine`.
+**Bella** runs normal application scans on macOS and Windows. CMake defines
+`MEDIAMUSTER_USE_BELLA` for both supported platforms. `MEDIAMUSTER_BELLA_PREVIEW`
+changes the test application's name and branding; it is not the normal scanner
+selection switch.
 
-The existing AVB reader, bin reference resolver and shared reading types remain
-under `src/mediaengine/`, also in namespace `MediaEngine`. Bin Filter is unchanged.
-The file-operation engine continues using the existing MXF/OMF readers and
-projections to verify identities on opened files. This organization preserves
-those consumers while isolating the scanner being replaced.
+The independent C++17 / Qt 6.5.3 implementation lives under `src/bella/` in
+`mediamuster_bella`. `BellaAppScanner` owns its app-side background/UI connection;
+`Bella::scan()` coordinates discovery, a fresh per-scan reader pool with at most
+four outstanding source jobs, source matching and compact results.
+`bellarowpresentation.cpp` prepares ordinary table/CSV rows, and
+`bellaoperationhandoff.cpp` captures their operation instructions. Bella excludes
+recorded Source Path and Effect Sequence from its results and presentation; File
+Path is the physical managed-file path. Its source priorities and header-opening
+rules are recorded in [Project Bella](../Project%20Bella/README.md).
 
-[Bella](../Project%20Bella/README.md) is a new, independent C++17 / Qt 6.5.3
-scanner/parser. Its requirements review is complete, and new implementation
-choices require user check-ins. The shared ID helper and PMR parser are implemented under
-`src/bella/` in a separate `mediamuster_bella` library used only by its focused
-tests; the scanner and other source readers remain pending. Do not patch OldScanner
-into Bella. The app stays on OldScanner until the user approves the switch.
+**OldScanner** remains under `src/oldscanner/`, with readers, interpretation and
+reconciliation under `src/oldscanner/mediaengine/` in namespace `MediaEngine`.
+Its facade and full scan pipeline serve legacy-mode regression tests and the
+`mediaengine_compare` probe. The normal application still uses its MXF/OMF readers
+and projectors for live file-operation identity checks, and Bella shares its
+compression-name lookup. Shared location types also remain in `oldscanner.h`.
+
+The active AVB reader, Whole Bin reference resolver and shared reading types stay
+under `src/mediaengine/`, also in namespace `MediaEngine`. Bin Filter uses them
+independently of the inventory scanner. It does not use Bella to read bins.
+
+## Retained MediaEngine components
+
+This table describes the OldScanner pipeline and its shared support types. Its
+field preferences and retained evidence are not Bella's compact scan contract.
 
 | Component | Role |
 | --- | --- |
@@ -33,7 +46,7 @@ into Bella. The app stays on OldScanner until the user approves the switch.
 | `Projection.fileReferencesComplete` | Temporary MDB file-reference coverage, established during projection independently of overall metadata read success. Required for absence proof; qualified individual references can establish presence without it. |
 | `MediaEngine::MediaFile` | Physical location and working evidence inside the scan result. |
 | UI `MediaFile` and `KelpieId` | Selected typed values for one physical media-file location and its scan-session identity. Matching Avid IDs do not merge copies. |
-| `MediaMetadataStatus` | Fixed inline status checklist, with availability, applicability, agreement, origin and freshness tags. Contains no values, strings or source owners. |
+| `MediaMetadataStatus` | OldScanner's fixed inline status checklist, with availability, applicability, agreement, origin and freshness tags. Contains no values, strings or source owners. Bella row preparation does not populate this checklist. |
 | `MediaScanStamp` / `OpScanReceipt` | Current path/time/volume claims and optional frozen header/database safety conclusions used by live operations. |
 | `ScanRowLookup` | Scoped path lookup of header outcomes and change/skipped flags used during row preparation. Owns no scan or parsed-source data. |
 
@@ -48,12 +61,15 @@ then the scanner discards the result before delivering rows to the UI. Partial a
 failed reads retain their actual outcomes during preparation; their histories do
 not become row-owned data.
 
-Databases are still read first and buffered in RAM during parsing. Projected
+OldScanner reads databases first and buffers them in RAM during parsing. Projected
 database facts remain available for matching across folders and reporting unmatched
 references during scanning. Reconciliation issues may separately retain source
-snapshot diagnostics without keeping the complete scan result. AVB loading is
-independent: parsed bin graphs and detailed resolution records are temporary
-loading data. Loaded bins and applied filters keep compact file references,
+snapshot diagnostics without keeping the complete scan result.
+
+## Shared AVB loading and filtering
+
+AVB loading is independent: parsed bin graphs and detailed resolution records are
+temporary loading data. Loaded bins and applied filters keep compact file references,
 status and warnings. They do not supply names or derived effect fields to the
 media inventory, and rows retain no AVB history owners.
 `AvbReferenceIndex` accepts one AVB and resolves Whole Bin from its root item list,
@@ -76,6 +92,11 @@ saved in the
 Supported low-level AVB field decoding and physical-file timing metadata remain
 separate from this removal. See [AVB coverage](avb-parser.md).
 
+## OldScanner matching and presentation
+
+The following details describe the retained OldScanner pipeline. Bella uses its
+own matching implementation and the source priorities linked above.
+
 Local database membership uses an unambiguous qualified PMR filename/identity
 reference or a same-folder qualified MDB file entry matching the final usable
 physical FileMobId. A validated individual entry can count in a partial source;
@@ -94,13 +115,13 @@ columns and corresponding views derive from this same compact status. CSV uses
 the two flags in place of Database Status, after Location and before the IDs.
 All enabled views remain visible at zero; their counts still describe the whole inventory.
 
-The read-only scan probe uses this same engine. It can inspect working evidence,
-source receipts, read decisions, callbacks, input stamps and prepared CSV, and measures
-scan time and process memory. Reader and projector tests inspect genuine source
-records directly while those inputs are alive; they also check that extracted
+The read-only `mediaengine_compare` probe uses OldScanner, not Bella. It can inspect
+working evidence, source receipts, read decisions, callbacks, input stamps and
+prepared CSV, and measures scan time and process memory. Fixture-backed reader and projector tests inspect
+source records directly while those inputs are alive; they also check that extracted
 evidence survives the reading storage's lifetime.
 
-The `OldScanner` facade owns the background/UI boundary. The
+The `OldScanner` facade owns the legacy background/UI boundary. Its
 presentation adapter prepares selected facts for the table and CSV. Table insertion
 stores prepared values without reselecting or projecting metadata. Confirmed
 transfers directly update physical values, field status and destination membership
@@ -114,8 +135,8 @@ unknown, and uncertain Kind cannot establish inapplicability. Actual
 Present/Unreadable Resolution facts remain.
 This is a final compact-note rule, with no reader, temporary aggregation or
 acquisition change and no extra retained source data.
-After Cancel the coordinator finishes indexes and final matching from completed,
-qualified preparations and captured freshness checks, with no further filesystem
+After Cancel the OldScanner coordinator finishes indexes and final matching from
+completed, qualified preparations and captured freshness checks, with no further filesystem
 requests. Interrupted projection/ownership or unchecked physical/source work stays
 unavailable. Every discovered physical row is retained. The presentation adapter
 continues formatting these rows and observes the live stop flag to avoid optional
@@ -133,8 +154,9 @@ header-sufficiency condition for missing clip lengths. Physical-file Duration,
 exact rates, display clocks/drop-frame interpretation and master associations
 remain required.
 
-Source Filename has been removed under C94/C95/C96: no basename projection,
-property/status slot, policy, row value or helper remains. Selected recorded Source
+In the retained OldScanner presentation, Source Filename was removed under
+C94/C95/C96: no basename projection, property/status slot, policy, row value or
+helper remains. Selected recorded Source
 Path or URL now supplies the same table/CSV column position, Search and sorting.
 The existing header-then-MDB preference, master/file ownership and exact recorded
 spellings remain. Missing usable applicable database paths trigger the next

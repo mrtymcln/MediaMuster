@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 Later status: this reader is now connected to the application. The
 [8 October compression/audio-summary correction](legacy-compression-and-audio-summaries-2026-10-08.md)
 records shared native/Summary field decoding, per-field evidence and current
@@ -53,10 +56,10 @@ Neither path calls the old production parsers.
 
 Implementation files:
 
-- [`omfreader.h/.cpp`](../src/mediaengine/omfreader.cpp): public reader and native/embedded source coordination.
-- [`audioreader_p.h/.cpp`](../src/mediaengine/audioreader_p.cpp): bounded native audio chunk reader.
-- [`omfbentoreader_p.h/.cpp`](../src/mediaengine/omfbentoreader_p.cpp): OMF-owned container framing and selective value reads.
-- [`omfobjects_p.h/.cpp`](../src/mediaengine/omfobjects_p.cpp): OMF-owned object interpretation.
+- [`omfreader.h/.cpp`](../src/oldscanner/mediaengine/omfreader.cpp): public reader and native/embedded source coordination.
+- [`audioreader_p.h/.cpp`](../src/oldscanner/mediaengine/audioreader_p.cpp): bounded native audio chunk reader.
+- [`omfbentoreader_p.h/.cpp`](../src/oldscanner/mediaengine/omfbentoreader_p.cpp): OMF-owned container framing and selective value reads.
+- [`omfobjects_p.h/.cpp`](../src/oldscanner/mediaengine/omfobjects_p.cpp): OMF-owned object interpretation.
 - [`scanmodel.h`](../src/mediaengine/scanmodel.h): embedded source contexts and original embedding locations.
 - [`tst_mediaenginelegacy.cpp`](../tests/tst_mediaenginelegacy.cpp): real specimens and independently authored failure/boundary cases.
 

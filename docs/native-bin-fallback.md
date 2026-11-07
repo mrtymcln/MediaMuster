@@ -1,7 +1,8 @@
 # Native bin first, with MediaMuster Trash fallback
 
-Scope: repair 1 from the data-loss verification plan. The parser, retired-original
-restoration and temporary-file cleanup repairs are separate and unchanged.
+This page describes the native Trash/bin refusal fallback used by file operations.
+The validation section records the original September 2026 repair checks; it does
+not certify the current checkout.
 
 ## Behaviour
 
@@ -37,13 +38,14 @@ for recovery; there is no downgrade to permanent deletion.
   platform error codes can map here only when no native destination was returned
   and the recorded original remains unchanged. The native error is kept in
   Details. Cancellation and ambiguous outcomes are distinct.
-- The new `trash-fallback` journal step records a completed native refusal.
+- The `trash-fallback` journal step records a completed native refusal.
   Recovery validates this state without repeating the native operation. Resume
   asks for consent if it has not been saved.
 - Batch acceptance is saved on every affected entry before moving the first
-  fallback file. `trashFallbackApproved` defaults to false when reading older
-  journals. An approved Resume revalidates the original and uses MediaMuster
-  Trash without another native attempt or another prompt for that item.
+  fallback file. Current-format journals require the boolean
+  `trashFallbackApproved` field; unsupported schemas and missing required fields
+  are rejected without migration. An approved Resume revalidates the original and
+  uses MediaMuster Trash without another native attempt or another prompt for that item.
 - Originals are reopened and checked before the dialog and again afterward.
   Destination conflicts never overwrite another file. Cancellation is checked
   again immediately before fallback relocation.
@@ -75,8 +77,8 @@ Verified 14 September 2026:
   file-operation suite; this was a test-code issue, corrected without changing
   the production implementation.
 - [Windows regression rerun 34813904539](https://github.com/mrtymcln/MediaMuster/actions/runs/34813904539)
-  passes all 107 file-operation cases with that correction. The source and tests
-  in the working checkout match this verified integration snapshot.
+  passed all 107 file-operation cases with that correction. Those results apply
+  to that integration snapshot, before subsequent source and test changes.
 
 The Windows production matrix confirmed real system-bin receipts and identical
 restored contents for ordinary files. Oversized files and recycling disabled by
@@ -90,12 +92,12 @@ pending/approved crash recovery and durable batch consent after partial
 completion. UI regressions cover both buttons, Escape, window close, cancellation,
 missing handlers, stale replies and destruction while waiting.
 
-The integrated Windows diagnostic runs the full application/test build and uses
-generated files on disposable storage to verify real native-bin/Undo round trips,
-an oversized file, and recycling disabled by policy. Those last two cases must
-record consent, move to MediaMuster Trash and restore identical contents through
-Undo. The per-volume disabled-bin setting remains inconclusive if its independent
-control does not establish that Windows applied it.
+The recorded integrated Windows diagnostic ran the full application/test build
+and used generated files on disposable storage to verify real native-bin/Undo
+round trips, an oversized file, and recycling disabled by policy. Those last two
+cases required recorded consent, movement to MediaMuster Trash and identical
+restored contents through Undo. A per-volume disabled-bin result was inconclusive
+unless its independent control established that Windows applied the setting.
 
 Hosted Windows Server tests do not establish every supported Windows desktop,
 removable drive or shared-storage configuration. The airgapped Avid machine is

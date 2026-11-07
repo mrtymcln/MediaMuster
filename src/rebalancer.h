@@ -27,8 +27,8 @@ public:
 
 	// MARK: - Execution
 
-	/// Only one execute is in flight per instance; a second call
-	/// cancels and joins the previous pre-flight before starting anew.
+	/// Replacing preparation cancels and joins the previous pre-flight first.
+	/// The private operation manager separately refuses overlapping engine jobs.
 	void executeAsync(const RebalancePlan &plan);
 
 	/// Checked at relatives-group boundaries so relatives stay
@@ -65,7 +65,7 @@ private:
 	std::atomic<bool> m_cancelRequested{false};
 	quint64 m_preparationRequestId = 0; // Accessed only on the owner thread.
 
-	/// Request preparation runs here so it cannot freeze the GUI. The
-	/// renames themselves run on the engine's own worker.
+	/// Request preparation runs off the GUI thread; the renames themselves
+	/// run on the engine's own worker.
 	BackgroundJob m_preflight;
 };

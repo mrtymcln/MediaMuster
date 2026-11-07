@@ -4,28 +4,33 @@
 > Dated results and file references below describe the original investigations.
 
 **Historical plan and evidence.** [Project Copland](../Project%20Copland/README.md)
-now records the active V1 scope and confirmed decisions, including revisions to
-Canon's retention and bin-enrichment design. The descriptions below record the
-Canon stage. For the current implementation, use
+records the subsequent V1 simplification decisions, and
+[Project Bella](../Project%20Bella/README.md) records later scanner requirements.
+Normal macOS and Windows application scans now use Bella. The descriptions below
+record the Canon stage, including its superseded retention and bin-enrichment
+design. For the current implementation, use
 [How MediaMuster works](../docs/current-behaviour.md) and the
 [architecture map](../docs/architecture.md). Dated reports retain their original
 source-state and validation limits.
 
 This folder records the user's requirements, RAM metadata design and the evidence
-behind MediaMuster's Avid-format interpretation. **MediaEngine** is the live engine,
-under `src/mediaengine/` and namespace `MediaEngine`; its concrete components are
-explained in [engine terminology](../docs/media-engine.md).
+behind MediaMuster's Avid-format interpretation. Canon's engine is retained under
+`src/oldscanner/mediaengine/` in namespace `MediaEngine`; its media readers and
+projectors still serve live operation checks. The active AVB reader remains under
+`src/mediaengine/`. Current ownership is explained in
+[engine terminology](../docs/media-engine.md).
 
 The [11 October cleanup verification](../docs/media-engine-cleanup-2026-10-11.md)
 records the sole-engine integration, migrated real-media checks and approved
 MPEG OMF ownership correction.
 
-The [source lifetime contract](source-lifetimes.md) defines the normal ownership
-rule: keep data while something uses it, then release it. PMR/MDB/MXF/OMF scans
+The [source lifetime contract](source-lifetimes.md) records Canon's ownership
+rule: keep data while something uses it, then release it. Its PMR/MDB/MXF/OMF scans
 retain supported observations, alternatives, evidence and source receipts;
 complete source copies and unused reader graphs are temporary. Database-first
-scheduling is unchanged. Loaded AVB graphs remain available while bin filtering
-and enrichment use their relationships.
+scheduling was preserved at that stage. Copland subsequently removed AVB
+enrichment and loaded-bin graph retention; active bin loading now releases its
+temporary graph after preparing compact file references and warnings.
 
 The [retention plan](newtestament-retention-plan-2026-10-10.md) records approved
 stages and further proposed trade-offs. Dated implementation reports record the
@@ -37,8 +42,8 @@ the all-source policy, its preservation checks and measured RAM/speed limits.
 The [source receipt cleanup](mediaengine-source-receipt-cleanup-2026-10-11.md)
 records removal of unused reconstruction machinery and policy switches, the
 permanent scoped reading path, exact metadata/evidence comparisons and measurements.
-`SourceReceipt` is the current per-source record; loaded AVB graphs remain available
-for active bin consumers. Earlier implementation reports retain their dated state.
+`SourceReceipt` remains the retained engine's per-source record. Earlier
+implementation reports retain their dated source and AVB-lifetime state.
 The [app naming review](app-naming-review-2026-10-11.md) and its
 searchable inventory group related components
 and propose names that describe their roles. The full declaration inventory,
@@ -48,11 +53,16 @@ chosen names and download a TXT for a later batch rename. They do not rename cod
 The [applied naming batch](app-naming-applied-2026-10-11.md) records the user’s
 exported choices, approved corrections and passing integration checks. The dated
 review inventory describes the source before that batch.
-Compression changes remain on hold. Project Canon remains the requirements folder
-name: canonical correctness is an objective, not a claim that every parser rule
+The compression hold recorded during Canon is historical; Bella's later naming
+decisions and implementation are documented separately. Project Canon remains the
+requirements folder name: canonical correctness is an objective, not a claim that every parser rule
 is proven. Dated verification records retain their source-state limits.
 
 ## Live connection update
+
+This section records the October Canon integration and its validation snapshots.
+It is not the current Bella app architecture. Sequence selection and AVB row
+enrichment described at intermediate checkpoints were subsequently removed.
 
 The [original audit closeout](audit-closeout-2026-10-07.md) assesses each of the
 40 findings individually and retains the open/partial/evidence limits. The
@@ -491,8 +501,12 @@ Only the selected implementation remains in the current MediaEngine source.
 
 ## Current implementation
 
-The live scanner creates one `MediaFile` per admitted physical location. It retains
-supported property observations and per-field selection explanations in RAM;
+This section describes the retained Canon/OldScanner implementation. Normal app
+scans use Bella's independent compact-result pipeline; see
+[current ownership](../docs/media-engine.md).
+
+The OldScanner pipeline creates one `MediaFile` per admitted physical location.
+It retains supported property observations and per-field selection explanations in RAM;
 unused source records are released under the [lifetime contract](source-lifetimes.md).
 Database entries without a local media match produce scoped `ScanIssue` records,
 including wider-scan matches when found; they do not create phantom media rows.
@@ -536,10 +550,11 @@ An accepted parse is not proof that every possible object/property is understood
 
 ## Continuing the implementation
 
-The replacement engines are connected. Read this requirements index together with
-the detailed documents, live verification report and format ledger before changing
-the implementation. Original media and Avid databases were not changed by the
-read-only corpus checks.
+Canon's engine was connected during its recorded integration stage; Bella now
+supplies normal application scans. Read this historical requirements index together
+with the later Copland/Bella decisions, current ownership map and relevant format
+ledger before changing retained readers. Original media and Avid databases were
+not changed by the read-only corpus checks.
 
 Agreed requirements above are user decisions. Proposed class layouts, catalogue
 entry structures and staged implementation details remain engineering proposals.
@@ -547,12 +562,15 @@ Evidence-backed format rules must retain their source and revision; empirical
 observations must not be promoted to universal format facts. Resolve newly
 discovered property meanings/display rules with the user as already required.
 
-The user approved per-property selection, validated media-header preference for
-technical facts, retention of competing observations, blank unresolved values with
-Console diagnostics, and display/export of all established MasterMobIds. Stop an
+The Canon-stage decisions approved per-property selection, validated media-header
+preference for technical facts, retention of competing observations, blank unresolved values with
+Console diagnostics, and display/export of all established MasterMobIds. Copland
+later selected one ordinary MasterMobId and removed row-owned histories; Bella
+has its own approved field priorities and compact records. Stop an
 affected move/delete if an applicable stamp check cannot be completed or detects
 change, and explain the reason. The staged implementation and comparison/check
-recommendations remain the approved acceptance plan.
+recommendations in this folder document Canon's acceptance plan; later Copland/Bella
+decisions govern the current implementation.
 
 The [live connection report](live-connection-2026-10-04.md#confirmed-selection-priorities)
 records the confirmed editorial-name/project/original-bin priorities. The Alpha

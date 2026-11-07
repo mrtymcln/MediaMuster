@@ -84,9 +84,8 @@ VolumeIdentity VolumeIdentity::capture(const QString &anyPathOnVolume)
 			v.rootObjectId = QString::number(qulonglong(root.st_ino));
 		return v;
 	}
-	// The volume's own UUID, read via getattrlist on the mount point.
-	// Read-only — nothing is ever written onto the user's drives; the OS
-	// minted this identity when the volume was formatted.
+	// Read the volume UUID through the mount point without writing to the drive.
+	// Matching this identifier does not depend on the current mount path.
 	struct attrlist al{};
 	al.bitmapcount = ATTR_BIT_MAP_COUNT;
 	al.volattr = ATTR_VOL_INFO | ATTR_VOL_UUID;

@@ -3,6 +3,8 @@
 These records describe their inspected source revisions and platforms. They do
 not certify later builds. Current ownership and behavior are in the
 [architecture](../architecture.md) and [application guide](../current-behaviour.md).
+Normal application scans now use Bella; older references to a "current" scanner
+describe the implementation inspected by that dated review.
 
 Raw audit evidence, reproduction harnesses and shared test fixtures were retired
 on 1 November 2026. Written findings and approved decisions remain. Dated results
@@ -10,6 +12,9 @@ describe their original runs; references to removed raw material are historical.
 
 | Record | Retained scope |
 | --- | --- |
+| [Bella matching contracts and implementation, 4 November](2026-11-04-bella-matching/MATCHING.md) | Independent matching, source eligibility, local-reference status and header-opening rules; dated checks remain separate from current app acceptance. |
+| [Bella shared naming boundary, 4 November](2026-11-04-bella-naming/SHARING.md) | Independent parser facts adapted to the shared compression/effect lookups; Bella retains Effect/Category and excludes Effect Sequence. |
+| [Bella timing reconfirmation, 4 November](2026-11-04-bella-timing-reconfirmation/IMPLEMENTATION.md) | Exact clocks, duration/timecode arithmetic and separate display interpretation, with implementation and verification records. |
 | [Bella MDB comparative verdict, 1 November](2026-11-01-bella-mdb-review/VERDICT.md) | Approved JPED Video addition and all three MDB qualification fixes implemented. The later [SEQU conflict finding is withdrawn](2026-11-01-bella-mdb-review/VERDICT.md#sequ-conflict-finding-withdrawn): a mixed-revision probe did not establish required Bella work. All 48 focused regression rows pass; 26 native-corpus reports remain identical before/after the qualification fixes. Deliberate scope exclusions and historical fixture-inclusive results remain distinct. |
 | [AVB binary findings](2026-09-05-avb/binary-findings.md) | Direct Media Composer serialization and object-reference evidence. |
 | [File operations](2026-09-06-current-code/file-operations.md) and [coverage](2026-09-06-current-code/file-operation-coverage.md) | Operation-engine findings and validation boundaries. |
@@ -18,7 +23,7 @@ describe their original runs; references to removed raw material are historical.
 | [Console wording](2026-09-24-console/console-review.md) | Accepted wording decisions. |
 | [Dialog/progress review](2026-10-08-dialog-wording/REVIEW.md) | Pending wording proposals for scans, operations, bins and Rebalance. |
 | [Bella PMR research](2026-10-18-bella-pmr/REVIEW.md) | Native PMR reader/writer, genuine records and hypothetical MDVx scanning with four concurrent jobs. |
-| [Bella scanner design](2026-10-26-bella-scanner-design/REVIEW.md) | All eight choices resolved: current event-driven progress and numeric timecode Duration order retained; proposed timer/coalescing and elapsed-time sort declined. No added memory controls. Further concrete choices still need check-ins; no runtime/cutover. |
+| [Bella scanner design](2026-10-26-bella-scanner-design/REVIEW.md) | All eight choices resolved: event-driven progress and numeric timecode Duration order retained; proposed timer/coalescing and elapsed-time sort declined. No added memory controls. The design review itself did not implement runtime integration or cutover. |
 | [PMR reading and memory](2026-10-18-bella-pmr/memory-lifetime.md) | Current/MDVx buffered reading and retained state; agreed Bella single-capture, compact-result lifetime with whole-set fallback. |
 | [Bella MDB research](2026-10-18-bella-mdb/REVIEW.md) | Native MDB objects and encodings, MDVx enrichment, six genuine databases and agreed four-MDB-job, read-once/extract/release workflow. |
 | [MDB text read/write](2026-10-18-bella-mdb/text-encoding.md) | Native paired writers/readers, typed Project text, legacy conversion and agreed field-level fallback. |
@@ -43,8 +48,8 @@ describe their original runs; references to removed raw material are historical.
 | [MXF audio Sample Rate](2026-10-21-bella-mxf/audio-sample-rate.md) | Dedicated AudioSamplingRate, native import/publication, MDVx ordinary omission and current exact fraction/late kHz display; compact source-preserving rule with five reused audio observations approved 22 October 2026. |
 | [MXF Bit Depth](2026-10-21-bella-mxf/bit-depth.md) | Native class-specific depth/layout import, DNxUncompressed interpretation, actual alpha/native-padding compatibility and current mixed/partial strings; complete common numeric depth, bounded padding compatibility and late labels approved 22 October 2026. |
 | [MXF Compression](2026-10-21-bella-mxf/compression.md) | Native comparisons, existing exact naming/helper boundary and reused thirteen-header facts; preserve names, DNx refinements, qualified PCM fallback and already-read source preference, retaining compact component context separately from the Bit Depth column. |
-| [Actual MDB/MXF Compression comparison](2026-10-21-bella-mxf/compression-comparison.md) | Current OldScanner execution on 2,411 paired physical MXFs: 2,397 identical strings, ten alpha names versus blank and four JPEG2000 versus J2K HD; full difference list, CSV and direct-reader rechecks. |
-| [Compression consistency](2026-10-21-bella-mxf/compression-consistency.md) | Naming-only J2K rate adaptation approved 22 October 2026 with unchanged helper; narrow MXF-only alpha rule approved separately on 22 October 2026; both unimplemented. |
+| [Actual MDB/MXF Compression comparison](2026-10-21-bella-mxf/compression-comparison.md) | Dated OldScanner execution on 2,411 paired physical MXFs: 2,397 identical strings, ten alpha names versus blank and four JPEG2000 versus J2K HD; original CSV/raw evidence is historical, with written findings and direct-reader conclusions retained. |
+| [Compression consistency](2026-10-21-bella-mxf/compression-consistency.md) | Naming-only J2K rate adaptation and narrow MXF-only alpha rule approved 22 October 2026. They were unimplemented at that review; the later Bella naming integration is recorded above. |
 | [Alpha MXF identification](2026-10-21-bella-mxf/alpha-identification.md) | All ten files positively declare uncompressed RGBA in partition/Preface; native fallback, installed codec definitions and distinct RLE writer keys support the agreed narrow header-only naming rule. Complete GUI/metadata publication parity not claimed. |
 | [MXF Clip Name](2026-10-21-bella-mxf/clip-name.md) | Native selected-master Name readers, known UTF-16BE encoding, ten matching MXF/MDB names and agreed blank/Unicode/compact-retention rules, approved 22 October 2026. |
 | [MDB audio Sample Rate](2026-10-18-bella-mdb/audio-sample-rate.md) | Native concrete audio fields/summaries, 1,513 actual 48 kHz files, MDVx comparison and agreed exact per-class sourcing. |
@@ -76,7 +81,7 @@ describe their original runs; references to removed raw material are historical.
 | [OMF Effect Category](2026-10-23-bella-omf/effect-category.md) | Native ID/registration versus current selected-name catalogue; shared Effect/Category value integration, preserved aliases/ambiguity/unknown, optional demand and discarded Sequence approved 25 October 2026 without extra OMF reads. |
 | [OMF Effect](2026-10-23-bella-omf/effect.md) | Agreed companion name from the same shared lookup: canonical English matches, verbatim custom tokens, current unknown/blank rules and discarded Sequence; no additional OMF field/read, approved 25 October. |
 | [OMF damage handling](2026-10-23-bella-omf/damage-handling.md) | Native container/value/object failures, MDVx uneven checks and current partial-source/independent-field behaviour; complete framing, local dependency isolation and physical-row retention approved 25 October. |
-| [Native WAVE/AIFF preservation](2026-10-25-bella-audio/REVIEW.md) | Current native recognition, interpretation, useful results and availability handling preserved in fresh Bella code on 25 October; extra FVER gates/further per-field redesign withdrawn, research retained. |
+| [Native WAVE/AIFF preservation](2026-10-25-bella-audio/REVIEW.md) | Preservation of native recognition, interpretation, useful results and availability handling agreed on 25 October; extra FVER gates/further per-field redesign withdrawn, research retained. |
 | [Final Bella source priorities](2026-10-25-bella-source-priorities/REVIEW.md) | Filesystem/PMR/MDB/already-read-header table, timing/Compression exceptions and identification/database-unavailable opening rules approved 26 October; brief scanner design follows. |
 | [MDB Type](2026-10-18-bella-mdb/type.md) | Selected-master UsageCode, native role qualification, MDVx labels/import override and agreed compact Media/Precompute classification with blank unavailable values. |
 | [MDB Precompute Category](2026-10-18-bella-mdb/precompute-category.md) | Native exact import-object/direct-track predicate, 107 rendered and 64 titles/matte physical rows, MDVx ordinary omission and agreed compact/selective Bella interpretation with blank unavailable values. |
@@ -86,8 +91,10 @@ describe their original runs; references to removed raw material are historical.
 | [PMR Project display](2026-10-18-bella-pmr/project-display.md) | Actual PMR cache-to-chooser-to-Qt path, system-codec selection and distinct bin Project column. |
 | [PMR modification value](2026-10-18-bella-pmr/modification-value.md) | Native change checks, Unix/historical clock conventions, Bella's decision to ignore DTM and FileMobId/MasterMobId terminology. |
 
-Direct source evidence under the September/October research folders includes
-Avid disassembly, genuine-file observations, Media Tool output and format
-specifications. Current format-reader verification and acceptance plans are in
-[Project Canon](../../Project%20Canon/README.md). Superseded parser code inventories,
+The September/October written findings describe Avid disassembly, genuine-file
+observations, Media Tool output and format specifications. References to retired
+raw files are provenance, not promises that those files remain in this checkout.
+[Project Canon](../../Project%20Canon/README.md) records the retained engine's
+history, and [Project Bella](../../Project%20Bella/README.md) records the current
+scanner's requirements and implementation checkpoints. Superseded parser code inventories,
 comparison probes and implementation-only reports have been removed.

@@ -218,7 +218,6 @@ namespace Bella
 			{"StructuralComponent.Duration", "060e2b34010101020702020101030000", Wire::Signed, 8},
 			{"Sequence.StructuralComponents", "060e2b34010101020601010406090000", Wire::References, 16},
 			{"TimecodeComponent.RoundedTimecodeBase", "060e2b34010101020404010102060000", Wire::Unsigned, 2},
-			{"TimecodeComponent.StartTimecode", "060e2b34010101020702010301050000", Wire::Signed, 8},
 			{"TimecodeComponent.DropFrame", "060e2b34010101010404010105000000", Wire::Unsigned, 1},
 			{"SourceClip.StartPosition", "060e2b34010101020702010301040000", Wire::Signed, 8},
 			{"SourceClip.SourcePackageID", "060e2b34010101020601010301000000", Wire::Bytes, 32},
@@ -254,7 +253,6 @@ namespace Bella
 			{"EssenceGroup.Choices", "060e2b34010101020601010406010000", Wire::References, 16},
 			{"EssenceGroup.StillFrame", "060e2b34010101020601010402080000", Wire::Reference, 16},
 			{"DefinitionObject.Identification", "060e2b34010101020101150300000000", Wire::Bytes, 16},
-			{"DefinitionObject.Name", "060e2b34010101020107010203010000", Wire::Text, 0},
 			{"Preface.ProjectName", "a5fb7b25f61594b962fc3717492d42bf", Wire::Text, 0},
 			{"Preface.ProjectEditRate", "8c70a718467ae486f36546b1387c4ee9", Wire::Rate, 8},
 			{"GenericPackage.AppCode", "a022006094eb75cb96c469924f6211d3", Wire::Signed, 4},
@@ -845,8 +843,7 @@ namespace Bella
 			}
 			return input.failure == MxfReadResult::NotRead;
 		}
-		// Fresh technical extraction from the approved MXF value contract.
-		// Insert in mxfparser.cpp's anonymous namespace after Image and Read helpers.
+		// Technical extraction uses qualified values from the selected own descriptor.
 
 		bool techClassKey(const QByteArray &actual, const char *hex)
 		{
@@ -918,15 +915,7 @@ namespace Bella
 		{
 			const auto read = image.rate(owner, name);
 			techReadProblem(image, owner, name, read);
-			if (const auto *value = valueOf(read))
-			{
-				if (value->numerator > 0 && value->denominator > 0)
-					return *value;
-				image.problem(
-					owner, name,
-					QStringLiteral("A usable explicit MXF rational requires positive numerator and denominator."));
-			}
-			return std::nullopt;
+			return optionalValue(read);
 		}
 
 		struct TechRectangle
@@ -1114,24 +1103,18 @@ namespace Bella
 			return {};
 		}
 
-		struct TechRgba
-		{
-			bool layoutUsable = false;
-			bool soleAlpha8 = false;
-		};
-
-		TechRgba techRgba(const Image &image, int descriptor, MxfFileInformation &file)
+		bool techRgba(const Image &image, int descriptor, MxfFileInformation &file)
 		{
 			const auto read = image.bytes(descriptor, "RGBAEssenceDescriptor.PixelLayout");
 			techReadProblem(image, descriptor, "RGBAEssenceDescriptor.PixelLayout", read);
 			const auto *bytes = valueOf(read);
 			if (!bytes)
-				return {};
+				return false;
 			if (bytes->size() != 16)
 			{
 				image.problem(descriptor, "RGBAEssenceDescriptor.PixelLayout",
 							  QStringLiteral("RGBA PixelLayout must contain exactly eight code/depth pairs."));
-				return {};
+				return false;
 			}
 			std::array<quint8, 16> layout{};
 			for (qsizetype i = 0; i != 16; ++i)
@@ -1188,7 +1171,7 @@ namespace Bella
 					descriptor, "RGBAEssenceDescriptor.PixelLayout",
 					QStringLiteral(
 						"RGBA requires a meaningful bounded prefix followed only by recognised zero-depth padding."));
-				return {};
+				return false;
 			}
 			if (allSupported && sameWidth && common)
 			{
@@ -1199,7 +1182,7 @@ namespace Bella
 				image.problem(
 					descriptor, "RGBAEssenceDescriptor.PixelLayout",
 					QStringLiteral("The meaningful RGBA components do not establish one supported common depth."));
-			return {true, meaningful == 1 && soleCode == 'A' && soleDepth == 8};
+			return meaningful == 1 && soleCode == 'A' && soleDepth == 8;
 		}
 
 		bool techAlphaContainers(const Image &image, int preface, const QVector<QByteArray> &partitionContainers)
@@ -1299,8 +1282,8 @@ namespace Bella
 			const bool rgba = techClassKey(key, "060e2b34025301010d01010101012900");
 			if (rgba)
 			{
-				const auto layout = techRgba(image, descriptor, file);
-				if (layout.layoutUsable && layout.soleAlpha8 &&
+				const bool soleAlpha8 = techRgba(image, descriptor, file);
+				if (soleAlpha8 &&
 					file.compression.codingState == MxfCodingState::Absent &&
 					missing(image.bytes(descriptor, "FileDescriptor.Codec")) && preface >= 0 &&
 					techAlphaContainers(image, preface, partitionContainers))
@@ -1349,7 +1332,6 @@ namespace Bella
 			Picture,
 			Sound,
 			Timecode,
-			Other,
 			Unreadable
 		};
 
@@ -1657,7 +1639,6 @@ namespace Bella
 				case EditorialDataKind::Sound:
 				case EditorialDataKind::Timecode:
 					break;
-				case EditorialDataKind::Other:
 				case EditorialDataKind::Unreadable:
 					return MxfPrecomputeCategory::Unknown;
 				}
@@ -1977,7 +1958,7 @@ namespace Bella
 						continue;
 					}
 					const auto kind = editorialDataDefinition(image, *valueOf(root));
-					if (kind == EditorialDataKind::Timecode || kind == EditorialDataKind::Other)
+					if (kind == EditorialDataKind::Timecode)
 						continue;
 					if (kind == EditorialDataKind::Unreadable)
 					{

@@ -27,8 +27,8 @@
 
 // MARK: - Row repaint helper
 
-// 'Keep Both' renders the renamed \"name (2)\" destination; 'Skip'
-// keep the original path, painted red.
+// Keep Both renders a numbered destination such as "name (2)"; Skip keeps
+// the original destination path, painted red.
 //
 // Rename hints always come from the background sweep; repainting does no disk I/O.
 static void applyConflictPolicyToRow(QTreeWidgetItem *item, const QString &baseDest,
@@ -378,9 +378,8 @@ void ManageMediaDialog::updatePreview()
 			}
 
 			// Duplicate ordinals in m_files order — the order the engine
-			// processes them. The first file to claim a clashing name keeps
-			// it; later ones are renamed. Mirrors the runner's claimDestination
-			// so the preview shows what actually happens.
+			// processes them. Later duplicates need numbered alternatives;
+			// the worker previews candidates and execution resolves live conflicts.
 			QHash<QString, int> seenSoFar;
 			m_pendingRows.reserve(m_files.size());
 			for (int idx = 0; idx < m_files.size(); ++idx)

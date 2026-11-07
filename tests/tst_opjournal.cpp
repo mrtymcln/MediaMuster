@@ -91,6 +91,7 @@ private slots:
 	void unsupported_schema_is_rejected_data();
 	void unsupported_schema_is_rejected();
 	void missing_required_policy_is_rejected();
+	void earlier_folder_records_do_not_block_recovery();
 	void string_entry_choices_round_trip();
 	void unknown_entry_choice_names_are_rejected();
 	void missing_required_entry_evidence_is_rejected();
@@ -295,7 +296,7 @@ void TestOpJournal::saved_policy_and_inverse_identity_survive_restart()
 void TestOpJournal::incomplete_moves_are_not_completed_by_source_retention()
 {
 	OpJournal::Entry entry;
-	for (const auto step : {OpJournal::Step::Published, OpJournal::Step::SourceRetained,
+	for (const auto step : {OpJournal::Step::Published,
 							OpJournal::Step::RemovingSource, OpJournal::Step::CopyReady})
 	{
 		entry.step = step;
@@ -396,6 +397,44 @@ void TestOpJournal::missing_required_policy_is_rejected()
 	QVERIFY(QFile::exists(path));
 }
 
+void TestOpJournal::earlier_folder_records_do_not_block_recovery()
+{
+	QTemporaryDir temp;
+	QVERIFY(temp.isValid());
+	const auto request = requestFor(temp.path());
+	QVERIFY(writeBytes(request.items.first().src, "payload"));
+	QString path, error;
+	{
+		OpJournal journal;
+		QVERIFY2(journal.create(request, temp.path() + "/journals", error), qPrintable(error));
+		path = journal.path();
+	}
+	const auto bytes = readBytes(path);
+	const auto begin = QJsonDocument::fromJson(bytes.trimmed()).object();
+	QCOMPARE(begin["schema"].toInt(), 4);
+	const auto oldFolder = temp.path() + "/disconnected-media-folder";
+	const QJsonObject folder{{"record", "folder"}, {"path", oldFolder}};
+	const QJsonObject resolved{{"record", "resolved"}, {"entries", begin["items"]}, {"volumes", begin["volumes"]}, {"dest", request.destRoot}, {"diagnosticTrashRoot", QString()}, {"folders", QJsonArray{oldFolder}}};
+	QVERIFY(writeBytes(path, bytes + QJsonDocument(folder).toJson(QJsonDocument::Compact) + '\n' +
+								 QJsonDocument(resolved).toJson(QJsonDocument::Compact) + '\n'));
+	const auto saved = OpJournal::readOne(path);
+	QVERIFY(saved && !saved->corrupt);
+	QCOMPARE(OpJournal::interrupted(temp.path() + "/journals").size(), 1);
+	{
+		OpJournal resumed;
+		QVERIFY2(resumed.resume(*saved, error), qPrintable(error));
+		auto entry = resumed.record().entries.first();
+		entry.step = OpJournal::Step::Skipped;
+		entry.explicitSkip = true;
+		QVERIFY(resumed.save(entry));
+		QVERIFY(resumed.finish(false));
+	}
+	const auto finished = OpJournal::readOne(path);
+	QVERIFY(finished && !finished->corrupt && finished->entries.first().complete());
+	QVERIFY(OpJournal::interrupted(temp.path() + "/journals").isEmpty());
+	QCOMPARE(readBytes(request.items.first().src), QByteArray("payload"));
+}
+
 void TestOpJournal::string_entry_choices_round_trip()
 {
 	OpJournal::Entry entry;
@@ -448,6 +487,10 @@ void TestOpJournal::unknown_entry_choice_names_are_rejected()
 	entry.id = 0;
 	entry.item.src = "/disposable/source.bin";
 	const auto record = entry.json();
+	// Source retention has a live result state, but was never emitted as a journal step.
+	auto retained = record;
+	retained["step"] = QStringLiteral("source-retained");
+	QVERIFY(!OpJournal::Entry::fromJson(retained));
 	for (const auto *field : {"mechanism", "trashProvider", "undoAction"})
 		for (const QJsonValue &value : {QJsonValue(""), QJsonValue("unknown"),
 										QJsonValue(1), QJsonValue(true), QJsonValue()})
@@ -1029,7 +1072,6 @@ void TestOpJournal::pruning_preserves_recovery_evidence_data()
 	QTest::newRow("cancelled") << int(Step::Cancelled) << QString() << false;
 	QTest::newRow("failed") << int(Step::Failed) << QString() << false;
 	QTest::newRow("awaiting-source-removal") << int(Step::Published) << QString() << false;
-	QTest::newRow("source-retained") << int(Step::SourceRetained) << QString() << false;
 	QTest::newRow("needs-attention") << int(Step::NeedsAttention) << QString() << false;
 	QTest::newRow("dismissed-failure") << int(Step::Failed) << QString("dismissed") << false;
 	QTest::newRow("missing-final-stop") << int(Step::Done) << QString("active") << false;

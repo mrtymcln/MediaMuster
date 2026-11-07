@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 The full comparison exposed a genuine matching bug: 277 file IDs differed from
 the old CSV because MediaEngine retained an MXF byte ordering where its database
 matching expected the database ordering. All 277 differences have exactly this
@@ -37,7 +40,7 @@ that this marker prevents the identity from using MXF serialization.
 
 ## Correction and proof
 
-[The MXF projection helper](../src/mediaengine/projection.cpp) now converts those numeric
+[The MXF projection helper](../src/oldscanner/mediaengine/projection.cpp) now converts those numeric
 fields for this family too. Original source bytes remain in the evidence.
 PMR/MDB and OMF wrapping keep their existing database representation. Comments in
 [omfuid.h](../src/omfuid.h) now distinguish the identity family from its encoding.

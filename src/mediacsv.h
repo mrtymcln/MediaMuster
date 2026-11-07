@@ -6,7 +6,7 @@
 #include <QVector>
 
 // MARK: - MediaCsv
-/// One header and one line per physical file, in fixed export order.
+/// One header and one CSV record per physical file, in fixed field order.
 /// The caller selects optional columns; rearranging the table does not affect CSV order.
 
 namespace MediaCsv
@@ -21,7 +21,7 @@ namespace MediaCsv
 	/// Column headings in emission order, using the same options as rows.
 	QString headerLine(Options options = {});
 
-	/// One CSV line, including its newline. Quotes and neutralises free-text fields;
+	/// One CSV record, including its terminal newline. Quotes and neutralises free-text fields;
 	/// uses the same display values as the table.
 	QString rowLine(const MediaFile &f, Options options = {});
 

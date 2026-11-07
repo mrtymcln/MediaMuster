@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 Research date: 22 October 2026. **The user approved these MXF Type rules on
 22 October 2026; they remain unimplemented.** Resolution is approved separately.
 OldScanner stays active; Bin Filter is unchanged. Type means **Media** or
@@ -83,7 +86,7 @@ Type. There is no demonstrated ordinary MDVx MXF Type algorithm to copy.
 
 ## Current MediaMuster
 
-The [MXF classifier](../../../src/oldscanner/mediaengine/mxfprojection.cpp:1200)
+The [MXF classifier](../../../src/oldscanner/mediaengine/mxfprojection.cpp)
 uses the qualified associated master. The small
 [shared helper](../../../src/avidusage.h) already distinguishes AppCode from
 standard UsageCode and returns a compact classification:

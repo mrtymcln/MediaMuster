@@ -4,7 +4,6 @@
 #include "discovery_p.h"
 #include "readjobs_p.h"
 
-#include <QElapsedTimer>
 #include <QFileInfo>
 #include <algorithm>
 #include <utility>
@@ -289,8 +288,6 @@ namespace Bella
 
 	ScanResult scan(const ScanRequest &request, ScanControl &control, const ScanCallbacks &callbacks)
 	{
-		QElapsedTimer timer;
-		timer.start();
 		ScanResult result;
 		try
 		{
@@ -323,7 +320,6 @@ namespace Bella
 		}
 		if (result.outcome == ScanOutcome::Completed && control.cancelled())
 			result.outcome = ScanOutcome::Cancelled;
-		result.elapsedMs = timer.elapsed();
 		return result;
 	}
 }

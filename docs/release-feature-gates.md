@@ -3,9 +3,10 @@
 ## v1 media scope
 
 The supported workflow families are Avid-managed MXF OP-Atom and OMF media.
-MXF OP-Atom is available by default; OMF remains behind `FeatureFlags::kOmfScan` as
-requested for the public release. Enabling OMF does not depend on the version of
-Media Composer that created the files. The OMF gate controls product availability;
+MXF OP-Atom is available by default; `FeatureFlags::kOmfScan` controls OMF
+availability. It is currently `true`, alongside the Precomputes, Undo and Debug
+menu flags; release builds can select each independently. Enabling OMF does not
+depend on the version of Media Composer that created the files. The OMF gate controls product availability;
 the enabled feature is held to the same v1 correctness and testing requirements
 as the public MXF workflow.
 
@@ -41,8 +42,8 @@ is intact. Add Folder and directory drops accept `Avid MediaFiles` with its MXF
 tree, `OMFI MediaFiles`, or an actual drive/share root containing those trees
 directly. Select the named media tree inside a copied project, rather than its
 arbitrary parent, `MXF` folder or media subfolder. Adding a location does not
-start a scan. The background scanner prepares exact MXF/OMFI roots once;
-the engine scans those roots without another parent/leaf lookup. Automatic
+start a scan. Bella resolves admitted locations to the supported MXF/OMFI roots
+during discovery and visits overlapping canonical media folders once. Automatic
 known-base discovery and trusted operation rescans retain their own entry paths.
 A bare `MXF` tree or an arbitrary folder containing PMR/MDB files is not enough.
 
@@ -80,13 +81,16 @@ This is not a scan limit: folders containing more files are still read.
 The managed layout selects the family. There is no mandatory per-file
 Operational Pattern probe and no attempt to authenticate the authoring app.
 Media Composer and compatible third-party media are treated alike. PMR/MDB
-records are read first. A complete, unchanged local PMR with an unambiguous
-filename/FileMobId match, joined to complete, unchanged MDB file metadata, can
-avoid opening the media header when all required table fields are usable.
-No usable match, missing or unresolved required metadata, or a detected source
-change triggers a header read. Deliberately unopened headers retain a `NotRead`
-receipt; database freshness stays unknown. See the [database-first scheduling
-contract](../Project%20Canon/database-first-scheduling-2026-10-07.md).
+records are read before matching. Bella avoids opening a media header when
+eligible PMR metadata supplies an unambiguous exact filename/FileMobId match and
+a safely matched MDB record supplies a qualified own descriptor. Missing
+individual columns or an unavailable master alone does not trigger a read.
+Required headers can supply an ID for another match against the already-loaded
+MDBs. Changed sources cannot supply eligible facts; a detected physical change
+or unconfirmed file presence retains the row with a rescan requirement. Unopened headers
+have no header identity to verify; database-derived identities still receive
+live checks before an operation. These checks do not establish database freshness.
+See the [Bella source-priority and header-opening rules](../Project%20Bella/README.md#final-source-priorities-and-header-opening-agreed).
 This is a managed-workflow scope rule, not a
 guarantee that a deliberately misplaced or renamed file is format-certified.
 
@@ -96,6 +100,13 @@ Rebalance accepts MXF only, retains its stricter destination-name and mutation
 checks, and carries both file and master identities to the operation engine.
 
 ## Build flags
+
+The normal macOS and Windows targets define `MEDIAMUSTER_USE_BELLA` in CMake.
+`MEDIAMUSTER_BELLA_PREVIEW=ON` builds the separately named scan/export rehearsal
+with file operations disabled; it is independent of the feature flags below.
+Normal Bella builds retain file operations and their live identity checks.
+Bella's active MDB/OMF baseline is legacy OMF 1/Bento 1.0. The retained
+OldScanner readers' OMF 2/Bento 2 support is not active Bella scan support.
 
 [`src/featureflags.h`](../src/featureflags.h) contains the independent compile-time
 switches and their current values. Rebuild after changing a value.

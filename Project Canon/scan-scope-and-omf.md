@@ -1,5 +1,9 @@
 # Scan scope and OmfScan
 
+
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 Source inspected 3 October 2026. No production changes in this documentation task.
 
 ## Agreed naming
@@ -36,7 +40,7 @@ from all admitted databases; filename alone must not silently select a winner.
 
 ## Current rules (before the rewrite)
 
-Sources: [scanner](../src/mediascanner.cpp), [layout](../src/app_avidmedialayout.h),
+Sources: [scanner](../src/oldscanner/oldscanner.cpp), [layout](../src/app_avidmedialayout.h),
 [conventions](../src/conventions.h), [feature flags](../src/featureflags.h).
 
 - Root spelling is **Avid MediaFiles**, with a space; `AvidMediaFiles` is not that

@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 Research date: 22 October 2026. **The user approved these MXF Resolution rules
 on 22 October 2026. They remain unimplemented; OldScanner stays active.**
 The alpha identification rule was approved separately.
@@ -87,7 +90,7 @@ static finding, not an exhaustive claim about every embedded library feature.
 
 ## MediaMuster / OldScanner and actual paired results
 
-Current [MXF projection](../../../src/oldscanner/mediaengine/mxfprojection.cpp:934)
+Current [MXF projection](../../../src/oldscanner/mediaengine/mxfprojection.cpp)
 constructs source-specific nested rectangles and calls the small value-only
 [geometry selector](../../../src/oldscanner/mediaengine/picturegeometry_p.h).
 It checks dimensions, offsets and parent containment before checked field-height
@@ -106,8 +109,8 @@ or final GUI/source-selection claim is made.
 The original temporary probe independently asserted the Compression adapter
 field, not a separate Resolution adapter field. Its retained selected Resolution
 values support the comparison directly. Current
-[table adapter](../../../src/oldscanner/mediaengineadapter.cpp:38) assigns that
-Resolution string and the [table model](../../../src/mediatablemodel.cpp:234)
+[table adapter](../../../src/oldscanner/mediaengineadapter.cpp) assigns that
+Resolution string and the [table model](../../../src/mediatablemodel.cpp)
 returns it unchanged; that source fact is separate from observed live app use.
 
 The equality includes the eight files matching the seven known small-proxy configurations and ordinary
@@ -169,7 +172,7 @@ without measurements.
 Curated evidence
 links the fresh native receipts, retained paired source outputs, raw physical
 examples and source/test hashes. Useful existing cases are in
-[the MXF projection tests](../../../tests/tst_mediaengine_mxfprojection.cpp:818):
+[the MXF projection tests](../../../tests/tst_mediaengine_mxfprojection.cpp):
 crop/field heights, absence, conflicting/unreadable values, nested offsets,
 overflow and exact proxy matches plus near misses. Tests were inspected, not
 newly run; no runtime code changed for this requirements review.

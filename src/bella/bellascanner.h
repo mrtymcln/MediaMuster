@@ -95,7 +95,6 @@ namespace Bella
 		QVector<ScanProblem> problems;
 		ScanOutcome outcome = ScanOutcome::Completed;
 		bool discoveryComplete = false;
-		qint64 elapsedMs = 0;
 	};
 
 	enum class ScanStage

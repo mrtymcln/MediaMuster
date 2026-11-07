@@ -3,6 +3,9 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
+> Source links use retained file locations; recorded line numbers and findings
+> refer to the reviewed revision. Removed components are identified as retired.
+
 11 October 2026. This is a proposal for the entire app, including every declared
 local variable. No source names have been changed by this review.
 
@@ -121,7 +124,7 @@ not automatically rename a visible column or stored file property.
 | `MediaProperty::SourceContainer`<br>[src/mediaevidence.h](../src/mediaevidence.h) | Import-settings Video/Audio description recorded by Avid; does not describe the current MXF/OMF file container. | `ImportFormatDescription` |
 | `PropertyAgreement::SingleSource`<br>[src/mediaevidence.h](../src/mediaevidence.h) | Exactly one usable observation, even if other sources exist or were checked. | `SingleObservation` |
 | `MediaEngine::Cancellation::cancelled`<br>[src/mediaengine/scanmodel.h](../src/mediaengine/scanmodel.h) | Check either the local or external cancellation request. | `isCancellationRequested` |
-| `mediaEngineMediaFile`<br>[src/mediaengineadapter.h](../src/mediaengineadapter.h) | Builds the application table, CSV and file-operation row from an engine MediaFile. | `makeMediaFileRow` |
+| `mediaEngineMediaFile`<br>[src/mediaengineadapter.h](../src/oldscanner/mediaengineadapter.h) | Builds the application table, CSV and file-operation row from an engine MediaFile. | `makeMediaFileRow` |
 | `Rebalancer::m_engine`<br>[src/rebalancer.h](../src/rebalancer.h) | Private OpManager for rebalance progress; it is not MediaEngine. | `m_operationManager` |
 | `OpTrash::isNetwork`<br>[src/optrash.h](../src/optrash.h) | True for network or unknown/unverified storage that must avoid system Trash. | `requiresMediaMusterTrash` |
 | `RevealInFinder`<br>[src/revealinfinder.h](../src/revealinfinder.h) | Cross-platform file reveal/open-parent-folder service for Finder/Explorer. | `RevealInFileManager` |

@@ -1,15 +1,25 @@
 # Precompute details preview
 
-MediaMuster reads the additional Avid usage information identified in Media Composer **26.8.0.58987**. The **Type** column distinguishes **Media** (master-clip media), **Precompute** and an em dash when unknown, and is always present in the table and CSV. The extra detail columns and filter controls require the build-time [Precomputes gate](release-feature-gates.md).
+MediaMuster reads the additional Avid usage information identified in Media Composer **26.8.0.58987**. The **Type** column distinguishes **Media** (master-clip media) and **Precompute**, with a blank when unknown in Bella, and is always present in the table and CSV. The extra detail columns and filter controls require the build-time [Precomputes gate](release-feature-gates.md).
 
-The effect details and picker are a preview, controlled at launch by the build flag:
+The effect details and picker are controlled by the compiled build flag
+`FeatureFlags::kPrecomputeFilter`, currently `true`. This feature gate is separate
+from the optional scan/export-only Bella rehearsal build:
 
 1. Set `FeatureFlags::kPrecomputeFilter` to `true` in `src/featureflags.h`, rebuild and launch.
 2. Scan the volumes you want to examine. Rescan results collected by an older build.
-3. The **Precompute Category** column shows **Rendered Effects**, **Titles and Matte Keys**, or **unknown** for precomputes.
+3. The **Precompute Category** column shows **Rendered Effects** or **Titles and Matte Keys**, with a blank for an unknown Bella category. The picker groups those unknown categories under **unknown**.
 4. Choose **Filter Precomputes...**. Choose a **Volume** at the top, expand the outline, and tick the branches or effects you want. For example, expand **Precomputes → Rendered Effects → Blend** and tick **3D Warp**. Choose **Apply**.
 
-The table gains **Precompute Category**, **Effect Category**, **Effect** and **Effect Sequence**, and the **Precomputes** tab becomes available. The table has 25 columns with these details and 21 without them, plus OmfScan when its flag is enabled. CSV exports include those same four extra columns (26 columns enabled, 22 disabled); CSV always includes No Database, No Reference and OmfScan. Every enabled tab remains visible even at zero; disabling precompute features hides Precomputes. Turning it off removes the four detail columns and clears precompute, category, effect and volume filters; Type stays visible and sortable. It does not change the underlying metadata classification or remove rendered media from ordinary scan results. The build flag controls availability; there is no user-facing Debug toggle.
+Bella adds **Precompute Category**, **Effect Category** and **Effect**, and the
+**Precomputes** tab becomes available. Effect Sequence is excluded. With OMF
+enabled, the Bella table has 24 columns with details and 21 without; disabling
+OMF hides OmfScan, giving 23 or 20 table columns. CSV always includes OmfScan,
+No Database and No Reference, giving 24 or 21 fields. Bella uses **File Path**
+and has no recorded Source Path column. Every enabled tab remains visible even
+at zero; disabling precompute features hides Precomputes and clears the detailed
+precompute and volume filters. Type stays visible and sortable, and rendered
+media remains in ordinary scan results. There is no user-facing Debug toggle.
 
 The picker uses a narrow standard dialog and outline. Its **Volume** row follows the Rebalance dialog. **Rendered Effects** expands into effect categories and then individual effects; **Titles and Matte Keys** and **unknown** expand directly into their named effects. The checkboxes show the selection, without separate selected-filter chips. There is no Search field, tree heading or Files column. The matching-file total remains below the outline, alongside **Apply** and **Cancel**.
 
@@ -33,13 +43,25 @@ Exact definitions, binary entry points and limitations are in [Usage code identi
 
 ## What establishes the precompute category
 
-The shared classifier follows Media Composer 26.8's inspected Media Tool rule after confirming a precompute master. A direct object attribute named exactly `_IMPORTSETTING`, together with at least two immediate video-track components, selects **Titles and Matte Keys**. Confirmed absence of that import object selects **Rendered Effects** without needing the track count. A confirmed import object with fewer than two video tracks also selects **Rendered Effects**.
+Bella's format-specific readers follow the inspected Media Composer 26.8 Media
+Tool rule after confirming a precompute master. A direct object attribute named exactly `_IMPORTSETTING`, together with at least two immediate video-track components, selects **Titles and Matte Keys**. Confirmed absence of that import object selects **Rendered Effects** without needing the track count. A confirmed import object with fewer than two video tracks also selects **Rendered Effects**.
 
-An unreadable attribute list is not confirmed absence. Missing decisive information, conflicting duplicate records, and disagreement between current database and header categories produce **unknown**. A separately confirmed Precompute type is preserved. Reused file identities discard old category information; a later name/bin database lookup cannot restore it.
+An unreadable attribute list is not confirmed absence. Missing decisive
+information or conflicting equally ranked category claims leave the category
+unavailable; a separately confirmed Precompute type is preserved. Bella prefers
+category information for the selected MDB master, then an eligible already-read
+header for that same master. It does not compare lower-priority header values
+against an already selected MDB value. A detected physical-file change excludes
+facts tied to the earlier capture.
 
 The OMF1/MDB reader checks the direct attribute's two-byte kind (3, including a null object payload) and the direct `CPNT:TrackKind` values. The MXF reader follows the selected master's mapped MobAttributeList and the verified `__AttributeList` conversion to an object attribute, then counts direct segment data definitions. Nested imports and nested video tracks do not substitute for these tests.
 
-**OMF2 remains supported as a media format, but its precompute subcategory is currently unknown.** Its UserAttributes property is not a verified equivalent of the required direct import-attribute list. The implementation does not guess that equivalence. The combined Titles and Matte Keys category does not separately identify Title Tool, Marquee or a particular matte effect.
+Bella reports OMF 2 as unsupported; its active OMF baseline is legacy OMF 1
+in Bento 1.0. The retained OldScanner implementation can read OMF 2 but leaves
+its precompute subcategory unknown, because UserAttributes is not a verified
+equivalent of the required direct import-attribute list. The combined Titles
+and Matte Keys category does not separately identify Title Tool, Marquee or a
+particular matte effect.
 
 ## What establishes the effect name
 
@@ -50,6 +72,14 @@ Effect details continue to come from the clip name, as requested. A name shared 
 The exact historical token `3DWarp` maps to **3D Warp / Blend** as a documented compatibility alias. The [Avid 2026 Effects Guide](https://resources.avid.com/SupportFiles/attach/Media_Composer/2026/Media_Composer_v2026.x_FX_Guide.pdf), pages 287–288, also places 3D Warp in Blend. **3D Warp Legacy / Legacy** remains a separate catalogue entry. The inspected effect registry describes names Media Composer recognizes; it is not proof that every listed plug-in is installed or licensed.
 
 The [catalogue evidence and historical extraction method](avid-effects-catalogue.md) distinguish direct registration facts, translated aliases, and the additional Motion Effect/Timewarp and D-Verb/AudioSuite groupings.
+
+## Historical validation
+
+The following receipts describe the implementations and feature controls tested
+in September, before Bella's November cutover. Their column counts, Effect
+Sequence fields, Debug controls, pass counts and temporary artifact paths are
+historical. They do not describe the current schema or confirm that the
+original temporary evidence is still present.
 
 ## Combined precompute indicator validation — 5 September 2026
 
