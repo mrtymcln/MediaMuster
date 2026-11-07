@@ -302,15 +302,20 @@ target_link_libraries(MediaMuster PRIVATE
     Qt6::Concurrent
 )
 
-if(MEDIAMUSTER_BELLA_PREVIEW)
-    set(_bella_preview_sources
+set(MEDIAMUSTER_USE_BELLA OFF)
+if(APPLE OR WIN32)
+    set(MEDIAMUSTER_USE_BELLA ON)
+    set(_bella_app_sources
         ${CMAKE_SOURCE_DIR}/src/bellaappscanner.cpp
         ${CMAKE_SOURCE_DIR}/src/bellaoperationhandoff.cpp
         ${CMAKE_SOURCE_DIR}/src/bellarowpresentation.cpp
     )
-    target_sources(MediaMuster PRIVATE ${_bella_preview_sources})
-    target_compile_definitions(MediaMuster PRIVATE MEDIAMUSTER_BELLA_PREVIEW)
+    target_sources(MediaMuster PRIVATE ${_bella_app_sources})
+    target_compile_definitions(MediaMuster PRIVATE MEDIAMUSTER_USE_BELLA)
     target_link_libraries(MediaMuster PRIVATE mediamuster_bella)
+endif()
+if(MEDIAMUSTER_BELLA_PREVIEW)
+    target_compile_definitions(MediaMuster PRIVATE MEDIAMUSTER_BELLA_PREVIEW)
     set_target_properties(MediaMuster PROPERTIES OUTPUT_NAME "${MEDIAMUSTER_BELLA_PREVIEW_NAME}")
 endif()
 

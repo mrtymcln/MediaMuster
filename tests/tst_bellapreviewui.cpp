@@ -162,6 +162,8 @@ void TestBellaPreviewUi::cancelThenRescan()
 	QVERIFY(window.m_scanner->isActive());
 	QVERIFY(!window.m_operations->isIdle());
 	QVERIFY(!window.m_exportAction->isEnabled());
+	QVERIFY(!window.m_manageMediaAction->isEnabled());
+	QVERIFY(!window.m_rebalanceAction->isEnabled());
 	QCOMPARE(window.m_model->rowCount(), 0);
 	QVERIFY(window.m_progressDialog);
 	// Request Cancel on the GUI thread before it can accept the queued result.
@@ -187,8 +189,13 @@ void TestBellaPreviewUi::cancelThenRescan()
 
 	window.m_tableView->selectRow(0);
 	QVERIFY(window.m_tableView->selectionModel()->hasSelection());
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
 	QVERIFY(!window.m_manageMediaAction->isEnabled());
 	QVERIFY(!window.m_rebalanceAction->isEnabled());
+#else
+	QVERIFY(window.m_manageMediaAction->isEnabled());
+	QVERIFY(window.m_rebalanceAction->isEnabled());
+#endif
 	QVERIFY(!window.m_operations->undoAction()->isEnabled());
 	QVERIFY(!window.m_operations->recoveryAction()->isEnabled());
 	QVERIFY(window.m_exportAction->isEnabled());
@@ -317,7 +324,7 @@ void TestBellaPreviewUi::scanEditAndShared()
 				 "Use an existing disposable temporary directory for MEDIAMUSTER_TEST_BELLA_CSV_PATH.");
 	}
 	checkTableAndCsv(window, exportPath, {{QStringLiteral("Untitled Sequence.175B1728V.mxf"), MediaFile::Kind::Video, QStringLiteral("00;10;11;28")}, {QStringLiteral("TONE_100A01.6A972974.039700.wav"), MediaFile::Kind::Audio, QStringLiteral("00:01:00:00")}, {QStringLiteral("TONE_100A01.6A972997.0C53E0.aif"), MediaFile::Kind::Audio, QStringLiteral("00:01:00:00")}});
-	qInfo() << "Bella preview retained" << rows.size() << "physical rows on EDIT and Shared.";
+	qInfo() << "Bella retained" << rows.size() << "physical rows on EDIT and Shared.";
 }
 
 QTEST_MAIN(TestBellaPreviewUi)

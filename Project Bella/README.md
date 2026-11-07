@@ -3,13 +3,12 @@
 > Raw audit evidence and shared test fixtures were retired on 1 November 2026.
 > Dated results and file references below describe the original investigations.
 
-Started 18 October 2026. Status: first-release parser/source requirements and
-the eight registered scanner-workflow decisions are settled. Independent Bella
-implementation includes the shared ID helper and independent PMR, MDB, MXF and
-OMF/native-audio readers, plus shared exact-timing helpers, in their separate
-library/test targets. Their focused tests pass normally and with ASan/UBSan on arm64. The scanner and later
-interpretation/formatting integration remain to implement; new concrete choices still require
-user check-ins.
+Started 18 October 2026. The user approved making Bella the default scanner
+in the normal macOS app on 7 November 2026 after the separate rehearsal, then
+approved the default for Windows. See the
+[Mac cutover decision](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#mac-cutover)
+and [Windows cutover decision](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#windows-cutover).
+The earlier decisions and evidence below are dated development records.
 
 Bella is a fresh start for MediaMuster's scanner and parser. The motivation is to
 reduce scan time and memory use after the Canon and Copland iterations and the
@@ -666,6 +665,18 @@ OldScanner until explicit switch approval. See the
 for qualified DNxUncompressed `10.6` and `12-bit` for qualified `12.4` in
 Bella's table and CSV. Retain each exact representation and its 16-bit storage
 width. See the [label decision and evidence](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#fixed-point-bit-depth-labels).
+
+**Mac cutover approved, 7 November 2026.** Select Bella by default in the
+normal macOS app. Keep the normal app identity, file-operation workflow and
+history. Bin Filter keeps its existing full-ID input and behavior. The separate
+preview keeps its scan/export scope. This approval covers macOS. See the
+[cutover record](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#mac-cutover).
+
+**Windows cutover approved, 7 November 2026.** Select Bella in the normal
+Windows app built by GitHub Actions. Keep the normal `MediaMuster.exe` name,
+file operations and startup recovery, and keep Bin Filter unchanged. Windows
+build and genuine-media verification are tracked in the
+[Windows cutover record](../docs/reviews/2026-10-26-bella-scanner-design/REVIEW.md#windows-cutover).
 
 **Build boundary agreed, 27 October 2026:** add a separate
 `mediamuster_bella` static library to the existing CMake build, using Qt Core

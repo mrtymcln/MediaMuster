@@ -299,7 +299,7 @@ mediamuster_add_test(tst_binfilterdialog ui
 target_link_libraries(tst_binfilterdialog PRIVATE Qt6::Widgets Qt6::Concurrent mediamuster_oldscanner_core)
 set_tests_properties(tst_binfilterdialog PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
-# Production UI and coordinator behavior, with no alternate operation model.
+# Shared app sources used to test the OldScanner and Bella UI paths.
 set(_operation_ui_sources ${SOURCES})
 list(FILTER _operation_ui_sources EXCLUDE REGEX "(^|/)main\\.cpp$")
 list(FILTER _operation_ui_sources EXCLUDE REGEX "\\.(icns|rc)$")
@@ -317,10 +317,13 @@ elseif(WIN32)
 endif()
 set_tests_properties(tst_operationui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
-if(MEDIAMUSTER_BELLA_PREVIEW)
-    mediamuster_add_test(tst_bellapreviewui ui ${_operation_ui_sources} ${_bella_preview_sources})
+if(MEDIAMUSTER_USE_BELLA)
+    mediamuster_add_test(tst_bellapreviewui ui ${_operation_ui_sources} ${_bella_app_sources})
     target_include_directories(tst_bellapreviewui PRIVATE ${CMAKE_BINARY_DIR})
-    target_compile_definitions(tst_bellapreviewui PRIVATE MEDIAMUSTER_BELLA_PREVIEW)
+    target_compile_definitions(tst_bellapreviewui PRIVATE MEDIAMUSTER_USE_BELLA)
+    if(MEDIAMUSTER_BELLA_PREVIEW)
+        target_compile_definitions(tst_bellapreviewui PRIVATE MEDIAMUSTER_BELLA_PREVIEW)
+    endif()
     target_link_libraries(tst_bellapreviewui PRIVATE Qt6::Widgets Qt6::Gui Qt6::Concurrent mediamuster_oldscanner mediamuster_bella)
     mediamuster_link_native_operations(tst_bellapreviewui)
     if(APPLE)

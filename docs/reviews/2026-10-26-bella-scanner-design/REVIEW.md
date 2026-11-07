@@ -795,3 +795,48 @@ including presentation, preview UI, CSV, table, filtering, Bin Filter and
 naming. The preview UI suite included a read-only Cancel and rescan on EDIT
 and Shared, returning all 2,413 rows and verifying CSV export. The ordinary
 build still selects OldScanner.
+
+### Mac cutover
+
+**Approved, 7 November 2026.** Make Bella the default scanner in the normal
+macOS MediaMuster app after the rehearsal and the fixed-point Bit Depth labels
+passed verification. Use the normal app identity, operation history, startup
+recovery and file actions. Keep Bin Filter's existing full-ID input and
+behavior. The scan/export preview remains separate. This approval covers
+macOS. Build the ordinary app and verify its scanner and file workflows.
+
+The macOS build now selects Bella separately from the preview setting. The
+normal `build/MediaMuster.app` was rebuilt and signed with the existing bundle
+identifier `com.McLean.MediaMuster` and Qt 6.5.3. The build includes arm64 and
+x86_64, and verification ran on arm64. The preview keeps its separate identity
+and disables file operations. Bin Filter uses the same implementation and full
+file IDs.
+
+All 51 normal-build test suites passed. Qt reported 2,776 passes, zero
+failures and 303 fixture-dependent or opt-in skips. The normal Bella UI test
+ran a read-only Cancel and rescan on EDIT and Shared and verified 2,413 rows
+and CSV export. The Bin Filter and Bella full-ID tests passed, as did the
+separate preview UI suite.
+
+Six smoke tests used the normal app's compiled objects, disposable Shared
+copies and isolated journals. Copy, Move, Delete, Rebalance and Undo passed
+through the app controls. Startup Unfinished Business resumed jobs started
+by OldScanner and Bella, then Undo restored the files byte for byte. Original
+Shared media and database files retained their hashes and file stamps.
+
+### Windows cutover
+
+**Approved, 7 November 2026.** Make Bella the default in the normal Windows
+app and its GitHub Actions Release package. Keep the `MediaMuster.exe` name,
+normal file actions and startup recovery, and Bin Filter's existing full-ID
+behavior. The preview remains a separate scan/export build. OldScanner
+retirement is a separate change.
+
+The normal Windows target now selects Bella through the same app wiring as
+macOS. The existing GitHub Actions workflow builds that target and packages
+the standard executable. A CMake selection check passed for the normal
+Windows configuration, and five focused Mac suites passed, including the
+read-only EDIT and Shared scan of 2,413 files. The previous published Windows
+build passed 49 test suites with Bella components and the OldScanner app.
+Native Windows build, packaging and genuine Windows media verification of
+this cutover are pending.

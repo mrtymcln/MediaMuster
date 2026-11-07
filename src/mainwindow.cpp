@@ -72,10 +72,14 @@ namespace
 {
 #ifdef MEDIAMUSTER_BELLA_PREVIEW
 	constexpr bool kBellaPreview = true;
+#else
+	constexpr bool kBellaPreview = false;
+#endif
+
+#ifdef MEDIAMUSTER_USE_BELLA
 	constexpr auto kPresentation = MediaPresentation::Bella;
 	constexpr auto kScanConnection = Qt::AutoConnection;
 #else
-	constexpr bool kBellaPreview = false;
 	constexpr auto kPresentation = MediaPresentation::OldScanner;
 	constexpr auto kScanConnection = Qt::QueuedConnection;
 #endif
@@ -204,7 +208,7 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 
 	setWindowTitle(QStringLiteral(APP_NAME));
 	resize(1200, 750);
-#ifdef MEDIAMUSTER_BELLA_PREVIEW
+#ifdef MEDIAMUSTER_USE_BELLA
 	qApp->installEventFilter(this);
 #endif
 	if (startup == StartupMode::UiOnly)
@@ -245,7 +249,7 @@ MainWindow::~MainWindow()
 		disconnect(child, nullptr, this, nullptr);
 }
 
-#ifdef MEDIAMUSTER_BELLA_PREVIEW
+#ifdef MEDIAMUSTER_USE_BELLA
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
 	if (watched == qApp && event->type() == QEvent::Quit && m_scanner->isActive())
@@ -772,7 +776,7 @@ void MainWindow::setupConnections()
 {
 	connect(m_scanner, &AppScanner::scanDiscovering, this, &MainWindow::onScanDiscovering, kScanConnection);
 	connect(m_scanner, &AppScanner::scanLogBatch, this, &MainWindow::onScanLogBatch, kScanConnection);
-#ifdef MEDIAMUSTER_BELLA_PREVIEW
+#ifdef MEDIAMUSTER_USE_BELLA
 	connect(m_scanner, &AppScanner::scanProgress, this, &MainWindow::onBellaScanProgress);
 	connect(m_scanner, &AppScanner::scanFinished, this,
 			[this](const QVector<MediaFile> &results, bool cancelled, bool discoveryComplete)
@@ -808,7 +812,7 @@ void MainWindow::setupConnections()
 		m_scanner, &AppScanner::scanFinalising, this,
 		[this]
 		{
-#ifdef MEDIAMUSTER_BELLA_PREVIEW
+#ifdef MEDIAMUSTER_USE_BELLA
 			if (m_bellaCancelling)
 				return;
 #endif
@@ -1450,7 +1454,7 @@ void MainWindow::startScan(const QVector<AppScanner::Location> &locations)
 {
 	if (!m_operations->isIdle() || locations.isEmpty())
 		return;
-#ifdef MEDIAMUSTER_BELLA_PREVIEW
+#ifdef MEDIAMUSTER_USE_BELLA
 	if (m_bellaClose != BellaClose::None)
 		return;
 	m_bellaCancelling = false;
@@ -1458,7 +1462,7 @@ void MainWindow::startScan(const QVector<AppScanner::Location> &locations)
 	AppScanner::Options opts;
 	opts.includeOmf = m_omfScanEnabled;
 	opts.locations = locations;
-#ifdef MEDIAMUSTER_BELLA_PREVIEW
+#ifdef MEDIAMUSTER_USE_BELLA
 	opts.includePrecomputeDetails = m_precomputesEnabled;
 #endif
 
@@ -1477,7 +1481,7 @@ void MainWindow::startScan(const QVector<AppScanner::Location> &locations)
 
 void MainWindow::onScanDiscovering(const QString &path)
 {
-#ifdef MEDIAMUSTER_BELLA_PREVIEW
+#ifdef MEDIAMUSTER_USE_BELLA
 	if (m_bellaCancelling)
 		return;
 #endif
@@ -1486,7 +1490,7 @@ void MainWindow::onScanDiscovering(const QString &path)
 	dlg->setDetail(tr("Finding media files… %1").arg(QDir::toNativeSeparators(path)));
 }
 
-#ifdef MEDIAMUSTER_BELLA_PREVIEW
+#ifdef MEDIAMUSTER_USE_BELLA
 void MainWindow::onBellaScanProgress(const QString &stage, qsizetype completed, qsizetype total, const QString &path)
 {
 	if (m_bellaCancelling)
@@ -2143,7 +2147,7 @@ ProgressDialog *MainWindow::progressDialog()
 				{
 					if (m_scanner->cancelScan())
 					{
-#ifdef MEDIAMUSTER_BELLA_PREVIEW
+#ifdef MEDIAMUSTER_USE_BELLA
 						m_bellaCancelling = true;
 						m_progressDialog->setProgress(0, 0);
 						m_progressDialog->setDetail(tr("Cancelling…"));

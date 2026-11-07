@@ -3,7 +3,7 @@
 #include "managemediadialog.h"
 #include "mediafile.h"
 #include "mediafilterproxy.h"
-#ifdef MEDIAMUSTER_BELLA_PREVIEW
+#ifdef MEDIAMUSTER_USE_BELLA
 #include "bellaappscanner.h"
 using AppScanner = BellaAppScanner;
 #else
@@ -55,7 +55,7 @@ public:
 	explicit MainWindow(QWidget *parent = nullptr, StartupMode startup = StartupMode::Normal);
 	~MainWindow();
 
-#ifdef MEDIAMUSTER_BELLA_PREVIEW
+#ifdef MEDIAMUSTER_USE_BELLA
 protected:
 	bool eventFilter(QObject *watched, QEvent *event) override;
 	void closeEvent(QCloseEvent *event) override;
@@ -114,7 +114,7 @@ private:
 	void rescanPaths(const QStringList &paths);
 	void startScan(const QVector<AppScanner::Location> &locations);
 	void addLog(QtMsgType level, const QString &module, const QString &message);
-#ifdef MEDIAMUSTER_BELLA_PREVIEW
+#ifdef MEDIAMUSTER_USE_BELLA
 	enum class BellaClose
 	{
 		None,
@@ -246,7 +246,7 @@ private:
 	// MARK: - Scan state
 
 	QElapsedTimer m_scanTimer;
-#ifdef MEDIAMUSTER_BELLA_PREVIEW
+#ifdef MEDIAMUSTER_USE_BELLA
 	BellaClose m_bellaClose = BellaClose::None;
 	bool m_bellaCancelling = false;
 #endif
