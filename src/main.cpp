@@ -1,5 +1,5 @@
-#include "applog.h"
-#include "mainwindow.h"
+#include "support/diagnostics.h"
+#include "ui/main_window.h"
 #include "version.h"
 #include <QApplication>
 #include <QDate>
@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QStyleFactory>
 
+// MARK: - Application startup
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
@@ -16,11 +17,16 @@ int main(int argc, char *argv[])
 	app.setApplicationName(APP_NAME);
 	app.setApplicationVersion(APP_VERSION);
 	app.setOrganizationName("Martin McLean");
+#ifdef MEDIAMUSTER_BELLA_PREVIEW
+	app.setApplicationDisplayName(APP_NAME);
+	app.setOrganizationDomain("com.McLean.MediaMuster.BellaTest");
+#else
 	app.setOrganizationDomain("com.McLean.MediaMuster");
+#endif
 	app.setWindowIcon(QIcon(":/res/mediamuster.png"));
 
-	// Start the diagnostic log first, which needes the above info.
-	AppLog::install();
+	// Start logging after setting the app details used in the path and header.
+	Diagnostics::install();
 
 #ifdef Q_OS_MAC
 	app.setStyle(QStyleFactory::create("macos"));

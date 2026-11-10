@@ -1,0 +1,3788 @@
+#include "test_media_file.h"
+#include "ui/main_window.h"
+#include "feature_flags.h"
+#include "media/media_csv.h"
+#include "ui/dialogs/manage_media_dialog.h"
+#include "operations/operation_journal.h"
+#include "ui/dialogs/progress_dialog.h"
+#include "ui/dialogs/rebalance_dialog.h"
+#include "operations/rebalancer.h"
+#include "ui/format_util.h"
+#include "ui/dialogs/avb_filter_dialog.h"
+#include "test_avb.h"
+#include "media/mob_id_text.h"
+
+#include <QAction>
+#include <QApplication>
+#include <QClipboard>
+#include <QDialog>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QComboBox>
+#include <QRadioButton>
+#include <QSemaphore>
+#include <QTreeWidget>
+#include <QtConcurrent>
+#include <QDir>
+#include <QEvent>
+#include <QElapsedTimer>
+#include <QFile>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QFrame>
+#include <QHash>
+#include <QHeaderView>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QMimeData>
+#include <QMenu>
+#include <QMenuBar>
+#include <QPlainTextEdit>
+#include <QProgressBar>
+#include <QPushButton>
+#include <QScopeGuard>
+#include <QSignalSpy>
+#include <QTabBar>
+#include <QTableView>
+#include <QTemporaryDir>
+#include <QTest>
+#include <QThreadPool>
+#include <QTimer>
+#include <QUuid>
+#include <QUrl>
+#include <algorithm>
+#include <atomic>
+#include <memory>
+
+// MARK: - Test helpers
+
+namespace
+{
+	bool put(const QString &path, const QByteArray &data)
+	{
+		if (!QDir().mkpath(QFileInfo(path).absolutePath()))
+			return false;
+		QFile file(path);
+		return file.open(QIODevice::WriteOnly) && file.write(data) == data.size();
+	}
+	MediaFile authoredScanRow(const QString &path, int index,
+							  MediaFile::DbStatus databaseStatus = MediaFile::DbStatus::NoDatabase)
+	{
+		MediaFile file;
+		file.kelpieId = index + 1;
+		file.mediaFilePath = path;
+		file.fileName = QFileInfo(path).fileName();
+		file.scanStamp.path = path;
+		file.clipName = QStringLiteral("Original %1").arg(index);
+		file.project = QStringLiteral("Original project");
+		file.kind = MediaFile::Kind::Video;
+		file.type = MediaFile::Type::Media;
+		file.dbStatus = databaseStatus;
+		TestMediaFile::setDuration(file, 250);
+		file.operationScanReceipt.emplace();
+		return file;
+	}
+	RebalancePlan smallRebalancePlan(const QString &root)
+	{
+		RebalancePlan plan;
+		plan.mxfRootPath = root;
+		plan.volumeLabel = QStringLiteral("Test media");
+		for (int n = 1; n <= 3; ++n)
+		{
+			FolderState folder;
+			folder.id = {{}, n};
+			folder.mediaFolderName = folder.id.display();
+			folder.count = n == 1 ? 3 : n == 2 ? 1
+											   : 0;
+			folder.filesOut = n == 1 ? 3 : 0;
+			folder.filesIn = n == 2 ? 2 : n == 3 ? 1
+												 : 0;
+			folder.isNew = n == 3;
+			plan.folders.append(folder);
+		}
+		plan.newFolders.append(NumberedMxfFolder{{}, 3});
+		for (int n = 0; n < 3; ++n)
+		{
+			RebalanceMove op;
+			op.srcPath = root + QStringLiteral("/1/clip-%1.mxf").arg(n);
+			op.dest = {{}, n == 1 ? 3 : 2};
+			plan.ops.append(op);
+		}
+		return plan;
+	}
+	QString folderCountCaption(const RebalanceDialog &dialog, const QString &mediaFolderName)
+	{
+		for (const auto *card : dialog.findChildren<QFrame *>(QStringLiteral("folderCard")))
+			if (card->accessibleName() == mediaFolderName)
+				return card->accessibleDescription();
+		return QStringLiteral("Missing folder card: ") + mediaFolderName;
+	}
+	QStringList appMessages(const QPlainTextEdit *console)
+	{
+		const QString prefix = QStringLiteral("app: ");
+		QStringList messages;
+		for (const QString &line : console->toPlainText().split('\n'))
+		{
+			const int start = line.indexOf(prefix);
+			if (start >= 0)
+				messages.append(line.mid(start + prefix.size()));
+		}
+		return messages;
+	}
+	bool enterSaveFile(QFileDialog &dialog, const QString &filePath)
+	{
+		dialog.setDirectory(QFileInfo(filePath).absolutePath());
+		auto *editor = dialog.findChild<QLineEdit *>(QStringLiteral("fileNameEdit"));
+		if (!editor)
+			return false;
+		// Qt's selectFile leaves a focused, visible filename editor unchanged.
+		// Enter the name as a user would, independently of platform focus timing.
+		editor->setFocus();
+		editor->selectAll();
+		QTest::keyClicks(editor, QFileInfo(filePath).fileName());
+		return true;
+	}
+	struct Sink : OperationSink
+	{
+		std::atomic<bool> *cancelAfterResult = nullptr;
+		void progress(const QString &, int, int, double) override {}
+		void log(QtMsgType, const QString &) override {}
+		void trashUsed(const QString &, int) override {}
+		void result(const OperationResult &value) override
+		{
+			if (cancelAfterResult && value.state == OperationResult::State::Completed)
+				cancelAfterResult->store(true);
+		}
+	};
+	// Holds background work deterministically while the dialog receives edits.
+	struct BlockPool
+	{
+		QThreadPool *pool = QThreadPool::globalInstance();
+		int previousMaximum = pool->maxThreadCount();
+		QSemaphore entered;
+		QSemaphore releaseWorker;
+		QFuture<void> future;
+		BlockPool()
+		{
+			pool->waitForDone();
+			pool->setMaxThreadCount(1);
+			future = QtConcurrent::run([this]
+									   { entered.release(); releaseWorker.acquire(); });
+		}
+		~BlockPool()
+		{
+			releaseWorker.release();
+			future.waitForFinished();
+			pool->setMaxThreadCount(previousMaximum);
+		}
+	};
+
+}
+
+// MARK: - Test fixture
+
+class TestOperationUi : public QObject
+{
+	Q_OBJECT
+private slots:
+	void scan_start_clears_prepared_rows_after_source_release();
+	void csv_export_completes_before_return_data();
+	void csv_export_completes_before_return();
+	void csv_export_failure_preserves_previous_file();
+	void scan_completion_resets_filters_widgets_and_pending_search();
+	void scan_failure_closes_progress_and_restores_actions();
+	void initTestCase();
+	void init();
+	void cleanup();
+	void cleanupTestCase();
+	void project_sidebar_uses_whole_inventory_totals();
+	void removed_sources_refresh_status_and_project_filters();
+	void feature_flags_configure_startup_and_text_undo_works();
+	void menu_availability_tracks_locations_selection_and_activity();
+	void select_relatives_counts_all_visible_matches_data();
+	void select_relatives_counts_all_visible_matches();
+	void select_relatives_counts_master_ids_even_when_names_match();
+	void select_relatives_use_selected_master_and_disable_ambiguous_seed();
+	void select_relatives_preserves_hidden_selections_without_using_them_as_seeds();
+	void invert_selection_preserves_hidden_selections_data();
+	void invert_selection_preserves_hidden_selections();
+	void text_editing_shortcuts_remain_native();
+	void main_escape_clears_search_and_keeps_other_filters_data();
+	void main_escape_clears_search_and_keeps_other_filters();
+	void search_chips_follow_text_and_clear_the_debounced_filter();
+	void table_widths_change_only_on_request_and_reset_each_session();
+	void precompute_gate_hides_controls_and_clears_filters();
+	void database_views_match_flags_and_preserve_selection();
+	void filter_tabs_keep_whole_inventory_counts_and_empty_views();
+	void optional_columns_match_csv_and_preserve_retained_sort();
+	void bin_loading_keeps_prepared_table_and_csv_metadata();
+	void bin_source_track_gap_keeps_proven_matches_and_console_warning();
+	void unmatched_bin_reports_once_when_loaded();
+	void bin_match_notice_checks_the_unfiltered_inventory();
+	void bin_match_notice_ignores_empty_inventory_and_unusable_references();
+	void omf_gate_controls_scans_and_removes_legacy_rows();
+	void added_locations_require_managed_media_structure();
+	void dropped_locations_keep_only_allowed_trees_without_scanning();
+	void volume_refresh_clears_selection_and_retains_unique_manual_paths();
+	void scan_commands_use_detected_and_manual_locations_data();
+	void scan_commands_use_detected_and_manual_locations();
+	void empty_detected_snapshot_keeps_only_manual_locations();
+	void startup_prunes_expired_journals_with_undo_disabled();
+	void unfinished_business_is_the_single_file_recovery_command();
+	void unfinished_business_merges_jobs_and_updates_choices();
+	void unfinished_business_gate_restore_does_not_start_waiting_job();
+	void unfinished_business_gate_stop_only_dismisses_selected_job();
+	void interrupted_dialog_escape_leaves_job_pending();
+	void interrupted_dialog_close_leaves_job_pending();
+	void interrupted_dialog_stop_keeps_completed_effects();
+	void interrupted_dialog_resume_starts_only_old_job();
+	void interrupted_undo_resumes_with_debug_flag_off();
+	void restore_action_survives_dismissal_later_jobs_and_close();
+	void restore_originals_keeps_completed_copy_and_refreshes_rows();
+	void resume_restoration_refreshes_rows();
+	void blocked_restore_remains_available();
+	void restore_can_select_another_retained_job();
+	void startup_offers_retained_originals();
+	void restore_originals_respects_busy_gate();
+	void observed_removals_prune_rows_even_when_job_needs_attention();
+	void completed_results_preserve_details_and_refresh_signals();
+	void transfer_totals_refresh_at_job_end_data();
+	void transfer_totals_refresh_at_job_end();
+	void copy_move_jobs_report_one_console_summary();
+	void rebalance_live_counts_follow_confirmed_results();
+	void rebalance_finished_recounts_uncertain_moves_and_absent_folders();
+	void rebalance_finished_marks_unavailable_root();
+	void rebalance_engine_results_and_final_counts_data();
+	void rebalance_engine_results_and_final_counts();
+	void rebalance_dialog_blocks_other_operation_entrypoints();
+	void scan_activity_blocks_operations_even_if_button_state_changes();
+	void rebalance_resume_keeps_running_job_activity();
+	void same_session_refresh_and_stale_result_guard();
+	void progress_cancel_is_acknowledged_once();
+	void trash_fallback_choice_data();
+	void trash_fallback_choice();
+	void trash_fallback_cancel_closes_dialog();
+	void trash_fallback_without_handler_returns_without_waiting();
+	void trash_fallback_destruction_unblocks_without_gui_events();
+	void trash_fallback_controller_destruction_closes_dialog();
+	void preview_background_checks_discard_superseded_results();
+	void preview_policy_changes_refresh_space_and_same_file_is_no_effect();
+
+private:
+	OperationRequest request(const QString &name = QStringLiteral("old"), int count = 1);
+	QString makeInterrupted(OperationRequest request, bool completeFirst = false);
+	QString makeRetainedOriginal(const QString &name = QStringLiteral("retained"));
+	void clickInterrupted(const QString &button);
+	void clickRestoreOriginals(const QString &button, const OperationRecovery::Restorable &job);
+	QString path(const QString &relative) const { return m_root + '/' + relative; }
+	QByteArray m_previousJournalDir;
+	bool m_hadJournalDir = false;
+	std::unique_ptr<QTemporaryDir> m_temp;
+	QString m_root;
+};
+
+// MARK: - Scan and CSV handoff
+
+void TestOperationUi::scan_start_clears_prepared_rows_after_source_release()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	{
+		const auto row = authoredScanRow(path("previous.mxf"), 0);
+		window.m_model->setMediaFiles({row});
+	}
+	QCOMPARE(window.m_model->rowCount(), 1);
+	QCOMPARE(window.m_model->fileAt(0).clipName, QStringLiteral("Original 0"));
+	QSignalSpy finished(window.m_scanner, &AppScanner::scanFinished);
+	window.rescanPaths({m_root});
+	QCOMPARE(window.m_model->rowCount(), 0);
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 10000);
+	QTRY_VERIFY(window.m_operations->isIdle());
+}
+
+void TestOperationUi::csv_export_completes_before_return_data()
+{
+	QTest::addColumn<QString>("scope");
+	QTest::addColumn<bool>("databaseView");
+	QTest::newRow("visible") << QString() << false;
+	QTest::newRow("selected") << QStringLiteral("Selected") << false;
+	QTest::newRow("all") << QStringLiteral("All") << false;
+	QTest::newRow("no-reference-visible") << QString() << true;
+	QTest::newRow("no-reference-selected") << QStringLiteral("Selected") << true;
+	QTest::newRow("no-reference-all") << QStringLiteral("All") << true;
+}
+
+void TestOperationUi::csv_export_completes_before_return()
+{
+	QFETCH(QString, scope);
+	QFETCH(bool, databaseView);
+	const bool nonNativeDialogs = QApplication::testAttribute(Qt::AA_DontUseNativeDialogs);
+	QApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
+	const auto restoreDialogs = qScopeGuard([nonNativeDialogs]
+											{ QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, nonNativeDialogs); });
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	QString selectedLine;
+	const MediaCsv::Options expectedOptions{true};
+	{
+		QVector<MediaFile> rows;
+		for (int index = 0; index < 3; ++index)
+		{
+			const auto status = databaseView
+									? (index < 2 ? MediaFile::DbStatus::NoReference : MediaFile::DbStatus::Listed)
+									: MediaFile::DbStatus::NoDatabase;
+			rows.append(authoredScanRow(path(QStringLiteral("original-%1.mxf").arg(index)), index, status));
+		}
+		window.onScanFinished(rows);
+		window.m_tableView->sortByColumn(int(MediaTableModel::Column::ClipName), Qt::AscendingOrder);
+		selectedLine = MediaCsv::rowLine(window.fileAtProxyRow(0), expectedOptions);
+	}
+	QCOMPARE(window.m_model->rowCount(), 3);
+	if (databaseView)
+	{
+		window.m_tableView->selectRow(2);
+		window.m_filterTabs->setCurrentIndex(5); // No Reference.
+		QCOMPARE(window.m_proxy->rowCount(), 2);
+		QVERIFY(window.selectedFiles().isEmpty()); // The remembered selection is hidden.
+	}
+	if (!scope.isEmpty())
+		window.m_tableView->selectRow(0);
+
+	const QString exportPath = path(QStringLiteral("export.csv"));
+	QString expectedText;
+	bool sawScopeDialog = false;
+	bool sawSaveDialog = false;
+	bool dialogTimedOut = false;
+	QStringList pickerSelection;
+	QString pickerDirectory;
+	QSignalSpy scanned(window.m_scanner, &AppScanner::scanFinished);
+	{
+		QElapsedTimer dialogElapsed;
+		dialogElapsed.start();
+		QTimer dialogs;
+		dialogs.setInterval(10);
+		connect(&dialogs, &QTimer::timeout, &window, [&]
+				{
+				auto *modal = QApplication::activeModalWidget();
+				if (dialogElapsed.elapsed() > 5000)
+				{
+					dialogTimedOut = true;
+					if (auto *dialog = qobject_cast<QDialog *>(modal))
+						dialog->reject();
+					return;
+				}
+				if (auto *message = qobject_cast<QMessageBox *>(modal))
+				{
+					sawScopeDialog = true;
+					// The chosen selection is captured before either modal dialog.
+					window.m_tableView->clearSelection();
+					window.m_tableView->selectRow(1);
+					for (auto *button : message->buttons())
+						if (button->text() == scope)
+						{
+							button->click();
+							return;
+						}
+				}
+				if (auto *dialog = qobject_cast<QFileDialog *>(modal); dialog && !sawSaveDialog)
+				{
+					sawSaveDialog = true;
+					auto changed = window.m_model->allFiles();
+					changed[0].clipName = QStringLiteral("Edited first");
+					changed[1].clipName = QStringLiteral("Edited second");
+					changed[2].clipName = QStringLiteral("Hidden after save");
+					window.m_model->setMediaFiles(changed);
+					window.m_proxy->setSearchText(QStringLiteral("Edited"));
+					window.m_tableView->sortByColumn(
+						static_cast<int>(MediaTableModel::Column::ClipName), Qt::DescendingOrder);
+					window.setPrecomputesEnabled(true);
+					// Visible rows, ordering and column gates are captured after Save.
+					expectedText = MediaCsv::headerLine(expectedOptions);
+					if (scope == QStringLiteral("Selected"))
+						expectedText += selectedLine;
+					else
+						expectedText += MediaCsv::rowLine(changed[1], expectedOptions) +
+										MediaCsv::rowLine(changed[0], expectedOptions);
+					if (!enterSaveFile(*dialog, exportPath))
+					{
+						dialog->reject();
+						return;
+					}
+					pickerDirectory = dialog->directory().absolutePath();
+					pickerSelection = dialog->selectedFiles();
+					if (pickerSelection != QStringList{exportPath})
+					{
+						dialog->reject();
+						return;
+					}
+					QMetaObject::invokeMethod(dialog, "accept", Qt::DirectConnection);
+				} });
+		dialogs.start();
+		window.onExportCsv();
+		dialogs.stop();
+		QVERIFY(!dialogTimedOut);
+		QCOMPARE(sawScopeDialog, !scope.isEmpty());
+		QVERIFY(sawSaveDialog);
+		QVERIFY2(pickerSelection == QStringList{exportPath},
+				 qPrintable(QStringLiteral("Save picker directory: %1; selection: %2; expected: %3")
+								.arg(pickerDirectory, pickerSelection.join(QStringLiteral("; ")), exportPath)));
+		QVERIFY(!window.m_exportInProgress);
+		const QString label = scope == QStringLiteral("Selected")
+								  ? QStringLiteral("selected")
+								  : QStringLiteral("visible");
+		const int count = scope == QStringLiteral("Selected") ? 1 : 2;
+		const auto messages = appMessages(window.m_console);
+		const QString confirmation = QStringLiteral("CSV export complete: %1 %2 rows to %3.")
+										 .arg(count)
+										 .arg(label, exportPath);
+		QCOMPARE(messages, QStringList{confirmation});
+		QFile csv(exportPath);
+		QVERIFY2(csv.open(QIODevice::ReadOnly), qPrintable(messages.join('\n')));
+		QCOMPARE(csv.readAll(), QByteArray::fromHex("efbbbf") + expectedText.toUtf8());
+		QCOMPARE(window.m_model->rowCount(), 3);
+		window.rescanPaths({m_root});
+		QCOMPARE(window.m_model->rowCount(), 0);
+	}
+	QTRY_COMPARE_WITH_TIMEOUT(scanned.count(), 1, 10000);
+	QTRY_VERIFY(window.m_operations->isIdle());
+}
+
+void TestOperationUi::csv_export_failure_preserves_previous_file()
+{
+	const bool nonNativeDialogs = QApplication::testAttribute(Qt::AA_DontUseNativeDialogs);
+	QApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
+	const auto restoreDialogs = qScopeGuard([nonNativeDialogs]
+											{ QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, nonNativeDialogs); });
+	const QString exportPath = path(QStringLiteral("previous.csv"));
+	const QByteArray original("previous export\n");
+	QVERIFY(put(exportPath, original));
+	QFile csv(exportPath);
+	const auto permissions = csv.permissions();
+	const auto restorePermissions = qScopeGuard([&]
+												{ csv.setPermissions(permissions); });
+	QVERIFY(csv.setPermissions(QFileDevice::ReadOwner | QFileDevice::ReadUser));
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile row;
+	row.mediaFilePath = path(QStringLiteral("original.mxf"));
+	row.clipName = QStringLiteral("New export row");
+	window.onScanFinished(TestMediaFile::seeded({row}));
+
+	bool sawSaveDialog = false;
+	bool dialogTimedOut = false;
+	QStringList pickerSelection;
+	QString pickerDirectory;
+	QElapsedTimer dialogElapsed;
+	dialogElapsed.start();
+	QTimer dialogs;
+	dialogs.setInterval(10);
+	connect(&dialogs, &QTimer::timeout, &window, [&]
+			{
+			auto *modal = QApplication::activeModalWidget();
+			if (dialogElapsed.elapsed() > 5000)
+			{
+				dialogTimedOut = true;
+				if (auto *dialog = qobject_cast<QDialog *>(modal))
+					dialog->reject();
+				return;
+			}
+			if (auto *dialog = qobject_cast<QFileDialog *>(modal); dialog && !sawSaveDialog)
+			{
+				sawSaveDialog = true;
+				// Exercise the writer's failure, without an additional overwrite prompt.
+				dialog->setOption(QFileDialog::DontConfirmOverwrite);
+				if (!enterSaveFile(*dialog, exportPath))
+				{
+					dialog->reject();
+					return;
+				}
+				pickerDirectory = dialog->directory().absolutePath();
+				pickerSelection = dialog->selectedFiles();
+				if (pickerSelection != QStringList{exportPath})
+				{
+					dialog->reject();
+					return;
+				}
+				QMetaObject::invokeMethod(dialog, "accept", Qt::DirectConnection);
+			} });
+	dialogs.start();
+	window.onExportCsv();
+	dialogs.stop();
+	QVERIFY(!dialogTimedOut);
+	QVERIFY(sawSaveDialog);
+	QVERIFY2(pickerSelection == QStringList{exportPath},
+			 qPrintable(QStringLiteral("Save picker directory: %1; selection: %2; expected: %3")
+							.arg(pickerDirectory, pickerSelection.join(QStringLiteral("; ")), exportPath)));
+	QVERIFY(!window.m_exportInProgress);
+	const auto messages = appMessages(window.m_console);
+	QCOMPARE(messages.count(QStringLiteral("CSV export failed: %1.").arg(exportPath)), 1);
+	for (const QString &message : messages)
+		QVERIFY(!message.startsWith(QStringLiteral("CSV export complete:")));
+	QVERIFY(csv.open(QIODevice::ReadOnly));
+	QCOMPARE(csv.readAll(), original);
+}
+
+// MARK: - Scan completion and inventory refresh
+
+void TestOperationUi::scan_completion_resets_filters_widgets_and_pending_search()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile audio;
+	audio.mediaFilePath = path("old-audio.mxf");
+	audio.fileName = QStringLiteral("old-audio.mxf");
+	audio.project = QStringLiteral("Old project");
+	audio.kind = MediaFile::Kind::Audio;
+	MediaFile video = audio;
+	video.mediaFilePath = path("old-video.mxf");
+	video.fileName = QStringLiteral("old-video.mxf");
+	video.kind = MediaFile::Kind::Video;
+	window.onScanFinished(TestMediaFile::seeded({audio, video}));
+	window.m_filterTabs->setCurrentIndex(2); // Audio.
+	window.m_projectList->item(0)->setSelected(true);
+	QSignalSpy searchTimeouts(window.m_searchDebounceTimer, &QTimer::timeout);
+	window.m_searchField->setText(QStringLiteral("old-audio"));
+	window.onSearchChanged(window.m_searchField->text());
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+	window.m_tableView->selectRow(0);
+	QVERIFY(!window.m_persistentSelectedPaths.isEmpty());
+	QVERIFY(window.m_searchDebounceTimer->isActive());
+	QVERIFY(!window.m_chipsBar->isHidden());
+
+	audio.mediaFilePath = path("new-audio.mxf");
+	audio.fileName = QStringLiteral("new-audio.mxf");
+	audio.project = QStringLiteral("New project");
+	video.mediaFilePath = path("new-video.mxf");
+	video.fileName = QStringLiteral("new-video.mxf");
+	video.project = audio.project;
+	window.onScanFinished(TestMediaFile::seeded({audio, video}));
+	QVERIFY(!window.m_searchDebounceTimer->isActive());
+	QVERIFY(window.m_searchField->text().isEmpty());
+	QCOMPARE(window.m_filterTabs->currentIndex(), 0);
+	QCOMPARE(window.m_projectList->count(), 1);
+	QCOMPARE(window.m_projectList->item(0)->text(), QStringLiteral("New project"));
+	QVERIFY(window.m_projectList->selectedItems().isEmpty());
+	QVERIFY(window.m_persistentSelectedPaths.isEmpty());
+	QVERIFY(window.selectedFiles().isEmpty());
+	QCOMPARE(window.m_chipsBar->layout()->count(), 0);
+	QVERIFY(window.m_chipsBar->isHidden());
+	QCOMPARE(window.m_proxy->rowCount(), 2);
+
+	// A reset cancels the queued search rather than invoking it on the new inventory.
+	QTest::qWait(window.m_searchDebounceTimer->interval() + 50);
+	QCOMPARE(searchTimeouts.count(), 0);
+	QCOMPARE(window.m_proxy->rowCount(), 2);
+	QTRY_COMPARE(window.m_statusFiles->text(), QStringLiteral("2 files"));
+}
+
+void TestOperationUi::scan_failure_closes_progress_and_restores_actions()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.m_operations->setActivity(FileOperationController::Activity::Scanning);
+	window.progressDialog()->begin();
+	QVERIFY(!window.m_exportAction->isEnabled());
+	bool explained = false;
+	QTimer dismiss;
+	dismiss.setInterval(1);
+	connect(&dismiss, &QTimer::timeout, [&]
+			{
+		for (QWidget *widget : QApplication::topLevelWidgets())
+			if (auto *message = qobject_cast<QMessageBox *>(widget))
+				if (message->text() == QStringLiteral("Archive allocation failed"))
+				{
+					explained = true;
+					message->accept();
+				} });
+	dismiss.start();
+	// Exercise the worker/UI failure notification, without inventing a bad media format.
+	emit window.m_scanner->scanFailed(QStringLiteral("Archive allocation failed"));
+	QTRY_VERIFY(explained);
+	QVERIFY(window.m_operations->isIdle());
+	QVERIFY(!window.progressDialog()->isVisible());
+	QCOMPARE(window.m_statusScanTime->text(), QStringLiteral("Scan failed"));
+}
+
+void TestOperationUi::project_sidebar_uses_whole_inventory_totals()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	QVector<MediaFile> files(4);
+	for (int i = 0; i < files.size(); ++i)
+	{
+		files[i].mediaFilePath = QStringLiteral("/media/%1.mxf").arg(i);
+		files[i].sizeBytes = 100;
+	}
+	for (int i : {0, 1, 2})
+		files[i].project = QStringLiteral("Project A");
+	files[0].kind = MediaFile::Kind::Video;
+	files[1].kind = MediaFile::Kind::Audio;
+	files[1].dbStatus = MediaFile::DbStatus::NoReference;
+	files[2].dbStatus = MediaFile::DbStatus::NoDatabase;
+	window.m_model->setMediaFiles(TestMediaFile::seeded(files));
+	window.m_proxy->setFilterMode(MediaFilterProxy::FilterMode::Audio);
+	window.rebuildProjectList();
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+	QCOMPARE(window.m_projectList->count(), 2);
+	QCOMPARE(window.m_projectList->item(0)->text(), QStringLiteral("No project"));
+	QCOMPARE(window.m_projectList->item(0)->toolTip(),
+			 QStringLiteral("1 files, 100 B\n\n") + MediaFile::noProjectWhy());
+	QCOMPARE(window.m_projectList->item(1)->text(), QStringLiteral("Project A"));
+	QCOMPARE(window.m_projectList->item(1)->toolTip(), QStringLiteral("3 files, 300 B"));
+
+	window.m_projectList->item(1)->setSelected(true);
+	emit window.m_operations->sourcesRemoved({files[0].mediaFilePath});
+	QVERIFY(window.m_projectList->item(1)->isSelected());
+	QCOMPARE(window.m_projectList->item(1)->toolTip(), QStringLiteral("2 files, 200 B"));
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+
+	emit window.m_operations->sourcesRemoved({files[1].mediaFilePath, files[2].mediaFilePath, files[3].mediaFilePath});
+	QCOMPARE(window.m_projectList->count(), 0);
+}
+
+void TestOperationUi::removed_sources_refresh_status_and_project_filters()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	QVector<MediaFile> files(3);
+	for (int i = 0; i < files.size(); ++i)
+	{
+		files[i].mediaFilePath = path(QStringLiteral("%1.mxf").arg(i));
+		files[i].clipName = QString::number(i);
+		files[i].project = i < 2 ? QStringLiteral("Project A") : QStringLiteral("Project B");
+		files[i].sizeBytes = 100 * (1 << i);
+	}
+	window.onScanFinished(TestMediaFile::seeded(files));
+	window.m_projectList->item(0)->setSelected(true);
+	window.m_tableView->selectAll();
+	QTRY_COMPARE(window.m_statusFiles->text(), QStringLiteral("2 files (filtered from 3)"));
+	QCOMPARE(window.m_statusSize->text(), QStringLiteral("300 B"));
+	QCOMPARE(window.m_statusSelected->text(), QStringLiteral("2 selected"));
+	QTRY_COMPARE(window.m_statusSelSize->text(), QStringLiteral("300 B selected"));
+
+	// Removing only part of the selected project retains its filter and selection.
+	emit window.m_operations->sourcesRemoved({files[0].mediaFilePath});
+	QTRY_COMPARE(window.m_statusFiles->text(), QStringLiteral("1 files (filtered from 2)"));
+	QCOMPARE(window.m_statusSize->text(), QStringLiteral("200 B"));
+	QCOMPARE(window.m_statusSelected->text(), QStringLiteral("1 selected"));
+	QTRY_COMPARE(window.m_statusSelSize->text(), QStringLiteral("200 B selected"));
+	QCOMPARE(window.m_projectList->selectedItems().size(), 1);
+	QCOMPARE(window.m_projectList->selectedItems().first()->text(), QStringLiteral("Project A"));
+	QCOMPARE(window.selectedFiles().size(), 1);
+	QCOMPARE(window.selectedFiles().first().mediaFilePath, files[1].mediaFilePath);
+	QVERIFY(!window.m_chipsBar->isHidden());
+
+	// Removing its last file clears the dead project filter and reveals Project B.
+	emit window.m_operations->sourcesRemoved({files[1].mediaFilePath});
+	QTRY_COMPARE(window.m_statusFiles->text(), QStringLiteral("1 files"));
+	QCOMPARE(window.m_statusSize->text(), QStringLiteral("400 B"));
+	QCOMPARE(window.m_projectList->count(), 1);
+	QCOMPARE(window.m_projectList->item(0)->text(), QStringLiteral("Project B"));
+	QVERIFY(window.m_projectList->selectedItems().isEmpty());
+	QVERIFY(window.m_chipsBar->isHidden());
+	QVERIFY(window.m_statusSelected->isHidden());
+	QVERIFY(window.m_statusSelSize->isHidden());
+	QVERIFY(window.selectedFiles().isEmpty());
+	QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, files[2].mediaFilePath);
+
+	emit window.m_operations->sourcesRemoved({files[2].mediaFilePath});
+	QTRY_COMPARE(window.m_statusFiles->text(), QStringLiteral("0 files"));
+	QCOMPARE(window.m_statusSize->text(), QStringLiteral("0 B"));
+	QCOMPARE(window.m_projectList->count(), 0);
+}
+
+// MARK: - UI test lifecycle
+
+void TestOperationUi::initTestCase()
+{
+	m_hadJournalDir = qEnvironmentVariableIsSet("MEDIAMUSTER_JOURNAL_DIR");
+	m_previousJournalDir = qgetenv("MEDIAMUSTER_JOURNAL_DIR");
+}
+void TestOperationUi::init()
+{
+	m_temp = std::make_unique<QTemporaryDir>();
+	QVERIFY(m_temp->isValid());
+	m_root = OperationJournal::canonicalPath(m_temp->path());
+	qputenv("MEDIAMUSTER_JOURNAL_DIR", path("journals").toUtf8());
+}
+void TestOperationUi::cleanup()
+{
+	QThreadPool::globalInstance()->waitForDone();
+	QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+	m_temp.reset();
+}
+void TestOperationUi::cleanupTestCase()
+{
+	if (m_hadJournalDir)
+		qputenv("MEDIAMUSTER_JOURNAL_DIR", m_previousJournalDir);
+	else
+		qunsetenv("MEDIAMUSTER_JOURNAL_DIR");
+}
+// MARK: - Recovery fixture helpers
+
+OperationRequest TestOperationUi::request(const QString &name, int count)
+{
+	OperationRequest result;
+	result.destRoot = path(name + "/destination");
+	QDir().mkpath(result.destRoot);
+	for (int i = 0; i < count; ++i)
+	{
+		OperationItem item;
+		item.name = QStringLiteral("clip-%1.bin").arg(i);
+		item.src = path(name + "/source/" + item.name);
+		item.bytes = 64 * 1024;
+		if (!put(item.src, QByteArray(int(item.bytes), char('a' + i))))
+			qFatal("Cannot write disposable UI fixture");
+		result.items.append(item);
+	}
+	return result;
+}
+QString TestOperationUi::makeInterrupted(OperationRequest request, bool completeFirst)
+{
+	if (completeFirst)
+	{
+		std::atomic<bool> cancel{false};
+		Sink sink;
+		sink.cancelAfterResult = &cancel;
+		OperationRunner runner(sink, cancel);
+		const auto totals = runner.run(request, path("journals"));
+		if (totals.succeeded != 1)
+			qFatal("Cannot prepare interrupted UI fixture");
+		const auto pending = OperationRecovery::readSummary(path("journals")).resumable;
+		if (pending.size() != 1)
+			qFatal("Interrupted UI fixture was not resumable");
+		return pending.first().journalPath;
+	}
+	OperationJournal journal;
+	QString error;
+	if (!journal.create(request, path("journals"), error) || !journal.finish(true))
+		qFatal("Cannot prepare interrupted journal: %s", qPrintable(error));
+	return journal.path();
+}
+void TestOperationUi::clickInterrupted(const QString &button)
+{
+	auto *timer = new QTimer(this);
+	timer->setInterval(1);
+	connect(timer, &QTimer::timeout, this, [timer, button]
+			{
+		auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget());
+		if (!dialog) return; // The asynchronous journal read may still be running.
+		timer->stop();
+		timer->deleteLater();
+		QTimer::singleShot(5000, dialog, &QDialog::reject); // Also closes if an assertion fails.
+		QCOMPARE(dialog->objectName(), QStringLiteral("unfinishedBusinessDialog"));
+		auto *heading = dialog->findChild<QLabel *>(QStringLiteral("unfinishedBusinessHeading"));
+		auto *jobs = dialog->findChild<QComboBox *>(QStringLiteral("unfinishedBusinessJob"));
+		QVERIFY(heading && jobs);
+		QCOMPARE(heading->text(), QStringLiteral("Resume the interrupted job?"));
+		auto *summary = dialog->findChild<QLabel *>(QStringLiteral("unfinishedBusinessSummary"));
+		QVERIFY(summary && !summary->text().isEmpty());
+		auto *resume = dialog->findChild<QPushButton *>(QStringLiteral("resumeInterruptedJobButton"));
+		auto *stop = dialog->findChild<QPushButton *>(QStringLiteral("stopInterruptedJobButton"));
+		QVERIFY(resume && stop);
+		QCOMPARE(resume->text(), QStringLiteral("Resume"));
+		QCOMPARE(stop->text(), QStringLiteral("Stop"));
+		for (auto *button : dialog->findChildren<QPushButton *>())
+			QVERIFY(button->text().remove('&') != QStringLiteral("Cancel"));
+		if (button == "escape") QTest::keyClick(dialog, Qt::Key_Escape);
+		else if (button == "close") dialog->close();
+		else
+		{
+			auto *target = dialog->findChild<QPushButton *>(button);
+			QVERIFY(target);
+			target->click();
+		} });
+	timer->start();
+}
+
+QString TestOperationUi::makeRetainedOriginal(const QString &name)
+{
+	// An interrupted Move can restore its relocated original without destination evidence.
+	auto old = request(name);
+	old.kind = OperationKind::Move;
+	old.copyThenRemove = true;
+	const auto mediaPath = path(name + "/Avid MediaFiles/MXF/1/clip-0.mxf");
+	if (!QDir().mkpath(QFileInfo(mediaPath).absolutePath()) ||
+		!QFile::rename(old.items[0].src, mediaPath))
+		qFatal("Cannot rename UI fixture");
+	old.items[0].src = mediaPath;
+	old.items[0].name = QStringLiteral("clip-0.mxf");
+	OperationJournal journal;
+	QString error;
+	if (!journal.create(old, path("journals"), error))
+		qFatal("Cannot create retained-original journal: %s", qPrintable(error));
+	auto entry = journal.record().entries.first();
+	entry.dst = old.destRoot + '/' + entry.item.name;
+	entry.retirement = QFileInfo(entry.item.src).absolutePath() + "/.mediamuster-retire-" +
+					   QUuid::createUuid().toString(QUuid::WithoutBraces) + "/payload.retired";
+	if (!QFile::copy(entry.item.src, entry.dst) ||
+		!QDir().mkpath(QFileInfo(entry.retirement).absolutePath()) ||
+		!QFile::rename(entry.item.src, entry.retirement))
+		qFatal("Cannot prepare retained-original payload");
+	entry.mechanism = QStringLiteral("copy");
+	entry.landed = OperationFile::inspect(entry.dst);
+	entry.copyDurable = true;
+	entry.metadataComplete = true;
+	entry.step = OperationJournal::Step::RemovingSource;
+	if (!journal.save(entry) || !journal.markCopiesComplete() || !journal.finish(true))
+		qFatal("Cannot save retained-original journal");
+	return journal.path();
+}
+
+void TestOperationUi::clickRestoreOriginals(const QString &button,
+											const OperationRecovery::Restorable &job)
+{
+	auto *timer = new QTimer(this);
+	timer->setInterval(1);
+	connect(timer, &QTimer::timeout, this, [timer, button, job]
+			{
+		auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget());
+		if (!dialog) return;
+		timer->stop();
+		timer->deleteLater();
+		QTimer::singleShot(5000, dialog, &QDialog::reject); // Also closes if an assertion fails.
+		QCOMPARE(dialog->objectName(), QStringLiteral("unfinishedBusinessDialog"));
+		auto *jobs = dialog->findChild<QComboBox *>(QStringLiteral("unfinishedBusinessJob"));
+		QVERIFY(jobs);
+		const int selectedJob = jobs->findData(job.journalPath);
+		QVERIFY(selectedJob >= 0);
+		jobs->setCurrentIndex(selectedJob);
+		auto *paths = dialog->findChild<QPlainTextEdit *>(QStringLiteral("restoreOriginalPaths"));
+		QVERIFY(paths && paths->isReadOnly());
+		for (const auto &path : job.originals)
+			QVERIFY(paths->toPlainText().contains(QDir::toNativeSeparators(path)));
+		for (const auto &path : job.retainedPaths)
+			QVERIFY(paths->toPlainText().contains(QDir::toNativeSeparators(path)));
+		if (button == "enter")
+		{
+			QTest::keyClick(dialog, Qt::Key_Return);
+			QVERIFY(dialog->isVisible());
+			QTest::keyClick(dialog, Qt::Key_Escape);
+		}
+		else if (button == "escape") QTest::keyClick(dialog, Qt::Key_Escape);
+		else if (button == "close") dialog->close();
+		else
+		{
+			auto *target = dialog->findChild<QPushButton *>(button);
+			QVERIFY(target);
+			target->click();
+		} });
+	timer->start();
+}
+
+// MARK: - Volume selection and discovery
+
+void TestOperationUi::volume_refresh_clears_selection_and_retains_unique_manual_paths()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.rebuildVolumeList({});
+	const QString folder = path("manual/Avid MediaFiles");
+	QVERIFY(QDir().mkpath(folder + "/MXF/1"));
+	window.addVolumePath(folder);
+	QCOMPARE(window.m_volumeList->count(), 1);
+	QVERIFY(window.m_volumeList->item(0)->isSelected());
+	window.addVolumePath(folder + "/.");
+	QCOMPARE(window.m_volumeList->count(), 1);
+	QCOMPARE(window.m_manualVolumes.size(), 1);
+	QCOMPARE(window.m_manualVolumes.value(folder), AppScanner::Location::Kind::MediaTree);
+#ifndef Q_OS_WIN
+	const QString alias = path("manual/tree-alias");
+	QVERIFY(QFile::link(folder, alias));
+	window.addVolumePath(alias);
+	QCOMPARE(window.m_volumeList->count(), 1);
+	QCOMPARE(window.m_manualVolumes.size(), 1);
+#endif
+	window.rebuildVolumeList({});
+	QCOMPARE(window.m_volumeList->count(), 1);
+	QCOMPARE(window.m_volumeList->item(0)->data(Qt::UserRole).toString(), folder);
+	QCOMPARE(window.m_manualVolumes.value(folder), AppScanner::Location::Kind::MediaTree);
+	QVERIFY(window.m_volumeList->selectedItems().isEmpty());
+	VolumeInfo volume;
+	volume.name = QStringLiteral("Detected media");
+	volume.path = folder;
+	volume.hasAvidMedia = true;
+	window.rebuildVolumeList({volume});
+	QCOMPARE(window.m_volumeList->count(), 1);
+	QVERIFY(window.m_volumeList->selectedItems().isEmpty());
+	window.m_volumeList->item(0)->setSelected(true);
+	window.rebuildVolumeList({volume});
+	QVERIFY(window.m_volumeList->selectedItems().isEmpty());
+	QCOMPARE(window.m_console->toPlainText().count(
+				 QStringLiteral("volumes: Found 1 volumes; 1 contain Avid media.")), 2);
+}
+
+void TestOperationUi::scan_commands_use_detected_and_manual_locations_data()
+{
+	QTest::addColumn<bool>("scanAll");
+	QTest::newRow("all-locations") << true;
+	QTest::newRow("selected-locations") << false;
+}
+
+void TestOperationUi::scan_commands_use_detected_and_manual_locations()
+{
+	QFETCH(bool, scanAll);
+	const QString shared = path("locations/detected-and-manual/Avid MediaFiles");
+	const QString detected = path("locations/detected-only");
+	const QString manual = path("locations/manual/Avid MediaFiles");
+	const QString sharedFile = shared + "/MXF/1/shared.mxf";
+	const QString detectedFile = detected + "/Avid MediaFiles/MXF/1/detected.mxf";
+	const QString manualFile = manual + "/MXF/1/manual.mxf";
+	for (const auto &file : {sharedFile, detectedFile, manualFile})
+		QVERIFY(put(file, QByteArray(4096, '\0')));
+
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	window.setOmfScanEnabled(false);
+	window.m_operations->setUndoEnabled(false);
+	window.rebuildVolumeList({});
+	window.addVolumePath(shared);
+	window.addVolumePath(manual);
+	VolumeInfo sharedVolume;
+	sharedVolume.name = QStringLiteral("Detected and added");
+	sharedVolume.path = shared;
+	sharedVolume.hasAvidMedia = true;
+	VolumeInfo detectedVolume;
+	detectedVolume.name = QStringLiteral("Detected only");
+	detectedVolume.path = detected;
+	detectedVolume.hasAvidMedia = true;
+	window.rebuildVolumeList({sharedVolume, detectedVolume});
+	QCOMPARE(window.m_volumeList->count(), 3);
+	QVERIFY(window.m_manualVolumes.contains(shared));
+	QVERIFY(window.m_volumeList->selectedItems().isEmpty());
+	if (!scanAll)
+		for (int row = 0; row < window.m_volumeList->count(); ++row)
+		{
+			auto *item = window.m_volumeList->item(row);
+			const QString location = item->data(Qt::UserRole).toString();
+			item->setSelected(location == detected || location == manual);
+		}
+
+	QSignalSpy discovering(window.m_scanner, &AppScanner::scanDiscovering);
+	QSignalSpy finished(window.m_scanner, &AppScanner::scanFinished);
+	if (scanAll)
+		window.scanEverything();
+	else
+		window.scanSelected();
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
+	QTRY_VERIFY(window.m_operations->isIdle());
+	QSet<QString> scanned;
+	for (const auto &file : window.m_model->allFiles())
+		scanned.insert(file.mediaFilePath);
+	QSet<QString> expected{detectedFile, manualFile};
+	if (scanAll)
+		expected.insert(sharedFile);
+	QCOMPARE(window.m_model->rowCount(), expected.size());
+	QCOMPARE(scanned, expected);
+	// The manual Avid MediaFiles folder must use folder rules, not drive-root rules.
+	// Count the requested locations separately from later discovery of their subfolders.
+	QStringList requested;
+	for (const auto &arguments : discovering)
+		requested.append(arguments.first().toString());
+	QCOMPARE(requested.count(detected), 1);
+	QCOMPARE(requested.count(manual), 1);
+	QCOMPARE(requested.count(shared), scanAll ? 1 : 0);
+}
+
+void TestOperationUi::empty_detected_snapshot_keeps_only_manual_locations()
+{
+	const QString detected = path("locations/detected");
+	const QString manual = path("locations/manual/Avid MediaFiles");
+	const QString detectedFile = detected + "/Avid MediaFiles/MXF/1/detected.mxf";
+	const QString manualFile = manual + "/MXF/1/manual.mxf";
+	QVERIFY(put(detectedFile, QByteArray(4096, '\0')));
+	QVERIFY(put(manualFile, QByteArray(4096, '\0')));
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	window.setOmfScanEnabled(false);
+	window.m_operations->setUndoEnabled(false);
+	VolumeInfo volume;
+	volume.name = QStringLiteral("Detected media");
+	volume.path = detected;
+	volume.hasAvidMedia = true;
+	window.rebuildVolumeList({volume});
+	window.addVolumePath(manual);
+	QSignalSpy discovering(window.m_scanner, &AppScanner::scanDiscovering);
+	QSignalSpy finished(window.m_scanner, &AppScanner::scanFinished);
+	window.scanEverything();
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
+	QTRY_VERIFY(window.m_operations->isIdle());
+	QSet<QString> scanned;
+	for (const auto &file : window.m_model->allFiles())
+		scanned.insert(file.mediaFilePath);
+	QCOMPARE(window.m_model->rowCount(), 2);
+	QCOMPARE(scanned, QSet<QString>({detectedFile, manualFile}));
+
+	// A completed Refresh with no detected drives replaces the previous snapshot.
+	window.rebuildVolumeList({});
+	QCOMPARE(window.m_volumeList->count(), 1);
+	QCOMPARE(window.m_volumeList->item(0)->data(Qt::UserRole).toString(), manual);
+	QVERIFY(window.m_volumeList->selectedItems().isEmpty());
+	discovering.clear();
+	window.scanEverything();
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 2, 15000);
+	QTRY_VERIFY(window.m_operations->isIdle());
+	QCOMPARE(window.m_model->rowCount(), 1);
+	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, manualFile);
+	QStringList requested;
+	for (const auto &arguments : discovering)
+		requested.append(arguments.first().toString());
+	QCOMPARE(requested.count(manual), 1);
+	QCOMPARE(requested.count(detected), 0);
+}
+
+void TestOperationUi::added_locations_require_managed_media_structure()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setOmfScanEnabled(false);
+	const QString copiedRoot = path("Desktop/Backup/Avid MediaFiles");
+	const QString legacyRoot = path("Desktop/Legacy/OMFI MediaFiles");
+	QVERIFY(QDir().mkpath(copiedRoot + "/MXF/1"));
+	QVERIFY(QDir().mkpath(copiedRoot + "/MXF/Edit01.1"));
+	QVERIFY(QDir().mkpath(copiedRoot + "/MXF/Monday"));
+	QVERIFY(QDir().mkpath(copiedRoot + "/MXF/Quarantined Files"));
+	QVERIFY(QDir().mkpath(legacyRoot + "/Workstation"));
+	QVERIFY(put(path("loose/msmFMID.pmr"), "not an admission rule"));
+	const QString mediaFile = copiedRoot + "/MXF/1/readable.mxf";
+	QVERIFY(put(mediaFile, "a readable file is not a folder input"));
+	QVERIFY(QDir().mkpath(path("standalone/MXF/1")));
+	QVERIFY(QDir().mkpath(path("ume/Avid MediaFiles/UME/1")));
+	const int originalCount = window.m_volumeList->count();
+	QSignalSpy discovering(window.m_scanner, &AppScanner::scanDiscovering);
+	for (const QString &rejected : {path("loose"), path("standalone/MXF"), path("Desktop"),
+									path("Desktop/Backup"), copiedRoot + "/MXF", copiedRoot + "/MXF/1",
+									copiedRoot + "/MXF/Edit01.1", copiedRoot + "/MXF/Monday",
+									copiedRoot + "/MXF/Quarantined Files", legacyRoot + "/Workstation",
+									path("ume/Avid MediaFiles/UME/1"), mediaFile})
+	{
+		window.addVolumePath(rejected);
+		QCOMPARE(window.m_volumeList->count(), originalCount);
+		QVERIFY(!window.m_manualVolumes.contains(rejected));
+	}
+	window.addVolumePath(copiedRoot);
+	window.addVolumePath(legacyRoot);
+	QCOMPARE(window.m_volumeList->count(), originalCount + 2);
+	QVERIFY(window.m_manualVolumes.contains(copiedRoot));
+	QVERIFY(window.m_manualVolumes.contains(legacyRoot));
+	QCOMPARE(window.m_manualVolumes.value(copiedRoot), AppScanner::Location::Kind::MediaTree);
+	QCOMPARE(window.m_manualVolumes.value(legacyRoot), AppScanner::Location::Kind::MediaTree);
+	QVERIFY(!window.m_omfScanEnabled); // Adding an OMF tree does not enable its reader.
+	window.addVolumePath(copiedRoot);
+	QCOMPARE(window.m_volumeList->count(), originalCount + 2);
+	QVERIFY(window.m_operations->isIdle());
+	QCOMPARE(discovering.count(), 0);
+}
+
+void TestOperationUi::dropped_locations_keep_only_allowed_trees_without_scanning()
+{
+	const QString tree = path("drop/Avid MediaFiles");
+	const QString mediaFile = tree + "/MXF/1/readable.mxf";
+	QVERIFY(put(mediaFile, QByteArray(4096, '\0')));
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile retained;
+	retained.mediaFilePath = path("retained.mxf");
+	window.onScanFinished(TestMediaFile::seeded({retained}));
+	window.show();
+	QSignalSpy dropped(window.m_volumeList, &VolumeListWidget::pathsDropped);
+	QSignalSpy discovering(window.m_scanner, &AppScanner::scanDiscovering);
+	QSignalSpy finished(window.m_scanner, &AppScanner::scanFinished);
+	QMimeData fileOnly;
+	fileOnly.setUrls({QUrl::fromLocalFile(mediaFile)});
+	QDragEnterEvent fileEnter(QPoint{}, Qt::CopyAction, &fileOnly, Qt::LeftButton, Qt::NoModifier);
+	QApplication::sendEvent(window.m_volumeList->viewport(), &fileEnter);
+	QVERIFY(!fileEnter.isAccepted());
+	QCOMPARE(dropped.count(), 0);
+	QCOMPARE(window.m_volumeList->count(), 0);
+
+	QMimeData mixed;
+	mixed.setUrls({QUrl::fromLocalFile(tree), QUrl::fromLocalFile(tree + "/."),
+				   QUrl::fromLocalFile(path("drop")), QUrl::fromLocalFile(tree + "/MXF/1"),
+				   QUrl::fromLocalFile(mediaFile)});
+	QDragEnterEvent enter(QPoint{}, Qt::CopyAction, &mixed, Qt::LeftButton, Qt::NoModifier);
+	QApplication::sendEvent(window.m_volumeList->viewport(), &enter);
+	QVERIFY(enter.isAccepted());
+	QDropEvent drop(QPointF{}, Qt::CopyAction, &mixed, Qt::LeftButton, Qt::NoModifier);
+	QApplication::sendEvent(window.m_volumeList->viewport(), &drop);
+	QVERIFY(drop.isAccepted());
+	QCOMPARE(dropped.count(), 1);
+	QVERIFY(!dropped.first().first().toStringList().contains(mediaFile));
+	QCOMPARE(window.m_volumeList->count(), 1);
+	QCOMPARE(window.m_volumeList->item(0)->data(Qt::UserRole).toString(), tree);
+	QCOMPARE(window.m_manualVolumes.size(), 1);
+	QVERIFY(window.m_manualVolumes.contains(tree));
+	QCOMPARE(window.m_manualVolumes.value(tree), AppScanner::Location::Kind::MediaTree);
+	QVERIFY(window.m_operations->isIdle());
+	QCOMPARE(discovering.count(), 0);
+	QCOMPARE(finished.count(), 0);
+	QCOMPARE(window.m_model->rowCount(), 1);
+	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, retained.mediaFilePath);
+	window.rebuildVolumeList({});
+	QCOMPARE(window.m_volumeList->count(), 1);
+	QCOMPARE(window.m_volumeList->item(0)->data(Qt::UserRole).toString(), tree);
+	QVERIFY(window.m_volumeList->selectedItems().isEmpty());
+}
+
+// MARK: - Feature gates and action availability
+
+void TestOperationUi::feature_flags_configure_startup_and_text_undo_works()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.show();
+	auto *debugMenu = window.findChild<QMenu *>(QStringLiteral("debugMenu"));
+	QCOMPARE(debugMenu != nullptr, FeatureFlags::kDebugMenu);
+	for (const auto *name : {"enableOmfDebugAction", "enablePrecomputesDebugAction", "enableUndoDebugAction"})
+		QVERIFY(!window.findChild<QAction *>(QString::fromLatin1(name)));
+	QCOMPARE(window.m_omfScanEnabled, FeatureFlags::kOmfScan);
+	QCOMPARE(window.m_precomputesEnabled, FeatureFlags::kPrecomputeFilter);
+	QCOMPARE(window.m_model->precomputesEnabled(), FeatureFlags::kPrecomputeFilter);
+	QCOMPARE(window.m_proxy->precomputesEnabled(), FeatureFlags::kPrecomputeFilter);
+	QCOMPARE(window.m_precomputeFilterAction->isVisible(), FeatureFlags::kPrecomputeFilter);
+	QCOMPARE(window.m_operations->m_undoEnabled, FeatureFlags::kUndo);
+	QCOMPARE(window.m_operations->m_undoAction->isVisible(), FeatureFlags::kUndo);
+	QCOMPARE(window.m_operations->m_undoAction->shortcut(),
+			 FeatureFlags::kUndo ? QKeySequence(QKeySequence::Undo) : QKeySequence());
+	window.m_searchField->setFocus();
+	QTest::keyClicks(window.m_searchField, "typed search");
+	QVERIFY(window.m_searchField->isUndoAvailable());
+	QTest::keySequence(window.m_searchField, QKeySequence::Undo);
+	QVERIFY(window.m_searchField->text().isEmpty());
+}
+
+void TestOperationUi::menu_availability_tracks_locations_selection_and_activity()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	window.setOmfScanEnabled(false);
+	window.m_operations->setUndoEnabled(false);
+	auto action = [&window](const char *name)
+	{
+		return window.findChild<QAction *>(QString::fromLatin1(name));
+	};
+	auto *scanSelected = action("scanSelectedAction");
+	auto *scanAll = action("scanAllAction");
+	auto *manage = action("manageMediaAction");
+	auto *rebalance = action("rebalanceAction");
+	auto *exportCsv = action("exportCsvAction");
+	auto *reveal = action("revealInFinderAction");
+	auto *relatives = action("selectRelativesAction");
+	auto *inverse = action("selectInverseAction");
+	for (auto *command : {scanSelected, scanAll, manage, rebalance, exportCsv, reveal, relatives, inverse})
+	{
+		QVERIFY(command);
+		QVERIFY(!command->isEnabled());
+	}
+	QVERIFY(!window.m_precomputeFilterAction->isVisible());
+	QVERIFY(!window.m_precomputeFilterAction->isEnabled());
+	window.setPrecomputesEnabled(true);
+	QVERIFY(window.m_precomputeFilterAction->isVisible());
+	QVERIFY(!window.m_precomputeFilterAction->isEnabled());
+	QVERIFY(!window.m_precomputeFilterButton->isEnabled());
+	window.setPrecomputesEnabled(false);
+
+	auto *location = new QListWidgetItem(QStringLiteral("Media volume"));
+	location->setData(Qt::UserRole, path("volume"));
+	window.m_volumeList->addItem(location);
+	QVERIFY(scanAll->isEnabled());
+	QVERIFY(window.m_scanAllButton->isEnabled());
+	QVERIFY(!scanSelected->isEnabled());
+	location->setSelected(true);
+	QVERIFY(scanSelected->isEnabled());
+	QVERIFY(window.m_scanButton->isEnabled());
+
+	MediaFile file;
+	file.mediaFilePath = path("volume/clip.mxf");
+	file.fileName = QStringLiteral("clip.mxf");
+	file.masterMobId = QStringLiteral("master-clip");
+	window.onScanFinished(TestMediaFile::seeded({file}));
+	QVERIFY(rebalance->isEnabled());
+	QVERIFY(window.m_rebalanceButton->isEnabled());
+	QVERIFY(exportCsv->isEnabled());
+	QVERIFY(window.m_exportCsvButton->isEnabled());
+	QVERIFY(inverse->isEnabled());
+	QVERIFY(!manage->isEnabled());
+	QVERIFY(!reveal->isEnabled());
+	QVERIFY(!relatives->isEnabled());
+
+	window.m_tableView->selectRow(0);
+	QVERIFY(manage->isEnabled());
+	QVERIFY(window.m_manageMediaButton->isEnabled());
+	QVERIFY(reveal->isEnabled());
+	QVERIFY(relatives->isEnabled());
+	window.setPrecomputesEnabled(true);
+	QVERIFY(window.m_precomputeFilterAction->isEnabled());
+	QVERIFY(window.m_precomputeFilterButton->isEnabled());
+
+	window.m_operations->setActivity(FileOperationController::Activity::Scanning);
+	for (auto *command : {scanSelected, scanAll, manage, rebalance, exportCsv, window.m_precomputeFilterAction})
+		QVERIFY(!command->isEnabled());
+	for (auto *button : {window.m_scanButton, window.m_scanAllButton, window.m_manageMediaButton,
+						 window.m_rebalanceButton, window.m_exportCsvButton, window.m_precomputeFilterButton})
+		QVERIFY(!button->isEnabled());
+	window.m_operations->setActivity(FileOperationController::Activity::Idle);
+	QVERIFY(manage->isEnabled());
+	QVERIFY(exportCsv->isEnabled());
+
+	// Remembered selections hidden by a filter cannot feed commands.
+	window.onSearchChanged(QStringLiteral("no matching media"));
+	QCOMPARE(window.m_proxy->rowCount(), 0);
+	QVERIFY(!manage->isEnabled());
+	QVERIFY(!reveal->isEnabled());
+	QVERIFY(!relatives->isEnabled());
+	QVERIFY(!inverse->isEnabled());
+	QVERIFY(!exportCsv->isEnabled());
+	QVERIFY(!window.m_exportCsvButton->isEnabled());
+	QVERIFY(rebalance->isEnabled()); // Rebalance uses the whole inventory.
+	window.onSearchChanged({});
+	QVERIFY(manage->isEnabled());
+	QVERIFY(exportCsv->isEnabled());
+
+	window.m_tableView->clearSelection();
+	QVERIFY(!manage->isEnabled());
+	QVERIFY(!window.m_manageMediaButton->isEnabled());
+	QVERIFY(!reveal->isEnabled());
+	QVERIFY(!relatives->isEnabled());
+
+	// Inventory changes must also clear commands seeded by an old selection.
+	window.m_tableView->selectRow(0);
+	window.m_model->removeFilesByPath({file.mediaFilePath});
+	QCOMPARE(window.m_proxy->rowCount(), 0);
+	for (auto *command : {manage, rebalance, exportCsv, reveal, relatives, inverse, window.m_precomputeFilterAction})
+		QVERIFY(!command->isEnabled());
+	window.onScanFinished(TestMediaFile::seeded({file}));
+	window.m_tableView->selectRow(0);
+	QVERIFY(manage->isEnabled());
+	QVERIFY(relatives->isEnabled());
+	window.m_model->setMediaFiles(TestMediaFile::seeded({}));
+	QCOMPARE(window.m_proxy->rowCount(), 0);
+	for (auto *command : {manage, rebalance, exportCsv, reveal, relatives, inverse, window.m_precomputeFilterAction})
+		QVERIFY(!command->isEnabled());
+
+	window.m_volumeList->clearSelection();
+	QVERIFY(!scanSelected->isEnabled());
+	QVERIFY(!window.m_scanButton->isEnabled());
+	QVERIFY(scanAll->isEnabled());
+	window.m_volumeList->clear();
+	QVERIFY(!scanAll->isEnabled());
+	QVERIFY(!window.m_scanAllButton->isEnabled());
+}
+
+// MARK: - Selection and keyboard actions
+
+void TestOperationUi::select_relatives_counts_all_visible_matches_data()
+{
+	QTest::addColumn<int>("total");
+	QTest::addColumn<int>("initiallySelected");
+	QTest::addColumn<bool>("hideLastRelative");
+	QTest::newRow("solo-file") << 1 << 1 << false;
+	QTest::newRow("audio-pair") << 2 << 1 << false;
+	QTest::newRow("trio") << 3 << 1 << false;
+	QTest::newRow("partly-selected-trio") << 3 << 2 << false;
+	QTest::newRow("filtered-relative") << 2 << 1 << true;
+}
+
+void TestOperationUi::select_relatives_counts_all_visible_matches()
+{
+	QFETCH(int, total);
+	QFETCH(int, initiallySelected);
+	QFETCH(bool, hideLastRelative);
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	QVector<MediaFile> files(total + 1);
+	for (int i = 0; i < files.size(); ++i)
+	{
+		auto &file = files[i];
+		file.fileName = QStringLiteral("audio-%1.mxf").arg(i);
+		file.mediaFilePath = path(file.fileName);
+		file.clipName = QStringLiteral("Interview");
+		file.fileMobId = QStringLiteral("file-%1").arg(i);
+		file.masterMobId = i < total ? QStringLiteral("master-a") : QStringLiteral("unrelated-master");
+		file.kind = MediaFile::Kind::Audio;
+	}
+	// The unrelated file deliberately shares the clip name, but not the master ID.
+	if (hideLastRelative)
+		files[total - 1].kind = MediaFile::Kind::Video;
+	window.onScanFinished(TestMediaFile::seeded(files));
+	if (hideLastRelative)
+		window.m_proxy->setFilterMode(MediaFilterProxy::FilterMode::Audio);
+	const int visibleRelatives = total - (hideLastRelative ? 1 : 0);
+	QCOMPARE(window.m_proxy->rowCount(), visibleRelatives + 1);
+	for (int row = 0; row < initiallySelected; ++row)
+	{
+		const auto index = window.m_proxy->mapFromSource(window.m_model->index(row, 0));
+		QVERIFY(index.isValid());
+		window.m_tableView->selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+	}
+	auto *command = window.findChild<QAction *>(QStringLiteral("selectRelativesAction"));
+	QVERIFY(command && command->isEnabled());
+	window.m_console->clear();
+	command->trigger();
+	QVERIFY(window.m_console->toPlainText().isEmpty());
+	QSet<QString> expectedPaths;
+	for (int row = 0; row < visibleRelatives; ++row)
+		expectedPaths.insert(files[row].mediaFilePath);
+	const auto selectedPaths = [&window]
+	{
+		QSet<QString> paths;
+		for (const auto &file : window.selectedFiles())
+			paths.insert(file.mediaFilePath);
+		return paths;
+	};
+	QCOMPARE(selectedPaths(), expectedPaths);
+	QCOMPARE(window.m_proxy->rowCount(), visibleRelatives + 1);
+
+	// Repeating the command keeps existing selections without logging routine UI changes.
+	window.m_console->clear();
+	command->trigger();
+	QVERIFY(window.m_console->toPlainText().isEmpty());
+	QCOMPARE(selectedPaths(), expectedPaths);
+	if (hideLastRelative)
+	{
+		QVERIFY(!window.m_proxy->mapFromSource(window.m_model->index(total - 1, 0)).isValid());
+		window.m_proxy->setFilterMode(MediaFilterProxy::FilterMode::All);
+		QCOMPARE(window.m_proxy->rowCount(), total + 1);
+		QCOMPARE(selectedPaths(), expectedPaths);
+	}
+}
+
+void TestOperationUi::select_relatives_counts_master_ids_even_when_names_match()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	QVector<MediaFile> files(6);
+	for (int i = 0; i < files.size(); ++i)
+	{
+		auto &file = files[i];
+		file.fileName = QStringLiteral("channel-%1.mxf").arg(i);
+		file.mediaFilePath = path(file.fileName);
+		file.clipName = QStringLiteral("Same clip name");
+		file.fileMobId = QStringLiteral("file-%1").arg(i);
+		file.masterMobId = i < 2   ? QStringLiteral("master-a")
+						   : i < 5 ? QStringLiteral("master-b")
+								   : QStringLiteral("unrelated-master");
+		file.kind = MediaFile::Kind::Audio;
+	}
+	window.onScanFinished(TestMediaFile::seeded(files));
+	for (int row : {0, 2})
+	{
+		const auto index = window.m_proxy->mapFromSource(window.m_model->index(row, 0));
+		QVERIFY(index.isValid());
+		window.m_tableView->selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+	}
+	window.m_console->clear();
+	window.onSelectRelatives();
+	QVERIFY(window.m_console->toPlainText().isEmpty());
+	QSet<QString> selectedPaths;
+	for (const auto &file : window.selectedFiles())
+		selectedPaths.insert(file.mediaFilePath);
+	QSet<QString> expectedPaths;
+	for (int row = 0; row < 5; ++row)
+		expectedPaths.insert(files[row].mediaFilePath);
+	QCOMPARE(selectedPaths, expectedPaths);
+
+	window.m_console->clear();
+	window.onSelectRelatives();
+	QVERIFY(window.m_console->toPlainText().isEmpty());
+	QCOMPARE(window.selectedFiles().size(), 5);
+}
+
+void TestOperationUi::select_relatives_use_selected_master_and_disable_ambiguous_seed()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	const QString firstMaster = MobId::format(TestAvb::Master);
+	const QString otherMaster = MobId::format(TestAvb::Other);
+	QVector<MediaFile> rows;
+	for (int index = 0; index < 4; ++index)
+	{
+		auto file = authoredScanRow(path(QStringLiteral("selected-master-%1.mxf").arg(index)), index);
+		file.masterMobId = index == 2 ? otherMaster : index == 3 ? QString{}
+																 : firstMaster;
+		rows.append(std::move(file));
+	}
+	QCOMPARE(rows[0].masterMobId, firstMaster);
+	QCOMPARE(rows[1].masterMobId, firstMaster);
+	QCOMPARE(rows[2].masterMobId, otherMaster);
+	QVERIFY(rows[3].masterMobId.isEmpty());
+	QVERIFY(rows[3].operationScanReceipt);
+	QVERIFY(rows[3].operationScanReceipt->headerIdentity.masterMobIds.isEmpty());
+	window.onScanFinished(rows);
+	auto *command = window.findChild<QAction *>(QStringLiteral("selectRelativesAction"));
+	QVERIFY(command);
+	window.m_tableView->selectionModel()->select(
+		window.m_proxy->mapFromSource(window.m_model->index(0, 0)),
+		QItemSelectionModel::Select | QItemSelectionModel::Rows);
+	QVERIFY(command->isEnabled());
+	window.m_console->clear();
+	command->trigger();
+	QVERIFY(window.m_console->toPlainText().isEmpty());
+	QSet<QString> selectedPaths;
+	for (const auto &file : window.selectedFiles())
+		selectedPaths.insert(file.mediaFilePath);
+	QCOMPARE(selectedPaths, (QSet<QString>{rows[0].mediaFilePath, rows[1].mediaFilePath}));
+
+	window.m_tableView->clearSelection();
+	window.m_tableView->selectionModel()->select(
+		window.m_proxy->mapFromSource(window.m_model->index(3, 0)),
+		QItemSelectionModel::Select | QItemSelectionModel::Rows);
+	QVERIFY(!command->isEnabled());
+	window.m_console->clear();
+	window.onSelectRelatives();
+	QCOMPARE(appMessages(window.m_console), QStringList{
+												QStringLiteral("No MasterMobId found in the selected files. Relatives can't be matched.")});
+	QCOMPARE(window.selectedFiles().size(), 1);
+	QCOMPARE(window.selectedFiles().first().mediaFilePath, rows[3].mediaFilePath);
+}
+
+void TestOperationUi::select_relatives_preserves_hidden_selections_without_using_them_as_seeds()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	const QStringList names{
+		QStringLiteral("visible-seed-a.mxf"), QStringLiteral("visible-relative-a.mxf"),
+		QStringLiteral("hidden-seed-b.mxf"), QStringLiteral("visible-relative-b.mxf")};
+	QVector<MediaFile> files(names.size());
+	for (int i = 0; i < files.size(); ++i)
+	{
+		auto &file = files[i];
+		file.fileName = names[i];
+		file.mediaFilePath = path(file.fileName);
+		file.clipName = i < 2 ? QStringLiteral("Interview") : QStringLiteral("Cutaway");
+		file.fileMobId = QStringLiteral("file-%1").arg(i);
+		file.masterMobId = i < 2 ? QStringLiteral("master-a") : QStringLiteral("master-b");
+		file.kind = MediaFile::Kind::Audio;
+	}
+	window.onScanFinished(TestMediaFile::seeded(files));
+	for (int row : {0, 2})
+		window.m_tableView->selectionModel()->select(
+			window.m_proxy->mapFromSource(window.m_model->index(row, 0)),
+			QItemSelectionModel::Select | QItemSelectionModel::Rows);
+	const auto selectedPaths = [&window]
+	{
+		QSet<QString> paths;
+		for (const auto &file : window.selectedFiles())
+			paths.insert(file.mediaFilePath);
+		return paths;
+	};
+	QCOMPARE(selectedPaths(), QSet<QString>({files[0].mediaFilePath, files[2].mediaFilePath}));
+
+	// Hide B's selected seed, but leave its unselected relative visible.
+	window.onSearchChanged(QStringLiteral("visible-"));
+	QCOMPARE(window.m_proxy->rowCount(), 3);
+	QCOMPARE(selectedPaths(), QSet<QString>{files[0].mediaFilePath});
+	window.m_console->clear();
+	window.onSelectRelatives();
+	QVERIFY(window.m_console->toPlainText().isEmpty());
+	QCOMPARE(selectedPaths(), QSet<QString>({files[0].mediaFilePath, files[1].mediaFilePath}));
+	QCOMPARE(window.m_proxy->rowCount(), 3);
+
+	// B's earlier selection returns, but its relative was never selected.
+	window.onSearchChanged({});
+	QCOMPARE(window.m_proxy->rowCount(), 4);
+	QCOMPARE(selectedPaths(), QSet<QString>({files[0].mediaFilePath, files[1].mediaFilePath, files[2].mediaFilePath}));
+}
+
+void TestOperationUi::invert_selection_preserves_hidden_selections_data()
+{
+	QTest::addColumn<int>("selectedVisibleCount");
+	QTest::newRow("none-visible-selected") << 0;
+	QTest::newRow("some-visible-selected") << 1;
+	QTest::newRow("all-visible-selected") << 2;
+}
+
+void TestOperationUi::invert_selection_preserves_hidden_selections()
+{
+	QFETCH(int, selectedVisibleCount);
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	QVector<MediaFile> files(3);
+	for (int row = 0; row < files.size(); ++row)
+	{
+		auto &file = files[row];
+		file.fileName = row < 2 ? QStringLiteral("visible-%1.mxf").arg(row) : QStringLiteral("hidden.mxf");
+		file.mediaFilePath = path(file.fileName);
+		file.kind = MediaFile::Kind::Audio;
+	}
+	window.onScanFinished(TestMediaFile::seeded(files));
+	QSet<QString> initialPaths{files[2].mediaFilePath};
+	for (int row = 0; row < files.size(); ++row)
+	{
+		if (row < 2 && row >= selectedVisibleCount)
+			continue;
+		window.m_tableView->selectionModel()->select(
+			window.m_proxy->mapFromSource(window.m_model->index(row, 0)),
+			QItemSelectionModel::Select | QItemSelectionModel::Rows);
+		initialPaths.insert(files[row].mediaFilePath);
+	}
+	const auto selectedPaths = [&window]
+	{
+		QSet<QString> paths;
+		for (const auto &file : window.selectedFiles())
+			paths.insert(file.mediaFilePath);
+		return paths;
+	};
+	QCOMPARE(selectedPaths(), initialPaths);
+
+	window.onSearchChanged(QStringLiteral("visible-"));
+	QCOMPARE(window.m_proxy->rowCount(), 2);
+	window.onInvertSelection();
+	QSet<QString> invertedPaths;
+	for (int row = selectedVisibleCount; row < 2; ++row)
+		invertedPaths.insert(files[row].mediaFilePath);
+	QCOMPARE(selectedPaths(), invertedPaths);
+	window.onSearchChanged({});
+	invertedPaths.insert(files[2].mediaFilePath);
+	QCOMPARE(selectedPaths(), invertedPaths);
+
+	// Inverting twice restores the visible selection without losing the hidden one.
+	window.onSearchChanged(QStringLiteral("visible-"));
+	window.onInvertSelection();
+	window.onSearchChanged({});
+	QCOMPARE(selectedPaths(), initialPaths);
+	QVERIFY(window.m_console->toPlainText().isEmpty());
+}
+
+void TestOperationUi::text_editing_shortcuts_remain_native()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.show();
+	window.activateWindow();
+	window.m_searchField->setFocus();
+	QTRY_COMPARE(QApplication::focusWidget(), window.m_searchField);
+	window.m_searchField->setText(QStringLiteral("native text"));
+	QTest::keySequence(window.m_searchField, QKeySequence::SelectAll);
+	QCOMPARE(window.m_searchField->selectedText(), QStringLiteral("native text"));
+	QTest::keySequence(window.m_searchField, QKeySequence::Copy);
+	QCOMPARE(QApplication::clipboard()->text(), QStringLiteral("native text"));
+	QTest::keySequence(window.m_searchField, QKeySequence::Cut);
+	QVERIFY(window.m_searchField->text().isEmpty());
+	QTest::keySequence(window.m_searchField, QKeySequence::Paste);
+	QCOMPARE(window.m_searchField->text(), QStringLiteral("native text"));
+}
+
+void TestOperationUi::main_escape_clears_search_and_keeps_other_filters_data()
+{
+	QTest::addColumn<bool>("tableFocus");
+	QTest::newRow("search-focus") << false;
+	QTest::newRow("table-focus") << true;
+}
+
+void TestOperationUi::main_escape_clears_search_and_keeps_other_filters()
+{
+	QFETCH(bool, tableFocus);
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(true);
+	QVector<MediaFile> files(7);
+	for (int row = 0; row < files.size(); ++row)
+	{
+		auto &file = files[row];
+		file.fileName = QStringLiteral("file-%1.mxf").arg(row);
+		file.mediaFilePath = path(file.fileName);
+		file.fileMobId = MobId::format(TestAvb::Source);
+		file.project = QStringLiteral("Selected project");
+		file.type = MediaFile::Type::Precompute;
+		file.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
+		file.effectCategory = QStringLiteral("Image");
+		file.clipName = QStringLiteral("Resize");
+		file.volumePath = path("selected-volume");
+	}
+	files[0].fileName = QStringLiteral("needle.mxf");
+	files[0].mediaFilePath = path(files[0].fileName);
+	files[2].project = QStringLiteral("Other project");
+	files[3].type = MediaFile::Type::Media;
+	files[4].fileMobId = MobId::format(TestAvb::Other);
+	files[5].clipName = QStringLiteral("Color Correction");
+	files[6].volumePath = path("other-volume");
+	window.onScanFinished(TestMediaFile::seeded(files));
+	const auto projects = window.m_projectList->findItems(files[0].project, Qt::MatchExactly);
+	QCOMPARE(projects.size(), 1);
+	projects.first()->setSelected(true);
+	const int precomputeTab = 3;
+	window.m_filterTabs->setCurrentIndex(precomputeTab);
+	AvbFileReferences references;
+	references.add(AvbFileId::fromMobId(files[0].fileMobId));
+	window.m_proxy->setBinFilter({{{AvbFilter::Operation::Intersect, {}, references, {}}}});
+	const PrecomputeFilter precomputes{
+		true, {{files[0].precomputeCategoryDisplay(), files[0].effectCategory, files[0].clipName}}};
+	window.m_proxy->setPrecomputeTreeFilter(precomputes);
+	window.m_proxy->setPrecomputeVolumeFilter(files[0].volumePath);
+	QCOMPARE(window.m_proxy->rowCount(), 2);
+	window.m_searchField->setText(QStringLiteral("needle"));
+	QTRY_COMPARE(window.m_proxy->rowCount(), 1);
+	QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, files[0].mediaFilePath);
+	window.show();
+	window.activateWindow();
+	QWidget *focused = tableFocus ? static_cast<QWidget *>(window.m_tableView)
+								  : static_cast<QWidget *>(window.m_searchField);
+	focused->setFocus();
+	QTRY_COMPARE(QApplication::focusWidget(), focused);
+	QTest::keyClick(focused, Qt::Key_Escape);
+	QVERIFY(window.m_searchField->text().isEmpty());
+	QTRY_COMPARE(window.m_proxy->rowCount(), 2);
+	QCOMPARE(window.m_projectList->selectedItems(), QList<QListWidgetItem *>({projects.first()}));
+	QCOMPARE(window.m_filterTabs->currentIndex(), precomputeTab);
+	QVERIFY(window.m_proxy->precomputeTreeFilter() == precomputes);
+	QCOMPARE(window.m_proxy->precomputeVolumeFilter(), files[0].volumePath);
+	QSet<QString> visible;
+	for (int row = 0; row < window.m_proxy->rowCount(); ++row)
+		visible.insert(window.fileAtProxyRow(row).mediaFilePath);
+	QCOMPARE(visible, QSet<QString>({files[0].mediaFilePath, files[1].mediaFilePath}));
+}
+
+void TestOperationUi::search_chips_follow_text_and_clear_the_debounced_filter()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile hit;
+	hit.mediaFilePath = path("hit.mxf");
+	hit.fileName = QStringLiteral("hit.mxf");
+	MediaFile miss = hit;
+	miss.mediaFilePath = path("miss.mxf");
+	miss.fileName = QStringLiteral("miss.mxf");
+	window.onScanFinished(TestMediaFile::seeded({hit, miss}));
+
+	window.m_searchField->setText(QStringLiteral("hit"));
+	QVERIFY(window.m_searchDebounceTimer->isActive());
+	QCOMPARE(window.m_proxy->rowCount(), 2); // Typing updates chips before filtering.
+	QCOMPARE(window.m_chipsBar->layout()->count(), 1);
+	auto *chip = qobject_cast<QPushButton *>(window.m_chipsBar->layout()->itemAt(0)->widget());
+	QVERIFY(chip);
+	QCOMPARE(chip->text(), QStringLiteral("Search: \"hit\"  ✕"));
+	QVERIFY(!window.m_chipsBar->isHidden());
+	QTRY_COMPARE(window.m_proxy->rowCount(), 1);
+	QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, hit.mediaFilePath);
+	QCOMPARE(window.m_chipsBar->layout()->count(), 1);
+	chip = qobject_cast<QPushButton *>(window.m_chipsBar->layout()->itemAt(0)->widget());
+	QVERIFY(chip);
+	QCOMPARE(chip->text(), QStringLiteral("Search: \"hit\"  ✕"));
+
+	chip->click();
+	QVERIFY(window.m_searchField->text().isEmpty());
+	QVERIFY(window.m_searchDebounceTimer->isActive());
+	QCOMPARE(window.m_chipsBar->layout()->count(), 0);
+	QVERIFY(window.m_chipsBar->isHidden());
+	QTRY_COMPARE(window.m_proxy->rowCount(), 2);
+	QTRY_COMPARE(window.m_statusFiles->text(), QStringLiteral("2 files"));
+}
+
+void TestOperationUi::table_widths_change_only_on_request_and_reset_each_session()
+{
+	using Column = MediaTableModel::Column;
+	const int clipColumn = static_cast<int>(Column::ClipName);
+	const int fileColumn = static_cast<int>(Column::FileName);
+	const int pathColumn = static_cast<int>(Column::Location);
+	int initialFilePosition = -1;
+	{
+		MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+		auto *table = window.m_tableView;
+		auto *header = table->horizontalHeader();
+		initialFilePosition = header->visualIndex(fileColumn);
+		QCOMPARE(table->columnWidth(clipColumn), 250);
+		QCOMPARE(table->columnWidth(static_cast<int>(Column::Location)), 250);
+		QCOMPARE(table->columnWidth(pathColumn), 250);
+		table->setColumnWidth(clipColumn, 333);
+		table->setColumnWidth(pathColumn, 345);
+		header->moveSection(header->visualIndex(fileColumn), 1);
+
+		MediaFile file;
+		file.mediaFilePath = path(QString(120, QLatin1Char('W')) + QStringLiteral(".mxf"));
+		file.clipName = QString(100, QLatin1Char('W'));
+		window.onScanFinished(TestMediaFile::seeded({file}));
+		QCOMPARE(table->columnWidth(clipColumn), 333);
+		QCOMPARE(table->columnWidth(pathColumn), 345);
+		QCOMPARE(header->visualIndex(fileColumn), 1);
+
+		QAction *fit = nullptr;
+		for (auto *action : window.findChildren<QAction *>())
+			if (action->text() == QStringLiteral("&Resize Columns to Fit"))
+				fit = action;
+		QVERIFY(fit);
+		fit->trigger();
+		const int fittedWidth = table->columnWidth(clipColumn);
+		const int fittedPathWidth = table->columnWidth(pathColumn);
+		QVERIFY(fittedWidth > 333);
+		QVERIFY(fittedPathWidth > 345);
+		file.clipName = QStringLiteral("Short");
+		window.onScanFinished(TestMediaFile::seeded({file}));
+		QCOMPARE(table->columnWidth(clipColumn), fittedWidth);
+		QCOMPARE(table->columnWidth(pathColumn), fittedPathWidth);
+	}
+	MainWindow freshWindow(nullptr, MainWindow::StartupMode::UiOnly);
+	QCOMPARE(freshWindow.m_tableView->columnWidth(clipColumn), 250);
+	QCOMPARE(freshWindow.m_tableView->columnWidth(pathColumn), 250);
+	QCOMPARE(freshWindow.m_tableView->horizontalHeader()->visualIndex(fileColumn), initialFilePosition);
+}
+
+// MARK: - Optional filters and table columns
+
+void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	window.setOmfScanEnabled(false);
+	window.m_operations->setUndoEnabled(false);
+	using Column = MediaTableModel::Column;
+	const int typeColumn = static_cast<int>(Column::Type);
+	const int precomputeTab = 3;
+	MediaFile media;
+	media.mediaFilePath = path("media.mxf");
+	media.fileName = QStringLiteral("media.mxf");
+	media.type = MediaFile::Type::Media;
+	media.project = QStringLiteral("Source project");
+	media.volumePath = path("volume");
+	MediaFile precompute = media;
+	precompute.mediaFilePath = path("render.mxf");
+	precompute.fileName = QStringLiteral("render.mxf");
+	precompute.type = MediaFile::Type::Precompute;
+	precompute.project = QStringLiteral("Render project");
+	precompute.effect = QStringLiteral("Resize");
+	precompute.clipName = QStringLiteral("Resize");
+	precompute.effectCategory = QStringLiteral("Image");
+	precompute.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
+	window.onScanFinished(TestMediaFile::seeded({media, precompute}));
+	QVERIFY(!window.m_precomputesEnabled);
+	QVERIFY(!window.m_model->precomputesEnabled());
+	QVERIFY(!window.m_proxy->precomputesEnabled());
+	QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
+	QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::PrecomputeCategory));
+	QVERIFY(window.m_precomputeFilterButton->isHidden());
+	QVERIFY(!window.m_precomputeFilterAction->isVisible());
+	QVERIFY(!window.m_precomputeFilterAction->isEnabled());
+	QVERIFY(!window.m_filterTabs->isTabVisible(precomputeTab));
+	QCOMPARE(window.m_proxy->rowCount(), 2); // Rendered media remains manageable.
+	window.onFilterChanged(precomputeTab);
+	QCOMPARE(window.m_proxy->rowCount(), 2);
+	window.updateFilterCounts();
+	QVERIFY(!window.m_filterTabs->isTabVisible(precomputeTab));
+	bool openedPicker = false;
+	QTimer::singleShot(0, &window, [&openedPicker]
+					   {
+		if (auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget()))
+		{
+			openedPicker = true;
+			dialog->reject();
+		} });
+	window.onFilterPrecomputes(); // Disabled entry point must not open a dialog.
+	QCoreApplication::processEvents();
+	QVERIFY(!openedPicker);
+
+	window.setPrecomputesEnabled(true);
+	QVERIFY(window.m_precomputesEnabled);
+	QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
+	QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::Count_));
+	int detailPosition = window.m_tableView->horizontalHeader()->visualIndex(typeColumn) + 1;
+	for (const auto column : {Column::PrecomputeCategory, Column::EffectCategory, Column::Effect})
+		QCOMPARE(window.m_tableView->horizontalHeader()->visualIndex(static_cast<int>(column)), detailPosition++);
+	QVERIFY(!window.m_precomputeFilterButton->isHidden());
+	QVERIFY(window.m_precomputeFilterAction->isVisible());
+	QVERIFY(window.m_precomputeFilterAction->isEnabled());
+	QVERIFY(window.m_filterTabs->isTabVisible(precomputeTab));
+	window.m_filterTabs->setCurrentIndex(precomputeTab);
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+	window.m_proxy->setPrecomputeTreeFilter({true, {{precompute.precomputeCategoryDisplay(), precompute.effectCategory, precompute.effect}}});
+	window.m_proxy->setPrecomputeVolumeFilter(precompute.volumePath);
+	window.m_tableView->sortByColumn(typeColumn, Qt::DescendingOrder);
+	window.setPrecomputesEnabled(false);
+	QVERIFY(!window.m_precomputesEnabled);
+	QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
+	QVERIFY(!window.m_filterTabs->isTabVisible(precomputeTab));
+	QCOMPARE(window.m_filterTabs->currentIndex(), 0);
+	QCOMPARE(window.m_proxy->sortColumn(), typeColumn);
+	QVERIFY(!window.m_proxy->precomputeTreeFilter().active);
+	QVERIFY(window.m_proxy->precomputeVolumeFilter().isEmpty());
+	QCOMPARE(window.m_proxy->rowCount(), 2);
+	QCOMPARE(window.m_model->rowCount(), 2);
+	QCOMPARE(window.m_model->fileAt(1).type, MediaFile::Type::Precompute);
+	QCOMPARE(window.m_model->fileAt(1).effect, precompute.effect);
+	QVERIFY(window.m_precomputeFilterButton->isHidden());
+	QVERIFY(!window.m_precomputeFilterAction->isVisible());
+	QVERIFY(!window.m_precomputeFilterAction->isEnabled());
+
+	// Sorting by any disappearing detail column also returns to Clip Name.
+	for (const auto column : {Column::PrecomputeCategory, Column::EffectCategory, Column::Effect})
+	{
+		window.setPrecomputesEnabled(true);
+		window.m_tableView->sortByColumn(static_cast<int>(column), Qt::DescendingOrder);
+		window.setPrecomputesEnabled(false);
+		QCOMPARE(window.m_proxy->sortColumn(), static_cast<int>(Column::ClipName));
+		QCOMPARE(window.m_proxy->rowCount(), 2);
+	}
+	// A rescan clears both the visible project selection and its predicate.
+	const auto projects = window.m_projectList->findItems(media.project, Qt::MatchExactly);
+	QCOMPARE(projects.size(), 1);
+	projects.first()->setSelected(true);
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+	window.onScanFinished(TestMediaFile::seeded({media, precompute}));
+	QVERIFY(window.m_projectList->selectedItems().isEmpty());
+	QCOMPARE(window.m_proxy->rowCount(), 2);
+}
+
+void TestOperationUi::database_views_match_flags_and_preserve_selection()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	const QVector<MediaFile::DbStatus> statuses{
+		MediaFile::DbStatus::Listed, MediaFile::DbStatus::NoReference,
+		MediaFile::DbStatus::NoDatabase, MediaFile::DbStatus::DbUnreadable};
+	QVector<MediaFile> files(statuses.size());
+	for (int row = 0; row < files.size(); ++row)
+	{
+		files[row].fileName = QStringLiteral("file-%1.mxf").arg(row);
+		files[row].mediaFilePath = path(files[row].fileName);
+		files[row].dbStatus = statuses[row];
+		files[row].sizeBytes = 100 * (row + 1);
+	}
+	window.onScanFinished(TestMediaFile::seeded(files));
+	window.m_tableView->selectAll();
+	const auto selectedPaths = [&window]
+	{
+		QSet<QString> result;
+		for (const auto &file : window.selectedFiles())
+			result.insert(file.mediaFilePath);
+		return result;
+	};
+	const auto selectedAll = selectedPaths();
+	QCOMPARE(selectedAll.size(), 4);
+
+	using Column = MediaTableModel::Column;
+	const int noDatabaseColumn = static_cast<int>(Column::NoDatabase);
+	const int noReferenceColumn = static_cast<int>(Column::NoReference);
+	window.m_filterTabs->setCurrentIndex(4); // No Database: absent or unverified checks.
+	QCOMPARE(window.m_filterTabs->tabText(4), QStringLiteral("No Database (2)"));
+	QCOMPARE(selectedPaths(), QSet<QString>({files[2].mediaFilePath, files[3].mediaFilePath}));
+	QCOMPARE(window.m_proxy->rowCount(), 2);
+	for (int row = 0; row < window.m_proxy->rowCount(); ++row)
+	{
+		QCOMPARE(window.m_proxy->index(row, noDatabaseColumn).data().toString(), QStringLiteral("true"));
+		QCOMPARE(window.m_proxy->index(row, noReferenceColumn).data().toString(), QStringLiteral("false"));
+	}
+	QVERIFY(window.m_manageMediaAction->isEnabled());
+	QTRY_COMPARE(window.m_statusSelected->text(), QStringLiteral("2 selected"));
+	QTRY_COMPARE(window.m_statusSelSize->text(), QStringLiteral("700 B selected"));
+
+	window.m_filterTabs->setCurrentIndex(5); // No Reference: a completed check found no match.
+	QCOMPARE(window.m_filterTabs->tabText(5), QStringLiteral("No Reference (1)"));
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+	QCOMPARE(selectedPaths(), QSet<QString>{files[1].mediaFilePath});
+	QCOMPARE(window.m_proxy->index(0, noDatabaseColumn).data().toString(), QStringLiteral("false"));
+	QCOMPARE(window.m_proxy->index(0, noReferenceColumn).data().toString(), QStringLiteral("true"));
+	QVERIFY(window.m_manageMediaAction->isEnabled());
+	QTRY_COMPARE(window.m_statusSelected->text(), QStringLiteral("1 selected"));
+	QTRY_COMPARE(window.m_statusSelSize->text(), QStringLiteral("200 B selected"));
+
+	// Hidden remembered selections cannot feed visible-selection commands.
+	window.onSearchChanged(QStringLiteral("no matching media"));
+	QCOMPARE(window.m_proxy->rowCount(), 0);
+	QVERIFY(window.selectedFiles().isEmpty());
+	QVERIFY(!window.m_manageMediaAction->isEnabled());
+	QVERIFY(!window.m_revealAction->isEnabled());
+	QVERIFY(!window.m_exportAction->isEnabled());
+	window.onSearchChanged({});
+	QCOMPARE(selectedPaths(), QSet<QString>{files[1].mediaFilePath});
+	window.m_filterTabs->setCurrentIndex(0);
+	QCOMPARE(selectedPaths(), selectedAll);
+	QCOMPARE(window.m_proxy->rowCount(), 4);
+}
+
+void TestOperationUi::filter_tabs_keep_whole_inventory_counts_and_empty_views()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	const QStringList emptyTabs{
+		QStringLiteral("All (0)"), QStringLiteral("Video (0)"), QStringLiteral("Audio (0)"),
+		QStringLiteral("Precomputes (0)"), QStringLiteral("No Database (0)"),
+		QStringLiteral("No Reference (0)"), QStringLiteral("Non-Portable (0)"), QStringLiteral("Quarantined (0)")};
+	QCOMPARE(window.m_filterTabs->count(), emptyTabs.size());
+	for (int tab = 0; tab < emptyTabs.size(); ++tab)
+	{
+		QCOMPARE(window.m_filterTabs->tabText(tab), emptyTabs[tab]);
+		QCOMPARE(window.m_filterTabs->isTabVisible(tab), tab != 3);
+	}
+	for (const auto *action : window.findChildren<QAction *>())
+		QVERIFY(action->text().remove(QLatin1Char('&')) != QStringLiteral("Show All Filter Tabs"));
+	window.setPrecomputesEnabled(true);
+	QVERIFY(window.m_filterTabs->isTabVisible(3));
+	window.setPrecomputesEnabled(false);
+	QVERIFY(!window.m_filterTabs->isTabVisible(3));
+
+	MediaFile reference;
+	reference.mediaFilePath = path("reference.mxf");
+	reference.fileName = QStringLiteral("reference.mxf");
+	reference.fileMobId = MobId::format(TestAvb::Source);
+	reference.project = QStringLiteral("Project A");
+	reference.dbStatus = MediaFile::DbStatus::NoReference;
+	MediaFile missing = reference;
+	missing.mediaFilePath = path("missing.mxf");
+	missing.fileName = QStringLiteral("missing.mxf");
+	missing.fileMobId = MobId::format(TestAvb::Other);
+	missing.project = QStringLiteral("Project B");
+	missing.dbStatus = MediaFile::DbStatus::NoDatabase;
+	MediaFile listed = reference;
+	listed.mediaFilePath = path("listed.mxf");
+	listed.fileName = QStringLiteral("listed.mxf");
+	listed.fileMobId = MobId::format(TestAvb::Master);
+	listed.dbStatus = MediaFile::DbStatus::Listed;
+	window.onScanFinished(TestMediaFile::seeded({reference, missing, listed}));
+	QStringList inventoryCounts;
+	for (int tab = 0; tab < window.m_filterTabs->count(); ++tab)
+		inventoryCounts.append(window.m_filterTabs->tabText(tab));
+	QCOMPARE(inventoryCounts[0], QStringLiteral("All (3)"));
+	QCOMPARE(inventoryCounts[4], QStringLiteral("No Database (1)"));
+	QCOMPARE(inventoryCounts[5], QStringLiteral("No Reference (1)"));
+
+	const auto verifyWholeInventoryCounts = [&window, &inventoryCounts]
+	{
+		window.updateFilterCounts();
+		QStringList actual;
+		for (int tab = 0; tab < window.m_filterTabs->count(); ++tab)
+		{
+			actual.append(window.m_filterTabs->tabText(tab));
+			QCOMPARE(window.m_filterTabs->isTabVisible(tab), tab != 3);
+		}
+		QCOMPARE(actual, inventoryCounts);
+	};
+	window.onSearchChanged(QStringLiteral("missing.mxf"));
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+	verifyWholeInventoryCounts();
+	window.onSearchChanged({});
+	const auto projects = window.m_projectList->findItems(reference.project, Qt::MatchExactly);
+	QCOMPARE(projects.size(), 1);
+	projects.first()->setSelected(true);
+	QCOMPARE(window.m_proxy->rowCount(), 2);
+	verifyWholeInventoryCounts();
+	AvbFileReferences references;
+	references.add(AvbFileId::fromMobId(reference.fileMobId));
+	window.m_proxy->setBinFilter({{{AvbFilter::Operation::Intersect, {}, references, {}}}});
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+	verifyWholeInventoryCounts();
+	window.m_filterTabs->setCurrentIndex(4);
+	QCOMPARE(window.m_proxy->rowCount(), 0);
+	QVERIFY(window.m_filterTabs->isTabVisible(4));
+	verifyWholeInventoryCounts();
+}
+
+void TestOperationUi::optional_columns_match_csv_and_preserve_retained_sort()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile file;
+	file.mediaFilePath = path(QStringLiteral("short.mxf"));
+	file.fileName = QStringLiteral("short.mxf");
+	file.clipName = QStringLiteral("Short clip");
+	file.kind = MediaFile::Kind::Video;
+	TestMediaFile::setDuration(file, 19);
+
+	file.dbStatus = MediaFile::DbStatus::NoDatabase;
+	MediaFile longer = file;
+	longer.mediaFilePath = path(QStringLiteral("long.mxf"));
+	longer.fileName = QStringLiteral("long.mxf");
+	longer.clipName = QStringLiteral("Long clip");
+	TestMediaFile::setDuration(longer, 250);
+	longer.dbStatus = MediaFile::DbStatus::NoReference;
+	window.m_model->setMediaFiles(TestMediaFile::seeded({file, longer}));
+	// Exercise both gates in one window, including removing and reinserting columns.
+	for (const bool omf : {true, false, true})
+	{
+		window.setOmfScanEnabled(omf);
+		for (const bool precomputes : {false, true, false})
+		{
+			window.setPrecomputesEnabled(precomputes);
+			QStringList headings;
+			auto *header = window.m_tableView->horizontalHeader();
+			for (int visual = 0; visual < header->count(); ++visual)
+			{
+				const int logical = header->logicalIndex(visual);
+				QVERIFY(!window.m_tableView->isColumnHidden(logical));
+				headings.append(window.m_model->headerData(logical, Qt::Horizontal, Qt::DisplayRole).toString());
+			}
+			QCOMPARE(headings.count(QStringLiteral("FileMobId")), 1);
+			QCOMPARE(headings.count(QStringLiteral("MasterMobId")), 1);
+			QCOMPARE(headings.count(QStringLiteral("Source Path")), 0);
+			QCOMPARE(headings.count(QStringLiteral("No Database")), 1);
+			QCOMPARE(headings.count(QStringLiteral("No Reference")), 1);
+			QCOMPARE(headings.indexOf(QStringLiteral("No Database")), headings.indexOf(QStringLiteral("File Path")) + 1);
+			QCOMPARE(headings.indexOf(QStringLiteral("No Reference")), headings.indexOf(QStringLiteral("No Database")) + 1);
+			QCOMPARE(headings.indexOf(QStringLiteral("FileMobId")), headings.indexOf(QStringLiteral("No Reference")) + 1);
+			QVERIFY(!headings.contains(QStringLiteral("Database Status")));
+			QVERIFY(!headings.contains(QStringLiteral("Source Filename")));
+			headings.removeAll(QStringLiteral("FileMobId"));
+			headings.removeAll(QStringLiteral("MasterMobId"));
+			headings.removeAll(QStringLiteral("KelpieId"));
+			headings.removeAll(QStringLiteral("OmfScan"));
+			headings.append({QStringLiteral("FileMobId"), QStringLiteral("MasterMobId"), QStringLiteral("KelpieId"), QStringLiteral("OmfScan")});
+			QCOMPARE(MediaCsv::headerLine({precomputes}), headings.join(',') + '\n');
+		}
+	}
+	window.setPrecomputesEnabled(true);
+	using Column = MediaTableModel::Column;
+	struct SortCase
+	{
+		Column column;
+		Qt::SortOrder order;
+		QString first;
+		QString second;
+	};
+	const QVector<SortCase> sortCases{
+		{Column::Duration, Qt::DescendingOrder, QStringLiteral("00:00:10:00"), QStringLiteral("00:00:00:19")},
+		{Column::NoDatabase, Qt::AscendingOrder, QStringLiteral("false"), QStringLiteral("true")},
+		{Column::NoReference, Qt::DescendingOrder, QStringLiteral("true"), QStringLiteral("false")}};
+	for (const auto &sort : sortCases)
+	{
+		const int logical = static_cast<int>(sort.column);
+		window.m_tableView->sortByColumn(logical, sort.order);
+		for (const bool precomputes : {false, true, false})
+		{
+			window.setPrecomputesEnabled(precomputes);
+			for (const bool omf : {false, true})
+			{
+				window.setOmfScanEnabled(omf);
+				QCOMPARE(window.m_proxy->sortColumn(), logical);
+				QCOMPARE(window.m_proxy->sortOrder(), sort.order);
+				QCOMPARE(window.m_proxy->rowCount(), 2);
+				QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, longer.mediaFilePath);
+				QCOMPARE(window.m_proxy->index(0, logical).data().toString(), sort.first);
+				QCOMPARE(window.m_proxy->index(1, logical).data().toString(), sort.second);
+			}
+		}
+	}
+}
+
+// MARK: - Bin filter integration
+
+void TestOperationUi::bin_loading_keeps_prepared_table_and_csv_metadata()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(true);
+	MediaFile missing;
+	missing.mediaFilePath = tmp.filePath("missing.mxf");
+	missing.fileMobId = MobId::format(TestAvb::Source);
+	missing.masterMobId = MobId::format(TestAvb::Master);
+	missing.type = MediaFile::Type::Precompute;
+	missing.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
+	missing.bellaValues.emplace();
+	missing.operationScanReceipt.emplace();
+	MediaFile known = missing;
+	known.mediaFilePath = tmp.filePath("known.mxf");
+	known.fileMobId = MobId::format(TestAvb::Other);
+	known.clipName = QStringLiteral("Resize");
+	known.originalBin = QStringLiteral("Database bin");
+	const auto names = Bella::effectNamesFor(true, known.clipName);
+	known.effect = names.effectDisplayText;
+	known.effectCategory = names.effectCategoryText;
+	// This completed row intentionally has no selected Effect. Loading a bin
+	// must leave that stored value empty instead of adding metadata.
+	window.onScanFinished({missing, known});
+	const auto prepared = window.m_model->allFiles();
+	QVERIFY(prepared[0].clipName.isEmpty() && prepared[0].originalBin.isEmpty());
+	QVERIFY(prepared[0].effect.isEmpty());
+	QCOMPARE(prepared[1].effectDisplay(), QStringLiteral("Resize"));
+	window.onFilterByBins();
+	auto *dialog = window.m_binFilterDialog;
+	QVERIFY(dialog);
+	auto *list = dialog->findChild<QListWidget *>(QStringLiteral("BinList"));
+	QVERIFY(list);
+	QSignalSpy loaded(dialog, &AvbFilterDialog::binLoaded);
+	QSignalSpy warnings(dialog, &AvbFilterDialog::loadWarning);
+	const auto makeBin = [&](const QString &name, bool partial = false)
+	{
+		TestAvb::Document d;
+		d.objects = {{"ABIN", TestAvb::bin(false, {2})},
+					 {"CMPO", TestAvb::composition(false, TestAvb::Master, name.toUtf8(), 3, {11, 12})},
+					 {"ATTR", TestAvb::attributes(false, 4)},
+					 {"MCBR", TestAvb::binReference(false, (name + " bin").toUtf8(), {})}};
+		TestAvb::appendFileSource(d, TestAvb::mediaLocator(false, TestAvb::Source), TestAvb::Source);
+		TestAvb::appendFileSource(d, TestAvb::mediaLocator(false, TestAvb::Other), TestAvb::Other);
+		d.objects.append({"SCLP", TestAvb::sourceClip(false, TestAvb::Source)});
+		d.objects.append({"SCLP", TestAvb::sourceClip(false, TestAvb::Other)});
+		if (partial)
+			d.objects.append({"ZZZZ", QByteArray::fromHex("020103")});
+		return TestAvb::write(tmp.filePath(name + ".avb"), d.bytes());
+	};
+	const MediaCsv::Options options{true};
+	const auto check = [&](const QVector<MediaFile> &expected, int visibleRows = 2)
+	{
+		QCOMPARE(window.m_model->rowCount(), expected.size());
+		for (int row = 0; row < expected.size(); ++row)
+		{
+			const auto &actual = window.m_model->fileAt(row);
+			QCOMPARE(actual.clipName, expected[row].clipName);
+			QCOMPARE(actual.originalBin, expected[row].originalBin);
+			QCOMPARE(actual.effect, expected[row].effect);
+			QCOMPARE(actual.effectCategory, expected[row].effectCategory);
+			QCOMPARE(actual.precomputeCategory, expected[row].precomputeCategory);
+			QCOMPARE(MediaCsv::rowLine(actual, options), MediaCsv::rowLine(expected[row], options));
+		}
+		QCOMPARE(window.m_proxy->rowCount(), visibleRows);
+		if (!visibleRows)
+			return;
+		window.m_tableView->selectAll();
+		const auto selected = window.selectedFiles();
+		QCOMPARE(selected.size(), visibleRows);
+		QVector<MediaFile> visible;
+		for (int row = 0; row < window.m_proxy->rowCount(); ++row)
+			visible.append(window.fileAtProxyRow(row));
+		for (const auto &rows : {visible, selected})
+		{
+			const auto exportPath = tmp.filePath("names.csv");
+			QVERIFY(MediaCsv::write(exportPath, rows, options));
+			QFile csv(exportPath);
+			QVERIFY(csv.open(QIODevice::ReadOnly));
+			QByteArray expectedBytes = QByteArray::fromHex("efbbbf") + MediaCsv::headerLine(options).toUtf8();
+			for (const auto &file : rows)
+			{
+				const auto original = std::find_if(expected.cbegin(), expected.cend(), [&](const MediaFile &candidate)
+												   { return candidate.mediaFilePath == file.mediaFilePath; });
+				QVERIFY(original != expected.cend());
+				expectedBytes += MediaCsv::rowLine(*original, options).toUtf8();
+				int proxyRow = 0;
+				while (proxyRow < visibleRows && window.fileAtProxyRow(proxyRow).mediaFilePath != file.mediaFilePath)
+					++proxyRow;
+				QVERIFY(proxyRow < visibleRows);
+				const auto displayedName = window.m_proxy->index(proxyRow, int(MediaTableModel::Column::ClipName)).data().toString();
+				const auto displayedBin = window.m_proxy->index(proxyRow, int(MediaTableModel::Column::OriginalBin)).data().toString();
+				QCOMPARE(displayedName, original->clipNameDisplay());
+				QCOMPARE(displayedBin, original->originalBin);
+				QCOMPARE(window.m_proxy->index(proxyRow, int(MediaTableModel::Column::Effect)).data().toString(), original->effectDisplay());
+			}
+			QCOMPARE(csv.readAll(), expectedBytes);
+		}
+	};
+	const auto checkLoadedBin = [&]
+	{
+		const auto bin = qvariant_cast<AvbBin>(loaded.last().first());
+		QVERIFY(bin.isUsable());
+		QVERIFY(bin.mediaFileIds.matches(AvbFileId::fromMobId(missing.fileMobId)));
+		QVERIFY(bin.mediaFileIds.matches(AvbFileId::fromMobId(known.fileMobId)));
+		loaded.clear();
+	};
+	dialog->addBinFromFile(makeBin(QStringLiteral("Resize")));
+	QTRY_COMPARE(loaded.count(), 1);
+	checkLoadedBin();
+	QTRY_VERIFY(window.m_binFilterActive);
+	QTRY_COMPARE(window.m_proxy->rowCount(), 2);
+	check(prepared);
+	window.show();
+	window.m_searchField->setText(QStringLiteral("missing"));
+	QTRY_COMPARE(window.m_proxy->rowCount(), 1);
+	window.onFilterByBins();
+	list->setFocus();
+	QTRY_COMPARE(QApplication::activeWindow(), dialog);
+	QTRY_COMPARE(QApplication::focusWidget(), list);
+	{
+		const QStringList retainedBinNames = window.m_binFilterBinNames;
+		const auto retainedCheckState = list->item(0)->checkState();
+		QSignalSpy filterChanges(dialog, &AvbFilterDialog::filterChainChanged);
+		QTest::keyClick(list, Qt::Key_Escape);
+		QTRY_VERIFY(!dialog->isVisible());
+		QCOMPARE(window.m_searchField->text(), QStringLiteral("missing"));
+		QCOMPARE(window.m_proxy->rowCount(), 1);
+		QVERIFY(window.m_binFilterActive);
+		QCOMPARE(window.m_binFilterBinNames, retainedBinNames);
+		QCOMPARE(filterChanges.count(), 0);
+		window.onFilterByBins();
+		QVERIFY(dialog->isVisible());
+		QCOMPARE(window.m_binFilterDialog, dialog);
+		QCOMPARE(list->count(), 1);
+		QCOMPARE(list->item(0)->checkState(), retainedCheckState);
+		QCOMPARE(loaded.count(), 0);
+		QCOMPARE(window.m_searchField->text(), QStringLiteral("missing"));
+		QCOMPARE(filterChanges.count(), 0);
+	}
+	window.m_searchField->clear();
+	QTRY_COMPARE(window.m_proxy->rowCount(), 2);
+	QVERIFY(QMetaObject::invokeMethod(dialog, "onSubtractClicked", Qt::DirectConnection));
+	check(prepared, 0);
+	QVERIFY(QMetaObject::invokeMethod(dialog, "onAddClicked", Qt::DirectConnection));
+	check(prepared);
+	const QString secondPath = makeBin(QStringLiteral("3D Warp"), true);
+	dialog->addBinFromFile(secondPath);
+	QTRY_COMPARE(loaded.count(), 1);
+	checkLoadedBin();
+	QCOMPARE(warnings.count(), 1);
+	QVERIFY(window.m_console->toPlainText().contains(QStringLiteral("Bin loaded with incomplete results: ") + secondPath));
+	check(prepared);
+	list->item(1)->setCheckState(Qt::Unchecked);
+	check(prepared);
+	list->clearSelection();
+	list->item(0)->setSelected(true);
+	QVERIFY(QMetaObject::invokeMethod(dialog, "onRemoveSelectedBinsClicked", Qt::DirectConnection));
+	check(prepared);
+	window.onScanFinished(prepared);
+	QCOMPARE(list->count(), 1);
+	QVERIFY(!window.m_binFilterActive);
+	check(prepared);
+	MediaFile refreshed = missing;
+	refreshed.clipName = QStringLiteral("Color Correction");
+	refreshed.originalBin = QStringLiteral("Fresh database bin");
+	auto fresh = TestMediaFile::seeded({refreshed, known});
+	for (int row = 0; row < fresh.size(); ++row)
+		fresh[row].kelpieId = prepared[row].kelpieId;
+	window.onScanFinished(fresh);
+	check(fresh);
+	list->item(0)->setSelected(true);
+	QVERIFY(QMetaObject::invokeMethod(dialog, "onRemoveSelectedBinsClicked", Qt::DirectConnection));
+	check(fresh);
+	dialog->clearFilterSteps();
+	window.onScanFinished(prepared);
+	check(prepared);
+}
+
+void TestOperationUi::bin_source_track_gap_keeps_proven_matches_and_console_warning()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile uncertain;
+	uncertain.mediaFilePath = tmp.filePath("uncertain.mxf");
+	uncertain.fileMobId = MobId::format(TestAvb::Source);
+	uncertain.masterMobId = MobId::format(TestAvb::Master);
+	uncertain.clipName = QStringLiteral("Prepared uncertain clip");
+	uncertain.originalBin = QStringLiteral("Prepared original bin");
+	MediaFile proven = uncertain;
+	proven.mediaFilePath = tmp.filePath("proven.mxf");
+	proven.fileMobId = MobId::format(TestAvb::Other);
+	proven.clipName = QStringLiteral("Prepared proven clip");
+	window.onScanFinished(TestMediaFile::seeded({uncertain, proven}));
+	const auto prepared = window.m_model->allFiles();
+	window.onFilterByBins();
+	auto *dialog = window.m_binFilterDialog;
+	QVERIFY(dialog);
+	QSignalSpy loaded(dialog, &AvbFilterDialog::binLoaded);
+	QSignalSpy warnings(dialog, &AvbFilterDialog::loadWarning);
+	QSignalSpy errors(dialog, &AvbFilterDialog::loadError);
+	auto sequenceId = TestAvb::Master;
+	sequenceId[31] = char(quint8(sequenceId[31]) ^ 1);
+	TestAvb::Document document;
+	document.objects = {
+		{"ABIN", TestAvb::bin(false, {2})},
+		{"CMPO", TestAvb::composition(false, sequenceId, "Edit with an unclear track", 0, {4, 5}, 0, true, 0, 1, {1, 2})},
+		{"CMPO", TestAvb::composition(false, TestAvb::Master, "Referenced master", 0, {6})},
+		{"SCLP", TestAvb::sourceClip(false, TestAvb::Master, true, 0)}, // Track zero has no established meaning here.
+		{"SCLP", TestAvb::sourceClip(false, TestAvb::Other)},
+		{"SCLP", TestAvb::sourceClip(false, TestAvb::Source)}};
+	TestAvb::appendFileSource(document, TestAvb::mediaLocator(false, TestAvb::Source), TestAvb::Source);
+	TestAvb::appendFileSource(document, TestAvb::mediaLocator(false, TestAvb::Other), TestAvb::Other);
+	const auto binPath = TestAvb::write(tmp.filePath("unclear-track.avb"), document.bytes());
+	QVERIFY(!binPath.isEmpty());
+	window.m_console->clear();
+	dialog->addBinFromFile(binPath);
+	QTRY_COMPARE(loaded.count(), 1);
+	QCOMPARE(errors.count(), 0);
+	QCOMPARE(warnings.count(), 1);
+	QCOMPARE(warnings.first().first().toString(), binPath);
+	QVERIFY(warnings.first().at(1).toString().contains(QStringLiteral("source-track")));
+	const auto bin = qvariant_cast<AvbBin>(loaded.first().first());
+	QVERIFY(bin.isUsable());
+	QVERIFY(!bin.coverageComplete);
+	QCOMPARE(bin.mediaFileIds.fullIds, QSet<QString>{proven.fileMobId});
+	QTRY_VERIFY(window.m_binFilterActive);
+	QTRY_COMPARE(window.m_proxy->rowCount(), 1);
+	QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, proven.mediaFilePath);
+	const auto console = window.m_console->toPlainText();
+	QVERIFY(console.contains(QStringLiteral("Bin loaded with incomplete results: ") + binPath));
+	QVERIFY(console.contains(QStringLiteral("source-track")));
+	QCOMPARE(window.m_model->rowCount(), prepared.size());
+	const MediaCsv::Options options{true};
+	for (int row = 0; row < prepared.size(); ++row)
+	{
+		const auto &actual = window.m_model->fileAt(row);
+		QCOMPARE(actual.kelpieId, prepared[row].kelpieId);
+		QCOMPARE(MediaCsv::rowLine(actual, options), MediaCsv::rowLine(prepared[row], options));
+	}
+}
+
+void TestOperationUi::unmatched_bin_reports_once_when_loaded()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile file;
+	file.mediaFilePath = tmp.filePath("scanned.mxf");
+	file.fileMobId = MobId::format(TestAvb::Source);
+	file.masterMobId = MobId::format(TestAvb::Master);
+	const auto prepared = TestMediaFile::seeded({file});
+	window.onScanFinished(prepared);
+	window.onFilterByBins();
+	auto *dialog = window.m_binFilterDialog;
+	QVERIFY(dialog);
+	QSignalSpy loaded(dialog, &AvbFilterDialog::binLoaded);
+	const auto binPath = TestAvb::write(tmp.filePath("Unmatched.avb"), TestAvb::mediaBin({TestAvb::Master}));
+	QVERIFY(!binPath.isEmpty());
+	const auto notice = QStringLiteral("Bin has no matching files in the current scan: ") + QFileInfo(binPath).canonicalFilePath();
+	window.m_console->clear();
+	dialog->addBinFromFile(binPath);
+	QTRY_COMPARE(loaded.count(), 1);
+	const auto bin = qvariant_cast<AvbBin>(loaded.first().first());
+	QVERIFY(bin.isUsable() && bin.coverageComplete);
+	QCOMPARE(bin.mediaFileIds.fullIds, QSet<QString>{file.masterMobId});
+	QTRY_VERIFY(window.m_binFilterActive);
+	QCOMPARE(window.m_proxy->rowCount(), 0); // A shared MasterMobId is not a FileMobId match.
+	QCOMPARE(window.m_console->toPlainText().count(notice), 1);
+	for (const auto *operation : {"onAddClicked", "onSubtractClicked", "onIntersectClicked"})
+	{
+		QVERIFY(QMetaObject::invokeMethod(dialog, operation, Qt::DirectConnection));
+		QCOMPARE(window.m_proxy->rowCount(), 0);
+	}
+	window.onScanFinished(prepared);
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+	dialog->addBinFromFile(binPath); // An already loaded bin is not loaded again.
+	QCOMPARE(loaded.count(), 1);
+	QCOMPARE(window.m_console->toPlainText().count(notice), 1);
+}
+
+void TestOperationUi::bin_match_notice_checks_the_unfiltered_inventory()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile hidden;
+	hidden.mediaFilePath = tmp.filePath("hidden.mxf");
+	hidden.fileMobId = MobId::format(TestAvb::Source);
+	hidden.project = QStringLiteral("Hidden project");
+	MediaFile other = hidden;
+	other.mediaFilePath = tmp.filePath("other.mxf");
+	other.fileMobId = MobId::format(TestAvb::Other);
+	other.project = QStringLiteral("Other project");
+	window.onScanFinished(TestMediaFile::seeded({hidden, other}));
+	window.onFilterByBins();
+	auto *dialog = window.m_binFilterDialog;
+	QVERIFY(dialog);
+	QSignalSpy loaded(dialog, &AvbFilterDialog::binLoaded);
+	dialog->addBinFromFile(TestAvb::write(tmp.filePath("Other.avb"), TestAvb::mediaBin({TestAvb::Other})));
+	QTRY_COMPARE(loaded.count(), 1);
+	QTRY_VERIFY(window.m_binFilterActive);
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+	QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, other.mediaFilePath);
+	const auto projects = window.m_projectList->findItems(other.project, Qt::MatchExactly);
+	QCOMPARE(projects.size(), 1);
+	projects.first()->setSelected(true);
+	window.m_searchField->setText(QStringLiteral("no visible match"));
+	QTRY_COMPARE(window.m_proxy->rowCount(), 0);
+	window.m_console->clear();
+	dialog->addBinFromFile(TestAvb::write(tmp.filePath("Hidden.avb"), TestAvb::mediaBin({TestAvb::Source})));
+	QTRY_COMPARE(loaded.count(), 2);
+	QVERIFY(qvariant_cast<AvbBin>(loaded.last().first()).coverageComplete);
+	QCOMPARE(window.m_model->rowCount(), 2);
+	QCOMPARE(window.m_proxy->rowCount(), 0);
+	QVERIFY(!window.m_console->toPlainText().contains(QStringLiteral("Bin has no matching files in the current scan:")));
+}
+
+void TestOperationUi::bin_match_notice_ignores_empty_inventory_and_unusable_references()
+{
+	QTemporaryDir tmp;
+	QVERIFY(tmp.isValid());
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.onFilterByBins();
+	auto *dialog = window.m_binFilterDialog;
+	QVERIFY(dialog);
+	QSignalSpy loaded(dialog, &AvbFilterDialog::binLoaded);
+	QSignalSpy errors(dialog, &AvbFilterDialog::loadError);
+	window.m_console->clear();
+	dialog->addBinFromFile(TestAvb::write(tmp.filePath("BeforeScan.avb"), TestAvb::mediaBin()));
+	QTRY_COMPARE(loaded.count(), 1);
+	QVERIFY(!qvariant_cast<AvbBin>(loaded.last().first()).mediaFileIds.isEmpty());
+	QTRY_VERIFY(window.m_binFilterActive);
+	MediaFile file;
+	file.mediaFilePath = tmp.filePath("scanned.mxf");
+	file.fileMobId = MobId::format(TestAvb::Other);
+	window.onScanFinished(TestMediaFile::seeded({file}));
+	dialog->addBinFromFile(TestAvb::write(tmp.filePath("NoReferences.avb"), TestAvb::mediaBin({})));
+	QTRY_COMPARE(loaded.count(), 2);
+	const auto empty = qvariant_cast<AvbBin>(loaded.last().first());
+	QVERIFY(empty.isUsable() && empty.mediaFileIds.isEmpty());
+	dialog->addBinFromFile(TestAvb::write(tmp.filePath("Unreadable.avb"), QByteArray("not an Avid bin")));
+	QTRY_COMPARE(loaded.count(), 3);
+	QCOMPARE(errors.count(), 1);
+	QVERIFY(!qvariant_cast<AvbBin>(loaded.last().first()).isUsable());
+	QVERIFY(!window.m_console->toPlainText().contains(QStringLiteral("Bin has no matching files in the current scan:")));
+}
+
+// MARK: - Legacy scan gate
+
+void TestOperationUi::omf_gate_controls_scans_and_removes_legacy_rows()
+{
+	const QString root = path("scan");
+	const QString mxfPath = root + QStringLiteral("/Avid MediaFiles/MXF/1/clip.mxf");
+	const QString omfPath = root + QStringLiteral("/OMFI MediaFiles/legacy.omf");
+	QVERIFY(put(mxfPath, QByteArray(4096, '\0')));
+	QVERIFY(put(omfPath, QByteArray(4096, '\0')));
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	window.setOmfScanEnabled(false);
+	window.m_operations->setUndoEnabled(false);
+	QSignalSpy finished(window.m_scanner, &AppScanner::scanFinished);
+	window.rescanPaths({root});
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
+	QTRY_VERIFY(window.m_operations->isIdle());
+	QCOMPARE(window.m_model->rowCount(), 1);
+	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
+	QVERIFY(!window.m_model->fileAt(0).omfEra);
+	window.setOmfScanEnabled(true);
+	window.rescanPaths({root});
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 2, 15000);
+	QTRY_VERIFY(window.m_operations->isIdle());
+	QCOMPARE(window.m_model->rowCount(), 2);
+	QSet<QString> scanned;
+	for (const auto &file : window.m_model->allFiles())
+		scanned.insert(file.mediaFilePath);
+	QCOMPARE(scanned, QSet<QString>({mxfPath, omfPath}));
+	window.setOmfScanEnabled(false);
+	QCOMPARE(window.m_model->rowCount(), 1);
+	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
+	QVERIFY(QFileInfo::exists(omfPath));
+	window.rescanPaths({root});
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 3, 15000);
+	QTRY_VERIFY(window.m_operations->isIdle());
+	QCOMPARE(window.m_model->rowCount(), 1);
+	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
+
+	// This part authors compatibility rows to exercise UI filtering alone.
+	// Legacy metadata and suffixes must both be removed when the gate closes.
+	window.setOmfScanEnabled(true);
+	MediaFile modern;
+	modern.mediaFilePath = mxfPath;
+	modern.fileName = QStringLiteral("clip.mxf");
+	modern.type = MediaFile::Type::Precompute;
+	modern.project = QStringLiteral("Retained project");
+	MediaFile otherModern = modern;
+	otherModern.mediaFilePath = path("another.mxf");
+	otherModern.fileName = QStringLiteral("another.mxf");
+	otherModern.project = QStringLiteral("Another project");
+	MediaFile legacyMetadata = modern;
+	legacyMetadata.mediaFilePath = path("legacy.mxf");
+	legacyMetadata.omfEra = true;
+	legacyMetadata.project = QStringLiteral("Legacy project");
+	MediaFile legacySuffix = modern;
+	legacySuffix.mediaFilePath = path("legacy.omf");
+	legacySuffix.fileName = QStringLiteral("legacy.omf");
+	legacySuffix.project = legacyMetadata.project;
+	window.onScanFinished(TestMediaFile::seeded({modern, otherModern, legacyMetadata, legacySuffix}));
+	for (const auto &project : {modern.project, legacyMetadata.project})
+	{
+		const auto matches = window.m_projectList->findItems(project, Qt::MatchExactly);
+		QCOMPARE(matches.size(), 1);
+		matches.first()->setSelected(true);
+	}
+	QCOMPARE(window.m_proxy->rowCount(), 3);
+	window.setOmfScanEnabled(false);
+	QCOMPARE(window.m_model->rowCount(), 2);
+	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, mxfPath);
+	QCOMPARE(window.m_model->fileAt(0).type, MediaFile::Type::Precompute);
+	QCOMPARE(window.m_projectList->count(), 2);
+	QVERIFY(window.m_projectList->findItems(legacyMetadata.project, Qt::MatchExactly).isEmpty());
+	QCOMPARE(window.m_projectList->selectedItems().size(), 1);
+	QCOMPARE(window.m_projectList->selectedItems().first()->text(), modern.project);
+	QCOMPARE(window.m_proxy->rowCount(), 1);
+	QCOMPARE(window.fileAtProxyRow(0).mediaFilePath, modern.mediaFilePath);
+	window.onScanFinished(TestMediaFile::seeded({modern, otherModern}));
+	QVERIFY(window.m_projectList->selectedItems().isEmpty());
+	QCOMPARE(window.m_proxy->rowCount(), 2);
+}
+
+// MARK: - Startup recovery and unfinished jobs
+
+void TestOperationUi::startup_prunes_expired_journals_with_undo_disabled()
+{
+	QStringList journals;
+	const auto expired = QDateTime::currentDateTimeUtc().addDays(-31);
+	for (int n = 0; n < 2; ++n)
+	{
+		std::atomic<bool> cancel{false};
+		Sink sink;
+		OperationRunner runner(sink, cancel);
+		const auto totals = runner.run(request(QStringLiteral("completed-%1").arg(n)), path("journals"));
+		QCOMPARE(totals.succeeded, 1);
+		const auto candidate = OperationJournal::latestUndoable();
+		QVERIFY(candidate);
+		journals.append(candidate->path);
+		QFile file(candidate->path);
+		QVERIFY(file.open(QIODevice::ReadWrite));
+		QVERIFY(file.setFileTime(expired, QFileDevice::FileModificationTime));
+		QTest::qWait(2); // Keep the jobs' recorded start times distinct.
+	}
+	QVERIFY(journals[0] != journals[1]);
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	window.setOmfScanEnabled(false);
+	window.m_operations->setUndoEnabled(false);
+	QVERIFY(!window.m_operations->m_undoEnabled);
+	window.m_operations->runStartupRecovery();
+	QTRY_VERIFY_WITH_TIMEOUT(!window.m_operations->m_historyLoading, 10000);
+	QVERIFY(!QFileInfo::exists(journals[0]));
+	QVERIFY(QFileInfo::exists(journals[1]));
+	QCOMPARE(window.m_operations->m_undoCandidate.journalPath, journals[1]);
+	QVERIFY(!window.m_operations->m_undoAction->isVisible());
+	for (int n = 0; n < 2; ++n)
+	{
+		QVERIFY(QFileInfo::exists(path(QStringLiteral("completed-%1/source/clip-0.bin").arg(n))));
+		QVERIFY(QFileInfo::exists(path(QStringLiteral("completed-%1/destination/clip-0.bin").arg(n))));
+	}
+}
+
+void TestOperationUi::unfinished_business_is_the_single_file_recovery_command()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	auto *recovery = window.m_operations->recoveryAction();
+	QCOMPARE(recovery->objectName(), QStringLiteral("unfinishedBusinessAction"));
+	QCOMPARE(recovery->text(), QStringLiteral("Unfinished Business…"));
+	QVERIFY(!recovery->isEnabled());
+
+	QMenu *fileMenu = nullptr;
+	for (auto *action : window.menuBar()->actions())
+		if (action->text().remove('&') == QStringLiteral("File"))
+			fileMenu = action->menu();
+	QVERIFY(fileMenu);
+	QCOMPARE(fileMenu->actions().count(recovery), 1);
+	for (auto *action : fileMenu->actions())
+	{
+		QVERIFY(!action->text().startsWith(QStringLiteral("Resume Interrupted")));
+		QVERIFY(!action->text().startsWith(QStringLiteral("Restore Interrupted")));
+	}
+
+	makeInterrupted(request());
+	window.m_operations->refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!window.m_operations->m_historyLoading, 15000);
+	QVERIFY(recovery->isEnabled());
+}
+
+void TestOperationUi::unfinished_business_merges_jobs_and_updates_choices()
+{
+	const auto bothPath = makeRetainedOriginal("both");
+	auto deleteRequest = request("delete");
+	deleteRequest.kind = OperationKind::Delete;
+	const auto resumePath = makeInterrupted(deleteRequest);
+	const auto restorePath = makeRetainedOriginal("restore");
+	QString error;
+	QVERIFY(OperationJournal::dismiss(restorePath, error));
+	QHash<QString, QByteArray> journalBytes;
+	for (const auto &journalPath : {bothPath, resumePath, restorePath})
+	{
+		QFile journal(journalPath);
+		QVERIFY(journal.open(QIODevice::ReadOnly));
+		journalBytes.insert(journalPath, journal.readAll());
+	}
+	QWidget window;
+	FileOperationController operations(&window);
+	operations.refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!operations.m_historyLoading, 15000);
+	QCOMPARE(operations.m_resumable.size(), 2);
+	QCOMPARE(operations.m_restorable.size(), 2);
+	QSignalSpy finished(operations.manager(), &OperationManager::operationFinished);
+	bool inspected = false;
+	QTimer inspect;
+	inspect.setInterval(1);
+	connect(&inspect, &QTimer::timeout, &window, [&]
+			{
+		auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget());
+		if (!dialog) return;
+		inspect.stop();
+		QTimer::singleShot(5000, dialog, &QDialog::reject); // Also closes if an assertion fails.
+		QCOMPARE(dialog->objectName(), QStringLiteral("unfinishedBusinessDialog"));
+		auto *heading = dialog->findChild<QLabel *>(QStringLiteral("unfinishedBusinessHeading"));
+		auto *summary = dialog->findChild<QLabel *>(QStringLiteral("unfinishedBusinessSummary"));
+		QVERIFY(heading && summary);
+		QCOMPARE(heading->text(), QStringLiteral("Resume the interrupted job?"));
+		auto *jobs = dialog->findChild<QComboBox *>(QStringLiteral("unfinishedBusinessJob"));
+		auto *resume = dialog->findChild<QPushButton *>(QStringLiteral("resumeInterruptedJobButton"));
+		auto *restore = dialog->findChild<QPushButton *>(QStringLiteral("restoreOriginalsButton"));
+		auto *stop = dialog->findChild<QPushButton *>(QStringLiteral("stopInterruptedJobButton"));
+		QVERIFY(jobs && resume && restore && stop);
+		QCOMPARE(resume->text(), QStringLiteral("Resume"));
+		QCOMPARE(stop->text(), QStringLiteral("Stop"));
+		for (auto *button : dialog->findChildren<QPushButton *>())
+			QVERIFY(button->text().remove('&') != QStringLiteral("Cancel"));
+		QCOMPARE(jobs->count(), 3); // The job with both choices appears only once.
+		QSet<QString> listed;
+		for (int i = 0; i < jobs->count(); ++i) listed.insert(jobs->itemData(i).toString());
+		QCOMPARE(listed, QSet<QString>({bothPath, resumePath, restorePath}));
+		for (const auto *button : {resume, restore, stop})
+		{
+			QVERIFY(!button->isDefault());
+			QVERIFY(!button->autoDefault());
+		}
+
+		jobs->setCurrentIndex(jobs->findData(bothPath));
+		QVERIFY(resume->isVisible() && resume->isEnabled());
+		QVERIFY(restore->isVisible() && restore->isEnabled());
+		QVERIFY(stop->isVisible() && stop->isEnabled());
+		for (auto *button : {resume, restore, stop})
+		{
+			button->setFocus();
+			QTest::keyClick(button, Qt::Key_Return);
+			QVERIFY(dialog->isVisible());
+			QCOMPARE(finished.count(), 0);
+		}
+		jobs->setCurrentIndex(jobs->findData(resumePath));
+		QVERIFY(jobs->currentText().startsWith(QStringLiteral("Delete")));
+		QVERIFY(summary->text().startsWith(QStringLiteral("Job: Delete\n")));
+		QVERIFY(resume->isVisible() && resume->isEnabled());
+		QVERIFY(!restore->isVisible() || !restore->isEnabled());
+		QVERIFY(stop->isVisible() && stop->isEnabled());
+		jobs->setCurrentIndex(jobs->findData(restorePath));
+		QVERIFY(!resume->isVisible() || !resume->isEnabled());
+		QVERIFY(restore->isVisible() && restore->isEnabled());
+		QVERIFY(!stop->isVisible() || !stop->isEnabled());
+		inspected = true;
+		dialog->close(); });
+	inspect.start();
+	operations.recoveryAction()->trigger();
+	QVERIFY(inspected);
+	QCOMPARE(finished.count(), 0);
+	const auto history = OperationRecovery::readSummary();
+	QCOMPARE(history.resumable.size(), 2);
+	QCOMPARE(history.restorable.size(), 2);
+	// Refreshing and inspecting history must not reconcile or rewrite jobs.
+	for (auto journal = journalBytes.cbegin(); journal != journalBytes.cend(); ++journal)
+	{
+		QFile file(journal.key());
+		QVERIFY(file.open(QIODevice::ReadOnly));
+		QCOMPARE(file.readAll(), journal.value());
+	}
+}
+
+void TestOperationUi::unfinished_business_gate_restore_does_not_start_waiting_job()
+{
+	const auto dismissedPath = makeRetainedOriginal("dismissed");
+	QString error;
+	QVERIFY(OperationJournal::dismiss(dismissedPath, error));
+	const auto restorePath = makeRetainedOriginal("pending");
+	const auto record = OperationJournal::readOne(restorePath);
+	QVERIFY(record);
+	const auto original = record->entries.first();
+	QWidget window;
+	FileOperationController operations(&window);
+	QSignalSpy finished(operations.manager(), &OperationManager::operationFinished);
+	bool selectedPending = false;
+	QTimer choose;
+	choose.setInterval(1);
+	connect(&choose, &QTimer::timeout, &window, [&]
+			{
+		auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget());
+		if (!dialog) return;
+		choose.stop();
+		QTimer::singleShot(0, dialog, &QDialog::reject);
+		QCOMPARE(dialog->objectName(), QStringLiteral("unfinishedBusinessDialog"));
+		auto *jobs = dialog->findChild<QComboBox *>(QStringLiteral("unfinishedBusinessJob"));
+		auto *restore = dialog->findChild<QPushButton *>(QStringLiteral("restoreOriginalsButton"));
+		QVERIFY(jobs && restore);
+		// The previous-job gate selects its unfinished job even when another
+		// dismissed job also has originals waiting to be restored.
+		QCOMPARE(jobs->currentData().toString(), restorePath);
+		selectedPending = true;
+		restore->click(); });
+	choose.start();
+	QVERIFY(!operations.dispatchRequest(request("attempted")));
+	QVERIFY(selectedPending);
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
+	QTRY_VERIFY_WITH_TIMEOUT(operations.isIdle() && !operations.m_historyLoading, 15000);
+	QVERIFY(QFileInfo::exists(original.item.src));
+	QVERIFY(!QFileInfo::exists(original.retirement));
+	QVERIFY(QFileInfo::exists(original.dst));
+	QVERIFY(!QFileInfo::exists(path("attempted/destination/clip-0.bin")));
+	QCOMPARE(OperationJournal::scan().size(), 2);
+	QVERIFY(OperationJournal::readOne(dismissedPath)->dismissed);
+	QCOMPARE(operations.m_restorable.size(), 1);
+	QCOMPARE(operations.m_restorable.first().journalPath, dismissedPath);
+}
+
+void TestOperationUi::unfinished_business_gate_stop_only_dismisses_selected_job()
+{
+	const auto firstPath = makeInterrupted(request("first"));
+	const auto secondPath = makeInterrupted(request("second"));
+	QWidget window;
+	FileOperationController operations(&window);
+	int dialogsSeen = 0;
+	QTimer choose;
+	choose.setInterval(1);
+	connect(&choose, &QTimer::timeout, &window, [&]
+			{
+		auto *dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget());
+		if (!dialog) return;
+		QTimer::singleShot(0, dialog, &QDialog::reject);
+		QCOMPARE(dialog->objectName(), QStringLiteral("unfinishedBusinessDialog"));
+		auto *jobs = dialog->findChild<QComboBox *>(QStringLiteral("unfinishedBusinessJob"));
+		QVERIFY(jobs);
+		++dialogsSeen;
+		if (dialogsSeen == 1)
+		{
+			const int secondIndex = jobs->findData(secondPath);
+			QVERIFY(secondIndex >= 0);
+			jobs->setCurrentIndex(secondIndex);
+			auto *stop = dialog->findChild<QPushButton *>(QStringLiteral("stopInterruptedJobButton"));
+			QVERIFY(stop);
+			stop->click();
+			return;
+		}
+		choose.stop();
+		QCOMPARE(dialogsSeen, 2);
+		QCOMPARE(jobs->count(), 1);
+		QCOMPARE(jobs->currentData().toString(), firstPath);
+		QVERIFY(!OperationJournal::readOne(firstPath)->dismissed);
+		QVERIFY(OperationJournal::readOne(secondPath)->dismissed);
+		dialog->close(); });
+	choose.start();
+	QVERIFY(!operations.dispatchRequest(request("attempted")));
+	QCOMPARE(dialogsSeen, 2);
+	QVERIFY(!operations.manager()->isRunning());
+	QVERIFY(!OperationJournal::readOne(firstPath)->dismissed);
+	QVERIFY(OperationJournal::readOne(secondPath)->dismissed);
+	QVERIFY(!QFileInfo::exists(path("attempted/destination/clip-0.bin")));
+	QCOMPARE(OperationJournal::scan().size(), 2);
+}
+
+void TestOperationUi::interrupted_dialog_escape_leaves_job_pending()
+{
+	const auto old = request();
+	const auto journalPath = makeInterrupted(old);
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	clickInterrupted("escape");
+	QVERIFY(!window.m_operations->dispatchRequest(request("attempted")));
+	const auto record = OperationJournal::readOne(journalPath);
+	QVERIFY(record);
+	QVERIFY(!record->dismissed);
+	QVERIFY(!QFileInfo::exists(path("attempted/destination/clip-0.bin")));
+	QCOMPARE(OperationJournal::scan().size(), 1);
+}
+void TestOperationUi::interrupted_dialog_close_leaves_job_pending()
+{
+	const auto journalPath = makeInterrupted(request());
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	clickInterrupted("close");
+	QVERIFY(!window.m_operations->resolvePreviousJob());
+	QVERIFY(!OperationJournal::readOne(journalPath)->dismissed);
+}
+void TestOperationUi::interrupted_dialog_stop_keeps_completed_effects()
+{
+	const auto old = request("old", 2);
+	const auto journalPath = makeInterrupted(old, true);
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	clickInterrupted("stopInterruptedJobButton");
+	QVERIFY(window.m_operations->resolvePreviousJob());
+	const auto record = OperationJournal::readOne(journalPath);
+	QVERIFY(record && record->dismissed);
+	QVERIFY(QFileInfo::exists(path("old/destination/clip-0.bin")));
+	QVERIFY(QFileInfo::exists(old.items[1].src));
+	QVERIFY(!QFileInfo::exists(path("old/destination/clip-1.bin")));
+	QVERIFY(OperationRecovery::readSummary().resumable.isEmpty());
+	QVERIFY(OperationJournal::latestUndoable());
+	QCOMPARE(OperationJournal::latestUndoable()->path, journalPath);
+}
+void TestOperationUi::interrupted_dialog_resume_starts_only_old_job()
+{
+	auto old = request();
+	const auto journalPath = makeInterrupted(old);
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	QSignalSpy finished(window.m_operations->m_operationManager, &OperationManager::operationFinished);
+	clickInterrupted("resumeInterruptedJobButton");
+	QVERIFY(!window.m_operations->dispatchRequest(request("attempted")));
+	QTRY_COMPARE_WITH_TIMEOUT(finished.size(), 1, 15000);
+	QVERIFY(QFileInfo::exists(path("old/destination/clip-0.bin")));
+	QVERIFY(!QFileInfo::exists(path("attempted/destination/clip-0.bin")));
+	QCOMPARE(OperationJournal::scan().size(), 1);
+	const auto record = OperationJournal::readOne(journalPath);
+	QVERIFY(record);
+	QVERIFY(record->entries.first().complete());
+}
+void TestOperationUi::interrupted_undo_resumes_with_debug_flag_off()
+{
+	auto original = request("original", 2);
+	original.diagnosticTrashRoot = path("undo-trash");
+	std::atomic<bool> cancel{false};
+	Sink sink;
+	OperationRunner forward(sink, cancel);
+	QCOMPARE(forward.run(original, path("journals")).succeeded, 2);
+	const auto saved = OperationJournal::latestUndoable();
+	QVERIFY(saved);
+	OperationRequest inverse;
+	inverse.kind = OperationKind::Undo;
+	inverse.undoEnabled = true;
+	inverse.undoJournalPath = saved->path;
+	sink.cancelAfterResult = &cancel;
+	OperationRunner undo(sink, cancel);
+	QCOMPARE(undo.run(inverse, path("journals")).succeeded, 1);
+	const auto pending = OperationRecovery::readSummary().resumable;
+	QCOMPARE(pending.size(), 1);
+	QCOMPARE(pending.first().kind, OperationKind::Undo);
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.m_operations->setUndoEnabled(false);
+	QVERIFY(!window.m_operations->m_undoEnabled);
+	MediaFile copied;
+	copied.mediaFilePath = path("original/destination/clip-1.bin");
+	copied.fileName = QStringLiteral("clip-1.bin");
+	copied.project = QStringLiteral("Copied project");
+	copied.sizeBytes = QFileInfo(copied.mediaFilePath).size();
+	window.onScanFinished(TestMediaFile::seeded({copied}));
+	QCOMPARE(window.m_projectList->count(), 1);
+	QSignalSpy restored(window.m_operations, &FileOperationController::originalsRestored);
+	QSignalSpy finished(window.m_operations->m_operationManager, &OperationManager::operationFinished);
+	clickInterrupted("resumeInterruptedJobButton");
+	QVERIFY(!window.m_operations->dispatchRequest(request("attempted")));
+	QTRY_COMPARE_WITH_TIMEOUT(finished.size(), 1, 15000);
+	QVERIFY(OperationRecovery::readSummary().resumable.isEmpty());
+	QVERIFY(!QFileInfo::exists(path("original/destination/clip-0.bin")));
+	QVERIFY(!QFileInfo::exists(path("original/destination/clip-1.bin")));
+	QVERIFY(QFileInfo::exists(original.items[0].src));
+	QVERIFY(QFileInfo::exists(original.items[1].src));
+	QVERIFY(!QFileInfo::exists(path("attempted/destination/clip-0.bin")));
+	QTRY_COMPARE(window.m_model->rowCount(), 0);
+	QCOMPARE(window.m_projectList->count(), 0);
+	QTRY_COMPARE(window.m_statusFiles->text(), QStringLiteral("0 files"));
+	QTRY_COMPARE(window.m_statusSize->text(), QStringLiteral("0 B"));
+	QCOMPARE(restored.count(), 0); // Undo Copy only removes a copy from the inventory.
+}
+// MARK: - Original restoration
+
+void TestOperationUi::restore_action_survives_dismissal_later_jobs_and_close()
+{
+	const auto oldPath = makeRetainedOriginal();
+	QString error;
+	QVERIFY(OperationJournal::dismiss(oldPath, error));
+	std::atomic<bool> cancel{false};
+	Sink sink;
+	OperationRunner later(sink, cancel);
+	QCOMPARE(later.run(request("later"), path("journals")).succeeded, 1);
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.setPrecomputesEnabled(false);
+	window.setOmfScanEnabled(false);
+	window.m_operations->setUndoEnabled(false);
+	auto *operations = window.m_operations;
+	operations->refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!operations->m_historyLoading, 15000);
+	QVERIFY(!operations->m_undoEnabled);
+	QVERIFY(!operations->undoAction()->isVisible());
+	QVERIFY(operations->recoveryAction()->isEnabled());
+	QCOMPARE(operations->m_restorable.size(), 1);
+	const auto job = operations->m_restorable.first();
+	QCOMPARE(job.journalPath, oldPath);
+	QSignalSpy finished(operations->manager(), &OperationManager::operationFinished);
+	for (const auto &close : {"escape", "close", "enter"})
+	{
+		clickRestoreOriginals(QString::fromLatin1(close), job);
+		operations->recoveryAction()->trigger();
+		QVERIFY(operations->recoveryAction()->isEnabled());
+		QVERIFY(!QFileInfo::exists(job.originals.first()));
+		QVERIFY(QFileInfo::exists(job.retainedPaths.first()));
+		QVERIFY(OperationJournal::readOne(oldPath)->dismissed);
+	}
+	QCOMPARE(finished.count(), 0);
+	QCOMPARE(OperationJournal::scan().size(), 2);
+}
+
+void TestOperationUi::restore_originals_keeps_completed_copy_and_refreshes_rows()
+{
+	const auto oldPath = makeRetainedOriginal();
+	const auto old = OperationJournal::readOne(oldPath);
+	QVERIFY(old);
+	QString error;
+	QVERIFY(OperationJournal::dismiss(oldPath, error));
+	// An unrelated unfinished job must not intercept a source-only restore.
+	const auto laterPath = makeInterrupted(request("later"));
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile untouched;
+	untouched.mediaFilePath = path("unaffected/Avid MediaFiles/MXF/1/other.mxf");
+	untouched.volumePath = path("unaffected");
+	untouched.volumeName = QStringLiteral("unaffected");
+	QVERIFY(put(untouched.mediaFilePath, QByteArray(1024, 'u')));
+	MediaFile sibling;
+	sibling.mediaFilePath = path("retained/Avid MediaFiles/MXF/1/sibling.mxf");
+	sibling.volumePath = path("retained");
+	sibling.volumeName = QStringLiteral("retained");
+	QVERIFY(put(sibling.mediaFilePath, QByteArray(1024, 's')));
+	window.m_model->setMediaFiles(TestMediaFile::seeded({untouched, sibling}));
+	auto *operations = window.m_operations;
+	operations->refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!operations->m_historyLoading, 15000);
+	QSignalSpy restored(operations, &FileOperationController::originalsRestored);
+	QSignalSpy finished(operations->manager(), &OperationManager::operationFinished);
+	clickRestoreOriginals("restoreOriginalsButton", operations->m_restorable.first());
+	operations->recoveryAction()->trigger();
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
+	QTRY_COMPARE_WITH_TIMEOUT(restored.count(), 1, 15000);
+	QTRY_VERIFY_WITH_TIMEOUT(operations->isIdle() && !operations->m_historyLoading, 15000);
+	QVERIFY(QFileInfo::exists(old->entries.first().item.src));
+	QVERIFY(!QFileInfo::exists(old->entries.first().retirement));
+	QVERIFY(QFileInfo::exists(old->entries.first().dst));
+	QVERIFY(operations->m_restorable.isEmpty());
+	QVERIFY(operations->recoveryAction()->isEnabled()); // The unrelated job can still resume.
+	QCOMPARE(OperationJournal::readOne(oldPath)->entries.first().step, OperationJournal::Step::SourceRestored);
+	QVERIFY(!OperationJournal::readOne(laterPath)->dismissed);
+	QVERIFY(!QFileInfo::exists(path("later/destination/clip-0.bin")));
+	QSet<QString> displayed;
+	const auto files = window.m_model->allFiles();
+	QCOMPARE(files.size(), 3); // The represented restored tree is scanned only once.
+	for (const auto &file : files)
+	{
+		displayed.insert(file.mediaFilePath);
+		const auto &previous = file.mediaFilePath == untouched.mediaFilePath ? untouched : sibling;
+		QCOMPARE(file.volumeName, previous.volumeName);
+		QCOMPARE(file.volumePath, previous.volumePath);
+	}
+	QCOMPARE(displayed, QSet<QString>({untouched.mediaFilePath, sibling.mediaFilePath, old->entries.first().item.src}));
+}
+
+void TestOperationUi::resume_restoration_refreshes_rows()
+{
+	const auto journalPath = makeRetainedOriginal();
+	const auto record = OperationJournal::readOne(journalPath);
+	QVERIFY(record);
+	OperationJournal journal;
+	QString error;
+	QVERIFY(journal.resume(*record, error));
+	auto entry = record->entries.first();
+	entry.step = OperationJournal::Step::RestoringSource;
+	QVERIFY(journal.save(entry));
+
+	// The original was absent during the current scan. Resuming the saved
+	// restoration intent must refresh the table just like explicit Restore.
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	auto *operations = window.m_operations;
+	operations->refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!operations->m_historyLoading, 15000);
+	QVERIFY(operations->recoveryAction()->isEnabled());
+	QSignalSpy restored(operations, &FileOperationController::originalsRestored);
+	QSignalSpy results(operations->manager(), &OperationManager::operationResult);
+	clickInterrupted("resumeInterruptedJobButton");
+	operations->recoveryAction()->trigger();
+	QTRY_COMPARE_WITH_TIMEOUT(restored.count(), 1, 15000);
+	QTRY_VERIFY_WITH_TIMEOUT(operations->isIdle() && !operations->m_historyLoading, 15000);
+	QCOMPARE(results.count(), 1);
+	QCOMPARE(qvariant_cast<OperationResult>(results.first().first()).state, OperationResult::State::OriginalRestored);
+	QVERIFY(QFileInfo::exists(entry.item.src));
+	QVERIFY(QFileInfo::exists(entry.dst));
+	QVERIFY(!QFileInfo::exists(entry.retirement));
+	QCOMPARE(OperationJournal::readOne(journalPath)->entries.first().step, OperationJournal::Step::SourceRestored);
+	const auto files = window.m_model->allFiles();
+	QCOMPARE(files.size(), 1);
+	QCOMPARE(files.first().mediaFilePath, entry.item.src);
+}
+
+void TestOperationUi::blocked_restore_remains_available()
+{
+	const auto oldPath = makeRetainedOriginal();
+	const auto old = OperationJournal::readOne(oldPath);
+	QVERIFY(old);
+	const auto original = old->entries.first().item.src;
+	QVERIFY(put(original, QByteArray("new file in the original location")));
+	QString error;
+	QVERIFY(OperationJournal::dismiss(oldPath, error));
+	QWidget window;
+	FileOperationController operations(&window);
+	operations.refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!operations.m_historyLoading, 15000);
+	QSignalSpy finished(operations.manager(), &OperationManager::operationFinished);
+	QSignalSpy restored(&operations, &FileOperationController::originalsRestored);
+	clickRestoreOriginals("restoreOriginalsButton", operations.m_restorable.first());
+	operations.recoveryAction()->trigger();
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
+	QTRY_VERIFY_WITH_TIMEOUT(!operations.m_historyLoading && operations.isIdle(), 15000);
+	QCOMPARE(restored.count(), 0);
+	QVERIFY(operations.recoveryAction()->isEnabled());
+	QVERIFY(QFileInfo::exists(old->entries.first().retirement));
+	QFile occupant(original);
+	QVERIFY(occupant.open(QIODevice::ReadOnly));
+	QCOMPARE(occupant.readAll(), QByteArray("new file in the original location"));
+	clickRestoreOriginals("close", operations.m_restorable.first());
+	operations.offerRecovery();
+	QVERIFY(operations.recoveryAction()->isEnabled());
+}
+
+void TestOperationUi::restore_can_select_another_retained_job()
+{
+	QString error;
+	QVERIFY(OperationJournal::dismiss(makeRetainedOriginal("first"), error));
+	QVERIFY(OperationJournal::dismiss(makeRetainedOriginal("second"), error));
+	QWidget window;
+	FileOperationController operations(&window);
+	operations.refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!operations.m_historyLoading, 15000);
+	QCOMPARE(operations.m_restorable.size(), 2);
+	const auto jobs = operations.m_restorable;
+	QVERIFY(put(jobs[0].originals.first(), QByteArray("occupied")));
+	QSignalSpy finished(operations.manager(), &OperationManager::operationFinished);
+	clickRestoreOriginals("restoreOriginalsButton", jobs[1]);
+	operations.recoveryAction()->trigger();
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
+	QTRY_VERIFY_WITH_TIMEOUT(!operations.m_historyLoading && operations.isIdle(), 15000);
+	QCOMPARE(operations.m_restorable.size(), 1);
+	QCOMPARE(operations.m_restorable.first().journalPath, jobs[0].journalPath);
+	QVERIFY(QFileInfo::exists(jobs[0].retainedPaths.first()));
+	QVERIFY(QFileInfo::exists(jobs[1].originals.first()));
+	QVERIFY(!QFileInfo::exists(jobs[1].retainedPaths.first()));
+}
+
+void TestOperationUi::startup_offers_retained_originals()
+{
+	const auto oldPath = makeRetainedOriginal();
+	QString error;
+	QVERIFY(OperationJournal::dismiss(oldPath, error));
+	QWidget window;
+	FileOperationController operations(&window);
+	const auto summary = OperationRecovery::readSummary();
+	QCOMPARE(summary.restorable.size(), 1);
+	clickRestoreOriginals("close", summary.restorable.first());
+	operations.onRecoveryDone(summary);
+	QVERIFY(operations.recoveryAction()->isEnabled());
+	QVERIFY(!operations.manager()->isRunning());
+}
+
+void TestOperationUi::restore_originals_respects_busy_gate()
+{
+	const auto oldPath = makeRetainedOriginal();
+	QWidget window;
+	FileOperationController operations(&window);
+	operations.refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!operations.m_historyLoading, 15000);
+	for (auto activity : {FileOperationController::Activity::Scanning,
+						  FileOperationController::Activity::Recovering,
+						  FileOperationController::Activity::RebalanceDialog,
+						  FileOperationController::Activity::FileOperation})
+	{
+		operations.setActivity(activity);
+		QVERIFY(!operations.recoveryAction()->isEnabled());
+		operations.offerRecovery();
+		OperationRequest restore;
+		restore.restoreJournalPath = oldPath;
+		QVERIFY(!operations.dispatchRequest(restore));
+		QVERIFY(!operations.manager()->isRunning());
+	}
+	operations.setActivity(FileOperationController::Activity::Idle);
+	QVERIFY(operations.recoveryAction()->isEnabled());
+}
+
+// MARK: - Operation results and inventory updates
+
+void TestOperationUi::observed_removals_prune_rows_even_when_job_needs_attention()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	MediaFile retired, removed, retained;
+	retired.mediaFilePath = path("retired.mxf");
+	removed.mediaFilePath = path("removed.mxf");
+	retained.mediaFilePath = path("retained.mxf");
+	window.m_model->setMediaFiles(TestMediaFile::seeded({retired, removed, retained}));
+	window.m_operations->m_pruneSourceRowsAfterOperation = true;
+	OperationResult retirement;
+	retirement.state = OperationResult::State::SourceRetained;
+	retirement.source = retired.mediaFilePath;
+	retirement.sourceRemoved = true;
+	emit window.m_operations->m_operationManager->operationResult(retirement);
+	OperationResult removal;
+	removal.state = OperationResult::State::NeedsAttention;
+	removal.source = removed.mediaFilePath;
+	removal.sourceRemoved = true;
+	emit window.m_operations->m_operationManager->operationResult(removal);
+	OperationResult kept;
+	kept.state = OperationResult::State::NeedsAttention;
+	kept.source = retained.mediaFilePath;
+	emit window.m_operations->m_operationManager->operationResult(kept);
+	emit window.m_operations->m_operationManager->operationFinished(0, 3);
+	QTRY_COMPARE(window.m_model->rowCount(), 1);
+	QCOMPARE(window.m_model->fileAt(0).mediaFilePath, retained.mediaFilePath);
+}
+void TestOperationUi::completed_results_preserve_details_and_refresh_signals()
+{
+	QWidget window;
+	FileOperationController operations(&window);
+	QSignalSpy messages(&operations, &FileOperationController::logMessage);
+	QSignalSpy removed(&operations, &FileOperationController::sourcesRemoved);
+	QSignalSpy restored(&operations, &FileOperationController::originalsRestored);
+	operations.m_pruneSourceRowsAfterOperation = true;
+
+	OperationResult plain;
+	plain.state = OperationResult::State::Completed;
+	plain.name = QStringLiteral("moved.mxf");
+	plain.source = path(plain.name);
+	plain.sourceRemoved = true;
+	emit operations.manager()->operationResult(plain);
+
+	OperationResult detailed;
+	detailed.state = OperationResult::State::Completed;
+	detailed.name = QStringLiteral("copied.mxf");
+	detailed.message = QStringLiteral("Copy finished; the storage did not confirm the full durability request.");
+	emit operations.manager()->operationResult(detailed);
+
+	OperationResult returned;
+	returned.state = OperationResult::State::Completed;
+	returned.name = QStringLiteral("returned.mxf");
+	returned.restoredOriginalPath = path(returned.name);
+	emit operations.manager()->operationResult(returned);
+	for (const auto state : {OperationResult::State::NoEffect, OperationResult::State::Skipped,
+							 OperationResult::State::Cancelled})
+	{
+		OperationResult routine;
+		routine.state = state;
+		routine.name = QStringLiteral("routine.mxf");
+		routine.message = QStringLiteral("Routine per-file outcome.");
+		emit operations.manager()->operationResult(routine);
+	}
+	emit operations.manager()->operationFinished(3, 0);
+
+	QTRY_COMPARE(restored.count(), 1);
+	QCOMPARE(removed.count(), 1);
+	QCOMPARE(removed.first().first().value<QSet<QString>>(), QSet<QString>{plain.source});
+	QCOMPARE(restored.first().first().value<QSet<QString>>(), QSet<QString>{returned.restoredOriginalPath});
+	QCOMPARE(messages.count(), 1);
+	QCOMPARE(messages.first().at(0).value<QtMsgType>(), QtWarningMsg);
+	QCOMPARE(messages.first().at(2).toString(), detailed.name + QStringLiteral(": ") + detailed.message);
+}
+
+void TestOperationUi::transfer_totals_refresh_at_job_end_data()
+{
+	QTest::addColumn<bool>("move");
+	QTest::addColumn<int>("completedCount");
+	QTest::addColumn<int>("remainingState");
+	QTest::addColumn<bool>("pendingTotals");
+	QTest::newRow("copy-complete") << false << 2 << -1 << false;
+	QTest::newRow("copy-partly-cancelled") << false << 1 << int(OperationResult::State::Cancelled) << false;
+	QTest::newRow("copy-partly-failed") << false << 1 << int(OperationResult::State::Failed) << false;
+	QTest::newRow("move-complete") << true << 2 << -1 << false;
+	QTest::newRow("move-partly-failed") << true << 1 << int(OperationResult::State::Failed) << false;
+	QTest::newRow("no-completed-transfers") << false << 0 << int(OperationResult::State::Failed) << false;
+	QTest::newRow("copy-with-pending-totals") << false << 2 << -1 << true;
+	QTest::newRow("pending-totals-without-transfers") << false << 0 << int(OperationResult::State::Failed) << true;
+}
+
+void TestOperationUi::transfer_totals_refresh_at_job_end()
+{
+	QFETCH(bool, move);
+	QFETCH(int, completedCount);
+	QFETCH(int, remainingState);
+	QFETCH(bool, pendingTotals);
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	QVector<MediaFile> files;
+	QStringList destinations;
+	for (int i = 0; i < 3; ++i)
+	{
+		const QString source = path(QStringLiteral("totals/source-%1.mxf").arg(i));
+		QVERIFY(put(source, QByteArray(4, 's')));
+		auto file = authoredScanRow(source, i, MediaFile::DbStatus::Listed);
+		file.sizeBytes = 4;
+		files.append(std::move(file));
+		const QString destination = path(QStringLiteral("totals/destination-%1.mxf").arg(i));
+		QVERIFY(put(destination, QByteArray(4, 's')));
+		destinations.append(destination);
+	}
+	window.onScanFinished(files);
+	if (!pendingTotals)
+		window.m_statusBarUpdateTimer->stop();
+	window.doUpdateStatusBar();
+	QCOMPARE(window.m_statusFiles->text(), QStringLiteral("3 files"));
+	QCOMPARE(window.m_statusSize->text(), QStringLiteral("12 B"));
+	const QString originalProjectTip = window.m_projectList->item(0)->toolTip();
+	QSignalSpy summaryRebuilds(window.m_projectList->model(), &QAbstractItemModel::modelReset);
+	auto *operations = window.m_operations;
+	QSignalSpy transfers(operations, &FileOperationController::transferCompleted);
+	operations->m_activeKind = move ? OperationKind::Move : OperationKind::Copy;
+	operations->m_pruneSourceRowsAfterOperation = move;
+	operations->setActivity(FileOperationController::Activity::FileOperation);
+
+	for (int i = 0; i < completedCount; ++i)
+	{
+		OperationResult result;
+		result.state = OperationResult::State::Completed;
+		result.name = files[i].fileName;
+		result.source = files[i].mediaFilePath;
+		result.destination = destinations[i];
+		result.sourceRemoved = move;
+		emit operations->manager()->operationResult(result);
+		QTRY_COMPARE(transfers.count(), i + 1);
+		// Confirmed rows change immediately; summaries wait for the whole job.
+		QCOMPARE(window.m_model->rowCount(), move ? 3 : 4 + i);
+		bool found = false;
+		for (const auto &file : window.m_model->allFiles())
+			found = found || file.mediaFilePath == destinations[i];
+		QVERIFY(found);
+	}
+	for (int i = completedCount; i < 2; ++i)
+	{
+		OperationResult result;
+		result.state = static_cast<OperationResult::State>(remainingState);
+		result.name = files[i].fileName;
+		result.source = files[i].mediaFilePath;
+		emit operations->manager()->operationResult(result);
+	}
+	QTest::qWait(250); // Let existing status timers run while the job is still active.
+	QCOMPARE(summaryRebuilds.count(), 0);
+	QCOMPARE(window.m_projectList->item(0)->toolTip(), originalProjectTip);
+	QCOMPARE(window.m_filterTabs->tabText(0), QStringLiteral("All (3)"));
+	QCOMPARE(window.m_statusFiles->text(), QStringLiteral("3 files"));
+	QCOMPARE(window.m_statusSize->text(), QStringLiteral("12 B"));
+
+	const int finalCount = move ? 3 : 3 + completedCount;
+	const QString finalFiles = QStringLiteral("%1 files").arg(finalCount);
+	const QString finalSize = QStringLiteral("%1 B").arg(4 * finalCount);
+	bool totalsReadyAtIdle = false;
+	connect(operations, &FileOperationController::activityChanged, &window,
+			[&](FileOperationController::Activity activity)
+			{
+				if (activity == FileOperationController::Activity::Idle)
+					totalsReadyAtIdle = window.m_statusFiles->text() == finalFiles &&
+										window.m_statusSize->text() == finalSize &&
+										window.m_filterTabs->tabText(0) == QStringLiteral("All (%1)").arg(finalCount);
+			});
+	emit operations->manager()->operationFinished(completedCount, 2 - completedCount);
+	QTRY_VERIFY(operations->isIdle());
+	QVERIFY(totalsReadyAtIdle);
+	QCOMPARE(summaryRebuilds.count(), completedCount > 0 || pendingTotals ? 1 : 0);
+	QCOMPARE(window.m_projectList->item(0)->toolTip(),
+			 QStringLiteral("%1 files, %2 B").arg(finalCount).arg(4 * finalCount));
+	QCOMPARE(window.m_filterTabs->tabText(4), QStringLiteral("No Database (%1)").arg(completedCount));
+	QVERIFY(!window.m_statusBarUpdateTimer->isActive());
+}
+
+void TestOperationUi::copy_move_jobs_report_one_console_summary()
+{
+	for (const auto kind : {OperationKind::Copy, OperationKind::Move})
+	{
+		const bool copy = kind == OperationKind::Copy;
+		auto job = request(copy ? QStringLiteral("copy-summary") : QStringLiteral("move-summary"), 2);
+		job.kind = kind;
+		MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+		auto *operations = window.m_operations;
+		QSignalSpy finished(operations->manager(), &OperationManager::operationFinished);
+		QSignalSpy messages(operations, &FileOperationController::logMessage);
+		QVERIFY(operations->dispatchRequest(job));
+		QTRY_COMPARE(finished.count(), 1);
+		QTRY_VERIFY(operations->isIdle());
+		QCOMPARE(finished.first().at(0).toInt(), 2);
+		QCOMPARE(finished.first().at(1).toInt(), 0);
+		const QString summary = QStringLiteral("%1 complete: 2 files %2 to %3.")
+									.arg(copy ? QStringLiteral("Copy") : QStringLiteral("Move"),
+										 copy ? QStringLiteral("copied") : QStringLiteral("moved"), job.destRoot);
+		QCOMPARE(window.m_console->toPlainText().count(QStringLiteral("operations: ") + summary), 1);
+		int confirmations = 0;
+		for (const auto &message : messages)
+			if (message.at(2).toString() == summary)
+			{
+				QCOMPARE(message.at(0).value<QtMsgType>(), QtInfoMsg);
+				QCOMPARE(message.at(1).toString(), QStringLiteral("operations"));
+				++confirmations;
+			}
+		QCOMPARE(confirmations, 1);
+		QCOMPARE(messages.count(), 1);
+	}
+}
+
+// MARK: - Rebalance progress and activity gates
+
+void TestOperationUi::rebalance_live_counts_follow_confirmed_results()
+{
+	const auto plan = smallRebalancePlan(path("Avid MediaFiles/MXF"));
+	RebalanceDialog dialog({}, {}, {});
+	dialog.m_currentPlan = plan;
+	dialog.renderPlan();
+	dialog.primeLiveState();
+	dialog.m_running = true;
+	const auto originalCounts = dialog.m_runningCount;
+	dialog.onProgress(3, 3, QStringLiteral("Starting last file"));
+	QVERIFY(dialog.m_runningCount == originalCounts);
+
+	OperationResult outcome;
+	outcome.source = plan.ops[0].srcPath;
+	outcome.destination = plan.mxfRootPath + QStringLiteral("/2/clip-0.mxf");
+	for (const auto state : {OperationResult::State::Completed, OperationResult::State::NoEffect,
+							 OperationResult::State::Failed, OperationResult::State::Skipped,
+							 OperationResult::State::Cancelled, OperationResult::State::NeedsAttention})
+	{
+		outcome.state = state;
+		dialog.onOperationResult(outcome);
+		QVERIFY(dialog.m_runningCount == originalCounts);
+	}
+
+	// The grouped runner can emit a different order than the preview's ops.
+	outcome.source = plan.ops[2].srcPath;
+	outcome.destination = plan.mxfRootPath + QStringLiteral("/2/clip-2.mxf");
+	outcome.state = OperationResult::State::Completed;
+	outcome.sourceRemoved = true;
+	dialog.onOperationResult(outcome);
+	const NumberedMxfFolder source{{}, 1}, existingDestination{{}, 2}, newDestination{{}, 3};
+	QCOMPARE(dialog.m_runningCount.value(source), 2);
+	QCOMPARE(dialog.m_runningCount.value(existingDestination), 2);
+	QCOMPARE(dialog.m_runningCount.value(newDestination), 0);
+	dialog.onOperationResult(outcome); // A repeated receipt must not move the count twice.
+	QCOMPARE(dialog.m_runningCount.value(source), 2);
+	QCOMPARE(dialog.m_runningCount.value(existingDestination), 2);
+
+	// The rename succeeded, but saving its final journal entry failed.
+	outcome.source = plan.ops[1].srcPath;
+	outcome.destination = plan.mxfRootPath + QStringLiteral("/3/clip-1.mxf");
+	outcome.state = OperationResult::State::NeedsAttention;
+	dialog.onOperationResult(outcome);
+	QCOMPARE(dialog.m_runningCount.value(source), 1);
+	QCOMPARE(dialog.m_runningCount.value(existingDestination), 2);
+	QCOMPARE(dialog.m_runningCount.value(newDestination), 1);
+	dialog.finishDisplay(1, {{source, {1, true}}, {existingDestination, {2, true}}, {newDestination, {1, true}}});
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("1")), QStringLiteral("1"));
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("2")), QStringLiteral("2"));
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("3")), QStringLiteral("1"));
+}
+
+void TestOperationUi::rebalance_finished_recounts_uncertain_moves_and_absent_folders()
+{
+	const auto plan = smallRebalancePlan(path("Avid MediaFiles/MXF"));
+	for (const auto &op : plan.ops)
+		QVERIFY(put(op.srcPath, "media"));
+	QVERIFY(put(plan.mxfRootPath + QStringLiteral("/2/existing.mxf"), "media"));
+	QVERIFY(put(plan.mxfRootPath + QStringLiteral("/1/msmMMOB.mdb"), "database"));
+	QVERIFY(put(plan.mxfRootPath + QStringLiteral("/2/.DS_Store"), "metadata"));
+	RebalanceDialog dialog({}, {}, {});
+	dialog.m_currentPlan = plan;
+	dialog.renderPlan();
+	dialog.primeLiveState();
+	dialog.m_running = true;
+	const auto originalCounts = dialog.m_runningCount;
+
+	OperationResult uncertain;
+	uncertain.state = OperationResult::State::NeedsAttention;
+	uncertain.source = plan.ops[0].srcPath;
+	uncertain.destination = plan.mxfRootPath + QStringLiteral("/2/clip-0.mxf");
+	QVERIFY(QFile::rename(uncertain.source, uncertain.destination));
+	// A post-rename sync failure has no confirmed sourceRemoved flag.
+	dialog.onOperationResult(uncertain);
+	QVERIFY(dialog.m_runningCount == originalCounts);
+	dialog.onFinished(0, 1, false);
+	QTRY_COMPARE(dialog.m_rebalanceButton->text(), QStringLiteral("Close"));
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("1")), QStringLiteral("2"));
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("2")), QStringLiteral("2"));
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("3")), QStringLiteral("Not created"));
+	QVERIFY(dialog.m_statsLine->text().contains(QStringLiteral("<b>2</b> folders affected")));
+	QVERIFY(dialog.m_statsLine->text().contains(QStringLiteral("<b>0</b> new folders")));
+	QVERIFY(!QFileInfo::exists(plan.mxfRootPath + QStringLiteral("/3")));
+	QVERIFY(dialog.m_progressLabel->text().contains(QStringLiteral("1 failed")));
+}
+
+void TestOperationUi::rebalance_finished_marks_unavailable_root()
+{
+	const auto plan = smallRebalancePlan(path("Avid MediaFiles/MXF"));
+	QVERIFY(put(plan.ops[0].srcPath, "media"));
+	RebalanceDialog dialog({}, {}, {});
+	dialog.m_currentPlan = plan;
+	dialog.renderPlan();
+	dialog.primeLiveState();
+	dialog.m_running = true;
+	QDir mediaRoot(QFileInfo(plan.mxfRootPath).absolutePath());
+	QVERIFY(mediaRoot.rename(QStringLiteral("MXF"), QStringLiteral("MXF-offline")));
+	dialog.onFinished(0, 1, false);
+	QTRY_COMPARE(dialog.m_rebalanceButton->text(), QStringLiteral("Close"));
+	for (const auto &folder : plan.folders)
+		QCOMPARE(folderCountCaption(dialog, folder.mediaFolderName), QStringLiteral("Unavailable"));
+	QVERIFY(dialog.m_statsLine->text().contains(QStringLiteral("Unknown")));
+	QVERIFY(!dialog.m_statsLine->text().contains(QStringLiteral("<b>-1</b>")));
+}
+
+void TestOperationUi::rebalance_engine_results_and_final_counts_data()
+{
+	QTest::addColumn<bool>("firstDestinationOccupied");
+	QTest::addColumn<bool>("viaAlias");
+	QTest::newRow("all-moved") << false << false;
+	QTest::newRow("first-move-skipped") << true << false;
+#ifdef Q_OS_UNIX
+	QTest::newRow("ancestor-directory-alias") << false << true;
+#endif
+}
+
+void TestOperationUi::rebalance_engine_results_and_final_counts()
+{
+	QFETCH(bool, firstDestinationOccupied);
+	QFETCH(bool, viaAlias);
+	const QString realRoot = path("media/Avid MediaFiles/MXF");
+	auto plan = smallRebalancePlan(realRoot);
+	for (int i = 0; i < plan.ops.size(); ++i)
+	{
+		const auto contents = QByteArray::number(i) + "-media";
+		plan.ops[i].sizeBytes = contents.size();
+		QVERIFY(put(plan.ops[i].srcPath, contents));
+	}
+	QVERIFY(put(plan.mxfRootPath + QStringLiteral("/2/existing.mxf"), "existing media"));
+	if (viaAlias)
+	{
+		const QString alias = path("media-alias");
+		QVERIFY(QFile::link(path("media"), alias));
+		plan.mxfRootPath = alias + QStringLiteral("/Avid MediaFiles/MXF");
+		for (auto &op : plan.ops)
+			op.srcPath = plan.mxfRootPath + QStringLiteral("/1/") + QFileInfo(op.srcPath).fileName();
+	}
+	RebalanceDialog dialog({{plan.volumeLabel, plan.mxfRootPath}}, {}, plan.volumeLabel);
+	QTRY_VERIFY(!dialog.m_planWatcher.isRunning());
+	QTRY_COMPARE(dialog.m_currentPlan.mxfRootPath, plan.mxfRootPath); // onPlanReady has delivered.
+	dialog.m_currentPlan = plan;
+	dialog.renderPlan();
+	dialog.primeLiveState();
+	dialog.m_running = true;
+	if (firstDestinationOccupied)
+		QVERIFY(put(plan.mxfRootPath + QStringLiteral("/2/clip-0.mxf"), "conflicting media"));
+
+	QSignalSpy results(dialog.m_rebalancer, &Rebalancer::operationResult);
+	QSignalSpy finished(dialog.m_rebalancer, &Rebalancer::finished);
+	QSignalSpy messages(&dialog, &RebalanceDialog::logMessage);
+	dialog.m_rebalancer->executeAsync(plan);
+	QTRY_COMPARE_WITH_TIMEOUT(dialog.m_rebalanceButton->text(), QStringLiteral("Close"), 15000);
+	const int moved = firstDestinationOccupied ? 2 : 3;
+	QCOMPARE(finished.count(), 1);
+	QCOMPARE(finished.first().at(0).toInt(), moved);
+	QCOMPARE(finished.first().at(1).toInt(), 0);
+	QCOMPARE(results.count(), 3);
+	for (int i = 0; i < plan.ops.size(); ++i)
+	{
+		const bool skipped = firstDestinationOccupied && i == 0;
+		const auto result = results[i].first().value<OperationResult>();
+		QCOMPARE(result.state, skipped ? OperationResult::State::Skipped : OperationResult::State::Completed);
+		QCOMPARE(result.sourceRemoved, !skipped);
+		const QString fileName = QFileInfo(plan.ops[i].srcPath).fileName();
+		const QString sourcePath = realRoot + QStringLiteral("/1/") + fileName;
+		QCOMPARE(QFileInfo::exists(sourcePath), skipped);
+		QFile destination(realRoot + '/' + plan.ops[i].dest.display() + '/' + fileName);
+		QVERIFY(destination.open(QIODevice::ReadOnly));
+		QCOMPARE(destination.readAll(), skipped ? QByteArray("conflicting media") : QByteArray::number(i) + "-media");
+		if (skipped)
+		{
+			QFile source(sourcePath);
+			QVERIFY(source.open(QIODevice::ReadOnly));
+			QCOMPARE(source.readAll(), QByteArray("0-media"));
+		}
+	}
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("1")), firstDestinationOccupied ? QStringLiteral("1") : QStringLiteral("0"));
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("2")), QStringLiteral("3"));
+	QCOMPARE(folderCountCaption(dialog, QStringLiteral("3")), QStringLiteral("1"));
+	QCOMPARE(dialog.m_progressBar->value(), moved); // Real result forwarding supplied the confirmed-move count.
+	QVERIFY(dialog.m_statsLine->text().contains(QStringLiteral("<b>3</b> folders affected")));
+	QVERIFY(dialog.m_statsLine->text().contains(QStringLiteral("<b>1</b> new folder")));
+	QVERIFY(dialog.m_progressLabel->text().contains(QStringLiteral("%1 moved, 0 failed").arg(moved)));
+	if (firstDestinationOccupied)
+	{
+		int reportedSkips = 0;
+		for (const auto &message : messages)
+			if (message.at(1).toString().contains(QStringLiteral("Rebalance group skipped")))
+			{
+				QCOMPARE(message.at(0).value<QtMsgType>(), QtWarningMsg);
+				++reportedSkips;
+			}
+		QCOMPARE(reportedSkips, 1);
+	}
+	const QString summary = QStringLiteral("Rebalance complete: %1 files moved%2.")
+								.arg(moved)
+								.arg(firstDestinationOccupied ? QStringLiteral("; 1 skipped") : QString());
+	QCOMPARE(messages.count(), firstDestinationOccupied ? 2 : 1);
+	QCOMPARE(messages.last().at(0).value<QtMsgType>(), QtInfoMsg);
+	QCOMPARE(messages.last().at(1).toString(), summary);
+}
+
+void TestOperationUi::rebalance_dialog_blocks_other_operation_entrypoints()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.m_operations->setUndoEnabled(true);
+	window.m_operations->m_undoCandidate.journalPath = path("earlier-journal.jsonl");
+	OperationRecovery::Resumable interrupted;
+	interrupted.journalPath = path("interrupted-journal.jsonl");
+	window.m_operations->m_resumable = {interrupted};
+	window.m_operations->setActivity(FileOperationController::Activity::RebalanceDialog);
+	window.m_operations->updateRecoveryAction();
+	QVERIFY(!window.m_operations->m_undoAction->isEnabled());
+	QVERIFY(!window.m_operations->m_recoveryAction->isEnabled());
+	QVERIFY(!window.m_operations->dispatchRequest(request("competing")));
+	QVERIFY(!window.m_operations->resolvePreviousJob());
+	window.m_operations->undoLastOperation();
+	QVERIFY(!window.m_operations->m_operationManager->isRunning());
+	QVERIFY(OperationJournal::scan().isEmpty());
+	QVERIFY(!QFileInfo::exists(path("competing/destination/clip-0.bin")));
+}
+void TestOperationUi::scan_activity_blocks_operations_even_if_button_state_changes()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.m_operations->setActivity(FileOperationController::Activity::Scanning);
+	window.m_scanButton->setEnabled(true); // Widget presentation is no longer the safety state.
+	QVERIFY(!window.m_operations->dispatchRequest(request("blocked")));
+	QVERIFY(!window.m_operations->resolvePreviousJob());
+	QVERIFY(!window.m_operations->manager()->isRunning());
+	window.m_operations->setActivity(FileOperationController::Activity::Idle);
+	QVERIFY(window.m_operations->isIdle());
+}
+
+void TestOperationUi::rebalance_resume_keeps_running_job_activity()
+{
+	makeInterrupted(request("old"));
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	auto *operations = window.m_operations;
+	operations->setActivity(FileOperationController::Activity::RebalanceDialog);
+	QSignalSpy finished(operations->manager(), &OperationManager::operationFinished);
+	clickInterrupted("resumeInterruptedJobButton");
+	QVERIFY(!operations->resolveBeforeRebalance());
+	QCOMPARE(operations->activity(), FileOperationController::Activity::FileOperation);
+	operations->endRebalanceDialog();
+	QCOMPARE(operations->activity(), FileOperationController::Activity::FileOperation);
+	QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 15000);
+	QTRY_VERIFY(operations->isIdle());
+}
+
+void TestOperationUi::same_session_refresh_and_stale_result_guard()
+{
+	const auto journalPath = makeInterrupted(request());
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.m_operations->refreshHistory();
+	QTRY_VERIFY_WITH_TIMEOUT(!window.m_operations->m_historyLoading, 15000);
+	QVERIFY(window.m_operations->m_recoveryAction->isEnabled());
+	QCOMPARE(window.m_operations->m_resumable.first().journalPath, journalPath);
+	window.m_operations->refreshHistory();
+	++window.m_operations->m_historyGeneration; // A newer dispatch invalidates the pending read.
+	window.m_operations->m_resumable.clear();
+	window.m_operations->m_historyLoading = false;
+	QThreadPool::globalInstance()->waitForDone();
+	QCoreApplication::processEvents();
+	QVERIFY(window.m_operations->m_resumable.isEmpty());
+}
+// MARK: - Preview checks and cancellation
+
+void TestOperationUi::preview_background_checks_discard_superseded_results()
+{
+	const auto fixture = request("preview");
+	const auto &source = fixture.items.first();
+	MediaFile file;
+	file.mediaFilePath = source.src;
+	file.fileName = source.name;
+	file.sizeBytes = source.bytes;
+	const QString oldDestination = fixture.destRoot;
+	const QString latestDestination = path("latest");
+	QVERIFY(QDir().mkpath(latestDestination));
+	QVERIFY(put(oldDestination + '/' + source.name, "occupied"));
+	ManageMediaDialog dialog({file});
+	{
+		BlockPool block;
+		QVERIFY(block.entered.tryAcquire(1, 10000));
+		dialog.m_destPath->setText(oldDestination);
+		QVERIFY(dialog.m_checkingDest);
+		QVERIFY(!dialog.m_executeButton->isEnabled());
+		dialog.m_destPath->setText(latestDestination);
+		QVERIFY(dialog.m_checkingDest);
+		QVERIFY(!dialog.m_executeButton->isEnabled());
+	}
+	QTRY_VERIFY_WITH_TIMEOUT(!dialog.m_checkingDest, 15000);
+	QThreadPool::globalInstance()->waitForDone();
+	QCoreApplication::processEvents();
+	QVERIFY(dialog.m_perFileConflictCombos.isEmpty());
+	QCOMPARE(dialog.m_previewTree->topLevelItem(0)->text(1), latestDestination + '/' + source.name);
+	QCOMPARE(dialog.m_assessment.requiredCopyBytes, source.bytes);
+	QVERIFY(dialog.m_executeButton->isEnabled());
+	{
+		BlockPool block;
+		QVERIFY(block.entered.tryAcquire(1, 10000));
+		dialog.m_destPath->setText(oldDestination);
+		QVERIFY(dialog.m_checkingDest);
+		dialog.m_radioDelete->setChecked(true);
+		QVERIFY(!dialog.m_checkingDest);
+		QVERIFY(dialog.m_executeButton->isEnabled());
+	}
+	QThreadPool::globalInstance()->waitForDone();
+	QCoreApplication::processEvents();
+	QCOMPARE(dialog.operation(), ManageMediaDialog::Operation::Delete);
+	QCOMPARE(dialog.m_previewTree->columnCount(), 1);
+	QVERIFY(dialog.m_perFileConflictCombos.isEmpty());
+}
+
+void TestOperationUi::preview_policy_changes_refresh_space_and_same_file_is_no_effect()
+{
+	const auto fixture = request("preview");
+	const auto &source = fixture.items.first();
+	MediaFile file;
+	file.mediaFilePath = source.src;
+	file.fileName = source.name;
+	file.sizeBytes = source.bytes;
+	QVERIFY(put(fixture.destRoot + '/' + source.name, "occupied"));
+	ManageMediaDialog dialog({file});
+	dialog.m_destPath->setText(fixture.destRoot);
+	QTRY_VERIFY_WITH_TIMEOUT(!dialog.m_checkingDest, 15000);
+	QCOMPARE(dialog.m_assessment.requiredCopyBytes, source.bytes);
+	QCOMPARE(dialog.m_perFileConflictCombos.size(), 1);
+	auto *policy = dialog.m_perFileConflictCombos.value(source.src);
+	policy->setCurrentIndex(policy->findData(int(ConflictPolicy::Skip)));
+	QVERIFY(dialog.m_checkingDest);
+	QVERIFY(!dialog.m_executeButton->isEnabled());
+	QTRY_VERIFY_WITH_TIMEOUT(!dialog.m_checkingDest, 15000);
+	QCOMPARE(dialog.m_assessment.requiredCopyBytes, qint64(0));
+	policy->setCurrentIndex(policy->findData(int(ConflictPolicy::KeepBoth)));
+	QTRY_VERIFY_WITH_TIMEOUT(!dialog.m_checkingDest, 15000);
+	QCOMPARE(dialog.m_assessment.requiredCopyBytes, source.bytes);
+	dialog.m_destPath->setText(QFileInfo(source.src).absolutePath());
+	QTRY_VERIFY_WITH_TIMEOUT(!dialog.m_checkingDest, 15000);
+	QCOMPARE(dialog.m_assessment.requiredCopyBytes, qint64(0));
+	QVERIFY(dialog.m_perFileConflictCombos.isEmpty());
+	QCOMPARE(dialog.m_previewTree->topLevelItem(0)->toolTip(1), QStringLiteral("Already at destination; no change needed."));
+}
+
+void TestOperationUi::progress_cancel_is_acknowledged_once()
+{
+	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	window.show();
+	window.m_searchField->setText(QStringLiteral("Keep this search"));
+	ProgressDialog dialog(&window);
+	QSignalSpy cancelled(&dialog, &ProgressDialog::cancelRequested);
+	dialog.begin();
+	dialog.activateWindow();
+	QTRY_COMPARE(QApplication::activeWindow(), &dialog);
+	dialog.setItemProgress(1, 1, 100);
+	auto *bar = dialog.findChild<QProgressBar *>();
+	QVERIFY(bar && bar->value() < bar->maximum());
+	dialog.setItemProgress(3, 4, 0); // two files, copying plus removal
+	bool showsProgress = false;
+	for (const auto *label : dialog.findChildren<QLabel *>())
+	{
+		showsProgress |= label->text() == "50%";
+		QVERIFY(!label->text().contains("of 4"));
+	}
+	QVERIFY(showsProgress);
+	QTest::keyClick(&dialog, Qt::Key_Escape);
+	QCOMPARE(cancelled.size(), 1);
+	QVERIFY(dialog.isVisible());
+	QCOMPARE(window.m_searchField->text(), QStringLiteral("Keep this search"));
+	auto *button = dialog.findChild<QPushButton *>();
+	QVERIFY(button && !button->isEnabled());
+	QCOMPARE(button->text(), QStringLiteral("Cancelling..."));
+	QTest::keyClick(&dialog, Qt::Key_Escape);
+	QCOMPARE(cancelled.size(), 1);
+	QVERIFY(dialog.isVisible());
+	QCOMPARE(window.m_searchField->text(), QStringLiteral("Keep this search"));
+	dialog.close();
+	QCOMPARE(cancelled.size(), 1);
+	dialog.finish();
+	QVERIFY(!dialog.isVisible());
+}
+
+// MARK: - Trash fallback interaction
+
+void TestOperationUi::trash_fallback_choice_data()
+{
+	QTest::addColumn<QString>("choice");
+	QTest::addColumn<bool>("expectedAcceptance");
+	QTest::newRow("move") << QStringLiteral("acceptTrashFallbackButton") << true;
+	QTest::newRow("cancel") << QStringLiteral("cancelTrashFallbackButton") << false;
+	QTest::newRow("escape") << QStringLiteral("escape") << false;
+	QTest::newRow("window-close") << QStringLiteral("close") << false;
+}
+
+void TestOperationUi::trash_fallback_choice()
+{
+	QFETCH(QString, choice);
+	QFETCH(bool, expectedAcceptance);
+	std::atomic<bool> completed{false};
+	std::atomic<bool> accepted{false};
+	QWidget window;
+	FileOperationController controller(&window);
+	window.show();
+	const QVector<OperationTrashFallbackItem> items{
+		{path("source/<clip>.mxf"), path("MediaMuster_Trash/<clip>.mxf"), QStringLiteral("Too large <b>for the bin</b>")},
+		{path("source/second.mxf"), path("MediaMuster_Trash/second.mxf"), QStringLiteral("Bin unavailable")}};
+	auto *manager = controller.manager();
+	QSignalSpy requests(manager, &OperationManager::trashFallbackRequested);
+	manager->m_job.start([manager, items, &completed, &accepted]
+						 {
+		accepted.store(manager->confirmTrashFallback(items));
+		completed.store(true); });
+	QTRY_VERIFY_WITH_TIMEOUT(controller.m_trashFallbackDialog, 5000);
+	auto *dialog = controller.m_trashFallbackDialog.data();
+	QVERIFY(dialog->isVisible());
+#ifndef Q_OS_MACOS
+	// QMessageBox deliberately ignores window titles on macOS; the headline,
+	// explanatory text and choices below are still required on every platform.
+	QCOMPARE(dialog->windowTitle(), QStringLiteral("MediaMuster Trash"));
+#endif
+	QCOMPARE(dialog->textFormat(), Qt::PlainText);
+	QCOMPARE(dialog->text(), QStringLiteral("Move these files to MediaMuster Trash?"));
+	QCOMPARE(dialog->informativeText(), QStringLiteral("The system trash couldn’t accept these files. Keep them in MediaMuster Trash until you decide."));
+	QVERIFY(dialog->detailedText().contains(items[0].source));
+	QVERIFY(dialog->detailedText().contains(items[0].reason));
+	QVERIFY(dialog->detailedText().contains(items[1].destination));
+	auto *cancel = dialog->findChild<QPushButton *>(QStringLiteral("cancelTrashFallbackButton"));
+	QVERIFY(cancel);
+	QCOMPARE(dialog->defaultButton(), cancel);
+	QCOMPARE(dialog->escapeButton(), cancel);
+	QCOMPARE(requests.size(), 1);
+	const auto requestId = controller.m_trashFallbackRequest;
+	// A stale reply must not resolve the current prompt.
+	manager->respondTrashFallback(requestId + 1, true);
+	QVERIFY(manager->isTrashFallbackPending(requestId));
+	QVERIFY(!completed.load());
+	if (choice == "escape")
+		QTest::keyClick(dialog, Qt::Key_Escape);
+	else if (choice == "close")
+		dialog->close();
+	else
+	{
+		auto *button = dialog->findChild<QPushButton *>(choice);
+		QVERIFY(button);
+		button->click();
+	}
+	QTRY_VERIFY_WITH_TIMEOUT(completed.load(), 5000);
+	QCOMPARE(accepted.load(), expectedAcceptance);
+	QVERIFY(!manager->isTrashFallbackPending(requestId));
+	QVERIFY(!controller.m_trashFallbackDialog);
+}
+
+void TestOperationUi::trash_fallback_cancel_closes_dialog()
+{
+	std::atomic<bool> completed{false};
+	std::atomic<bool> accepted{true};
+	QWidget window;
+	FileOperationController controller(&window);
+	auto *manager = controller.manager();
+	manager->m_job.start([manager, &completed, &accepted]
+						 {
+		accepted.store(manager->confirmTrashFallback({{"source", "trash", "Unavailable"}}));
+		completed.store(true); });
+	QTRY_VERIFY_WITH_TIMEOUT(controller.m_trashFallbackDialog, 5000);
+	const auto requestId = controller.m_trashFallbackRequest;
+	manager->cancel();
+	manager->respondTrashFallback(requestId, true); // Acceptance after cancel must be ignored.
+	QTRY_VERIFY_WITH_TIMEOUT(completed.load(), 5000);
+	QTRY_VERIFY_WITH_TIMEOUT(!controller.m_trashFallbackDialog, 5000);
+	QVERIFY(!accepted.load());
+	// A request already queued when cancellation happened must not reopen it.
+	controller.showTrashFallback(requestId, {{"source", "trash", "Unavailable"}});
+	QVERIFY(!controller.m_trashFallbackDialog);
+}
+
+void TestOperationUi::trash_fallback_without_handler_returns_without_waiting()
+{
+	std::atomic<bool> completed{false};
+	std::atomic<bool> accepted{true};
+	OperationManager manager;
+	QSignalSpy requests(&manager, &OperationManager::trashFallbackRequested);
+	manager.m_job.start([&]
+						{
+		accepted.store(manager.confirmTrashFallback({{"source", "trash", "Unavailable"}}));
+		completed.store(true); });
+	QTRY_VERIFY_WITH_TIMEOUT(completed.load(), 5000);
+	QVERIFY(!accepted.load());
+	QCOMPARE(requests.size(), 0);
+}
+
+void TestOperationUi::trash_fallback_destruction_unblocks_without_gui_events()
+{
+	std::atomic<bool> completed{false};
+	std::atomic<bool> accepted{true};
+	QSemaphore requested;
+	auto manager = std::make_unique<OperationManager>();
+	manager->setTrashFallbackHandlerAvailable(true);
+	connect(manager.get(), &OperationManager::trashFallbackRequested, this, [&requested]
+			{ requested.release(); }, Qt::DirectConnection);
+	auto *workerManager = manager.get();
+	manager->m_job.start([workerManager, &completed, &accepted]
+						 {
+		accepted.store(workerManager->confirmTrashFallback({{"source", "trash", "Unavailable"}}));
+		completed.store(true); });
+	QVERIFY(requested.tryAcquire(1, 5000));
+	QElapsedTimer timer;
+	timer.start();
+	manager.reset(); // No event processing: the destructor must release and join directly.
+	QVERIFY(timer.elapsed() < 2000);
+	QVERIFY(completed.load());
+	QVERIFY(!accepted.load());
+}
+
+void TestOperationUi::trash_fallback_controller_destruction_closes_dialog()
+{
+	std::atomic<bool> completed{false};
+	std::atomic<bool> accepted{true};
+	QWidget window;
+	auto controller = std::make_unique<FileOperationController>(&window);
+	auto *manager = controller->manager();
+	manager->m_job.start([manager, &completed, &accepted]
+						 {
+		accepted.store(manager->confirmTrashFallback({{"source", "trash", "Unavailable"}}));
+		completed.store(true); });
+	QTRY_VERIFY_WITH_TIMEOUT(controller->m_trashFallbackDialog, 5000);
+	QPointer<QMessageBox> dialog = controller->m_trashFallbackDialog;
+	controller.reset();
+	QVERIFY(dialog.isNull());
+	QVERIFY(completed.load());
+	QVERIFY(!accepted.load());
+}
+
+QTEST_MAIN(TestOperationUi)
+#include "tst_operation_ui.moc"

@@ -1,0 +1,206 @@
+#pragma once
+
+#include "media/media_evidence.h"
+
+#include <QString>
+#include <QMetaType>
+#include <QVector>
+#include <QtGlobal>
+
+#include <optional>
+
+// Requests contain only the file facts execution and journal replay need.
+// Keeping them separate from MediaFile lets recovery work without a scan or UI.
+
+// MARK: - OpKind
+
+/// Supported operations. New Undo jobs require authorization from the caller;
+/// the application supplies it according to FeatureFlags::kUndo.
+/// Rename is Rebalance's same-filesystem relocation.
+enum class OperationKind : int
+{
+	Copy = 0,
+	Move = 1,
+	Delete = 2,
+	Rename = 3,
+	Undo = 4
+};
+
+// MARK: - ConflictPolicy
+
+/// Destination conflicts never permit replacement. KeepBoth chooses a free
+/// name; Skip leaves the source alone. An unexpected occupied destination with
+/// no KeepBoth policy fails the item, preserving its source.
+enum class ConflictPolicy : int
+{
+	KeepBoth = 0,
+	Skip = 1
+};
+
+// MARK: - On-disk names
+//
+// Persisted names have schema-defined meanings; unsupported schemas are rejected.
+inline QString operationKindName(OperationKind k)
+{
+	switch (k)
+	{
+	case OperationKind::Copy:
+		return QStringLiteral("copy");
+	case OperationKind::Move:
+		return QStringLiteral("move");
+	case OperationKind::Delete:
+		return QStringLiteral("delete");
+	case OperationKind::Rename:
+		return QStringLiteral("rename");
+	case OperationKind::Undo:
+		return QStringLiteral("undo");
+	}
+	return QStringLiteral("copy");
+}
+
+/// nullopt for a name this build doesn't know. Callers must treat an
+/// unknown kind as "do not touch": a wrong guess here is how a recovery
+/// pass turns a crash into data loss.
+inline std::optional<OperationKind> operationKindFromName(const QString &s)
+{
+	if (s == QStringLiteral("copy"))
+		return OperationKind::Copy;
+	if (s == QStringLiteral("move"))
+		return OperationKind::Move;
+	if (s == QStringLiteral("delete"))
+		return OperationKind::Delete;
+	if (s == QStringLiteral("rename"))
+		return OperationKind::Rename;
+	if (s == QStringLiteral("undo"))
+		return OperationKind::Undo;
+	return std::nullopt;
+}
+
+inline QString conflictPolicyName(ConflictPolicy policy)
+{
+	switch (policy)
+	{
+	case ConflictPolicy::KeepBoth:
+		return QStringLiteral("keepboth");
+	case ConflictPolicy::Skip:
+		return QStringLiteral("skip");
+	}
+	return {};
+}
+
+inline std::optional<ConflictPolicy> conflictPolicyFromName(const QString &name)
+{
+	if (name == QStringLiteral("keepboth"))
+		return ConflictPolicy::KeepBoth;
+	if (name == QStringLiteral("skip"))
+		return ConflictPolicy::Skip;
+	return std::nullopt;
+}
+
+// MARK: - OpItem
+
+/// One selected file, persisted in the journal so a job can resume without
+/// a rescan. Size, time and Avid IDs are scan claims, not fresh disk evidence.
+/// The runner checks filesystem identity and supplied size/time before acting;
+/// applicable MXF/legacy IDs also receive a header cross-check through the open handle.
+struct OperationItem
+{
+	QString src;			 ///< Absolute source path; the item's identity key.
+	QString name;			 ///< Destination leaf name (usually the source's).
+	QString mediaFolderName; ///< Source folder name, reused when preserving MXF structure.
+	/// OMF-era: the scanner's verdict (MediaFile::omfEra). Preserve mode
+	/// sends a legacy file to <dest>/OMFI MediaFiles/ whatever `mediaFolderName`
+	/// says; journaled so a resumed run lands it in the same place.
+	bool omfEra = false;
+	qint64 bytes = 0;
+	qint64 modifiedMs = -1;	  ///< Scanner timestamp; -1 when not supplied.
+	bool maintenance = false; ///< Rebalance database relocation, excluded from media totals.
+	QString policy;			  ///< Conflict policy by name; empty = none chosen.
+
+	// Scan claims about the media inside the file (empty when unknown).
+	QString fileMobId;		  ///< FileMobId of this essence file.
+	QString masterMobId;	  ///< The scan's one selected MasterMobId, empty when unresolved.
+	QString clipName;		  ///< The human name the editor knows the clip by.
+	QString scanPath;
+	QString scanVolumeIdentifier;					///< VolumeIdentity identifier, distinct from native expectedVolumeId.
+	std::optional<OperationHeaderIdentity> headerIdentity; ///< Captured media checks; absent for non-scanned inputs.
+	/// PMR/MDB file identity to verify when the scan deliberately skipped its header.
+	/// Kept separate from header-established IDs and database-only master associations.
+	QString databaseFileMobIdToVerify;
+
+	// Inverse operations must target the object recorded by the original job,
+	// not whichever file happens to occupy its path while building the new plan.
+	QString expectedFileId;
+	QString expectedVolumeId;
+	qint64 expectedModified = 0;
+	QString undoAction;
+	int undoEntryId = -1;
+	QString trashReceipt;
+
+	QString renameDst; ///< Full destination for Rebalance relocation or Undo restoration.
+	QString groupKey;  ///< Relatives cancel boundary: cancel only
+					   ///< lands between groups, never inside one.
+};
+
+// MARK: - OpRequest
+
+/// Complete execution input, assembled from UI choices, a rebalance plan,
+/// or a saved journal.
+struct OperationRequest
+{
+	OperationKind kind = OperationKind::Copy;
+	QString destRoot;			 ///< Destination root used by Copy/Move.
+	bool preserve = false;		 ///< Recreate the MXF folder path or flat OMFI root under destRoot.
+	bool copyThenRemove = false; ///< Whole Move uses copy-then-remove, including mixed volumes.
+	bool undoEnabled = false;	 ///< Runtime permission to start a NEW Undo; not persisted.
+	QVector<OperationItem> items;
+
+	QString resumeJournalPath;	 ///< Continue this journal; never retire it on dispatch.
+	QString restoreJournalPath;	 ///< Restore retained originals only, including dismissed jobs.
+	QString diagnosticTrashRoot; ///< Explicit disposable-test root; production leaves empty.
+	QString undoJournalPath;	 ///< Forward job requested by a new Undo command.
+	QString undoOf;				 ///< Persisted forward-job link for an executing inverse operation.
+};
+
+// Files confirmed unchanged after the native bin refused them. The worker
+// revalidates each original again after the GUI's answer, before relocation.
+// MARK: - Trash fallback requests
+
+struct OperationTrashFallbackItem
+{
+	QString source;
+	QString destination;
+	QString reason;
+};
+
+// Explicit outcomes keep a retained source visible in the media table.
+// MARK: - Operation results
+
+struct OperationResult
+{
+	enum class State
+	{
+		Completed,
+		NoEffect,
+		SourceRetained,
+		OriginalRestored,
+		Skipped,
+		Cancelled,
+		Failed,
+		NeedsAttention
+	};
+	State state = State::Failed;
+	QString name;
+	QString source;
+	QString destination;
+	QString message;
+	bool sourceRemoved = false;
+	QString restoredOriginalPath; ///< Confirmed return by Undo or original restoration; empty otherwise.
+};
+Q_DECLARE_METATYPE(OperationResult)
+
+// MARK: - Row conversion
+
+struct MediaFile;
+// Preserve the scan receipt and the Avid identity claims to verify on the opened file.
+OperationItem operationItemFromMediaFile(const MediaFile &file);

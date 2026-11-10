@@ -1,134 +1,240 @@
 ### MediaMuster test suite ###
 
-### Same exact Qt release as the app; the number lives in the top-level CMakeLists.txt ###
-find_package(Qt6 ${MEDIAMUSTER_QT_VERSION} EXACT REQUIRED COMPONENTS Test)
+# Keep Qt Test pinned to the application's Qt release.
+find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Test)
 
 ### Test target helper ###
-function(mediamuster_add_test name)
+function(mediamuster_add_test name label)
     add_executable(${name}
         ${name}.cpp
-        ${CMAKE_SOURCE_DIR}/src/logging.cpp
         ${ARGN}
     )
     target_link_libraries(${name} PRIVATE Qt6::Test Qt6::Core)
     target_include_directories(${name} PRIVATE ${CMAKE_SOURCE_DIR}/src)
-    add_test(NAME ${name} COMMAND ${name})
+    # Save results as well as printing them: Windows CI can lose QtTest stdout.
+    add_test(NAME ${name} COMMAND ${name} -o -,txt -o ${CMAKE_CURRENT_BINARY_DIR}/${name}.result.txt,txt)
+    set_tests_properties(${name} PROPERTIES LABELS "${label}")
 endfunction()
 
-### Tier 1 ###
+# Suites are registered in logical order. Labels allow focused CTest runs;
+# they do not create dependencies between suites.
 
-# Header-only namespaces.
-mediamuster_add_test(tst_mobid)
-mediamuster_add_test(tst_applog ${CMAKE_SOURCE_DIR}/src/applog.cpp)
-mediamuster_add_test(tst_pathkey)
-mediamuster_add_test(tst_pmrkey)
-mediamuster_add_test(tst_format)
+### Core ###
 
-# AvidLayout: the shared folder-name and essence-name facts the scanner,
-# rebalancer, and copy-path builder all key on (header-only).
-mediamuster_add_test(tst_avidlayout)
-
-# MediaCsv: the export's header/field alignment and the display columns
-# it shares with the table. Lifted out of mainwindow.cpp so it is
-# reachable from a test at all.
-mediamuster_add_test(tst_mediacsv ${CMAKE_SOURCE_DIR}/src/mediacsv.cpp)
-
-# rebalancer.cpp pulls in parseFolderName (and now OpJournal, used by
-# doExecute — the symbols have to resolve even though parse tests don't
-# run it).
-mediamuster_add_test(tst_rebalancer_parse
-    ${CMAKE_SOURCE_DIR}/src/rebalancer.cpp
-    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
+# Diagnostic messages and crash-report collection.
+mediamuster_add_test(tst_diagnostics core
+    ${CMAKE_SOURCE_DIR}/src/support/diagnostics.cpp
 )
 
-# Golden tests for Rebalancer::computePlan over synthetic Avid
-# folder trees. Creates a few thousand empty files in QTemporaryDir
-# for the cap-related tests — runs in well under a second locally.
-mediamuster_add_test(tst_rebalancer_plan
-    ${CMAKE_SOURCE_DIR}/src/rebalancer.cpp
-    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
+# Core value types and metadata selection.
+mediamuster_add_test(tst_mob_id_text core)
+mediamuster_add_test(tst_bella_mob_id core)
+target_link_libraries(tst_bella_mob_id PRIVATE mediamuster_bella)
+mediamuster_add_test(tst_bella_timing core)
+target_link_libraries(tst_bella_timing PRIVATE mediamuster_bella)
+mediamuster_add_test(tst_bella_media_labels core)
+target_link_libraries(tst_bella_media_labels PRIVATE mediamuster_bella)
+mediamuster_add_test(tst_bella_matching core)
+target_link_libraries(tst_bella_matching PRIVATE mediamuster_bella)
+mediamuster_add_test(tst_path_key core)
+mediamuster_add_test(tst_format_util core)
+
+# Shared folder names, essence-name rules and folder limits.
+mediamuster_add_test(tst_conventions core)
+
+### Media ###
+
+mediamuster_add_test(tst_bella_pmr media)
+target_link_libraries(tst_bella_pmr PRIVATE mediamuster_bella)
+
+mediamuster_add_test(tst_bella_mdb media)
+target_link_libraries(tst_bella_mdb PRIVATE mediamuster_bella)
+
+mediamuster_add_test(tst_bella_mxf media)
+target_link_libraries(tst_bella_mxf PRIVATE mediamuster_bella)
+
+mediamuster_add_test(tst_bella_omf media)
+target_link_libraries(tst_bella_omf PRIVATE mediamuster_bella)
+
+mediamuster_add_test(tst_bella_audio media)
+target_link_libraries(tst_bella_audio PRIVATE mediamuster_bella)
+
+# Discovery and physical-file record model.
+mediamuster_add_test(tst_bella_scanner media)
+target_link_libraries(tst_bella_scanner PRIVATE mediamuster_bella)
+
+# Bin object decoding and Whole Bin reference resolution.
+mediamuster_add_test(tst_avb_reader media)
+target_link_libraries(tst_avb_reader PRIVATE mediamuster_binreader)
+mediamuster_add_test(tst_avb_references media)
+target_link_libraries(tst_avb_references PRIVATE mediamuster_binreader)
+
+# Shared compression names: recorded labels and qualified Avid operating points.
+mediamuster_add_test(tst_compression_names media)
+target_link_libraries(tst_compression_names PRIVATE mediamuster_bella)
+
+# OmfUid: literal OMF-era 8/12-byte -> 32-byte identity wrapping controls.
+mediamuster_add_test(tst_omf_uid media)
+
+# Bin loading: both byte orders, malformed boundaries and file identities
+# using authored disposable documents.
+mediamuster_add_test(tst_avb_bin_loader media
+    ${CMAKE_SOURCE_DIR}/src/avb/avb_bin_loader.cpp
+    ${CMAKE_SOURCE_DIR}/src/support/diagnostics.cpp
+)
+target_link_libraries(tst_avb_bin_loader PRIVATE mediamuster_binreader)
+
+# Precompute names mapped to effect names and categories in the compiled catalogue.
+mediamuster_add_test(tst_effect_catalogue media)
+target_link_libraries(tst_effect_catalogue PRIVATE mediamuster_bella)
+
+### Operations ###
+
+# The operation verification boundary retains receipt policy and physical checks.
+mediamuster_add_test(tst_file_check operations
+    ${CMAKE_SOURCE_DIR}/src/operations/file_check.cpp
+    ${CMAKE_SOURCE_DIR}/src/operations/operation_file.cpp
+    ${CMAKE_SOURCE_DIR}/src/storage/file_sync.cpp
+    ${CMAKE_SOURCE_DIR}/src/storage/volume_identity.cpp
+)
+target_link_libraries(tst_file_check PRIVATE mediamuster_bella)
+
+# Identity-bound cleanup of operation-owned partial files and empty folders.
+mediamuster_add_test(tst_operation_cleanup operations
+    ${CMAKE_SOURCE_DIR}/src/operations/operation_file.cpp
+    ${CMAKE_SOURCE_DIR}/src/storage/file_sync.cpp
 )
 
-# mediamanager.cpp uses xxhash for the verify pass, and now OpJournal
-# for the write-ahead log in doMove/doDelete.
-mediamuster_add_test(tst_mediamanager_paths
-    ${CMAKE_SOURCE_DIR}/src/mediamanager.cpp
-    ${CMAKE_SOURCE_DIR}/src/third_party/xxhash.c
-    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
+# Volume identity and native durability primitives over real temporary files.
+mediamuster_add_test(tst_volume_identity operations
+    ${CMAKE_SOURCE_DIR}/src/storage/volume_identity.cpp
+    ${CMAKE_SOURCE_DIR}/src/storage/file_sync.cpp
 )
 
-# OpJournal: write-ahead log writer + recovery reader fully isolated.
-mediamuster_add_test(tst_opjournal
-    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
+# Journal state/claim contracts and serialized operation/policy names, without a runner.
+mediamuster_add_test(tst_operation_journal operations
+    ${CMAKE_SOURCE_DIR}/src/operations/operation_journal.cpp
+    ${CMAKE_SOURCE_DIR}/src/operations/operation_file.cpp
+    ${CMAKE_SOURCE_DIR}/src/storage/file_sync.cpp
+    ${CMAKE_SOURCE_DIR}/src/storage/volume_identity.cpp
 )
 
-# OpRecovery: the crash-rollback engine. Drives hand-written journals
-# over real files in a QTemporaryDir and checks what gets put back.
-mediamuster_add_test(tst_oprecovery
-    ${CMAKE_SOURCE_DIR}/src/opjournal.cpp
-    ${CMAKE_SOURCE_DIR}/src/oprecovery.cpp
+# Rebalance folder naming and redistribution plans over synthetic Avid folders.
+# Execution contracts live in tst_file_operations, keeping this planner-only.
+mediamuster_add_test(tst_rebalance_planner operations
+    ${CMAKE_SOURCE_DIR}/src/operations/operation_request.cpp
+    ${CMAKE_SOURCE_DIR}/src/operations/rebalance_planner.cpp
 )
 
-# Collect macOS crash reports into the logs folder.
-mediamuster_add_test(tst_crashcollector
-    ${CMAKE_SOURCE_DIR}/src/crashcollector.cpp
+# File-operation engine, coordinator and Rebalance adapter contracts, including
+# failures, retries, cancellation, recovery and Undo.
+mediamuster_add_test(tst_file_operations operations
+    ${CMAKE_SOURCE_DIR}/src/media/bella_media_mapper.cpp
+    ${CMAKE_SOURCE_DIR}/src/operations/rebalancer.cpp
+    ${CMAKE_SOURCE_DIR}/src/operations/rebalance_planner.cpp
+    ${CMAKE_SOURCE_DIR}/src/operations/operation_request.cpp
+    ${CMAKE_SOURCE_DIR}/src/operations/operation_manager.cpp
+    ${CMAKE_SOURCE_DIR}/src/operations/operation_runner.cpp
+    ${CMAKE_SOURCE_DIR}/src/operations/file_check.cpp
+    ${CMAKE_SOURCE_DIR}/src/operations/operation_plan.cpp
+    ${CMAKE_SOURCE_DIR}/src/operations/operation_copier.cpp
+    ${CMAKE_SOURCE_DIR}/src/operations/operation_journal.cpp
+    ${CMAKE_SOURCE_DIR}/src/operations/operation_recovery.cpp
+    ${CMAKE_SOURCE_DIR}/src/operations/operation_file.cpp
+    ${CMAKE_SOURCE_DIR}/src/storage/volume_identity.cpp
+    ${CMAKE_SOURCE_DIR}/src/storage/file_sync.cpp
+    ${CMAKE_SOURCE_DIR}/src/support/diagnostics.cpp
+)
+target_link_libraries(tst_file_operations PRIVATE mediamuster_bella)
+target_sources(tst_file_operations PRIVATE ${CMAKE_SOURCE_DIR}/src/operations/operation_trash.cpp)
+if(APPLE)
+    target_sources(tst_file_operations PRIVATE ${CMAKE_SOURCE_DIR}/src/operations/operation_trash_mac.mm)
+endif()
+mediamuster_link_native_operations(tst_file_operations)
+
+### UI and export ###
+
+# MediaCsv: the export's header/field alignment and shared display columns.
+mediamuster_add_test(tst_media_csv ui ${CMAKE_SOURCE_DIR}/src/media/media_csv.cpp)
+target_link_libraries(tst_media_csv PRIVATE mediamuster_bella)
+
+# Prepared table rows, QtCore model notifications and transfer updates.
+mediamuster_add_test(tst_media_table_model ui
+    ${CMAKE_SOURCE_DIR}/src/media/bella_media_mapper.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/media_table_model.cpp
+    ${CMAKE_SOURCE_DIR}/src/media/media_csv.cpp
 )
 
-# AvbParser: Bento-bin MOB extraction, driven by hand-crafted byte buffers.
-mediamuster_add_test(tst_avbparser
-    ${CMAKE_SOURCE_DIR}/src/avbparser.cpp
+# MediaFilterProxy: text normalization, classifications and row-level AVB algebra.
+mediamuster_add_test(tst_media_filter_proxy ui
+    ${CMAKE_SOURCE_DIR}/src/ui/media_filter_proxy.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/media_table_model.cpp
 )
 
-# MxfParser: codec-UL lookup table + DNxHD bitrate/fps + family fallback,
-# plus clip-name/rate/audio pinning against real Avid header slices in
-# fixtures/avid_headers.
-mediamuster_add_test(tst_mxfparser
-    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
+# Precompute picker: choose branches and a volume, then use the table filter.
+mediamuster_add_test(tst_precompute_filter_dialog ui
+    ${CMAKE_SOURCE_DIR}/src/ui/dialogs/precompute_filter_dialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/media_filter_proxy.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/media_table_model.cpp
 )
-target_compile_definitions(tst_mxfparser PRIVATE
-    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
-)
+target_link_libraries(tst_precompute_filter_dialog PRIVATE Qt6::Widgets)
 
-# PmrParser: fixed-layout msmFMID.pmr, driven by hand-crafted byte buffers.
-mediamuster_add_test(tst_pmrparser
-    ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
+# Bin picker: asynchronous loading/status and ordered expressions through the
+# actual proxy, including empty operands and removed pending reads.
+mediamuster_add_test(tst_avb_filter_dialog ui
+    ${CMAKE_SOURCE_DIR}/src/ui/dialogs/avb_filter_dialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/avb/avb_bin_loader.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/media_filter_proxy.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/media_table_model.cpp
+    ${CMAKE_SOURCE_DIR}/src/support/diagnostics.cpp
 )
+target_link_libraries(tst_avb_filter_dialog PRIVATE Qt6::Widgets Qt6::Concurrent mediamuster_binreader)
+set_tests_properties(tst_avb_filter_dialog PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
-# MdbParser: the msmMMOB.mdb record framing, driven by buffers built to the
-# real on-disk shape, plus the MacRoman-twin guard against a real accented-bin
-# MDB. Links MxfParser too: the join test resolves real MXF headers against
-# the MDB captured from their own folder (fixtures/mdb_join), using each file's
-# MaterialPackage name as ground truth.
-mediamuster_add_test(tst_mdbparser
-    ${CMAKE_SOURCE_DIR}/src/mdbparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
-)
-target_compile_definitions(tst_mdbparser PRIVATE
-    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
-)
+# Shared app sources used by the operation and scan UI tests.
+set(_operation_ui_sources ${SOURCES})
+list(FILTER _operation_ui_sources EXCLUDE REGEX "(^|/)main\\.cpp$")
+list(FILTER _operation_ui_sources EXCLUDE REGEX "\\.(icns|rc)$")
+list(TRANSFORM _operation_ui_sources PREPEND "${CMAKE_SOURCE_DIR}/")
+mediamuster_add_test(tst_operation_ui ui ${_operation_ui_sources} ${_bella_app_sources})
+target_include_directories(tst_operation_ui PRIVATE ${CMAKE_BINARY_DIR})
+target_link_libraries(tst_operation_ui PRIVATE Qt6::Widgets Qt6::Gui Qt6::Concurrent mediamuster_bella mediamuster_binreader)
+mediamuster_link_native_operations(tst_operation_ui)
+if(APPLE)
+    set_source_files_properties(${CMAKE_SOURCE_DIR}/src/storage/revealinfinder.cpp PROPERTIES LANGUAGE OBJCXX)
+    target_link_libraries(tst_operation_ui PRIVATE "-framework AppKit")
+elseif(WIN32)
+    target_link_libraries(tst_operation_ui PRIVATE secur32)
+endif()
+set_tests_properties(tst_operation_ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
-### Tier 2 — fixture-backed ###
+mediamuster_add_test(tst_bella_preview_ui ui ${_operation_ui_sources} ${_bella_app_sources})
+target_include_directories(tst_bella_preview_ui PRIVATE ${CMAKE_BINARY_DIR})
+if(MEDIAMUSTER_BELLA_PREVIEW)
+    target_compile_definitions(tst_bella_preview_ui PRIVATE MEDIAMUSTER_BELLA_PREVIEW)
+endif()
+target_link_libraries(tst_bella_preview_ui PRIVATE Qt6::Widgets Qt6::Gui Qt6::Concurrent mediamuster_bella mediamuster_binreader)
+mediamuster_link_native_operations(tst_bella_preview_ui)
+if(APPLE)
+    target_link_libraries(tst_bella_preview_ui PRIVATE "-framework AppKit")
+elseif(WIN32)
+    target_link_libraries(tst_bella_preview_ui PRIVATE secur32)
+endif()
+set_tests_properties(tst_bella_preview_ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
-mediamuster_add_test(tst_scanner
-    ${CMAKE_SOURCE_DIR}/src/mediascanner.cpp
-    ${CMAKE_SOURCE_DIR}/src/mxfparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/pmrparser.cpp
-    ${CMAKE_SOURCE_DIR}/src/mdbparser.cpp
+mediamuster_add_test(tst_bella_presentation ui
+    ${CMAKE_SOURCE_DIR}/src/media/bella_media_mapper.cpp
+    ${CMAKE_SOURCE_DIR}/src/media/media_csv.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/media_filter_proxy.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/media_table_model.cpp
 )
-target_link_libraries(tst_scanner PRIVATE Qt6::Concurrent)
-target_compile_definitions(tst_scanner PRIVATE
-    FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures"
-)
+target_link_libraries(tst_bella_presentation PRIVATE mediamuster_bella)
 
-### Tier 3 — Qt model behaviour ###
-
-# The model is QtCore only (QAbstractTableModel); no widgets, no icons.
-mediamuster_add_test(tst_mediatablemodel
-    ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
-)
-
-# MediaFilterProxy: search across Unicode normalisation forms (NFC vs NFD).
-mediamuster_add_test(tst_mediafilterproxy
-    ${CMAKE_SOURCE_DIR}/src/mediafilterproxy.cpp
-    ${CMAKE_SOURCE_DIR}/src/mediatablemodel.cpp
-)
+# Model transfer receipts use the same native volume identity as operations.
+foreach(_model_test tst_media_table_model tst_media_filter_proxy tst_precompute_filter_dialog tst_avb_filter_dialog)
+    target_link_libraries(${_model_test} PRIVATE mediamuster_bella)
+    target_sources(${_model_test} PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/operations/operation_request.cpp
+        ${CMAKE_SOURCE_DIR}/src/storage/volume_identity.cpp
+        ${CMAKE_SOURCE_DIR}/src/storage/file_sync.cpp)
+endforeach()

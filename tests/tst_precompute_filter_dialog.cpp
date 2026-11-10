@@ -1,0 +1,251 @@
+#include "test_media_file.h"
+#include "ui/dialogs/precompute_filter_dialog.h"
+#include "ui/media_filter_proxy.h"
+#include "ui/media_table_model.h"
+
+#include <QApplication>
+#include <QComboBox>
+#include <QLabel>
+#include <QPushButton>
+#include <QSignalSpy>
+#include <QTest>
+#include <QTreeWidget>
+
+// MARK: - Test helpers
+
+namespace
+{
+	MediaFile render(const QString &effect, const QString &volume, const QString &name)
+	{
+		MediaFile row;
+		row.type = MediaFile::Type::Precompute;
+		row.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
+		row.effect = effect;
+		row.clipName = QString(effect).replace(QLatin1Char(' '), QLatin1Char('_'));
+		row.effectCategory = QStringLiteral("Blend");
+		row.volumeName = QStringLiteral("EDIT");
+		row.volumePath = volume;
+		row.fileName = name;
+		row.mediaFilePath = volume + QLatin1Char('/') + name;
+		return row;
+	}
+
+	QVector<MediaFile> rows()
+	{
+		QVector<MediaFile> files{
+			render(QStringLiteral("3D Warp"), QStringLiteral("/Volumes/EDIT"), QStringLiteral("warp1.mxf")),
+			render(QStringLiteral("3D Warp"), QStringLiteral("/Volumes/EDIT"), QStringLiteral("warp2.mxf")),
+			render(QStringLiteral("3D Warp"), QStringLiteral("/Volumes/EDIT2"), QStringLiteral("warp3.mxf")),
+			render(QStringLiteral("Dissolve"), QStringLiteral("/Volumes/EDIT2"), QStringLiteral("dissolve.mxf"))};
+		auto resize = render(QStringLiteral("Resize"), QStringLiteral("/Volumes/EDIT"), QStringLiteral("resize.mxf"));
+		resize.effectCategory = QStringLiteral("Image");
+		files.append(resize);
+		auto title = render(QStringLiteral("Title"), QStringLiteral("/Volumes/EDIT"), QStringLiteral("title.mxf"));
+		title.precomputeCategory = MediaFile::PrecomputeCategory::TitlesAndMatteKeys;
+		title.effectCategory = QStringLiteral("Title");
+		files.append(title);
+		title.effect = QStringLiteral("3D Warp"); // same inferred name must not change its proven subtype
+		title.clipName = QStringLiteral("3D_Warp");
+		title.fileName = QStringLiteral("renamed-title.mxf");
+		title.mediaFilePath = QStringLiteral("/Volumes/EDIT/renamed-title.mxf");
+		files.append(title);
+		auto unknown = render(QStringLiteral("Renamed"), QStringLiteral("/Volumes/EDIT"), QStringLiteral("unknown.mxf"));
+		unknown.precomputeCategory = MediaFile::PrecomputeCategory::Unknown;
+		unknown.effectCategory.clear();
+		files.append(unknown);
+		auto ordinary = render(QStringLiteral("Ordinary fake effect"), QStringLiteral("/Volumes/EDIT"), QStringLiteral("source.mxf"));
+		ordinary.type = MediaFile::Type::Media;
+		files.append(ordinary);
+		return TestMediaFile::seeded(files);
+	}
+
+	QTreeWidgetItem *choice(PrecomputeFilterDialog &dialog, const QStringList &path)
+	{
+		auto *tree = dialog.findChild<QTreeWidget *>(QStringLiteral("precomputeChoices"));
+		if (!tree || tree->topLevelItemCount() != 1)
+			return nullptr;
+		auto *item = tree->topLevelItem(0);
+		for (const auto &name : path)
+		{
+			QTreeWidgetItem *next = nullptr;
+			for (int i = 0; i < item->childCount(); ++i)
+				if (item->child(i)->text(0) == name)
+					next = item->child(i);
+			if (!next)
+				return nullptr;
+			item = next;
+		}
+		return item;
+	}
+
+	QString matchingText(PrecomputeFilterDialog &dialog)
+	{
+		return dialog.findChild<QLabel *>(QStringLiteral("precomputeMatchingCount"))->text();
+	}
+
+	QStringList matchingFiles(const QVector<MediaFile> &files, const PrecomputeFilter &filter, const QString &volume = {})
+	{
+		MediaTableModel model;
+		model.setMediaFiles(TestMediaFile::seeded(files));
+		MediaFilterProxy proxy;
+		proxy.setSourceModel(&model);
+		proxy.setPrecomputesEnabled(true);
+		proxy.setPrecomputeTreeFilter(filter);
+		proxy.setPrecomputeVolumeFilter(volume);
+		QStringList names;
+		for (int i = 0; i < proxy.rowCount(); ++i)
+			names.append(model.fileAt(proxy.mapToSource(proxy.index(i, 0)).row()).fileName);
+		names.sort();
+		return names;
+	}
+}
+
+// MARK: - Test fixture
+
+class TestPrecomputeFilterDialog : public QObject
+{
+	Q_OBJECT
+private slots:
+	void initial_all_and_empty_are_distinct();
+	void branches_combine_and_reopen_without_crossing_subtypes();
+	void collapsed_branch_selects_all_descendants();
+	void volume_changes_preserve_zero_match_choices();
+	void unknown_effect_and_unknown_subtype_remain_distinct();
+	void apply_cancel_and_keyboard_actions();
+};
+
+// MARK: - Test cases
+
+void TestPrecomputeFilterDialog::initial_all_and_empty_are_distinct()
+{
+	PrecomputeFilterDialog dialog(rows(), {}, {});
+	auto *root = choice(dialog, {});
+	QVERIFY(root);
+	QCOMPARE(root->childCount(), 3);
+	QCOMPARE(root->checkState(0), Qt::Checked);
+	QCOMPARE(matchingText(dialog), QStringLiteral("8 matching files"));
+	QCOMPARE(matchingFiles(rows(), dialog.precomputeFilter()).size(), 8);
+	root->setCheckState(0, Qt::Unchecked);
+	QVERIFY(dialog.precomputeFilter().active);
+	QVERIFY(dialog.precomputeFilter().paths.isEmpty());
+	QCOMPARE(matchingText(dialog), QStringLiteral("0 matching files"));
+	QVERIFY(matchingFiles(rows(), dialog.precomputeFilter()).isEmpty());
+	QVERIFY(dialog.findChild<QPushButton *>(QStringLiteral("applyPrecomputeFilter"))->isEnabled());
+	root->setCheckState(0, Qt::Checked);
+	QCOMPARE(dialog.precomputeFilter().paths.size(), 1);
+	QCOMPARE(matchingFiles(rows(), dialog.precomputeFilter()).size(), 8);
+}
+
+void TestPrecomputeFilterDialog::branches_combine_and_reopen_without_crossing_subtypes()
+{
+	PrecomputeFilterDialog dialog(rows(), {true, {}}, {});
+	auto *warp = choice(dialog, {QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3D Warp")});
+	auto *titles = choice(dialog, {QStringLiteral("Titles and Matte Keys")});
+	QVERIFY(warp && titles);
+	warp->setCheckState(0, Qt::Checked);
+	QCOMPARE(choice(dialog, {QStringLiteral("Rendered Effects"), QStringLiteral("Blend")})->checkState(0), Qt::PartiallyChecked);
+	QCOMPARE(choice(dialog, {QStringLiteral("Rendered Effects")})->checkState(0), Qt::PartiallyChecked);
+	QCOMPARE(choice(dialog, {})->checkState(0), Qt::PartiallyChecked);
+	QCOMPARE(matchingFiles(rows(), dialog.precomputeFilter()).size(), 3);
+	titles->setCheckState(0, Qt::Checked);
+	const QStringList expected{QStringLiteral("renamed-title.mxf"), QStringLiteral("title.mxf"),
+							   QStringLiteral("warp1.mxf"), QStringLiteral("warp2.mxf"), QStringLiteral("warp3.mxf")};
+	QCOMPARE(matchingFiles(rows(), dialog.precomputeFilter()), expected);
+	PrecomputeFilterDialog reopened(rows(), dialog.precomputeFilter(), {});
+	QCOMPARE(matchingFiles(rows(), reopened.precomputeFilter()), expected);
+	QCOMPARE(choice(reopened, {QStringLiteral("Titles and Matte Keys")})->checkState(0), Qt::Checked);
+	QCOMPARE(choice(reopened, {QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("Dissolve")})->checkState(0), Qt::Unchecked);
+}
+
+void TestPrecomputeFilterDialog::collapsed_branch_selects_all_descendants()
+{
+	PrecomputeFilterDialog dialog(rows(), {true, {}}, {});
+	auto *resize = choice(dialog, {QStringLiteral("Rendered Effects"), QStringLiteral("Image"), QStringLiteral("Resize")});
+	auto *blend = choice(dialog, {QStringLiteral("Rendered Effects"), QStringLiteral("Blend")});
+	auto *warp = choice(dialog, {QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3D Warp")});
+	auto *dissolve = choice(dialog, {QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("Dissolve")});
+	QVERIFY(resize && blend && warp && dissolve);
+	resize->setCheckState(0, Qt::Checked);
+	blend->setExpanded(false);
+	QCOMPARE(matchingText(dialog), QStringLiteral("1 matching file"));
+	blend->setCheckState(0, Qt::Checked);
+	QCOMPARE(warp->checkState(0), Qt::Checked);
+	QCOMPARE(dissolve->checkState(0), Qt::Checked);
+	QCOMPARE(resize->checkState(0), Qt::Checked);
+	QCOMPARE(matchingText(dialog), QStringLiteral("5 matching files"));
+	QVERIFY(!blend->isExpanded());
+	QCOMPARE(matchingFiles(rows(), dialog.precomputeFilter()).size(), 5);
+	blend->setCheckState(0, Qt::Unchecked);
+	QCOMPARE(warp->checkState(0), Qt::Unchecked);
+	QCOMPARE(dissolve->checkState(0), Qt::Unchecked);
+	QCOMPARE(resize->checkState(0), Qt::Checked);
+	QCOMPARE(matchingText(dialog), QStringLiteral("1 matching file"));
+}
+
+void TestPrecomputeFilterDialog::volume_changes_preserve_zero_match_choices()
+{
+	PrecomputeFilterDialog dialog(rows(), {true, {}}, {});
+	auto *volumes = dialog.findChild<QComboBox *>(QStringLiteral("precomputeVolume"));
+	auto *dissolve = choice(dialog, {QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("Dissolve")});
+	QVERIFY(volumes && dissolve);
+	QCOMPARE(volumes->count(), 3);
+	QVERIFY(volumes->itemText(1) != volumes->itemText(2));
+	dissolve->setCheckState(0, Qt::Checked);
+	volumes->setCurrentIndex(volumes->findData(QStringLiteral("/Volumes/EDIT")));
+	QCOMPARE(dissolve->checkState(0), Qt::Checked);
+	QCOMPARE(matchingText(dialog), QStringLiteral("0 matching files"));
+	QVERIFY(matchingFiles(rows(), dialog.precomputeFilter(), dialog.selectedVolume()).isEmpty());
+	volumes->setCurrentIndex(volumes->findData(QStringLiteral("/Volumes/EDIT2")));
+	QCOMPARE(matchingText(dialog), QStringLiteral("1 matching file"));
+	QCOMPARE(matchingFiles(rows(), dialog.precomputeFilter(), dialog.selectedVolume()), QStringList{QStringLiteral("dissolve.mxf")});
+	PrecomputeFilterDialog disconnected(rows(), dialog.precomputeFilter(), QStringLiteral("/Volumes/Disconnected"));
+	QCOMPARE(disconnected.selectedVolume(), QStringLiteral("/Volumes/Disconnected"));
+	QCOMPARE(matchingText(disconnected), QStringLiteral("0 matching files"));
+}
+
+void TestPrecomputeFilterDialog::unknown_effect_and_unknown_subtype_remain_distinct()
+{
+	auto files = rows();
+	auto unknownEffect = render({}, QStringLiteral("/Volumes/EDIT"), QStringLiteral("renamed-render.mxf"));
+	unknownEffect.effectCategory.clear();
+	files.append(unknownEffect);
+	PrecomputeFilterDialog dialog(files, {true, {}}, {});
+	auto *renderUnknown = choice(dialog, {QStringLiteral("Rendered Effects"), QStringLiteral("unknown"), QStringLiteral("unknown")});
+	auto *subtypeUnknown = choice(dialog, {QStringLiteral("unknown")});
+	QVERIFY(renderUnknown && subtypeUnknown);
+	renderUnknown->setCheckState(0, Qt::Checked);
+	QCOMPARE(subtypeUnknown->checkState(0), Qt::Unchecked);
+	QCOMPARE(matchingFiles(files, dialog.precomputeFilter()), QStringList{QStringLiteral("renamed-render.mxf")});
+	subtypeUnknown->setCheckState(0, Qt::Checked);
+	QCOMPARE(matchingFiles(files, dialog.precomputeFilter()).size(), 2);
+}
+
+void TestPrecomputeFilterDialog::apply_cancel_and_keyboard_actions()
+{
+	PrecomputeFilter initial{true, {{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3D Warp")}}};
+	PrecomputeFilterDialog dialog(rows(), initial, {});
+	QSignalSpy accepted(&dialog, &QDialog::accepted);
+	QSignalSpy rejected(&dialog, &QDialog::rejected);
+	auto *tree = dialog.findChild<QTreeWidget *>(QStringLiteral("precomputeChoices"));
+	auto *warp = choice(dialog, {QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3D Warp")});
+	dialog.show();
+	tree->setCurrentItem(warp);
+	tree->setFocus();
+	QTest::keyClick(tree, Qt::Key_Space);
+	QCOMPARE(warp->checkState(0), Qt::Unchecked);
+	QTest::keyClick(tree, Qt::Key_Space);
+	QCOMPARE(warp->checkState(0), Qt::Checked);
+	QTest::keyClick(&dialog, Qt::Key_Escape);
+	QCOMPARE(rejected.size(), 1);
+	QCOMPARE(accepted.size(), 0);
+	QCOMPARE(initial.paths.size(), 1); // the caller's applied filter stays unchanged
+
+	PrecomputeFilterDialog apply(rows(), initial, {});
+	apply.show();
+	QTest::keyClick(&apply, Qt::Key_Return);
+	QCOMPARE(apply.result(), int(QDialog::Accepted));
+	QCOMPARE(matchingFiles(rows(), apply.precomputeFilter()).size(), 3);
+}
+
+QTEST_MAIN(TestPrecomputeFilterDialog)
+#include "tst_precompute_filter_dialog.moc"

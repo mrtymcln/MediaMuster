@@ -1,0 +1,34 @@
+#pragma once
+
+#include "operation_request.h"
+#include <functional>
+
+// Shared advisory decisions for previews and execution. These results do not
+// reserve paths or authorize mutations; the runner rechecks live storage.
+// MARK: - Destination planning
+
+namespace OperationPlan
+{
+	QString destinationPath(const QString &fileName, const QString &mediaFolderName, const QString &destinationRoot,
+							bool preserveAvidStructure, bool omfEra = false);
+	std::optional<QString> findKeepBothPath(const QString &path);
+	bool sameVolumeForRename(const QString &source, const QString &destination);
+	bool alreadyAtDestination(const QString &source, const QString &destination);
+
+	// MARK: - Copy and move assessment
+
+	struct CopyMoveAssessment
+	{
+		bool copyThenRemove = false;
+		qint64 requiredCopyBytes = 0;
+	};
+	using CanRelocate = std::function<bool(const QString &, const QString &)>;
+	using SameFile = std::function<bool(const QString &, const QString &)>;
+	// When any required Move item needs copying, every required item is copied
+	// before any original is removed. Explicit skips and identity-confirmed
+	// files already at their destination contribute no extra bytes.
+	// The default probe is read-only. Execution supplies fresh capability evidence.
+	CopyMoveAssessment assessCopyMove(const OperationRequest &request,
+									  const CanRelocate &canRelocate = sameVolumeForRename, bool forceCopy = false,
+									  const SameFile &sameFile = alreadyAtDestination);
+}

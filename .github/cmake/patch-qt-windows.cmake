@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 3.31)
+
+# Keep the two compatibility replacements for the handwritten Qt version.
+if(NOT "$ENV{QT_ROOT_DIR}" STREQUAL "")
+    set(_qt_root "$ENV{QT_ROOT_DIR}")
+else()
+    if("$ENV{RUNNER_TEMP}" STREQUAL "" OR "$ENV{QT_VERSION}" STREQUAL "")
+        message(FATAL_ERROR "Set QT_ROOT_DIR, or RUNNER_TEMP and QT_VERSION")
+    endif()
+    set(_qt_root "$ENV{RUNNER_TEMP}/Qt/Qt/$ENV{QT_VERSION}/msvc2019_64")
+endif()
+set(_header "${_qt_root}/include/QtCore/qcompilerdetection.h")
+file(READ "${_header}" _original)
+string(REPLACE "stdext::make_unchecked_array_iterator(x)" "(x)" _patched "${_original}")
+string(REPLACE "stdext::make_checked_array_iterator(x, size_t(N))" "(x)" _patched "${_patched}")
+if(NOT _patched STREQUAL _original)
+    file(WRITE "${_header}" "${_patched}")
+endif()

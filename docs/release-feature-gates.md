@@ -1,0 +1,145 @@
+# Release feature gates
+
+## v1 media scope
+
+The supported workflow families are Avid-managed MXF OP-Atom and OMF media.
+MXF OP-Atom is available by default; `FeatureFlags::kOmfScan` controls OMF
+availability. It is currently `true`, alongside the Precomputes, Undo and Debug
+menu flags; release builds can select each independently. Enabling OMF does not
+depend on the version of Media Composer that created the files. The OMF gate controls product availability;
+the enabled feature is held to the same v1 correctness and testing requirements
+as the public MXF workflow.
+
+Media Composer's OP1a workflow under `Avid MediaFiles/UME` is deferred. These
+trees are excluded from volume scans and explicitly added paths, including
+canonical aliases. This is a managed-folder scope rule, not a new guarantee that
+every `.mxf` encountered outside UME has been structurally certified as OP-Atom.
+Adding UME/OP1a later will require its own discovery, metadata and destination
+handling rather than treating UME as another MXF OP-Atom folder.
+
+Avid also stores managed proxy media under `Avid MediaFiles/Proxy`, including
+`.pmxf` files. That family is outside MediaMuster's current discovery/readers too.
+Accepting an `Avid MediaFiles` folder does not imply support for every Avid media
+family it can contain. The top-level Add Folder/drop restriction is MediaMuster's
+interface policy; it is not a claim that Avid forbids other selection or
+configured-storage workflows.
+
+For managed OMF audio, the observed AIFF-C filename suffix is `.aif`, and WAVE
+uses `.wav`. A missing `.aiff` alias is not a v1 requirement for that workflow.
+`.omf` is not restricted to video: the reader also handles supported OMF audio
+descriptors under that suffix. Other suffixes, including `.sd2`, are ignored by
+the filename allowlist just like unrelated documents. There is no SDII-specific
+parser or exclusion path. See [format scope and native filename evidence](reference/media-scope.md).
+Retained Media Composer code does not define MediaMuster's supported scope.
+
+## Managed media locations
+
+Automatic volume scans look for immediate `Avid MediaFiles/MXF` and enabled
+`OMFI MediaFiles` roots. The documented system-drive bases remain supported.
+Manually added copies may live anywhere, provided their internal Avid structure
+is intact. Add Folder and directory drops accept `Avid MediaFiles` with its MXF
+tree, `OMFI MediaFiles`, or an actual drive/share root containing those trees
+directly. Select the named media tree inside a copied project, rather than its
+arbitrary parent, `MXF` folder or media subfolder. Adding a location does not
+start a scan. Bella resolves admitted locations to the supported MXF/OMFI roots
+during discovery and visits overlapping canonical media folders once. Automatic
+known-base discovery and trusted operation rescans retain their own entry paths.
+A bare `MXF` tree or an arbitrary folder containing PMR/MDB files is not enough.
+
+`AvidMediaLayout` supplies folder and filename rules to scanning and Rebalance.
+MXF scans read `.mxf` files directly inside ordinary child folders of
+`Avid MediaFiles/MXF`. This includes numbered, workstation-numbered and named
+ingest folders. Hidden folders and `Creating` are excluded; nested folders are
+not scanned. OMF media
+lives in `OMFI MediaFiles`, either directly or one level down in a legacy shared
+workstation folder; only `.omf`, `.wav` and `.aif` files enter that family.
+Names such as `Temp` and `Quarantine` do not exclude an ordinary MXF folder.
+`Avid MediaFiles/MXF/Quarantined Files` is a known location:
+its direct MXF contents are scanned, flagged **Quarantined**, and shown by the
+Quarantined filter tab. Subfolders are not scanned. Quarantined media remains
+excluded from Rebalance.
+OMF workstation folders use plain names, including `Temp` and `Quarantine`;
+hidden folders, `Creating` and `Quarantined Files` remain excluded there.
+Media file symlinks are excluded. Directory aliases must resolve to a supported
+managed location; an alias cannot change the resolved folder's quarantine status.
+Rebalance accepts only positive numbered or workstation-numbered MXF folders.
+It checks that source and destination directories resolve to the intended MXF
+root and folder number before dispatch. Other named MXF folders remain available
+for scanning and ordinary media operations.
+
+Avid's [MediaCentral Production Management best practices](https://resources.avid.com/SupportFiles/attach/MediaCentral_Production/MCPM_2023_7_0_Best_Practices_Guide.pdf#page=130)
+describe named ingest folders in a Media Indexer workflow. MediaMuster supports
+reading their accessible files and folder databases; it does not connect to the
+MediaCentral server or its catalogue. Its direct-child discovery rule does not
+claim to reproduce Media Indexer's storage configuration or recursive indexing.
+
+Rebalance uses a **5,000-file target**, matching Avid's documented
+[folder performance threshold](https://kb.avid.com/pkb/articles/en_US/Knowledge/Avid-MediaFiles-MXF-folder-size-limit).
+This is not a scan limit: folders containing more files are still read.
+
+The managed layout selects the family. There is no mandatory per-file
+Operational Pattern probe and no attempt to authenticate the authoring app.
+Media Composer and compatible third-party media are treated alike. PMR/MDB
+records are read before matching. Bella avoids opening a media header when
+eligible PMR metadata supplies an unambiguous exact filename/FileMobId match and
+a safely matched MDB record supplies a qualified own descriptor. Missing
+individual columns or an unavailable master alone does not trigger a read.
+Required headers can supply an ID for another match against the already-loaded
+MDBs. Changed sources cannot supply eligible facts; a detected physical change
+or unconfirmed file presence retains the row with a rescan requirement. Unopened headers
+have no header identity to verify; database-derived identities still receive
+live checks before an operation. These checks do not establish database freshness.
+See the [Bella source-priority and header-opening rules](projects/Bella/README.md).
+This is a managed-workflow scope rule, not a
+guarantee that a deliberately misplaced or renamed file is format-certified.
+
+OMF bin matching preserves legacy ID bytes. Preserve-structure transfers use
+`OMFI MediaFiles` for OMF alongside `Avid MediaFiles/MXF/<folder>` for MXF.
+Rebalance accepts MXF only, retains its stricter destination-name and mutation
+checks, and carries both file and master identities to the operation engine.
+
+## Build flags
+
+The normal macOS and Windows targets link Bella directly in CMake.
+`MEDIAMUSTER_BELLA_PREVIEW=ON` builds the separately named scan/export rehearsal
+with file operations disabled; it is independent of the feature flags below.
+Normal Bella builds retain file operations and their live identity checks.
+Bella's active MDB/OMF baseline is legacy OMF 1/Bento 1.0; OMF 2 and Bento 2
+are unsupported.
+
+[`src/featureflags.h`](../src/featureflags.h) contains the independent compile-time
+switches and their current values. Rebuild after changing a value.
+
+| Flag | Enabled behavior | Disabled behavior |
+| --- | --- | --- |
+| kOmfScan | Scans discover and parse managed OMF essence. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. |
+| kPrecomputeFilter | Adds precompute detail columns and CSV fields, the Precomputes tab, toolbar filter and Special > Filter Precomputes. | Hides precompute details and filtering; rendered media remains in ordinary scan results. |
+| kUndo | Makes file-operation Undo available in Edit, with its shortcut, for eligible recorded jobs. | Hides file-operation Undo, removes its shortcut and rejects new Undo requests. Normal text-editing Undo still works. |
+| kDebugMenu | Shows the session-only Fusion style toggle in the Debug menu. | Omits the Debug menu. |
+
+OMF, Precomputes and Undo have no Debug menu controls. Their availability is
+independent of whether the Debug menu is included. Fusion style starts off on
+each launch. The table and headers inherit normal Qt font styling; the Console
+keeps its monospaced font. Neither has a font feature flag or table-font control.
+Exact sequence filtering is deferred after V1; there is no dormant sequence flag
+or picker in the current build.
+
+Interrupted operations, including an Undo already started in another build,
+remain recoverable through Unfinished Business even when Undo is disabled.
+Metadata classification and parser implementations remain intact and tested.
+
+## Public builds
+
+Set the desired flags, commit the change with the release, and rebuild:
+
+```sh
+cmake --build build --config Release --parallel 4
+```
+
+These values are compiled into the app. No saved preference, CMake option,
+version number, Git tag, or CI setting changes them. They are also independent
+of the compiler's Debug/Release configuration. Set `kDebugMenu` to `false`
+to omit the developer menu; select each feature's availability separately.
+
+The operation UI tests check startup configuration against these constants and
+verify that the removed feature toggles are absent. Rebuild after changing flags.

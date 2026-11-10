@@ -1,0 +1,45 @@
+#pragma once
+
+#include <QLoggingCategory>
+#include <QDateTime>
+#include <QString>
+#include <QStringList>
+
+// MARK: - Diagnostics
+//
+// Writes Qt diagnostic messages and in-app console messages to
+// <AppData>/mediamuster.log.
+// Removes lines older than 30 days at startup.
+namespace Diagnostics
+{
+	/// Open the log, write session details and install the Qt handler.
+	/// Call once after setting application/organisation names; directory overrides the default path.
+	void install(const QString &directory = {}, const QDateTime &now = QDateTime::currentDateTime());
+
+	/// Absolute path to the current log file, for Help > Reveal Diagnostics.
+	QString logPath();
+
+	/// Also write a console message to the file, labelled with its module.
+	void appendConsoleLine(QtMsgType level, const QString &module, const QString &message,
+						   const QDateTime &now = QDateTime::currentDateTime());
+
+	/// Timestamp each physical line; warning/error lines also include available source locations.
+	QString formatMessage(QtMsgType type, const QMessageLogContext &context, const QString &message,
+						  const QDateTime &now = QDateTime::currentDateTime());
+
+	/// At startup, trim dated log lines and expire collected crash copies.
+	/// Discard past divider lines; install() writes the current startup block.
+	/// Returns a diagnostic on failure; keeps the original log if rewriting fails.
+	QString cleanUp(const QString &directory, const QDateTime &now);
+
+	/// macOS crash-report location. Empty on Windows, where collection is disabled.
+	QString systemCrashReportsDir();
+
+	/// Copy crash reports from the last 30 days beside the log.
+	/// Preserve the report's modification time; existing copies are left untouched.
+	QStringList collectCrashReports(const QString &reportsDir, const QString &logsDir,
+									const QDateTime &now = QDateTime::currentDateTime());
+} // namespace Diagnostics
+
+// Technical messages use the same category names as the Console where they overlap.
+Q_DECLARE_LOGGING_CATEGORY(lcApp)

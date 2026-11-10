@@ -1,0 +1,958 @@
+#include "scanner/pmr_parser.h"
+
+#include <QFile>
+#include <QTemporaryDir>
+#include <QTemporaryFile>
+#include <QtTest>
+#include <QtEndian>
+#include <array>
+#include <atomic>
+#include <optional>
+#include <utility>
+#include <vector>
+
+// MARK: - Test helpers
+
+namespace
+{
+	using Read = Bella::PmrReadResult;
+	using Check = Bella::PmrCheckResult;
+
+	struct Record
+	{
+		QByteArray filename{"take.mxf"};
+		QByteArray project{"Project"};
+		QByteArray fileId;
+		QByteArray masterId;
+		quint32 modification = 0x12345678;
+		bool nullFilename = false;
+		bool nullProject = false;
+		char firstMarker = '\0';
+		char secondMarker = '\0';
+	};
+
+	QByteArray expectedFileId(qint32 version)
+	{
+		return QByteArray::fromHex(version <= 7
+									   ? "060a2b340101010101010f001300000044332211d4c3b2a1060e2b347f7f2a80"
+									   : "000102030405060708090a0b0c0d0e0f443322116655887718191a1b1c1d1e1f");
+	}
+
+	QByteArray expectedMasterId(qint32 version)
+	{
+		return QByteArray::fromHex(version <= 7
+									   ? "060a2b340101010101010f0013000000887766550817f6e5060e2b347f7f2a80"
+									   : "202122232425262728292a2b2c2d2e2fd4c3b2a1f6e5081738393a3b3c3d3e3f");
+	}
+
+	QByteArray storedId(qint32 version, bool bigEndian, bool master)
+	{
+		// Explicit authored wire values, independent of Bella's normalization.
+		// Legacy IDs have two 32-bit words; modern IDs have 32/16/16-bit fields.
+		if (version <= 7)
+			return QByteArray::fromHex(master
+										   ? (bigEndian ? "55667788e5f61708" : "887766550817f6e5")
+										   : (bigEndian ? "11223344a1b2c3d4" : "44332211d4c3b2a1"));
+		if (master)
+			return bigEndian
+					   ? QByteArray::fromHex("202122232425262728292a2b2c2d2e2fa1b2c3d4e5f6170838393a3b3c3d3e3f")
+					   : expectedMasterId(version);
+		return bigEndian
+				   ? QByteArray::fromHex("000102030405060708090a0b0c0d0e0f112233445566778818191a1b1c1d1e1f")
+				   : expectedFileId(version);
+	}
+
+	template <typename T>
+	void appendNumber(QByteArray &bytes, T value, bool bigEndian)
+	{
+		std::array<char, sizeof(T)> encoded{};
+		if (bigEndian)
+			qToBigEndian<T>(value, encoded.data());
+		else
+			qToLittleEndian<T>(value, encoded.data());
+		bytes.append(encoded.data(), static_cast<qsizetype>(encoded.size()));
+	}
+
+	void appendText(QByteArray &bytes, const QByteArray &text, bool nullText, bool bigEndian)
+	{
+		if (nullText)
+		{
+			appendNumber<quint16>(bytes, 0xffff, bigEndian);
+			return;
+		}
+		if (text.size() >= 0xffff)
+			qFatal("Authored test text does not fit a non-null PMR length word");
+		appendNumber<quint16>(bytes, static_cast<quint16>(text.size()), bigEndian);
+		bytes.append(text);
+	}
+
+	QByteArray recordBytes(qint32 version, bool bigEndian, const Record &record)
+	{
+		QByteArray bytes = record.fileId.isEmpty() ? storedId(version, bigEndian, false) : record.fileId;
+		QByteArray filename = record.filename;
+		if (version == 16)
+		{
+			QByteArray framed;
+			framed.append(record.firstMarker);
+			framed.append(record.secondMarker);
+			framed.append(filename);
+			filename = std::move(framed);
+		}
+		appendText(bytes, filename, record.nullFilename, bigEndian);
+		if (version != 1)
+		{
+			appendText(bytes, record.project, record.nullProject, bigEndian);
+			bytes.append(record.masterId.isEmpty() ? storedId(version, bigEndian, true) : record.masterId);
+		}
+		appendNumber<quint32>(bytes, record.modification, bigEndian);
+		return bytes;
+	}
+
+	void appendSet(QByteArray &bytes, qint32 version, bool bigEndian, const QVector<Record> &records)
+	{
+		appendNumber<qint32>(bytes, version, bigEndian);
+		appendNumber<quint32>(bytes, static_cast<quint32>(records.size()), bigEndian);
+		for (const auto &record : records)
+			bytes.append(recordBytes(version, bigEndian, record));
+	}
+
+	QByteArray pmrBytes(qint32 version, bool bigEndian, const QVector<Record> &records)
+	{
+		QByteArray bytes;
+		appendNumber<quint32>(bytes, 0x7a9, bigEndian);
+		appendSet(bytes, version, bigEndian, records);
+		return bytes;
+	}
+
+	Bella::PmrReport parseBytes(const QByteArray &bytes)
+	{
+		QTemporaryFile file;
+		if (!file.open() || file.write(bytes) != static_cast<qint64>(bytes.size()) || !file.flush())
+			qFatal("Cannot prepare temporary PMR test file: %s", qPrintable(file.errorString()));
+		const QString path = file.fileName();
+		file.close();
+		const std::atomic_bool stopRequested{false};
+		return Bella::parsePmr(path, stopRequested);
+	} // The file is removed before the caller inspects the owned report.
+
+	Bella::PmrStamp stamp(std::optional<qint64> size, std::optional<qint64> modifiedMs)
+	{
+		return {size, modifiedMs ? QDateTime::fromMSecsSinceEpoch(*modifiedMs, Qt::UTC) : QDateTime{}};
+	}
+}
+
+// MARK: - Test fixture
+
+class TestBellaPmr final : public QObject
+{
+	Q_OBJECT
+private slots:
+	void supportedLayouts_data();
+	void supportedLayouts();
+	void signedBranchBaselineIsNotHistoricalEvidence();
+	void preferredUnicodeSet_data();
+	void preferredUnicodeSet();
+	void legacyTextAlwaysUsesMacRoman();
+	void unicodeMarkersAndStrictText();
+	void unicodeFilenamePreservesInitialFeff_data();
+	void unicodeFilenamePreservesInitialFeff();
+	void nulAndNullText();
+	void wholeSetFailureDiscardsAllItsEntries();
+	void safeBaseFramingCanReachPreferredSet();
+	void brokenBaseFramingCannotFindAnAppendedSet();
+	void everyBaseTruncationAndImpossibleCount();
+	void everyTruncatedKnownUnicodeSetFallsBack();
+	void preferredSetFallbackDiagnostics_data();
+	void preferredSetFallbackDiagnostics();
+	void unsupportedExtensionsAndTailsKeepReferenceOnlyWholeSets();
+	void diagnosticsSeparateFileContextFromReasons();
+	void emptySetsHaveIndependentReferenceCoverage();
+	void unsupportedBaseAndBadMagic();
+	void completeIdsAndIgnoredModificationWord();
+	void nativeTextCapacitiesAreNotWireLimits();
+	void stampComparisonUsesAvailableFacts();
+	void preCancelledAndIoFailures();
+	void reportsOwnTheirResults();
+};
+
+// MARK: - Layout and text selection
+
+void TestBellaPmr::supportedLayouts_data()
+{
+	QTest::addColumn<int>("version");
+	QTest::addColumn<bool>("bigEndian");
+	for (int version = 1; version <= 8; ++version)
+		for (const bool bigEndian : {false, true})
+			QTest::newRow(qPrintable(QStringLiteral("authored-v%1-%2")
+										 .arg(version)
+										 .arg(bigEndian ? QStringLiteral("BE") : QStringLiteral("LE"))))
+				<< version << bigEndian;
+}
+
+void TestBellaPmr::supportedLayouts()
+{
+	QFETCH(int, version);
+	QFETCH(bool, bigEndian);
+	const QByteArray bytes = pmrBytes(version, bigEndian, {Record{}});
+	const auto report = parseBytes(bytes);
+	QVERIFY(report.reading == Read::Completed);
+	QVERIFY(report.sizeDateCheck == Check::Verified);
+	QVERIFY(report.records.canUsePmrMetadata);
+	QVERIFY(report.records.referenceCoverageComplete);
+	QVERIFY(report.records.knownSet);
+	QCOMPARE(report.records.knownSet->version, qint32(version));
+	QCOMPARE(report.records.knownSet->entries.size(), qsizetype{1});
+	QVERIFY(report.source.capturedStamp.sizeBytes);
+	QCOMPARE(*report.source.capturedStamp.sizeBytes, qint64(bytes.size()));
+	QVERIFY(report.source.capturedStamp.modified.isValid());
+	const auto &entry = report.records.knownSet->entries.front();
+	QCOMPARE(entry.filename, QStringLiteral("take.mxf"));
+	QCOMPARE(entry.fileMobId.bytes().toByteArray(), expectedFileId(version));
+	if (version == 1)
+	{
+		QVERIFY(entry.project.isEmpty());
+		QVERIFY(!entry.masterMobId);
+	}
+	else
+	{
+		QCOMPARE(entry.project, QStringLiteral("Project"));
+		QVERIFY(entry.masterMobId);
+		QCOMPARE(entry.masterMobId->bytes().toByteArray(), expectedMasterId(version));
+	}
+}
+
+void TestBellaPmr::signedBranchBaselineIsNotHistoricalEvidence()
+{
+	// Preserve the inspected signed branch without describing these authored
+	// words as specimens of genuine historical PMR releases.
+	for (const qint32 version : {qint32{-1}, qint32{0}})
+		for (const bool bigEndian : {false, true})
+		{
+			const auto report = parseBytes(pmrBytes(version, bigEndian, {Record{}}));
+			QVERIFY(report.reading == Read::Completed);
+			QVERIFY(report.records.canUsePmrMetadata);
+			QVERIFY(report.records.referenceCoverageComplete);
+			QVERIFY(report.records.knownSet);
+			QCOMPARE(report.records.knownSet->version, version);
+			QCOMPARE(report.records.knownSet->entries.front().fileMobId.bytes().toByteArray(), expectedFileId(version));
+			QVERIFY(!report.diagnostics.isEmpty());
+		}
+}
+
+void TestBellaPmr::preferredUnicodeSet_data()
+{
+	QTest::addColumn<int>("baseVersion");
+	QTest::addColumn<bool>("bigEndian");
+	for (int version = 1; version <= 8; ++version)
+		for (const bool bigEndian : {false, true})
+			QTest::newRow(qPrintable(QStringLiteral("authored-base%1-v16-%2")
+										 .arg(version)
+										 .arg(bigEndian ? QStringLiteral("BE") : QStringLiteral("LE"))))
+				<< version << bigEndian;
+}
+
+void TestBellaPmr::preferredUnicodeSet()
+{
+	QFETCH(int, baseVersion);
+	QFETCH(bool, bigEndian);
+	Record older;
+	older.filename = "older.mxf";
+	older.project = "Older project";
+	Record preferred;
+	preferred.filename = QByteArray::fromHex("c39f2e6d7866");
+	preferred.project = QByteArray::fromHex("a7");
+	QByteArray bytes = pmrBytes(baseVersion, bigEndian, {older, older});
+	appendSet(bytes, 16, bigEndian, {preferred}); // Counts legitimately differ.
+	const auto report = parseBytes(bytes);
+	QVERIFY(report.reading == Read::Completed);
+	QVERIFY(report.records.canUsePmrMetadata);
+	QVERIFY(report.records.referenceCoverageComplete);
+	QVERIFY(report.records.knownSet);
+	QCOMPARE(report.records.knownSet->version, qint32{16});
+	QCOMPARE(report.records.knownSet->entries.size(), qsizetype{1});
+	const auto &entry = report.records.knownSet->entries.front();
+	QCOMPARE(entry.filename, QString::fromUtf8("ß.mxf"));
+	QCOMPARE(entry.project, QString::fromUtf8("ß"));
+	QCOMPARE(entry.fileMobId.bytes().toByteArray(), expectedFileId(16));
+	QVERIFY(entry.masterMobId);
+	QCOMPARE(entry.masterMobId->bytes().toByteArray(), expectedMasterId(16));
+}
+
+void TestBellaPmr::legacyTextAlwaysUsesMacRoman()
+{
+	Record legacy;
+	legacy.filename = QByteArray::fromHex("c39f"); // Valid UTF-8 also; MacRoman means √ü.
+	legacy.project = QByteArray::fromHex("c39f");
+	const auto older = parseBytes(pmrBytes(8, false, {legacy}));
+	QVERIFY(older.records.canUsePmrMetadata);
+	QVERIFY(older.records.referenceCoverageComplete);
+	QVERIFY(older.records.knownSet);
+	const QString macRoman = QString(QChar(char16_t{0x221a})) + QChar(char16_t{0x00fc});
+	QCOMPARE(older.records.knownSet->entries.front().filename, macRoman);
+	QCOMPARE(older.records.knownSet->entries.front().project, macRoman);
+
+	Record unicode;
+	unicode.filename = QByteArray::fromHex("c39f");
+	unicode.project = QByteArray::fromHex("c39f");
+	QByteArray bytes = pmrBytes(8, false, {Record{}});
+	appendSet(bytes, 16, false, {unicode});
+	const auto preferred = parseBytes(bytes);
+	QVERIFY(preferred.records.canUsePmrMetadata);
+	QVERIFY(preferred.records.referenceCoverageComplete);
+	QVERIFY(preferred.records.knownSet);
+	QCOMPARE(preferred.records.knownSet->entries.front().filename, QString::fromUtf8("ß"));
+	QCOMPARE(preferred.records.knownSet->entries.front().project, macRoman);
+}
+
+void TestBellaPmr::unicodeMarkersAndStrictText()
+{
+	Record older;
+	older.filename = "older.mxf";
+	Record unicode;
+	unicode.secondMarker = 7; // Only the first of the two marker bytes is constrained.
+	QByteArray valid = pmrBytes(8, false, {older});
+	appendSet(valid, 16, false, {unicode});
+	const auto accepted = parseBytes(valid);
+	QVERIFY(accepted.records.canUsePmrMetadata);
+	QVERIFY(accepted.records.referenceCoverageComplete);
+	QVERIFY(accepted.records.knownSet);
+	QCOMPARE(accepted.records.knownSet->version, qint32{16});
+
+	const std::array<QByteArray, 6> invalidUtf8{{
+		QByteArray::fromHex("c3"),
+		QByteArray::fromHex("ff"),
+		QByteArray::fromHex("c080"),
+		QByteArray::fromHex("eda080"),
+		QByteArray::fromHex("f4908080"),
+		QByteArray::fromHex("e228a1"),
+	}};
+	for (const auto &text : invalidUtf8)
+	{
+		Record bad;
+		bad.filename = text;
+		QByteArray bytes = pmrBytes(8, false, {older});
+		appendSet(bytes, 16, false, {bad});
+		const auto report = parseBytes(bytes);
+		QVERIFY(report.reading == Read::Completed);
+		QVERIFY(report.records.canUsePmrMetadata);
+		QVERIFY(!report.records.referenceCoverageComplete);
+		QVERIFY(report.records.knownSet);
+		QCOMPARE(report.records.knownSet->version, qint32{8});
+		QCOMPARE(report.records.knownSet->entries.front().filename, QStringLiteral("older.mxf"));
+		QVERIFY(!report.diagnostics.isEmpty());
+	}
+	unicode.firstMarker = 1;
+	QByteArray badMarker = pmrBytes(8, false, {older});
+	appendSet(badMarker, 16, false, {unicode});
+	const auto rejected = parseBytes(badMarker);
+	QVERIFY(rejected.records.canUsePmrMetadata);
+	QVERIFY(!rejected.records.referenceCoverageComplete);
+	QVERIFY(rejected.records.knownSet);
+	QCOMPARE(rejected.records.knownSet->version, qint32{8});
+
+	// A counted v16 filename must contain both marker bytes even when no
+	// actual text follows. This authored payload provides just one byte.
+	QByteArray shortMarker = pmrBytes(8, false, {older});
+	appendNumber<qint32>(shortMarker, 16, false);
+	appendNumber<quint32>(shortMarker, 1, false);
+	shortMarker.append(storedId(16, false, false));
+	appendText(shortMarker, QByteArray(1, '\0'), false, false);
+	appendText(shortMarker, "Project", false, false);
+	shortMarker.append(storedId(16, false, true));
+	appendNumber<quint32>(shortMarker, 0, false);
+	const auto shortResult = parseBytes(shortMarker);
+	QVERIFY(shortResult.records.canUsePmrMetadata);
+	QVERIFY(!shortResult.records.referenceCoverageComplete);
+	QVERIFY(shortResult.records.knownSet);
+	QCOMPARE(shortResult.records.knownSet->version, qint32{8});
+}
+
+void TestBellaPmr::unicodeFilenamePreservesInitialFeff_data()
+{
+	QTest::addColumn<QByteArray>("filename");
+	QTest::addColumn<QString>("expected");
+	QTest::newRow("authored-leading-feff")
+		<< QByteArray::fromHex("efbbbf74616b652e6d7866") << QStringLiteral("\uFEFFtake.mxf");
+	QTest::newRow("authored-only-feff")
+		<< QByteArray::fromHex("efbbbf") << QStringLiteral("\uFEFF");
+}
+
+void TestBellaPmr::unicodeFilenamePreservesInitialFeff()
+{
+	QFETCH(QByteArray, filename);
+	QFETCH(QString, expected);
+	Record older;
+	older.filename = "older.mxf";
+	Record preferred;
+	preferred.filename = filename;
+	QByteArray bytes = pmrBytes(8, false, {older});
+	appendSet(bytes, 16, false, {preferred});
+	const auto report = parseBytes(bytes);
+	QVERIFY(report.reading == Read::Completed);
+	QVERIFY(report.records.canUsePmrMetadata);
+	QVERIFY(report.records.knownSet);
+	QCOMPARE(report.records.knownSet->version, qint32{16});
+	QCOMPARE(report.records.knownSet->entries.size(), qsizetype{1});
+	QCOMPARE(report.records.knownSet->entries.front().filename, expected);
+	QVERIFY(report.records.referenceCoverageComplete);
+	QVERIFY(report.diagnostics.isEmpty());
+}
+
+void TestBellaPmr::nulAndNullText()
+{
+	for (const bool unicode : {false, true})
+	{
+		Record record;
+		record.filename = QByteArray("a\0\xff", 3);
+		record.project = QByteArray("P\0\xff", 3);
+		QByteArray bytes = unicode ? pmrBytes(8, false, {}) : pmrBytes(8, false, {record});
+		if (unicode)
+			appendSet(bytes, 16, false, {record});
+		const auto report = parseBytes(bytes);
+		QVERIFY(report.records.canUsePmrMetadata);
+		QVERIFY(report.records.referenceCoverageComplete);
+		QVERIFY(report.records.knownSet);
+		QCOMPARE(report.records.knownSet->entries.front().filename, QStringLiteral("a"));
+		QCOMPARE(report.records.knownSet->entries.front().project, QStringLiteral("P"));
+	}
+	for (const bool nullProject : {false, true})
+	{
+		Record record;
+		record.project.clear();
+		record.nullProject = nullProject;
+		const auto report = parseBytes(pmrBytes(8, false, {record}));
+		QVERIFY(report.records.canUsePmrMetadata);
+		QVERIFY(report.records.referenceCoverageComplete);
+		QVERIFY(report.records.knownSet);
+		QVERIFY(report.records.knownSet->entries.front().project.isEmpty());
+		QVERIFY(report.records.knownSet->entries.front().masterMobId);
+	}
+	for (const bool nullFilename : {false, true})
+	{
+		Record bad;
+		bad.filename.clear();
+		bad.nullFilename = nullFilename;
+		const auto base = parseBytes(pmrBytes(8, false, {Record{}, bad}));
+		QVERIFY(base.reading == Read::NoUsableSet);
+		QVERIFY(!base.records.canUsePmrMetadata);
+		QVERIFY(!base.records.referenceCoverageComplete);
+		QVERIFY(!base.records.knownSet);
+		QVERIFY(!base.diagnostics.isEmpty());
+		QByteArray fallback = pmrBytes(8, false, {Record{}});
+		appendSet(fallback, 16, false, {bad});
+		const auto report = parseBytes(fallback);
+		QVERIFY(report.records.canUsePmrMetadata);
+		QVERIFY(!report.records.referenceCoverageComplete);
+		QVERIFY(report.records.knownSet);
+		QCOMPARE(report.records.knownSet->version, qint32{8});
+	}
+}
+
+// MARK: - Framing and fallback boundaries
+
+void TestBellaPmr::wholeSetFailureDiscardsAllItsEntries()
+{
+	Record older;
+	older.filename = "older.mxf";
+	Record first;
+	first.filename = "preferred-first.mxf";
+	Record damaged;
+	damaged.filename = QByteArray::fromHex("ff");
+	QByteArray bytes = pmrBytes(8, false, {older});
+	appendSet(bytes, 16, false, {first, damaged});
+	const auto report = parseBytes(bytes);
+	QVERIFY(report.records.canUsePmrMetadata);
+	QVERIFY(!report.records.referenceCoverageComplete);
+	QVERIFY(report.records.knownSet);
+	QCOMPARE(report.records.knownSet->version, qint32{8});
+	QCOMPARE(report.records.knownSet->entries.size(), qsizetype{1});
+	QCOMPARE(report.records.knownSet->entries.front().filename, QStringLiteral("older.mxf"));
+
+	Record badBase;
+	badBase.nullFilename = true;
+	QByteArray neither = pmrBytes(8, false, {older, badBase});
+	appendSet(neither, 16, false, {first, damaged});
+	const auto noSet = parseBytes(neither);
+	QVERIFY(!noSet.records.canUsePmrMetadata);
+	QVERIFY(!noSet.records.referenceCoverageComplete);
+	QVERIFY(!noSet.records.knownSet);
+	QCOMPARE(noSet.diagnostics, QStringList({
+									QStringLiteral("Version 16 record 2: Filename is not valid UTF-8. Version 16 is unusable; trying the older set from the same capture."),
+									QStringLiteral("Version 8 record 2: Filename is empty or null."),
+								}));
+}
+
+void TestBellaPmr::safeBaseFramingCanReachPreferredSet()
+{
+	Record unusable;
+	unusable.nullFilename = true; // Known bounds despite unusable older text.
+	Record preferred;
+	preferred.filename = "preferred.mxf";
+	QByteArray bytes = pmrBytes(8, false, {unusable, Record{}});
+	appendSet(bytes, 16, false, {preferred});
+	const auto report = parseBytes(bytes);
+	QVERIFY(report.reading == Read::Completed);
+	QVERIFY(report.records.canUsePmrMetadata);
+	QVERIFY(report.records.referenceCoverageComplete);
+	QVERIFY(report.records.knownSet);
+	QCOMPARE(report.records.knownSet->version, qint32{16});
+	QCOMPARE(report.records.knownSet->entries.size(), qsizetype{1});
+	QCOMPARE(report.records.knownSet->entries.front().filename, QStringLiteral("preferred.mxf"));
+}
+
+void TestBellaPmr::brokenBaseFramingCannotFindAnAppendedSet()
+{
+	QByteArray bytes = pmrBytes(8, false, {Record{}});
+	appendSet(bytes, 16, false, {Record{}});
+	// Base header (12) plus file ID (32) places its counted-name word here.
+	qToLittleEndian<quint16>(65534, bytes.data() + 44);
+	const auto report = parseBytes(bytes);
+	QVERIFY(report.reading == Read::Malformed);
+	QVERIFY(!report.records.canUsePmrMetadata);
+	QVERIFY(!report.records.referenceCoverageComplete);
+	QVERIFY(!report.records.knownSet);
+	QVERIFY(!report.diagnostics.isEmpty());
+}
+
+void TestBellaPmr::everyBaseTruncationAndImpossibleCount()
+{
+	const QByteArray complete = pmrBytes(8, false, {Record{}, Record{}});
+	for (qsizetype size = 0; size < complete.size(); ++size)
+	{
+		const auto report = parseBytes(complete.first(size));
+		QVERIFY2(!report.records.canUsePmrMetadata, qPrintable(QStringLiteral("truncation at %1").arg(size)));
+		QVERIFY2(!report.records.referenceCoverageComplete, qPrintable(QStringLiteral("truncation at %1").arg(size)));
+		QVERIFY(!report.records.knownSet);
+	}
+	QByteArray hugeCount;
+	appendNumber<quint32>(hugeCount, 0x7a9, false);
+	appendNumber<qint32>(hugeCount, 8, false);
+	appendNumber<quint32>(hugeCount, 0xffffffff, false);
+	const auto report = parseBytes(hugeCount);
+	QVERIFY(report.reading == Read::Malformed);
+	QVERIFY(!report.records.knownSet);
+	QVERIFY(!report.records.canUsePmrMetadata);
+	QVERIFY(!report.records.referenceCoverageComplete);
+
+	QByteArray shortText;
+	appendNumber<quint32>(shortText, 0x7a9, false);
+	appendNumber<qint32>(shortText, 8, false);
+	appendNumber<quint32>(shortText, 1, false);
+	shortText.append(storedId(8, false, false));
+	appendNumber<quint16>(shortText, 20, false);
+	shortText.append("ab", 2); // Authored: declared 20 bytes, only two available.
+	const auto shortReport = parseBytes(shortText);
+	QVERIFY(shortReport.reading == Read::Malformed);
+	QVERIFY(!shortReport.records.knownSet);
+	QVERIFY(!shortReport.records.canUsePmrMetadata);
+	QVERIFY(!shortReport.records.referenceCoverageComplete);
+}
+
+void TestBellaPmr::everyTruncatedKnownUnicodeSetFallsBack()
+{
+	Record base;
+	base.filename = "base.mxf";
+	QByteArray complete = pmrBytes(8, false, {base});
+	const qsizetype baseEnd = complete.size();
+	Record preferred;
+	preferred.filename = "preferred.mxf";
+	appendSet(complete, 16, false, {preferred, preferred});
+	// Start after a complete recognized v16 version/count header. Classification
+	// of an incomplete unknown extension word is deliberately not assumed here.
+	for (qsizetype size = baseEnd + 8; size < complete.size(); ++size)
+	{
+		const auto report = parseBytes(complete.first(size));
+		QVERIFY2(report.reading == Read::Completed, qPrintable(QStringLiteral("v16 truncation at %1").arg(size)));
+		QVERIFY(report.records.canUsePmrMetadata);
+		QVERIFY(!report.records.referenceCoverageComplete);
+		QVERIFY(report.records.knownSet);
+		QCOMPARE(report.records.knownSet->version, qint32{8});
+		QCOMPARE(report.records.knownSet->entries.size(), qsizetype{1});
+		QCOMPARE(report.records.knownSet->entries.front().filename, QStringLiteral("base.mxf"));
+		QCOMPARE(report.diagnostics.size(), qsizetype{1});
+	}
+}
+
+void TestBellaPmr::preferredSetFallbackDiagnostics_data()
+{
+	QTest::addColumn<QByteArray>("bytes");
+	QTest::addColumn<QString>("reason");
+	QTest::addColumn<bool>("completeCoverage");
+	for (const bool bigEndian : {false, true})
+	{
+		Record base;
+		base.filename = "base.mxf";
+		const QByteArray baseBytes = pmrBytes(8, bigEndian, {base});
+		const auto addCase = [bigEndian](const char *name, const QByteArray &bytes,
+										 const QString &reason, bool completeCoverage)
+		{
+			QTest::newRow(qPrintable(QStringLiteral("%1-%2")
+										 .arg(QString::fromLatin1(name), bigEndian ? QStringLiteral("BE") : QStringLiteral("LE"))))
+				<< bytes << reason << completeCoverage;
+		};
+		Record rejected;
+		rejected.filename = QByteArray::fromHex("ff");
+		QByteArray badUtf8 = baseBytes;
+		appendSet(badUtf8, 16, bigEndian, {rejected});
+		addCase("invalid-utf8", badUtf8,
+				QStringLiteral("Version 16 record 1: Filename is not valid UTF-8."), false);
+
+		rejected = Record{};
+		rejected.firstMarker = 1;
+		QByteArray badMarker = baseBytes;
+		appendSet(badMarker, 16, bigEndian, {rejected});
+		addCase("invalid-marker", badMarker,
+				QStringLiteral("Version 16 record 1: Filename has an invalid v16 prefix."), false);
+
+		rejected = Record{};
+		rejected.nullFilename = true;
+		QByteArray nullFilename = baseBytes;
+		appendSet(nullFilename, 16, bigEndian, {rejected});
+		addCase("null-filename", nullFilename,
+				QStringLiteral("Version 16 record 1: Filename is empty or null."), false);
+
+		QByteArray empty = baseBytes;
+		appendSet(empty, 16, bigEndian, {});
+		addCase("empty-set", empty, QStringLiteral("Version 16 contains no entries."), true);
+
+		QByteArray impossibleCount = baseBytes;
+		appendNumber<qint32>(impossibleCount, 16, bigEndian);
+		appendNumber<quint32>(impossibleCount, 1, bigEndian);
+		addCase("impossible-count", impossibleCount,
+				QStringLiteral("Version 16 declares 1 records at byte %1, beyond the 0 remaining bytes.")
+					.arg(impossibleCount.size()),
+				false);
+
+		QByteArray truncated = baseBytes;
+		appendSet(truncated, 16, bigEndian, {Record{}});
+		truncated.chop(1);
+		addCase("truncated-record", truncated,
+				QStringLiteral("Version 16 record 1: ignored modification word at byte %1 needs 4 bytes; only 3 remain.")
+					.arg(truncated.size() - 3),
+				false);
+
+		QByteArray missingCount = baseBytes;
+		appendNumber<qint32>(missingCount, 16, bigEndian);
+		addCase("missing-count", missingCount,
+				QStringLiteral("v16 record count at byte %1 needs 4 bytes; only 0 remain.")
+					.arg(missingCount.size()),
+				false);
+		QByteArray partialCount = missingCount;
+		partialCount.append("\0\0", 2);
+		addCase("partial-count", partialCount,
+				QStringLiteral("v16 record count at byte %1 needs 4 bytes; only 2 remain.")
+					.arg(missingCount.size()),
+				false);
+	}
+}
+
+void TestBellaPmr::preferredSetFallbackDiagnostics()
+{
+	QFETCH(QByteArray, bytes);
+	QFETCH(QString, reason);
+	QFETCH(bool, completeCoverage);
+	const auto report = parseBytes(bytes);
+	QVERIFY(report.reading == Read::Completed);
+	QVERIFY(report.sizeDateCheck == Check::Verified);
+	QVERIFY(report.records.canUsePmrMetadata);
+	QCOMPARE(report.records.referenceCoverageComplete, completeCoverage);
+	QVERIFY(report.records.knownSet);
+	QCOMPARE(report.records.knownSet->version, qint32{8});
+	QCOMPARE(report.records.knownSet->entries.size(), qsizetype{1});
+	QCOMPARE(report.records.knownSet->entries.front().filename, QStringLiteral("base.mxf"));
+	QCOMPARE(report.diagnostics, QStringList({
+									 reason + QStringLiteral(" Version 16 is unusable; trying the older set from the same capture."),
+								 }));
+}
+
+void TestBellaPmr::unsupportedExtensionsAndTailsKeepReferenceOnlyWholeSets()
+{
+	Record base;
+	base.filename = "base.mxf";
+	QByteArray unknown = pmrBytes(8, false, {base});
+	appendNumber<qint32>(unknown, 17, false);
+	appendNumber<quint32>(unknown, 0, false);
+	const auto extension = parseBytes(unknown);
+	QVERIFY(extension.reading == Read::Unsupported);
+	QVERIFY(!extension.records.canUsePmrMetadata);
+	QVERIFY(!extension.records.referenceCoverageComplete);
+	QVERIFY(extension.records.knownSet);
+	QCOMPARE(extension.records.knownSet->version, qint32{8});
+	QCOMPARE(extension.records.knownSet->entries.size(), qsizetype{1});
+	QCOMPARE(extension.records.knownSet->entries.front().filename, QStringLiteral("base.mxf"));
+	QVERIFY(!extension.diagnostics.isEmpty());
+
+	Record preferred;
+	preferred.filename = "preferred.mxf";
+	QByteArray trailing = pmrBytes(8, false, {base});
+	appendSet(trailing, 16, false, {preferred});
+	trailing.append("unknown", 7);
+	const auto tail = parseBytes(trailing);
+	QVERIFY(tail.reading == Read::Unsupported);
+	QVERIFY(!tail.records.canUsePmrMetadata);
+	QVERIFY(!tail.records.referenceCoverageComplete);
+	QVERIFY(tail.records.knownSet);
+	QCOMPARE(tail.records.knownSet->version, qint32{16});
+	QCOMPARE(tail.records.knownSet->entries.size(), qsizetype{1});
+	QCOMPARE(tail.records.knownSet->entries.front().filename, QStringLiteral("preferred.mxf"));
+	QVERIFY(!tail.diagnostics.isEmpty());
+
+	Record malformed;
+	malformed.filename = QByteArray::fromHex("ff");
+	const std::array<QVector<Record>, 2> unusablePreferred{{{malformed}, {}}};
+	for (const auto &records : unusablePreferred)
+	{
+		QByteArray fallback = pmrBytes(8, false, {base});
+		appendSet(fallback, 16, false, records);
+		fallback.append("unknown", 7);
+		const auto report = parseBytes(fallback);
+		QVERIFY(report.reading == Read::Unsupported);
+		QVERIFY(!report.records.canUsePmrMetadata);
+		QVERIFY(!report.records.referenceCoverageComplete);
+		QVERIFY(report.records.knownSet);
+		QCOMPARE(report.records.knownSet->version, qint32{8});
+		QCOMPARE(report.records.knownSet->entries.size(), qsizetype{1});
+		QCOMPARE(report.records.knownSet->entries.front().filename, QStringLiteral("base.mxf"));
+		QCOMPARE(report.records.knownSet->entries.front().fileMobId.bytes().toByteArray(), expectedFileId(8));
+		QCOMPARE(report.diagnostics.size(), qsizetype{2});
+		QCOMPARE(report.diagnostics.front(), QStringLiteral("Unexplained content after the declared v16 set."));
+		QCOMPARE(report.diagnostics.back(),
+				 (records.isEmpty() ? QStringLiteral("Version 16 contains no entries.")
+									: QStringLiteral("Version 16 record 1: Filename is not valid UTF-8.")) +
+					 QStringLiteral(" Version 16 is unusable; trying the older set from the same capture."));
+	}
+}
+
+// MARK: - Diagnostics and reference coverage
+
+void TestBellaPmr::diagnosticsSeparateFileContextFromReasons()
+{
+	Record base;
+	base.filename = "base.mxf";
+	Record malformed;
+	malformed.filename = QByteArray::fromHex("ff");
+	QByteArray bytes = pmrBytes(8, false, {base});
+	appendSet(bytes, 16, false, {malformed});
+
+	QTemporaryDir firstDirectory;
+	QTemporaryDir secondDirectory;
+	QVERIFY(firstDirectory.isValid());
+	QVERIFY(secondDirectory.isValid());
+	const QStringList paths{
+		firstDirectory.filePath(QStringLiteral("first source.pmr")),
+		secondDirectory.filePath(QStringLiteral("second source.pmr")),
+	};
+	QVector<Bella::PmrReport> reports;
+	const std::atomic_bool stopRequested{false};
+	for (const auto &path : paths)
+	{
+		QFile source(path);
+		QVERIFY(source.open(QIODevice::WriteOnly));
+		QCOMPARE(source.write(bytes), qint64(bytes.size()));
+		QVERIFY(source.flush());
+		source.close();
+		reports.append(Bella::parsePmr(path, stopRequested));
+		const auto &report = reports.back();
+		QCOMPARE(report.source.path, path);
+		QVERIFY(report.reading == Read::Completed);
+		QVERIFY(report.records.canUsePmrMetadata);
+		QVERIFY(!report.records.referenceCoverageComplete);
+		QVERIFY(report.records.knownSet);
+		QCOMPARE(report.records.knownSet->version, qint32{8});
+		QCOMPARE(report.records.knownSet->entries.front().filename, QStringLiteral("base.mxf"));
+		QVERIFY(!report.diagnostics.isEmpty());
+		for (const auto &reason : report.diagnostics)
+		{
+			QVERIFY(!reason.isEmpty());
+			QVERIFY(!reason.contains(firstDirectory.path()));
+			QVERIFY(!reason.contains(secondDirectory.path()));
+		}
+	}
+	QCOMPARE(reports[0].diagnostics, reports[1].diagnostics);
+}
+
+void TestBellaPmr::emptySetsHaveIndependentReferenceCoverage()
+{
+	for (const bool hasEmptyExtension : {false, true})
+	{
+		QByteArray bytes = pmrBytes(8, false, {});
+		if (hasEmptyExtension)
+			appendSet(bytes, 16, false, {});
+		const auto report = parseBytes(bytes);
+		QVERIFY(report.reading == Read::NoUsableSet);
+		QVERIFY(!report.records.canUsePmrMetadata);
+		QVERIFY(report.records.referenceCoverageComplete);
+		QVERIFY(!report.records.knownSet || report.records.knownSet->entries.isEmpty());
+	}
+	QByteArray fallback = pmrBytes(8, false, {Record{}});
+	appendSet(fallback, 16, false, {});
+	const auto older = parseBytes(fallback);
+	QVERIFY(older.reading == Read::Completed);
+	QVERIFY(older.records.canUsePmrMetadata);
+	QVERIFY(older.records.referenceCoverageComplete);
+	QVERIFY(older.records.knownSet);
+	QCOMPARE(older.records.knownSet->version, qint32{8});
+
+	QByteArray preferred = pmrBytes(8, false, {});
+	appendSet(preferred, 16, false, {Record{}});
+	const auto unicode = parseBytes(preferred);
+	QVERIFY(unicode.records.canUsePmrMetadata);
+	QVERIFY(unicode.records.referenceCoverageComplete);
+	QVERIFY(unicode.records.knownSet);
+	QCOMPARE(unicode.records.knownSet->version, qint32{16});
+}
+
+void TestBellaPmr::unsupportedBaseAndBadMagic()
+{
+	for (const qint32 version : {qint32{9}, qint32{15}, qint32{16}, qint32{17}})
+	{
+		const auto report = parseBytes(pmrBytes(version, false, {}));
+		QVERIFY(report.reading == Read::Unsupported);
+		QVERIFY(!report.records.canUsePmrMetadata);
+		QVERIFY(!report.records.referenceCoverageComplete);
+		QVERIFY(!report.records.knownSet);
+	}
+	QByteArray badMagic = pmrBytes(8, false, {Record{}});
+	badMagic[0] = 0;
+	const auto report = parseBytes(badMagic);
+	QVERIFY(report.reading == Read::Malformed);
+	QVERIFY(!report.records.canUsePmrMetadata);
+	QVERIFY(!report.records.referenceCoverageComplete);
+	QVERIFY(!report.records.knownSet);
+}
+
+// MARK: - Identity and native field limits
+
+void TestBellaPmr::completeIdsAndIgnoredModificationWord()
+{
+	for (const qint32 version : {qint32{2}, qint32{8}})
+	{
+		Record zero;
+		zero.fileId = QByteArray(version <= 7 ? 8 : 32, '\0');
+		zero.masterId = zero.fileId;
+		const auto report = parseBytes(pmrBytes(version, false, {zero}));
+		QVERIFY(report.records.canUsePmrMetadata);
+		QVERIFY(report.records.referenceCoverageComplete);
+		QVERIFY(report.records.knownSet);
+		const auto &entry = report.records.knownSet->entries.front();
+		QVERIFY(entry.masterMobId);
+		const QByteArray expected = version <= 7
+										? QByteArray::fromHex("060a2b340101010101010f00130000000000000000000000060e2b347f7f2a80")
+										: QByteArray(32, '\0');
+		QCOMPARE(entry.fileMobId.bytes().toByteArray(), expected);
+		QCOMPARE(entry.masterMobId->bytes().toByteArray(), expected);
+	}
+	for (const quint32 modification : {quint32{0}, quint32{0x12345678}, quint32{0xffffffff}})
+	{
+		Record record;
+		record.modification = modification;
+		const auto report = parseBytes(pmrBytes(8, false, {record, record}));
+		QVERIFY(report.records.canUsePmrMetadata);
+		QVERIFY(report.records.referenceCoverageComplete);
+		QVERIFY(report.records.knownSet);
+		QCOMPARE(report.records.knownSet->entries.size(), qsizetype{2});
+		QCOMPARE(report.records.knownSet->entries.front().fileMobId.bytes().toByteArray(), expectedFileId(8));
+		QCOMPARE(report.records.knownSet->entries.back().filename, QStringLiteral("take.mxf"));
+	}
+}
+
+void TestBellaPmr::nativeTextCapacitiesAreNotWireLimits()
+{
+	Record longText;
+	longText.filename = QByteArray(4096, 'n');
+	longText.project = QByteArray(4096, 'p');
+	for (const bool unicode : {false, true})
+	{
+		QByteArray bytes = unicode ? pmrBytes(8, false, {}) : pmrBytes(8, false, {longText});
+		if (unicode)
+			appendSet(bytes, 16, false, {longText});
+		const auto report = parseBytes(bytes);
+		QVERIFY(report.records.canUsePmrMetadata);
+		QVERIFY(report.records.referenceCoverageComplete);
+		QVERIFY(report.records.knownSet);
+		QCOMPARE(report.records.knownSet->entries.front().filename, QString(4096, QLatin1Char('n')));
+		QCOMPARE(report.records.knownSet->entries.front().project, QString(4096, QLatin1Char('p')));
+	}
+}
+
+void TestBellaPmr::stampComparisonUsesAvailableFacts()
+{
+	struct Example
+	{
+		const char *name;
+		Bella::PmrStamp before;
+		Bella::PmrStamp after;
+		Check expected;
+	};
+	const std::vector<Example> examples{
+		{"both equal", stamp(100, 1000), stamp(100, 1000), Check::Verified},
+		{"zero size and epoch are available", stamp(0, 0), stamp(0, 0), Check::Verified},
+		{"size changed", stamp(100, 1000), stamp(101, 1000), Check::Changed},
+		{"date changed by one millisecond", stamp(100, 1000), stamp(100, 1001), Check::Changed},
+		{"only equal sizes", stamp(100, std::nullopt), stamp(100, std::nullopt), Check::Unverified},
+		{"only equal dates", stamp(std::nullopt, 1000), stamp(std::nullopt, 1000), Check::Unverified},
+		{"missing before facts", stamp(std::nullopt, std::nullopt), stamp(100, 1000), Check::Unverified},
+		{"missing after facts", stamp(100, 1000), stamp(std::nullopt, std::nullopt), Check::Unverified},
+		{"all missing", stamp(std::nullopt, std::nullopt), stamp(std::nullopt, std::nullopt), Check::Unverified},
+		{"size difference despite missing dates", stamp(100, std::nullopt), stamp(101, std::nullopt), Check::Changed},
+		{"date difference despite missing sizes", stamp(std::nullopt, 1000), stamp(std::nullopt, 1001), Check::Changed},
+		{"negative size is unavailable", stamp(-1, 1000), stamp(100, 1000), Check::Unverified},
+		{"different negative sizes are unavailable", stamp(-1, 1000), stamp(-2, 1000), Check::Unverified},
+		{"known date change wins over negative size", stamp(-1, 1000), stamp(100, 1001), Check::Changed},
+	};
+	for (const auto &example : examples)
+		QVERIFY2(Bella::Detail::comparePmrStamps(example.before, example.after) == example.expected, example.name);
+}
+
+// MARK: - Cancellation and result ownership
+
+void TestBellaPmr::preCancelledAndIoFailures()
+{
+	QTemporaryDir directory;
+	QVERIFY(directory.isValid());
+	const QString missing = directory.filePath(QStringLiteral("missing.pmr"));
+	const std::atomic_bool stopped{true};
+	const auto cancelled = Bella::parsePmr(missing, stopped);
+	QVERIFY(cancelled.reading == Read::Cancelled);
+	QVERIFY(cancelled.sizeDateCheck == Check::NotChecked);
+	QVERIFY(!cancelled.records.knownSet);
+	QVERIFY(!cancelled.records.canUsePmrMetadata);
+	QVERIFY(!cancelled.records.referenceCoverageComplete);
+	QCOMPARE(cancelled.source.path, missing);
+	QCOMPARE(cancelled.diagnostics, QStringList({
+										QStringLiteral("PMR reading cancelled at a whole-file or whole-set boundary."),
+									}));
+
+	const std::atomic_bool running{false};
+	const auto absent = Bella::parsePmr(missing, running);
+	QVERIFY(absent.reading == Read::IoError);
+	QVERIFY(!absent.records.knownSet);
+	QVERIFY(!absent.records.canUsePmrMetadata);
+	QVERIFY(!absent.records.referenceCoverageComplete);
+	QVERIFY(!absent.diagnostics.isEmpty());
+	QCOMPARE(absent.source.path, missing);
+}
+
+void TestBellaPmr::reportsOwnTheirResults()
+{
+	Record record;
+	record.filename = QByteArray::fromHex("c39f2e6d7866");
+	record.project = QByteArray::fromHex("a7");
+	QByteArray source = pmrBytes(8, false, {});
+	appendSet(source, 16, false, {record});
+	auto original = parseBytes(source);
+	QVERIFY(original.records.canUsePmrMetadata);
+	QVERIFY(original.records.referenceCoverageComplete);
+	QVERIFY(original.records.knownSet);
+	QVERIFY(!QFile::exists(original.source.path));
+	const auto copied = original;
+	auto moved = std::move(original);
+	moved.records.knownSet.reset();
+	QVERIFY(copied.records.knownSet);
+	QCOMPARE(copied.records.knownSet->entries.front().filename, QString::fromUtf8("ß.mxf"));
+	QCOMPARE(copied.records.knownSet->entries.front().project, QString::fromUtf8("ß"));
+	QCOMPARE(copied.records.knownSet->entries.front().fileMobId.bytes().toByteArray(), expectedFileId(16));
+}
+
+QTEST_APPLESS_MAIN(TestBellaPmr)
+#include "tst_bella_pmr.moc"

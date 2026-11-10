@@ -1,0 +1,117 @@
+#pragma once
+
+#include "operations/operation_recovery.h"
+#include "operations/operation_manager.h"
+
+#include <QObject>
+#include <QPointer>
+#include <QSet>
+
+class QAction;
+class QMessageBox;
+class ProgressDialog;
+class QWidget;
+
+// Owns the UI lifecycle of one file job: recovery, dispatch, progress and Undo.
+// MainWindow supplies scan/dialog activity and applies model changes from signals.
+// MARK: - File operation UI coordination
+
+class FileOperationController : public QObject
+{
+	Q_OBJECT
+	friend class TestOperationUi;
+
+public:
+	enum class Activity
+	{
+		Idle,
+		Scanning,
+		Recovering,
+		FileOperation,
+		RebalanceDialog
+	};
+	Q_ENUM(Activity)
+	explicit FileOperationController(QWidget *window);
+	~FileOperationController() override;
+	Activity activity() const { return m_activity; }
+	bool isIdle() const { return m_activity == Activity::Idle; }
+	void setActivity(Activity activity);
+	OperationManager *manager() const { return m_operationManager; }
+	QAction *recoveryAction() const { return m_recoveryAction; }
+	QAction *undoAction() const { return m_undoAction; }
+
+	// MARK: - Operation and recovery actions
+
+	void runStartupRecovery();
+	void refreshHistory();
+	bool dispatchRequest(OperationRequest request);
+	bool resolvePreviousJob();
+	void offerRecovery();
+	void undoLastOperation();
+	// Temporarily releases only the modal-dialog activity for the authoritative
+	// previous-job gate. A resumed job keeps its activity when the dialog closes.
+	bool resolveBeforeRebalance();
+	void endRebalanceDialog();
+
+// MARK: - Operation notifications
+
+signals:
+	void activityChanged(FileOperationController::Activity activity);
+	void logMessage(QtMsgType level, const QString &module, const QString &message);
+	void sourcesRemoved(const QSet<QString> &paths);
+	void transferCompleted(const QString &source, const QString &destination, bool copy);
+	void originalsRestored(const QSet<QString> &paths);
+	void mediaMusterTrashUsed(const QString &folder, int fileCount);
+
+// MARK: - Recovery and UI helpers
+
+private:
+	enum class RecoveryOutcome
+	{
+		Closed,
+		Started,
+		Stopped
+	};
+	void onOperationResult(const OperationResult &result);
+	void onOperationFinished();
+	void onRecoveryDone(const OperationRecovery::Summary &summary);
+	void setUndoEnabled(bool enabled);
+	void updateUndoAction();
+	void updateRecoveryAction();
+	RecoveryOutcome showRecoveryDialog(const QString &preferredJournalPath = {});
+	bool confirmCrashProtection();
+	bool resumeOperation(const OperationRecovery::Resumable &job);
+	void applyOperationHistory(const OperationRecovery::Summary &history);
+	void readOperationHistoryForGate();
+	ProgressDialog *progressDialog();
+	void showTrashFallback(quint64 requestId, const QVector<OperationTrashFallbackItem> &items);
+	void closeTrashFallback(quint64 requestId);
+	// MARK: - Owned UI and operation state
+
+	QWidget *m_window;
+	OperationManager *m_operationManager;
+	ProgressDialog *m_progressDialog = nullptr;
+	QPointer<QMessageBox> m_trashFallbackDialog;
+	quint64 m_trashFallbackRequest = 0;
+	Activity m_activity = Activity::Idle;
+	bool m_pruneSourceRowsAfterOperation = false;
+	OperationKind m_activeKind = OperationKind::Copy;
+	QSet<QString> m_removedSourcePaths;
+	QSet<QString> m_restoredOriginalPaths;
+	QVector<OperationRecovery::Resumable> m_resumable;
+	QVector<OperationRecovery::Restorable> m_restorable;
+	QAction *m_recoveryAction;
+	QAction *m_undoAction;
+	bool m_undoEnabled = false;
+	bool m_operationGateActive = false;
+	bool m_historyLoading = false;
+	quint64 m_historyGeneration = 0;
+	struct UndoCandidate
+	{
+		QString journalPath;
+		QString undoText;
+		QString confirmationHeading;
+		QString confirmationMessage;
+	};
+	UndoCandidate m_undoCandidate;
+};

@@ -1,0 +1,277 @@
+--- a/tests/tst_mediaengineavbreferences.cpp
++++ b/tests/tst_mediaengineavbreferences.cpp
+@@ -229,6 +229,61 @@
+ 		member(source, 4, 1, true);
+ 		timedClip(source, 5, identity('S'), start, length);
+ 		track(source, 4, 0, 1, 5);
++	}
++	void replaceComponent(Source &source, ObjectHandle owner, int slot, ObjectHandle target)
++	{
++		const auto name = QStringLiteral("TrackGroup.tracks[%1].component").arg(slot);
++		removeField(source, owner, name);
++		source->relationships.removeIf([&](const auto &edge)
++									 { return edge.origin == owner && edge.locator.name == name; });
++		edge(source, owner, target, name);
++	}
++	void filler(Source &source, ObjectHandle handle, quint32 length)
++	{
++		add(source, handle, "FILL");
++		replaceField(source, handle, QStringLiteral("Clip.length"), length);
++		field(source, handle, QStringLiteral("Component.media_kind_id"), pictureKind);
++	}
++	void relativeTrack(Source &source, ObjectHandle handle, qint16 scope, qint16 offset)
++	{
++		add(source, handle, "TRKR");
++		field(source, handle, QStringLiteral("TrackRef.relative_scope"), scope);
++		field(source, handle, QStringLiteral("TrackRef.relative_track"), offset);
++		field(source, handle, QStringLiteral("Component.media_kind_id"), pictureKind);
++	}
++	void fillerProxy(Source &source, ObjectHandle owner, int slot, ObjectHandle proxy)
++	{
++		const auto prefix = QStringLiteral("TrackGroup.tracks[%1]").arg(slot);
++		replaceField(source, owner, prefix + QStringLiteral(".flags"), quint16(0x000d));
++		edge(source, owner, proxy, prefix + QStringLiteral(".filler_proxy"));
++	}
++	Source proxyTrackGraph(qint16 scope = 0, qint16 offset = -1)
++	{
++		auto result = source();
++		root(result);
++		composition(result, 2, identity('S'), 1);
++		member(result, 2, 0, true);
++		clip(result, 3, identity('M'), 77);
++		track(result, 2, 0, 1, 3);
++		composition(result, 4, identity('M'), 2);
++		filler(result, 5, 100);
++		relativeTrack(result, 6, scope, offset);
++		clip(result, 10, identity('A'));
++		clip(result, 11, identity('B'));
++		// Relative references use list slots, not these deliberately unrelated labels.
++		track(result, 4, 0, 500, 10);
++		track(result, 4, 1, 77, 5);
++		track(result, 4, 2, 8, 11);
++		fillerProxy(result, 4, 1, 6);
++		fileSource(result, 1000, 'A');
++		fileSource(result, 1010, 'B');
++		return result;
++	}
++	void independentProxyControl(Source &source)
++	{
++		fileSource(source, 1020, 'D');
++		clip(source, 8, identity('D'));
++		track(source, 2, 1, 2, 8);
+ 	}
+ 	void speedTiming(Source &s, ObjectHandle handle, qint64 length, bool group)
+ 	{
+@@ -376,6 +431,17 @@
+ 	void sideMediaReferencesAreNotTimelineInputs();
+ 	void scalarParameterControls_data();
+ 	void scalarParameterControls();
++	void fillerProxySelectsRelativeSlot_data();
++	void fillerProxySelectsRelativeSlot();
++	void spareProxyDoesNotReplaceRealComponent();
++	void zeroLengthFillerDoesNotActivateProxy();
++	void sharedProxyKeepsCallerOwnership();
++	void relativeTrackUncertainty_data();
++	void relativeTrackUncertainty();
++	void sourceMobJumpResetsRelativeScope();
++	void relativeTrackAccumulatesSequenceOffsets_data();
++	void relativeTrackAccumulatesSequenceOffsets();
++	void relativeProxyCycleTerminates();
+ 	void compositionRateUsesFloorAndCeil();
+ 	void sourceStartAndTrackOrigin_data();
+ 	void sourceStartAndTrackOrigin();
+@@ -801,6 +867,194 @@
+ 		QVERIFY(!result.issues.isEmpty());
+ }
+ 
++void TestMediaEngineAvbReferences::fillerProxySelectsRelativeSlot_data()
++{
++	QTest::addColumn<int>("offset");
++	QTest::addColumn<char>("file");
++	QTest::newRow("previous-slot-not-track-label") << -1 << 'A';
++	QTest::newRow("next-slot-not-track-label") << 1 << 'B';
++}
++
++void TestMediaEngineAvbReferences::fillerProxySelectsRelativeSlot()
++{
++	QFETCH(int, offset);
++	QFETCH(char, file);
++	Cancellation cancel;
++	const auto result = AvbReferenceIndex(proxyTrackGraph(0, qint16(offset)), cancel).resolveReferences(selected({2}), cancel);
++	QVERIFY(result.coverageComplete);
++	QCOMPARE(mediaIds(result), QSet<QByteArray>{identity(file)});
++	QVERIFY(hasEdge(result, 4, file == 'A' ? 10 : 11));
++}
++
++void TestMediaEngineAvbReferences::spareProxyDoesNotReplaceRealComponent()
++{
++	auto s = proxyTrackGraph();
++	clip(s, 7, identity('B'));
++	replaceComponent(s, 4, 1, 7);
++	Cancellation cancel;
++	const auto result = AvbReferenceIndex(s, cancel).resolveReferences(selected({2}), cancel);
++	QVERIFY(result.coverageComplete);
++	QCOMPARE(mediaIds(result), QSet<QByteArray>{identity('B')});
++	QVERIFY(!hasEdge(result, 4, 6));
++}
++
++void TestMediaEngineAvbReferences::zeroLengthFillerDoesNotActivateProxy()
++{
++	auto s = proxyTrackGraph();
++	replaceField(s, 5, QStringLiteral("Clip.length"), quint32(0));
++	Cancellation cancel;
++	const auto result = AvbReferenceIndex(s, cancel).resolveReferences(selected({2}), cancel);
++	QVERIFY(result.coverageComplete);
++	QVERIFY(result.mediaReferences.isEmpty());
++	QVERIFY(!hasEdge(result, 4, 6));
++}
++
++void TestMediaEngineAvbReferences::sharedProxyKeepsCallerOwnership()
++{
++	auto s = proxyTrackGraph();
++	composition(s, 14, identity('N'), 2);
++	clip(s, 13, identity('N'), 77);
++	clip(s, 15, identity('B'));
++	clip(s, 16, identity('A'));
++	track(s, 14, 0, 500, 15);
++	track(s, 14, 1, 77, 5);
++	track(s, 14, 2, 8, 16);
++	fillerProxy(s, 14, 1, 6);
++	track(s, 2, 1, 2, 13);
++	// Both paths reach the same FILL and TRKR at the same local time. Only
++	// their containing composition differs, and each resolves its own neighbour.
++	Cancellation cancel;
++	const auto result = AvbReferenceIndex(s, cancel).resolveReferences(selected({2}), cancel);
++	QVERIFY(result.coverageComplete);
++	QCOMPARE(mediaIds(result), (QSet<QByteArray>{identity('A'), identity('B')}));
++	QVERIFY(hasEdge(result, 4, 10) && hasEdge(result, 14, 15));
++	QCOMPARE(result.mediaReferences.size(), 2);
++}
++
++void TestMediaEngineAvbReferences::relativeTrackUncertainty_data()
++{
++	QTest::addColumn<QString>("damage");
++	for (const auto *damage : {"negative-scope", "scope-beyond-root", "slot-before-list", "slot-after-list",
++							  "kind-mismatch", "rate-mismatch", "target-component-missing", "relative-offset-missing"})
++		QTest::newRow(damage) << QString::fromLatin1(damage);
++}
++
++void TestMediaEngineAvbReferences::relativeTrackUncertainty()
++{
++	QFETCH(QString, damage);
++	auto s = proxyTrackGraph();
++	independentProxyControl(s);
++	if (damage == QLatin1String("negative-scope"))
++		replaceField(s, 6, QStringLiteral("TrackRef.relative_scope"), qint16(-1));
++	else if (damage == QLatin1String("scope-beyond-root"))
++		replaceField(s, 6, QStringLiteral("TrackRef.relative_scope"), qint16(1));
++	else if (damage == QLatin1String("slot-before-list"))
++		replaceField(s, 6, QStringLiteral("TrackRef.relative_track"), qint16(-2));
++	else if (damage == QLatin1String("slot-after-list"))
++		replaceField(s, 6, QStringLiteral("TrackRef.relative_track"), qint16(2));
++	else if (damage == QLatin1String("kind-mismatch"))
++		replaceField(s, 10, QStringLiteral("Component.media_kind_id"), audioKind);
++	else if (damage == QLatin1String("rate-mismatch"))
++		replaceField(s, 10, QStringLiteral("Component.edit_rate.mantissa"), qint32(50));
++	else if (damage == QLatin1String("target-component-missing"))
++	{
++		removeField(s, 4, QStringLiteral("TrackGroup.tracks[0].component"));
++		s->relationships.removeIf([](const auto &edge)
++								 { return edge.origin == 4 && edge.locator.name == QLatin1String("TrackGroup.tracks[0].component"); });
++	}
++	else if (damage == QLatin1String("relative-offset-missing"))
++		removeField(s, 6, QStringLiteral("TrackRef.relative_track"));
++	Cancellation cancel;
++	const auto result = AvbReferenceIndex(s, cancel).resolveReferences(selected({2}), cancel);
++	QVERIFY(!result.coverageComplete);
++	QVERIFY(!result.issues.isEmpty());
++	QCOMPARE(mediaIds(result), QSet<QByteArray>{identity('D')});
++}
++
++void TestMediaEngineAvbReferences::sourceMobJumpResetsRelativeScope()
++{
++	auto s = proxyTrackGraph(1, -1);
++	independentProxyControl(s);
++	// Caller O has an unrequested Z track. The target M's scope must start
++	// afresh; TRKR cannot climb back into O and borrow that otherwise hidden Z.
++	composition(s, 14, identity('O'), 2);
++	clip(s, 13, identity('M'), 77);
++	clip(s, 15, identity('Z'));
++	track(s, 14, 0, 500, 15);
++	track(s, 14, 1, 77, 13);
++	fileSource(s, 1030, 'Z');
++	replaceField(s, 3, QStringLiteral("SourceClip.mob_id"), identity('O'));
++	for (auto &edge : s->relationships)
++		if (edge.origin == 3 && edge.locator.name == QLatin1String("SourceClip.mob_id"))
++			edge.recordedReference = identity('O');
++	Cancellation cancel;
++	const auto result = AvbReferenceIndex(s, cancel).resolveReferences(selected({2}), cancel);
++	QVERIFY(!result.coverageComplete);
++	QVERIFY(!result.issues.isEmpty());
++	QCOMPARE(mediaIds(result), QSet<QByteArray>{identity('D')});
++	QVERIFY(!hasEdge(result, 14, 15));
++}
++
++void TestMediaEngineAvbReferences::relativeTrackAccumulatesSequenceOffsets_data()
++{
++	QTest::addColumn<int>("start");
++	QTest::addColumn<int>("length");
++	QTest::addColumn<char>("file");
++	QTest::newRow("beginning-after-two-sequence-offsets") << 30 << 3 << 'B';
++	QTest::newRow("inside-after-two-sequence-offsets") << 33 << 5 << 'C';
++	QTest::newRow("end-after-two-sequence-offsets") << 38 << 2 << 'D';
++}
++
++void TestMediaEngineAvbReferences::relativeTrackAccumulatesSequenceOffsets()
++{
++	QFETCH(int, start);
++	QFETCH(int, length);
++	QFETCH(char, file);
++	auto s = proxyTrackGraph(1, -1);
++	// TRKR is inside TKFX track 0 after 10 units; that effect is on the
++	// containing composition's slot 1 after another 20 units. Scope 1/-1
++	// reaches slot 0, with both offsets added to both requested endpoints.
++	replaceField(s, 3, QStringLiteral("SourceClip.start_time"), qint32(start));
++	replaceField(s, 3, QStringLiteral("Clip.length"), quint32(length));
++	replaceField(s, 2, QStringLiteral("TrackGroup.length"), qint32(length));
++	replaceField(s, 4, QStringLiteral("TrackGroup.length"), qint32(40));
++	replaceField(s, 6, QStringLiteral("Clip.length"), quint32(10));
++	timedClip(s, 21, identity('A'), 0, 30);
++	timedClip(s, 22, identity('B'), 0, 3);
++	timedClip(s, 23, identity('C'), 0, 5);
++	timedClip(s, 24, identity('D'), 0, 2);
++	fileSource(s, 1020, 'C');
++	fileSource(s, 1030, 'D');
++	sequence(s, 20, {21, 22, 23, 24});
++	field(s, 20, QStringLiteral("Component.media_kind_id"), pictureKind);
++	replaceComponent(s, 4, 0, 20);
++	filler(s, 25, 20);
++	filler(s, 26, 10);
++	sequence(s, 31, {26, 6});
++	add(s, 30, "TKFX");
++	replaceField(s, 30, QStringLiteral("TrackGroup.length"), qint32(20));
++	track(s, 30, 0, 900, 31);
++	sequence(s, 7, {25, 30});
++	field(s, 7, QStringLiteral("Component.media_kind_id"), pictureKind);
++	replaceComponent(s, 4, 1, 7);
++	Cancellation cancel;
++	const auto result = AvbReferenceIndex(s, cancel).resolveReferences(selected({2}), cancel);
++	QVERIFY(result.coverageComplete);
++	QCOMPARE(mediaIds(result), QSet<QByteArray>{identity(file)});
++}
++
++void TestMediaEngineAvbReferences::relativeProxyCycleTerminates()
++{
++	auto s = proxyTrackGraph(0, 0);
++	independentProxyControl(s);
++	Cancellation cancel;
++	const auto result = AvbReferenceIndex(s, cancel).resolveReferences(selected({2}), cancel);
++	QVERIFY(!result.coverageComplete);
++	QVERIFY(!result.issues.isEmpty());
++	QCOMPARE(mediaIds(result), QSet<QByteArray>{identity('D')});
++	QVERIFY(result.edges.size() < 50);
++}
++
+ void TestMediaEngineAvbReferences::compositionRateUsesFloorAndCeil()
+ {
+ 	auto s = cameraTimeline({0, 1, 2});

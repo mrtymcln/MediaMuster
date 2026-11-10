@@ -1,6 +1,4 @@
-// Windows resources for MediaMuster. Configured by CMake (see the WIN32
-// block in CMakeLists.txt) into <build>/mediamuster-win.rc: the version
-// numbers and copyright come from there, so they are never typed twice.
+// CMake supplies the Windows icon, version and copyright from the app settings.
 #pragma code_page(65001)
 #include <windows.h>
 

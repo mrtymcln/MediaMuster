@@ -1,0 +1,167 @@
+#pragma once
+
+#include "storage/volume_identity.h"
+#include "operation_file.h"
+#include "operation_request.h"
+#include <QDateTime>
+#include <QFile>
+#include <QLockFile>
+#include <QVector>
+#include <optional>
+
+// Each item update contains that item's complete state; other records capture
+// job-wide intent and progress. A valid prefix survives a torn last append.
+// Journal errors stop the engine; unresolved recovery and required Undo records
+// are protected from pruning.
+// MARK: - Operation journal
+
+class OperationJournal
+{
+public:
+	enum class Step
+	{
+		Planned,
+		Copying,
+		CopyReady,
+		Publishing,
+		Published,
+		Relocating,
+		RemovingSource,
+		SourceRemoved,
+		Done,
+		NoEffect,
+		Skipped,
+		Cancelled,
+		Failed,
+		TrashFallback,
+		RestoringSource,
+		SourceRestored,
+		NeedsAttention
+	};
+	struct Cleanup
+	{
+		QString directory;
+		OperationStamp directoryStamp;
+		QString file;
+		OperationStamp fileStamp;
+		bool removeFile = false;
+	};
+	struct Entry
+	{
+		int id = -1;
+		OperationItem item;
+		QString originalSource;
+		VolumeIdentity originalVolume; // Original-volume provenance; never re-anchored.
+		QString originalRelativePath;
+		QString dst;
+		QString temp;
+		QString mechanism;
+		QString retirement;
+		QString trashProvider;
+		QString trashReceipt;
+		bool trashFallbackApproved = false;
+		bool explicitSkip = false;
+		bool sourceRemoved = false;
+		int attempts = 0;
+		int undoEntryId = -1;
+		QString undoAction;
+		bool copyDurable = false;
+		bool metadataComplete = false;
+		QString error;
+		OperationStamp source;
+		OperationStamp landed;
+		Step step = Step::Planned;
+		QStringList artifacts;
+		QVector<Cleanup> cleanup;
+		bool complete() const;
+		bool needsOriginalRestoration() const;
+		QJsonObject json() const;
+		static std::optional<Entry> fromJson(const QJsonObject &json);
+	};
+	struct Record
+	{
+		QString path;
+		QString started;
+		OperationRequest request;
+		QVector<VolumeIdentity> volumes;
+		QVector<Entry> entries;
+		bool stopped = false;
+		bool dismissed = false;
+		bool copiesComplete = false;
+		QString undoPath;
+		bool torn = false;
+		bool corrupt = false;
+		qint64 validBytes = 0;
+	};
+
+	// MARK: - Journal writing and state
+
+	OperationJournal() = default;
+	bool create(const OperationRequest &request, const QString &directory, QString &error);
+	bool resume(const Record &record, QString &error);
+	bool save(const Entry &entry);
+	bool finish(bool cancelled);
+	bool markCopiesComplete();
+	bool claimUndo(const QString &undoPath);
+	bool healthy() const
+	{
+		return m_healthy;
+	}
+	void stop(const QString &error)
+	{
+		m_healthy = false;
+		m_error = error;
+	}
+	QString path() const
+	{
+		return m_file.fileName();
+	}
+	const Record &record() const
+	{
+		return m_record;
+	}
+	QString error() const
+	{
+		return m_error;
+	}
+	// MARK: - History and recovery queries
+
+	static QString standardJournalDir();
+	static bool standardDirWritable();
+	static QVector<Record> scan(const QString &directory = {});
+	// Journal-only discovery: disconnected storage must not hide an unfinished job.
+	static QVector<Record> interrupted(const QString &directory = {});
+	static QVector<Record> interrupted(const QVector<Record> &records);
+	static std::optional<Record> latestUndoable(const QString &directory = {});
+	// Loaded records retain the chronological order supplied by scan().
+	static std::optional<Record> latestUndoable(const QVector<Record> &records);
+	// Acquires the operation lock; removes completed journals last updated over
+	// 30 days ago, preserving recovery evidence and Undo dependencies.
+	static bool prune(const QString &directory, QString &error,
+					  const QDateTime &now = QDateTime::currentDateTimeUtc());
+	// Caller must hold this directory's operation lock from before loading records
+	// until pruning finishes. Each successful deletion is removed from records,
+	// including when a later deletion or directory sync fails.
+	static bool pruneRecords(const QString &directory, QVector<Record> &records, QString &error,
+							 const QDateTime &now = QDateTime::currentDateTimeUtc());
+	static std::optional<Record> readOne(const QString &path);
+	static bool dismiss(const QString &path, QString &error);
+	static QString canonicalPath(const QString &path);
+	static QString stepName(Step step);
+	static bool resolve(Record &record, QString &error,
+						const QVector<VolumeIdentity> &mounted = {});
+	// Protective restoration does not depend on the copied destination being
+	// present: resolve only the volumes containing originals awaiting return.
+	static bool resolveRestoration(Record &record, QString &error,
+								   const QVector<VolumeIdentity> &mounted = {});
+	static std::unique_ptr<QLockFile> acquire(const QString &directory, QString &error);
+
+// MARK: - Journal storage
+
+private:
+	bool append(const QJsonObject &value);
+	QFile m_file;
+	Record m_record;
+	bool m_healthy = false;
+	QString m_error;
+};

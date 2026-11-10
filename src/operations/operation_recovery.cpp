@@ -1,0 +1,245 @@
+#include "operation_recovery.h"
+#include "file_check.h"
+#include "operation_runner.h"
+#include <QDir>
+#include <QHash>
+#include <QSet>
+#include <utility>
+
+// MARK: - Undo reconciliation helpers
+
+namespace
+{
+	using CompletedUndoEntries = QHash<int, QVector<OperationJournal::Entry>>;
+
+	CompletedUndoEntries completedUndoEntries(
+		OperationJournal::Record inverse, const QVector<VolumeIdentity> &mounted)
+	{
+		QString error;
+		if (!OperationJournal::resolve(inverse, error, mounted))
+			return {}; // Unresolved evidence cannot settle the forward job.
+		CompletedUndoEntries completed;
+		for (const auto &entry : inverse.entries)
+			if (entry.complete())
+				completed[entry.undoEntryId].append(entry);
+		return completed;
+	}
+
+	bool settleOriginalFromUndo(
+		OperationJournal &journal, OperationJournal::Entry &entry, const CompletedUndoEntries &completed)
+	{
+		if (!entry.needsOriginalRestoration())
+			return true;
+		const auto candidates = completed.constFind(entry.id);
+		if (candidates == completed.cend() || OperationFile::occupied(entry.retirement))
+			return true;
+
+		// Undo keeps ownership of the forward job. Its completed entries can
+		// establish where the original ended up without replaying forward work.
+		const auto original = OperationFile::inspect(entry.item.src);
+		for (const auto &done : candidates.value())
+		{
+			if (FileCheck::unchanged(entry.source, original))
+			{
+				entry.sourceRemoved = false;
+				entry.step = OperationJournal::Step::SourceRestored;
+			}
+			else if (done.undoAction == "restoreMove" && done.dst == entry.item.src &&
+					 FileCheck::unchanged(done.landed, original))
+			{
+				entry.sourceRemoved = true; // Undo replaced the original object with its completed copy.
+				entry.step = OperationJournal::Step::SourceRemoved;
+			}
+			else
+				continue;
+			entry.error.clear();
+			return journal.save(entry);
+		}
+		return true;
+	}
+} // namespace
+
+// MARK: - Recovery summaries
+
+std::optional<OperationRecovery::Resumable> OperationRecovery::resumableFrom(const OperationJournal::Record &rec)
+{
+	if (rec.corrupt || rec.dismissed || !rec.undoPath.isEmpty())
+		return {};
+	Resumable out;
+	out.journalPath = rec.path;
+	out.kind = rec.request.kind;
+	out.dest = rec.request.destRoot;
+	out.started = rec.started;
+	bool hasIncomplete = false;
+	for (const auto &e : rec.entries)
+	{
+		if (!e.item.maintenance)
+		{
+			++out.total;
+			if (e.complete())
+				++out.finished;
+		}
+		if (!e.complete())
+			hasIncomplete = true;
+	}
+	return hasIncomplete ? std::optional<Resumable>(out) : std::nullopt;
+}
+OperationRecovery::Summary OperationRecovery::readSummary(const QString &directory)
+{
+	const auto records = OperationJournal::scan(directory);
+	Summary out;
+	for (const auto &rec : OperationJournal::interrupted(records))
+	{
+		if (auto r = resumableFrom(rec))
+			out.resumable.append(std::move(*r));
+	}
+	out.restorable = restorableFrom(records);
+	out.undoCandidate = OperationJournal::latestUndoable(records);
+	return out;
+}
+QVector<OperationRecovery::Restorable> OperationRecovery::restorableFrom(const QVector<OperationJournal::Record> &records)
+{
+	QVector<Restorable> out;
+	QSet<QString> claimed;
+	for (const auto &record : records)
+		if (!record.corrupt && record.request.kind == OperationKind::Undo)
+			claimed.insert(record.request.undoOf);
+	for (const auto &record : records)
+	{
+		if (record.corrupt || !record.undoPath.isEmpty() || claimed.contains(record.path))
+			continue;
+		Restorable job;
+		job.journalPath = record.path;
+		for (const auto &entry : record.entries)
+			if (entry.needsOriginalRestoration())
+			{
+				job.originals.append(entry.item.src);
+				job.retainedPaths.append(entry.retirement);
+			}
+		if (!job.originals.isEmpty())
+			out.append(job);
+	}
+	return out;
+}
+// MARK: - Recovery execution
+
+OperationRecovery::Summary OperationRecovery::run(const QString &directory, const QVector<VolumeIdentity> &mounted)
+{
+	Summary out;
+	auto reportArtifacts = [&](const OperationJournal::Record &record)
+	{
+		for (const auto &entry : record.entries)
+			for (const auto &path : entry.artifacts)
+				if (OperationFile::occupied(path))
+				{
+					++out.opsFlagged;
+					out.notes.append("Isolated temporary file retained: " + path);
+				}
+	};
+	QString error;
+	const auto dir = directory.isEmpty() ? OperationJournal::standardJournalDir() : OperationJournal::canonicalPath(directory);
+	auto lock = OperationJournal::acquire(dir, error);
+	if (!lock)
+	{
+		out.notes.append(error);
+		return out;
+	}
+	auto records = OperationJournal::scan(dir);
+	QString cleanupError;
+	if (!OperationJournal::pruneRecords(dir, records, cleanupError))
+	{
+		QString message = "Journal cleanup failed: " + cleanupError;
+		if (!message.endsWith(QLatin1Char('.')))
+			message += QLatin1Char('.');
+		out.notes.append(message);
+	}
+	bool journalsChanged = false;
+	QHash<QString, OperationJournal::Record> inverses;
+	for (const auto &record : records)
+		if (!record.corrupt && record.request.kind == OperationKind::Undo)
+			inverses.insert(record.request.undoOf, record);
+	for (auto rec : records)
+	{
+		if (rec.corrupt)
+		{
+			++out.opsFlagged;
+			out.notes.append("Invalid journal retained for inspection: " + rec.path);
+			continue;
+		}
+		const bool forwardActive = !rec.dismissed && rec.undoPath.isEmpty() && !inverses.contains(rec.path);
+		bool incomplete = false;
+		bool artifacts = false;
+		bool needsRestoration = false;
+		for (const auto &e : rec.entries)
+		{
+			if (forwardActive && !e.complete())
+				incomplete = true;
+			needsRestoration = needsRestoration || e.needsOriginalRestoration();
+			artifacts = artifacts || !e.artifacts.isEmpty() || !e.cleanup.isEmpty();
+		}
+		if (!incomplete && !artifacts && !needsRestoration)
+			continue;
+		if (!OperationJournal::resolve(rec, error, mounted))
+		{
+			++out.opsFlagged;
+			out.notes.append(error + " Journal: " + rec.path);
+			if (auto r = resumableFrom(rec))
+				out.resumable.append(*r);
+			continue;
+		}
+		OperationJournal journal;
+		// Resume can truncate a torn tail or partially append even on failure.
+		// Refresh the shared history once after any attempted journal update.
+		journalsChanged = true;
+		if (!journal.resume(rec, error))
+		{
+			++out.opsFlagged;
+			out.notes.append(error);
+			if (auto r = resumableFrom(rec))
+				out.resumable.append(*r);
+			continue;
+		}
+		const auto inverse = inverses.constFind(rec.path);
+		const auto completedUndo = needsRestoration && inverse != inverses.cend()
+									   ? completedUndoEntries(inverse.value(), mounted)
+									   : CompletedUndoEntries{};
+		for (auto e : rec.entries)
+		{
+			if (!settleOriginalFromUndo(journal, e, completedUndo))
+			{
+				++out.opsFlagged;
+				out.notes.append(journal.error() + " Journal: " + rec.path);
+				break;
+			}
+			// Dismissal ends forward work, but cannot erase cleanup or a
+			// restoring rename whose completion append was interrupted.
+			if ((!e.complete() && e.step != OperationJournal::Step::Planned && forwardActive) ||
+				e.step == OperationJournal::Step::RestoringSource)
+			{
+				if (!OperationRunner::reconcile(journal, e, error))
+				{
+					++out.opsFlagged;
+					out.notes.append(error + " Journal: " + rec.path);
+				}
+			}
+			if (!journal.healthy())
+				break;
+			QString cleanupError;
+			if (!OperationRunner::cleanup(journal, e, cleanupError))
+			{
+				++out.opsFlagged;
+				out.notes.append(cleanupError + " Journal: " + rec.path);
+			}
+			if (!journal.healthy())
+				break;
+		}
+		if (auto r = resumableFrom(journal.record()))
+			out.resumable.append(*r);
+		reportArtifacts(journal.record());
+	}
+	if (journalsChanged)
+		records = OperationJournal::scan(dir);
+	out.undoCandidate = OperationJournal::latestUndoable(records);
+	out.restorable = restorableFrom(records);
+	return out;
+}

@@ -1,0 +1,791 @@
+#include "avb_filter_dialog.h"
+#include "ui/widget_helpers.h"
+#include "ui/format_util.h"
+
+#include <QDir>
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDropEvent>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QFrame>
+#include <QFutureWatcher>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QListWidget>
+#include <QMimeData>
+#include <QPushButton>
+#include <QSignalBlocker>
+#include <QStringList>
+#include <QTimer>
+#include <QToolButton>
+#include <QUrl>
+#include <QVariant>
+#include <QVBoxLayout>
+#include <QtConcurrent>
+
+#include <algorithm>
+#include <utility>
+
+// MARK: - File-local helpers
+
+namespace
+{
+	constexpr int kMaxConcurrentBinLoads = 2;
+
+	QString binExplanation(const AvbBin &bin, bool loading)
+	{
+		if (loading)
+			return {};
+		if (!bin.coverageComplete)
+			return AvbFilterDialog::tr("Results may be incomplete");
+		if (bin.mediaFileIds.isEmpty())
+			return AvbFilterDialog::tr("No media references.");
+		return {};
+	}
+
+	QString operationLabel(AvbFilterDialog::Operation op)
+	{
+		switch (op)
+		{
+		case AvbFilterDialog::Operation::Intersect:
+			return AvbFilterDialog::tr("Intersect");
+		case AvbFilterDialog::Operation::Subtract:
+			return AvbFilterDialog::tr("Subtract");
+		case AvbFilterDialog::Operation::Add:
+			return AvbFilterDialog::tr("Add");
+		}
+		return {};
+	}
+
+	// Two strips share styling, so parameterise rule selectors by
+	// objectName.
+	QString segBarStyleSheet(const QString &objectName)
+	{
+		return QStringLiteral("#%1 {"
+							  "  background: palette(window);"
+							  "  border-top: 1px solid palette(mid);"
+							  "}"
+							  "#%1 QToolButton {"
+							  "  border: none; padding: 0px 10px 2px 10px;"
+							  "  min-width: 24px; min-height: 20px;"
+							  "  color: palette(text);"
+							  "  font-weight: bold;"
+							  "  font-size: 18px;"
+							  "}"
+							  "#%1 QToolButton:hover { background: palette(midlight); }"
+							  "#%1 QToolButton:pressed { background: palette(mid); }"
+							  "#%1 QToolButton:disabled { color: palette(mid); }")
+			.arg(objectName);
+	}
+
+	// `[ button ] [ help text ]`. Button returned by reference so the
+	// caller can wire its clicked signal.
+	QWidget *makeOperationRow(const QString &label, const QString &help, QPushButton *&buttonOut)
+	{
+		auto *operationRow = new QWidget;
+		auto *layout = new QHBoxLayout(operationRow);
+		layout->setContentsMargins(0, 0, 0, 0);
+		layout->setSpacing(12);
+
+		buttonOut = new QPushButton(label);
+		buttonOut->setFixedSize(150, 50);
+		layout->addWidget(buttonOut);
+
+		auto *helpLabel = new QLabel(help);
+		helpLabel->setWordWrap(true);
+		layout->addWidget(helpLabel, 1);
+
+		return operationRow;
+	}
+} // namespace
+
+// MARK: - Construction
+
+AvbFilterDialog::AvbFilterDialog(QWidget *parent)
+	: QDialog(parent)
+{
+	setWindowTitle(tr("Filter by Bin"));
+	setWindowFlags(windowFlags() | Qt::Tool);
+	setAttribute(Qt::WA_MacAlwaysShowToolWindow, true);
+	setModal(false);
+	setAcceptDrops(true);
+	m_loadPool.setMaxThreadCount(kMaxConcurrentBinLoads);
+	resize(720, 640);
+	setupUi();
+}
+
+AvbFilterDialog::~AvbFilterDialog()
+{
+	for (const auto &cancelled : std::as_const(m_pendingLoads))
+		cancelled->store(true, std::memory_order_relaxed);
+	// Workers own only their path and cancellation flag. On teardown, join
+	// after signalling cancellation so the pool cannot outlive the dialog.
+	m_loadPool.waitForDone();
+}
+
+// MARK: - UI layout
+
+void AvbFilterDialog::setupUi()
+{
+	auto *root = new QVBoxLayout(this);
+	root->setContentsMargins(20, 20, 20, 20);
+	root->setSpacing(12);
+
+	auto *intro = new QLabel(
+		tr("Load your Avid Bin files here and I'll show you only the media they "
+		   "reference.\nTick which bins to include, then refine the filter below."));
+	// Explicit \n keeps the two sentences on their own lines; word wrap still
+	// applies within each line if the dialog is ever narrowed.
+	intro->setWordWrap(true);
+	root->addWidget(intro);
+
+	// Breathing room so the wrapped intro doesn't crowd the Loaded Bins group
+	// heading directly beneath it.
+	root->addSpacing(8);
+
+	// MARK: Loaded Bins group
+
+	auto *binsGroup = new QGroupBox(tr("Loaded Bins"));
+	auto *binsLayout = new QVBoxLayout(binsGroup);
+	auto *binsFrame = new QFrame;
+	binsFrame->setFrameShape(QFrame::StyledPanel);
+	binsFrame->setFrameShadow(QFrame::Sunken);
+	auto *framedLayout = new QVBoxLayout(binsFrame);
+	framedLayout->setContentsMargins(0, 0, 0, 0);
+	framedLayout->setSpacing(0);
+	m_binList = new QListWidget;
+	m_binList->setObjectName(QStringLiteral("BinList"));
+	m_binList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+	m_binList->setMinimumHeight(140);
+	m_binList->setFrameShape(QFrame::NoFrame);
+	framedLayout->addWidget(m_binList, 1);
+	auto *segBar = new QWidget;
+	segBar->setObjectName("BinFilterSegBar");
+	segBar->setStyleSheet(segBarStyleSheet(QStringLiteral("BinFilterSegBar")));
+	auto *segLayout = new QHBoxLayout(segBar);
+	segLayout->setContentsMargins(0, 0, 0, 0);
+	segLayout->setSpacing(0);
+	auto *btnPlus = new QToolButton;
+	// Text-mode glyphs (not emoji dingbats) so the colour follows
+	// palette(text) and flips with dark mode. The segBar QSS bumps
+	// the font size to keep them visually chunky.
+	btnPlus->setText(QStringLiteral("+"));
+	btnPlus->setToolTip(tr("Add..."));
+	btnPlus->setCursor(Qt::PointingHandCursor);
+	btnPlus->setAutoRaise(true);
+	auto *btnMinus = new QToolButton;
+	btnMinus->setText(QStringLiteral("−"));
+	btnMinus->setToolTip(tr("Remove selected"));
+	btnMinus->setCursor(Qt::PointingHandCursor);
+	btnMinus->setAutoRaise(true);
+	// Disabled until a row is selected.
+	btnMinus->setEnabled(false);
+	auto *vSep1 = new QFrame;
+	vSep1->setFrameShape(QFrame::VLine);
+	vSep1->setStyleSheet(QStringLiteral("QFrame { color: palette(mid); }"));
+	auto *vSep2 = new QFrame;
+	vSep2->setFrameShape(QFrame::VLine);
+	vSep2->setStyleSheet(QStringLiteral("QFrame { color: palette(mid); }"));
+	segLayout->addWidget(btnPlus);
+	segLayout->addWidget(vSep1);
+	segLayout->addWidget(btnMinus);
+	segLayout->addWidget(vSep2);
+	segLayout->addStretch(1);
+	m_binListSummary = new QLabel(tr("0 loaded, 0 ticked"));
+	m_binListSummary->setObjectName(QStringLiteral("BinListSummary"));
+	m_binListSummary->setStyleSheet(
+		QStringLiteral("QLabel { color: palette(placeholder-text); padding-right: 8px; }"));
+	segLayout->addWidget(m_binListSummary);
+
+	framedLayout->addWidget(segBar);
+	binsLayout->addWidget(binsFrame);
+
+	connect(btnPlus, &QToolButton::clicked, this, &AvbFilterDialog::onAddBinsClicked);
+	connect(btnMinus, &QToolButton::clicked, this, &AvbFilterDialog::onRemoveSelectedBinsClicked);
+
+	connect(m_binList, &QListWidget::itemSelectionChanged, this,
+			[this, btnMinus]()
+			{ btnMinus->setEnabled(!m_binList->selectedItems().isEmpty()); });
+
+	root->addWidget(binsGroup);
+
+	// MARK: Apply Operation group
+
+	auto *opsGroup = new QGroupBox(tr("Filter Operations"));
+	auto *opsLayout = new QVBoxLayout(opsGroup);
+	opsLayout->setSpacing(12);
+
+	opsLayout->addWidget(makeOperationRow(
+		tr("Intersect"),
+		tr("Show only the media referenced in the ticked bins."),
+		m_intersectButton));
+
+	opsLayout->addWidget(makeOperationRow(
+		tr("Subtract"),
+		tr("Hide media that is referenced in the ticked bins. Useful when archiving or deleting."),
+		m_subtractButton));
+
+	opsLayout->addWidget(makeOperationRow(
+		tr("Add"),
+		tr("Bring back media referenced in the ticked bins, even if an earlier step hid it."),
+		m_addButton));
+	m_intersectButton->setObjectName(QStringLiteral("BinIntersectButton"));
+	m_subtractButton->setObjectName(QStringLiteral("BinSubtractButton"));
+	m_addButton->setObjectName(QStringLiteral("BinAddButton"));
+
+	root->addWidget(opsGroup);
+
+	// MARK: Current Steps group
+
+	// Mirrors the Loaded Bins panel: list inside a sunken frame with
+	// a bottom segBar carrying the remove control and a summary
+	// label. Familiar shape, familiar interactions.
+	auto *chainGroup = new QGroupBox(tr("Filter Steps"));
+	auto *chainLayout = new QVBoxLayout(chainGroup);
+
+	auto *chainFrame = new QFrame;
+	chainFrame->setFrameShape(QFrame::StyledPanel);
+	chainFrame->setFrameShadow(QFrame::Sunken);
+	auto *chainFrameLayout = new QVBoxLayout(chainFrame);
+	chainFrameLayout->setContentsMargins(0, 0, 0, 0);
+	chainFrameLayout->setSpacing(0);
+
+	m_chainList = new QListWidget;
+	m_chainList->setObjectName(QStringLiteral("BinChainList"));
+	m_chainList->setMinimumHeight(96);
+	m_chainList->setFrameShape(QFrame::NoFrame);
+	chainFrameLayout->addWidget(m_chainList, 1);
+
+	auto *chainSegBar = new QWidget;
+	chainSegBar->setObjectName("ChainFilterSegBar");
+	chainSegBar->setStyleSheet(segBarStyleSheet(QStringLiteral("ChainFilterSegBar")));
+	auto *chainSegLayout = new QHBoxLayout(chainSegBar);
+	chainSegLayout->setContentsMargins(0, 0, 0, 0);
+	chainSegLayout->setSpacing(0);
+
+	auto *btnChainRemove = new QToolButton;
+	btnChainRemove->setText(QStringLiteral("−"));
+	btnChainRemove->setToolTip(tr("Remove selected operation"));
+	btnChainRemove->setCursor(Qt::PointingHandCursor);
+	btnChainRemove->setAutoRaise(true);
+	btnChainRemove->setEnabled(false);
+
+	auto *chainSep = new QFrame;
+	chainSep->setFrameShape(QFrame::VLine);
+	chainSep->setStyleSheet(QStringLiteral("QFrame { color: palette(mid); }"));
+
+	chainSegLayout->addWidget(btnChainRemove);
+	chainSegLayout->addWidget(chainSep);
+	chainSegLayout->addStretch(1);
+
+	m_chainSummary = new QLabel(tr("Add bin files to get started."));
+	m_chainSummary->setObjectName(QStringLiteral("BinChainSummary"));
+	m_chainSummary->setStyleSheet(
+		QStringLiteral("QLabel { color: palette(placeholder-text); padding-right: 8px; }"));
+	chainSegLayout->addWidget(m_chainSummary);
+
+	chainFrameLayout->addWidget(chainSegBar);
+	chainLayout->addWidget(chainFrame);
+
+	connect(m_chainList, &QListWidget::itemSelectionChanged, this, [this, btnChainRemove]()
+			{ btnChainRemove->setEnabled(!m_chainList->selectedItems().isEmpty()); });
+	connect(btnChainRemove, &QToolButton::clicked, this,
+			[this]()
+			{
+				auto sel = m_chainList->selectedItems();
+				if (sel.isEmpty())
+					return;
+				const int stepIndex = sel.first()->data(Qt::UserRole).toInt();
+				onRemoveStep(stepIndex);
+			});
+
+	root->addWidget(chainGroup);
+
+	// MARK: Footer
+
+	auto *footer = new QHBoxLayout;
+	footer->addStretch(1);
+	auto *btnDone = new QPushButton(tr("Done"));
+	btnDone->setDefault(true);
+	footer->addWidget(btnDone);
+	root->addLayout(footer);
+
+	connect(m_intersectButton, &QPushButton::clicked, this, &AvbFilterDialog::onIntersectClicked);
+	connect(m_subtractButton, &QPushButton::clicked, this, &AvbFilterDialog::onSubtractClicked);
+	connect(m_addButton, &QPushButton::clicked, this, &AvbFilterDialog::onAddClicked);
+	connect(btnDone, &QPushButton::clicked, this, &QDialog::hide);
+
+	// Tickbox changes drive the summary text and op-button enable state.
+	connect(m_binList, &QListWidget::itemChanged, this,
+			[this](QListWidgetItem *)
+			{ refreshBinSelectionUi(); });
+
+	// Prime initial state (0 loaded, buttons disabled, placeholder text).
+	refreshBinSelectionUi();
+}
+
+// MARK: - UI state
+
+void AvbFilterDialog::refreshBinSelectionUi()
+{
+	const auto loading = std::count_if(m_bins.cbegin(), m_bins.cend(),
+									   [](const BinLoadEntry &binEntry)
+									   { return binEntry.loading; });
+	const auto loaded = m_bins.size() - loading;
+	const auto ready = checkedLoadedBins().size();
+	QString summary = tr("%1 loaded, %2 ticked").arg(Format::count(loaded), Format::count(ready));
+	if (loading > 0)
+		summary += tr(", %1 loading").arg(Format::count(loading));
+	m_binListSummary->setText(summary);
+
+	// Operations require at least one ticked, usable bin.
+	const bool canApply = ready > 0;
+	m_intersectButton->setEnabled(canApply);
+	m_addButton->setEnabled(canApply);
+	// A leading Subtract starts with all media rows, just as its help text says.
+	m_subtractButton->setEnabled(canApply);
+
+	if (m_chain.isEmpty())
+		m_chainSummary->setText(tr("Tick a bin, then choose an operation above."));
+}
+
+// MARK: - Drag and drop
+
+bool AvbFilterDialog::hasAcceptedDragPath(const QMimeData *mime) const
+{
+	return DragDropUtil::hasAnyLocalUrl(
+		mime, [this](const QString &path)
+		{ return m_dragAcceptedPaths.contains(path); });
+}
+
+// Same blue ring + tint the Volumes list draws (VolumeListWidget). Kept as a
+// duplicate string on purpose: two static drop targets, no shared helper.
+void AvbFilterDialog::setDropHighlight(bool on)
+{
+	if (on)
+		m_binList->setStyleSheet(QStringLiteral(
+			"QListWidget { border: 2px solid #4A90E2; "
+			"background-color: rgba(74, 144, 226, 0.08); }"));
+	else
+		m_binList->setStyleSheet(QString());
+}
+
+void AvbFilterDialog::dragEnterEvent(QDragEnterEvent *event)
+{
+	m_dragAcceptedPaths.clear();
+	QSet<QString> inspectedPaths;
+	// Recognize contents once per drag, not on every mouse movement. Full
+	// object validation still runs on the background workers after dropping.
+	for (const QUrl &url : event->mimeData()->urls())
+	{
+		if (!url.isLocalFile())
+			continue;
+		const QString path = url.toLocalFile();
+		if (inspectedPaths.contains(path))
+			continue;
+		inspectedPaths.insert(path);
+		const AvbHeaderResult header = path.endsWith(QStringLiteral(".avb"), Qt::CaseInsensitive)
+										   ? AvbBinLoader::inspectHeader(path)
+										   : AvbHeaderResult{false, tr("Choose an Avid bin file with an .avb extension.")};
+		if (header.recognized)
+			m_dragAcceptedPaths.insert(path);
+		else
+			// A rejected enter need not receive a drop event, so report it now.
+			emit loadError(path, header.error);
+	}
+	if (hasAcceptedDragPath(event->mimeData()))
+	{
+		event->acceptProposedAction();
+		setDropHighlight(true);
+	}
+	else
+	{
+		setDropHighlight(false);
+		event->ignore();
+	}
+}
+
+void AvbFilterDialog::dragMoveEvent(QDragMoveEvent *event)
+{
+	if (hasAcceptedDragPath(event->mimeData()))
+		event->acceptProposedAction();
+	else
+		event->ignore();
+}
+
+void AvbFilterDialog::dragLeaveEvent(QDragLeaveEvent *event)
+{
+	setDropHighlight(false);
+	m_dragAcceptedPaths.clear();
+	QDialog::dragLeaveEvent(event);
+}
+
+void AvbFilterDialog::dropEvent(QDropEvent *event)
+{
+	setDropHighlight(false);
+	if (!hasAcceptedDragPath(event->mimeData()))
+	{
+		m_dragAcceptedPaths.clear();
+		event->ignore();
+		return;
+	}
+	for (const QUrl &url : event->mimeData()->urls())
+	{
+		if (!url.isLocalFile())
+			continue;
+		const QString path = url.toLocalFile();
+		if (m_dragAcceptedPaths.contains(path))
+			addBinFromFile(path);
+	}
+	m_dragAcceptedPaths.clear();
+	event->acceptProposedAction();
+}
+
+// MARK: - Bin loading
+
+void AvbFilterDialog::addBinFromFile(const QString &avbFilePath)
+{
+	const QFileInfo info(avbFilePath);
+	const QString canonical = info.canonicalFilePath();
+	const QString path = canonical.isEmpty()
+							 ? QDir::cleanPath(info.absoluteFilePath())
+							 : canonical;
+	for (const BinLoadEntry &existingBin : std::as_const(m_bins))
+	{
+		if (existingBin.bin.filePath == path)
+			return;
+	}
+	if (!avbFilePath.endsWith(QStringLiteral(".avb"), Qt::CaseInsensitive))
+	{
+		AvbBin rejected;
+		rejected.filePath = path;
+		rejected.displayName = info.completeBaseName();
+		rejected.error = tr("Choose an Avid bin file with an .avb extension.");
+		reportLoadFailure(rejected);
+		emit binLoaded(rejected);
+		return;
+	}
+
+	BinLoadEntry newBinEntry;
+	newBinEntry.bin.filePath = path;
+	newBinEntry.bin.displayName = info.completeBaseName();
+	newBinEntry.binRowId = m_nextBinId++;
+	const quint64 id = newBinEntry.binRowId;
+	const int binRow = m_binList->count();
+	m_bins.append(std::move(newBinEntry));
+	appendBinItem(binRow);
+	refreshBinSelectionUi();
+
+	if (m_chain.isEmpty())
+		m_autoIntersectPending = true;
+	startBinLoad(id, path);
+}
+
+void AvbFilterDialog::startBinLoad(quint64 id, const QString &path)
+{
+	const auto cancelled = std::make_shared<std::atomic_bool>(false);
+	m_pendingLoads.insert(id, cancelled);
+	auto *const watcher = new QFutureWatcher<AvbBin>(this);
+	connect(watcher, &QFutureWatcher<AvbBin>::finished, this,
+			[this, watcher, id]()
+			{
+				m_pendingLoads.remove(id);
+				const AvbBin parsed = watcher->result();
+				watcher->deleteLater();
+				completeBinLoad(id, parsed);
+				QTimer::singleShot(0, this, &AvbFilterDialog::finishLoadingBatch);
+			});
+	// The worker owns its path and shares only the cancellation flag. The
+	// watcher callback is bound to this dialog's lifetime on the GUI thread.
+	watcher->setFuture(QtConcurrent::run(&m_loadPool,
+										 [path, cancelled]()
+										 { return AvbBinLoader::load(path, cancelled.get()); }));
+}
+
+void AvbFilterDialog::completeBinLoad(quint64 id, const AvbBin &bin)
+{
+	// Rows may have been removed, compacted, or re-added while parsing.
+	// Only the original stable ID can receive this result.
+	for (int binRow = 0; binRow < m_binList->count(); ++binRow)
+	{
+		BinLoadEntry &binEntry = m_bins[binRow];
+		if (binEntry.binRowId != id)
+			continue;
+		if (!bin.isUsable())
+		{
+			removeBinRow(binRow);
+			refreshBinSelectionUi();
+			reportLoadFailure(bin);
+			emit binLoaded(bin);
+			return;
+		}
+		binEntry.bin = bin;
+		binEntry.loading = false;
+		if (!bin.coverageComplete)
+			emit loadWarning(bin.filePath, bin.warnings.join(QStringLiteral("; ")));
+		if (!bin.mediaFileIds.isEmpty())
+			m_newlyLoadedIds.insert(id);
+		updateBinItem(binRow);
+		refreshBinSelectionUi();
+		emit binLoaded(bin);
+		return;
+	}
+}
+
+void AvbFilterDialog::removeBinRow(int row)
+{
+	const quint64 id = m_bins[row].binRowId;
+	const auto cancelled = m_pendingLoads.value(id);
+	if (cancelled)
+		cancelled->store(true, std::memory_order_relaxed);
+	m_newlyLoadedIds.remove(id);
+	m_bins.removeAt(row);
+	// takeItem transfers ownership out of the view; release it at scope end.
+	const std::unique_ptr<QListWidgetItem> removed(m_binList->takeItem(row));
+}
+
+void AvbFilterDialog::reportLoadFailure(const AvbBin &bin)
+{
+	QStringList reasons;
+	if (!bin.error.isEmpty())
+		reasons.append(bin.error);
+	reasons.append(bin.warnings);
+	if (reasons.isEmpty())
+		reasons.append(tr("The bin could not be read completely."));
+	emit loadError(bin.filePath, reasons.join(QStringLiteral("; ")));
+}
+
+bool AvbFilterDialog::hasLoadingBins() const
+{
+	return std::any_of(m_bins.cbegin(), m_bins.cend(),
+					   [](const BinLoadEntry &entry)
+					   { return entry.loading; });
+}
+
+void AvbFilterDialog::finishLoadingBatch()
+{
+	if (hasLoadingBins())
+		return;
+	// Initial filtering uses the settled set of retained bins.
+	// Rejected attempts must not reactivate a previously cleared filter.
+	if (!m_newlyLoadedIds.isEmpty())
+		tryAutoIntersect();
+	else
+		m_autoIntersectPending = false;
+	m_newlyLoadedIds.clear();
+}
+
+void AvbFilterDialog::tryAutoIntersect()
+{
+	if (!m_autoIntersectPending || !m_chain.isEmpty())
+		return;
+	if (hasLoadingBins())
+		return;
+	m_autoIntersectPending = false;
+	applyOperation(Operation::Intersect);
+}
+
+void AvbFilterDialog::appendBinItem(int binIndex)
+{
+	const QSignalBlocker block(m_binList);
+	m_binList->addItem(QString{});
+	updateBinItem(binIndex);
+}
+
+void AvbFilterDialog::updateBinItem(int binIndex)
+{
+	const BinLoadEntry &binEntry = m_bins[binIndex];
+	const AvbBin &bin = binEntry.bin;
+	QListWidgetItem *const item = m_binList->item(binIndex);
+	const QSignalBlocker block(m_binList);
+	const bool usable = !binEntry.loading && bin.isUsable();
+	item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable |
+				   (usable ? Qt::ItemIsUserCheckable : Qt::NoItemFlags));
+	// Loading rows remain selectable so their outstanding reads can be cancelled.
+	item->setData(Qt::CheckStateRole, usable ? QVariant(Qt::Checked) : QVariant());
+	const QString explanation = binExplanation(bin, binEntry.loading);
+	item->setText(explanation.isEmpty() ? bin.displayName
+										: bin.displayName + QStringLiteral("\n") + explanation);
+	QStringList details{bin.filePath};
+	if (!explanation.isEmpty())
+		details.append(explanation);
+	if (!bin.error.isEmpty())
+		details.append(bin.error);
+	details.append(bin.warnings);
+	item->setToolTip(details.join(QStringLiteral("\n")));
+}
+
+void AvbFilterDialog::onAddBinsClicked()
+{
+	const QStringList paths = QFileDialog::getOpenFileNames(
+		this, tr("Add Avid Bin files"), QString(),
+		tr("Avid Bin files (*.avb)"));
+	for (const QString &avbPath : paths)
+		addBinFromFile(avbPath);
+}
+
+void AvbFilterDialog::onRemoveSelectedBinsClicked()
+{
+	// 'Selected' means rows the user clicked, not the tickboxes;
+	// tickboxes control which bins participate in operations.
+	const QList<QListWidgetItem *> selected = m_binList->selectedItems();
+	if (selected.isEmpty())
+		return;
+
+	// Remove descending so earlier row numbers stay valid. Surviving items
+	// stay in place, preserving their tick states.
+	QList<int> binRows;
+	binRows.reserve(selected.size());
+	for (const QListWidgetItem *item : selected)
+		binRows.append(m_binList->row(item));
+	std::sort(binRows.begin(), binRows.end(), std::greater<>{});
+	for (int row : binRows)
+		removeBinRow(row);
+
+	// Deletes don't fire itemChanged, so refresh the summary and op-button
+	// state ourselves; otherwise they'd stay stale when the last bin goes.
+	refreshBinSelectionUi();
+
+	// Chain operands are snapshots and remain unchanged, including a leading Subtract.
+	publishFilter();
+	QTimer::singleShot(0, this, &AvbFilterDialog::finishLoadingBatch);
+}
+
+// MARK: - Tick helpers
+
+QVector<const AvbBin *> AvbFilterDialog::checkedLoadedBins() const
+{
+	QVector<const AvbBin *> out;
+	for (int binRow = 0; binRow < m_binList->count(); ++binRow)
+	{
+		const QListWidgetItem *binItem = m_binList->item(binRow);
+		if (binItem->checkState() != Qt::Checked)
+			continue;
+		const BinLoadEntry &binEntry = m_bins[binRow];
+		if (!binEntry.loading && binEntry.bin.isUsable())
+			out.append(&binEntry.bin);
+	}
+	return out;
+}
+
+// MARK: - Chain operations
+
+void AvbFilterDialog::onIntersectClicked()
+{
+	applyOperation(Operation::Intersect);
+}
+void AvbFilterDialog::onSubtractClicked()
+{
+	applyOperation(Operation::Subtract);
+}
+void AvbFilterDialog::onAddClicked()
+{
+	applyOperation(Operation::Add);
+}
+
+void AvbFilterDialog::applyOperation(Operation op)
+{
+	const auto selection = checkedLoadedBins();
+	if (selection.isEmpty())
+		return;
+	m_autoIntersectPending = false;
+	ChainStep step;
+	step.operation = op;
+	for (const AvbBin *bin : selection)
+	{
+		step.binDisplayNames.append(bin->displayName);
+		step.fileReferences.unite(bin->mediaFileIds);
+		if (!bin->coverageComplete)
+		{
+			step.warnings.append(tr("%1: Results may be incomplete").arg(bin->displayName));
+			step.warnings.append(bin->warnings);
+		}
+	}
+	// An operand without usable file identities leaves the current chain unchanged.
+	if (step.fileReferences.isEmpty())
+		return;
+	m_chain.append(std::move(step));
+	rebuildChainList();
+	publishFilter();
+	refreshBinSelectionUi();
+}
+
+void AvbFilterDialog::clearFilterSteps()
+{
+	m_autoIntersectPending = false;
+	if (m_chain.isEmpty())
+		return;
+	m_chain.clear();
+	rebuildChainList();
+	publishFilter();
+	refreshBinSelectionUi();
+}
+
+void AvbFilterDialog::onRemoveStep(int index)
+{
+	if (index < 0 || index >= m_chain.size())
+		return;
+	m_autoIntersectPending = false;
+	m_chain.removeAt(index);
+	rebuildChainList();
+	publishFilter();
+	refreshBinSelectionUi();
+}
+
+void AvbFilterDialog::rebuildChainList()
+{
+	m_chainList->clear();
+	for (const ChainStep &step : std::as_const(m_chain))
+	{
+		const int stepRow = m_chainList->count();
+		const QString binNames =
+			step.binDisplayNames.isEmpty()
+				? tr("(no bins)")
+				: QStringList(step.binDisplayNames.cbegin(), step.binDisplayNames.cend())
+					  .join(QStringLiteral(", "));
+
+		auto *const item = new QListWidgetItem(
+			QStringLiteral("%1.  %2:  %3").arg(stepRow + 1).arg(operationLabel(step.operation), binNames));
+		if (!step.warnings.isEmpty())
+			item->setText(item->text() + QStringLiteral("\n") + tr("Results may be incomplete"));
+		item->setToolTip(step.warnings.join(QStringLiteral("\n")));
+		item->setData(Qt::UserRole, stepRow);
+		m_chainList->addItem(item);
+	}
+}
+
+// MARK: - Emit the ordered chain
+
+void AvbFilterDialog::publishFilter()
+{
+	if (m_chain.isEmpty())
+	{
+		m_chainSummary->setText(tr("Tick a bin, then choose an operation above."));
+		emit filterChainChanged({}, {});
+		return;
+	}
+
+	// The chain list already describes the active filter.
+	m_chainSummary->setText(AvbFilter{m_chain}.resultsMayBeIncomplete() ? tr("Results may be incomplete") : QString{});
+
+	// Deduped, insertion-ordered bin names for the main-window chip
+	// strip. First appearance wins so the chip ordering is stable
+	// across re-emits.
+	QStringList binNames;
+	QSet<QString> seen;
+	for (const ChainStep &step : std::as_const(m_chain))
+	{
+		for (const QString &name : step.binDisplayNames)
+		{
+			if (!seen.contains(name))
+			{
+				seen.insert(name);
+				binNames.append(name);
+			}
+		}
+	}
+
+	emit filterChainChanged(AvbFilter{m_chain}, binNames);
+}
