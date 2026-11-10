@@ -122,14 +122,14 @@ namespace Bella::Lookup
 		// Additional exact names from Avid's codec definitions.
 		static const std::array<DnxCompression, 7> kDnxCompression{{
 			// Display name, coding label.
-			{"Avid DNx HQ", QByteArray::fromHex("060e2b34040101030e04410101050200")},
-			{"Avid DNx SQ", QByteArray::fromHex("060e2b34040101030e04410101050300")},
-			{"Avid DNxStitched AVC-I 4:2:2", QByteArray::fromHex("060e2b34040101030e04410101060100")},
+			{"DNx HQ", QByteArray::fromHex("060e2b34040101030e04410101050200")},
+			{"DNx SQ", QByteArray::fromHex("060e2b34040101030e04410101050300")},
+			{"DNxStitched AVC-I 4:2:2", QByteArray::fromHex("060e2b34040101030e04410101060100")},
 			// These thin-raster DNx profiles don't have numbered aliases.
-			{"Avid DNx TR", QByteArray::fromHex("060e2b340401010d04010202710a0000")},
-			{"Avid DNx TR", QByteArray::fromHex("060e2b340401010d0401020271180000")},
-			{"Avid DNx TR", QByteArray::fromHex("060e2b340401010d0401020271190000")},
-			{"Avid DNx TR", QByteArray::fromHex("060e2b340401010d04010202711a0000")},
+			{"DNx TR", QByteArray::fromHex("060e2b340401010d04010202710a0000")},
+			{"DNx TR", QByteArray::fromHex("060e2b340401010d0401020271180000")},
+			{"DNx TR", QByteArray::fromHex("060e2b340401010d0401020271190000")},
+			{"DNx TR", QByteArray::fromHex("060e2b340401010d04010202711a0000")},
 		}};
 
 		QString dnxUncompressedName(const CompressionFacts &facts)
@@ -147,7 +147,7 @@ namespace Bella::Lookup
 			if (facts.codingLabel != kDnxUncompressedCodingLabel && facts.codingLabel != kDnxUncompressedFixedPointCodingLabel)
 				return {};
 
-			QString name = QStringLiteral("Avid DNxUncompressed");
+			QString name = QStringLiteral("DNxUncompressed");
 			if (!facts.bitDepthText.isEmpty() && !facts.sampleFormatText.isEmpty())
 				name += QStringLiteral(" — %1 %2").arg(facts.bitDepthText, facts.sampleFormatText);
 			return name;
@@ -161,7 +161,7 @@ namespace Bella::Lookup
 		{
 			if (facts.codingLabel != profile.codingLabel)
 				continue;
-			result.newDnx = QStringLiteral("Avid DNx %1").arg(QLatin1String(profile.profileTier));
+			result.newDnx = QStringLiteral("DNx %1").arg(QLatin1String(profile.profileTier));
 			result.oldDnx = QStringLiteral("DNx%1 %2")
 								.arg(profile.isDnxHr ? QLatin1String("HR") : QLatin1String("HD"), QLatin1String(profile.profileTier));
 			result.reallyOldDnx = numberedDnxName(profile, facts);

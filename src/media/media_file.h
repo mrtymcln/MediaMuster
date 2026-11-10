@@ -69,7 +69,7 @@ struct MediaFile
 
 	// MARK: MXF or MDB technical metadata
 
-	QString compression; ///< "Avid DNx HQX [DNxHD 175x]", "PCM", etc.
+	QString compression; ///< "DNx HQX [DNxHD 175x]", "PCM", etc.
 	std::optional<BellaRowValues> bellaValues;
 
 	// MARK: Precompute detail (table, CSV and filtering when enabled)

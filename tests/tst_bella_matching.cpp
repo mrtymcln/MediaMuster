@@ -613,8 +613,8 @@ void TestBellaMatching::partialCompressionNamesAgree()
 												  : QVector<Bella::MdbReport>{complete, aliases};
 	const auto context = Bella::prepareMatchContext({listedPmr()}, std::move(databases), {folder, elsewhere});
 	const auto answer = Bella::matchFile(context, physical, true, {}, false);
-	QCOMPARE(answer.metadata.compression.compressionName, QStringLiteral("Avid DNx HQX [DNxHD 175x]"));
-	QCOMPARE(answer.metadata.compression.newDnx, QStringLiteral("Avid DNx HQX"));
+	QCOMPARE(answer.metadata.compression.compressionName, QStringLiteral("DNx HQX [DNxHD 175x]"));
+	QCOMPARE(answer.metadata.compression.newDnx, QStringLiteral("DNx HQX"));
 	QCOMPARE(answer.metadata.compression.oldDnx, QStringLiteral("DNxHD HQX"));
 	QCOMPARE(answer.metadata.compression.reallyOldDnx, QStringLiteral("DNxHD 175x"));
 	QVERIFY(!answer.needsHeader);

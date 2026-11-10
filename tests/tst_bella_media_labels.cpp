@@ -155,8 +155,8 @@ void TestBellaMediaLabels::mdbNeedsOwnedDescriptor()
 	file.ownDescriptorQualified = false;
 	expectNames(Bella::compressionNamesFor(file), {});
 	file.ownDescriptorQualified = true;
-	expectNames(Bella::compressionNamesFor(file), QStringLiteral("Avid DNx HQX [DNxHD 175x]"),
-				QStringLiteral("Avid DNx HQX"), QStringLiteral("DNxHD HQX"), QStringLiteral("DNxHD 175x"));
+	expectNames(Bella::compressionNamesFor(file), QStringLiteral("DNx HQX [DNxHD 175x]"),
+				QStringLiteral("DNx HQX"), QStringLiteral("DNxHD HQX"), QStringLiteral("DNxHD 175x"));
 }
 
 void TestBellaMediaLabels::codingStateControlsStaleBytes_data()
@@ -226,13 +226,13 @@ void TestBellaMediaLabels::allDnxNamesUseNamingGeometry()
 	// Compression does not require the independent displayed Frame Rate flag.
 	mxf.frameRateQualified = false;
 	for (const auto &names : {Bella::compressionNamesFor(mdb), Bella::compressionNamesFor(omf), Bella::compressionNamesFor(mxf)})
-		expectNames(names, QStringLiteral("Avid DNx HQX [DNxHD 175x]"),
-					QStringLiteral("Avid DNx HQX"), QStringLiteral("DNxHD HQX"), QStringLiteral("DNxHD 175x"));
+		expectNames(names, QStringLiteral("DNx HQX [DNxHD 175x]"),
+					QStringLiteral("DNx HQX"), QStringLiteral("DNxHD HQX"), QStringLiteral("DNxHD 175x"));
 	mdb.compression.namingGeometry.reset();
 	omf.compression.namingGeometry.reset();
 	mxf.compression.namingGeometry.reset();
 	for (const auto &names : {Bella::compressionNamesFor(mdb), Bella::compressionNamesFor(omf), Bella::compressionNamesFor(mxf)})
-		expectNames(names, QStringLiteral("Avid DNx HQX"), QStringLiteral("Avid DNx HQX"), QStringLiteral("DNxHD HQX"));
+		expectNames(names, QStringLiteral("DNx HQX"), QStringLiteral("DNx HQX"), QStringLiteral("DNxHD HQX"));
 }
 
 void TestBellaMediaLabels::legacyDnxRateQualification_data()
@@ -288,8 +288,8 @@ void TestBellaMediaLabels::legacyDnxRateQualification()
 		omf.compression.resolutionId.reset();
 	}
 	for (const auto &names : {Bella::compressionNamesFor(mdb), Bella::compressionNamesFor(omf)})
-		expectNames(names, numberedAlias ? QStringLiteral("Avid DNx HQX [DNxHD 175x]") : QStringLiteral("Avid DNx HQX"),
-					QStringLiteral("Avid DNx HQX"), QStringLiteral("DNxHD HQX"), numberedAlias ? QStringLiteral("DNxHD 175x") : QString{});
+		expectNames(names, numberedAlias ? QStringLiteral("DNx HQX [DNxHD 175x]") : QStringLiteral("DNx HQX"),
+					QStringLiteral("DNx HQX"), QStringLiteral("DNxHD HQX"), numberedAlias ? QStringLiteral("DNxHD 175x") : QString{});
 	QCOMPARE(mdb.sampleRate->words.numerator, variation == 4 ? qint32(5994) : variation == 5 ? qint32(23976001)
 																							 : qint32(23976));
 	QCOMPARE(omf.sampleRate->words.denominator, variation == 4 ? qint32(100) : variation == 5 ? qint32(1000000)
@@ -300,10 +300,10 @@ void TestBellaMediaLabels::mxfNamingClockRemainsLiteral()
 {
 	auto file = mxfHqx();
 	file.sampleRate = Bella::MxfRate{23976, 1000};
-	expectNames(Bella::compressionNamesFor(file), QStringLiteral("Avid DNx HQX"), QStringLiteral("Avid DNx HQX"), QStringLiteral("DNxHD HQX"));
+	expectNames(Bella::compressionNamesFor(file), QStringLiteral("DNx HQX"), QStringLiteral("DNx HQX"), QStringLiteral("DNxHD HQX"));
 	file.compression.codingLabel = hrHqx;
 	file.sampleRate = Bella::MxfRate{24000, 1001};
-	expectNames(Bella::compressionNamesFor(file), QStringLiteral("Avid DNx HQX"), QStringLiteral("Avid DNx HQX"), QStringLiteral("DNxHR HQX"));
+	expectNames(Bella::compressionNamesFor(file), QStringLiteral("DNx HQX"), QStringLiteral("DNx HQX"), QStringLiteral("DNxHR HQX"));
 }
 
 void TestBellaMediaLabels::jpeg2000NameIgnoresRateEncoding_data()
@@ -400,7 +400,7 @@ void TestBellaMediaLabels::uncompressedRepresentations()
 		mxf.bitDepth.bits.reset();
 	}
 	for (const auto &names : {Bella::compressionNamesFor(mdb), Bella::compressionNamesFor(omf), Bella::compressionNamesFor(mxf)})
-		expectNames(names, QStringLiteral("Avid DNxUncompressed — ") + description);
+		expectNames(names, QStringLiteral("DNxUncompressed — ") + description);
 }
 
 void TestBellaMediaLabels::mixedMxfComponents_data()
@@ -421,8 +421,8 @@ void TestBellaMediaLabels::mixedMxfComponents()
 	file.bitDepth.pixelLayout = mixed ? std::array<quint8, 16>{'A', 8, 'R', 254, 'G', 253, 'B', 10}
 									  : std::array<quint8, 16>{'F', 8, 'R', 10, 'G', 10, 'B', 10};
 	expectNames(Bella::compressionNamesFor(file), mixed
-													  ? QStringLiteral("Avid DNxUncompressed — A: 8-bit; R: 32-bit; G: 16-bit; B: 10-bit A: Integer; R: Float; G: Half float; B: Integer")
-													  : QStringLiteral("Avid DNxUncompressed — 10-bit Integer"));
+													  ? QStringLiteral("DNxUncompressed — A: 8-bit; R: 32-bit; G: 16-bit; B: 10-bit A: Integer; R: Float; G: Half float; B: Integer")
+													  : QStringLiteral("DNxUncompressed — 10-bit Integer"));
 }
 
 void TestBellaMediaLabels::dnxAlphaLayout_data()
@@ -455,7 +455,7 @@ void TestBellaMediaLabels::dnxAlphaLayout()
 		expectNames(names, QStringLiteral("DNxUncompressed"));
 	else
 	{
-		QVERIFY(names.compressionName.startsWith(QLatin1String("Avid DNxUncompressed")));
+		QVERIFY(names.compressionName.startsWith(QLatin1String("DNxUncompressed")));
 		QVERIFY(names.newDnx.isEmpty());
 		QVERIFY(names.oldDnx.isEmpty());
 		QVERIFY(names.reallyOldDnx.isEmpty());
@@ -469,10 +469,10 @@ void TestBellaMediaLabels::dnxAlphaNeedsMatchingMetadata_data()
 	QTest::newRow("unavailable-coding") << 0 << QString{};
 	QTest::newRow("absent-coding") << 1 << QString{};
 	QTest::newRow("unknown-coding") << 2 << QString{};
-	QTest::newRow("cdci-descriptor") << 3 << QStringLiteral("Avid DNxUncompressed — 8-bit Integer");
-	QTest::newRow("missing-layout") << 4 << QStringLiteral("Avid DNxUncompressed — 10-bit Integer");
-	QTest::newRow("fixed-point-label") << 5 << QStringLiteral("Avid DNxUncompressed — 16-bit S2.14 fixed point");
-	QTest::newRow("dnxhr-lb-colour") << 6 << QStringLiteral("Avid DNx LB");
+	QTest::newRow("cdci-descriptor") << 3 << QStringLiteral("DNxUncompressed — 8-bit Integer");
+	QTest::newRow("missing-layout") << 4 << QStringLiteral("DNxUncompressed — 10-bit Integer");
+	QTest::newRow("fixed-point-label") << 5 << QStringLiteral("DNxUncompressed — 16-bit S2.14 fixed point");
+	QTest::newRow("dnxhr-lb-colour") << 6 << QStringLiteral("DNx LB");
 }
 
 void TestBellaMediaLabels::dnxAlphaNeedsMatchingMetadata()
@@ -510,7 +510,7 @@ void TestBellaMediaLabels::dnxAlphaNeedsMatchingMetadata()
 	}
 	const auto names = Bella::compressionNamesFor(file);
 	if (variation == 6)
-		expectNames(names, expected, QStringLiteral("Avid DNx LB"), QStringLiteral("DNxHR LB"));
+		expectNames(names, expected, QStringLiteral("DNx LB"), QStringLiteral("DNxHR LB"));
 	else
 		expectNames(names, expected);
 }
@@ -634,7 +634,7 @@ void TestBellaMediaLabels::contradictoryAudioSummaryKeepsDnxNames()
 	mdb.compression.audioEncoding = Bella::MdbAudioEncoding::IeeeFloat;
 	omf.compression.audioEncoding = Bella::OmfAudioEncoding::IeeeFloat;
 	for (const auto &names : {Bella::compressionNamesFor(mdb), Bella::compressionNamesFor(omf)})
-		expectNames(names, {}, QStringLiteral("Avid DNx HQX"), QStringLiteral("DNxHD HQX"), QStringLiteral("DNxHD 175x"));
+		expectNames(names, {}, QStringLiteral("DNx HQX"), QStringLiteral("DNxHD HQX"), QStringLiteral("DNxHD 175x"));
 	QCOMPARE(mdb.compression.codingLabel, hqx);
 	QCOMPARE(omf.compression.audioEncoding, Bella::OmfAudioEncoding::IeeeFloat);
 }
@@ -737,7 +737,7 @@ void TestBellaMediaLabels::inputsAndReturnedNamesAreOwned()
 	QCOMPARE(report.problemNotes, originalNotes);
 	file.compression.codingLabel = proresHq;
 	file.sampleRate->words = {25, 1};
-	expectNames(names, QStringLiteral("Avid DNx HQX [DNxHD 175x]"), QStringLiteral("Avid DNx HQX"),
+	expectNames(names, QStringLiteral("DNx HQX [DNxHD 175x]"), QStringLiteral("DNx HQX"),
 				QStringLiteral("DNxHD HQX"), QStringLiteral("DNxHD 175x"));
 	QString clip = QStringLiteral("Seq,Resize+2");
 	const auto effect = Bella::effectNamesFor(true, clip);

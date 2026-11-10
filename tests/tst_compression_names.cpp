@@ -113,7 +113,7 @@ private slots:
 
 		facts.codingLabel = QByteArray::fromHex("060e2b340401010a0401020271040000");
 		const auto recordedDnx = Bella::Lookup::compressionNames(facts);
-		QCOMPARE(recordedDnx.compressionName, QStringLiteral("Avid DNx HQ"));
+		QCOMPARE(recordedDnx.compressionName, QStringLiteral("DNx HQ"));
 		QVERIFY(!recordedDnx.usedLegacyCompressionIdentifiers);
 
 		facts.codingLabel = QByteArray::fromHex("060e2b3404010101040102020202ffff");
@@ -326,24 +326,24 @@ private slots:
 	{
 		auto facts = dnxHqxFacts();
 		const auto hd = Bella::Lookup::compressionNames(facts);
-		QCOMPARE(hd.newDnx, QStringLiteral("Avid DNx HQX"));
+		QCOMPARE(hd.newDnx, QStringLiteral("DNx HQX"));
 		QCOMPARE(hd.oldDnx, QStringLiteral("DNxHD HQX"));
 		QCOMPARE(hd.reallyOldDnx, QStringLiteral("DNxHD 175x"));
-		QCOMPARE(hd.compressionName, QStringLiteral("Avid DNx HQX [DNxHD 175x]"));
+		QCOMPARE(hd.compressionName, QStringLiteral("DNx HQX [DNxHD 175x]"));
 
 		facts.namingRate = {23976, 1000};
 		const auto approximateRate = Bella::Lookup::compressionNames(facts);
 		QVERIFY(approximateRate.reallyOldDnx.isEmpty());
-		QCOMPARE(approximateRate.compressionName, QStringLiteral("Avid DNx HQX"));
+		QCOMPARE(approximateRate.compressionName, QStringLiteral("DNx HQX"));
 
 		// DNxHR can store an HD raster; that does not make it DNxHD 175x.
 		facts.namingRate = {24000, 1001};
 		facts.codingLabel = QByteArray::fromHex("060e2b340401010d0401020271250000");
 		const auto hr = Bella::Lookup::compressionNames(facts);
-		QCOMPARE(hr.newDnx, QStringLiteral("Avid DNx HQX"));
+		QCOMPARE(hr.newDnx, QStringLiteral("DNx HQX"));
 		QCOMPARE(hr.oldDnx, QStringLiteral("DNxHR HQX"));
 		QVERIFY(hr.reallyOldDnx.isEmpty());
-		QCOMPARE(hr.compressionName, QStringLiteral("Avid DNx HQX"));
+		QCOMPARE(hr.compressionName, QStringLiteral("DNx HQX"));
 	}
 
 	void unproven_dnx_identifiers_remain_unnamed_data()
@@ -386,17 +386,17 @@ private slots:
 		QTest::addColumn<QString>("sampleFormat");
 		QTest::addColumn<QString>("expected");
 		QTest::newRow("standard-float") << false << QStringLiteral("32-bit") << QStringLiteral("Float")
-										<< QStringLiteral("Avid DNxUncompressed — 32-bit Float");
+										<< QStringLiteral("DNxUncompressed — 32-bit Float");
 		QTest::newRow("standard-half") << false << QStringLiteral("16-bit") << QStringLiteral("Half float")
-									   << QStringLiteral("Avid DNxUncompressed — 16-bit Half float");
+									   << QStringLiteral("DNxUncompressed — 16-bit Half float");
 		QTest::newRow("standard-integer") << false << QStringLiteral("10-bit") << QStringLiteral("Integer")
-										  << QStringLiteral("Avid DNxUncompressed — 10-bit Integer");
+										  << QStringLiteral("DNxUncompressed — 10-bit Integer");
 		QTest::newRow("fixed-2.14") << true << QStringLiteral("16-bit") << QStringLiteral("S2.14 fixed point")
-									<< QStringLiteral("Avid DNxUncompressed — 16-bit S2.14 fixed point");
+									<< QStringLiteral("DNxUncompressed — 16-bit S2.14 fixed point");
 		QTest::newRow("fixed-10.6") << true << QStringLiteral("16-bit") << QStringLiteral("10.6 fixed point")
-									<< QStringLiteral("Avid DNxUncompressed — 16-bit 10.6 fixed point");
+									<< QStringLiteral("DNxUncompressed — 16-bit 10.6 fixed point");
 		QTest::newRow("fixed-12.4") << true << QStringLiteral("16-bit") << QStringLiteral("12.4 fixed point")
-									<< QStringLiteral("Avid DNxUncompressed — 16-bit 12.4 fixed point");
+									<< QStringLiteral("DNxUncompressed — 16-bit 12.4 fixed point");
 	}
 
 	void dnx_uncompressed_retains_qualified_flavours()
@@ -424,20 +424,20 @@ private slots:
 		QTest::addColumn<QString>("expected");
 		QTest::newRow("standard-zero-alpha")
 			<< QByteArray::fromHex("060e2b340401010d0401020203070100") << qint64(0)
-			<< QStringLiteral("Avid DNxUncompressed — 16-bit Integer");
+			<< QStringLiteral("DNxUncompressed — 16-bit Integer");
 		QTest::newRow("alpha-8")
 			<< QByteArray::fromHex("060e2b340401010d0401020203070100") << qint64(8) << QStringLiteral("DNxUncompressed");
 		QTest::newRow("standard-alpha-10")
 			<< QByteArray::fromHex("060e2b340401010d0401020203070100") << qint64(10)
-			<< QStringLiteral("Avid DNxUncompressed — 16-bit Integer");
+			<< QStringLiteral("DNxUncompressed — 16-bit Integer");
 		QTest::newRow("alpha-16")
 			<< QByteArray::fromHex("060e2b340401010d0401020203070100") << qint64(16) << QStringLiteral("DNxUncompressed");
 		QTest::newRow("fixed-point-alpha-8")
 			<< QByteArray::fromHex("060e2b340401010d0401020203070200") << qint64(8)
-			<< QStringLiteral("Avid DNxUncompressed — 16-bit Integer");
+			<< QStringLiteral("DNxUncompressed — 16-bit Integer");
 		QTest::newRow("fixed-point-alpha-16")
 			<< QByteArray::fromHex("060e2b340401010d0401020203070200") << qint64(16)
-			<< QStringLiteral("Avid DNxUncompressed — 16-bit Integer");
+			<< QStringLiteral("DNxUncompressed — 16-bit Integer");
 		QTest::newRow("legacy-rle")
 			<< QByteArray::fromHex("060e2b34040101030e04410101030000") << kMissingAlphaDepth << QStringLiteral("DNxUncompressed");
 		QTest::newRow("legacy-rle-alpha-10")
