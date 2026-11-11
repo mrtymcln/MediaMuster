@@ -44,30 +44,6 @@ else()
     add_compile_options(-Wall -Wextra)
 endif()
 
-### Beta expiry ###
-option(SELF_DESTRUCT "Lock the app after the expiry date" OFF)
-set(SELF_DESTRUCT_DATE "2026-12-31" CACHE STRING "Self destruct date")
-if(SELF_DESTRUCT)
-    if(NOT SELF_DESTRUCT_DATE MATCHES "^([0-9][0-9][0-9][0-9])-([0-9][0-9])-([0-9][0-9])$")
-        message(FATAL_ERROR
-            "SELF_DESTRUCT_DATE must be ISO yyyy-MM-dd, got '${SELF_DESTRUCT_DATE}'")
-    endif()
-    if(CMAKE_MATCH_2 GREATER 12 OR CMAKE_MATCH_2 LESS 1
-       OR CMAKE_MATCH_3 GREATER 31 OR CMAKE_MATCH_3 LESS 1)
-        message(FATAL_ERROR
-            "SELF_DESTRUCT_DATE '${SELF_DESTRUCT_DATE}' is not a real date")
-    endif()
-
-    string(TIMESTAMP _today "%Y-%m-%d")
-    if(SELF_DESTRUCT_DATE STRLESS _today)
-        message(WARNING
-            "SELF_DESTRUCT_DATE ${SELF_DESTRUCT_DATE} is already in the past ")
-    endif()
-    unset(_today)
-
-    message(STATUS "SelfDestruct enabled — expires ${SELF_DESTRUCT_DATE}")
-endif()
-
 ### Codesign identity ###
 if(APPLE)
     set(MEDIAMUSTER_CODESIGN_IDENTITY
@@ -77,8 +53,6 @@ endif()
 
 ### Test suite; disable with -DMEDIAMUSTER_BUILD_TESTS=OFF ###
 option(MEDIAMUSTER_BUILD_TESTS "Build the MediaMuster test suite" ON)
-option(MEDIAMUSTER_BELLA_PREVIEW "Build the separate Bella scan and export test app" OFF)
-set(MEDIAMUSTER_BELLA_PREVIEW_NAME "MediaMuster Bella Test")
 
 ### Pin to Qt version ###
 find_package(Qt6 6.5.3 EXACT REQUIRED COMPONENTS Widgets Core Gui Concurrent)
@@ -202,10 +176,6 @@ if(APPLE)
     set(MACOSX_BUNDLE_GUI_IDENTIFIER       "com.McLean.MediaMuster")
     set(MACOSX_BUNDLE_ICON_FILE            "mediamuster-mac.icns")
     set(MACOSX_BUNDLE_COPYRIGHT            "${MEDIAMUSTER_COPYRIGHT}")
-    if(MEDIAMUSTER_BELLA_PREVIEW)
-        set(MACOSX_BUNDLE_BUNDLE_NAME "${MEDIAMUSTER_BELLA_PREVIEW_NAME}")
-        set(MACOSX_BUNDLE_GUI_IDENTIFIER "com.McLean.MediaMuster.BellaTest")
-    endif()
 
     add_executable(MediaMuster MACOSX_BUNDLE ${SOURCES})
     set_target_properties(MediaMuster PROPERTIES
@@ -253,10 +223,6 @@ set(_bella_app_sources
     ${CMAKE_SOURCE_DIR}/src/media/bella_media_mapper.cpp
 )
 target_sources(MediaMuster PRIVATE ${_bella_app_sources})
-if(MEDIAMUSTER_BELLA_PREVIEW)
-    target_compile_definitions(MediaMuster PRIVATE MEDIAMUSTER_BELLA_PREVIEW)
-    set_target_properties(MediaMuster PROPERTIES OUTPUT_NAME "${MEDIAMUSTER_BELLA_PREVIEW_NAME}")
-endif()
 
 function(mediamuster_link_native_operations target)
     if(APPLE)
@@ -272,13 +238,6 @@ if(APPLE)
 elseif(WIN32)
     ### Shell reveal (revealinfinder.cpp) and GetUserNameEx (aboutdialog.cpp) ###
     target_link_libraries(MediaMuster PRIVATE shell32 ole32 secur32)
-endif()
-
-if(SELF_DESTRUCT)
-    target_compile_definitions(MediaMuster PRIVATE
-        SELF_DESTRUCT
-        SELF_DESTRUCT_DATE="${SELF_DESTRUCT_DATE}"
-    )
 endif()
 
 ### Sign local builds with the configured identity ###

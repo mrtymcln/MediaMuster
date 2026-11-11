@@ -37,10 +37,9 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 	friend class TestOperationUi;
-	friend class TestBellaPreviewUi;
 
 public:
-	/// UiOnly supports interface tests/previews without volume discovery,
+	/// UiOnly supports interface tests without volume discovery,
 	/// crash collection or journal recovery against the host.
 	enum class StartupMode
 	{

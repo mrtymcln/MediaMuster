@@ -2,12 +2,9 @@
 #include "ui/main_window.h"
 #include "version.h"
 #include <QApplication>
-#include <QDate>
 #include <QIcon>
-#include <QMessageBox>
 #include <QStyleFactory>
 
-// MARK: - Application startup
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
@@ -17,32 +14,15 @@ int main(int argc, char *argv[])
 	app.setApplicationName(APP_NAME);
 	app.setApplicationVersion(APP_VERSION);
 	app.setOrganizationName("Martin McLean");
-#ifdef MEDIAMUSTER_BELLA_PREVIEW
-	app.setApplicationDisplayName(APP_NAME);
-	app.setOrganizationDomain("com.McLean.MediaMuster.BellaTest");
-#else
 	app.setOrganizationDomain("com.McLean.MediaMuster");
-#endif
 	app.setWindowIcon(QIcon(":/res/mediamuster.png"));
 
-	// Start logging after setting the app details used in the path and header.
 	Diagnostics::install();
 
 #ifdef Q_OS_MAC
 	app.setStyle(QStyleFactory::create("macos"));
 #elif defined(Q_OS_WIN)
 	app.setStyle(QStyleFactory::create("windows"));
-#endif
-
-#ifdef SELF_DESTRUCT
-	const QDate expiry = QDate::fromString(SELF_DESTRUCT_DATE, Qt::ISODate);
-	if (expiry.isValid() && QDate::currentDate() > expiry)
-	{
-		QMessageBox::critical(nullptr, "MediaMuster beta programme",
-							  "This beta build expired on " SELF_DESTRUCT_DATE ".\n"
-							  "Please download the latest version.");
-		return 1;
-	}
 #endif
 
 	MainWindow window;

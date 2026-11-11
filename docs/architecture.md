@@ -4,10 +4,8 @@ MediaMuster is a C++17 / Qt Widgets desktop application. The interface coordinat
 media discovery, an in-memory inventory, and a shared file-operation engine.
 For what the user sees, start with [How MediaMuster works](current-behaviour.md).
 
-The normal macOS and Windows application uses [Bella](../src/bella/README.md).
-[BellaAppScanner](../src/app/bellaappscanner.cpp) connects the organiser to the UI.
-`MEDIAMUSTER_BELLA_PREVIEW` is a separate scan/export-only build option; normal
-Bella builds include file operations and Rebalance.
+The macOS and Windows application uses [Bella](projects/Bella_readme.md).
+[BellaAppScanner](../src/ui/bella_app_scanner.cpp) connects the scanner to the UI.
 
 [File Check](../src/operations/filecheck.cpp) verifies operation inputs using Bella's parser
 helpers and the existing native file safeguards. File Operations owns execution,
@@ -292,14 +290,13 @@ receipt is refused with a rescan request.
   a job, restoring retained originals, stopping unfinished work and Undo are distinct
   actions. Stop abandons the remaining work and keeps the job's completed effects.
 
-The current beta build uses journal schema 4, without checksum fields. Ordinary
+MediaMuster uses journal schema 4, without checksum fields. Ordinary
 identity keys are `fileMobId`, `masterMobId` and `databaseFileMobIdToVerify`;
 only nested `headerIdentity` retains its safety-only `masterMobIds` array.
 Older journal schemas and legacy identity-key aliases are unsupported. Existing
 schema-4 advisory `folder` records and `resolved.folders` are accepted and ignored;
 new writes no longer maintain that unused ledger. The unproduced journal step
 `source-retained` is rejected; the live operation result `SourceRetained` remains.
-During beta, simplicity takes precedence over older journal formats.
 Mechanism, Trash provider and Undo action use `QString` internally
 and explicit names in JSON,
 including `"none"` for an unset choice (an empty string inside the program). Loading

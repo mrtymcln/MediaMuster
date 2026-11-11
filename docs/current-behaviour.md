@@ -8,8 +8,7 @@ features or a claim that every storage system has been tested.
 The macOS and Windows app uses Bella for media scanning and format reading.
 File Check verifies file facts before and during operations; File Operations
 performs the jobs and maintains Undo/recovery. The separate AVB reader supplies
-Bin Filter references. The optional MediaMuster Bella Test build
-uses the same scanner and presentation with file operations disabled.
+Bin Filter references.
 
 Confirmed requirements are summarized under [Bella](projects/Bella/README.md),
 [Copland](projects/Copland/README.md) and [Canon](projects/Canon/README.md).
@@ -18,7 +17,7 @@ See the [architecture map](architecture.md) for code responsibilities and
 
 ## Starting the app
 
-The normal app opens its main window, finds storage locations and checks for unfinished
+MediaMuster opens its main window, finds storage locations and checks for unfinished
 file operations. Use Refresh Volumes to update the drive list after startup.
 You start a media scan with the scan controls.
 
@@ -617,7 +616,7 @@ their existing rescan/refresh paths.
 
 Every file job requires a writable journal: a saved record of its plan, file
 identities and progress. If the journal cannot be written, a new job cannot start.
-The current beta build reads and writes schema-4 journals. Older beta journals
+MediaMuster reads and writes schema-4 journals. Older beta journals
 are unsupported and are not migrated. Schema-4 folder-ledger records from earlier
 builds remain readable and are discarded; new jobs do not write that unused ledger.
 Resume reloads execution facts from the saved journal rather than retaining a

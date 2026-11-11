@@ -3,8 +3,7 @@
 MediaMuster reads the additional Avid usage information identified in Media Composer **26.8.0.58987**. The **Type** column distinguishes **Media** (master-clip media) and **Precompute**, with a blank when unknown in Bella, and is always present in the table and CSV. The extra detail columns and filter controls require the build-time [Precomputes gate](../release-feature-gates.md).
 
 The effect details and picker are controlled by the compiled build flag
-`FeatureFlags::kPrecomputeFilter`, currently `true`. This feature gate is separate
-from the optional scan/export-only Bella rehearsal build:
+`FeatureFlags::kPrecomputeFilter`, currently `true`.
 
 1. Set `FeatureFlags::kPrecomputeFilter` to `true` in `src/featureflags.h`, rebuild and launch.
 2. Scan the volumes you want to examine. Rescan results collected by an older build.

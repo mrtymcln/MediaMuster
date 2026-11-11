@@ -100,10 +100,7 @@ checks, and carries both file and master identities to the operation engine.
 
 ## Build flags
 
-The normal macOS and Windows targets link Bella directly in CMake.
-`MEDIAMUSTER_BELLA_PREVIEW=ON` builds the separately named scan/export rehearsal
-with file operations disabled; it is independent of the feature flags below.
-Normal Bella builds retain file operations and their live identity checks.
+The macOS and Windows targets link Bella directly in CMake.
 Bella's active MDB/OMF baseline is legacy OMF 1/Bento 1.0; OMF 2 and Bento 2
 are unsupported.
 

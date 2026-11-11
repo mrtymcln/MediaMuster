@@ -73,7 +73,6 @@ jobs:
           path: |
             build/Testing/Temporary/*.log
             build/tests/*.result.txt
-            build/tests/Release/*.result.txt
           if-no-files-found: ignore
 
       - name: Import code-signing cert
@@ -109,6 +108,7 @@ jobs:
         with:
           name: MediaMuster-${{ env.APP_VERSION }}-Win
           path: build/MediaMuster-${{ env.APP_VERSION }}-Win
+          if-no-files-found: error
 
   release:
     name: Publish Release
@@ -131,7 +131,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
-          prerelease: ${{ startsWith(github.ref_name, 'v0.') }}
           fail_on_unmatched_files: true
           files: |
             release-assets/MediaMuster-*-Mac/*.dmg

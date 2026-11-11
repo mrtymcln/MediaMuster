@@ -72,12 +72,6 @@
 
 namespace
 {
-#ifdef MEDIAMUSTER_BELLA_PREVIEW
-	constexpr bool kBellaPreview = true;
-#else
-	constexpr bool kBellaPreview = false;
-#endif
-
 	constexpr auto kScanConnection = Qt::AutoConnection;
 
 	/// Monospaced font for the Console.
@@ -222,8 +216,6 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	addLog(QtInfoMsg, QStringLiteral("app"), QStringLiteral("%1 %2 initialised on %3").arg(APP_NAME, APP_VERSION, platform));
 
 	refreshVolumes();
-	if (kBellaPreview)
-		return; // The scan/export preview has no startup recovery actions.
 
 	// Show the window before recovery. Finish any crash-report notice first
 	// so it cannot overlap the recovery prompts.
@@ -603,8 +595,7 @@ void MainWindow::buildFileMenu()
 	fileMenu->addSeparator();
 
 	// One place for unfinished jobs and originals awaiting restoration.
-	if (!kBellaPreview)
-		fileMenu->addAction(m_operations->recoveryAction());
+	fileMenu->addAction(m_operations->recoveryAction());
 
 	fileMenu->addSeparator();
 
@@ -634,8 +625,7 @@ void MainWindow::buildEditMenu()
 
 	// The controller applies the independent Undo feature gate and enables
 	// the action only when a recorded job is eligible.
-	if (!kBellaPreview)
-		editMenu->addAction(m_operations->undoAction());
+	editMenu->addAction(m_operations->undoAction());
 
 	auto *findAction = editMenu->addAction(tr("&Find"));
 	findAction->setShortcut(QKeySequence::Find);
@@ -1148,7 +1138,7 @@ namespace
 
 void MainWindow::onRebalance()
 {
-	if (kBellaPreview || !m_operations->isIdle() || m_model->allFiles().isEmpty() || !m_operations->resolvePreviousJob())
+	if (!m_operations->isIdle() || m_model->allFiles().isEmpty() || !m_operations->resolvePreviousJob())
 		return;
 
 	const auto inventory = prepareRebalanceInventory(m_model->allFiles());
@@ -1680,7 +1670,7 @@ void MainWindow::onFileOperations()
 
 void MainWindow::openManageMedia(ManageMediaDialog::Operation initialOp)
 {
-	if (kBellaPreview || !m_operations->isIdle())
+	if (!m_operations->isIdle())
 		return;
 	auto files = selectedFiles();
 	if (files.isEmpty())
@@ -1710,8 +1700,6 @@ void MainWindow::openManageMedia(ManageMediaDialog::Operation initialOp)
 bool MainWindow::dispatchOperation(OperationKind kind, QVector<MediaFile> files, const QString &dest,
 								   bool preserve, const QHash<QString, ConflictPolicy> &policies)
 {
-	if (kBellaPreview)
-		return false;
 	// Extract request fields and captured safety checks from the selection,
 	// then let the controller gate and dispatch the request.
 	OperationRequest req;
@@ -2036,11 +2024,11 @@ void MainWindow::updateActivityUi()
 	m_scanSelectedAction->setEnabled(!busy && m_volumeList->selectionModel()->hasSelection());
 	m_scanAllAction->setEnabled(!busy && m_volumeList->count() > 0);
 	m_binFilterAction->setEnabled(!busy);
-	m_rebalanceAction->setEnabled(!kBellaPreview && !busy && !m_model->allFiles().isEmpty());
+	m_rebalanceAction->setEnabled(!busy && !m_model->allFiles().isEmpty());
 	m_exportAction->setEnabled(!busy && !m_exportInProgress && m_proxy->rowCount() > 0);
 	m_precomputeFilterAction->setEnabled(!busy && m_precomputesEnabled && !m_model->allFiles().isEmpty());
 	const bool hasSelection = m_tableView->selectionModel()->hasSelection();
-	m_manageMediaAction->setEnabled(!kBellaPreview && !busy && hasSelection);
+	m_manageMediaAction->setEnabled(!busy && hasSelection);
 	m_revealAction->setEnabled(!busy && hasSelection);
 	m_selectInverseAction->setEnabled(!busy && m_proxy->rowCount() > 0);
 	m_selectRelativesAction->setEnabled(!busy && hasSelection && m_selectionHasMasterMob);

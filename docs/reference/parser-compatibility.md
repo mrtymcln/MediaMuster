@@ -2,7 +2,7 @@
 
 ## Current scanner
 
-Bella is the scanner and format-reading engine in normal macOS and Windows
+Bella is the scanner and format-reading engine in macOS and Windows
 builds. File Check uses its supported decoding paths through already-open files;
 required identities outside those limits refuse the affected operation. Bin Filter
 retains its separate AVB readers. See
