@@ -103,11 +103,14 @@ Source Filename, Clip Duration and Effect Sequence are excluded.
 
 Preserve exact counts/rates and separate the duration clock from the display
 clock/DF mode. Known zero and positive durations rounding to zero remain visible;
-unavailable stays blank. Sort Duration by numeric displayed HH/MM/SS/FF, with the
-existing Audio/Video/Unknown tie order, not by elapsed seconds or formatted text.
-Table and CSV use the enabled schema; export captures selected visible or all
-visible rows and writes synchronously. File Check borrows the operation's already
-open file to confirm required identities through Bella; it does not start a scan.
+unavailable stays blank. Sort Duration by numeric displayed HH/MM/SS/FF, with
+Video, Audio, then `unknown` for ascending ties. The table and CSV include the
+detail columns when Precomputes is enabled. File Path includes the filename in
+both outputs. CSV also includes FileMobId, MasterMobId, KelpieId, No Database,
+No Reference and OmfScan. Export captures selected visible or all visible rows
+and writes synchronously. File Check borrows
+the operation's already open file and uses Bella to confirm required identities
+during the operation.
 
 ## Validation and changes
 

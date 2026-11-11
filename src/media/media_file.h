@@ -261,7 +261,7 @@ struct MediaFile
 		case Type::Precompute:
 			return QStringLiteral("Precompute");
 		case Type::Unknown:
-			return {};
+			return QStringLiteral("unknown");
 		}
 		return {};
 	}

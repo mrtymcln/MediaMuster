@@ -6,14 +6,13 @@
 #include <QVector>
 
 // MARK: - MediaCsv
-/// One header and one CSV record per physical file, in fixed field order.
-/// The caller selects optional columns; rearranging the table does not affect CSV order.
+/// CSV export with one record per physical file. CSV-only fields follow the table fields.
 
 namespace MediaCsv
 {
 	struct Options
 	{
-		/// Adds precompute details after Type.
+		/// Adds precompute details after Bit Depth.
 		bool includePrecomputeDetails = false;
 	};
 

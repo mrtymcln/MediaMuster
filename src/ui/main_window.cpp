@@ -185,8 +185,10 @@ MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	  m_model(new MediaTableModel(this)),
 	  m_proxy(new MediaFilterProxy(this))
 {
+	// Configure the empty model before Qt establishes the table's initial sort.
+	m_model->setOmfScanEnabled(FeatureFlags::kOmfScan);
+	m_model->setPrecomputesEnabled(FeatureFlags::kPrecomputeFilter);
 	m_proxy->setSourceModel(m_model);
-	m_proxy->setSortRole(Qt::UserRole);
 
 	setupUi();
 	setupMenus();
@@ -510,10 +512,9 @@ void MainWindow::buildTable()
 	setW(Col::BitDepth, 100);
 	setW(Col::Type, 100);
 	setW(Col::Created, 150);
-	setW(Col::FileName, 250);
 	setW(Col::Location, 250);
-	setW(Col::NoDatabase, 130);
-	setW(Col::NoReference, 130);
+	for (const auto column : {Col::FileMobId, Col::MasterMobId, Col::KelpieId, Col::NoDatabase, Col::NoReference})
+		m_tableView->setColumnHidden(m_model->columnIndex(column), true);
 }
 
 // MARK: - Console
@@ -924,7 +925,9 @@ void MainWindow::setOmfScanEnabled(bool enabled)
 		return;
 	m_omfScanEnabled = enabled;
 	m_model->setOmfScanEnabled(enabled);
-	if (!enabled)
+	if (enabled)
+		m_tableView->setColumnHidden(m_model->omfScanColumn(), true);
+	else
 	{
 		QSet<QString> legacyPaths;
 		for (const auto &file : m_model->allFiles())
@@ -969,10 +972,9 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 	updateActivityUi();
 	if (enabled)
 	{
-		// Put the newly enabled details together after Type, ahead of
-		// Date Created, without moving or resetting the existing columns.
+		// Put the newly enabled details after Bit Depth and preserve the existing columns' order.
 		auto *header = m_tableView->horizontalHeader();
-		int position = header->visualIndex(m_model->columnIndex(MediaTableModel::Column::Type)) + 1;
+		int position = header->visualIndex(m_model->columnIndex(MediaTableModel::Column::BitDepth)) + 1;
 		for (auto column : {MediaTableModel::Column::PrecomputeCategory, MediaTableModel::Column::EffectCategory,
 							MediaTableModel::Column::Effect})
 		{

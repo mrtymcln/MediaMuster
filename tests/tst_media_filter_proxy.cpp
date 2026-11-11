@@ -65,6 +65,7 @@ private slots:
 
 	// Equal rounded sizes still sort by exact byte counts.
 	void size_column_sorts_on_exact_bytes();
+	void date_created_sorts_on_timestamp_with_unknown_first();
 	void sample_rate_column_sorts_numerically();
 	void bit_depth_column_sorts_numbers_with_unavailable_first();
 	void duration_column_sorts_displayed_timecode();
@@ -283,26 +284,56 @@ void TestMediaFilterProxy::size_column_sorts_on_exact_bytes()
 	// The two 850.0-rounding neighbours differ by 400 bytes: the display
 	// string cannot tell them apart, the sort must.
 	MediaTableModel model;
-	model.setMediaFiles({sized(QStringLiteral("big"), 1'100'000'000),
+	model.setMediaFiles({sized(QStringLiteral("big"), 5'000'000'000),
 						 sized(QStringLiteral("mid_hi"), 850'000'400),
 						 sized(QStringLiteral("mid_lo"), 850'000'000),
-						 sized(QStringLiteral("empty"), 0)});
+						 sized(QStringLiteral("empty"), 0),
+						 sized(QStringLiteral("unknown"), -1)});
 
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	const int sizeCol = Enum::toUnderlying(MediaTableModel::Column::SizeMB);
 	const int nameCol = Enum::toUnderlying(MediaTableModel::Column::ClipName);
-	proxy.sort(sizeCol, Qt::AscendingOrder);
-	QCOMPARE(proxy.rowCount(), 4);
-
-	QStringList order;
-	for (int r = 0; r < proxy.rowCount(); ++r)
-		order << proxy.data(proxy.index(r, nameCol)).toString();
-	QCOMPARE(order, (QStringList{QStringLiteral("empty"), QStringLiteral("mid_lo"),
-								 QStringLiteral("mid_hi"), QStringLiteral("big")}));
+	QStringList expected = {QStringLiteral("unknown"), QStringLiteral("empty"), QStringLiteral("mid_lo"),
+							QStringLiteral("mid_hi"), QStringLiteral("big")};
+	for (const auto direction : {Qt::AscendingOrder, Qt::DescendingOrder})
+	{
+		proxy.sort(sizeCol, direction);
+		QStringList order;
+		for (int row = 0; row < proxy.rowCount(); ++row)
+			order << proxy.index(row, nameCol).data().toString();
+		QCOMPARE(order, expected);
+		std::reverse(expected.begin(), expected.end());
+	}
 
 	// Identical display strings still sort by their distinct byte counts.
 	QCOMPARE(model.fileAt(1).sizeMBDisplay(), model.fileAt(2).sizeMBDisplay());
+}
+
+void TestMediaFilterProxy::date_created_sorts_on_timestamp_with_unknown_first()
+{
+	auto earlier = rowNamed(QStringLiteral("earlier"));
+	earlier.created = QDateTime(QDate(2026, 7, 20), QTime(12, 30, 10), Qt::UTC);
+	auto later = rowNamed(QStringLiteral("later"));
+	later.created = earlier.created.addSecs(20);
+	const auto unknown = rowNamed(QStringLiteral("unknown"));
+	QCOMPARE(later.createdDisplay(), earlier.createdDisplay());
+
+	MediaTableModel model;
+	model.setMediaFiles({later, earlier, unknown});
+	MediaFilterProxy proxy;
+	proxy.setSourceModel(&model);
+	using Column = MediaTableModel::Column;
+	QStringList expected = {unknown.clipName, earlier.clipName, later.clipName};
+	for (const auto direction : {Qt::AscendingOrder, Qt::DescendingOrder})
+	{
+		proxy.sort(Enum::toUnderlying(Column::Created), direction);
+		QStringList order;
+		for (int row = 0; row < proxy.rowCount(); ++row)
+			order << proxy.index(row, Enum::toUnderlying(Column::ClipName)).data().toString();
+		QCOMPARE(order, expected);
+		std::reverse(expected.begin(), expected.end());
+	}
 }
 
 void TestMediaFilterProxy::sample_rate_column_sorts_numerically()
@@ -509,7 +540,6 @@ void TestMediaFilterProxy::database_flags_sort_across_optional_column_gates()
 	model.setMediaFiles(files);
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
-	proxy.setSortRole(Qt::UserRole);
 	const int column = Enum::toUnderlying(noDatabase ? Column::NoDatabase : Column::NoReference);
 	for (const auto direction : {Qt::AscendingOrder, Qt::DescendingOrder})
 	{
@@ -574,7 +604,7 @@ void TestMediaFilterProxy::duration_column_sorts_displayed_timecode()
 {
 	using Kind = MediaFile::Kind;
 	// Expected ascending order compares the displayed fields numerically.
-	// Equal fields use the existing Audio, Video, Unknown order, regardless
+	// Equal fields use the Video, Audio, Unknown order, regardless
 	// of rate or whether the displayed separator is a colon or semicolon.
 	const struct
 	{
@@ -585,14 +615,14 @@ void TestMediaFilterProxy::duration_column_sorts_displayed_timecode()
 		Kind kind;
 		const char *display;
 	} cases[] = {
-		{"missing duration", -1, 25, false, Kind::Audio, ""},
 		{"blank rate", 250, 0, false, Kind::Video, ""},
+		{"missing duration", -1, 25, false, Kind::Audio, ""},
 		{"negative frames", -25, 25, false, Kind::Unknown, ""},
 		{"known zero", 0, 25, false, Kind::Audio, "00:00:00:00"},
 		{"30 frames/s", 10, 30, false, Kind::Video, "00:00:00:10"},
 		{"25 frames/s", 11, 25, false, Kind::Video, "00:00:00:11"},
-		{"equal audio", 12, 24, false, Kind::Audio, "00:00:00:12"},
 		{"equal video", 12, 60, false, Kind::Video, "00:00:00:12"},
+		{"equal audio", 12, 24, false, Kind::Audio, "00:00:00:12"},
 		{"equal unknown", 12, 25, false, Kind::Unknown, "00:00:00:12"},
 		// Raw FF order, not FF/base: 12 at 24 frames/s precedes 20 at 60 frames/s.
 		{"60 frames/s", 20, 60, false, Kind::Video, "00:00:00:20"},
@@ -601,8 +631,8 @@ void TestMediaFilterProxy::duration_column_sorts_displayed_timecode()
 		{"selected 25 fps clock", 25, 25, false, Kind::Video, "00:00:01:00"},
 		{"60 DF before drop", 3599, 60, true, Kind::Video, "00;00;59;59"},
 		{"60 NDF at drop", 3603, 60, false, Kind::Video, "00:01:00:03"},
-		{"60 DF at drop", 3600, 60, true, Kind::Audio, "00;01;00;04"},
 		{"60 NDF equal fields", 3604, 60, false, Kind::Video, "00:01:00:04"},
+		{"60 DF at drop", 3600, 60, true, Kind::Audio, "00;01;00;04"},
 		// The original mixed DF/NDF regression: the larger raw frame count
 		// displays a shorter timecode and must sort first.
 		{"30 NDF before ten minutes", 17990, 30, false, Kind::Video, "00:09:59:20"},
@@ -670,7 +700,9 @@ void TestMediaFilterProxy::three_state_classification_sort_is_consistent()
 				QStringList names;
 				for (int i = 0; i < proxy.rowCount(); ++i)
 					names << proxy.index(i, int(MediaTableModel::Column::ClipName)).data().toString();
-				QStringList expected{QStringLiteral("audio"), QStringLiteral("video"), QStringLiteral("unknown")};
+				QStringList expected = column == MediaTableModel::Column::Type
+										   ? QStringList{audio.clipName, video.clipName, unknown.clipName}
+										   : QStringList{video.clipName, audio.clipName, unknown.clipName};
 				if (direction == Qt::DescendingOrder)
 					std::reverse(expected.begin(), expected.end());
 				QCOMPARE(names, expected);
@@ -833,7 +865,7 @@ void TestMediaFilterProxy::effect_columns_sort_displayed_values()
 	}
 	model.setPrecomputesEnabled(false);
 	proxy.setPrecomputesEnabled(false);
-	QCOMPARE(proxy.columnCount(), 20);
+	QCOMPARE(proxy.columnCount(), int(MediaTableModel::Column::PrecomputeCategory));
 	QCOMPARE(proxy.rowCount(), 3);
 }
 

@@ -280,7 +280,7 @@ private slots:
 	void precompute_gate_hides_controls_and_clears_filters();
 	void database_views_match_flags_and_preserve_selection();
 	void filter_tabs_keep_whole_inventory_counts_and_empty_views();
-	void optional_columns_match_csv_and_preserve_retained_sort();
+	void table_columns_follow_default_order_and_preserve_sort();
 	void bin_loading_keeps_prepared_table_and_csv_metadata();
 	void bin_source_track_gap_keeps_proven_matches_and_console_warning();
 	void unmatched_bin_reports_once_when_loaded();
@@ -370,26 +370,31 @@ void TestOperationUi::csv_export_completes_before_return_data()
 {
 	QTest::addColumn<QString>("scope");
 	QTest::addColumn<bool>("databaseView");
-	QTest::newRow("visible") << QString() << false;
-	QTest::newRow("selected") << QStringLiteral("Selected") << false;
-	QTest::newRow("all") << QStringLiteral("All") << false;
-	QTest::newRow("no-reference-visible") << QString() << true;
-	QTest::newRow("no-reference-selected") << QStringLiteral("Selected") << true;
-	QTest::newRow("no-reference-all") << QStringLiteral("All") << true;
+	QTest::addColumn<bool>("includePrecomputeDetails");
+	QTest::addColumn<bool>("omfScanEnabled");
+	QTest::newRow("visible") << QString() << false << false << false;
+	QTest::newRow("selected") << QStringLiteral("Selected") << false << true << true;
+	QTest::newRow("all") << QStringLiteral("All") << false << true << false;
+	QTest::newRow("no-reference-visible") << QString() << true << false << true;
+	QTest::newRow("no-reference-selected") << QStringLiteral("Selected") << true << true << false;
+	QTest::newRow("no-reference-all") << QStringLiteral("All") << true << true << true;
 }
 
 void TestOperationUi::csv_export_completes_before_return()
 {
 	QFETCH(QString, scope);
 	QFETCH(bool, databaseView);
+	QFETCH(bool, includePrecomputeDetails);
+	QFETCH(bool, omfScanEnabled);
 	const bool nonNativeDialogs = QApplication::testAttribute(Qt::AA_DontUseNativeDialogs);
 	QApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
 	const auto restoreDialogs = qScopeGuard([nonNativeDialogs]
 											{ QApplication::setAttribute(Qt::AA_DontUseNativeDialogs, nonNativeDialogs); });
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
-	window.setPrecomputesEnabled(false);
+	window.setPrecomputesEnabled(!includePrecomputeDetails);
+	window.setOmfScanEnabled(!omfScanEnabled);
 	QString selectedLine;
-	const MediaCsv::Options expectedOptions{true};
+	const MediaCsv::Options expectedOptions{includePrecomputeDetails};
 	{
 		QVector<MediaFile> rows;
 		for (int index = 0; index < 3; ++index)
@@ -461,7 +466,8 @@ void TestOperationUi::csv_export_completes_before_return()
 					window.m_proxy->setSearchText(QStringLiteral("Edited"));
 					window.m_tableView->sortByColumn(
 						static_cast<int>(MediaTableModel::Column::ClipName), Qt::DescendingOrder);
-					window.setPrecomputesEnabled(true);
+					window.setPrecomputesEnabled(includePrecomputeDetails);
+					window.setOmfScanEnabled(omfScanEnabled);
 					// Visible rows, ordering and column gates are captured after Save.
 					expectedText = MediaCsv::headerLine(expectedOptions);
 					if (scope == QStringLiteral("Selected"))
@@ -1688,20 +1694,19 @@ void TestOperationUi::table_widths_change_only_on_request_and_reset_each_session
 {
 	using Column = MediaTableModel::Column;
 	const int clipColumn = static_cast<int>(Column::ClipName);
-	const int fileColumn = static_cast<int>(Column::FileName);
 	const int pathColumn = static_cast<int>(Column::Location);
-	int initialFilePosition = -1;
+	int initialPathPosition = -1;
 	{
 		MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 		auto *table = window.m_tableView;
 		auto *header = table->horizontalHeader();
-		initialFilePosition = header->visualIndex(fileColumn);
+		initialPathPosition = header->visualIndex(pathColumn);
 		QCOMPARE(table->columnWidth(clipColumn), 250);
-		QCOMPARE(table->columnWidth(static_cast<int>(Column::Location)), 250);
+		QVERIFY(!table->isColumnHidden(pathColumn));
 		QCOMPARE(table->columnWidth(pathColumn), 250);
 		table->setColumnWidth(clipColumn, 333);
 		table->setColumnWidth(pathColumn, 345);
-		header->moveSection(header->visualIndex(fileColumn), 1);
+		header->moveSection(header->visualIndex(pathColumn), 1);
 
 		MediaFile file;
 		file.mediaFilePath = path(QString(120, QLatin1Char('W')) + QStringLiteral(".mxf"));
@@ -1709,7 +1714,7 @@ void TestOperationUi::table_widths_change_only_on_request_and_reset_each_session
 		window.onScanFinished({file});
 		QCOMPARE(table->columnWidth(clipColumn), 333);
 		QCOMPARE(table->columnWidth(pathColumn), 345);
-		QCOMPARE(header->visualIndex(fileColumn), 1);
+		QCOMPARE(header->visualIndex(pathColumn), 1);
 
 		QAction *fit = nullptr;
 		for (auto *action : window.findChildren<QAction *>())
@@ -1729,7 +1734,7 @@ void TestOperationUi::table_widths_change_only_on_request_and_reset_each_session
 	MainWindow freshWindow(nullptr, MainWindow::StartupMode::UiOnly);
 	QCOMPARE(freshWindow.m_tableView->columnWidth(clipColumn), 250);
 	QCOMPARE(freshWindow.m_tableView->columnWidth(pathColumn), 250);
-	QCOMPARE(freshWindow.m_tableView->horizontalHeader()->visualIndex(fileColumn), initialFilePosition);
+	QCOMPARE(freshWindow.m_tableView->horizontalHeader()->visualIndex(pathColumn), initialPathPosition);
 }
 
 // MARK: - Optional filters and table columns
@@ -1789,7 +1794,8 @@ void TestOperationUi::precompute_gate_hides_controls_and_clears_filters()
 	QVERIFY(window.m_precomputesEnabled);
 	QVERIFY(!window.m_tableView->isColumnHidden(typeColumn));
 	QCOMPARE(window.m_model->columnCount(), static_cast<int>(Column::Count_));
-	int detailPosition = window.m_tableView->horizontalHeader()->visualIndex(typeColumn) + 1;
+	const int bitDepthColumn = static_cast<int>(Column::BitDepth);
+	int detailPosition = window.m_tableView->horizontalHeader()->visualIndex(bitDepthColumn) + 1;
 	for (const auto column : {Column::PrecomputeCategory, Column::EffectCategory, Column::Effect})
 		QCOMPARE(window.m_tableView->horizontalHeader()->visualIndex(static_cast<int>(column)), detailPosition++);
 	QVERIFY(!window.m_precomputeFilterButton->isHidden());
@@ -1980,9 +1986,50 @@ void TestOperationUi::filter_tabs_keep_whole_inventory_counts_and_empty_views()
 	verifyWholeInventoryCounts();
 }
 
-void TestOperationUi::optional_columns_match_csv_and_preserve_retained_sort()
+void TestOperationUi::table_columns_follow_default_order_and_preserve_sort()
 {
+	using Column = MediaTableModel::Column;
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
+	const auto *header = window.m_tableView->horizontalHeader();
+	const auto verifyHeadings = [&](MediaCsv::Options options, bool omfEnabled)
+	{
+		QStringList visibleHeadings;
+		QStringList hiddenHeadings;
+		for (int visual = 0; visual < header->count(); ++visual)
+		{
+			const int logical = header->logicalIndex(visual);
+			const auto heading = window.m_model->headerData(logical, Qt::Horizontal, Qt::DisplayRole).toString();
+			if (window.m_tableView->isColumnHidden(logical))
+				hiddenHeadings.append(heading);
+			else
+				visibleHeadings.append(heading);
+		}
+		QStringList expectedHeadings = {
+			QStringLiteral("Clip Name"), QStringLiteral("Bin"), QStringLiteral("Project"),
+			QStringLiteral("Duration"), QStringLiteral("Kind"), QStringLiteral("Type"),
+			QStringLiteral("Compression"), QStringLiteral("Resolution"), QStringLiteral("Frame Rate"),
+			QStringLiteral("Sample Rate"), QStringLiteral("Bit Depth")};
+		if (options.includePrecomputeDetails)
+			expectedHeadings.append({QStringLiteral("Precompute Category"), QStringLiteral("Effect Category"), QStringLiteral("Effect")});
+		expectedHeadings.append({QStringLiteral("Size (MB)"), QStringLiteral("Date Created"), QStringLiteral("File Path")});
+		const QStringList csvOnlyHeadings = {QStringLiteral("FileMobId"), QStringLiteral("MasterMobId"),
+											 QStringLiteral("KelpieId"), QStringLiteral("No Database"),
+											 QStringLiteral("No Reference"), QStringLiteral("OmfScan")};
+		auto expectedHiddenHeadings = csvOnlyHeadings;
+		if (!omfEnabled)
+			expectedHiddenHeadings.removeLast();
+		QCOMPARE(visibleHeadings, expectedHeadings);
+		QCOMPARE(hiddenHeadings, expectedHiddenHeadings);
+		QCOMPARE(MediaCsv::headerLine(options),
+				 (visibleHeadings + csvOnlyHeadings).join(QLatin1Char(',')) + QLatin1Char('\n'));
+	};
+	const int clipNameColumn = static_cast<int>(Column::ClipName);
+	QCOMPARE(window.m_proxy->rowCount(), 0);
+	verifyHeadings({FeatureFlags::kPrecomputeFilter}, FeatureFlags::kOmfScan);
+	QCOMPARE(header->logicalIndex(0), clipNameColumn);
+	QCOMPARE(window.m_proxy->sortColumn(), clipNameColumn);
+	QCOMPARE(window.m_proxy->sortOrder(), Qt::DescendingOrder);
+
 	MediaFile file;
 	file.mediaFilePath = path(QStringLiteral("short.mxf"));
 	file.fileName = QStringLiteral("short.mxf");
@@ -1997,7 +2044,10 @@ void TestOperationUi::optional_columns_match_csv_and_preserve_retained_sort()
 	longer.clipName = QStringLiteral("Long clip");
 	TestMediaFile::setDuration(longer, 250);
 	longer.dbStatus = MediaFile::DbStatus::NoReference;
-	window.m_model->setMediaFiles({file, longer});
+	window.onScanFinished({longer, file});
+	QCOMPARE(window.m_proxy->sortColumn(), clipNameColumn);
+	QCOMPARE(window.m_proxy->sortOrder(), Qt::DescendingOrder);
+	QCOMPARE(window.fileAtProxyRow(0).clipName, file.clipName);
 	// Exercise both gates in one window, including removing and reinserting columns.
 	for (const bool omf : {true, false, true})
 	{
@@ -2005,31 +2055,10 @@ void TestOperationUi::optional_columns_match_csv_and_preserve_retained_sort()
 		for (const bool precomputes : {false, true, false})
 		{
 			window.setPrecomputesEnabled(precomputes);
-			QStringList headings;
-			auto *header = window.m_tableView->horizontalHeader();
-			for (int visual = 0; visual < header->count(); ++visual)
-			{
-				const int logical = header->logicalIndex(visual);
-				QVERIFY(!window.m_tableView->isColumnHidden(logical));
-				headings.append(window.m_model->headerData(logical, Qt::Horizontal, Qt::DisplayRole).toString());
-			}
-			QCOMPARE(headings.count(QStringLiteral("FileMobId")), 1);
-			QCOMPARE(headings.count(QStringLiteral("MasterMobId")), 1);
-			QCOMPARE(headings.count(QStringLiteral("No Database")), 1);
-			QCOMPARE(headings.count(QStringLiteral("No Reference")), 1);
-			QCOMPARE(headings.indexOf(QStringLiteral("No Database")), headings.indexOf(QStringLiteral("File Path")) + 1);
-			QCOMPARE(headings.indexOf(QStringLiteral("No Reference")), headings.indexOf(QStringLiteral("No Database")) + 1);
-			QCOMPARE(headings.indexOf(QStringLiteral("FileMobId")), headings.indexOf(QStringLiteral("No Reference")) + 1);
-			headings.removeAll(QStringLiteral("FileMobId"));
-			headings.removeAll(QStringLiteral("MasterMobId"));
-			headings.removeAll(QStringLiteral("KelpieId"));
-			headings.removeAll(QStringLiteral("OmfScan"));
-			headings.append({QStringLiteral("FileMobId"), QStringLiteral("MasterMobId"), QStringLiteral("KelpieId"), QStringLiteral("OmfScan")});
-			QCOMPARE(MediaCsv::headerLine({precomputes}), headings.join(',') + '\n');
+			verifyHeadings({precomputes}, omf);
 		}
 	}
 	window.setPrecomputesEnabled(true);
-	using Column = MediaTableModel::Column;
 	struct SortCase
 	{
 		Column column;

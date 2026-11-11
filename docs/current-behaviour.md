@@ -79,11 +79,11 @@ Operation-time reader failures are reported through `operations`.
 These outputs add no `console/` or `mediamuster.` prefix. The category identifies a message's source;
 its severity is separate.
 
-OMF support, precompute details/filtering and file-operation Undo are
-controlled independently by compile-time flags in `src/featureflags.h`. This build
-enables OmfScan, precompute details and Undo by default. Change a flag and rebuild
-to change its availability; these controls do not appear in the Debug menu. Rendered media remains in ordinary scan results when
-precompute details and filtering are disabled.
+OMF support, precompute details and filtering, and file-operation Undo each have
+a compile-time flag in `src/feature_flags.h`. The default build enables precompute
+details and filtering. Change the corresponding flag and rebuild to change its
+availability. Rendered media remains in ordinary scan results when precompute
+details and filtering are disabled.
 
 The Debug menu contains **Fusion style** (off at launch). The menu has its own
 independent build flag. The media table and headers inherit normal Qt font
@@ -320,12 +320,10 @@ establish that no local database was present.
 Reference status does not itself authorize metadata or a header skip. A PMR entry
 can establish a positive local reference even when its set cannot supply metadata.
 The usable PMR identity and qualified MDB descriptor checks control header
-scheduling. No Database and No Reference appear as `true`/`false` columns after
-File Path, before the IDs, in both the table and CSV.
-Each has its own view, showing exactly the rows whose flag is true. Both flags
-derive from the compact internal status; the CSV no longer has Database Status.
-False No Reference on an unresolved row does not establish that the file is listed.
-Project and flag tooltips explain the row's result.
+scheduling. No Database and No Reference are CSV-only `true`/`false` columns.
+Each has a filter tab that shows exactly the rows whose flag is true. Both flags
+derive from the compact internal status. False No Reference on an unresolved row
+does not establish that the file is listed. Project tooltips explain the row's result.
 
 The Project field is recorded metadata, not a search through every Avid project.
 Original Bin is recorded origin information, not proof of which bins currently
@@ -334,20 +332,18 @@ to delete.
 
 ## Filtering, selecting and exporting
 
-The default column order is Clip Name, Project, Bin, Kind, Duration, Size (MB),
-Compression, Resolution, Frame Rate, Sample Rate, Bit Depth, Type, Date Created, Filename,
-File Path, No Database, No Reference, FileMobId, MasterMobId and KelpieId, followed by OmfScan
-when its flag is enabled. MasterMobId displays the one selected association,
-or stays blank when none can be selected.
+The default table order is Clip Name, Bin, Project, Duration, Kind, Type,
+Compression, Resolution, Frame Rate, Sample Rate, Bit Depth, Size (MB), Date Created
+and File Path.
 Compression is the readable format name, such as `Avid DNx HQX [DNxHD 175x]`.
 Bella prepares the readable name from qualified descriptor and coding facts; the
 row keeps the resulting name rather than raw properties or observation histories.
-OmfScan is true for admitted legacy-folder media, including AIF/WAV; it is false
-for MXF-family media. Type is always visible. Enabling
-Precomputes inserts Precompute Category, Effect Category and Effect after Type
-and exposes the Filter Precomputes dialog. Source Path and Effect Sequence are
-absent from Bella table and CSV output.
+The Precomputes flag adds Precompute Category, Effect Category and Effect after
+Bit Depth in the table and CSV, and exposes the Filter Precomputes dialog. With
+the flag off, both outputs omit those three columns. Source Path and Effect
+Sequence are absent from Bella table and CSV output.
 
+By default, the first scan is sorted by Clip Name, Z–A. Click a heading to change the sort.
 Columns start at their default widths each session. Dragging or resizing them
 affects the current window only; scans leave that layout alone. Nothing is saved.
 **View > Resize Columns to Fit** uses content-based resizing.
@@ -359,8 +355,8 @@ The table and CSV include **Sample Rate** (for example, `48 kHz`) and
 **Bit Depth** (for example, `24-bit`) beside Frame Rate. Sample Rate describes audio;
 Bit Depth also shows established video depths. There is no standalone Sample
 Format string or column; Bella retains a compact bit-depth representation such
-as integer or float for rendering and interpretation. Unknown Kind displays `unknown`; unknown Type and Precompute
-Category stay blank, as do unavailable technical values.
+as integer or float for rendering and interpretation. Unclassified Kind and Type
+display `unknown`. Unavailable Precompute Category and technical values display blank.
 
 **Resolution** shows the visible picture raster, using valid descriptor crops and
 format-correct field handling. Recorded display geometry can remove storage padding
@@ -407,18 +403,20 @@ Exact file counts and rates cannot by themselves answer how a bin entry uses
 the media. CSV durations remain display timecodes; they do not export the raw
 counts, fractions or original rate bytes.
 
-Duration sorts by the displayed hours, minutes, seconds and frame number,
-including across different frame rates. Colons and semicolons do not affect
-the order. Blank durations come first when sorting upwards and last downwards.
+Ascending Kind order is Video, Audio, `unknown`. Ascending Type order is Media,
+Precompute, `unknown`. Duration sorts by the displayed hours, minutes, seconds and
+frame number, including across different frame rates, and breaks ties by Kind.
+Colons and semicolons do not affect the order. Blank durations come first when
+sorting upwards and last downwards.
 With a usable display clock, a known zero duration displays zero; a positive
 duration that rounds to zero also remains known rather than being shown as missing.
 
 The filter tabs are All, Video, Audio, No Database, No Reference, Non-Portable and Quarantined.
 Enabling precompute features also adds Precomputes. Project selection, including
-**No project**, is available in the sidebar. Database membership remains visible
-in the two flag columns and their tooltips, as well as Project tooltips. All enabled
-tabs remain visible at zero; feature-disabled Precomputes stays hidden. There is
-no Show All Filter Tabs override. Rows retain selected identifiers and the compact
+**No project**, is available in the sidebar. Project tooltips explain database
+membership when the result needs context. All enabled tabs remain visible at
+zero. The Precomputes flag controls the availability of its tab. There is no
+Show All Filter Tabs override. Rows retain selected identifiers and the compact
 operation instruction. Invalid identities are examined during parsing and operation
 checks; Bella rows do not retain a per-field source/explanation checklist.
 
@@ -512,18 +510,17 @@ waits until saving finishes; Console confirms the row count and destination afte
 a successful file commit, or reports failure. No background CSV export remains
 running when the user can start another scan.
 
-CSV retains its explicit export order, with File Path followed by No Database,
-No Reference, FileMobId, MasterMobId, KelpieId and OmfScan. Both database flags use
-unquoted lowercase `true`/`false`. Bella CSV has 21 columns without precompute
-details and 24 with them. Disabled optional columns are absent rather than exported
-as blank fields. CSV always includes OmfScan, even when its table column is hidden.
-Moving table columns does not change export order. The exporter maintains its
-own explicit column list; a UI test compares its headings against the table's
-visual order with precompute details enabled and disabled. File Path is the
-managed media file's current full path. Search matches that physical path and the
-other retained searchable fields; Bella does not retain or search a recorded
-source/import path. Volume is not exported separately. Source Container and
-Imported have no separate retained row values or CSV columns.
+CSV follows the default table order even if you drag columns in the window. The
+six CSV-only fields follow File Path in the order FileMobId, MasterMobId, KelpieId,
+No Database, No Reference and OmfScan. MasterMobId contains the selected
+association or is blank when none can be selected. Both database flags and OmfScan use
+unquoted lowercase `true`/`false`. OmfScan is true for admitted legacy-folder
+media, including AIF/WAV, and false for MXF-family media or when OMF scanning is
+disabled. In the table and CSV, File Path gives the managed media file's full
+current path, including its filename. Search matches that physical path and the
+other retained searchable fields. Bella does not retain or search a recorded
+source/import path. Volume is not exported separately.
+Source Container and Imported have no separate retained row values or CSV columns.
 
 ## Copy, Move and Delete
 

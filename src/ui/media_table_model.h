@@ -8,7 +8,7 @@
 #include <QVector>
 
 /// One row per MediaFile. Optional columns are appended and the view positions
-/// precompute details beside Type.
+/// precompute details after Bit Depth.
 class MediaTableModel : public QAbstractTableModel
 {
 	Q_OBJECT
@@ -18,25 +18,24 @@ public:
 	enum class Column : int
 	{
 		ClipName,
-		Project,
 		OriginalBin,
-		Kind,
+		Project,
 		Duration,
-		SizeMB,
+		Kind,
+		Type,
 		Compression,
 		Resolution,
 		FrameRate,
 		SampleRate,
 		BitDepth,
-		Type,
+		SizeMB,
 		Created,
-		FileName,
 		Location,
-		NoDatabase,
-		NoReference,
 		FileMobId,
 		MasterMobId,
 		KelpieId,
+		NoDatabase,
+		NoReference,
 		PrecomputeCategory,
 		EffectCategory,
 		Effect,
@@ -48,6 +47,9 @@ public:
 	// Logical positions before feature gating. Excluded columns have no index.
 	int columnIndex(Column column) const;
 	Column columnAt(int index) const;
+
+	/// Typed values for Qt's sort comparator. DisplayRole supplies the cell text.
+	static constexpr int SortRole = Qt::UserRole + 1;
 
 	// MARK: - QAbstractItemModel overrides
 
@@ -83,7 +85,6 @@ public:
 	bool precomputesEnabled() const { return m_precomputesEnabled; }
 
 private:
-
 	// MARK: - Model state
 
 	QVector<MediaFile> m_files;

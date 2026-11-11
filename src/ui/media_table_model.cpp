@@ -194,17 +194,81 @@ void MediaTableModel::setPrecomputesEnabled(bool enabled)
 
 // MARK: - Cell and header values
 
+namespace
+{
+	int kindSortRank(MediaFile::Kind kind)
+	{
+		switch (kind)
+		{
+		case MediaFile::Kind::Video:
+			return 0;
+		case MediaFile::Kind::Audio:
+			return 1;
+		case MediaFile::Kind::Unknown:
+			return 2;
+		}
+		return 2;
+	}
+
+	int typeSortRank(MediaFile::Type type)
+	{
+		switch (type)
+		{
+		case MediaFile::Type::Media:
+			return 0;
+		case MediaFile::Type::Precompute:
+			return 1;
+		case MediaFile::Type::Unknown:
+			return 2;
+		}
+		return 2;
+	}
+}
+
 QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 {
 	if (!index.isValid() || index.row() >= m_files.size() || index.column() >= columnCount())
 		return {};
 	const MediaFile &f = m_files[index.row()];
 	if (m_omfScanEnabled && index.column() == omfScanColumn())
-		return role == Qt::DisplayRole ? QVariant(f.omfEra ? QStringLiteral("true") : QStringLiteral("false")) : role == Qt::UserRole ? QVariant(f.omfEra)
-																																	  : QVariant{};
+	{
+		if (role == SortRole)
+			return int(f.omfEra);
+		if (role == Qt::DisplayRole)
+			return f.omfEra ? QStringLiteral("true") : QStringLiteral("false");
+		if (role == Qt::UserRole)
+			return f.omfEra;
+		return {};
+	}
 
 	const auto column = columnAt(index.column());
-	if (role == Qt::DisplayRole)
+	if (role == SortRole)
+	{
+		switch (column)
+		{
+		case Column::Kind:
+			return kindSortRank(f.kind);
+		case Column::Type:
+			return typeSortRank(f.type);
+		case Column::SizeMB:
+			return f.sizeBytes;
+		case Column::BitDepth:
+		{
+			// Missing bit depth is first, before a known zero.
+			const auto depth = f.bellaDepthBits();
+			return depth ? qint64(*depth) : qint64{-1};
+		}
+		case Column::Created:
+			return f.created;
+		case Column::NoDatabase:
+			return int(f.isNoDatabase());
+		case Column::NoReference:
+			return int(f.isNoReference());
+		default:
+			break;
+		}
+	}
+	if (role == Qt::DisplayRole || role == SortRole)
 	{
 		switch (column)
 		{
@@ -234,8 +298,6 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return f.typeDisplay();
 		case Column::Created:
 			return f.createdDisplay();
-		case Column::FileName:
-			return f.fileName;
 		case Column::Location:
 			return f.mediaFilePath;
 		case Column::NoDatabase:
@@ -313,9 +375,9 @@ QVariant MediaTableModel::headerData(int section, Qt::Orientation orientation, i
 	if (m_omfScanEnabled && section == omfScanColumn())
 		return QStringLiteral("OmfScan");
 	const auto column = columnAt(section);
-	const char *headers[] = {"Clip Name", "Project", "Bin", "Kind", "Duration", "Size (MB)",
-							 "Compression", "Resolution", "Frame Rate", "Sample Rate", "Bit Depth", "Type",
-							 "Date Created", "Filename", "File Path", "No Database", "No Reference", "FileMobId", "MasterMobId", "KelpieId",
+	const char *headers[] = {"Clip Name", "Bin", "Project", "Duration", "Kind", "Type",
+							 "Compression", "Resolution", "Frame Rate", "Sample Rate", "Bit Depth",
+							 "Size (MB)", "Date Created", "File Path", "FileMobId", "MasterMobId", "KelpieId", "No Database", "No Reference",
 							 "Precompute Category", "Effect Category", "Effect"};
 	static_assert(sizeof(headers) / sizeof(headers[0]) == Enum::toUnderlying(Column::Count_),
 				  "Column enum and headers[] array got out of sync — "

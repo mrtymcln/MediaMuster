@@ -40,7 +40,7 @@ contain more information than the supported reader extracts.
 
 | Field | Meaning and mapping |
 | --- | --- |
-| Clip Name | Selected associated master name, distinct from disk Filename. OMF uses master-owned `OMFI:CPNT:Name` / `OMFI:MOBJ:Name`; MXF uses the qualified MaterialPackage `GenericPackage.Name`. Never take a name from another candidate master or a loaded bin. |
+| Clip Name | Selected associated master name, distinct from the filename on disk. OMF uses master-owned `OMFI:CPNT:Name` / `OMFI:MOBJ:Name`; MXF uses the qualified MaterialPackage `GenericPackage.Name`. Never take a name from another candidate master or a loaded bin. |
 | Project | Recorded original Avid project, not the application's current project. Sources include PMR Project, OMF/MDB `_PJ`/qualified alternatives and MXF `Preface.ProjectName` or qualified tagged attributes. Presence does not prove the project still exists. |
 | Original Bin | Recorded original-bin association, not membership in currently loaded bins. Private OMF/MDB route: `_ORG_BIN` → `MCBR` → `OMFI:MCBR:MC:binNameUTF8` / `binName`. Bella's MXF fallback supplies no Original Bin value. |
 | Kind | Audio/Video/unknown from the physical descriptor or native audio header. Distinct from master/source/composition role and from Media/Precompute Type. O: `DataKind`; M: Data Definition. |
@@ -53,7 +53,7 @@ contain more information than the supported reader extracts.
 | Bit Depth | Established component/sample precision with representation kept distinct. OMF/MXF use descriptor-family scalar/layout properties, audio summaries and encoding-specific interpretation. Special codes such as 253/254 are not literal printed depths. |
 | Type | Media/Precompute/unknown from the selected master's qualified Avid usage. Avid integer codes 1/7 are distinct from standard AAF AUID UsageCode values; filename shape alone is insufficient. See [usage rules](usage-code-identification.md). |
 | Date Created | Filesystem birth time, blank if unavailable. Avid package creation dates are not substitutes. |
-| Filename / File Path | Current physical basename and full absolute path. Database filenames are matching claims; recorded import paths do not replace physical paths. Confirmed transfers update these physical facts. |
+| File Path | Current full absolute path, including the physical basename. Database filenames are matching claims; recorded import paths do not replace physical paths. Confirmed transfers update these physical facts. |
 | FileMobId / MasterMobId | Full file-role ID and one selected master association; see the identity section below. |
 | KelpieId / OmfScan | App row identity and admitted OMFI-family flag; neither is an Avid package property. |
 | No Database / No Reference | Derived local-reference booleans from distinct compact states. Missing/unresolved checks make No Database true. A qualified positive or complete miss makes it false; No Reference is true only for an established miss without a positive. Neither proves sequence usage or freshness. |

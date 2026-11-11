@@ -131,8 +131,8 @@ row `DbStatus` drives the No Database / No Reference flags and tabs.
 Bella rows use `BellaRowValues` for dimensions, bit depth, exact interpreted rates,
 original rate forms, coherent timing and prepared timecode components. Known zero
 and a positive duration rounding to zero remain displayable; unavailable duration
-stays blank. Sorting compares displayed HH/MM/SS/FF, then Audio/Video/Unknown kind
-for ties. Bella omits recorded Source Path and the separate Effect Sequence value
+stays blank. Sorting compares displayed HH/MM/SS/FF, then Video, Audio and `unknown`
+for ascending ties. Bella omits recorded Source Path and the separate Effect Sequence value
 from rows, table schema, search and CSV. Ordinary physical paths remain searchable.
 
 Every Bella row supplies an operation receipt, including an explicit physical-only

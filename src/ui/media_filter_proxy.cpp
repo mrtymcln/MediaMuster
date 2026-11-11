@@ -9,36 +9,6 @@
 
 namespace
 {
-	// Preserve Audio/Video order and group unresolved kinds afterwards.
-	// Duration ties use the same total order; treating Unknown as equivalent
-	// to both Audio and Video would violate the sort's strict weak ordering.
-	int kindSortRank(MediaFile::Kind kind)
-	{
-		switch (kind)
-		{
-		case MediaFile::Kind::Audio:
-			return 0;
-		case MediaFile::Kind::Video:
-			return 1;
-		case MediaFile::Kind::Unknown:
-			return 2;
-		}
-		return 2;
-	}
-	int typeSortRank(MediaFile::Type type)
-	{
-		switch (type)
-		{
-		case MediaFile::Type::Media:
-			return 0;
-		case MediaFile::Type::Precompute:
-			return 1;
-		case MediaFile::Type::Unknown:
-			return 2;
-		}
-		return 2;
-	}
-
 	// True when every character is plain ASCII. ASCII has exactly one
 	// Unicode form, so normalisation can never change such a string.
 	bool isAsciiOnly(const QString &s)
@@ -91,6 +61,8 @@ namespace
 MediaFilterProxy::MediaFilterProxy(QObject *parent)
 	: QSortFilterProxyModel(parent)
 {
+	setSortRole(MediaTableModel::SortRole);
+	setSortCaseSensitivity(Qt::CaseInsensitive);
 }
 
 void MediaFilterProxy::setSourceModel(QAbstractItemModel *sourceModel)
@@ -250,88 +222,37 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 
 bool MediaFilterProxy::lessThan(const QModelIndex &left, const QModelIndex &right) const
 {
-	// Compare stored fields directly to avoid converting each value through QVariant.
 	if (!m_sourceModel)
 		return QSortFilterProxyModel::lessThan(left, right);
 
-	const MediaFile &leftFile = m_sourceModel->fileAt(left.row());
-	const MediaFile &rightFile = m_sourceModel->fileAt(right.row());
-
-	if (m_sourceModel->omfScanEnabled() && left.column() == m_sourceModel->omfScanColumn())
-		return leftFile.omfEra < rightFile.omfEra;
-
 	using Col = MediaTableModel::Column;
-	switch (m_sourceModel->columnAt(left.column()))
+	const auto column = m_sourceModel->columnAt(left.column());
+	switch (column)
 	{
-	case Col::SizeMB:
-		// Exact integer compare; the MB string is display-only.
-		return leftFile.sizeBytes < rightFile.sizeBytes;
-
-	case Col::Created:
-	{
-		// Invalid (unknown) datetimes sort before every valid one, so blank
-		// rows group together predictably.
-		return leftFile.created < rightFile.created;
-	}
-	case Col::ClipName:
-		// The exact string the column displays; shared rule, can't drift.
-		return QString::compare(leftFile.clipNameDisplay(), rightFile.clipNameDisplay(),
-								Qt::CaseInsensitive) < 0;
-
-	case Col::Compression:
-		return QString::compare(leftFile.compression, rightFile.compression,
-								Qt::CaseInsensitive) < 0;
-
-	case Col::Kind:
-		return kindSortRank(leftFile.kind) < kindSortRank(rightFile.kind);
-
 	case Col::Duration:
 	{
-		// Compare the displayed HH, MM, SS, FF; equal values sort audio first.
-		const auto ls = leftFile.durationTimecode();
-		const auto rs = rightFile.durationTimecode();
-		if (ls != rs)
-			return ls < rs;
-		return kindSortRank(leftFile.kind) < kindSortRank(rightFile.kind);
+		const auto leftDuration = m_sourceModel->fileAt(left.row()).durationTimecode();
+		const auto rightDuration = m_sourceModel->fileAt(right.row()).durationTimecode();
+		if (leftDuration != rightDuration)
+			return leftDuration < rightDuration;
+		const int kindColumn = m_sourceModel->columnIndex(Col::Kind);
+		return QSortFilterProxyModel::lessThan(left.siblingAtColumn(kindColumn), right.siblingAtColumn(kindColumn));
 	}
-
-	case Col::FileName:
-		return QString::compare(leftFile.fileName, rightFile.fileName, Qt::CaseInsensitive) < 0;
-	case Col::Project:
-		return QString::compare(leftFile.projectDisplay(), rightFile.projectDisplay(), Qt::CaseInsensitive) < 0;
-	case Col::OriginalBin:
-		return QString::compare(leftFile.originalBin, rightFile.originalBin, Qt::CaseInsensitive) < 0;
 	case Col::Resolution:
-		return bellaResolutionSortValue(leftFile) < bellaResolutionSortValue(rightFile);
+		return bellaResolutionSortValue(m_sourceModel->fileAt(left.row())) <
+			   bellaResolutionSortValue(m_sourceModel->fileAt(right.row()));
 	case Col::FrameRate:
-		return exactRateLess(leftFile.bellaValues ? leftFile.bellaValues->frameRateValue : std::nullopt,
-							 rightFile.bellaValues ? rightFile.bellaValues->frameRateValue : std::nullopt);
 	case Col::SampleRate:
-		return exactRateLess(leftFile.bellaValues ? leftFile.bellaValues->sampleRateValue : std::nullopt,
-							 rightFile.bellaValues ? rightFile.bellaValues->sampleRateValue : std::nullopt);
-	case Col::BitDepth:
-		return leftFile.bellaDepthBits() < rightFile.bellaDepthBits();
-	case Col::Location:
-		return QString::compare(leftFile.mediaFilePath, rightFile.mediaFilePath, Qt::CaseInsensitive) < 0;
-	case Col::NoDatabase:
-		return leftFile.isNoDatabase() < rightFile.isNoDatabase();
-	case Col::NoReference:
-		return leftFile.isNoReference() < rightFile.isNoReference();
-	case Col::KelpieId:
-		return leftFile.kelpieId < rightFile.kelpieId;
-	case Col::FileMobId:
-		return leftFile.fileMobId < rightFile.fileMobId;
-	case Col::MasterMobId:
-		return leftFile.masterMobId < rightFile.masterMobId;
-	case Col::Type:
-		return typeSortRank(leftFile.type) < typeSortRank(rightFile.type);
-	case Col::PrecomputeCategory:
-	case Col::Effect:
-	case Col::EffectCategory:
-		// Model data applies the same precompute-only display rule.
-		return QString::compare(left.data().toString(), right.data().toString(), Qt::CaseInsensitive) < 0;
-	case Col::Count_:
-		break;
+	{
+		const auto &leftValues = m_sourceModel->fileAt(left.row()).bellaValues;
+		const auto &rightValues = m_sourceModel->fileAt(right.row()).bellaValues;
+		if (column == Col::FrameRate)
+			return exactRateLess(leftValues ? leftValues->frameRateValue : std::nullopt,
+								 rightValues ? rightValues->frameRateValue : std::nullopt);
+		return exactRateLess(leftValues ? leftValues->sampleRateValue : std::nullopt,
+							 rightValues ? rightValues->sampleRateValue : std::nullopt);
 	}
-	return false;
+	default:
+		return QSortFilterProxyModel::lessThan(left, right);
+	}
 }

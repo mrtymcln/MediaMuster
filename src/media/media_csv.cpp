@@ -42,15 +42,14 @@ namespace MediaCsv
 {
 	QString headerLine(Options options)
 	{
-		QString line = QStringLiteral("Clip Name,Project,Bin,Kind,Duration,");
-		line += QStringLiteral("Size (MB),Compression,Resolution,Frame Rate,Sample Rate,Bit Depth,Type,");
+		QString line = QStringLiteral("Clip Name,Bin,Project,Duration,Kind,Type,"
+									  "Compression,Resolution,Frame Rate,Sample Rate,Bit Depth,");
 		if (options.includePrecomputeDetails)
 		{
 			line += QStringLiteral("Precompute Category,Effect Category,Effect,");
 		}
-		line += QStringLiteral("Date Created,Filename,");
-		line += QStringLiteral("File Path,");
-		line += QStringLiteral("No Database,No Reference,FileMobId,MasterMobId,KelpieId,OmfScan");
+		line += QStringLiteral("Size (MB),Date Created,File Path,"
+							   "FileMobId,MasterMobId,KelpieId,No Database,No Reference,OmfScan");
 		return line + QLatin1Char('\n');
 	}
 
@@ -58,23 +57,23 @@ namespace MediaCsv
 	{
 		QString line;
 		QTextStream out(&line);
-		out << CsvUtil::quoted(f.clipName) << ',' << CsvUtil::quoted(f.projectDisplay()) << ','
-			<< CsvUtil::quoted(f.originalBin) << ',' << CsvUtil::quoted(f.kindDisplay()) << ','
-			<< CsvUtil::quoted(f.durationDisplay()) << ',';
-		out << f.sizeMBDisplay() << ',' << CsvUtil::quoted(f.compression) << ',' << CsvUtil::quoted(f.resolutionDisplay()) << ','
+		out << CsvUtil::quoted(f.clipName) << ',' << CsvUtil::quoted(f.originalBin) << ','
+			<< CsvUtil::quoted(f.projectDisplay()) << ',' << CsvUtil::quoted(f.durationDisplay()) << ','
+			<< CsvUtil::quoted(f.kindDisplay()) << ',' << CsvUtil::quoted(f.typeDisplay()) << ','
+			<< CsvUtil::quoted(f.compression) << ',' << CsvUtil::quoted(f.resolutionDisplay()) << ','
 			<< CsvUtil::quoted(f.frameRateDisplay()) << ',' << CsvUtil::quoted(f.sampleRateDisplay()) << ','
-			<< CsvUtil::quoted(f.bitDepthDisplay()) << ',' << CsvUtil::quoted(f.typeDisplay()) << ',';
+			<< CsvUtil::quoted(f.bitDepthDisplay()) << ',';
 		if (options.includePrecomputeDetails)
 		{
 			out << CsvUtil::quoted(f.precomputeCategoryDisplay()) << ','
 				<< CsvUtil::quoted(f.effectCategoryDisplay()) << ','
 				<< CsvUtil::quoted(f.effectDisplay()) << ',';
 		}
-		out << f.createdDisplay() << ',' << CsvUtil::quoted(f.fileName) << ',';
-		out << CsvUtil::quoted(f.mediaFilePath) << ','
+		out << f.sizeMBDisplay() << ',' << f.createdDisplay() << ','
+			<< CsvUtil::quoted(f.mediaFilePath) << ','
+			<< CsvUtil::quoted(f.fileMobId) << ',' << CsvUtil::quoted(f.masterMobId) << ',' << f.kelpieId << ','
 			<< (f.isNoDatabase() ? QStringLiteral("true") : QStringLiteral("false")) << ','
 			<< (f.isNoReference() ? QStringLiteral("true") : QStringLiteral("false")) << ','
-			<< CsvUtil::quoted(f.fileMobId) << ',' << CsvUtil::quoted(f.masterMobId) << ',' << f.kelpieId << ','
 			<< (f.omfEra ? QStringLiteral("true") : QStringLiteral("false"));
 		out << '\n';
 		return line;

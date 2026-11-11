@@ -100,20 +100,22 @@ void TestMediaCsv::selected_master_and_physical_row_identity_are_exported()
 	file.masterMobId = QStringLiteral("selected-master");
 	file.omfEra = true;
 	const auto headers = readCsvRecord(MediaCsv::headerLine());
-	const auto values = readCsvRecord(MediaCsv::rowLine(file));
+	const auto line = MediaCsv::rowLine(file);
+	const auto values = readCsvRecord(line);
 	QCOMPARE(headers.count(QStringLiteral("FileMobId")), 1);
 	QCOMPARE(headers.count(QStringLiteral("MasterMobId")), 1);
 	QCOMPARE(values.at(headers.indexOf(QStringLiteral("FileMobId"))), QStringLiteral("file-id"));
 	QCOMPARE(values.at(headers.indexOf(QStringLiteral("MasterMobId"))), QStringLiteral("selected-master"));
 	QCOMPARE(values.at(headers.indexOf(QStringLiteral("KelpieId"))), QStringLiteral("42"));
 	QCOMPARE(values.at(headers.indexOf(QStringLiteral("OmfScan"))), QStringLiteral("true"));
+	QVERIFY(line.endsWith(QStringLiteral(",true\n")));
 }
 
 void TestMediaCsv::blank_row_has_a_field_for_every_column()
 {
-	for (const bool enabled : {false, true})
+	for (const bool precomputes : {false, true})
 	{
-		const MediaCsv::Options options{enabled};
+		const MediaCsv::Options options{precomputes};
 		QCOMPARE(readCsvRecord(MediaCsv::rowLine(MediaFile{}, options)).size(),
 				 readCsvRecord(MediaCsv::headerLine(options)).size());
 	}
@@ -135,36 +137,30 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 	f.dbStatus = MediaFile::DbStatus::NoReference;
 	f.fileMobId = QStringLiteral("file-mob-id");
 	f.masterMobId = QStringLiteral("master-mob-id");
-	for (bool enabled : {false, true})
+	for (const bool precomputes : {false, true})
 	{
 		QStringList expectedHeaders = QStringLiteral(
-										  "Clip Name,Project,Bin,Kind,Duration,Size (MB),Compression,Resolution,Frame Rate,Sample Rate,Bit Depth,Type,"
-										  "Date Created,Filename,File Path,No Database,No Reference,FileMobId,MasterMobId,KelpieId,OmfScan")
+										  "Clip Name,Bin,Project,Duration,Kind,Type,Compression,Resolution,Frame Rate,Sample Rate,Bit Depth")
 										  .split(QLatin1Char(','));
 		QStringList expectedFields{
-			QStringLiteral("Scene 1 - Take 3"), QStringLiteral("MyFilm"), QStringLiteral("Rushes"),
-			QStringLiteral("Video"), QStringLiteral("00:00:10:00"), QStringLiteral("850.0"),
+			QStringLiteral("Scene 1 - Take 3"), QStringLiteral("Rushes"), QStringLiteral("MyFilm"),
+			QStringLiteral("00:00:10:00"), QStringLiteral("Video"), QStringLiteral("Precompute"),
 			QStringLiteral("DNx HQX [DNxHD 175x]"), QStringLiteral("1920x1080"), QStringLiteral("25"),
-			QStringLiteral("48 kHz"), QStringLiteral("10-bit"), QStringLiteral("Precompute"),
-			QStringLiteral("2026-07-20 12:30"),
-			QStringLiteral("A11B22C33D44.mxf"),
-			QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/1/A11B22C33D44.mxf"),
-			QStringLiteral("false"), QStringLiteral("true"), QStringLiteral("file-mob-id"), QStringLiteral("master-mob-id"), QStringLiteral("0"), QStringLiteral("false")};
-		if (enabled)
+			QStringLiteral("48 kHz"), QStringLiteral("10-bit")};
+		if (precomputes)
 		{
-			const QStringList detailHeaders{QStringLiteral("Precompute Category"), QStringLiteral("Effect Category"),
-											QStringLiteral("Effect")};
-			const QStringList detailFields{QStringLiteral("Rendered Effects"), QStringLiteral("Image"),
-										   QStringLiteral("Color Correction")};
-			for (int i = 0; i < detailHeaders.size(); ++i)
-			{
-				expectedHeaders.insert(12 + i, detailHeaders[i]);
-				expectedFields.insert(12 + i, detailFields[i]);
-			}
+			expectedHeaders.append({QStringLiteral("Precompute Category"), QStringLiteral("Effect Category"), QStringLiteral("Effect")});
+			expectedFields.append({QStringLiteral("Rendered Effects"), QStringLiteral("Image"), QStringLiteral("Color Correction")});
 		}
-		const MediaCsv::Options options{enabled};
-		QCOMPARE(readCsvRecord(MediaCsv::headerLine(options)), expectedHeaders);
-		QCOMPARE(readCsvRecord(MediaCsv::rowLine(f, options)), expectedFields);
+		expectedHeaders.append(QStringLiteral(
+								   "Size (MB),Date Created,File Path,FileMobId,MasterMobId,KelpieId,No Database,No Reference,OmfScan")
+								   .split(QLatin1Char(',')));
+		expectedFields.append({QStringLiteral("850.0"), QStringLiteral("2026-07-20 12:30"),
+							   QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/1/A11B22C33D44.mxf"),
+							   QStringLiteral("file-mob-id"), QStringLiteral("master-mob-id"), QStringLiteral("0"),
+							   QStringLiteral("false"), QStringLiteral("true"), QStringLiteral("false")});
+		QCOMPARE(readCsvRecord(MediaCsv::headerLine({precomputes})), expectedHeaders);
+		QCOMPARE(readCsvRecord(MediaCsv::rowLine(f, {precomputes})), expectedFields);
 	}
 }
 
@@ -194,7 +190,7 @@ void TestMediaCsv::database_flags_are_unquoted_booleans()
 		const int referenceColumn = headers.indexOf(QStringLiteral("No Reference"));
 		// This row has no embedded commas: inspect raw cells to retain the
 		// unquoted lowercase boolean format used by OmfScan.
-		const auto rawValues = MediaCsv::rowLine(file, options).split(QLatin1Char(','));
+		const auto rawValues = MediaCsv::rowLine(file, options).chopped(1).split(QLatin1Char(','));
 		QCOMPARE(rawValues.value(databaseColumn), noDatabase);
 		QCOMPARE(rawValues.value(referenceColumn), noReference);
 	}
@@ -237,12 +233,10 @@ void TestMediaCsv::sample_rate_and_bit_depth_are_exported()
 		QVERIFY(frameRateIndex >= 0);
 		QCOMPARE(headers.at(frameRateIndex + 1), QStringLiteral("Sample Rate"));
 		QCOMPARE(headers.at(frameRateIndex + 2), QStringLiteral("Bit Depth"));
-		QCOMPARE(headers.at(frameRateIndex + 3), QStringLiteral("Type"));
 		QCOMPARE(fields.at(frameRateIndex), f.frameRateDisplay());
 		QCOMPARE(fields.at(frameRateIndex + 1), sampleRateLabel);
 		QCOMPARE(fields.at(frameRateIndex + 1), f.sampleRateDisplay());
 		QCOMPARE(fields.at(frameRateIndex + 2), bitDepthLabel);
-		QCOMPARE(fields.at(frameRateIndex + 3), f.typeDisplay());
 	}
 }
 
@@ -270,7 +264,7 @@ void TestMediaCsv::file_path_round_trips_csv()
 		QCOMPARE(fields.size(), headers.size());
 		QCOMPARE(headers.count(QStringLiteral("File Path")), 1);
 		QCOMPARE(fields.at(headers.indexOf(QStringLiteral("File Path"))), filePath);
-		QCOMPARE(fields.at(headers.indexOf(QStringLiteral("Filename"))), file.fileName);
+		QVERIFY(!headers.contains(QStringLiteral("Filename")));
 	}
 }
 
@@ -363,7 +357,7 @@ void TestMediaCsv::unknown_classification_is_exported_without_guessing()
 		const auto headers = readCsvRecord(MediaCsv::headerLine(options));
 		const auto unknown = readCsvRecord(MediaCsv::rowLine(MediaFile{}, options));
 		QCOMPARE(unknown.at(headers.indexOf(QStringLiteral("Kind"))), QStringLiteral("unknown"));
-		QCOMPARE(unknown.at(headers.indexOf(QStringLiteral("Type"))), QString{});
+		QCOMPARE(unknown.at(headers.indexOf(QStringLiteral("Type"))), QStringLiteral("unknown"));
 		const auto known = readCsvRecord(MediaCsv::rowLine(sampleRow(), options));
 		QCOMPARE(known.at(headers.indexOf(QStringLiteral("Kind"))), QStringLiteral("Video"));
 		QCOMPARE(known.at(headers.indexOf(QStringLiteral("Type"))), QStringLiteral("Media"));

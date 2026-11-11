@@ -1,24 +1,25 @@
 # Precompute details preview
 
-MediaMuster reads the additional Avid usage information identified in Media Composer **26.8.0.58987**. The **Type** column distinguishes **Media** (master-clip media) and **Precompute**, with a blank when unknown in Bella, and is always present in the table and CSV. The extra detail columns and filter controls require the build-time [Precomputes gate](../release-feature-gates.md).
+MediaMuster reads the additional Avid usage information identified in Media Composer **26.8.0.58987**. The **Type** column displays **Media** (master-clip media), **Precompute** or `unknown` in the table and CSV. The extra detail columns and filter controls require the build-time [Precomputes gate](../release-feature-gates.md).
 
 The effect details and picker are controlled by the compiled build flag
 `FeatureFlags::kPrecomputeFilter`, currently `true`.
 
-1. Set `FeatureFlags::kPrecomputeFilter` to `true` in `src/featureflags.h`, rebuild and launch.
+1. Set `FeatureFlags::kPrecomputeFilter` to `true` in `src/feature_flags.h`, rebuild and launch.
 2. Scan the volumes you want to examine. Rescan results collected by an older build.
 3. The **Precompute Category** column shows **Rendered Effects** or **Titles and Matte Keys**, with a blank for an unknown Bella category. The picker groups those unknown categories under **unknown**.
 4. Choose **Filter Precomputes...**. Choose a **Volume** at the top, expand the outline, and tick the branches or effects you want. For example, expand **Precomputes → Rendered Effects → Blend** and tick **3D Warp**. Choose **Apply**.
 
-Bella adds **Precompute Category**, **Effect Category** and **Effect**, and the
-**Precomputes** tab becomes available. Effect Sequence is excluded. With OMF
-enabled, the Bella table has 24 columns with details and 21 without; disabling
-OMF hides OmfScan, giving 23 or 20 table columns. CSV always includes OmfScan,
-No Database and No Reference, giving 24 or 21 fields. Bella uses **File Path**
-and has no recorded Source Path column. Every enabled tab remains visible even
-at zero; disabling precompute features hides Precomputes and clears the detailed
-precompute and volume filters. Type stays visible and sortable, and rendered
-media remains in ordinary scan results. There is no user-facing Debug toggle.
+The Precomputes flag adds **Precompute Category**, **Effect Category** and
+**Effect** after **Bit Depth** in the table and CSV, and makes the
+**Precomputes** tab available. With Precomputes off, the table has 14 columns
+and CSV has 20, including six CSV-only fields. With Precomputes on, the table
+has 17 columns and CSV has 23. Effect Sequence and recorded Source Path are
+excluded. Every enabled tab remains visible even at zero. Disabling precompute
+features removes the detail columns from the table and CSV, hides Precomputes
+and clears the detailed precompute and volume filters. Type stays visible and
+sortable, and rendered media remains in ordinary scan results. There is no
+user-facing Debug toggle. See [current behaviour](../current-behaviour.md#filtering-selecting-and-exporting) for the export fields.
 
 The picker uses a narrow standard dialog and outline. Its **Volume** row follows the Rebalance dialog. **Rendered Effects** expands into effect categories and then individual effects; **Titles and Matte Keys** and **unknown** expand directly into their named effects. The checkboxes show the selection, without separate selected-filter chips. There is no Search field, tree heading or Files column. The matching-file total remains below the outline, alongside **Apply** and **Cancel**.
 

@@ -361,7 +361,7 @@ void TestMediaTableModel::omf_gate_preserves_optional_column_indexes()
 		for (bool precompute : {true, false, true})
 		{
 			model.setPrecomputesEnabled(precompute);
-			QCOMPARE(model.columnCount(), 20 + int(omf) + 3 * int(precompute));
+			QCOMPARE(model.columnCount(), int(MediaTableModel::Column::PrecomputeCategory) + int(omf) + 3 * int(precompute));
 			for (int column = 0; column < model.omfScanColumn(); ++column)
 				QCOMPARE(model.columnIndex(model.columnAt(column)), column);
 			QVERIFY(duration.isValid());
@@ -467,9 +467,8 @@ void TestMediaTableModel::database_columns_show_the_compact_result()
 	model.setMediaFiles({file});
 	const int databaseColumn = int(MediaTableModel::Column::NoDatabase);
 	const int referenceColumn = int(MediaTableModel::Column::NoReference);
-	QCOMPARE(databaseColumn, int(MediaTableModel::Column::Location) + 1);
+	QCOMPARE(databaseColumn, int(MediaTableModel::Column::KelpieId) + 1);
 	QCOMPARE(referenceColumn, databaseColumn + 1);
-	QCOMPARE(int(MediaTableModel::Column::FileMobId), referenceColumn + 1);
 	const QPersistentModelIndex database(model.index(0, databaseColumn));
 	const QPersistentModelIndex reference(model.index(0, referenceColumn));
 	for (const bool precomputes : {false, true, false})
@@ -523,7 +522,7 @@ void TestMediaTableModel::unknown_classification_displays_without_guessing()
 	const int kind = int(MediaTableModel::Column::Kind);
 	const int type = int(MediaTableModel::Column::Type);
 	QCOMPARE(model.index(0, kind).data().toString(), QStringLiteral("unknown"));
-	QVERIFY(model.index(0, type).data().toString().isEmpty());
+	QCOMPARE(model.index(0, type).data().toString(), QStringLiteral("unknown"));
 	QVERIFY(!model.index(0, kind).data(Qt::ToolTipRole).toString().isEmpty());
 	QVERIFY(!model.index(0, type).data(Qt::ToolTipRole).toString().isEmpty());
 	QCOMPARE(model.index(1, kind).data().toString(), QStringLiteral("Video"));
@@ -540,31 +539,31 @@ void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 	QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
 	model.setMediaFiles(makeRows(2));
 	const QStringList baseHeaders{
-		QStringLiteral("Clip Name"), QStringLiteral("Project"), QStringLiteral("Bin"),
-		QStringLiteral("Kind"), QStringLiteral("Duration"), QStringLiteral("Size (MB)"),
+		QStringLiteral("Clip Name"), QStringLiteral("Bin"), QStringLiteral("Project"),
+		QStringLiteral("Duration"), QStringLiteral("Kind"), QStringLiteral("Type"),
 		QStringLiteral("Compression"), QStringLiteral("Resolution"), QStringLiteral("Frame Rate"),
-		QStringLiteral("Sample Rate"), QStringLiteral("Bit Depth"), QStringLiteral("Type"),
-		QStringLiteral("Date Created"), QStringLiteral("Filename"),
-		QStringLiteral("File Path"), QStringLiteral("No Database"), QStringLiteral("No Reference"),
-		QStringLiteral("FileMobId"), QStringLiteral("MasterMobId"), QStringLiteral("KelpieId")};
+		QStringLiteral("Sample Rate"), QStringLiteral("Bit Depth"), QStringLiteral("Size (MB)"),
+		QStringLiteral("Date Created"), QStringLiteral("File Path"), QStringLiteral("FileMobId"),
+		QStringLiteral("MasterMobId"), QStringLiteral("KelpieId"), QStringLiteral("No Database"),
+		QStringLiteral("No Reference")};
 	const QPersistentModelIndex row(model.index(1, int(MediaTableModel::Column::Location)));
 	const QString path = row.data().toString();
 	QSignalSpy reset(&model, &QAbstractItemModel::modelReset);
 	QSignalSpy inserted(&model, &QAbstractItemModel::columnsInserted);
 	QSignalSpy removed(&model, &QAbstractItemModel::columnsRemoved);
 	QVERIFY(!model.precomputesEnabled());
-	QCOMPARE(model.columnCount(), 20);
+	QCOMPARE(model.columnCount(), baseHeaders.size());
 	for (int column = 0; column < baseHeaders.size(); ++column)
 		QCOMPARE(model.headerData(column, Qt::Horizontal, Qt::DisplayRole).toString(), baseHeaders[column]);
 	QVERIFY(!model.index(0, int(MediaTableModel::Column::Effect)).isValid());
 	QVERIFY(!model.headerData(int(MediaTableModel::Column::Effect), Qt::Horizontal, Qt::DisplayRole).isValid());
 	model.setPrecomputesEnabled(true);
-	QCOMPARE(model.columnCount(), 23);
+	QCOMPARE(model.columnCount(), baseHeaders.size() + 3);
 	for (int column = 0; column < baseHeaders.size(); ++column)
 		QCOMPARE(model.headerData(column, Qt::Horizontal, Qt::DisplayRole).toString(), baseHeaders[column]);
 	QCOMPARE(inserted.size(), 1);
-	QCOMPARE(inserted.first().at(1).toInt(), 20);
-	QCOMPARE(inserted.first().at(2).toInt(), 22);
+	QCOMPARE(inserted.first().at(1).toInt(), baseHeaders.size());
+	QCOMPARE(inserted.first().at(2).toInt(), baseHeaders.size() + 2);
 	QVERIFY(row.isValid());
 	QCOMPARE(row.data().toString(), path);
 	const QPersistentModelIndex effect(model.index(1, int(MediaTableModel::Column::Effect)));
@@ -572,7 +571,7 @@ void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 	QCOMPARE(inserted.size(), 1);
 	model.setPrecomputesEnabled(false);
 	model.setPrecomputesEnabled(false);
-	QCOMPARE(model.columnCount(), 20);
+	QCOMPARE(model.columnCount(), baseHeaders.size());
 	QCOMPARE(removed.size(), 1);
 	QCOMPARE(reset.size(), 0);
 	QCOMPARE(model.rowCount(), 2);

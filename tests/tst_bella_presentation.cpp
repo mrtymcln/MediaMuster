@@ -151,19 +151,19 @@ void TestBellaPresentation::durationZeroBlankAndSort()
 	const auto rounded = bellaMediaFile(audio);
 	QCOMPARE(rounded.bellaValues->timing.duration->count, qint64(1));
 	MediaTableModel model;
-	model.setMediaFiles({bellaMediaFile(longVideo), bellaMediaFile(video), rounded, bellaMediaFile(unclocked)});
+	model.setMediaFiles({bellaMediaFile(longVideo), rounded, bellaMediaFile(video), bellaMediaFile(unclocked)});
 	QCOMPARE(cell(model, 0, Col::Duration), QStringLiteral("100:00:00:00"));
 	QCOMPARE(cell(model, 1, Col::Duration), QStringLiteral("00:00:00:00"));
 	QCOMPARE(cell(model, 2, Col::Duration), QStringLiteral("00:00:00:00"));
 	QVERIFY(cell(model, 3, Col::Duration).isEmpty());
 	QCOMPARE(cell(model, 3, Col::Kind), QStringLiteral("unknown"));
-	QVERIFY(cell(model, 3, Col::Type).isEmpty());
+	QCOMPARE(cell(model, 3, Col::Type), QStringLiteral("unknown"));
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	proxy.sort(model.columnIndex(Col::Duration));
 	QCOMPARE(firstClip(proxy, model), QStringLiteral("blank"));
-	QCOMPARE(proxy.index(1, model.columnIndex(Col::ClipName)).data().toString(), QStringLiteral("rounded zero"));
-	QCOMPARE(proxy.index(2, model.columnIndex(Col::ClipName)).data().toString(), QStringLiteral("zero"));
+	QCOMPARE(proxy.index(1, model.columnIndex(Col::ClipName)).data().toString(), QStringLiteral("zero"));
+	QCOMPARE(proxy.index(2, model.columnIndex(Col::ClipName)).data().toString(), QStringLiteral("rounded zero"));
 }
 
 void TestBellaPresentation::ratesSortExactly()
