@@ -10,10 +10,11 @@ File Check verifies file facts before and during operations; File Operations
 performs the jobs and maintains Undo/recovery. The separate AVB reader supplies
 Bin Filter references.
 
-Confirmed requirements are summarized under [Bella](projects/Bella/README.md),
-[Copland](projects/Copland/README.md) and [Canon](projects/Canon/README.md).
+Confirmed requirements are summarized under [Bella](projects/Bella_readme.md),
+[Copland](projects/Copland_readme.md) and [Canon](projects/Canon_readme.md).
 See the [architecture map](architecture.md) for code responsibilities and
-[contributing](CONTRIBUTING.md#validation) for current test/acceptance limits.
+the [validation policy](projects/Copland_readme.md#validation-and-change-policy)
+for current test and acceptance limits.
 
 ## Starting the app
 
@@ -79,15 +80,15 @@ Operation-time reader failures are reported through `operations`.
 These outputs add no `console/` or `mediamuster.` prefix. The category identifies a message's source;
 its severity is separate.
 
-OMF support, precompute details and filtering, and file-operation Undo each have
-a compile-time flag in `src/feature_flags.h`. The default build enables precompute
-details and filtering. Change the corresponding flag and rebuild to change its
-availability. Rendered media remains in ordinary scan results when precompute
-details and filtering are disabled.
+The default build enables OMF support, precompute details and filtering, and
+file-operation Undo. Each has a compile-time flag in `src/feature_flags.h`.
+Change the corresponding flag and rebuild to change its availability. Rendered
+media remains in ordinary scan results when precompute details and filtering
+are disabled.
 
-The Debug menu contains **Fusion style** (off at launch). The menu has its own
-independent build flag. The media table and headers inherit normal Qt font
-styling; the Console retains its monospaced font. See
+The Debug menu is enabled by default through its own build flag and contains
+**Fusion style** (off at launch). The media table and headers inherit normal Qt
+font styling; the Console retains its monospaced font. See
 [release feature gates](release-feature-gates.md).
 
 ## Menus
@@ -335,7 +336,7 @@ to delete.
 The default table order is Clip Name, Bin, Project, Duration, Kind, Type,
 Compression, Resolution, Frame Rate, Sample Rate, Bit Depth, Size (MB), Date Created
 and File Path.
-Compression is the readable format name, such as `Avid DNx HQX [DNxHD 175x]`.
+Compression is the readable format name, such as `DNx HQX [DNxHD 175x]`.
 Bella prepares the readable name from qualified descriptor and coding facts; the
 row keeps the resulting name rather than raw properties or observation histories.
 The Precomputes flag adds Precompute Category, Effect Category and Effect after

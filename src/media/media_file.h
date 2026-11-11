@@ -236,7 +236,7 @@ struct MediaFile
 		return type == Type::Precompute && label.isEmpty() ? QStringLiteral("unknown") : label;
 	}
 
-	/// Shared Kind label for the table, sorting and CSV.
+	/// Shared Kind label for the table and CSV.
 	QString kindDisplay() const
 	{
 		switch (kind)
@@ -266,7 +266,7 @@ struct MediaFile
 		return {};
 	}
 
-	/// Decimal MB for table/CSV display; sorting uses the exact byte count.
+	/// MB for table and CSV display; exact bytes for sorting.
 	QString sizeMBDisplay() const
 	{
 		return sizeBytes < 0
@@ -281,8 +281,7 @@ struct MediaFile
 								 : QString();
 	}
 
-	/// Preserve unknown clip names as blank in the table, sort and CSV.
-	/// The on-disk filename is a separate fact, not a fallback clip name.
+	/// Unknown Clip Names stay empty.
 	const QString &clipNameDisplay() const
 	{
 		return clipName;

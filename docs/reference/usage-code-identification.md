@@ -43,6 +43,6 @@ within their supported layouts:
 - Package/master associations are retained separately from classification observations. Unknown usage does not fabricate a render classification.
 
 Bella's MXF parser checks the supported complete UsageCode labels directly. See
-the [MDB](../../src/bella/mdbparser.cpp), [OMF](../../src/bella/omfparser.cpp) and
-[MXF](../../src/bella/mxfparser.cpp) parsers for the implementation and
-[Project Bella](../projects/Bella/README.md) for its approved scope.
+the [MDB](../../src/scanner/mdb_parser.cpp), [OMF](../../src/scanner/omf_parser.cpp) and
+[MXF](../../src/scanner/mxf_parser.cpp) parsers for the implementation and
+[Project Bella](../projects/Bella_readme.md) for its approved scope.

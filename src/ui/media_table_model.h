@@ -44,7 +44,7 @@ public:
 
 	explicit MediaTableModel(QObject *parent = nullptr);
 
-	// Logical positions before feature gating. Excluded columns have no index.
+	/// Returns the logical index. Feature gates determine whether the column is present.
 	int columnIndex(Column column) const;
 	Column columnAt(int index) const;
 

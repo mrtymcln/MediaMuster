@@ -1,6 +1,6 @@
 # Bella matching and source selection
 
-[`matching.h/.cpp`](../../src/bella/matching.cpp) owns the fixed source rules.
+[`matching.h/.cpp`](../../src/scanner/matching.cpp) owns the fixed source rules.
 It performs no filesystem I/O. One temporary `MatchContext` owns completed PMR/MDB
 reports and full-ID lookup indexes; per-file calls borrow a supplied header
 report synchronously and return owned selected values.
@@ -60,4 +60,4 @@ Final rows retain selected values, exact timing, the compact local-reference
 answer and operation receipt. They do not keep temporary database graphs,
 per-column candidate histories or a permanent MatchContext. See
 [source ownership](source-ownership.md), [timing](timing.md) and
-[the current scanner contract](../projects/Bella/README.md).
+[the current scanner contract](../projects/Bella_readme.md).

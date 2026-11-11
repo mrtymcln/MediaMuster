@@ -40,7 +40,7 @@ Verified named MDB counterparts include `OMFI:MCBR:MC:binNameUTF8` and
 inherit that meaning. Actual legacy/UTF-8 bin-name counterparts can have separate
 byte locations and different encodings on the same object.
 
-The shared [MacRoman table](../../src/media/avidtext.h) is static data. Active
+The shared [MacRoman table](../../src/media/avid_text.h) is static data. Active
 parsers own their format-specific decoding and bounds/error policy. See
 [PMR](pmr-format.md), [MDB](mdb-format.md), [MXF](mxf-format.md) and
 [AVB](avb-format.md) for their independent scope limits.

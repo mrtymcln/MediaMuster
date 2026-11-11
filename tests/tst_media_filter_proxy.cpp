@@ -554,15 +554,16 @@ void TestMediaFilterProxy::database_flags_sort_across_optional_column_gates()
 				QCOMPARE(proxy.sortColumn(), column);
 				QCOMPARE(proxy.sortOrder(), direction);
 				QCOMPARE(proxy.rowCount(), 4);
-				QList<bool> expected{false, false, noDatabase, true};
+				QList<int> expected = {0, 0, int(noDatabase), 1};
 				if (direction == Qt::DescendingOrder)
 					std::reverse(expected.begin(), expected.end());
 				for (int row = 0; row < proxy.rowCount(); ++row)
 				{
 					const auto index = proxy.index(row, column);
 					QVERIFY(index.isValid());
-					QCOMPARE(index.data(Qt::UserRole).metaType(), QMetaType::fromType<bool>());
-					QCOMPARE(index.data(Qt::UserRole).toBool(), expected[row]);
+					const auto sortValue = index.data(MediaTableModel::SortRole);
+					QCOMPARE(sortValue.metaType(), QMetaType::fromType<int>());
+					QCOMPARE(sortValue.toInt(), expected[row]);
 					QCOMPARE(index.data().toString(), expected[row] ? QStringLiteral("true") : QStringLiteral("false"));
 				}
 			}

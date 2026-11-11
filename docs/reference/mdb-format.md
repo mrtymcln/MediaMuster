@@ -1,6 +1,6 @@
 # MDB objects, ownership and supported fields
 
-[`mdbparser.cpp`](../../src/bella/mdbparser.cpp) owns database framing,
+[`mdb_parser.cpp`](../../src/scanner/mdb_parser.cpp) owns database framing,
 dictionaries, local references and supported metadata extraction. MDB and the
 OMF media reader have deliberately independent implementations: similar `OMFI:`
 wire names do not make one depend on the other. Review applicable corrections in

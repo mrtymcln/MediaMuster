@@ -7,7 +7,7 @@ builds. File Check uses its supported decoding paths through already-open files;
 required identities outside those limits refuse the affected operation. Bin Filter
 retains its separate AVB readers. See
 [current behaviour](../current-behaviour.md), [architecture](../architecture.md) and
-[Project Bella](../projects/Bella/README.md).
+[Project Bella](../projects/Bella_readme.md).
 
 Bella returns one owned result per discovered physical file. Its parsers return
 compact facts and qualifications, with diagnostic notes; raw captures and parser
@@ -56,5 +56,5 @@ and their selection rules are described in [precompute details](effect-details-p
   automatic reader reduction is imposed.
 - Genuine-file observations and authored malformed/boundary cases establish
   different kinds of evidence. Neither establishes support for every server,
-  writer or format variant. The current suite does not provide real-media acceptance;
-  see [contributing](../CONTRIBUTING.md#validation).
+  writer or format variant. The current suite does not provide real-media acceptance.
+  See the [validation policy](../projects/Copland_readme.md#validation-and-change-policy).

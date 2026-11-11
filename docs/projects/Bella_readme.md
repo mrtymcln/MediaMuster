@@ -4,9 +4,9 @@ Bella is the scanner and media-reading engine in macOS and Windows MediaMuster
 builds. It uses C++17 and the [Qt version pinned for MediaMuster](../../CMakeLists.txt).
 
 This page summarises the current approved contract. The
-[implementation map](../../../src/bella/README.md) identifies its files and APIs;
-[current behaviour](../../current-behaviour.md) describes the complete app.
-[Copland](../Copland/README.md) supplies the retained V1 product scope. Older
+[implementation map](../architecture.md#bella-readers-matching-and-row-values) identifies its files and APIs;
+[current behaviour](../current-behaviour.md) describes the complete app.
+[Copland](Copland_readme.md) supplies the retained V1 product scope. Older
 scanner capabilities and earlier proposals do not expand Bella's supported scope.
 
 ## Inventory and identity
@@ -66,7 +66,7 @@ Explicitly marked Unicode and legacy text counterparts retain their distinct
 rules. Do not infer UTF-8 from arbitrary legacy bytes, reinterpret malformed
 Unicode as legacy text, or invent trimmed/normalized source values. Bounds,
 typed-form and ownership checks still apply; selective reading is not unchecked
-allocation from a file-supplied count. See [parser compatibility](../../reference/parser-compatibility.md).
+allocation from a file-supplied count. See [parser compatibility](../reference/parser-compatibility.md).
 
 ## Scan lifecycle
 

@@ -1,6 +1,6 @@
 # PMR layout and selected-set rules
 
-[`pmrparser.cpp`](../../src/bella/pmrparser.cpp) reads one captured PMR and returns
+[`pmr_parser.cpp`](../../src/scanner/pmr_parser.cpp) reads one captured PMR and returns
 one qualified selected filename set. PMR is an Avid cache/index, not a physical
 media inventory or a generic OMF identifier format.
 

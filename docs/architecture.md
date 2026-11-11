@@ -7,56 +7,55 @@ For what the user sees, start with [How MediaMuster works](current-behaviour.md)
 The macOS and Windows application uses [Bella](projects/Bella_readme.md).
 [BellaAppScanner](../src/ui/bella_app_scanner.cpp) connects the scanner to the UI.
 
-[File Check](../src/operations/filecheck.cpp) verifies operation inputs using Bella's parser
+[File Check](../src/operations/file_check.cpp) verifies operation inputs using Bella's parser
 helpers and the existing native file safeguards. File Operations owns execution,
 journalling, Undo and recovery. The AVB reader/reference resolver in
-`src/AvbReader/` continues to implement Bin Filter independently.
+`src/avb/` continues to implement Bin Filter independently.
 
 ## Source layout
 
 | Location | Responsibilities |
 | --- | --- |
 | `src/` | App entry point, feature flags, resource manifest and generated-version template. |
-| `src/app/` | BellaAppScanner, Bella2Table and CSV export adapters. |
-| `src/media/` | Shared media values, identities, text/managed-layout rules and the effect catalogue. |
-| `src/storage/` | Volume discovery and identity, path keys and native file reveal. |
+| `src/media/` | Shared media values, identities, text and managed-layout rules, Bella row mapping and CSV export. |
+| `src/storage/` | Volume discovery and identity, path keys, native file reveal and storage persistence. |
 | `src/support/` | Diagnostics, worker ownership and enum helpers. |
-| `src/ui/` | Main window, table model, filter proxy, volume-list widget, filter criteria and widget/display helpers. |
+| `src/ui/` | Main window, scan and file-operation controllers, table model, filter proxy, volume-list widget, filter criteria and display helpers. |
 | `src/ui/dialogs/` | Task dialogs and their presentation. |
-| `src/operations/` | Operation controller, requests, planning, execution, checks, native file routines, journals, recovery and Rebalance. |
-| `src/bella/` | Existing scanner, readers, matching, timing and naming. |
-| `src/AvbReader/` | AVB reader, bin loader, source-graph support and reference resolver. |
-| `src/CompressionNames/` | Existing shared compression-name lookup and DNx naming rules. |
+| `src/operations/` | Requests, planning, execution, checks, native file routines, journals, recovery and Rebalance. |
+| `src/scanner/` | Scanner, media readers, matching, timing and media labels. |
+| `src/avb/` | AVB reader, bin loader, source-graph support and reference resolver. |
+| `src/scanner_lookup/` | Compression names, DNx naming rules and the effect catalogue. |
 
 The folders group existing responsibilities; component ownership and behavior
 remain the same. Application and test CMake lists name the sources explicitly.
 
 ## From storage to table
 
-1. [VolumeManager](../src/storage/volumemanager.cpp) discovers storage locations at startup
+1. [VolumeDetector](../src/storage/volume_detector.cpp) discovers storage locations at startup
    and on explicit Refresh Volumes. It keeps no detection cache or media inventory.
    The main window retains the last detected paths and session manual locations;
    scan commands use those paths without rediscovering drives.
-2. [MainWindow](../src/ui/mainwindow.cpp) passes selected/all locations and the OMF
+2. [MainWindow](../src/ui/main_window.cpp) passes selected/all locations and the OMF
    and precompute gates to `BellaAppScanner`, which owns location admission and
    trusted-rescan preparation. Starting a scan clears the old inventory,
    filters and selection.
-3. `BellaAppScanner` starts one organiser `QThread`. [Bella discovery](../src/bella/discovery_p.cpp)
+3. `BellaAppScanner` starts one organiser `QThread`. [Bella discovery](../src/scanner/discovery_p.cpp)
    inventories admitted physical files and database paths. The organiser then
-   uses a fresh [ReadJobs](../src/bella/readjobs_p.cpp) pool with at most four
+   uses a fresh [ReadJobs](../src/scanner/read_jobs_p.cpp) pool with at most four
    outstanding PMR/MDB/required-header jobs in total.
-4. [Bella::scan](../src/bella/bellascanner.cpp) collects database reports before
-   preparing [MatchContext](../src/bella/matching.cpp). It checks physical files,
+4. [Bella::scan](../src/scanner/bella_scanner.cpp) collects database reports before
+   preparing [MatchContext](../src/scanner/matching.cpp). It checks physical files,
    matches the databases and reads only required headers, then matches those
    replies using the same context. Every discovered physical location retains
    its own row identity, even when Avid IDs are shared.
-5. [Bella2Table](../src/app/Bella2Table.cpp), the app adapter, prepares owned
-   [MediaFile](../src/media/mediafile.h) rows, including typed timing/rates and
+5. [Bella media mapper](../src/media/bella_media_mapper.cpp), the app adapter, prepares owned
+   [MediaFile](../src/media/media_file.h) rows, including typed timing/rates and
    operation-safety receipts. `bellaMediaFile()` and
    `applyBellaOperationHandoff()` share this adapter implementation. Working reader reports
    and matching indexes are released before final row delivery.
-6. [MediaTableModel](../src/ui/mediatablemodel.cpp) stores prepared rows;
-   [MediaFilterProxy](../src/ui/mediafilterproxy.cpp) filters and sorts them without
+6. [MediaTableModel](../src/ui/media_table_model.cpp) stores prepared rows;
+   [MediaFilterProxy](../src/ui/media_filter_proxy.cpp) filters and sorts them without
    changing the underlying inventory. Results replace the model at scan end,
    including partial results after cancellation.
 
@@ -95,14 +94,14 @@ states follow the same inventory, selection and activity rules.
 
 | Component | Responsibility |
 | --- | --- |
-| [PMR parser](../src/bella/pmrparser.cpp) | Reads an independent validated PMR set, filenames, IDs, Project and reference coverage. |
-| [MDB parser](../src/bella/mdbparser.cpp) | Extracts qualified compact file/master facts from supported Avid databases. |
-| [MXF parser](../src/bella/mxfparser.cpp) | Reads the admitted initial header metadata and qualified physical/package facts. |
-| [OMF/native-audio parser](../src/bella/omfparser.cpp) | Reads supported OMF and WAVE/AIFF facts, with bounded shared audio-format decoding. |
-| [Matcher](../src/bella/matching.cpp) | Uses exact local PMR filenames and full IDs, scan-wide MDB indexes and compatible already-read headers. Selects values and local-reference status and decides whether a header is needed. |
-| [Timing](../src/bella/timing.cpp) | Preserves exact duration/rates, interprets qualified Avid edit rates and computes displayed timecode components. |
-| [Naming](../src/bella/naming.cpp) | Interprets selected compression facts and derives effects from a confirmed precompute name using shared catalogues. |
-| [BellaAppScanner](../src/app/bellaappscanner.cpp) | Owns background result preparation, event-driven progress, warning/log batches and final delivery on the GUI thread. |
+| [PMR parser](../src/scanner/pmr_parser.cpp) | Reads an independent validated PMR set, filenames, IDs, Project and reference coverage. |
+| [MDB parser](../src/scanner/mdb_parser.cpp) | Extracts qualified compact file/master facts from supported Avid databases. |
+| [MXF parser](../src/scanner/mxf_parser.cpp) | Reads the admitted initial header metadata and qualified physical/package facts. |
+| [OMF/native-audio parser](../src/scanner/omf_parser.cpp) | Reads supported OMF and WAVE/AIFF facts, with bounded shared audio-format decoding. |
+| [Matcher](../src/scanner/matching.cpp) | Uses exact local PMR filenames and full IDs, scan-wide MDB indexes and compatible already-read headers. Selects values and local-reference status and decides whether a header is needed. |
+| [Timing](../src/scanner/timing.cpp) | Preserves exact duration/rates, interprets qualified Avid edit rates and computes displayed timecode components. |
+| [Media labels](../src/scanner/media_labels.cpp) | Interprets selected compression facts and derives effects from a confirmed precompute name using shared catalogues. |
+| [BellaAppScanner](../src/ui/bella_app_scanner.cpp) | Owns background result preparation, event-driven progress, warning/log batches and final delivery on the GUI thread. |
 
 The fixed source rules are implemented in the matcher, independently of any former
 policy table. Project prefers eligible PMR, then MDB, then an eligible already-read
@@ -118,8 +117,7 @@ qualified matching MDB descriptor can describe it. Missing individual columns,
 a missing master or an excluded Source Path do not independently request a read.
 An independently read header can supply an ID for another lookup in the already-
 loaded MDB indexes. Original Bin can fall back to same-master OMF; MXF supplies
-no Original Bin result. See [source priorities](reference/matching.md)
-and [matching](reference/matching.md).
+no Original Bin result. See [matching and source priorities](reference/matching.md).
 
 Local-reference status is independent of displayed metadata. A qualified local
 positive wins over a complete local miss; incomplete/unavailable checks remain
@@ -142,7 +140,7 @@ database. They do not reread or reselect the media metadata.
 
 ## File Check and format reading
 
-[File Check](../src/operations/filecheck.h) owns reusable verification rules:
+[File Check](../src/operations/file_check.h) owns reusable verification rules:
 native identity, size/date, scan path/volume, required Avid identities and final
 opened-file/path agreement. It borrows the operation's already-open `QFile`;
 Bella's MXF/OMF helpers reuse their mapping/graph code to compare the full
@@ -151,12 +149,12 @@ table clip. They do not reopen, adopt or close that file or start another scan.
 The supported initial MXF header and legacy OMF 1/Bento 1.0 limits apply;
 an unsupported required identity refuses the affected operation.
 
-[OpRunner](../src/operations/oprunner.cpp) and the copier call File Check for reusable
+[OperationRunner](../src/operations/operation_runner.cpp) and the copier call File Check for reusable
 file-verification rules before and during work, including publication, original
 removal, restoration, Undo and recovery. Captured observations stay captured;
 checks of current files happen at their existing points. Native action guards
 remain attached to their file routines.
-[OpFile](../src/operations/opfile.cpp) owns the actual native file handles. Ordinary Undo
+[OperationFile](../src/operations/operation_file.cpp) owns the actual native file handles. Ordinary Undo
 uses saved physical identities and does not gain an Avid-header requirement.
 Journals and recovery keep their existing schema and captured requirements.
 
@@ -168,8 +166,8 @@ file references and warnings. Shared compression lookups under
 
 ## Filters, selection and export
 
-[AvbFilterDialog](../src/ui/dialogs/avbfilterdialog.cpp) controls loaded bins and builds an ordered
-[AvbFilter](../src/ui/avbfilter.h) expression. The proxy evaluates each step against a
+[AvbFilterDialog](../src/ui/dialogs/avb_filter_dialog.cpp) controls loaded bins and builds an ordered
+[AvbFilter](../src/ui/avb_filter.h) expression. The proxy evaluates each step against a
 row's FileMobId. A shared MasterMobId alone does not establish membership.
 Loaded bins retain file-reference sets and load status/warnings. Their parsed
 graphs and detailed resolution records are released when loading finishes.
@@ -207,13 +205,13 @@ loading. Removing a loaded bin leaves its applied snapshots in the chain for now
 Bella retains one selected MasterMobId per row. Source Filename and Clip Duration
 are absent, and recorded Source Path and separate Effect Sequence are excluded
 from the Bella presentation.
-[PrecomputeFilterDialog](../src/ui/dialogs/precomputefilterdialog.cpp) builds the optional
-[PrecomputeFilter](../src/ui/precomputefilter.h).
+[PrecomputeFilterDialog](../src/ui/dialogs/precompute_filter_dialog.cpp) builds the optional
+[PrecomputeFilter](../src/ui/precompute_filter.h).
 
 The main window remembers selected paths across filter changes. Its
 `selectedFiles()` returns the currently visible selected rows, which are the inputs
 to Manage Media and selected-row export. Select Relatives also operates on visible
-rows. [MediaCsv](../src/app/mediacsv.cpp) writes the captured selected or all visible
+rows. [MediaCsv](../src/media/media_csv.cpp) writes the captured selected or all visible
 rows directly in view order, using QTextStream and QSaveFile. The main window waits
 until saving returns, then reports successful commit or failure in Console. No
 background CSV job retains a prior scan during a rescan. Project sidebar totals
@@ -227,17 +225,17 @@ projects when rebuilding the list.
 
 | Component | Responsibility |
 | --- | --- |
-| [ManageMediaDialog](../src/ui/dialogs/managemediadialog.cpp) | Collects choices and shows an advisory destination/conflict/space preview. |
-| [OperationPlan](../src/operations/operationplan.cpp) | Shares destination naming, Keep Both candidates and whole-job copy/space assessment between preview and execution. |
-| [FileOperationController](../src/operations/fileoperationcontroller.cpp) | Coordinates activity, progress, recovery choices, Undo availability and dispatch from the main window. |
-| [OpRequest / OpItem](../src/operations/oprequest.h) | Carry independent requests, items, results and frozen scan-receipt value types. |
-| [OpManager](../src/operations/opmanager.cpp) | Owns the execution worker and passes progress/results between it and the interface. |
-| [Operation request adapters](../src/operations/oprequest.cpp) | Combine captured scan receipts with current row path/volume/time and Avid claims when preparing operation items and destination-copy receipts. |
-| [OpRunner](../src/operations/oprunner.cpp) | Coordinates journal preparation, execution, recovery and Undo in one implementation file, organized with `MARK` sections. |
-| [OpFile](../src/operations/opfile.cpp) | Holds file handles and checks file identity, metadata and relocation outcomes. |
-| [OpCopier](../src/operations/opcopier.cpp), [OpTrash](../src/operations/optrash.cpp) | Perform native copying and platform Trash handling. |
-| [NativeFile](../src/operations/nativefile.cpp), [VolumeIdentity](../src/storage/volumeidentity.cpp) | Request storage persistence and identify volumes for recovery. |
-| [OpJournal](../src/operations/opjournal.cpp), [OperationRecovery](../src/operations/operationrecovery.cpp) | Save plans and outcomes; inspect recorded work, reconcile it and find recovery/Undo candidates. |
+| [ManageMediaDialog](../src/ui/dialogs/manage_media_dialog.cpp) | Collects choices and shows an advisory destination/conflict/space preview. |
+| [OperationPlan](../src/operations/operation_plan.cpp) | Shares destination naming, Keep Both candidates and whole-job copy/space assessment between preview and execution. |
+| [FileOperationController](../src/ui/file_operation_controller.cpp) | Coordinates activity, progress, recovery choices, Undo availability and dispatch from the main window. |
+| [OperationRequest / OperationItem](../src/operations/operation_request.h) | Carry independent requests, items, results and frozen scan-receipt value types. |
+| [OperationManager](../src/operations/operation_manager.cpp) | Owns the execution worker and passes progress/results between it and the interface. |
+| [Operation request adapters](../src/operations/operation_request.cpp) | Combine captured scan receipts with current row path/volume/time and Avid claims when preparing operation items and destination-copy receipts. |
+| [OperationRunner](../src/operations/operation_runner.cpp) | Coordinates journal preparation, execution, recovery and Undo in one implementation file, organized with `MARK` sections. |
+| [OperationFile](../src/operations/operation_file.cpp) | Holds file handles and checks file identity, metadata and relocation outcomes. |
+| [OperationCopier](../src/operations/operation_copier.cpp), [OperationTrash](../src/operations/operation_trash.cpp) | Perform native copying and platform Trash handling. |
+| [FileSync](../src/storage/file_sync.cpp), [VolumeIdentity](../src/storage/volume_identity.cpp) | Request storage persistence and identify volumes for recovery. |
+| [OperationJournal](../src/operations/operation_journal.cpp), [OperationRecovery](../src/operations/operation_recovery.cpp) | Save plans and outcomes; inspect recorded work, reconcile it and find recovery/Undo candidates. |
 
 The main window prepares a request from the visible selection. The controller
 checks activity, prior unfinished work and journal availability, then dispatches to
@@ -260,7 +258,7 @@ Saved jobs can require multiple independently captured header MasterMobIds.
 File Check continues to enforce every supplied requirement. An absent saved
 header receipt retains its existing fallback meaning; an explicit empty receipt
 retains its physical-only meaning.
-`opItemFromMediaFile()` combines the receipt with the row path/time/volume and
+`operationItemFromMediaFile()` combines the receipt with the row path/time/volume and
 selected Avid claims; it does not consult scan evidence. A row without a captured
 receipt is refused with a rescan request.
 
@@ -305,12 +303,12 @@ and Undo use the current identity, size, modification-time, metadata and persist
 checks.
 
 See the [behaviour guide](current-behaviour.md#copy-move-and-delete) for Trash routing
-and [contributing](CONTRIBUTING.md#validation) for current validation and
-platform-acceptance limits.
+and [validation and maintenance](#background-work-and-maintenance) for current
+platform acceptance limits.
 
 ## Rebalance
 
-[RebalancePlanner](../src/operations/rebalanceplanner.cpp) takes eligible files from the whole
+[RebalancePlanner](../src/operations/rebalance_planner.cpp) takes eligible files from the whole
 scan for one MXF root, inspects folder occupancy and computes a proposed plan. Its
 stricter name and resolved-path checks accept positive numbered or
 workstation-numbered folders and exclude OMF and quarantine media. Relatives
@@ -318,10 +316,10 @@ are grouped within a media root and workstation prefix using valid master IDs;
 oversized groups may span folders to respect the 5,000-file target. This target
 guides folder performance and planning; it does not limit scanning.
 
-[RebalanceDialog](../src/ui/dialogs/rebalancedialog.cpp) shows that plan.
+[RebalanceDialog](../src/ui/dialogs/rebalance_dialog.cpp) shows that plan.
 [Rebalancer](../src/operations/rebalancer.cpp) prepares the request asynchronously and adapts
-the shared engine's signals. It has its own `OpManager`, while the main window's
-controller gates conflicting activity and unfinished jobs. `OpRunner` performs all
+the shared engine's signals. It has its own `OperationManager`, while the main window's
+controller gates conflicting activity and unfinished jobs. `OperationRunner` performs all
 folder creation, database retirement and media moves.
 
 Before a group moves, the runner retires affected Avid databases to MediaMuster
@@ -342,7 +340,7 @@ received through `addLog()`. Bin loaders return errors to the UI for one report;
 they do not log the same failure themselves. Qt diagnostics also go to the file. The
 Console does not read the saved log.
 
-[BackgroundJob](../src/support/backgroundjob.h) owns a worker thread with cooperative
+[BackgroundJob](../src/support/background_job.h) owns a worker thread with cooperative
 cancellation for operation workers. BellaAppScanner owns its separate
 organiser thread and asynchronously waits for readiness; each Bella scan owns a
 fresh four-job reader pool. Bin Filter has a private two-worker pool. Destination/
@@ -351,18 +349,18 @@ worker inputs until completion; an operating-system call in progress can delay
 cleanup. Workers are cancelled cooperatively, not force-stopped.
 
 Application and test sources are explicitly listed in CMake. The relevant tests
-include `tst_bellascanner`, the individual parser suites, `tst_mediafilterproxy`,
-`tst_binfilterdialog`, `tst_rebalanceplanner`, `tst_fileoperations`, `tst_opjournal`
-and `tst_operationui`. The ordinary suites use self-contained inputs. They do not provide genuine-media
-or live shared-storage acceptance; see the contributor guide for current coverage
-limits. Passing results must identify the tested platform and source state.
+include `tst_bella_scanner`, the individual parser suites, `tst_media_table_model`,
+`tst_media_filter_proxy`, `tst_media_csv`, `tst_avb_filter_dialog`,
+`tst_rebalance_planner`, `tst_file_operations`, `tst_operation_journal` and
+`tst_operation_ui`. The ordinary suites use self-contained inputs. See the
+[validation policy](projects/Copland_readme.md#validation-and-change-policy) for
+genuine-media and live shared-storage acceptance limits. Passing results must
+identify the tested platform and source state.
 
 Bella separates reader facts and metadata matching from scanner/UI orchestration.
 Recovery/Undo planning and execution remain the established operation engine.
 Windows and NEXIS behaviour need their own documented runtime checks; local macOS
 results do not establish those platform guarantees.
-
-See [CONTRIBUTING](CONTRIBUTING.md) for development and documentation conventions.
 
 ## Duration ownership
 

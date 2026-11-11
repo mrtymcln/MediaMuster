@@ -3,8 +3,8 @@
 These pages explain the supported current contracts and useful native-format
 knowledge. Version-specific binary addresses and published specifications are
 provenance for particular meanings, not guarantees of every writer or format
-variant. Current build/test instructions and acceptance limits are in
-[contributing](../CONTRIBUTING.md#validation).
+variant. The current validation targets and acceptance limits are in the
+[validation policy](../projects/Copland_readme.md#validation-and-change-policy).
 
 | Topic | Reference |
 | --- | --- |

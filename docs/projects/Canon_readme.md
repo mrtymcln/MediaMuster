@@ -25,16 +25,16 @@ an instruction to restore the removed source-archive/replay implementation.
 - File operations recheck actual files and captured requirements at execution.
   Advisory metadata/inventory does not replace native identity or journal safety.
 
-The current scanner contract is [Bella](../Bella/README.md); V1 workflow
-requirements are summarized under [Copland](../Copland/README.md).
-Implementation ownership is in [architecture](../../architecture.md).
+The current scanner contract is [Bella](Bella_readme.md); V1 workflow
+requirements are summarized under [Copland](Copland_readme.md).
+Implementation ownership is in [architecture](../architecture.md).
 
-Useful format knowledge is consolidated under [reference](../../reference/README.md):
-[scope](../../reference/media-scope.md), [PMR](../../reference/pmr-format.md),
-[MDB](../../reference/mdb-format.md), [MXF](../../reference/mxf-format.md),
-[OMF/audio](../../reference/omf-format.md), [matching](../../reference/matching.md),
-[timing](../../reference/timing.md), [compression names](../../reference/compression-names.md),
-[text](../../reference/text-encoding.md) and [AVB](../../reference/avb-format.md).
-The [deferred sequence bundle](../../deferred/sequence/README.txt) is retained
+Useful format knowledge is consolidated under [reference](../reference/README.md):
+[scope](../reference/media-scope.md), [PMR](../reference/pmr-format.md),
+[MDB](../reference/mdb-format.md), [MXF](../reference/mxf-format.md),
+[OMF/audio](../reference/omf-format.md), [matching](../reference/matching.md),
+[timing](../reference/timing.md), [compression names](../reference/compression-names.md),
+[text](../reference/text-encoding.md) and [AVB](../reference/avb-format.md).
+The [deferred sequence bundle](../deferred/sequence/README.txt) is retained
 for future work. Implementation diaries, benchmarks and superseded proposals
 are not retained as project documentation.

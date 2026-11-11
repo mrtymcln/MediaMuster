@@ -1,7 +1,7 @@
 # AVB object and dependency evidence
 
-The independent [`AvbReader`](../../src/AvbReader/avbreader.cpp) and
-[`AvbReferenceIndex`](../../src/AvbReader/avbreferences.cpp) read and resolve one
+The independent [`AvbReader`](../../src/avb/avb_reader.cpp) and
+[`AvbReferenceIndex`](../../src/avb/avb_references.cpp) read and resolve one
 bin at a time. The active product contract is [Whole Bin filtering](avb-parser.md).
 Exact sequence-use filtering is [deferred](../deferred/sequence/README.txt).
 
@@ -85,4 +85,5 @@ Native addresses are unslid locations in the inspected `libameLibrary.dylib`
 arm64 slice, SHA-256
 `70b6f2810f53dc044a9b6b2d3f9d3e3c50df40c91fcc263e21a2678752566f9e`.
 They establish bounded format evidence, not all historical variants or current
-fixture-based acceptance. See [contributing](../CONTRIBUTING.md#validation).
+fixture-based acceptance. See the
+[validation policy](../projects/Copland_readme.md#validation-and-change-policy).

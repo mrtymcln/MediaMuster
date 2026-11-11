@@ -1,13 +1,13 @@
 # Copland V1 product requirements
 
 Copland defines MediaMuster's retained V1 product scope. Bella is now the normal
-scanner on macOS and Windows; its [current requirements](../Bella/README.md)
+scanner on macOS and Windows; its [current requirements](Bella_readme.md)
 replace earlier scanner policies where they differ. This is a current decision
 summary, not a development diary or a request to restore removed implementations.
 
-Use [current behaviour](../../current-behaviour.md) for user-facing details,
-[architecture](../../architecture.md) for ownership and
-[metadata reference](../../reference/metadata-reference.md) for terminology.
+Use [current behaviour](../current-behaviour.md) for user-facing details,
+[architecture](../architecture.md) for ownership and
+[metadata reference](../reference/metadata-reference.md) for terminology.
 
 ## Retained V1 requirements
 
@@ -73,7 +73,7 @@ original inputs plus renders, and union across checked sequences while respectin
 other filters. Empty known usage and unresolved usage must remain distinct.
 Genuine edits are needed to validate that future behavior.
 
-The [deferred sequence bundle](../../deferred/sequence/README.txt) contains saved
+The [deferred sequence bundle](../deferred/sequence/README.txt) contains saved
 code/research for later inspection. It is not active code or proof of current
 sequence accuracy, and its patch must not be applied wholesale to this tree.
 

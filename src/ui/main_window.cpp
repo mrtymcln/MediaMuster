@@ -495,9 +495,7 @@ void MainWindow::buildTable()
 	using Col = MediaTableModel::Column;
 	auto setW = [this](Col c, int w)
 	{
-		const int column = m_model->columnIndex(c);
-		if (column >= 0)
-			m_tableView->setColumnWidth(column, w);
+		m_tableView->setColumnWidth(m_model->columnIndex(c), w);
 	};
 	setW(Col::ClipName, 250);
 	setW(Col::Project, 150);
@@ -979,8 +977,6 @@ void MainWindow::setPrecomputesEnabled(bool enabled)
 							MediaTableModel::Column::Effect})
 		{
 			const int logical = m_model->columnIndex(column);
-			if (logical < 0)
-				continue;
 			header->moveSection(header->visualIndex(logical), position++);
 			m_tableView->setColumnWidth(logical,
 										column == MediaTableModel::Column::PrecomputeCategory || column == MediaTableModel::Column::EffectCategory ? 180 : 240);

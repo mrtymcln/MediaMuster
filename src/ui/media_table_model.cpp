@@ -236,8 +236,6 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 			return int(f.omfEra);
 		if (role == Qt::DisplayRole)
 			return f.omfEra ? QStringLiteral("true") : QStringLiteral("false");
-		if (role == Qt::UserRole)
-			return f.omfEra;
 		return {};
 	}
 
@@ -350,20 +348,6 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 		return QStringLiteral("The available metadata has not identified this file as media or a precompute.");
 	if (role == Qt::TextAlignmentRole && column == Column::SizeMB)
 		return QVariant(int(Qt::AlignRight | Qt::AlignVCenter));
-	if (role == Qt::UserRole)
-	{
-		if (column == Column::SizeMB)
-			return f.sizeBytes < 0 ? QVariant{} : QVariant(f.sizeBytes);
-		if (column == Column::SampleRate)
-			return f.sampleRateHz() > 0 ? QVariant(f.sampleRateHz()) : QVariant();
-		if (column == Column::Created)
-			return f.created;
-		if (column == Column::NoDatabase)
-			return f.isNoDatabase();
-		if (column == Column::NoReference)
-			return f.isNoReference();
-		return data(index, Qt::DisplayRole);
-	}
 	return {};
 }
 

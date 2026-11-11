@@ -1,11 +1,11 @@
 # Compression identifiers and readable names
 
-[`Bella::compressionFor`](../../src/bella/naming.cpp) adapts an already-selected
-reader value to the compiled lookup under
-[`src/CompressionNames/`](../../src/CompressionNames/compressionnames_p.cpp).
+[`Bella::compressionNamesFor`](../../src/scanner/media_labels.cpp) adapts
+already-selected reader values to the
+[compiled lookup](../../src/scanner_lookup/compression_names.cpp).
 It does no parsing, source ranking or filesystem I/O. Media Composer is not a
-runtime dependency. Its four strings are Compression, NewDnx, OldDnx and
-ReallyOldDnx, not four competing metadata sources.
+runtime dependency. The helper returns Compression, NewDnx, OldDnx and
+ReallyOldDnx from the same selected facts.
 
 “Compression” is established format/property terminology even where the encoding
 is uncompressed. An MXF picture/sound coding label, legacy compression FourCC,
@@ -41,7 +41,7 @@ These scheme names are MediaMuster terminology, not recorded Avid property names
 
 | Scheme | Example | Required evidence |
 | --- | --- | --- |
-| NewDnx | `Avid DNx HQX` | Established quality level/current unified brand. |
+| NewDnx | `DNx HQX` | Established quality level/current unified brand. |
 | OldDnx | `DNxHD HQX` or `DNxHR HQX` | Verified encoded historical profile. |
 | ReallyOldDnx | `DNxHD 175x` | Exact supported HD operating point, raster/layout/sampling/depth and clock. No numbered HR alias. |
 

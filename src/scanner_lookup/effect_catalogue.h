@@ -8,11 +8,8 @@ namespace AvidEffects
 {
 	struct Hit
 	{
-		QString name;     ///< Avid's display name, or the unrecognised token.
+		QString name;	  ///< Avid's display name, or the unrecognised token.
 		QString category; ///< Matching groups joined with " / ", or "unknown".
-		QString sequence; ///< Everything before the effect token, left as written.
-		int instance = 0; ///< The +N or comma-N instance; 0 when absent or invalid.
-		bool matched = false;
 	};
 
 	/// Handles +N and comma-N instances, including repeated .new.N suffixes.

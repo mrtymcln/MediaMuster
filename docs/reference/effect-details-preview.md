@@ -37,7 +37,7 @@ When the **Precomputes** tab and a detailed precompute selection are both active
 
 There are two different usage fields. Avid's integer master code **1** means precompute and **7** means master clip. In MXF, MediaMuster reads that private integer through the file's property mapping and checks it against the separate standard UsageCode identifier. Media Composer also uses the standard **LowerLevel** identifier for groups and motion effects, so LowerLevel alone cannot prove that a file is a precompute.
 
-File-mob code **9** occurs on many renders, but it is not sufficient as the classification rule: confirmed precomputes can also have file-mob code **0**. Unsupported or conflicting master usage remains **Unknown**. A successfully read MXF MaterialPackage with neither usage field retains the ordinary-media convention observed throughout the supplied sample. A known clip identity remains available even when its usage cannot establish a type.
+File-mob code **9** occurs on many renders, but it is not sufficient as the classification rule: confirmed precomputes can also have file-mob code **0**. Unsupported or conflicting master usage leaves Type as `unknown`. A successfully read MXF MaterialPackage with neither usage field retains the ordinary-media convention observed throughout the supplied sample. A known clip identity remains available even when its usage cannot establish a type.
 
 Exact definitions, binary entry points and limitations are in [Usage code identification](usage-code-identification.md).
 

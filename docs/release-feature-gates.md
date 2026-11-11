@@ -89,7 +89,7 @@ MDBs. Changed sources cannot supply eligible facts; a detected physical change
 or unconfirmed file presence retains the row with a rescan requirement. Unopened headers
 have no header identity to verify; database-derived identities still receive
 live checks before an operation. These checks do not establish database freshness.
-See the [Bella source-priority and header-opening rules](projects/Bella/README.md).
+See the [Bella source-priority and header-opening rules](projects/Bella_readme.md).
 This is a managed-workflow scope rule, not a
 guarantee that a deliberately misplaced or renamed file is format-certified.
 
@@ -104,7 +104,7 @@ The macOS and Windows targets link Bella directly in CMake.
 Bella's active MDB/OMF baseline is legacy OMF 1/Bento 1.0; OMF 2 and Bento 2
 are unsupported.
 
-[`src/featureflags.h`](../src/featureflags.h) contains the independent compile-time
+[`src/feature_flags.h`](../src/feature_flags.h) contains the independent compile-time
 switches and their current values. Rebuild after changing a value.
 
 | Flag | Enabled behavior | Disabled behavior |

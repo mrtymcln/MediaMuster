@@ -1,13 +1,13 @@
 # Effect-name catalogue: Media Composer 26.8
 
-The catalogue embedded in `src/media/effectcatalogue.cpp` contains **887 distinct name/category pairs, representing 861 English names**, identified from Media Composer **26.8.0.58987** and its shipped resources.
+The [compiled effect catalogue](../../src/scanner_lookup/effect_catalogue.cpp) contains **887 distinct name/category pairs, representing 861 English names**, identified from Media Composer **26.8.0.58987** and its shipped resources.
 
 Recognition from a clip name is **not a definitive effect ID**. Clip names are editable, and a name does not identify a specific AlphaFlex execution variant. The application must first classify a row as a precompute using its usage metadata. Unmatched tokens retain their original text and an **unknown** category, including uppercase `TITLE`, `SLATE` and arbitrary template names.
 
-Normal Bella scans call this shared catalogue through `src/bella/naming.cpp` and
-retain Effect and Effect Category when precompute details are requested. Bella
-does not retain or export the separate Effect Sequence value returned by the
-shared lookup.
+Normal Bella scans call this shared catalogue through
+[`media_labels.cpp`](../../src/scanner/media_labels.cpp) and retain Effect and
+Effect Category when precompute details are requested. The catalogue recognizes
+render-name suffixes to extract the effect token.
 
 ## Provenance and scope
 

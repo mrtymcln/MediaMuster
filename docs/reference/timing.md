@@ -1,6 +1,6 @@
 # Exact duration, rates and timecode
 
-[`timing.h/.cpp`](../../src/bella/timing.cpp) is pure value arithmetic after
+[`timing.h/.cpp`](../../src/scanner/timing.cpp) is pure value arithmetic after
 readers/matching establish the applicable source. It does no file I/O, source
 selection or default-project-clock lookup.
 

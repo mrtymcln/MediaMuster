@@ -397,9 +397,9 @@ void TestMediaTableModel::unknown_created_date_displays_blank()
 			 QStringLiteral("2026-07-20 12:30"));
 	QVERIFY(m.index(1, col).data(Qt::DisplayRole).toString().isEmpty());
 
-	// The sort role hands back the raw (possibly invalid) datetime;
-	// invalid values sort before valid ones, so blanks group together.
-	QVERIFY(!m.index(1, col).data(Qt::UserRole).toDateTime().isValid());
+	const auto sortValue = m.index(1, col).data(MediaTableModel::SortRole);
+	QCOMPARE(sortValue.metaType(), QMetaType::fromType<QDateTime>());
+	QVERIFY(!sortValue.toDateTime().isValid());
 }
 
 // Missing and unreadable databases share a label but keep distinct explanations.
@@ -481,10 +481,12 @@ void TestMediaTableModel::database_columns_show_the_compact_result()
 			QVERIFY(reference.isValid());
 			QCOMPARE(database.data().toString(), noDatabase ? QStringLiteral("true") : QStringLiteral("false"));
 			QCOMPARE(reference.data().toString(), noReference ? QStringLiteral("true") : QStringLiteral("false"));
-			QCOMPARE(database.data(Qt::UserRole).metaType().id(), int(QMetaType::Bool));
-			QCOMPARE(reference.data(Qt::UserRole).metaType().id(), int(QMetaType::Bool));
-			QCOMPARE(database.data(Qt::UserRole).toBool(), noDatabase);
-			QCOMPARE(reference.data(Qt::UserRole).toBool(), noReference);
+			const auto databaseSortValue = database.data(MediaTableModel::SortRole);
+			const auto referenceSortValue = reference.data(MediaTableModel::SortRole);
+			QCOMPARE(databaseSortValue.metaType(), QMetaType::fromType<int>());
+			QCOMPARE(referenceSortValue.metaType(), QMetaType::fromType<int>());
+			QCOMPARE(databaseSortValue.toInt(), int(noDatabase));
+			QCOMPARE(referenceSortValue.toInt(), int(noReference));
 			QCOMPARE(model.headerData(databaseColumn, Qt::Horizontal, Qt::DisplayRole).toString(), QStringLiteral("No Database"));
 			QCOMPARE(model.headerData(referenceColumn, Qt::Horizontal, Qt::DisplayRole).toString(), QStringLiteral("No Reference"));
 			const QString databaseTip = database.data(Qt::ToolTipRole).toString();

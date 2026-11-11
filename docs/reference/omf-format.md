@@ -1,6 +1,6 @@
 # Legacy OMF and native audio
 
-[`omfparser.cpp`](../../src/bella/omfparser.cpp) owns OMF media interpretation,
+[`omf_parser.cpp`](../../src/scanner/omf_parser.cpp) owns OMF media interpretation,
 native WAVE/AIFF navigation and embedded/trailer OMF handling. It is independent
 of MDB's parser. Shared bounded audio-format helpers decode the ordinary format
 prefixes used by both native files and database summaries.

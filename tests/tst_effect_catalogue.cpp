@@ -40,28 +40,23 @@ void TestEffectCatalogue::corpus_render_names_resolve()
 		const char *clip;
 		const char *name;
 		const char *category;
-		const char *sequence;
-		int instance;
 	};
 	// MaterialPackage names recorded in the genuine MXF/MDB fixtures.
 	const Case cases[] = {
-		{"zT_\xc3\x9ft_1080i_50_seq,Color_Correction+1", "Color Correction", "Image", "zT_\xc3\x9ft_1080i_50_seq", 1},
-		{"zT_\xc3\x9ft_1080i_50_seq,AniMatte+6", "AniMatte", "Key", "zT_\xc3\x9ft_1080i_50_seq", 6},
-		{"Untitled_Sequence.01,3D_Ball+4", "3D Ball", "Xpress 3D Effect", "Untitled_Sequence.01", 4},
-		{"zT_\xc3\x9ft_1080i_50_seq,1.85_Mask+2", "1.85 Mask", "Film", "zT_\xc3\x9ft_1080i_50_seq", 2},
-		{"zT_\xc3\x9ft_1080i_50_seq,3D_Page_Fold+5", "3D Page Fold", "Xpress 3D Effect", "zT_\xc3\x9ft_1080i_50_seq", 5},
-		{"zT_\xc3\x9ft_1080i_50_seq,14_9_Letterbox+4", "14:9 Letterbox", "Reformat", "zT_\xc3\x9ft_1080i_50_seq", 4},
-		{"Untitled_Sequence.01,Color_Adapter+9", "Color Adapter", "Image", "Untitled_Sequence.01", 9},
-		{"Untitled_Sequence.04,Color_Correction+3", "Color Correction", "Image", "Untitled_Sequence.04", 3},
+		{"zT_\xc3\x9ft_1080i_50_seq,Color_Correction+1", "Color Correction", "Image"},
+		{"zT_\xc3\x9ft_1080i_50_seq,AniMatte+6", "AniMatte", "Key"},
+		{"Untitled_Sequence.01,3D_Ball+4", "3D Ball", "Xpress 3D Effect"},
+		{"zT_\xc3\x9ft_1080i_50_seq,1.85_Mask+2", "1.85 Mask", "Film"},
+		{"zT_\xc3\x9ft_1080i_50_seq,3D_Page_Fold+5", "3D Page Fold", "Xpress 3D Effect"},
+		{"zT_\xc3\x9ft_1080i_50_seq,14_9_Letterbox+4", "14:9 Letterbox", "Reformat"},
+		{"Untitled_Sequence.01,Color_Adapter+9", "Color Adapter", "Image"},
+		{"Untitled_Sequence.04,Color_Correction+3", "Color Correction", "Image"},
 	};
 	for (const Case &c : cases)
 	{
 		const AvidEffects::Hit h = AvidEffects::lookup(QString::fromUtf8(c.clip));
-		QVERIFY2(h.matched, c.clip);
 		QCOMPARE(h.name, QString::fromUtf8(c.name));
 		QCOMPARE(h.category, QString::fromUtf8(c.category));
-		QCOMPARE(h.sequence, QString::fromUtf8(c.sequence));
-		QCOMPARE(h.instance, c.instance);
 	}
 }
 
@@ -91,11 +86,8 @@ void TestEffectCatalogue::current_registration_variants_and_render_names()
 	{
 		const auto hit = AvidEffects::lookup(QStringLiteral("Act_1,_Scene_2,") +
 											 QString::fromUtf8(c.token) + QStringLiteral(",79.new.01"));
-		QVERIFY2(hit.matched, c.token);
 		QCOMPARE(hit.name, QString::fromUtf8(c.name));
 		QCOMPARE(hit.category, QString::fromUtf8(c.category));
-		QCOMPARE(hit.sequence, QStringLiteral("Act_1,_Scene_2"));
-		QCOMPARE(hit.instance, 79);
 	}
 }
 
@@ -107,7 +99,6 @@ void TestEffectCatalogue::aliases_do_not_guess_arbitrary_names()
 								 QStringLiteral("3DWarp_custom"), QStringLiteral("FXBaseProxyRegistration")})
 	{
 		const auto hit = AvidEffects::lookup(QStringLiteral("Seq,") + token + QStringLiteral("+2"));
-		QVERIFY2(!hit.matched, qPrintable(token));
 		QCOMPARE(hit.name, token);
 		QCOMPARE(hit.category, QStringLiteral("unknown"));
 	}
@@ -117,11 +108,8 @@ void TestEffectCatalogue::user_typed_title_is_not_a_standard_effect()
 {
 	// Recorded title text is not a catalogue effect name.
 	const AvidEffects::Hit h = AvidEffects::lookup(QString::fromUtf8("zT_\xc3\x9ft_1080i_50_seq,10101010+3"));
-	QVERIFY(!h.matched);
 	QCOMPARE(h.name, QStringLiteral("10101010"));
 	QCOMPARE(h.category, QStringLiteral("unknown"));
-	QCOMPARE(h.sequence, QString::fromUtf8("zT_\xc3\x9ft_1080i_50_seq"));
-	QCOMPARE(h.instance, 3);
 }
 
 // MARK: - Rendered name parsing
@@ -130,23 +118,20 @@ void TestEffectCatalogue::parse_splits_on_the_last_comma_and_strips_the_instance
 {
 	// Commas inside the sequence name must not split the effect token.
 	AvidEffects::Hit h = AvidEffects::lookup(QStringLiteral("Act_1,_Scene_2,Dissolve+12"));
-	QVERIFY(h.matched);
 	QCOMPARE(h.name, QStringLiteral("Dissolve"));
-	QCOMPARE(h.sequence, QStringLiteral("Act_1,_Scene_2"));
-	QCOMPARE(h.instance, 12);
+	QCOMPARE(h.category, QStringLiteral("Blend"));
 
 	h = AvidEffects::lookup(QStringLiteral("Dissolve"));
-	QVERIFY(h.matched);
-	QVERIFY(h.sequence.isEmpty());
-	QCOMPARE(h.instance, 0);
+	QCOMPARE(h.name, QStringLiteral("Dissolve"));
+	QCOMPARE(h.category, QStringLiteral("Blend"));
 
 	h = AvidEffects::lookup(QStringLiteral("Interview Take 3"));
-	QVERIFY(!h.matched);
 	QCOMPARE(h.name, QStringLiteral("Interview Take 3"));
+	QCOMPARE(h.category, QStringLiteral("unknown"));
 
 	h = AvidEffects::lookup(QString());
-	QVERIFY(!h.matched);
 	QVERIFY(h.name.isEmpty());
+	QCOMPARE(h.category, QStringLiteral("unknown"));
 }
 
 void TestEffectCatalogue::comma_instances_data()
@@ -154,43 +139,32 @@ void TestEffectCatalogue::comma_instances_data()
 	QTest::addColumn<QString>("clip");
 	QTest::addColumn<QString>("name");
 	QTest::addColumn<QString>("category");
-	QTest::addColumn<QString>("sequence");
-	QTest::addColumn<int>("instance");
-	QTest::addColumn<bool>("matched");
 
 	// Recorded render names use a final comma-separated instance and optional rename suffix.
 	QTest::newRow("real-title")
 		<< QStringLiteral("HAA_1730_8647_SUBMASTER,Title,4.new.01")
-		<< QStringLiteral("Title") << QStringLiteral("Title")
-		<< QStringLiteral("HAA_1730_8647_SUBMASTER") << 4 << true;
+		<< QStringLiteral("Title") << QStringLiteral("Title");
 	QTest::newRow("real-resize")
 		<< QStringLiteral("HAA_1730_8647_SUBMASTER,Resize,9.new.01")
-		<< QStringLiteral("Resize") << QStringLiteral("Image")
-		<< QStringLiteral("HAA_1730_8647_SUBMASTER") << 9 << true;
+		<< QStringLiteral("Resize") << QStringLiteral("Image");
 	QTest::newRow("real-audio-dissolve")
 		<< QStringLiteral("HAA_1730_8647_SUBMASTER,Audio_Dissolve,79.new.01")
-		<< QStringLiteral("Audio Dissolve") << QStringLiteral("Blend")
-		<< QStringLiteral("HAA_1730_8647_SUBMASTER") << 79 << true;
+		<< QStringLiteral("Audio Dissolve") << QStringLiteral("Blend");
 	QTest::newRow("sequence-commas")
 		<< QStringLiteral("Act_1,_Scene_2,Title,12")
-		<< QStringLiteral("Title") << QStringLiteral("Title")
-		<< QStringLiteral("Act_1,_Scene_2") << 12 << true;
+		<< QStringLiteral("Title") << QStringLiteral("Title");
 	QTest::newRow("repeated-rename-suffixes")
 		<< QStringLiteral("Act_1,_Scene_2,Resize,12.new.01.new.002")
-		<< QStringLiteral("Resize") << QStringLiteral("Image")
-		<< QStringLiteral("Act_1,_Scene_2") << 12 << true;
+		<< QStringLiteral("Resize") << QStringLiteral("Image");
 	QTest::newRow("zero-instance")
 		<< QStringLiteral("Seq,Title,0")
-		<< QStringLiteral("Title") << QStringLiteral("Title")
-		<< QStringLiteral("Seq") << 0 << true;
+		<< QStringLiteral("Title") << QStringLiteral("Title");
 	QTest::newRow("largest-instance")
 		<< QStringLiteral("Seq,Title,2147483647.new.2147483647")
-		<< QStringLiteral("Title") << QStringLiteral("Title")
-		<< QStringLiteral("Seq") << 2147483647 << true;
+		<< QStringLiteral("Title") << QStringLiteral("Title");
 	QTest::newRow("plus-instance-with-sequence-commas")
 		<< QStringLiteral("Act_1,_Scene_2,Resize+9")
-		<< QStringLiteral("Resize") << QStringLiteral("Image")
-		<< QStringLiteral("Act_1,_Scene_2") << 9 << true;
+		<< QStringLiteral("Resize") << QStringLiteral("Image");
 }
 
 void TestEffectCatalogue::comma_instances()
@@ -198,22 +172,15 @@ void TestEffectCatalogue::comma_instances()
 	QFETCH(QString, clip);
 	QFETCH(QString, name);
 	QFETCH(QString, category);
-	QFETCH(QString, sequence);
-	QFETCH(int, instance);
-	QFETCH(bool, matched);
 	const AvidEffects::Hit hit = AvidEffects::lookup(clip);
 	QCOMPARE(hit.name, name);
 	QCOMPARE(hit.category, category);
-	QCOMPARE(hit.sequence, sequence);
-	QCOMPARE(hit.instance, instance);
-	QCOMPARE(hit.matched, matched);
 }
 
 void TestEffectCatalogue::invalid_suffixes_stay_visible_data()
 {
 	QTest::addColumn<QString>("clip");
 	QTest::addColumn<QString>("name");
-	QTest::addColumn<QString>("sequence");
 	for (const QString &suffix : {
 			 QStringLiteral("4.new."), QStringLiteral("4.new.one"),
 			 QStringLiteral("4.new.01.extra"), QStringLiteral("4.new.01.02"),
@@ -224,30 +191,26 @@ void TestEffectCatalogue::invalid_suffixes_stay_visible_data()
 	{
 		QTest::newRow(qPrintable(QStringLiteral("comma-") + suffix))
 			<< QStringLiteral("Act_1,_Scene_2,Title,") + suffix
-			<< suffix << QStringLiteral("Act_1,_Scene_2,Title");
+			<< suffix;
 	}
 	QTest::newRow("missing-effect")
-		<< QStringLiteral("Seq,,4") << QStringLiteral("4") << QStringLiteral("Seq,");
+		<< QStringLiteral("Seq,,4") << QStringLiteral("4");
 	QTest::newRow("only-one-comma")
-		<< QStringLiteral("Seq,4.new.01") << QStringLiteral("4.new.01") << QStringLiteral("Seq");
+		<< QStringLiteral("Seq,4.new.01") << QStringLiteral("4.new.01");
 	QTest::newRow("plus-overflow")
 		<< QStringLiteral("Act_1,_Scene_2,Dissolve+2147483648")
-		<< QStringLiteral("Dissolve+2147483648") << QStringLiteral("Act_1,_Scene_2");
+		<< QStringLiteral("Dissolve+2147483648");
 	QTest::newRow("plus-malformed")
 		<< QStringLiteral("Act_1,_Scene_2,Dissolve+one")
-		<< QStringLiteral("Dissolve+one") << QStringLiteral("Act_1,_Scene_2");
+		<< QStringLiteral("Dissolve+one");
 }
 
 void TestEffectCatalogue::invalid_suffixes_stay_visible()
 {
 	QFETCH(QString, clip);
 	QFETCH(QString, name);
-	QFETCH(QString, sequence);
 	const AvidEffects::Hit hit = AvidEffects::lookup(clip);
 	QCOMPARE(hit.name, name);
-	QCOMPARE(hit.sequence, sequence);
-	QCOMPARE(hit.instance, 0);
-	QVERIFY(!hit.matched);
 	QCOMPARE(hit.category, QStringLiteral("unknown"));
 }
 
@@ -263,7 +226,6 @@ void TestEffectCatalogue::mangle_turns_spaces_and_colons_into_underscores()
 void TestEffectCatalogue::ambiguous_names_report_every_category()
 {
 	const AvidEffects::Hit h = AvidEffects::lookup(QStringLiteral("seq,Bottom_to_Top+1"));
-	QVERIFY(h.matched);
 	QCOMPARE(h.name, QStringLiteral("Bottom to Top"));
 	QVERIFY2(h.category.contains(QStringLiteral("Conceal")), qPrintable(h.category));
 	QVERIFY2(h.category.contains(QStringLiteral("Push")), qPrintable(h.category));
@@ -275,12 +237,11 @@ void TestEffectCatalogue::localised_spellings_resolve_to_the_english_name()
 	// A German Media Composer writes "Blende" for Dissolve; the catalogue
 	// keys every shipped language so the count stays one effect, not five.
 	const AvidEffects::Hit de = AvidEffects::lookup(QStringLiteral("Sequenz_1,Blende+2"));
-	QVERIFY(de.matched);
 	QCOMPARE(de.name, QStringLiteral("Dissolve"));
 	QCOMPARE(de.category, QStringLiteral("Blend"));
 	const AvidEffects::Hit fr = AvidEffects::lookup(QStringLiteral("Seq,Correction_colorimétrique+1"));
-	QVERIFY(fr.matched);
 	QCOMPARE(fr.name, QStringLiteral("Color Correction"));
+	QCOMPARE(fr.category, QStringLiteral("Image"));
 }
 
 QTEST_APPLESS_MAIN(TestEffectCatalogue)

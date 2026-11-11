@@ -3,9 +3,9 @@
 This reference distinguishes physical-file facts, Avid object roles, literal
 format names and MediaMuster's own labels. It is a technical reference, not a
 record of development stages. Current selection and supported-format rules are
-in [Bella requirements](../projects/Bella/README.md),
+in [Bella requirements](../projects/Bella_readme.md),
 [parser compatibility](parser-compatibility.md) and
-[the implementation map](../../src/bella/README.md).
+[the implementation map](../architecture.md#bella-readers-matching-and-row-values).
 
 The old scanner's broader format mappings and per-column status schema are not
 the current implementation. Bella excludes recorded Source Path, Source Filename,
@@ -58,10 +58,11 @@ contain more information than the supported reader extracts.
 | KelpieId / OmfScan | App row identity and admitted OMFI-family flag; neither is an Avid package property. |
 | No Database / No Reference | Derived local-reference booleans from distinct compact states. Missing/unresolved checks make No Database true. A qualified positive or complete miss makes it false; No Reference is true only for an established miss without a positive. Neither proves sequence usage or freshness. |
 
-Project displays “No project” when missing; unknown Kind has its existing label.
+Project displays “No project” when missing. Unclassified Kind and Type display
+`unknown`.
 Unavailable technical values remain distinct from zero. Table, filtering and CSV
 share current row formatting; they do not retain every parser observation.
-See [MediaFile](../../src/media/mediafile.h) and
+See [MediaFile](../../src/media/media_file.h) and
 [matching](matching.md) for the implemented boundaries.
 
 ## Original Bin storage
@@ -120,8 +121,8 @@ general OMF UID to fit it. Source-qualified numeric byte order is separate from
 text formatting. Preserve complete IDs and active bytes; do not compare only the
 UUID-looking portion. Filesystem copies can share Avid IDs while remaining
 separate rows. Neither embedded ID proves byte equality or replaces native file
-identity checks. See [MobId](../../src/bella/mobid.h) and
-[OMF UID handling](../../src/media/omfuid.h).
+identity checks. See [MobId](../../src/scanner/mob_id.h) and
+[OMF UID handling](../../src/media/omf_uid.h).
 
 ### Stored names, parser labels and object roles
 

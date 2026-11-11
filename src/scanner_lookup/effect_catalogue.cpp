@@ -966,10 +966,7 @@ AvidEffects::Hit AvidEffects::lookup(const QString &clipName)
 	QString token = clipName;
 	const qsizetype comma = clipName.lastIndexOf(QLatin1Char(','));
 	if (comma >= 0)
-	{
-		hit.sequence = clipName.left(comma);
 		token = clipName.mid(comma + 1);
-	}
 	bool hasCommaInstance = false;
 	static const QRegularExpression kCommaInstance(QStringLiteral("\\A[0-9]+(?:\\.new\\.[0-9]+)*\\z"));
 	if (comma > 0 && kCommaInstance.match(token).hasMatch())
@@ -980,24 +977,19 @@ AvidEffects::Hit AvidEffects::lookup(const QString &clipName)
 			const QStringList numbers = token.split(QStringLiteral(".new."));
 			// Validate every number before removing the suffix, so malformed text stays visible.
 			bool isValid = true;
-			int instance = 0;
-			for (qsizetype numberIndex = 0; numberIndex < numbers.size(); ++numberIndex)
+			for (const QString &number : numbers)
 			{
 				bool isValidNumber = false;
-				const int value = numbers[numberIndex].toInt(&isValidNumber);
+				(void)number.toInt(&isValidNumber);
 				if (!isValidNumber)
 				{
 					isValid = false;
 					break;
 				}
-				if (numberIndex == 0)
-					instance = value;
 			}
 			if (isValid)
 			{
-				hit.sequence = clipName.left(effectComma);
 				token = clipName.mid(effectComma + 1, comma - effectComma - 1);
-				hit.instance = instance;
 				hasCommaInstance = true;
 			}
 		}
@@ -1009,12 +1001,9 @@ AvidEffects::Hit AvidEffects::lookup(const QString &clipName)
 		if (suffixMatch.hasMatch() && suffixMatch.capturedStart(0) > 0)
 		{
 			bool isValidNumber = false;
-			const int instance = suffixMatch.captured(1).toInt(&isValidNumber);
+			(void)suffixMatch.captured(1).toInt(&isValidNumber);
 			if (isValidNumber)
-			{
-				hit.instance = instance;
 				token.chop(suffixMatch.capturedLength(0));
-			}
 		}
 	}
 
@@ -1026,7 +1015,6 @@ AvidEffects::Hit AvidEffects::lookup(const QString &clipName)
 		hit.category = QStringLiteral("unknown");
 		return hit;
 	}
-	hit.matched = true;
 	hit.name = lookupTable.rows[matchingRows->first()].name;
 	// Some names appear in several groups. Keep each category once, in catalogue order.
 	QStringList categories;

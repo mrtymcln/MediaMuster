@@ -13,12 +13,12 @@ bytes/graphs. There is no source-storage mode switch or replay pipeline.
 | AVB parsed graph and detailed resolution | One bin load; released before compact file-reference/warning results reach the dialog. |
 | Applied bin-filter operand | Its own compact reference/warning snapshot, independent of removal of the loaded-bin row. |
 
-[`BellaAppScanner`](../../src/app/bellaappscanner.cpp) owns background preparation
-and delivery. [`Bella2Table`](../../src/app/Bella2Table.cpp) adapts selected values
-and operation-safety receipts. The table does not retain a per-field observation
-history or raw reader graph. Unknown/unselected source properties cannot be
-reconstructed from a final row; deeper inspection requires reopening the source,
-which may have changed or disappeared.
+[`BellaAppScanner`](../../src/ui/bella_app_scanner.cpp) owns background preparation
+and delivery. [`bellaMediaFile()`](../../src/media/bella_media_mapper.cpp) adapts
+selected values and operation-safety receipts. The table does not retain a
+per-field observation history or raw reader graph. Inspecting source properties
+that the final row did not capture requires reopening the source, which may
+have changed or disappeared.
 
 One organiser creates a fresh pool with at most four outstanding source jobs.
 That bounds concurrency, not total memory. Counts, extents, typed widths and
@@ -35,5 +35,5 @@ not permission to return dangling views into temporary captures.
 MDB and OMF deliberately own separate format implementations. A similar wire
 schema does not authorize sharing one private interpreter. Common value types,
 complete IDs, checked timing and readable-name catalogues remain separate
-helpers. See [architecture](../architecture.md), [matching](matching.md) and
-[the contributor boundaries](../CONTRIBUTING.md#boundaries-and-behaviour).
+helpers. See the [scanner architecture](../architecture.md#bella-readers-matching-and-row-values)
+and [matching rules](matching.md).

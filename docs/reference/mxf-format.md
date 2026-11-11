@@ -1,6 +1,6 @@
 # MXF metadata, package identity and ownership
 
-[`mxfparser.cpp`](../../src/bella/mxfparser.cpp) reads the supported closed,
+[`mxf_parser.cpp`](../../src/scanner/mxf_parser.cpp) reads the supported closed,
 complete **initial Header Partition at byte zero** and OP-Atom family. It does
 not implement general run-in, later-header/footer recovery or an arbitrary MXF
 demultiplexer. These are application limits within a broader format standard.
@@ -64,5 +64,6 @@ See [matching](matching.md), [timing](timing.md),
 - [libMXF Avid UMID generation](https://github.com/bbc/bmx/blob/main/deps/libMXF/mxf/mxf_avid.c): explicit legacy-compatible prefix/suffix with big-endian material numeric fields.
 - [libMXF extension model](https://github.com/bbc/bmx/blob/main/deps/libMXF/mxf/mxf_extensions_data_model.h): EssenceGroup Choices `060e2b34010101020601010406010000` and StillFrame `060e2b34010101020601010402080000`.
 
-Reference-source capabilities do not expand Bella's supported navigation. Current
-real-media acceptance coverage is described in [contributing](../CONTRIBUTING.md#validation).
+Reference-source capabilities do not expand Bella's supported navigation. See the
+[validation policy](../projects/Copland_readme.md#validation-and-change-policy)
+for the limits of current coverage.
